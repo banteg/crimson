@@ -1,19 +1,12 @@
 from __future__ import annotations
 
-from typing import cast
-
-import msgspec
-
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
 from .channel_helpers import ENTITY_SAMPLE_KINDS, EntitySampleRow, entity_rows
+from .payloads import BuiltinObject, BuiltinRows, to_builtin_object, to_builtin_value
 from .strict_compare import strict_mismatch_payload
 
 
-def _to_builtin_obj(value: object) -> dict[str, object]:
-    return cast("dict[str, object]", msgspec.to_builtins(value))
-
-
-def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngStreamRow]) -> tuple[bool, dict[str, object] | None]:
+def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngStreamRow]) -> tuple[bool, BuiltinObject | None]:
     exp_keys = [
         (
             int(row.tick_call_index),
@@ -38,38 +31,44 @@ def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngS
         prefix += 1
     if prefix == len(exp_keys) == len(act_keys):
         return True, None
-    detail: dict[str, object] = {
+    detail = to_builtin_object(
+        {
         "prefix_match_len": prefix,
         "expected_calls": len(exp_keys),
         "actual_calls": len(act_keys),
         "missing_tail": max(0, len(exp_keys) - len(act_keys)),
         "extra_tail": max(0, len(act_keys) - len(exp_keys)),
-    }
+        },
+        field="rng_stream.diff",
+    )
     if prefix < len(expected_rows):
-        detail["expected_first_mismatch"] = _to_builtin_obj(expected_rows[prefix])
+        detail["expected_first_mismatch"] = to_builtin_object(expected_rows[prefix], field="rng_stream.expected")
     if prefix < len(actual_rows):
-        detail["actual_first_mismatch"] = _to_builtin_obj(actual_rows[prefix])
+        detail["actual_first_mismatch"] = to_builtin_object(actual_rows[prefix], field="rng_stream.actual")
     return False, detail
 
 
 def compare_sim_state(
     expected_obj: SimStateSnapshot,
     actual_obj: SimStateSnapshot,
-) -> tuple[bool, dict[str, object] | None]:
+) -> tuple[bool, BuiltinObject | None]:
     if expected_obj == actual_obj:
         return True, None
     payload, diff_count, pretty = strict_mismatch_payload(expected_obj, actual_obj, root_path="sim_state")
-    return False, {
-        "diff_count": int(diff_count),
-        "mismatches": payload,
-        "pretty": pretty,
-    }
+    return False, to_builtin_object(
+        {
+            "diff_count": int(diff_count),
+            "mismatches": payload,
+            "pretty": pretty,
+        },
+        field="sim_state.diff",
+    )
 
 
 def compare_timing_samples(
     expected_rows: list[TimingSampleRow],
     actual_rows: list[TimingSampleRow],
-) -> tuple[bool, dict[str, object] | None]:
+) -> tuple[bool, BuiltinObject | None]:
     if expected_rows == actual_rows:
         return True, None
     payload, diff_count, pretty = strict_mismatch_payload(
@@ -77,11 +76,14 @@ def compare_timing_samples(
         actual_rows,
         root_path="timing_samples",
     )
-    return False, {
-        "diff_count": int(diff_count),
-        "mismatches": payload,
-        "pretty": pretty,
-    }
+    return False, to_builtin_object(
+        {
+            "diff_count": int(diff_count),
+            "mismatches": payload,
+            "pretty": pretty,
+        },
+        field="timing_samples.diff",
+    )
 
 
 def _rows_by_uid(rows: list[EntitySampleRow]) -> tuple[dict[int, EntitySampleRow], int, list[int]]:
@@ -98,12 +100,12 @@ def _rows_by_uid(rows: list[EntitySampleRow]) -> tuple[dict[int, EntitySampleRow
 def compare_entity_samples(
     expected_obj: EntitySamplesSnapshot,
     actual_obj: EntitySamplesSnapshot,
-) -> tuple[bool, dict[str, object] | None]:
+) -> tuple[bool, BuiltinObject | None]:
     if expected_obj == actual_obj:
         return True, None
 
-    detail: dict[str, object] = {}
-    row_diffs: list[dict[str, object]] = []
+    detail: BuiltinObject = {}
+    row_diffs: BuiltinRows = []
     for kind in ENTITY_SAMPLE_KINDS:
         exp_map, exp_total, exp_dupes = _rows_by_uid(entity_rows(expected_obj, kind=kind))
         act_map, act_total, act_dupes = _rows_by_uid(entity_rows(actual_obj, kind=kind))
@@ -144,5 +146,5 @@ def compare_entity_samples(
             )
 
     if row_diffs:
-        detail["row_diffs"] = row_diffs
+        detail["row_diffs"] = to_builtin_value(row_diffs, field="entity_samples.row_diffs")
     return (len(detail) == 0), (None if len(detail) == 0 else detail)

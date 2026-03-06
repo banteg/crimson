@@ -157,12 +157,6 @@ def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
     typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
     typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
     typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
-    if failure.first_rng_mark is not None:
-        key = str(failure.first_rng_mark)
-        typer.echo(
-            f"  rng_mark[{key}] expected={exp.rng_marks.get(key)} actual={act.rng_marks.get(key)}",
-            err=True,
-        )
     typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
     if exp.deaths or act.deaths:
         typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)

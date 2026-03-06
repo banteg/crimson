@@ -21,10 +21,12 @@ from ..replay.types import WEAPON_USAGE_COUNT, BootstrapKind, Replay, ReplayStat
 from ..sim.bootstrap import run_terrain_bootstrap
 from ..status_snapshot import progress_status_from_debug_snapshot, replay_status_from_progress
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
-from .rng import canonical_rng_marks
+from .payloads import BuiltinObject
 from .schema import (
     TRACE_FORMAT_VERSION,
+    TRACE_REQUIRED_CHANNELS,
     TRACE_SCHEMA_VERSION,
+    ReplayTickChannels,
     TickRecord,
     TraceMeta,
     channel_versions_for,
@@ -39,7 +41,11 @@ _GAME_MODE_SURVIVAL = int(GameMode.SURVIVAL)
 _GAME_MODE_RUSH = int(GameMode.RUSH)
 _TERRAIN_BOOTSTRAP_MODES = {_GAME_MODE_SURVIVAL, _GAME_MODE_RUSH}
 _BOOTSTRAP_KINDS: set[BootstrapKind] = {"none", "terrain_v1"}
-_SUPPORTED_CAPTURE_FORMAT_VERSION = 9
+_SUPPORTED_CAPTURE_FORMAT_VERSION = 10
+_SUPPORTED_JSONL_SCHEMA_VERSION = 1
+_RUN_START_REASONS = frozenset(("run_start", "first_tick", "quest_attempt", "mode_or_stage_change"))
+_RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change", "shutdown"))
+_SEED_SOURCES = frozenset(("unknown", "crt_srand", "terrain_bootstrap_sim"))
 _MODE_LABEL_BY_ID = {
     int(GameMode.DEMO): "demo",
     int(GameMode.SURVIVAL): "survival",
@@ -58,9 +64,62 @@ class _TickChannels(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     checkpoint: ReplayCheckpoint
     sim_state: SimStateSnapshot
     entity_samples: EntitySamplesSnapshot
-    rng_marks: dict[str, int] = msgspec.field(default_factory=dict)
     rng_stream: list[RngStreamRow] = msgspec.field(default_factory=list)
     timing_samples: list[TimingSampleRow] = msgspec.field(default_factory=list)
+
+
+class _SessionFingerprintRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    session_id: str
+    ptrs_hash: str
+    module_hash: str | None = None
+
+
+class _SessionConfigRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    out_path: str
+    jsonl_schema_version: int
+    capture_profile: str
+    config_env_overrides: list[str]
+    log_mode: str
+    console_all_events: bool
+    console_events: list[str]
+    include_caller: bool
+    include_backtrace: bool
+    emit_ticks_outside_tracked_states: bool
+    tracked_states: list[int]
+    player_count_override: int
+    focus_tick: int
+    focus_radius: int
+    heartbeat_ms: int
+    flush_capture_writes: bool
+    max_head_per_kind: int
+    max_events_per_tick: int
+    max_rng_head_per_tick: int
+    max_rng_caller_kinds: int
+    enable_rng_roll_log: bool
+    max_rng_roll_log_events: int
+    max_rng_outside_tick_head: int
+    enable_rng_state_mirror: bool
+    max_creature_delta_ids: int
+    creature_sample_limit: int
+    projectile_sample_limit: int
+    secondary_projectile_sample_limit: int
+    bonus_sample_limit: int
+    enable_input_hooks: bool
+    enable_rng_hooks: bool
+    enable_sfx_hooks: bool
+    enable_damage_hooks: bool
+    enable_effect_hooks: bool
+    creature_damage_projectile_only: bool
+    enable_spawn_hooks: bool
+    enable_creature_spawn_hook: bool
+    enable_creature_death_hook: bool
+    enable_bonus_spawn_hook: bool
+    enable_creature_lifecycle_digest: bool
+    enable_creature_micro_hooks: bool
+    creature_micro_slots: list[int]
+    creature_micro_tick_start: int
+    creature_micro_tick_end: int
+    creature_micro_max_head_per_tick: int
 
 
 class _SessionStartRow(
@@ -71,14 +130,14 @@ class _SessionStartRow(
     tag="session_start",
 ):
     capture_format_version: int
-    schema_version: int = 1
-    session_id: str = ""
-    out_path: str = ""
-    platform: str = "windows"
-    arch: str = "x86"
-    script_version: str = ""
-    config: dict[str, object] = msgspec.field(default_factory=dict)
-    session_fingerprint: dict[str, object] = msgspec.field(default_factory=dict)
+    schema_version: int
+    session_id: str
+    out_path: str
+    platform: str
+    arch: str
+    script_version: str
+    config: _SessionConfigRow
+    session_fingerprint: _SessionFingerprintRow
 
 
 class _RunStartRow(
@@ -129,12 +188,24 @@ class _RunEndRow(
     tag="run_end",
 ):
     run_id: int
+    mode_id: int
+    quest_stage_major: int
+    quest_stage_minor: int
+    ticks_written: int
     reason: str = "run_end"
-    mode_id: int = -1
-    quest_stage_major: int = -1
-    quest_stage_minor: int = -1
     tick_index_global: int | None = None
-    ticks_written: int = 0
+
+
+class _ErrorRow(
+    msgspec.Struct,
+    frozen=True,
+    forbid_unknown_fields=True,
+    tag_field="event",
+    tag="error",
+):
+    error: str
+    run_id: int | None = None
+    tick_index_global: int | None = None
 
 
 class _SessionEndRow(
@@ -144,11 +215,11 @@ class _SessionEndRow(
     tag_field="event",
     tag="session_end",
 ):
-    session_id: str = ""
-    ticks_written: int = 0
+    session_id: str
+    ticks_written: int
 
 
-type _CaptureRow = _SessionStartRow | _RunStartRow | _TickRow | _RunEndRow | _SessionEndRow
+type _CaptureRow = _SessionStartRow | _RunStartRow | _TickRow | _RunEndRow | _ErrorRow | _SessionEndRow
 
 
 _CAPTURE_ROW_DECODER = msgspec.json.Decoder(type=_CaptureRow)
@@ -193,7 +264,7 @@ class _OpenRun(msgspec.Struct):
     global_tick_last: int | None = None
 
 
-def _fingerprint(path: Path) -> dict[str, object]:
+def _fingerprint(path: Path) -> BuiltinObject:
     stat = path.stat()
     raw = path.read_bytes()
     return {
@@ -222,36 +293,22 @@ def _canonical_channels_payload(
     channels: _TickChannels,
     local_tick: int,
     field: str,
-) -> tuple[ReplayCheckpoint, dict[str, object]]:
-    checkpoint = msgspec.structs.replace(
-        channels.checkpoint,
-        tick_index=int(local_tick),
-    )
-    expected_rng_marks = canonical_rng_marks(
-        rng_state=int(checkpoint.rng_state),
-        rng_stream=channels.rng_stream,
-    )
-    if dict(checkpoint.rng_marks) != expected_rng_marks:
-        raise FridaFinalizeError(
-            f"{field}.checkpoint.rng_marks must match canonical rng marks; "
-            "recapture with updated gameplay_diff_capture.js",
-        )
-    if dict(channels.rng_marks) != expected_rng_marks:
-        raise FridaFinalizeError(
-            f"{field}.rng_marks must match canonical rng marks; "
-            "recapture with updated gameplay_diff_capture.js",
-        )
-    checkpoint = msgspec.structs.replace(checkpoint, rng_marks=dict(expected_rng_marks))
+) -> tuple[ReplayCheckpoint, ReplayTickChannels]:
+    checkpoint = msgspec.structs.replace(channels.checkpoint, tick_index=int(local_tick))
     normalized = _TickChannels(
         checkpoint=checkpoint,
         sim_state=channels.sim_state,
         entity_samples=channels.entity_samples,
-        rng_marks=dict(expected_rng_marks),
         rng_stream=list(channels.rng_stream),
         timing_samples=list(channels.timing_samples),
     )
-    built = msgspec.to_builtins(normalized)
-    return checkpoint, cast("dict[str, object]", built)
+    return checkpoint, ReplayTickChannels(
+        checkpoint=normalized.checkpoint,
+        sim_state=normalized.sim_state,
+        entity_samples=normalized.entity_samples,
+        rng_stream=list(normalized.rng_stream),
+        timing_samples=list(normalized.timing_samples),
+    )
 
 
 def _replay_tick_inputs_from_row(
@@ -359,7 +416,7 @@ def _validate_run_seed_for_replay(run: _OpenRun) -> None:
 
 def _build_meta(
     *,
-    raw_fingerprint: dict[str, object],
+    raw_fingerprint: BuiltinObject,
     session_start: _SessionStartRow,
     run: _OpenRun,
     tick_count: int,
@@ -368,7 +425,9 @@ def _build_meta(
     producer_platform = str(session_start.platform)
     producer_arch = str(session_start.arch)
     producer_impl_version = str(session_start.script_version)
-    config = dict(session_start.config)
+    config = msgspec.to_builtins(session_start.config)
+    if not isinstance(config, dict):
+        raise FridaFinalizeError("session_start.config must encode to a mapping")
     source = dict(raw_fingerprint)
     source["run_id"] = int(run.run_id)
     source["mode_id"] = int(run.mode_id)
@@ -406,7 +465,7 @@ def _write_run_trace(
     *,
     raw_path: Path,
     output_dir: Path,
-    raw_fingerprint: dict[str, object],
+    raw_fingerprint: BuiltinObject,
     session_start: _SessionStartRow,
     run: _OpenRun,
     chunk_ticks: int,
@@ -508,6 +567,7 @@ def finalize_frida_jsonl_to_traces(
     session_start: _SessionStartRow | None = None
     session_ended = False
     active_run: _OpenRun | None = None
+    captured_tick_count = 0
 
     temp_dir_obj = TemporaryDirectory(prefix="crimson-frida-finalize-")
     temp_root = Path(temp_dir_obj.name)
@@ -528,6 +588,33 @@ def finalize_frida_jsonl_to_traces(
                                 f"{raw_path}.lines[{line_no}] unsupported capture_format_version="
                                 f"{int(session_row.capture_format_version)}; expected {int(_SUPPORTED_CAPTURE_FORMAT_VERSION)}",
                             )
+                        if int(session_row.schema_version) != int(_SUPPORTED_JSONL_SCHEMA_VERSION):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] unsupported schema_version="
+                                f"{int(session_row.schema_version)}; expected {int(_SUPPORTED_JSONL_SCHEMA_VERSION)}",
+                            )
+                        if not str(session_row.session_id):
+                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].session_id must be non-empty")
+                        if not str(session_row.out_path):
+                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].out_path must be non-empty")
+                        if not str(session_row.platform):
+                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].platform must be non-empty")
+                        if not str(session_row.arch):
+                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].arch must be non-empty")
+                        if not str(session_row.script_version):
+                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].script_version must be non-empty")
+                        if int(session_row.config.jsonl_schema_version) != int(session_row.schema_version):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].config.jsonl_schema_version must match schema_version",
+                            )
+                        if str(session_row.config.out_path) != str(session_row.out_path):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].config.out_path must match out_path",
+                            )
+                        if str(session_row.session_fingerprint.session_id) != str(session_row.session_id):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].session_fingerprint.session_id must match session_id",
+                            )
                         session_start = session_row
                         continue
                     case _:
@@ -538,10 +625,18 @@ def finalize_frida_jsonl_to_traces(
                     case _RunStartRow() as run_start:
                         if active_run is not None:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] run_start while run is active")
+                        if str(run_start.reason) not in _RUN_START_REASONS:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].reason must be one of {sorted(_RUN_START_REASONS)!r}",
+                            )
                         bootstrap_kind = _validate_bootstrap_kind(
                             run_start.bootstrap_kind,
                             field=f"{raw_path}.lines[{line_no}].bootstrap_kind",
                         )
+                        if str(run_start.seed_source) not in _SEED_SOURCES:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].seed_source must be one of {sorted(_SEED_SOURCES)!r}",
+                            )
                         mode_id = int(run_start.mode_id)
                         if mode_id in _TERRAIN_BOOTSTRAP_MODES:
                             if bootstrap_kind != "terrain_v1":
@@ -580,6 +675,21 @@ def finalize_frida_jsonl_to_traces(
                                 f"{raw_path}.lines[{line_no}] tick run_id={int(tick_row.run_id)} "
                                 f"does not match active run {active_run.run_id}",
                             )
+                        if int(tick_row.mode_id) != int(active_run.mode_id):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] tick mode_id={int(tick_row.mode_id)} "
+                                f"does not match active run {active_run.mode_id}",
+                            )
+                        if int(tick_row.quest_stage_major) != int(active_run.quest_stage_major):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] tick quest_stage_major={int(tick_row.quest_stage_major)} "
+                                f"does not match active run {active_run.quest_stage_major}",
+                            )
+                        if int(tick_row.quest_stage_minor) != int(active_run.quest_stage_minor):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] tick quest_stage_minor={int(tick_row.quest_stage_minor)} "
+                                f"does not match active run {active_run.quest_stage_minor}",
+                            )
                         if not math.isfinite(float(tick_row.dt)) or float(tick_row.dt) < 0.0:
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}].dt must be finite and >= 0",
@@ -612,7 +722,8 @@ def finalize_frida_jsonl_to_traces(
                         active_run.stream.write(payload)
                         active_run.next_local_tick += 1
                         active_run.tick_count += 1
-                        active_run.channels_seen.update(str(name) for name in channels.keys())
+                        captured_tick_count += 1
+                        active_run.channels_seen.update(TRACE_REQUIRED_CHANNELS)
                         if tick_row.tick_index_global is not None:
                             global_tick = int(tick_row.tick_index_global)
                             if active_run.global_tick_first is None:
@@ -627,6 +738,30 @@ def finalize_frida_jsonl_to_traces(
                                 f"{raw_path}.lines[{line_no}] run_end run_id={int(run_end.run_id)} "
                                 f"does not match active run {active_run.run_id}",
                             )
+                        if str(run_end.reason) not in _RUN_END_REASONS:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].reason must be one of {sorted(_RUN_END_REASONS)!r}",
+                            )
+                        if int(run_end.mode_id) != int(active_run.mode_id):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] run_end mode_id={int(run_end.mode_id)} "
+                                f"does not match active run {active_run.mode_id}",
+                            )
+                        if int(run_end.quest_stage_major) != int(active_run.quest_stage_major):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] run_end quest_stage_major={int(run_end.quest_stage_major)} "
+                                f"does not match active run {active_run.quest_stage_major}",
+                            )
+                        if int(run_end.quest_stage_minor) != int(active_run.quest_stage_minor):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] run_end quest_stage_minor={int(run_end.quest_stage_minor)} "
+                                f"does not match active run {active_run.quest_stage_minor}",
+                            )
+                        if int(run_end.ticks_written) != int(active_run.tick_count):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] run_end.ticks_written={int(run_end.ticks_written)} "
+                                f"does not match active run tick_count {int(active_run.tick_count)}",
+                            )
                         traces.append(
                             _write_run_trace(
                                 raw_path=raw_path,
@@ -640,9 +775,26 @@ def finalize_frida_jsonl_to_traces(
                         )
                         active_run = None
                         continue
+                    case _ErrorRow() as error_row:
+                        location = f"{raw_path}.lines[{line_no}]"
+                        if error_row.tick_index_global is None:
+                            raise FridaFinalizeError(f"{location} capture error={error_row.error!r}")
+                        raise FridaFinalizeError(
+                            f"{location} capture error={error_row.error!r} "
+                            f"tick_index_global={int(error_row.tick_index_global)}",
+                        )
                     case _SessionEndRow():
                         if active_run is not None:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] session_end while run is active")
+                        if str(row.session_id) != str(session_start.session_id):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].session_id must match session_start.session_id",
+                            )
+                        if int(row.ticks_written) != int(captured_tick_count):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].ticks_written={int(row.ticks_written)} "
+                                f"does not match parsed tick_count {int(captured_tick_count)}",
+                            )
                         session_ended = True
                         continue
                     case _:

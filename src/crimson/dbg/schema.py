@@ -1,19 +1,22 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from typing import Any
 
 import msgspec
 
+from ..replay.checkpoints import ReplayCheckpoint
+from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
+
 TRACE_MAGIC = b"crimson_debug_trace_v1\n"
 TRACE_FORMAT_VERSION = 1
-TRACE_SCHEMA_VERSION = 5
+TRACE_SCHEMA_VERSION = 7
 SUPPORTED_TRACE_SCHEMA_VERSIONS = frozenset((TRACE_SCHEMA_VERSION,))
 
 TRACE_REQUIRED_CHANNELS = (
     "checkpoint",
     "sim_state",
     "entity_samples",
-    "rng_marks",
     "rng_stream",
     "timing_samples",
 )
@@ -40,12 +43,20 @@ class TraceMeta(msgspec.Struct):
     trace_format_version: int
     trace_schema_version: int
     created_utc: str
-    producer: dict[str, object]
-    source: dict[str, object]
+    producer: dict[str, Any]
+    source: dict[str, Any]
     channels: list[str]
     channel_versions: dict[str, int]
     tick_range: dict[str, int]
-    config: dict[str, object]
+    config: dict[str, Any]
+
+
+class ReplayTickChannels(msgspec.Struct):
+    checkpoint: ReplayCheckpoint
+    sim_state: SimStateSnapshot
+    entity_samples: EntitySamplesSnapshot
+    rng_stream: list[RngStreamRow] = msgspec.field(default_factory=list)
+    timing_samples: list[TimingSampleRow] = msgspec.field(default_factory=list)
 
 
 class TickRecord(msgspec.Struct):
@@ -53,8 +64,8 @@ class TickRecord(msgspec.Struct):
     elapsed_ms: int
     dt_ms_i32: int
     mode_id: int
-    phase_markers: list[str]
-    channels: dict[str, object]
+    channels: ReplayTickChannels
+    phase_markers: list[str] = msgspec.field(default_factory=list)
 
 
 class TickBlock(msgspec.Struct):

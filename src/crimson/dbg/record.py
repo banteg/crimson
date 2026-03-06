@@ -5,7 +5,7 @@ import platform
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal, cast
+from typing import Literal
 
 import msgspec
 
@@ -32,9 +32,16 @@ from .canonical_channels import (
     SnapshotWeapon,
     bonus_timer_ms,
 )
-from .checkpoint_codec import checkpoint_to_channel
-from .rng import canonical_rng_marks
-from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
+from .payloads import BuiltinObject
+from .schema import (
+    TRACE_FORMAT_VERSION,
+    TRACE_REQUIRED_CHANNELS,
+    TRACE_SCHEMA_VERSION,
+    ReplayTickChannels,
+    TickRecord,
+    TraceMeta,
+    channel_versions_for,
+)
 from .trace import TraceError, TraceReader, TraceSummary, write_trace
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -63,7 +70,7 @@ class _EntityGenerationState(msgspec.Struct):
         return int(self.generation_by_index[idx])
 
 
-def _fingerprint(path: Path) -> dict[str, object]:
+def _fingerprint(path: Path) -> BuiltinObject:
     stat = path.stat()
     raw = path.read_bytes()
     return {
@@ -151,7 +158,7 @@ def _entity_samples_for_world(
                 damage_pool=float(projectile.damage_pool),
                 hit_radius=float(projectile.hit_radius),
                 travel_budget=float(projectile.travel_budget),
-                owner=projectile.owner,
+                owner_id=int(projectile.owner.to_legacy()),
             ),
         )
 
@@ -173,7 +180,7 @@ def _entity_samples_for_world(
                 vel=SnapshotVec2(x=float(projectile.vel.x), y=float(projectile.vel.y)),
                 speed=float(projectile.speed),
                 trail_timer=float(projectile.trail_timer),
-                owner=projectile.owner,
+                owner_id=int(projectile.owner.to_legacy()),
                 target_id=int(projectile.target_id),
             ),
         )
@@ -261,7 +268,7 @@ def _sim_state_from_world(world: WorldState, *, replay: Replay) -> SimStateSnaps
     )
 
 
-def _build_replay_fingerprint(*, replay_path: Path, replay: Replay) -> dict[str, object]:
+def _build_replay_fingerprint(*, replay_path: Path, replay: Replay) -> BuiltinObject:
     replay_fingerprint = _fingerprint(replay_path)
     replay_fingerprint["tick_rate"] = replay.header.tick_rate
     replay_fingerprint["seed"] = replay.header.seed
@@ -277,7 +284,7 @@ def _build_trace_meta(
     tick_rows: list[TickRecord],
     channels_seen: set[str],
     impl: Literal["python", "zig"],
-    config_extra: dict[str, object] | None = None,
+    config_extra: BuiltinObject | None = None,
 ) -> TraceMeta:
     tick_start = min((row.tick_index for row in tick_rows), default=-1)
     tick_end = max((row.tick_index for row in tick_rows), default=-1)
@@ -383,23 +390,14 @@ def _record_replay_to_trace_python(
         entity_samples_obj = entity_samples_by_tick[tick_index]
         sim_state_obj = sim_state_by_tick[tick_index]
         rng_stream = list(rng_stream_by_tick[tick_index])
-        trace_rng_marks = canonical_rng_marks(
-            rng_state=int(checkpoint.rng_state),
-            rng_stream=rng_stream,
-        )
-        trace_checkpoint = msgspec.structs.replace(
-            checkpoint,
-            rng_marks=dict(trace_rng_marks),
-        )
 
-        channels: dict[str, object] = {
-            "checkpoint": checkpoint_to_channel(trace_checkpoint),
-            "sim_state": cast("dict[str, object]", msgspec.to_builtins(sim_state_obj)),
-            "entity_samples": cast("dict[str, object]", msgspec.to_builtins(entity_samples_obj)),
-            "rng_marks": dict(trace_rng_marks),
-            "rng_stream": msgspec.to_builtins(rng_stream),
-            "timing_samples": [],
-        }
+        channels = ReplayTickChannels(
+            checkpoint=checkpoint,
+            sim_state=sim_state_obj,
+            entity_samples=entity_samples_obj,
+            rng_stream=rng_stream,
+            timing_samples=[],
+        )
 
         if not (0 <= tick_index < len(replay_dt_rows)):
             raise ValueError(f"missing replay dt_ms_i32 row for tick {tick_index}")
@@ -407,7 +405,7 @@ def _record_replay_to_trace_python(
         if tick_dt_ms_i32 < 0:
             raise ValueError(f"invalid replay dt_ms_i32 at tick {tick_index}: {tick_dt_ms_i32}")
 
-        channels_seen.update(channels.keys())
+        channels_seen.update(TRACE_REQUIRED_CHANNELS)
         tick_rows.append(
             TickRecord(
                 tick_index=tick_index,
@@ -510,6 +508,12 @@ def _record_replay_to_trace_zig(
 
     try:
         with TraceReader(out_path) as trace:
+            decoded_tick_count = sum(1 for _ in trace.iter_ticks())
+            if int(decoded_tick_count) != int(trace.footer.tick_count):
+                raise TraceError(
+                    "zig trace validation failed to decode all tick payloads: "
+                    f"decoded={int(decoded_tick_count)} footer={int(trace.footer.tick_count)}",
+                )
             summary = TraceSummary(meta=trace.meta, footer=trace.footer)
     except TraceError as exc:
         raise ValueError(f"zig trace validation failed: {exc}") from exc

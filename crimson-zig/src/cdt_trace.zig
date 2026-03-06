@@ -15,7 +15,7 @@ const max_rng_draws_per_phase: usize = 1_000_000;
 
 const trace_magic = "crimson_debug_trace_v1\n";
 const trace_format_version: u32 = 1;
-const trace_schema_version: i32 = 5;
+const trace_schema_version: i32 = 7;
 
 const chunk_kind_meta = "META";
 const chunk_kind_tick = "TICK";
@@ -29,7 +29,6 @@ const channels_list = [_][]const u8{
     "checkpoint",
     "sim_state",
     "entity_samples",
-    "rng_marks",
     "rng_stream",
     "timing_samples",
 };
@@ -77,7 +76,6 @@ const ChannelVersions = struct {
     checkpoint: i32 = 1,
     sim_state: i32 = 1,
     entity_samples: i32 = 1,
-    rng_marks: i32 = 1,
     rng_stream: i32 = 1,
     timing_samples: i32 = 1,
 };
@@ -139,7 +137,6 @@ const ChannelCounts = struct {
     checkpoint: i32,
     sim_state: i32,
     entity_samples: i32,
-    rng_marks: i32,
     rng_stream: i32,
     timing_samples: i32,
 };
@@ -349,15 +346,6 @@ const ReplayEventSummaryChannel = struct {
     sfx_head: []const []const u8 = empty_strings,
 };
 
-const RngMarks = struct {
-    calls_total: i32,
-    first_value_15: i32,
-    last_value_15: i32,
-    first_state_before_u32: i64,
-    last_state_after_u32: i64,
-    checkpoint_rng_state: i64,
-};
-
 const CheckpointChannel = struct {
     tick_index: i32,
     rng_state: i64,
@@ -370,7 +358,6 @@ const CheckpointChannel = struct {
     bonus_timers: BonusTimersMap,
     state_hash: []const u8 = "",
     command_hash: []const u8 = "",
-    rng_marks: RngMarks,
     deaths: []const ReplayDeathLedgerEntry = empty_deaths,
     perk: ReplayPerkSnapshotChannel,
     events: ReplayEventSummaryChannel = .{},
@@ -380,7 +367,6 @@ const TickChannels = struct {
     checkpoint: CheckpointChannel,
     sim_state: SimStateSnapshot,
     entity_samples: EntitySamplesSnapshot,
-    rng_marks: RngMarks,
     rng_stream: []const RngStreamRow = empty_rng_stream,
     timing_samples: []const TimingSampleRow = empty_timing_samples,
 };
@@ -603,7 +589,6 @@ pub fn writeReplayTickTraceCdt(
         .checkpoint = tick_count,
         .sim_state = tick_count,
         .entity_samples = tick_count,
-        .rng_marks = tick_count,
         .rng_stream = tick_count,
         .timing_samples = tick_count,
     };
@@ -707,8 +692,7 @@ fn buildTickRecord(
     const tick_index_i32 = try castI32(row.tick_index);
     const rng_stream = try buildRngStream(allocator, row, tick_rng_start_state);
     errdefer if (rng_stream.len > 0) allocator.free(rng_stream);
-    const rng_marks = try buildRngMarks(row.rng.rng_state, rng_stream);
-    const checkpoint = try buildCheckpoint(allocator, row, elapsed_ms, rng_marks);
+    const checkpoint = try buildCheckpoint(allocator, row, elapsed_ms);
     errdefer deinitCheckpoint(allocator, &checkpoint);
     const sim_state = buildSimState(
         row,
@@ -733,7 +717,6 @@ fn buildTickRecord(
             .checkpoint = checkpoint,
             .sim_state = sim_state,
             .entity_samples = entity_samples,
-            .rng_marks = rng_marks,
             .rng_stream = rng_stream,
         },
     };
@@ -922,7 +905,6 @@ fn buildCheckpoint(
     allocator: std.mem.Allocator,
     row: replay_runner.ReplayTickTrace,
     elapsed_ms: i64,
-    rng_marks: RngMarks,
 ) TraceWriteError!CheckpointChannel {
     const player = row.player_state;
     const quest_tick0_reload_sfx = row.tick_index == 0 and
@@ -965,7 +947,6 @@ fn buildCheckpoint(
             .@"6" = bonusTimerMs(row.gameplay_state.bonuses.double_experience),
             .@"11" = bonusTimerMs(row.gameplay_state.bonuses.freeze),
         },
-        .rng_marks = rng_marks,
         .perk = .{
             .pending_count = row.gameplay_state.perk_selection.pending_count,
             .choices_dirty = row.gameplay_state.perk_selection.choices_dirty,
@@ -1106,30 +1087,6 @@ fn appendRngTransition(
 
 fn lcgStep(state: u32) u32 {
     return state *% crt_rand_mult +% crt_rand_inc;
-}
-
-fn buildRngMarks(
-    checkpoint_rng_state: u32,
-    rng_stream: []const RngStreamRow,
-) TraceWriteError!RngMarks {
-    var marks: RngMarks = .{
-        .calls_total = try castI32(rng_stream.len),
-        .first_value_15 = -1,
-        .last_value_15 = -1,
-        .first_state_before_u32 = -1,
-        .last_state_after_u32 = -1,
-        .checkpoint_rng_state = @intCast(checkpoint_rng_state),
-    };
-    if (rng_stream.len == 0) {
-        return marks;
-    }
-    const first = rng_stream[0];
-    const last = rng_stream[rng_stream.len - 1];
-    marks.first_value_15 = first.value_15;
-    marks.last_value_15 = last.value_15;
-    marks.first_state_before_u32 = first.state_before_u32;
-    marks.last_state_after_u32 = last.state_after_u32;
-    return marks;
 }
 
 fn encodeMsgpackOwned(allocator: std.mem.Allocator, value: anytype) ![]u8 {

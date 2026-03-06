@@ -65,11 +65,10 @@ These traces are directly consumable by:
 - `uv run crimson dbg diff`
 - `uv run crimson dbg bisect`
 - `uv run crimson dbg focus`
-- `uv run crimson dbg viz`
 
 ## Notes
 
 - Legacy `dbg import-capture`, `replay convert-capture`, and postpack flow are removed.
-- JSONL rows contain already-normalized trace channels (`checkpoint`, `rng_marks`, `rng_stream_head`, `entity_samples`, `event_heads`, `event_counts`, `micro_traces`).
-- JSONL tick rows also carry replay-grade packed inputs (`replay_inputs`) and run metadata (`seed`, `player_count`) so replay sidecars can be generated losslessly.
+- JSONL capture is now treated as a strict owned wire contract. Replay-grade rows are `session_start`, `run_start`, `tick`, `run_end`, and `session_end`; contract violations are capture errors, not finalize-time cleanup work.
+- JSONL tick rows carry the finalized replay channels (`checkpoint`, `rng_marks`, `rng_stream`, `timing_samples`, `sim_state`, `entity_samples`) plus replay-grade packed inputs (`replay_inputs`) so replay sidecars can be generated losslessly.
 - Finalization normalizes entity UID/generation tracking so entity timelines are stable across runs.

@@ -6,12 +6,14 @@ from typing import cast
 
 import msgspec
 
+from .payloads import BuiltinRows, BuiltinValue, to_builtin_rows, to_builtin_value
+
 
 class FieldMismatch(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     path: str
     kind: str
-    expected: object | None = None
-    actual: object | None = None
+    expected: BuiltinValue | None = None
+    actual: BuiltinValue | None = None
 
 
 def _path_or_root(path: str) -> str:
@@ -49,10 +51,6 @@ def _is_sequence(value: object) -> bool:
     return isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray, memoryview))
 
 
-def _to_builtin(value: object) -> object:
-    return msgspec.to_builtins(value)
-
-
 def _append(
     out: list[FieldMismatch],
     *,
@@ -65,8 +63,8 @@ def _append(
         FieldMismatch(
             path=_path_or_root(path),
             kind=str(kind),
-            expected=_to_builtin(expected) if expected is not None else None,
-            actual=_to_builtin(actual) if actual is not None else None,
+            expected=to_builtin_value(expected, field=f"{_path_or_root(path)}.expected") if expected is not None else None,
+            actual=to_builtin_value(actual, field=f"{_path_or_root(path)}.actual") if actual is not None else None,
         ),
     )
 
@@ -127,7 +125,7 @@ def strict_mismatches(expected: object, actual: object, *, root_path: str = "") 
     return out
 
 
-def strict_mismatch_payload(expected: object, actual: object, *, root_path: str = "") -> tuple[list[dict[str, object]], int, str]:
+def strict_mismatch_payload(expected: object, actual: object, *, root_path: str = "") -> tuple[BuiltinRows, int, str]:
     mismatches = strict_mismatches(expected, actual, root_path=root_path)
-    payload = cast("list[dict[str, object]]", msgspec.to_builtins(mismatches))
+    payload = to_builtin_rows(mismatches, field=f"{root_path or 'mismatches'}")
     return payload, len(payload), json.dumps(payload, sort_keys=True, indent=2, default=repr)

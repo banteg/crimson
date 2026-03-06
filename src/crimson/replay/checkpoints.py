@@ -31,7 +31,7 @@ class _EventsLike(Protocol):
     pickups: list[object]
     sfx: list[str]
 
-FORMAT_VERSION = 3
+FORMAT_VERSION = 4
 DEFAULT_CHECKPOINT_SAMPLE_RATE = 1
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
 _DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES = 256 * 1024 * 1024
@@ -60,7 +60,6 @@ class ReplayCheckpoint(msgspec.Struct, frozen=True):
     perk_pending: int
     players: list[ReplayPlayerCheckpoint]
     bonus_timers: dict[str, int]
-    rng_marks: dict[str, int] = msgspec.field(default_factory=dict)
     deaths: list["ReplayDeathLedgerEntry"] = msgspec.field(default_factory=list)
     perk: "ReplayPerkSnapshot" = msgspec.field(default_factory=lambda: ReplayPerkSnapshot())
     events: "ReplayEventSummary" = msgspec.field(default_factory=lambda: ReplayEventSummary())
@@ -71,7 +70,7 @@ class ReplayDeathLedgerEntry(msgspec.Struct, frozen=True):
     type_id: int
     reward_value: float
     xp_awarded: int
-    owner: OwnerRef
+    owner_id: int
 
 
 class ReplayPerkSnapshot(msgspec.Struct, frozen=True):
@@ -134,7 +133,6 @@ def build_checkpoint(
     world: WorldState,
     elapsed_ms: float,
     creature_count_override: int | None = None,
-    rng_marks: dict[str, int] | None = None,
     deaths: Sequence[object] | None = None,
     events: object | None = None,
 ) -> ReplayCheckpoint:
@@ -193,14 +191,9 @@ def build_checkpoint(
                 type_id=int(death_view.type_id),
                 reward_value=float(death_view.reward_value),
                 xp_awarded=int(death_view.xp_awarded),
-                owner=death_view.owner,
+                owner_id=int(death_view.owner.to_legacy()),
             ),
         )
-
-    marks: dict[str, int] = {}
-    if rng_marks:
-        for key, value in rng_marks.items():
-            marks[str(key)] = int(value)
 
     events_view = cast(_EventsLike | None, events)
     hits = list(events_view.hits) if events_view is not None else []
@@ -223,7 +216,6 @@ def build_checkpoint(
         perk_pending=int(state.perk_selection.pending_count),
         players=player_ckpts,
         bonus_timers=bonus_timers,
-        rng_marks=marks,
         deaths=death_entries,
         perk=perk_snapshot,
         events=event_summary,

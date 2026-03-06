@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from typing import cast
-
 import msgspec
 
-from ..owner_ref import OwnerRef
 from ..sim.timing import ftol_ms_i32
 
 
@@ -120,7 +117,7 @@ class ProjectileEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=
     damage_pool: float
     hit_radius: float
     travel_budget: float
-    owner: OwnerRef
+    owner_id: int
 
 
 class SecondaryProjectileEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -135,7 +132,7 @@ class SecondaryProjectileEntitySample(msgspec.Struct, frozen=True, forbid_unknow
     vel: SnapshotVec2
     speed: float
     trail_timer: float
-    owner: OwnerRef
+    owner_id: int
     target_id: int
 
 
@@ -162,39 +159,3 @@ class EntitySamplesSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=T
 
 def bonus_timer_ms(value: float) -> int:
     return max(0, int(ftol_ms_i32(float(value))))
-
-
-def _to_builtin(value: object) -> object:
-    return msgspec.to_builtins(value)
-
-
-def validate_sim_state(value: object, *, field: str) -> dict[str, object]:
-    try:
-        validated = msgspec.convert(value, type=SimStateSnapshot)
-    except (msgspec.ValidationError, TypeError, ValueError) as exc:
-        raise ValueError(f"{field} must be a valid SimStateSnapshot payload") from exc
-    return cast("dict[str, object]", _to_builtin(validated))
-
-
-def validate_rng_stream(value: object, *, field: str) -> list[object]:
-    try:
-        validated = msgspec.convert(value, type=list[RngStreamRow])
-    except (msgspec.ValidationError, TypeError, ValueError) as exc:
-        raise ValueError(f"{field} must be a valid rng_stream payload") from exc
-    return cast("list[object]", _to_builtin(validated))
-
-
-def validate_entity_samples(value: object, *, field: str) -> dict[str, object]:
-    try:
-        validated = msgspec.convert(value, type=EntitySamplesSnapshot)
-    except (msgspec.ValidationError, TypeError, ValueError) as exc:
-        raise ValueError(f"{field} must be a valid EntitySamplesSnapshot payload") from exc
-    return cast("dict[str, object]", _to_builtin(validated))
-
-
-def validate_timing_samples(value: object, *, field: str) -> list[object]:
-    try:
-        validated = msgspec.convert(value, type=list[TimingSampleRow])
-    except (msgspec.ValidationError, TypeError, ValueError) as exc:
-        raise ValueError(f"{field} must be a valid timing_samples payload") from exc
-    return cast("list[object]", _to_builtin(validated))

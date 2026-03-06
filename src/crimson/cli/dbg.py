@@ -2,20 +2,25 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Literal, cast
+from typing import Literal
 
 import typer
+
+from ..dbg.payloads import BuiltinObject, builtin_object_or_empty, coerce_builtin_value
 
 dbg_app = typer.Typer(add_completion=False)
 
 
-def _as_dict(value: object) -> dict[str, object]:
+def _as_dict(value: object) -> BuiltinObject:
     if not isinstance(value, dict):
         return {}
-    out: dict[str, object] = {}
+    out: BuiltinObject = {}
     for key, item in value.items():
         if isinstance(key, str):
-            out[key] = item
+            try:
+                out[key] = coerce_builtin_value(item, field=f"payload.{key}")
+            except TypeError:
+                continue
     return out
 
 
@@ -82,14 +87,9 @@ def cmd_dbg_health(
         typer.echo(f"dbg health failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    tick_window_obj = summary.get("tick_window")
-    tick_window: dict[str, object] = (
-        cast("dict[str, object]", tick_window_obj) if isinstance(tick_window_obj, dict) else {}
-    )
-    metrics_obj = summary.get("metrics")
-    metrics: dict[str, object] = cast("dict[str, object]", metrics_obj) if isinstance(metrics_obj, dict) else {}
-    channels_obj = summary.get("channels_present")
-    channels: dict[str, object] = cast("dict[str, object]", channels_obj) if isinstance(channels_obj, dict) else {}
+    tick_window = builtin_object_or_empty(summary.get("tick_window"))
+    metrics = builtin_object_or_empty(summary.get("metrics"))
+    channels = builtin_object_or_empty(summary.get("channels_present"))
     issues_obj = summary.get("issues")
     issues = [str(item) for item in issues_obj] if isinstance(issues_obj, list) else []
     ok = bool(summary.get("ok_for_movement_root_cause"))
@@ -200,12 +200,11 @@ def cmd_dbg_bisect(
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
     tick_start: int | None = typer.Option(None, "--tick-start", help="optional inclusive lower tick bound"),
     tick_end: int | None = typer.Option(None, "--tick-end", help="optional inclusive upper tick bound"),
-    window_before: int = typer.Option(12, "--window-before", min=0, help="ticks before first bad tick in repro trace"),
-    window_after: int = typer.Option(6, "--window-after", min=0, help="ticks after first bad tick in repro trace"),
-    out: Path | None = typer.Option(None, "--out", help="optional repro trace output path (.cdt)"),
+    window_before: int = typer.Option(12, "--window-before", min=0, help="ticks before first bad tick in report window"),
+    window_after: int = typer.Option(6, "--window-after", min=0, help="ticks after first bad tick in report window"),
     json_out: Path | None = typer.Option(None, "--json-out", help="optional JSON output path"),
 ) -> None:
-    """Bisect divergence and optionally emit a compact repro trace window."""
+    """Bisect divergence and report a compact focus window."""
     from ..dbg.diff import bisect_report_to_json, bisect_traces
 
     try:
@@ -216,7 +215,6 @@ def cmd_dbg_bisect(
             tick_end=tick_end,
             window_before=window_before,
             window_after=window_after,
-            repro_out=(None if out is None else Path(out)),
         )
     except ValueError as exc:
         typer.echo(f"dbg bisect failed: {exc}", err=True)
@@ -236,10 +234,9 @@ def cmd_dbg_bisect(
     assert mismatch is not None
     typer.echo(
         f"result=diverged first_bad_tick={report.first_bad_tick} "
-        f"kind={mismatch.kind} checked={report.checked_count}",
+        f"kind={mismatch.kind} checked={report.checked_count} "
+        f"window={report.window_start}..{report.window_end}",
     )
-    if report.repro_trace_path is not None:
-        typer.echo(f"repro_trace={report.repro_trace_path}")
 
 
 @dbg_app.command("tick")
@@ -268,7 +265,6 @@ def cmd_dbg_tick(
         return
 
     checkpoint = _as_dict(payload.get("checkpoint"))
-    rng_marks = _as_dict(payload.get("rng_marks"))
     entity_counts = _as_dict(payload.get("entity_counts"))
     top_events = payload.get("top_event_types")
     top_events_text = ",".join(str(item) for item in top_events) if isinstance(top_events, list) else ""
@@ -294,7 +290,6 @@ def cmd_dbg_tick(
         + " perk_pending="
         + str(checkpoint.get("perk_pending")),
     )
-    typer.echo("rng_marks=" + ",".join(sorted(str(key) for key in rng_marks.keys())))
     typer.echo(
         "entity_counts "
         + "creatures="
@@ -461,8 +456,6 @@ def cmd_dbg_focus(
         + " checkpoint_diff_count="
         + str(payload.get("checkpoint_diff_count")),
     )
-    rng_marks = _as_dict(payload.get("rng_marks"))
-    typer.echo("first_rng_mark=" + str(rng_marks.get("first_mismatch_mark")))
     rng_stream = _as_dict(payload.get("rng_stream"))
     typer.echo(
         "rng_stream "
@@ -484,47 +477,4 @@ def cmd_dbg_focus(
         "sim_state "
         + "ok="
         + str(sim_state.get("ok")),
-    )
-
-
-@dbg_app.command("viz")
-def cmd_dbg_viz(
-    golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
-    candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
-    tick: int | None = typer.Option(None, "--tick", help="focus tick (auto when omitted)"),
-    window_before: int = typer.Option(64, "--window-before", min=0, help="ticks before focus tick"),
-    window_after: int = typer.Option(64, "--window-after", min=0, help="ticks after focus tick"),
-    out: Path | None = typer.Option(None, "--out", help="output HTML path"),
-    json_out: Path | None = typer.Option(None, "--json-out", help="optional JSON summary output path"),
-) -> None:
-    """Render a static HTML divergence timeline around a focus tick."""
-    from ..dbg.viz import write_viz_html
-
-    html_out = Path(out) if out is not None else Path(candidate_trace).with_suffix(".viz.html")
-
-    try:
-        payload = write_viz_html(
-            golden_trace=Path(golden_trace),
-            candidate_trace=Path(candidate_trace),
-            tick=tick,
-            window_before=window_before,
-            window_after=window_after,
-            out_path=html_out,
-        )
-    except ValueError as exc:
-        typer.echo(f"dbg viz failed: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
-
-    if json_out is not None:
-        json_out.parent.mkdir(parents=True, exist_ok=True)
-        json_out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-        typer.echo(f"json_report={json_out}")
-
-    typer.echo(
-        "viz_html="
-        + str(payload.get("html_path"))
-        + " focus_tick="
-        + str(payload.get("focus_tick"))
-        + " rows="
-        + str(payload.get("row_count")),
     )

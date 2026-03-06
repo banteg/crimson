@@ -20,6 +20,7 @@ from .schema import (
     SUPPORTED_TRACE_SCHEMA_VERSIONS,
     TRACE_FORMAT_VERSION,
     TRACE_MAGIC,
+    TRACE_REQUIRED_CHANNELS,
     TRAILER_MAGIC,
     TickBlock,
     TickBlockIndexEntry,
@@ -35,7 +36,7 @@ _META_MAGIC_LEN = len(TRACE_MAGIC)
 
 _ENCODER = msgspec.msgpack.Encoder()
 _META_DECODER = msgspec.msgpack.Decoder(type=TraceMeta)
-_BLOCK_DECODER = msgspec.msgpack.Decoder(type=TickBlock)
+_REPLAY_BLOCK_DECODER = msgspec.msgpack.Decoder(type=TickBlock)
 _FOOTER_DECODER = msgspec.msgpack.Decoder(type=TraceFooter)
 
 
@@ -161,7 +162,7 @@ def _write_trace_from_iter(
                     )
                 last_tick = row_tick
                 tick_count += 1
-                for channel_name in row.channels:
+                for channel_name in TRACE_REQUIRED_CHANNELS:
                     channel_counts[channel_name] = channel_counts.get(channel_name, 0) + 1
             current_block.clear()
 
@@ -339,7 +340,10 @@ class TraceReader:
         kind, _start, _end, payload = _chunk_payload_from_file(self._handle, offset=cache_key)
         if kind != CHUNK_KIND_TICK:
             raise TraceError("trace index points at non-tick chunk")
-        block = _BLOCK_DECODER.decode(payload)
+        try:
+            block = _REPLAY_BLOCK_DECODER.decode(payload)
+        except (msgspec.DecodeError, msgspec.ValidationError) as exc:
+            raise TraceError("invalid replay trace tick payload") from exc
         self._block_cache[cache_key] = block
         return block
 

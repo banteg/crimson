@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 import re
 from pathlib import Path
-from typing import cast
 
 import msgspec
 
@@ -12,8 +11,8 @@ from .channel_helpers import (
     checkpoint_channel,
     entity_rows,
     entity_samples_channel,
-    rng_marks_channel_required,
 )
+from .payloads import BuiltinObject, BuiltinValue, coerce_builtin_value, to_builtin_object
 from .schema import TickRecord
 from .trace import TraceReader
 
@@ -23,7 +22,7 @@ _COND_RE = re.compile(r"^\s*(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+?)\s*$")
 
 class _Operand(msgspec.Struct, frozen=True):
     kind: str
-    value: object
+    value: BuiltinValue
 
 
 class _Predicate(msgspec.Struct, frozen=True):
@@ -32,7 +31,7 @@ class _Predicate(msgspec.Struct, frozen=True):
     right: _Operand
 
 
-def _parse_literal(token: str) -> object:
+def _parse_literal(token: str) -> BuiltinValue:
     raw = token.strip()
     lower = raw.lower()
     if lower == "true":
@@ -42,8 +41,12 @@ def _parse_literal(token: str) -> object:
     if lower == "none" or lower == "null":
         return None
     try:
-        return ast.literal_eval(raw)
+        parsed = ast.literal_eval(raw)
     except (SyntaxError, ValueError):
+        return raw
+    try:
+        return coerce_builtin_value(parsed, field="query literal")
+    except TypeError:
         return raw
 
 
@@ -75,8 +78,8 @@ def _parse_expression(expression: str) -> tuple[str, _Predicate]:
     return scope, _Predicate(left=left, op=op, right=right)
 
 
-def _resolve_path(root: dict[str, object], path: str) -> object:
-    current: object = root
+def _resolve_path(root: BuiltinObject, path: str) -> BuiltinValue | None:
+    current: BuiltinValue = root
     for part in path.split("."):
         match current:
             case dict() as mapped:
@@ -106,9 +109,9 @@ def _to_float(value: object) -> float | None:
 def _eval_operand(
     operand: _Operand,
     *,
-    current: dict[str, object],
-    previous: dict[str, object] | None,
-) -> object:
+    current: BuiltinObject,
+    previous: BuiltinObject | None,
+) -> BuiltinValue | None:
     if operand.kind == "literal":
         return operand.value
     if operand.kind == "field":
@@ -120,7 +123,7 @@ def _eval_operand(
     raise ValueError(f"unsupported operand kind: {operand.kind}")
 
 
-def _compare_values(left: object, op: str, right: object) -> bool:
+def _compare_values(left: BuiltinValue | None, op: str, right: BuiltinValue | None) -> bool:
     left_num = _to_float(left)
     right_num = _to_float(right)
     if left_num is not None and right_num is not None:
@@ -156,14 +159,14 @@ def _compare_values(left: object, op: str, right: object) -> bool:
     raise ValueError(f"unsupported comparison operator: {op}")
 
 
-def _entity_rows(row: TickRecord) -> list[dict[str, object]]:
+def _entity_rows(row: TickRecord) -> list[BuiltinObject]:
     samples = entity_samples_channel(row)
     if samples is None:
         return []
-    out: list[dict[str, object]] = []
+    out: list[BuiltinObject] = []
     for kind in ENTITY_SAMPLE_KINDS:
         for item in entity_rows(samples, kind=kind):
-            out.append(cast("dict[str, object]", msgspec.to_builtins(item)))
+            out.append(to_builtin_object(item, field=f"entity_samples.{kind}"))
     return out
 
 
@@ -178,14 +181,9 @@ def _event_type_counts(row: TickRecord) -> dict[str, int]:
     }
 
 
-def tick_summary_from_row(row: TickRecord) -> dict[str, object]:
+def tick_summary_from_row(row: TickRecord) -> BuiltinObject:
     checkpoint_obj = checkpoint_channel(row)
-    checkpoint = (
-        cast("dict[str, object]", msgspec.to_builtins(checkpoint_obj))
-        if checkpoint_obj is not None
-        else {}
-    )
-    rng_marks = dict(rng_marks_channel_required(row))
+    checkpoint = to_builtin_object(checkpoint_obj, field="checkpoint") if checkpoint_obj is not None else {}
     samples = entity_samples_channel(row)
     if samples is None:
         entity_counts = {kind: 0 for kind in ENTITY_SAMPLE_KINDS}
@@ -202,21 +200,23 @@ def tick_summary_from_row(row: TickRecord) -> dict[str, object]:
     event_types_sorted = sorted(event_counts.items(), key=lambda item: (-item[1], item[0]))
     top_event_types = [f"{name}:{count}" for name, count in event_types_sorted[:8]]
 
-    return {
-        "tick_index": row.tick_index,
-        "elapsed_ms": row.elapsed_ms,
-        "dt_ms_i32": row.dt_ms_i32,
-        "mode_id": row.mode_id,
-        "phase_markers": list(row.phase_markers),
-        "checkpoint": checkpoint,
-        "rng_marks": rng_marks,
-        "entity_counts": entity_counts,
-        "event_count_total": event_count_total,
-        "top_event_types": top_event_types,
-    }
+    return to_builtin_object(
+        {
+            "tick_index": row.tick_index,
+            "elapsed_ms": row.elapsed_ms,
+            "dt_ms_i32": row.dt_ms_i32,
+            "mode_id": row.mode_id,
+            "phase_markers": list(row.phase_markers),
+            "checkpoint": checkpoint,
+            "entity_counts": entity_counts,
+            "event_count_total": event_count_total,
+            "top_event_types": top_event_types,
+        },
+        field="tick_summary",
+    )
 
 
-def summarize_tick(*, trace_path: Path, tick_index: int) -> dict[str, object]:
+def summarize_tick(*, trace_path: Path, tick_index: int) -> BuiltinObject:
     with TraceReader(Path(trace_path)) as trace:
         row = trace.tick(tick_index)
         if row is None:
@@ -248,8 +248,8 @@ def entity_history(
     entity_uid: int,
     tick_start: int | None = None,
     tick_end: int | None = None,
-) -> dict[str, object]:
-    snapshots: list[dict[str, object]] = []
+) -> BuiltinObject:
+    snapshots: list[BuiltinObject] = []
     spawn_tick: int | None = None
     despawn_tick: int | None = None
     with TraceReader(Path(trace_path)) as trace:
@@ -274,13 +274,16 @@ def entity_history(
     assert despawn_tick is not None
 
     first = snapshots[0]
-    return {
-        "entity_uid": entity_uid,
-        "pool_kind": str(first.get("pool_kind", "unknown")),
-        "spawn_tick": int(spawn_tick),
-        "despawn_tick": int(despawn_tick),
-        "samples": snapshots,
-    }
+    return to_builtin_object(
+        {
+            "entity_uid": entity_uid,
+            "pool_kind": str(first.get("pool_kind", "unknown")),
+            "spawn_tick": int(spawn_tick),
+            "despawn_tick": int(despawn_tick),
+            "samples": snapshots,
+        },
+        field="entity_history",
+    )
 
 
 def query_trace(
@@ -288,15 +291,15 @@ def query_trace(
     trace_path: Path,
     expression: str,
     limit: int = 256,
-) -> dict[str, object]:
+) -> BuiltinObject:
     scope, predicate = _parse_expression(expression)
     limit_value = max(1, limit)
 
-    rows: list[dict[str, object]] = []
+    rows: list[BuiltinObject] = []
     matched_count = 0
     with TraceReader(Path(trace_path)) as trace:
         if scope == "ticks":
-            prev_context: dict[str, object] | None = None
+            prev_context: BuiltinObject | None = None
             for row in trace.iter_ticks():
                 context = tick_summary_from_row(row)
                 left = _eval_operand(predicate.left, current=context, previous=prev_context)
@@ -318,11 +321,14 @@ def query_trace(
                         if len(rows) < limit_value:
                             rows.append(context)
 
-    return {
-        "scope": scope,
-        "expression": expression,
-        "limit": limit_value,
-        "match_count": matched_count,
-        "truncated": bool(matched_count > len(rows)),
-        "rows": rows,
-    }
+    return to_builtin_object(
+        {
+            "scope": scope,
+            "expression": expression,
+            "limit": limit_value,
+            "match_count": matched_count,
+            "truncated": bool(matched_count > len(rows)),
+            "rows": rows,
+        },
+        field="query_trace",
+    )
