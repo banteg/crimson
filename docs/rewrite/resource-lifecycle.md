@@ -104,13 +104,13 @@ flowchart TD
 
 ## What Is Still Wrong
 
-- Consumer code in active gameplay/debug draw paths still sometimes behaves as
-  if resources might be missing, even though those paths run after
-  `open_runtime()`.
-- `RenderResources.texture()` still has a fallback lookup path, which hides
-  lifecycle mistakes instead of surfacing them.
-- `RenderFrame.resources` is still `RuntimeResources | None`, even though the
-  draw entrypoint rejects unloaded frames.
+- App-level screens still keep `GameState.resources | None` because boot and
+  teardown genuinely own that lifecycle.
+- `RenderResources._resources` is still optional internally because a world can
+  exist before `open_runtime()` and after `close_runtime()`.
+- Terrain bootstrap still needs a pre-open asset lookup path, but that path is
+  now explicit via `registry_texture()` instead of hidden behind the normal
+  draw-time texture accessor.
 
 ## Better Shape From Here
 
@@ -130,8 +130,8 @@ Concretely:
 - keep `RenderResources._resources` optional internally for pre-open world state
 - keep viewport math pure and resource-free
 - make active draw APIs consume concrete resources
-- eventually make draw snapshots concrete enough that `RenderFrame.resources`
-  does not need to represent the unloaded phase
+- keep bootstrap terrain lookup explicit and narrow
+- avoid reintroducing generic fallback texture access in draw-time code
 
-The remaining bug is that draw snapshots and resource access still carry
-optionality farther than they should.
+The remaining optionality is now mostly at real lifecycle boundaries rather than
+smearing through live rendering.
