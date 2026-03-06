@@ -25,6 +25,79 @@ def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> Path:
     return path
 
 
+def _session_fingerprint_stub() -> dict[str, object]:
+    return {
+        "session_id": "session-test",
+        "module_hash": "cafebabe",
+        "ptrs_hash": "deadbeef",
+    }
+
+
+def _session_config_stub() -> dict[str, object]:
+    return {
+        "out_path": "C:\\share\\frida\\gameplay_diff_capture.jsonl",
+        "jsonl_schema_version": 1,
+        "capture_profile": "exhaustive_default",
+        "config_env_overrides": [],
+        "log_mode": "truncate",
+        "console_all_events": False,
+        "console_events": ["start", "ready", "capture_shutdown", "error", "hook_error", "hook_skip", "tickless_event"],
+        "include_caller": True,
+        "include_backtrace": False,
+        "emit_ticks_outside_tracked_states": False,
+        "tracked_states": [6, 7, 8, 9, 10, 12, 14, 18],
+        "player_count_override": 0,
+        "focus_tick": -1,
+        "focus_radius": 0,
+        "heartbeat_ms": 1000,
+        "flush_capture_writes": False,
+        "max_head_per_kind": -1,
+        "max_events_per_tick": -1,
+        "max_rng_head_per_tick": -1,
+        "max_rng_caller_kinds": -1,
+        "enable_rng_roll_log": True,
+        "max_rng_roll_log_events": -1,
+        "max_rng_outside_tick_head": 256,
+        "enable_rng_state_mirror": True,
+        "max_creature_delta_ids": 256,
+        "creature_sample_limit": -1,
+        "projectile_sample_limit": -1,
+        "secondary_projectile_sample_limit": -1,
+        "bonus_sample_limit": -1,
+        "enable_input_hooks": True,
+        "enable_rng_hooks": True,
+        "enable_sfx_hooks": True,
+        "enable_damage_hooks": True,
+        "enable_effect_hooks": True,
+        "creature_damage_projectile_only": True,
+        "enable_spawn_hooks": True,
+        "enable_creature_spawn_hook": True,
+        "enable_creature_death_hook": True,
+        "enable_bonus_spawn_hook": True,
+        "enable_creature_lifecycle_digest": True,
+        "enable_creature_micro_hooks": True,
+        "creature_micro_slots": [],
+        "creature_micro_tick_start": -1,
+        "creature_micro_tick_end": -1,
+        "creature_micro_max_head_per_tick": -1,
+    }
+
+
+def _session_start_row(*, capture_format_version: int = CAPTURE_FORMAT_VERSION) -> dict[str, object]:
+    return {
+        "event": "session_start",
+        "schema_version": 1,
+        "capture_format_version": int(capture_format_version),
+        "session_id": "session-test",
+        "out_path": "C:\\share\\frida\\gameplay_diff_capture.jsonl",
+        "platform": "windows",
+        "arch": "x86",
+        "script_version": str(CAPTURE_FORMAT_VERSION),
+        "config": _session_config_stub(),
+        "session_fingerprint": _session_fingerprint_stub(),
+    }
+
+
 def _checkpoint_stub(*, tick_index: int, elapsed_ms: int) -> dict[str, object]:
     return {
         "tick_index": int(tick_index),
@@ -194,17 +267,77 @@ def _run_start_row(
     }
 
 
+def _tick_row(
+    *,
+    run_id: int,
+    tick_index: int,
+    elapsed_ms: int,
+    dt_ms_i32: int,
+    dt: float,
+    mode_id: int,
+    player_count: int = 1,
+    quest_stage_major: int = -1,
+    quest_stage_minor: int = -1,
+    channels: dict[str, object] | None = None,
+) -> dict[str, object]:
+    return {
+        "event": "tick",
+        "run_id": int(run_id),
+        "tick_index_global": int(tick_index),
+        "elapsed_ms": int(elapsed_ms),
+        "dt_ms_i32": int(dt_ms_i32),
+        "dt": float(dt),
+        "mode_id": int(mode_id),
+        "quest_stage_major": int(quest_stage_major),
+        "quest_stage_minor": int(quest_stage_minor),
+        "phase_markers": [],
+        "replay_inputs": _replay_inputs_stub(player_count=player_count),
+        "channels": _channels_stub(
+            tick_index=int(tick_index),
+            elapsed_ms=int(elapsed_ms),
+            mode_id=int(mode_id),
+            quest_stage_major=int(quest_stage_major),
+            quest_stage_minor=int(quest_stage_minor),
+        )
+        if channels is None
+        else channels,
+    }
+
+
+def _run_end_row(
+    *,
+    run_id: int,
+    mode_id: int = -1,
+    quest_stage_major: int = -1,
+    quest_stage_minor: int = -1,
+    ticks_written: int = 0,
+    reason: str = "run_end",
+) -> dict[str, object]:
+    return {
+        "event": "run_end",
+        "run_id": int(run_id),
+        "reason": str(reason),
+        "mode_id": int(mode_id),
+        "quest_stage_major": int(quest_stage_major),
+        "quest_stage_minor": int(quest_stage_minor),
+        "ticks_written": int(ticks_written),
+    }
+
+
+def _session_end_row(*, session_id: str = "session-test", ticks_written: int = 0) -> dict[str, object]:
+    return {
+        "event": "session_end",
+        "session_id": str(session_id),
+        "ticks_written": int(ticks_written),
+    }
+
+
 def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
             {
-                "event": "session_start",
-                "capture_format_version": CAPTURE_FORMAT_VERSION,
-                "platform": "windows",
-                "arch": "x86",
-                "script_version": "5",
-                "config": {"a": 1},
+                **_session_start_row(),
             },
             _run_start_row(run_id=1, mode_id=1, seed=777, player_count=1),
             {
@@ -241,8 +374,8 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                     creatures=[_creature_sample(uid=562949953421317, generation=1, index=5, active=False)],
                 ),
             },
-            {"event": "run_end", "run_id": 1},
-            {"event": "session_end"},
+            _run_end_row(run_id=1, mode_id=1, ticks_written=2),
+            _session_end_row(ticks_written=2),
         ],
     )
 
@@ -285,7 +418,7 @@ def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_clos
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
+            _session_start_row(),
             _run_start_row(run_id=1, mode_id=1, seed=11, player_count=1),
             {
                 "event": "tick",
@@ -298,7 +431,7 @@ def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_clos
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": _channels_stub(tick_index=0, elapsed_ms=0, mode_id=1),
             },
-            {"event": "run_end", "run_id": 1},
+            _run_end_row(run_id=1, mode_id=1, ticks_written=1),
         ],
     )
 
@@ -312,7 +445,7 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
+            _session_start_row(),
             _run_start_row(run_id=4, mode_id=2, seed=22, player_count=1),
             {
                 "event": "tick",
@@ -336,7 +469,7 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_missing_session_end_when_no_runs(tmp_path: Path) -> None:
-    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [{"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION}])
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [_session_start_row()])
 
     with pytest.raises(FridaFinalizeError, match="missing session_end"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
@@ -346,7 +479,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
+            _session_start_row(),
             _run_start_row(run_id=1, mode_id=3, seed=31, player_count=1, quest_stage_major=1, quest_stage_minor=5),
             {
                 "event": "tick",
@@ -355,11 +488,19 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "dt_ms_i32": 16,
                 "dt": 0.016,
                 "mode_id": 3,
+                "quest_stage_major": 1,
+                "quest_stage_minor": 5,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": _channels_stub(tick_index=0, elapsed_ms=0, mode_id=3),
+                "channels": _channels_stub(
+                    tick_index=0,
+                    elapsed_ms=0,
+                    mode_id=3,
+                    quest_stage_major=1,
+                    quest_stage_minor=5,
+                ),
             },
-            {"event": "run_end", "run_id": 1},
+            _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=5, ticks_written=1),
             _run_start_row(run_id=2, mode_id=2, seed=32, player_count=1, quest_stage_major=1, quest_stage_minor=5),
             {
                 "event": "tick",
@@ -368,11 +509,19 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "dt_ms_i32": 16,
                 "dt": 0.016,
                 "mode_id": 2,
+                "quest_stage_major": 1,
+                "quest_stage_minor": 5,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": _channels_stub(tick_index=1, elapsed_ms=16, mode_id=2),
+                "channels": _channels_stub(
+                    tick_index=1,
+                    elapsed_ms=16,
+                    mode_id=2,
+                    quest_stage_major=1,
+                    quest_stage_minor=5,
+                ),
             },
-            {"event": "run_end", "run_id": 2},
+            _run_end_row(run_id=2, mode_id=2, quest_stage_major=1, quest_stage_minor=5, ticks_written=1),
             _run_start_row(run_id=3, mode_id=1, seed=33, player_count=1, quest_stage_major=1, quest_stage_minor=5),
             {
                 "event": "tick",
@@ -381,12 +530,20 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "dt_ms_i32": 33,
                 "dt": 0.033,
                 "mode_id": 1,
+                "quest_stage_major": 1,
+                "quest_stage_minor": 5,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": _channels_stub(tick_index=2, elapsed_ms=33, mode_id=1),
+                "channels": _channels_stub(
+                    tick_index=2,
+                    elapsed_ms=33,
+                    mode_id=1,
+                    quest_stage_major=1,
+                    quest_stage_minor=5,
+                ),
             },
-            {"event": "run_end", "run_id": 3},
-            {"event": "session_end"},
+            _run_end_row(run_id=3, mode_id=1, quest_stage_major=1, quest_stage_minor=5, ticks_written=1),
+            _session_end_row(ticks_written=3),
         ],
     )
 
@@ -410,7 +567,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
+            _session_start_row(),
             _run_start_row(run_id=1, mode_id=1, seed=51, player_count=1),
             {
                 "event": "tick",
@@ -448,8 +605,8 @@ def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp
                     },
                 },
             },
-            {"event": "run_end", "run_id": 1},
-            {"event": "session_end"},
+            _run_end_row(run_id=1, mode_id=1, ticks_written=1),
+            _session_end_row(ticks_written=1),
         ],
     )
 
@@ -461,7 +618,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_null_run_start_seed_with_actiona
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
+            _session_start_row(),
             {
                 "event": "run_start",
                 "run_id": 1,
@@ -482,7 +639,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_mode_without_bootstrap_m
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
+            _session_start_row(),
             {
                 "event": "run_start",
                 "run_id": 1,
@@ -505,7 +662,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: 
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
+            _session_start_row(),
             {
                 "event": "run_start",
                 "run_id": 1,
@@ -513,7 +670,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: 
                 "seed": 7,
                 "bootstrap_kind": "terrain_v1",
                 "bootstrap_seed": 7,
-                "seed_source": "thread_rng_sample",
+                "seed_source": "terrain_bootstrap_sim",
                 "player_count": 1,
                 "quest_stage_major": -1,
                 "quest_stage_minor": -1,
@@ -529,8 +686,8 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: 
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": _channels_stub(tick_index=0, elapsed_ms=0, mode_id=1),
             },
-            {"event": "run_end", "run_id": 1},
-            {"event": "session_end"},
+            _run_end_row(run_id=1, mode_id=1, ticks_written=1),
+            _session_end_row(ticks_written=1),
         ],
     )
 
@@ -544,7 +701,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 6},
+            _session_start_row(capture_format_version=6),
             _run_start_row(run_id=1, mode_id=3, seed=91, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
@@ -557,8 +714,8 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": _channels_stub(tick_index=0, elapsed_ms=16, mode_id=3),
             },
-            {"event": "run_end", "run_id": 1},
-            {"event": "session_end"},
+            _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=1, ticks_written=1),
+            _session_end_row(ticks_written=1),
         ],
     )
 
@@ -570,7 +727,7 @@ def test_finalize_frida_jsonl_to_traces_keeps_large_first_tick_elapsed(tmp_path:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
+            _session_start_row(),
             _run_start_row(run_id=1, mode_id=3, seed=92, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
@@ -579,9 +736,17 @@ def test_finalize_frida_jsonl_to_traces_keeps_large_first_tick_elapsed(tmp_path:
                 "dt_ms_i32": 16,
                 "dt": 0.016,
                 "mode_id": 3,
+                "quest_stage_major": 1,
+                "quest_stage_minor": 1,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": _channels_stub(tick_index=0, elapsed_ms=25_000, mode_id=3),
+                "channels": _channels_stub(
+                    tick_index=0,
+                    elapsed_ms=25_000,
+                    mode_id=3,
+                    quest_stage_major=1,
+                    quest_stage_minor=1,
+                ),
             },
         ],
     )
@@ -601,7 +766,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_required_canonical_chann
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
+            _session_start_row(),
             _run_start_row(run_id=1, mode_id=3, seed=93, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
@@ -614,8 +779,8 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_required_canonical_chann
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": channels,
             },
-            {"event": "run_end", "run_id": 1},
-            {"event": "session_end"},
+            _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=1, ticks_written=1),
+            _session_end_row(ticks_written=1),
         ],
     )
 
@@ -631,7 +796,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_extra_non_canonical_channel(
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
+            _session_start_row(),
             _run_start_row(run_id=1, mode_id=3, seed=94, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
@@ -644,12 +809,125 @@ def test_finalize_frida_jsonl_to_traces_rejects_extra_non_canonical_channel(
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": channels,
             },
-            {"event": "run_end", "run_id": 1},
-            {"event": "session_end"},
+            _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=1, ticks_written=1),
+            _session_end_row(ticks_written=1),
         ],
     )
 
     with pytest.raises(FridaFinalizeError, match="unknown field `event_heads`"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_session_start_config_out_path_mismatch(tmp_path: Path) -> None:
+    session_start = _session_start_row()
+    config = dict(_session_config_stub())
+    config["out_path"] = "C:\\share\\frida\\wrong.jsonl"
+    session_start["config"] = config
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [session_start])
+
+    with pytest.raises(FridaFinalizeError, match="config.out_path must match out_path"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_session_start_fingerprint_session_id_mismatch(tmp_path: Path) -> None:
+    session_start = _session_start_row()
+    fingerprint = dict(_session_fingerprint_stub())
+    fingerprint["session_id"] = "session-other"
+    session_start["session_fingerprint"] = fingerprint
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [session_start])
+
+    with pytest.raises(FridaFinalizeError, match="session_fingerprint.session_id must match session_id"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_invalid_run_start_seed_source(tmp_path: Path) -> None:
+    run_start = _run_start_row(run_id=1, mode_id=3, seed=101, player_count=1)
+    run_start["seed_source"] = "thread_rng_sample"
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            run_start,
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="seed_source must be one of"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_tick_mode_mismatch(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=3, seed=102, player_count=1),
+            _tick_row(run_id=1, tick_index=0, elapsed_ms=16, dt_ms_i32=16, dt=0.016, mode_id=2),
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="tick mode_id=2 does not match active run 3"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_run_end_tick_count_mismatch(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=3, seed=103, player_count=1),
+            _tick_row(run_id=1, tick_index=0, elapsed_ms=16, dt_ms_i32=16, dt=0.016, mode_id=3),
+            _run_end_row(run_id=1, mode_id=3, ticks_written=0),
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="run_end.ticks_written=0 does not match active run tick_count 1"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_capture_error_row(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            {
+                "event": "error",
+                "error": "missing_bootstrap_seed",
+                "run_id": 1,
+                "tick_index_global": 77,
+            },
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="capture error='missing_bootstrap_seed' tick_index_global=77"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_session_end_session_id_mismatch(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _session_end_row(session_id="session-other"),
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="session_id must match session_start.session_id"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_session_end_tick_count_mismatch(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=3, seed=104, player_count=1),
+            _tick_row(run_id=1, tick_index=0, elapsed_ms=16, dt_ms_i32=16, dt=0.016, mode_id=3),
+            _run_end_row(run_id=1, mode_id=3, ticks_written=1),
+            _session_end_row(ticks_written=0),
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="ticks_written=0 does not match parsed tick_count 1"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 

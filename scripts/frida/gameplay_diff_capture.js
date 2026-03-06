@@ -652,38 +652,14 @@ function runKeyForTick(tickObj) {
 
 function requireRunStartSeedU32(tickObj) {
   if (outState.lastSrandSeed != null) return outState.lastSrandSeed >>> 0;
-  const tickIndex =
-    tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null;
-  const errorRow = {
-    event: "error",
-    error: "missing_run_start_seed",
-    run_id: (outState.currentRunId | 0) + 1,
-    tick_index_global: tickIndex,
-    seed_source: "crt_srand",
-  };
-  _captureWriteJsonLine(errorRow, true);
-  writeLine(errorRow);
-  shutdownCapture("missing_run_start_seed");
-  return null;
+  return emitCaptureContractError("missing_run_start_seed", tickObj);
 }
 
 function requireRunBootstrap(modeId, tickObj) {
   const mode = modeId | 0;
   if (mode === GAME_MODE_SURVIVAL || mode === GAME_MODE_RUSH) {
     if (outState.lastSrandSeed == null) {
-      const tickIndex =
-        tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null;
-      const errorRow = {
-        event: "error",
-        error: "missing_bootstrap_seed",
-        mode_id: mode,
-        run_id: (outState.currentRunId | 0) + 1,
-        tick_index_global: tickIndex,
-      };
-      _captureWriteJsonLine(errorRow, true);
-      writeLine(errorRow);
-      shutdownCapture("missing_bootstrap_seed");
-      return null;
+      return emitCaptureContractError("missing_bootstrap_seed", tickObj);
     }
     return {
       kind: "terrain_v1",
@@ -825,19 +801,35 @@ function _captureForceFlush() {
   } catch (_) {}
 }
 
+function emitCaptureContractError(errorCode, tickObj) {
+  const row = {
+    event: "error",
+    error: String(errorCode || "capture_contract_error"),
+    run_id: outState.runActive ? outState.currentRunId | 0 : null,
+    tick_index_global:
+      tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
+  };
+  _captureWriteJsonLine(row, true);
+  writeLine(row);
+  shutdownCapture(String(errorCode || "capture_contract_error"));
+  return null;
+}
+
+// session_start is the authoritative contract row for the whole JSONL stream.
+// It must be emitted from the locally constructed capture meta without fallbacks.
 function emitSessionStartRow(meta, outPath) {
-  const processObj = meta && meta.process ? meta.process : {};
+  const processObj = meta.process;
   return {
     event: "session_start",
     schema_version: FRIDA_JSONL_SCHEMA_VERSION,
     capture_format_version: CAPTURE_FORMAT_VERSION,
     session_id: outState.sessionId,
     out_path: outPath || CONFIG.outPath,
-    platform: processObj.platform == null ? "" : String(processObj.platform),
-    arch: processObj.arch == null ? "" : String(processObj.arch),
+    platform: String(processObj.platform),
+    arch: String(processObj.arch),
     script_version: String(CAPTURE_FORMAT_VERSION),
-    config: meta && meta.config ? meta.config : {},
-    session_fingerprint: meta && meta.session_fingerprint ? meta.session_fingerprint : {},
+    config: meta.config,
+    session_fingerprint: meta.session_fingerprint,
   };
 }
 
@@ -850,7 +842,7 @@ function startCaptureFile(meta, outPath) {
   outState.captureStarted = false;
   outState.captureClosed = false;
   const started = _captureWriteJsonLine(
-    emitSessionStartRow(meta || {}, targetOutPath),
+    emitSessionStartRow(meta, targetOutPath),
     true,
   );
   if (started) _captureForceFlush();
@@ -1414,8 +1406,22 @@ function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
   return outState.currentRunElapsedNormalizedMs | 0;
 }
 
+// tick rows are replay-grade rows. Missing required fields are contract errors,
+// not something finalize should coerce after the fact.
 function buildTraceTickRow(tickObj) {
-  const checkpoint = tickObj && tickObj.checkpoint ? tickObj.checkpoint : {};
+  if (!tickObj || typeof tickObj !== "object") {
+    return emitCaptureContractError("missing_tick_payload", tickObj);
+  }
+  const checkpoint = tickObj.checkpoint;
+  if (!checkpoint || typeof checkpoint !== "object") {
+    return emitCaptureContractError("missing_tick_checkpoint", tickObj);
+  }
+  if (!Array.isArray(checkpoint.players)) {
+    return emitCaptureContractError("invalid_tick_checkpoint_players", tickObj);
+  }
+  if (checkpoint.rng_state == null || !Number.isFinite(checkpoint.rng_state)) {
+    return emitCaptureContractError("invalid_tick_rng_state", tickObj);
+  }
   const rngStream = rngStreamFromTick(tickObj);
   const timingSamples = timingSamplesFromTick(tickObj);
   const rngMarks = canonicalRngMarksFromStream(checkpoint, rngStream);
@@ -1423,6 +1429,9 @@ function buildTraceTickRow(tickObj) {
   checkpoint.command_hash = "";
   checkpoint.rng_marks = rngMarks;
   const modeId = tickModeId(tickObj);
+  if (modeId < 0) {
+    return emitCaptureContractError("invalid_tick_mode_id", tickObj);
+  }
   const dtMsI32 =
     tickObj.frame_dt_ms_i32 != null
       ? intOr(tickObj.frame_dt_ms_i32, null)
@@ -1432,6 +1441,9 @@ function buildTraceTickRow(tickObj) {
           tickObj.diagnostics.timing.frame_dt_ms_after_i32 != null
         ? intOr(tickObj.diagnostics.timing.frame_dt_ms_after_i32, null)
         : null;
+  if (dtMsI32 == null || !Number.isFinite(dtMsI32) || dtMsI32 < 0) {
+    return emitCaptureContractError("invalid_tick_dt_ms_i32", tickObj);
+  }
   let gpurEnterDt = null;
   for (let i = 0; i < timingSamples.length; i++) {
     const row = timingSamples[i] && typeof timingSamples[i] === "object" ? timingSamples[i] : {};
@@ -1447,12 +1459,24 @@ function buildTraceTickRow(tickObj) {
           tickObj.diagnostics.timing &&
           tickObj.diagnostics.timing.frame_dt_before != null
         ? captureNumber(tickObj.diagnostics.timing.frame_dt_before)
-      : dtMsI32 == null
-        ? 0.0
         : captureNumber(dtMsI32 / 1000.0);
+  if (dtSeconds == null || !Number.isFinite(dtSeconds) || dtSeconds < 0) {
+    return emitCaptureContractError("invalid_tick_dt", tickObj);
+  }
   const elapsedRawMs = intOr(checkpoint.elapsed_ms, -1);
   const elapsedMs = normalizeRunElapsedMs(elapsedRawMs, dtMsI32);
+  if (!Number.isFinite(elapsedMs) || elapsedMs < 0) {
+    return emitCaptureContractError("invalid_tick_elapsed_ms", tickObj);
+  }
   checkpoint.elapsed_ms = elapsedMs;
+  const replayInputs = replayInputsFromTick(tickObj);
+  const playerCount = runPlayerCountFromTick(tickObj);
+  if ((playerCount | 0) <= 0) {
+    return emitCaptureContractError("invalid_tick_player_count", tickObj);
+  }
+  if ((replayInputs.length | 0) !== (playerCount | 0)) {
+    return emitCaptureContractError("invalid_tick_replay_inputs", tickObj);
+  }
   const simState = simStateFromTick(tickObj, checkpoint);
 
   return {
@@ -1466,7 +1490,7 @@ function buildTraceTickRow(tickObj) {
     quest_stage_major: tickQuestMajor(tickObj),
     quest_stage_minor: tickQuestMinor(tickObj),
     phase_markers: phaseMarkerNames(tickObj.phase_markers),
-    replay_inputs: replayInputsFromTick(tickObj),
+    replay_inputs: replayInputs,
     channels: {
       checkpoint: checkpoint,
       rng_marks: rngMarks,
@@ -1482,7 +1506,9 @@ function writeCaptureTick(tickObj) {
   if (!tickObj) return;
   if (!outState.captureStarted || outState.captureClosed) return;
   if (!ensureRunForTick(tickObj)) return;
-  const wrote = _captureWriteJsonLine(buildTraceTickRow(tickObj), true);
+  const tickRow = buildTraceTickRow(tickObj);
+  if (!tickRow) return;
+  const wrote = _captureWriteJsonLine(tickRow, true);
   if (wrote) {
     outState.captureTickCount += 1;
     outState.currentRunTickCount += 1;
