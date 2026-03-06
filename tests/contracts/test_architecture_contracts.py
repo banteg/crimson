@@ -25,7 +25,6 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
     GameCommand,
     LocalInputProvider,
-    NetworkInputProvider,
     PerkPickCommand,
     ResolvedTick,
 )
@@ -41,6 +40,7 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
+from tests.support.builders.input_providers import CallbackInputProvider
 from tests.support.builders.session import make_session
 
 
@@ -145,8 +145,7 @@ def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mock
 def test_contract_3_lockstep_command_propagation_over_network_provider() -> None:
     runtime = _MockLockstepRuntime()
     tick_input = [PlayerInput()]
-    host_provider = NetworkInputProvider(
-        player_count=1,
+    host_provider = CallbackInputProvider(
         resolve_tick=lambda tick, dt: ResolvedTick(
             tick_index=int(tick),
             dt_seconds=float(dt),
@@ -155,8 +154,7 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
         ),
         submit_command=runtime.submit_local_command,
     )
-    client_provider = NetworkInputProvider(
-        player_count=1,
+    client_provider = CallbackInputProvider(
         resolve_tick=lambda tick, dt: ResolvedTick(
             tick_index=int(tick),
             dt_seconds=float(dt),

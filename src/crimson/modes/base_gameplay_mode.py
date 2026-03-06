@@ -73,9 +73,9 @@ from ..sim.input_providers import (
     GameCommand,
     InputStatus,
     LocalInputProvider,
-    NetworkInputProvider,
     PerkPickCommand,
     ResolvedTick,
+    TickSupply,
 )
 from ..sim.presentation_reactions import (
     PostApplyReaction,
@@ -157,19 +157,15 @@ class LanFramePolicy:
     on_paused: Callable[[float], None] = _lan_on_paused_default
 
 
-class _LanRuntimeInputProvider(NetworkInputProvider):
+class _LanRuntimeInputProvider:
     def __init__(self, *, player_count: int, tick_rate: int) -> None:
+        _ = player_count
         self._runtime: LanRuntime | None = None
         self._role: str = ""
         self._samples_by_runner_tick: dict[int, LanFrameSample] = {}
         self._before_pop: Callable[[], bool] | None = None
         self._pop_blocked = False
         self._capture_clock = FixedStepClock(tick_rate=max(1, int(tick_rate)))
-        super().__init__(
-            player_count=player_count,
-            resolve_tick=self._resolve_tick,
-            submit_command=self._submit_runtime_command,
-        )
 
     def bind_runtime(self, runtime: LanRuntime | None) -> None:
         self._runtime = runtime
@@ -198,25 +194,25 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         self._capture_clock.reset()
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
-        super().begin_frame(frame_ctx)
+        _ = frame_ctx
         self._samples_by_runner_tick.clear()
         self._pop_blocked = False
 
     def take_frame_sample(self, runner_tick_index: int) -> LanFrameSample | None:
         return self._samples_by_runner_tick.pop(int(runner_tick_index), None)
 
-    def _resolve_tick(self, tick_index: int, default_dt_seconds: float) -> ResolvedTick | None:
+    def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
         self._pop_blocked = False
         before_pop = self._before_pop
         if before_pop is not None and (not bool(before_pop())):
             self._pop_blocked = True
-            return None
+            return TickSupply(status=InputStatus.STALLED, tick=None)
         runtime = self._runtime
         if runtime is None:
-            return None
+            return TickSupply(status=InputStatus.STALLED, tick=None)
         frame = runtime.pop_tick_frame()
         if frame is None:
-            return None
+            return TickSupply(status=InputStatus.STALLED, tick=None)
         frame_tick_index = int(frame.tick_index)
         frame_inputs = tuple(list(packed) for packed in frame.frame_inputs)
         player_inputs = [unpack_player_input(packed) for packed in frame_inputs]
@@ -225,14 +221,20 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
             frame_inputs=tuple(frame_inputs),
             commands=tuple(frame.commands),
         )
-        return ResolvedTick(
-            tick_index=int(tick_index),
-            dt_seconds=float(default_dt_seconds),
-            inputs=player_inputs,
-            commands=list(frame.commands),
+        return TickSupply(
+            status=InputStatus.READY,
+            tick=ResolvedTick(
+                tick_index=int(tick_index),
+                dt_seconds=float(default_dt_seconds),
+                inputs=player_inputs,
+                commands=list(frame.commands),
+            ),
         )
 
-    def _submit_runtime_command(self, command: GameCommand) -> None:
+    def supports_command_submission(self) -> bool:
+        return self._runtime is not None and str(self._role) == "host"
+
+    def submit_command(self, command: GameCommand) -> None:
         runtime = self._runtime
         if runtime is None:
             return

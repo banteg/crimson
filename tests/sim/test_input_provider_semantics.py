@@ -9,11 +9,11 @@ from crimson.sim.input_providers import (
     InputProvider,
     InputStatus,
     LocalInputProvider,
-    NetworkInputProvider,
     ResolvedTick,
     TickSupply,
 )
 from crimson.sim.tick_runner import TickRunner, TickRunnerConfig
+from tests.support.builders.input_providers import CallbackInputProvider
 from tests.support.builders.session import make_session
 
 _FRAME_CTX = FrameContext(
@@ -53,7 +53,7 @@ def test_local_provider_allows_empty_inputs_for_zero_players() -> None:
 
 
 def test_network_provider_returns_stalled_when_no_inputs() -> None:
-    provider = NetworkInputProvider(player_count=1, resolve_tick=lambda tick, _dt: None)
+    provider = CallbackInputProvider(resolve_tick=lambda tick, _dt: None)
     provider.begin_frame(_FRAME_CTX)
 
     tick0 = provider.pull_tick(0, _FRAME_CTX.tick_dt_seconds)
@@ -62,8 +62,7 @@ def test_network_provider_returns_stalled_when_no_inputs() -> None:
 
 
 def test_network_provider_returns_resolved_tick_inline() -> None:
-    provider = NetworkInputProvider(
-        player_count=1,
+    provider = CallbackInputProvider(
         resolve_tick=lambda tick, dt: ResolvedTick(
             tick_index=int(tick),
             dt_seconds=float(dt),
