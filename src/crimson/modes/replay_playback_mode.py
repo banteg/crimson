@@ -45,7 +45,6 @@ from ..sim.presentation_reactions import (
     apply_post_apply_reaction,
     build_post_apply_reaction,
 )
-from ..terrain_assets import terrain_texture_by_id
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
     HUD_AMMO_TEXT_OFFSET,
@@ -407,20 +406,16 @@ class ReplayPlaybackMode:
                 self._quest_complete_texture = self._load_quest_complete_texture()
                 quest_stage_major, quest_stage_minor = quest.level_key
 
-                base_id, overlay_id, detail_id = normalize_terrain_ids(quest.terrain_ids)
-                base = terrain_texture_by_id(base_id)
-                overlay = terrain_texture_by_id(overlay_id)
-                detail = terrain_texture_by_id(detail_id)
-                if base is not None and overlay is not None:
-                    runtime.terrain_runtime.set_terrain(
-                        base_texture_id=base,
-                        overlay_texture_id=overlay,
-                        detail_texture_id=detail,
-                    )
-                    runtime.terrain_runtime.schedule_from_rng_seed(
-                        seed=int(sim_world.state.rng.state),
-                        layers=3,
-                    )
+                base_texture_id, overlay_texture_id, detail_texture_id = normalize_terrain_ids(quest.terrain_ids)
+                runtime.terrain_runtime.set_terrain(
+                    base_texture_id=base_texture_id,
+                    overlay_texture_id=overlay_texture_id,
+                    detail_texture_id=detail_texture_id,
+                )
+                runtime.terrain_runtime.schedule_from_rng_seed(
+                    seed=int(sim_world.state.rng.state),
+                    layers=3,
+                )
 
                 start_weapon_id = quest.start_weapon_id
                 if start_weapon_id <= WeaponId.NONE:

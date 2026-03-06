@@ -47,7 +47,6 @@ from ..sim.presentation_reactions import (
     build_post_apply_reaction,
 )
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, QuestSpawnState, quest_post_step
-from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.overlays.quest_run import (
@@ -58,6 +57,7 @@ from ..ui.overlays.quest_run import (
 from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
+from ..world.terrain_runtime import normalize_terrain_ids
 from .base_gameplay_mode import (
     BaseGameplayMode,
     LanFramePolicy,
@@ -417,26 +417,12 @@ class QuestMode(BaseGameplayMode):
         self.bind_status(status)
         self.state.quest_stage_major, self.state.quest_stage_minor = quest.level_key
 
-        default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
-        terrain_ids = quest.terrain_ids
-        if terrain_ids is None:
-            base_id, overlay_id, detail_id = default_terrain
-        else:
-            try:
-                base_id = TerrainTextureId(int(terrain_ids[0]))
-                overlay_id = TerrainTextureId(int(terrain_ids[1]))
-                detail_id = TerrainTextureId(int(terrain_ids[2]))
-            except ValueError:
-                base_id, overlay_id, detail_id = default_terrain
-        base = terrain_texture_by_id(base_id)
-        overlay = terrain_texture_by_id(overlay_id)
-        detail = terrain_texture_by_id(detail_id)
-        if base is not None and overlay is not None:
-            self.set_terrain(
-                base_texture_id=base,
-                overlay_texture_id=overlay,
-                detail_texture_id=detail,
-            )
+        base_texture_id, overlay_texture_id, detail_texture_id = normalize_terrain_ids(quest.terrain_ids)
+        self.set_terrain(
+            base_texture_id=base_texture_id,
+            overlay_texture_id=overlay_texture_id,
+            detail_texture_id=detail_texture_id,
+        )
 
         # Quest metadata already stores native (1-based) weapon ids.
         start_weapon_id = quest.start_weapon_id

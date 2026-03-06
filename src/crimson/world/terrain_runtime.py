@@ -6,29 +6,38 @@ import msgspec
 
 from grim.assets import TextureId
 
-from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
+from ..terrain_assets import TerrainTextureId
 from .render_resources import RenderResources
 
 DEFAULT_TERRAIN_IDS = (
-    TerrainTextureId.Q1_BASE,
-    TerrainTextureId.Q1_OVERLAY,
-    TerrainTextureId.Q1_BASE,
+    TextureId.TER_Q1_BASE,
+    TextureId.TER_Q1_OVERLAY,
+    TextureId.TER_Q1_BASE,
 )
+_TEXTURE_ID_BY_TERRAIN_ID: dict[int, TextureId] = {
+    int(TerrainTextureId.Q1_BASE): TextureId.TER_Q1_BASE,
+    int(TerrainTextureId.Q1_OVERLAY): TextureId.TER_Q1_OVERLAY,
+    int(TerrainTextureId.Q2_BASE): TextureId.TER_Q2_BASE,
+    int(TerrainTextureId.Q2_OVERLAY): TextureId.TER_Q2_OVERLAY,
+    int(TerrainTextureId.Q3_BASE): TextureId.TER_Q3_BASE,
+    int(TerrainTextureId.Q3_OVERLAY): TextureId.TER_Q3_OVERLAY,
+    int(TerrainTextureId.Q4_BASE): TextureId.TER_Q4_BASE,
+    int(TerrainTextureId.Q4_OVERLAY): TextureId.TER_Q4_OVERLAY,
+}
 
 
 def normalize_terrain_ids(
     terrain_ids: tuple[int, int, int] | None,
-) -> tuple[TerrainTextureId, TerrainTextureId, TerrainTextureId]:
+) -> tuple[TextureId, TextureId, TextureId]:
     if terrain_ids is None:
         return DEFAULT_TERRAIN_IDS
     try:
-        return (
-            TerrainTextureId(int(terrain_ids[0])),
-            TerrainTextureId(int(terrain_ids[1])),
-            TerrainTextureId(int(terrain_ids[2])),
-        )
-    except (TypeError, ValueError, IndexError):
+        base = _TEXTURE_ID_BY_TERRAIN_ID[int(terrain_ids[0])]
+        overlay = _TEXTURE_ID_BY_TERRAIN_ID[int(terrain_ids[1])]
+        detail = _TEXTURE_ID_BY_TERRAIN_ID[int(terrain_ids[2])]
+    except (KeyError, TypeError, ValueError, IndexError):
         return DEFAULT_TERRAIN_IDS
+    return base, overlay, detail
 
 
 class TerrainRuntime(msgspec.Struct):
@@ -42,21 +51,15 @@ class TerrainRuntime(msgspec.Struct):
         seed: int,
         layers: int = 3,
     ) -> None:
-        base_id, overlay_id, detail_id = normalize_terrain_ids(terrain_ids)
+        base_texture_id, overlay_texture_id, detail_texture_id = normalize_terrain_ids(terrain_ids)
+        base = self.render_resources.load_texture(base_texture_id)
+        overlay = self.render_resources.load_texture(overlay_texture_id)
+        detail = self.render_resources.load_texture(detail_texture_id) or overlay or base
 
-        def _load(texture_id: TextureId | None):
-            if texture_id is None:
-                return None
-            return self.render_resources.load_texture(texture_id)
-
-        base = _load(terrain_texture_by_id(base_id))
-        overlay = _load(terrain_texture_by_id(overlay_id))
-        detail = _load(terrain_texture_by_id(detail_id)) or overlay or base
-
-        if base is None and (base_id, overlay_id, detail_id) != DEFAULT_TERRAIN_IDS:
-            base = _load(terrain_texture_by_id(TerrainTextureId.Q1_BASE))
-            overlay = _load(terrain_texture_by_id(TerrainTextureId.Q1_OVERLAY))
-            detail = _load(terrain_texture_by_id(TerrainTextureId.Q1_BASE)) or overlay or base
+        if base is None and (base_texture_id, overlay_texture_id, detail_texture_id) != DEFAULT_TERRAIN_IDS:
+            base = self.render_resources.load_texture(DEFAULT_TERRAIN_IDS[0])
+            overlay = self.render_resources.load_texture(DEFAULT_TERRAIN_IDS[1])
+            detail = self.render_resources.load_texture(DEFAULT_TERRAIN_IDS[2]) or overlay or base
 
         if base is None:
             return
