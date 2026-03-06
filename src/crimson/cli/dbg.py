@@ -200,12 +200,11 @@ def cmd_dbg_bisect(
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
     tick_start: int | None = typer.Option(None, "--tick-start", help="optional inclusive lower tick bound"),
     tick_end: int | None = typer.Option(None, "--tick-end", help="optional inclusive upper tick bound"),
-    window_before: int = typer.Option(12, "--window-before", min=0, help="ticks before first bad tick in repro trace"),
-    window_after: int = typer.Option(6, "--window-after", min=0, help="ticks after first bad tick in repro trace"),
-    out: Path | None = typer.Option(None, "--out", help="optional repro trace output path (.cdt)"),
+    window_before: int = typer.Option(12, "--window-before", min=0, help="ticks before first bad tick in report window"),
+    window_after: int = typer.Option(6, "--window-after", min=0, help="ticks after first bad tick in report window"),
     json_out: Path | None = typer.Option(None, "--json-out", help="optional JSON output path"),
 ) -> None:
-    """Bisect divergence and optionally emit a compact repro trace window."""
+    """Bisect divergence and report a compact focus window."""
     from ..dbg.diff import bisect_report_to_json, bisect_traces
 
     try:
@@ -216,7 +215,6 @@ def cmd_dbg_bisect(
             tick_end=tick_end,
             window_before=window_before,
             window_after=window_after,
-            repro_out=(None if out is None else Path(out)),
         )
     except ValueError as exc:
         typer.echo(f"dbg bisect failed: {exc}", err=True)
@@ -236,10 +234,9 @@ def cmd_dbg_bisect(
     assert mismatch is not None
     typer.echo(
         f"result=diverged first_bad_tick={report.first_bad_tick} "
-        f"kind={mismatch.kind} checked={report.checked_count}",
+        f"kind={mismatch.kind} checked={report.checked_count} "
+        f"window={report.window_start}..{report.window_end}",
     )
-    if report.repro_trace_path is not None:
-        typer.echo(f"repro_trace={report.repro_trace_path}")
 
 
 @dbg_app.command("tick")
@@ -485,4 +482,3 @@ def cmd_dbg_focus(
         + "ok="
         + str(sim_state.get("ok")),
     )
-

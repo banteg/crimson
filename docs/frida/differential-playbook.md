@@ -80,7 +80,7 @@ uv run crimson dbg diff \
   analysis/frida/traces/capture_<sha8>_zig.cdt
 ```
 
-Extract a focused trace repro bundle spanning across the first divergence point:
+Capture the first divergence plus its surrounding focus window:
 
 ```bash
 uv run crimson dbg bisect \
@@ -88,7 +88,7 @@ uv run crimson dbg bisect \
   analysis/frida/traces/capture_<sha8>_zig.cdt \
   --window-before 12 \
   --window-after 6 \
-  --out analysis/frida/traces/capture_<sha8>_repro.cdt
+  --json-out analysis/frida/reports/capture_<sha8>_bisect.json
 ```
 
 For surgical detail at exactly the focus mismatch tick, inspect the state across both traces in lockstep:

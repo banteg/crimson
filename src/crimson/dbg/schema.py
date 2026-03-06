@@ -70,31 +70,10 @@ class TickRecord(msgspec.Struct):
     phase_markers: list[str] = msgspec.field(default_factory=list)
 
 
-class BisectTickChannels(msgspec.Struct):
-    golden: ReplayTickChannels | None = None
-    candidate: ReplayTickChannels | None = None
-    focus_tick: bool = False
-
-
 class TickBlock(msgspec.Struct):
     start_tick: int
     end_tick: int
     ticks: list[TickRecord]
-
-
-class BisectTickRecord(msgspec.Struct):
-    tick_index: int
-    elapsed_ms: int
-    dt_ms_i32: int
-    mode_id: int
-    channels: BisectTickChannels
-    phase_markers: list[str] = msgspec.field(default_factory=list)
-
-
-class BisectTickBlock(msgspec.Struct):
-    start_tick: int
-    end_tick: int
-    ticks: list[BisectTickRecord]
 
 
 class TickBlockIndexEntry(msgspec.Struct):

@@ -66,6 +66,31 @@ def test_dbg_record_rejects_removed_max_ticks_option(tmp_path: Path) -> None:
     assert "No such option" in result.output
 
 
+def test_dbg_bisect_rejects_removed_out_option(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample.crd")
+    golden_trace = tmp_path / "golden.cdt"
+    candidate_trace = tmp_path / "candidate.cdt"
+    runner = CliRunner()
+
+    record_result = runner.invoke(
+        app,
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace)],
+    )
+    assert record_result.exit_code == 0, record_result.output
+    meta, ticks, _footer = load_trace(golden_trace)
+    tick1 = next(row for row in ticks if int(row.tick_index) == 1)
+    _with_score_xp_delta(tick1, delta=1)
+    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
+
+    result = runner.invoke(
+        app,
+        ["dbg", "bisect", str(golden_trace), str(candidate_trace), "--out", str(tmp_path / "repro.cdt")],
+    )
+
+    assert result.exit_code == 2
+    assert "No such option" in result.output
+
+
 def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatch) -> None:
     replay_path = _write_replay(tmp_path / "sample.crd")
     trace_path = tmp_path / "sample.cdt"
@@ -213,7 +238,6 @@ def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
     replay_path = _write_replay(tmp_path / "sample.crd")
     golden_trace = tmp_path / "golden.cdt"
     candidate_trace = tmp_path / "candidate.cdt"
-    repro_trace = tmp_path / "repro.cdt"
     runner = CliRunner()
 
     record_result = runner.invoke(
@@ -237,12 +261,12 @@ def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
 
     bisect_result = runner.invoke(
         app,
-        ["dbg", "bisect", str(golden_trace), str(candidate_trace), "--out", str(repro_trace)],
+        ["dbg", "bisect", str(golden_trace), str(candidate_trace)],
     )
     assert bisect_result.exit_code == 0, bisect_result.output
     assert "result=diverged" in bisect_result.output
     assert "first_bad_tick=1" in bisect_result.output
-    assert repro_trace.exists()
+    assert "window=-11..7" in bisect_result.output
 
 
 def test_dbg_diff_checkpoint_field_changes_report_mismatch(tmp_path: Path) -> None:
@@ -337,6 +361,8 @@ def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
         actual_trace_path=candidate_trace,
     )
     assert report.first_bad_tick == 1
+    assert report.window_start == -11
+    assert report.window_end == 7
     assert call_count == 1
 
 
@@ -417,4 +443,3 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
     assert focus_result.exit_code == 0, focus_result.output
     assert "result=diverged" in focus_result.output
     assert "checkpoint_diff_count=" in focus_result.output
-
