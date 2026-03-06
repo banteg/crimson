@@ -233,24 +233,24 @@ class WorldRuntimeHost:
     def apply_bootstrap_terrain(
         self,
         *,
-        terrain_ids: tuple[int, int, int],
+        terrain_slots: tuple[int, int, int],
         seed: int,
         layers: int = 3,
     ) -> None:
         self._runtime.terrain_runtime.apply_bootstrap_terrain(
-            terrain_ids=terrain_ids,
+            terrain_slots=terrain_slots,
             seed=int(seed),
             layers=int(layers),
         )
 
-    def set_terrain(
+    def set_ground_textures(
         self,
         *,
         base_texture_id: TextureId,
         overlay_texture_id: TextureId,
         detail_texture_id: TextureId | None = None,
     ) -> None:
-        self._runtime.terrain_runtime.set_terrain(
+        self._runtime.terrain_runtime.set_ground_textures(
             base_texture_id=base_texture_id,
             overlay_texture_id=overlay_texture_id,
             detail_texture_id=detail_texture_id,

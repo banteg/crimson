@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from ..terrain_slots import TerrainSlotTriplet, terrain_slots_for_level
 from ..weapons import WeaponId
-from .types import QuestBuilder, QuestDefinition, parse_level, terrain_ids_for
+from .types import QuestBuilder, QuestDefinition, parse_level
 
 _QUESTS: dict[tuple[int, int], QuestDefinition] = {}
 
@@ -16,7 +17,7 @@ def register_quest(
     start_weapon_id: WeaponId,
     unlock_perk_id: int | None = None,
     unlock_weapon_id: WeaponId | None = None,
-    terrain_ids: tuple[int, int, int] | None = None,
+    terrain_slots: TerrainSlotTriplet | None = None,
     builder_address: int | None = None,
 ) -> Callable[[QuestBuilder], QuestBuilder]:
     def _builder_name(builder_fn: QuestBuilder) -> str:
@@ -24,12 +25,7 @@ def register_quest(
 
     def decorator(builder: QuestBuilder) -> QuestBuilder:
         major, minor = parse_level(level)
-        resolved_terrain_ids = terrain_ids if terrain_ids is not None else terrain_ids_for(major, minor)
-        normalized_terrain_ids = (
-            int(resolved_terrain_ids[0]),
-            int(resolved_terrain_ids[1]),
-            int(resolved_terrain_ids[2]),
-        )
+        resolved_terrain_slots = terrain_slots if terrain_slots is not None else terrain_slots_for_level(major, minor)
         normalized_unlock_weapon_id = WeaponId(unlock_weapon_id) if unlock_weapon_id is not None else None
         quest = QuestDefinition(
             major=major,
@@ -40,7 +36,7 @@ def register_quest(
             start_weapon_id=WeaponId(start_weapon_id),
             unlock_perk_id=unlock_perk_id,
             unlock_weapon_id=normalized_unlock_weapon_id,
-            terrain_ids=normalized_terrain_ids,
+            terrain_slots=resolved_terrain_slots,
             builder_address=builder_address,
         )
         key = quest.level_key

@@ -436,24 +436,33 @@ class BaseGameplayMode:
     def apply_bootstrap_terrain(
         self,
         *,
-        terrain_ids: tuple[int, int, int],
+        terrain_slots: tuple[int, int, int],
         seed: int,
         layers: int = 3,
     ) -> None:
         self.terrain_runtime.apply_bootstrap_terrain(
-            terrain_ids=terrain_ids,
+            terrain_slots=terrain_slots,
             seed=int(seed),
             layers=int(layers),
         )
 
-    def set_terrain(
+    def set_terrain_slots(
+        self,
+        *,
+        terrain_slots: tuple[int, int, int],
+    ) -> None:
+        self.terrain_runtime.set_terrain_slots(terrain_slots=terrain_slots)
+        terrain_seed = int(self.sim_world.state.rng.state)
+        self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
+
+    def set_ground_textures(
         self,
         *,
         base_texture_id: TextureId,
         overlay_texture_id: TextureId,
         detail_texture_id: TextureId | None = None,
     ) -> None:
-        self.terrain_runtime.set_terrain(
+        self.terrain_runtime.set_ground_textures(
             base_texture_id=base_texture_id,
             overlay_texture_id=overlay_texture_id,
             detail_texture_id=detail_texture_id,

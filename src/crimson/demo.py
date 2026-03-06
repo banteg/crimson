@@ -108,13 +108,13 @@ class DemoView:
     def _close_world_runtime(self) -> None:
         self._runtime.close_runtime()
 
-    def _set_terrain(
+    def _set_ground_textures(
         self,
         *,
         base_texture_id: TextureId,
         overlay_texture_id: TextureId,
     ) -> None:
-        self._runtime.terrain_runtime.set_terrain(
+        self._runtime.terrain_runtime.set_ground_textures(
             base_texture_id=base_texture_id,
             overlay_texture_id=overlay_texture_id,
         )
@@ -529,7 +529,7 @@ class DemoView:
             ),
         )
         base_texture_id, overlay_texture_id = terrain
-        self._set_terrain(
+        self._set_ground_textures(
             base_texture_id=base_texture_id,
             overlay_texture_id=overlay_texture_id,
         )

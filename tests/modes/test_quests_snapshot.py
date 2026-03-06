@@ -48,7 +48,7 @@ def test_quest_builders_snapshot(snapshot: SnapshotAssertion) -> None:
             "start_weapon_id": quest.start_weapon_id,
             "unlock_perk_id": quest.unlock_perk_id,
             "unlock_weapon_id": quest.unlock_weapon_id,
-            "terrain_ids": quest.terrain_ids,
+            "terrain_slots": quest.terrain_slots,
             "builder_address": quest.builder_address,
             "entries": _build_entries(quest.builder, ctx, seed=1337),
         }

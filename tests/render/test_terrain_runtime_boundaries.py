@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.terrain_assets import TerrainTextureId
-from crimson.world.terrain_runtime import DEFAULT_TERRAIN_IDS, normalize_terrain_ids
+from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS, DEFAULT_TERRAIN_TEXTURE_IDS, terrain_slots_to_texture_ids
 from grim.assets import TextureId
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -25,11 +24,7 @@ def test_apply_bootstrap_terrain_keeps_sim_rng_state(assets_dir: Path, monkeypat
     before_rng_state = int(world.sim_world.state.rng.state)
 
     world.apply_bootstrap_terrain(
-        terrain_ids=(
-            int(TerrainTextureId.Q1_BASE),
-            int(TerrainTextureId.Q1_OVERLAY),
-            int(TerrainTextureId.Q1_BASE),
-        ),
+        terrain_slots=DEFAULT_TERRAIN_SLOTS,
         seed=1337,
         layers=3,
     )
@@ -40,7 +35,7 @@ def test_apply_bootstrap_terrain_keeps_sim_rng_state(assets_dir: Path, monkeypat
     assert int(world.render_resources.ground._pending_generate_seed or -1) == 1337
 
 
-def test_set_terrain_updates_render_cache_without_touching_sim_rng(assets_dir: Path, monkeypatch) -> None:
+def test_set_ground_textures_updates_render_cache_without_touching_sim_rng(assets_dir: Path, monkeypatch) -> None:
     world = _build_world(assets_dir)
     before_rng_state = int(world.sim_world.state.rng.state)
     base = rl.Texture()
@@ -57,7 +52,7 @@ def test_set_terrain_updates_render_cache_without_touching_sim_rng(assets_dir: P
 
     monkeypatch.setattr(type(world.render_resources), "load_texture", _load_texture, raising=True)
 
-    world.set_terrain(
+    world.set_ground_textures(
         base_texture_id=TextureId.TER_Q1_BASE,
         overlay_texture_id=TextureId.TER_Q1_OVERLAY,
         detail_texture_id=TextureId.TER_Q2_OVERLAY,
@@ -99,7 +94,7 @@ def test_reset_syncs_world_size_across_sim_and_render_ownership(assets_dir: Path
     assert int(world.render_resources.ground.height) == 2048
 
 
-def test_normalize_terrain_ids_falls_back_to_defaults_on_invalid_rows() -> None:
-    assert normalize_terrain_ids(None) == DEFAULT_TERRAIN_IDS
-    assert normalize_terrain_ids((9999, 1, 2)) == DEFAULT_TERRAIN_IDS
-    assert normalize_terrain_ids((int(TerrainTextureId.Q1_BASE),)) == DEFAULT_TERRAIN_IDS  # type: ignore[arg-type]
+def test_terrain_slots_to_texture_ids_falls_back_to_defaults_on_invalid_rows() -> None:
+    assert terrain_slots_to_texture_ids(None) == DEFAULT_TERRAIN_TEXTURE_IDS
+    assert terrain_slots_to_texture_ids((9999, 1, 2)) == DEFAULT_TERRAIN_TEXTURE_IDS
+    assert terrain_slots_to_texture_ids((0,)) == DEFAULT_TERRAIN_TEXTURE_IDS  # type: ignore[arg-type]

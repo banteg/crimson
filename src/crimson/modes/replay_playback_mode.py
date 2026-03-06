@@ -63,7 +63,6 @@ from ..ui.overlays.quest_run import (
 )
 from ..weapons import WeaponId
 from ..world.runtime import WorldRuntime
-from ..world.terrain_runtime import normalize_terrain_ids
 
 _PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
 _DEFAULT_SPEED_INDEX = 2
@@ -382,7 +381,7 @@ class ReplayPlaybackMode:
         )
         if bootstrap is not None:
             runtime.terrain_runtime.apply_bootstrap_terrain(
-                terrain_ids=bootstrap.terrain.terrain_ids,
+                terrain_slots=bootstrap.terrain.terrain_slots,
                 seed=int(bootstrap.terrain.terrain_seed),
                 layers=3,
             )
@@ -406,12 +405,7 @@ class ReplayPlaybackMode:
                 self._quest_complete_texture = self._load_quest_complete_texture()
                 quest_stage_major, quest_stage_minor = quest.level_key
 
-                base_texture_id, overlay_texture_id, detail_texture_id = normalize_terrain_ids(quest.terrain_ids)
-                runtime.terrain_runtime.set_terrain(
-                    base_texture_id=base_texture_id,
-                    overlay_texture_id=overlay_texture_id,
-                    detail_texture_id=detail_texture_id,
-                )
+                runtime.terrain_runtime.set_terrain_slots(terrain_slots=quest.terrain_slots)
                 runtime.terrain_runtime.schedule_from_rng_seed(
                     seed=int(sim_world.state.rng.state),
                     layers=3,

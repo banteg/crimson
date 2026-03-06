@@ -57,7 +57,6 @@ from ..ui.overlays.quest_run import (
 from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
-from ..world.terrain_runtime import normalize_terrain_ids
 from .base_gameplay_mode import (
     BaseGameplayMode,
     LanFramePolicy,
@@ -417,12 +416,7 @@ class QuestMode(BaseGameplayMode):
         self.bind_status(status)
         self.state.quest_stage_major, self.state.quest_stage_minor = quest.level_key
 
-        base_texture_id, overlay_texture_id, detail_texture_id = normalize_terrain_ids(quest.terrain_ids)
-        self.set_terrain(
-            base_texture_id=base_texture_id,
-            overlay_texture_id=overlay_texture_id,
-            detail_texture_id=detail_texture_id,
-        )
+        self.set_terrain_slots(terrain_slots=quest.terrain_slots)
 
         # Quest metadata already stores native (1-based) weapon ids.
         start_weapon_id = quest.start_weapon_id

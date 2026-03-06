@@ -8,7 +8,7 @@ from crimson.quests.level import QuestLevel
 from grim.geom import Vec2
 
 from ..creatures.spawn import SpawnId
-from ..terrain_assets import TerrainTextureId
+from ..terrain_slots import TerrainSlotTriplet
 from ..weapons import WeaponId
 
 
@@ -41,25 +41,6 @@ def format_level(major: int, minor: int) -> str:
     return QuestLevel.from_parts(major, minor).to_string()
 
 
-def _level_parts(level_or_major: str | int, minor: int | None = None) -> tuple[int, int]:
-    if isinstance(level_or_major, str):
-        return parse_level(level_or_major)
-    if minor is None:
-        raise TypeError("minor is required when major is passed as an int")
-    return int(level_or_major), int(minor)
-
-
-def terrain_ids_for(level_or_major: str | int, minor: int | None = None) -> tuple[int, int, int]:
-    tier, quest = _level_parts(level_or_major, minor)
-    if tier <= 4:
-        base = (tier - 1) * 2
-        alt = base + 1
-        if quest < 6:
-            return base, alt, base
-        return base, base, alt
-    return quest & 0x3, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q2_OVERLAY
-
-
 class QuestDefinition(msgspec.Struct, frozen=True, kw_only=True):
     major: int
     minor: int
@@ -67,9 +48,9 @@ class QuestDefinition(msgspec.Struct, frozen=True, kw_only=True):
     builder: QuestBuilder
     time_limit_ms: int
     start_weapon_id: WeaponId
+    terrain_slots: TerrainSlotTriplet
     unlock_perk_id: int | None = None
     unlock_weapon_id: WeaponId | None = None
-    terrain_ids: tuple[int, int, int] | None = None
     builder_address: int | None = None
 
     @property

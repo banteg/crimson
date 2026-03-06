@@ -1,27 +1,16 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-
 import msgspec
 
 from grim.rand import CrandLike
 
-from ..terrain_assets import TerrainTextureId
+from ..terrain_slots import (
+    TerrainSlotTriplet,
+    choose_menu_terrain_slots,
+)
 
 BOOTSTRAP_KIND_NONE = "none"
 BOOTSTRAP_KIND_TERRAIN_V1 = "terrain_v1"
-
-# Mirror classic `terrain_generate_random` menu selection rules.
-TERRAIN_DEFAULT_IDS: tuple[int, int, int] = (
-    TerrainTextureId.Q1_BASE,
-    TerrainTextureId.Q1_OVERLAY,
-    TerrainTextureId.Q1_BASE,
-)
-TERRAIN_UNLOCK_RULES: tuple[tuple[int, tuple[int, int, int]], ...] = (
-    (0x28, (TerrainTextureId.Q4_BASE, TerrainTextureId.Q4_OVERLAY, TerrainTextureId.Q4_BASE)),
-    (0x1E, (TerrainTextureId.Q3_BASE, TerrainTextureId.Q3_OVERLAY, TerrainTextureId.Q3_BASE)),
-    (0x14, (TerrainTextureId.Q2_BASE, TerrainTextureId.Q2_OVERLAY, TerrainTextureId.Q2_BASE)),
-)
 
 # Terrain stamping RNG consumption mirrors `grim/terrain_render.py` + `docs/crimsonland-exe/terrain.md`.
 TERRAIN_DENSITY_BASE = 800
@@ -29,20 +18,6 @@ TERRAIN_DENSITY_OVERLAY = 0x23
 TERRAIN_DENSITY_DETAIL = 0x0F
 TERRAIN_DENSITY_SHIFT = 19
 TERRAIN_RAND_DRAWS_PER_STAMP = 3  # rotation, then position draws (see terrain renderer parity notes)
-
-
-def choose_terrain_ids(
-    *,
-    quest_unlock_index: int,
-    rand: Callable[[], int],
-) -> tuple[int, int, int]:
-    """Choose classic terrain IDs using the canonical RNG stream."""
-
-    unlock_index = int(quest_unlock_index)
-    for threshold, ids in TERRAIN_UNLOCK_RULES:
-        if unlock_index >= int(threshold) and (int(rand()) & 7) == 3:
-            return ids
-    return TERRAIN_DEFAULT_IDS
 
 
 def terrain_stamping_draws(*, width: int, height: int, layers: int = 3) -> int:
@@ -68,7 +43,7 @@ class TerrainBootstrapResult(msgspec.Struct, frozen=True):
     kind: str
     seed_before: int
     seed_after: int
-    terrain_ids: tuple[int, int, int]
+    terrain_slots: TerrainSlotTriplet
     terrain_seed: int
     selection_draws: int
     stamping_draws: int
@@ -101,7 +76,7 @@ def run_terrain_bootstrap(
         selection_draws += 1
         return int(rng.rand())
 
-    terrain_ids = choose_terrain_ids(quest_unlock_index=int(quest_unlock_index), rand=_rand)
+    terrain_slots = choose_menu_terrain_slots(quest_unlock_index=int(quest_unlock_index), rand=_rand)
     terrain_seed = int(rng.state)
 
     stamping_draws = terrain_stamping_draws(width=int(width), height=int(height), layers=int(layers))
@@ -113,7 +88,7 @@ def run_terrain_bootstrap(
         kind=BOOTSTRAP_KIND_TERRAIN_V1,
         seed_before=int(seed_before),
         seed_after=int(seed_after),
-        terrain_ids=(int(terrain_ids[0]), int(terrain_ids[1]), int(terrain_ids[2])),
+        terrain_slots=terrain_slots,
         terrain_seed=int(terrain_seed),
         selection_draws=int(selection_draws),
         stamping_draws=int(stamping_draws),

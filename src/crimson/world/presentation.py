@@ -87,12 +87,12 @@ class PresentationLayer:
     def apply_bootstrap_terrain(
         self,
         *,
-        terrain_ids: tuple[int, int, int],
+        terrain_slots: tuple[int, int, int],
         seed: int,
         layers: int = 3,
     ) -> None:
         self.terrain_runtime.apply_bootstrap_terrain(
-            terrain_ids=terrain_ids,
+            terrain_slots=terrain_slots,
             seed=seed,
             layers=layers,
         )
