@@ -5,8 +5,12 @@ import pytest
 import zstandard as zstd
 
 import crimson.replay.checkpoints as replay_checkpoints_mod
+from crimson.bonuses.ids import BonusId
+from crimson.creatures.runtime import CreatureDeath
+from crimson.creatures.spawn_ids import CreatureTypeId
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
+from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.replay.checkpoints import (
     DEFAULT_CHECKPOINT_SAMPLE_RATE,
     FORMAT_VERSION,
@@ -16,23 +20,8 @@ from crimson.replay.checkpoints import (
     dump_checkpoints,
     load_checkpoints,
 )
-from crimson.sim.world_state import WorldState
-
-
-class _Death:
-    def __init__(self, *, index: int, type_id: int, reward_value: float, xp_awarded: int, owner: OwnerRef) -> None:
-        self.index = int(index)
-        self.type_id = int(type_id)
-        self.reward_value = float(reward_value)
-        self.xp_awarded = int(xp_awarded)
-        self.owner = owner
-
-
-class _Events:
-    def __init__(self, *, hits: int, pickups: int, sfx: list[str]) -> None:
-        self.hits = [object() for _ in range(int(hits))]
-        self.pickups = [object() for _ in range(int(pickups))]
-        self.sfx = list(sfx)
+from crimson.sim.state_types import BonusPickupEvent
+from crimson.sim.world_state import WorldEvents, WorldState
 
 
 def test_checkpoints_codec_roundtrip_is_stable(base_world: WorldState) -> None:
@@ -74,8 +63,37 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
         tick_index=15,
         world=world,
         elapsed_ms=250.0,
-        deaths=[_Death(index=33, type_id=18, reward_value=75.0, xp_awarded=10, owner=OwnerRef.from_player(0))],
-        events=_Events(hits=2, pickups=1, sfx=["sfx_a", "sfx_b", "sfx_c", "sfx_d", "sfx_e"]),
+        deaths=[
+            CreatureDeath(
+                index=33,
+                pos=world.players[0].pos,
+                type_id=CreatureTypeId.ZOMBIE,
+                reward_value=75.0,
+                xp_awarded=10,
+                owner=OwnerRef.from_player(0),
+            ),
+        ],
+        events=WorldEvents(
+            hits=[
+                ProjectileHit(
+                    type_id=ProjectileTemplateId.PISTOL,
+                    origin=world.players[0].pos,
+                    hit=world.players[0].pos,
+                    target=world.players[0].pos,
+                )
+                for _ in range(2)
+            ],
+            deaths=(),
+            pickups=[
+                BonusPickupEvent(
+                    player_index=0,
+                    bonus_id=BonusId.POINTS,
+                    amount=1,
+                    pos=world.players[0].pos,
+                ),
+            ],
+            sfx=["sfx_a", "sfx_b", "sfx_c", "sfx_d", "sfx_e"],
+        ),
     )
     checkpoints = ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=1, checkpoints=[ckpt])
     decoded = load_checkpoints(dump_checkpoints(checkpoints))

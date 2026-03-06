@@ -91,13 +91,14 @@ from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import shots_from_state
 
 if TYPE_CHECKING:
-    from ..creatures.runtime import CreaturePool
+    from ..creatures.runtime import CreatureDeath, CreaturePool
     from ..game.types import GameState
     from ..gameplay import GameplayState
     from ..net.lockstep_protocol import StatusSnapshot
     from ..persistence.save_status import GameStatus
     from ..replay import ReplayRecorder
     from ..sim.state_types import PlayerState
+    from ..sim.world_state import WorldEvents
 
 LanRuntime = LockstepRuntime | RollbackRuntime
 
@@ -756,8 +757,8 @@ class BaseGameplayMode:
         tick_index: int,
         *,
         force: bool = False,
-        deaths: list[object] | tuple[object, ...] | None = None,
-        events: object | None = None,
+        deaths: list[CreatureDeath] | tuple[CreatureDeath, ...] | None = None,
+        events: WorldEvents | None = None,
     ) -> None:
         recorder = self._replay_recorder
         if recorder is None:
