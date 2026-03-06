@@ -15,7 +15,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
     ctx.state.camera_shake_pulses = 0x14
     ctx.state.camera_shake_timer = 0.2
 
-    origin = ctx.origin_pos or ctx.player.pos
+    origin = ctx.origin_pos
     rand = ctx.state.rng.rand
 
     bullet_count = int(rand()) & 3

@@ -21,7 +21,7 @@ class BonusApplyCtx(msgspec.Struct):
     player: PlayerState
     bonus_id: BonusId
     amount: int
-    origin_pos: Vec2 | None
+    origin_pos: Vec2
     creatures: Sequence[CreatureState]
     players: list[PlayerState]
     detail_preset: int

@@ -915,7 +915,7 @@ def test_bonus_apply_registers_hud_slot_and_expires() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
 
-    bonus_apply(state, player, BonusId.WEAPON_POWER_UP, amount=3, creatures=[], players=[player])
+    bonus_apply(state, player, BonusId.WEAPON_POWER_UP, amount=3, origin=player.pos, creatures=[], players=[player])
     for _ in range(40):
         bonus_hud_update(state, [player], dt=1.0 / 60.0)
 

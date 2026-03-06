@@ -18,7 +18,7 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
     # - requires `active != 0`
     # - requires `lifecycle_stage == 16.0` (alive sentinel)
     # - no HP gate
-    origin = ctx.origin_pos or ctx.player.pos
+    origin = ctx.origin_pos
     best_idx = 0 if bool(ctx.state.preserve_bugs) else -1
     best_dist_sq = 1e12
     for idx, creature in enumerate(creatures):

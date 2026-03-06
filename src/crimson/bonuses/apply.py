@@ -52,7 +52,7 @@ def bonus_apply(
     bonus_id: BonusId,
     *,
     amount: int | None = None,
-    origin: Vec2 | None = None,
+    origin: Vec2,
     creatures: Sequence[CreatureState],
     players: list[PlayerState],
     detail_preset: int = 5,
