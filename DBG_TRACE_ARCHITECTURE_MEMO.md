@@ -2,622 +2,730 @@
 
 ## Purpose
 
-This memo captures:
+This memo is the branch-state architecture document for `refactor/smells1`.
 
-1. The current `dbg` trace architecture at `HEAD`.
-2. The recent changelog that got us here.
-3. The real trust boundaries and what is now typed vs still generic.
-4. What historical differential sessions actually needed from `dbg`.
-5. The remaining split-brain contracts between writers and consumers.
-6. The proposed follow-up architecture to finish the cleanup without overengineering.
+It captures:
 
-The concrete execution sequence for that cleanup lives in `plan.md`.
+1. What has already landed on this branch.
+2. What the `dbg` stack is actually for.
+3. What the current replay-trace architecture looks like at `HEAD`.
+4. Which contracts are now clean versus which ones are still split-brain.
+5. The open questions that still need an explicit branch-level decision.
+6. A recommended next-step sequence for the remaining cleanup work.
+
+`plan.md` remains the execution ladder. This memo is the explanatory companion.
+
+## Branch Status
+
+As of this branch state, the early simplification cuts are already landed.
+
+### Landed Stages
+
+- `286d7e4b refactor(dbg): remove trace viz`
+  - removed `dbg viz`
+  - removed the HTML visualizer module
+  - removed docs/tests that treated `viz` as part of the standard parity loop
+- `53a9bc9d refactor(dbg): tighten frida capture contract`
+  - narrowed the raw Frida JSONL contract
+  - treated capture JSONL as an owned wire protocol rather than a loose bag of rows
+  - kept finalize validation strict
+- `0d217e17 refactor(dbg): drop bisect repro traces`
+  - removed the separate bisect-repro `.cdt` artifact path
+  - kept `dbg bisect` as a report command rather than a second trace dialect
+
+### Still Open
+
+These are the next meaningful cleanup areas:
+
+- Stage 4: type replay trace metadata
+- Stage 5: align Zig with the replay schema
+- Stage 6: thin secondary consumers
+- Stage 7: remove duplicate authorities and stale docs
+
+### Important Correction To Older Notes
+
+Earlier versions of this memo discussed `dbg viz` and bisect-repro `.cdt`
+artifacts as current architectural problems. That is now stale.
+
+At `HEAD` on this branch:
+
+- there is no `dbg viz`
+- there is no stored bisect-repro `.cdt` dialect
+- replay `.cdt` is the only durable trace kind left
+
+That simplification matters because it changes what the real remaining work is.
+We are no longer deciding between multiple trace artifact families. We are now
+mainly deciding how sharp to make the one replay-trace contract.
 
 ## Executive Summary
 
-The root-cause fix is now partially landed.
+The central conclusion did not change during the cleanup:
 
-- Raw Frida JSONL is the only remaining capture-ingress boundary, but it is
-  still ours and should be treated as a strict owned wire contract, not as
-  untrusted data.
-- Finalized replay `.cdt` traces are now typed end-to-end on the Python side.
-- `frida_finalize.py` and `record.py` both write typed replay rows.
-- `trace.py` decodes replay `.cdt` blocks directly into typed replay rows.
-- Replay consumers no longer re-decode per-channel payload dicts just to get back to typed objects.
+`crimson.dbg` is not supposed to become a general debug platform. It is a
+deterministic parity workbench.
 
-The more important conclusion after reviewing historical differential sessions is
-that the real `dbg` need is narrower than the current abstraction surface:
+The workflow it needs to serve is much narrower and much more concrete:
 
-- capture original gameplay with full deterministic evidence
-- replay the same inputs in the candidate runtime
-- locate the first sustained divergence quickly
-- inspect one or a few focus ticks with full state + RNG context
-- jump into the decompile/hotspot sources and fix the runtime
-- repeat the same loop fast, with caching and session bookkeeping
+```mermaid
+flowchart LR
+    A["Capture original run\nFrida JSONL"] --> B["Finalize to original replay .cdt + .crd"]
+    B --> C["Record candidate replay .cdt\nPython today, Zig later"]
+    C --> D["Find first sustained divergence\nfast diff / bisect"]
+    D --> E["Inspect one focus tick deeply"]
+    E --> F["Use decompile / hotspot evidence"]
+    F --> G["Patch deterministic runtime"]
+    G --> C
+```
 
-The sessions show high leverage from:
+The historical differential sessions repeatedly show that progress comes from:
 
-- accurate typed boundaries
-- reliable divergence/focus reports
-- fast repeated probes on the same capture
-- targeted recapture when telemetry is insufficient
+- trustworthy original capture finalization
+- replay-grade candidate recording
+- fast first-bad-tick detection
+- strong single-tick drilldown with RNG/state/entity context
+- targeted recapture when the frontier is still ambiguous
 
-The sessions show much weaker evidence for:
+The sessions do not show strong evidence for:
 
-- multiple long-lived `.cdt` dialects
-- stored bisect repro bundles as a first-class artifact family
-- broad generic query surfaces driving the trace schema
+- a broad exploratory trace platform
+- multiple durable `.cdt` dialects
+- a visualizer-heavy workflow
+- schema growth driven by peripheral commands
 
-What is still split-brain in the current implementation:
+That means the design center should stay:
 
-- replay `.cdt` and bisect repro `.cdt` share one top-level container and schema version, but actually carry different tick row dialects
-- `TraceMeta` is still a generic map shell hiding several producer-specific contracts
-- Zig replay trace shape still diverges from Python canonical replay channels
-- metadata and footer fields still duplicate some facts instead of having one authority
+- `frida_finalize`
+- `record`
+- `diff`
+- `bisect`
+- `focus`
+- one replay `.cdt` format
 
-## Recent Changelog
+Everything else should clearly sit on top of that.
 
-### `56266c74 chore: snapshot dbg trace typing exploration`
+## What The Current Architecture Actually Is
 
-This was the checkpoint commit taken before the architecture was corrected. It preserved the first round of exploration and the initial memo baseline.
+### Durable Artifact Families
 
-### `4cf54fdd refactor: keep dbg replay traces typed end-to-end`
-
-This commit landed the actual replay-path root-cause fix:
-
-- added typed replay channels to `src/crimson/dbg/schema.py`
-- changed replay `TickRecord` to carry typed `ReplayTickChannels`
-- changed `src/crimson/dbg/trace.py` to decode replay traces directly into typed rows
-- changed `src/crimson/dbg/frida_finalize.py` to keep validated Frida tick channels typed through `.cdt` write
-- changed `src/crimson/dbg/record.py` to write typed replay rows directly
-- simplified `src/crimson/dbg/channel_helpers.py` into typed accessors
-- removed `src/crimson/dbg/checkpoint_codec.py`
-- removed dead builtin-validation helpers from `src/crimson/dbg/canonical_channels.py`
-- introduced a separate typed bisect repro row shape and writer path
-
-## Current Architecture
-
-### Artifact Families
-
-There are now four relevant debug artifact families:
+At `HEAD`, the relevant artifact families are:
 
 1. Raw Frida JSONL capture
-2. Replay `.cdt` traces
-3. Bisect repro `.cdt` traces
-4. Replay `.crd` files
+2. Replay `.crd` sidecars
+3. Replay `.cdt` traces
 
-The `.cdt` container is still shared:
+That is the important simplification. There is only one durable trace kind now.
 
-- file header + trailer
-- `META` chunk
-- `TICK` chunks
-- `FOTR` footer chunk
-- msgpack payloads
-- zstd compression
-
-`src/crimson/dbg/trace.py` is the shared container layer.
-
-### Current Replay Data Flow
+### Current Data Flow
 
 ```mermaid
 flowchart LR
-    subgraph ReplayProducers
-        P1["record.py\nPython replay recorder"]
-        P2["frida_finalize.py\nFinalize raw Frida JSONL"]
-        P3["crimson-zig/src/cdt_trace.zig\nZig replay recorder"]
+    subgraph CaptureSide
+        JS["scripts/frida/gameplay_diff_capture.js"]
+        HOST["gameplay_diff_capture_host.py"]
+        FIN["src/crimson/dbg/frida_finalize.py"]
     end
 
-    P1 --> R["Typed replay rows\nTickRecord + ReplayTickChannels"]
-    P2 --> R
-    P3 --> Z["Typed Zig replay rows\nlogical replay schema"]
+    subgraph ReplaySide
+        REC["src/crimson/dbg/record.py"]
+        ZIG["crimson-zig/src/cdt_trace.zig"]
+    end
 
-    R --> W["trace.py\nwrite_trace / write_trace_iter"]
-    Z --> W
-    W --> CDT["Replay .cdt"]
-    CDT --> TR["TraceReader\nreplay row decoder"]
-    TR --> C["diff / focus / query / health / CLI"]
+    subgraph TraceCore
+        WR["src/crimson/dbg/trace.py\nwrite_trace / TraceReader"]
+        DIFF["src/crimson/dbg/diff.py"]
+        FOCUS["src/crimson/dbg/focus.py"]
+    end
+
+    JS --> HOST --> FIN --> WR
+    REC --> WR
+    ZIG --> WR
+    WR --> DIFF
+    WR --> FOCUS
 ```
 
-### Current Bisect Data Flow
+### Replay Trace Schema At A Glance
 
-```mermaid
-flowchart LR
-    D["diff.py\nbisect_traces"] --> B["BisectTickRecord + BisectTickChannels"]
-    B --> W["trace.py\nwrite_bisect_trace"]
-    W --> CDT["Bisect repro .cdt"]
-    CDT --> BR["BisectTraceReader"]
-```
-
-### Current Schema Shape
-
-The replay row path is now typed:
-
-- `TickRecord.channels: ReplayTickChannels`
-- `ReplayTickChannels.checkpoint: ReplayCheckpoint`
-- `ReplayTickChannels.sim_state: SimStateSnapshot`
-- `ReplayTickChannels.entity_samples: EntitySamplesSnapshot`
-- `ReplayTickChannels.rng_marks: dict[str, int]`
-- `ReplayTickChannels.rng_stream: list[RngStreamRow]`
-- `ReplayTickChannels.timing_samples: list[TimingSampleRow]`
-
-The bisect repro path is also typed, but separate:
-
-- `BisectTickRecord.channels: BisectTickChannels`
-- `BisectTickChannels.golden: ReplayTickChannels | None`
-- `BisectTickChannels.candidate: ReplayTickChannels | None`
-- `BisectTickChannels.focus_tick: bool`
-
-What is still generic:
-
-- `TraceMeta.producer: dict[str, Any]`
-- `TraceMeta.source: dict[str, Any]`
-- `TraceMeta.config: dict[str, Any]`
-
-## What Differential Sessions Actually Needed
-
-Historical session logs show a very consistent workflow. The `dbg` suite exists
-to support deterministic parity triage, not to be a general-purpose data
-exploration platform.
-
-```mermaid
-flowchart LR
-    A["Frida capture of original run\ninputs + checkpoints + RNG stream/markers"] --> B["Finalize to trusted replay trace + replay sidecar"]
-    B --> C["Record candidate replay trace\nPython today, Zig later"]
-    C --> D["Find first sustained divergence\nfast diff / health checks"]
-    D --> E["Inspect focus tick(s)\nfull state + RNG + event context"]
-    E --> F["Use decompile / hotspot sources\nto identify root cause"]
-    F --> G["Patch deterministic runtime"]
-    G --> H["Re-run same capture\nand update session notes"]
-    H --> D
-```
-
-### Evidence From Historical Sessions
-
-- Session 10 was entirely about making repeated `divergence-report` and
-  `focus-trace` runs fast enough to be usable. Caching turned repeated probes on
-  the same capture from tens of seconds into sub-second feedback.
-- Session 12 found that the blocker was not gameplay code but incorrect
-  divergence accounting around RNG attribution. Tooling correctness mattered as
-  much as runtime correctness.
-- Session 17 repeatedly hit cases where the next step was more faithful
-  quest-mode focus tracing or richer recapture telemetry, not more generic
-  trace/container abstractions.
-- Session 19 closed a real frontier by using exactly the core loop:
-  baseline divergence report, bisect to first bad tick, focus trace on that
-  tick, native caller mapping, runtime fix, and replay verification.
-
-### Core Capabilities The Workflow Actually Depends On
-
-- One trusted replay trace format carrying:
-  - replay inputs
-  - full or strategically anchored state snapshots
-  - RNG stream samples and stable RNG markers
-  - enough timing/event context to attribute first divergence
-- Fast candidate trace recording from `.crd` sidecars for Python today and Zig
-  later.
-- Cheap identification of the first sustained divergence.
-- High-detail focus reports for a specific tick window.
-- Strong cache/index support so repeated probes on one capture are cheap.
-- Session bookkeeping keyed by capture SHA and JSON report artifacts.
-- A recapture path when telemetry is insufficient to explain the frontier.
-
-### Secondary Capabilities
-
-These are useful, but the historical record does not show them as the main
-drivers of parity progress:
-
-- ad hoc query-by-path tooling
-- entity/tick inspection commands as standalone primary workflows
-- long-lived visualizer or HTML payload architecture
-- stored bisect repro `.cdt` bundles
-
-## What Looks Overengineered
-
-Relative to the historical workflow, the following areas look suspiciously
-overbuilt or at least under-justified:
-
-### 1) Treating Finalized Replay Traces As Weakly Typed
-
-This was the core mistake already corrected in `4cf54fdd`. We were validating
-the boundary and then immediately discarding the typed model.
-
-### 2) Promoting Bisect Repro Bundles Into A Peer Artifact Family
-
-The docs mention repro bundles, but the session history does not show them as a
-central working artifact. Most sessions persisted:
-
-- the capture SHA
-- JSON reports
-- focused commands
-- the resulting code changes
-
-That makes bisect repro `.cdt` files look optional rather than architectural.
-
-### 3) Letting Peripheral Consumers Shape The Core Schema
-
-The schema should primarily serve:
-
-- trace recording
-- divergence detection
-- focus drilldown
-- replay verification
-
-Commands like `query`, `entity`, and `tick` should be thin consumers on
-top of that core, not reasons to make the core format more dynamic or more
-abstract.
-
-### 4) Multi-Dialect `.cdt` Support Without Strong Evidence
-
-If replay traces are the main long-lived artifact, then adding more `.cdt`
-dialects increases reader/writer complexity and metadata split-brain. That
-complexity needs stronger evidence than “it might be nice for tooling.”
-
-### 5) Solving Metadata Generality Before Replay-Loop Fit
-
-Typed metadata is still worth doing, but the historical sessions suggest the
-highest-value next work is:
-
-- better typed capture/finalize boundaries
-- one shared replay schema across producers
-- faster and more accurate diff/focus workflows
-
-before investing in broader artifact taxonomy work.
-
-## Real Boundaries
-
-The important distinction is not “all debug data is weakly trusted.”
-
-### Owned Capture Contract
-
-Raw Frida JSONL is the only real ingress boundary, but it is produced by code
-we own on both sides. So this is not an adversarial or duck-typing boundary. It
-is an owned wire contract with some operational failure modes:
-
-- emitted by a long-running script
-- vulnerable to abrupt shutdown
-- vulnerable to partial/incomplete rows
-- versioned independently from the finalized replay trace shape
-- currently mixed with auxiliary rows that are not part of finalized replay output
-
-This boundary is handled in `src/crimson/dbg/frida_finalize.py` by:
-
-- `_CaptureRow` tagged decode
-- `_TickChannels` typed decode
-- semantic finalize checks
-- canonical RNG mark validation
-- replay input width validation
-- bootstrap/seed validation
-
-The right target is stricter than “validate a weak boundary.” It is:
-
-- `gameplay_diff_capture.js` emits one narrow canonical row contract for replay
-  rows
-- `frida_finalize.py` decodes that contract directly
-- any schema mismatch fails loudly instead of being normalized away
-
-### Strong Boundary
-
-After finalize validation, replay trace rows are ours.
-
-That means:
-
-- finalized replay `.cdt` rows should stay typed
-- replay consumers should not treat replay row payloads as duck-typed JSON blobs
-- builtin conversion belongs only at presentation edges
-
-This is now mostly true for replay rows.
-
-## What Changed vs The Old Design
-
-The old loop was:
-
-```mermaid
-flowchart TB
-    A["Typed producer state"] --> B["msgspec.to_builtins / payload helpers"]
-    B --> C["Generic TickRecord.channels dict"]
-    C --> D["TraceReader returns generic rows"]
-    D --> E["channel_helpers msgspec.convert"]
-    E --> F["Typed consumer logic"]
-```
-
-The current replay loop is:
-
-```mermaid
-flowchart TB
-    A["Typed producer state"] --> B["Typed TickRecord + ReplayTickChannels"]
-    B --> C["trace.py writes replay .cdt"]
-    C --> D["TraceReader decodes typed replay rows"]
-    D --> E["Typed consumer logic"]
-    E --> F["Builtins only at report / CLI / HTML edges"]
-```
-
-That is the right direction and matches the repo principle:
-
-> validate at edges, trust inside
-
-## Current Findings
-
-### 1) Replay vs Bisect Is Still One Container With Two Dialects
-
-This is the biggest remaining architectural mismatch.
-
-Replay traces and bisect repro traces both use:
-
-- the same trace magic
-- the same top-level `TraceMeta`
-- the same `trace_schema_version`
-- the same file extension
-
-But they do not contain the same tick row type.
-
-Replay uses:
+The replay row path is typed:
 
 - `TickRecord`
 - `ReplayTickChannels`
+- `ReplayCheckpoint`
+- `SimStateSnapshot`
+- `EntitySamplesSnapshot`
+- `list[RngStreamRow]`
+- `list[TimingSampleRow]`
 
-Bisect repro uses:
+The required channel list today is:
 
-- `BisectTickRecord`
-- `BisectTickChannels`
+- `checkpoint`
+- `sim_state`
+- `entity_samples`
+- `rng_marks`
+- `rng_stream`
+- `timing_samples`
 
-We now have two readers:
+This is already much better than the old generic `channels: dict[str, object]`
+flow. Replay consumers now operate on typed rows instead of round-tripping
+through builtin payloads.
 
-- `TraceReader`
-- `BisectTraceReader`
+### What Each Core Piece Is Responsible For
 
-But we do not have a typed discriminant such as `trace_kind` in metadata. So replay-only consumers cannot reject bisect traces early and cleanly.
+#### `gameplay_diff_capture.js`
 
-### 2) `TraceMeta` Still Hides Producer-Specific Contracts Behind Generic Maps
+This is the owned producer for the raw Frida JSONL capture wire format.
 
-`TraceMeta` is still acting as a bag of dicts rather than a real typed schema.
+Its real job is:
 
-Current producers write different `source` / `config` contracts:
+- capture replay-grade inputs
+- capture original-side checkpoint/state/entity/RNG/timing evidence
+- emit explicit lifecycle rows:
+  - `session_start`
+  - `run_start`
+  - `tick`
+  - `run_end`
+  - `session_end`
 
-- Frida finalize writes raw-capture provenance and run metadata
-- Python replay record writes replay file provenance
-- Zig replay record writes its own typed source/config shape in Zig
-- bisect repro writes expected/candidate path metadata
+It is not just a logging script anymore. It is the producer side of a strict
+capture contract.
 
-That means consumers cannot safely rely on metadata fields without knowing producer folklore.
+#### `frida_finalize.py`
 
-### 3) Zig Replay Schema Still Diverges From Python Canonical Replay Schema
+This is the trust boundary between raw capture transport and durable replay
+artifacts.
 
-The Zig writer is still not the same contract as Python canonical replay channels.
+Its real job is:
 
-Examples:
+- decode the owned JSONL wire shape strictly
+- validate lifecycle ordering
+- validate bootstrap/seed assumptions
+- recompute canonical RNG marks
+- preserve replay-grade inputs into `.crd`
+- write original-side replay `.cdt`
 
-- Zig hardcodes single-player arrays where Python uses lists
-- Zig projectile ownership uses scalar `owner_id` fields where Python uses `OwnerRef`
-- Zig record currently rejects non-single-player replays before writing
+This is one of the most important files in the whole parity loop because it
+defines what "original trace" means.
 
-So “typed on both sides” is true, but “one shared replay schema” is still not true.
+#### `record.py`
 
-### 4) Channel Presence Has Multiple Authorities
+This is the candidate-side recorder.
 
-There are still several different ways the system describes channels:
+Its real job is:
 
+- consume the `.crd` replay sidecar
+- run Python or Zig deterministically from the same input timeline
+- record candidate-side state/entity/RNG evidence into the same `.cdt` format
+
+Conceptually this is the mirror of `frida_finalize.py` for the candidate
+runtime.
+
+#### `trace.py`
+
+This is the container layer:
+
+- typed `META`
+- typed `TICK` blocks
+- typed `FOTR`
+- compressed random-access storage
+- small block cache in the reader
+
+It should stay boring. Its value is not cleverness; its value is that it makes
+repeated diff/focus work cheap.
+
+#### `diff.py` and `bisect`
+
+These are the frontier-finding tools.
+
+Their job is:
+
+- compare two replay traces tick-by-tick
+- stop on the first sustained mismatch
+- report which channels disagreed at that tick
+- produce a compact first-bad window
+
+This is the command path the session history uses over and over again.
+
+#### `focus.py`
+
+This is the surgical drilldown tool.
+
+Its job is:
+
+- inspect one tick in detail across both traces
+- show checkpoint drift
+- show RNG mark and RNG stream drift
+- show entity presence drift
+- show structural `sim_state` / `entity_samples` differences
+
+This command is where the loop goes once `diff` or `bisect` has found the
+frontier.
+
+#### `tick`, `entity`, and `query`
+
+These are projections.
+
+They can be useful, but they are not the reason the trace schema exists. They
+should be layered consumers, not schema drivers.
+
+## Why This Shape Matches The Session History
+
+The historical session trail is unusually consistent.
+
+### The Sessions Keep Asking The Same Questions
+
+Again and again the workflow is:
+
+1. What is the first bad tick?
+2. Is the lead an RNG shortfall, value drift, or state drift?
+3. Which state/entity detail changed at that exact tick?
+4. If the current snapshots are not enough, what targeted recapture should we
+   run next?
+
+That validates keeping these as first-class:
+
+- replay-grade inputs
+- full checkpoint/state snapshots
+- entity samples
+- RNG stream
+- RNG marks
+- single-tick focused comparison
+
+### What The Sessions Do Not Really Need
+
+The sessions do not provide strong evidence for investing heavily in:
+
+- long-lived visualizer infrastructure
+- a broad trace query platform
+- extra durable trace artifact kinds
+- schema inflation for every one-off probe channel
+
+Targeted probe telemetry is still valuable. The important point is that targeted
+probe telemetry should stay clearly optional, not silently expand the base diff
+contract without justification.
+
+## What Is Already In A Good State
+
+These parts of the architecture are materially better now than they were before
+the cleanup:
+
+### 1) There Is Only One Durable Trace Kind
+
+This is a major simplification.
+
+We no longer need:
+
+- a replay-vs-bisect artifact split
+- multiple readers for long-lived trace families
+- metadata that exists mostly to discriminate between dialects
+
+### 2) Replay Rows Stay Typed End-To-End On The Python Side
+
+That means:
+
+- producers emit typed rows
+- the container stores typed rows
+- the reader decodes typed rows
+- consumers operate on typed rows
+
+This matches the repo principle:
+
+> validate at edges, trust inside
+
+### 3) Capture JSONL Is Treated As An Owned Contract
+
+This matters conceptually as much as technically.
+
+The raw JSONL format still needs validation because transport can fail, but it
+is not an adversarial boundary. We own both sides. That means strictness and
+consistency should win over permissive cleanup behavior.
+
+### 4) Diffing Is Decoupled From Playback
+
+This is one of the biggest practical wins from the whole refactor.
+
+Playback is expensive. Focused comparison should not require replaying the same
+capture over and over. The trace container plus diff/focus split fixes that.
+
+## The Remaining Architectural Seams
+
+These are the real open seams now. They are narrower than the old architecture
+problems, but they still matter.
+
+### 1) `TraceMeta` Is Still Too Generic
+
+`TraceMeta` still uses generic maps for:
+
+- `producer`
+- `source`
+- `config`
+- `tick_range`
+
+That has a few costs:
+
+- readers and CLIs need producer folklore to know which keys matter
+- metadata remains weaker and less self-documenting than the row schema
+- we still have avoidable `Any` and dict-shaped contracts in the replay path
+
+This is the natural Stage 4 target.
+
+### 2) Zig Still Does Not Fully Share The Python Replay Schema
+
+The architecture goal is not "typed on both sides." The goal is "one replay
+schema across original, Python, and Zig."
+
+This is still not fully true. The remaining differences include:
+
+- producer-specific metadata shape
+- ownership / container representation mismatches
+- Zig-specific recording limitations that leak into the contract story
+
+This is the Stage 5 target.
+
+### 3) `timing_samples` Is The Least-Settled Part Of The Contract
+
+This is the most important unresolved contract question on the branch.
+
+Today:
+
+- `timing_samples` is listed as required in the schema
+- `diff` compares it strictly
+- Frida captures can emit meaningful timing rows
+- Python recording currently writes `timing_samples=[]` for every tick
+- `health` counts timing rows but does not treat "all empty" as an issue
+- `focus` does not surface timing mismatch detail at all
+
+So the current system is sending mixed signals:
+
+- timing is important enough to be a required canonical channel
+- but the main candidate recorder does not yet produce meaningful rows
+- and the main drilldown tool does not explain timing divergence
+
+That does not mean timing evidence is unimportant. In fact, parity docs and
+session history say timing evidence can be valuable. It means the branch still
+needs to decide what the minimum timing contract actually is.
+
+### 4) `focus` Does Not Yet Match The Full Diff Contract
+
+`diff` can currently diverge on:
+
+- checkpoint
+- RNG stream
+- sim state
+- entity samples
+- timing samples
+
+But `focus` only explains:
+
+- checkpoint
+- RNG marks
+- RNG stream
+- entity presence / entity samples
+- sim state
+
+If timing is part of the parity-significant contract, the main single-tick
+drilldown tool should expose it. Otherwise the user is forced to infer timing
+problems from `diff` output without a matching focused explanation.
+
+### 5) Candidate-Side RNG Provenance Is Still Missing
+
+Original-side Frida traces can carry:
+
+- `caller_static`
+- `branch_id`
+
+Python recording currently leaves those fields as `None`.
+
+This is not a correctness blocker for basic equality checking because the
+current RNG comparison intentionally keys on value/state progression, not
+caller metadata. But it is a root-cause speed problem:
+
+- original-side provenance helps explain why original consumed RNG
+- candidate-side provenance would make Python-vs-Zig and Python-vs-original
+  frontier work much faster
+
+This feels like a better future investment than adding more general query
+surface.
+
+### 6) Channel And Tick Facts Still Have Multiple Authorities
+
+Today there are still several ways to describe the same facts.
+
+For channel presence:
+
+- the row type
+- `TRACE_REQUIRED_CHANNELS`
 - `meta.channels`
 - `footer.channel_counts`
-- the row type itself
-- the hardcoded `TRACE_REQUIRED_CHANNELS`
 
-These are close, but they are not one authority.
-
-Examples:
-
-- `diff.py` trusts `meta.channels`
-- `health.py` derives coverage by iterating rows
-- `trace.py` increments footer channel counts from the required channel list, not from discovered row contents
-
-### 5) Tick Bounds Also Have Multiple Authorities
-
-Tick range appears in:
+For tick bounds:
 
 - `meta.tick_range`
 - `footer.first_tick`
 - `footer.last_tick`
 - `footer.tick_count`
 
-The writer currently keeps these aligned, but they are still duplicated facts rather than one canonical source plus derived views.
+These are usually kept aligned, but the architecture is still more redundant
+than it needs to be.
 
-### 6) Frida Session Metadata Is Still Generic
+### 7) Some CLI Surface Still Carries Legacy Wording
 
-The hot path is fixed, but the Frida `session_start` metadata remains generic:
+Two examples stand out:
 
-- `config: dict[str, Any]`
-- `session_fingerprint: dict[str, Any]`
+- `dbg verify` is still mostly a wiring assertion rather than a workflow
+  command
+- `dbg health` still prints `movement_root_cause_ready`, which is narrower and
+  more historical than the current deterministic-alignment use case
 
-In practice the capture script emits stable object literals here too. So this is likely typeable, but it is not the main remaining root cause.
+This is not the highest-risk problem, but it is good Stage 6/7 cleanup work.
 
-## Current Split-Brain Table
+### 8) Docs Still Drift In Ways That Obscure The Architecture
 
-| Area | Writer View | Consumer View | Problem |
-| --- | --- | --- | --- |
-| Replay vs bisect `.cdt` | two different row dialects | replay commands still assume replay unless the user knows otherwise | missing explicit artifact discriminant |
-| Trace metadata | producer-specific dict payloads | consumers must inspect ad hoc fields | no typed meta union |
-| Zig replay rows | typed Zig structs | Python `TraceReader` expects Python canonical replay schema | schemas not fully aligned |
-| Channel presence | row schema, meta, footer, constants | different commands trust different authorities | metadata drift can exist conceptually |
-| Tick bounds | meta and footer both store them | CLI/reporting reads meta while reader validates footer | duplicated source of truth |
-| Core vs secondary workflows | parity loop is diff/focus/verify driven | some APIs assume broad exploratory use | architecture may be serving rare workflows first |
+The biggest stale doc at the moment is `docs/rewrite/cdt-trace-format.md`.
 
-## Proposed Architecture Direction
+It still refers to:
 
-The next cleanup should optimize for the real parity loop first.
+- `dbg viz`
+- schema version `3`
+- the older required-channel set
+- an outdated diff contract description
 
-### 1) Keep One Main Typed Replay Trace Contract
+This matters because doc drift makes the system look more complicated and less
+intentional than it actually is.
 
-The strongest simplification is to treat replay `.cdt` as the primary durable
-artifact and make every producer target that exact schema:
+## One Important Non-Conclusion
 
-- Frida finalize
-- Python replay record
-- Zig replay record
+The right simplification is not "strip the traces down to only hashes and a few
+summary counters."
 
-That keeps the core loop closed-world and removes the need for consumers to
-reason about multiple replay dialects.
+The branch should keep treating these as core, not optional luxuries:
 
-### 2) Make The Owned Capture Contract Strict
+- full checkpoint/state evidence
+- entity samples
+- RNG stream
+- RNG marks
 
-The remaining boundary work is in raw Frida capture/finalize metadata and row
-shapes, because that is where transport failures or producer bugs can still
-show up.
+The session history is clear that these are the tools that actually let us move
+frontiers. The goal is not to make the traces smaller at any cost. The goal is
+to make the contracts sharper and more honest.
 
-This follows the repo rule directly:
+## Open Questions
 
-> validate at edges, trust inside
+These are the questions that still need a deliberate answer.
 
-But here “edge” should not be read as “untrusted.” We control both sides, so we
-should tighten the producer and consumer together until the JSONL wire shape is
-also effectively a strict typed contract.
+### 1) What Is The Minimum `timing_samples` Contract?
 
-### 3) Unify Zig Replay Schema With Python Canonical Replay Schema
+There are three plausible directions:
 
-This is the next big parity cleanup after the Python replay refactor.
+1. Keep `timing_samples` parity-significant and require Python/Zig to emit
+   meaningful rows.
+2. Keep the channel in the replay schema, but make diff/focus treat it as
+   optional until candidate emitters catch up.
+3. Move timing to a clearly optional probe-grade contract rather than the
+   minimum deterministic-alignment contract.
 
-Goals:
+The important thing is not which choice we make. The important thing is that
+the branch should make the choice explicitly.
 
-- identical replay tick channel shape across Python and Zig
-- no single-player-only special case in Python for Zig traces
-- shared ownership representation
-- shared player/perk/count container shapes
+### 2) If Timing Stays Core, What Should The Candidate Emitters Produce?
 
-Once that lands, `TraceReader(out_path)` validating Zig output becomes a real cross-implementation contract instead of a narrow happy path.
+If the answer is "timing stays core," then Python and Zig need a concrete
+minimum row contract. For example:
 
-### 4) Make Diff / Focus / Verify The Center Of The Design
+- one or two canonical phase snapshots per tick
+- the exact phase names we compare
+- whether we require write-kind detail or only phase snapshots
 
-The historical loop suggests these should remain the design center:
+Without that, the current contract is only strict on paper.
 
-- record
-- health
-- diff
-- focus
-- verify-style checks
+### 3) Should Candidate RNG Provenance Live In `rng_stream` Or In An Optional Diagnostic Channel?
 
-Everything else should be treated as a secondary consumer layered on top of the
-same typed replay rows.
+There are two reasonable approaches:
 
-### 5) Reduce Duplicate Authorities
+- keep provenance as optional fields on `RngStreamRow`
+- move richer provenance into a separate diagnostic/probe channel later
 
-- row schema defines required channels
-- footer derives block/tick/channel counts from actual written rows
-- metadata carries descriptive provenance, not redundant integrity facts when avoidable
+My preference is to keep the lightweight symbolic provenance in `RngStreamRow`
+if we can generate it cheaply, because that keeps the most useful clue near the
+frontier data people already inspect.
 
-In other words:
+### 4) What Should Typed Replay Metadata Look Like?
 
-- derive counts from rows
-- derive replay/bisect kind from typed meta
-- minimize manually maintained duplicated facts
+The design question is not whether to type it. It is how much producer-specific
+structure belongs in the typed metadata.
 
-### 6) Demote Repro Bundles To Optional Outputs
+The likely answer is:
 
-`dbg bisect --out` can remain useful as a convenience, but the historical record
-does not justify building the architecture around stored bisect repro traces.
+- one typed replay meta envelope
+- one small typed producer/source section per producer kind
+- no revival of a broader artifact union
 
-If we keep them:
+### 5) Does `dbg verify` Need To Stay User-Facing?
 
-- they should be clearly marked as optional convenience artifacts
-- they should not complicate the main replay schema
-- they should not force generic readers/consumers to carry extra dialect logic
+Possible answers:
 
-### 7) Type Frida Session Metadata
+- keep it as a small user-facing sanity command
+- fold it into tests and internal assertions
+- replace it with a more meaningful contract-report command
 
-- type `session_start.config`
-- type `session_start.session_fingerprint`
+This is not urgent, but it should be decided rather than left as residue.
 
-That would make the Frida finalize path typed from raw JSONL ingress all the way through finalized replay trace output.
+### 6) How Strict Should `health` Be About Timing Coverage?
 
-## Target Architecture
+If `timing_samples` stays core, then `health` probably needs to distinguish:
 
-```mermaid
-flowchart LR
-    subgraph WeakBoundary
-        J["Raw Frida JSONL\nowned wire contract"]
-        D["_CaptureRow + typed raw tick decode"]
-        V["Finalize validation\nand normalization"]
-        J --> D --> V
-    end
+- channel present
+- channel non-empty
+- channel meaningfully populated across the trace window
 
-    V --> O["Typed replay trace\noriginal run"]
-    P["Python replay recorder"] --> C1["Typed replay trace\ncandidate"]
-    Z["Zig replay recorder"] --> C2["Typed replay trace\ncandidate"]
+Right now it mainly answers the first question.
 
-    O --> DIFF["diff / health / verify"]
-    C1 --> DIFF
-    C2 --> DIFF
+### 7) What Should Remain Stored Versus Derived?
 
-    DIFF --> F["focus drilldown\nspecific tick window"]
-    F --> H["decompile / hotspot analysis"]
-    H --> FIX["runtime fix"]
-    FIX --> C1
-    FIX --> C2
-```
+The row schema already gives us a lot. The remaining decision is how much meta
+and footer data we want to store redundantly for convenience versus derive from
+rows for consistency.
 
-```mermaid
-classDiagram
-    class ReplayTickChannels {
-      checkpoint: ReplayCheckpoint
-      sim_state: SimStateSnapshot
-      entity_samples: EntitySamplesSnapshot
-      rng_marks: dict[str,int]
-      rng_stream: list[RngStreamRow]
-      timing_samples: list[TimingSampleRow]
-    }
+This is mainly a Stage 7 design cleanup question.
 
-    class ReplayTickRecord {
-      tick_index: int
-      elapsed_ms: int
-      dt_ms_i32: int
-      mode_id: int
-      phase_markers: list[str]
-      channels: ReplayTickChannels
-    }
+## Recommendations For Next Steps On This Branch
 
-    class ReplayTraceMeta {
-      producer
-      source
-      tick_range
-      config
-    }
+This is the sequence I would recommend now that Stages 1-3 are already landed.
 
-    ReplayTickRecord --> ReplayTickChannels
-    ReplayTraceMeta --> ReplayTickRecord
-```
+### Recommendation 1: Make An Explicit `timing_samples` Decision Before More Schema Polish
 
-## Recommended Next Steps
+This is the highest-value branch decision because it affects:
 
-1. Type the remaining Frida finalize boundary objects, especially stable
-   `session_start` metadata and any still-generic capture row payloads.
-2. Keep replay `.cdt` as the main durable trace contract and stop letting
-   secondary artifact kinds drive the core schema.
-3. Align Zig replay row structs with Python canonical replay row structs.
-4. Revisit whether `dbg bisect --out` should stay a stored `.cdt` artifact or
-   become a lighter report-only convenience.
-5. Reduce duplicate authorities in metadata/footer bookkeeping.
-6. Keep `query`, `entity`, and `tick` as thin consumers; do not let them
-   reintroduce weak typing into the replay path.
-7. Update stale docs such as `docs/rewrite/cdt-trace-format.md` so the
-   documentation matches the typed replay-trace reality.
+- the required-channel list
+- `diff`
+- `focus`
+- `health`
+- candidate recorder expectations
+- doc wording
+
+My recommendation:
+
+- keep `timing_samples` in the replay schema
+- do not pretend the current Python behavior is a finished core contract
+- make one explicit branch call:
+  - either candidate traces must start emitting meaningful timing rows soon
+  - or timing should be treated as optional in diff/focus until that work lands
+
+I would not leave the current "required, but usually empty on Python, and not
+explained by focus" state in place for long.
+
+### Recommendation 2: Do Stage 4 As "Typed Metadata Plus Honest Timing Story"
+
+Typing metadata is the natural next architecture step, but it will be easier to
+do cleanly if the timing decision is made at the same time.
+
+This pass should aim to:
+
+- type `TraceMeta`
+- keep one replay meta contract
+- avoid reopening artifact unions
+- make the stored metadata describe the actual shipped replay contract
+
+### Recommendation 3: If Timing Stays Core, Upgrade `focus` And `health` In The Same Wave
+
+If timing remains parity-significant, then:
+
+- `focus` should expose timing comparison detail
+- `health` should report meaningful timing coverage, not just channel presence
+- tests should lock this behavior in
+
+This keeps the tools coherent.
+
+### Recommendation 4: Do Stage 5 Next, Not Later
+
+Once metadata is typed, the next highest-value branch step is Zig alignment.
+
+That work pays off directly because it makes:
+
+- Python-vs-Zig diffs more trustworthy
+- shared tooling less conditional
+- the "one replay schema" story actually true instead of aspirational
+
+### Recommendation 5: Treat Candidate RNG Provenance As A Focused Follow-Up
+
+After Stage 5, candidate-side RNG provenance would be a high-leverage targeted
+improvement.
+
+Recommended guardrails:
+
+- do not make provenance part of the equality key for `compare_rng_stream`
+- keep equality based on value/state progression
+- expose provenance as explanatory detail for frontier work
+
+### Recommendation 6: Use Stage 6 To Clean Residual Surface Area, Not To Re-Architect
+
+Stage 6 should be about making the layering obvious:
+
+- `query`, `entity`, and `tick` remain thin projections
+- `verify` is either justified or removed
+- legacy naming such as `movement_root_cause_ready` is updated
+
+This should be cleanup, not another large architecture turn.
+
+### Recommendation 7: Finish With A Docs-Reality Pass
+
+Once the metadata, timing, and Zig decisions are settled, Stage 7 should bring
+the docs fully in line with shipped behavior:
+
+- update `docs/rewrite/cdt-trace-format.md`
+- update any remaining playbook wording as needed
+- mark completed stages in `plan.md` and this memo
+
+That matters because the branch is now close enough to the target shape that
+stale docs create more confusion than the code does.
+
+## Suggested Branch Execution Order
+
+If we want a concrete order rather than just themes, this is the one I would
+use:
+
+1. Decide `timing_samples` policy.
+2. Type replay metadata around that policy.
+3. If timing is core, extend `focus` and `health` to match.
+4. Align Zig with the replay schema.
+5. Add candidate RNG provenance if it is cheap enough to be practical.
+6. Thin secondary consumers and clean CLI wording.
+7. Update stale docs and remove duplicate authorities where practical.
+
+## Acceptance Gates For The Remaining Work
+
+The remaining stages should continue to be judged against real artifact flows,
+not just local type tidiness.
+
+The branch should preserve these acceptance gates:
+
+- raw Frida JSONL -> finalized original replay `.cdt` + `.crd`
+- `.crd` -> Python replay `.cdt`
+- `.crd` -> Zig replay `.cdt`
+- replay trace diff happy path
+- replay trace focus happy path
+
+And any timing-policy change should also be covered by explicit tests for:
+
+- diff behavior
+- focus behavior
+- health behavior
 
 ## Bottom Line
 
-The architecture is in a much better place than before:
+This branch already removed the biggest sources of unnecessary complexity:
 
-- the remaining capture-ingress contract is now correctly localized at raw
-  Frida JSONL
-- replay trace rows are typed end-to-end on the Python side
-- builtin coercion is no longer the internal replay data model
+- no visualizer-heavy workflow
+- no bisect-repro trace dialect
+- no generic replay-row decode path
 
-After reviewing historical sessions, the bigger correction is also conceptual:
+What remains is more specific:
 
-- `dbg` is primarily a deterministic parity workbench
-- the core loop is capture -> replay -> diff -> focus -> fix -> re-run
-- the architecture should serve that loop first, not speculative artifact
-  generality
+- type metadata
+- settle the timing contract
+- align Zig with the replay schema
+- add a few high-value diagnostic improvements
+- clean residual surface area and stale docs
 
-The remaining work is:
+That is a much better place to be.
 
-- make the Frida JSONL capture contract strict on both producer and consumer
-  sides
-- make Zig and Python share one actual replay schema
-- keep repeated diff/focus probes fast and accurate
-- avoid building more artifact machinery unless session history proves it pays for itself
+The branch does not need another broad rethink. It needs a few explicit
+decisions, then disciplined follow-through.
