@@ -655,6 +655,7 @@ class CreaturePool:
         self,
         *,
         players: list[PlayerState],
+        preserve_bugs: bool,
         player_index: int,
         creature_index: int,
         creature: CreatureState,
@@ -676,7 +677,12 @@ class CreaturePool:
             return
 
         dist_new = Vec2.distance_sq(player.pos, creature.pos)
-        dist_current = Vec2.distance_sq(player.pos, current.pos)
+        current_origin = player.pos
+        if preserve_bugs and int(player_index) != 0 and players:
+            # Native compares player 2 auto-target replacement against player 1's
+            # coordinates here, which can block closer replacements for player 2.
+            current_origin = players[0].pos
+        dist_current = Vec2.distance_sq(current_origin, current.pos)
         if float(dist_new) < float(dist_current):
             player.auto_target = int(creature_index)
 
@@ -1024,6 +1030,7 @@ class CreaturePool:
             if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
                 self._update_player_auto_target(
                     players=players,
+                    preserve_bugs=bool(state.preserve_bugs),
                     player_index=int(target_player),
                     creature_index=int(idx),
                     creature=creature,

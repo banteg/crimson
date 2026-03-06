@@ -601,6 +601,84 @@ def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> No
     assert player.auto_target == 1
 
 
+def test_creature_update_coop_auto_target_uses_target_player_position_by_default() -> None:
+    state = GameplayState(preserve_bugs=False)
+    pool = CreaturePool()
+    player0 = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=100.0, weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+    player1 = PlayerState(index=1, pos=Vec2(100.0, 0.0), health=100.0, weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+
+    current = pool.entries[0]
+    current.active = True
+    current.hp = 50.0
+    current.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    current.flags = CreatureFlags(0)
+    current.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    current.move_speed = 0.0
+    current.size = 45.0
+    current.contact_damage = 0.0
+    current.target_player = 0
+    current.pos = Vec2(10.0, 0.0)
+
+    nearer_for_player1 = pool.entries[1]
+    nearer_for_player1.active = True
+    nearer_for_player1.hp = 50.0
+    nearer_for_player1.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    nearer_for_player1.flags = CreatureFlags(0)
+    nearer_for_player1.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    nearer_for_player1.move_speed = 0.0
+    nearer_for_player1.size = 45.0
+    nearer_for_player1.contact_damage = 0.0
+    nearer_for_player1.target_player = 0
+    nearer_for_player1.pos = Vec2(80.0, 0.0)
+
+    player1.auto_target = 0
+    pool.update(
+        1.0 / 60.0,
+        options=make_creature_update_options(state=state, players=[player0, player1], rand=lambda: 0),
+    )
+
+    assert player1.auto_target == 1
+
+
+def test_creature_update_coop_auto_target_preserve_bugs_keeps_player1_distance_bias() -> None:
+    state = GameplayState(preserve_bugs=True)
+    pool = CreaturePool()
+    player0 = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=100.0, weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+    player1 = PlayerState(index=1, pos=Vec2(100.0, 0.0), health=100.0, weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+
+    current = pool.entries[0]
+    current.active = True
+    current.hp = 50.0
+    current.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    current.flags = CreatureFlags(0)
+    current.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    current.move_speed = 0.0
+    current.size = 45.0
+    current.contact_damage = 0.0
+    current.target_player = 0
+    current.pos = Vec2(10.0, 0.0)
+
+    nearer_for_player1 = pool.entries[1]
+    nearer_for_player1.active = True
+    nearer_for_player1.hp = 50.0
+    nearer_for_player1.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    nearer_for_player1.flags = CreatureFlags(0)
+    nearer_for_player1.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    nearer_for_player1.move_speed = 0.0
+    nearer_for_player1.size = 45.0
+    nearer_for_player1.contact_damage = 0.0
+    nearer_for_player1.target_player = 0
+    nearer_for_player1.pos = Vec2(80.0, 0.0)
+
+    player1.auto_target = 0
+    pool.update(
+        1.0 / 60.0,
+        options=make_creature_update_options(state=state, players=[player0, player1], rand=lambda: 0),
+    )
+
+    assert player1.auto_target == 0
+
+
 def test_small_creature_dies_on_contact() -> None:
     state = GameplayState()
     pool = CreaturePool()
