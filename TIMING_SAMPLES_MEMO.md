@@ -168,7 +168,7 @@ flowchart TD
     F --> G
     E --> H[session elapsed advance]
     G --> I[checkpoint / trace assembly]
-    I --> J[timing_samples = []]
+    I --> J[timing_samples empty]
 ```
 
 ## What `dbg` Does With Timing Today
