@@ -71,7 +71,7 @@ class ReplayDeathLedgerEntry(msgspec.Struct, frozen=True):
     type_id: int
     reward_value: float
     xp_awarded: int
-    owner: OwnerRef
+    owner_id: int
 
 
 class ReplayPerkSnapshot(msgspec.Struct, frozen=True):
@@ -193,7 +193,7 @@ def build_checkpoint(
                 type_id=int(death_view.type_id),
                 reward_value=float(death_view.reward_value),
                 xp_awarded=int(death_view.xp_awarded),
-                owner=death_view.owner,
+                owner_id=int(death_view.owner.to_legacy()),
             ),
         )
 

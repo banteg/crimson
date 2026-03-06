@@ -10,7 +10,7 @@ from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSna
 
 TRACE_MAGIC = b"crimson_debug_trace_v1\n"
 TRACE_FORMAT_VERSION = 1
-TRACE_SCHEMA_VERSION = 5
+TRACE_SCHEMA_VERSION = 6
 SUPPORTED_TRACE_SCHEMA_VERSIONS = frozenset((TRACE_SCHEMA_VERSION,))
 
 TRACE_REQUIRED_CHANNELS = (

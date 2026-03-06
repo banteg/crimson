@@ -159,7 +159,7 @@ def _entity_samples_for_world(
                 damage_pool=float(projectile.damage_pool),
                 hit_radius=float(projectile.hit_radius),
                 travel_budget=float(projectile.travel_budget),
-                owner=projectile.owner,
+                owner_id=int(projectile.owner.to_legacy()),
             ),
         )
 
@@ -181,7 +181,7 @@ def _entity_samples_for_world(
                 vel=SnapshotVec2(x=float(projectile.vel.x), y=float(projectile.vel.y)),
                 speed=float(projectile.speed),
                 trail_timer=float(projectile.trail_timer),
-                owner=projectile.owner,
+                owner_id=int(projectile.owner.to_legacy()),
                 target_id=int(projectile.target_id),
             ),
         )
@@ -518,6 +518,12 @@ def _record_replay_to_trace_zig(
 
     try:
         with TraceReader(out_path) as trace:
+            decoded_tick_count = sum(1 for _ in trace.iter_ticks())
+            if int(decoded_tick_count) != int(trace.footer.tick_count):
+                raise TraceError(
+                    "zig trace validation failed to decode all tick payloads: "
+                    f"decoded={int(decoded_tick_count)} footer={int(trace.footer.tick_count)}",
+                )
             summary = TraceSummary(meta=trace.meta, footer=trace.footer)
     except TraceError as exc:
         raise ValueError(f"zig trace validation failed: {exc}") from exc

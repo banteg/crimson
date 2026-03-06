@@ -7,10 +7,13 @@ import pytest
 
 from crimson.dbg.canonical_channels import (
     EntitySamplesSnapshot,
+    ProjectileEntitySample,
+    SecondaryProjectileEntitySample,
     SimStateSnapshot,
     SnapshotBonusTimers,
     SnapshotGameplay,
     SnapshotStatus,
+    SnapshotVec2,
 )
 from crimson.dbg.schema import (
     TRACE_FORMAT_VERSION,
@@ -22,7 +25,7 @@ from crimson.dbg.schema import (
     channel_versions_for,
 )
 from crimson.dbg.trace import TraceError, TraceReader, write_trace
-from crimson.replay.checkpoints import ReplayCheckpoint
+from crimson.replay.checkpoints import ReplayCheckpoint, ReplayDeathLedgerEntry
 from crimson.replay.types import WEAPON_USAGE_COUNT
 
 
@@ -53,6 +56,15 @@ def _channels(*, tick_index: int, elapsed_ms: int, score_xp: int) -> ReplayTickC
             players=[],
             bonus_timers={},
             rng_marks={},
+            deaths=[
+                ReplayDeathLedgerEntry(
+                    creature_index=3,
+                    type_id=18,
+                    reward_value=75.0,
+                    xp_awarded=10,
+                    owner_id=-1,
+                ),
+            ],
         ),
         sim_state=SimStateSnapshot(
             gameplay=SnapshotGameplay(
@@ -78,8 +90,42 @@ def _channels(*, tick_index: int, elapsed_ms: int, score_xp: int) -> ReplayTickC
         ),
         entity_samples=EntitySamplesSnapshot(
             creatures=[],
-            projectiles=[],
-            secondary_projectiles=[],
+            projectiles=[
+                ProjectileEntitySample(
+                    uid=11,
+                    generation=1,
+                    pool_kind="projectile",
+                    index=2,
+                    active=True,
+                    type_id=4,
+                    angle=0.25,
+                    pos=SnapshotVec2(x=1.0, y=2.0),
+                    vel=SnapshotVec2(x=3.0, y=4.0),
+                    life_timer=0.5,
+                    speed_scale=1.0,
+                    damage_pool=8.0,
+                    hit_radius=1.5,
+                    travel_budget=9.0,
+                    owner_id=-100,
+                ),
+            ],
+            secondary_projectiles=[
+                SecondaryProjectileEntitySample(
+                    uid=21,
+                    generation=1,
+                    pool_kind="secondary_projectile",
+                    index=5,
+                    active=True,
+                    type_id=7,
+                    angle=0.5,
+                    pos=SnapshotVec2(x=5.0, y=6.0),
+                    vel=SnapshotVec2(x=7.0, y=8.0),
+                    speed=3.0,
+                    trail_timer=0.25,
+                    owner_id=13,
+                    target_id=99,
+                ),
+            ],
             bonuses=[],
         ),
         rng_marks={},
@@ -153,6 +199,9 @@ def test_tick_record_decodes_with_unknown_fields() -> None:
     )
     tick = msgspec.msgpack.decode(payload, type=TickRecord)
     assert tick.tick_index == 7
+    assert tick.channels.checkpoint.deaths[0].owner_id == -1
+    assert tick.channels.entity_samples.projectiles[0].owner_id == -100
+    assert tick.channels.entity_samples.secondary_projectiles[0].owner_id == 13
 
 
 def test_trace_reader_rejects_old_schema_version(tmp_path: Path) -> None:

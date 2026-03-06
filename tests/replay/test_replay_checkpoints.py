@@ -81,6 +81,7 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
     checkpoints = ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=1, checkpoints=[ckpt])
     decoded = load_checkpoints(dump_checkpoints(checkpoints))
     assert decoded == checkpoints
+    assert decoded.checkpoints[0].deaths[0].owner_id == -1
 
 
 def test_load_checkpoints_defaults_optional_checkpoint_fields() -> None:

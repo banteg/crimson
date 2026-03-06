@@ -142,11 +142,16 @@ def _sim_state_stub(
     }
 
 
-def _entity_samples_stub(*, creatures: list[dict[str, object]] | None = None) -> dict[str, object]:
+def _entity_samples_stub(
+    *,
+    creatures: list[dict[str, object]] | None = None,
+    projectiles: list[dict[str, object]] | None = None,
+    secondary_projectiles: list[dict[str, object]] | None = None,
+) -> dict[str, object]:
     return {
         "creatures": list(creatures or []),
-        "projectiles": [],
-        "secondary_projectiles": [],
+        "projectiles": list(projectiles or []),
+        "secondary_projectiles": list(secondary_projectiles or []),
         "bonuses": [],
     }
 
@@ -178,6 +183,26 @@ def _creature_sample(
     }
 
 
+def _projectile_sample(*, uid: int, generation: int, index: int, owner_id: int) -> dict[str, object]:
+    return {
+        "uid": int(uid),
+        "generation": int(generation),
+        "pool_kind": "projectile",
+        "index": int(index),
+        "active": True,
+        "type_id": 4,
+        "angle": 0.25,
+        "pos": {"x": 1.0, "y": 2.0},
+        "vel": {"x": 3.0, "y": 4.0},
+        "life_timer": 0.5,
+        "speed_scale": 1.0,
+        "damage_pool": 8.0,
+        "hit_radius": 1.5,
+        "travel_budget": 9.0,
+        "owner_id": int(owner_id),
+    }
+
+
 def _channels_stub(
     *,
     tick_index: int,
@@ -186,6 +211,8 @@ def _channels_stub(
     quest_stage_major: int = -1,
     quest_stage_minor: int = -1,
     creatures: list[dict[str, object]] | None = None,
+    projectiles: list[dict[str, object]] | None = None,
+    secondary_projectiles: list[dict[str, object]] | None = None,
     checkpoint_overrides: dict[str, object] | None = None,
     rng_marks: dict[str, int] | None = None,
 ) -> dict[str, object]:
@@ -209,7 +236,11 @@ def _channels_stub(
             quest_stage_major=int(quest_stage_major),
             quest_stage_minor=int(quest_stage_minor),
         ),
-        "entity_samples": _entity_samples_stub(creatures=creatures),
+        "entity_samples": _entity_samples_stub(
+            creatures=creatures,
+            projectiles=projectiles,
+            secondary_projectiles=secondary_projectiles,
+        ),
         "rng_marks": dict(marks),
         "rng_stream": [],
         "timing_samples": [],
@@ -355,6 +386,18 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                     elapsed_ms=0,
                     mode_id=1,
                     creatures=[_creature_sample(uid=562949953421317, generation=1, index=5, active=True)],
+                    projectiles=[_projectile_sample(uid=1001, generation=1, index=2, owner_id=-100)],
+                    checkpoint_overrides={
+                        "deaths": [
+                            {
+                                "creature_index": 7,
+                                "type_id": 18,
+                                "reward_value": 75.0,
+                                "xp_awarded": 10,
+                                "owner_id": -1,
+                            },
+                        ],
+                    },
                 ),
             },
             {
@@ -412,6 +455,8 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert isinstance(creatures0[0].uid, int)
     assert creatures0[0].generation == 1
     assert creatures1[0].generation == 1
+    assert ticks[0].channels.entity_samples.projectiles[0].owner_id == -100
+    assert ticks[0].channels.checkpoint.deaths[0].owner_id == -1
 
 
 def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_closed(tmp_path: Path) -> None:

@@ -15,7 +15,7 @@ const max_rng_draws_per_phase: usize = 1_000_000;
 
 const trace_magic = "crimson_debug_trace_v1\n";
 const trace_format_version: u32 = 1;
-const trace_schema_version: i32 = 5;
+const trace_schema_version: i32 = 6;
 
 const chunk_kind_meta = "META";
 const chunk_kind_tick = "TICK";
