@@ -327,8 +327,7 @@ class DemoView:
         resources = self.state.resources
         if resources is None:
             return
-        logos = resources.logos
-        backplasma = logos.backplasma
+        backplasma = resources.texture(TextureId.BACKPLASMA)
 
         pulse_phase = float(self._upsell_pulse_ms % 1000)
         pulse = math.sin(pulse_phase * 6.2831855)
@@ -381,14 +380,14 @@ class DemoView:
         wide_shift = self._purchase_var_28_2()
 
         # Mockup and logo textures.
-        mockup = logos.mockup
+        mockup = resources.texture(TextureId.MOCKUP)
         x = screen_w / 2.0 - 128.0 + wide_shift
         y = screen_h / 2.0 - 140.0
         dst = rl.Rectangle(x, y, 512.0, 256.0)
         src = rl.Rectangle(0.0, 0.0, float(mockup.width), float(mockup.height))
         rl.draw_texture_pro(mockup, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
-        cl_logo = logos.cl_logo
+        cl_logo = resources.texture(TextureId.CL_LOGO)
         x = screen_w / 2.0 - 256.0
         y = screen_h / 2.0 - 200.0 - wide_shift * 0.4
         dst = rl.Rectangle(x, y, 512.0, 64.0)

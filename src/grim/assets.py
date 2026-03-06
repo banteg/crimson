@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 from enum import Enum, auto
 from pathlib import Path
-from typing import Final, cast
+from typing import TYPE_CHECKING, Final, cast
 
 import msgspec
 from PIL import Image
@@ -11,6 +11,9 @@ from PIL import Image
 from grim.raylib_api import rl
 
 from . import jaz, paq
+
+if TYPE_CHECKING:
+    from grim.fonts.small import SmallFontData
 
 PAQ_NAME = "crimson.paq"
 
@@ -178,19 +181,10 @@ class TextureAsset(msgspec.Struct):
         self.texture = None
 
 
-class LogoAssets(msgspec.Struct):
-    backplasma: rl.Texture
-    mockup: rl.Texture
-    logo_esrb: rl.Texture
-    loading: rl.Texture
-    cl_logo: rl.Texture
-
-
 class RuntimeResources(msgspec.Struct):
     assets_dir: Path
     textures: dict[TextureId, rl.Texture]
-    logos: LogoAssets
-    small_font_widths: list[int]
+    small_font: SmallFontData
 
     def texture(self, texture_id: TextureId) -> rl.Texture:
         texture = self.textures.get(texture_id)
@@ -289,13 +283,12 @@ def _load_texture_asset_from_bytes(rel_path: str, data: bytes | None) -> Texture
     return TextureAsset(texture=texture)
 
 
-def _build_logo_assets(textures: dict[TextureId, rl.Texture]) -> LogoAssets:
-    return LogoAssets(
-        backplasma=textures[TextureId.BACKPLASMA],
-        mockup=textures[TextureId.MOCKUP],
-        logo_esrb=textures[TextureId.LOGO_ESRB],
-        loading=textures[TextureId.LOADING],
-        cl_logo=textures[TextureId.CL_LOGO],
+def _build_small_font(textures: dict[TextureId, rl.Texture], widths_data: bytes) -> SmallFontData:
+    from grim.fonts.small import SmallFontData
+
+    return SmallFontData(
+        widths=list(widths_data),
+        texture=textures[TextureId.SMALL_WHITE],
     )
 
 
@@ -317,8 +310,7 @@ def load_runtime_resources(assets_dir: Path) -> RuntimeResources:
     resources = RuntimeResources(
         assets_dir=Path(assets_dir),
         textures=textures,
-        logos=_build_logo_assets(textures),
-        small_font_widths=list(widths_data),
+        small_font=_build_small_font(textures, widths_data),
     )
     register_runtime_resources(resources)
     return resources

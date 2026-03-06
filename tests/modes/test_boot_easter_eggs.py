@@ -10,7 +10,6 @@ def test_boot_open_eagerly_loads_runtime_resources_and_audio(make_game_state, mo
     state = make_game_state()
     resources = SimpleNamespace(
         textures={"dummy": object()},
-        logos=SimpleNamespace(),
     )
     audio = object()
 
