@@ -13,7 +13,6 @@ from pathlib import Path
 import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
-from crimson.game_modes import GameMode
 from crimson.modes.base_gameplay_mode import LanFramePolicy, _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
@@ -22,6 +21,7 @@ from crimson.sim.tick_runner import TickBatchResult
 from grim.view import ViewContext
 from tests.support.builders import FakeRunner, make_tick_payload
 from tests.support.builders.session import make_session
+from tests.support.gameplay_screen import GameplayScreenStub
 
 
 class _DummyRuntime:
@@ -312,77 +312,7 @@ def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker) -> None:
 def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, mocker) -> None:
     state = make_game_state()
     loop = GameLoopView(state)
-
-    class _FakeGameplayView:
-        close_requested = False
-        default_game_mode_id = GameMode.SURVIVAL
-
-        def open(self) -> None:
-            return
-
-        def close(self) -> None:
-            return
-
-        def update(self, dt: float) -> None:
-            _ = dt
-
-        def draw(self) -> None:
-            return
-
-        def take_action(self) -> str | None:
-            return None
-
-        def bind_status(self, status) -> None:
-            _ = status
-
-        def bind_screen_fade(self, fade) -> None:
-            _ = fade
-
-        def bind_audio(self, audio, audio_rng) -> None:
-            _ = (audio, audio_rng)
-
-        def set_lan_runtime(
-            self,
-            *,
-            enabled: bool,
-            role: str,
-            expected_players: int,
-            connected_players: int,
-            waiting_for_players: bool,
-        ) -> None:
-            _ = (enabled, role, expected_players, connected_players, waiting_for_players)
-
-        def bind_lan_runtime(self, runtime) -> None:
-            _ = runtime
-
-        def set_lan_match_start(self, *, seed: int, start_tick: int = 0, status_snapshot=None) -> None:
-            _ = (seed, start_tick, status_snapshot)
-
-        def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-            _ = entity_alpha
-
-        def steal_ground_for_menu(self):
-            return None
-
-        def menu_ground_camera(self):
-            return None
-
-        def console_elapsed_ms(self) -> float:
-            return 0.0
-
-        def regenerate_terrain_for_console(self) -> None:
-            return None
-
-        def set_rtx_mode(self, mode) -> None:
-            _ = mode
-
-        def set_runtime_updates_per_frame(self, value: int) -> None:
-            _ = value
-
-        def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
-            return (3, 2, 5, 1.25, 0.75, 0.5)
-
-    view = _FakeGameplayView()
+    view = GameplayScreenStub(telemetry=(3, 2, 5, 1.25, 0.75, 0.5))
     loop._front_active = view
     loop._active = view
 

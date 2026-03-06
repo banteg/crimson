@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
-from types import SimpleNamespace
-from typing import cast
 
-from crimson.game.types import GameState
 from crimson.screens.boot import TEXTURE_LOAD_STAGES, BootView, _is_balloon_easter_egg_day
 
 
@@ -19,8 +16,8 @@ def test_balloon_easter_egg_day_rejects_other_dates() -> None:
     assert _is_balloon_easter_egg_day(dt.date(2026, 9, 11)) is False
 
 
-def test_boot_stage_completion_loads_company_logos_before_balloon(mocker) -> None:
-    state = cast(GameState, SimpleNamespace(audio=None, texture_cache=None))
+def test_boot_stage_completion_loads_company_logos_before_balloon(make_game_state, mocker) -> None:
+    state = make_game_state()
     view = BootView(state)
     load_texture_stage = mocker.patch.object(view, "_load_texture_stage")
     load_company_logos = mocker.patch.object(view, "_load_company_logos")
