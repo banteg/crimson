@@ -36,6 +36,7 @@ class MusicState(msgspec.Struct):
     game_tune_track: str | None = None
     track_ids: dict[str, int] = msgspec.field(default_factory=dict)
     next_track_id: int = 0
+    paq_entries: dict[str, bytes] | None = None
 
 
 def init_music_state(*, ready: bool, enabled: bool, volume: float) -> MusicState:
@@ -51,6 +52,7 @@ def init_music_state(*, ready: bool, enabled: bool, volume: float) -> MusicState
         game_tune_track=None,
         track_ids={},
         next_track_id=0,
+        paq_entries=None,
     )
 
 
@@ -81,6 +83,7 @@ def load_music_tracks(state: MusicState, assets_dir: Path, console: ConsoleState
         loaded += 1
     state.track_ids = {name: idx for idx, name in enumerate(state.tracks.keys())}
     state.next_track_id = len(state.track_ids)
+    state.paq_entries = entries
 
     console.log.log(f"audio: music tracks loaded {loaded}/{len(MUSIC_TRACKS)} from {paq_path}")
     console.log.flush()
@@ -93,6 +96,19 @@ def _normalize_track_key(rel_path: str) -> str:
     return name
 
 
+def _ensure_music_entries(state: MusicState, assets_dir: Path) -> dict[str, bytes] | None:
+    if state.paq_entries is not None:
+        return state.paq_entries
+    paq_path = assets_dir / MUSIC_PAK_NAME
+    if not paq_path.exists():
+        return None
+    entries: dict[str, bytes] = {}
+    for name, data in paq.iter_entries(paq_path):
+        entries[name.replace("\\", "/")] = data
+    state.paq_entries = entries
+    return entries
+
+
 def load_music_track(
     state: MusicState,
     assets_dir: Path,
@@ -100,7 +116,6 @@ def load_music_track(
     *,
     console: ConsoleState | None = None,
 ) -> tuple[str, int] | None:
-    _ = assets_dir
     normalized = rel_path.replace("\\", "/")
     if not state.ready or not state.enabled:
         if console is not None:
@@ -108,10 +123,38 @@ def load_music_track(
         return None
     key = _normalize_track_key(normalized)
     track_id = state.track_ids.get(key)
-    if track_id is None:
+    if track_id is not None:
+        if console is not None:
+            console.log.log(f"SFX Tune {track_id} <- '{normalized}' ok")
+        return key, int(track_id)
+    if key in state.tracks:
+        track_id = state.next_track_id
+        state.next_track_id += 1
+        state.track_ids[key] = track_id
+        if console is not None:
+            console.log.log(f"SFX Tune {track_id} <- '{normalized}' ok")
+        return key, track_id
+    music_stream = None
+    file_path = assets_dir / normalized
+    if file_path.is_file():
+        music_stream = rl.load_music_stream(str(file_path))
+    if music_stream is None:
+        entries = _ensure_music_entries(state, assets_dir)
+        if entries is not None:
+            data = entries.get(normalized)
+            if data is None:
+                data = entries.get(Path(normalized).name)
+            if data is not None:
+                music_stream = rl.load_music_stream_from_memory(".ogg", cast(str, data), len(data))
+    if music_stream is None:
         if console is not None:
             console.log.log(f"SFX Tune {state.next_track_id} <- '{normalized}' FAILED")
         return None
+    track_id = state.next_track_id
+    state.next_track_id += 1
+    rl.set_music_volume(music_stream, state.volume)
+    state.tracks[key] = music_stream
+    state.track_ids[key] = track_id
     if console is not None:
         console.log.log(f"SFX Tune {track_id} <- '{normalized}' ok")
     return key, int(track_id)
@@ -336,6 +379,7 @@ def shutdown_music(state: MusicState) -> None:
     state.tracks.clear()
     state.track_ids.clear()
     state.next_track_id = 0
+    state.paq_entries = None
     state.active_track = None
     state.game_tune_started = False
     state.game_tune_track = None
