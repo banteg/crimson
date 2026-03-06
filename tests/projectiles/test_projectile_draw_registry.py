@@ -11,7 +11,7 @@ from grim.assets import TextureId
 from grim.geom import Vec2
 
 if TYPE_CHECKING:
-    from crimson.render.projectile_draw import ProjectileRendererLike
+    from crimson.render.world.context import WorldRenderCtx
     from grim.raylib_api import rl
 
 
@@ -34,8 +34,8 @@ class _RendererLike(Protocol):
     def _is_bullet_trail_type(self, type_id: int) -> bool: ...
 
 
-def _as_renderer(renderer: Any) -> ProjectileRendererLike:
-    return cast("ProjectileRendererLike", renderer)
+def _as_renderer(renderer: Any) -> WorldRenderCtx:
+    return cast("WorldRenderCtx", renderer)
 
 
 def _as_texture(texture: _TextureLike) -> rl.Texture:

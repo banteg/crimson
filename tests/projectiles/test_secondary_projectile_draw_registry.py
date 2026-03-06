@@ -11,7 +11,7 @@ from grim.assets import TextureId
 from grim.geom import Vec2
 
 if TYPE_CHECKING:
-    from crimson.render.projectile_draw import ProjectileRendererLike
+    from crimson.render.world.context import WorldRenderCtx
 
 
 class _TextureLike(Protocol):
@@ -29,8 +29,8 @@ class _RendererLike(Protocol):
     config: object | None
 
 
-def _as_renderer(renderer: Any) -> ProjectileRendererLike:
-    return cast("ProjectileRendererLike", renderer)
+def _as_renderer(renderer: Any) -> WorldRenderCtx:
+    return cast("WorldRenderCtx", renderer)
 
 
 @dataclass(slots=True)

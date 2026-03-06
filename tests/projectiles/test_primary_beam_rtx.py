@@ -13,7 +13,7 @@ from grim.assets import TextureId
 from grim.geom import Vec2
 
 if TYPE_CHECKING:
-    from crimson.render.projectile_draw import ProjectileRendererLike
+    from crimson.render.world.context import WorldRenderCtx
     from grim.raylib_api import rl
 
 
@@ -63,8 +63,8 @@ class _RendererStub:
         self.atlas_calls += 1
 
 
-def _as_renderer(renderer: _RendererStub) -> ProjectileRendererLike:
-    return cast("ProjectileRendererLike", renderer)
+def _as_renderer(renderer: _RendererStub) -> WorldRenderCtx:
+    return cast("WorldRenderCtx", renderer)
 
 
 def _as_texture(texture: _TextureStub) -> rl.Texture:

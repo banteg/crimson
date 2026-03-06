@@ -4,13 +4,11 @@ from .primary_dispatch import draw_projectile_from_registry
 from .secondary_dispatch import draw_secondary_projectile_from_registry
 from .types import (
     ProjectileDrawCtx,
-    ProjectileRendererLike,
     SecondaryProjectileDrawCtx,
 )
 
 __all__ = [
     "ProjectileDrawCtx",
-    "ProjectileRendererLike",
     "SecondaryProjectileDrawCtx",
     "draw_projectile_from_registry",
     "draw_secondary_projectile_from_registry",
