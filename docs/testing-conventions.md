@@ -25,16 +25,24 @@ This project prioritizes deterministic parity with the original executable. The 
 
 ## Float Assertions
 
-- Use `tests.helpers.assert_float_close(actual, expected)` for scalar float parity checks.
+- Use `tests.support.helpers.assert_float_close(actual, expected)` for scalar float parity checks.
 - The canonical absolute tolerance is `1e-9`.
 
 ## RNG Assertions
 
-- Use `tests.helpers.assert_rng_progression(...)` with `MockCrand` for deterministic RNG checks.
+- Use `tests.support.helpers.assert_rng_progression(...)` with `MockCrand` for deterministic RNG checks.
 - Assert draw budget (`expected_draws`) when native parity defines an exact call budget.
 - Assert state/hash progression (`expected_after_state`, optional `expected_hash`) when call ordering is behaviorally significant.
 - Use both budget and state/hash in parity-critical paths (projectile/death planning, branch-sensitive effects).
 - Use `min_draws` only when a branch must consume RNG but the exact budget is intentionally non-contractual.
+
+## Suite Layout
+
+- Place tests under the nearest domain directory (`tests/perks/`, `tests/net/`, `tests/replay/`, `tests/render/`, and similar) instead of adding new top-level `tests/test_*.py` files.
+- Keep shared builders, fixtures-as-code, and assertion helpers under `tests/support/`.
+- Keep binary/static fixtures under `tests/fixtures/`.
+- Keep syrupy snapshots in `__snapshots__/` beside the owning test package.
+- Prefer adding domain-specific `conftest.py` files or directory-based collection rules over filename-prefix conventions.
 
 ## Snapshot-First Testing
 

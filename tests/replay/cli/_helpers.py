@@ -1,0 +1,105 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import msgspec
+
+from crimson.game_modes import GameMode
+from crimson.replay import (
+    Replay,
+    ReplayClaimedStatsSnapshot,
+    ReplayHeader,
+    ReplayRecorder,
+    dump_replay,
+)
+from crimson.replay.checkpoints import (
+    FORMAT_VERSION,
+    ReplayCheckpoints,
+    default_checkpoints_path,
+    dump_checkpoints_file,
+)
+from crimson.sim.input import PlayerInput
+from crimson.sim.input_providers import GameCommand
+from crimson.weapons import WeaponId
+from grim.geom import Vec2
+from tests.support.replay_runner_helpers import _run_verify_playback
+
+
+def build_replay(
+    *,
+    mode: GameMode,
+    ticks: int,
+    seed: int = 0xBEEF,
+    player_count: int = 1,
+    quest_level: str = "",
+) -> Replay:
+    header = ReplayHeader(
+        game_mode_id=mode,
+        seed=int(seed),
+        tick_rate=60,
+        player_count=int(player_count),
+        quest_level=str(quest_level),
+    )
+    recorder = ReplayRecorder(header)
+    for _ in range(int(ticks)):
+        recorder.record_tick(
+            [PlayerInput(aim=Vec2(512.0, 512.0)) for _ in range(int(player_count))],
+        )
+    replay = recorder.finish()
+    result = _run_verify_playback(replay)
+    return msgspec.structs.replace(
+        replay,
+        header=msgspec.structs.replace(
+            replay.header,
+            claimed_stats=ReplayClaimedStatsSnapshot(
+                complete=True,
+                ticks=int(result.ticks),
+                elapsed_ms=int(result.elapsed_ms),
+                score_xp=int(result.score_xp),
+                kills=int(result.creature_kill_count),
+                most_used_weapon_id=WeaponId(result.most_used_weapon_id),
+                shots_fired=int(result.shots_fired),
+                shots_hit=int(result.shots_hit),
+            ),
+        ),
+    )
+
+
+def inject_tick_commands(replay: Replay, tick_index: int, commands: list[GameCommand]) -> None:
+    old_tick = replay.ticks[tick_index]
+    existing = list(old_tick.commands) + commands
+    replay.ticks[tick_index] = msgspec.structs.replace(old_tick, commands=existing)
+
+
+def write_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
+    replay_path = tmp_path / name
+    replay_path.parent.mkdir(parents=True, exist_ok=True)
+    replay_path.write_bytes(dump_replay(replay))
+    return replay_path
+
+
+def write_checkpoint_sidecar(
+    replay_path: Path,
+    replay: Replay,
+    *,
+    mutate_checkpoint: bool = False,
+) -> Path:
+    checkpoint_ticks = {0}
+    checkpoints = []
+    _run_verify_playback(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
+    if mutate_checkpoint:
+        checkpoints[0] = msgspec.structs.replace(
+            checkpoints[0],
+            score_xp=999999,
+        )
+    payload = ReplayCheckpoints(
+        version=int(FORMAT_VERSION),
+        sample_rate=1,
+        checkpoints=list(checkpoints),
+    )
+    sidecar_path = default_checkpoints_path(replay_path)
+    dump_checkpoints_file(sidecar_path, payload)
+    return sidecar_path
+
+
+run_verify_playback = _run_verify_playback

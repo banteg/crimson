@@ -12,6 +12,8 @@ import msgspec
 import pytest
 from pytest_mock import MockerFixture
 
+TESTS_ROOT = Path(__file__).resolve().parent
+
 if TYPE_CHECKING:
     import crimson.modes.replay_playback_mode as replay_playback_mode
     from crimson.game.types import GameState
@@ -44,7 +46,7 @@ def pytest_configure(config: pytest.Config) -> None:
     src_str = str(src_dir)
     if src_str not in sys.path:
         sys.path.insert(0, src_str)
-    tests_dir = str(Path(__file__).resolve().parent)
+    tests_dir = str(TESTS_ROOT)
     if tests_dir not in sys.path:
         sys.path.insert(0, tests_dir)
     config.addinivalue_line("markers", "terrain: terrain generation/rendering tests (slow, opt-in)")
@@ -54,13 +56,23 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "replay_fixture: replay fixture integration tests (slow, opt-in)")
 
 
+def _test_relative_path(item: pytest.Item) -> Path:
+    try:
+        return item.path.resolve().relative_to(TESTS_ROOT)
+    except ValueError:
+        return item.path
+
+
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     for item in items:
-        file_name = item.path.name
-        if file_name.startswith("test_original_capture_"):
+        relative_path = _test_relative_path(item)
+        file_name = relative_path.name
+        top_level_dir = relative_path.parts[0] if relative_path.parts else ""
+
+        if top_level_dir == "original_capture" or file_name.startswith("test_original_capture_"):
             item.add_marker(pytest.mark.original_capture)
             item.add_marker(pytest.mark.slow)
-        if file_name.startswith(("test_lan_", "test_net_", "test_relay_")):
+        if top_level_dir == "net":
             item.add_marker(pytest.mark.network)
             item.add_marker(pytest.mark.slow)
         if "terrain" in item.keywords:
