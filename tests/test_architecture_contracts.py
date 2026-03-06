@@ -317,7 +317,8 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
     mocker.patch.object(replay_playback_mode, "WorldRuntime", _StubRuntime)
 
     mode.open()
-    assert isinstance(mode._survival, DeterministicSession)
+    assert mode._driver is not None
+    assert isinstance(mode._driver.session, DeterministicSession)
 
     replay_tick_indices: list[int] = []
 
@@ -446,21 +447,29 @@ def test_contract_9_post_apply_reactions_are_shared() -> None:
 def test_contract_10_replay_driver_walk_is_canonical_loop_owner() -> None:
     walk_source = inspect.getsource(playback_driver_module.PlaybackDriver.walk_ticks)
     run_source = inspect.getsource(playback_driver_module.PlaybackDriver.run)
+    driver_init_source = inspect.getsource(playback_driver_module.PlaybackDriver.__init__)
     replay_info_source = inspect.getsource(replay_info_module.collect_replay_info)
     factory_source = inspect.getsource(playback_driver_module.build_verify_playback_driver)
     replay_pump_source = inspect.getsource(playback_pump_module.advance_playback_frame)
     replay_mode_open_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode.open)
+    replay_mode_tune_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._session_game_tune_started)
     replay_render_source = inspect.getsource(replay_render_module.run_replay_render_video)
     replay_benchmark_source = inspect.getsource(replay_benchmark_module.run_replay_benchmark)
 
     assert "self.step_tick(" in walk_source
     assert "self.walk_ticks(" in run_source
+    assert "PlaybackDriverConfig" not in driver_init_source
+    assert "PlaybackDriverOptions" not in driver_init_source
     assert "driver.walk_ticks(" in replay_info_source
     assert "driver.step_tick(" not in replay_info_source
     assert "PlaybackDriver(" in factory_source
     assert "PlaybackTickOutcome" not in replay_pump_source
     assert "build_runtime_playback_driver(" in replay_mode_open_source
     assert "PlaybackDriver(" not in replay_mode_open_source
+    assert "survival_session" not in replay_mode_open_source
+    assert "rush_session" not in replay_mode_open_source
+    assert "quest_session" not in replay_mode_open_source
+    assert "driver.session.game_tune_started" in replay_mode_tune_source
     assert "build_verify_playback_driver(" in replay_render_source
     assert "PlaybackDriver(" not in replay_render_source
     assert "build_verify_playback_driver(" in replay_benchmark_source

@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from crimson.game_modes import GameMode
-from crimson.sim.driver.playback_driver import PlaybackDriver, PlaybackDriverOptions, build_verify_playback_driver
+from crimson.sim.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
 from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 from tests.replay_runner_helpers import _blank_survival_replay, _run_verify_playback
 
@@ -155,7 +155,7 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
 def test_playback_driver_run_matches_verify_driver_factory() -> None:
     _header, rec = _blank_survival_replay(ticks=4, seed=0x1234)
     replay = rec.finish()
-    driver = PlaybackDriver(replay, PlaybackDriverOptions())
+    driver = PlaybackDriver(replay)
 
     driver_result = driver.run()
     wrapper_result = build_verify_playback_driver(replay).run()

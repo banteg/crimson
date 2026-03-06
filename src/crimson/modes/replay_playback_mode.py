@@ -60,7 +60,6 @@ from ..views.quest_run_overlay import (
     draw_quest_title_timer_overlay,
     quest_level_label,
 )
-from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from ..world.runtime import WorldRuntime
 from ..world.terrain_runtime import normalize_terrain_ids
@@ -118,12 +117,6 @@ class ReplayPlaybackMode:
         self.close_requested = False
 
         self._replay: Replay | None = None
-        self._world_size = 1024.0
-        self._difficulty_level = 0
-        self._hardcore = False
-        self._preserve_bugs = bool(ctx.preserve_bugs)
-        self._demo_mode_active = False
-        self._rtx_mode = mode_from_rtx_flag(self._rtx)
         self._texture_cache: PaqTextureCache | None = None
         self._runtime: WorldRuntime | None = None
         self._small: SmallFontData | None = None
@@ -146,9 +139,6 @@ class ReplayPlaybackMode:
         self._speed_index = _DEFAULT_SPEED_INDEX
 
         self._driver: PlaybackDriver | None = None
-        self._survival = None
-        self._rush = None
-        self._quest = None
         self._quest_total_spawn_count = 0
 
         self._audio: AudioState | None = None
@@ -354,25 +344,23 @@ class ReplayPlaybackMode:
         self._register_replay_audio_commands()
         self._load_game_tune_queue()
 
-        self._world_size = float(world_size)
-        self._difficulty_level = int(replay.header.difficulty_level)
-        self._hardcore = bool(replay.header.hardcore)
-        self._preserve_bugs = bool(replay.header.preserve_bugs)
-        self._demo_mode_active = False
-        self._rtx_mode = mode_from_rtx_flag(self._rtx)
+        difficulty_level = int(replay.header.difficulty_level)
+        hardcore = bool(replay.header.hardcore)
+        preserve_bugs = bool(replay.header.preserve_bugs)
+        rtx_mode = mode_from_rtx_flag(self._rtx)
 
         runtime = WorldRuntime(
             assets_dir=self._ctx.assets_dir,
-            world_size=float(self._world_size),
-            demo_mode_active=bool(self._demo_mode_active),
-            difficulty_level=int(self._difficulty_level),
-            hardcore=bool(self._hardcore),
-            preserve_bugs=bool(self._preserve_bugs),
+            world_size=float(world_size),
+            demo_mode_active=False,
+            difficulty_level=int(difficulty_level),
+            hardcore=bool(hardcore),
+            preserve_bugs=bool(preserve_bugs),
             texture_cache=self._texture_cache,
             config=self._config,
             audio=self._audio,
             audio_rng=self._audio_rng,
-            rtx_mode=self._rtx_mode,
+            rtx_mode=rtx_mode,
         )
         self._runtime = runtime
         runtime.reset(
@@ -412,7 +400,7 @@ class ReplayPlaybackMode:
             case GameMode.QUESTS:
                 quest, spawn_entries = resolve_replay_quest_setup(
                     replay,
-                    world_size=float(self._world_size),
+                    world_size=float(world_size),
                     player_count=len(sim_world.players),
                 )
 
@@ -421,8 +409,6 @@ class ReplayPlaybackMode:
                 self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
                 self._quest_complete_texture = self._load_quest_complete_texture()
                 quest_stage_major, quest_stage_minor = quest.level_key
-                sim_world.state.quest_stage_major = int(quest_stage_major)
-                sim_world.state.quest_stage_minor = int(quest_stage_minor)
 
                 base_id, overlay_id, detail_id = normalize_terrain_ids(quest.terrain_ids)
                 base = terrain_texture_by_id(base_id)
@@ -449,8 +435,6 @@ class ReplayPlaybackMode:
                 start_weapon_id = quest.start_weapon_id
                 if start_weapon_id <= WeaponId.NONE:
                     start_weapon_id = WeaponId.PISTOL
-                for player in sim_world.players:
-                    weapon_assign_player(player, start_weapon_id, state=sim_world.state)
                 self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
             case _:
                 self._quest_total_spawn_count = 0
@@ -460,7 +444,7 @@ class ReplayPlaybackMode:
                 replay,
                 max_ticks=self._max_ticks,
                 trace_rng=bool(self._trace_rng),
-                world_size=float(self._world_size),
+                world_size=float(world_size),
                 fx_queue=render_resources.fx_queue,
                 fx_queue_rotated=render_resources.fx_queue_rotated,
                 spawn_entries=spawn_entries,
@@ -472,10 +456,6 @@ class ReplayPlaybackMode:
         except ReplayRunnerError as exc:  # pragma: no cover
             raise ValueError(f"unsupported replay game_mode_id: {int(mode_id)}") from exc
 
-        self._survival = self._driver.survival_session
-        self._rush = self._driver.rush_session
-        self._quest = self._driver.quest_session
-
     def close(self) -> None:
         if self._small is not None:
             rl.unload_texture(self._small.texture)
@@ -486,9 +466,6 @@ class ReplayPlaybackMode:
         self._quest_complete_texture = None
         self._hud_assets = None
         self._driver = None
-        self._survival = None
-        self._rush = None
-        self._quest = None
         if self._runtime is not None:
             self._runtime.close_runtime()
             self._runtime = None
@@ -570,13 +547,8 @@ class ReplayPlaybackMode:
         return min(int(total_ticks), max(0, int(self._max_ticks)))
 
     def _session_game_tune_started(self) -> bool:
-        if self._survival is not None:
-            return bool(self._survival.game_tune_started)
-        if self._quest is not None:
-            return bool(self._quest.game_tune_started)
-        if self._rush is not None:
-            return bool(self._rush.game_tune_started)
-        return False
+        driver = self._driver
+        return bool(driver is not None and driver.session.game_tune_started)
 
     def _on_runner_tick_complete(self, _tick_index: int, _tick: object) -> bool:
         return False

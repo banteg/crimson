@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from types import SimpleNamespace
 
 from builders.tick_payload import make_tick_payload
 from builders.tick_result import make_tick_result
@@ -20,6 +21,11 @@ class FakePlaybackDriver:
     on_step: object | None = None
     quest_spawn_state: QuestSpawnState | None = None
     post_apply_sfx_keys: tuple[str, ...] = ()
+    game_tune_started: bool = False
+
+    @property
+    def session(self) -> object:
+        return SimpleNamespace(game_tune_started=bool(self.game_tune_started))
 
     def step_tick(self, tick_index: int) -> TickResult:
         if self.on_step is not None:
