@@ -62,17 +62,13 @@ def choose_menu_terrain_slots(
 
 
 def terrain_slots_to_texture_ids(
-    slots: TerrainSlotTriplet | None,
+    slots: TerrainSlotTriplet,
 ) -> tuple[TextureId, TextureId, TextureId]:
-    if slots is None:
-        return DEFAULT_TERRAIN_TEXTURE_IDS
-    try:
-        base = _TEXTURE_ID_BY_TERRAIN_SLOT[int(slots[0])]
-        overlay = _TEXTURE_ID_BY_TERRAIN_SLOT[int(slots[1])]
-        detail = _TEXTURE_ID_BY_TERRAIN_SLOT[int(slots[2])]
-    except (KeyError, TypeError, ValueError, IndexError):
-        return DEFAULT_TERRAIN_TEXTURE_IDS
-    return base, overlay, detail
+    return (
+        _TEXTURE_ID_BY_TERRAIN_SLOT[slots[0]],
+        _TEXTURE_ID_BY_TERRAIN_SLOT[slots[1]],
+        _TEXTURE_ID_BY_TERRAIN_SLOT[slots[2]],
+    )
 
 
 __all__ = [

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS, DEFAULT_TERRAIN_TEXTURE_IDS, terrain_slots_to_texture_ids
+from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS
 from grim.assets import TextureId
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -92,9 +92,3 @@ def test_reset_syncs_world_size_across_sim_and_render_ownership(assets_dir: Path
     assert world.render_resources.ground is not None
     assert int(world.render_resources.ground.width) == 2048
     assert int(world.render_resources.ground.height) == 2048
-
-
-def test_terrain_slots_to_texture_ids_falls_back_to_defaults_on_invalid_rows() -> None:
-    assert terrain_slots_to_texture_ids(None) == DEFAULT_TERRAIN_TEXTURE_IDS
-    assert terrain_slots_to_texture_ids((9999, 1, 2)) == DEFAULT_TERRAIN_TEXTURE_IDS
-    assert terrain_slots_to_texture_ids((0,)) == DEFAULT_TERRAIN_TEXTURE_IDS  # type: ignore[arg-type]

@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+from crimson.quests import all_quests
 from crimson.terrain_slots import (
     DEFAULT_TERRAIN_SLOTS,
     Q2_TERRAIN_SLOTS,
     Q3_TERRAIN_SLOTS,
     Q4_TERRAIN_SLOTS,
+    TerrainSlotTriplet,
     choose_menu_terrain_slots,
     terrain_slots_for_level,
+    terrain_slots_to_texture_ids,
 )
+from grim.assets import TextureId
 
 
 def test_terrain_slots_for_level_matches_native_layout() -> None:
@@ -55,3 +59,21 @@ def test_choose_menu_terrain_slots_can_fall_to_mid_tiers() -> None:
     )
 
     assert chosen == Q3_TERRAIN_SLOTS
+
+
+def test_all_produced_terrain_slots_map_without_fallback_logic() -> None:
+    produced_slots: set[TerrainSlotTriplet] = {quest.terrain_slots for quest in all_quests()}
+
+    for unlock_index in range(51):
+        for roll in range(8):
+            produced_slots.add(
+                choose_menu_terrain_slots(
+                    quest_unlock_index=unlock_index,
+                    rand=lambda r=roll: r,
+                ),
+            )
+
+    for slots in sorted(produced_slots):
+        texture_ids = terrain_slots_to_texture_ids(slots)
+        assert len(texture_ids) == 3
+        assert all(isinstance(texture_id, TextureId) for texture_id in texture_ids)
