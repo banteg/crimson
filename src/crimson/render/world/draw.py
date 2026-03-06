@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable
+from collections.abc import Callable, Iterator, Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -42,6 +42,14 @@ _CREATURE_TEXTURE_IDS: dict[str, TextureId] = {
     "trooper": TextureId.TROOPER,
     "zombie": TextureId.ZOMBIE,
 }
+
+_NATIVE_CREATURE_SPRITE_DRAW_ORDER: tuple[CreatureTypeId, ...] = (
+    CreatureTypeId.ZOMBIE,
+    CreatureTypeId.SPIDER_SP1,
+    CreatureTypeId.SPIDER_SP2,
+    CreatureTypeId.ALIEN,
+    CreatureTypeId.LIZARD,
+)
 
 
 class WorldDrawContext(msgspec.Struct, frozen=True):
@@ -231,20 +239,17 @@ def draw_players(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, alive: bo
         draw_player(render_ctx, player, ctx=ctx)
 
 
-def sorted_active_creatures(render_ctx: WorldRenderCtx) -> list[tuple[int, CreatureState]]:
-    creature_type_order = {
-        CreatureTypeId.ZOMBIE: 0,
-        CreatureTypeId.SPIDER_SP1: 1,
-        CreatureTypeId.SPIDER_SP2: 2,
-        CreatureTypeId.ALIEN: 3,
-        CreatureTypeId.LIZARD: 4,
-        CreatureTypeId.TROOPER: 5,
-    }
-    creatures = [(idx, creature) for idx, creature in enumerate(render_ctx.creatures.entries) if creature.active]
-    creatures.sort(
-        key=lambda item: (creature_type_order[item[1].type_id], item[0]),
-    )
-    return creatures
+def iter_active_creature_overlay_pass(creatures: Sequence[CreatureState]) -> Iterator[CreatureState]:
+    for creature in creatures:
+        if creature.active:
+            yield creature
+
+
+def iter_native_creature_sprite_pass(creatures: Sequence[CreatureState]) -> Iterator[CreatureState]:
+    for type_id in _NATIVE_CREATURE_SPRITE_DRAW_ORDER:
+        for creature in creatures:
+            if creature.active and creature.type_id == type_id:
+                yield creature
 
 
 def draw_creature_overlays(
@@ -290,16 +295,23 @@ def draw_creature_overlays(
 
 
 def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
+    creature_entries = render_ctx.creatures.entries
+
+    # Native `creature_render_all` batches all overlays across the active pool
+    # before any species-specific sprite passes.
+    for creature in iter_active_creature_overlay_pass(creature_entries):
+        screen = render_ctx._world_to_screen_with(creature.pos, camera=ctx.camera, view_scale=ctx.view_scale)
+        lifecycle_stage = float(creature.lifecycle_stage)
+        draw_creature_overlays(render_ctx, creature, screen=screen, lifecycle_stage=lifecycle_stage, ctx=ctx)
+
     resources = render_ctx.resources
-    for _idx, creature in sorted_active_creatures(render_ctx):
+    for creature in iter_native_creature_sprite_pass(creature_entries):
         screen = render_ctx._world_to_screen_with(creature.pos, camera=ctx.camera, view_scale=ctx.view_scale)
         lifecycle_stage = float(creature.lifecycle_stage)
 
         type_id = creature.type_id
         asset = CREATURE_ASSET[type_id]
         texture = _creature_texture(resources, asset)
-
-        draw_creature_overlays(render_ctx, creature, screen=screen, lifecycle_stage=lifecycle_stage, ctx=ctx)
 
         if texture is None:
             tint = rl.Color(220, 90, 90, int(255 * ctx.entity_alpha + 0.5))
