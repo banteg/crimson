@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import webbrowser
 
-from grim.assets import PaqTextureCache, load_paq_entries
+from grim.assets import TextureId
 from grim.audio import update_audio
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
@@ -77,7 +77,6 @@ class DemoView:
             demo_mode_active=True,
             hardcore=state.config.hardcore,
             preserve_bugs=bool(state.preserve_bugs),
-            texture_cache=state.texture_cache,
             config=state.config,
             audio=state.audio,
             audio_rng=state.rng,
@@ -107,7 +106,6 @@ class DemoView:
 
     def _open_world_runtime(self) -> None:
         self._runtime.open_runtime()
-        self.state.texture_cache = self._runtime.texture_cache
 
     def _close_world_runtime(self) -> None:
         self._runtime.close_runtime()
@@ -159,12 +157,8 @@ class DemoView:
     def close(self) -> None:
         self._runtime.reset_tick_runner()
         self._close_world_runtime()
-        if self._upsell_font is not None:
-            rl.unload_texture(self._upsell_font.texture)
-            self._upsell_font = None
-        if self._small_font is not None:
-            rl.unload_texture(self._small_font.texture)
-            self._small_font = None
+        self._upsell_font = None
+        self._small_font = None
 
     def is_finished(self) -> bool:
         return self._finished
@@ -261,10 +255,12 @@ class DemoView:
             return
 
         font = self._ensure_small_font()
-        cache = self._ensure_cache()
+        resources = self.state.resources
+        if resources is None:
+            return
         textures = UiButtonTextureSet(
-            button_sm=cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture,
-            button_md=cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture,
+            button_sm=resources.texture(TextureId.UI_BUTTON_SM),
+            button_md=resources.texture(TextureId.UI_BUTTON_MD),
         )
         if textures.button_sm is None and textures.button_md is None:
             return
@@ -325,10 +321,12 @@ class DemoView:
     def _draw_purchase_screen(self) -> None:
         rl.clear_background(rl.BLACK)
 
-        logos = self.state.logos
-        if logos is None or logos.backplasma.texture is None:
+        resources = self.state.resources
+        if resources is None or resources.logos.backplasma.texture is None:
             return
+        logos = resources.logos
         backplasma = logos.backplasma.texture
+        assert backplasma is not None
 
         pulse_phase = float(self._upsell_pulse_ms % 1000)
         pulse = math.sin(pulse_phase * 6.2831855)
@@ -417,10 +415,12 @@ class DemoView:
         draw_small_text(small, _DEMO_PURCHASE_FOOTER, Vec2(x_text, y), text_scale, color)
 
         # Buttons on the right.
-        cache = self._ensure_cache()
+        resources = self.state.resources
+        if resources is None:
+            return
         textures = UiButtonTextureSet(
-            button_sm=cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture,
-            button_md=cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture,
+            button_sm=resources.texture(TextureId.UI_BUTTON_SM),
+            button_md=resources.texture(TextureId.UI_BUTTON_MD),
         )
         if textures.button_sm is None and textures.button_md is None:
             return
@@ -442,20 +442,11 @@ class DemoView:
         )
 
         # Demo purchase screen uses menu-style cursor; draw it explicitly since the OS cursor is hidden.
-        particles = cache.get_or_load("particles", "game/particles.jaz").texture
-        cursor_tex = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
+        particles = resources.texture(TextureId.PARTICLES)
+        cursor_tex = resources.texture(TextureId.UI_CURSOR)
         mouse = rl.get_mouse_position()
         pulse_time = float(self._upsell_pulse_ms) * 0.001
         draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=pulse_time)
-
-    def _ensure_cache(self) -> PaqTextureCache:
-        cache = self.state.texture_cache
-        if cache is not None:
-            return cache
-        entries = load_paq_entries(self.state.assets_dir)
-        cache = PaqTextureCache(entries=entries, textures={})
-        self.state.texture_cache = cache
-        return cache
 
     def _demo_mode_start(self) -> None:
         index = self._demo_variant_index

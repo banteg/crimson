@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import msgspec
 
-from grim.assets import PaqTextureCache
 from grim.audio import AudioState, stop_music, update_audio
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.console import ConsoleState
@@ -259,7 +258,6 @@ class BaseGameplayMode:
         demo_mode_active: bool = False,
         quest_fail_retry_count: int = 0,
         hardcore: bool = False,
-        texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
@@ -304,7 +302,6 @@ class BaseGameplayMode:
         self.quest_fail_retry_count = int(quest_fail_retry_count)
         self.hardcore = bool(hardcore)
         self.preserve_bugs = bool(ctx.preserve_bugs)
-        self.texture_cache = texture_cache
         self.audio = audio
         self.audio_rng = audio_rng
         self.rtx_mode = RtxRenderMode.CLASSIC
@@ -315,7 +312,6 @@ class BaseGameplayMode:
             quest_fail_retry_count=int(self.quest_fail_retry_count),
             hardcore=bool(self.hardcore),
             preserve_bugs=bool(self.preserve_bugs),
-            texture_cache=self.texture_cache,
             config=self.config,
             audio=self.audio,
             audio_rng=self.audio_rng,
@@ -333,7 +329,6 @@ class BaseGameplayMode:
         self._sync_world_runtime_config()
         player_count = self.config.player_count
         self._world_runtime.reset(player_count=max(1, min(4, int(player_count))))
-        self.texture_cache = self._world_runtime.texture_cache
         self._bind_world()
 
         self._game_over_active = False
@@ -428,7 +423,6 @@ class BaseGameplayMode:
         runtime.quest_fail_retry_count = int(self.quest_fail_retry_count)
         runtime.hardcore = bool(self.hardcore)
         runtime.preserve_bugs = bool(self.preserve_bugs)
-        runtime.texture_cache = self.texture_cache
         runtime.config = self.config
         runtime.audio = self.audio
         runtime.audio_rng = self.audio_rng
@@ -1235,7 +1229,6 @@ class BaseGameplayMode:
         self._sync_world_runtime_config()
         self._world_runtime.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._world_runtime.open_runtime()
-        self.texture_cache = self._world_runtime.texture_cache
         self._bind_world()
         ground = self.render_resources.ground
         lan_debug_log(
@@ -1289,7 +1282,6 @@ class BaseGameplayMode:
     def close(self) -> None:
         self._game_over_ui.close()
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
             self._small = None
         self._hud_assets = None
         self._reset_tick_runner_state()

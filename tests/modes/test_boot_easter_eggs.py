@@ -1,41 +1,42 @@
 from __future__ import annotations
 
-import datetime as dt
+from types import SimpleNamespace
 
-from crimson.screens.boot import TEXTURE_LOAD_STAGES, BootView, _is_balloon_easter_egg_day
-
-
-def test_balloon_easter_egg_day_matches_three_known_dates() -> None:
-    assert _is_balloon_easter_egg_day(dt.date(2026, 9, 12)) is True
-    assert _is_balloon_easter_egg_day(dt.date(2026, 11, 8)) is True
-    assert _is_balloon_easter_egg_day(dt.date(2026, 12, 18)) is True
+import crimson.screens.boot as boot_module
+from crimson.screens.boot import BootView
 
 
-def test_balloon_easter_egg_day_rejects_other_dates() -> None:
-    assert _is_balloon_easter_egg_day(dt.date(2026, 3, 3)) is False
-    assert _is_balloon_easter_egg_day(dt.date(2026, 9, 11)) is False
-
-
-def test_boot_stage_completion_loads_company_logos_before_balloon(make_game_state, mocker) -> None:
+def test_boot_open_eagerly_loads_runtime_resources_and_audio(make_game_state, mocker) -> None:
     state = make_game_state()
+    resources = SimpleNamespace(
+        textures={"dummy": object()},
+        logos=SimpleNamespace(),
+    )
+    audio = object()
+
+    load_runtime_resources = mocker.patch.object(boot_module, "load_runtime_resources", return_value=resources)
+    init_audio_state = mocker.patch.object(boot_module, "init_audio_state", return_value=audio)
+
     view = BootView(state)
-    load_texture_stage = mocker.patch.object(view, "_load_texture_stage")
-    load_company_logos = mocker.patch.object(view, "_load_company_logos")
-    load_balloon = mocker.patch.object(view, "_load_balloon_easter_egg_texture")
-    prepare_menu_assets = mocker.patch.object(view, "_prepare_menu_assets")
+    view.open()
 
-    call_order = mocker.Mock()
-    call_order.attach_mock(load_texture_stage, "load_texture_stage")
-    call_order.attach_mock(load_company_logos, "load_company_logos")
-    call_order.attach_mock(load_balloon, "load_balloon")
-    call_order.attach_mock(prepare_menu_assets, "prepare_menu_assets")
+    load_runtime_resources.assert_called_once_with(state.assets_dir)
+    init_audio_state.assert_called_once_with(state.config, state.assets_dir, state.console)
+    assert state.resources is resources
+    assert state.audio is audio
 
-    view._texture_stage = len(TEXTURE_LOAD_STAGES) - 1
-    view.update(1.0 / 60.0)
 
-    assert call_order.mock_calls == [
-        mocker.call.load_texture_stage(len(TEXTURE_LOAD_STAGES) - 1),
-        mocker.call.load_company_logos(),
-        mocker.call.load_balloon(),
-        mocker.call.prepare_menu_assets(),
-    ]
+def test_boot_close_unloads_runtime_resources_and_audio(make_game_state, mocker) -> None:
+    resources = object()
+    audio = object()
+    state = make_game_state(resources=resources, audio=audio)
+    shutdown_audio = mocker.patch.object(boot_module, "shutdown_audio")
+    unload_runtime_resources = mocker.patch.object(boot_module, "unload_runtime_resources")
+
+    view = BootView(state)
+    view.close()
+
+    shutdown_audio.assert_called_once_with(audio)
+    unload_runtime_resources.assert_called_once_with(resources)
+    assert state.audio is None
+    assert state.resources is None

@@ -6,7 +6,7 @@ from typing import Literal, cast
 
 import msgspec
 
-from grim.assets import PaqTextureCache, TextureLoader
+from grim.assets import TEXTURE_SPECS, TextureId, runtime_resources_for
 from grim.audio import AudioState, play_music
 from grim.config import (
     CrimsonConfig,
@@ -111,7 +111,6 @@ class QuestMode(BaseGameplayMode):
         ctx: ViewContext,
         *,
         demo_mode_active: bool = False,
-        texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
@@ -125,7 +124,6 @@ class QuestMode(BaseGameplayMode):
             demo_mode_active=bool(demo_mode_active),
             quest_fail_retry_count=0,
             hardcore=False,
-            texture_cache=texture_cache,
             config=config,
             console=console,
             audio=audio,
@@ -174,24 +172,14 @@ class QuestMode(BaseGameplayMode):
         self._sim_session = self._new_sim_session(spawn_entries=())
 
     def close(self) -> None:
-        if self._grim_mono is not None:
-            rl.unload_texture(self._grim_mono.texture)
-            self._grim_mono = None
+        self._grim_mono = None
         self._quest_complete_texture = None
         self._perk_menu_assets = None
         self._sim_session = None
         super().close()
 
     def _load_quest_complete_texture(self) -> rl.Texture | None:
-        loader = TextureLoader(
-            assets_root=self._assets_root,
-            cache=self.texture_cache,
-        )
-        texture = loader.get(
-            name="ui_textLevComp",
-            paq_rel="ui/ui_textLevComp.jaz",
-        )
-        return texture
+        return runtime_resources_for(self._assets_root).texture(TextureId.UI_TEXT_LEVEL_COMPLETE)
 
     def _new_sim_session(self, *, spawn_entries: tuple[SpawnEntry, ...]) -> DeterministicSession:
         quest_spawn_state = QuestSpawnState(spawn_entries=tuple(spawn_entries))
@@ -444,17 +432,13 @@ class QuestMode(BaseGameplayMode):
         overlay = terrain_texture_by_id(overlay_id)
         detail = terrain_texture_by_id(detail_id)
         if base is not None and overlay is not None:
-            base_key, base_path = base
-            overlay_key, overlay_path = overlay
-            detail_key = detail[0] if detail is not None else None
-            detail_path = detail[1] if detail is not None else None
             self.set_terrain(
-                base_key=base_key,
-                overlay_key=overlay_key,
-                base_path=base_path,
-                overlay_path=overlay_path,
-                detail_key=detail_key,
-                detail_path=detail_path,
+                base_key=TEXTURE_SPECS[base].legacy_name,
+                overlay_key=TEXTURE_SPECS[overlay].legacy_name,
+                base_path=TEXTURE_SPECS[base].rel_path,
+                overlay_path=TEXTURE_SPECS[overlay].rel_path,
+                detail_key=TEXTURE_SPECS[detail].legacy_name if detail is not None else None,
+                detail_path=TEXTURE_SPECS[detail].rel_path if detail is not None else None,
             )
 
         # Quest metadata already stores native (1-based) weapon ids.

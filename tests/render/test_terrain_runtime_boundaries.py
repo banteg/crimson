@@ -17,11 +17,10 @@ def test_apply_bootstrap_terrain_keeps_sim_rng_state(assets_dir: Path, monkeypat
     world = _build_world(assets_dir)
     tex = rl.Texture()
 
-    def _load_texture(_self, _name: str, *, cache_path: str) -> rl.Texture:
-        _ = cache_path
+    def _texture_for(_assets_dir: Path, _texture_id) -> rl.Texture:
         return tex
 
-    monkeypatch.setattr(type(world.render_resources), "load_texture", _load_texture, raising=True)
+    monkeypatch.setattr("crimson.world.terrain_runtime.texture_for", _texture_for)
     before_rng_state = int(world.sim_world.state.rng.state)
 
     world.apply_bootstrap_terrain(

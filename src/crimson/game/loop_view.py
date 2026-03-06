@@ -151,7 +151,6 @@ class GameLoopView:
             "open_pause_menu": PauseMenuView(state),
             "start_quest": QuestMode(
                 _mode_view_context(state),
-                texture_cache=state.texture_cache,
                 config=state.config,
                 console=state.console,
                 audio=state.audio,
@@ -164,7 +163,6 @@ class GameLoopView:
             "open_high_scores": HighScoresView(state),
             "start_survival": SurvivalMode(
                 _mode_view_context(state),
-                texture_cache=state.texture_cache,
                 config=state.config,
                 console=state.console,
                 audio=state.audio,
@@ -172,7 +170,6 @@ class GameLoopView:
             ),
             "start_rush": RushMode(
                 _mode_view_context(state),
-                texture_cache=state.texture_cache,
                 config=state.config,
                 console=state.console,
                 audio=state.audio,
@@ -180,7 +177,6 @@ class GameLoopView:
             ),
             "start_typo": TypoShooterMode(
                 _mode_view_context(state),
-                texture_cache=state.texture_cache,
                 config=state.config,
                 console=state.console,
                 audio=state.audio,
@@ -188,7 +184,6 @@ class GameLoopView:
             ),
             "start_tutorial": TutorialMode(
                 _mode_view_context(state),
-                texture_cache=state.texture_cache,
                 config=state.config,
                 console=state.console,
                 audio=state.audio,
@@ -840,7 +835,6 @@ class GameLoopView:
         if not info.visible:
             return False
 
-        self._demo_trial_overlay.bind_cache(self.state.texture_cache)
         action = self._demo_trial_overlay.update(dt_ms)
         if action == "purchase":
             try:
@@ -1057,7 +1051,6 @@ class GameLoopView:
         self._active.draw()
         info = self._demo_trial_info
         if info is not None and bool(info.visible):
-            self._demo_trial_overlay.bind_cache(self.state.texture_cache)
             self._demo_trial_overlay.draw(info)
         self.state.console.draw()
         self.state.console.draw_fps_counter()

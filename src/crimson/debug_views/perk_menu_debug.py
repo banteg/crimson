@@ -85,7 +85,6 @@ class PerkMenuDebugView:
         if self._assets is not None:
             self._assets = None
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
             self._small = None
 
     def _choices(self) -> list[PerkId]:

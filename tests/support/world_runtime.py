@@ -14,7 +14,6 @@ from crimson.sim.presentation_reactions import apply_post_apply_reaction, build_
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSpawnState, survival_mid_step
 from crimson.sim.world_state import WorldState
 from crimson.world import WorldRuntime
-from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
@@ -30,7 +29,6 @@ class WorldRuntimeHost:
         quest_fail_retry_count: int = 0,
         hardcore: bool = False,
         preserve_bugs: bool = False,
-        texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
@@ -43,7 +41,6 @@ class WorldRuntimeHost:
             quest_fail_retry_count=quest_fail_retry_count,
             hardcore=hardcore,
             preserve_bugs=preserve_bugs,
-            texture_cache=texture_cache,
             config=config,
             audio=audio,
             audio_rng=audio_rng,
@@ -103,14 +100,6 @@ class WorldRuntimeHost:
     @preserve_bugs.setter
     def preserve_bugs(self, value: bool) -> None:
         self._runtime.preserve_bugs = bool(value)
-
-    @property
-    def texture_cache(self) -> PaqTextureCache | None:
-        return self._runtime.texture_cache
-
-    @texture_cache.setter
-    def texture_cache(self, value: PaqTextureCache | None) -> None:
-        self._runtime.texture_cache = value
 
     @property
     def config(self) -> CrimsonConfig | None:

@@ -160,7 +160,6 @@ class HighScoresView:
     def close(self) -> None:
         self._is_open = False
         if self._small_font is not None:
-            rl.unload_texture(self._small_font.texture)
             self._small_font = None
         self._wicons_tex = None
         self._clock_table_tex = None

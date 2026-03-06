@@ -5,7 +5,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.assets import PaqTextureCache, TextureLoader
+from grim.assets import legacy_texture_for
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -25,7 +25,6 @@ from ..sim.world_defs import CREATURE_ASSET
 class RenderResources(msgspec.Struct):
     assets_dir: Path
     world_size: float = 1024.0
-    texture_cache: PaqTextureCache | None = None
     config: CrimsonConfig | None = None
 
     ground: GroundRenderer | None = None
@@ -46,26 +45,8 @@ class RenderResources(msgspec.Struct):
     muzzle_flash_texture: rl.Texture | None = None
     wicons_texture: rl.Texture | None = None
 
-    _texture_loader: TextureLoader | None = None
-
-    def _ensure_texture_loader(self) -> TextureLoader:
-        if self._texture_loader is not None:
-            return self._texture_loader
-        if self.texture_cache is not None:
-            loader = TextureLoader(
-                assets_root=self.assets_dir,
-                cache=self.texture_cache,
-            )
-        else:
-            loader = TextureLoader.from_assets_root(self.assets_dir)
-            if loader.cache is not None:
-                self.texture_cache = loader.cache
-        self._texture_loader = loader
-        return loader
-
     def load_texture(self, name: str, *, cache_path: str) -> rl.Texture | None:
-        loader = self._ensure_texture_loader()
-        return loader.get(name=name, paq_rel=cache_path)
+        return legacy_texture_for(self.assets_dir, name=name, rel_path=cache_path)
 
     def sync_ground_settings(self) -> None:
         if self.ground is None:
@@ -167,7 +148,6 @@ class RenderResources(msgspec.Struct):
             self.ground.render_target = None
         self.ground = None
 
-        self._texture_loader = None
         self.creature_textures.clear()
         self.projs_texture = None
         self.particles_texture = None

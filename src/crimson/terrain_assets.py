@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from enum import IntEnum
 
+from grim.assets import TextureId
+
 
 class TerrainTextureId(IntEnum):
     Q1_BASE = 0
@@ -21,20 +23,19 @@ class TerrainTextureId(IntEnum):
 __all__ = ["TerrainTextureId", "terrain_texture_by_id"]
 
 
-_TERRAIN_TEXTURES: dict[TerrainTextureId, tuple[str, str]] = {
-    TerrainTextureId.Q1_BASE: ("ter_q1_base", "ter/ter_q1_base.jaz"),
-    TerrainTextureId.Q1_OVERLAY: ("ter_q1_tex1", "ter/ter_q1_tex1.jaz"),
-    TerrainTextureId.Q2_BASE: ("ter_q2_base", "ter/ter_q2_base.jaz"),
-    TerrainTextureId.Q2_OVERLAY: ("ter_q2_tex1", "ter/ter_q2_tex1.jaz"),
-    TerrainTextureId.Q3_BASE: ("ter_q3_base", "ter/ter_q3_base.jaz"),
-    TerrainTextureId.Q3_OVERLAY: ("ter_q3_tex1", "ter/ter_q3_tex1.jaz"),
-    TerrainTextureId.Q4_BASE: ("ter_q4_base", "ter/ter_q4_base.jaz"),
-    TerrainTextureId.Q4_OVERLAY: ("ter_q4_tex1", "ter/ter_q4_tex1.jaz"),
+_TERRAIN_TEXTURES: dict[TerrainTextureId, TextureId] = {
+    TerrainTextureId.Q1_BASE: TextureId.TER_Q1_BASE,
+    TerrainTextureId.Q1_OVERLAY: TextureId.TER_Q1_OVERLAY,
+    TerrainTextureId.Q2_BASE: TextureId.TER_Q2_BASE,
+    TerrainTextureId.Q2_OVERLAY: TextureId.TER_Q2_OVERLAY,
+    TerrainTextureId.Q3_BASE: TextureId.TER_Q3_BASE,
+    TerrainTextureId.Q3_OVERLAY: TextureId.TER_Q3_OVERLAY,
+    TerrainTextureId.Q4_BASE: TextureId.TER_Q4_BASE,
+    TerrainTextureId.Q4_OVERLAY: TextureId.TER_Q4_OVERLAY,
 }
 
 
-def terrain_texture_by_id(terrain_id: TerrainTextureId) -> tuple[str, str] | None:
-    """Return (texture_cache_key, paq_relative_path) for a terrain texture ID."""
+def terrain_texture_by_id(terrain_id: TerrainTextureId) -> TextureId | None:
     try:
         key = TerrainTextureId(int(terrain_id))
     except ValueError:

@@ -157,10 +157,8 @@ def make_game_state(tmp_path: Path, assets_dir: Path) -> Callable[..., "GameStat
             console=create_console(resolved_base_dir, assets_dir=resolved_assets_dir),
             demo_enabled=bool(demo_enabled),
             preserve_bugs=bool(preserve_bugs),
-            logos=None,
-            texture_cache=None,
+            resources=None,
             audio=audio,
-            resource_paq=resolved_assets_dir / "crimson.paq",
             session_start=time.monotonic() if session_start is None else float(session_start),
         )
 

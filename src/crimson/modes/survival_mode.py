@@ -4,7 +4,6 @@ import random
 from collections.abc import Callable
 from typing import Literal, cast
 
-from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.config import (
     CrimsonConfig,
@@ -70,7 +69,6 @@ class SurvivalMode(BaseGameplayMode):
         self,
         ctx: ViewContext,
         *,
-        texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
@@ -84,7 +82,6 @@ class SurvivalMode(BaseGameplayMode):
             demo_mode_active=False,
             quest_fail_retry_count=0,
             hardcore=False,
-            texture_cache=texture_cache,
             config=config,
             console=console,
             audio=audio,

@@ -352,7 +352,6 @@ class ArsenalDebugView:
         rl.show_cursor()
         self._reset_tick_runner()
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
             self._small = None
         if self._audio is not None:
             shutdown_audio(self._audio)

@@ -17,7 +17,7 @@ def _default_rtx_render_mode() -> RtxRenderMode:
     return RtxRenderMode.CLASSIC
 
 if TYPE_CHECKING:
-    from grim.assets import LogoAssets, PaqTextureCache
+    from grim.assets import RuntimeResources
     from grim.audio import AudioState
     from grim.config import CrimsonConfig
     from grim.console import ConsoleState
@@ -184,10 +184,8 @@ class GameState(msgspec.Struct):
     console: ConsoleState
     demo_enabled: bool
     preserve_bugs: bool
-    logos: LogoAssets | None
-    texture_cache: PaqTextureCache | None
+    resources: RuntimeResources | None
     audio: AudioState | None
-    resource_paq: Path
     session_start: float
     rtx_mode: RtxRenderMode = msgspec.field(default_factory=_default_rtx_render_mode)
     skip_intro: bool = False

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from grim.assets import PaqTextureCache
+from grim.assets import TextureId, runtime_resources_for
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
 from grim.math import clamp
@@ -25,7 +25,6 @@ DEMO_PURCHASE_URL = "http://buy.crimsonland.com"
 class DemoTrialOverlayUi:
     def __init__(self, assets_root: Path) -> None:
         self._assets_root = assets_root
-        self._cache: PaqTextureCache | None = None
 
         self._missing_assets: list[str] = []
         self._font: SmallFontData | None = None
@@ -35,13 +34,8 @@ class DemoTrialOverlayUi:
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
 
-    def bind_cache(self, cache: PaqTextureCache | None) -> None:
-        self._cache = cache
-
     def close(self) -> None:
-        if self._font is not None:
-            rl.unload_texture(self._font.texture)
-            self._font = None
+        self._font = None
         self._assets = None
         self._cl_logo = None
 
@@ -50,14 +44,12 @@ class DemoTrialOverlayUi:
             self._missing_assets.clear()
             self._font = load_small_font(self._assets_root)
 
-        cache = self._cache
-        if cache is None:
-            return
+        resources = runtime_resources_for(self._assets_root)
 
         if self._assets is None:
-            cursor = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
-            button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
-            button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+            cursor = resources.texture(TextureId.UI_CURSOR)
+            button_sm = resources.texture(TextureId.UI_BUTTON_SM)
+            button_md = resources.texture(TextureId.UI_BUTTON_MD)
             self._assets = PerkMenuAssets(
                 menu_panel=None,
                 title_pick_perk=None,
@@ -70,7 +62,7 @@ class DemoTrialOverlayUi:
             )
 
         if self._cl_logo is None:
-            self._cl_logo = cache.get_or_load("cl_logo", "load/logo_crimsonland.tga").texture
+            self._cl_logo = resources.texture(TextureId.CL_LOGO)
 
     @staticmethod
     def _panel_xy(*, screen_w: float, screen_h: float) -> Vec2:

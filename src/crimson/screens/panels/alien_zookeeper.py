@@ -184,7 +184,6 @@ class AlienZooKeeperView:
     def close(self) -> None:
         self._is_open = False
         if self._small_font is not None:
-            rl.unload_texture(self._small_font.texture)
             self._small_font = None
         self._button_textures = None
         self._assets = None

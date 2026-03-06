@@ -2385,7 +2385,6 @@ class LightingDebugView:
         self._release_shadow_resources()
 
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
             self._small = None
         if self._audio is not None:
             shutdown_audio(self._audio)

@@ -89,7 +89,6 @@ class SpawnPlanView:
 
     def close(self) -> None:
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
             self._small = None
 
     def _draw_ui_label(self, label: str, value: str, pos: Vec2) -> None:

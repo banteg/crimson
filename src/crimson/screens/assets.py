@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.assets import PaqTextureCache, TextureLoader, load_paq_entries_from_path
+from grim.assets import TextureId, runtime_texture_view_for
 from grim.raylib_api import rl
 
 from ..game.types import GameState
@@ -15,17 +15,10 @@ class MenuAssets(msgspec.Struct):
     labels: rl.Texture
 
 
-def _load_resource_entries(state: GameState) -> dict[str, bytes]:
-    return load_paq_entries_from_path(state.resource_paq)
-
-
-def _ensure_texture_cache(state: GameState) -> PaqTextureCache:
-    cache = state.texture_cache
-    if cache is None:
-        entries = _load_resource_entries(state)
-        cache = PaqTextureCache(entries=entries, textures={})
-        state.texture_cache = cache
-    return cache
+def _ensure_texture_cache(state: GameState):
+    if state.resources is None:
+        raise RuntimeError("runtime resources are not loaded")
+    return runtime_texture_view_for(state.assets_dir)
 
 
 def _require_menu_texture(texture: rl.Texture | None, *, rel_path: str) -> rl.Texture:
@@ -35,23 +28,23 @@ def _require_menu_texture(texture: rl.Texture | None, *, rel_path: str) -> rl.Te
 
 
 def load_menu_assets(state: GameState) -> MenuAssets:
-    cache = _ensure_texture_cache(state)
-    loader = TextureLoader(assets_root=state.assets_dir, cache=cache)
+    if state.resources is None:
+        raise RuntimeError("runtime resources are not loaded")
     return MenuAssets(
         sign=_require_menu_texture(
-            loader.get(name="ui_signCrimson", paq_rel="ui/ui_signCrimson.jaz"),
+            state.resources.texture(TextureId.UI_SIGN_CRIMSON),
             rel_path="ui/ui_signCrimson.jaz",
         ),
         item=_require_menu_texture(
-            loader.get(name="ui_menuItem", paq_rel="ui/ui_menuItem.jaz"),
+            state.resources.texture(TextureId.UI_MENU_ITEM),
             rel_path="ui/ui_menuItem.jaz",
         ),
         panel=_require_menu_texture(
-            loader.get(name="ui_menuPanel", paq_rel="ui/ui_menuPanel.jaz"),
+            state.resources.texture(TextureId.UI_MENU_PANEL),
             rel_path="ui/ui_menuPanel.jaz",
         ),
         labels=_require_menu_texture(
-            loader.get(name="ui_itemTexts", paq_rel="ui/ui_itemTexts.jaz"),
+            state.resources.texture(TextureId.UI_ITEM_TEXTS),
             rel_path="ui/ui_itemTexts.jaz",
         ),
     )

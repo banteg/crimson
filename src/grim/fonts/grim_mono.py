@@ -3,9 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import msgspec
-from construct import ConstructError
 
-from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
+from grim.assets import TextureId, runtime_resources_for
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -24,33 +23,9 @@ class GrimMonoFont(msgspec.Struct, frozen=True):
 
 
 def load_grim_mono_font(assets_root: Path) -> GrimMonoFont:
-    # Prefer crimson.paq (runtime source-of-truth), but fall back to extracted
-    # assets when present for development convenience.
-    paq_path = find_paq_path(assets_root)
-
-    atlas_png = assets_root / "crimson" / "load" / "default_font_courier.png"
-    atlas_tga = assets_root / "crimson" / "load" / "default_font_courier.tga"
-
-    texture: rl.Texture | None = None
-    if paq_path is not None:
-        try:
-            entries = load_paq_entries_from_path(paq_path)
-            cache = PaqTextureCache(entries=entries, textures={})
-            texture_asset = cache.get_or_load("default_font_courier", "load/default_font_courier.tga")
-            texture = texture_asset.texture
-        except (ConstructError, FileNotFoundError, OSError, ValueError, RuntimeError):
-            texture = None
-
+    texture = runtime_resources_for(assets_root).texture(TextureId.DEFAULT_FONT_COURIER)
     if texture is None:
-        if atlas_png.is_file():
-            texture = rl.load_texture(str(atlas_png))
-        elif atlas_tga.is_file():
-            texture = rl.load_texture(str(atlas_tga))
-        else:
-            raise FileNotFoundError(
-                "Missing grim mono font (expected load/default_font_courier.tga in crimson.paq "
-                "or extracted crimson/load/default_font_courier.(png|tga))",
-            )
+        raise FileNotFoundError("Missing runtime font texture: load/default_font_courier.tga")
 
     rl.set_texture_filter(texture, GRIM_MONO_TEXTURE_FILTER)
     grid = 16

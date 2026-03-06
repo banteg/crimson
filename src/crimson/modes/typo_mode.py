@@ -4,7 +4,6 @@ import math
 import random
 from collections.abc import Callable
 
-from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.color import RGBA
 from grim.config import CrimsonConfig
@@ -55,7 +54,6 @@ class TypoShooterMode(BaseGameplayMode):
         self,
         ctx: ViewContext,
         *,
-        texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
@@ -69,7 +67,6 @@ class TypoShooterMode(BaseGameplayMode):
             demo_mode_active=False,
             quest_fail_retry_count=0,
             hardcore=False,
-            texture_cache=texture_cache,
             config=config,
             console=console,
             audio=audio,

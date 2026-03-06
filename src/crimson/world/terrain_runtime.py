@@ -4,6 +4,7 @@ from typing import cast
 
 import msgspec
 
+from grim.assets import TextureId, texture_for
 from grim.raylib_api import rl
 
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
@@ -44,21 +45,16 @@ class TerrainRuntime(msgspec.Struct):
     ) -> None:
         base_id, overlay_id, detail_id = normalize_terrain_ids(terrain_ids)
 
-        def _load(spec: tuple[str, str] | None) -> rl.Texture | None:
-            if spec is None:
+        def _load(texture_id: TextureId | None) -> rl.Texture | None:
+            if texture_id is None:
                 return None
-            key, rel_path = spec
-            return self.render_resources.load_texture(
-                str(key),
-                cache_path=str(rel_path),
-            )
+            return texture_for(self.render_resources.assets_dir, texture_id)
 
         base = _load(terrain_texture_by_id(base_id))
         overlay = _load(terrain_texture_by_id(overlay_id))
         detail = _load(terrain_texture_by_id(detail_id)) or overlay or base
 
         if base is None and (base_id, overlay_id, detail_id) != DEFAULT_TERRAIN_IDS:
-            # Fall back to default terrain if the chosen one is unavailable.
             base = _load(terrain_texture_by_id(TerrainTextureId.Q1_BASE))
             overlay = _load(terrain_texture_by_id(TerrainTextureId.Q1_OVERLAY))
             detail = _load(terrain_texture_by_id(TerrainTextureId.Q1_BASE)) or overlay or base

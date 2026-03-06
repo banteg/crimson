@@ -6,7 +6,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.assets import TextureLoader
+from grim.assets import TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -103,14 +103,11 @@ class _GameOverPanelLayout(msgspec.Struct, frozen=True):
 
 def load_game_over_assets(assets_root: Path) -> GameOverAssets:
     perk_menu_assets = load_perk_menu_assets(assets_root)
-    loader = TextureLoader.from_assets_root(assets_root)
-    menu_panel = loader.get(name="ui_menuPanel", paq_rel="ui/ui_menuPanel.jaz")
-    text_reaper = loader.get(name="ui_textReaper", paq_rel="ui/ui_textReaper.jaz")
-    text_well_done = loader.get(
-        name="ui_textWellDone",
-        paq_rel="ui/ui_textWellDone.jaz",
-    )
-    particles = loader.get(name="particles", paq_rel="game/particles.jaz")
+    resources = runtime_resources_for(assets_root)
+    menu_panel = resources.texture(TextureId.UI_MENU_PANEL)
+    text_reaper = resources.texture(TextureId.UI_TEXT_REAPER)
+    text_well_done = resources.texture(TextureId.UI_TEXT_WELL_DONE)
+    particles = resources.texture(TextureId.PARTICLES)
     return GameOverAssets(
         menu_panel=menu_panel,
         text_reaper=text_reaper,
@@ -193,9 +190,7 @@ class GameOverUi(msgspec.Struct):
     def close(self) -> None:
         if self.assets is not None:
             self.assets = None
-        if self.font is not None:
-            rl.unload_texture(self.font.texture)
-            self.font = None
+        self.font = None
 
     def consume_enter(self) -> bool:
         if self._consume_enter:

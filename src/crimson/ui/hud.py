@@ -6,7 +6,7 @@ from typing import Protocol
 
 import msgspec
 
-from grim.assets import TextureLoader
+from grim.assets import TextureId, runtime_resources_for
 from grim.color import RGBA
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
@@ -207,26 +207,20 @@ def hud_layout(screen_w: float, screen_h: float, *, font: SmallFontLike | None, 
 
 
 def load_hud_assets(assets_root: Path) -> HudAssets:
-    loader = TextureLoader.from_assets_root(assets_root)
+    resources = runtime_resources_for(assets_root)
     return HudAssets(
-        game_top=loader.get(name="iGameUI", paq_rel="ui/ui_gameTop.jaz"),
-        life_heart=loader.get(name="iHeart", paq_rel="ui/ui_lifeHeart.jaz"),
-        ind_life=loader.get(name="ui_indLife", paq_rel="ui/ui_indLife.jaz"),
-        ind_panel=loader.get(name="ui_indPanel", paq_rel="ui/ui_indPanel.jaz"),
-        ind_bullet=loader.get(name="ui_indBullet", paq_rel="ui/ui_indBullet.jaz"),
-        ind_fire=loader.get(name="ui_indFire", paq_rel="ui/ui_indFire.jaz"),
-        ind_rocket=loader.get(name="ui_indRocket", paq_rel="ui/ui_indRocket.jaz"),
-        ind_electric=loader.get(
-            name="ui_indElectric",
-            paq_rel="ui/ui_indElectric.jaz",
-        ),
-        wicons=loader.get(name="ui_wicons", paq_rel="ui/ui_wicons.jaz"),
-        clock_table=loader.get(name="ui_clockTable", paq_rel="ui/ui_clockTable.jaz"),
-        clock_pointer=loader.get(
-            name="ui_clockPointer",
-            paq_rel="ui/ui_clockPointer.jaz",
-        ),
-        bonuses=loader.get(name="bonuses", paq_rel="game/bonuses.jaz"),
+        game_top=resources.texture(TextureId.UI_GAME_TOP),
+        life_heart=resources.texture(TextureId.UI_LIFE_HEART),
+        ind_life=resources.texture(TextureId.UI_IND_LIFE),
+        ind_panel=resources.texture(TextureId.UI_IND_PANEL),
+        ind_bullet=resources.texture(TextureId.UI_IND_BULLET),
+        ind_fire=resources.texture(TextureId.UI_IND_FIRE),
+        ind_rocket=resources.texture(TextureId.UI_IND_ROCKET),
+        ind_electric=resources.texture(TextureId.UI_IND_ELECTRIC),
+        wicons=resources.texture(TextureId.UI_WICONS),
+        clock_table=resources.texture(TextureId.UI_CLOCK_TABLE),
+        clock_pointer=resources.texture(TextureId.UI_CLOCK_POINTER),
+        bonuses=resources.texture(TextureId.BONUSES),
     )
 
 

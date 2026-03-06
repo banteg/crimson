@@ -15,7 +15,7 @@ from ..game.types import GameState
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
-from .assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from .assets import MenuAssets, load_menu_assets
 from .transitions import _draw_screen_fade
 
 MENU_LABEL_WIDTH = 122.0
@@ -102,23 +102,17 @@ def _choose_menu_terrain_ids(state: GameState) -> tuple[TerrainTextureId, Terrai
 
 
 def _menu_terrain_texture(state: GameState, terrain_id: TerrainTextureId) -> rl.Texture | None:
-    cache = state.texture_cache
-    if cache is None:
+    resources = state.resources
+    if resources is None:
         return None
     terrain = terrain_texture_by_id(terrain_id)
     if terrain is None:
         return None
-
-    key, rel_path = terrain
-    texture = cache.texture(key)
-    if texture is not None:
-        return texture
-    return cache.get_or_load(key, rel_path).texture
+    return resources.texture(terrain)
 
 
 def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
-    cache = state.texture_cache
-    if cache is None:
+    if state.resources is None:
         return None
 
     ground = state.menu_ground
@@ -180,9 +174,11 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
 
 
 def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
-    cache = _ensure_texture_cache(state)
-    particles = cache.get_or_load("particles", "game/particles.jaz").texture
-    cursor_tex = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
+    resources = state.resources
+    if resources is None:
+        return
+    particles = resources.legacy_texture("particles", "game/particles.jaz")
+    cursor_tex = resources.legacy_texture("ui_cursor", "ui/ui_cursor.jaz")
 
     mouse = rl.get_mouse_position()
     draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=float(pulse_time))

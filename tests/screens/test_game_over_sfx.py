@@ -104,10 +104,8 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
         console=create_console(tmp_path, assets_dir=assets_dir),
         demo_enabled=False,
         preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
+        resources=None,
         audio=_audio_state_stub(),
-        resource_paq=tmp_path / "crimson.paq",
         session_start=time.monotonic(),
     )
     state.pending_high_scores = HighScoresRequest(game_mode_id=GameMode.SURVIVAL)
@@ -162,10 +160,8 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
         console=create_console(tmp_path, assets_dir=assets_dir),
         demo_enabled=False,
         preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
+        resources=None,
         audio=None,
-        resource_paq=tmp_path / "crimson.paq",
         session_start=time.monotonic(),
     )
     state.pending_high_scores = HighScoresRequest(game_mode_id=GameMode.SURVIVAL)

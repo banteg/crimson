@@ -4,7 +4,6 @@ import random
 from collections.abc import Callable
 from typing import cast
 
-from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
@@ -54,7 +53,6 @@ class TutorialMode(BaseGameplayMode):
         ctx: ViewContext,
         *,
         demo_mode_active: bool = False,
-        texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
@@ -68,7 +66,6 @@ class TutorialMode(BaseGameplayMode):
             demo_mode_active=bool(demo_mode_active),
             quest_fail_retry_count=0,
             hardcore=False,
-            texture_cache=texture_cache,
             config=config,
             console=console,
             audio=audio,

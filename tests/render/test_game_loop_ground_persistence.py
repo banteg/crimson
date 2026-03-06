@@ -10,7 +10,7 @@ from crimson.game.loop_view import GameLoopView
 from crimson.game.types import GameState
 from crimson.persistence import save_status
 from crimson.screens.menu import ensure_menu_ground
-from grim.assets import PaqTextureCache
+from grim.assets import RuntimeResources, TextureId
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 from grim.geom import Vec2
@@ -40,25 +40,21 @@ class _TextureCacheStub:
         return self._asset
 
 
-class _TerrainTextureCacheStub:
+class _ResourcesStub:
     def __init__(self) -> None:
         self._textures = {
-            "ter_q1_base": rl.Texture(),
-            "ter_q1_tex1": rl.Texture(),
-            "ter_q2_base": rl.Texture(),
-            "ter_q2_tex1": rl.Texture(),
-            "ter_q3_base": rl.Texture(),
-            "ter_q3_tex1": rl.Texture(),
-            "ter_q4_base": rl.Texture(),
-            "ter_q4_tex1": rl.Texture(),
+            TextureId.TER_Q1_BASE: rl.Texture(),
+            TextureId.TER_Q1_OVERLAY: rl.Texture(),
+            TextureId.TER_Q2_BASE: rl.Texture(),
+            TextureId.TER_Q2_OVERLAY: rl.Texture(),
+            TextureId.TER_Q3_BASE: rl.Texture(),
+            TextureId.TER_Q3_OVERLAY: rl.Texture(),
+            TextureId.TER_Q4_BASE: rl.Texture(),
+            TextureId.TER_Q4_OVERLAY: rl.Texture(),
         }
 
-    def texture(self, name: str) -> rl.Texture | None:
-        return self._textures.get(name)
-
-    def get_or_load(self, name: str, rel_path: str) -> _TextureAssetStub:
-        _ = rel_path
-        return _TextureAssetStub(texture=self._textures.get(name))
+    def texture(self, texture_id: TextureId) -> rl.Texture | None:
+        return self._textures.get(texture_id)
 
 
 class _RngStub(random.Random):
@@ -135,10 +131,8 @@ def _build_state(tmp_path: Path) -> GameState:
         console=create_console(tmp_path, assets_dir=assets_dir),
         demo_enabled=False,
         preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
+        resources=None,
         audio=None,
-        resource_paq=assets_dir / "crimson.paq",
         session_start=time.monotonic(),
     )
 
@@ -188,7 +182,7 @@ def test_capture_gameplay_ground_from_stacked_view(tmp_path: Path) -> None:
 
 def test_regenerate_menu_ground_resets_menu_camera(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
-    state.texture_cache = cast(PaqTextureCache, _TextureCacheStub())
+    state.resources = cast(RuntimeResources, _ResourcesStub())
     state.menu_ground_camera = Vec2(-100.0, -200.0)
 
     ground = ensure_menu_ground(state, regenerate=True)
@@ -199,8 +193,8 @@ def test_regenerate_menu_ground_resets_menu_camera(tmp_path: Path) -> None:
 
 def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
-    cache = _TerrainTextureCacheStub()
-    state.texture_cache = cast(PaqTextureCache, cache)
+    resources = _ResourcesStub()
+    state.resources = cast(RuntimeResources, resources)
     state.status.quest_unlock_index = 0x28
     # unlock>=40 and first (rand & 7)==3 should pick (6,7,6) i.e. q4 base/tex1/base.
     state.rng = _RngStub([3, 1234])
@@ -208,9 +202,9 @@ def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(tmp_path: Path)
     ground = ensure_menu_ground(state, regenerate=True)
 
     assert ground is not None
-    assert ground.texture is cache.texture("ter_q4_base")
-    assert ground.overlay is cache.texture("ter_q4_tex1")
-    assert ground.overlay_detail is cache.texture("ter_q4_base")
+    assert ground.texture is resources.texture(TextureId.TER_Q4_BASE)
+    assert ground.overlay is resources.texture(TextureId.TER_Q4_OVERLAY)
+    assert ground.overlay_detail is resources.texture(TextureId.TER_Q4_BASE)
 
 
 def test_start_survival_does_not_adopt_existing_menu_ground(tmp_path: Path) -> None:
