@@ -7,9 +7,9 @@ from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+from ...game.types import GameState
 from ...perks import PerkId
 from ..high_scores_layout import perks_db_right_detail_x_shift
-from ..types import ScreenContext
 from .databases_base import _DatabaseBaseView
 
 
@@ -23,7 +23,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
     _LIST_TEXT_Y = 128.0
     _DESC_WRAP_WIDTH_PX = 256.0
 
-    def __init__(self, state: ScreenContext) -> None:
+    def __init__(self, state: GameState) -> None:
         super().__init__(state)
         self._perk_ids: list[PerkId] = []
         self._list_scroll_index: int = 0

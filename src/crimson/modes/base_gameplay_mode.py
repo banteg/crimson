@@ -269,6 +269,7 @@ class BaseGameplayMode:
         self._small: SmallFontData | None = None
         self._hud_assets: HudAssets | None = None
         self._hud_state = HudState()
+        self.default_game_mode_id = default_game_mode_id
 
         mode_id = int(default_game_mode_id)
         if config is None:

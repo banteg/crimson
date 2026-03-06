@@ -6,6 +6,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
+from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..menu import (
@@ -37,7 +38,6 @@ from ..menu import (
     menu_ground_camera,
 )
 from ..transitions import _draw_screen_fade
-from ..types import ScreenContext
 
 PANEL_POS_X = -45.0
 PANEL_POS_Y = 210.0
@@ -60,7 +60,7 @@ FADE_TO_GAME_ACTIONS = frozenset(
 class PanelMenuView:
     def __init__(
         self,
-        state: ScreenContext,
+        state: GameState,
         *,
         title: str,
         body: str | None = None,

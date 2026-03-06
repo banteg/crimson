@@ -8,6 +8,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
+from ...game.types import GameState
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
@@ -17,7 +18,6 @@ from ..menu import (
     _draw_menu_cursor,
 )
 from ..transitions import _draw_screen_fade
-from ..types import ScreenContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .hit_test import mouse_inside_rect_with_padding
 
@@ -43,7 +43,7 @@ class OptionsMenuView(PanelMenuView):
         "Mouse sensitivity:",
     )
 
-    def __init__(self, state: ScreenContext) -> None:
+    def __init__(self, state: GameState) -> None:
         super().__init__(state, title="Options", back_action="open_pause_menu")
         self._small_font: SmallFontData | None = None
         self._rect_on: rl.Texture | None = None

@@ -21,6 +21,7 @@ from crimson.sim.tick_runner import TickBatchResult
 from grim.view import ViewContext
 from tests.support.builders import FakeRunner, make_tick_payload
 from tests.support.builders.session import make_session
+from tests.support.gameplay_screen import GameplayScreenStub
 
 
 class _DummyRuntime:
@@ -311,33 +312,9 @@ def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker) -> None:
 def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, mocker) -> None:
     state = make_game_state()
     loop = GameLoopView(state)
-
-    class _FakeGameplayView:
-        def open(self) -> None:
-            return
-
-        def close(self) -> None:
-            return
-
-        def update(self, dt: float) -> None:
-            _ = dt
-
-        def draw(self) -> None:
-            return
-
-        def take_action(self) -> str | None:
-            return None
-
-        def set_runtime_updates_per_frame(self, value: int) -> None:
-            _ = value
-
-        def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
-            return (3, 2, 5, 1.25, 0.75, 0.5)
-
-    view = _FakeGameplayView()
+    view = GameplayScreenStub(telemetry=(3, 2, 5, 1.25, 0.75, 0.5))
     loop._front_active = view
     loop._active = view
-    loop._gameplay_views = frozenset({view})
 
     mocker.patch.object(loop_view_module, "input_begin_frame", side_effect=lambda: None)
     mocker.patch.object(type(state.console), "handle_hotkey", return_value=None)

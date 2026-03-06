@@ -1,19 +1,24 @@
 from __future__ import annotations
 
 import webbrowser
-from typing import cast
 
 from crimson.quests.level import QuestLevel
+from grim.audio import stop_music
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
-from grim.view import View
+from grim.view import View, ViewContext
 
 from ..debug import debug_enabled
 from ..demo import DemoView
 from ..demo_trial import demo_trial_overlay_info, tick_demo_trial_timers
 from ..game_modes import GameMode
 from ..input_codes import input_begin_frame
+from ..modes.quest_mode import QuestMode
+from ..modes.rush_mode import RushMode
+from ..modes.survival_mode import SurvivalMode
+from ..modes.tutorial_mode import TutorialMode
+from ..modes.typo_mode import TypoShooterMode
 from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
 from ..screens.boot import BootView
@@ -34,8 +39,7 @@ from ..screens.pause_menu import PauseMenuView
 from ..screens.quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
 from ..screens.transitions import _update_screen_fade
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
-from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
-from .types import GameState, PauseBackground, ScreenView
+from .types import GameplayScreen, GameState, HighScoresRequest, Screen
 
 _GAMMA_RAMP_SHADER: rl.Shader | None = None
 _GAMMA_RAMP_SHADER_GAIN_LOC: int = -1
@@ -80,7 +84,12 @@ void main() {
 """
 
 
-_GameplayView = QuestGameView | RushGameView | SurvivalGameView | TutorialGameView | TypoShooterGameView
+def _mode_view_context(state: GameState) -> ViewContext:
+    preserve_bugs = bool(state.preserve_bugs)
+    if bool(state.network_in_lobby):
+        # Network multiplayer must keep simulation rules deterministic across peers.
+        preserve_bugs = False
+    return ViewContext(assets_dir=state.assets_dir, preserve_bugs=preserve_bugs)
 
 
 def _get_gamma_ramp_shader() -> tuple[rl.Shader | None, int]:
@@ -134,21 +143,58 @@ class GameLoopView:
         self._boot = BootView(state)
         self._demo = DemoView(state)
         self._menu = MenuView(state)
-        self._front_views: dict[str, ScreenView] = {
+        self._front_views: dict[str, Screen] = {
             "open_play_game": PlayGameMenuView(state),
             "open_lan_session": NetworkSessionPanelView(state),
             "open_lan_lobby": NetworkLobbyPanelView(state),
             "open_quests": QuestsMenuView(state),
             "open_pause_menu": PauseMenuView(state),
-            "start_quest": QuestGameView(state),
+            "start_quest": QuestMode(
+                _mode_view_context(state),
+                texture_cache=state.texture_cache,
+                config=state.config,
+                console=state.console,
+                audio=state.audio,
+                audio_rng=state.rng,
+                demo_mode_active=state.demo_enabled,
+            ),
             "quest_results": QuestResultsView(state),
             "quest_failed": QuestFailedView(state),
             "end_note": EndNoteView(state),
             "open_high_scores": HighScoresView(state),
-            "start_survival": SurvivalGameView(state),
-            "start_rush": RushGameView(state),
-            "start_typo": TypoShooterGameView(state),
-            "start_tutorial": TutorialGameView(state),
+            "start_survival": SurvivalMode(
+                _mode_view_context(state),
+                texture_cache=state.texture_cache,
+                config=state.config,
+                console=state.console,
+                audio=state.audio,
+                audio_rng=state.rng,
+            ),
+            "start_rush": RushMode(
+                _mode_view_context(state),
+                texture_cache=state.texture_cache,
+                config=state.config,
+                console=state.console,
+                audio=state.audio,
+                audio_rng=state.rng,
+            ),
+            "start_typo": TypoShooterMode(
+                _mode_view_context(state),
+                texture_cache=state.texture_cache,
+                config=state.config,
+                console=state.console,
+                audio=state.audio,
+                audio_rng=state.rng,
+            ),
+            "start_tutorial": TutorialMode(
+                _mode_view_context(state),
+                texture_cache=state.texture_cache,
+                config=state.config,
+                console=state.console,
+                audio=state.audio,
+                audio_rng=state.rng,
+                demo_mode_active=state.demo_enabled,
+            ),
             "open_options": OptionsMenuView(state),
             "open_controls": ControlsMenuView(state),
             "open_statistics": StatisticsMenuView(state),
@@ -163,8 +209,8 @@ class GameLoopView:
                 body="This menu is out of scope for the rewrite.",
             ),
         }
-        self._front_active: ScreenView | None = None
-        self._front_stack: list[ScreenView] = []
+        self._front_active: Screen | None = None
+        self._front_stack: list[Screen] = []
         self._active: View = self._boot
         self._demo_trial_overlay = DemoTrialOverlayUi(state.assets_dir)
         self._demo_trial_info: DemoTrialOverlayInfo | None = None
@@ -172,15 +218,6 @@ class GameLoopView:
         self._menu_active = False
         self._quit_after_demo = False
         self._screenshot_requested = False
-        self._gameplay_views: frozenset[ScreenView] = frozenset(
-            {
-                self._front_views["start_survival"],
-                self._front_views["start_rush"],
-                self._front_views["start_typo"],
-                self._front_views["start_tutorial"],
-                self._front_views["start_quest"],
-            },
-        )
         self._runtime_updates_per_frame = 0
 
     def _pending_session(self):
@@ -481,7 +518,7 @@ class GameLoopView:
         self.state.presentation_apply_ms = 0.0
 
     def _sync_gameplay_frame_telemetry_to_state(self) -> None:
-        gameplay = self._as_gameplay_view(self._front_active)
+        gameplay = self._gameplay_screen(self._front_active)
         if gameplay is None:
             return
         (
@@ -511,10 +548,9 @@ class GameLoopView:
         self._tick_network_runtime()
         self._clear_state_frame_telemetry()
         front_active = self._front_active
-        if front_active is not None:
-            setter = getattr(front_active, "set_runtime_updates_per_frame", None)
-            if callable(setter):
-                setter(int(self._runtime_updates_per_frame))
+        gameplay = self._gameplay_screen(front_active)
+        if gameplay is not None:
+            gameplay.set_runtime_updates_per_frame(int(self._runtime_updates_per_frame))
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_F4):
             self._set_rtx_mode(cycle_rtx_render_mode(self.state.rtx_mode), source="debug hotkey F4")
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
@@ -527,14 +563,18 @@ class GameLoopView:
 
         self._demo_trial_info = None
         self._tick_statistics_playtime(dt)
-        if self._front_active is not None and self._front_active in self._gameplay_views:
+        if gameplay is not None:
             if self._update_demo_trial_overlay(dt):
                 return
 
         self._active.update(dt)
         self._sync_gameplay_frame_telemetry_to_state()
         if self._front_active is not None:
-            action = self._front_active.take_action()
+            front_active = self._front_active
+            gameplay = self._gameplay_screen(front_active)
+            action = front_active.take_action()
+            if gameplay is not None:
+                action = self._resolve_gameplay_action(gameplay, action)
             if action is not None:
                 action = self._resolve_lan_action(action)
                 if action is None:
@@ -552,16 +592,16 @@ class GameLoopView:
                 return
             if action == "back_to_previous":
                 if self._front_stack:
-                    self._front_active.close()
+                    front_active.close()
                     self._front_active = self._front_stack.pop()
-                    if self._front_active in self._gameplay_views:
+                    if self._gameplay_screen(self._front_active) is not None:
                         self.state.pause_background = None
                     else:
                         if isinstance(self._front_active, StatisticsMenuView):
                             self._front_active.reopen_from_child()
                     self._active = self._front_active
                     return
-                self._front_active.close()
+                front_active.close()
                 self._front_active = None
                 self.state.pause_background = None
                 self._menu.open()
@@ -572,9 +612,9 @@ class GameLoopView:
                 pause_view = self._front_views.get("open_pause_menu")
                 if pause_view is None:
                     return
-                if self._front_active in self._gameplay_views:
-                    self.state.pause_background = cast(PauseBackground, self._front_active)
-                    self._front_stack.append(self._front_active)
+                if gameplay is not None:
+                    self.state.pause_background = gameplay
+                    self._front_stack.append(front_active)
                     pause_view.open()
                     self._front_active = pause_view
                     self._active = pause_view
@@ -590,7 +630,7 @@ class GameLoopView:
                     self._active = self._menu
                     self._menu_active = True
                     return
-                self._front_active.close()
+                front_active.close()
                 pause_view.open()
                 self._front_active = pause_view
                 self._active = pause_view
@@ -609,12 +649,12 @@ class GameLoopView:
                 view = self._front_views.get(action)
                 if view is not None:
                     if action in {"open_high_scores", "open_weapon_database", "open_perk_database", "open_credits"}:
-                        if (self._front_active in self._gameplay_views) and (self.state.pause_background is None):
-                            self.state.pause_background = cast(PauseBackground, self._front_active)
-                        self._front_stack.append(self._front_active)
-                    elif action in {"quest_results", "quest_failed"} and (self._front_active in self._gameplay_views):
-                        self.state.pause_background = cast(PauseBackground, self._front_active)
-                        self._front_stack.append(self._front_active)
+                        if gameplay is not None and self.state.pause_background is None:
+                            self.state.pause_background = gameplay
+                        self._front_stack.append(front_active)
+                    elif action in {"quest_results", "quest_failed"} and gameplay is not None:
+                        self.state.pause_background = gameplay
+                        self._front_stack.append(front_active)
                     else:
                         if action in {
                             "start_survival",
@@ -629,9 +669,8 @@ class GameLoopView:
                             self.state.pause_background = None
                             while self._front_stack:
                                 self._front_stack.pop().close()
-                        self._front_active.close()
-                    view.open()
-                    self._maybe_adopt_menu_ground(action, view)
+                        front_active.close()
+                    self._open_front_view(action, view)
                     self._front_active = view
                     self._active = view
                     return
@@ -665,8 +704,7 @@ class GameLoopView:
                 if view is not None:
                     self._menu.close()
                     self._menu_active = False
-                    view.open()
-                    self._maybe_adopt_menu_ground(action, view)
+                    self._open_front_view(action, view)
                     self._front_active = view
                     self._active = view
                     return
@@ -711,7 +749,7 @@ class GameLoopView:
         # and is used by the Statistics "played for ... hours ... minutes" row.
         if self.state.demo_enabled:
             return
-        if self._front_active is None or self._front_active not in self._gameplay_views:
+        if self._gameplay_screen(self._front_active) is None:
             return
         delta_ms = int(float(dt) * 1000.0)
         if delta_ms <= 0:
@@ -719,13 +757,13 @@ class GameLoopView:
         self.state.status.game_sequence_id = int(self.state.status.game_sequence_id + delta_ms)
 
     def _sync_console_elapsed_ms(self) -> None:
-        views: list[ScreenView] = []
+        views: list[Screen] = []
         if self._front_active is not None:
             views.append(self._front_active)
         if self._front_stack:
             views.extend(reversed(self._front_stack))
         for view in views:
-            gameplay = self._as_gameplay_view(view)
+            gameplay = self._gameplay_screen(view)
             if gameplay is not None:
                 self.state.survival_elapsed_ms = max(0.0, float(gameplay.console_elapsed_ms()))
                 return
@@ -737,13 +775,13 @@ class GameLoopView:
 
     def _regenerate_terrain_for_console(self) -> None:
         ensure_menu_ground(self.state, regenerate=True)
-        views: list[ScreenView] = []
+        views: list[Screen] = []
         if self._front_active is not None:
             views.append(self._front_active)
         if self._front_stack:
             views.extend(reversed(self._front_stack))
         for view in views:
-            gameplay = self._as_gameplay_view(view)
+            gameplay = self._gameplay_screen(view)
             if gameplay is not None:
                 gameplay.regenerate_terrain_for_console()
                 return
@@ -825,7 +863,7 @@ class GameLoopView:
 
         return True
 
-    def _maybe_adopt_menu_ground(self, action: str, _view: ScreenView) -> None:
+    def _maybe_adopt_menu_ground(self, action: str, _view: Screen | None = None) -> None:
         if action not in {"start_survival", "start_rush"}:
             return
         # Native `game_state_set(9)` always calls `gameplay_reset_state()`, which
@@ -833,10 +871,118 @@ class GameLoopView:
         # but entering a fresh gameplay run must regenerate terrain instead of
         # reusing the captured menu render target.
 
-    def _as_gameplay_view(self, view: ScreenView | None) -> _GameplayView | None:
-        if view is None or view not in self._gameplay_views:
+    def _gameplay_screen(self, view: Screen | None) -> GameplayScreen | None:
+        if view is None or not isinstance(view, GameplayScreen):
             return None
-        return cast(_GameplayView, view)
+        return view
+
+    def _open_front_view(self, action: str, view: Screen) -> None:
+        gameplay = self._gameplay_screen(view)
+        if gameplay is not None:
+            self._open_gameplay_screen(gameplay)
+        else:
+            view.open()
+        self._maybe_adopt_menu_ground(action)
+
+    def _open_gameplay_screen(self, gameplay: GameplayScreen) -> None:
+        if self.state.screen_fade_ramp:
+            self.state.screen_fade_alpha = 1.0
+        self.state.screen_fade_ramp = False
+        if isinstance(gameplay, QuestMode):
+            self.state.quest_outcome = None
+        if self.state.audio is not None:
+            # Original game: entering gameplay cuts the menu theme; in-game tunes
+            # start later on the first creature hit.
+            stop_music(self.state.audio)
+        self._configure_lan_runtime(gameplay)
+        gameplay.bind_status(self.state.status)
+        gameplay.bind_audio(self.state.audio, self.state.rng)
+        gameplay.set_rtx_mode(self.state.rtx_mode)
+        gameplay.bind_screen_fade(self.state)
+        gameplay.open()
+        if isinstance(gameplay, QuestMode):
+            self._prepare_quest_run(gameplay)
+
+    def _configure_lan_runtime(self, gameplay: GameplayScreen) -> None:
+        pending = self.state.pending_network_session
+        in_lobby = bool(self.state.network_in_lobby)
+        if (not in_lobby) or pending is None:
+            gameplay.set_lan_runtime(
+                enabled=False,
+                role="",
+                expected_players=1,
+                connected_players=1,
+                waiting_for_players=False,
+            )
+            gameplay.bind_lan_runtime(runtime=None)
+            return
+
+        expected_players = max(
+            1,
+            min(
+                4,
+                int(self.state.network_expected_players),
+            ),
+        )
+        connected_players = max(
+            0,
+            min(
+                expected_players,
+                int(self.state.network_connected_players),
+            ),
+        )
+        waiting_for_players = bool(self.state.network_waiting_for_players)
+        gameplay.set_lan_runtime(
+            enabled=True,
+            role=str(pending.role),
+            expected_players=int(expected_players),
+            connected_players=int(connected_players),
+            waiting_for_players=bool(waiting_for_players),
+        )
+        runtime = self.state.network_runtime
+        gameplay.bind_lan_runtime(runtime=runtime)
+        if runtime is not None:
+            match_start = runtime.match_start
+            if match_start is not None:
+                event = match_start()
+                if event is not None:
+                    gameplay.set_lan_match_start(
+                        seed=int(event.seed),
+                        start_tick=int(event.start_tick),
+                        status_snapshot=event.status_snapshot,
+                    )
+
+    def _prepare_quest_run(self, gameplay: QuestMode) -> None:
+        level = self.state.pending_quest_level
+        if level is None:
+            return
+        parsed = QuestLevel.parse(level)
+        normalized = parsed.to_string()
+        self.state.pending_quest_level = normalized
+        gameplay.prepare_new_run(normalized, status=self.state.status)
+
+    def _resolve_gameplay_action(self, gameplay: GameplayScreen, action: str | None) -> str | None:
+        if action == "open_high_scores":
+            self.state.pending_high_scores = HighScoresRequest(game_mode_id=gameplay.default_game_mode_id)
+            return action
+        if action == "back_to_menu":
+            gameplay.close_requested = False
+            return action
+        if action is not None:
+            return action
+        if not gameplay.close_requested:
+            return None
+        gameplay.close_requested = False
+        if isinstance(gameplay, QuestMode):
+            outcome = gameplay.consume_outcome()
+            if outcome is not None:
+                self.state.quest_outcome = outcome
+                if outcome.kind == "completed":
+                    return "quest_results"
+                if outcome.kind == "failed":
+                    return "quest_failed"
+            return "back_to_menu"
+        return "back_to_menu"
 
     def _set_rtx_mode(self, mode: RtxRenderMode, *, source: str) -> None:
         if mode is self.state.rtx_mode:
@@ -846,18 +992,18 @@ class GameLoopView:
         self.state.console.log.log(f"render mode: {mode.value} ({source})")
 
     def _sync_rtx_mode(self) -> None:
-        views: list[ScreenView] = []
+        views: list[Screen] = []
         if self._front_active is not None:
             views.append(self._front_active)
         if self._front_stack:
             views.extend(self._front_stack)
         for view in views:
-            gameplay = self._as_gameplay_view(view)
+            gameplay = self._gameplay_screen(view)
             if gameplay is not None:
                 gameplay.set_rtx_mode(self.state.rtx_mode)
 
-    def _steal_ground_from_view(self, view: ScreenView | None) -> GroundRenderer | None:
-        gameplay = self._as_gameplay_view(view)
+    def _steal_ground_from_view(self, view: Screen | None) -> GroundRenderer | None:
+        gameplay = self._gameplay_screen(view)
         if gameplay is None:
             return None
         ground = gameplay.steal_ground_for_menu()
@@ -865,8 +1011,8 @@ class GameLoopView:
             return ground
         return None
 
-    def _menu_ground_camera_from_view(self, view: ScreenView | None) -> Vec2 | None:
-        gameplay = self._as_gameplay_view(view)
+    def _menu_ground_camera_from_view(self, view: Screen | None) -> Vec2 | None:
+        gameplay = self._gameplay_screen(view)
         if gameplay is None:
             return None
         camera = gameplay.menu_ground_camera()
@@ -888,12 +1034,12 @@ class GameLoopView:
     def _capture_gameplay_ground_for_menu(self) -> None:
         ground: GroundRenderer | None = None
         camera: Vec2 | None = None
-        if self._front_active in self._gameplay_views:
+        if self._gameplay_screen(self._front_active) is not None:
             camera = self._menu_ground_camera_from_view(self._front_active)
             ground = self._steal_ground_from_view(self._front_active)
         if ground is None:
             for view in reversed(self._front_stack):
-                if view in self._gameplay_views:
+                if self._gameplay_screen(view) is not None:
                     camera = self._menu_ground_camera_from_view(view)
                     ground = self._steal_ground_from_view(view)
                     if ground is not None:

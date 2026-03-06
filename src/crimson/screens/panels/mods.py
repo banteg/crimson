@@ -8,11 +8,11 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+from ...game.types import GameState
 from ..menu import (
     MENU_PANEL_WIDTH,
     MenuView,
 )
-from ..types import ScreenContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
 
@@ -23,7 +23,7 @@ class _ModsContentLayout(msgspec.Struct, frozen=True):
 
 
 class ModsMenuView(PanelMenuView):
-    def __init__(self, state: ScreenContext) -> None:
+    def __init__(self, state: GameState) -> None:
         super().__init__(state, title="Mods")
         self._small_font: SmallFontData | None = None
         self._lines: list[str] = []

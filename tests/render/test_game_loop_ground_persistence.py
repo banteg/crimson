@@ -16,36 +16,7 @@ from grim.console import create_console
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
-
-
-class _GroundSourceView:
-    def __init__(self, ground: GroundRenderer | None, camera: Vec2 | None = None) -> None:
-        self._ground = ground
-        self._camera = camera
-
-    def steal_ground_for_menu(self) -> GroundRenderer | None:
-        ground = self._ground
-        self._ground = None
-        return ground
-
-    def menu_ground_camera(self) -> Vec2 | None:
-        return self._camera
-
-    def open(self) -> None:
-        return None
-
-    def close(self) -> None:
-        return None
-
-    def update(self, dt: float) -> None:
-        _ = dt
-        return None
-
-    def draw(self) -> None:
-        return None
-
-    def take_action(self) -> str | None:
-        return None
+from tests.support.gameplay_screen import GameplayScreenStub
 
 
 @dataclass(slots=True)
@@ -179,13 +150,12 @@ def test_capture_gameplay_ground_from_active_view(tmp_path: Path) -> None:
     menu_ground = GroundRenderer(texture=rl.Texture())
     gameplay_ground = GroundRenderer(texture=rl.Texture())
     gameplay_camera = Vec2(-321.25, -456.5)
-    gameplay_view = _GroundSourceView(gameplay_ground, gameplay_camera)
+    gameplay_view = GameplayScreenStub(ground=gameplay_ground, camera=gameplay_camera)
 
     state.menu_ground = menu_ground
     state.menu_ground_camera = Vec2(-1.0, -1.0)
     loop._front_active = gameplay_view
     loop._front_stack = []
-    loop._gameplay_views = frozenset({gameplay_view})
 
     loop._capture_gameplay_ground_for_menu()
 
@@ -201,14 +171,13 @@ def test_capture_gameplay_ground_from_stacked_view(tmp_path: Path) -> None:
     menu_ground = GroundRenderer(texture=rl.Texture())
     gameplay_ground = GroundRenderer(texture=rl.Texture())
     gameplay_camera = Vec2(-611.0, -322.0)
-    gameplay_view = _GroundSourceView(gameplay_ground, gameplay_camera)
+    gameplay_view = GameplayScreenStub(ground=gameplay_ground, camera=gameplay_camera)
     overlay_view = _OverlayView()
 
     state.menu_ground = menu_ground
     state.menu_ground_camera = Vec2(-1.0, -1.0)
     loop._front_active = overlay_view
     loop._front_stack = [gameplay_view]
-    loop._gameplay_views = frozenset({gameplay_view})
 
     loop._capture_gameplay_ground_for_menu()
 

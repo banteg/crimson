@@ -6,6 +6,8 @@ from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
+from ..game.types import GameState
+from ..pause_background import PauseBackground
 from .assets import MenuAssets, load_menu_assets
 from .menu import (
     MENU_ITEM_OFFSET_X,
@@ -34,13 +36,12 @@ from .menu import (
     _draw_menu_cursor,
 )
 from .transitions import _draw_screen_fade
-from .types import PauseBackground, ScreenContext
 
 PAUSE_MENU_TO_MAIN_MENU_FADE_MS = 500
 
 
 class PauseMenuView:
-    def __init__(self, state: ScreenContext) -> None:
+    def __init__(self, state: GameState) -> None:
         self.state = state
         self._is_open = False
         self._assets: MenuAssets | None = None
