@@ -778,9 +778,12 @@ class QuestMode(BaseGameplayMode):
     def _draw_game_cursor(self) -> None:
         assets = self._perk_menu_assets
         cursor_tex = assets.cursor if assets is not None else None
+        world_assets = self.render_resources.assets
+        if world_assets is None:
+            return
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
-            self.render_resources.particles_texture,
+            world_assets.particles,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),

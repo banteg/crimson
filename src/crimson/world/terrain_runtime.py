@@ -24,12 +24,9 @@ class TerrainRuntime(msgspec.Struct):
         overlay_texture_id: TextureId,
         detail_texture_id: TextureId,
     ) -> None:
-        base = self.render_resources.load_texture(base_texture_id)
-        overlay = self.render_resources.load_texture(overlay_texture_id)
-        detail = self.render_resources.load_texture(detail_texture_id)
-        assert base is not None
-        assert overlay is not None
-        assert detail is not None
+        base = self.render_resources.texture(base_texture_id)
+        overlay = self.render_resources.texture(overlay_texture_id)
+        detail = self.render_resources.texture(detail_texture_id)
 
         self.render_resources.set_ground_textures(
             base=base,

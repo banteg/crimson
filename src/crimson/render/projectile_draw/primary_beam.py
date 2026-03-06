@@ -57,6 +57,7 @@ def _draw_beam_body_sprites(
 
 def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
+    assets = renderer.assets
     type_id = int(ctx.type_id)
     texture = ctx.texture
     if type_id not in BEAM_TYPES:
@@ -163,8 +164,8 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             )
 
         # Fire Bullets renders an extra particles.png overlay in a later pass.
-        if is_fire_bullets and renderer.particles_texture is not None:
-            particles_texture = renderer.particles_texture
+        if is_fire_bullets and assets.particles is not None:
+            particles_texture = assets.particles
             atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))
             if atlas is not None:
                 grid = SIZE_CODE_GRID.get(int(atlas.size_code))

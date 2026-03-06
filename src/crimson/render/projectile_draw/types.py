@@ -21,16 +21,7 @@ if TYPE_CHECKING:
 
 class ProjectileRendererLike(Protocol):
     @property
-    def bullet_trail_texture(self) -> rl.Texture | None: ...
-
-    @property
-    def bullet_texture(self) -> rl.Texture | None: ...
-
-    @property
-    def particles_texture(self) -> rl.Texture | None: ...
-
-    @property
-    def projs_texture(self) -> rl.Texture | None: ...
+    def assets(self) -> ProjectileRenderAssetsLike: ...
 
     @property
     def config(self) -> CrimsonConfig | None: ...
@@ -77,6 +68,20 @@ class ProjectileRendererLike(Protocol):
     ) -> None: ...
 
 
+class ProjectileRenderAssetsLike(Protocol):
+    @property
+    def bullet_trail(self) -> rl.Texture | None: ...
+
+    @property
+    def bullet(self) -> rl.Texture | None: ...
+
+    @property
+    def particles(self) -> rl.Texture | None: ...
+
+    @property
+    def projs(self) -> rl.Texture | None: ...
+
+
 class ProjectileDrawCtx(msgspec.Struct, frozen=True):
     renderer: ProjectileRendererLike
     proj: Projectile
@@ -103,6 +108,7 @@ class SecondaryProjectileDrawCtx(msgspec.Struct, frozen=True):
 
 __all__ = [
     "ProjectileDrawCtx",
+    "ProjectileRenderAssetsLike",
     "ProjectileRendererLike",
     "SecondaryProjectileDrawCtx",
 ]

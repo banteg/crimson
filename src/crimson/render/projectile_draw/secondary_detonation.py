@@ -10,6 +10,7 @@ from .types import SecondaryProjectileDrawCtx
 
 def draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
+    assets = renderer.assets
     if int(ctx.proj_type) != 3:
         return False
 
@@ -21,7 +22,7 @@ def draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
         return True
 
     scale = ctx.scale
-    particles_texture = renderer.particles_texture
+    particles_texture = assets.particles
     if particles_texture is None:
         radius = det_scale * t * 80.0
         alpha_byte = int(clamp((1.0 - t) * 180.0 * ctx.alpha, 0.0, 255.0) + 0.5)

@@ -15,13 +15,14 @@ from .types import ProjectileDrawCtx
 
 def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
+    assets = renderer.assets
     type_id = int(ctx.type_id)
     if type_id not in PLASMA_PARTICLE_TYPES:
         return False
-    if renderer.particles_texture is None:
+    if assets.particles is None:
         return False
 
-    particles_texture = renderer.particles_texture
+    particles_texture = assets.particles
     atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))
     if atlas is None:
         return False

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Protocol, cast
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import crimson.render.projectile_draw.secondary_detonation as secondary_detonation_module
 import crimson.render.projectile_draw.secondary_rocket as secondary_rocket_module
@@ -19,13 +19,17 @@ class _TextureLike(Protocol):
     height: int
 
 
+class _AssetsLike(Protocol):
+    projs: _TextureLike | None
+    particles: _TextureLike | None
+
+
 class _RendererLike(Protocol):
-    projs_texture: _TextureLike | None
-    particles_texture: _TextureLike | None
+    assets: _AssetsLike
     config: object | None
 
 
-def _as_renderer(renderer: _RendererLike) -> ProjectileRendererLike:
+def _as_renderer(renderer: Any) -> ProjectileRendererLike:
     return cast("ProjectileRendererLike", renderer)
 
 
@@ -37,9 +41,14 @@ class _TextureStub:
 
 
 @dataclass(slots=True)
+class _AssetsStub:
+    projs: _TextureLike | None = None
+    particles: _TextureLike | None = None
+
+
+@dataclass(slots=True)
 class _RendererStub:
-    projs_texture: _TextureLike | None = None
-    particles_texture: _TextureLike | None = None
+    assets: _AssetsStub = field(default_factory=_AssetsStub)
     config: object | None = None
 
 
@@ -60,7 +69,7 @@ def test_secondary_draw_registry_returns_false_when_not_handled() -> None:
 
 def test_secondary_draw_registry_returns_true_for_rocket_like_when_texture_invalid() -> None:
     renderer = _RendererStub()
-    renderer.projs_texture = _TextureStub(width=0, height=128)
+    renderer.assets.projs = _TextureStub(width=0, height=128)
     proj = SecondaryProjectile(type_id=SecondaryProjectileTypeId.ROCKET, pos=Vec2(), angle=0.0)
     ctx = SecondaryProjectileDrawCtx(
         renderer=_as_renderer(renderer),

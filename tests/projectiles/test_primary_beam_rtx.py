@@ -37,10 +37,15 @@ class _CreatureStub:
 
 
 @dataclass(slots=True)
+class _AssetsStub:
+    particles: _TextureStub | None = None
+
+
+@dataclass(slots=True)
 class _RendererStub:
     rtx_mode: RtxRenderMode
     players: list[object] = field(default_factory=list)
-    particles_texture: _TextureStub | None = None
+    assets: _AssetsStub = field(default_factory=_AssetsStub)
     creatures: _CreaturesStub = field(default_factory=_CreaturesStub)
     atlas_calls: int = 0
 

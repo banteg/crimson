@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_from_registry
@@ -20,10 +20,15 @@ class _TextureLike(Protocol):
     height: int
 
 
+class _AssetsLike(Protocol):
+    bullet_trail: _TextureLike | None
+    bullet: _TextureLike | None
+    particles: _TextureLike | None
+    projs: _TextureLike | None
+
+
 class _RendererLike(Protocol):
-    bullet_trail_texture: _TextureLike | None
-    bullet_texture: _TextureLike | None
-    particles_texture: _TextureLike | None
+    assets: _AssetsLike
     config: object | None
     players: list[object]
     rtx_mode: RtxRenderMode
@@ -31,7 +36,7 @@ class _RendererLike(Protocol):
     def _is_bullet_trail_type(self, type_id: int) -> bool: ...
 
 
-def _as_renderer(renderer: _RendererLike) -> ProjectileRendererLike:
+def _as_renderer(renderer: Any) -> ProjectileRendererLike:
     return cast("ProjectileRendererLike", renderer)
 
 
@@ -68,10 +73,16 @@ class _TextureStub:
 
 
 @dataclass(slots=True)
+class _AssetsStub:
+    bullet_trail: _TextureLike | None = None
+    bullet: _TextureLike | None = None
+    particles: _TextureLike | None = None
+    projs: _TextureLike | None = None
+
+
+@dataclass(slots=True)
 class _RendererStub:
-    bullet_trail_texture: _TextureLike | None = None
-    bullet_texture: _TextureLike | None = None
-    particles_texture: _TextureLike | None = None
+    assets: _AssetsStub = field(default_factory=_AssetsStub)
     config: object | None = None
     players: list[object] = field(default_factory=list)
     rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC

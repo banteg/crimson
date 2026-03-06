@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import crimson.render.world.draw as world_draw_module
 from crimson.render.world import WorldDrawContext, WorldRenderer
@@ -30,6 +31,7 @@ def _make_renderer(*, players: list[PlayerState], local_only: bool, local_slot: 
         runtime_player.health = test_player.health
     world.lan_local_aim_indicators_only = bool(local_only)
     world.lan_local_player_slot_index = int(local_slot)
+    world.render_resources.assets = SimpleNamespace(aim=object())
     return world.renderer
 
 

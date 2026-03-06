@@ -498,10 +498,13 @@ class TutorialMode(BaseGameplayMode):
         assets = self._ui_assets
         if assets is None:
             return
+        world_assets = self.render_resources.assets
+        if world_assets is None:
+            return
         cursor_tex = assets.cursor
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
-            self.render_resources.particles_texture,
+            world_assets.particles,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),

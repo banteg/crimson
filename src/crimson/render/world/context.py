@@ -4,17 +4,15 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
-from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.raylib_api import rd, rl
 
 from ...projectiles.types import ProjectileTemplateId
 from ..rtx.mode import RtxRenderMode
+from ..world_assets import WorldRenderAssets
 from .constants import _RAD_TO_DEG
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from grim.config import CrimsonConfig
     from grim.terrain_render import GroundRenderer
 
@@ -30,10 +28,6 @@ class WorldRenderCtx(msgspec.Struct):
     frame: RenderFrame
     projection_camera: Vec2 | None = None
     projection_view_scale: Vec2 | None = None
-
-    @property
-    def assets_dir(self) -> Path:
-        return self.frame.assets_dir
 
     @property
     def world_size(self) -> float:
@@ -68,56 +62,10 @@ class WorldRenderCtx(msgspec.Struct):
         return self.frame.creatures
 
     @property
-    def creature_textures(self) -> dict[str, rl.Texture]:
-        return self.frame.creature_textures
-
-    @property
-    def projs_texture(self) -> rl.Texture | None:
-        return self.frame.projs_texture
-
-    @property
-    def particles_texture(self) -> rl.Texture | None:
-        return self.frame.particles_texture
-
-    @property
-    def bullet_texture(self) -> rl.Texture | None:
-        return self.frame.bullet_texture
-
-    @property
-    def bullet_trail_texture(self) -> rl.Texture | None:
-        return self.frame.bullet_trail_texture
-
-    @property
-    def arrow_texture(self) -> rl.Texture | None:
-        return self.frame.arrow_texture
-
-    @property
-    def bonuses_texture(self) -> rl.Texture | None:
-        return self.frame.bonuses_texture
-
-    @property
-    def bodyset_texture(self) -> rl.Texture | None:
-        return self.frame.bodyset_texture
-
-    @property
-    def clock_table_texture(self) -> rl.Texture | None:
-        return self.frame.clock_table_texture
-
-    @property
-    def clock_pointer_texture(self) -> rl.Texture | None:
-        return self.frame.clock_pointer_texture
-
-    @property
-    def aim_texture(self) -> rl.Texture | None:
-        return self.frame.aim_texture
-
-    @property
-    def muzzle_flash_texture(self) -> rl.Texture | None:
-        return self.frame.muzzle_flash_texture
-
-    @property
-    def wicons_texture(self) -> rl.Texture | None:
-        return self.frame.wicons_texture
+    def assets(self) -> WorldRenderAssets:
+        assets = self.frame.assets
+        assert assets is not None, "world render assets must be loaded before drawing"
+        return assets
 
     @property
     def elapsed_ms(self) -> float:
@@ -142,12 +90,6 @@ class WorldRenderCtx(msgspec.Struct):
     @property
     def rtx_mode(self) -> RtxRenderMode:
         return self.frame.rtx_mode
-
-    def _ensure_small_font(self) -> SmallFontData | None:
-        if self.renderer._small_font is not None:
-            return self.renderer._small_font
-        self.renderer._small_font = load_small_font(self.assets_dir)
-        return self.renderer._small_font
 
     def _camera_screen_size(
         self,
@@ -320,8 +262,7 @@ def _draw_bullet_trail(
     scale: float,
     angle: float,
 ) -> bool:
-    if render_ctx.bullet_trail_texture is None:
-        return False
+    bullet_trail_texture = render_ctx.assets.bullet_trail
     if alpha <= 0:
         return False
 
@@ -361,7 +302,7 @@ def _draw_bullet_trail(
     tail = rl.Color(tail_rgb[0], tail_rgb[1], tail_rgb[2], 0)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    rl.rl_set_texture(render_ctx.bullet_trail_texture.id)
+    rl.rl_set_texture(bullet_trail_texture.id)
     rl.rl_begin(rd.RL_QUADS)
     rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
     rl.rl_tex_coord2f(0.0, 0.0)
