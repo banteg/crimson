@@ -15,9 +15,11 @@ from .creatures.spawn import RANDOM_HEADING_SENTINEL, SpawnId
 from .game.types import GameState
 from .game_modes import GameMode
 from .sim.bootstrap import terrain_stamping_draws
+from .quests import quest_by_stage
 from .sim.input import PlayerInput
 from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
+from .terrain_slots import Q2_TERRAIN_SLOTS, TerrainSlotTriplet
 from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
@@ -108,15 +110,13 @@ class DemoView:
     def _close_world_runtime(self) -> None:
         self._runtime.close_runtime()
 
-    def _set_ground_textures(
+    def _set_terrain_slots(
         self,
         *,
-        base_texture_id: TextureId,
-        overlay_texture_id: TextureId,
+        terrain_slots: TerrainSlotTriplet,
     ) -> None:
-        self._runtime.terrain_runtime.set_ground_textures(
-            base_texture_id=base_texture_id,
-            overlay_texture_id=overlay_texture_id,
+        self._runtime.terrain_runtime.set_terrain_slots(
+            terrain_slots=terrain_slots,
         )
         rng = self._runtime.sim_world.state.rng
         self._runtime.terrain_runtime.schedule_from_rng_seed(
@@ -467,12 +467,10 @@ class DemoView:
         if index == 0:
             self._setup_variant_0()
         elif index == 1:
-            self._apply_variant_ground(1)
             self._setup_variant_1()
         elif index == 2:
             self._setup_variant_2()
         elif index == 3:
-            self._apply_variant_ground(3)
             self._setup_variant_3()
         elif index == 4:
             self._setup_variant_0()
@@ -496,43 +494,6 @@ class DemoView:
             player.aim = pos
             weapon_assign_player(player, WeaponId(weapon_id), state=self._runtime.sim_world.state)
         self._demo_targets = [None] * len(self._runtime.sim_world.players)
-
-    def _apply_variant_ground(self, index: int) -> None:
-        if index == 5:
-            return
-        terrain = {
-            0: (
-                TextureId.TER_Q1_BASE,
-                TextureId.TER_Q1_OVERLAY,
-            ),
-            1: (
-                TextureId.TER_Q2_BASE,
-                TextureId.TER_Q2_OVERLAY,
-            ),
-            2: (
-                TextureId.TER_Q3_BASE,
-                TextureId.TER_Q3_OVERLAY,
-            ),
-            3: (
-                TextureId.TER_Q4_BASE,
-                TextureId.TER_Q4_OVERLAY,
-            ),
-            4: (
-                TextureId.TER_Q1_BASE,
-                TextureId.TER_Q1_OVERLAY,
-            ),
-        }.get(
-            index,
-            (
-                TextureId.TER_Q1_BASE,
-                TextureId.TER_Q1_OVERLAY,
-            ),
-        )
-        base_texture_id, overlay_texture_id = terrain
-        self._set_ground_textures(
-            base_texture_id=base_texture_id,
-            overlay_texture_id=overlay_texture_id,
-        )
 
     def _spawn(self, spawn_id: SpawnId, pos: Vec2, *, heading: float = 0.0) -> None:
         rng = self._runtime.sim_world.state.rng
@@ -574,6 +535,8 @@ class DemoView:
                 (Vec2(480.0, 576.0), weapon_id),
             ],
         )
+        # Native variant 1 calls terrain_generate(&quest_meta_terrain_desc_unlock_gt_0x13).
+        self._set_terrain_slots(terrain_slots=Q2_TERRAIN_SLOTS)
         self._runtime.sim_world.state.bonuses.weapon_power_up = 15.0
         for idx in range(20):
             x = float(int(rng.rand() % 200) + 32)
@@ -605,6 +568,11 @@ class DemoView:
         weapon_id = 18
         rng = self._runtime.sim_world.state.rng
         self._setup_world_players([(Vec2(512.0, 512.0), weapon_id)])
+        quest = quest_by_stage(1, 1)
+        assert quest is not None
+        # Native variant 3 calls terrain_generate(&quest_selected_meta), which is the
+        # base of the quest metadata array in this build, so it resolves to quest 1.1.
+        self._set_terrain_slots(terrain_slots=quest.terrain_slots)
         for idx in range(20):
             x = float(int(rng.rand() % 200) + 32)
             y = float(int(rng.rand() % 899) + 64)
