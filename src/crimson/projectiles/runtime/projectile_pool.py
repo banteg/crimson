@@ -31,7 +31,7 @@ from .behaviors import (
     _ProjectileUpdateCtx,
 )
 from .collision import _apply_damage_to_creature, _hit_radius_for, _within_native_find_radius
-from .primary_rules import apply_linger, apply_post_hit, apply_pre_hit, primary_rule_for_type_id
+from .primary_rules import primary_rule_for_type_id
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
@@ -271,7 +271,7 @@ class ProjectilePool:
             if proj.life_timer < 0.4:
                 if rule.reset_shock_chain_on_linger:
                     _reset_shock_chain_if_owner(proj_index)
-                apply_linger(rule.linger, update_ctx, proj)
+                rule.linger(update_ctx, proj)
                 continue
 
             if (
@@ -402,7 +402,7 @@ class ProjectilePool:
                     for hook in _PROJECTILE_HIT_PERK_HOOKS:
                         hook(perk_ctx)
 
-                    apply_pre_hit(rule.pre_hit, update_ctx, proj, int(hit_idx))
+                    rule.pre_hit(update_ctx, proj, int(hit_idx))
 
                     owner_player_index = proj.owner.player_index_in_bounds(len(runtime_state.shots_hit))
                     if owner_player_index is not None and creature_lifecycle_is_alive(creature.lifecycle_stage):
@@ -431,8 +431,7 @@ class ProjectilePool:
 
                     dist = _damage_distance_f32(proj.origin, proj.pos)
 
-                    apply_post_hit(
-                        rule.post_hit,
+                    rule.post_hit(
                         update_ctx,
                         _ProjectileHitInfo(
                             proj_index=int(proj_index),
