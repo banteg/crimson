@@ -115,7 +115,7 @@ flowchart LR
     Z --> W
     W --> CDT["Replay .cdt"]
     CDT --> TR["TraceReader\nreplay row decoder"]
-    TR --> C["diff / focus / query / health / viz / CLI"]
+    TR --> C["diff / focus / query / health / CLI"]
 ```
 
 ### Current Bisect Data Flow
@@ -242,7 +242,7 @@ The schema should primarily serve:
 - focus drilldown
 - replay verification
 
-Commands like `query`, `entity`, `tick`, and `viz` should be thin consumers on
+Commands like `query`, `entity`, and `tick` should be thin consumers on
 top of that core, not reasons to make the core format more dynamic or more
 abstract.
 

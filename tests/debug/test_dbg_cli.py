@@ -418,33 +418,3 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
     assert "result=diverged" in focus_result.output
     assert "checkpoint_diff_count=" in focus_result.output
 
-
-def test_dbg_viz(tmp_path: Path) -> None:
-    replay_path = _write_replay_with_fire(tmp_path / "capture_like.crd", ticks=2)
-    golden_trace = tmp_path / "golden.cdt"
-    candidate_trace = tmp_path / "candidate.cdt"
-    html_out = tmp_path / "viz.html"
-    runner = CliRunner()
-
-    record_result = runner.invoke(
-        app,
-        ["dbg", "record", str(replay_path), "--out", str(golden_trace)],
-    )
-    assert record_result.exit_code == 0, record_result.output
-
-    meta, ticks, _footer = load_trace(golden_trace)
-    tick1 = next(row for row in ticks if int(row.tick_index) == 1)
-    _with_score_xp_delta(tick1, delta=1)
-    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
-
-    result = runner.invoke(
-        app,
-        ["dbg", "viz", str(golden_trace), str(candidate_trace), "--tick", "1", "--out", str(html_out)],
-    )
-    assert result.exit_code == 0, result.output
-    assert "viz_html=" in result.output
-    assert html_out.exists()
-    html_text = html_out.read_text(encoding="utf-8")
-    assert "Crimson Debug Viz" in html_text
-    assert "Focus tick: 1" in html_text
-    assert "tick-slider" in html_text

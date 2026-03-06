@@ -65,7 +65,6 @@ These traces are directly consumable by:
 - `uv run crimson dbg diff`
 - `uv run crimson dbg bisect`
 - `uv run crimson dbg focus`
-- `uv run crimson dbg viz`
 
 ## Notes
 

@@ -100,14 +100,6 @@ uv run crimson dbg focus \
   --tick <focus_tick>
 ```
 
-For visual context and movement trajectory overlaps, use the visualizer:
-
-```bash
-uv run crimson dbg viz \
-  analysis/frida/traces/capture_<sha8>.cdt \
-  analysis/frida/traces/capture_<sha8>_zig.cdt
-```
-
 ## 5) Use refactored decompiled hotspot sources first
 
 Static/native references for differential probes should now prefer the refactored

@@ -38,7 +38,6 @@ Last reviewed: **2026-02-24**
   - `uv run crimson dbg diff <expected.cdt> <actual.cdt>`
   - `uv run crimson dbg bisect <expected.cdt> <actual.cdt>`
   - `uv run crimson dbg focus <expected.cdt> <actual.cdt> --tick <n>`
-  - `uv run crimson dbg viz <expected.cdt> <actual.cdt>`
 
 ## Zig replay verifier status
 
@@ -127,7 +126,7 @@ Last reviewed: **2026-02-24**
 - Capture import and trace diagnostics are managed via the decoupled `dbg` trace suite.
   - Code: `src/crimson/dbg/*`
   - Documentation: [`docs/frida/differential-playbook.md`](../frida/differential-playbook.md)
-  - Tooling includes health, structural diffs across implementations, bisection, focus trace, and visualizer.
+  - Tooling includes health, structural diffs across implementations, bisection, and focus trace.
 - Capture-only triage workflow is documented here:
   - [`docs/frida/differential-playbook.md`](../frida/differential-playbook.md)
 
