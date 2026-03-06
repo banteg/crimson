@@ -113,11 +113,11 @@ Available via `uv run crimson view <name>`:
 See also:
 
 - [Module map (Grim vs Crimson)](module-map.md)
-- [Resource lifecycle memo](resource-lifecycle.md)
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
 - [Netplay (rollback primary)](netplay-rollback.md)
 - [LAN lockstep (fallback mode)](lan-lockstep.md)
 - [Local multiplayer rewrite notes](local-multiplayer.md)
+- [Rendering pipeline](rendering-pipeline.md)
 - [Float parity policy](float-parity-policy.md)
 - [Float expression precision map](float-expression-precision-map.md)
 - [Beam rendering (classic + RTX)](beam-rendering.md)

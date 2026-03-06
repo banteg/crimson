@@ -39,7 +39,6 @@ nav = [
     { "Architecture" = [
       { "Overview" = "rewrite/architecture/index.md" },
       { "Module map" = "rewrite/module-map.md" },
-      { "Resource lifecycle memo" = "rewrite/resource-lifecycle.md" },
       { "Perks architecture" = "rewrite/perks-architecture.md" },
     ]},
     { "Contracts" = [
@@ -54,6 +53,7 @@ nav = [
     ]},
     { "Modules" = [
       { "Overview" = "rewrite/modules/index.md" },
+      { "Rendering pipeline" = "rewrite/rendering-pipeline.md" },
       { "Terrain" = "rewrite/terrain.md" },
       { "Beam rendering (classic + RTX)" = "rewrite/beam-rendering.md" },
     ]},
