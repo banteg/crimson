@@ -247,7 +247,7 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
 # These knobs currently affect deterministic simulation (not just rendering), so
 # we force stable values while in a LAN match.
 LAN_SIM_DETAIL_PRESET = 5
-LAN_SIM_FX_TOGGLE = 0
+LAN_SIM_GORE_DISABLED = 0
 
 
 class BaseGameplayMode:
@@ -1193,7 +1193,7 @@ class BaseGameplayMode:
 
     def _deterministic_gore_disabled(self) -> int:
         if self._lan_enabled:
-            return int(LAN_SIM_FX_TOGGLE)
+            return int(LAN_SIM_GORE_DISABLED)
         return self.config.gore_disabled
 
     def update(self, dt: float) -> None:
