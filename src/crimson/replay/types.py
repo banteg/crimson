@@ -264,7 +264,8 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     bootstrap_seed: int = 0
     game_version: str = msgspec.field(default_factory=_default_game_version)
     tick_rate: int = 60
-    difficulty_level: int = 0
+    # Mirrors the native quest retry scaling counter (`quest_fail_retry_count`).
+    quest_fail_retry_count: int = 0
     hardcore: bool = False
     preserve_bugs: bool = False
     detail_preset: int = 5

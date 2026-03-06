@@ -69,7 +69,7 @@ class SpawnPlanView:
         self._seed = 0xBEEF
         self._world_scale = 1.0
         self._hardcore = False
-        self._difficulty = 0
+        self._quest_fail_retry_count = 0
         self._demo_mode_active = True
 
         self._plan = None
@@ -106,7 +106,7 @@ class SpawnPlanView:
             terrain_height=1024.0,
             demo_mode_active=self._demo_mode_active,
             hardcore=self._hardcore,
-            difficulty_level=self._difficulty,
+            quest_fail_retry_count=self._quest_fail_retry_count,
         )
         try:
             self._plan = build_spawn_plan(spawn_id, BASE_POS, 0.0, rng, env)
@@ -164,8 +164,8 @@ class SpawnPlanView:
         self._demo_mode_active = not self._demo_mode_active
         self._rebuild_plan()
 
-    def _adjust_difficulty(self, delta: int) -> None:
-        self._difficulty = max(0, min(5, self._difficulty + delta))
+    def _adjust_quest_fail_retry_count(self, delta: int) -> None:
+        self._quest_fail_retry_count = max(0, min(5, self._quest_fail_retry_count + delta))
         self._rebuild_plan()
 
     def update(self, dt: float) -> None:
@@ -192,9 +192,9 @@ class SpawnPlanView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_D):
             self._toggle_demo_mode()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_COMMA):
-            self._adjust_difficulty(-1)
+            self._adjust_quest_fail_retry_count(-1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_PERIOD):
-            self._adjust_difficulty(1)
+            self._adjust_quest_fail_retry_count(1)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
             self._sim_running = not self._sim_running
@@ -252,7 +252,7 @@ class SpawnPlanView:
             scale=0.8,
             color=UI_TEXT_COLOR,
         )
-        hints = "Left/Right: id  Up/Down: seed  R: random seed  [,]: scale  H: hardcore  D: demo-mode  ,/.: difficulty  Space: sim  Backspace: reset"
+        hints = "Left/Right: id  Up/Down: seed  R: random seed  [,]: scale  H: hardcore  D: demo-mode  ,/.: retry-count  Space: sim  Backspace: reset"
         draw_ui_text(self._small, hints, Vec2(margin, margin + line_h), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
 
         y = margin + line_h * 2.0 + 4.0
@@ -262,7 +262,7 @@ class SpawnPlanView:
         y += line_h
         self._draw_ui_label("hardcore", str(self._hardcore), Vec2(margin, y))
         y += line_h
-        self._draw_ui_label("difficulty", str(self._difficulty), Vec2(margin, y))
+        self._draw_ui_label("retry_count", str(self._quest_fail_retry_count), Vec2(margin, y))
         y += line_h
         self._draw_ui_label("demo_mode_active", str(self._demo_mode_active), Vec2(margin, y))
         y += line_h

@@ -70,7 +70,7 @@ def _apply_batch(
             apply_audio=True,
         )
         world.update_camera(float(step.dt_sim))
-        applied_ticks.append(int(result.tick_index))
+        applied_ticks.append(int(result.source_tick.tick_index))
     return applied_ticks
 
 
@@ -165,7 +165,7 @@ def test_runner_multi_tick_batch_apply_order_is_deterministic() -> None:
             dt_seconds=(3.0 / 60.0) + 1e-9,
         )
         order = _apply_batch(world, session=session, batch=batch)
-        tick_indices = [int(result.tick_index) for result in batch.completed_results]
+        tick_indices = [int(result.source_tick.tick_index) for result in batch.completed_results]
         return order, tick_indices
 
     order_a, indices_a = _advance_once()

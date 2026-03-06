@@ -66,8 +66,8 @@ def test_tick_runner_completed_tick_result_shape() -> None:
     assert result.batch_status is InputStatus.READY
     assert len(result.completed_results) == 1
     tick = result.completed_results[0]
-    assert tick.tick_index == 0
-    assert tick.inputs is not None
+    assert tick.source_tick.tick_index == 0
+    assert tick.source_tick.inputs is not None
 
 
 def test_tick_runner_stall_sets_stalled_and_preserves_debt() -> None:

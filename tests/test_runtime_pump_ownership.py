@@ -19,7 +19,7 @@ from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingN
 from crimson.modes.base_gameplay_mode import LanFramePolicy, _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
-from crimson.sim.input_providers import InputStatus, PerkPickCommand
+from crimson.sim.input_providers import InputStatus, PerkPickCommand, ResolvedTick
 from crimson.sim.tick_runner import TickBatchResult
 from grim.view import ViewContext
 
@@ -94,10 +94,13 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
                 next_tick_index=1,
                 completed_results=[
                     TickResult(
-                        tick_index=0,
+                        source_tick=ResolvedTick(
+                            tick_index=0,
+                            dt_seconds=1.0 / 60.0,
+                            inputs=[],
+                            commands=[],
+                        ),
                         payload=tick_payload,
-                        inputs=[],
-                        commands=[],
                         lan_sync=LanTickSync(
                             frame_tick_index=0,
                             frame_inputs=([],),
@@ -170,16 +173,22 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
     mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
     ticks = [
         TickResult(
-            tick_index=0,
+            source_tick=ResolvedTick(
+                tick_index=0,
+                dt_seconds=1.0 / 60.0,
+                inputs=[],
+                commands=[],
+            ),
             payload=make_tick_payload(elapsed_ms=16.67),
-            inputs=[],
-            commands=[],
         ),
         TickResult(
-            tick_index=1,
+            source_tick=ResolvedTick(
+                tick_index=1,
+                dt_seconds=1.0 / 60.0,
+                inputs=[],
+                commands=[],
+            ),
             payload=make_tick_payload(elapsed_ms=33.33),
-            inputs=[],
-            commands=[],
         ),
     ]
     runner = FakeRunner(results=
@@ -245,10 +254,13 @@ def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker) -> None:
     mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
     command = PerkPickCommand(player_index=0, choice_index=2)
     tick = TickResult(
-        tick_index=0,
+        source_tick=ResolvedTick(
+            tick_index=0,
+            dt_seconds=1.0 / 60.0,
+            inputs=[],
+            commands=[command],
+        ),
         payload=make_tick_payload(elapsed_ms=16.67),
-        inputs=[],
-        commands=[command],
     )
     runner = FakeRunner(results=[
         TickBatchResult(

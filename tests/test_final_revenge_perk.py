@@ -20,7 +20,7 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.5)
@@ -64,7 +64,7 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.1, weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))

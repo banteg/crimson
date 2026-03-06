@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import crimson.modes.base_gameplay_mode as base_gameplay_mode
 from crimson.modes.rush_mode import RushMode
 from crimson.persistence.highscores import HighScoreRecord
+from crimson.sim.sessions import DeterministicSession
 from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -103,3 +104,22 @@ def test_draw_pause_background_fades_entities_during_game_over_close(mocker) -> 
     world_draw.assert_called_once()
     assert world_draw.call_args.kwargs["draw_aim_indicators"] is False
     assert world_draw.call_args.kwargs["entity_alpha"] == 0.5
+
+
+def test_rush_elapsed_helpers_use_authoritative_session_timer(mocker) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
+    config = CrimsonConfig(path=repo_root / "crimson.cfg", data={"game_mode": 2})
+    mode = RushMode(ctx, config=config)
+    session = mode._sim_session
+    assert isinstance(session, DeterministicSession)
+    session.elapsed_ms = 9876.0
+    mocker.patch.object(GameOverUi, "open", return_value=None)
+
+    mode._enter_game_over()
+
+    record = mode._game_over_record
+    assert record is not None
+    assert record.survival_elapsed_ms == 9876
+    assert mode._replay_checkpoint_elapsed_ms() == 9876.0
+    assert mode._replay_claimed_stats_elapsed_ms() == 9876

@@ -27,7 +27,7 @@ def test_projectile_kill_awards_xp_same_step() -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     world.players.append(player)
@@ -72,7 +72,7 @@ def test_world_step_invalid_creature_type_id_fails_fast() -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
 
@@ -108,7 +108,7 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
 
@@ -169,7 +169,7 @@ def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
 
@@ -235,7 +235,7 @@ def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
 
@@ -296,7 +296,7 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
 
@@ -362,7 +362,7 @@ def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
 
@@ -418,7 +418,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
         world_size=world_size,
         demo_mode_active=False,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
     world.state.bonuses.freeze = 1.0
@@ -482,7 +482,7 @@ def test_perk_effects_step_uses_previous_aim_before_player_update() -> None:
         world_size=world_size,
         demo_mode_active=False,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     player.aim = Vec2(128.0, 256.0)

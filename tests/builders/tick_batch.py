@@ -14,7 +14,7 @@ def make_tick_batch(
     ticks = ticks or []
     completed = len(ticks)
     if next_tick_index is None:
-        next_tick_index = (ticks[-1].tick_index + 1) if ticks else 0
+        next_tick_index = (ticks[-1].source_tick.tick_index + 1) if ticks else 0
     return TickBatchResult(
         ticks_completed=completed,
         batch_status=status,

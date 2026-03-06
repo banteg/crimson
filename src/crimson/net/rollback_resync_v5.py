@@ -6,6 +6,7 @@ from typing import Literal
 
 import msgspec
 
+from ..quests.types import SpawnEntry
 from ..wire.float32_wire import assert_wire_f32, wire_f32
 from .relay_protocol import (
     RESYNC_CHUNK_PAYLOAD_BYTES,
@@ -15,8 +16,8 @@ from .relay_protocol import (
     RbResyncCommit,
 )
 
-SCHEMA_VERSION = 2
-SNAPSHOT_CODEC = "msgpack_state_v2_f32wire"
+SCHEMA_VERSION = 4
+SNAPSHOT_CODEC = "msgpack_state_v4_f32wire"
 
 
 class RollbackResyncV5Error(RuntimeError):
@@ -61,14 +62,15 @@ class RushRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
 
 class QuestsRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
     elapsed_ms: float = 0.0
+    spawn_entries: tuple[SpawnEntry, ...] = msgspec.field(default_factory=tuple)
     spawn_timeline_ms: float = 0.0
     no_creatures_timer_ms: float = 0.0
     completion_transition_ms: float = 0.0
-    quest_name_timer_ms: float = 0.0
     perk_pending_count: int = 0
 
     def __post_init__(self) -> None:
         self.elapsed_ms = wire_f32(float(self.elapsed_ms), field="quests.runtime_state.elapsed_ms")
+        self.spawn_entries = tuple(self.spawn_entries)
         self.spawn_timeline_ms = wire_f32(float(self.spawn_timeline_ms), field="quests.runtime_state.spawn_timeline_ms")
         self.no_creatures_timer_ms = wire_f32(
             float(self.no_creatures_timer_ms),
@@ -78,7 +80,6 @@ class QuestsRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
             float(self.completion_transition_ms),
             field="quests.runtime_state.completion_transition_ms",
         )
-        self.quest_name_timer_ms = wire_f32(float(self.quest_name_timer_ms), field="quests.runtime_state.quest_name_timer_ms")
         self.perk_pending_count = int(self.perk_pending_count)
 
 
@@ -186,6 +187,7 @@ def _assert_snapshot_f32(snapshot: ModeStateSnapshotV2) -> None:
         case QuestsStateSnapshotV2():
             runtime_state = snapshot.runtime_state
             runtime_state.elapsed_ms = assert_wire_f32(runtime_state.elapsed_ms, field="quests.runtime_state.elapsed_ms")
+            runtime_state.spawn_entries = tuple(runtime_state.spawn_entries)
             runtime_state.spawn_timeline_ms = assert_wire_f32(
                 runtime_state.spawn_timeline_ms,
                 field="quests.runtime_state.spawn_timeline_ms",
@@ -197,10 +199,6 @@ def _assert_snapshot_f32(snapshot: ModeStateSnapshotV2) -> None:
             runtime_state.completion_transition_ms = assert_wire_f32(
                 runtime_state.completion_transition_ms,
                 field="quests.runtime_state.completion_transition_ms",
-            )
-            runtime_state.quest_name_timer_ms = assert_wire_f32(
-                runtime_state.quest_name_timer_ms,
-                field="quests.runtime_state.quest_name_timer_ms",
             )
 
 

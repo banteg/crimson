@@ -6,21 +6,29 @@ from pathlib import Path
 from builders.session import make_session
 
 import crimson.audio_router as audio_router_module
+import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
 import crimson.sim.batch_apply as batch_apply_module
+import crimson.sim.driver.playback_driver as playback_driver_module
+import crimson.sim.driver.playback_pump as playback_pump_module
+import crimson.sim.driver.replay_benchmark as replay_benchmark_module
+import crimson.sim.driver.replay_info as replay_info_module
+import crimson.sim.driver.replay_render as replay_render_module
+import crimson.sim.frame_pump as frame_pump_module
+import crimson.sim.presentation_reactions as presentation_reactions_module
+import crimson.world.runtime as world_runtime_module
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
 from crimson.sim.clock import FixedStepClock
-from crimson.sim.driver.playback_driver import PlaybackTickOutcome
+from crimson.sim.frame_pump import advance_tick_runner_frame
 from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
-    FrameContext,
     GameCommand,
-    InputStatus,
     LocalInputProvider,
     NetworkInputProvider,
     PerkPickCommand,
+    ResolvedTick,
 )
 from crimson.sim.presentation_step import PresentationStepCommands
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
@@ -74,27 +82,18 @@ def _advance_with_clock(
     ticks_requested = int(clock.advance(float(dt_seconds)))
     if max_ticks is not None:
         ticks_requested = min(int(ticks_requested), max(0, int(max_ticks)))
-    frame_index = int(frame_index) + 1
-    runner.begin_frame(
-        FrameContext(
-            dt_seconds=float(dt_seconds),
-            tick_dt_seconds=float(clock.dt_tick),
-            frame_index=int(frame_index),
-            candidate_ticks=max(0, int(ticks_requested)),
-            is_networked=bool(is_networked),
-            is_replay=bool(is_replay),
-        ),
-    )
-    batch = runner.advance_ticks(
+    advance = advance_tick_runner_frame(
+        runner=runner,
         start_tick=int(start_tick),
-        ticks_requested=max(0, int(ticks_requested)),
-        tick_dt=float(clock.dt_tick),
+        frame_index=int(frame_index),
+        ticks_requested=int(ticks_requested),
+        dt_seconds=float(dt_seconds),
+        tick_dt_seconds=float(clock.dt_tick),
+        is_networked=bool(is_networked),
+        is_replay=bool(is_replay),
+        refund_clock=clock,
     )
-    if batch.batch_status in (InputStatus.STALLED, InputStatus.EOS):
-        unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
-        if unconsumed_ticks > 0:
-            clock.accum += float(unconsumed_ticks) * float(clock.dt_tick)
-    return batch, int(batch.next_tick_index), int(frame_index)
+    return advance.batch, int(advance.next_tick_index), int(advance.frame_index)
 
 
 def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mocker) -> None:
@@ -147,14 +146,22 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     tick_input = [PlayerInput()]
     host_provider = NetworkInputProvider(
         player_count=1,
-        resolve_tick_input=lambda _tick: list(tick_input),
-        resolve_tick_commands=lambda tick: runtime.pull_commands(peer="host", tick_index=int(tick)),
+        resolve_tick=lambda tick, dt: ResolvedTick(
+            tick_index=int(tick),
+            dt_seconds=float(dt),
+            inputs=list(tick_input),
+            commands=runtime.pull_commands(peer="host", tick_index=int(tick)),
+        ),
         submit_command=runtime.submit_local_command,
     )
     client_provider = NetworkInputProvider(
         player_count=1,
-        resolve_tick_input=lambda _tick: list(tick_input),
-        resolve_tick_commands=lambda tick: runtime.pull_commands(peer="client", tick_index=int(tick)),
+        resolve_tick=lambda tick, dt: ResolvedTick(
+            tick_index=int(tick),
+            dt_seconds=float(dt),
+            inputs=list(tick_input),
+            commands=runtime.pull_commands(peer="client", tick_index=int(tick)),
+        ),
     )
     host_session, _ = make_session(seed=42)
     client_session, _ = make_session(seed=42)
@@ -171,7 +178,7 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     )
 
     command = PerkPickCommand(player_index=0, choice_index=1)
-    host_provider.push_command(command)
+    host_provider.submit_command(command)
 
     host_clock = FixedStepClock(tick_rate=60)
     host_frame_index = 0
@@ -200,8 +207,8 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     )
 
     # Commands propagated through runner to both host and client
-    assert host_batch.completed_results[0].commands == [command]
-    assert client_batch.completed_results[0].commands == [command]
+    assert host_batch.completed_results[0].source_tick.commands == [command]
+    assert client_batch.completed_results[0].source_tick.commands == [command]
 
 
 def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
@@ -247,7 +254,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
             max_ticks=1,
         )
         assert batch.ticks_completed == 1
-        live_tick_indices.append(int(batch.completed_results[0].tick_index))
+        live_tick_indices.append(int(batch.completed_results[0].source_tick.tick_index))
 
     replay = recorder.finish()
     replay_path = tmp_path / "contract_live_to_replay.crd"
@@ -282,7 +289,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
                 world_size=float(kwargs.get("world_size", 1024.0)),  # type: ignore[arg-type]
                 demo_mode_active=bool(kwargs.get("demo_mode_active", False)),
                 hardcore=bool(kwargs.get("hardcore", False)),
-                difficulty_level=int(kwargs.get("difficulty_level", 0)),  # type: ignore[arg-type]
+                quest_fail_retry_count=int(kwargs.get("quest_fail_retry_count", 0)),  # type: ignore[arg-type]
                 preserve_bugs=bool(kwargs.get("preserve_bugs", False)),
             )
             self.sim_world = sw
@@ -310,16 +317,21 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
     mocker.patch.object(replay_playback_mode, "WorldRuntime", _StubRuntime)
 
     mode.open()
-    assert isinstance(mode._survival, DeterministicSession)
+    assert mode._driver is not None
+    assert isinstance(mode._driver.session, DeterministicSession)
 
     replay_tick_indices: list[int] = []
 
-    def _capture_runner_tick(_tick_index: int, tick: object) -> bool:
-        assert isinstance(tick, PlaybackTickOutcome)
-        replay_tick_indices.append(int(_tick_index))
-        return False
+    def _apply_presentation_outputs(*, outputs, on_output_applied, **_kwargs) -> None:
+        for output in outputs:
+            replay_tick_indices.append(int(output.tick_index))
+            on_output_applied(output)
 
-    mocker.patch.object(mode, "_on_runner_tick_complete", side_effect=_capture_runner_tick)
+    mocker.patch.object(
+        replay_playback_mode,
+        "apply_presentation_outputs",
+        side_effect=_apply_presentation_outputs,
+    )
     for _ in range(int(tick_count)):
         mode._advance_runner(
             dt_seconds=float(mode._dt),
@@ -392,3 +404,82 @@ def test_contract_6_shared_batch_apply_separates_deterministic_and_output_phases
     assert "update_camera" not in deterministic_apply_source
     assert "apply_step_metadata" not in output_source
     assert output_source.count("sync_audio_bridge_state()") == 1
+
+
+def test_contract_7_live_frame_advancement_uses_shared_helper() -> None:
+    helper_source = inspect.getsource(frame_pump_module.advance_tick_runner_frame)
+    gameplay_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._run_deterministic_session_ticks)
+    lan_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._consume_lan_tick_frames)
+    world_source = inspect.getsource(world_runtime_module.WorldRuntime.advance_tick_frame)
+
+    assert "runner.begin_frame(" in helper_source
+    assert "runner.advance_ticks(" in helper_source
+    assert "refund_clock.accum +=" in helper_source
+    assert "advance_tick_runner_frame(" in gameplay_source
+    assert "advance_tick_runner_frame(" in lan_source
+    assert "runner.begin_frame(" not in gameplay_source
+    assert "runner.advance_ticks(" not in gameplay_source
+    assert "runner.begin_frame(" not in lan_source
+    assert "runner.advance_ticks(" not in lan_source
+    assert "advance_tick_runner_frame(" in world_source
+    assert "runner.begin_frame(" not in world_source
+    assert "runner.advance_ticks(" not in world_source
+
+
+def test_contract_8_replay_frame_advancement_uses_shared_helper() -> None:
+    helper_source = inspect.getsource(playback_pump_module.advance_playback_frame)
+    replay_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._advance_runner)
+
+    assert "driver.step_tick(" in helper_source
+    assert "apply_tick_to_sim(" in helper_source
+    assert "clock.accum +=" in helper_source
+    assert "advance_playback_frame(" in replay_source
+    assert "driver.step_tick(" not in replay_source
+    assert "apply_tick_to_sim(" not in replay_source
+    assert "clock.advance(" not in replay_source
+
+
+def test_contract_9_post_apply_reactions_are_shared() -> None:
+    helper_source = inspect.getsource(presentation_reactions_module.apply_post_apply_reaction)
+    gameplay_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._process_tick_batch_results)
+    replay_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._apply_post_apply_reaction)
+    world_source = inspect.getsource(world_runtime_module.WorldRuntime._apply_tick_batch)
+
+    assert 'play_sfx("sfx_questhit")' in helper_source
+    assert "PerkPickCommand" not in gameplay_source
+    assert 'play_sfx("sfx_ui_bonus")' not in gameplay_source
+    assert "apply_post_apply_reaction(" in replay_source
+    assert "apply_post_apply_reaction(" in world_source
+
+
+def test_contract_10_replay_driver_walk_is_canonical_loop_owner() -> None:
+    walk_source = inspect.getsource(playback_driver_module.PlaybackDriver.walk_ticks)
+    run_source = inspect.getsource(playback_driver_module.PlaybackDriver.run)
+    driver_init_source = inspect.getsource(playback_driver_module.PlaybackDriver.__init__)
+    replay_info_source = inspect.getsource(replay_info_module.collect_replay_info)
+    factory_source = inspect.getsource(playback_driver_module.build_verify_playback_driver)
+    replay_pump_source = inspect.getsource(playback_pump_module.advance_playback_frame)
+    replay_mode_open_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode.open)
+    replay_mode_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._advance_runner)
+    replay_render_source = inspect.getsource(replay_render_module.run_replay_render_video)
+    replay_benchmark_source = inspect.getsource(replay_benchmark_module.run_replay_benchmark)
+
+    assert "self.step_tick(" in walk_source
+    assert "self.walk_ticks(" in run_source
+    assert "PlaybackDriverConfig" not in driver_init_source
+    assert "PlaybackDriverOptions" not in driver_init_source
+    assert "driver.walk_ticks(" in replay_info_source
+    assert "driver.step_tick(" not in replay_info_source
+    assert "PlaybackDriver(" in factory_source
+    assert "PlaybackTickOutcome" not in replay_pump_source
+    assert "build_runtime_playback_driver(" in replay_mode_open_source
+    assert "PlaybackDriver(" not in replay_mode_open_source
+    assert "survival_session" not in replay_mode_open_source
+    assert "rush_session" not in replay_mode_open_source
+    assert "quest_session" not in replay_mode_open_source
+    assert "driver.session.game_tune_started" in replay_mode_source
+    assert "hasattr(" not in replay_mode_source
+    assert "build_verify_playback_driver(" in replay_render_source
+    assert "PlaybackDriver(" not in replay_render_source
+    assert "build_verify_playback_driver(" in replay_benchmark_source
+    assert "PlaybackDriver(" not in replay_benchmark_source

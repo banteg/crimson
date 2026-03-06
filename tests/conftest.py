@@ -178,7 +178,7 @@ def make_world_state() -> Callable[..., "WorldState"]:
         world_size: float = 1024.0,
         demo_mode_active: bool = False,
         hardcore: bool = False,
-        difficulty_level: int = 0,
+        quest_fail_retry_count: int = 0,
         preserve_bugs: bool = False,
         with_player: bool = True,
         player_index: int = 0,
@@ -188,7 +188,7 @@ def make_world_state() -> Callable[..., "WorldState"]:
             world_size=float(world_size),
             demo_mode_active=bool(demo_mode_active),
             hardcore=bool(hardcore),
-            difficulty_level=int(difficulty_level),
+            quest_fail_retry_count=int(quest_fail_retry_count),
             preserve_bugs=bool(preserve_bugs),
         )
         if with_player:
@@ -213,7 +213,7 @@ def default_spawn_env():
         terrain_height=1024.0,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
 
 

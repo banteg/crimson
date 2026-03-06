@@ -40,7 +40,7 @@ def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
         terrain_height=1024.0,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     plan = build_spawn_plan(SpawnId.FORMATION_CHAIN_ALIEN_10_13, Vec2(100.0, 200.0), 0.0, rng, env)
 
@@ -68,7 +68,7 @@ def test_spawn_plan_remaps_spawn_slot_indices() -> None:
         terrain_height=1024.0,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     plan = build_spawn_plan(SpawnId.ZOMBIE_BOSS_SPAWNER_00, Vec2(100.0, 200.0), 0.0, rng, env)
 
@@ -106,7 +106,7 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
         terrain_height=1024.0,
         demo_mode_active=False,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     state = GameplayState(rng=rng)
     pool = CreaturePool(env=env, effects=state.effects)
@@ -145,7 +145,7 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
         terrain_height=1024.0,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     pool = CreaturePool(env=env)
 
@@ -198,7 +198,7 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
         terrain_height=1024.0,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     pool = CreaturePool(env=env)
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
@@ -239,7 +239,7 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
         terrain_height=1024.0,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     pool = CreaturePool(env=env)
     player = PlayerState(index=0, pos=Vec2(640.0, 700.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))

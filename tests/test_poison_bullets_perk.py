@@ -20,7 +20,7 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.state.rng = MockCrand(1)  # rand & 7 == 1
 
@@ -65,7 +65,7 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.state.rng = MockCrand(0)  # rand & 7 != 1
 
@@ -110,7 +110,7 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.state.rng = MockCrand(1)  # rand & 7 == 1
 
@@ -148,7 +148,7 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.state.rng = MockCrand(1)  # rand & 7 == 1
 

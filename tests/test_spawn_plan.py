@@ -30,10 +30,10 @@ _VARIANT_CASES = (
         (SpawnId.ZOMBIE_BOSS_SPAWNER_00, SpawnId.FORMATION_GRID_ALIEN_WHITE_15, SpawnId.ZOMBIE_RANDOM_41),
     ),
     (
-        "alt_difficulty",
+        "alt_retry_count",
         0x5555,
         -100.0,
-        {"difficulty_level": 1},
+        {"quest_fail_retry_count": 1},
         (SpawnId.SPIDER_SP1_RANDOM_03, SpawnId.LIZARD_RANDOM_04, SpawnId.SPIDER_SP2_RANDOM_05),
     ),
 )

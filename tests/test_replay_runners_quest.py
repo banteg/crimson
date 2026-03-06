@@ -4,12 +4,15 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
-from crimson.sim.driver.playback_driver import PlaybackDriver, PlaybackDriverOptions
-from crimson.sim.driver.replay_info import run_replay_info
-from crimson.sim.driver.replay_runner import run_replay
+from crimson.sim.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
 from crimson.sim.input_providers import PerkPickCommand
 from crimson.weapons import WEAPON_BY_ID
-from tests.replay_runner_helpers import _blank_quest_replay, _quest_spawn_entries
+from tests.replay_runner_helpers import (
+    _blank_quest_replay,
+    _collect_verify_replay_info,
+    _quest_spawn_entries,
+    _run_verify_playback,
+)
 
 
 def test_quest_runner_is_deterministic() -> None:
@@ -19,8 +22,8 @@ def test_quest_runner_is_deterministic() -> None:
         _quest_spawn_entries("1.1", player_count=int(replay.header.player_count), seed=int(replay.header.seed)),
     )
 
-    result0 = run_replay(replay, spawn_entries=spawn_entries)
-    result1 = run_replay(replay, spawn_entries=spawn_entries)
+    result0 = _run_verify_playback(replay, spawn_entries=spawn_entries)
+    result1 = _run_verify_playback(replay, spawn_entries=spawn_entries)
 
     assert result0 == result1
     assert result0.game_mode_id == int(GameMode.QUESTS)
@@ -36,7 +39,7 @@ def test_quest_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
         _quest_spawn_entries("1.1", player_count=int(replay.header.player_count), seed=int(replay.header.seed)),
     )
 
-    result = run_replay(
+    result = _run_verify_playback(
         replay,
         spawn_entries=spawn_entries,
     )
@@ -48,9 +51,9 @@ def test_quest_runner_inter_tick_rand_draws_shift_rng_state() -> None:
     _header, rec = _blank_quest_replay(ticks=3, seed=101)
     replay = rec.finish()
 
-    baseline = run_replay(replay, spawn_entries=())
-    shifted = run_replay(replay, spawn_entries=(), inter_tick_rand_draws=1)
-    shifted_again = run_replay(replay, spawn_entries=(), inter_tick_rand_draws=1)
+    baseline = _run_verify_playback(replay, spawn_entries=())
+    shifted = _run_verify_playback(replay, spawn_entries=(), inter_tick_rand_draws=1)
+    shifted_again = _run_verify_playback(replay, spawn_entries=(), inter_tick_rand_draws=1)
 
     assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
     assert shifted == shifted_again
@@ -62,7 +65,7 @@ def test_quest_runner_replays_start_weapon_reload_sfx_at_tick_zero() -> None:
     replay = rec.finish()
     checkpoints = []
 
-    run_replay(
+    _run_verify_playback(
         replay,
         checkpoints_out=checkpoints,
         checkpoint_ticks={0},
@@ -87,7 +90,7 @@ def test_quest_runner_ignores_stale_perk_pick_command() -> None:
         commands=[PerkPickCommand(player_index=0, choice_index=0)],
     )
 
-    result = run_replay(replay, spawn_entries=())
+    result = _run_verify_playback(replay, spawn_entries=())
     assert result.ticks == 1
 
 
@@ -96,8 +99,8 @@ def test_quest_replay_info_elapsed_matches_run_replay() -> None:
     replay = rec.finish()
     replay.ticks[0] = msgspec.structs.replace(replay.ticks[0], dt=0.5)
 
-    run_result = run_replay(replay)
-    info = run_replay_info(replay)
+    run_result = _run_verify_playback(replay)
+    info = _collect_verify_replay_info(replay)
 
     assert int(info.elapsed_ms) == int(run_result.elapsed_ms)
 
@@ -105,7 +108,7 @@ def test_quest_replay_info_elapsed_matches_run_replay() -> None:
 def test_playback_driver_tick_begin_observer_runs_before_step(mocker) -> None:
     _header, rec = _blank_quest_replay(ticks=1, seed=101)
     replay = rec.finish()
-    driver = PlaybackDriver(replay, PlaybackDriverOptions())
+    driver = build_verify_playback_driver(replay)
     observed_before: list[int] = []
     observed_after: list[int] = []
 
@@ -117,9 +120,11 @@ def test_playback_driver_tick_begin_observer_runs_before_step(mocker) -> None:
 
     mocker.patch.object(driver, "step_tick", side_effect=_step_tick_with_mutation)
 
-    driver.run_to_completion(
-        tick_begin_observer=lambda _tick_index, world, _dt_tick: observed_before.append(int(world.players[0].experience)),
-        tick_end_observer=lambda outcome: observed_after.append(int(outcome.world.players[0].experience)),
+    driver.run(
+        hooks=PlaybackWalkHooks(
+            before_tick=lambda _tick_index, world, _dt_tick: observed_before.append(int(world.players[0].experience)),
+            after_tick=lambda _tick_result, world: observed_after.append(int(world.players[0].experience)),
+        ),
     )
 
     assert observed_before == [0]

@@ -1,7 +1,14 @@
 from __future__ import annotations
 
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, GameCommand, InputProvider, InputStatus, TickInput
+from crimson.sim.input_providers import (
+    FrameContext,
+    GameCommand,
+    InputProvider,
+    InputStatus,
+    ResolvedTick,
+    TickSupply,
+)
 
 
 class StallableInputProvider(InputProvider):
@@ -18,23 +25,25 @@ class StallableInputProvider(InputProvider):
     def begin_frame(self, frame_ctx: FrameContext) -> None:
         pass
 
-    def pull_tick_input(self, tick_index: int) -> TickInput:
+    def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
         row = self._rows.get(int(tick_index), [PlayerInput()])
         if row is None:
-            return TickInput(status=InputStatus.STALLED, inputs=[])
-        return TickInput(status=InputStatus.READY, inputs=list(row))
+            return TickSupply(status=InputStatus.STALLED, tick=None)
+        return TickSupply(
+            status=InputStatus.READY,
+            tick=ResolvedTick(
+                tick_index=int(tick_index),
+                dt_seconds=float(default_dt_seconds),
+                inputs=list(row),
+                commands=[],
+            ),
+        )
 
-    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
-        return []
-
-    def supports_commands(self) -> bool:
+    def supports_command_submission(self) -> bool:
         return False
 
-    def push_command(self, command: GameCommand) -> None:
+    def submit_command(self, command: GameCommand) -> None:
         pass
-
-    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
-        return default_dt
 
 
 class EOSInputProvider(InputProvider):
@@ -43,19 +52,21 @@ class EOSInputProvider(InputProvider):
     def begin_frame(self, frame_ctx: FrameContext) -> None:
         pass
 
-    def pull_tick_input(self, tick_index: int) -> TickInput:
+    def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
         if int(tick_index) == 0:
-            return TickInput(status=InputStatus.READY, inputs=[PlayerInput()])
-        return TickInput(status=InputStatus.EOS, inputs=[])
+            return TickSupply(
+                status=InputStatus.READY,
+                tick=ResolvedTick(
+                    tick_index=int(tick_index),
+                    dt_seconds=float(default_dt_seconds),
+                    inputs=[PlayerInput()],
+                    commands=[],
+                ),
+            )
+        return TickSupply(status=InputStatus.EOS, tick=None)
 
-    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
-        return []
-
-    def supports_commands(self) -> bool:
+    def supports_command_submission(self) -> bool:
         return False
 
-    def push_command(self, command: GameCommand) -> None:
+    def submit_command(self, command: GameCommand) -> None:
         pass
-
-    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
-        return default_dt

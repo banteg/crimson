@@ -23,7 +23,7 @@ def test_replay_header_from_session_settings_roundtrip() -> None:
         seed=1234,
         bootstrap_kind="terrain_v1",
         bootstrap_seed=11,
-        difficulty_level=2,
+        quest_fail_retry_count=2,
         hardcore=True,
         detail_preset=4,
         gore_disabled=1,

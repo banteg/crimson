@@ -164,7 +164,7 @@ class WorldRenderCtx(msgspec.Struct):
     def elapsed_ms(self) -> float:
         if self.frame is not None:
             return self.frame.elapsed_ms
-        return float(self.renderer._world.sim_world.elapsed_ms)
+        return float(self.renderer._world.sim_world.presentation_elapsed_ms)
 
     @property
     def bonus_anim_phase(self) -> float:

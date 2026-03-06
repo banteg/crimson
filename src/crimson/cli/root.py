@@ -185,7 +185,7 @@ def cmd_quests(
             terrain_height=float(height),
             demo_mode_active=True,
             hardcore=False,
-            difficulty_level=0,
+            quest_fail_retry_count=0,
         )
         for entry in entries:
             if entry.spawn_id in plan_cache:
@@ -391,7 +391,7 @@ def cmd_spawn_plan(
     terrain_h: float = typer.Option(1024.0, help="terrain height"),
     demo_mode_active: bool = typer.Option(True, help="when true, burst effect is skipped"),
     hardcore: bool = typer.Option(False, help="hardcore mode"),
-    difficulty: int = typer.Option(0, help="difficulty level"),
+    quest_fail_retry_count: int = typer.Option(0, help="quest fail retry count"),
     as_json: bool = typer.Option(False, "--json", help="print JSON"),
 ) -> None:
     """Build and print a spawn plan for a single template id."""
@@ -407,7 +407,7 @@ def cmd_spawn_plan(
         terrain_height=terrain_h,
         demo_mode_active=demo_mode_active,
         hardcore=hardcore,
-        difficulty_level=difficulty,
+        quest_fail_retry_count=quest_fail_retry_count,
     )
     plan = build_spawn_plan(template_id, spawn_pos, heading, rng, env)
     if as_json:
@@ -424,7 +424,7 @@ def cmd_spawn_plan(
                 "terrain_height": terrain_h,
                 "demo_mode_active": demo_mode_active,
                 "hardcore": hardcore,
-                "difficulty_level": difficulty,
+                "quest_fail_retry_count": quest_fail_retry_count,
             },
             "primary": plan.primary,
             "creatures": creatures,
@@ -444,7 +444,7 @@ def cmd_spawn_plan(
         "env="
         f"demo_mode_active={demo_mode_active} "
         f"hardcore={hardcore} "
-        f"difficulty={difficulty} "
+        f"quest_fail_retry_count={quest_fail_retry_count} "
         f"terrain={terrain_w:.0f}x{terrain_h:.0f}",
     )
     typer.echo(f"primary={plan.primary} creatures={len(plan.creatures)} slots={len(plan.spawn_slots)} effects={len(plan.effects)}")

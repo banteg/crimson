@@ -12,7 +12,7 @@ import msgspec
 from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.types import Replay
-from ..sim.driver.replay_runner import run_replay
+from ..sim.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
 from ..sim.timing import ftol_ms_i32
 from ..sim.world_state import WorldState
 from ..status_snapshot import debug_snapshot_from_progress_status, progress_status_from_game_status
@@ -343,14 +343,29 @@ def _record_replay_to_trace_python(
     def _tick_rng_trace_observer(tick_index: int, draws: list[tuple[int, int, int]]) -> None:
         rng_stream_by_tick[int(tick_index)] = _rng_stream_from_draws(draws)
 
-    run_replay(
+    driver = build_verify_playback_driver(
         replay,
         max_ticks=None,
         trace_rng=True,
-        checkpoints_out=checkpoints,
-        checkpoint_ticks=checkpoint_ticks,
-        tick_observer=_tick_observer,
-        tick_rng_trace_observer=_tick_rng_trace_observer,
+    )
+
+    def _after_tick(tick_result, world: WorldState) -> None:
+        tick_index = int(tick_result.source_tick.tick_index)
+        if tick_index in checkpoint_ticks:
+            checkpoints.append(driver.build_checkpoint(tick_result=tick_result))
+        _tick_observer(tick_index, world)
+
+    def _on_rng_trace(tick_result, draws: tuple[tuple[int, int, int], ...]) -> None:
+        _tick_rng_trace_observer(
+            int(tick_result.source_tick.tick_index),
+            list(draws),
+        )
+
+    driver.run(
+        hooks=PlaybackWalkHooks(
+            after_tick=_after_tick,
+            on_rng_trace=_on_rng_trace,
+        ),
     )
 
     tick_rows: list[TickRecord] = []

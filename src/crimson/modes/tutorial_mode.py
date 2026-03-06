@@ -4,8 +4,6 @@ import random
 from collections.abc import Callable
 from typing import cast
 
-import msgspec
-
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -43,11 +41,8 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
-
-
-class _TutorialUiLayout(msgspec.Struct):
-    panel_pos: Vec2 = Vec2(0.0, 64.0)
-    panel_padding: Vec2 = Vec2(20.0, 8.0)
+_TUTORIAL_PANEL_POS = Vec2(0.0, 64.0)
+_TUTORIAL_PANEL_PADDING = Vec2(20.0, 8.0)
 
 
 TutorialSessionFactory = Callable[..., DeterministicSession]
@@ -71,7 +66,7 @@ class TutorialMode(BaseGameplayMode):
             world_size=1024.0,
             default_game_mode_id=GameMode.TUTORIAL,
             demo_mode_active=bool(demo_mode_active),
-            difficulty_level=0,
+            quest_fail_retry_count=0,
             hardcore=False,
             texture_cache=texture_cache,
             config=config,
@@ -83,7 +78,6 @@ class TutorialMode(BaseGameplayMode):
         self._tutorial_actions = TutorialFrameActions()
 
         self._ui_assets: PerkMenuAssets | None = None
-        self._ui_layout = _TutorialUiLayout()
 
         self._perk_menu = PerkMenuController()
 
@@ -211,8 +205,8 @@ class TutorialMode(BaseGameplayMode):
         for line in lines:
             max_w = max(max_w, float(self._ui_text_width(line, scale)))
 
-        pad_x = self._ui_layout.panel_padding.x * scale
-        pad_y = self._ui_layout.panel_padding.y * scale
+        pad_x = _TUTORIAL_PANEL_PADDING.x * scale
+        pad_y = _TUTORIAL_PANEL_PADDING.y * scale
         w = max_w + pad_x * 2.0
         h = float(len(lines)) * line_h + pad_y * 2.0
 
@@ -240,7 +234,7 @@ class TutorialMode(BaseGameplayMode):
         if stage == 8:
             rect, _lines, _line_h = self._prompt_panel_rect(
                 self._tutorial_actions.prompt_text,
-                pos=self._ui_layout.panel_pos,
+                pos=_TUTORIAL_PANEL_POS,
                 scale=1.0,
             )
             gap = 18.0
@@ -438,13 +432,13 @@ class TutorialMode(BaseGameplayMode):
             self._draw_prompt_panel(
                 actions.prompt_text,
                 alpha=float(actions.prompt_alpha),
-                pos=self._ui_layout.panel_pos,
+                pos=_TUTORIAL_PANEL_POS,
             )
         if actions.hint_text and actions.hint_alpha > 1e-3:
             self._draw_prompt_panel(
                 actions.hint_text,
                 alpha=float(actions.hint_alpha),
-                pos=self._ui_layout.panel_pos.offset(dy=84.0),
+                pos=_TUTORIAL_PANEL_POS.offset(dy=84.0),
             )
 
         if self._ui_assets is None:
@@ -454,7 +448,7 @@ class TutorialMode(BaseGameplayMode):
         if stage == 8:
             rect, _lines, _line_h = self._prompt_panel_rect(
                 actions.prompt_text,
-                pos=self._ui_layout.panel_pos,
+                pos=_TUTORIAL_PANEL_POS,
                 scale=1.0,
             )
             gap = 18.0
@@ -499,8 +493,8 @@ class TutorialMode(BaseGameplayMode):
 
         text_alpha = int(255 * clamp(alpha * 0.9, 0.0, 1.0))
         color = rl.Color(255, 255, 255, text_alpha)
-        x = rect.x + self._ui_layout.panel_padding.x
-        line_y = rect.y + self._ui_layout.panel_padding.y
+        x = rect.x + _TUTORIAL_PANEL_PADDING.x
+        line_y = rect.y + _TUTORIAL_PANEL_PADDING.y
         for line in lines:
             self._draw_ui_text(line, Vec2(x, line_y), color, scale=1.0)
             line_y += line_h

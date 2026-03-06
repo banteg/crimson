@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.modes.survival_mode import SurvivalMode
+from crimson.sim.sessions import DeterministicSession
 from crimson.ui.game_over import GameOverUi
 from grim.config import CrimsonConfig
 from grim.view import ViewContext
@@ -36,3 +37,21 @@ def test_survival_high_score_record_uses_player0_stats_in_multiplayer(mocker) ->
     assert record.shots_fired == 10
     assert record.shots_hit == 7
     assert record.most_used_weapon_id == 1
+
+
+def test_survival_elapsed_helpers_use_authoritative_session_timer(mocker) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
+    mode = SurvivalMode(ctx)
+    session = mode._sim_session
+    assert isinstance(session, DeterministicSession)
+    session.elapsed_ms = 4321.0
+    mocker.patch.object(GameOverUi, "open", return_value=None)
+
+    mode._enter_game_over()
+
+    record = mode._game_over_record
+    assert record is not None
+    assert record.survival_elapsed_ms == 4321
+    assert mode._replay_checkpoint_elapsed_ms() == 4321.0
+    assert mode._replay_claimed_stats_elapsed_ms() == 4321

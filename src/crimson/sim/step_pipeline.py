@@ -29,6 +29,7 @@ class DeterministicStepResult(msgspec.Struct):
     presentation: PresentationStepCommands
     presentation_plan_ms: float
     presentation_rng_trace: PresentationRngTrace
+    post_apply_sfx_keys: tuple[str, ...] = ()
 
 
 class StepPipelineOptions(msgspec.Struct, frozen=True):

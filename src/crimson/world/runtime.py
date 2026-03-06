@@ -16,8 +16,14 @@ from ..render.rtx.mode import RtxRenderMode
 from ..render.world.renderer import WorldRenderer, WorldRenderHost
 from ..sim.batch_apply import apply_presentation_outputs, apply_sim_metadata_batch
 from ..sim.clock import FixedStepClock
+from ..sim.frame_pump import advance_tick_runner_frame
 from ..sim.input import PlayerInput
-from ..sim.input_providers import FrameContext, InputStatus, LocalInputProvider
+from ..sim.input_providers import FrameContext, LocalInputProvider
+from ..sim.presentation_reactions import (
+    PostApplyReaction,
+    apply_post_apply_reaction,
+    build_post_apply_reaction,
+)
 from ..sim.sessions import DeterministicSession
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from .audio_bridge import AudioBridge
@@ -42,7 +48,7 @@ class WorldRuntime:
         assets_dir: Path,
         world_size: float = 1024.0,
         demo_mode_active: bool = False,
-        difficulty_level: int = 0,
+        quest_fail_retry_count: int = 0,
         hardcore: bool = False,
         preserve_bugs: bool = False,
         texture_cache: PaqTextureCache | None = None,
@@ -54,7 +60,7 @@ class WorldRuntime:
         self.assets_dir = Path(assets_dir)
         self.world_size = float(world_size)
         self.demo_mode_active = bool(demo_mode_active)
-        self.difficulty_level = int(difficulty_level)
+        self.quest_fail_retry_count = int(quest_fail_retry_count)
         self.hardcore = bool(hardcore)
         self.preserve_bugs = bool(preserve_bugs)
         self.texture_cache = texture_cache
@@ -67,7 +73,7 @@ class WorldRuntime:
             world_size=float(self.world_size),
             demo_mode_active=bool(self.demo_mode_active),
             hardcore=bool(self.hardcore),
-            difficulty_level=int(self.difficulty_level),
+            quest_fail_retry_count=int(self.quest_fail_retry_count),
             preserve_bugs=bool(self.preserve_bugs),
         )
         render_resources = RenderResources(
@@ -143,7 +149,7 @@ class WorldRuntime:
         self._sync_world_size_ownership()
         self.sim_world.demo_mode_active = bool(self.demo_mode_active)
         self.sim_world.hardcore = bool(self.hardcore)
-        self.sim_world.difficulty_level = int(self.difficulty_level)
+        self.sim_world.quest_fail_retry_count = int(self.quest_fail_retry_count)
         self.sim_world.preserve_bugs = bool(self.preserve_bugs)
         self.sim_world.reset(
             seed=int(seed),
@@ -201,7 +207,7 @@ class WorldRuntime:
             creatures=self.sim_world.creatures,
             camera=self.camera,
             demo_mode_active=bool(self.demo_mode_active),
-            elapsed_ms=float(self.sim_world.elapsed_ms),
+            elapsed_ms=float(self.sim_world.presentation_elapsed_ms),
             bonus_anim_phase=float(self.sim_world.bonus_anim_phase),
             lan_player_rings_enabled=bool(self.lan_player_rings_enabled),
             lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
@@ -210,7 +216,7 @@ class WorldRuntime:
         )
 
     # ------------------------------------------------------------------
-    # Tick-stepping (absorbed from WorldTickRunnerHarness)
+    # Tick-stepping
     # ------------------------------------------------------------------
 
     def init_tick_runner(
@@ -305,6 +311,10 @@ class WorldRuntime:
             completed_results=batch.completed_results,
             game_tune_started=bool(session.game_tune_started),
         )
+        reactions = {
+            int(result.source_tick.tick_index): build_post_apply_reaction(tick_result=result)
+            for result in batch.completed_results
+        }
         apply_presentation_outputs(
             outputs=outputs,
             sync_audio_bridge_state=self.sync_audio_bridge_state,
@@ -313,6 +323,10 @@ class WorldRuntime:
                 apply_audio=bool(should_apply_audio),
             ),
             update_camera=self.update_camera,
+            on_output_applied=lambda output: apply_post_apply_reaction(
+                reaction=reactions.get(int(output.tick_index), PostApplyReaction()),
+                play_sfx=self.audio_bridge.router.play_sfx,
+            ),
             apply_audio=True,
         )
         return len(outputs)
@@ -325,28 +339,20 @@ class WorldRuntime:
         session.demo_mode_active = bool(self.demo_mode_active)
         dt = float(dt)
         ticks_requested = int(self._clock.advance(dt))
-        self._frame_index = int(self._frame_index) + 1
-        runner.begin_frame(
-            FrameContext(
-                dt_seconds=float(dt),
-                tick_dt_seconds=float(self._clock.dt_tick),
-                frame_index=int(self._frame_index),
-                candidate_ticks=max(0, int(ticks_requested)),
-                is_networked=False,
-                is_replay=False,
-            ),
-        )
-        batch = runner.advance_ticks(
+        advance = advance_tick_runner_frame(
+            runner=runner,
             start_tick=int(self._next_tick_index),
-            ticks_requested=max(0, int(ticks_requested)),
-            tick_dt=float(self._clock.dt_tick),
+            frame_index=int(self._frame_index),
+            ticks_requested=int(ticks_requested),
+            dt_seconds=float(dt),
+            tick_dt_seconds=float(self._clock.dt_tick),
+            is_networked=False,
+            is_replay=False,
+            refund_clock=self._clock,
         )
-        self._next_tick_index = int(batch.next_tick_index)
-        if batch.batch_status in (InputStatus.STALLED, InputStatus.EOS):
-            unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
-            if unconsumed_ticks > 0:
-                self._clock.accum += float(unconsumed_ticks) * float(self._clock.dt_tick)
+        self._frame_index = int(advance.frame_index)
+        self._next_tick_index = int(advance.next_tick_index)
         return self._apply_tick_batch(
-            batch=batch,
+            batch=advance.batch,
             session=session,
         )

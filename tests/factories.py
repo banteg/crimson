@@ -100,7 +100,7 @@ def make_creature_update_options(
     world_height: float = 1024.0,
     fx_queue: FxQueue | None = None,
     fx_queue_rotated: FxQueueRotated | None = None,
-    difficulty_level: int = 0,
+    quest_fail_retry_count: int = 0,
 ) -> CreatureUpdateOptions:
     width = float(world_width)
     height = float(world_height)
@@ -109,7 +109,7 @@ def make_creature_update_options(
         terrain_height=height,
         demo_mode_active=bool(state.demo_mode_active),
         hardcore=bool(state.hardcore),
-        difficulty_level=int(difficulty_level),
+        quest_fail_retry_count=int(quest_fail_retry_count),
     )
     return CreatureUpdateOptions(
         state=state,

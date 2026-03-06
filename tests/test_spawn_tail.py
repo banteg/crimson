@@ -14,14 +14,14 @@ def test_spawn_plan_tail_burst_effect_is_gated_by_demo_and_bounds() -> None:
         terrain_height=1024.0,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     env_live = SpawnEnv(
         terrain_width=1024.0,
         terrain_height=1024.0,
         demo_mode_active=False,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
 
     plan_demo = build_spawn_plan(SpawnId.SPIDER_SP2_SPLITTER_01, Vec2(100.0, 200.0), 0.0, Crand(0), env_demo)
@@ -37,7 +37,7 @@ def test_spawn_plan_tail_burst_effect_is_gated_by_demo_and_bounds() -> None:
 
 
 @pytest.mark.parametrize(
-    ("difficulty", "reward_scale", "speed_scale", "contact_scale", "health_scale"),
+    ("retry_count", "reward_scale", "speed_scale", "contact_scale", "health_scale"),
     [
         (1, 0.9, 0.95, 0.95, 0.95),
         (2, 0.85, 0.9, 0.9, 0.9),
@@ -46,8 +46,8 @@ def test_spawn_plan_tail_burst_effect_is_gated_by_demo_and_bounds() -> None:
         (5, 0.8, 0.6, 0.5, 0.5),
     ],
 )
-def test_spawn_plan_tail_applies_difficulty_scaling(
-    difficulty: int,
+def test_spawn_plan_tail_applies_retry_count_scaling(
+    retry_count: int,
     reward_scale: float,
     speed_scale: float,
     contact_scale: float,
@@ -58,7 +58,7 @@ def test_spawn_plan_tail_applies_difficulty_scaling(
         terrain_height=1024.0,
         demo_mode_active=True,  # avoid effect noise
         hardcore=False,
-        difficulty_level=difficulty,
+        quest_fail_retry_count=retry_count,
     )
     plan = build_spawn_plan(SpawnId.SPIDER_SP2_SPLITTER_01, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
@@ -70,13 +70,13 @@ def test_spawn_plan_tail_applies_difficulty_scaling(
     assert c.max_health == 400.0
 
 
-def test_spawn_plan_tail_applies_hardcore_scaling_and_ignores_difficulty() -> None:
+def test_spawn_plan_tail_applies_hardcore_scaling_and_ignores_retry_count() -> None:
     env = SpawnEnv(
         terrain_width=1024.0,
         terrain_height=1024.0,
         demo_mode_active=True,  # avoid effect noise
         hardcore=True,
-        difficulty_level=4,
+        quest_fail_retry_count=4,
     )
     plan = build_spawn_plan(SpawnId.SPIDER_SP2_SPLITTER_01, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
@@ -89,19 +89,19 @@ def test_spawn_plan_tail_applies_hardcore_scaling_and_ignores_difficulty() -> No
 
 
 @pytest.mark.parametrize(
-    ("difficulty", "expected_extra"),
+    ("retry_count", "expected_extra"),
     [
         (1, 0.35),
         (9, 3.0),
     ],
 )
-def test_spawn_plan_tail_spawn_slot_interval_scales_with_difficulty(difficulty: int, expected_extra: float) -> None:
+def test_spawn_plan_tail_spawn_slot_interval_scales_with_retry_count(retry_count: int, expected_extra: float) -> None:
     env = SpawnEnv(
         terrain_width=1024.0,
         terrain_height=1024.0,
         demo_mode_active=True,  # avoid effect noise
         hardcore=False,
-        difficulty_level=difficulty,
+        quest_fail_retry_count=retry_count,
     )
     plan = build_spawn_plan(SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
@@ -115,7 +115,7 @@ def test_spawn_plan_tail_spawn_slot_interval_hardcore_decrease() -> None:
         terrain_height=1024.0,
         demo_mode_active=True,  # avoid effect noise
         hardcore=True,
-        difficulty_level=9,
+        quest_fail_retry_count=9,
     )
     plan = build_spawn_plan(SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 

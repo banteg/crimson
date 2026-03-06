@@ -1,40 +1,41 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from types import SimpleNamespace
 
 from builders.tick_payload import make_tick_payload
+from builders.tick_result import make_tick_result
 
-from crimson.sim.driver.playback_driver import PlaybackTickOutcome
-from crimson.sim.world_state import WorldState
+from crimson.sim.hooks import TickResult
+from crimson.sim.sessions import QuestSpawnState
 
 
 @dataclass
 class FakePlaybackDriver:
     """Minimal fake driver for replay playback mode tests.
 
-    Returns stub ``PlaybackTickOutcome`` objects from ``step_tick``.
+    Returns stub ``TickResult`` objects from ``step_tick``.
     """
 
     tick_limit: int = 0
     on_step: object | None = None
+    quest_spawn_state: QuestSpawnState | None = None
+    post_apply_sfx_keys: tuple[str, ...] = ()
+    game_tune_started: bool = False
+    elapsed_ms: float = 0.0
 
-    def step_tick(self, tick_index: int) -> PlaybackTickOutcome:
+    @property
+    def session(self) -> object:
+        return SimpleNamespace(game_tune_started=bool(self.game_tune_started))
+
+    def step_tick(self, tick_index: int) -> TickResult:
         if self.on_step is not None:
             self.on_step()
-        payload = make_tick_payload()
-        return PlaybackTickOutcome(
+        return make_tick_result(
             tick_index=int(tick_index),
-            dt_tick=1.0 / 60.0,
-            commands=[],
-            world=WorldState.build(
-                world_size=1024.0,
-                demo_mode_active=False,
-                hardcore=False,
-                difficulty_level=0,
+            dt_sim=1.0 / 60.0,
+            payload=make_tick_payload(
+                dt_sim=1.0 / 60.0,
+                post_apply_sfx_keys=tuple(self.post_apply_sfx_keys),
             ),
-            step=payload.step,
-            elapsed_ms=float(payload.elapsed_ms),
-            rng_marks={},
-            creature_count_world_step=0,
-            tick_rng_rows=[],
         )

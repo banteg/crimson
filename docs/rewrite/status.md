@@ -113,9 +113,9 @@ Last reviewed: **2026-02-24**
 - Ground renderer parity is fixture-tested against runtime dumps.
   - Doc: [`docs/rewrite/terrain.md`](terrain.md)
   - Test: `tests/test_ground_dump_fixtures.py`
-- Deterministic step pipeline parity (live update vs replay/headless runners) is covered with command-hash checks.
-  - Tests: `tests/test_step_pipeline_parity.py`, `tests/test_replay_runners.py`
-  - Code: `src/crimson/sim/sessions.py`, `src/crimson/sim/runners/*.py`
+- Deterministic step pipeline parity (live update vs replay/headless execution) is covered with canonical tick and checkpoint/state parity tests.
+  - Tests: `tests/test_step_pipeline_parity.py`, `tests/test_replay_runners_survival.py`, `tests/test_replay_runners_rush.py`, `tests/test_replay_runners_quest.py`
+  - Code: `src/crimson/sim/sessions.py`, `src/crimson/sim/tick_runner.py`, `src/crimson/sim/driver/playback_driver.py`
 - Network protocol/runtime behavior is covered by unit and wiring tests.
   - Tests: `tests/test_relay_protocol.py`, `tests/test_relay_service.py`, `tests/test_rollback_core.py`, `tests/test_rollback_resync_v5.py`, `tests/test_net_runtime_heartbeat.py`, `tests/test_net_runtime_rollback.py`, `tests/test_net_runtime_resync.py`, `tests/test_net_runtime_modes.py`, `tests/test_net_reconnect.py`, `tests/test_net_runtime_lockstep_fallback.py`, `tests/test_net_cli.py`, `tests/test_net_ui_flow.py`, plus lockstep suites `tests/test_lan_protocol.py`, `tests/test_lan_lockstep_host.py`, `tests/test_lan_lockstep_client.py`
 - Replay-side checkpoint differential comparison is reusable via CLI and library helpers.

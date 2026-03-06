@@ -126,7 +126,7 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
         world_size=1024.0,
         demo_mode_active=False,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
         preserve_bugs=False,
     )
     fx_queue = FxQueue()

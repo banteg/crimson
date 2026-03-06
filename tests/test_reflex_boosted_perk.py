@@ -19,7 +19,7 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
 
     player = PlayerState(index=0, pos=Vec2())
@@ -49,7 +49,7 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
         world_size=1024.0,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.players.append(PlayerState(index=0, pos=Vec2()))
     world.state.time_scale_active = True

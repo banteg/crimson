@@ -4,8 +4,6 @@ import math
 import random
 from collections.abc import Callable
 
-import msgspec
-
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.color import RGBA
@@ -19,6 +17,7 @@ from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, Creat
 from ..game_modes import GameMode
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSession
+from ..sim.timing import ftol_ms_i32
 from ..typo.names import CreatureNameTable, load_typo_dictionary
 from ..typo.player import build_typo_player_input, enforce_typo_player_frame
 from ..typo.spawns import tick_typo_spawns
@@ -48,11 +47,6 @@ TYPING_CURSOR = "_"
 TYPING_CURSOR_X_OFFSET = 14.0
 
 
-class _TypoState(msgspec.Struct):
-    elapsed_ms: int = 0
-    spawn_cooldown_ms: int = 0
-
-
 TypoSessionFactory = Callable[..., DeterministicSession]
 
 
@@ -73,7 +67,7 @@ class TypoShooterMode(BaseGameplayMode):
             world_size=WORLD_SIZE,
             default_game_mode_id=GameMode.TYPO,
             demo_mode_active=False,
-            difficulty_level=0,
+            quest_fail_retry_count=0,
             hardcore=False,
             texture_cache=texture_cache,
             config=config,
@@ -81,7 +75,8 @@ class TypoShooterMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._typo = _TypoState()
+        self._elapsed_ms: int = 0
+        self._spawn_cooldown_ms: int = 0
         self._typing = TypingBuffer()
         self._names = CreatureNameTable.sized(0)
         self._aim_target = Vec2()
@@ -111,7 +106,8 @@ class TypoShooterMode(BaseGameplayMode):
         super().open()
         self._ui_assets = load_perk_menu_assets(self._assets_root)
         self._sim_session = self._new_sim_session()
-        self._typo = _TypoState()
+        self._elapsed_ms = 0
+        self._spawn_cooldown_ms = 0
         self._typing = TypingBuffer()
         self._names = CreatureNameTable.sized(len(self.creatures.entries))
         self._unique_words = None
@@ -247,7 +243,7 @@ class TypoShooterMode(BaseGameplayMode):
         record = build_highscore_record_for_game_over(
             state=self.state,
             player=self.player,
-            survival_elapsed_ms=int(self._typo.elapsed_ms),
+            survival_elapsed_ms=int(self._elapsed_ms),
             creature_kill_count=int(self.creatures.kill_count),
             game_mode_id=GameMode.TYPO,
             shots_fired=int(self._typing.shots_fired),
@@ -319,14 +315,14 @@ class TypoShooterMode(BaseGameplayMode):
         self.state.bonus_pool.reset()
 
         cooldown, spawns = tick_typo_spawns(
-            elapsed_ms=int(self._typo.elapsed_ms),
-            spawn_cooldown_ms=int(self._typo.spawn_cooldown_ms),
-            frame_dt_ms=int(dt_world * 1000.0),
+            elapsed_ms=int(self._elapsed_ms),
+            spawn_cooldown_ms=int(self._spawn_cooldown_ms),
+            frame_dt_ms=ftol_ms_i32(float(dt_world)),
             player_count=1,
             world_width=float(self.world_size),
             world_height=float(self.world_size),
         )
-        self._typo.spawn_cooldown_ms = int(cooldown)
+        self._spawn_cooldown_ms = int(cooldown)
         for call in spawns:
             creature_idx = self._spawn_tinted_creature(
                 type_id=call.type_id,
@@ -341,7 +337,7 @@ class TypoShooterMode(BaseGameplayMode):
                 unique_words=self._unique_words,
             )
 
-        self._typo.elapsed_ms += int(dt_world * 1000.0)
+        self._elapsed_ms += ftol_ms_i32(float(dt_world))
         # Death/game-over flow is handled at the start of the next frame so the
         # trooper death animation can play before the UI slides in.
 
@@ -460,7 +456,7 @@ class TypoShooterMode(BaseGameplayMode):
                 player=self.player,
                 players=self.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
-                elapsed_ms=float(self._typo.elapsed_ms),
+                elapsed_ms=float(self._elapsed_ms),
                 frame_dt_ms=self._last_dt_ms,
             )
 

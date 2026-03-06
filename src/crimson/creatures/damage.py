@@ -164,7 +164,7 @@ def creature_apply_damage(
     This is a partial port of `creature_apply_damage` (FUN_004207c0).
 
     Notes:
-    - Death side-effects are handled by the caller (see Phase 2 in `plan.md`).
+    - Death side-effects are handled by the caller.
     - `damage_type` is a native integer category; call sites must supply it.
     """
 

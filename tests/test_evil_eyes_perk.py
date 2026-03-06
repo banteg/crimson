@@ -19,7 +19,7 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     player = PlayerState(index=0, pos=Vec2(300.0, 100.0))
     player.perk_counts[int(PerkId.EVIL_EYES)] = 1

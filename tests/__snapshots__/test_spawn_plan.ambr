@@ -19681,7 +19681,7 @@
     'template_id': 67,
   })
 # ---
-# name: test_spawn_plan_variant_snapshot[alt_difficulty_template_03][alt_difficulty_template_03]
+# name: test_spawn_plan_variant_snapshot[alt_retry_count_template_03][alt_retry_count_template_03]
   dict({
     'creatures': list([
       dict({
@@ -19729,7 +19729,7 @@
     'template_id': 3,
   })
 # ---
-# name: test_spawn_plan_variant_snapshot[alt_difficulty_template_04][alt_difficulty_template_04]
+# name: test_spawn_plan_variant_snapshot[alt_retry_count_template_04][alt_retry_count_template_04]
   dict({
     'creatures': list([
       dict({
@@ -19777,7 +19777,7 @@
     'template_id': 4,
   })
 # ---
-# name: test_spawn_plan_variant_snapshot[alt_difficulty_template_05][alt_difficulty_template_05]
+# name: test_spawn_plan_variant_snapshot[alt_retry_count_template_05][alt_retry_count_template_05]
   dict({
     'creatures': list([
       dict({
