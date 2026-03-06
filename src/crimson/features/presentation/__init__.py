@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-"""Presentation-phase deterministic hook registries."""
+"""Presentation-phase deterministic helpers."""
 
-from .projectile_decals import ProjectileDecalCtx, run_projectile_decal_hooks
+from .projectile_decals import queue_projectile_large_streak_decal
 
-__all__ = ["ProjectileDecalCtx", "run_projectile_decal_hooks"]
-
+__all__ = ["queue_projectile_large_streak_decal"]
