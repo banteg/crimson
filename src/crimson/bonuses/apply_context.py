@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -16,16 +16,12 @@ if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
 
 
-class HasPos(Protocol):
-    pos: Vec2
-
-
 class BonusApplyCtx(msgspec.Struct):
     state: GameplayState
     player: PlayerState
     bonus_id: BonusId
     amount: int
-    origin: HasPos | None
+    origin_pos: Vec2 | None
     creatures: Sequence[CreatureState]
     players: list[PlayerState]
     detail_preset: int
@@ -59,10 +55,6 @@ class BonusApplyCtx(msgspec.Struct):
                 icon_id=self.icon_id,
                 timer_ref=_TimerRef("player", str(timer_key), player_index=int(self.player.index)),
             )
-
-    def origin_pos(self) -> HasPos:
-        return self.origin or self.player
-
 
 BonusApplyHandler = Callable[[BonusApplyCtx], None]
 

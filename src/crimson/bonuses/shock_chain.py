@@ -14,12 +14,11 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
     if not creatures:
         return
 
-    origin_pos = ctx.origin_pos()
     # Mirrors the `exclude_id == -1` behavior of `creature_find_nearest(origin, -1, 0.0)`:
     # - requires `active != 0`
     # - requires `lifecycle_stage == 16.0` (alive sentinel)
     # - no HP gate
-    origin = origin_pos.pos
+    origin = ctx.origin_pos or ctx.player.pos
     best_idx = 0 if bool(ctx.state.preserve_bugs) else -1
     best_dist_sq = 1e12
     for idx, creature in enumerate(creatures):
