@@ -54,6 +54,7 @@ def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleSt
         sfx=sfx.init_sfx_state(ready=True, enabled=sfx_enabled, volume=sfx_volume),
     )
     sfx.load_sfx_index(state.sfx, assets_dir, console)
+    sfx.preload_sfx_samples(state.sfx, console)
     music.load_music_tracks(state.music, assets_dir, console)
     return state
 

@@ -208,6 +208,35 @@ def load_sfx_index(state: SfxState, assets_dir: Path, console: ConsoleState) -> 
     console.log.flush()
 
 
+def _iter_preload_keys(state: SfxState) -> Iterable[str]:
+    seen: set[str] = set()
+    for group in (sfx_map.SFX_LOAD_ORDER, sfx_map.SFX_UNREFERENCED):
+        for key, _entry_name in group:
+            if key not in state.key_to_entry or key in seen:
+                continue
+            seen.add(key)
+            yield key
+    for key in sorted(state.key_to_entry):
+        if key in seen:
+            continue
+        seen.add(key)
+        yield key
+
+
+def preload_sfx_samples(state: SfxState, console: ConsoleState | None = None) -> None:
+    if not state.ready or not state.enabled:
+        return
+    loaded = 0
+    total = 0
+    for key in _iter_preload_keys(state):
+        total += 1
+        if _load_sample(state, key) is not None:
+            loaded += 1
+    if console is not None:
+        console.log.log(f"audio: sfx samples loaded {loaded}/{total}")
+        console.log.flush()
+
+
 def _normalize_sfx_key(state: SfxState, key: str) -> str | None:
     key = key.strip().lstrip("_")
     if not key:
