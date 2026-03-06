@@ -521,7 +521,7 @@ class GameOverUi(msgspec.Struct):
                 self._hover_time = float(max(0.0, min(1.0, self._hover_time + (dt_hover if hovering_time else -dt_hover))))
 
                 elapsed_ms = int(record.survival_elapsed_ms)
-                if hud_assets is not None and hud_assets.clock_table is not None:
+                if hud_assets is not None:
                     src = rl.Rectangle(0.0, 0.0, float(hud_assets.clock_table.width), float(hud_assets.clock_table.height))
                     clock_table_pos = col2_pos + Vec2(8.0 * scale, 14.0 * scale)
                     dst = rl.Rectangle(clock_table_pos.x, clock_table_pos.y, 32.0 * scale, 32.0 * scale)
@@ -533,7 +533,7 @@ class GameOverUi(msgspec.Struct):
                         0.0,
                         rl.Color(255, 255, 255, int(255 * alpha)),
                     )
-                if hud_assets is not None and hud_assets.clock_pointer is not None:
+                if hud_assets is not None:
                     src = rl.Rectangle(
                         0.0, 0.0, float(hud_assets.clock_pointer.width), float(hud_assets.clock_pointer.height),
                     )
@@ -555,7 +555,7 @@ class GameOverUi(msgspec.Struct):
         row_pos = card_origin.offset(dy=52.0 * scale)
         self._hover_weapon = float(max(0.0, min(1.0, self._hover_weapon)))
         self._hover_hit_ratio = float(max(0.0, min(1.0, self._hover_hit_ratio)))
-        if show_weapon_row and hud_assets is not None and hud_assets.wicons is not None:
+        if show_weapon_row and hud_assets is not None:
             weapon_pos = row_pos
             weapon_rect = Rect.from_top_left(weapon_pos, 64.0 * scale, 32.0 * scale)
             hovering_weapon = weapon_rect.contains(mouse)

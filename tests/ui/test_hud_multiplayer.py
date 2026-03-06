@@ -36,15 +36,15 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(mocker) -> None:
         game_top=textures["game_top"],
         life_heart=textures["life_heart"],
         ind_life=textures["ind_life"],
-        ind_panel=None,
+        ind_panel=_texture(182, 53),
         ind_bullet=textures["ind_bullet"],
-        ind_fire=None,
-        ind_rocket=None,
-        ind_electric=None,
+        ind_fire=_texture(6, 16),
+        ind_rocket=_texture(6, 16),
+        ind_electric=_texture(6, 16),
         wicons=textures["wicons"],
-        clock_table=None,
-        clock_pointer=None,
-        bonuses=None,
+        clock_table=_texture(32, 32),
+        clock_pointer=_texture(32, 32),
+        bonuses=_texture(256, 256),
     )
 
     player0 = PlayerState(index=0, pos=Vec2(), health=80.0)
@@ -112,18 +112,18 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker)
 
     life_heart = _texture(32, 32)
     assets = HudAssets(
-        game_top=None,
+        game_top=_texture(512, 64),
         life_heart=life_heart,
-        ind_life=None,
-        ind_panel=None,
-        ind_bullet=None,
-        ind_fire=None,
-        ind_rocket=None,
-        ind_electric=None,
-        wicons=None,
-        clock_table=None,
-        clock_pointer=None,
-        bonuses=None,
+        ind_life=_texture(120, 9),
+        ind_panel=_texture(182, 53),
+        ind_bullet=_texture(6, 16),
+        ind_fire=_texture(6, 16),
+        ind_rocket=_texture(6, 16),
+        ind_electric=_texture(6, 16),
+        wicons=_texture(256, 128),
+        clock_table=_texture(32, 32),
+        clock_pointer=_texture(32, 32),
+        bonuses=_texture(256, 256),
     )
 
     player0 = PlayerState(index=0, pos=Vec2(), health=20.0)

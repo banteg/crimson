@@ -15,6 +15,7 @@ from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
 from .math_parity import f32
 from .owner_ref import OwnerRef
+from .projectiles.types import CreatureDamageApplier
 
 if TYPE_CHECKING:
     from .creatures.runtime import CreatureState
@@ -62,7 +63,6 @@ class ParticleStyleId(IntEnum):
     BUBBLEGUN = 8
 
 
-CreatureDamageApplier = Callable[[int, float, int, Vec2, OwnerRef], None]
 CreatureKillHandler = Callable[[int, OwnerRef], None]
 
 

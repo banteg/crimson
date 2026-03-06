@@ -235,14 +235,14 @@ class ReplayPlaybackMode:
         icon_x = panel_x + 2.0 * scale + float(_REPLAY_WIDGET_CLOCK_OFFSET_X) * scale
         icon_y = panel_y + 8.0 * scale + float(_REPLAY_WIDGET_CLOCK_OFFSET_Y) * scale
 
-        if assets is not None and assets.clock_table is not None:
+        if assets is not None:
             src = rl.Rectangle(0.0, 0.0, float(assets.clock_table.width), float(assets.clock_table.height))
             dst = rl.Rectangle(icon_x, icon_y, icon_w, icon_h)
             rl.draw_texture_pro(assets.clock_table, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, 230))
 
         elapsed_seconds = float(self._tick_index) / float(self._tick_rate)
 
-        if assets is not None and assets.clock_pointer is not None:
+        if assets is not None:
             src = rl.Rectangle(0.0, 0.0, float(assets.clock_pointer.width), float(assets.clock_pointer.height))
             center_x = icon_x + icon_w * 0.5
             center_y = icon_y + icon_h * 0.5

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from enum import IntEnum
-from typing import Protocol
+from typing import TypeAlias
 
 import msgspec
 
@@ -50,8 +50,7 @@ def _rng_zero() -> int:
     return 0
 
 
-class CreatureDamageApplier(Protocol):
-    def __call__(self, creature_index: int, damage: float, damage_type: int, impulse: Vec2, owner: OwnerRef, /) -> None: ...
+CreatureDamageApplier: TypeAlias = Callable[[int, float, int, Vec2, OwnerRef], None]
 
 
 SecondaryDetonationKillHandler = Callable[[int], None]

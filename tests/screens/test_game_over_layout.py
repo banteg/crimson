@@ -60,18 +60,18 @@ def _game_over_assets(
 
 def _hud_assets_for_score_card() -> HudAssets:
     return HudAssets(
-        game_top=None,
-        life_heart=None,
-        ind_life=None,
-        ind_panel=None,
-        ind_bullet=None,
-        ind_fire=None,
-        ind_rocket=None,
-        ind_electric=None,
+        game_top=_texture(width=512, height=64),
+        life_heart=_texture(width=32, height=32),
+        ind_life=_texture(width=120, height=9),
+        ind_panel=_texture(width=182, height=53),
+        ind_bullet=_texture(width=6, height=16),
+        ind_fire=_texture(width=6, height=16),
+        ind_rocket=_texture(width=6, height=16),
+        ind_electric=_texture(width=6, height=16),
         wicons=_texture(width=256, height=256),
-        clock_table=None,
-        clock_pointer=None,
-        bonuses=None,
+        clock_table=_texture(width=32, height=32),
+        clock_pointer=_texture(width=32, height=32),
+        bonuses=_texture(width=256, height=256),
     )
 
 

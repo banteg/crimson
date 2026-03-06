@@ -395,7 +395,7 @@ class TypoShooterMode(BaseGameplayMode):
         text_y = screen_h - 127.0  # v38 + 1.0
 
         # Draw panel backdrop using ind_panel texture (original: DAT_0048f7c4)
-        if self._hud_assets is not None and self._hud_assets.ind_panel is not None:
+        if self._hud_assets is not None:
             tex = self._hud_assets.ind_panel
             src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
             dst = rl.Rectangle(
