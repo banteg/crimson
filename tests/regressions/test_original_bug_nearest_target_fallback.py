@@ -15,7 +15,7 @@ from crimson.projectiles.runtime import (
 from crimson.projectiles.types import SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.factories import make_creature_state, make_projectile_update_options
+from tests.support.factories import make_creature_state, make_projectile_update_options
 
 
 @pytest.mark.parametrize(
