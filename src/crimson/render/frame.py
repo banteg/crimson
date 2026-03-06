@@ -29,7 +29,7 @@ class RenderFrame(msgspec.Struct, frozen=True):
     state: GameplayState
     players: list[PlayerState]
     creatures: CreaturePool
-    resources: RuntimeResources | None
+    resources: RuntimeResources
 
     elapsed_ms: float
     bonus_anim_phase: float

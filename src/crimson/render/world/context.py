@@ -34,7 +34,7 @@ class WorldRenderCtx(msgspec.Struct):
     state: GameplayState
     players: list[PlayerState]
     creatures: CreaturePool
-    _resources: RuntimeResources | None
+    resources: RuntimeResources
     elapsed_ms: float
     bonus_anim_phase: float
     lan_player_rings_enabled: bool
@@ -43,12 +43,6 @@ class WorldRenderCtx(msgspec.Struct):
     rtx_mode: RtxRenderMode
     projection_camera: Vec2 | None = None
     projection_view_scale: Vec2 | None = None
-
-    @property
-    def resources(self) -> RuntimeResources:
-        resources = self._resources
-        assert resources is not None, "runtime resources must be loaded before drawing"
-        return resources
 
     def _camera_screen_size(
         self,
@@ -125,7 +119,7 @@ class WorldRenderCtx(msgspec.Struct):
             state=self.state,
             players=self.players,
             creatures=self.creatures,
-            _resources=self._resources,
+            resources=self.resources,
             elapsed_ms=self.elapsed_ms,
             bonus_anim_phase=self.bonus_anim_phase,
             lan_player_rings_enabled=self.lan_player_rings_enabled,
@@ -195,7 +189,7 @@ def build_world_render_ctx(
         state=frame.state,
         players=frame.players,
         creatures=frame.creatures,
-        _resources=frame.resources,
+        resources=frame.resources,
         elapsed_ms=frame.elapsed_ms,
         bonus_anim_phase=frame.bonus_anim_phase,
         lan_player_rings_enabled=frame.lan_player_rings_enabled,

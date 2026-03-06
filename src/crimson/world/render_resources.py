@@ -43,9 +43,9 @@ class RenderResources(msgspec.Struct):
         self._resources = value
 
     def texture(self, texture_id: TextureId) -> rl.Texture:
-        resources = self._resources
-        if resources is not None:
-            return resources.texture(texture_id)
+        return self.resources.texture(texture_id)
+
+    def registry_texture(self, texture_id: TextureId) -> rl.Texture:
         return runtime_resources_for(self.assets_dir).texture(texture_id)
 
     def sync_ground_settings(self) -> None:
@@ -161,7 +161,7 @@ class RenderResources(msgspec.Struct):
             state=state,
             players=players,
             creatures=creatures,
-            resources=self._resources,
+            resources=self.resources,
             elapsed_ms=float(elapsed_ms),
             bonus_anim_phase=float(bonus_anim_phase),
             lan_player_rings_enabled=bool(lan_player_rings_enabled),

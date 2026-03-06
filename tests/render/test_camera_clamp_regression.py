@@ -5,6 +5,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Protocol, cast
 
+import pytest
+
 import grim.terrain_render as terrain_render
 from crimson.render.frame import RenderFrame
 from crimson.render.world import renderer as world_renderer
@@ -173,6 +175,13 @@ def test_renderer_viewport_helpers_do_not_build_render_frame(mocker) -> None:
     world = renderer.screen_to_world(screen)
     assert_float_close(world.x, 100.0)
     assert_float_close(world.y, 200.0)
+
+
+def test_runtime_build_render_frame_requires_bound_resources() -> None:
+    world = _runtime_world(world_size=1024.0)
+
+    with pytest.raises(AssertionError, match="runtime resources must be loaded before use"):
+        world.build_render_frame()
 
 
 def test_ground_draw_uses_explicit_output_dimensions(mocker) -> None:
