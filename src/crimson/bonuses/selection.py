@@ -61,7 +61,7 @@ def _bonus_pick_suppressed(
         return True
     if state.shock_chain_links_left > 0 and bonus_id == BonusId.SHOCK_CHAIN:
         return True
-    if bonus_id == BonusId.FREEZE and float(state.bonuses.freeze) > 0.0:
+    if bonus_id == BonusId.FREEZE and state.bonuses.freeze > 0.0:
         return True
     if bonus_id == BonusId.SHIELD and any(player.shield_timer > 0.0 for player in players):
         return True
@@ -71,14 +71,14 @@ def _bonus_pick_suppressed(
         return True
     if bonus_id == BonusId.MEDIKIT and any(perk_active(player, PerkId.DEATH_CLOCK) for player in players):
         return True
-    if state.game_mode != GameMode.QUESTS or int(state.quest_stage_minor) != 10:
+    if state.game_mode != GameMode.QUESTS or state.quest_stage_minor != 10:
         return False
 
-    major = int(state.quest_stage_major)
+    major = state.quest_stage_major
     if bonus_id == BonusId.NUKE:
-        return major in (2, 4, 5) or (bool(state.hardcore) and major == 3)
+        return major in (2, 4, 5) or (state.hardcore and major == 3)
     if bonus_id == BonusId.FREEZE:
-        return major == 4 or (bool(state.hardcore) and major == 2)
+        return major == 4 or (state.hardcore and major == 2)
     return False
 
 
@@ -96,7 +96,7 @@ def bonus_pick_random_type(pool: BonusPool, state: GameplayState, players: list[
             state=state,
             players=players,
             bonus_id=bonus_id,
-            has_fire_bullets_drop=bool(has_fire_bullets_drop),
+            has_fire_bullets_drop=has_fire_bullets_drop,
         ):
             continue
         return bonus_id
