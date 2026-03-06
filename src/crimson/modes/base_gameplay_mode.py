@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import msgspec
 
-from grim.assets import TextureId
 from grim.audio import AudioState, stop_music, update_audio
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.console import ConsoleState
@@ -453,21 +452,6 @@ class BaseGameplayMode:
         terrain_slots: TerrainSlotTriplet,
     ) -> None:
         self.terrain_runtime.set_terrain_slots(terrain_slots=terrain_slots)
-        terrain_seed = int(self.sim_world.state.rng.state)
-        self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
-
-    def set_ground_textures(
-        self,
-        *,
-        base_texture_id: TextureId,
-        overlay_texture_id: TextureId,
-        detail_texture_id: TextureId | None = None,
-    ) -> None:
-        self.terrain_runtime.set_ground_textures(
-            base_texture_id=base_texture_id,
-            overlay_texture_id=overlay_texture_id,
-            detail_texture_id=detail_texture_id,
-        )
         terrain_seed = int(self.sim_world.state.rng.state)
         self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
 

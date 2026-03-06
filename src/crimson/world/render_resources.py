@@ -74,8 +74,8 @@ class RenderResources(msgspec.Struct):
         self,
         *,
         base: rl.Texture,
-        overlay: rl.Texture | None,
-        detail: rl.Texture | None,
+        overlay: rl.Texture,
+        detail: rl.Texture,
     ) -> None:
         if self.ground is None:
             self.ground = GroundRenderer(

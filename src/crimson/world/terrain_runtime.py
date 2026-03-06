@@ -22,17 +22,14 @@ class TerrainRuntime(msgspec.Struct):
         *,
         base_texture_id: TextureId,
         overlay_texture_id: TextureId,
-        detail_texture_id: TextureId | None = None,
+        detail_texture_id: TextureId,
     ) -> None:
         base = self.render_resources.load_texture(base_texture_id)
         overlay = self.render_resources.load_texture(overlay_texture_id)
+        detail = self.render_resources.load_texture(detail_texture_id)
         assert base is not None
         assert overlay is not None
-        if detail_texture_id is None:
-            detail = overlay
-        else:
-            detail = self.render_resources.load_texture(detail_texture_id)
-            assert detail is not None
+        assert detail is not None
 
         self.render_resources.set_ground_textures(
             base=base,
@@ -61,19 +58,6 @@ class TerrainRuntime(msgspec.Struct):
         terrain_slots: TerrainSlotTriplet,
     ) -> None:
         base_texture_id, overlay_texture_id, detail_texture_id = terrain_slots_to_texture_ids(terrain_slots)
-        self._apply_ground_texture_ids(
-            base_texture_id=base_texture_id,
-            overlay_texture_id=overlay_texture_id,
-            detail_texture_id=detail_texture_id,
-        )
-
-    def set_ground_textures(
-        self,
-        *,
-        base_texture_id: TextureId,
-        overlay_texture_id: TextureId,
-        detail_texture_id: TextureId | None = None,
-    ) -> None:
         self._apply_ground_texture_ids(
             base_texture_id=base_texture_id,
             overlay_texture_id=overlay_texture_id,

@@ -14,7 +14,6 @@ from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick,
 from crimson.sim.world_state import WorldState
 from crimson.terrain_slots import TerrainSlotTriplet
 from crimson.world import WorldRuntime
-from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
@@ -244,18 +243,12 @@ class WorldRuntimeHost:
             layers=int(layers),
         )
 
-    def set_ground_textures(
+    def set_terrain_slots(
         self,
         *,
-        base_texture_id: TextureId,
-        overlay_texture_id: TextureId,
-        detail_texture_id: TextureId | None = None,
+        terrain_slots: TerrainSlotTriplet,
     ) -> None:
-        self._runtime.terrain_runtime.set_ground_textures(
-            base_texture_id=base_texture_id,
-            overlay_texture_id=overlay_texture_id,
-            detail_texture_id=detail_texture_id,
-        )
+        self._runtime.terrain_runtime.set_terrain_slots(terrain_slots=terrain_slots)
         terrain_seed = int(self._runtime.sim_world.state.rng.state)
         self._runtime.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
 

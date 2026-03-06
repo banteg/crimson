@@ -35,7 +35,7 @@ def test_apply_bootstrap_terrain_keeps_sim_rng_state(assets_dir: Path, monkeypat
     assert int(world.render_resources.ground._pending_generate_seed or -1) == 1337
 
 
-def test_set_ground_textures_updates_render_cache_without_touching_sim_rng(assets_dir: Path, monkeypatch) -> None:
+def test_set_terrain_slots_updates_render_cache_without_touching_sim_rng(assets_dir: Path, monkeypatch) -> None:
     world = _build_world(assets_dir)
     before_rng_state = int(world.sim_world.state.rng.state)
     base = rl.Texture()
@@ -52,11 +52,7 @@ def test_set_ground_textures_updates_render_cache_without_touching_sim_rng(asset
 
     monkeypatch.setattr(type(world.render_resources), "load_texture", _load_texture, raising=True)
 
-    world.set_ground_textures(
-        base_texture_id=TextureId.TER_Q1_BASE,
-        overlay_texture_id=TextureId.TER_Q1_OVERLAY,
-        detail_texture_id=TextureId.TER_Q2_OVERLAY,
-    )
+    world.set_terrain_slots(terrain_slots=(0, 1, 3))
 
     assert int(world.sim_world.state.rng.state) == before_rng_state
     assert world.render_resources.ground is not None

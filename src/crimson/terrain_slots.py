@@ -30,16 +30,9 @@ _TEXTURE_ID_BY_TERRAIN_SLOT: dict[int, TextureId] = {
     7: TextureId.TER_Q4_OVERLAY,
 }
 
-DEFAULT_TERRAIN_TEXTURE_IDS: tuple[TextureId, TextureId, TextureId] = (
-    TextureId.TER_Q1_BASE,
-    TextureId.TER_Q1_OVERLAY,
-    TextureId.TER_Q1_BASE,
-)
-
-
 def terrain_slots_for_level(major: int, minor: int) -> TerrainSlotTriplet:
-    tier = int(major)
-    quest = int(minor)
+    tier = major
+    quest = minor
     if tier <= 4:
         base = (tier - 1) * 2
         alt = base + 1
@@ -54,9 +47,9 @@ def choose_menu_terrain_slots(
     quest_unlock_index: int,
     rand: Callable[[], int],
 ) -> TerrainSlotTriplet:
-    unlock_index = int(quest_unlock_index)
+    # Keep the thresholds descending to preserve the native chained 1/8 roll order.
     for threshold, slots in MENU_UNLOCK_TERRAIN_SLOTS.items():
-        if unlock_index >= int(threshold) and (int(rand()) & 7) == 3:
+        if quest_unlock_index >= threshold and (rand() & 7) == 3:
             return slots
     return DEFAULT_TERRAIN_SLOTS
 
@@ -73,7 +66,6 @@ def terrain_slots_to_texture_ids(
 
 __all__ = [
     "DEFAULT_TERRAIN_SLOTS",
-    "DEFAULT_TERRAIN_TEXTURE_IDS",
     "MENU_UNLOCK_TERRAIN_SLOTS",
     "Q1_TERRAIN_SLOTS",
     "Q2_TERRAIN_SLOTS",

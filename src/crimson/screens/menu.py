@@ -78,18 +78,6 @@ def menu_ground_camera(state: GameState) -> Vec2:
     return Vec2()
 
 
-def _menu_unlock_index(state: GameState) -> int:
-    return int(state.status.quest_unlock_index)
-
-
-def _choose_menu_terrain_texture_ids(state: GameState) -> tuple[TextureId, TextureId, TextureId]:
-    slots = choose_menu_terrain_slots(
-        quest_unlock_index=_menu_unlock_index(state),
-        rand=lambda: state.rng.rand(),
-    )
-    return terrain_slots_to_texture_ids(slots)
-
-
 def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
     resources = state.resources
     if resources is None:
@@ -105,7 +93,12 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         scale_changed = abs(float(ground.texture_scale) - texture_scale) > 1e-6
 
     if ground is None or explicit_regenerate:
-        base_id, overlay_id, detail_id = _choose_menu_terrain_texture_ids(state)
+        base_id, overlay_id, detail_id = terrain_slots_to_texture_ids(
+            choose_menu_terrain_slots(
+                quest_unlock_index=int(state.status.quest_unlock_index),
+                rand=lambda: state.rng.rand(),
+            ),
+        )
         base = resources.texture(base_id)
         overlay = resources.texture(overlay_id)
         detail = resources.texture(detail_id)
