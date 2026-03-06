@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
 from ..sim.state_types import GameplayState, PlayerState
@@ -9,7 +10,10 @@ from .availability import perk_can_offer, perks_rebuild_available
 from .helpers import perk_active
 from .ids import PERK_BY_ID, PerkFlags, PerkId
 from .runtime.apply import perk_apply
-from .state import CreatureForPerks, PerkSelectionState
+from .state import PerkSelectionState
+
+if TYPE_CHECKING:
+    from ..creatures.runtime import CreatureState
 
 PERK_ID_MAX = max(int(perk_id) for perk_id in PERK_BY_ID)
 
@@ -203,7 +207,7 @@ def perk_auto_pick(
     game_mode: GameMode,
     player_count: int | None = None,
     dt: float | None = None,
-    creatures: Sequence[CreatureForPerks] | None = None,
+    creatures: Sequence[CreatureState] | None = None,
 ) -> list[PerkId]:
     """Resolve pending perks by auto-selecting from generated choices."""
 
@@ -279,7 +283,7 @@ def perk_selection_pick(
     game_mode: GameMode,
     player_count: int | None = None,
     dt: float | None = None,
-    creatures: Sequence[CreatureForPerks] | None = None,
+    creatures: Sequence[CreatureState] | None = None,
 ) -> PerkId | None:
     """Pick a perk from the current choice list and apply it.
 

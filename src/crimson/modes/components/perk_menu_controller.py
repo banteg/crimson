@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -12,7 +13,7 @@ from ...game_modes import GameMode
 from ...gameplay import GameplayState
 from ...perks import PerkId, perk_display_description, perk_display_name
 from ...perks.selection import perk_selection_current_choices, perk_selection_pick
-from ...perks.state import CreatureForPerks, PerkSelectionState
+from ...perks.state import PerkSelectionState
 from ...sim.state_types import PlayerState
 from ...ui.layout import ui_origin, ui_scale
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -31,6 +32,9 @@ from ...ui.perk_menu import (
     perk_menu_panel_slide_x,
 )
 
+if TYPE_CHECKING:
+    from ...creatures.runtime import CreatureState
+
 PlaySfxFn = Callable[[str], None]
 OnCloseFn = Callable[[], None]
 OnPickFn = Callable[[int], bool]
@@ -43,7 +47,7 @@ class PerkMenuContext(msgspec.Struct, frozen=True):
     state: GameplayState
     perk_state: PerkSelectionState
     players: list[PlayerState]
-    creatures: Sequence[CreatureForPerks]
+    creatures: Sequence[CreatureState]
     player: PlayerState
     game_mode: GameMode
     player_count: int

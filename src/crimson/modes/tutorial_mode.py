@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import cast
 
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -17,7 +16,6 @@ from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..gameplay import survival_check_level_up
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
-from ..perks.state import CreatureForPerks
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSession
 from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline
@@ -137,7 +135,7 @@ class TutorialMode(BaseGameplayMode):
             state=self.state,
             perk_state=self.state.perk_selection,
             players=[self.player],
-            creatures=cast("list[CreatureForPerks]", self.creatures.entries),
+            creatures=self.creatures.entries,
             player=self.player,
             game_mode=GameMode.TUTORIAL,
             player_count=1,

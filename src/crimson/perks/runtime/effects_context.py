@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -10,10 +11,12 @@ from ...collision_math import native_find_size_margin
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects import FxQueue
 from ...sim.state_types import GameplayState, PlayerState
-from ..state import CreatureForPerks
+
+if TYPE_CHECKING:
+    from ...creatures.runtime import CreatureState
 
 
-def creature_find_in_radius(creatures: Sequence[CreatureForPerks], *, pos: Vec2, radius: float, start_index: int) -> int:
+def creature_find_in_radius(creatures: Sequence[CreatureState], *, pos: Vec2, radius: float, start_index: int) -> int:
     """Find the first active creature intersecting an aim radius.
 
     Port of `creature_find_in_radius` (0x004206a0).
@@ -45,7 +48,7 @@ class PerksUpdateEffectsCtx(msgspec.Struct):
     state: GameplayState
     players: list[PlayerState]
     dt: float
-    creatures: Sequence[CreatureForPerks] | None
+    creatures: Sequence[CreatureState] | None
     fx_queue: FxQueue | None
     _aim_target_by_player_index: dict[int, int] = msgspec.field(default_factory=dict)
 

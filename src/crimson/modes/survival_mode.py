@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Literal, cast
+from typing import Literal
 
 from grim.audio import AudioState
 from grim.config import (
@@ -29,7 +29,6 @@ from ..net.rollback_resync_v5 import (
     SurvivalRuntimeSnapshotV2,
     SurvivalStateSnapshotV2,
 )
-from ..perks.state import CreatureForPerks
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..replay.types import normalize_weapon_usage_counts
@@ -156,7 +155,7 @@ class SurvivalMode(BaseGameplayMode):
             state=self.state,
             perk_state=self.state.perk_selection,
             players=players,
-            creatures=cast("list[CreatureForPerks]", self.creatures.entries),
+            creatures=self.creatures.entries,
             player=self.player,
             game_mode=GameMode.SURVIVAL,
             player_count=len(players),

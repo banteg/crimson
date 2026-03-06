@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING
 
 import msgspec
 
 from ...sim.state_types import GameplayState, PlayerState
 from ..ids import PerkId
-from ..state import CreatureForPerks, PerkSelectionState
+from ..state import PerkSelectionState
+
+if TYPE_CHECKING:
+    from ...creatures.runtime import CreatureState
 
 
 class PerkApplyCtx(msgspec.Struct):
@@ -16,7 +20,7 @@ class PerkApplyCtx(msgspec.Struct):
     perk_id: PerkId
     perk_state: PerkSelectionState | None
     dt: float | None
-    creatures: Sequence[CreatureForPerks] | None
+    creatures: Sequence[CreatureState] | None
 
     def frame_dt(self) -> float:
         return float(self.dt) if self.dt is not None else 0.0

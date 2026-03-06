@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Literal, cast
+from typing import Literal
 
 import msgspec
 
@@ -31,7 +31,6 @@ from ..net.rollback_resync_v5 import (
     QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,
 )
-from ..perks.state import CreatureForPerks
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table
@@ -372,7 +371,7 @@ class QuestMode(BaseGameplayMode):
             state=self.state,
             perk_state=self.state.perk_selection,
             players=players,
-            creatures=cast("list[CreatureForPerks]", self.creatures.entries),
+            creatures=self.creatures.entries,
             player=self.player,
             game_mode=GameMode.QUESTS,
             player_count=len(players),
