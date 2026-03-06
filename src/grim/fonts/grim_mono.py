@@ -24,9 +24,6 @@ class GrimMonoFont(msgspec.Struct, frozen=True):
 
 def load_grim_mono_font(assets_root: Path) -> GrimMonoFont:
     texture = runtime_resources_for(assets_root).texture(TextureId.DEFAULT_FONT_COURIER)
-    if texture is None:
-        raise FileNotFoundError("Missing runtime font texture: load/default_font_courier.tga")
-
     rl.set_texture_filter(texture, GRIM_MONO_TEXTURE_FILTER)
     grid = 16
     cell_width = texture.width / grid

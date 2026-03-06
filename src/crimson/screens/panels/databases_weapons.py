@@ -9,7 +9,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
-from ..assets import _ensure_texture_cache, _require_runtime_texture
+from ..assets import _ensure_texture_cache
 from ..high_scores_layout import weapons_db_right_detail_x_shift
 from .databases_base import _DatabaseBaseView
 
@@ -31,7 +31,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         self._selected_weapon_id = None
         self._list_scroll_index = 0
         cache = _ensure_texture_cache(self.state)
-        self._wicons_tex = _require_runtime_texture(cache, TextureId.UI_WICONS)
+        self._wicons_tex = cache.texture(TextureId.UI_WICONS)
 
     def close(self) -> None:
         self._wicons_tex = None

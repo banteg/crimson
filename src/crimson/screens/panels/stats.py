@@ -13,7 +13,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, _require_runtime_texture, load_menu_assets
+from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_STATISTICS,
@@ -134,8 +134,8 @@ class StatisticsMenuView:
         self._pending_action = None
 
         cache = _ensure_texture_cache(self.state)
-        button_md = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
-        button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
+        button_md = cache.texture(TextureId.UI_BUTTON_MD)
+        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
 
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)

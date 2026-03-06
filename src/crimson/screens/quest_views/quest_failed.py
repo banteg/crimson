@@ -14,7 +14,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import _ensure_texture_cache, _require_runtime_texture
+from ..assets import _ensure_texture_cache
 from ..menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ..transitions import _draw_screen_fade
 from .shared import (
@@ -92,10 +92,10 @@ class QuestFailedView:
         self._build_score_preview(outcome)
 
         cache = _ensure_texture_cache(self.state)
-        self._panel_tex = _require_runtime_texture(cache, TextureId.UI_MENU_PANEL)
-        self._reaper_tex = _require_runtime_texture(cache, TextureId.UI_TEXT_REAPER)
-        button_md = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
-        button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
+        self._panel_tex = cache.texture(TextureId.UI_MENU_PANEL)
+        self._reaper_tex = cache.texture(TextureId.UI_TEXT_REAPER)
+        button_md = cache.texture(TextureId.UI_BUTTON_MD)
+        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
 
     def close(self) -> None:

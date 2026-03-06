@@ -102,9 +102,6 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         base = resources.texture(base_id)
         overlay = resources.texture(overlay_id)
         detail = resources.texture(detail_id)
-        assert base is not None
-        assert overlay is not None
-        assert detail is not None
     else:
         base = ground.texture
         overlay = ground.overlay

@@ -16,7 +16,7 @@ from ...net.lockstep_runtime import LockstepRuntime
 from ...net.relay_protocol import RoomState
 from ...net.rollback_runtime import RollbackRuntime
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import _require_runtime_texture
+from ..assets import _ensure_texture_cache
 from ..menu import MENU_PANEL_OFFSET_Y, MENU_PANEL_WIDTH, MenuEntry, MenuView
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
@@ -45,9 +45,9 @@ class NetworkLobbyPanelView(PanelMenuView):
 
     def open(self) -> None:
         super().open()
-        cache = self._ensure_cache()
-        button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
-        button_md = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
+        cache = _ensure_texture_cache(self.state)
+        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
+        button_md = cache.texture(TextureId.UI_BUTTON_MD)
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._back_button = UiButtonState("Back", force_wide=False)
         self._error = ""

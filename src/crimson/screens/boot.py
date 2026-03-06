@@ -178,8 +178,6 @@ class BootView:
             return
         texture_id, alpha = state
         tex = resources.texture(texture_id)
-        if tex is None:
-            return
         tex_w = float(tex.width)
         tex_h = float(tex.height)
         x = (rl.get_screen_width() - tex_w) * 0.5

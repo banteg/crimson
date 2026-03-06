@@ -24,8 +24,6 @@ SMALL_FONT_RENDER_SCALE = 1.0
 def load_small_font(assets_root: Path) -> SmallFontData:
     resources = runtime_resources_for(assets_root)
     texture = resources.texture(TextureId.SMALL_WHITE)
-    if texture is None:
-        raise FileNotFoundError("Missing runtime font texture: load/smallWhite.tga")
     rl.set_texture_filter(texture, SMALL_FONT_FILTER)
     return SmallFontData(widths=list(resources.small_font_widths), texture=texture)
 
