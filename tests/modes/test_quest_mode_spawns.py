@@ -1,0 +1,96 @@
+from __future__ import annotations
+
+from crimson.creatures.spawn import SpawnId
+from crimson.quests.timeline import tick_quest_mode_spawns
+from crimson.quests.types import SpawnEntry
+from grim.geom import Vec2
+from tests.support.helpers import assert_float_close
+
+
+def test_tick_quest_mode_spawns_advances_timeline_when_creatures_active() -> None:
+    entries: tuple[SpawnEntry, ...] = ()
+    updated, timeline_ms, creatures_none_active, idle_ms, spawns = tick_quest_mode_spawns(
+        entries,
+        quest_spawn_timeline_ms=1000.0,
+        frame_dt_ms=16.0,
+        terrain_width=1024.0,
+        creatures_none_active=False,
+        no_creatures_timer_ms=123.0,
+    )
+
+    assert updated == ()
+    assert_float_close(timeline_ms, 1016.0)
+    assert creatures_none_active is False
+    assert_float_close(idle_ms, 0.0)
+    assert spawns == ()
+
+
+def test_tick_quest_mode_spawns_advances_timeline_when_table_not_empty() -> None:
+    entries = (
+        SpawnEntry(
+            pos=Vec2(512.0, 512.0),
+            heading=0.0,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
+            trigger_ms=10_000,
+            count=1,
+        ),
+    )
+    updated, timeline_ms, creatures_none_active, idle_ms, spawns = tick_quest_mode_spawns(
+        entries,
+        quest_spawn_timeline_ms=1000.0,
+        frame_dt_ms=16.0,
+        terrain_width=1024.0,
+        creatures_none_active=True,
+        no_creatures_timer_ms=0.0,
+    )
+
+    assert updated == entries
+    assert_float_close(timeline_ms, 1016.0)
+    assert creatures_none_active is True
+    assert_float_close(idle_ms, 16.0)
+    assert spawns == ()
+
+
+def test_tick_quest_mode_spawns_freezes_timeline_when_idle_complete() -> None:
+    entries: tuple[SpawnEntry, ...] = ()
+    updated, timeline_ms, creatures_none_active, idle_ms, spawns = tick_quest_mode_spawns(
+        entries,
+        quest_spawn_timeline_ms=1000.0,
+        frame_dt_ms=16.0,
+        terrain_width=1024.0,
+        creatures_none_active=True,
+        no_creatures_timer_ms=0.0,
+    )
+
+    assert updated == ()
+    assert_float_close(timeline_ms, 1000.0)
+    assert creatures_none_active is True
+    assert_float_close(idle_ms, 16.0)
+    assert spawns == ()
+
+
+def test_tick_quest_mode_spawns_can_fire_entries_after_timeline_advance() -> None:
+    entries = (
+        SpawnEntry(
+            pos=Vec2(512.0, 512.0),
+            heading=0.25,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
+            trigger_ms=1000,
+            count=1,
+        ),
+    )
+    updated, timeline_ms, creatures_none_active, idle_ms, spawns = tick_quest_mode_spawns(
+        entries,
+        quest_spawn_timeline_ms=999.0,
+        frame_dt_ms=2.0,
+        terrain_width=1024.0,
+        creatures_none_active=True,
+        no_creatures_timer_ms=0.0,
+    )
+
+    assert_float_close(timeline_ms, 1001.0)
+    assert updated[0].count == 0
+    assert creatures_none_active is False
+    assert_float_close(idle_ms, 2.0)
+    assert len(spawns) == 1
+    assert spawns[0].template_id == SpawnId.FORMATION_RING_ALIEN_8_12
