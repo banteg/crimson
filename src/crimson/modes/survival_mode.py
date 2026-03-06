@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Literal, cast
+from typing import Literal
 
 from grim.audio import AudioState
 from grim.config import (
@@ -29,7 +29,6 @@ from ..net.rollback_resync_v5 import (
     SurvivalRuntimeSnapshotV2,
     SurvivalStateSnapshotV2,
 )
-from ..perks.state import CreatureForPerks
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..replay.types import normalize_weapon_usage_counts
@@ -43,7 +42,6 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
-    LanFramePolicy,
     LanSession,
     LanStepAction,
 )
@@ -156,7 +154,7 @@ class SurvivalMode(BaseGameplayMode):
             state=self.state,
             perk_state=self.state.perk_selection,
             players=players,
-            creatures=cast("list[CreatureForPerks]", self.creatures.entries),
+            creatures=self.creatures.entries,
             player=self.player,
             game_mode=GameMode.SURVIVAL,
             player_count=len(players),
@@ -365,20 +363,12 @@ class SurvivalMode(BaseGameplayMode):
     def _lan_match_session(self) -> DeterministicSession | None:
         return self._sim_session
 
-    def _lan_frame_policy(self) -> LanFramePolicy:
-        return LanFramePolicy(
-            prepare_frame=self._survival_prepare_lan_frame,
-            allow_frame_pop=self._survival_allow_frame_pop,
-            on_tick_applied=self._survival_on_tick_applied,
-            on_paused=self._survival_on_lan_paused,
-        )
-
-    def _survival_on_lan_paused(self, dt: float) -> None:
+    def _lan_on_paused(self, dt: float) -> None:
         _ = dt
         if self._death_transition_ready():
             self._enter_game_over()
 
-    def _survival_prepare_lan_frame(
+    def _lan_prepare_frame(
         self,
         role: str,
         dt_ui_ms: float,
@@ -461,10 +451,10 @@ class SurvivalMode(BaseGameplayMode):
             return False
         return True
 
-    def _survival_allow_frame_pop(self) -> bool:
+    def _lan_allow_frame_pop(self) -> bool:
         return not self._perk_menu.active
 
-    def _survival_on_tick_applied(
+    def _lan_on_tick_applied(
         self,
         tick: DeterministicSessionTick,
         frame_tick_index: int | None,
@@ -624,7 +614,7 @@ class SurvivalMode(BaseGameplayMode):
 
         def _on_tick(tick, tick_index: int | None) -> bool:
             _ = tick_index
-            action = self._survival_on_tick_applied(tick, None, tick_dt)
+            action = self._lan_on_tick_applied(tick, None, tick_dt)
             return action != "continue"
 
         def _on_checkpoint(tick_index: int, tick) -> None:

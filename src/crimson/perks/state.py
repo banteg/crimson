@@ -1,24 +1,8 @@
 from __future__ import annotations
 
-from typing import Protocol
-
 import msgspec
 
-from grim.geom import Vec2
-
-from ..creatures.spawn import CreatureFlags
 from .ids import PerkId
-
-
-class CreatureForPerks(Protocol):
-    active: bool
-    pos: Vec2
-    hp: float
-    flags: CreatureFlags
-    lifecycle_stage: float
-    collision_timer: float
-    reward_value: float
-    size: float
 
 
 class PerkEffectIntervals(msgspec.Struct):

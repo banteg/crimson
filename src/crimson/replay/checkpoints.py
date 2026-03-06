@@ -3,7 +3,6 @@ from __future__ import annotations
 import io
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Protocol, cast
 
 import msgspec
 import zstandard as zstd
@@ -11,25 +10,11 @@ import zstandard as zstd
 from grim.geom import Vec2
 
 from ..bonuses import BonusId
-from ..owner_ref import OwnerRef
+from ..creatures.runtime import CreatureDeath
 from ..sim.state_types import PlayerState
 from ..sim.timing import ftol_ms_i32
-from ..sim.world_state import WorldState
+from ..sim.world_state import WorldEvents, WorldState
 from ..weapons import WeaponId
-
-
-class _DeathLike(Protocol):
-    index: int
-    type_id: int
-    reward_value: float
-    xp_awarded: int
-    owner: OwnerRef
-
-
-class _EventsLike(Protocol):
-    hits: Sequence[object]
-    pickups: list[object]
-    sfx: list[str]
 
 FORMAT_VERSION = 4
 DEFAULT_CHECKPOINT_SAMPLE_RATE = 1
@@ -133,8 +118,8 @@ def build_checkpoint(
     world: WorldState,
     elapsed_ms: float,
     creature_count_override: int | None = None,
-    deaths: Sequence[object] | None = None,
-    events: object | None = None,
+    deaths: Sequence[CreatureDeath] | None = None,
+    events: WorldEvents | None = None,
 ) -> ReplayCheckpoint:
     state = world.state
     players: list[PlayerState] = list(world.players)
@@ -184,21 +169,19 @@ def build_checkpoint(
 
     death_entries: list[ReplayDeathLedgerEntry] = []
     for death in deaths or ():
-        death_view = cast(_DeathLike, death)
         death_entries.append(
             ReplayDeathLedgerEntry(
-                creature_index=int(death_view.index),
-                type_id=int(death_view.type_id),
-                reward_value=float(death_view.reward_value),
-                xp_awarded=int(death_view.xp_awarded),
-                owner_id=int(death_view.owner.to_legacy()),
+                creature_index=int(death.index),
+                type_id=int(death.type_id),
+                reward_value=float(death.reward_value),
+                xp_awarded=int(death.xp_awarded),
+                owner_id=int(death.owner.to_legacy()),
             ),
         )
 
-    events_view = cast(_EventsLike | None, events)
-    hits = list(events_view.hits) if events_view is not None else []
-    pickups = list(events_view.pickups) if events_view is not None else []
-    sfx = list(events_view.sfx) if events_view is not None else []
+    hits = list(events.hits) if events is not None else []
+    pickups = list(events.pickups) if events is not None else []
+    sfx = list(events.sfx) if events is not None else []
     event_summary = ReplayEventSummary(
         hit_count=len(hits),
         pickup_count=len(pickups),

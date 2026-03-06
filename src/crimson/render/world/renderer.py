@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol
+from collections.abc import Callable
 
 import msgspec
 
@@ -11,39 +11,19 @@ from ..frame import RenderFrame
 from .context import WorldRenderCtx, build_world_render_ctx
 from .draw import draw_world
 
-if TYPE_CHECKING:
-    from pathlib import Path
-
-    from grim.config import CrimsonConfig
-
-    from ...world.render_resources import RenderResources
-    from ...world.sim_world_state import SimWorldState
-    from ..rtx.mode import RtxRenderMode
-
-
-class WorldRenderHost(Protocol):
-    assets_dir: Path
-    world_size: float
-    demo_mode_active: bool
-    config: CrimsonConfig | None
-    camera: Vec2
-    render_resources: RenderResources
-    sim_world: SimWorldState
-    lan_player_rings_enabled: bool
-    lan_local_aim_indicators_only: bool
-    lan_local_player_slot_index: int
-    rtx_mode: RtxRenderMode
-
-    def build_render_frame(self) -> RenderFrame: ...
-
 
 class WorldRenderer(msgspec.Struct):
-    _world: WorldRenderHost
+    _build_render_frame: Callable[[], RenderFrame]
     _render_frame: RenderFrame | None = None
     _small_font: SmallFontData | None = None
 
+    def _active_render_frame(self) -> RenderFrame:
+        if self._render_frame is not None:
+            return self._render_frame
+        return self._build_render_frame()
+
     def _active_render_ctx(self) -> WorldRenderCtx:
-        return build_world_render_ctx(self, render_frame=self._render_frame)
+        return build_world_render_ctx(self, render_frame=self._active_render_frame())
 
     def draw(
         self,
@@ -52,7 +32,7 @@ class WorldRenderer(msgspec.Struct):
         draw_aim_indicators: bool = True,
         entity_alpha: float = 1.0,
     ) -> None:
-        frame = render_frame if render_frame is not None else self._world.build_render_frame()
+        frame = render_frame if render_frame is not None else self._build_render_frame()
         self._render_frame = frame
         try:
             render_ctx = build_world_render_ctx(self, render_frame=frame)

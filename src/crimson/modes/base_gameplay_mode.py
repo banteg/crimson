@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, TypeAlias
@@ -91,13 +91,14 @@ from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import shots_from_state
 
 if TYPE_CHECKING:
-    from ..creatures.runtime import CreaturePool
+    from ..creatures.runtime import CreatureDeath, CreaturePool
     from ..game.types import GameState
     from ..gameplay import GameplayState
     from ..net.lockstep_protocol import StatusSnapshot
     from ..persistence.save_status import GameStatus
     from ..replay import ReplayRecorder
     from ..sim.state_types import PlayerState
+    from ..sim.world_state import WorldEvents
 
 LanRuntime = LockstepRuntime | RollbackRuntime
 
@@ -127,34 +128,6 @@ class _ModeFrameState:
 LanStepAction = Literal["continue", "stop_before_finalize", "stop_after_finalize"]
 
 LanSession: TypeAlias = DeterministicSession
-
-
-def _lan_prepare_frame_default(_role: str, _dt_ui_ms: float, _session: LanSession, _dt_tick: float) -> bool:
-    return True
-
-
-def _lan_allow_frame_pop_default() -> bool:
-    return True
-
-
-def _lan_on_tick_applied_default(
-    _tick: DeterministicSessionTick, _frame_tick_index: int | None, _dt_tick: float,
-) -> LanStepAction:
-    return "continue"
-
-
-def _lan_on_paused_default(_dt: float) -> None:
-    return
-
-
-@dataclass(frozen=True, slots=True)
-class LanFramePolicy:
-    prepare_frame: Callable[[str, float, LanSession, float], bool] = _lan_prepare_frame_default
-    allow_frame_pop: Callable[[], bool] = _lan_allow_frame_pop_default
-    on_tick_applied: Callable[[DeterministicSessionTick, int | None, float], LanStepAction] = (
-        _lan_on_tick_applied_default
-    )
-    on_paused: Callable[[float], None] = _lan_on_paused_default
 
 
 class _LanRuntimeInputProvider:
@@ -756,8 +729,8 @@ class BaseGameplayMode:
         tick_index: int,
         *,
         force: bool = False,
-        deaths: list[object] | tuple[object, ...] | None = None,
-        events: object | None = None,
+        deaths: Sequence[CreatureDeath] | None = None,
+        events: WorldEvents | None = None,
     ) -> None:
         recorder = self._replay_recorder
         if recorder is None:
@@ -1575,8 +1548,24 @@ class BaseGameplayMode:
     def _lan_match_session(self) -> DeterministicSession | None:
         raise NotImplementedError
 
-    def _lan_frame_policy(self) -> LanFramePolicy:
-        return LanFramePolicy()
+    def _lan_prepare_frame(self, role: str, dt_ui_ms: float, session: LanSession, dt_tick: float) -> bool:
+        _ = role, dt_ui_ms, session, dt_tick
+        return True
+
+    def _lan_allow_frame_pop(self) -> bool:
+        return True
+
+    def _lan_on_tick_applied(
+        self,
+        tick: DeterministicSessionTick,
+        frame_tick_index: int | None,
+        dt_tick: float,
+    ) -> LanStepAction:
+        _ = tick, frame_tick_index, dt_tick
+        return "continue"
+
+    def _lan_on_paused(self, dt: float) -> None:
+        _ = dt
 
     def _update_lan_match(self, *, dt: float, dt_ui_ms: float = 0.0) -> None:
         runtime = self._lan_runtime
@@ -1594,15 +1583,13 @@ class BaseGameplayMode:
             self._reset_lan_capture_clock()
             return
 
-        policy = self._lan_frame_policy()
-
         if bool(self._paused):
             self._reset_gameplay_frame_clock()
-            policy.on_paused(float(dt))
+            self._lan_on_paused(float(dt))
             return
 
         dt_tick = float(self._lan_capture_tick_dt())
-        if not policy.prepare_frame(
+        if not self._lan_prepare_frame(
             str(role),
             float(dt_ui_ms),
             session,
@@ -1617,7 +1604,6 @@ class BaseGameplayMode:
                 session=session,
                 role=role,
                 dt_tick=float(dt_tick),
-                policy=policy,
             ):
                 return
 
@@ -1633,7 +1619,6 @@ class BaseGameplayMode:
             session=session,
             role=role,
             dt_tick=float(dt_tick),
-            policy=policy,
         )
 
     def _prepare_lan_match_runtime(self, *, mode_name: Literal["survival", "rush", "quests"]) -> str | None:
@@ -1679,7 +1664,6 @@ class BaseGameplayMode:
         session: DeterministicSession,
         role: str,
         dt_tick: float,
-        policy: LanFramePolicy,
     ) -> bool:
         runner, provider = self._ensure_tick_runner(
             session=session,
@@ -1691,7 +1675,7 @@ class BaseGameplayMode:
         if not isinstance(provider, _LanRuntimeInputProvider):
             raise TypeError("networked tick runner provider must be _LanRuntimeInputProvider")
         provider.bind_runtime(runtime)
-        provider.set_before_pop(policy.allow_frame_pop)
+        provider.set_before_pop(self._lan_allow_frame_pop)
         sim_ns_start = time.perf_counter_ns()
         ticks_requested = 1 if float(dt_tick) > 0.0 else 0
         # LAN always requests exactly 0 or 1 ticks per frame. This ensures
@@ -1732,7 +1716,7 @@ class BaseGameplayMode:
                 frame_tick_index = applied.frame_tick_index
                 if frame_tick_index is None:
                     raise RuntimeError("lan tick runner completed without runtime frame metadata")
-                return policy.on_tick_applied(
+                return self._lan_on_tick_applied(
                     applied.tick,
                     int(frame_tick_index),
                     float(dt_tick),

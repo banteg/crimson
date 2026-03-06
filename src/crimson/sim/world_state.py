@@ -26,7 +26,6 @@ from ..gameplay import (
 from ..owner_ref import OwnerRef
 from ..perks.runtime.effects import perks_update_effects
 from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
-from ..perks.state import CreatureForPerks
 from ..player_damage import player_take_projectile_damage
 from ..projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
@@ -378,7 +377,7 @@ class WorldState(msgspec.Struct):
                 game_mode=game_mode,
                 auto_pick=auto_pick_perks,
                 dt=dt,
-                creatures=cast("list[CreatureForPerks]", self.creatures.entries),
+                creatures=self.creatures.entries,
             )
         _mark("ws_after_progression")
         # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.

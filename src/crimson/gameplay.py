@@ -23,7 +23,7 @@ from .perks import PerkId
 from .perks.helpers import perk_active
 from .perks.runtime.player_ticks import apply_player_perk_ticks
 from .perks.selection import perk_auto_pick
-from .perks.state import CreatureForPerks, PerkEffectIntervals, PerkSelectionState
+from .perks.state import PerkEffectIntervals, PerkSelectionState
 from .projectiles.runtime import (
     ProjectilePool,
     SecondaryProjectilePool,
@@ -263,7 +263,7 @@ def survival_progression_update(
     player_count: int | None = None,
     auto_pick: bool = True,
     dt: float | None = None,
-    creatures: Sequence[CreatureForPerks] | None = None,
+    creatures: Sequence[CreatureState] | None = None,
 ) -> list[PerkId]:
     """Advance survival level/perk progression and optionally auto-pick perks."""
 

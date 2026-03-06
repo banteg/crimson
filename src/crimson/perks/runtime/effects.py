@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from ...effects import FxQueue
 from ...sim.state_types import GameplayState, PlayerState
-from ..state import CreatureForPerks
 from .effects_context import PerksUpdateEffectsCtx, creature_find_in_radius
 from .manifest import PERKS_UPDATE_EFFECT_STEPS
+
+if TYPE_CHECKING:
+    from ...creatures.runtime import CreatureState
 
 # Backward-compatible re-export used by HUD target hover wiring.
 _creature_find_in_radius = creature_find_in_radius
@@ -19,7 +22,7 @@ def perks_update_effects(
     players: list[PlayerState],
     dt: float,
     *,
-    creatures: Sequence[CreatureForPerks] | None = None,
+    creatures: Sequence[CreatureState] | None = None,
     fx_queue: FxQueue | None = None,
 ) -> None:
     """Apply frame-based perk effect updates.
