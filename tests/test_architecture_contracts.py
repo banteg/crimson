@@ -322,12 +322,16 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
 
     replay_tick_indices: list[int] = []
 
-    def _capture_runner_tick(_tick_index: int, tick: object) -> bool:
-        assert isinstance(tick, TickResult)
-        replay_tick_indices.append(int(_tick_index))
-        return False
+    def _apply_presentation_outputs(*, outputs, on_output_applied, **_kwargs) -> None:
+        for output in outputs:
+            replay_tick_indices.append(int(output.tick_index))
+            on_output_applied(output)
 
-    mocker.patch.object(mode, "_on_runner_tick_complete", side_effect=_capture_runner_tick)
+    mocker.patch.object(
+        replay_playback_mode,
+        "apply_presentation_outputs",
+        side_effect=_apply_presentation_outputs,
+    )
     for _ in range(int(tick_count)):
         mode._advance_runner(
             dt_seconds=float(mode._dt),
@@ -404,15 +408,19 @@ def test_contract_6_shared_batch_apply_separates_deterministic_and_output_phases
 
 def test_contract_7_live_frame_advancement_uses_shared_helper() -> None:
     helper_source = inspect.getsource(frame_pump_module.advance_tick_runner_frame)
-    gameplay_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._advance_tick_runner_batch)
+    gameplay_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._run_deterministic_session_ticks)
+    lan_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._consume_lan_tick_frames)
     world_source = inspect.getsource(world_runtime_module.WorldRuntime.advance_tick_frame)
 
     assert "runner.begin_frame(" in helper_source
     assert "runner.advance_ticks(" in helper_source
     assert "refund_clock.accum +=" in helper_source
     assert "advance_tick_runner_frame(" in gameplay_source
+    assert "advance_tick_runner_frame(" in lan_source
     assert "runner.begin_frame(" not in gameplay_source
     assert "runner.advance_ticks(" not in gameplay_source
+    assert "runner.begin_frame(" not in lan_source
+    assert "runner.advance_ticks(" not in lan_source
     assert "advance_tick_runner_frame(" in world_source
     assert "runner.begin_frame(" not in world_source
     assert "runner.advance_ticks(" not in world_source
@@ -452,7 +460,7 @@ def test_contract_10_replay_driver_walk_is_canonical_loop_owner() -> None:
     factory_source = inspect.getsource(playback_driver_module.build_verify_playback_driver)
     replay_pump_source = inspect.getsource(playback_pump_module.advance_playback_frame)
     replay_mode_open_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode.open)
-    replay_mode_tune_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._session_game_tune_started)
+    replay_mode_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._advance_runner)
     replay_render_source = inspect.getsource(replay_render_module.run_replay_render_video)
     replay_benchmark_source = inspect.getsource(replay_benchmark_module.run_replay_benchmark)
 
@@ -469,7 +477,8 @@ def test_contract_10_replay_driver_walk_is_canonical_loop_owner() -> None:
     assert "survival_session" not in replay_mode_open_source
     assert "rush_session" not in replay_mode_open_source
     assert "quest_session" not in replay_mode_open_source
-    assert "driver.session.game_tune_started" in replay_mode_tune_source
+    assert "driver.session.game_tune_started" in replay_mode_source
+    assert "hasattr(" not in replay_mode_source
     assert "build_verify_playback_driver(" in replay_render_source
     assert "PlaybackDriver(" not in replay_render_source
     assert "build_verify_playback_driver(" in replay_benchmark_source

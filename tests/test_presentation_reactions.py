@@ -6,10 +6,9 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import PerkPickCommand
 from crimson.sim.presentation_reactions import (
     PostApplyReaction,
+    QuestPresentationReaction,
     apply_post_apply_reaction,
-    resolve_quest_presentation_reaction,
 )
-from crimson.sim.sessions import QuestSpawnState
 
 
 def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() -> None:
@@ -37,14 +36,10 @@ def test_session_step_tick_skips_bonus_post_apply_sfx_for_stale_perk_pick() -> N
     assert tick.step.post_apply_sfx_keys == ()
 
 
-def test_resolve_quest_presentation_reaction_updates_timer_and_flags() -> None:
-    reaction = resolve_quest_presentation_reaction(
-        QuestSpawnState(
-            spawn_timeline_ms=444.0,
-            completion_transition_ms=222.0,
-            play_hit_sfx=True,
-            play_completion_music=True,
-        ),
+def test_quest_presentation_reaction_tracks_audio_flags() -> None:
+    reaction = QuestPresentationReaction(
+        play_hit_sfx=True,
+        play_completion_music=True,
     )
 
     assert reaction.play_hit_sfx is True
@@ -58,13 +53,9 @@ def test_apply_post_apply_reaction_applies_sfx_and_completion_music() -> None:
     apply_post_apply_reaction(
         reaction=PostApplyReaction(
             sfx_keys=("sfx_ui_bonus",),
-            quest=resolve_quest_presentation_reaction(
-                QuestSpawnState(
-                    spawn_timeline_ms=444.0,
-                    completion_transition_ms=222.0,
-                    play_hit_sfx=True,
-                    play_completion_music=True,
-                ),
+            quest=QuestPresentationReaction(
+                play_hit_sfx=True,
+                play_completion_music=True,
             ),
         ),
         play_sfx=lambda key: play_sfx.append(str(key)),

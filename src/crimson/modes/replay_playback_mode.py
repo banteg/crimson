@@ -543,13 +543,6 @@ class ReplayPlaybackMode:
             return int(total_ticks)
         return min(int(total_ticks), max(0, int(self._max_ticks)))
 
-    def _session_game_tune_started(self) -> bool:
-        driver = self._driver
-        return bool(driver is not None and driver.session.game_tune_started)
-
-    def _on_runner_tick_complete(self, _tick_index: int, _tick: object) -> bool:
-        return False
-
     def _mark_finished_if_complete(self) -> None:
         tick_limit = int(self._tick_limit())
         if int(self._tick_index) < int(tick_limit):
@@ -585,14 +578,13 @@ class ReplayPlaybackMode:
             dt_seconds=float(frame_dt),
             max_ticks=max_ticks,
             tick_limit=int(tick_limit),
-            game_tune_started=self._session_game_tune_started(),
+            game_tune_started=bool(driver.session.game_tune_started),
         )
         self._frame_index = int(advance.frame_index)
         self._tick_index = int(advance.next_tick_index)
 
-        def _on_output_applied(output: PresentationTickOutput, tick_result: TickResult) -> None:
+        def _on_output_applied(output: PresentationTickOutput) -> None:
             self._apply_post_apply_reaction(reaction_by_tick[int(output.tick_index)])
-            self._on_runner_tick_complete(int(output.tick_index), tick_result)
             if not bake_fx_per_tick:
                 return
             if render_resources.ground is not None and render_resources.fx_textures is not None:
@@ -601,21 +593,11 @@ class ReplayPlaybackMode:
                 render_resources.fx_queue.clear()
                 render_resources.fx_queue_rotated.clear()
 
-        can_apply_output_phase = bool(
-            hasattr(runtime, "sync_audio_bridge_state")
-            and hasattr(runtime, "audio_bridge")
-            and hasattr(runtime.audio_bridge, "apply_plan"),
-        )
-        update_camera = runtime.update_camera if hasattr(runtime, "update_camera") else None
-        tick_result_by_tick = {
-            int(tick_result.source_tick.tick_index): tick_result
-            for tick_result in advance.tick_results
-        }
         reaction_by_tick = {
             int(tick_result.source_tick.tick_index): self._build_post_apply_reaction(tick_result=tick_result)
             for tick_result in advance.tick_results
         }
-        if advance.outputs and can_apply_output_phase:
+        if advance.outputs:
             apply_presentation_outputs(
                 outputs=advance.outputs,
                 sync_audio_bridge_state=runtime.sync_audio_bridge_state,
@@ -623,15 +605,13 @@ class ReplayPlaybackMode:
                     plan=plan,
                     apply_audio=bool(should_apply_audio),
                 ),
-                update_camera=update_camera,
-                on_output_applied=lambda output: _on_output_applied(
-                    output, tick_result_by_tick[int(output.tick_index)],
-                ),
+                update_camera=runtime.update_camera,
+                on_output_applied=_on_output_applied,
                 apply_audio=True,
             )
         else:
-            for output, tick_result in zip(advance.outputs, advance.tick_results):
-                _on_output_applied(output, tick_result)
+            for output in advance.outputs:
+                _on_output_applied(output)
 
         self._mark_finished_if_complete()
         self._dt_accum = float(self._clock.accum)

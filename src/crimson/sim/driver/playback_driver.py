@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, TypeAlias, cast
+from typing import TypeAlias
 
 from crimson.quest_level import QuestLevel
 from grim.rand import CrtRand, RngTraceSink
@@ -142,14 +142,6 @@ class PlaybackWalkResult:
     start_tick: int
     next_tick_index: int
     ticks_completed: int
-
-
-@dataclass(slots=True)
-class _PlaybackTickMeta:
-    tick_index: int
-    dt_tick: float
-    trace_ctx: object
-    tick_rng_rows: list[RngTraceDraw]
 
 
 class PlaybackDriver:
@@ -362,12 +354,7 @@ class PlaybackDriver:
             case _:
                 raise ReplayRunnerError(f"unsupported replay game_mode_id={int(self.mode_id)}")
 
-    def _prepare_tick_meta(
-        self,
-        *,
-        tick_index: int,
-        dt_tick: float,
-    ) -> _PlaybackTickMeta:
+    def _prepare_tick(self, *, tick_index: int) -> None:
         if int(tick_index) < 0 or int(tick_index) >= int(self.tick_limit):
             raise ReplayRunnerError(f"tick_index out of range: {tick_index} (tick_limit={self.tick_limit})")
 
@@ -381,49 +368,6 @@ class PlaybackDriver:
                 draws = int(self.inter_tick_rand_draws)
             for _ in range(max(0, int(draws))):
                 state.rng.rand()
-
-        trace_ctx = _tick_rng_trace(state.rng, enabled=bool(self.trace_rng))
-        tick_rng_rows = trace_ctx.__enter__()
-        return _PlaybackTickMeta(
-            tick_index=int(tick_index),
-            dt_tick=float(dt_tick),
-            trace_ctx=trace_ctx,
-            tick_rng_rows=tick_rng_rows,
-        )
-
-    def _finalize_tick_result(
-        self,
-        *,
-        tick_result: TickResult,
-        meta: _PlaybackTickMeta,
-    ) -> TickResult:
-        trace_ctx = cast(Any, meta.trace_ctx)
-        trace_closed = False
-        try:
-            source_tick = tick_result.source_tick
-            tick_index = int(source_tick.tick_index)
-            if int(meta.tick_index) != int(tick_index):
-                raise ReplayRunnerError(
-                    f"playback tick mismatch: meta={int(meta.tick_index)} runner={int(tick_index)}",
-                )
-
-            state = self.world.state
-
-            # Close the trace context before snapshotting rows so any
-            # `finally`-recorded draws are included in this tick.
-            trace_ctx.__exit__(None, None, None)
-            trace_closed = True
-
-            if self.inter_tick_rand_draws_by_tick is None:
-                draws = max(0, int(self.inter_tick_rand_draws))
-                for _ in range(draws):
-                    state.rng.rand()
-
-            self._last_tick_rng_rows = tuple(meta.tick_rng_rows)
-            return tick_result
-        finally:
-            if not trace_closed:
-                trace_ctx.__exit__(None, None, None)
 
     def build_checkpoint(
         self,
@@ -447,31 +391,39 @@ class PlaybackDriver:
 
     def step_tick(self, tick_index: int) -> TickResult:
         tick_index = int(tick_index)
+        self._prepare_tick(tick_index=tick_index)
+        self._last_tick_rng_rows = ()
         replay_tick = self.replay.ticks[tick_index]
         dt_tick = float(replay_tick.dt)
-        meta = self._prepare_tick_meta(tick_index=tick_index, dt_tick=dt_tick)
-        self._last_tick_rng_rows = ()
-
         inputs = unpack_tick_inputs(replay_tick.inputs)
         commands = list(replay_tick.commands)
-        source_tick = ResolvedTick(
-            tick_index=int(tick_index),
-            dt_seconds=float(dt_tick),
-            inputs=list(inputs),
-            commands=list(commands),
-        )
+        with _tick_rng_trace(self.world.state.rng, enabled=bool(self.trace_rng)) as tick_rng_rows:
+            source_tick = ResolvedTick(
+                tick_index=int(tick_index),
+                dt_seconds=float(dt_tick),
+                inputs=list(inputs),
+                commands=list(commands),
+            )
 
-        timing = self.session.timing_for_dt(dt_tick)
-        session_tick = self.session.step_tick(
-            timing=timing, inputs=inputs,
-            trace_rng=self.trace_rng, commands=commands,
-        )
-        tick_result = TickResult(
-            source_tick=source_tick,
-            payload=session_tick,
-            replay_tick_index=int(tick_index),
-        )
-        return self._finalize_tick_result(tick_result=tick_result, meta=meta)
+            timing = self.session.timing_for_dt(dt_tick)
+            session_tick = self.session.step_tick(
+                timing=timing,
+                inputs=inputs,
+                trace_rng=self.trace_rng,
+                commands=commands,
+            )
+            tick_result = TickResult(
+                source_tick=source_tick,
+                payload=session_tick,
+                replay_tick_index=int(tick_index),
+            )
+
+        if self.inter_tick_rand_draws_by_tick is None:
+            draws = max(0, int(self.inter_tick_rand_draws))
+            for _ in range(draws):
+                self.world.state.rng.rand()
+        self._last_tick_rng_rows = tuple(tick_rng_rows)
+        return tick_result
 
     def walk_ticks(
         self,

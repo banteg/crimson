@@ -22,6 +22,7 @@ class FakePlaybackDriver:
     quest_spawn_state: QuestSpawnState | None = None
     post_apply_sfx_keys: tuple[str, ...] = ()
     game_tune_started: bool = False
+    elapsed_ms: float = 0.0
 
     @property
     def session(self) -> object:

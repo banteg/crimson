@@ -71,7 +71,6 @@ from ..sim.input import PlayerInput
 from ..sim.input_providers import (
     FrameContext,
     GameCommand,
-    InputProvider,
     InputStatus,
     LocalInputProvider,
     NetworkInputProvider,
@@ -1399,43 +1398,6 @@ class BaseGameplayMode:
     def _deterministic_tick_rate() -> int:
         return 60
 
-    def _new_tick_runner(
-        self,
-        *,
-        session: DeterministicSession,
-        input_provider: InputProvider,
-    ) -> TickRunner:
-        return TickRunner(
-            session=session,
-            input_provider=input_provider,
-            config=TickRunnerConfig(),
-        )
-
-    def _advance_tick_runner_batch(
-        self,
-        *,
-        runner: TickRunner,
-        dt_seconds: float,
-        tick_dt_seconds: float,
-        candidate_ticks: int,
-        is_networked: bool,
-        is_replay: bool = False,
-    ) -> TickBatchResult:
-        advance = advance_tick_runner_frame(
-            runner=runner,
-            start_tick=int(self._tick_runner_next_tick_index),
-            frame_index=int(self._tick_runner_frame_index),
-            ticks_requested=int(candidate_ticks),
-            dt_seconds=float(dt_seconds),
-            tick_dt_seconds=float(tick_dt_seconds),
-            is_networked=bool(is_networked),
-            is_replay=bool(is_replay),
-            refund_clock=None if bool(is_networked) else self._tick_runner_local_clock,
-        )
-        self._tick_runner_frame_index = int(advance.frame_index)
-        self._tick_runner_next_tick_index = int(advance.next_tick_index)
-        return advance.batch
-
     def _gameplay_tick_rate(self) -> int:
         return int(self._deterministic_tick_rate())
 
@@ -1554,9 +1516,10 @@ class BaseGameplayMode:
             )
         self._flush_queued_input_commands(provider=provider)
 
-        runner = self._new_tick_runner(
+        runner = TickRunner(
             session=session,
             input_provider=provider,
+            config=TickRunnerConfig(),
         )
         self._tick_runner = runner
         self._tick_input_provider = provider
@@ -1753,13 +1716,19 @@ class BaseGameplayMode:
         # LAN always requests exactly 0 or 1 ticks per frame. This ensures
         # _on_tick_applied stop actions never discard simulated-but-unapplied ticks.
         assert ticks_requested <= 1
-        batch = self._advance_tick_runner_batch(
+        advance = advance_tick_runner_frame(
             runner=runner,
+            start_tick=int(self._tick_runner_next_tick_index),
+            frame_index=int(self._tick_runner_frame_index),
+            ticks_requested=int(ticks_requested),
             dt_seconds=float(dt_tick),
             tick_dt_seconds=float(dt_tick),
-            candidate_ticks=int(ticks_requested),
             is_networked=True,
+            is_replay=False,
         )
+        self._tick_runner_frame_index = int(advance.frame_index)
+        self._tick_runner_next_tick_index = int(advance.next_tick_index)
+        batch = advance.batch
         sim_ms = (time.perf_counter_ns() - sim_ns_start) / 1_000_000.0
         self._sim_ms += float(sim_ms)
         self._presentation_plan_ms += float(
@@ -1855,20 +1824,8 @@ class BaseGameplayMode:
     def _build_tick_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
         return build_post_apply_reaction(tick_result=tick_result)
 
-    def _augment_post_apply_reaction(
-        self,
-        *,
-        reaction: PostApplyReaction,
-        dt_seconds: float,
-    ) -> PostApplyReaction:
-        _ = dt_seconds
-        return reaction
-
     def _apply_tick_post_apply_reaction(self, reaction: PostApplyReaction, *, dt_seconds: float) -> None:
-        reaction = self._augment_post_apply_reaction(
-            reaction=reaction,
-            dt_seconds=float(dt_seconds),
-        )
+        _ = dt_seconds
         apply_post_apply_reaction(
             reaction=reaction,
             play_sfx=self.audio_bridge.router.play_sfx,
@@ -1990,13 +1947,20 @@ class BaseGameplayMode:
         candidate_ticks = int(local_clock.advance(float(dt_frame)))
         tick_dt = float(local_clock.dt_tick)
         sim_ns_start = time.perf_counter_ns()
-        batch = self._advance_tick_runner_batch(
+        advance = advance_tick_runner_frame(
             runner=runner,
+            start_tick=int(self._tick_runner_next_tick_index),
+            frame_index=int(self._tick_runner_frame_index),
+            ticks_requested=int(candidate_ticks),
             dt_seconds=float(dt_frame),
             tick_dt_seconds=float(tick_dt),
-            candidate_ticks=int(candidate_ticks),
             is_networked=False,
+            is_replay=False,
+            refund_clock=local_clock,
         )
+        self._tick_runner_frame_index = int(advance.frame_index)
+        self._tick_runner_next_tick_index = int(advance.next_tick_index)
+        batch = advance.batch
         self._sim_ms = float((time.perf_counter_ns() - sim_ns_start) / 1_000_000.0)
         self._presentation_plan_ms = float(
             sum(max(0.0, float(row.payload.step.presentation_plan_ms)) for row in batch.completed_results),

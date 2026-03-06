@@ -46,6 +46,19 @@ def _replay_with_ticks(tick_count: int) -> Replay:
     )
 
 
+def _capture_output_ticks(mocker, captured_ticks: list[int]) -> None:
+    def _apply_presentation_outputs(*, outputs, on_output_applied, **_kwargs) -> None:
+        for output in outputs:
+            captured_ticks.append(int(output.tick_index))
+            on_output_applied(output)
+
+    mocker.patch.object(
+        replay_playback_mode,
+        "apply_presentation_outputs",
+        side_effect=_apply_presentation_outputs,
+    )
+
+
 def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
 
@@ -58,7 +71,6 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
     view._tick_rate = 60
     view._dt = 1.0 / 60.0
     view._dt_accum = 0.0
-    view._on_runner_tick_complete = lambda _tick_index, _tick: False
     view._max_ticks = None
 
     view._driver = FakePlaybackDriver(tick_limit=16)
@@ -78,8 +90,6 @@ def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_vie
     view._max_ticks = None
     view._tick_index = 0
     view._finished = False
-    view._on_runner_tick_complete = lambda _tick_index, _tick: False
-
     view._driver = FakePlaybackDriver(tick_limit=2)
 
     view._advance_runner(
@@ -91,7 +101,7 @@ def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_vie
     assert not view._finished
 
 
-def test_replay_runner_eos_applies_partial_completed_results(replay_playback_view) -> None:
+def test_replay_runner_eos_applies_partial_completed_results(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
 
     view._replay = _replay_with_ticks(2)
@@ -100,7 +110,7 @@ def test_replay_runner_eos_applies_partial_completed_results(replay_playback_vie
     view._tick_index = 0
     view._finished = False
     applied_ticks: list[int] = []
-    view._on_runner_tick_complete = lambda tick_index, _tick: applied_ticks.append(int(tick_index)) or False
+    _capture_output_ticks(mocker, applied_ticks)
 
     view._driver = FakePlaybackDriver(tick_limit=2)
 
@@ -114,7 +124,7 @@ def test_replay_runner_eos_applies_partial_completed_results(replay_playback_vie
     assert view._finished is True
 
 
-def test_replay_runner_preserves_tick_complete_order_for_mixed_payload_batches(replay_playback_view) -> None:
+def test_replay_runner_preserves_tick_complete_order_for_mixed_payload_batches(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
 
     view._replay = _replay_with_ticks(2)
@@ -137,7 +147,7 @@ def test_replay_runner_preserves_tick_complete_order_for_mixed_payload_batches(r
     view._tick_index = 0
     view._finished = False
     callback_order: list[int] = []
-    view._on_runner_tick_complete = lambda tick_index, _tick: callback_order.append(int(tick_index)) or False
+    _capture_output_ticks(mocker, callback_order)
 
     view._driver = FakePlaybackDriver(tick_limit=2)
 

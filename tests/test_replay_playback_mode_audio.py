@@ -44,6 +44,9 @@ class _RouterStub:
 class _AudioBridgeStub:
     router: _RouterStub = field(default_factory=_RouterStub)
 
+    def apply_plan(self, **_kwargs) -> None:
+        return None
+
 
 class _Clearable(Protocol):
     def clear(self) -> None: ...
@@ -71,6 +74,12 @@ class _RuntimeStub:
     audio_bridge: _AudioBridgeStub
     render_resources: _RenderResourcesStub
     sim_world: SimWorldState = field(default_factory=SimWorldState)
+
+    def sync_audio_bridge_state(self) -> None:
+        return None
+
+    def update_camera(self, _dt: float) -> None:
+        return None
 
 
 class _CountingQueue:
@@ -154,8 +163,8 @@ def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
     observed_sfx_enabled: list[bool] = []
     _set_private(
         view,
-        "_on_runner_tick_complete",
-        lambda *_args, **_kwargs: observed_sfx_enabled.append(bool(audio_bridge.router.sfx_enabled)) or False,
+        "_apply_post_apply_reaction",
+        lambda _reaction: observed_sfx_enabled.append(bool(audio_bridge.router.sfx_enabled)),
     )
     _set_private(view, "_driver", FakePlaybackDriver(tick_limit=5))
     view._max_ticks = None
@@ -191,11 +200,11 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
 
     observed_sfx_enabled: list[bool] = []
 
-    def _on_runner_tick_complete(*_args, **_kwargs) -> bool:
+    def _apply_post_apply_reaction(_reaction: object) -> None:
         observed_sfx_enabled.append(bool(audio_bridge.router.sfx_enabled))
         raise RuntimeError("skip test boom")
 
-    _set_private(view, "_on_runner_tick_complete", _on_runner_tick_complete)
+    _set_private(view, "_apply_post_apply_reaction", _apply_post_apply_reaction)
     _set_private(view, "_driver", FakePlaybackDriver(tick_limit=3))
     view._max_ticks = None
 
@@ -240,7 +249,6 @@ def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playbac
     view._tick_index = 0
     view._finished = False
     view._dt = 1.0 / 60.0
-    _set_private(view, "_on_runner_tick_complete", lambda *_args, **_kwargs: False)
     _set_private(view, "_driver", FakePlaybackDriver(tick_limit=len(replay_inputs)))
     view._max_ticks = None
 
@@ -275,7 +283,6 @@ def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_pl
     view._tick_index = 0
     view._finished = False
     view._dt = 1.0 / 60.0
-    _set_private(view, "_on_runner_tick_complete", lambda *_args, **_kwargs: False)
     _set_private(view, "_driver", FakePlaybackDriver(tick_limit=len(replay_inputs)))
     view._max_ticks = None
 

@@ -24,38 +24,16 @@ def build_post_apply_reaction(
     tick_result: TickResult,
     quest_state: QuestSpawnState | None = None,
 ) -> PostApplyReaction:
-    reaction = PostApplyReaction(
-        sfx_keys=tuple(str(key) for key in tick_result.payload.step.post_apply_sfx_keys),
-    )
     if quest_state is None:
-        return reaction
-    return merge_post_apply_reactions(
-        reaction,
-        PostApplyReaction(quest=resolve_quest_presentation_reaction(quest_state)),
-    )
-
-
-def resolve_quest_presentation_reaction(
-    quest_state: QuestSpawnState,
-) -> QuestPresentationReaction:
-    return QuestPresentationReaction(
-        play_hit_sfx=bool(quest_state.play_hit_sfx),
-        play_completion_music=bool(quest_state.play_completion_music),
-    )
-
-
-def merge_post_apply_reactions(*reactions: PostApplyReaction | None) -> PostApplyReaction:
-    sfx_keys: list[str] = []
-    quest: QuestPresentationReaction | None = None
-    for reaction in reactions:
-        if reaction is None:
-            continue
-        sfx_keys.extend(str(key) for key in reaction.sfx_keys)
-        if reaction.quest is not None:
-            quest = reaction.quest
+        return PostApplyReaction(
+            sfx_keys=tuple(str(key) for key in tick_result.payload.step.post_apply_sfx_keys),
+        )
     return PostApplyReaction(
-        sfx_keys=tuple(sfx_keys),
-        quest=quest,
+        sfx_keys=tuple(str(key) for key in tick_result.payload.step.post_apply_sfx_keys),
+        quest=QuestPresentationReaction(
+            play_hit_sfx=bool(quest_state.play_hit_sfx),
+            play_completion_music=bool(quest_state.play_completion_music),
+        ),
     )
 
 
