@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import cast
 
 import pytest
 
@@ -272,14 +271,14 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert "sim_state" in meta.channels
     assert "entity_samples" in meta.channels
     assert "rng_stream" in meta.channels
-    assert cast("dict[str, object]", ticks[0].channels["checkpoint"])["tick_index"] == 0
-    assert cast("dict[str, object]", ticks[1].channels["checkpoint"])["tick_index"] == 1
+    assert ticks[0].channels.checkpoint.tick_index == 0
+    assert ticks[1].channels.checkpoint.tick_index == 1
 
-    creatures0 = cast("dict[str, list[dict[str, object]]]", ticks[0].channels["entity_samples"])["creatures"]
-    creatures1 = cast("dict[str, list[dict[str, object]]]", ticks[1].channels["entity_samples"])["creatures"]
-    assert isinstance(creatures0[0]["uid"], int)
-    assert creatures0[0]["generation"] == 1
-    assert creatures1[0]["generation"] == 1
+    creatures0 = ticks[0].channels.entity_samples.creatures
+    creatures1 = ticks[1].channels.entity_samples.creatures
+    assert isinstance(creatures0[0].uid, int)
+    assert creatures0[0].generation == 1
+    assert creatures1[0].generation == 1
 
 
 def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_closed(tmp_path: Path) -> None:

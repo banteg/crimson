@@ -18,11 +18,13 @@ from .schema import (
     TRACE_FORMAT_VERSION,
     TRACE_REQUIRED_CHANNELS,
     TRACE_SCHEMA_VERSION,
+    BisectTickChannels,
+    BisectTickRecord,
     TickRecord,
     TraceMeta,
     channel_versions_for,
 )
-from .trace import TraceError, TraceReader, write_trace
+from .trace import TraceError, TraceReader, write_bisect_trace
 
 
 class TraceMismatch(msgspec.Struct, frozen=True):
@@ -299,28 +301,26 @@ def bisect_traces(
         if repro_out is not None:
             left = first_bad - max(0, window_before)
             right = first_bad + max(0, window_after)
-            repro_rows: list[TickRecord] = []
+            repro_rows: list[BisectTickRecord] = []
             for pair in pairs:
                 tick = pair.tick_index
                 if tick < left or tick > right:
                     continue
-                channels: BuiltinObject = {}
-                if pair.expected_row is not None:
-                    channels["golden"] = to_builtin_object(pair.expected_row.channels, field="golden")
-                if pair.actual_row is not None:
-                    channels["candidate"] = to_builtin_object(pair.actual_row.channels, field="candidate")
-                channels["focus_tick"] = tick == first_bad
                 source_row = pair.expected_row if pair.expected_row is not None else pair.actual_row
                 if source_row is None:
                     raise ValueError(f"internal error: missing both rows for tick {tick}")
                 repro_rows.append(
-                    TickRecord(
+                    BisectTickRecord(
                         tick_index=tick,
                         elapsed_ms=int(source_row.elapsed_ms),
                         dt_ms_i32=int(source_row.dt_ms_i32),
                         mode_id=int(source_row.mode_id),
                         phase_markers=[],
-                        channels=channels,
+                        channels=BisectTickChannels(
+                            golden=(None if pair.expected_row is None else pair.expected_row.channels),
+                            candidate=(None if pair.actual_row is None else pair.actual_row.channels),
+                            focus_tick=(tick == first_bad),
+                        ),
                     ),
                 )
             meta = TraceMeta(
@@ -350,7 +350,7 @@ def bisect_traces(
                     "window_after": window_after,
                 },
             )
-            write_trace(Path(repro_out), meta=meta, ticks=repro_rows, chunk_ticks=128)
+            write_bisect_trace(Path(repro_out), meta=meta, ticks=repro_rows, chunk_ticks=128)
             repro_path = Path(repro_out)
 
         return TraceBisectReport(

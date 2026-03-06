@@ -5,8 +5,25 @@ from pathlib import Path
 import msgspec
 import pytest
 
-from crimson.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
+from crimson.dbg.canonical_channels import (
+    EntitySamplesSnapshot,
+    SimStateSnapshot,
+    SnapshotBonusTimers,
+    SnapshotGameplay,
+    SnapshotStatus,
+)
+from crimson.dbg.schema import (
+    TRACE_FORMAT_VERSION,
+    TRACE_REQUIRED_CHANNELS,
+    TRACE_SCHEMA_VERSION,
+    ReplayTickChannels,
+    TickRecord,
+    TraceMeta,
+    channel_versions_for,
+)
 from crimson.dbg.trace import TraceError, TraceReader, write_trace
+from crimson.replay.checkpoints import ReplayCheckpoint
+from crimson.replay.types import WEAPON_USAGE_COUNT
 
 
 def _meta() -> TraceMeta:
@@ -16,39 +33,77 @@ def _meta() -> TraceMeta:
         created_utc="2026-02-24T00:00:00+00:00",
         producer={"impl": "python", "impl_version": "test", "platform": "darwin", "arch": "x86_64"},
         source={"kind": "unit_test", "sha256": "0" * 64},
-        channels=["checkpoint"],
-        channel_versions=channel_versions_for(("checkpoint",)),
+        channels=[*TRACE_REQUIRED_CHANNELS],
+        channel_versions=channel_versions_for(TRACE_REQUIRED_CHANNELS),
         tick_range={"start_tick": 0, "end_tick": 2, "tick_count": 3},
         config={},
     )
 
 
+def _channels(*, tick_index: int, elapsed_ms: int, score_xp: int) -> ReplayTickChannels:
+    return ReplayTickChannels(
+        checkpoint=ReplayCheckpoint(
+            tick_index=int(tick_index),
+            rng_state=0,
+            elapsed_ms=int(elapsed_ms),
+            score_xp=int(score_xp),
+            kills=0,
+            creature_count=0,
+            perk_pending=0,
+            players=[],
+            bonus_timers={},
+            rng_marks={},
+        ),
+        sim_state=SimStateSnapshot(
+            gameplay=SnapshotGameplay(
+                mode_id=1,
+                quest_stage_major=-1,
+                quest_stage_minor=-1,
+                perk_pending_count=0,
+                perk_choices_dirty=False,
+                bonus_timers=SnapshotBonusTimers(
+                    weapon_power_up_ms=0,
+                    reflex_boost_ms=0,
+                    energizer_ms=0,
+                    double_experience_ms=0,
+                    freeze_ms=0,
+                ),
+                status=SnapshotStatus(
+                    quest_unlock_index=0,
+                    quest_unlock_index_full=0,
+                    weapon_usage_counts=[0] * int(WEAPON_USAGE_COUNT),
+                ),
+            ),
+            players=[],
+        ),
+        entity_samples=EntitySamplesSnapshot(
+            creatures=[],
+            projectiles=[],
+            secondary_projectiles=[],
+            bonuses=[],
+        ),
+        rng_marks={},
+        rng_stream=[],
+        timing_samples=[],
+    )
+
+
+def _row(*, tick_index: int, elapsed_ms: int, score_xp: int) -> TickRecord:
+    return TickRecord(
+        tick_index=int(tick_index),
+        elapsed_ms=int(elapsed_ms),
+        dt_ms_i32=16,
+        mode_id=1,
+        channels=_channels(tick_index=int(tick_index), elapsed_ms=int(elapsed_ms), score_xp=int(score_xp)),
+        phase_markers=[],
+    )
+
+
 def test_trace_roundtrip_random_access(tmp_path: Path) -> None:
     rows = [
-        TickRecord(
-            tick_index=0,
-            elapsed_ms=0,
-            dt_ms_i32=16,
-            mode_id=1,
-            phase_markers=[],
-            channels={"checkpoint": {"score_xp": 0}},
-        ),
-        TickRecord(
-            tick_index=1,
-            elapsed_ms=16,
-            dt_ms_i32=16,
-            mode_id=1,
-            phase_markers=[],
-            channels={"checkpoint": {"score_xp": 5}},
-        ),
-        TickRecord(
-            tick_index=2,
-            elapsed_ms=33,
-            dt_ms_i32=16,
-            mode_id=1,
-            phase_markers=[],
-            channels={"checkpoint": {"score_xp": 9}},
-        ),
+        _row(tick_index=0, elapsed_ms=0, score_xp=0),
+        _row(tick_index=1, elapsed_ms=16, score_xp=5),
+        _row(tick_index=2, elapsed_ms=33, score_xp=9),
     ]
     out_path = tmp_path / "trace.cdt"
     summary = write_trace(out_path, meta=_meta(), ticks=rows, chunk_ticks=2)
@@ -92,7 +147,7 @@ def test_tick_record_decodes_with_unknown_fields() -> None:
             "dt_ms_i32": 16,
             "mode_id": 2,
             "phase_markers": ["pre", "post"],
-            "channels": {"checkpoint": {"score_xp": 42}},
+            "channels": msgspec.to_builtins(_channels(tick_index=7, elapsed_ms=112, score_xp=42)),
             "future_tick_field": "ignored",
         },
     )
@@ -108,21 +163,12 @@ def test_trace_reader_rejects_old_schema_version(tmp_path: Path) -> None:
         created_utc="2026-02-24T00:00:00+00:00",
         producer={"impl": "python", "impl_version": "test", "platform": "darwin", "arch": "x86_64"},
         source={"kind": "unit_test", "sha256": "1" * 64},
-        channels=["checkpoint"],
-        channel_versions=channel_versions_for(("checkpoint",)),
+        channels=[*TRACE_REQUIRED_CHANNELS],
+        channel_versions=channel_versions_for(TRACE_REQUIRED_CHANNELS),
         tick_range={"start_tick": 0, "end_tick": 0, "tick_count": 1},
         config={},
     )
-    rows = [
-        TickRecord(
-            tick_index=0,
-            elapsed_ms=0,
-            dt_ms_i32=16,
-            mode_id=1,
-            phase_markers=[],
-            channels={"checkpoint": {"score_xp": 0}},
-        ),
-    ]
+    rows = [_row(tick_index=0, elapsed_ms=0, score_xp=0)]
     write_trace(out_path, meta=meta, ticks=rows, chunk_ticks=1)
 
     with pytest.raises(TraceError, match="unsupported trace schema version"):
@@ -138,21 +184,12 @@ def test_trace_reader_rejects_unknown_schema_version(tmp_path: Path) -> None:
         created_utc="2026-02-24T00:00:00+00:00",
         producer={"impl": "python", "impl_version": "test", "platform": "darwin", "arch": "x86_64"},
         source={"kind": "unit_test", "sha256": "2" * 64},
-        channels=["checkpoint"],
-        channel_versions=channel_versions_for(("checkpoint",)),
+        channels=[*TRACE_REQUIRED_CHANNELS],
+        channel_versions=channel_versions_for(TRACE_REQUIRED_CHANNELS),
         tick_range={"start_tick": 0, "end_tick": 0, "tick_count": 1},
         config={},
     )
-    rows = [
-        TickRecord(
-            tick_index=0,
-            elapsed_ms=0,
-            dt_ms_i32=16,
-            mode_id=1,
-            phase_markers=[],
-            channels={"checkpoint": {"score_xp": 0}},
-        ),
-    ]
+    rows = [_row(tick_index=0, elapsed_ms=0, score_xp=0)]
     write_trace(out_path, meta=meta, ticks=rows, chunk_ticks=1)
 
     with pytest.raises(TraceError, match="unsupported trace schema version"):

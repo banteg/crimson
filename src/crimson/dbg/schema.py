@@ -5,6 +5,9 @@ from typing import Any
 
 import msgspec
 
+from ..replay.checkpoints import ReplayCheckpoint
+from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
+
 TRACE_MAGIC = b"crimson_debug_trace_v1\n"
 TRACE_FORMAT_VERSION = 1
 TRACE_SCHEMA_VERSION = 5
@@ -49,19 +52,49 @@ class TraceMeta(msgspec.Struct):
     config: dict[str, Any]
 
 
+class ReplayTickChannels(msgspec.Struct):
+    checkpoint: ReplayCheckpoint
+    sim_state: SimStateSnapshot
+    entity_samples: EntitySamplesSnapshot
+    rng_marks: dict[str, int] = msgspec.field(default_factory=dict)
+    rng_stream: list[RngStreamRow] = msgspec.field(default_factory=list)
+    timing_samples: list[TimingSampleRow] = msgspec.field(default_factory=list)
+
+
 class TickRecord(msgspec.Struct):
     tick_index: int
     elapsed_ms: int
     dt_ms_i32: int
     mode_id: int
-    phase_markers: list[str]
-    channels: dict[str, Any]
+    channels: ReplayTickChannels
+    phase_markers: list[str] = msgspec.field(default_factory=list)
+
+
+class BisectTickChannels(msgspec.Struct):
+    golden: ReplayTickChannels | None = None
+    candidate: ReplayTickChannels | None = None
+    focus_tick: bool = False
 
 
 class TickBlock(msgspec.Struct):
     start_tick: int
     end_tick: int
     ticks: list[TickRecord]
+
+
+class BisectTickRecord(msgspec.Struct):
+    tick_index: int
+    elapsed_ms: int
+    dt_ms_i32: int
+    mode_id: int
+    channels: BisectTickChannels
+    phase_markers: list[str] = msgspec.field(default_factory=list)
+
+
+class BisectTickBlock(msgspec.Struct):
+    start_tick: int
+    end_tick: int
+    ticks: list[BisectTickRecord]
 
 
 class TickBlockIndexEntry(msgspec.Struct):

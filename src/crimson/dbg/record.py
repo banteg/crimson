@@ -32,10 +32,17 @@ from .canonical_channels import (
     SnapshotWeapon,
     bonus_timer_ms,
 )
-from .checkpoint_codec import checkpoint_to_channel
-from .payloads import BuiltinObject, to_builtin_object, to_builtin_value
+from .payloads import BuiltinObject
 from .rng import canonical_rng_marks
-from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
+from .schema import (
+    TRACE_FORMAT_VERSION,
+    TRACE_REQUIRED_CHANNELS,
+    TRACE_SCHEMA_VERSION,
+    ReplayTickChannels,
+    TickRecord,
+    TraceMeta,
+    channel_versions_for,
+)
 from .trace import TraceError, TraceReader, TraceSummary, write_trace
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -393,14 +400,14 @@ def _record_replay_to_trace_python(
             rng_marks=dict(trace_rng_marks),
         )
 
-        channels: BuiltinObject = {
-            "checkpoint": checkpoint_to_channel(trace_checkpoint),
-            "sim_state": to_builtin_object(sim_state_obj, field="sim_state"),
-            "entity_samples": to_builtin_object(entity_samples_obj, field="entity_samples"),
-            "rng_marks": dict(trace_rng_marks),
-            "rng_stream": to_builtin_value(rng_stream, field="rng_stream"),
-            "timing_samples": [],
-        }
+        channels = ReplayTickChannels(
+            checkpoint=trace_checkpoint,
+            sim_state=sim_state_obj,
+            entity_samples=entity_samples_obj,
+            rng_marks=dict(trace_rng_marks),
+            rng_stream=rng_stream,
+            timing_samples=[],
+        )
 
         if not (0 <= tick_index < len(replay_dt_rows)):
             raise ValueError(f"missing replay dt_ms_i32 row for tick {tick_index}")
@@ -408,7 +415,7 @@ def _record_replay_to_trace_python(
         if tick_dt_ms_i32 < 0:
             raise ValueError(f"invalid replay dt_ms_i32 at tick {tick_index}: {tick_dt_ms_i32}")
 
-        channels_seen.update(channels.keys())
+        channels_seen.update(TRACE_REQUIRED_CHANNELS)
         tick_rows.append(
             TickRecord(
                 tick_index=tick_index,

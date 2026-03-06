@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
-from typing import cast
 
+import msgspec
 from typer.testing import CliRunner
 
 import crimson.dbg.diff as dbg_diff
 from crimson.cli import app
+from crimson.dbg.schema import TickRecord
 from crimson.dbg.trace import TraceReader, load_trace, write_trace
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay
@@ -148,13 +149,13 @@ def _write_replay_with_fire(path: Path, *, ticks: int = 3) -> Path:
     return path
 
 
-def _as_dict(value: object) -> dict[str, object]:
-    assert isinstance(value, dict)
-    out: dict[str, object] = {}
-    for key, item in value.items():
-        assert isinstance(key, str)
-        out[key] = item
-    return out
+def _with_score_xp_delta(row: TickRecord, *, delta: int) -> TickRecord:
+    checkpoint = msgspec.structs.replace(
+        row.channels.checkpoint,
+        score_xp=int(row.channels.checkpoint.score_xp) + int(delta),
+    )
+    row.channels = msgspec.structs.replace(row.channels, checkpoint=checkpoint)
+    return row
 
 
 def test_dbg_record_emits_required_channels(tmp_path: Path) -> None:
@@ -177,11 +178,11 @@ def test_dbg_record_emits_required_channels(tmp_path: Path) -> None:
     with TraceReader(trace_path) as trace:
         tick0 = trace.tick(0)
         assert tick0 is not None
-        assert "checkpoint" in tick0.channels
-        assert "rng_marks" in tick0.channels
-        assert "rng_stream" in tick0.channels
-        assert "sim_state" in tick0.channels
-        assert "entity_samples" in tick0.channels
+        assert tick0.channels.checkpoint.tick_index == 0
+        assert isinstance(tick0.channels.rng_marks, dict)
+        assert isinstance(tick0.channels.rng_stream, list)
+        assert tick0.channels.sim_state is not None
+        assert tick0.channels.entity_samples is not None
 
 
 def test_dbg_record_uses_canonical_channels(tmp_path: Path) -> None:
@@ -203,12 +204,9 @@ def test_dbg_record_uses_canonical_channels(tmp_path: Path) -> None:
     with TraceReader(trace_path) as trace:
         tick0 = trace.tick(0)
         assert tick0 is not None
-        rng_stream = tick0.channels.get("rng_stream")
-        assert isinstance(rng_stream, list)
-        sim_state = tick0.channels.get("sim_state")
-        assert isinstance(sim_state, dict)
-        entity_samples = tick0.channels.get("entity_samples")
-        assert isinstance(entity_samples, dict)
+        assert isinstance(tick0.channels.rng_stream, list)
+        assert tick0.channels.sim_state.gameplay.mode_id == int(GameMode.SURVIVAL)
+        assert tick0.channels.entity_samples is not None
 
 
 def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
@@ -226,10 +224,7 @@ def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
 
     meta, ticks, _footer = load_trace(golden_trace)
     tick1 = next(row for row in ticks if int(row.tick_index) == 1)
-    checkpoint = cast(dict[str, object], tick1.channels["checkpoint"])
-    score_xp_obj = checkpoint.get("score_xp")
-    assert isinstance(score_xp_obj, int)
-    checkpoint["score_xp"] = score_xp_obj + 1
+    _with_score_xp_delta(tick1, delta=1)
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     diff_result = runner.invoke(
@@ -264,8 +259,10 @@ def test_dbg_diff_checkpoint_field_changes_report_mismatch(tmp_path: Path) -> No
 
     meta, ticks, _footer = load_trace(golden_trace)
     tick0 = next(row for row in ticks if int(row.tick_index) == 0)
-    checkpoint = cast(dict[str, object], tick0.channels["checkpoint"])
-    checkpoint["score_xp"] = 999999
+    tick0.channels = msgspec.structs.replace(
+        tick0.channels,
+        checkpoint=msgspec.structs.replace(tick0.channels.checkpoint, score_xp=999999),
+    )
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     result = runner.invoke(
@@ -295,8 +292,6 @@ def test_dbg_diff_default_policy_requires_canonical_channels(tmp_path: Path) -> 
     assert record_result.exit_code == 0, record_result.output
 
     meta, ticks, _footer = load_trace(golden_trace)
-    for row in ticks:
-        row.channels.pop("entity_samples", None)
     meta.channels = [name for name in meta.channels if name != "entity_samples"]
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
@@ -322,10 +317,7 @@ def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
 
     meta, ticks, _footer = load_trace(golden_trace)
     tick1 = next(row for row in ticks if row.tick_index == 1)
-    checkpoint = cast(dict[str, object], tick1.channels["checkpoint"])
-    score_xp_obj = checkpoint.get("score_xp")
-    assert isinstance(score_xp_obj, int)
-    checkpoint["score_xp"] = score_xp_obj + 1
+    _with_score_xp_delta(tick1, delta=1)
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     call_count = 0
@@ -362,27 +354,25 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
 
     meta, ticks, _footer = load_trace(golden_trace)
     tick1 = next(row for row in ticks if int(row.tick_index) == 1)
-    checkpoint = cast(dict[str, object], tick1.channels["checkpoint"])
-    score_xp_obj = checkpoint.get("score_xp")
-    assert isinstance(score_xp_obj, int)
-    checkpoint["score_xp"] = score_xp_obj + 1
+    _with_score_xp_delta(tick1, delta=1)
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     entity_uid = -1
     entity_pool_kind = ""
     for row in ticks:
-        entity_samples = _as_dict(row.channels["entity_samples"])
-        for pool_name in ("projectiles", "creatures", "secondary_projectiles", "bonuses"):
-            pool_obj = entity_samples.get(pool_name)
-            if not isinstance(pool_obj, list) or not pool_obj:
+        samples = row.channels.entity_samples
+        for pool in (
+            samples.projectiles,
+            samples.creatures,
+            samples.secondary_projectiles,
+            samples.bonuses,
+        ):
+            if not pool:
                 continue
-            first_entity = _as_dict(pool_obj[0])
-            uid_obj = first_entity.get("uid")
-            pool_kind_obj = first_entity.get("pool_kind")
-            if isinstance(uid_obj, int) and isinstance(pool_kind_obj, str):
-                entity_uid = int(uid_obj)
-                entity_pool_kind = str(pool_kind_obj)
-                break
+            first_entity = pool[0]
+            entity_uid = int(first_entity.uid)
+            entity_pool_kind = str(first_entity.pool_kind)
+            break
         if entity_uid >= 0:
             break
 
@@ -444,10 +434,7 @@ def test_dbg_viz(tmp_path: Path) -> None:
 
     meta, ticks, _footer = load_trace(golden_trace)
     tick1 = next(row for row in ticks if int(row.tick_index) == 1)
-    checkpoint = cast(dict[str, object], tick1.channels["checkpoint"])
-    score_xp_obj = checkpoint.get("score_xp")
-    assert isinstance(score_xp_obj, int)
-    checkpoint["score_xp"] = score_xp_obj + 1
+    _with_score_xp_delta(tick1, delta=1)
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     result = runner.invoke(

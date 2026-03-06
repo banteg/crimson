@@ -21,11 +21,13 @@ from ..replay.types import WEAPON_USAGE_COUNT, BootstrapKind, Replay, ReplayStat
 from ..sim.bootstrap import run_terrain_bootstrap
 from ..status_snapshot import progress_status_from_debug_snapshot, replay_status_from_progress
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
-from .payloads import BuiltinObject, to_builtin_object
+from .payloads import BuiltinObject
 from .rng import canonical_rng_marks
 from .schema import (
     TRACE_FORMAT_VERSION,
+    TRACE_REQUIRED_CHANNELS,
     TRACE_SCHEMA_VERSION,
+    ReplayTickChannels,
     TickRecord,
     TraceMeta,
     channel_versions_for,
@@ -223,7 +225,7 @@ def _canonical_channels_payload(
     channels: _TickChannels,
     local_tick: int,
     field: str,
-) -> tuple[ReplayCheckpoint, BuiltinObject]:
+) -> tuple[ReplayCheckpoint, ReplayTickChannels]:
     checkpoint = msgspec.structs.replace(
         channels.checkpoint,
         tick_index=int(local_tick),
@@ -251,7 +253,14 @@ def _canonical_channels_payload(
         rng_stream=list(channels.rng_stream),
         timing_samples=list(channels.timing_samples),
     )
-    return checkpoint, to_builtin_object(normalized, field=field)
+    return checkpoint, ReplayTickChannels(
+        checkpoint=normalized.checkpoint,
+        sim_state=normalized.sim_state,
+        entity_samples=normalized.entity_samples,
+        rng_marks=dict(normalized.rng_marks),
+        rng_stream=list(normalized.rng_stream),
+        timing_samples=list(normalized.timing_samples),
+    )
 
 
 def _replay_tick_inputs_from_row(
@@ -612,7 +621,7 @@ def finalize_frida_jsonl_to_traces(
                         active_run.stream.write(payload)
                         active_run.next_local_tick += 1
                         active_run.tick_count += 1
-                        active_run.channels_seen.update(str(name) for name in channels.keys())
+                        active_run.channels_seen.update(TRACE_REQUIRED_CHANNELS)
                         if tick_row.tick_index_global is not None:
                             global_tick = int(tick_row.tick_index_global)
                             if active_run.global_tick_first is None:

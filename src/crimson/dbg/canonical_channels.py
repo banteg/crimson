@@ -4,7 +4,6 @@ import msgspec
 
 from ..owner_ref import OwnerRef
 from ..sim.timing import ftol_ms_i32
-from .payloads import BuiltinObject, BuiltinRows, to_builtin_object, to_builtin_rows
 
 
 class SnapshotVec2(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -161,35 +160,3 @@ class EntitySamplesSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=T
 
 def bonus_timer_ms(value: float) -> int:
     return max(0, int(ftol_ms_i32(float(value))))
-
-
-def validate_sim_state(value: object, *, field: str) -> BuiltinObject:
-    try:
-        validated = msgspec.convert(value, type=SimStateSnapshot)
-    except (msgspec.ValidationError, TypeError, ValueError) as exc:
-        raise ValueError(f"{field} must be a valid SimStateSnapshot payload") from exc
-    return to_builtin_object(validated, field=field)
-
-
-def validate_rng_stream(value: object, *, field: str) -> BuiltinRows:
-    try:
-        validated = msgspec.convert(value, type=list[RngStreamRow])
-    except (msgspec.ValidationError, TypeError, ValueError) as exc:
-        raise ValueError(f"{field} must be a valid rng_stream payload") from exc
-    return to_builtin_rows(validated, field=field)
-
-
-def validate_entity_samples(value: object, *, field: str) -> BuiltinObject:
-    try:
-        validated = msgspec.convert(value, type=EntitySamplesSnapshot)
-    except (msgspec.ValidationError, TypeError, ValueError) as exc:
-        raise ValueError(f"{field} must be a valid EntitySamplesSnapshot payload") from exc
-    return to_builtin_object(validated, field=field)
-
-
-def validate_timing_samples(value: object, *, field: str) -> BuiltinRows:
-    try:
-        validated = msgspec.convert(value, type=list[TimingSampleRow])
-    except (msgspec.ValidationError, TypeError, ValueError) as exc:
-        raise ValueError(f"{field} must be a valid timing_samples payload") from exc
-    return to_builtin_rows(validated, field=field)

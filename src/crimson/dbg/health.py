@@ -34,11 +34,9 @@ def summarize_trace_health(
 
         for tick in trace.iter_ticks(tick_start=tick_start, tick_end=tick_end):
             ticks_total += 1
-            if tick.dt_ms_i32 is not None:
-                ticks_with_dt += 1
-            for channel_name, channel_value in tick.channels.items():
+            ticks_with_dt += 1
+            for channel_name in TRACE_REQUIRED_CHANNELS:
                 channels_present[channel_name] = int(channels_present.get(channel_name, 0)) + 1
-                _ = channel_value
                 if channel_name == "rng_stream":
                     rng_stream_rows += len(rng_stream_channel_required(tick))
                 elif channel_name == "timing_samples":
