@@ -9,7 +9,7 @@ from grim.raylib_api import rl
 
 from ..assets import _ensure_texture_cache
 from ..high_scores_layout import weapons_db_right_detail_x_shift
-from ..types import FrontendContext
+from ..types import ScreenContext
 from .databases_base import _DatabaseBaseView
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
-    def __init__(self, state: FrontendContext) -> None:
+    def __init__(self, state: ScreenContext) -> None:
         super().__init__(state)
         self._wicons_tex: rl.Texture | None = None
         self._weapon_ids: list[int] = []

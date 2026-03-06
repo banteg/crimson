@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import msgspec
 
-from crimson.frontend.high_scores_view.view import _ScoresDropdownLayout as HighScoresDropdownLayout
-from crimson.frontend.panels.controls import _ControlsDropdownLayout as ControlsDropdownLayout
+from crimson.screens.high_scores_view.view import _ScoresDropdownLayout as HighScoresDropdownLayout
+from crimson.screens.panels.controls import _ControlsDropdownLayout as ControlsDropdownLayout
 from crimson.ui.layout import DropdownLayoutBase
 
 

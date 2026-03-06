@@ -3,7 +3,7 @@ language: python
 severity: warning
 message: Database views should use concrete GameState and metadata contracts instead of `getattr` fallbacks.
 files:
-  - src/crimson/frontend/panels/databases.py
+  - src/crimson/screens/panels/databases.py
 rule:
   any:
     - pattern: bool(getattr(self.state, "preserve_bugs", False))

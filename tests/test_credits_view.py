@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-import crimson.frontend.panels.credits as credits_panel
-from crimson.frontend.panels.credits import (
+import crimson.screens.panels.credits as credits_panel
+from crimson.screens.panels.credits import (
     _CREDITS_SECRET_LINES,
     _FLAG_CLICKED,
     _FLAG_HEADING,

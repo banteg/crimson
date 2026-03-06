@@ -3,16 +3,16 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import Any, cast
 
-import crimson.frontend.panels.network_lobby as lan_lobby_module
-from crimson.frontend.panels.network_lobby import NetworkLobbyPanelView
+import crimson.screens.panels.network_lobby as lan_lobby_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import PendingNetworkSession, RollbackEndpoint, RollbackSessionConfig
 from crimson.net.relay_protocol import RoomState
+from crimson.screens.panels.network_lobby import NetworkLobbyPanelView
 from grim.geom import Vec2
 
 
 def test_network_session_panel_requires_room_code_for_join(make_game_state) -> None:
-    from crimson.frontend.panels.network_session import NetworkSessionPanelView
+    from crimson.screens.panels.network_session import NetworkSessionPanelView
 
     state = make_game_state()
     panel = NetworkSessionPanelView(state)
@@ -27,7 +27,7 @@ def test_network_session_panel_requires_room_code_for_join(make_game_state) -> N
 
 
 def test_network_session_panel_writes_pending_network_session(make_game_state) -> None:
-    from crimson.frontend.panels.network_session import NetworkSessionPanelView
+    from crimson.screens.panels.network_session import NetworkSessionPanelView
 
     state = make_game_state()
     panel = NetworkSessionPanelView(state)

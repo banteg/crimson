@@ -17,7 +17,7 @@ from ..menu import (
     MENU_PANEL_WIDTH,
     MenuView,
 )
-from ..types import FrontendContext
+from ..types import ScreenContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .hit_test import mouse_inside_rect_with_padding
 
@@ -58,7 +58,7 @@ class PlayGameMenuView(PanelMenuView):
 
     _PLAYER_COUNT_LABELS = ("1 player", "2 players", "3 players", "4 players")
 
-    def __init__(self, state: FrontendContext) -> None:
+    def __init__(self, state: ScreenContext) -> None:
         super().__init__(
             state,
             title="Play Game",

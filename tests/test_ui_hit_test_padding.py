@@ -1,4 +1,4 @@
-from crimson.frontend.panels.hit_test import mouse_inside_rect_with_padding
+from crimson.screens.panels.hit_test import mouse_inside_rect_with_padding
 from grim.geom import Vec2
 
 

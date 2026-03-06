@@ -36,7 +36,7 @@ from ..menu import (
     menu_ground_camera,
 )
 from ..transitions import _draw_screen_fade
-from ..types import FrontendContext
+from ..types import ScreenContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_17:credits, timeline=300).
@@ -225,7 +225,7 @@ def _credits_unlock_secret_lines(lines: list[_CreditsLine], base_index: int) -> 
 
 
 class CreditsView:
-    def __init__(self, state: FrontendContext) -> None:
+    def __init__(self, state: ScreenContext) -> None:
         self.state = state
         self._is_open = False
         self._assets: MenuAssets | None = None

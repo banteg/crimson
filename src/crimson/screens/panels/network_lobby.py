@@ -16,7 +16,7 @@ from ...net.relay_protocol import RoomState
 from ...net.rollback_runtime import RollbackRuntime
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ..menu import MENU_PANEL_OFFSET_Y, MENU_PANEL_WIDTH, MenuEntry, MenuView
-from ..types import FrontendContext
+from ..types import ScreenContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
 
@@ -29,7 +29,7 @@ class _LobbyLayout(msgspec.Struct, frozen=True):
 
 
 class NetworkLobbyPanelView(PanelMenuView):
-    def __init__(self, state: FrontendContext) -> None:
+    def __init__(self, state: ScreenContext) -> None:
         super().__init__(
             state,
             title="Network Lobby",

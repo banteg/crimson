@@ -4,12 +4,12 @@ import random
 import time
 from pathlib import Path
 
-from crimson.frontend.high_scores_view import HighScoresView
-from crimson.frontend.panels.network_session import NetworkSessionPanelView
 from crimson.game.loop_view import GameLoopView
 from crimson.game.mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
 from crimson.game.types import GameState
 from crimson.persistence import save_status
+from crimson.screens.high_scores_view import HighScoresView
+from crimson.screens.panels.network_session import NetworkSessionPanelView
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 

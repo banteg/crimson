@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from grim.raylib_api import rl
 
-from .types import FrontendContext
+from .types import ScreenContext
 
 SCREEN_FADE_OUT_RATE = 2.0
 SCREEN_FADE_IN_RATE = 10.0
 
 
-def _update_screen_fade(state: FrontendContext, dt: float) -> None:
+def _update_screen_fade(state: ScreenContext, dt: float) -> None:
     if state.screen_fade_ramp:
         state.screen_fade_alpha += float(dt) * SCREEN_FADE_IN_RATE
     else:
@@ -19,7 +19,7 @@ def _update_screen_fade(state: FrontendContext, dt: float) -> None:
         state.screen_fade_alpha = 1.0
 
 
-def _draw_screen_fade(state: FrontendContext) -> None:
+def _draw_screen_fade(state: ScreenContext) -> None:
     alpha = float(state.screen_fade_alpha)
     if alpha <= 0.0:
         return

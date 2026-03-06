@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import crimson.frontend.quest_views.end_note as end_note_module
-from crimson.frontend.panels.base import PANEL_TIMELINE_START_MS
-from crimson.frontend.quest_views import EndNoteView
+import crimson.screens.quest_views.end_note as end_note_module
+from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
+from crimson.screens.quest_views import EndNoteView
 from grim.raylib_api import rl
 
 

@@ -52,7 +52,7 @@ Last reviewed: **2026-02-24**
 ### Front-end (menus + screens)
 
 - **Main menu (state `0`)**: implemented, including timeline/layout behavior and terrain/sign-shadow rules.
-  - Code: `src/crimson/frontend/menu.py`
+  - Code: `src/crimson/screens/menu.py`
   - Ref: [`docs/crimsonland-exe/main-menu.md`](../crimsonland-exe/main-menu.md)
 - **Play Game panel (state `1`)**: implemented (mode buttons, player-count dropdown, tooltips, F1 times-played overlay).
   - Code: `src/crimson/game/__init__.py` (`PlayGameMenuView`)
@@ -61,13 +61,13 @@ Last reviewed: **2026-02-24**
   - Code: `src/crimson/game/__init__.py` (`QuestsMenuView`)
   - Ref: [`docs/crimsonland-exe/quest-select-menu.md`](../crimsonland-exe/quest-select-menu.md)
 - **Options panel (state `2`)**: implemented for core sliders + controls workflow.
-  - Code: `src/crimson/frontend/panels/options.py`, `src/crimson/frontend/panels/controls.py`
+  - Code: `src/crimson/screens/panels/options.py`, `src/crimson/screens/panels/controls.py`
   - Implemented: SFX/music/detail/mouse sliders, UI info toggle, controls entry and interactive rebinding flow.
   - Not exposed in this in-game UI: `screen_width`, `screen_height`, `windowed_flag`, `screen_bpp`, `texture_scale` editing (currently config/CLI-managed).
 - **Statistics hub (state `4`)**: implemented with child panels.
-  - Code: `src/crimson/frontend/panels/stats.py`
+  - Code: `src/crimson/screens/panels/stats.py`
   - Child views: high scores, weapons database, perks database, credits.
-  - Code: `src/crimson/game/__init__.py`, `src/crimson/frontend/panels/databases.py`, `src/crimson/frontend/panels/credits.py`
+  - Code: `src/crimson/game/__init__.py`, `src/crimson/screens/panels/databases.py`, `src/crimson/screens/panels/credits.py`
 - **Demo / attract mode**: implemented (variant sequencing, upsell flow, trial overlay during gameplay).
   - Code: `src/crimson/demo.py`, `src/crimson/ui/demo_trial_overlay.py`
   - Ref: [`docs/crimsonland-exe/demo-mode.md`](../crimsonland-exe/demo-mode.md), [`docs/crimsonland-exe/screens.md`](../crimsonland-exe/screens.md)
@@ -76,13 +76,13 @@ Last reviewed: **2026-02-24**
 - **Quest results (state `8`) / quest failed (state `0x0c`)**: implemented.
   - Code: `src/crimson/ui/quest_results.py`, `src/crimson/game/__init__.py`
 - **Mods menu (state `0x14` path from main menu)**: implemented as a panel and filesystem DLL discovery UI; plugin loading/runtime is still not implemented.
-  - Code: `src/crimson/frontend/panels/mods.py`, `src/crimson/frontend/menu.py`
+  - Code: `src/crimson/screens/panels/mods.py`, `src/crimson/screens/menu.py`
   - Ref: [`docs/crimsonland-exe/mods.md`](../crimsonland-exe/mods.md)
 - **Scope policy for Mods and Other Games/shareware ads**: out of scope for the rewrite target.
   - Rationale: native DLL plugin runtime is not practical to support in the Python rewrite architecture.
   - Rewrite stance: keep menu-shell UX compatibility where useful, but do not implement native DLL mod loading/execution or Other Games ad/runtime flows.
 - **Secrets / extras**: implemented, including the Alien Zoo Keeper credits secret flow.
-  - Code: `src/crimson/frontend/panels/alien_zookeeper.py`, `src/crimson/frontend/panels/credits.py`
+  - Code: `src/crimson/screens/panels/alien_zookeeper.py`, `src/crimson/screens/panels/credits.py`
 
 ### Gameplay
 

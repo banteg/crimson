@@ -34,7 +34,7 @@ from ..menu import (
     menu_ground_camera,
 )
 from ..transitions import _draw_screen_fade
-from ..types import FrontendContext
+from ..types import ScreenContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 _BOARD_SIDE = 6
@@ -126,7 +126,7 @@ def _credits_secret_match3_find(board: list[int]) -> tuple[bool, int, int]:
 
 
 class AlienZooKeeperView:
-    def __init__(self, state: FrontendContext) -> None:
+    def __init__(self, state: ScreenContext) -> None:
         self.state = state
         self._is_open = False
         self._assets: MenuAssets | None = None

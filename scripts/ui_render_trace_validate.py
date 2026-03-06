@@ -108,7 +108,7 @@ def _panel_scale_and_shift(screen_w: int) -> tuple[float, float]:
 
 
 def validate_main_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
-    from crimson.frontend import menu as m
+    from crimson.screens import menu as m
 
     errors: list[str] = []
     screen = _find_screen(oracle, "state_0")
@@ -185,8 +185,8 @@ def validate_main_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
 
 
 def validate_options_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
-    from crimson.frontend import menu as m
-    from crimson.frontend.panels import base as pb
+    from crimson.screens import menu as m
+    from crimson.screens.panels import base as pb
 
     errors: list[str] = []
     screen = _find_screen(oracle, "state_2:Sound volume:")
@@ -257,7 +257,7 @@ def validate_pause_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
     layout with three entries.
     """
 
-    from crimson.frontend import menu as m
+    from crimson.screens import menu as m
 
     errors: list[str] = []
     screen = _find_screen(oracle, "state_5")
@@ -326,7 +326,7 @@ def validate_pause_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
 
 
 def validate_play_game_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
-    from crimson.frontend import menu as m
+    from crimson.screens import menu as m
 
     errors: list[str] = []
     screen = _find_screen(oracle, "state_1:Quests")
@@ -365,8 +365,8 @@ def validate_play_game_panel(oracle: dict[str, Any], *, tol: float) -> list[str]
 
 
 def validate_controls_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
-    from crimson.frontend import menu as m
-    from crimson.frontend.panels import controls as c
+    from crimson.screens import menu as m
+    from crimson.screens.panels import controls as c
 
     errors: list[str] = []
     screen = _find_screen(oracle, "state_3:Configure for:")
@@ -453,8 +453,8 @@ def validate_controls_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
 
 
 def validate_statistics_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
-    from crimson.frontend import menu as m
-    from crimson.frontend.panels import stats as s
+    from crimson.screens import menu as m
+    from crimson.screens.panels import stats as s
 
     errors: list[str] = []
     screen = _find_screen(oracle, "state_4:played for # hours # minutes")
@@ -507,8 +507,8 @@ def validate_statistics_menu(oracle: dict[str, Any], *, tol: float) -> list[str]
 
 
 def validate_credits_screen(oracle: dict[str, Any], *, tol: float) -> list[str]:
-    from crimson.frontend import menu as m
-    from crimson.frontend.panels import credits as c
+    from crimson.screens import menu as m
+    from crimson.screens.panels import credits as c
 
     errors: list[str] = []
     screen = _find_screen(oracle, "state_17:credits")
@@ -545,8 +545,8 @@ def validate_credits_screen(oracle: dict[str, Any], *, tol: float) -> list[str]:
 
 
 def validate_weapon_database_screen(oracle: dict[str, Any], *, tol: float) -> list[str]:
-    from crimson.frontend import menu as m
-    from crimson.frontend.panels import databases as d
+    from crimson.screens import menu as m
+    from crimson.screens.panels import databases as d
 
     errors: list[str] = []
     screen = _find_screen(oracle, "state_15:Unlocked Weapons Database")
@@ -590,8 +590,8 @@ def validate_weapon_database_screen(oracle: dict[str, Any], *, tol: float) -> li
 
 
 def validate_perk_database_screen(oracle: dict[str, Any], *, tol: float) -> list[str]:
-    from crimson.frontend import menu as m
-    from crimson.frontend.panels import databases as d
+    from crimson.screens import menu as m
+    from crimson.screens.panels import databases as d
 
     errors: list[str] = []
     screen = _find_screen(oracle, "state_16:Unlocked Perks Database")
@@ -632,8 +632,8 @@ def validate_perk_database_screen(oracle: dict[str, Any], *, tol: float) -> list
 
 
 def validate_high_scores_screens(oracle: dict[str, Any], *, tol: float) -> list[str]:
-    from crimson.frontend import high_scores_layout as hs
-    from crimson.frontend import menu as m
+    from crimson.screens import high_scores_layout as hs
+    from crimson.screens import menu as m
 
     errors: list[str] = []
     screen_w = 1024
@@ -701,8 +701,8 @@ def validate_high_scores_screens(oracle: dict[str, Any], *, tol: float) -> list[
 
 
 def validate_quest_menu_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
-    from crimson.frontend import menu as m
-    from crimson.frontend.quest_views import (
+    from crimson.screens import menu as m
+    from crimson.screens.quest_views import (
         QUEST_MENU_BASE_X,
         QUEST_MENU_BASE_Y,
         QUEST_MENU_PANEL_OFFSET_X,

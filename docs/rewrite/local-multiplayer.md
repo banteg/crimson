@@ -31,7 +31,7 @@
   - player selector supports players `1..4`.
   - per-slot rebind capture supports cancel/default/unbind flows.
   - writes route to per-player persisted blocks (or legacy global slots where applicable).
-  - Code: `src/crimson/frontend/panels/controls.py`
+  - Code: `src/crimson/screens/panels/controls.py`
 - Quest results:
   - life bonus aggregation supports N-player health values for 3/4-player runs.
   - 1/2-player scoring behavior is preserved.

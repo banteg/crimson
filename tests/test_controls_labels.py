@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import cast
 
 from crimson.aim_schemes import AimScheme
-from crimson.frontend.panels.controls_labels import (
+from crimson.movement_controls import MovementControlType
+from crimson.screens.panels.controls_labels import (
     PICK_PERK_BIND_SLOT,
     RELOAD_BIND_SLOT,
     controls_aim_method_dropdown_ids,
@@ -13,7 +14,6 @@ from crimson.frontend.panels.controls_labels import (
     input_configure_for_label,
     input_scheme_label,
 )
-from crimson.movement_controls import MovementControlType
 
 
 def test_input_configure_for_label_mapping() -> None:

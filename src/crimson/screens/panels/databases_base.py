@@ -29,7 +29,7 @@ from ..menu import (
     menu_ground_camera,
 )
 from ..transitions import _draw_screen_fade
-from ..types import FrontendContext
+from ..types import ScreenContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 # Shared panel layout (state_14/15/16 in the oracle): tall left panel + short right panel.
@@ -40,7 +40,7 @@ RIGHT_PANEL_HEIGHT = 254.0
 
 
 class _DatabaseBaseView:
-    def __init__(self, state: FrontendContext) -> None:
+    def __init__(self, state: ScreenContext) -> None:
         self.state = state
         self._is_open = False
         self._assets: MenuAssets | None = None

@@ -21,7 +21,6 @@ from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
-from ..frontend.results.game_over import GameOverUi
 from ..game_modes import GameMode
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
@@ -55,6 +54,7 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
 )
 from ..replay.input_codec import pack_player_input, unpack_player_input
+from ..screens.results.game_over import GameOverUi
 from ..sim.batch_apply import (
     PresentationTickOutput,
     apply_presentation_outputs,

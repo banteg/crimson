@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.frontend.panels.controls import (
+from crimson.screens.panels.controls import (
     _controls_left_panel_pos_x,
     _controls_right_panel_pos_x,
     _controls_right_panel_pos_y,

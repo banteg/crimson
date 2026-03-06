@@ -4,9 +4,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode
-from crimson.frontend.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from crimson.modes.rush_mode import RushMode
 from crimson.persistence.highscores import HighScoreRecord
+from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from crimson.sim.sessions import DeterministicSession
 from grim.audio import AudioState
 from grim.config import CrimsonConfig

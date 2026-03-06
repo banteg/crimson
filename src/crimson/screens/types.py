@@ -20,8 +20,8 @@ if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
 
 
-class FrontendContext(Protocol):
-    # Keep this protocol lightweight: frontend code should not depend on the full
+class ScreenContext(Protocol):
+    # Keep this protocol lightweight: screen code should not depend on the full
     # gameplay/sim stack (enforced via import-linter).
     base_dir: Path
     assets_dir: Path

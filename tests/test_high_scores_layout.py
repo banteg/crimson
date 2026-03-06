@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.frontend.high_scores_layout import (
+from crimson.screens.high_scores_layout import (
     hs_left_panel_pos_x,
     hs_right_local_card_x_shift,
     hs_right_options_x_shift,

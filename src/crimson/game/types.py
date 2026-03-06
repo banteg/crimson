@@ -115,7 +115,7 @@ class HighScoresRequest(msgspec.Struct):
     highlight_rank: int | None = None
 
 
-class FrontView(Protocol):
+class ScreenView(Protocol):
     def open(self) -> None: ...
 
     def close(self) -> None: ...
@@ -186,7 +186,7 @@ class GameState(msgspec.Struct):
 
 
 __all__ = [
-    "FrontView",
+    "ScreenView",
     "GameConfig",
     "GameState",
     "HighScoresRequest",

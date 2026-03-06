@@ -1,9 +1,9 @@
 id: no-any-contract-gaps
 language: python
 severity: error
-message: Avoid `Any` in core runtime/frontend contracts; use concrete protocol or struct types.
+message: Avoid `Any` in core runtime/screen contracts; use concrete protocol or struct types.
 files:
-  - src/crimson/frontend/types.py
+  - src/crimson/screens/types.py
   - src/crimson/game/mode_views.py
   - src/crimson/render/world/draw.py
   - src/crimson/sim/state_types.py
