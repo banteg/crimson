@@ -113,6 +113,7 @@ Available via `uv run crimson view <name>`:
 See also:
 
 - [Module map (Grim vs Crimson)](module-map.md)
+- [Resource lifecycle memo](resource-lifecycle.md)
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
 - [Netplay (rollback primary)](netplay-rollback.md)
 - [LAN lockstep (fallback mode)](lan-lockstep.md)
