@@ -40,7 +40,7 @@ def build_replay(
         seed=int(seed),
         tick_rate=60,
         player_count=int(player_count),
-        quest_level=((0, 0) if parsed_level is None else parsed_level.to_stage_pair()),
+        quest_level=(None if parsed_level is None else parsed_level.to_stage_pair()),
     )
     recorder = ReplayRecorder(header)
     for _ in range(int(ticks)):

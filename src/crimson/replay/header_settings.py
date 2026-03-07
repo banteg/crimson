@@ -45,7 +45,7 @@ def replay_header_from_session_settings(
     return ReplayHeader(
         game_mode_id=game_mode_id,
         seed=int(seed),
-        quest_level=((0, 0) if quest_level is None else quest_level.to_stage_pair()),
+        quest_level=(None if quest_level is None else quest_level.to_stage_pair()),
         tick_rate=int(settings.tick_rate),
         quest_fail_retry_count=int(quest_fail_retry_count),
         hardcore=bool(hardcore),

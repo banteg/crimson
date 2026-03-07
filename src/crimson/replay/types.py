@@ -257,8 +257,8 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     game_mode_id: GameMode
     seed: int
     replay_format_version: int = REPLAY_FORMAT_VERSION
-    # Canonical quest stage pair `(major, minor)`. Use `(0, 0)` for non-quest modes.
-    quest_level: ReplayQuestLevel = (0, 0)
+    # Canonical quest stage pair `(major, minor)`. Use `None` for non-quest modes.
+    quest_level: ReplayQuestLevel | None = None
     game_version: str = msgspec.field(default_factory=_default_game_version)
     tick_rate: int = 60
     # Mirrors the native quest retry scaling counter (`quest_fail_retry_count`).
@@ -275,6 +275,8 @@ class ReplayHeader(msgspec.Struct, frozen=True):
 
     @property
     def quest_level_value(self) -> QuestLevel | None:
+        if self.quest_level is None:
+            return None
         major, minor = self.quest_level
         return QuestLevel.from_parts_or_none(int(major), int(minor))
 
