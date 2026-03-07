@@ -168,6 +168,7 @@ class TutorialMode(BaseGameplayMode):
     def _perk_menu_context(self) -> PerkMenuContext:
         gore_disabled = self.config.gore_disabled
         fx_detail = self.config.fx_detail(level=0, default=False)
+        assert self._small is not None, "perk menu requires small font after mode open"
         return PerkMenuContext(
             state=self.state,
             perk_state=self.state.perk_selection,

@@ -78,7 +78,7 @@ class PerkPromptUi:
     def draw(
         cls,
         *,
-        font: SmallFontData | None,
+        font: SmallFontData,
         resources: RuntimeResources,
         label: str,
         timer_ms: float,

@@ -55,8 +55,8 @@ def _game_over_assets(
 ) -> GameOverAssets:
     return GameOverAssets(
         resources=_resources_for_score_card() if resources is None else resources,
-        text_reaper=text_reaper,
-        text_well_done=text_well_done,
+        text_reaper=_texture(width=32, height=32) if text_reaper is None else text_reaper,
+        text_well_done=_texture(width=32, height=32) if text_well_done is None else text_well_done,
     )
 
 

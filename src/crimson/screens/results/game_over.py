@@ -87,8 +87,8 @@ def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle
 
 class GameOverAssets(msgspec.Struct):
     resources: RuntimeResources
-    text_reaper: rl.Texture | None
-    text_well_done: rl.Texture | None
+    text_reaper: rl.Texture
+    text_well_done: rl.Texture
 
 
 class _GameOverPanelLayout(msgspec.Struct, frozen=True):
@@ -659,14 +659,13 @@ class GameOverUi(msgspec.Struct):
         # Banner (Reaper / Well done)
         banner_pos = panel_top_left + Vec2(GAME_OVER_BANNER_X_OFFSET * scale, 40.0 * scale)
         banner = self.assets.text_reaper if banner_kind == "reaper" else self.assets.text_well_done
-        if banner is not None:
-            _draw_texture_centered(
-                banner,
-                banner_pos,
-                TEXTURE_TOP_BANNER_W * scale,
-                TEXTURE_TOP_BANNER_H * scale,
-                1.0,
-            )
+        _draw_texture_centered(
+            banner,
+            banner_pos,
+            TEXTURE_TOP_BANNER_W * scale,
+            TEXTURE_TOP_BANNER_H * scale,
+            1.0,
+        )
 
         if self.phase == 0:
             form_pos = banner_pos + Vec2(8.0 * scale, 84.0 * scale)

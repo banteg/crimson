@@ -87,8 +87,8 @@ COLOR_UI_ACCENT = rl.Color(149, 175, 198, 255)
 
 class QuestResultsAssets(msgspec.Struct):
     resources: RuntimeResources
-    text_well_done: rl.Texture | None
-    wicons: rl.Texture | None
+    text_well_done: rl.Texture
+    wicons: rl.Texture
 
 
 class _QuestResultsPanelLayout(msgspec.Struct, frozen=True):
@@ -333,7 +333,7 @@ class QuestResultsUi(msgspec.Struct):
             return
 
         row_y = row_top
-        if self.assets is not None and self.assets.wicons is not None:
+        if self.assets is not None:
             src = _weapon_icon_src(self.assets.wicons, record.most_used_weapon_id)
             if src is not None:
                 dst = rl.Rectangle(x + 4.0 * scale, row_y, 64.0 * scale, 32.0 * scale)
@@ -653,12 +653,11 @@ class QuestResultsUi(msgspec.Struct):
 
         content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)
         banner_pos = content_pos + Vec2(QUEST_RESULTS_BANNER_X_FROM_CONTENT * scale, 36.0 * scale)
-        if self.assets.text_well_done is not None:
-            src = rl.Rectangle(
-                0.0, 0.0, float(self.assets.text_well_done.width), float(self.assets.text_well_done.height),
-            )
-            dst = rl.Rectangle(banner_pos.x, banner_pos.y, TEXTURE_TOP_BANNER_W * scale, TEXTURE_TOP_BANNER_H * scale)
-            rl.draw_texture_pro(self.assets.text_well_done, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        src = rl.Rectangle(
+            0.0, 0.0, float(self.assets.text_well_done.width), float(self.assets.text_well_done.height),
+        )
+        dst = rl.Rectangle(banner_pos.x, banner_pos.y, TEXTURE_TOP_BANNER_W * scale, TEXTURE_TOP_BANNER_H * scale)
+        rl.draw_texture_pro(self.assets.text_well_done, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         qualifies = int(self.rank) < TABLE_MAX
 

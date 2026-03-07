@@ -344,6 +344,7 @@ class QuestMode(BaseGameplayMode):
         gore_disabled = self.config.gore_disabled
         fx_detail = self.config.fx_detail(level=0, default=False)
         players = self.sim_world.players
+        assert self._small is not None, "perk menu requires small font after mode open"
         return PerkMenuContext(
             state=self.state,
             perk_state=self.state.perk_selection,
@@ -574,6 +575,7 @@ class QuestMode(BaseGameplayMode):
         label = PerkPromptUi.label(self.config, pending_count=pending_count)
         if not label:
             return
+        assert self._small is not None, "perk prompt requires small font after mode open"
         PerkPromptUi.draw(
             font=self._small,
             resources=self.render_resources.resources,

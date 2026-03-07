@@ -53,7 +53,7 @@ class PerkMenuContext(msgspec.Struct, frozen=True):
     player_count: int
     gore_disabled: int
 
-    font: SmallFontData | None
+    font: SmallFontData
     resources: RuntimeResources
     mouse: rl.Vector2
     fx_detail: bool = False

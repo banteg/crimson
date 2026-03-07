@@ -58,8 +58,8 @@ def _game_over_assets_stub() -> GameOverAssets:
     )
     return GameOverAssets(
         resources=resources,
-        text_reaper=None,
-        text_well_done=None,
+        text_reaper=tex,
+        text_well_done=tex,
     )
 
 

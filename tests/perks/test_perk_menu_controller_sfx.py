@@ -28,6 +28,10 @@ def _dummy_resources() -> RuntimeResources:
     return cast("RuntimeResources", SimpleNamespace(texture=lambda _texture_id: texture))
 
 
+def _dummy_font() -> SmallFontData:
+    return SmallFontData(widths=[8] * 256, texture=_texture(), cell_size=16, grid=16)
+
+
 def _dummy_player() -> PlayerState:
     player = PlayerState(index=0, pos=Vec2())
     player.perk_counts = [0] * 128
@@ -73,7 +77,7 @@ def test_open_perk_menu_plays_panel_click(mocker) -> None:
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
+        font=_dummy_font(),
         resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=play_sfx,
@@ -112,7 +116,7 @@ def test_perk_menu_pick_plays_button_click(mocker) -> None:
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
+        font=_dummy_font(),
         resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=play_sfx,
@@ -151,7 +155,7 @@ def test_perk_menu_pick_invokes_on_pick(mocker) -> None:
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
+        font=_dummy_font(),
         resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=None,
@@ -193,7 +197,7 @@ def test_perk_menu_deferred_pick_invokes_callback_without_direct_pick_apply(mock
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
+        font=_dummy_font(),
         resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=None,
@@ -237,7 +241,7 @@ def test_perk_menu_deferred_pick_does_not_play_bonus_sfx_immediately(mocker) -> 
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
+        font=_dummy_font(),
         resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=play_sfx,
@@ -282,7 +286,7 @@ def test_perk_menu_deferred_pick_rejected_keeps_menu_open(mocker) -> None:
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
+        font=_dummy_font(),
         resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=play_sfx,
@@ -320,7 +324,7 @@ def test_perk_menu_deferred_pick_callback_requires_bool_return(mocker) -> None:
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
+        font=_dummy_font(),
         resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=None,
@@ -353,7 +357,7 @@ def test_perk_menu_cancel_plays_button_click(mocker) -> None:
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
+        font=_dummy_font(),
         resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=play_sfx,

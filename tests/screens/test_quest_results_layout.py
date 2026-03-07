@@ -50,7 +50,7 @@ class _ResourcesStub:
 def _quest_results_assets() -> QuestResultsAssets:
     return QuestResultsAssets(
         resources=_ResourcesStub(),  # type: ignore[arg-type]
-        text_well_done=None,
+        text_well_done=_texture(width=32, height=32),
         wicons=_texture(width=256, height=256),
     )
 
@@ -132,7 +132,7 @@ def test_quest_results_name_entry_draws_stats_card(tmp_path: Path, mocker) -> No
     assert "Shotgun" in captured_text
     assert "Frags: 10" in captured_text
     assert "Hit %: 23%" in captured_text
-    assert len(draw_texture_pro.call_args_list) == 1
+    assert len(draw_texture_pro.call_args_list) == 2
 
 
 def test_quest_results_name_prompt_preserve_bugs(tmp_path: Path, mocker) -> None:
@@ -193,7 +193,7 @@ def test_quest_results_buttons_phase_keeps_weapon_stats_hidden(tmp_path: Path, m
     assert "Frags: 10" not in captured_text
     assert "Hit %: 23%" not in captured_text
     assert "Shotgun" not in captured_text
-    assert draw_texture_pro.call_args_list == []
+    assert len(draw_texture_pro.call_args_list) == 1
 
 
 def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> None:
