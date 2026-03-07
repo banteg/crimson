@@ -6,6 +6,7 @@ import pytest
 
 import crimson.screens.quest_views.quest_failed as quest_failed_module
 from crimson.modes.quest_mode import QuestRunOutcome
+from crimson.quests.level import QuestLevel
 from crimson.screens.quest_views import QUEST_FAILED_PANEL_SLIDE_DURATION_MS, QUEST_FAILED_PANEL_W, QuestFailedView
 from crimson.weapons import WeaponId
 from grim import music as grim_music
@@ -43,7 +44,7 @@ def quest_failed_state(make_game_state, tmp_path):
 def _failed_outcome() -> QuestRunOutcome:
     return QuestRunOutcome(
         kind="failed",
-        level="5.10",
+        level=QuestLevel(5, 10),
         base_time_ms=7_000,
         player_health=0.0,
         player2_health=None,
@@ -117,7 +118,7 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, quest_failed_stat
     view.update(0.016)
 
     assert state.quest_fail_retry_count == 3
-    assert state.pending_quest_level == "5.10"
+    assert state.pending_quest_level == QuestLevel(5, 10)
     assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
     assert view.take_action() is None
     action = None

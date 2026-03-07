@@ -77,7 +77,7 @@ def draw_main_panel(
         if arrow is not None:
             major = max(1, min(5, int(quest_major)))
             minor = max(1, min(10, int(quest_minor)))
-            global_index = int(QuestLevel.from_parts(major, minor).global_index)
+            global_index = int(QuestLevel(major, minor).global_index)
             unlock = (
                 int(view.state.status.quest_unlock_index_full)
                 if view.state.config.hardcore

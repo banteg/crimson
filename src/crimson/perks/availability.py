@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from ..game_modes import GameMode
 from ..quests import all_quests
+from ..quests.level import QuestLevel
 from ..sim.state_types import GameplayState, PlayerState
 from .helpers import perk_count_get
 from .ids import PERK_BY_ID, PerkFlags, PerkId
@@ -67,8 +68,7 @@ def perk_can_offer(
     if (
         game_mode == GameMode.QUESTS
         and state.hardcore
-        and int(state.quest_stage_major) == 2
-        and int(state.quest_stage_minor) == 10
+        and state.quest_level == QuestLevel(2, 10)
         and perk_id in (PerkId.POISON_BULLETS, PerkId.VEINS_OF_POISON, PerkId.PLAGUEBEARER)
     ):
         return False

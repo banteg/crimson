@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
+from ..quests.level import QuestLevel
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WeaponId
 from .availability import perk_can_offer, perks_rebuild_available
@@ -144,8 +145,7 @@ def perk_generate_choices(
     # Native `quest_monster_vision_meta` points to quest 3-4 (Hidden Evil):
     # force Monster Vision as the first choice if not owned.
     if (
-        int(state.quest_stage_major) == 3
-        and int(state.quest_stage_minor) == 4
+        state.quest_level == QuestLevel(3, 4)
         and int(player_perk_counts[int(PerkId.MONSTER_VISION)]) == 0
     ):
         choices[0] = PerkId.MONSTER_VISION

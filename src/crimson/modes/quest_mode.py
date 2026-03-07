@@ -33,6 +33,7 @@ from ..net.rollback_resync_v5 import (
 )
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
+from ..quests.level import QuestLevel
 from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
@@ -81,7 +82,7 @@ QuestSessionFactory = Callable[..., DeterministicSession]
 
 class QuestRunOutcome(msgspec.Struct, frozen=True):
     kind: str  # "completed" | "failed"
-    level: str
+    level: QuestLevel
     base_time_ms: int
     player_health: float
     player2_health: float | None
@@ -129,7 +130,7 @@ class QuestMode(BaseGameplayMode):
             audio_rng=audio_rng,
         )
         self._quest_def: QuestDefinition | None = None
-        self._quest_level: str = ""
+        self._quest_level: QuestLevel | None = self.config.quest_level_value or QuestLevel(1, 1)
         self._quest_total_spawn_count: int = 0
         self._outcome: QuestRunOutcome | None = None
         self._perk_menu_assets: PerkMenuAssets | None = None
@@ -152,7 +153,7 @@ class QuestMode(BaseGameplayMode):
     def open(self) -> None:
         super().open()
         self._quest_def = None
-        self._quest_level = ""
+        self._quest_level = self.config.quest_level_value or QuestLevel(1, 1)
         self._quest_total_spawn_count = 0
         self._outcome = None
         self._perk_menu_assets = load_perk_menu_assets(self._assets_root)
@@ -196,7 +197,7 @@ class QuestMode(BaseGameplayMode):
             clear_fx_queues_each_tick=False,
             finalize_post_render_lifecycle=True,
             spawn_entries=tuple(spawn_entries),
-            quest_level=(None if quest_def is None else quest_def.level_value),
+            quest_level=(None if quest_def is None else quest_def.level),
             start_weapon_id=(None if quest_def is None else quest_def.start_weapon_id),
             session_factory=self._session_factory,
         )
@@ -227,9 +228,9 @@ class QuestMode(BaseGameplayMode):
         replay_level = (
             ""
             if replay.header.quest_level is None
-            else f"{int(replay.header.quest_level[0])}.{int(replay.header.quest_level[1])}"
+            else replay.header.quest_level.text
         )
-        level = str(self._quest_level) if self._quest_level else (replay_level or "quest")
+        level = self._quest_level.text if self._quest_level is not None else (replay_level or "quest")
         kind = str(self._outcome.kind) if self._outcome is not None else "quest"
         base_time_ms = int(self._quest_spawn_state.spawn_timeline_ms)
         return f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
@@ -290,6 +291,7 @@ class QuestMode(BaseGameplayMode):
 
         if spawn_state.completed:
             if self._outcome is None:
+                assert self._quest_level is not None, "quest outcome requires active quest level"
                 fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
                 most_used_weapon_id = most_used_weapon_id_for_player(
                     self.state,
@@ -302,7 +304,7 @@ class QuestMode(BaseGameplayMode):
                     player2_health = float(player_health_values[1])
                 self._outcome = QuestRunOutcome(
                     kind="completed",
-                    level=str(self._quest_level),
+                    level=self._quest_level,
                     base_time_ms=int(spawn_state.spawn_timeline_ms),
                     player_health=float(player_health_values[0] if player_health_values else self.player.health),
                     player2_health=player2_health,
@@ -392,10 +394,11 @@ class QuestMode(BaseGameplayMode):
         return outcome
 
     def prepare_new_run(self, level: str, *, status: GameStatus | None) -> None:
-        quest = quest_by_level(level)
+        quest_level = QuestLevel.parse(level)
+        quest = quest_by_level(quest_level)
         if quest is None:
             self._quest_def = None
-            self._quest_level = str(level)
+            self._quest_level = quest_level
             self._quest_total_spawn_count = 0
             return
         self._outcome = None
@@ -454,7 +457,7 @@ class QuestMode(BaseGameplayMode):
         self.sim_world.state.rng.srand(int(self.state.rng.state))
         total_spawn_count = sum(int(entry.count) for entry in entries)
         self._quest_def = quest
-        self._quest_level = str(quest.level)
+        self._quest_level = quest.level
         self._quest_total_spawn_count = int(total_spawn_count)
         self._reset_gameplay_frame_clock()
         self._sim_session = self._new_sim_session(spawn_entries=tuple(entries))
@@ -475,7 +478,7 @@ class QuestMode(BaseGameplayMode):
                 ReplayHeader(
                     game_mode_id=GameMode.QUESTS,
                     seed=int(self._run_reset_seed),
-                    quest_level=quest.level_value.to_stage_pair(),
+                    quest_level=quest.level,
                     tick_rate=int(self._gameplay_tick_rate()),
                     quest_fail_retry_count=int(self.quest_fail_retry_count),
                     hardcore=bool(self.hardcore),
@@ -559,6 +562,7 @@ class QuestMode(BaseGameplayMode):
 
     def _close_failed_run(self) -> None:
         if self._outcome is None:
+            assert self._quest_level is not None, "quest outcome requires active quest level"
             fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
             most_used_weapon_id = most_used_weapon_id_for_player(
                 self.state,
@@ -571,7 +575,7 @@ class QuestMode(BaseGameplayMode):
                 player2_health = float(player_health_values[1])
             self._outcome = QuestRunOutcome(
                 kind="failed",
-                level=str(self._quest_level),
+                level=self._quest_level,
                 base_time_ms=int(self._quest_spawn_state.spawn_timeline_ms),
                 player_health=float(player_health_values[0] if player_health_values else self.player.health),
                 player2_health=player2_health,

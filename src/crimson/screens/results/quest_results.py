@@ -22,6 +22,7 @@ from ...persistence.highscores import (
     scores_path_for_mode,
     upsert_highscore_record,
 )
+from ...quests.level import QuestLevel
 from ...quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
 from ...ui.cursor import draw_menu_cursor
 from ...ui.formatting import format_ordinal, format_time_mm_ss
@@ -141,10 +142,8 @@ class QuestResultsUi(msgspec.Struct):
     rank: int = TABLE_MAX
     highlight_rank: int | None = None
 
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
     quest_title: str = ""
-    quest_stage_major: int = 0
-    quest_stage_minor: int = 0
     unlock_weapon_name: str = ""
     unlock_perk_name: str = ""
 
@@ -176,10 +175,8 @@ class QuestResultsUi(msgspec.Struct):
         *,
         record: HighScoreRecord,
         breakdown: QuestFinalTime,
-        quest_level: str,
+        quest_level: QuestLevel,
         quest_title: str,
-        quest_stage_major: int,
-        quest_stage_minor: int,
         unlock_weapon_name: str,
         unlock_perk_name: str,
         player_name_default: str,
@@ -191,10 +188,8 @@ class QuestResultsUi(msgspec.Struct):
         self.phase = -1
         self.rank = TABLE_MAX
         self.highlight_rank = None
-        self.quest_level = str(quest_level or "")
+        self.quest_level = quest_level
         self.quest_title = str(quest_title or "")
-        self.quest_stage_major = int(quest_stage_major)
-        self.quest_stage_minor = int(quest_stage_minor)
         self.unlock_weapon_name = str(unlock_weapon_name or "")
         self.unlock_perk_name = str(unlock_perk_name or "")
         self.record = record.copy()
@@ -203,18 +198,19 @@ class QuestResultsUi(msgspec.Struct):
         self._saved = False
 
         # Native behavior: the final quest replaces "Play Next" with "Show End Note".
-        if int(self.quest_stage_major) == 5 and int(self.quest_stage_minor) == 10:
+        if self.quest_level == QuestLevel(5, 10):
             self._play_next_button.label = "Show End Note"
         else:
             self._play_next_button.label = "Play Next"
 
+        assert self.quest_level is not None, "quest results require quest level"
         hardcore = self.config.hardcore
         self._scores_path = scores_path_for_mode(
             self.base_dir,
             GameMode.QUESTS,
             hardcore=hardcore,
-            quest_stage_major=int(self.quest_stage_major),
-            quest_stage_minor=int(self.quest_stage_minor),
+            quest_stage_major=int(self.quest_level.major),
+            quest_stage_minor=int(self.quest_level.minor),
             player_count=self.config.player_count,
         )
 

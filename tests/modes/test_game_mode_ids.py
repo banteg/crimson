@@ -9,6 +9,7 @@ from crimson.gameplay import GameplayState
 from crimson.perks import PERK_BY_ID, PerkFlags, PerkId
 from crimson.perks.availability import perk_can_offer
 from crimson.persistence.highscores import HighScoreRecord, rank_index, scores_path_for_config, sort_highscores
+from crimson.quests.level import QuestLevel
 from crimson.sim.state_types import PlayerState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
@@ -250,8 +251,7 @@ def test_hardcore_quest_2_10_blocks_poison_related_perks() -> None:
 
     state = GameplayState()
     state.hardcore = True
-    state.quest_stage_major = 2
-    state.quest_stage_minor = 10
+    state.quest_level = QuestLevel(2, 10)
 
     for perk_id in (PerkId.POISON_BULLETS, PerkId.VEINS_OF_POISON, PerkId.PLAGUEBEARER):
         assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=1) is False

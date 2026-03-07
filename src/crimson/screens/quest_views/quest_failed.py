@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from crimson.quests.level import QuestLevel
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
@@ -338,8 +337,8 @@ class QuestFailedView:
         if outcome is None:
             return
 
-        level = QuestLevel.parse(str(outcome.level))
-        major, minor = level.to_stage_pair()
+        level = outcome.level
+        major, minor = level.major, level.minor
 
         record = HighScoreRecord.blank()
         record.set_name(_player_name_default(self.state.config) or "Player")
@@ -362,14 +361,10 @@ class QuestFailedView:
         if outcome is None:
             return
         self.state.quest_fail_retry_count = int(self.state.quest_fail_retry_count) + 1
-        parsed = QuestLevel.parse(str(outcome.level))
-        level_text = parsed.to_string()
-        self.state.pending_quest_level = level_text
+        level = outcome.level
+        self.state.pending_quest_level = level
         self.state.config.game_mode = int(GameMode.QUESTS)
-        self.state.config.quest_level = level_text
-        major, minor = parsed.to_stage_pair()
-        self.state.config.quest_stage_major = int(major)
-        self.state.config.quest_stage_minor = int(minor)
+        self.state.config.quest_level_value = level
         try:
             self.state.config.save()
         except (OSError, ValueError) as exc:

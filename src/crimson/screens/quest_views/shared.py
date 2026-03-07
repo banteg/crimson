@@ -93,9 +93,8 @@ def _player_name_default(config: CrimsonConfig) -> str:
     return config.player_name
 
 
-def _next_quest_level(level: str) -> str | None:
-    parsed = QuestLevel.parse(level)
-    major, minor = parsed.to_stage_pair()
+def _next_quest_level(level: QuestLevel) -> QuestLevel | None:
+    major, minor = level.major, level.minor
 
     from ...quests import quest_by_stage
 
@@ -105,7 +104,7 @@ def _next_quest_level(level: str) -> str | None:
             minor = 1
             major += 1
         if quest_by_stage(major, minor) is not None:
-            return QuestLevel.from_parts(major, minor).to_string()
+            return QuestLevel(major, minor)
     return None
 
 

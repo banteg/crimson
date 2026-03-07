@@ -118,8 +118,7 @@ class GameplayState(msgspec.Struct):
     hardcore: bool = False
     preserve_bugs: bool = False
     status: GameStatus | None = None
-    quest_stage_major: int = 0
-    quest_stage_minor: int = 0
+    quest_level: QuestLevel | None = None
     perk_available: list[bool] = msgspec.field(default_factory=lambda: [False] * PERK_COUNT_SIZE)
     _perk_available_unlock_index: int = -1
     weapon_available: list[bool] = msgspec.field(default_factory=lambda: [False] * WEAPON_COUNT_SIZE)
@@ -151,19 +150,6 @@ class GameplayState(msgspec.Struct):
     player_spread_damping_gate: float = 0.0
     weapon_shots_fired: list[list[int]] = msgspec.field(default_factory=lambda: [[0] * WEAPON_COUNT_SIZE for _ in range(4)])
     debug_god_mode: bool = False
-
-    @property
-    def quest_level(self) -> QuestLevel | None:
-        return QuestLevel.from_parts_or_none(self.quest_stage_major, self.quest_stage_minor)
-
-    @quest_level.setter
-    def quest_level(self, value: QuestLevel | None) -> None:
-        if value is None:
-            self.quest_stage_major = 0
-            self.quest_stage_minor = 0
-            return
-        self.quest_stage_major = int(value.major)
-        self.quest_stage_minor = int(value.minor)
 
     def __post_init__(self) -> None:
         rand = self.rng.rand

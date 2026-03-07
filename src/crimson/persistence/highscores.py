@@ -148,7 +148,11 @@ class HighScoreRecord(msgspec.Struct):
 
     @property
     def quest_level(self) -> QuestLevel | None:
-        return QuestLevel.from_parts_or_none(self.quest_stage_major, self.quest_stage_minor)
+        major = int(self.quest_stage_major)
+        minor = int(self.quest_stage_minor)
+        if major <= 0 or minor <= 0:
+            return None
+        return QuestLevel(major, minor)
 
     @quest_level.setter
     def quest_level(self, value: QuestLevel | None) -> None:
@@ -311,9 +315,9 @@ def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage
                 major = config.quest_stage_major
                 minor = config.quest_stage_minor
                 if major == 0 and minor == 0:
-                    level = QuestLevel.try_parse(config.quest_level)
+                    level = config.quest_level_value
                     if level is not None:
-                        major, minor = level.to_stage_pair()
+                        major, minor = level.major, level.minor
                 quest_stage_major = major
                 quest_stage_minor = minor
             path = _scores_path_for_mode_root(

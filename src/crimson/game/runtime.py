@@ -6,7 +6,6 @@ import time
 import webbrowser
 from pathlib import Path
 
-from crimson.quests.level import QuestLevel
 from grim import music
 from grim.app import RunViewHooks, run_view
 from grim.config import ensure_crimson_cfg
@@ -168,14 +167,10 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
             mode_id = GameMode(mode_raw)
         except ValueError:
             mode_id = GameMode.DEMO
-        quest_major = 0
-        quest_minor = 0
+        quest_level = None
         match mode_id:
             case GameMode.QUESTS:
-                level_text = str(state.pending_quest_level or "")
-                if level_text:
-                    level = QuestLevel.parse(level_text)
-                    quest_major, quest_minor = level.to_stage_pair()
+                quest_level = state.pending_quest_level
             case _:
                 pass
         info = demo_trial_overlay_info(
@@ -183,15 +178,15 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
             game_mode_id=mode_id,
             global_playtime_ms=int(state.status.game_sequence_id),
             quest_grace_elapsed_ms=int(state.demo_trial_elapsed_ms),
-            quest_stage_major=int(quest_major),
-            quest_stage_minor=int(quest_minor),
+            quest_stage_major=(0 if quest_level is None else int(quest_level.major)),
+            quest_stage_minor=(0 if quest_level is None else int(quest_level.minor)),
         )
         remaining = format_demo_trial_time(info.remaining_ms)
         console.log.log(
             "demo trial: "
             f"demo={int(state.demo_enabled)} "
             f"mode={int(mode_id)} "
-            f"quest={quest_major}.{quest_minor} "
+            f"quest={(quest_level.text if quest_level is not None else '0.0')} "
             f"playtime={int(state.status.game_sequence_id)}ms "
             f"grace={int(state.demo_trial_elapsed_ms)}ms "
             f"visible={int(info.visible)} "
