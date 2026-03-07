@@ -4,9 +4,10 @@ from collections.abc import Callable
 
 from ..terrain_slots import TerrainSlotTriplet, terrain_slots_for_level
 from ..weapons import WeaponId
-from .types import QuestBuilder, QuestDefinition, parse_level
+from .level import QuestLevel
+from .types import QuestBuilder, QuestDefinition
 
-_QUESTS: dict[tuple[int, int], QuestDefinition] = {}
+_QUESTS: dict[QuestLevel, QuestDefinition] = {}
 
 
 def register_quest(
@@ -24,12 +25,13 @@ def register_quest(
         return str(builder_fn.__name__)
 
     def decorator(builder: QuestBuilder) -> QuestBuilder:
-        major, minor = parse_level(level)
-        resolved_terrain_slots = terrain_slots if terrain_slots is not None else terrain_slots_for_level(major, minor)
+        quest_level = QuestLevel.parse(level)
+        resolved_terrain_slots = (
+            terrain_slots if terrain_slots is not None else terrain_slots_for_level(quest_level.major, quest_level.minor)
+        )
         normalized_unlock_weapon_id = WeaponId(unlock_weapon_id) if unlock_weapon_id is not None else None
         quest = QuestDefinition(
-            major=major,
-            minor=minor,
+            level=quest_level,
             title=title,
             builder=builder,
             time_limit_ms=time_limit_ms,
@@ -39,29 +41,31 @@ def register_quest(
             terrain_slots=resolved_terrain_slots,
             builder_address=builder_address,
         )
-        key = quest.level_key
-        existing = _QUESTS.get(key)
+        existing = _QUESTS.get(quest.level)
         if existing is not None:
             raise ValueError(
-                f"duplicate quest level {quest.level}: {_builder_name(existing.builder)} vs {_builder_name(builder)}",
+                f"duplicate quest level {quest.level.text}: {_builder_name(existing.builder)} vs {_builder_name(builder)}",
             )
-        _QUESTS[key] = quest
+        _QUESTS[quest.level] = quest
         return builder
 
     return decorator
 
 
 def all_quests() -> list[QuestDefinition]:
-    return sorted(_QUESTS.values(), key=lambda quest: quest.level_key)
+    return sorted(_QUESTS.values(), key=lambda quest: quest.level.global_index)
 
 
 def quest_by_stage(major: int, minor: int) -> QuestDefinition | None:
-    return _QUESTS.get((int(major), int(minor)))
-
-
-def quest_by_level(level: str) -> QuestDefinition | None:
     try:
-        major, minor = parse_level(level)
-    except ValueError:
+        level = QuestLevel(int(major), int(minor))
+    except TypeError:
         return None
-    return quest_by_stage(major, minor)
+    return _QUESTS.get(level)
+
+
+def quest_by_level(level: QuestLevel | str) -> QuestDefinition | None:
+    resolved = level if isinstance(level, QuestLevel) else QuestLevel.try_parse(level)
+    if resolved is None:
+        return None
+    return _QUESTS.get(resolved)

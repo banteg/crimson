@@ -22,7 +22,7 @@ from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 
 app = typer.Typer(add_completion=False)
 
-_QUEST_DEFS: dict[str, QuestDefinition] = {quest.level: quest for quest in all_quests()}
+_QUEST_DEFS: dict[str, QuestDefinition] = {quest.level.text: quest for quest in all_quests()}
 _QUEST_BUILDERS = {level: quest.builder for level, quest in _QUEST_DEFS.items()}
 _QUEST_TITLES = {level: quest.title for level, quest in _QUEST_DEFS.items()}
 
