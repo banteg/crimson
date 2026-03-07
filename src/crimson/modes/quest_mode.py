@@ -33,7 +33,7 @@ from ..net.rollback_resync_v5 import (
 )
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
-from ..quests.runtime import advance_quest_start_prelude, build_quest_spawn_table
+from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
@@ -421,7 +421,9 @@ class QuestMode(BaseGameplayMode):
             height=int(self.world_size),
             layers=3,
         )
-        advance_quest_start_prelude(self.state.rng)
+        # Native `quest_start_selected()` burns one `crt_rand()` for
+        # `highscore_record_random_tag` before quest terrain and spawn setup.
+        self.state.rng.rand()
         quest_terrain = run_explicit_terrain_prelude(
             self.state.rng,
             terrain_slots=quest.terrain_slots,

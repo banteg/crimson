@@ -51,13 +51,6 @@ def apply_hardcore_spawn_table_adjustment(entries: list[SpawnEntry]) -> list[Spa
         adjusted.append(entry if count == entry.count else msgspec.structs.replace(entry, count=count))
     return adjusted
 
-
-def advance_quest_start_prelude(rng: CrandLike) -> None:
-    """Consume the quest-specific startup draw before quest terrain/spawn setup."""
-
-    rng.rand()
-
-
 def build_quest_spawn_table(
     quest: QuestDefinition,
     ctx: QuestContext,

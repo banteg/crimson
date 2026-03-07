@@ -12,7 +12,7 @@ from grim.rand import CrtRand, RngTraceSink
 from ...effects import FxQueue, FxQueueRotated
 from ...game_modes import GameMode
 from ...quests import quest_by_level
-from ...quests.runtime import advance_quest_start_prelude, build_quest_spawn_table
+from ...quests.runtime import build_quest_spawn_table
 from ...quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ...replay import Replay, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint
@@ -245,7 +245,9 @@ class PlaybackDriver:
                     height=int(self.world_size),
                     layers=3,
                 )
-                advance_quest_start_prelude(world.state.rng)
+                # Native `quest_start_selected()` burns one `crt_rand()` for
+                # `highscore_record_random_tag` before quest terrain and spawn setup.
+                world.state.rng.rand()
                 quest_terrain = run_explicit_terrain_prelude(
                     world.state.rng,
                     terrain_slots=quest_definition.terrain_slots,
