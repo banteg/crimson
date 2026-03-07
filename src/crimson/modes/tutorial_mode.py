@@ -26,12 +26,10 @@ from ..ui.overlays.tutorial_run import (
     tutorial_prompt_panel_rect,
 )
 from ..ui.perk_menu import (
-    PerkMenuAssets,
     UiButtonState,
     button_draw,
     button_update,
     button_width,
-    load_perk_menu_assets,
 )
 from ..weapon_runtime import weapon_assign_player
 from ..weapon_usage import normalize_weapon_usage_counts
@@ -65,8 +63,6 @@ class TutorialMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._ui_assets: PerkMenuAssets | None = None
-
         self._perk_menu = PerkMenuController()
 
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
@@ -96,8 +92,6 @@ class TutorialMode(BaseGameplayMode):
             super().open()
         finally:
             self.config.player_count = original_player_count
-        self._ui_assets = load_perk_menu_assets(self._assets_root)
-
         self._perk_menu.reset()
 
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
@@ -153,7 +147,6 @@ class TutorialMode(BaseGameplayMode):
         self._replay_checkpoints_last_tick = None
 
     def close(self) -> None:
-        self._ui_assets = None
         self._sim_session = None
         self._replay_recorder = None
         self._frame_input_state = None
@@ -186,7 +179,7 @@ class TutorialMode(BaseGameplayMode):
             gore_disabled=gore_disabled,
             fx_detail=fx_detail,
             font=self._small,
-            assets=self._ui_assets,
+            resources=self.render_resources.resources,
             mouse=self._ui_mouse_pos(),
             play_sfx=None,
         )
@@ -393,8 +386,7 @@ class TutorialMode(BaseGameplayMode):
             measure_text_width=lambda text, scale: float(self._ui_text_width(text, scale)),
             measure_line_height=self._ui_line_height,
         )
-        assets = self._ui_assets
-        assert assets is not None, "perk menu assets must be loaded before use"
+        resources = self.render_resources.resources
 
         stage = int(self.state.tutorial.stage_index)
         if stage == 8:
@@ -410,7 +402,7 @@ class TutorialMode(BaseGameplayMode):
             play_w = button_width(self._small, self._play_button.label, scale=1.0, force_wide=True)
             repeat_w = button_width(self._small, self._repeat_button.label, scale=1.0, force_wide=True)
             button_draw(
-                assets,
+                resources,
                 self._small,
                 self._play_button,
                 pos=button_base_pos,
@@ -418,7 +410,7 @@ class TutorialMode(BaseGameplayMode):
                 scale=1.0,
             )
             button_draw(
-                assets,
+                resources,
                 self._small,
                 self._repeat_button,
                 pos=button_base_pos.offset(dx=play_w + gap),
@@ -430,7 +422,7 @@ class TutorialMode(BaseGameplayMode):
         if self._skip_button.alpha > 1e-3:
             y = float(rl.get_screen_height()) - 50.0
             w = button_width(self._small, self._skip_button.label, scale=1.0, force_wide=True)
-            button_draw(assets, self._small, self._skip_button, pos=Vec2(10.0, y), width=w, scale=1.0)
+            button_draw(resources, self._small, self._skip_button, pos=Vec2(10.0, y), width=w, scale=1.0)
 
         if self._paused:
             x = 18.0
@@ -438,13 +430,11 @@ class TutorialMode(BaseGameplayMode):
             self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
 
     def _draw_menu_cursor(self) -> None:
-        assets = self._ui_assets
-        assert assets is not None, "perk menu assets must be loaded before use"
         resources = self.render_resources.resources
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
             resources.texture(TextureId.PARTICLES),
-            assets.cursor,
+            resources.texture(TextureId.UI_CURSOR),
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )

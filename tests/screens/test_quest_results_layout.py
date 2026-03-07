@@ -12,8 +12,8 @@ from crimson.screens.results.quest_results import (
     QuestResultsAssets,
     QuestResultsUi,
 )
-from crimson.ui.perk_menu import PerkMenuAssets
 from crimson.weapons import WeaponId
+from grim.assets import TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.raylib_api import rl
 
@@ -31,26 +31,27 @@ def _texture(*, width: int = 0, height: int = 0) -> rl.Texture:
     return texture
 
 
-def _perk_menu_assets() -> PerkMenuAssets:
-    return PerkMenuAssets(
-        menu_panel=_texture(),
-        title_pick_perk=_texture(),
-        title_level_up=_texture(),
-        menu_item=_texture(),
-        button_sm=_texture(),
-        button_md=_texture(),
-        cursor=_texture(),
-        aim=_texture(),
-    )
+class _ResourcesStub:
+    def __init__(self) -> None:
+        tex = _texture(width=32, height=32)
+        self._textures = {
+            TextureId.UI_MENU_PANEL: tex,
+            TextureId.UI_BUTTON_SM: tex,
+            TextureId.UI_BUTTON_MD: tex,
+            TextureId.UI_CURSOR: tex,
+            TextureId.PARTICLES: tex,
+            TextureId.UI_WICONS: _texture(width=256, height=256),
+        }
+
+    def texture(self, texture_id: TextureId) -> rl.Texture:
+        return self._textures[texture_id]
 
 
 def _quest_results_assets() -> QuestResultsAssets:
     return QuestResultsAssets(
-        menu_panel=None,
+        resources=_ResourcesStub(),  # type: ignore[arg-type]
         text_well_done=None,
-        particles=None,
         wicons=_texture(width=256, height=256),
-        perk_menu_assets=_perk_menu_assets(),
     )
 
 
@@ -96,6 +97,7 @@ def _patch_draw_environment(
     mocker.patch.object(quest_results_module.rl, "get_time", side_effect=lambda: 0.0)
     mocker.patch.object(quest_results_module.rl, "draw_rectangle_lines", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_results_module.rl, "draw_rectangle", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_results_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     draw_line = mocker.patch.object(quest_results_module.rl, "draw_line")
     mocker.patch.object(quest_results_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_results_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)

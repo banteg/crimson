@@ -11,7 +11,7 @@ from grim.raylib_api import rl
 from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import _ensure_texture_cache
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
@@ -69,9 +69,6 @@ class PlayGameMenuView(PanelMenuView):
             back_pos=Vec2(-55.0, 462.0),
         )
         self._small_font: SmallFontData | None = None
-        self._button_sm: rl.Texture | None = None
-        self._button_md: rl.Texture | None = None
-        self._button_textures: UiButtonTextureSet | None = None
         self._drop_on: rl.Texture | None = None
         self._drop_off: rl.Texture | None = None
 
@@ -85,9 +82,6 @@ class PlayGameMenuView(PanelMenuView):
     def open(self) -> None:
         super().open()
         cache = _ensure_texture_cache(self.state)
-        self._button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        self._button_textures = UiButtonTextureSet(button_sm=self._button_sm, button_md=self._button_md)
         self._drop_on = cache.texture(TextureId.UI_DROP_ON)
         self._drop_off = cache.texture(TextureId.UI_DROP_OFF)
         self._player_list_open = False
@@ -592,15 +586,10 @@ class PlayGameMenuView(PanelMenuView):
             draw_small_text(font, item, Vec2(layout.text_pos.x, item_y), rl.Color(255, 255, 255, alpha))
 
     def _draw_mode_button(self, mode: _PlayGameModeEntry, pos: Vec2, scale: float) -> None:
-        textures = self._button_textures
-        if textures is None:
-            return
-        if textures.button_sm is None and textures.button_md is None:
-            return
         font = self._ensure_small_font()
         state = self._mode_button_state(mode)
         width = button_width(font, state.label, scale=scale, force_wide=state.force_wide)
-        button_draw(textures, font, state, pos=pos, width=width, scale=scale)
+        button_draw(_ensure_texture_cache(self.state), font, state, pos=pos, width=width, scale=scale)
 
     def _draw_mode_count(self, key: str, pos: Vec2, scale: float, color: rl.Color) -> None:
         status = self.state.status

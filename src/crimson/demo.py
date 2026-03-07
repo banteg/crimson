@@ -23,7 +23,7 @@ from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
 from .terrain_slots import Q2_TERRAIN_SLOTS, TerrainSlotTriplet
 from .ui.cursor import draw_menu_cursor
-from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from .ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
 from .weapons import WeaponId, weapon_display_name
 from .world import WorldRuntime
@@ -273,13 +273,6 @@ class DemoView:
         except (OSError, webbrowser.Error):
             return
 
-    def _purchase_button_textures(self) -> UiButtonTextureSet:
-        resources = require_runtime_resources(self.state)
-        return UiButtonTextureSet(
-            button_sm=resources.texture(TextureId.UI_BUTTON_SM),
-            button_md=resources.texture(TextureId.UI_BUTTON_MD),
-        )
-
     def _update_purchase_screen(self, dt_ms: int) -> None:
         dt_ms = max(0, int(dt_ms))
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -288,7 +281,6 @@ class DemoView:
             return
 
         font = self._ensure_small_font()
-        textures = self._purchase_button_textures()
 
         w = float(self.state.config.screen_width)
         h = float(self.state.config.screen_height)
@@ -327,9 +319,6 @@ class DemoView:
         purchase_requested = purchase_requested or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
         if purchase_requested:
             self._trigger_purchase()
-
-        # Keep referenced to avoid unused warnings if this method grows.
-        _ = textures
 
     def _draw_purchase_screen(self) -> None:
         rl.clear_background(rl.BLACK)
@@ -421,17 +410,15 @@ class DemoView:
         draw_small_text(small, _DEMO_PURCHASE_FOOTER, Vec2(x_text, y), color)
 
         # Buttons on the right.
-        textures = self._purchase_button_textures()
-
         button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.3
         button_base_pos = Vec2(screen_w / 2.0 + 128.0, button_base_y + 50.0)
         scale = 1.0
         button_w = button_width(
             small, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
         )
-        button_draw(textures, small, self._purchase_button, pos=button_base_pos, width=button_w, scale=scale)
+        button_draw(resources, small, self._purchase_button, pos=button_base_pos, width=button_w, scale=scale)
         button_draw(
-            textures,
+            resources,
             small,
             self._maybe_later_button,
             pos=button_base_pos.offset(dy=40.0),

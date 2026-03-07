@@ -4,7 +4,6 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode
-import crimson.modes.tutorial_mode as tutorial_mode
 import crimson.world.render_resources as render_resources_module
 from crimson.game_modes import GameMode
 from crimson.modes.tutorial_mode import TutorialMode
@@ -29,8 +28,6 @@ def test_tutorial_open_creates_session_and_recorder(mocker) -> None:
     small_font = SimpleNamespace(cell_size=10)
     mocker.patch.object(render_resources_module, "runtime_resources_for", return_value=resources)
     mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=small_font)
-    mocker.patch.object(tutorial_mode, "load_perk_menu_assets", return_value=SimpleNamespace())
-
     mode.open()
 
     assert isinstance(mode._sim_session, DeterministicSession)

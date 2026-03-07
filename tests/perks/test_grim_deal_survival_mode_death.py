@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -13,7 +15,8 @@ from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.quests.level import QuestLevel
 from crimson.screens.results.game_over import GameOverUi
-from crimson.ui.perk_menu import PerkMenuAssets
+from grim.assets import RuntimeResources, TextureId, register_runtime_resources
+from grim.fonts.small import SmallFontData
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
@@ -21,6 +24,17 @@ from grim.view import ViewContext
 
 def _assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
+
+
+def _register_runtime_resources_stub(assets_dir: Path) -> None:
+    tex = cast("rl.Texture", SimpleNamespace(width=1, height=1, id=1))
+    register_runtime_resources(
+        RuntimeResources(
+            assets_dir=assets_dir,
+            textures={texture_id: tex for texture_id in TextureId},
+            small_font=cast(SmallFontData, SimpleNamespace(cell_size=10)),
+        ),
+    )
 
 
 def _is_dead(mode: SurvivalMode | QuestMode) -> bool:
@@ -31,14 +45,20 @@ def _is_dead(mode: SurvivalMode | QuestMode) -> bool:
 
 @pytest.mark.parametrize("mode_cls", [SurvivalMode, QuestMode])
 def test_grim_deal_kills_player_during_perk_menu_transition(mocker, mode_cls: type[SurvivalMode] | type[QuestMode]) -> None:
-    ctx = ViewContext(assets_dir=_assets_dir())
+    assets_dir = _assets_dir()
+    _register_runtime_resources_stub(assets_dir)
+    ctx = ViewContext(assets_dir=assets_dir)
     mode = mode_cls(ctx, audio_rng=Crand(0xBEEF))
     if isinstance(mode, QuestMode):
+        mocker.patch.object(quest_mode_module, "load_grim_mono_font", return_value=SimpleNamespace())
+        mode.open()
+        mocker.patch.object(mode, "_sync_audio_and_ground", return_value=None)
         mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
         mode.start_run(QuestLevel(1, 1), status=None)
-        mode._perk_menu_assets = PerkMenuAssets(*(rl.Texture() for _ in range(8)))
+        mode.render_resources.ground = None
     else:
-        mode._perk_menu_assets = PerkMenuAssets(*(rl.Texture() for _ in range(8)))
+        mode.open()
+        mocker.patch.object(mode, "_sync_audio_and_ground", return_value=None)
     mocker.patch.object(GameOverUi, "open", return_value=None)
 
     assert mode.player.health > 0.0

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import (
     SmallFontData,
@@ -17,7 +16,7 @@ from grim.terrain_render import GroundRenderer
 from ...debug import debug_enabled
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..menu import (
     MENU_PANEL_OFFSET_X,
@@ -232,7 +231,6 @@ class CreditsView:
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
-        self._button_textures: UiButtonTextureSet | None = None
 
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
@@ -274,10 +272,6 @@ class CreditsView:
         self._scroll_line_start_index = 0
         self._scroll_line_end_index = 0
 
-        cache = _ensure_texture_cache(self.state)
-        button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._back_button = UiButtonState("Back", force_wide=False)
         self._secret_button = UiButtonState("Secret", force_wide=False)
 
@@ -289,7 +283,6 @@ class CreditsView:
         self._is_open = False
         if self._small_font is not None:
             self._small_font = None
-        self._button_textures = None
         self._assets = None
         self._ground = None
         self._closing = False
@@ -511,10 +504,6 @@ class CreditsView:
         )
         self._update_secret_unlock()
 
-        textures = self._button_textures
-        if textures is None or (textures.button_md is None and textures.button_sm is None):
-            return
-
         dt_ms_f = dt_clamped * 1000.0
 
         back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
@@ -597,33 +586,32 @@ class CreditsView:
                 text_w = measure_small_text_width(font, line.text)
                 draw_small_text(font, line.text, Vec2(center_x - (text_w * 0.5), y), color)
 
-        textures = self._button_textures
-        if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
-            back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
-            button_draw(
-                textures,
+        resources = _ensure_texture_cache(self.state)
+        back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        button_draw(
+            resources,
+            font,
+            self._back_button,
+            pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
+            width=back_w,
+            scale=scale,
+        )
+
+        if self._secret_button_visible():
+            secret_w = button_width(
                 font,
-                self._back_button,
-                pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
-                width=back_w,
+                self._secret_button.label,
+                scale=scale,
+                force_wide=self._secret_button.force_wide,
+            )
+            button_draw(
+                resources,
+                font,
+                self._secret_button,
+                pos=panel_top_left + Vec2(_SECRET_BUTTON_X * scale, _SECRET_BUTTON_Y * scale),
+                width=secret_w,
                 scale=scale,
             )
-
-            if self._secret_button_visible():
-                secret_w = button_width(
-                    font,
-                    self._secret_button.label,
-                    scale=scale,
-                    force_wide=self._secret_button.force_wide,
-                )
-                button_draw(
-                    textures,
-                    font,
-                    self._secret_button,
-                    pos=panel_top_left + Vec2(_SECRET_BUTTON_X * scale, _SECRET_BUTTON_Y * scale),
-                    width=secret_w,
-                    scale=scale,
-                )
 
         self._draw_sign()
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)

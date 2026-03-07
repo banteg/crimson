@@ -54,7 +54,6 @@ from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
     draw_quest_title_timer_overlay,
 )
-from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
 from ..weapon_usage import normalize_weapon_usage_counts
 from ..weapons import WEAPON_BY_ID, WeaponId
@@ -118,7 +117,6 @@ class QuestMode(BaseGameplayMode):
         self._quest_level: QuestLevel | None = self.config.quest_level_value or QuestLevel(1, 1)
         self._quest_total_spawn_count: int = 0
         self._outcome: QuestRunOutcome | None = None
-        self._perk_menu_assets: PerkMenuAssets | None = None
         self._grim_mono: GrimMonoFont | None = None
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
@@ -138,7 +136,6 @@ class QuestMode(BaseGameplayMode):
         self._quest_level = self.config.quest_level_value or QuestLevel(1, 1)
         self._quest_total_spawn_count = 0
         self._outcome = None
-        self._perk_menu_assets = load_perk_menu_assets(self._assets_root)
         self._grim_mono = load_grim_mono_font(self._assets_root)
 
         self._perk_prompt_timer_ms = 0.0
@@ -154,7 +151,6 @@ class QuestMode(BaseGameplayMode):
 
     def close(self) -> None:
         self._grim_mono = None
-        self._perk_menu_assets = None
         self._sim_session = None
         super().close()
 
@@ -359,7 +355,7 @@ class QuestMode(BaseGameplayMode):
             gore_disabled=gore_disabled,
             fx_detail=fx_detail,
             font=self._small,
-            assets=self._perk_menu_assets,
+            resources=self.render_resources.resources,
             mouse=self._ui_mouse_pos(),
             play_sfx=self.audio_bridge.router.play_sfx,
         )
@@ -580,7 +576,7 @@ class QuestMode(BaseGameplayMode):
             return
         PerkPromptUi.draw(
             font=self._small,
-            assets=self._perk_menu_assets,
+            resources=self.render_resources.resources,
             label=label,
             timer_ms=float(self._perk_prompt_timer_ms),
             pulse=float(self._perk_prompt_pulse),
@@ -616,7 +612,7 @@ class QuestMode(BaseGameplayMode):
                     label,
                     ui_text_width=self._ui_text_width,
                     ui_line_height=self._ui_line_height,
-                    assets=self._perk_menu_assets,
+                    resources=self.render_resources.resources,
                     scale=UI_TEXT_SCALE,
                 )
                 self._perk_prompt_hover = rect.contains(self._ui_mouse_pos())
@@ -780,13 +776,11 @@ class QuestMode(BaseGameplayMode):
         self._draw_lan_wait_overlay()
 
     def _draw_game_cursor(self) -> None:
-        assets = self._perk_menu_assets
-        assert assets is not None, "perk menu assets must be loaded before use"
         resources = self.render_resources.resources
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
             resources.texture(TextureId.PARTICLES),
-            assets.cursor,
+            resources.texture(TextureId.UI_CURSOR),
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )

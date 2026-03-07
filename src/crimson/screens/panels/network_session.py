@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
@@ -20,7 +19,7 @@ from ...game.types import (
 from ...net.relay_protocol import ROOM_CODE_LENGTH
 from ...net.room_code import parse_optional_room_code
 from ...quests.level import QuestLevel
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ...ui.text_input import poll_text_input
 from ..assets import _ensure_texture_cache
 from ..menu import MENU_PANEL_OFFSET_Y, MENU_PANEL_WIDTH, MenuEntry, MenuView
@@ -47,7 +46,6 @@ class NetworkSessionPanelView(PanelMenuView):
             back_action="open_play_game",
         )
         self._small_font: SmallFontData | None = None
-        self._button_textures: UiButtonTextureSet | None = None
         self._back_button = UiButtonState("Back", force_wide=False)
 
         self._role: str = "host"
@@ -71,10 +69,6 @@ class NetworkSessionPanelView(PanelMenuView):
     def open(self) -> None:
         super().open()
 
-        cache = _ensure_texture_cache(self.state)
-        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._back_button = UiButtonState("Back", force_wide=False)
 
         pending = self.state.pending_network_session
@@ -243,10 +237,6 @@ class NetworkSessionPanelView(PanelMenuView):
             return
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._begin_close_transition(self._back_action)
-            return
-
-        textures = self._button_textures
-        if textures is None:
             return
 
         layout = self._layout()
@@ -442,13 +432,11 @@ class NetworkSessionPanelView(PanelMenuView):
             y += float(font.cell_size) * 0.9 * scale + 6.0 * scale
             draw_small_text(font, self._error, Vec2(base_pos.x, y), rl.Color(240, 90, 90, 255))
 
-        textures = self._button_textures
-        if textures is not None:
-            button_draw(
-                textures,
-                font,
-                self._back_button,
-                pos=layout.back_pos,
-                width=float(layout.back_w),
-                scale=scale,
-            )
+        button_draw(
+            _ensure_texture_cache(self.state),
+            font,
+            self._back_button,
+            pos=layout.back_pos,
+            width=float(layout.back_w),
+            scale=scale,
+        )

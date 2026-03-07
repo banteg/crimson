@@ -17,7 +17,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..menu import (
     MENU_PANEL_WIDTH,
@@ -133,7 +133,6 @@ class AlienZooKeeperView:
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
-        self._button_textures: UiButtonTextureSet | None = None
         self._alien_texture: rl.Texture | None = None
 
         self._cursor_pulse_time = 0.0
@@ -162,9 +161,6 @@ class AlienZooKeeperView:
         self._small_font = None
 
         cache = _ensure_texture_cache(self.state)
-        button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._alien_texture = cache.texture(TextureId.ALIEN)
 
         self._cursor_pulse_time = 0.0
@@ -186,7 +182,6 @@ class AlienZooKeeperView:
         self._is_open = False
         if self._small_font is not None:
             self._small_font = None
-        self._button_textures = None
         self._assets = None
         self._ground = None
         self._alien_texture = None
@@ -386,9 +381,6 @@ class AlienZooKeeperView:
         if click:
             self._resolve_tile_click(layout=layout, mouse=mouse)
 
-        textures = self._button_textures
-        if textures is None or (textures.button_md is None and textures.button_sm is None):
-            return
         font = self._ensure_small_font()
         dt_ms_f = dt_clamped * 1000.0
 
@@ -520,27 +512,26 @@ class AlienZooKeeperView:
         if self._timer_ms == 0 and math.cos(float(self._anim_time_ms) * 0.005) > 0.0:
             draw_small_text(font, _LABEL_GAME_OVER, Vec2(layout.game_over_x, layout.game_over_y), rl.WHITE)
 
-        textures = self._button_textures
-        if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
-            reset_w = button_width(font, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide)
-            button_draw(
-                textures,
-                font,
-                self._reset_button,
-                pos=layout.reset_pos,
-                width=reset_w,
-                scale=scale,
-            )
+        resources = _ensure_texture_cache(self.state)
+        reset_w = button_width(font, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide)
+        button_draw(
+            resources,
+            font,
+            self._reset_button,
+            pos=layout.reset_pos,
+            width=reset_w,
+            scale=scale,
+        )
 
-            back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
-            button_draw(
-                textures,
-                font,
-                self._back_button,
-                pos=layout.back_pos,
-                width=back_w,
-                scale=scale,
-            )
+        back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        button_draw(
+            resources,
+            font,
+            self._back_button,
+            pos=layout.back_pos,
+            width=back_w,
+            scale=scale,
+        )
 
         self._draw_sign()
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)

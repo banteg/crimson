@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
@@ -15,7 +14,7 @@ from ...net.lockstep_protocol import LobbyState
 from ...net.lockstep_runtime import LockstepRuntime
 from ...net.relay_protocol import RoomState
 from ...net.rollback_runtime import RollbackRuntime
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import _ensure_texture_cache
 from ..menu import MENU_PANEL_OFFSET_Y, MENU_PANEL_WIDTH, MenuEntry, MenuView
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
@@ -39,16 +38,11 @@ class NetworkLobbyPanelView(PanelMenuView):
             back_action="open_play_game",
         )
         self._small_font: SmallFontData | None = None
-        self._button_textures: UiButtonTextureSet | None = None
         self._back_button = UiButtonState("Back", force_wide=False)
         self._error: str = ""
 
     def open(self) -> None:
         super().open()
-        cache = _ensure_texture_cache(self.state)
-        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._back_button = UiButtonState("Back", force_wide=False)
         self._error = ""
 
@@ -191,10 +185,6 @@ class NetworkLobbyPanelView(PanelMenuView):
             self._begin_close_transition(self._back_action)
             return
 
-        textures = self._button_textures
-        if textures is None:
-            return
-
         layout = self._layout()
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -325,13 +315,11 @@ class NetworkLobbyPanelView(PanelMenuView):
             y += line_h
             draw_small_text(font, f"logs: {str(self.state.base_dir)}/logs/lan/", Vec2(base_pos.x, y), rl.Color(232, 197, 117, 255))
 
-        textures = self._button_textures
-        if textures is not None:
-            button_draw(
-                textures,
-                font,
-                self._back_button,
-                pos=layout.back_pos,
-                width=float(layout.back_w),
-                scale=scale,
-            )
+        button_draw(
+            _ensure_texture_cache(self.state),
+            font,
+            self._back_button,
+            pos=layout.back_pos,
+            width=float(layout.back_w),
+            scale=scale,
+        )

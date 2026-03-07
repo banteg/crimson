@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
 
@@ -9,7 +10,19 @@ from crimson.game.types import NetworkSessionConfig, PendingNetworkSession, Roll
 from crimson.net.relay_protocol import RoomState
 from crimson.quests.level import QuestLevel
 from crimson.screens.panels.network_lobby import NetworkLobbyPanelView
+from grim.assets import RuntimeResources, TextureId
+from grim.fonts.small import SmallFontData
 from grim.geom import Vec2
+from grim.raylib_api import rl
+
+
+def _stub_runtime_resources(assets_dir: Path) -> RuntimeResources:
+    tex = cast("rl.Texture", SimpleNamespace(width=1, height=1, id=1))
+    return RuntimeResources(
+        assets_dir=assets_dir,
+        textures={texture_id: tex for texture_id in TextureId},
+        small_font=cast(SmallFontData, SimpleNamespace(cell_size=8)),
+    )
 
 
 def test_network_session_panel_requires_room_code_for_join(make_game_state) -> None:
@@ -86,6 +99,7 @@ def test_loop_view_resolves_lan_action_using_pending_network_session(make_game_s
 
 def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, mocker) -> None:
     state = make_game_state()
+    state.resources = _stub_runtime_resources(state.base_dir)
     pending = PendingNetworkSession(
         role="host",
         config=NetworkSessionConfig(
@@ -114,6 +128,7 @@ def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, moc
 
     panel = NetworkLobbyPanelView(state)
     draw_small_text = mocker.patch.object(lan_lobby_module, "draw_small_text")
+    mocker.patch.object(lan_lobby_module, "button_draw", return_value=None)
     mocker.patch.object(
         lan_lobby_module,
         "measure_small_text_width",

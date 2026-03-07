@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
+from typing import cast
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.quest_mode as quest_mode_module
@@ -8,19 +10,36 @@ from crimson.modes.quest_mode import QuestMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.quests.level import QuestLevel
-from crimson.ui.perk_menu import PerkMenuAssets
+from grim.assets import RuntimeResources, TextureId, register_runtime_resources
+from grim.fonts.small import SmallFontData
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
 
+def _register_runtime_resources_stub(assets_dir: Path) -> None:
+    tex = cast("rl.Texture", SimpleNamespace(width=1, height=1, id=1))
+    register_runtime_resources(
+        RuntimeResources(
+            assets_dir=assets_dir,
+            textures={texture_id: tex for texture_id in TextureId},
+            small_font=cast(SmallFontData, SimpleNamespace(cell_size=10)),
+        ),
+    )
+
+
 def _make_quest_mode(mocker) -> QuestMode:
     repo_root = Path(__file__).resolve().parents[1]
-    ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
+    assets_dir = repo_root / "artifacts" / "assets"
+    _register_runtime_resources_stub(assets_dir)
+    ctx = ViewContext(assets_dir=assets_dir)
     mode = QuestMode(ctx, audio_rng=Crand(0xBEEF))
+    mocker.patch.object(quest_mode_module, "load_grim_mono_font", return_value=SimpleNamespace())
+    mode.open()
+    mocker.patch.object(mode, "_sync_audio_and_ground", return_value=None)
     mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
     mode.start_run(QuestLevel(1, 1), status=None)
-    mode._perk_menu_assets = PerkMenuAssets(*(rl.Texture() for _ in range(8)))
+    mode.render_resources.ground = None
     return mode
 
 

@@ -27,13 +27,11 @@ from ...ui.formatting import format_ordinal, format_time_mm_ss
 from ...ui.layout import menu_widescreen_y_shift, ui_scale
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
-    PerkMenuAssets,
     UiButtonState,
     button_draw,
     button_update,
     button_width,
     draw_ui_text,
-    load_perk_menu_assets,
 )
 from ...ui.text_input import flush_text_input_events, gameplay_controls_held, poll_text_input
 from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
@@ -88,11 +86,9 @@ def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle
 
 
 class GameOverAssets(msgspec.Struct):
-    menu_panel: rl.Texture | None
+    resources: RuntimeResources
     text_reaper: rl.Texture | None
     text_well_done: rl.Texture | None
-    particles: rl.Texture | None
-    perk_menu_assets: PerkMenuAssets
 
 
 class _GameOverPanelLayout(msgspec.Struct, frozen=True):
@@ -101,18 +97,13 @@ class _GameOverPanelLayout(msgspec.Struct, frozen=True):
 
 
 def load_game_over_assets(assets_root: Path) -> GameOverAssets:
-    perk_menu_assets = load_perk_menu_assets(assets_root)
     resources = runtime_resources_for(assets_root)
-    menu_panel = resources.texture(TextureId.UI_MENU_PANEL)
     text_reaper = resources.texture(TextureId.UI_TEXT_REAPER)
     text_well_done = resources.texture(TextureId.UI_TEXT_WELL_DONE)
-    particles = resources.texture(TextureId.PARTICLES)
     return GameOverAssets(
-        menu_panel=menu_panel,
+        resources=resources,
         text_reaper=text_reaper,
         text_well_done=text_well_done,
-        particles=particles,
-        perk_menu_assets=perk_menu_assets,
     )
 
 
@@ -657,14 +648,13 @@ class GameOverUi(msgspec.Struct):
         panel_top_left = panel_layout.top_left
 
         # Panel background
-        if self.assets.menu_panel is not None:
-            fx_detail = self.config.fx_detail(level=0, default=False)
-            draw_classic_menu_panel(
-                self.assets.menu_panel,
-                dst=panel.to_rl(),
-                tint=rl.WHITE,
-                shadow=fx_detail,
-            )
+        fx_detail = self.config.fx_detail(level=0, default=False)
+        draw_classic_menu_panel(
+            self.assets.resources.texture(TextureId.UI_MENU_PANEL),
+            dst=panel.to_rl(),
+            tint=rl.WHITE,
+            shadow=fx_detail,
+        )
 
         # Banner (Reaper / Well done)
         banner_pos = panel_top_left + Vec2(GAME_OVER_BANNER_X_OFFSET * scale, 40.0 * scale)
@@ -712,7 +702,7 @@ class GameOverUi(msgspec.Struct):
             ok_pos = form_pos + Vec2(170.0 * scale, 32.0 * scale)
             ok_w = button_width(self.font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
             button_draw(
-                self.assets.perk_menu_assets,
+                self.assets.resources,
                 self.font,
                 self._ok_button,
                 pos=ok_pos,
@@ -760,7 +750,7 @@ class GameOverUi(msgspec.Struct):
                 self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
             )
             button_draw(
-                self.assets.perk_menu_assets,
+                self.assets.resources,
                 self.font,
                 self._play_again_button,
                 pos=button_pos,
@@ -773,7 +763,7 @@ class GameOverUi(msgspec.Struct):
                 self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
             )
             button_draw(
-                self.assets.perk_menu_assets,
+                self.assets.resources,
                 self.font,
                 self._high_scores_button,
                 pos=button_pos,
@@ -786,7 +776,7 @@ class GameOverUi(msgspec.Struct):
                 self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
             )
             button_draw(
-                self.assets.perk_menu_assets,
+                self.assets.resources,
                 self.font,
                 self._main_menu_button,
                 pos=button_pos,
@@ -795,8 +785,8 @@ class GameOverUi(msgspec.Struct):
             )
 
         draw_menu_cursor(
-            self.assets.particles,
-            self.assets.perk_menu_assets.cursor,
+            self.assets.resources.texture(TextureId.PARTICLES),
+            self.assets.resources.texture(TextureId.UI_CURSOR),
             pos=Vec2.from_xy(mouse),
             pulse_time=float(self._cursor_pulse_time),
         )

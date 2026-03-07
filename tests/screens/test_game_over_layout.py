@@ -8,7 +8,6 @@ import crimson.screens.results.game_over as game_over_module
 from crimson.game_modes import GameMode
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
-from crimson.ui.perk_menu import PerkMenuAssets
 from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg_data
@@ -29,17 +28,22 @@ def _texture(*, width: int = 0, height: int = 0) -> rl.Texture:
     return texture
 
 
-def _perk_menu_assets() -> PerkMenuAssets:
-    return PerkMenuAssets(
-        menu_panel=_texture(),
-        title_pick_perk=_texture(),
-        title_level_up=_texture(),
-        menu_item=_texture(),
-        button_sm=_texture(),
-        button_md=_texture(),
-        cursor=_texture(),
-        aim=_texture(),
-    )
+class _ResourcesStub:
+    def __init__(self) -> None:
+        tex = _texture(width=32, height=32)
+        self._textures = {
+            TextureId.UI_MENU_PANEL: tex,
+            TextureId.UI_BUTTON_SM: tex,
+            TextureId.UI_BUTTON_MD: tex,
+            TextureId.UI_CURSOR: tex,
+            TextureId.PARTICLES: tex,
+            TextureId.UI_WICONS: _texture(width=256, height=256),
+            TextureId.UI_CLOCK_TABLE: tex,
+            TextureId.UI_CLOCK_POINTER: tex,
+        }
+
+    def texture(self, texture_id: TextureId) -> rl.Texture:
+        return self._textures[texture_id]
 
 
 def _game_over_assets(
@@ -47,27 +51,13 @@ def _game_over_assets(
     menu_panel: rl.Texture | None = None,
     text_reaper: rl.Texture | None = None,
     text_well_done: rl.Texture | None = None,
-    particles: rl.Texture | None = None,
+    resources: RuntimeResources | None = None,
 ) -> GameOverAssets:
     return GameOverAssets(
-        menu_panel=menu_panel,
+        resources=_resources_for_score_card() if resources is None else resources,
         text_reaper=text_reaper,
         text_well_done=text_well_done,
-        particles=particles,
-        perk_menu_assets=_perk_menu_assets(),
     )
-
-
-class _ResourcesStub:
-    def __init__(self) -> None:
-        self._textures = {
-            TextureId.UI_WICONS: _texture(width=256, height=256),
-            TextureId.UI_CLOCK_TABLE: _texture(width=32, height=32),
-            TextureId.UI_CLOCK_POINTER: _texture(width=32, height=32),
-        }
-
-    def texture(self, texture_id: TextureId) -> rl.Texture:
-        return self._textures[texture_id]
 
 
 def _resources_for_score_card() -> RuntimeResources:

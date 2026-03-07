@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime as dt
 
-from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
@@ -12,7 +11,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
@@ -101,7 +100,6 @@ class StatisticsMenuView:
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
-        self._button_textures: UiButtonTextureSet | None = None
 
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
@@ -133,11 +131,6 @@ class StatisticsMenuView:
         self._close_action = None
         self._pending_action = None
 
-        cache = _ensure_texture_cache(self.state)
-        button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
-
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
         self._btn_perks = UiButtonState("Perks", force_wide=True)
@@ -155,7 +148,6 @@ class StatisticsMenuView:
         self._is_open = False
         if self._small_font is not None:
             self._small_font = None
-        self._button_textures = None
         self._assets = None
         self._ground = None
         self._action = None
@@ -245,9 +237,6 @@ class StatisticsMenuView:
             self._begin_close_transition("back_to_menu")
             return
 
-        textures = self._button_textures
-        if textures is None or (textures.button_md is None and textures.button_sm is None):
-            return
         if not interactive:
             return
 
@@ -361,29 +350,28 @@ class StatisticsMenuView:
             draw_small_text(font, _STATS_EASTER_TEXT, Vec2(x, _STATS_EASTER_TEXT_Y), rl.Color(51, 255, 153, 128))
 
         # Buttons.
-        textures = self._button_textures
-        if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
-            button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
-            for i, btn in enumerate((self._btn_high_scores, self._btn_weapons, self._btn_perks, self._btn_credits)):
-                w = button_width(font, btn.label, scale=scale, force_wide=btn.force_wide)
-                button_draw(
-                    textures,
-                    font,
-                    btn,
-                    pos=button_base.offset(dy=_BUTTON_STEP_Y * float(i) * scale),
-                    width=w,
-                    scale=scale,
-                )
-
-            back_w = button_width(font, self._btn_back.label, scale=scale, force_wide=self._btn_back.force_wide)
+        resources = _ensure_texture_cache(self.state)
+        button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
+        for i, btn in enumerate((self._btn_high_scores, self._btn_weapons, self._btn_perks, self._btn_credits)):
+            w = button_width(font, btn.label, scale=scale, force_wide=btn.force_wide)
             button_draw(
-                textures,
+                resources,
                 font,
-                self._btn_back,
-                pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
-                width=back_w,
+                btn,
+                pos=button_base.offset(dy=_BUTTON_STEP_Y * float(i) * scale),
+                width=w,
                 scale=scale,
             )
+
+        back_w = button_width(font, self._btn_back.label, scale=scale, force_wide=self._btn_back.force_wide)
+        button_draw(
+            resources,
+            font,
+            self._btn_back,
+            pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
+            width=back_w,
+            scale=scale,
+        )
 
         self._draw_sign(scale=scale)
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)

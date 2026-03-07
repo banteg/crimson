@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.math import clamp
@@ -10,7 +11,6 @@ from ..perks import PERK_BY_ID, PerkId, perk_display_description, perk_display_n
 from ..ui.layout import ui_origin, ui_scale
 from ..ui.menu_panel import draw_classic_menu_panel
 from ..ui.perk_menu import (
-    PerkMenuAssets,
     PerkMenuLayout,
     UiButtonState,
     button_draw,
@@ -20,7 +20,6 @@ from ..ui.perk_menu import (
     draw_menu_item,
     draw_ui_text,
     draw_wrapped_ui_text_in_rect,
-    load_perk_menu_assets,
     menu_item_hit_rect,
     perk_menu_compute_layout,
     texture_loaded,
@@ -56,7 +55,7 @@ class PerkMenuDebugView:
         self._preserve_bugs = bool(ctx.preserve_bugs)
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
-        self._assets: PerkMenuAssets | None = None
+        self._resources: RuntimeResources | None = None
         self._layout = PerkMenuLayout()
 
         self._perk_ids = [perk_id for perk_id in sorted(PERK_BY_ID.keys()) if perk_id != PerkId.ANTIPERK]
@@ -78,13 +77,13 @@ class PerkMenuDebugView:
     def open(self) -> None:
         self._missing_assets.clear()
         self._small = load_small_font(self._assets_root)
-        self._assets = load_perk_menu_assets(self._assets_root)
+        self._resources = runtime_resources_for(self._assets_root)
         rl.hide_cursor()
 
     def close(self) -> None:
         rl.show_cursor()
-        if self._assets is not None:
-            self._assets = None
+        if self._resources is not None:
+            self._resources = None
         if self._small is not None:
             self._small = None
 
@@ -108,17 +107,18 @@ class PerkMenuDebugView:
 
     def _perk_prompt_rect(self, label: str) -> Rect:
         hinge = self._perk_prompt_hinge()
-        if self._assets is not None and texture_loaded(self._assets.menu_item):
-            tex = self._assets.menu_item
-            bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
-            bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
-            local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
-            local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-            return Rect.from_top_left(
-                hinge.offset(dx=local_x, dy=local_y),
-                bar_w,
-                bar_h,
-            )
+        if self._resources is not None:
+            tex = self._resources.texture(TextureId.UI_MENU_ITEM)
+            if texture_loaded(tex):
+                bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
+                bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
+                local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
+                local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
+                return Rect.from_top_left(
+                    hinge.offset(dx=local_x, dy=local_y),
+                    bar_w,
+                    bar_h,
+                )
 
         text_w = float(_ui_text_width(self._small, label, 1.0))
         text_h = 20.0
@@ -129,7 +129,7 @@ class PerkMenuDebugView:
     def _draw_perk_prompt(self) -> None:
         if not self._show_prompt:
             return
-        if self._assets is None:
+        if self._resources is None:
             return
         label = self._prompt_label()
         if not label:
@@ -148,8 +148,8 @@ class PerkMenuDebugView:
         color = rl.Color(UI_TEXT_COLOR.r, UI_TEXT_COLOR.g, UI_TEXT_COLOR.b, int(255 * alpha))
         draw_ui_text(self._small, label, Vec2(x, y), scale=1.0, color=color)
 
-        if texture_loaded(self._assets.menu_item):
-            tex = self._assets.menu_item
+        tex = self._resources.texture(TextureId.UI_MENU_ITEM)
+        if texture_loaded(tex):
             bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
@@ -160,8 +160,8 @@ class PerkMenuDebugView:
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
 
-        if texture_loaded(self._assets.title_level_up):
-            tex = self._assets.title_level_up
+        tex = self._resources.texture(TextureId.UI_TEXT_LEVEL_UP)
+        if texture_loaded(tex):
             local_x = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_X * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_X
             local_y = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_Y * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_Y
             w = PERK_PROMPT_LEVEL_UP_BASE_W * PERK_PROMPT_LEVEL_UP_SCALE
@@ -244,7 +244,7 @@ class PerkMenuDebugView:
         pulse_delta = dt_ms * (6.0 if self._prompt_hover else -2.0)
         self._prompt_pulse = clamp(self._prompt_pulse + pulse_delta, 0.0, 1000.0)
 
-        if not self._show_menu or self._assets is None:
+        if not self._show_menu or self._resources is None:
             return
 
         choices = self._choices()
@@ -304,7 +304,7 @@ class PerkMenuDebugView:
         if self._show_prompt_rect and self._prompt_rect is not None:
             rl.draw_rectangle_lines_ex(self._prompt_rect.to_rl(), 1.0, rl.Color(255, 0, 255, 255))
 
-        if self._show_menu and self._assets is not None:
+        if self._show_menu and self._resources is not None:
             choices = self._choices()
             if choices:
                 screen_w = float(rl.get_screen_width())
@@ -322,20 +322,18 @@ class PerkMenuDebugView:
                     panel_slide_x=self._panel_slide_x,
                 )
 
-                if texture_loaded(self._assets.menu_panel):
-                    draw_classic_menu_panel(self._assets.menu_panel, dst=computed.panel.to_rl())
+                draw_classic_menu_panel(self._resources.texture(TextureId.UI_MENU_PANEL), dst=computed.panel.to_rl())
 
-                if texture_loaded(self._assets.title_pick_perk):
-                    tex = self._assets.title_pick_perk
-                    src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-                    rl.draw_texture_pro(
-                        tex,
-                        src,
-                        computed.title.to_rl(),
-                        rl.Vector2(0.0, 0.0),
-                        0.0,
-                        rl.WHITE,
-                    )
+                tex = self._resources.texture(TextureId.UI_TEXT_PICK_A_PERK)
+                src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
+                rl.draw_texture_pro(
+                    tex,
+                    src,
+                    computed.title.to_rl(),
+                    rl.Vector2(0.0, 0.0),
+                    0.0,
+                    rl.WHITE,
+                )
 
                 sponsor = None
                 if self._master_owned:
@@ -373,7 +371,7 @@ class PerkMenuDebugView:
                     self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide,
                 )
                 button_draw(
-                    self._assets,
+                    self._resources,
                     self._small,
                     self._cancel_button,
                     pos=computed.cancel_pos,
@@ -384,8 +382,8 @@ class PerkMenuDebugView:
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
-        if self._assets is not None:
-            cursor_draw(self._assets, mouse=rl.get_mouse_position(), scale=scale)
+        if self._resources is not None:
+            cursor_draw(self._resources, mouse=rl.get_mouse_position(), scale=scale)
 
         if self._debug_overlay:
             self._draw_overlay()

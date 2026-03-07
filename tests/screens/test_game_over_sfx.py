@@ -15,7 +15,7 @@ from crimson.screens.assets import MenuAssets
 from crimson.screens.high_scores_view import HighScoresView
 from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
 from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
-from crimson.ui.perk_menu import PerkMenuAssets
+from grim.assets import RuntimeResources, TextureId
 from grim.audio import AudioState
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
@@ -44,21 +44,22 @@ def _menu_assets_stub(*, tex: rl.Texture | None = None) -> MenuAssets:
 
 def _game_over_assets_stub() -> GameOverAssets:
     tex = _texture_stub()
+    resources = cast(
+        "RuntimeResources",
+        SimpleNamespace(
+            texture=lambda texture_id: {
+                TextureId.UI_MENU_PANEL: tex,
+                TextureId.UI_BUTTON_SM: tex,
+                TextureId.UI_BUTTON_MD: tex,
+                TextureId.UI_CURSOR: tex,
+                TextureId.PARTICLES: tex,
+            }[texture_id],
+        ),
+    )
     return GameOverAssets(
-        menu_panel=None,
+        resources=resources,
         text_reaper=None,
         text_well_done=None,
-        particles=None,
-        perk_menu_assets=PerkMenuAssets(
-            menu_panel=tex,
-            title_pick_perk=tex,
-            title_level_up=tex,
-            menu_item=tex,
-            button_sm=tex,
-            button_md=tex,
-            cursor=tex,
-            aim=tex,
-        ),
     )
 
 

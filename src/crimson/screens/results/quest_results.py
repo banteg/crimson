@@ -6,7 +6,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.assets import TextureId, runtime_resources_for
+from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -29,13 +29,11 @@ from ...ui.formatting import format_ordinal, format_time_mm_ss
 from ...ui.layout import menu_widescreen_y_shift, ui_scale
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
-    PerkMenuAssets,
     UiButtonState,
     button_draw,
     button_update,
     button_width,
     draw_ui_text,
-    load_perk_menu_assets,
 )
 from ...ui.text_input import flush_text_input_events, gameplay_controls_held, poll_text_input
 from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
@@ -88,11 +86,9 @@ COLOR_UI_ACCENT = rl.Color(149, 175, 198, 255)
 
 
 class QuestResultsAssets(msgspec.Struct):
-    menu_panel: rl.Texture | None
+    resources: RuntimeResources
     text_well_done: rl.Texture | None
-    particles: rl.Texture | None
     wicons: rl.Texture | None
-    perk_menu_assets: PerkMenuAssets
 
 
 class _QuestResultsPanelLayout(msgspec.Struct, frozen=True):
@@ -115,17 +111,13 @@ def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle
 
 
 def load_quest_results_assets(assets_root: Path) -> QuestResultsAssets:
-    perk_menu_assets = load_perk_menu_assets(assets_root)
     resources = runtime_resources_for(assets_root)
     text_well_done = resources.texture(TextureId.UI_TEXT_WELL_DONE)
-    particles = resources.texture(TextureId.PARTICLES)
     wicons = resources.texture(TextureId.UI_WICONS)
     return QuestResultsAssets(
-        menu_panel=perk_menu_assets.menu_panel,
+        resources=resources,
         text_well_done=text_well_done,
-        particles=particles,
         wicons=wicons,
-        perk_menu_assets=perk_menu_assets,
     )
 
 
@@ -651,14 +643,13 @@ class QuestResultsUi(msgspec.Struct):
         panel_layout = self._panel_layout(screen_w=screen_w, scale=scale)
         panel = panel_layout.panel
 
-        if self.assets.menu_panel is not None:
-            fx_detail = self.config.fx_detail(level=0, default=False)
-            draw_classic_menu_panel(
-                self.assets.menu_panel,
-                dst=panel.to_rl(),
-                tint=rl.WHITE,
-                shadow=fx_detail,
-            )
+        fx_detail = self.config.fx_detail(level=0, default=False)
+        draw_classic_menu_panel(
+            self.assets.resources.texture(TextureId.UI_MENU_PANEL),
+            dst=panel.to_rl(),
+            tint=rl.WHITE,
+            shadow=fx_detail,
+        )
 
         content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)
         banner_pos = content_pos + Vec2(QUEST_RESULTS_BANNER_X_FROM_CONTENT * scale, 36.0 * scale)
@@ -771,7 +762,7 @@ class QuestResultsUi(msgspec.Struct):
 
             ok_pos = input_pos + Vec2(170.0 * scale, -8.0 * scale)
             ok_w = button_width(self.font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
-            button_draw(self.assets.perk_menu_assets, self.font, self._ok_button, pos=ok_pos, width=ok_w, scale=scale)
+            button_draw(self.assets.resources, self.font, self._ok_button, pos=ok_pos, width=ok_w, scale=scale)
 
             # Native phase 1 still renders the quest score card while entering the name.
             score_card_pos = input_pos + Vec2(26.0 * scale, 46.0 * scale)
@@ -824,7 +815,7 @@ class QuestResultsUi(msgspec.Struct):
                 self.font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
             )
             button_draw(
-                self.assets.perk_menu_assets,
+                self.assets.resources,
                 self.font,
                 self._play_next_button,
                 pos=button_pos,
@@ -836,7 +827,7 @@ class QuestResultsUi(msgspec.Struct):
                 self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
             )
             button_draw(
-                self.assets.perk_menu_assets,
+                self.assets.resources,
                 self.font,
                 self._play_again_button,
                 pos=button_pos,
@@ -848,7 +839,7 @@ class QuestResultsUi(msgspec.Struct):
                 self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
             )
             button_draw(
-                self.assets.perk_menu_assets,
+                self.assets.resources,
                 self.font,
                 self._high_scores_button,
                 pos=button_pos,
@@ -860,7 +851,7 @@ class QuestResultsUi(msgspec.Struct):
                 self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
             )
             button_draw(
-                self.assets.perk_menu_assets,
+                self.assets.resources,
                 self.font,
                 self._main_menu_button,
                 pos=button_pos,
@@ -869,8 +860,8 @@ class QuestResultsUi(msgspec.Struct):
             )
 
         draw_menu_cursor(
-            self.assets.particles,
-            self.assets.perk_menu_assets.cursor,
+            self.assets.resources.texture(TextureId.PARTICLES),
+            self.assets.resources.texture(TextureId.UI_CURSOR),
             pos=Vec2.from_xy(mouse),
             pulse_time=float(self._cursor_pulse_time),
         )

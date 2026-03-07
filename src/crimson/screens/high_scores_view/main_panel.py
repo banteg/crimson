@@ -11,6 +11,7 @@ from ...game.types import HighScoresRequest
 from ...game_modes import GameMode
 from ...quests import quest_by_level
 from ...ui.perk_menu import button_draw, button_width
+from ..assets import _ensure_texture_cache
 from ..high_scores_layout import (
     HS_BACK_BUTTON_X,
     HS_BACK_BUTTON_Y,
@@ -172,29 +173,28 @@ def draw_main_panel(
             draw_small_text(font, name, Vec2(left_panel_top_left.x + 304.0 * scale, y), color)
             y += row_step
 
-    textures = view._button_textures
-    if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-        button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
-        w = button_width(font, view._update_button.label, scale=scale, force_wide=view._update_button.force_wide)
-        button_draw(textures, font, view._update_button, pos=button_base_pos, width=w, scale=scale)
-        w = button_width(font, view._play_button.label, scale=scale, force_wide=view._play_button.force_wide)
-        button_draw(
-            textures,
-            font,
-            view._play_button,
-            pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y * scale),
-            width=w,
-            scale=scale,
-        )
-        w = button_width(font, view._back_button.label, scale=scale, force_wide=view._back_button.force_wide)
-        button_draw(
-            textures,
-            font,
-            view._back_button,
-            pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),
-            width=w,
-            scale=scale,
-        )
+    resources = _ensure_texture_cache(view.state)
+    button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
+    w = button_width(font, view._update_button.label, scale=scale, force_wide=view._update_button.force_wide)
+    button_draw(resources, font, view._update_button, pos=button_base_pos, width=w, scale=scale)
+    w = button_width(font, view._play_button.label, scale=scale, force_wide=view._play_button.force_wide)
+    button_draw(
+        resources,
+        font,
+        view._play_button,
+        pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y * scale),
+        width=w,
+        scale=scale,
+    )
+    w = button_width(font, view._back_button.label, scale=scale, force_wide=view._back_button.force_wide)
+    button_draw(
+        resources,
+        font,
+        view._back_button,
+        pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),
+        width=w,
+        scale=scale,
+    )
 
     return selected_rank
 

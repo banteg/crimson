@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import msgspec
 
-from grim.assets import TextureId, runtime_resources_for
+from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.math import clamp
@@ -169,31 +167,6 @@ def perk_menu_panel_slide_x(t_ms: float, *, width: float) -> float:
     )
 
 
-class PerkMenuAssets(msgspec.Struct):
-    menu_panel: rl.Texture
-    title_pick_perk: rl.Texture
-    title_level_up: rl.Texture
-    menu_item: rl.Texture
-    button_sm: rl.Texture
-    button_md: rl.Texture
-    cursor: rl.Texture
-    aim: rl.Texture
-
-
-def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
-    resources = runtime_resources_for(assets_root)
-    return PerkMenuAssets(
-        menu_panel=resources.texture(TextureId.UI_MENU_PANEL),
-        title_pick_perk=resources.texture(TextureId.UI_TEXT_PICK_A_PERK),
-        title_level_up=resources.texture(TextureId.UI_TEXT_LEVEL_UP),
-        menu_item=resources.texture(TextureId.UI_MENU_ITEM),
-        button_sm=resources.texture(TextureId.UI_BUTTON_SM),
-        button_md=resources.texture(TextureId.UI_BUTTON_MD),
-        cursor=resources.texture(TextureId.UI_CURSOR),
-        aim=resources.texture(TextureId.UI_AIM),
-    )
-
-
 def texture_loaded(texture: rl.Texture | None) -> bool:
     return texture is not None and int(texture.width) > 0 and int(texture.height) > 0
 
@@ -286,11 +259,6 @@ def draw_menu_item(
     return width
 
 
-class UiButtonTextureSet(msgspec.Struct):
-    button_sm: rl.Texture | None
-    button_md: rl.Texture | None
-
-
 class UiButtonState(msgspec.Struct):
     label: str
     enabled: bool = True
@@ -300,6 +268,13 @@ class UiButtonState(msgspec.Struct):
     press_t: int = 0  # 0..1000
     alpha: float = 1.0
     force_wide: bool = False
+
+
+def _resolve_button_textures(resources: RuntimeResources) -> tuple[rl.Texture, rl.Texture]:
+    return (
+        resources.texture(TextureId.UI_BUTTON_SM),
+        resources.texture(TextureId.UI_BUTTON_MD),
+    )
 
 
 def button_width(font: SmallFontData | None, label: str, *, scale: float, force_wide: bool) -> float:
@@ -343,7 +318,7 @@ def button_update(
 
 
 def button_draw(
-    assets: PerkMenuAssets | UiButtonTextureSet,
+    resources: RuntimeResources,
     font: SmallFontData | None,
     state: UiButtonState,
     *,
@@ -351,10 +326,10 @@ def button_draw(
     width: float,
     scale: float,
 ) -> None:
-    texture = assets.button_md if width > 120.0 * scale else assets.button_sm
+    button_sm, button_md = _resolve_button_textures(resources)
+    texture = button_md if width > 120.0 * scale else button_sm
     if not texture_loaded(texture):
         return
-    assert texture is not None
 
     if state.hover_t > 0:
         # ui_button_update: highlight fill uses a hover-scaled alpha and click-biased blue tint.
@@ -397,11 +372,10 @@ def button_draw(
     draw_ui_text(font, state.label, text_pos, scale=scale, color=text_tint)
 
 
-def cursor_draw(assets: PerkMenuAssets, *, mouse: rl.Vector2, scale: float, alpha: float = 1.0) -> None:
-    tex = assets.cursor
+def cursor_draw(resources: RuntimeResources, *, mouse: rl.Vector2, scale: float, alpha: float = 1.0) -> None:
+    tex = resources.texture(TextureId.UI_CURSOR)
     if not texture_loaded(tex):
         return
-    assert tex is not None
     a = int(255 * clamp(alpha, 0.0, 1.0))
     tint = rl.Color(255, 255, 255, a)
     size = 32.0 * scale

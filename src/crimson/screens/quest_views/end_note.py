@@ -10,7 +10,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import _ensure_texture_cache
 from ..menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
@@ -47,7 +47,6 @@ class EndNoteView:
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
         self._panel_tex: rl.Texture | None = None
-        self._button_textures: UiButtonTextureSet | None = None
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
@@ -71,16 +70,12 @@ class EndNoteView:
 
         cache = _ensure_texture_cache(self.state)
         self._panel_tex = cache.texture(TextureId.UI_MENU_PANEL)
-        button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._small_font = None
 
     def close(self) -> None:
         self._ground = None
         self._small_font = None
         self._panel_tex = None
-        self._button_textures = None
         self._closing = False
         self._close_action = None
 
@@ -107,9 +102,6 @@ class EndNoteView:
             self._begin_close_transition("back_to_menu")
             return
 
-        textures = self._button_textures
-        if textures is None or (textures.button_sm is None and textures.button_md is None):
-            return
         if not enabled:
             return
 
@@ -262,24 +254,23 @@ class EndNoteView:
         body_pos = body_pos.offset(dy=END_NOTE_AFTER_BODY_Y_GAP * scale)
         draw_small_text(font, "Good luck with your battles, trooper!", body_pos, body_color)
 
-        textures = self._button_textures
-        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
-            survival_w = button_width(
-                font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide,
-            )
-            button_draw(textures, font, self._survival_button, pos=button_pos, width=survival_w, scale=scale)
-            button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
-            rush_w = button_width(font, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
-            button_draw(textures, font, self._rush_button, pos=button_pos, width=rush_w, scale=scale)
-            button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
-            typo_w = button_width(font, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
-            button_draw(textures, font, self._typo_button, pos=button_pos, width=typo_w, scale=scale)
-            button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
-            main_w = button_width(
-                font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
-            )
-            button_draw(textures, font, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
+        resources = _ensure_texture_cache(self.state)
+        button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
+        survival_w = button_width(
+            font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide,
+        )
+        button_draw(resources, font, self._survival_button, pos=button_pos, width=survival_w, scale=scale)
+        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
+        rush_w = button_width(font, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
+        button_draw(resources, font, self._rush_button, pos=button_pos, width=rush_w, scale=scale)
+        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
+        typo_w = button_width(font, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
+        button_draw(resources, font, self._typo_button, pos=button_pos, width=typo_w, scale=scale)
+        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
+        main_w = button_width(
+            font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
+        )
+        button_draw(resources, font, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
 
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 

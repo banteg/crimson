@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
@@ -9,7 +8,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..high_scores_layout import hs_left_panel_pos_x, hs_right_panel_pos_x
 from ..menu import (
@@ -47,7 +46,6 @@ class _DatabaseBaseView:
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
-        self._button_textures: UiButtonTextureSet | None = None
 
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
@@ -74,10 +72,6 @@ class _DatabaseBaseView:
         self._pending_action = None
         self._action = None
 
-        cache = _ensure_texture_cache(self.state)
-        button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._back_button = UiButtonState("Back", force_wide=False)
 
         if self.state.audio is not None:
@@ -88,7 +82,6 @@ class _DatabaseBaseView:
         self._is_open = False
         if self._small_font is not None:
             self._small_font = None
-        self._button_textures = None
         self._assets = None
         self._ground = None
         self._closing = False
@@ -191,9 +184,6 @@ class _DatabaseBaseView:
             self._begin_close_transition("back_to_previous")
             return
 
-        textures = self._button_textures
-        if textures is None or (textures.button_md is None and textures.button_sm is None):
-            return
         if not enabled:
             return
 
@@ -280,18 +270,16 @@ class _DatabaseBaseView:
         font = self._ensure_small_font()
         self._draw_contents(left_panel_top_left, right_panel_top_left, scale=scale, font=font)
 
-        textures = self._button_textures
-        if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
-            back_pos = self._back_button_pos()
-            back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
-            button_draw(
-                textures,
-                font,
-                self._back_button,
-                pos=left_panel_top_left + back_pos * scale,
-                width=back_w,
-                scale=scale,
-            )
+        back_pos = self._back_button_pos()
+        back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        button_draw(
+            _ensure_texture_cache(self.state),
+            font,
+            self._back_button,
+            pos=left_panel_top_left + back_pos * scale,
+            width=back_w,
+            scale=scale,
+        )
 
         self._draw_sign()
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)

@@ -37,7 +37,7 @@ from ..sim.session_builders import build_survival_session
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
-from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, PerkMenuAssets, load_perk_menu_assets
+from ..ui.perk_menu import PERK_MENU_TRANSITION_MS
 from ..weapon_runtime import weapon_assign_player
 from ..weapon_usage import normalize_weapon_usage_counts
 from ..weapons import WEAPON_BY_ID, WeaponId
@@ -91,7 +91,6 @@ class SurvivalMode(BaseGameplayMode):
             defer_pick_apply=True,
         )
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
-        self._perk_menu_assets: PerkMenuAssets | None = None
         self._cursor_time = 0.0
         self._replay_recorder: ReplayRecorder | None = None
         self._spawn_state = SurvivalSpawnState()
@@ -154,7 +153,7 @@ class SurvivalMode(BaseGameplayMode):
             gore_disabled=gore_disabled,
             fx_detail=fx_detail,
             font=self._small,
-            assets=self._perk_menu_assets,
+            resources=self.render_resources.resources,
             mouse=self._ui_mouse_pos(),
             play_sfx=self.audio_bridge.router.play_sfx,
         )
@@ -181,7 +180,6 @@ class SurvivalMode(BaseGameplayMode):
     def open(self) -> None:
         super().open()
 
-        self._perk_menu_assets = load_perk_menu_assets(self._assets_root)
         self._perk_menu.reset()
         self._cursor_time = 0.0
         self._cursor_pulse_time = 0.0
@@ -266,7 +264,6 @@ class SurvivalMode(BaseGameplayMode):
         self._replay_checkpoints_last_tick = None
 
     def close(self) -> None:
-        self._perk_menu_assets = None
         self._sim_session = None
         self._lan_last_tick_index = -1
         super().close()
@@ -387,7 +384,7 @@ class SurvivalMode(BaseGameplayMode):
                     label,
                     ui_text_width=self._ui_text_width,
                     ui_line_height=self._ui_line_height,
-                    assets=self._perk_menu_assets,
+                    resources=self.render_resources.resources,
                     scale=UI_TEXT_SCALE,
                 )
                 self._perk_prompt_hover = rect.contains(self._ui_mouse_pos())
@@ -529,7 +526,7 @@ class SurvivalMode(BaseGameplayMode):
                     label,
                     ui_text_width=self._ui_text_width,
                     ui_line_height=self._ui_line_height,
-                    assets=self._perk_menu_assets,
+                    resources=self.render_resources.resources,
                     scale=UI_TEXT_SCALE,
                 )
                 mouse = self._ui_mouse_pos()
@@ -635,7 +632,7 @@ class SurvivalMode(BaseGameplayMode):
             return
         PerkPromptUi.draw(
             font=self._small,
-            assets=self._perk_menu_assets,
+            resources=self.render_resources.resources,
             label=label,
             timer_ms=float(self._perk_prompt_timer_ms),
             pulse=float(self._perk_prompt_pulse),
@@ -645,13 +642,11 @@ class SurvivalMode(BaseGameplayMode):
         )
 
     def _draw_game_cursor(self) -> None:
-        assets = self._perk_menu_assets
-        assert assets is not None, "perk menu assets must be loaded before use"
         resources = self.render_resources.resources
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
             resources.texture(TextureId.PARTICLES),
-            assets.cursor,
+            resources.texture(TextureId.UI_CURSOR),
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )

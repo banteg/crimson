@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
+from typing import cast
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode
+import crimson.modes.quest_mode as quest_mode_module
 from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
@@ -12,14 +15,26 @@ from crimson.net.rollback_runtime import JoinRollbackRuntimeConfig, RollbackRunt
 from crimson.quests.level import QuestLevel
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
-from crimson.ui.perk_menu import PerkMenuAssets
+from grim.assets import RuntimeResources, TextureId, register_runtime_resources
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console, register_core_cvars
+from grim.fonts.small import SmallFontData
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 from tests.support.world_runtime import WorldRuntimeHost
+
+
+def _register_runtime_resources_stub(assets_dir: Path) -> None:
+    tex = cast("rl.Texture", SimpleNamespace(width=1, height=1, id=1))
+    register_runtime_resources(
+        RuntimeResources(
+            assets_dir=assets_dir,
+            textures={texture_id: tex for texture_id in TextureId},
+            small_font=cast(SmallFontData, SimpleNamespace(cell_size=10)),
+        ),
+    )
 
 
 def test_game_world_init_honors_config_player_count(tmp_path: Path) -> None:
@@ -59,14 +74,18 @@ def test_survival_mode_uses_config_player_count(tmp_path: Path) -> None:
 def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
+    _register_runtime_resources_stub(assets_dir)
 
     cfg = ensure_crimson_cfg(tmp_path)
     cfg.data["player_count"] = 3
     ctx = ViewContext(assets_dir=assets_dir)
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
+    mocker.patch.object(quest_mode_module, "load_grim_mono_font", return_value=SimpleNamespace())
+    mode.open()
+    mocker.patch.object(mode, "_sync_audio_and_ground", return_value=None)
     mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
     mode.start_run(QuestLevel(1, 1), status=None)
-    mode._perk_menu_assets = PerkMenuAssets(*(rl.Texture() for _ in range(8)))
+    mode.render_resources.ground = None
 
     step_tick_calls: list[list[PlayerInput]] = []
     original_step_tick = DeterministicSession.step_tick

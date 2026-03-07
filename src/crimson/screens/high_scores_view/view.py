@@ -13,7 +13,7 @@ from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_update, button_width
 from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..high_scores_layout import (
     HS_BACK_BUTTON_X,
@@ -89,8 +89,6 @@ class HighScoresView:
         self._closing = False
         self._close_action: str | None = None
         self._small_font: SmallFontData | None = None
-        self._button_tex: rl.Texture | None = None
-        self._button_textures: UiButtonTextureSet | None = None
         self._check_on: rl.Texture | None = None
         self._check_off: rl.Texture | None = None
         self._drop_on: rl.Texture | None = None
@@ -127,7 +125,6 @@ class HighScoresView:
         self._close_action = None
         self._small_font = None
         self._scroll_index = 0
-        self._button_textures = None
         self._dirty = False
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
@@ -139,9 +136,6 @@ class HighScoresView:
         self._score_list_open = False
 
         cache = _ensure_texture_cache(self.state)
-        self._button_tex = cache.texture(TextureId.UI_BUTTON_MD)
-        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
         self._check_on = cache.texture(TextureId.UI_CHECK_ON)
         self._check_off = cache.texture(TextureId.UI_CHECK_OFF)
         self._drop_on = cache.texture(TextureId.UI_DROP_ON)
@@ -166,8 +160,6 @@ class HighScoresView:
         self._clock_table_tex = None
         self._clock_pointer_tex = None
         self._assets = None
-        self._button_tex = None
-        self._button_textures = None
         self._check_on = None
         self._check_off = None
         self._drop_on = None
@@ -252,8 +244,7 @@ class HighScoresView:
             if self._update_quest_arrows(left_panel_top_left=left_panel_top_left, scale=scale):
                 return
 
-        textures = self._button_textures
-        if enabled and textures is not None and (textures.button_sm is not None or textures.button_md is not None):
+        if enabled:
             button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)

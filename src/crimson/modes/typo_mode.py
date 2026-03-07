@@ -22,7 +22,6 @@ from ..typo.state import typo_shot_counts
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
-from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..weapon_usage import normalize_weapon_usage_counts
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
@@ -52,8 +51,6 @@ class TypoShooterMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-
-        self._ui_assets: PerkMenuAssets | None = None
         self._sim_session: DeterministicSession | None = self._new_sim_session()
 
     def _new_sim_session(self) -> DeterministicSession:
@@ -71,7 +68,6 @@ class TypoShooterMode(BaseGameplayMode):
 
     def open(self) -> None:
         super().open()
-        self._ui_assets = load_perk_menu_assets(self._assets_root)
         dictionary_path = self._base_dir / "typo_dictionary.txt"
         dictionary_words: tuple[str, ...] = ()
         if dictionary_path.is_file():
@@ -120,7 +116,6 @@ class TypoShooterMode(BaseGameplayMode):
         self._replay_checkpoints_last_tick = None
 
     def close(self) -> None:
-        self._ui_assets = None
         self._sim_session = None
         super().close()
 
@@ -259,13 +254,11 @@ class TypoShooterMode(BaseGameplayMode):
         # trooper death animation can play before the UI slides in.
 
     def _draw_game_cursor(self) -> None:
-        assets = self._ui_assets
-        assert assets is not None, "perk menu assets must be loaded before use"
         resources = self.render_resources.resources
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
             resources.texture(TextureId.PARTICLES),
-            assets.cursor,
+            resources.texture(TextureId.UI_CURSOR),
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )

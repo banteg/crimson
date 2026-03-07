@@ -26,7 +26,6 @@ from ..sim.session_builders import build_rush_session, enforce_rush_loadout
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, RushSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
-from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..weapon_usage import normalize_weapon_usage_counts
 from .base_gameplay_mode import (
     BaseGameplayMode,
@@ -64,7 +63,6 @@ class RushMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._ui_assets: PerkMenuAssets | None = None
         self._replay_recorder: ReplayRecorder | None = None
         self._spawn_state = RushSpawnState()
         self._sim_session: DeterministicSession | None = self._new_sim_session()
@@ -87,7 +85,6 @@ class RushMode(BaseGameplayMode):
 
     def open(self) -> None:
         super().open()
-        self._ui_assets = load_perk_menu_assets(self._assets_root)
         self._reset_gameplay_frame_clock()
         self._reset_lan_capture_clock()
 
@@ -166,7 +163,6 @@ class RushMode(BaseGameplayMode):
         self._replay_checkpoints_last_tick = None
 
     def close(self) -> None:
-        self._ui_assets = None
         self._sim_session = None
         super().close()
 
@@ -319,13 +315,11 @@ class RushMode(BaseGameplayMode):
         )
 
     def _draw_game_cursor(self) -> None:
-        assets = self._ui_assets
-        assert assets is not None, "perk menu assets must be loaded before use"
         resources = self.render_resources.resources
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
             resources.texture(TextureId.PARTICLES),
-            assets.cursor,
+            resources.texture(TextureId.UI_CURSOR),
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )

@@ -10,7 +10,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import _ensure_texture_cache
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
@@ -52,8 +52,6 @@ class OptionsMenuView(PanelMenuView):
         self._rect_off: rl.Texture | None = None
         self._check_on: rl.Texture | None = None
         self._check_off: rl.Texture | None = None
-        self._button_tex: rl.Texture | None = None
-        self._button_textures: UiButtonTextureSet | None = None
         self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
         self._slider_sfx = SliderState(10, 0, 10)
         self._slider_music = SliderState(10, 0, 10)
@@ -70,9 +68,6 @@ class OptionsMenuView(PanelMenuView):
         self._rect_off = cache.texture(TextureId.UI_RECT_OFF)
         self._check_on = cache.texture(TextureId.UI_CHECK_ON)
         self._check_off = cache.texture(TextureId.UI_CHECK_OFF)
-        self._button_tex = cache.texture(TextureId.UI_BUTTON_MD)
-        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
         self._controls_button = UiButtonState("Controls", force_wide=True)
         self._active_slider = None
         self._dirty = False
@@ -132,28 +127,26 @@ class OptionsMenuView(PanelMenuView):
             config.ui_info_texts = self._ui_info_texts
             self._dirty = True
 
-        textures = self._button_textures
-        if textures is not None and textures.button_md is not None:
-            # `sub_4475d0`: controls button is aligned with the panel content base.
-            controls_pos = base_pos.offset(dy=155.0 * scale)
-            dt_ms = min(float(dt), 0.1) * 1000.0
-            mouse = rl.get_mouse_position()
-            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            width = button_width(
-                self._ensure_small_font(),
-                self._controls_button.label,
-                scale=scale,
-                force_wide=self._controls_button.force_wide,
-            )
-            if button_update(
-                self._controls_button,
-                pos=controls_pos,
-                width=width,
-                dt_ms=dt_ms,
-                mouse=mouse,
-                click=click,
-            ):
-                self._begin_close_transition("open_controls")
+        # `sub_4475d0`: controls button is aligned with the panel content base.
+        controls_pos = base_pos.offset(dy=155.0 * scale)
+        dt_ms = min(float(dt), 0.1) * 1000.0
+        mouse = rl.get_mouse_position()
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        width = button_width(
+            self._ensure_small_font(),
+            self._controls_button.label,
+            scale=scale,
+            force_wide=self._controls_button.force_wide,
+        )
+        if button_update(
+            self._controls_button,
+            pos=controls_pos,
+            width=width,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
+        ):
+            self._begin_close_transition("open_controls")
 
     def draw(self) -> None:
         self._assert_open()
@@ -406,21 +399,18 @@ class OptionsMenuView(PanelMenuView):
             )
             draw_small_text(font, "UI Info texts", check_pos + Vec2(check_w + 6.0 * scale, 1.0 * scale), text_color)
 
-        button = self._button_tex
-        textures = self._button_textures
-        if button is not None and textures is not None:
-            button_pos = base_pos.offset(dy=155.0 * scale)
-            button_w = button_width(
-                font, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide,
-            )
-            button_draw(
-                textures,
-                font,
-                self._controls_button,
-                pos=button_pos,
-                width=button_w,
-                scale=scale,
-            )
+        button_pos = base_pos.offset(dy=155.0 * scale)
+        button_w = button_width(
+            font, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide,
+        )
+        button_draw(
+            _ensure_texture_cache(self.state),
+            font,
+            self._controls_button,
+            pos=button_pos,
+            width=button_w,
+            scale=scale,
+        )
 
     def _draw_slider(
         self,

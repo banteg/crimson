@@ -15,7 +15,7 @@ from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..menu import (
     MENU_PANEL_OFFSET_Y,
@@ -87,9 +87,6 @@ class QuestsMenuView:
         self._stage_icons: dict[int, rl.Texture | None] = {}
         self._check_on: rl.Texture | None = None
         self._check_off: rl.Texture | None = None
-        self._button_sm: rl.Texture | None = None
-        self._button_md: rl.Texture | None = None
-        self._button_textures: UiButtonTextureSet | None = None
         self._back_button = UiButtonState("Back")
 
         self._menu_screen_width = 0
@@ -125,10 +122,6 @@ class QuestsMenuView:
         }
         self._check_on = cache.texture(TextureId.UI_CHECK_ON)
         self._check_off = cache.texture(TextureId.UI_CHECK_OFF)
-        self._button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        self._button_textures = UiButtonTextureSet(button_sm=self._button_sm, button_md=self._button_md)
-
         self._action = None
         self._dirty = False
         self._stage = max(1, min(5, int(self._stage)))
@@ -156,7 +149,6 @@ class QuestsMenuView:
                 self.state.console.log.log(f"failed to save quest menu config: {exc}")
             self._dirty = False
         self._ground = None
-        self._button_textures = None
 
     def update(self, dt: float) -> None:
         self._assert_open()
@@ -225,27 +217,25 @@ class QuestsMenuView:
         if self._hardcore_checkbox_clicked(layout):
             return
 
-        textures = self._button_textures
-        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            back_pos = Vec2(layout.list_pos.x, self._rows_y0(layout)) + Vec2(
-                QUEST_BACK_BUTTON_X_OFFSET,
-                QUEST_BACK_BUTTON_Y_OFFSET,
-            )
-            dt_ms = min(float(dt), 0.1) * 1000.0
-            font = self._ensure_small_font()
-            back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
-            mouse = rl.get_mouse_position()
-            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            if button_update(
-                self._back_button,
-                pos=back_pos,
-                width=float(back_w),
-                dt_ms=float(dt_ms),
-                mouse=mouse,
-                click=bool(click),
-            ):
-                self._begin_close_transition("open_play_game")
-                return
+        back_pos = Vec2(layout.list_pos.x, self._rows_y0(layout)) + Vec2(
+            QUEST_BACK_BUTTON_X_OFFSET,
+            QUEST_BACK_BUTTON_Y_OFFSET,
+        )
+        dt_ms = min(float(dt), 0.1) * 1000.0
+        font = self._ensure_small_font()
+        back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
+        mouse = rl.get_mouse_position()
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        if button_update(
+            self._back_button,
+            pos=back_pos,
+            width=float(back_w),
+            dt_ms=float(dt_ms),
+            mouse=mouse,
+            click=bool(click),
+        ):
+            self._begin_close_transition("open_play_game")
+            return
 
         # Quick-select row numbers 1..0 (10).
         row_from_key = self._digit_row_pressed()
@@ -598,18 +588,16 @@ class QuestsMenuView:
             draw_small_text(font, "(completed/games)", Vec2(header_x, header_y), base_color)
 
         # Back button.
-        textures = self._button_textures
-        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            back_pos = Vec2(list_pos.x, y0) + Vec2(QUEST_BACK_BUTTON_X_OFFSET, QUEST_BACK_BUTTON_Y_OFFSET)
-            back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
-            button_draw(
-                textures,
-                font,
-                self._back_button,
-                pos=back_pos,
-                width=float(back_w),
-                scale=1.0,
-            )
+        back_pos = Vec2(list_pos.x, y0) + Vec2(QUEST_BACK_BUTTON_X_OFFSET, QUEST_BACK_BUTTON_Y_OFFSET)
+        back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
+        button_draw(
+            _ensure_texture_cache(self.state),
+            font,
+            self._back_button,
+            pos=back_pos,
+            width=float(back_w),
+            scale=1.0,
+        )
 
     def _draw_sign(self) -> None:
         assets = self._assets
