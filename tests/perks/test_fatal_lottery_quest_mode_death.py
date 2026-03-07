@@ -5,19 +5,25 @@ from pathlib import Path
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.quest_mode as quest_mode_module
 from crimson.modes.quest_mode import QuestMode
+from crimson.quests.level import QuestLevel
+from crimson.ui.perk_menu import PerkMenuAssets
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
 
-def _make_quest_mode() -> QuestMode:
+def _make_quest_mode(mocker) -> QuestMode:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
-    return QuestMode(ctx, audio_rng=Crand(0xBEEF))
+    mode = QuestMode(ctx, audio_rng=Crand(0xBEEF))
+    mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
+    mode.start_run(QuestLevel(1, 1), status=None)
+    mode._perk_menu_assets = PerkMenuAssets(*(rl.Texture() for _ in range(8)))
+    return mode
 
 
 def test_quest_mode_closes_run_when_player_dies_during_perk_menu_transition(monkeypatch, mocker) -> None:
-    mode = _make_quest_mode()
+    mode = _make_quest_mode(mocker)
 
     # Simulate Fatal Lottery killing the player while the perk menu is closing.
     # Quest mode should still produce a failure outcome after the native death-timer

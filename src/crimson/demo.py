@@ -27,6 +27,7 @@ from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button
 from .weapon_runtime import weapon_assign_player
 from .weapons import WeaponId, weapon_display_name
 from .world import WorldRuntime
+from .world.standalone_tick_harness import StandaloneTickHarness
 
 WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 6
@@ -100,10 +101,11 @@ class DemoView:
         self._purchase_active = False
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
-        self._runtime.init_standalone_tick_harness(
+        self._tick_harness = StandaloneTickHarness(
             game_mode=GameMode.DEMO,
             build_inputs=self._build_runner_inputs,
         )
+        self._seed_from_app_state = True
 
     def _open_world_runtime(self) -> None:
         self._runtime.open_runtime()
@@ -126,13 +128,21 @@ class DemoView:
             terrain_slots=terrain.terrain_slots,
             seed=int(terrain.terrain_seed),
         )
-        self._sync_live_rng_state()
+        self._sync_audio_rng_from_runtime()
 
-    def _sync_live_rng_state(self) -> None:
+    def _sync_audio_rng_from_runtime(self) -> None:
         live_rng = self._runtime.sim_world.state.rng
         self._runtime.audio_rng = live_rng
         self._runtime.sync_audio_bridge_state()
-        self.state.rng.srand(int(live_rng.state))
+
+    def _commit_live_rng_state_to_app(self) -> None:
+        self.state.rng.srand(int(self._runtime.sim_world.state.rng.state))
+
+    def _next_demo_reset_seed(self) -> int:
+        if self._seed_from_app_state:
+            self._seed_from_app_state = False
+            return int(self.state.rng.state)
+        return int(self._runtime.sim_world.state.rng.state)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self._runtime.render_resources.bake_fx_queues()
@@ -159,10 +169,13 @@ class DemoView:
     def close(self) -> None:
         self._finished = True
         self._purchase_active = False
-        self._runtime.reset_standalone_tick_harness()
+        if not self._seed_from_app_state:
+            self._commit_live_rng_state_to_app()
+        self._tick_harness.reset()
         self._close_world_runtime()
         self._upsell_font = None
         self._small_font = None
+        self._seed_from_app_state = True
 
     def is_finished(self) -> bool:
         return self._finished
@@ -200,7 +213,7 @@ class DemoView:
 
         self._quest_spawn_timeline_ms += frame_dt_ms
         self._update_world(frame_dt)
-        self._sync_live_rng_state()
+        self._sync_audio_rng_from_runtime()
         if self._quest_spawn_timeline_ms > self._demo_time_limit_ms:
             self._demo_mode_start()
 
@@ -441,9 +454,9 @@ class DemoView:
         self._demo_time_limit_ms = 0
         self._purchase_active = False
         player_count = 2 if index in (0, 1, 4) else 1
-        self._runtime.reset(seed=int(self.state.rng.state), player_count=player_count)
-        self._runtime.reset_standalone_tick_harness()
-        self._sync_live_rng_state()
+        self._runtime.reset(seed=self._next_demo_reset_seed(), player_count=player_count)
+        self._tick_harness.reset()
+        self._sync_audio_rng_from_runtime()
         self._runtime.sim_world.state.bonuses.weapon_power_up = 0.0
         if index == 0:
             self._setup_variant_0()
@@ -463,7 +476,7 @@ class DemoView:
         # timeline resets (quest_spawn_timeline == 0) and the purchase screen is inactive.
         if (not self._purchase_active) and _DEMO_UPSELL_MESSAGES:
             self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
-        self._sync_live_rng_state()
+        self._sync_audio_rng_from_runtime()
 
     def _setup_world_players(self, specs: list[tuple[Vec2, int]]) -> None:
         for idx, (pos, weapon_id) in enumerate(specs):
@@ -639,7 +652,7 @@ class DemoView:
     def _update_world(self, dt: float) -> None:
         if not self._runtime.sim_world.players:
             return
-        self._runtime.advance_standalone_tick_frame(float(dt))
+        self._tick_harness.advance_frame(self._runtime, float(dt))
 
     def _build_demo_inputs(self, dt: float) -> list[PlayerInput]:
         players = self._runtime.sim_world.players

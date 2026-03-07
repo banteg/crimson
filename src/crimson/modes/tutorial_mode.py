@@ -16,7 +16,7 @@ from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..sim.bootstrap import run_unlock_terrain_prelude
 from ..sim.input import PlayerInput
-from ..sim.session_builders import DeterministicSessionFactory, build_tutorial_session
+from ..sim.session_builders import build_tutorial_session
 from ..sim.sessions import DeterministicSession
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -52,7 +52,6 @@ class TutorialMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: Crand,
-        session_factory: DeterministicSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -73,10 +72,15 @@ class TutorialMode(BaseGameplayMode):
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
-        self._session_factory = session_factory
         self._sim_session: DeterministicSession | None = None
         self._replay_recorder: ReplayRecorder | None = None
         self._frame_input_state: PlayerInput | None = None
+
+    @property
+    def ui_assets(self) -> PerkMenuAssets:
+        assets = self._ui_assets
+        assert assets is not None, "perk menu assets must be loaded before use"
+        return assets
 
     def _new_sim_session(self) -> DeterministicSession:
         return build_tutorial_session(
@@ -89,7 +93,6 @@ class TutorialMode(BaseGameplayMode):
             gore_disabled=int(self._deterministic_gore_disabled()),
             game_tune_started=bool(self.sim_world.game_tune_started),
             demo_mode_active=bool(self.demo_mode_active),
-            session_factory=self._session_factory,
         )
 
     def open(self) -> None:
@@ -189,7 +192,7 @@ class TutorialMode(BaseGameplayMode):
             gore_disabled=gore_disabled,
             fx_detail=fx_detail,
             font=self._small,
-            assets=self._ui_assets,
+            assets=self.ui_assets,
             mouse=self._ui_mouse_pos(),
             play_sfx=None,
         )
@@ -248,9 +251,6 @@ class TutorialMode(BaseGameplayMode):
         self.close_requested = True
 
     def _update_prompt_buttons(self, *, dt_ms: float, mouse: rl.Vector2, click: bool) -> None:
-        if self._ui_assets is None:
-            return
-
         tutorial = self.state.tutorial
         overlay = self.state.tutorial_overlay
         stage = int(tutorial.stage_index)
@@ -400,9 +400,6 @@ class TutorialMode(BaseGameplayMode):
             measure_line_height=self._ui_line_height,
         )
 
-        if self._ui_assets is None:
-            return
-
         stage = int(self.state.tutorial.stage_index)
         if stage == 8:
             rect, _lines, _line_h = tutorial_prompt_panel_rect(
@@ -417,7 +414,7 @@ class TutorialMode(BaseGameplayMode):
             play_w = button_width(self._small, self._play_button.label, scale=1.0, force_wide=True)
             repeat_w = button_width(self._small, self._repeat_button.label, scale=1.0, force_wide=True)
             button_draw(
-                self._ui_assets,
+                self.ui_assets,
                 self._small,
                 self._play_button,
                 pos=button_base_pos,
@@ -425,7 +422,7 @@ class TutorialMode(BaseGameplayMode):
                 scale=1.0,
             )
             button_draw(
-                self._ui_assets,
+                self.ui_assets,
                 self._small,
                 self._repeat_button,
                 pos=button_base_pos.offset(dx=play_w + gap),
@@ -437,7 +434,7 @@ class TutorialMode(BaseGameplayMode):
         if self._skip_button.alpha > 1e-3:
             y = float(rl.get_screen_height()) - 50.0
             w = button_width(self._small, self._skip_button.label, scale=1.0, force_wide=True)
-            button_draw(self._ui_assets, self._small, self._skip_button, pos=Vec2(10.0, y), width=w, scale=1.0)
+            button_draw(self.ui_assets, self._small, self._skip_button, pos=Vec2(10.0, y), width=w, scale=1.0)
 
         if self._paused:
             x = 18.0
@@ -445,15 +442,11 @@ class TutorialMode(BaseGameplayMode):
             self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
 
     def _draw_menu_cursor(self) -> None:
-        assets = self._ui_assets
-        if assets is None:
-            return
         resources = self.render_resources.resources
-        cursor_tex = assets.cursor
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
             resources.texture(TextureId.PARTICLES),
-            cursor_tex,
+            self.ui_assets.cursor,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )

@@ -11,7 +11,9 @@ from crimson.modes.quest_mode import QuestMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
+from crimson.quests.level import QuestLevel
 from crimson.screens.results.game_over import GameOverUi
+from crimson.ui.perk_menu import PerkMenuAssets
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
@@ -31,6 +33,12 @@ def _is_dead(mode: SurvivalMode | QuestMode) -> bool:
 def test_grim_deal_kills_player_during_perk_menu_transition(mocker, mode_cls: type[SurvivalMode] | type[QuestMode]) -> None:
     ctx = ViewContext(assets_dir=_assets_dir())
     mode = mode_cls(ctx, audio_rng=Crand(0xBEEF))
+    if isinstance(mode, QuestMode):
+        mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
+        mode.start_run(QuestLevel(1, 1), status=None)
+        mode._perk_menu_assets = PerkMenuAssets(*(rl.Texture() for _ in range(8)))
+    else:
+        mode._perk_menu_assets = PerkMenuAssets(*(rl.Texture() for _ in range(8)))
     mocker.patch.object(GameOverUi, "open", return_value=None)
 
     assert mode.player.health > 0.0

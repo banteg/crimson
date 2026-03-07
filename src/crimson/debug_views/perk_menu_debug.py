@@ -23,6 +23,7 @@ from ..ui.perk_menu import (
     load_perk_menu_assets,
     menu_item_hit_rect,
     perk_menu_compute_layout,
+    texture_loaded,
 )
 from .registry import register_view
 
@@ -107,7 +108,7 @@ class PerkMenuDebugView:
 
     def _perk_prompt_rect(self, label: str) -> Rect:
         hinge = self._perk_prompt_hinge()
-        if self._assets is not None and self._assets.menu_item is not None:
+        if self._assets is not None and texture_loaded(self._assets.menu_item):
             tex = self._assets.menu_item
             bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
@@ -147,7 +148,7 @@ class PerkMenuDebugView:
         color = rl.Color(UI_TEXT_COLOR.r, UI_TEXT_COLOR.g, UI_TEXT_COLOR.b, int(255 * alpha))
         draw_ui_text(self._small, label, Vec2(x, y), scale=1.0, color=color)
 
-        if self._assets.menu_item is not None:
+        if texture_loaded(self._assets.menu_item):
             tex = self._assets.menu_item
             bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
@@ -159,7 +160,7 @@ class PerkMenuDebugView:
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
 
-        if self._assets.title_level_up is not None:
+        if texture_loaded(self._assets.title_level_up):
             tex = self._assets.title_level_up
             local_x = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_X * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_X
             local_y = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_Y * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_Y
@@ -321,10 +322,10 @@ class PerkMenuDebugView:
                     panel_slide_x=self._panel_slide_x,
                 )
 
-                if self._assets.menu_panel is not None:
+                if texture_loaded(self._assets.menu_panel):
                     draw_classic_menu_panel(self._assets.menu_panel, dst=computed.panel.to_rl())
 
-                if self._assets.title_pick_perk is not None:
+                if texture_loaded(self._assets.title_pick_perk):
                     tex = self._assets.title_pick_perk
                     src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
                     rl.draw_texture_pro(

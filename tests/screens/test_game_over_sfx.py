@@ -43,20 +43,21 @@ def _menu_assets_stub(*, tex: rl.Texture | None = None) -> MenuAssets:
 
 
 def _game_over_assets_stub() -> GameOverAssets:
+    tex = _texture_stub()
     return GameOverAssets(
         menu_panel=None,
         text_reaper=None,
         text_well_done=None,
         particles=None,
         perk_menu_assets=PerkMenuAssets(
-            menu_panel=None,
-            title_pick_perk=None,
-            title_level_up=None,
-            menu_item=None,
-            button_sm=None,
-            button_md=None,
-            cursor=None,
-            aim=None,
+            menu_panel=tex,
+            title_pick_perk=tex,
+            title_level_up=tex,
+            menu_item=tex,
+            button_sm=tex,
+            button_md=tex,
+            cursor=tex,
+            aim=tex,
         ),
     )
 

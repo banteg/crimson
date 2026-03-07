@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import Literal
 
 import msgspec
 
-from grim.assets import TextureId, runtime_resources_for
+from grim.assets import TextureId
 from grim.audio import AudioState, play_music
 from grim.config import (
     CrimsonConfig,
@@ -77,8 +76,6 @@ UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 
-QuestSessionFactory = Callable[..., DeterministicSession]
-
 
 class QuestRunOutcome(msgspec.Struct, frozen=True):
     kind: str  # "completed" | "failed"
@@ -104,7 +101,6 @@ class QuestMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: Crand,
-        session_factory: QuestSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -124,8 +120,6 @@ class QuestMode(BaseGameplayMode):
         self._outcome: QuestRunOutcome | None = None
         self._perk_menu_assets: PerkMenuAssets | None = None
         self._grim_mono: GrimMonoFont | None = None
-        self._quest_complete_texture: rl.Texture | None = None
-
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
@@ -134,10 +128,15 @@ class QuestMode(BaseGameplayMode):
             on_pick=self._record_perk_pick,
             defer_pick_apply=True,
         )
-        self._session_factory = session_factory
         self._quest_spawn_state = QuestSpawnState()
         self._sim_session: DeterministicSession | None = None
         self._replay_recorder: ReplayRecorder | None = None
+
+    @property
+    def perk_menu_assets(self) -> PerkMenuAssets:
+        assets = self._perk_menu_assets
+        assert assets is not None, "perk menu assets must be loaded before use"
+        return assets
 
     def open(self) -> None:
         super().open()
@@ -146,7 +145,6 @@ class QuestMode(BaseGameplayMode):
         self._quest_total_spawn_count = 0
         self._outcome = None
         self._perk_menu_assets = load_perk_menu_assets(self._assets_root)
-        self._quest_complete_texture = self._load_quest_complete_texture()
         self._grim_mono = load_grim_mono_font(self._assets_root)
 
         self._perk_prompt_timer_ms = 0.0
@@ -162,13 +160,9 @@ class QuestMode(BaseGameplayMode):
 
     def close(self) -> None:
         self._grim_mono = None
-        self._quest_complete_texture = None
         self._perk_menu_assets = None
         self._sim_session = None
         super().close()
-
-    def _load_quest_complete_texture(self) -> rl.Texture | None:
-        return runtime_resources_for(self._assets_root).texture(TextureId.UI_TEXT_LEVEL_COMPLETE)
 
     def _new_sim_session(self, *, spawn_entries: tuple[SpawnEntry, ...]) -> DeterministicSession:
         quest_def = self._quest_def
@@ -188,7 +182,6 @@ class QuestMode(BaseGameplayMode):
             spawn_entries=tuple(spawn_entries),
             quest_level=(None if quest_def is None else quest_def.level),
             start_weapon_id=(None if quest_def is None else quest_def.start_weapon_id),
-            session_factory=self._session_factory,
         )
         self._quest_spawn_state = quest_spawn_state
         return session
@@ -372,7 +365,7 @@ class QuestMode(BaseGameplayMode):
             gore_disabled=gore_disabled,
             fx_detail=fx_detail,
             font=self._small,
-            assets=self._perk_menu_assets,
+            assets=self.perk_menu_assets,
             mouse=self._ui_mouse_pos(),
             play_sfx=self.audio_bridge.router.play_sfx,
         )
@@ -593,7 +586,7 @@ class QuestMode(BaseGameplayMode):
             return
         PerkPromptUi.draw(
             font=self._small,
-            assets=self._perk_menu_assets,
+            assets=self.perk_menu_assets,
             label=label,
             timer_ms=float(self._perk_prompt_timer_ms),
             pulse=float(self._perk_prompt_pulse),
@@ -629,7 +622,7 @@ class QuestMode(BaseGameplayMode):
                     label,
                     ui_text_width=self._ui_text_width,
                     ui_line_height=self._ui_line_height,
-                    assets=self._perk_menu_assets,
+                    assets=self.perk_menu_assets,
                     scale=UI_TEXT_SCALE,
                 )
                 self._perk_prompt_hover = rect.contains(self._ui_mouse_pos())
@@ -793,13 +786,11 @@ class QuestMode(BaseGameplayMode):
         self._draw_lan_wait_overlay()
 
     def _draw_game_cursor(self) -> None:
-        assets = self._perk_menu_assets
-        cursor_tex = assets.cursor if assets is not None else None
         resources = self.render_resources.resources
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
             resources.texture(TextureId.PARTICLES),
-            cursor_tex,
+            self.perk_menu_assets.cursor,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )
@@ -817,9 +808,7 @@ class QuestMode(BaseGameplayMode):
         )
 
     def _draw_quest_complete_banner(self) -> None:
-        tex = self._quest_complete_texture
-        if tex is None:
-            return
+        tex = self.render_resources.resources.texture(TextureId.UI_TEXT_LEVEL_COMPLETE)
         draw_quest_complete_banner_overlay(
             tex,
             timer_ms=float(self._quest_spawn_state.completion_transition_ms),

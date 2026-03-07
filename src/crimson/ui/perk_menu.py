@@ -170,14 +170,14 @@ def perk_menu_panel_slide_x(t_ms: float, *, width: float) -> float:
 
 
 class PerkMenuAssets(msgspec.Struct):
-    menu_panel: rl.Texture | None
-    title_pick_perk: rl.Texture | None
-    title_level_up: rl.Texture | None
-    menu_item: rl.Texture | None
-    button_sm: rl.Texture | None
-    button_md: rl.Texture | None
-    cursor: rl.Texture | None
-    aim: rl.Texture | None
+    menu_panel: rl.Texture
+    title_pick_perk: rl.Texture
+    title_level_up: rl.Texture
+    menu_item: rl.Texture
+    button_sm: rl.Texture
+    button_md: rl.Texture
+    cursor: rl.Texture
+    aim: rl.Texture
 
 
 def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
@@ -192,6 +192,10 @@ def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
         cursor=resources.texture(TextureId.UI_CURSOR),
         aim=resources.texture(TextureId.UI_AIM),
     )
+
+
+def texture_loaded(texture: rl.Texture | None) -> bool:
+    return texture is not None and int(texture.width) > 0 and int(texture.height) > 0
 
 
 def _ui_text_width(font: SmallFontData | None, text: str, scale: float) -> float:
@@ -348,8 +352,9 @@ def button_draw(
     scale: float,
 ) -> None:
     texture = assets.button_md if width > 120.0 * scale else assets.button_sm
-    if texture is None:
+    if not texture_loaded(texture):
         return
+    assert texture is not None
 
     if state.hover_t > 0:
         # ui_button_update: highlight fill uses a hover-scaled alpha and click-biased blue tint.
@@ -394,8 +399,9 @@ def button_draw(
 
 def cursor_draw(assets: PerkMenuAssets, *, mouse: rl.Vector2, scale: float, alpha: float = 1.0) -> None:
     tex = assets.cursor
-    if tex is None:
+    if not texture_loaded(tex):
         return
+    assert tex is not None
     a = int(255 * clamp(alpha, 0.0, 1.0))
     tint = rl.Color(255, 255, 255, a)
     size = 32.0 * scale

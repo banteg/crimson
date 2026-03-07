@@ -12,6 +12,7 @@ from crimson.net.rollback_runtime import JoinRollbackRuntimeConfig, RollbackRunt
 from crimson.quests.level import QuestLevel
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
+from crimson.ui.perk_menu import PerkMenuAssets
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console, register_core_cvars
 from grim.geom import Vec2
@@ -65,6 +66,7 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
     mode.start_run(QuestLevel(1, 1), status=None)
+    mode._perk_menu_assets = PerkMenuAssets(*(rl.Texture() for _ in range(8)))
 
     step_tick_calls: list[list[PlayerInput]] = []
     original_step_tick = DeterministicSession.step_tick

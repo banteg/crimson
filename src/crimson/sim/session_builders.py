@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import TypeAlias
-
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..quests.level import QuestLevel
@@ -24,8 +21,6 @@ from .sessions import (
     rush_mid_step,
     survival_mid_step,
 )
-
-DeterministicSessionFactory: TypeAlias = Callable[..., DeterministicSession]
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 RUSH_FORCED_AMMO = 30.0
@@ -52,10 +47,9 @@ def build_survival_session(
     clear_fx_queues_each_tick: bool,
     finalize_post_render_lifecycle: bool,
     apply_world_dt_steps: bool = False,
-    session_factory: DeterministicSessionFactory = DeterministicSession,
 ) -> tuple[DeterministicSession, SurvivalSpawnState]:
     spawn_state = SurvivalSpawnState()
-    session = session_factory(
+    session = DeterministicSession(
         world=world,
         world_size=float(world_size),
         damage_scale_by_type=damage_scale_by_type,
@@ -86,10 +80,9 @@ def build_rush_session(
     game_tune_started: bool,
     clear_fx_queues_each_tick: bool,
     finalize_post_render_lifecycle: bool,
-    session_factory: DeterministicSessionFactory = DeterministicSession,
 ) -> tuple[DeterministicSession, RushSpawnState]:
     spawn_state = RushSpawnState()
-    session = session_factory(
+    session = DeterministicSession(
         world=world,
         world_size=float(world_size),
         damage_scale_by_type=damage_scale_by_type,
@@ -127,7 +120,6 @@ def build_quest_session(
     spawn_entries: tuple[SpawnEntry, ...],
     quest_level: QuestLevel | None,
     start_weapon_id: WeaponId | None,
-    session_factory: DeterministicSessionFactory = DeterministicSession,
 ) -> tuple[DeterministicSession, QuestSpawnState]:
     world.state.quest_level = quest_level
 
@@ -137,7 +129,7 @@ def build_quest_session(
 
     world.creatures.capture_spawn_events_authoritative = False
     quest_state = QuestSpawnState(spawn_entries=tuple(spawn_entries))
-    session = session_factory(
+    session = DeterministicSession(
         world=world,
         world_size=float(world_size),
         damage_scale_by_type=damage_scale_by_type,
@@ -168,14 +160,13 @@ def build_typo_session(
     gore_disabled: int,
     game_tune_started: bool,
     dictionary_words: tuple[str, ...] = (),
-    session_factory: DeterministicSessionFactory = DeterministicSession,
 ) -> DeterministicSession:
     reset_typo_state(
         world.state.typo,
         creature_capacity=len(world.creatures.entries),
         dictionary_words=dictionary_words,
     )
-    session = session_factory(
+    session = DeterministicSession(
         world=world,
         world_size=float(world_size),
         damage_scale_by_type=damage_scale_by_type,
@@ -206,14 +197,13 @@ def build_tutorial_session(
     gore_disabled: int,
     game_tune_started: bool,
     demo_mode_active: bool,
-    session_factory: DeterministicSessionFactory = DeterministicSession,
 ) -> DeterministicSession:
     reset_tutorial_state(
         world.state.tutorial,
         world.state.tutorial_overlay,
         preserve_bugs=bool(world.state.preserve_bugs),
     )
-    session = session_factory(
+    session = DeterministicSession(
         world=world,
         world_size=float(world_size),
         damage_scale_by_type=damage_scale_by_type,

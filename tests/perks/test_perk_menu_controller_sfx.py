@@ -19,16 +19,20 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 
+def _texture() -> rl.Texture:
+    return rl.Texture()
+
+
 def _dummy_assets() -> PerkMenuAssets:
     return PerkMenuAssets(
-        menu_panel=None,
-        title_pick_perk=None,
-        title_level_up=None,
-        menu_item=None,
-        button_sm=None,
-        button_md=None,
-        cursor=None,
-        aim=None,
+        menu_panel=_texture(),
+        title_pick_perk=_texture(),
+        title_level_up=_texture(),
+        menu_item=_texture(),
+        button_sm=_texture(),
+        button_md=_texture(),
+        cursor=_texture(),
+        aim=_texture(),
     )
 
 

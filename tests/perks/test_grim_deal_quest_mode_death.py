@@ -7,19 +7,25 @@ import crimson.modes.quest_mode as quest_mode_module
 from crimson.modes.quest_mode import QuestMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
+from crimson.quests.level import QuestLevel
+from crimson.ui.perk_menu import PerkMenuAssets
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
 
-def _make_quest_mode() -> QuestMode:
+def _make_quest_mode(mocker) -> QuestMode:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
-    return QuestMode(ctx, audio_rng=Crand(0xBEEF))
+    mode = QuestMode(ctx, audio_rng=Crand(0xBEEF))
+    mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
+    mode.start_run(QuestLevel(1, 1), status=None)
+    mode._perk_menu_assets = PerkMenuAssets(*(rl.Texture() for _ in range(8)))
+    return mode
 
 
 def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_transition(mocker) -> None:
-    mode = _make_quest_mode()
+    mode = _make_quest_mode(mocker)
 
     # Simulate picking Grim Deal while the perk menu is visible and in transition.
     # The perk kills the player immediately, but QuestMode must still close the run

@@ -7,7 +7,7 @@ from grim.fonts.small import SmallFontData
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
-from ...ui.perk_menu import PerkMenuAssets, draw_ui_text
+from ...ui.perk_menu import PerkMenuAssets, draw_ui_text, texture_loaded
 
 PERK_PROMPT_MAX_TIMER_MS = 200.0
 PERK_PROMPT_OUTSET_X = 50.0
@@ -63,7 +63,7 @@ class PerkPromptUi:
         scale: float = 1.0,
     ) -> Rect:
         hinge = cls.hinge()
-        if assets is not None and assets.menu_item is not None:
+        if assets is not None and texture_loaded(assets.menu_item):
             tex = assets.menu_item
             bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
@@ -111,7 +111,7 @@ class PerkPromptUi:
         color = rl.Color(int(text_color.r), int(text_color.g), int(text_color.b), int(255 * alpha))
         draw_ui_text(font, label, Vec2(x, y), scale=text_scale, color=color)
 
-        if assets is not None and assets.menu_item is not None:
+        if assets is not None and texture_loaded(assets.menu_item):
             tex = assets.menu_item
             bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
@@ -125,7 +125,7 @@ class PerkPromptUi:
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
 
-        if assets is not None and assets.title_level_up is not None:
+        if assets is not None and texture_loaded(assets.title_level_up):
             tex = assets.title_level_up
             local_x = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_X * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_X
             local_y = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_Y * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_Y

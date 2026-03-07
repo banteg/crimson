@@ -8,7 +8,6 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 
-from ..game_modes import GameMode
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world import viewport
@@ -16,15 +15,11 @@ from ..render.world.renderer import WorldRenderer
 from .audio_bridge import AudioBridge
 from .render_resources import RenderResources
 from .sim_world_state import SimWorldState
-from .standalone_tick_harness import StandaloneTickHarness, WorldTickInputBuilder
 from .terrain_runtime import TerrainRuntime
 
 
 class WorldRuntime:
     """Composition container owning the 4 world components and shared lifecycle methods.
-
-    Gameplay modes use BaseGameplayMode for deterministic stepping.
-    Demo/debug screens use the explicit standalone tick harness methods below.
     """
 
     def __init__(
@@ -85,7 +80,6 @@ class WorldRuntime:
             config=self.config,
             camera=self.camera,
         )
-        self._standalone_tick_harness: StandaloneTickHarness | None = None
 
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
@@ -205,34 +199,3 @@ class WorldRuntime:
             lan_local_player_slot_index=int(self.lan_local_player_slot_index),
             rtx_mode=self.rtx_mode,
         )
-
-    # ------------------------------------------------------------------
-    # Tick-stepping
-    # ------------------------------------------------------------------
-
-    def init_standalone_tick_harness(
-        self,
-        *,
-        game_mode: GameMode,
-        build_inputs: WorldTickInputBuilder,
-        tick_rate: int = 60,
-    ) -> None:
-        """Initialize standalone local stepping for demo/debug screens."""
-
-        self._standalone_tick_harness = StandaloneTickHarness(
-            game_mode=game_mode,
-            build_inputs=build_inputs,
-            tick_rate=int(tick_rate),
-        )
-
-    def reset_standalone_tick_harness(self) -> None:
-        harness = self._standalone_tick_harness
-        if harness is None:
-            return
-        harness.reset()
-
-    def advance_standalone_tick_frame(self, dt: float) -> int:
-        harness = self._standalone_tick_harness
-        if harness is None:
-            raise RuntimeError("standalone tick harness is not initialized")
-        return harness.advance_frame(self, float(dt))

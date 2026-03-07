@@ -26,6 +26,7 @@ from ..sim.input_providers import FrameContext
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
 from ..world import WorldRuntime
+from ..world.standalone_tick_harness import StandaloneTickHarness
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import register_view
@@ -1286,7 +1287,7 @@ class LightingDebugView:
         self.close_requested = False
         self._paused = False
         self._screenshot_requested = False
-        self._runtime.init_standalone_tick_harness(
+        self._tick_harness = StandaloneTickHarness(
             game_mode=GameMode.SURVIVAL,
             build_inputs=self._build_runner_inputs,
         )
@@ -2092,7 +2093,7 @@ class LightingDebugView:
         return [self._build_input()]
 
     def _reset_tick_runner(self) -> None:
-        self._runtime.reset_standalone_tick_harness()
+        self._tick_harness.reset()
 
     @staticmethod
     def _burst_angle(profile: EmissiveProfile, index: int) -> float:
@@ -2909,7 +2910,7 @@ class LightingDebugView:
         elif self._player is not None:
             self._apply_debug_player_cheats()
             self._update_auto_emit(sim_dt)
-            self._runtime.advance_standalone_tick_frame(float(sim_dt))
+            self._tick_harness.advance_frame(self._runtime, float(sim_dt))
         elif self._runtime.sim_world.players:
             self._player = self._runtime.sim_world.players[0]
 
