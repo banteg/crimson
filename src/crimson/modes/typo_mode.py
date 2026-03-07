@@ -395,7 +395,7 @@ class TypoShooterMode(BaseGameplayMode):
         text_y = screen_h - 127.0  # v38 + 1.0
 
         # Draw panel backdrop using ind_panel texture (original: DAT_0048f7c4)
-        tex = self.hud_resources.texture(TextureId.UI_IND_PANEL)
+        tex = self.render_resources.resources.texture(TextureId.UI_IND_PANEL)
         src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
         dst = rl.Rectangle(
             panel_x,
@@ -441,7 +441,7 @@ class TypoShooterMode(BaseGameplayMode):
             self._draw_target_health_bar()
             draw_hud_overlay(
                 HudRenderContext(
-                    resources=self.hud_resources,
+                    resources=self.render_resources.resources,
                     state=self._hud_state,
                     font=self._small,
                     show_health=hud_flags.show_health,
@@ -467,6 +467,6 @@ class TypoShooterMode(BaseGameplayMode):
                 self._game_over_ui.draw(
                     record=self._game_over_record,
                     banner_kind=self._game_over_banner,
-                    hud_resources=self.hud_resources,
+                    resources=self.render_resources.resources,
                     mouse=self._ui_mouse_pos(),
                 )

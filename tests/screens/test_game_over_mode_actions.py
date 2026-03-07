@@ -78,7 +78,6 @@ def test_open_stops_music_before_run_restart(mocker) -> None:
     )
     stop_music = mocker.patch.object(base_gameplay_mode, "stop_music")
     mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=SimpleNamespace(texture=None))
-    mocker.patch.object(base_gameplay_mode, "runtime_resources_for", return_value=SimpleNamespace())
     mocker.patch.object(base_gameplay_mode, "lan_debug_log", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(base_gameplay_mode.rl, "get_screen_width", return_value=1024)
     mocker.patch.object(base_gameplay_mode.rl, "get_screen_height", return_value=768)

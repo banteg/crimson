@@ -4,7 +4,6 @@ from pathlib import Path
 
 from grim import music as grim_music
 from grim.assets import (
-    RuntimeResources,
     TextureId,
     runtime_resources_for,
 )
@@ -118,7 +117,6 @@ class ReplayPlaybackMode:
         self._replay: Replay | None = None
         self._runtime: WorldRuntime | None = None
         self._small: SmallFontData | None = None
-        self._hud_resources: RuntimeResources | None = None
         self._hud_state = HudState()
         self._grim_mono: GrimMonoFont | None = None
         self._quest_complete_texture: rl.Texture | None = None
@@ -141,12 +139,6 @@ class ReplayPlaybackMode:
 
         self._audio: AudioState | None = None
         self._audio_rng: Crand | None = None
-
-    @property
-    def hud_resources(self) -> RuntimeResources:
-        resources = self._hud_resources
-        assert resources is not None, "HUD resources must be loaded before replay draw"
-        return resources
 
     @property
     def tick_index(self) -> int:
@@ -233,7 +225,9 @@ class ReplayPlaybackMode:
         panel_x += float(_REPLAY_WIDGET_PANEL_OFFSET_X) * scale
         panel_y += float(_REPLAY_WIDGET_PANEL_OFFSET_Y) * scale
 
-        resources = self.hud_resources
+        runtime = self._runtime
+        assert runtime is not None, "World runtime must be open before replay draw"
+        resources = runtime.render_resources.resources
 
         icon_w = _REPLAY_WIDGET_ICON_SIZE.x * scale
         icon_h = _REPLAY_WIDGET_ICON_SIZE.y * scale
@@ -312,7 +306,6 @@ class ReplayPlaybackMode:
 
     def open(self) -> None:
         self._small = load_small_font(self._ctx.assets_dir)
-        self._hud_resources = runtime_resources_for(self._ctx.assets_dir)
         self._hud_state = HudState()
         self._grim_mono = None
         self._quest_complete_texture = None
@@ -444,7 +437,6 @@ class ReplayPlaybackMode:
         self._small = None
         self._grim_mono = None
         self._quest_complete_texture = None
-        self._hud_resources = None
         self._driver = None
         if self._runtime is not None:
             self._runtime.close_runtime()
@@ -713,7 +705,8 @@ class ReplayPlaybackMode:
         )
 
     def draw(self) -> None:
-        sim_world = self._runtime.sim_world if self._runtime is not None else None
+        runtime = self._runtime
+        sim_world = runtime.sim_world if runtime is not None else None
         if sim_world is not None:
             self._draw_world(draw_aim_indicators=True)
         else:
@@ -721,6 +714,8 @@ class ReplayPlaybackMode:
 
         replay = self._replay
         if (
+            runtime is not None
+            and
             sim_world is not None
             and replay is not None
             and sim_world.players
@@ -743,7 +738,7 @@ class ReplayPlaybackMode:
                         elapsed_ms = float(driver.elapsed_ms)
             draw_hud_overlay(
                 HudRenderContext(
-                    resources=self.hud_resources,
+                    resources=runtime.render_resources.resources,
                     state=self._hud_state,
                     font=self._small,
                     show_health=bool(hud_flags.show_health),
