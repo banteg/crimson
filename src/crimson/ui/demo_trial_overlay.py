@@ -9,60 +9,119 @@ from grim.math import clamp
 from grim.raylib_api import rl
 
 from ..demo_trial import DemoTrialOverlayInfo
+from .cursor import draw_menu_cursor
 from .perk_menu import (
-    PerkMenuAssets,
     UiButtonState,
+    UiButtonTextureSet,
     button_draw,
     button_update,
     button_width,
-    cursor_draw,
-    wrap_ui_text,
 )
 
 DEMO_PURCHASE_URL = "http://buy.crimsonland.com"
+_DEMO_HEADER_TEXT = "You've been playing the Demo version of"
+_QUEST_COMPLETED_TEXT = "You've completed all Quest mode levels available in the Demo version."
+_QUEST_LIMIT_REMAINING_TEXT = "However, you still have {remaining} time left to play Survival and Rush game modes."
+_QUEST_GRACE_USED_UP_TEXT = "You have used up your play time in this game mode. However, you still"
+_QUEST_GRACE_REMAINING_TEXT = "have {remaining} time left to play Quest mode levels only."
+_UPGRADE_ALL_FEATURES_TEXT = "If you would like to have unlimited play time and access to all features,"
+_UPGRADE_FEATURES_LINE_TEXT = "The full version features unrestricted access to all 3"
+_UPGRADE_BUY_FULL_TEXT = "Buy the full version to gain unrestricted access to all 3"
+_UPGRADE_BUY_LINE_TEXT = "game modes and be able to post your scores on the Internet. Why not buy"
+_UPGRADE_TRAILER_TEXT = "it now? You'll have a great time!"
+_UPGRADE_PLEASE_TEXT = "please upgrade to the full version of Crimsonland."
+_UPGRADE_PROCESS_TEXT = "please upgrade to the full version of Crimsonland.  The process is very easy"
+_UPGRADE_PROCESS_CONT_TEXT = "and takes just minutes. "
+_UPGRADE_EASY_TEXT = "is very easy and takes just minutes."
+_TIME_UP_TEXT = "Trial time is up. If you would like to have unlimited play time and access to"
+_TIME_UP_ALL_FEATURES_TEXT = "all features, please upgrade to the full version of Crimsonland.  The process"
+
+
+def _overlay_body_lines(info: DemoTrialOverlayInfo) -> tuple[tuple[float, str], ...]:
+    if info.kind == "quest_tier_limit":
+        if info.show_remaining_line:
+            return (
+                (74.0, _QUEST_COMPLETED_TEXT),
+                (92.0, _QUEST_LIMIT_REMAINING_TEXT.format(remaining=info.remaining_label)),
+                (124.0, _UPGRADE_ALL_FEATURES_TEXT),
+                (142.0, _UPGRADE_PLEASE_TEXT),
+                (164.0, _UPGRADE_FEATURES_LINE_TEXT),
+                (182.0, _UPGRADE_BUY_LINE_TEXT),
+                (200.0, _UPGRADE_TRAILER_TEXT),
+            )
+        return (
+            (86.0, _QUEST_COMPLETED_TEXT),
+            (104.0, _UPGRADE_ALL_FEATURES_TEXT),
+            (122.0, _UPGRADE_PLEASE_TEXT),
+            (144.0, _UPGRADE_FEATURES_LINE_TEXT),
+            (162.0, _UPGRADE_BUY_LINE_TEXT),
+            (180.0, _UPGRADE_TRAILER_TEXT),
+        )
+    if info.kind == "quest_grace_left":
+        return (
+            (73.0, _QUEST_GRACE_USED_UP_TEXT),
+            (89.0, _QUEST_GRACE_REMAINING_TEXT.format(remaining=info.remaining_label)),
+            (111.0, _UPGRADE_ALL_FEATURES_TEXT),
+            (127.0, _UPGRADE_PROCESS_TEXT),
+            (143.0, _UPGRADE_PROCESS_CONT_TEXT),
+            (165.0, _UPGRADE_BUY_FULL_TEXT),
+            (181.0, _UPGRADE_BUY_LINE_TEXT),
+            (197.0, _UPGRADE_TRAILER_TEXT),
+        )
+    return (
+        (80.0, _TIME_UP_TEXT),
+        (98.0, _TIME_UP_ALL_FEATURES_TEXT),
+        (116.0, _UPGRADE_EASY_TEXT),
+        (140.0, _UPGRADE_BUY_FULL_TEXT),
+        (158.0, _UPGRADE_BUY_LINE_TEXT),
+        (176.0, _UPGRADE_TRAILER_TEXT),
+    )
 
 
 class DemoTrialOverlayUi:
     def __init__(self, assets_root: Path) -> None:
         self._assets_root = assets_root
 
-        self._missing_assets: list[str] = []
         self._font: SmallFontData | None = None
-        self._assets: PerkMenuAssets | None = None
+        self._button_textures: UiButtonTextureSet | None = None
+        self._cursor: rl.Texture | None = None
         self._cl_logo: rl.Texture | None = None
+        self._particles: rl.Texture | None = None
+        self._cursor_pulse_time = 0.0
 
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
 
     def close(self) -> None:
         self._font = None
-        self._assets = None
+        self._button_textures = None
+        self._cursor = None
         self._cl_logo = None
+        self._particles = None
+        self._cursor_pulse_time = 0.0
 
     def _ensure_loaded(self) -> None:
         if self._font is None:
-            self._missing_assets.clear()
             self._font = load_small_font(self._assets_root)
 
         resources = runtime_resources_for(self._assets_root)
 
-        if self._assets is None:
-            cursor = resources.texture(TextureId.UI_CURSOR)
+        if self._button_textures is None:
             button_sm = resources.texture(TextureId.UI_BUTTON_SM)
             button_md = resources.texture(TextureId.UI_BUTTON_MD)
-            self._assets = PerkMenuAssets(
-                menu_panel=None,
-                title_pick_perk=None,
-                title_level_up=None,
-                menu_item=None,
+            self._button_textures = UiButtonTextureSet(
                 button_sm=button_sm,
                 button_md=button_md,
-                cursor=cursor,
-                aim=None,
             )
+
+        if self._cursor is None:
+            self._cursor = resources.texture(TextureId.UI_CURSOR)
 
         if self._cl_logo is None:
             self._cl_logo = resources.texture(TextureId.CL_LOGO)
+
+        if self._particles is None:
+            self._particles = resources.texture(TextureId.PARTICLES)
 
     @staticmethod
     def _panel_xy(*, screen_w: float, screen_h: float) -> Vec2:
@@ -72,6 +131,7 @@ class DemoTrialOverlayUi:
         self._ensure_loaded()
 
         dt_ms = max(0, int(dt_ms))
+        self._cursor_pulse_time += float(dt_ms) * 0.001 * 1.1
         mouse = rl.get_mouse_position()
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
@@ -111,20 +171,6 @@ class DemoTrialOverlayUi:
             return "maybe_later"
         return None
 
-    def _draw_text_block(self, text: str, *, pos: Vec2, width: float, scale: float) -> float:
-        font = self._font
-        lines = wrap_ui_text(font, text, max_width=float(width), scale=float(scale))
-        line_h = (font.cell_size if font is not None else 16) * scale
-        color = rl.Color(220, 220, 220, 255)
-        y_pos = pos.y
-        for line in lines:
-            if font is not None:
-                draw_small_text(font, line, Vec2(pos.x, y_pos), color)
-            else:
-                rl.draw_text(line, int(pos.x), int(y_pos), int(20 * scale), color)
-            y_pos += float(line_h)
-        return y_pos
-
     def draw(self, info: DemoTrialOverlayInfo) -> None:
         if not info.visible:
             return
@@ -134,7 +180,6 @@ class DemoTrialOverlayUi:
         screen_h = float(rl.get_screen_height())
         panel_pos = self._panel_xy(screen_w=screen_w, screen_h=screen_h)
 
-        rl.draw_rectangle(0, 0, int(screen_w), int(screen_h), rl.Color(0, 0, 0, 180))
         rl.draw_rectangle(int(panel_pos.x), int(panel_pos.y), 512, 256, rl.Color(18, 18, 22, 230))
         rl.draw_rectangle_lines(int(panel_pos.x), int(panel_pos.y), 512, 256, rl.Color(255, 255, 255, 255))
 
@@ -145,54 +190,29 @@ class DemoTrialOverlayUi:
             rl.draw_texture_pro(logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         font = self._font
-        header = "You have been playing the Demo version of Crimsonland."
         if font is not None:
-            draw_small_text(font, header, Vec2(panel_pos.x + 28.0, panel_pos.y + 9.0), rl.Color(220, 220, 220, 255))
+            draw_small_text(font, _DEMO_HEADER_TEXT, Vec2(panel_pos.x + 131.0, panel_pos.y + 9.0), rl.Color(220, 220, 220, 255))
         else:
-            rl.draw_text(header, int(panel_pos.x + 28.0), int(panel_pos.y + 9.0), 16, rl.Color(220, 220, 220, 255))
+            rl.draw_text(_DEMO_HEADER_TEXT, int(panel_pos.x + 131.0), int(panel_pos.y + 9.0), 16, rl.Color(220, 220, 220, 255))
 
-        body = ""
-        if info.kind == "quest_tier_limit":
-            body = (
-                "You have completed all Quest mode levels.\n"
-                f"However, you still have {info.remaining_label} time left.\n\n"
-                "If you would like to have unlimited play time and access to all features,\n"
-                "please upgrade to the full version.\n\n"
-                "Buy the full version to gain unrestricted game modes and be able to post your high scores online.\n"
-                "Buy it now. You'll have a great time."
-            )
-        elif info.kind == "quest_grace_left":
-            body = (
-                "You have used up your play time in the Demo version.\n"
-                f"You have {info.remaining_label} time left to play Quest mode.\n\n"
-                "If you would like to have unlimited play time and access to all features,\n"
-                "please upgrade to the full version.\n\n"
-                "Buy the full version to gain unrestricted game modes and be able to post your high scores online.\n"
-                "Buy it now. You'll have a great time."
-            )
-        else:
-            body = (
-                "Trial time is up.\n\n"
-                "If you would like all features, please upgrade to the full version.\n"
-                "Purchasing is very easy and takes just minutes.\n\n"
-                "Buy the full version to gain unrestricted game modes and be able to post your high scores online.\n"
-                "Buy it now. You'll have a great time."
-            )
+        body_x = panel_pos.x + 26.0
+        body_color = rl.Color(220, 220, 220, 255)
+        for y_offset, line in _overlay_body_lines(info):
+            if font is not None:
+                draw_small_text(font, line, Vec2(body_x, panel_pos.y + y_offset), body_color)
+            else:
+                rl.draw_text(line, int(body_x), int(panel_pos.y + y_offset), 16, body_color)
 
-        text_x = panel_pos.x + 26.0
-        text_y = panel_pos.y + 78.0
-        text_w = 512.0 - 52.0
-        self._draw_text_block(body, pos=Vec2(text_x, text_y), width=text_w, scale=1.0)
-
-        assets = self._assets
-        if assets is not None:
+        textures = self._button_textures
+        cursor = self._cursor
+        if textures is not None:
             scale = 1.0
             button_w = 145.0 * scale
             gap = 20.0
             row_w = button_w * 2.0 + gap
             button_base_pos = panel_pos + Vec2(256.0 - row_w * 0.5, 214.0)
             button_draw(
-                assets,
+                textures,
                 font,
                 self._purchase_button,
                 pos=button_base_pos,
@@ -200,11 +220,17 @@ class DemoTrialOverlayUi:
                 scale=float(scale),
             )
             button_draw(
-                assets,
+                textures,
                 font,
                 self._maybe_later_button,
                 pos=button_base_pos.offset(dx=button_w + gap),
                 width=float(button_w),
                 scale=float(scale),
             )
-            cursor_draw(assets, mouse=rl.get_mouse_position(), scale=1.0, alpha=1.0)
+        if cursor is not None:
+            draw_menu_cursor(
+                self._particles,
+                cursor,
+                pos=Vec2.from_xy(rl.get_mouse_position()),
+                pulse_time=float(self._cursor_pulse_time),
+            )

@@ -30,7 +30,7 @@ from .step_pipeline import (
     run_deterministic_step,
     time_scale_reflex_boost_factor,
 )
-from .timing import FrameTiming, zero_gate_active_from_state
+from .timing import FrameTiming
 from .world_state import WorldState
 
 # ---------------------------------------------------------------------------
@@ -209,9 +209,7 @@ def _session_timing(state: object, dt: float) -> FrameTiming:
             reflex_boost_timer=float(state.bonuses.reflex_boost),  # type: ignore[union-attr]
             time_scale_active=bool(state.time_scale_active),  # type: ignore[union-attr]
         ),
-        zero_gate_active=zero_gate_active_from_state(
-            demo_mode_active=bool(state.demo_mode_active),  # type: ignore[union-attr]
-        ),
+        zero_gate_active=False,
     )
 
 # ---------------------------------------------------------------------------

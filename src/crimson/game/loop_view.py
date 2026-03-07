@@ -777,6 +777,7 @@ class GameLoopView:
     def _update_demo_trial_overlay(self, dt: float) -> bool:
         if not self.state.demo_enabled:
             return False
+        gameplay = self._gameplay_screen(self._front_active)
 
         mode_raw = self.state.config.game_mode
         try:
@@ -795,8 +796,7 @@ class GameLoopView:
             game_mode_id=mode_id,
             global_playtime_ms=int(self.state.status.game_sequence_id),
             quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),
-            quest_stage_major=(0 if quest_level is None else int(quest_level.major)),
-            quest_stage_minor=(0 if quest_level is None else int(quest_level.minor)),
+            quest_level=quest_level,
         )
 
         frame_dt = min(float(dt), 0.1)
@@ -818,15 +818,17 @@ class GameLoopView:
             game_mode_id=mode_id,
             global_playtime_ms=int(self.state.status.game_sequence_id),
             quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),
-            quest_stage_major=(0 if quest_level is None else int(quest_level.major)),
-            quest_stage_minor=(0 if quest_level is None else int(quest_level.minor)),
+            quest_level=quest_level,
         )
         self._demo_trial_info = info
         if not info.visible:
             return False
+        if gameplay is not None:
+            gameplay.prepare_demo_trial_overlay_frame()
 
         action = self._demo_trial_overlay.update(dt_ms)
         if action == "purchase":
+            self.state.quit_requested = True
             try:
                 webbrowser.open(DEMO_PURCHASE_URL)
             except (OSError, webbrowser.Error):
