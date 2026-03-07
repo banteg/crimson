@@ -9,6 +9,7 @@ from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.net.relay_protocol import RoomStart
 from crimson.net.rollback_runtime import JoinRollbackRuntimeConfig, RollbackRuntime
+from crimson.quests.level import QuestLevel
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
 from grim.config import ensure_crimson_cfg
@@ -62,6 +63,8 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     cfg.data["player_count"] = 3
     ctx = ViewContext(assets_dir=assets_dir)
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
+    mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
+    mode.start_run(QuestLevel(1, 1), status=None)
 
     step_tick_calls: list[list[PlayerInput]] = []
     original_step_tick = DeterministicSession.step_tick

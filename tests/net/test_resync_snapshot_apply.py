@@ -16,6 +16,7 @@ from crimson.net.rollback_resync_v5 import (
     SurvivalStateSnapshotV2,
     encode_mode_snapshot,
 )
+from crimson.quests.level import QuestLevel
 from crimson.quests.types import SpawnEntry
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.input_providers import LocalInputProvider
@@ -100,6 +101,8 @@ def test_rush_apply_resync_snapshot_restores_mode_state() -> None:
 
 def test_quest_apply_resync_snapshot_restores_authoritative_runtime() -> None:
     mode = QuestMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
+    mode.apply_terrain_setup = lambda **_kwargs: None  # type: ignore[method-assign]
+    mode.start_run(QuestLevel(1, 1), status=None)
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     mode._quest_spawn_state.spawn_entries = ()
@@ -188,6 +191,8 @@ def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner() -> No
 
 def test_quest_consume_net_runtime_recovery_restores_authoritative_runtime() -> None:
     mode = QuestMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
+    mode.apply_terrain_setup = lambda **_kwargs: None  # type: ignore[method-assign]
+    mode.start_run(QuestLevel(1, 1), status=None)
     mode._quest_spawn_state.spawn_entries = ()
     mode._quest_spawn_state.spawn_timeline_ms = 0.0
     mode._quest_spawn_state.no_creatures_timer_ms = 0.0

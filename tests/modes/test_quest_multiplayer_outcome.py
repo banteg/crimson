@@ -21,7 +21,7 @@ def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, 
 
     mocker.patch.object(QuestMode, "apply_terrain_setup", return_value=None)
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
-    mode.prepare_new_run("1.1", status=None)
+    mode.start_run(QuestLevel(1, 1), status=None)
     health_values = (91.2, 50.6, 10.4, 0.49)
     for idx, health in enumerate(health_values):
         mode.sim_world.players[idx].health = float(health)
@@ -33,7 +33,7 @@ def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, 
     assert outcome.player2_health == health_values[1]
 
 
-def test_prepare_new_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) -> None:
+def test_start_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
 
@@ -43,7 +43,7 @@ def test_prepare_new_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) 
 
     mocker.patch.object(QuestMode, "apply_terrain_setup", return_value=None)
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
-    mode.prepare_new_run("1.1", status=None)
+    mode.start_run(QuestLevel(1, 1), status=None)
 
     quest = quest_by_level(QuestLevel(1, 1))
     assert quest is not None
@@ -52,7 +52,7 @@ def test_prepare_new_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) 
     assert mode.state.sfx_queue == [reload_sfx] * len(mode.sim_world.players)
 
 
-def test_prepare_new_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_path: Path, mocker) -> None:
+def test_start_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_path: Path, mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
 
@@ -66,7 +66,7 @@ def test_prepare_new_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_p
     mode.state.rng.srand(seed_before_run)
 
     reset_spy = mocker.spy(mode.world_runtime, "reset")
-    mode.prepare_new_run("1.1", status=None)
+    mode.start_run(QuestLevel(1, 1), status=None)
 
     assert reset_spy.call_args is not None
     assert int(reset_spy.call_args.kwargs["seed"]) == int(seed_before_run)

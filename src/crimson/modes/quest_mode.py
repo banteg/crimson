@@ -136,7 +136,7 @@ class QuestMode(BaseGameplayMode):
         )
         self._session_factory = session_factory
         self._quest_spawn_state = QuestSpawnState()
-        self._sim_session: DeterministicSession | None = self._new_sim_session(spawn_entries=())
+        self._sim_session: DeterministicSession | None = None
         self._replay_recorder: ReplayRecorder | None = None
 
     def open(self) -> None:
@@ -158,7 +158,7 @@ class QuestMode(BaseGameplayMode):
         self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
-        self._sim_session = self._new_sim_session(spawn_entries=())
+        self._sim_session = None
 
     def close(self) -> None:
         self._grim_mono = None
@@ -382,13 +382,13 @@ class QuestMode(BaseGameplayMode):
         self._outcome = None
         return outcome
 
-    def prepare_new_run(self, level: str, *, status: GameStatus | None) -> None:
-        quest_level = QuestLevel.parse(level)
-        quest = quest_by_level(quest_level)
+    def start_run(self, level: QuestLevel, *, status: GameStatus | None) -> None:
+        quest = quest_by_level(level)
         if quest is None:
             self._quest_def = None
-            self._quest_level = quest_level
+            self._quest_level = level
             self._quest_total_spawn_count = 0
+            self._sim_session = None
             return
         self._outcome = None
         self._replay_recorder = None

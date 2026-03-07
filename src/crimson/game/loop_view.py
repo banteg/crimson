@@ -942,7 +942,7 @@ class GameLoopView:
         level = self.state.pending_quest_level
         if level is None:
             return
-        gameplay.prepare_new_run(level.text, status=self.state.status)
+        gameplay.start_run(level, status=self.state.status)
 
     def _resolve_gameplay_action(self, gameplay: GameplayScreen, action: str | None) -> str | None:
         if action == "open_high_scores":
