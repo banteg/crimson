@@ -4,7 +4,9 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
+from crimson.sim.bootstrap import run_unlock_terrain_prelude
 from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
+from grim.rand import Crand
 from tests.support.replay_runner_helpers import _blank_survival_replay, _run_verify_playback
 
 
@@ -47,6 +49,26 @@ def test_survival_runner_inter_tick_rand_draws_shift_rng_state() -> None:
     assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
     assert shifted == shifted_again
     assert shifted.rng_state != baseline.rng_state
+
+
+def test_survival_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
+    _header, rec = _blank_survival_replay(ticks=0, seed=0x1234)
+    replay = rec.finish()
+    driver = build_verify_playback_driver(replay)
+
+    rng = Crand(int(replay.header.seed))
+    terrain = run_unlock_terrain_prelude(
+        rng,
+        unlock_index=int(replay.header.status.quest_unlock_index),
+        width=int(replay.header.world_size),
+        height=int(replay.header.world_size),
+    )
+
+    terrain_setup = driver.terrain_setup
+    assert terrain_setup is not None
+    assert terrain_setup.terrain_slots == terrain.terrain_slots
+    assert terrain_setup.terrain_seed == int(terrain.terrain_seed)
+    assert int(driver.world.state.rng.state) == int(terrain.seed_after)
 
 
 def test_survival_runner_ignores_stale_perk_pick_command() -> None:

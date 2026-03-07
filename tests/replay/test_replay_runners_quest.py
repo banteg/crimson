@@ -4,9 +4,13 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
+from crimson.quests.runtime import build_quest_spawn_table
+from crimson.quests.types import QuestContext
 from crimson.replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
+from crimson.sim.bootstrap import run_explicit_terrain_prelude, run_unlock_terrain_prelude
 from crimson.sim.input_providers import PerkPickCommand
 from crimson.weapons import WEAPON_BY_ID
+from grim.rand import Crand
 from tests.support.replay_runner_helpers import (
     _blank_quest_replay,
     _collect_verify_replay_info,
@@ -58,6 +62,53 @@ def test_quest_runner_inter_tick_rand_draws_shift_rng_state() -> None:
     assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
     assert shifted == shifted_again
     assert shifted.rng_state != baseline.rng_state
+
+
+def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries() -> None:
+    _header, rec = _blank_quest_replay(ticks=0, seed=101)
+    replay = msgspec.structs.replace(
+        rec.finish(),
+        header=msgspec.structs.replace(rec.header, quest_level="1.3"),
+    )
+    quest = quest_by_level("1.3")
+    assert quest is not None
+
+    ctx = QuestContext(
+        width=int(replay.header.world_size),
+        height=int(replay.header.world_size),
+        player_count=int(replay.header.player_count),
+    )
+    rng = Crand(int(replay.header.seed))
+    _ = run_unlock_terrain_prelude(
+        rng,
+        unlock_index=int(replay.header.status.quest_unlock_index),
+        width=int(replay.header.world_size),
+        height=int(replay.header.world_size),
+    )
+    # Native `quest_start_selected()` burns one `crt_rand()` before quest terrain.
+    rng.rand()
+    _ = run_explicit_terrain_prelude(
+        rng,
+        terrain_slots=quest.terrain_slots,
+        width=int(replay.header.world_size),
+        height=int(replay.header.world_size),
+    )
+    spawn_entries = tuple(
+        build_quest_spawn_table(
+            quest,
+            ctx,
+            rng=rng,
+            hardcore=bool(replay.header.hardcore),
+            full_version=True,
+        ),
+    )
+    expected_rng_state = int(rng.state)
+
+    baseline_driver = build_verify_playback_driver(replay)
+    injected_driver = build_verify_playback_driver(replay, spawn_entries=spawn_entries)
+
+    assert int(baseline_driver.world.state.rng.state) == expected_rng_state
+    assert int(injected_driver.world.state.rng.state) == expected_rng_state
 
 
 def test_quest_runner_replays_start_weapon_reload_sfx_at_tick_zero() -> None:

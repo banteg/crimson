@@ -196,6 +196,7 @@ class PlaybackDriver:
             quest_fail_retry_count=int(self.replay.header.quest_fail_retry_count),
             preserve_bugs=bool(self.session_settings.preserve_bugs),
         )
+        world.state.rng.srand(int(self.replay.header.seed))
         reset_world_players(
             world.players,
             state=world.state,
@@ -252,18 +253,19 @@ class PlaybackDriver:
                     width=int(self.world_size),
                     height=int(self.world_size),
                 )
+                generated_spawn_entries = tuple(
+                    build_quest_spawn_table(
+                        quest_definition,
+                        ctx,
+                        rng=world.state.rng,
+                        hardcore=bool(self.replay.header.hardcore),
+                        full_version=True,
+                    ),
+                )
                 spawn_entries = (
                     tuple(self._quest_spawn_entries)
                     if self._quest_spawn_entries is not None
-                    else tuple(
-                        build_quest_spawn_table(
-                            quest_definition,
-                            ctx,
-                            rng=world.state.rng,
-                            hardcore=bool(self.replay.header.hardcore),
-                            full_version=True,
-                        ),
-                    )
+                    else generated_spawn_entries
                 )
                 world.state.quest_level = quest_level
                 self._quest_definition = quest_definition
