@@ -12,6 +12,7 @@ from crimson.demo_trial import (
 )
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
+from crimson.quests.level import QuestLevel
 
 
 class _DummyGameplay:
@@ -95,37 +96,34 @@ def test_format_demo_trial_time() -> None:
         "game_mode_id",
         "global_playtime_ms",
         "quest_grace_elapsed_ms",
-        "quest_stage_major",
-        "quest_stage_minor",
+        "quest_level",
         "expected_visible",
         "expected_kind",
         "expected_remaining_ms",
         "expected_show_remaining_line",
     ),
     [
-        (False, GameMode.SURVIVAL, DEMO_TOTAL_PLAY_TIME_MS, DEMO_QUEST_GRACE_TIME_MS, 4, 10, False, "none", None, False),
-        (True, GameMode.SURVIVAL, DEMO_TOTAL_PLAY_TIME_MS, 0, 1, 1, True, "time_up", 0, False),
-        (True, GameMode.QUESTS, 0, 0, 2, 1, True, "quest_tier_limit", None, True),
+        (False, GameMode.SURVIVAL, DEMO_TOTAL_PLAY_TIME_MS, DEMO_QUEST_GRACE_TIME_MS, QuestLevel(4, 10), False, "none", None, False),
+        (True, GameMode.SURVIVAL, DEMO_TOTAL_PLAY_TIME_MS, 0, QuestLevel(1, 1), True, "time_up", 0, False),
+        (True, GameMode.QUESTS, 0, 0, QuestLevel(2, 1), True, "quest_tier_limit", None, True),
         (
             True,
             GameMode.SURVIVAL,
             DEMO_TOTAL_PLAY_TIME_MS,
             1_000,
-            1,
-            1,
+            QuestLevel(1, 1),
             True,
             "quest_grace_left",
             DEMO_QUEST_GRACE_TIME_MS - 1_000,
             False,
         ),
-        (True, GameMode.QUESTS, DEMO_TOTAL_PLAY_TIME_MS, 1_000, 1, 1, False, "none", None, False),
+        (True, GameMode.QUESTS, DEMO_TOTAL_PLAY_TIME_MS, 1_000, QuestLevel(1, 1), False, "none", None, False),
         (
             True,
             GameMode.QUESTS,
             DEMO_TOTAL_PLAY_TIME_MS,
             1_000,
-            2,
-            1,
+            QuestLevel(2, 1),
             True,
             "quest_tier_limit",
             DEMO_QUEST_GRACE_TIME_MS - 1_000,
@@ -146,8 +144,7 @@ def test_demo_trial_overlay_info(
     game_mode_id: GameMode,
     global_playtime_ms: int,
     quest_grace_elapsed_ms: int,
-    quest_stage_major: int,
-    quest_stage_minor: int,
+    quest_level: QuestLevel | None,
     expected_visible: bool,
     expected_kind: str,
     expected_remaining_ms: int | None,
@@ -158,8 +155,7 @@ def test_demo_trial_overlay_info(
         game_mode_id=game_mode_id,
         global_playtime_ms=global_playtime_ms,
         quest_grace_elapsed_ms=quest_grace_elapsed_ms,
-        quest_stage_major=quest_stage_major,
-        quest_stage_minor=quest_stage_minor,
+        quest_level=quest_level,
     )
     assert info.visible is expected_visible
     assert info.kind == expected_kind

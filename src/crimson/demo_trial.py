@@ -3,6 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from .game_modes import GameMode
+from .quests.level import QuestLevel
 
 DEMO_TOTAL_PLAY_TIME_MS = 2_400_000
 DEMO_QUEST_GRACE_TIME_MS = 300_000
@@ -85,8 +86,7 @@ def demo_trial_overlay_info(
     game_mode_id: GameMode,
     global_playtime_ms: int,
     quest_grace_elapsed_ms: int,
-    quest_stage_major: int,
-    quest_stage_minor: int,
+    quest_level: QuestLevel | None,
 ) -> DemoTrialOverlayInfo:
     """Compute demo trial overlay status.
 
@@ -112,7 +112,11 @@ def demo_trial_overlay_info(
     global_remaining_ms = max(0, DEMO_TOTAL_PLAY_TIME_MS - used_ms)
     grace_remaining_ms = max(0, DEMO_QUEST_GRACE_TIME_MS - grace_ms)
 
-    tier_locked = game_mode_id == GameMode.QUESTS and (int(quest_stage_major) > 1 or int(quest_stage_minor) > 10)
+    tier_locked = (
+        game_mode_id == GameMode.QUESTS
+        and quest_level is not None
+        and (int(quest_level.major) > 1 or int(quest_level.minor) > 10)
+    )
 
     if grace_ms > 0:
         if grace_remaining_ms <= 0:

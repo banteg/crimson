@@ -98,7 +98,6 @@ class DemoView:
         self._upsell_font: GrimMonoFont | None = None
         self._small_font: SmallFontData | None = None
         self._purchase_active = False
-        self._purchase_url_opened = False
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._runtime.init_tick_runner(
@@ -148,7 +147,6 @@ class DemoView:
         self._upsell_message_index = 0
         self._upsell_pulse_ms = 0
         self._purchase_active = False
-        self._purchase_url_opened = False
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._variant_index = 0
@@ -238,7 +236,6 @@ class DemoView:
         if reset_timeline:
             self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = max(0, int(limit_ms))
-        self._purchase_url_opened = False
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
 
@@ -248,13 +245,20 @@ class DemoView:
         self._small_font = load_small_font(self.state.assets_dir)
         return self._small_font
 
-    def _purchase_var_28_2(self) -> float:
+    def _purchase_layout_wide_shift(self) -> float:
         screen_w = self.state.config.screen_width
         if screen_w == 0x320:  # 800
             return 64.0
         if screen_w == 0x400:  # 1024
             return 128.0
         return 0.0
+
+    def _trigger_purchase(self) -> None:
+        self.state.quit_requested = True
+        try:
+            webbrowser.open(DEMO_PURCHASE_URL)
+        except (OSError, webbrowser.Error):
+            return
 
     def _purchase_button_textures(self) -> UiButtonTextureSet:
         resources = require_runtime_resources(self.state)
@@ -275,7 +279,7 @@ class DemoView:
 
         w = float(self.state.config.screen_width)
         h = float(self.state.config.screen_height)
-        wide_shift = self._purchase_var_28_2()
+        wide_shift = self._purchase_layout_wide_shift()
         button_base_y = h / 2.0 + 102.0 + wide_shift * 0.3
         button_base_pos = Vec2(w / 2.0 + 128.0, button_base_y + 50.0)
 
@@ -285,21 +289,14 @@ class DemoView:
         button_w = button_width(
             font, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
         )
-        if button_update(
+        purchase_requested = button_update(
             self._purchase_button,
             pos=button_base_pos,
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
             click=bool(click),
-        ):
-            if not self._purchase_url_opened:
-                self._purchase_url_opened = True
-                try:
-                    webbrowser.open(DEMO_PURCHASE_URL)
-                except (OSError, webbrowser.Error):
-                    self._purchase_url_opened = True
-            self.state.quit_requested = True
+        )
 
         if button_update(
             self._maybe_later_button,
@@ -314,14 +311,9 @@ class DemoView:
             return
 
         # Keyboard activation for convenience; original uses UI mouse.
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-            if not self._purchase_url_opened:
-                self._purchase_url_opened = True
-                try:
-                    webbrowser.open(DEMO_PURCHASE_URL)
-                except (OSError, webbrowser.Error):
-                    self._purchase_url_opened = True
-            self.state.quit_requested = True
+        purchase_requested = purchase_requested or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
+        if purchase_requested:
+            self._trigger_purchase()
 
         # Keep referenced to avoid unused warnings if this method grows.
         _ = textures
@@ -380,7 +372,7 @@ class DemoView:
         rl.rl_set_texture(0)
         rl.end_blend_mode()
 
-        wide_shift = self._purchase_var_28_2()
+        wide_shift = self._purchase_layout_wide_shift()
 
         # Mockup and logo textures.
         mockup = resources.texture(TextureId.MOCKUP)
@@ -448,7 +440,6 @@ class DemoView:
         self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = 0
         self._purchase_active = False
-        self._purchase_url_opened = False
         player_count = 2 if index in (0, 1, 4) else 1
         self._runtime.reset(seed=int(self.state.rng.state), player_count=player_count)
         self._runtime.reset_tick_runner()

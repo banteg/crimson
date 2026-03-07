@@ -178,8 +178,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
             game_mode_id=mode_id,
             global_playtime_ms=int(state.status.game_sequence_id),
             quest_grace_elapsed_ms=int(state.demo_trial_elapsed_ms),
-            quest_stage_major=(0 if quest_level is None else int(quest_level.major)),
-            quest_stage_minor=(0 if quest_level is None else int(quest_level.minor)),
+            quest_level=quest_level,
         )
         remaining = format_demo_trial_time(info.remaining_ms)
         console.log.log(

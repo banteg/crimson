@@ -11,8 +11,8 @@ from grim.raylib_api import rl
 from ..demo_trial import DemoTrialOverlayInfo
 from .cursor import draw_menu_cursor
 from .perk_menu import (
-    PerkMenuAssets,
     UiButtonState,
+    UiButtonTextureSet,
     button_draw,
     button_update,
     button_width,
@@ -82,9 +82,9 @@ class DemoTrialOverlayUi:
     def __init__(self, assets_root: Path) -> None:
         self._assets_root = assets_root
 
-        self._missing_assets: list[str] = []
         self._font: SmallFontData | None = None
-        self._assets: PerkMenuAssets | None = None
+        self._button_textures: UiButtonTextureSet | None = None
+        self._cursor: rl.Texture | None = None
         self._cl_logo: rl.Texture | None = None
         self._particles: rl.Texture | None = None
         self._cursor_pulse_time = 0.0
@@ -94,32 +94,28 @@ class DemoTrialOverlayUi:
 
     def close(self) -> None:
         self._font = None
-        self._assets = None
+        self._button_textures = None
+        self._cursor = None
         self._cl_logo = None
         self._particles = None
         self._cursor_pulse_time = 0.0
 
     def _ensure_loaded(self) -> None:
         if self._font is None:
-            self._missing_assets.clear()
             self._font = load_small_font(self._assets_root)
 
         resources = runtime_resources_for(self._assets_root)
 
-        if self._assets is None:
-            cursor = resources.texture(TextureId.UI_CURSOR)
+        if self._button_textures is None:
             button_sm = resources.texture(TextureId.UI_BUTTON_SM)
             button_md = resources.texture(TextureId.UI_BUTTON_MD)
-            self._assets = PerkMenuAssets(
-                menu_panel=None,
-                title_pick_perk=None,
-                title_level_up=None,
-                menu_item=None,
+            self._button_textures = UiButtonTextureSet(
                 button_sm=button_sm,
                 button_md=button_md,
-                cursor=cursor,
-                aim=None,
             )
+
+        if self._cursor is None:
+            self._cursor = resources.texture(TextureId.UI_CURSOR)
 
         if self._cl_logo is None:
             self._cl_logo = resources.texture(TextureId.CL_LOGO)
@@ -207,15 +203,16 @@ class DemoTrialOverlayUi:
             else:
                 rl.draw_text(line, int(body_x), int(panel_pos.y + y_offset), 16, body_color)
 
-        assets = self._assets
-        if assets is not None:
+        textures = self._button_textures
+        cursor = self._cursor
+        if textures is not None:
             scale = 1.0
             button_w = 145.0 * scale
             gap = 20.0
             row_w = button_w * 2.0 + gap
             button_base_pos = panel_pos + Vec2(256.0 - row_w * 0.5, 214.0)
             button_draw(
-                assets,
+                textures,
                 font,
                 self._purchase_button,
                 pos=button_base_pos,
@@ -223,16 +220,17 @@ class DemoTrialOverlayUi:
                 scale=float(scale),
             )
             button_draw(
-                assets,
+                textures,
                 font,
                 self._maybe_later_button,
                 pos=button_base_pos.offset(dx=button_w + gap),
                 width=float(button_w),
                 scale=float(scale),
             )
+        if cursor is not None:
             draw_menu_cursor(
                 self._particles,
-                assets.cursor,
+                cursor,
                 pos=Vec2.from_xy(rl.get_mouse_position()),
                 pulse_time=float(self._cursor_pulse_time),
             )

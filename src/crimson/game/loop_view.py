@@ -796,8 +796,7 @@ class GameLoopView:
             game_mode_id=mode_id,
             global_playtime_ms=int(self.state.status.game_sequence_id),
             quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),
-            quest_stage_major=(0 if quest_level is None else int(quest_level.major)),
-            quest_stage_minor=(0 if quest_level is None else int(quest_level.minor)),
+            quest_level=quest_level,
         )
 
         frame_dt = min(float(dt), 0.1)
@@ -819,8 +818,7 @@ class GameLoopView:
             game_mode_id=mode_id,
             global_playtime_ms=int(self.state.status.game_sequence_id),
             quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),
-            quest_stage_major=(0 if quest_level is None else int(quest_level.major)),
-            quest_stage_minor=(0 if quest_level is None else int(quest_level.minor)),
+            quest_level=quest_level,
         )
         self._demo_trial_info = info
         if not info.visible:
