@@ -20,17 +20,15 @@ from ..game_modes import GameMode
 from ..render.rtx.mode import mode_from_rtx_flag
 from ..replay import (
     Replay,
-    apply_replay_bootstrap,
     load_replay_file,
     warn_on_game_version_mismatch,
 )
 from ..replay.driver.playback_driver import (
     PlaybackDriver,
     build_runtime_playback_driver,
-    resolve_replay_quest_setup,
 )
 from ..replay.driver.playback_pump import advance_playback_frame
-from ..replay.driver.setup import ReplayRunnerError, status_from_snapshot
+from ..replay.driver.setup import ReplayRunnerError
 from ..replay.types import ReplayHeader
 from ..sim.batch_apply import (
     PresentationTickOutput,
@@ -58,7 +56,6 @@ from ..ui.overlays.quest_run import (
     draw_quest_title_timer_overlay,
     quest_level_label,
 )
-from ..weapons import WeaponId
 from ..world.runtime import WorldRuntime
 
 _PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
@@ -363,55 +360,6 @@ class ReplayPlaybackMode:
         sim_world = runtime.sim_world
         render_resources = runtime.render_resources
 
-        self._hud_state.preserve_bugs = bool(sim_world.state.preserve_bugs)
-        sim_world.state.status = status_from_snapshot(
-            quest_unlock_index=int(replay.header.status.quest_unlock_index),
-            quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
-            weapon_usage_counts=replay.header.status.weapon_usage_counts,
-        )
-        bootstrap = apply_replay_bootstrap(
-            replay.header,
-            rng=sim_world.state.rng,
-            world_size=float(world_size),
-        )
-        if bootstrap is not None:
-            runtime.terrain_runtime.apply_bootstrap_terrain(
-                terrain_slots=bootstrap.terrain.terrain_slots,
-                seed=int(bootstrap.terrain.terrain_seed),
-                layers=3,
-            )
-
-        mode_id = replay.header.game_mode_id
-        spawn_entries = None
-        quest_stage_major: int | None = None
-        quest_stage_minor: int | None = None
-        start_weapon_id: WeaponId | None = None
-        match mode_id:
-            case GameMode.QUESTS:
-                quest, spawn_entries = resolve_replay_quest_setup(
-                    replay,
-                    world_size=float(world_size),
-                    player_count=len(sim_world.players),
-                )
-
-                self._quest_title = str(quest.title)
-                self._quest_level = quest_level_label(quest.major, quest.minor)
-                self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
-                quest_stage_major, quest_stage_minor = quest.level_key
-
-                runtime.terrain_runtime.set_terrain_slots(terrain_slots=quest.terrain_slots)
-                runtime.terrain_runtime.schedule_from_rng_seed(
-                    seed=int(sim_world.state.rng.state),
-                    layers=3,
-                )
-
-                start_weapon_id = quest.start_weapon_id
-                if start_weapon_id <= WeaponId.NONE:
-                    start_weapon_id = WeaponId.PISTOL
-                self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
-            case _:
-                self._quest_total_spawn_count = 0
-
         try:
             self._driver = build_runtime_playback_driver(
                 replay,
@@ -420,14 +368,33 @@ class ReplayPlaybackMode:
                 world_size=float(world_size),
                 fx_queue=render_resources.fx_queue,
                 fx_queue_rotated=render_resources.fx_queue_rotated,
-                spawn_entries=spawn_entries,
-                quest_stage_major=quest_stage_major,
-                quest_stage_minor=quest_stage_minor,
-                start_weapon_id=start_weapon_id,
             )
-            sim_world.load_world_state(self._driver.world)
+            driver = self._driver
+            sim_world.load_world_state(driver.world)
         except ReplayRunnerError as exc:  # pragma: no cover
-            raise ValueError(f"unsupported replay game_mode_id: {int(mode_id)}") from exc
+            raise ValueError(f"unsupported replay game_mode_id: {int(replay.header.game_mode_id)}") from exc
+
+        self._hud_state.preserve_bugs = bool(sim_world.state.preserve_bugs)
+
+        driver = self._driver
+        assert driver is not None, "Replay driver must be initialized before replay view setup"
+        terrain_slots = driver.terrain_slots
+        terrain_seed = driver.terrain_seed
+        if terrain_slots is not None and terrain_seed is not None:
+            runtime.terrain_runtime.apply_bootstrap_terrain(
+                terrain_slots=terrain_slots,
+                seed=int(terrain_seed),
+                layers=3,
+            )
+
+        quest = driver.quest_definition
+        if quest is not None:
+            self._quest_title = str(quest.title)
+            self._quest_level = quest_level_label(quest.major, quest.minor)
+            self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
+            self._quest_total_spawn_count = int(driver.quest_total_spawn_count)
+        else:
+            self._quest_total_spawn_count = 0
 
     def close(self) -> None:
         self._small = None

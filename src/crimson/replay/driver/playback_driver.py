@@ -20,18 +20,18 @@ from ...replay.header_settings import session_settings_from_replay_header
 from ...replay.input_codec import unpack_tick_inputs
 from ...sim.hooks import TickResult
 from ...sim.input_providers import ResolvedTick
+from ...sim.session_builders import (
+    build_quest_session,
+    build_rush_session,
+    build_survival_session,
+    enforce_rush_loadout,
+)
 from ...sim.sessions import (
     DeterministicSession,
     QuestSpawnState,
-    RushSpawnState,
-    SurvivalSpawnState,
-    quest_post_step,
-    rush_input_transform,
-    rush_mid_step,
-    survival_mid_step,
 )
 from ...sim.world_state import WorldState
-from ...weapon_runtime import weapon_assign_player
+from ...terrain_slots import TerrainSlotTriplet
 from ...weapons import WeaponId
 from .replay_timing import should_apply_world_dt_steps_for_replay
 from .setup import (
@@ -44,9 +44,6 @@ from .setup import (
     reset_players,
     status_from_snapshot,
 )
-
-RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
-RUSH_FORCED_AMMO = 30.0
 
 RngTraceDraw: TypeAlias = tuple[int, int, int]
 TickRngTraceObserver: TypeAlias = Callable[[TickResult, tuple[RngTraceDraw, ...]], None]
@@ -99,15 +96,6 @@ def resolve_replay_quest_setup(
         ),
     )
     return quest, spawn_entries
-
-
-def enforce_rush_loadout(world: WorldState) -> None:
-    for player in world.players:
-        if player.weapon.weapon_id != RUSH_WEAPON_ID:
-            weapon_assign_player(player, RUSH_WEAPON_ID, state=world.state)
-        # Native `rush_mode_update` forces assault rifle + 30 ammo every frame.
-        player.weapon.ammo = float(RUSH_FORCED_AMMO)
-
 
 @contextmanager
 def _tick_rng_trace(rng: object, *, enabled: bool) -> Iterator[list[RngTraceDraw]]:
@@ -177,6 +165,10 @@ class PlaybackDriver:
         self._quest_stage_minor = quest_stage_minor
         self._quest_start_weapon_id = start_weapon_id
         self._quest_spawn_state: QuestSpawnState | None = None
+        self._quest_definition: QuestDefinition | None = None
+        self._quest_total_spawn_count = 0
+        self._terrain_slots: TerrainSlotTriplet | None = None
+        self._terrain_seed: int | None = None
 
         if version_mismatch_action is not None:
             warn_on_game_version_mismatch(replay, action=str(version_mismatch_action))
@@ -237,11 +229,14 @@ class PlaybackDriver:
         )
 
         if self.mode_id in (GameMode.SURVIVAL, GameMode.RUSH):
-            apply_replay_bootstrap(
+            bootstrap = apply_replay_bootstrap(
                 self.replay.header,
                 rng=world.state.rng,
                 world_size=float(self.world_size),
             )
+            if bootstrap is not None:
+                self._terrain_slots = bootstrap.terrain.terrain_slots
+                self._terrain_seed = int(bootstrap.terrain.terrain_seed)
         else:
             world.state.rng.srand(int(self.replay.header.seed))
 
@@ -252,96 +247,84 @@ class PlaybackDriver:
             return self._provided_fx_queue, self._provided_fx_queue_rotated
         return build_empty_fx_queues()
 
-    def _resolve_quest_setup(self) -> tuple[tuple[SpawnEntry, ...], int | None, int | None, WeaponId | None]:
+    def _resolve_quest_setup(
+        self,
+    ) -> tuple[QuestDefinition | None, tuple[SpawnEntry, ...], QuestLevel | None, WeaponId | None]:
         spawn_entries = self._quest_spawn_entries
-        quest_stage_major = self._quest_stage_major
-        quest_stage_minor = self._quest_stage_minor
+        quest_definition: QuestDefinition | None = None
+        quest_level: QuestLevel | None = None
+        if self._quest_stage_major is not None and self._quest_stage_minor is not None:
+            quest_level = QuestLevel.from_parts_or_none(
+                int(self._quest_stage_major),
+                int(self._quest_stage_minor),
+            )
         start_weapon_id = self._quest_start_weapon_id
 
         if spawn_entries is None:
-            quest, spawn_entries = resolve_replay_quest_setup(
+            quest_definition, spawn_entries = resolve_replay_quest_setup(
                 self.replay,
                 world_size=float(self.world_size),
                 player_count=int(self.session_settings.player_count),
             )
-
-            if quest_stage_major is None or quest_stage_minor is None:
-                quest_stage_major, quest_stage_minor = quest.level_key
+            if quest_level is None:
+                quest_level = QuestLevel.from_parts(*quest_definition.level_key)
             if start_weapon_id is None:
-                start_weapon_id = quest.start_weapon_id
+                start_weapon_id = quest_definition.start_weapon_id
         else:
             spawn_entries = tuple(spawn_entries)
 
-        return spawn_entries, quest_stage_major, quest_stage_minor, start_weapon_id
+        return quest_definition, spawn_entries, quest_level, start_weapon_id
 
     def _build_session(self, *, apply_world_dt_steps: bool) -> DeterministicSession:
         damage_scale_by_type = build_damage_scale_by_type()
         self._quest_spawn_state = None
+        self._quest_definition = None
+        self._quest_total_spawn_count = 0
         match self.mode_id:
             case GameMode.SURVIVAL:
-                survival_spawn = SurvivalSpawnState()
-                return DeterministicSession(
+                session, _ = build_survival_session(
                     world=self.world,
                     world_size=float(self.world_size),
                     damage_scale_by_type=damage_scale_by_type,
                     fx_queue=self.fx_queue,
                     fx_queue_rotated=self.fx_queue_rotated,
-                    game_mode=GameMode.SURVIVAL,
-                    perk_progression_enabled=True,
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
                     apply_world_dt_steps=bool(apply_world_dt_steps),
                     clear_fx_queues_each_tick=True,
                     finalize_post_render_lifecycle=True,
-                    mid_step_hook=lambda ctx: survival_mid_step(ctx, survival_spawn),
                 )
+                return session
             case GameMode.RUSH:
                 enforce_rush_loadout(self.world)
-                rush_spawn = RushSpawnState()
-                return DeterministicSession(
+                session, _ = build_rush_session(
                     world=self.world,
                     world_size=float(self.world_size),
                     damage_scale_by_type=damage_scale_by_type,
                     fx_queue=self.fx_queue,
                     fx_queue_rotated=self.fx_queue_rotated,
-                    game_mode=GameMode.RUSH,
-                    perk_progression_enabled=False,
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
                     clear_fx_queues_each_tick=True,
                     finalize_post_render_lifecycle=True,
-                    elapsed_uses_raw_dt=True,
-                    mid_step_hook=lambda ctx: rush_mid_step(ctx, rush_spawn),
-                    before_step_hook=lambda: enforce_rush_loadout(self.world),
-                    input_transform=rush_input_transform,
                 )
+                return session
             case GameMode.QUESTS:
-                spawn_entries, quest_stage_major, quest_stage_minor, start_weapon_id = self._resolve_quest_setup()
+                quest_definition, spawn_entries, quest_level, start_weapon_id = self._resolve_quest_setup()
+                self._quest_definition = quest_definition
+                self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
+                if quest_definition is not None:
+                    self._terrain_slots = quest_definition.terrain_slots
+                    self._terrain_seed = int(self.world.state.rng.state)
 
-                if quest_stage_major is not None and quest_stage_minor is not None:
-                    self.world.state.quest_level = QuestLevel.from_parts(quest_stage_major, quest_stage_minor)
-
-                weapon_id = start_weapon_id or WeaponId.PISTOL
-                if weapon_id <= WeaponId.NONE:
-                    weapon_id = WeaponId.PISTOL
-                for player in self.world.players:
-                    weapon_assign_player(player, weapon_id, state=self.world.state)
-
-                self.world.creatures.capture_spawn_events_authoritative = False
-
-                quest_state = QuestSpawnState(spawn_entries=tuple(spawn_entries))
-                self._quest_spawn_state = quest_state
-
-                return DeterministicSession(
+                session, quest_state = build_quest_session(
                     world=self.world,
                     world_size=float(self.world_size),
                     damage_scale_by_type=damage_scale_by_type,
                     fx_queue=self.fx_queue,
                     fx_queue_rotated=self.fx_queue_rotated,
-                    game_mode=GameMode.QUESTS,
-                    perk_progression_enabled=True,
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
@@ -349,8 +332,12 @@ class PlaybackDriver:
                     apply_world_dt_steps=bool(apply_world_dt_steps),
                     clear_fx_queues_each_tick=True,
                     finalize_post_render_lifecycle=True,
-                    post_step_hook=lambda ctx: quest_post_step(ctx, quest_state),
+                    spawn_entries=tuple(spawn_entries),
+                    quest_level=quest_level,
+                    start_weapon_id=start_weapon_id,
                 )
+                self._quest_spawn_state = quest_state
+                return session
             case _:
                 raise ReplayRunnerError(f"unsupported replay game_mode_id={int(self.mode_id)}")
 
@@ -508,6 +495,22 @@ class PlaybackDriver:
     @property
     def quest_spawn_state(self) -> QuestSpawnState | None:
         return self._quest_spawn_state
+
+    @property
+    def quest_definition(self) -> QuestDefinition | None:
+        return self._quest_definition
+
+    @property
+    def quest_total_spawn_count(self) -> int:
+        return int(self._quest_total_spawn_count)
+
+    @property
+    def terrain_slots(self) -> TerrainSlotTriplet | None:
+        return self._terrain_slots
+
+    @property
+    def terrain_seed(self) -> int | None:
+        return self._terrain_seed
 
 
 def build_verify_playback_driver(
