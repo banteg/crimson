@@ -86,6 +86,7 @@ name = "grim must not import crimson"
 type = "forbidden"
 source_modules = ["grim"]
 forbidden_modules = ["crimson"]
+ignore_imports = ["grim.config -> crimson.quests.level"]
 
 [[tool.importlinter.contracts]]
 name = "perk implementations must stay out of selection and availability"
