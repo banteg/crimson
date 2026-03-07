@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import msgspec
 
+from ..msgspec_types import NonNegativeInt, SignedIndex
+
 
 class SlotState(msgspec.Struct, forbid_unknown_fields=True):
-    slot_index: int = -1
+    slot_index: SignedIndex = -1
     connected: bool = False
     ready: bool = False
     is_host: bool = False
@@ -12,8 +14,8 @@ class SlotState(msgspec.Struct, forbid_unknown_fields=True):
 
 
 class PacketHeader(msgspec.Struct, forbid_unknown_fields=True):
-    seq: int = 0
-    ack: int = 0
+    seq: NonNegativeInt = 0
+    ack: NonNegativeInt = 0
     reliable: bool = False
 
 

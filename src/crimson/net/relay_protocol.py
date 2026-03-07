@@ -4,6 +4,7 @@ from typing import Literal, TypeAlias
 
 import msgspec
 
+from ..msgspec_types import NonNegativeInt, PlayerCount, PositiveInt, SignedIndex
 from ..quests.level import QuestLevel
 from ..replay.types import PackedPlayerInput
 from .lockstep_protocol import (
@@ -53,12 +54,12 @@ class ClientWelcome(msgspec.Struct, tag="client_welcome", forbid_unknown_fields=
 
 class RoomCreate(msgspec.Struct, tag="room_create", forbid_unknown_fields=True):
     mode_id: int = 0
-    player_count: int = 1
+    player_count: PlayerCount = 1
     quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
-    tick_rate: int = TICK_RATE
-    input_delay_ticks: int = INPUT_DELAY_TICKS
-    rollback_max_ticks: int = ROLLBACK_MAX_TICKS
+    tick_rate: PositiveInt = TICK_RATE
+    input_delay_ticks: NonNegativeInt = INPUT_DELAY_TICKS
+    rollback_max_ticks: PositiveInt = ROLLBACK_MAX_TICKS
     netcode_mode: NetcodeMode = "rollback"
     status_snapshot: StatusSnapshot | None = None
 
@@ -77,12 +78,12 @@ class RoomState(msgspec.Struct, tag="room_state", forbid_unknown_fields=True):
     room_code: str = ""
     session_id: str = ""
     mode_id: int = 0
-    player_count: int = 1
+    player_count: PlayerCount = 1
     quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
-    tick_rate: int = TICK_RATE
-    input_delay_ticks: int = INPUT_DELAY_TICKS
-    rollback_max_ticks: int = ROLLBACK_MAX_TICKS
+    tick_rate: PositiveInt = TICK_RATE
+    input_delay_ticks: NonNegativeInt = INPUT_DELAY_TICKS
+    rollback_max_ticks: PositiveInt = ROLLBACK_MAX_TICKS
     netcode_mode: NetcodeMode = "rollback"
     slots: list[RelaySlot] = msgspec.field(default_factory=list)
     all_ready: bool = False
@@ -93,23 +94,23 @@ class RoomStart(msgspec.Struct, tag="room_start", forbid_unknown_fields=True):
     room_code: str = ""
     session_id: str = ""
     seed: int = 0
-    start_tick: int = 0
+    start_tick: NonNegativeInt = 0
     mode_id: int = 0
-    player_count: int = 1
+    player_count: PlayerCount = 1
     quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
-    tick_rate: int = TICK_RATE
-    input_delay_ticks: int = INPUT_DELAY_TICKS
-    rollback_max_ticks: int = ROLLBACK_MAX_TICKS
+    tick_rate: PositiveInt = TICK_RATE
+    input_delay_ticks: NonNegativeInt = INPUT_DELAY_TICKS
+    rollback_max_ticks: PositiveInt = ROLLBACK_MAX_TICKS
     netcode_mode: NetcodeMode = "rollback"
-    slot_index: int = -1
-    host_slot_index: int = 0
+    slot_index: SignedIndex = -1
+    host_slot_index: NonNegativeInt = 0
     reconnect_token: str = ""
     status_snapshot: StatusSnapshot | None = None
 
 
 class PeerDisconnect(msgspec.Struct, tag="peer_disconnect", forbid_unknown_fields=True):
-    slot_index: int = -1
+    slot_index: SignedIndex = -1
     reason: str = ""
 
 
@@ -118,48 +119,48 @@ class RelayError(msgspec.Struct, tag="relay_error", forbid_unknown_fields=True):
 
 
 class Ping(msgspec.Struct, tag="ping", forbid_unknown_fields=True):
-    stamp_ms: int = 0
+    stamp_ms: NonNegativeInt = 0
 
 
 class Pong(msgspec.Struct, tag="pong", forbid_unknown_fields=True):
-    stamp_ms: int = 0
+    stamp_ms: NonNegativeInt = 0
 
 
 class RbInputSample(msgspec.Struct, forbid_unknown_fields=True):
-    tick_index: int = 0
+    tick_index: NonNegativeInt = 0
     packed_input: PackedPlayerInput = msgspec.field(default_factory=list)
 
 
 class RbInputBatch(msgspec.Struct, tag="rb_input_sample", forbid_unknown_fields=True):
-    slot_index: int = -1
+    slot_index: SignedIndex = -1
     samples: list[RbInputSample] = msgspec.field(default_factory=list)
 
 
 class RbResyncRequest(msgspec.Struct, tag="rb_resync_request", forbid_unknown_fields=True):
     request_id: str = ""
-    from_tick: int = 0
+    from_tick: NonNegativeInt = 0
     reason: str = ""
-    requested_by_slot: int = -1
+    requested_by_slot: SignedIndex = -1
 
 
 class RbResyncBegin(msgspec.Struct, tag="rb_resync_begin", forbid_unknown_fields=True):
     request_id: str = ""
-    snapshot_tick: int = 0
+    snapshot_tick: NonNegativeInt = 0
     codec: str = "msgpack_state_v1"
-    total_chunks: int = 0
-    compressed_size: int = 0
-    uncompressed_size: int = 0
+    total_chunks: NonNegativeInt = 0
+    compressed_size: NonNegativeInt = 0
+    uncompressed_size: NonNegativeInt = 0
 
 
 class RbResyncChunk(msgspec.Struct, tag="rb_resync_chunk", forbid_unknown_fields=True):
     request_id: str = ""
-    chunk_index: int = 0
+    chunk_index: NonNegativeInt = 0
     payload: bytes = b""
 
 
 class RbResyncCommit(msgspec.Struct, tag="rb_resync_commit", forbid_unknown_fields=True):
     request_id: str = ""
-    snapshot_tick: int = 0
+    snapshot_tick: NonNegativeInt = 0
 
 
 class LockstepInputBatch(msgspec.Struct, tag="lockstep_state_input_batch", forbid_unknown_fields=True):

@@ -4,6 +4,7 @@ from typing import Literal, TypeAlias
 
 import msgspec
 
+from ..msgspec_types import NonNegativeInt, PlayerCount, PositiveInt
 from ..quests.level import QuestLevel
 from .lockstep_protocol import INPUT_DELAY_TICKS as LOCKSTEP_INPUT_DELAY_TICKS
 from .lockstep_protocol import PROTOCOL_VERSION as LOCKSTEP_PROTOCOL_VERSION
@@ -29,22 +30,22 @@ from .relay_protocol import (
 
 class LockstepSessionSettings(msgspec.Struct, frozen=True):
     mode_id: int = 0
-    player_count: int = 1
+    player_count: PlayerCount = 1
     quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
-    tick_rate: int = LOCKSTEP_TICK_RATE
-    input_delay_ticks: int = LOCKSTEP_INPUT_DELAY_TICKS
+    tick_rate: PositiveInt = LOCKSTEP_TICK_RATE
+    input_delay_ticks: NonNegativeInt = LOCKSTEP_INPUT_DELAY_TICKS
     netcode_mode: Literal["lockstep"] = "lockstep"
 
 
 class RelaySessionSettings(msgspec.Struct, frozen=True):
     mode_id: int = 0
-    player_count: int = 1
+    player_count: PlayerCount = 1
     quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
-    tick_rate: int = RELAY_TICK_RATE
-    input_delay_ticks: int = RELAY_INPUT_DELAY_TICKS
-    rollback_max_ticks: int = ROLLBACK_MAX_TICKS
+    tick_rate: PositiveInt = RELAY_TICK_RATE
+    input_delay_ticks: NonNegativeInt = RELAY_INPUT_DELAY_TICKS
+    rollback_max_ticks: PositiveInt = ROLLBACK_MAX_TICKS
     netcode_mode: NetcodeMode = "rollback"
 
 

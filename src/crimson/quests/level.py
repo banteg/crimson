@@ -1,15 +1,20 @@
 from __future__ import annotations
 
+from typing import Annotated, TypeAlias
+
 import msgspec
 
 QUEST_STAGE_COUNT = 5
 QUESTS_PER_STAGE = 10
 QUEST_COUNT = QUEST_STAGE_COUNT * QUESTS_PER_STAGE
 
+QuestStageMajor: TypeAlias = Annotated[int, msgspec.Meta(ge=1, le=QUEST_STAGE_COUNT)]
+QuestStageMinor: TypeAlias = Annotated[int, msgspec.Meta(ge=1, le=QUESTS_PER_STAGE)]
+
 
 class QuestLevel(msgspec.Struct, frozen=True):
-    major: int
-    minor: int
+    major: QuestStageMajor
+    minor: QuestStageMinor
 
     @classmethod
     def parse(cls, value: str) -> QuestLevel:
@@ -22,11 +27,16 @@ class QuestLevel(msgspec.Struct, frozen=True):
             minor = int(minor_text)
         except ValueError as exc:
             raise ValueError(f"invalid quest level: {value!r}") from exc
-        if not (1 <= major <= QUEST_STAGE_COUNT):
-            raise ValueError(f"quest stage out of range: {major} (expected 1..{QUEST_STAGE_COUNT})")
-        if not (1 <= minor <= QUESTS_PER_STAGE):
-            raise ValueError(f"quest row out of range: {minor} (expected 1..{QUESTS_PER_STAGE})")
-        return cls(major=major, minor=minor)
+        try:
+            return msgspec.convert(
+                {
+                    "major": major,
+                    "minor": minor,
+                },
+                type=cls,
+            )
+        except msgspec.ValidationError as exc:
+            raise ValueError(f"invalid quest level: {value!r}") from exc
 
     @classmethod
     def try_parse(cls, value: str | None) -> QuestLevel | None:
