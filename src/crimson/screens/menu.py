@@ -15,7 +15,7 @@ from grim.terrain_render import GroundRenderer
 from ..game.types import GameState
 from ..sim.bootstrap import terrain_stamping_draws
 from ..terrain_slots import (
-    choose_menu_terrain_slots,
+    choose_unlock_terrain_slots,
     terrain_slots_to_texture_ids,
 )
 from ..ui.cursor import draw_menu_cursor
@@ -91,8 +91,8 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
 
     if ground is None or explicit_regenerate:
         base_id, overlay_id, detail_id = terrain_slots_to_texture_ids(
-            choose_menu_terrain_slots(
-                quest_unlock_index=int(state.status.quest_unlock_index),
+            choose_unlock_terrain_slots(
+                unlock_index=int(state.status.quest_unlock_index),
                 rand=lambda: state.rng.rand(),
             ),
         )

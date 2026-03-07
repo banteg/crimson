@@ -6,7 +6,7 @@ from grim.rand import CrandLike
 
 from ..terrain_slots import (
     TerrainSlotTriplet,
-    choose_menu_terrain_slots,
+    choose_unlock_terrain_slots,
 )
 
 BOOTSTRAP_KIND_NONE = "none"
@@ -76,7 +76,7 @@ def run_terrain_bootstrap(
         selection_draws += 1
         return int(rng.rand())
 
-    terrain_slots = choose_menu_terrain_slots(quest_unlock_index=int(quest_unlock_index), rand=_rand)
+    terrain_slots = choose_unlock_terrain_slots(unlock_index=int(quest_unlock_index), rand=_rand)
     terrain_seed = int(rng.state)
 
     stamping_draws = terrain_stamping_draws(width=int(width), height=int(height), layers=int(layers))

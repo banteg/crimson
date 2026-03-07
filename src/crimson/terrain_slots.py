@@ -13,7 +13,7 @@ Q3_TERRAIN_SLOTS: TerrainSlotTriplet = (4, 5, 4)
 Q4_TERRAIN_SLOTS: TerrainSlotTriplet = (6, 7, 6)
 DEFAULT_TERRAIN_SLOTS: TerrainSlotTriplet = Q1_TERRAIN_SLOTS
 
-MENU_UNLOCK_TERRAIN_SLOTS: dict[int, TerrainSlotTriplet] = {
+UNLOCK_TERRAIN_SLOTS: dict[int, TerrainSlotTriplet] = {
     40: Q4_TERRAIN_SLOTS,  # after quest 4.10 "The End of All"
     30: Q3_TERRAIN_SLOTS,  # after quest 3.10 "Zombie Masters"
     20: Q2_TERRAIN_SLOTS,  # after quest 2.10 "Spideroids"
@@ -42,14 +42,14 @@ def terrain_slots_for_level(major: int, minor: int) -> TerrainSlotTriplet:
     return quest & 3, 1, 3
 
 
-def choose_menu_terrain_slots(
+def choose_unlock_terrain_slots(
     *,
-    quest_unlock_index: int,
+    unlock_index: int,
     rand: Callable[[], int],
 ) -> TerrainSlotTriplet:
     # Keep the thresholds descending to preserve the native chained 1/8 roll order.
-    for threshold, slots in MENU_UNLOCK_TERRAIN_SLOTS.items():
-        if quest_unlock_index >= threshold and (rand() & 7) == 3:
+    for threshold, slots in UNLOCK_TERRAIN_SLOTS.items():
+        if unlock_index >= threshold and (rand() & 7) == 3:
             return slots
     return DEFAULT_TERRAIN_SLOTS
 
@@ -66,13 +66,13 @@ def terrain_slots_to_texture_ids(
 
 __all__ = [
     "DEFAULT_TERRAIN_SLOTS",
-    "MENU_UNLOCK_TERRAIN_SLOTS",
+    "UNLOCK_TERRAIN_SLOTS",
     "Q1_TERRAIN_SLOTS",
     "Q2_TERRAIN_SLOTS",
     "Q3_TERRAIN_SLOTS",
     "Q4_TERRAIN_SLOTS",
     "TerrainSlotTriplet",
-    "choose_menu_terrain_slots",
+    "choose_unlock_terrain_slots",
     "terrain_slots_for_level",
     "terrain_slots_to_texture_ids",
 ]
