@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import math
 
+from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ..game.types import GameState
 from ..pause_background import PauseBackground
-from .assets import MenuAssets, load_menu_assets
+from .assets import require_runtime_resources
 from .menu import (
     MENU_ITEM_OFFSET_X,
     MENU_ITEM_OFFSET_Y,
@@ -44,7 +45,6 @@ class PauseMenuView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._is_open = False
-        self._assets: MenuAssets | None = None
         self._menu_entries: list[MenuEntry] = []
         self._selected_index = 0
         self._focus_timer_ms = 0
@@ -63,8 +63,6 @@ class PauseMenuView:
         layout_w = float(self.state.config.screen_width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self.state)
-
         ys = [
             MENU_LABEL_BASE_Y + self._widescreen_y_shift,
             MENU_LABEL_BASE_Y + MENU_LABEL_STEP + self._widescreen_y_shift,
@@ -89,7 +87,6 @@ class PauseMenuView:
 
     def close(self) -> None:
         self._is_open = False
-        self._assets = None
         self._menu_entries = []
 
     def update(self, dt: float) -> None:
@@ -160,8 +157,6 @@ class PauseMenuView:
             pause_background.draw_pause_background(entity_alpha=self._pause_background_entity_alpha())
         _draw_screen_fade(self.state)
 
-        assets = self._assets
-        assert assets is not None, "PauseMenuView assets must be loaded before draw()"
         self._draw_menu_items()
         self._draw_menu_sign()
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
@@ -252,10 +247,9 @@ class PauseMenuView:
         return angle, offset_x
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
-        assets = self._assets
-        assert assets is not None, "PauseMenuView assets must be loaded before computing menu bounds"
-        item_w = float(assets.item.width)
-        item_h = float(assets.item.height)
+        item = require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM)
+        item_w = float(item.width)
+        item_h = float(item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
         offset_min = Vec2(
             MENU_ITEM_OFFSET_X * item_scale,
@@ -302,12 +296,11 @@ class PauseMenuView:
         return self._timeline_ms >= MenuView._menu_slot_start_ms(entry.slot)
 
     def _draw_menu_items(self) -> None:
-        assets = self._assets
-        assert assets is not None, "PauseMenuView assets must be loaded before drawing menu items"
         if not self._menu_entries:
             return
-        item = assets.item
-        label_tex = assets.labels
+        resources = require_runtime_resources(self.state)
+        item = resources.texture(TextureId.UI_MENU_ITEM)
+        label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         item_w = float(item.width)
         item_h = float(item.height)
         fx_detail = self.state.config.fx_detail(level=0, default=False)
@@ -392,8 +385,6 @@ class PauseMenuView:
                 rl.end_blend_mode()
 
     def _draw_menu_sign(self) -> None:
-        assets = self._assets
-        assert assets is not None, "PauseMenuView assets must be loaded before drawing sign"
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
@@ -414,7 +405,7 @@ class PauseMenuView:
             )
             _ = slide_x
             rotation_deg = math.degrees(angle_rad)
-        sign = assets.sign
+        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(

@@ -19,7 +19,7 @@ from ..terrain_slots import (
 )
 from ..ui.cursor import draw_menu_cursor
 from ..ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
-from .assets import MenuAssets, load_menu_assets, require_runtime_resources
+from .assets import require_runtime_resources
 from .transitions import _draw_screen_fade
 
 MENU_LABEL_WIDTH = 122.0
@@ -161,7 +161,6 @@ class MenuView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._is_open = False
-        self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._menu_entries: list[MenuEntry] = []
         self._selected_index = 0
@@ -184,7 +183,6 @@ class MenuView:
         layout_w = float(self.state.config.screen_width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = self._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self.state)
         # Shareware gating is controlled by the --demo flag (see GameState.demo_enabled),
         # not by a persisted config byte.
         self._full_version = not self.state.demo_enabled
@@ -314,8 +312,6 @@ class MenuView:
         if self._ground is not None:
             self._ground.draw(menu_ground_camera(self.state))
         _draw_screen_fade(self.state)
-        assets = self._assets
-        assert assets is not None, "MenuView assets must be loaded before draw()"
         self._draw_menu_items()
         self._draw_menu_sign()
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
@@ -415,12 +411,11 @@ class MenuView:
         return [show_top, True, True, True, True, False]
 
     def _draw_menu_items(self) -> None:
-        assets = self._assets
-        assert assets is not None, "MenuView assets must be loaded before drawing menu items"
         if not self._menu_entries:
             return
-        item = assets.item
-        label_tex = assets.labels
+        resources = require_runtime_resources(self.state)
+        item = resources.texture(TextureId.UI_MENU_ITEM)
+        label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         item_w = float(item.width)
         item_h = float(item.height)
         fx_detail = self.state.config.fx_detail(level=0, default=False)
@@ -564,10 +559,10 @@ class MenuView:
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         # FUN_0044fb50: inset bounds derived from quad0 v0/v2 and pos_x/pos_y.
-        assets = self._assets
-        assert assets is not None, "MenuView assets must be loaded before computing menu bounds"
-        item_w = float(assets.item.width)
-        item_h = float(assets.item.height)
+        resources = require_runtime_resources(self.state)
+        item = resources.texture(TextureId.UI_MENU_ITEM)
+        item_w = float(item.width)
+        item_h = float(item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
         offset_min = Vec2(
             MENU_ITEM_OFFSET_X * item_scale,
@@ -666,8 +661,6 @@ class MenuView:
         draw_ui_quad_shadow(texture=texture, src=src, dst=dst, origin=origin, rotation_deg=rotation_deg)
 
     def _draw_menu_sign(self) -> None:
-        assets = self._assets
-        assert assets is not None, "MenuView assets must be loaded before drawing sign"
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = self._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
@@ -688,7 +681,7 @@ class MenuView:
             )
             _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
             rotation_deg = math.degrees(angle_rad)
-        sign = assets.sign
+        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             self._draw_ui_quad_shadow(

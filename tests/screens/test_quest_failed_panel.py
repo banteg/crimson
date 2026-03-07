@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -11,6 +12,7 @@ from crimson.screens.quest_views import QUEST_FAILED_PANEL_SLIDE_DURATION_MS, QU
 from crimson.weapons import WeaponId
 from grim import music as grim_music
 from grim import sfx as grim_sfx
+from grim.assets import RuntimeResources
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -33,11 +35,23 @@ def _texture_stub() -> rl.Texture:
     return SimpleNamespace(width=1, height=1)  # type: ignore[return-value]
 
 
+def _resources_stub() -> RuntimeResources:
+    tex = _texture_stub()
+    return cast(
+        "RuntimeResources",
+        SimpleNamespace(
+            texture=lambda _texture_id: tex,
+            small_font=SimpleNamespace(cell_size=8, widths=[8] * 256),
+        ),
+    )
+
+
 @pytest.fixture
 def quest_failed_state(make_game_state, tmp_path):
     state = make_game_state(assets_root=tmp_path, audio=_dummy_audio_state())
     # Avoid ground/menu asset loading in tests.
     state.pause_background = _PauseBackgroundStub()
+    state.resources = _resources_stub()
     return state
 
 
@@ -103,13 +117,7 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, quest_failed_stat
     state.quest_fail_retry_count = 2
 
     play_sfx = mocker.Mock()
-
-    class _DummyResources:
-        def texture(self, *_args, **_kwargs):
-            return _texture_stub()
-
     mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(quest_failed_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
     mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
     mocker.patch.object(quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER))
 
@@ -136,13 +144,7 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, quest_failed_state, mocker
     state.quest_fail_retry_count = 4
 
     play_sfx = mocker.Mock()
-
-    class _DummyResources:
-        def texture(self, *_args, **_kwargs):
-            return _texture_stub()
-
     mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(quest_failed_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
     mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
     mocker.patch.object(quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_Q))
 
@@ -168,13 +170,7 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_fai
     state.quest_fail_retry_count = 4
 
     play_sfx = mocker.Mock()
-
-    class _DummyResources:
-        def texture(self, *_args, **_kwargs):
-            return _texture_stub()
-
     mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(quest_failed_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
     mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
     mocker.patch.object(quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE))
 
@@ -199,11 +195,6 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, quest_faile
     state.quest_outcome = _failed_outcome()
     view = QuestFailedView(state)
 
-    class _DummyResources:
-        def texture(self, *_args, **_kwargs):
-            return _texture_stub()
-
-    mocker.patch.object(quest_failed_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
     view.open()
 
     drawn_text: list[str] = []
@@ -224,8 +215,7 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, quest_faile
     mocker.patch.object(quest_failed_module.rl, "draw_rectangle", side_effect=_draw_rect)
     mocker.patch.object(quest_failed_module.rl, "measure_text", side_effect=lambda text, _size: len(str(text)) * 8)
 
-    view._small_font = None
-    view._draw_score_preview(None, panel_top_left=Vec2(-108.0, 29.0))  # type: ignore[arg-type]
+    view._draw_score_preview(state.resources.small_font, panel_top_left=Vec2(-108.0, 29.0))
 
     assert "Score" in drawn_text
     assert "Experience" in drawn_text
@@ -241,13 +231,7 @@ def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_stat
     state.quest_outcome = _failed_outcome()
     pause_background = mocker.Mock()
     state.pause_background = pause_background
-
-    class _DummyResources:
-        def texture(self, *_args, **_kwargs):
-            return _texture_stub()
-
     view = QuestFailedView(state)
-    mocker.patch.object(quest_failed_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
     mocker.patch.object(quest_failed_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(quest_failed_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
@@ -257,7 +241,6 @@ def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_stat
     mocker.patch.object(quest_failed_module.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
-    mocker.patch.object(view, "_ensure_small_font", side_effect=lambda: SimpleNamespace())
     mocker.patch.object(view, "_draw_score_preview", side_effect=lambda *_args, **_kwargs: None)
 
     view.open()

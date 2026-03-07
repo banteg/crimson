@@ -7,9 +7,7 @@ import msgspec
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import (
-    SmallFontData,
     draw_small_text,
-    load_small_font,
 )
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -18,7 +16,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ..assets import require_runtime_resources
 from ..menu import (
     MENU_PANEL_WIDTH,
     MENU_SCALE_SMALL_THRESHOLD,
@@ -130,10 +128,7 @@ class AlienZooKeeperView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._is_open = False
-        self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
-        self._small_font: SmallFontData | None = None
-        self._alien_texture: rl.Texture | None = None
 
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
@@ -156,13 +151,7 @@ class AlienZooKeeperView:
     def open(self) -> None:
         layout_w = float(self.state.config.screen_width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self.state)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._small_font = None
-
-        cache = _ensure_texture_cache(self.state)
-        self._alien_texture = cache.texture(TextureId.ALIEN)
-
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
@@ -180,11 +169,7 @@ class AlienZooKeeperView:
 
     def close(self) -> None:
         self._is_open = False
-        if self._small_font is not None:
-            self._small_font = None
-        self._assets = None
         self._ground = None
-        self._alien_texture = None
         self._action = None
         self._closing = False
         self._close_action = None
@@ -211,12 +196,6 @@ class AlienZooKeeperView:
             return
         self._closing = True
         self._close_action = action
-
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
 
     def _panel_slide_x(self, *, scale: float) -> float:
         panel_w = MENU_PANEL_WIDTH * scale
@@ -381,7 +360,7 @@ class AlienZooKeeperView:
         if click:
             self._resolve_tile_click(layout=layout, mouse=mouse)
 
-        font = self._ensure_small_font()
+        font = require_runtime_resources(self.state).small_font
         dt_ms_f = dt_clamped * 1000.0
 
         reset_w = button_width(font, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide)
@@ -422,12 +401,11 @@ class AlienZooKeeperView:
             self._ground.draw(menu_ground_camera(self.state))
         _draw_screen_fade(self.state)
 
-        font = self._ensure_small_font()
+        resources = require_runtime_resources(self.state)
+        font = resources.small_font
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         layout = self._layout(scale=scale)
 
-        assets = self._assets
-        assert assets is not None, "AlienZooKeeperView assets must be loaded before draw()"
         dst = rl.Rectangle(
             layout.panel_x,
             layout.panel_y,
@@ -435,7 +413,7 @@ class AlienZooKeeperView:
             378.0 * scale,
         )
         fx_detail = self.state.config.fx_detail(level=0, default=False)
-        draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
+        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
         draw_small_text(font, _TITLE, Vec2(layout.title_x, layout.title_y), rl.WHITE)
         draw_small_text(font, _SUBTITLE_1, Vec2(layout.subtitle_1_x, layout.subtitle_1_y), rl.WHITE)
@@ -476,43 +454,41 @@ class AlienZooKeeperView:
             rl.draw_rectangle_rec(sel_rect, _to_color(0.2, 0.4, 0.7, 0.4))
             rl.draw_rectangle_lines_ex(sel_rect, max(1.0, scale), rl.WHITE)
 
-        alien = self._alien_texture
-        if alien is not None:
-            frame_w = float(alien.width) / 8.0
-            frame_h = float(alien.height) / 8.0
-            for index, tile in enumerate(self._board):
-                if tile == -3:
-                    continue
-                row = index // _BOARD_SIDE
-                col = index % _BOARD_SIDE
-                anim_frame = ((self._anim_time_ms // 50) + (tile * 2)) % 32
-                src_col = anim_frame % 8
-                src_row = anim_frame // 8
-                src = rl.Rectangle(src_col * frame_w, src_row * frame_h, frame_w, frame_h)
-                dst = rl.Rectangle(
-                    layout.board_x + col * layout.tile_size,
-                    layout.board_y + row * layout.tile_size,
-                    layout.tile_size,
-                    layout.tile_size,
-                )
-                if tile == 0:
-                    tint = _to_color(1.0, 0.5, 0.5, 1.0)
-                elif tile == 1:
-                    tint = _to_color(0.5, 0.5, 1.0, 1.0)
-                elif tile == 2:
-                    tint = _to_color(1.0, 0.5, 1.0, 1.0)
-                elif tile == 3:
-                    tint = _to_color(0.5, 1.0, 1.0, 1.0)
-                elif tile == 4:
-                    tint = _to_color(1.0, 1.0, 0.5, 1.0)
-                else:
-                    tint = rl.WHITE
-                rl.draw_texture_pro(alien, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+        alien = resources.texture(TextureId.ALIEN)
+        frame_w = float(alien.width) / 8.0
+        frame_h = float(alien.height) / 8.0
+        for index, tile in enumerate(self._board):
+            if tile == -3:
+                continue
+            row = index // _BOARD_SIDE
+            col = index % _BOARD_SIDE
+            anim_frame = ((self._anim_time_ms // 50) + (tile * 2)) % 32
+            src_col = anim_frame % 8
+            src_row = anim_frame // 8
+            src = rl.Rectangle(src_col * frame_w, src_row * frame_h, frame_w, frame_h)
+            dst = rl.Rectangle(
+                layout.board_x + col * layout.tile_size,
+                layout.board_y + row * layout.tile_size,
+                layout.tile_size,
+                layout.tile_size,
+            )
+            if tile == 0:
+                tint = _to_color(1.0, 0.5, 0.5, 1.0)
+            elif tile == 1:
+                tint = _to_color(0.5, 0.5, 1.0, 1.0)
+            elif tile == 2:
+                tint = _to_color(1.0, 0.5, 1.0, 1.0)
+            elif tile == 3:
+                tint = _to_color(0.5, 1.0, 1.0, 1.0)
+            elif tile == 4:
+                tint = _to_color(1.0, 1.0, 0.5, 1.0)
+            else:
+                tint = rl.WHITE
+            rl.draw_texture_pro(alien, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
         if self._timer_ms == 0 and math.cos(float(self._anim_time_ms) * 0.005) > 0.0:
             draw_small_text(font, _LABEL_GAME_OVER, Vec2(layout.game_over_x, layout.game_over_y), rl.WHITE)
 
-        resources = _ensure_texture_cache(self.state)
         reset_w = button_width(font, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide)
         button_draw(
             resources,
@@ -537,9 +513,7 @@ class AlienZooKeeperView:
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def _draw_sign(self) -> None:
-        assets = self._assets
-        assert assets is not None, "AlienZooKeeperView assets must be loaded before drawing sign"
-        sign = assets.sign
+        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(

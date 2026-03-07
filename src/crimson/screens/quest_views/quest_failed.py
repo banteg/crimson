@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -13,7 +13,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
-from ..assets import _ensure_texture_cache
+from ..assets import require_runtime_resources
 from ..menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ..transitions import _draw_screen_fade
 from .shared import (
@@ -55,9 +55,6 @@ class QuestFailedView:
         self._intro_ms = 0.0
         self._closing = False
         self._close_action: str | None = None
-        self._small_font: SmallFontData | None = None
-        self._panel_tex: rl.Texture | None = None
-        self._reaper_tex: rl.Texture | None = None
         self._retry_button = UiButtonState("Play Again", force_wide=True)
         self._quest_list_button = UiButtonState("Play Another", force_wide=True)
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
@@ -73,9 +70,6 @@ class QuestFailedView:
         self.state.quest_outcome = None
         self._quest_title = ""
         self._record = None
-        self._small_font = None
-        self._panel_tex = None
-        self._reaper_tex = None
         self._retry_button = UiButtonState("Play Again", force_wide=True)
         self._quest_list_button = UiButtonState("Play Another", force_wide=True)
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
@@ -88,17 +82,11 @@ class QuestFailedView:
 
         self._build_score_preview(outcome)
 
-        cache = _ensure_texture_cache(self.state)
-        self._panel_tex = cache.texture(TextureId.UI_MENU_PANEL)
-        self._reaper_tex = cache.texture(TextureId.UI_TEXT_REAPER)
     def close(self) -> None:
         self._ground = None
         self._outcome = None
         self._record = None
         self._quest_title = ""
-        self._small_font = None
-        self._panel_tex = None
-        self._reaper_tex = None
     def update(self, dt: float) -> None:
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
@@ -133,7 +121,7 @@ class QuestFailedView:
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        font = self._ensure_small_font()
+        font = require_runtime_resources(self.state).small_font
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET * scale, QUEST_FAILED_BUTTON_Y_OFFSET * scale)
 
         retry_w = button_width(font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
@@ -194,75 +182,72 @@ class QuestFailedView:
         _draw_screen_fade(self.state)
 
         panel_top_left = self._panel_top_left()
-        panel_tex = self._panel_tex
-        if panel_tex is not None:
-            panel = rl.Rectangle(
-                panel_top_left.x,
-                panel_top_left.y,
-                float(QUEST_FAILED_PANEL_W),
-                float(QUEST_FAILED_PANEL_H),
-            )
-            fx_detail = self.state.config.fx_detail(level=0, default=False)
-            draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=fx_detail)
+        resources = require_runtime_resources(self.state)
+        panel_tex = resources.texture(TextureId.UI_MENU_PANEL)
+        panel = rl.Rectangle(
+            panel_top_left.x,
+            panel_top_left.y,
+            float(QUEST_FAILED_PANEL_W),
+            float(QUEST_FAILED_PANEL_H),
+        )
+        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
-        reaper_tex = self._reaper_tex
-        if reaper_tex is not None:
-            src = rl.Rectangle(0.0, 0.0, float(reaper_tex.width), float(reaper_tex.height))
-            banner_pos = panel_top_left + Vec2(QUEST_FAILED_BANNER_X_OFFSET, QUEST_FAILED_BANNER_Y_OFFSET)
-            dst = rl.Rectangle(
-                banner_pos.x,
-                banner_pos.y,
-                float(QUEST_FAILED_BANNER_W),
-                float(QUEST_FAILED_BANNER_H),
-            )
-            rl.draw_texture_pro(reaper_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        reaper_tex = resources.texture(TextureId.UI_TEXT_REAPER)
+        src = rl.Rectangle(0.0, 0.0, float(reaper_tex.width), float(reaper_tex.height))
+        banner_pos = panel_top_left + Vec2(QUEST_FAILED_BANNER_X_OFFSET, QUEST_FAILED_BANNER_Y_OFFSET)
+        dst = rl.Rectangle(
+            banner_pos.x,
+            banner_pos.y,
+            float(QUEST_FAILED_BANNER_W),
+            float(QUEST_FAILED_BANNER_H),
+        )
+        rl.draw_texture_pro(reaper_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
-        font = self._ensure_small_font()
+        font = resources.small_font
         text_color = rl.Color(235, 235, 235, 255)
         draw_small_text(font, self._failure_message(), panel_top_left + Vec2(QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET), text_color)
         self._draw_score_preview(font, panel_top_left=panel_top_left)
 
-        resources = _ensure_texture_cache(self.state)
-        if resources is not None:
-            scale = 1.0
-            button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
+        scale = 1.0
+        button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
-            retry_w = button_width(
-                font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide,
-            )
-            button_draw(resources, font, self._retry_button, pos=button_pos, width=retry_w, scale=scale)
-            button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
+        retry_w = button_width(
+            font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide,
+        )
+        button_draw(resources, font, self._retry_button, pos=button_pos, width=retry_w, scale=scale)
+        button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
-            play_another_w = button_width(
-                font,
-                self._quest_list_button.label,
-                scale=scale,
-                force_wide=self._quest_list_button.force_wide,
-            )
-            button_draw(
-                resources,
-                font,
-                self._quest_list_button,
-                pos=button_pos,
-                width=play_another_w,
-                scale=scale,
-            )
-            button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
+        play_another_w = button_width(
+            font,
+            self._quest_list_button.label,
+            scale=scale,
+            force_wide=self._quest_list_button.force_wide,
+        )
+        button_draw(
+            resources,
+            font,
+            self._quest_list_button,
+            pos=button_pos,
+            width=play_another_w,
+            scale=scale,
+        )
+        button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
-            main_menu_w = button_width(
-                font,
-                self._main_menu_button.label,
-                scale=scale,
-                force_wide=self._main_menu_button.force_wide,
-            )
-            button_draw(
-                resources,
-                font,
-                self._main_menu_button,
-                pos=button_pos,
-                width=main_menu_w,
-                scale=scale,
-            )
+        main_menu_w = button_width(
+            font,
+            self._main_menu_button.label,
+            scale=scale,
+            force_wide=self._main_menu_button.force_wide,
+        )
+        button_draw(
+            resources,
+            font,
+            self._main_menu_button,
+            pos=button_pos,
+            width=main_menu_w,
+            scale=scale,
+        )
 
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
@@ -383,10 +368,8 @@ class QuestFailedView:
         self._close_action = action
 
     def _text_width(self, text: str, scale: float) -> float:
-        font = self._small_font
-        if font is None:
-            return float(rl.measure_text(text, int(20 * scale)))
-        return float(measure_small_text_width(font, text))
+        del scale
+        return float(measure_small_text_width(require_runtime_resources(self.state).small_font, text))
 
     def _draw_score_preview(self, font: SmallFontData, *, panel_top_left: Vec2) -> None:
         record = self._record
@@ -420,13 +403,6 @@ class QuestFailedView:
         # `FUN_004411c0`: horizontal 192px separator at x-16 after the score row.
         line_pos = score_pos + Vec2(-16.0, 52.0)
         rl.draw_rectangle(int(line_pos.x), int(line_pos.y), int(192.0), int(1.0), separator_color)
-
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
-
 
 __all__ = [
     "QUEST_FAILED_PANEL_SLIDE_DURATION_MS",

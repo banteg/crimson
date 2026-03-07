@@ -4,7 +4,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -25,18 +25,11 @@ class _ModsContentLayout(msgspec.Struct, frozen=True):
 class ModsMenuView(PanelMenuView):
     def __init__(self, state: GameState) -> None:
         super().__init__(state, title="Mods")
-        self._small_font: SmallFontData | None = None
         self._lines: list[str] = []
 
     def open(self) -> None:
         super().open()
         self._lines = self._build_lines()
-
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
 
     def _content_layout(self) -> _ModsContentLayout:
         panel_scale, _local_shift = self._menu_item_scale(0)
@@ -92,7 +85,7 @@ class ModsMenuView(PanelMenuView):
         label_pos = layout.label_pos
         scale = layout.scale
 
-        font = self._ensure_small_font()
+        font = require_runtime_resources(self.state).small_font
         title_color = rl.Color(255, 255, 255, 255)
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
@@ -102,3 +95,4 @@ class ModsMenuView(PanelMenuView):
         for line in self._lines:
             draw_small_text(font, line, line_pos, text_color)
             line_pos = line_pos.offset(dy=line_step)
+from ..assets import require_runtime_resources

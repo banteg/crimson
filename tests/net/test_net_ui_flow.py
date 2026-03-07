@@ -21,7 +21,7 @@ def _stub_runtime_resources(assets_dir: Path) -> RuntimeResources:
     return RuntimeResources(
         assets_dir=assets_dir,
         textures={texture_id: tex for texture_id in TextureId},
-        small_font=cast(SmallFontData, SimpleNamespace(cell_size=8)),
+        small_font=cast(SmallFontData, SimpleNamespace(cell_size=8, widths=[8] * 256)),
     )
 
 
@@ -134,7 +134,6 @@ def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, moc
         "measure_small_text_width",
         side_effect=lambda _font, text: float(len(str(text)) * 8),
     )
-    mocker.patch.object(panel, "_ensure_small_font", side_effect=lambda: SimpleNamespace(cell_size=8))
     mocker.patch.object(
         panel,
         "_layout",

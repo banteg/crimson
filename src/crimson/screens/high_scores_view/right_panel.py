@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -97,8 +98,8 @@ def _saved_score_names(view: "HighScoresView") -> list[str]:
 
 
 def _draw_dropdown(
-    view: "HighScoresView",
     *,
+    resources: RuntimeResources,
     font: SmallFontData,
     widget_pos: Vec2,
     widget_w: float,
@@ -144,20 +145,21 @@ def _draw_dropdown(
             rl.Color(255, 255, 255, 128),
         )
 
-    arrow_tex = view._drop_on if ((is_open or hovered_header) and enabled) else view._drop_off
-    if arrow_tex is None:
-        arrow_tex = view._drop_off
-    if arrow_tex is not None:
-        arrow_w = float(arrow_tex.width) * scale
-        arrow_h = float(arrow_tex.height) * scale
-        rl.draw_texture_pro(
-            arrow_tex,
-            rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
-            rl.Rectangle(arrow_pos.x, arrow_pos.y, arrow_w, arrow_h),
-            rl.Vector2(0.0, 0.0),
-            0.0,
-            rl.WHITE,
-        )
+    arrow_tex = (
+        resources.texture(TextureId.UI_DROP_ON)
+        if ((is_open or hovered_header) and enabled)
+        else resources.texture(TextureId.UI_DROP_OFF)
+    )
+    arrow_w = float(arrow_tex.width) * scale
+    arrow_h = float(arrow_tex.height) * scale
+    rl.draw_texture_pro(
+        arrow_tex,
+        rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
+        rl.Rectangle(arrow_pos.x, arrow_pos.y, arrow_w, arrow_h),
+        rl.Vector2(0.0, 0.0),
+        0.0,
+        rl.WHITE,
+    )
 
     if item_count <= 0:
         return
@@ -188,16 +190,24 @@ def _draw_dropdown(
 def draw_right_panel(
     view: "HighScoresView",
     *,
+    resources: RuntimeResources,
     font: SmallFontData,
     right_top_left: Vec2,
     scale: float,
     highlight_rank: int | None,
 ) -> None:
     if highlight_rank is None:
-        _draw_right_panel_quest_options(view, font=font, right_top_left=right_top_left, scale=scale)
+        _draw_right_panel_quest_options(
+            view,
+            resources=resources,
+            font=font,
+            right_top_left=right_top_left,
+            scale=scale,
+        )
         return
     _draw_right_panel_local_score(
         view,
+        resources=resources,
         font=font,
         right_top_left=right_top_left,
         scale=scale,
@@ -208,6 +218,7 @@ def draw_right_panel(
 def _draw_right_panel_quest_options(
     view: "HighScoresView",
     *,
+    resources: RuntimeResources,
     font: SmallFontData,
     right_top_left: Vec2,
     scale: float,
@@ -217,23 +228,26 @@ def _draw_right_panel_quest_options(
     text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
     # Checkbox: "Show internet scores"
-    check_tex = view._check_on if view.state.config.score_load_gate else view._check_off
-    if check_tex is not None:
-        check_w = float(check_tex.width) * scale
-        check_h = float(check_tex.height) * scale
-        rl.draw_texture_pro(
-            check_tex,
-            rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
-            rl.Rectangle(
-                options_top_left.x + HS_RIGHT_CHECK_X * scale,
-                options_top_left.y + HS_RIGHT_CHECK_Y * scale,
-                check_w,
-                check_h,
-            ),
-            rl.Vector2(0.0, 0.0),
-            0.0,
-            rl.WHITE,
-        )
+    check_tex = (
+        resources.texture(TextureId.UI_CHECK_ON)
+        if view.state.config.score_load_gate
+        else resources.texture(TextureId.UI_CHECK_OFF)
+    )
+    check_w = float(check_tex.width) * scale
+    check_h = float(check_tex.height) * scale
+    rl.draw_texture_pro(
+        check_tex,
+        rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
+        rl.Rectangle(
+            options_top_left.x + HS_RIGHT_CHECK_X * scale,
+            options_top_left.y + HS_RIGHT_CHECK_Y * scale,
+            check_w,
+            check_h,
+        ),
+        rl.Vector2(0.0, 0.0),
+        0.0,
+        rl.WHITE,
+    )
     draw_small_text(font, "Show internet scores", options_top_left + Vec2(HS_RIGHT_SHOW_INTERNET_X * scale, HS_RIGHT_SHOW_INTERNET_Y * scale), text_color)
     draw_small_text(font, "Number of players", options_top_left + Vec2(HS_RIGHT_NUMBER_PLAYERS_X * scale, HS_RIGHT_NUMBER_PLAYERS_Y * scale), text_color)
     draw_small_text(font, "Game mode", options_top_left + Vec2(HS_RIGHT_GAME_MODE_X * scale, HS_RIGHT_GAME_MODE_Y * scale), text_color)
@@ -306,7 +320,7 @@ def _draw_right_panel_quest_options(
         if is_open:
             continue
         _draw_dropdown(
-            view,
+            resources=resources,
             font=font,
             widget_pos=options_top_left + widget_offset * scale,
             widget_w=widget_w * scale,
@@ -322,7 +336,7 @@ def _draw_right_panel_quest_options(
         if not is_open:
             continue
         _draw_dropdown(
-            view,
+            resources=resources,
             font=font,
             widget_pos=options_top_left + widget_offset * scale,
             widget_w=widget_w * scale,
@@ -339,6 +353,7 @@ def _draw_right_panel_quest_options(
 def _draw_right_panel_local_score(
     view: "HighScoresView",
     *,
+    resources: RuntimeResources,
     font: SmallFontData,
     right_top_left: Vec2,
     scale: float,
@@ -431,7 +446,7 @@ def _draw_right_panel_local_score(
             draw_small_text(font, f"{score_xp}", card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale), game_time_color)
         case _:
             _draw_clock_gauge(
-                view,
+                resources=resources,
                 elapsed_ms=elapsed_ms,
                 pos=card_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
                 scale=scale,
@@ -459,8 +474,8 @@ def _draw_right_panel_local_score(
     weapon_name, icon_index = _weapon_label_and_icon(view, weapon_id)
     if icon_index is not None:
         _draw_wicon(
-            view,
-            icon_index,
+            resources=resources,
+            icon_index=icon_index,
             pos=card_top_left + Vec2(HS_LOCAL_WICON_X * scale, HS_LOCAL_WICON_Y * scale),
             scale=scale,
         )
@@ -481,16 +496,14 @@ def _draw_right_panel_local_score(
 
 
 def _draw_clock_gauge(
-    view: "HighScoresView",
     *,
+    resources: RuntimeResources,
     elapsed_ms: int,
     pos: Vec2,
     scale: float,
 ) -> None:
-    table_tex = view._clock_table_tex
-    pointer_tex = view._clock_pointer_tex
-    if table_tex is None or pointer_tex is None:
-        return
+    table_tex = resources.texture(TextureId.UI_CLOCK_TABLE)
+    pointer_tex = resources.texture(TextureId.UI_CLOCK_POINTER)
     draw_w = 32.0 * scale
     draw_h = 32.0 * scale
     dst = rl.Rectangle(pos.x, pos.y, draw_w, draw_h)
@@ -518,15 +531,13 @@ def _draw_clock_gauge(
 
 
 def _draw_wicon(
-    view: "HighScoresView",
-    icon_index: int,
     *,
+    resources: RuntimeResources,
+    icon_index: int,
     pos: Vec2,
     scale: float,
 ) -> None:
-    tex = view._wicons_tex
-    if tex is None:
-        return
+    tex = resources.texture(TextureId.UI_WICONS)
     idx = int(icon_index)
     if idx < 0 or idx > 31:
         return

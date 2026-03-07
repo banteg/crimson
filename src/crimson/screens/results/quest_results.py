@@ -6,9 +6,9 @@ from pathlib import Path
 
 import msgspec
 
-from grim.assets import RuntimeResources, TextureId, runtime_resources_for
+from grim.assets import TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
@@ -85,12 +85,6 @@ COLOR_GREEN = rl.Color(25, 200, 25, 255)
 COLOR_UI_ACCENT = rl.Color(149, 175, 198, 255)
 
 
-class QuestResultsAssets(msgspec.Struct):
-    resources: RuntimeResources
-    text_well_done: rl.Texture
-    wicons: rl.Texture
-
-
 class _QuestResultsPanelLayout(msgspec.Struct, frozen=True):
     panel: Rect
     top_left: Vec2
@@ -110,25 +104,11 @@ def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle
     return rl.Rectangle(float(col * cell_w), float(row * cell_h), float(cell_w * 2), float(cell_h))
 
 
-def load_quest_results_assets(assets_root: Path) -> QuestResultsAssets:
-    resources = runtime_resources_for(assets_root)
-    text_well_done = resources.texture(TextureId.UI_TEXT_WELL_DONE)
-    wicons = resources.texture(TextureId.UI_WICONS)
-    return QuestResultsAssets(
-        resources=resources,
-        text_well_done=text_well_done,
-        wicons=wicons,
-    )
-
-
 class QuestResultsUi(msgspec.Struct):
     assets_root: Path
     base_dir: Path
     config: CrimsonConfig
     preserve_bugs: bool = False
-
-    assets: QuestResultsAssets | None = None
-    font: SmallFontData | None = None
 
     phase: int = -1  # -1 init, 0 breakdown, 1 name entry (if qualifies), 2 results/buttons
     rank: int = TABLE_MAX
@@ -174,9 +154,6 @@ class QuestResultsUi(msgspec.Struct):
         player_name_default: str,
     ) -> None:
         self.close()
-        self.font = load_small_font(self.assets_root)
-        self.assets = load_quest_results_assets(self.assets_root)
-
         self.phase = -1
         self.rank = TABLE_MAX
         self.highlight_rank = None
@@ -225,9 +202,7 @@ class QuestResultsUi(msgspec.Struct):
         self.phase = 0
 
     def close(self) -> None:
-        if self.assets is not None:
-            self.assets = None
-        self.font = None
+        return None
 
     def _begin_close_transition(self, action: str) -> None:
         if self._closing:
@@ -260,15 +235,12 @@ class QuestResultsUi(msgspec.Struct):
         return alpha
 
     def _text_width(self, text: str, scale: float) -> float:
-        if self.font is None:
-            return float(rl.measure_text(text, int(20 * scale)))
-        return float(measure_small_text_width(self.font, text))
+        del scale
+        return float(measure_small_text_width(runtime_resources_for(self.assets_root).small_font, text))
 
     def _draw_small(self, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
-        if self.font is not None:
-            draw_small_text(self.font, text, pos, color)
-        else:
-            rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
+        del scale
+        draw_small_text(runtime_resources_for(self.assets_root).small_font, text, pos, color)
 
     def _draw_name_entry_stats(self, *, pos: Vec2, scale: float, alpha: float, show_weapon_row: bool) -> None:
         if self.record is None:
@@ -333,11 +305,11 @@ class QuestResultsUi(msgspec.Struct):
             return
 
         row_y = row_top
-        if self.assets is not None:
-            src = _weapon_icon_src(self.assets.wicons, record.most_used_weapon_id)
-            if src is not None:
-                dst = rl.Rectangle(x + 4.0 * scale, row_y, 64.0 * scale, 32.0 * scale)
-                rl.draw_texture_pro(self.assets.wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, icon_tint)
+        wicons = runtime_resources_for(self.assets_root).texture(TextureId.UI_WICONS)
+        src = _weapon_icon_src(wicons, record.most_used_weapon_id)
+        if src is not None:
+            dst = rl.Rectangle(x + 4.0 * scale, row_y, 64.0 * scale, 32.0 * scale)
+            rl.draw_texture_pro(wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, icon_tint)
 
         weapon_id = record.most_used_weapon_id
         weapon_name = weapon_display_name(weapon_id, preserve_bugs=bool(self.preserve_bugs))
@@ -401,7 +373,7 @@ class QuestResultsUi(msgspec.Struct):
             def rand() -> int:
                 return 0
 
-        if self.assets is None or self.record is None or self.breakdown is None:
+        if self.record is None or self.breakdown is None:
             return None
 
         if self._closing:
@@ -499,7 +471,8 @@ class QuestResultsUi(msgspec.Struct):
             content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)
             input_pos = content_pos.offset(dy=150.0 * scale)
             ok_pos = input_pos + Vec2(170.0 * scale, -8.0 * scale)
-            ok_w = button_width(self.font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
+            font = runtime_resources_for(self.assets_root).small_font
+            ok_w = button_width(font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
             ok_clicked = button_update(self._ok_button, pos=ok_pos, width=ok_w, dt_ms=dt_ms, mouse=mouse, click=click)
 
             if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
@@ -559,9 +532,10 @@ class QuestResultsUi(msgspec.Struct):
                 var_c_14 += 30.0 * scale
 
             button_pos = Vec2(score_card_pos.x + 20.0 * scale, var_c_14 + 6.0 * scale)
+            font = runtime_resources_for(self.assets_root).small_font
 
             play_next_w = button_width(
-                self.font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
+                font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
             )
             if button_update(
                 self._play_next_button,
@@ -578,7 +552,7 @@ class QuestResultsUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             play_again_w = button_width(
-                self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
+                font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
             )
             if button_update(
                 self._play_again_button,
@@ -595,7 +569,7 @@ class QuestResultsUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             high_scores_w = button_width(
-                self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
+                font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
             )
             if button_update(
                 self._high_scores_button,
@@ -612,7 +586,7 @@ class QuestResultsUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             main_menu_w = button_width(
-                self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
+                font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
             )
             if button_update(
                 self._main_menu_button,
@@ -631,7 +605,7 @@ class QuestResultsUi(msgspec.Struct):
         return None
 
     def draw(self, *, mouse: rl.Vector2 | None = None) -> None:
-        if self.assets is None or self.record is None or self.breakdown is None:
+        if self.record is None or self.breakdown is None:
             return
         if mouse is None:
             mouse = rl.get_mouse_position()
@@ -640,12 +614,14 @@ class QuestResultsUi(msgspec.Struct):
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
 
+        resources = runtime_resources_for(self.assets_root)
+        font = resources.small_font
         panel_layout = self._panel_layout(screen_w=screen_w, scale=scale)
         panel = panel_layout.panel
 
         fx_detail = self.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(
-            self.assets.resources.texture(TextureId.UI_MENU_PANEL),
+            resources.texture(TextureId.UI_MENU_PANEL),
             dst=panel.to_rl(),
             tint=rl.WHITE,
             shadow=fx_detail,
@@ -653,11 +629,10 @@ class QuestResultsUi(msgspec.Struct):
 
         content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)
         banner_pos = content_pos + Vec2(QUEST_RESULTS_BANNER_X_FROM_CONTENT * scale, 36.0 * scale)
-        src = rl.Rectangle(
-            0.0, 0.0, float(self.assets.text_well_done.width), float(self.assets.text_well_done.height),
-        )
+        text_well_done = resources.texture(TextureId.UI_TEXT_WELL_DONE)
+        src = rl.Rectangle(0.0, 0.0, float(text_well_done.width), float(text_well_done.height))
         dst = rl.Rectangle(banner_pos.x, banner_pos.y, TEXTURE_TOP_BANNER_W * scale, TEXTURE_TOP_BANNER_H * scale)
-        rl.draw_texture_pro(self.assets.text_well_done, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        rl.draw_texture_pro(text_well_done, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         qualifies = int(self.rank) < TABLE_MAX
 
@@ -744,7 +719,7 @@ class QuestResultsUi(msgspec.Struct):
                 rl.Color(0, 0, 0, 255),
             )
             draw_ui_text(
-                self.font,
+                font,
                 self.input_text,
                 input_pos + Vec2(4.0 * scale, 2.0 * scale),
                 scale=1.0 * scale,
@@ -760,8 +735,8 @@ class QuestResultsUi(msgspec.Struct):
             )
 
             ok_pos = input_pos + Vec2(170.0 * scale, -8.0 * scale)
-            ok_w = button_width(self.font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
-            button_draw(self.assets.resources, self.font, self._ok_button, pos=ok_pos, width=ok_w, scale=scale)
+            ok_w = button_width(font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
+            button_draw(resources, font, self._ok_button, pos=ok_pos, width=ok_w, scale=scale)
 
             # Native phase 1 still renders the quest score card while entering the name.
             score_card_pos = input_pos + Vec2(26.0 * scale, 46.0 * scale)
@@ -770,7 +745,7 @@ class QuestResultsUi(msgspec.Struct):
         else:
             score_card_pos = content_pos.offset(dx=QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale)
             var_c_12 = panel_layout.top_left.y + (96.0 if qualifies else 108.0) * scale
-            if (not qualifies) and self.font is not None:
+            if not qualifies:
                 self._draw_small(
                     "Score too low for top100.",
                     Vec2(score_card_pos.x + 8.0 * scale, panel_layout.top_left.y + 102.0 * scale),
@@ -811,11 +786,11 @@ class QuestResultsUi(msgspec.Struct):
             # Buttons
             button_pos = Vec2(score_card_pos.x + 20.0 * scale, var_c_14 + 6.0 * scale)
             play_next_w = button_width(
-                self.font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
+                font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
             )
             button_draw(
-                self.assets.resources,
-                self.font,
+                resources,
+                font,
                 self._play_next_button,
                 pos=button_pos,
                 width=play_next_w,
@@ -823,11 +798,11 @@ class QuestResultsUi(msgspec.Struct):
             )
             button_pos = button_pos.offset(dy=32.0 * scale)
             play_again_w = button_width(
-                self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
+                font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
             )
             button_draw(
-                self.assets.resources,
-                self.font,
+                resources,
+                font,
                 self._play_again_button,
                 pos=button_pos,
                 width=play_again_w,
@@ -835,11 +810,11 @@ class QuestResultsUi(msgspec.Struct):
             )
             button_pos = button_pos.offset(dy=32.0 * scale)
             high_scores_w = button_width(
-                self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
+                font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
             )
             button_draw(
-                self.assets.resources,
-                self.font,
+                resources,
+                font,
                 self._high_scores_button,
                 pos=button_pos,
                 width=high_scores_w,
@@ -847,11 +822,11 @@ class QuestResultsUi(msgspec.Struct):
             )
             button_pos = button_pos.offset(dy=32.0 * scale)
             main_menu_w = button_width(
-                self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
+                font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
             )
             button_draw(
-                self.assets.resources,
-                self.font,
+                resources,
+                font,
                 self._main_menu_button,
                 pos=button_pos,
                 width=main_menu_w,
@@ -859,8 +834,8 @@ class QuestResultsUi(msgspec.Struct):
             )
 
         draw_menu_cursor(
-            self.assets.resources.texture(TextureId.PARTICLES),
-            self.assets.resources.texture(TextureId.UI_CURSOR),
+            resources.texture(TextureId.PARTICLES),
+            resources.texture(TextureId.UI_CURSOR),
             pos=Vec2.from_xy(mouse),
             pulse_time=float(self._cursor_pulse_time),
         )

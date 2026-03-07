@@ -1,15 +1,27 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import cast
 
 import crimson.screens.pause_menu as pause_menu_module
-from crimson.screens.assets import MenuAssets
 from crimson.screens.pause_menu import PAUSE_MENU_TO_MAIN_MENU_FADE_MS, PauseMenuView
+from grim.assets import RuntimeResources
 from grim.raylib_api import rl
 
 
 def _texture_stub() -> rl.Texture:
     return cast("rl.Texture", type("_TextureStub", (), {"width": 1, "height": 1})())
+
+
+def _resources_stub() -> RuntimeResources:
+    tex = _texture_stub()
+    return cast(
+        "RuntimeResources",
+        SimpleNamespace(
+            texture=lambda _texture_id: tex,
+            small_font=SimpleNamespace(cell_size=8, widths=[8] * 256),
+        ),
+    )
 
 def test_pause_menu_draw_fades_pause_background_on_main_menu_close(make_game_state, mocker) -> None:
     state = make_game_state(
@@ -20,10 +32,9 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(make_game_sta
     )
     pause_background = mocker.Mock()
     state.pause_background = pause_background
+    state.resources = _resources_stub()
     view = PauseMenuView(state)
     view._is_open = True
-    dummy_tex = _texture_stub()
-    view._assets = MenuAssets(sign=dummy_tex, item=dummy_tex, panel=dummy_tex, labels=dummy_tex)
     view._closing = True
     view._close_action = "back_to_menu"
     view._timeline_ms = PAUSE_MENU_TO_MAIN_MENU_FADE_MS // 2
@@ -48,10 +59,9 @@ def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(make_ga
     )
     pause_background = mocker.Mock()
     state.pause_background = pause_background
+    state.resources = _resources_stub()
     view = PauseMenuView(state)
     view._is_open = True
-    dummy_tex = _texture_stub()
-    view._assets = MenuAssets(sign=dummy_tex, item=dummy_tex, panel=dummy_tex, labels=dummy_tex)
     view._closing = True
     view._close_action = "back_to_previous"
     view._timeline_ms = 0

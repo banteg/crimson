@@ -2,13 +2,9 @@ from __future__ import annotations
 
 import msgspec
 
+from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
-from grim.fonts.small import (
-    SmallFontData,
-    draw_small_text,
-    load_small_font,
-    measure_small_text_width,
-)
+from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -17,7 +13,7 @@ from ...debug import debug_enabled
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ..assets import require_runtime_resources
 from ..menu import (
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
@@ -228,9 +224,7 @@ class CreditsView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._is_open = False
-        self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
-        self._small_font: SmallFontData | None = None
 
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
@@ -255,9 +249,7 @@ class CreditsView:
     def open(self) -> None:
         layout_w = float(self.state.config.screen_width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self.state)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._small_font = None
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
@@ -281,9 +273,6 @@ class CreditsView:
 
     def close(self) -> None:
         self._is_open = False
-        if self._small_font is not None:
-            self._small_font = None
-        self._assets = None
         self._ground = None
         self._closing = False
         self._close_action = None
@@ -311,12 +300,6 @@ class CreditsView:
             return
         self._closing = True
         self._close_action = action
-
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
 
     def _panel_top_left(self, *, scale: float) -> Vec2:
         return Vec2(
@@ -491,7 +474,7 @@ class CreditsView:
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         slide_x = self._panel_slide_x(scale=scale)
         panel_top_left = self._panel_top_left(scale=scale).offset(dx=slide_x)
-        font = self._ensure_small_font()
+        font = require_runtime_resources(self.state).small_font
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
@@ -550,8 +533,7 @@ class CreditsView:
             self._ground.draw(menu_ground_camera(self.state))
         _draw_screen_fade(self.state)
 
-        assets = self._assets
-        assert assets is not None, "CreditsView assets must be loaded before draw()"
+        resources = require_runtime_resources(self.state)
 
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         slide_x = self._panel_slide_x(scale=scale)
@@ -564,9 +546,9 @@ class CreditsView:
             CREDITS_PANEL_HEIGHT * scale,
         )
         fx_detail = self.state.config.fx_detail(level=0, default=False)
-        draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
+        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
-        font = self._ensure_small_font()
+        font = resources.small_font
         draw_small_text(font, "credits", panel_top_left + Vec2(_TITLE_X * scale, _TITLE_Y * scale), rl.Color(255, 255, 255, 255))
 
         visible_count = self._scroll_line_end_index - self._scroll_line_start_index
@@ -586,7 +568,6 @@ class CreditsView:
                 text_w = measure_small_text_width(font, line.text)
                 draw_small_text(font, line.text, Vec2(center_x - (text_w * 0.5), y), color)
 
-        resources = _ensure_texture_cache(self.state)
         back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
@@ -617,9 +598,7 @@ class CreditsView:
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
     def _draw_sign(self) -> None:
-        assets = self._assets
-        assert assets is not None, "CreditsView assets must be loaded before drawing sign"
-        sign = assets.sign
+        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(

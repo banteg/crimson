@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import crimson.screens.results.quest_results as quest_results_module
@@ -9,11 +10,10 @@ from crimson.quests.results import QuestFinalTime
 from crimson.screens.results.quest_results import (
     PANEL_SLIDE_END_MS,
     PANEL_SLIDE_START_MS,
-    QuestResultsAssets,
     QuestResultsUi,
 )
 from crimson.weapons import WeaponId
-from grim.assets import TextureId
+from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.raylib_api import rl
 
@@ -41,22 +41,16 @@ class _ResourcesStub:
             TextureId.UI_CURSOR: tex,
             TextureId.PARTICLES: tex,
             TextureId.UI_WICONS: _texture(width=256, height=256),
+            TextureId.UI_TEXT_WELL_DONE: _texture(width=256, height=64),
         }
+        self.small_font = SimpleNamespace(cell_size=8, widths=[8] * 256)
 
     def texture(self, texture_id: TextureId) -> rl.Texture:
         return self._textures[texture_id]
 
 
-def _quest_results_assets() -> QuestResultsAssets:
-    return QuestResultsAssets(
-        resources=_ResourcesStub(),  # type: ignore[arg-type]
-        text_well_done=_texture(width=32, height=32),
-        wicons=_texture(width=256, height=256),
-    )
-
-
-def _set_assets(ui: QuestResultsUi, assets: QuestResultsAssets) -> None:
-    ui.assets = assets
+def _resources_stub() -> RuntimeResources:
+    return _ResourcesStub()  # type: ignore[return-value]
 
 
 def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
@@ -76,7 +70,6 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
     )
     ui.input_text = "banteg"
     ui.input_caret = len(ui.input_text)
-    _set_assets(ui, _quest_results_assets())
 
     record = HighScoreRecord.blank()
     record.survival_elapsed_ms = 17_610
@@ -92,6 +85,7 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
 def _patch_draw_environment(
     mocker,
 ) -> tuple[MagicMock, MagicMock, MagicMock]:
+    mocker.patch.object(quest_results_module, "runtime_resources_for", return_value=_resources_stub())
     mocker.patch.object(quest_results_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(quest_results_module.rl, "get_screen_height", side_effect=lambda: 480)
     mocker.patch.object(quest_results_module.rl, "get_time", side_effect=lambda: 0.0)

@@ -6,7 +6,7 @@ import webbrowser
 from grim.assets import TextureId
 from grim.audio import update_audio
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
@@ -97,7 +97,6 @@ class DemoView:
         self._upsell_message_index = 0
         self._upsell_pulse_ms = 0
         self._upsell_font: GrimMonoFont | None = None
-        self._small_font: SmallFontData | None = None
         self._purchase_active = False
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
@@ -174,7 +173,6 @@ class DemoView:
         self._tick_harness.reset()
         self._close_world_runtime()
         self._upsell_font = None
-        self._small_font = None
         self._seed_from_app_state = True
 
     def is_finished(self) -> bool:
@@ -252,12 +250,6 @@ class DemoView:
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
 
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
-
     def _purchase_layout_wide_shift(self) -> float:
         screen_w = self.state.config.screen_width
         if screen_w == 0x320:  # 800
@@ -280,7 +272,7 @@ class DemoView:
             self._finished = True
             return
 
-        font = self._ensure_small_font()
+        font = require_runtime_resources(self.state).small_font
 
         w = float(self.state.config.screen_width)
         h = float(self.state.config.screen_height)
@@ -391,7 +383,7 @@ class DemoView:
         src = rl.Rectangle(0.0, 0.0, float(cl_logo.width), float(cl_logo.height))
         rl.draw_texture_pro(cl_logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
-        small = self._ensure_small_font()
+        small = resources.small_font
         x_text = screen_w / 2.0 - 296.0 - wide_shift * 0.8
         y = screen_h / 2.0 - 104.0
         color = rl.Color(255, 255, 255, 255)

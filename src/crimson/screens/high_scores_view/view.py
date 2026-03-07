@@ -3,7 +3,7 @@ from __future__ import annotations
 from crimson.quests.level import QuestLevel
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
-from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
+from grim.fonts.small import measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -14,7 +14,7 @@ from ...persistence.highscores import HighScoreRecord
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ..assets import require_runtime_resources
 from ..high_scores_layout import (
     HS_BACK_BUTTON_X,
     HS_BACK_BUTTON_Y,
@@ -79,7 +79,6 @@ class HighScoresView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._is_open = False
-        self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
@@ -88,15 +87,6 @@ class HighScoresView:
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
         self._close_action: str | None = None
-        self._small_font: SmallFontData | None = None
-        self._check_on: rl.Texture | None = None
-        self._check_off: rl.Texture | None = None
-        self._drop_on: rl.Texture | None = None
-        self._drop_off: rl.Texture | None = None
-        self._arrow_tex: rl.Texture | None = None
-        self._wicons_tex: rl.Texture | None = None
-        self._clock_table_tex: rl.Texture | None = None
-        self._clock_pointer_tex: rl.Texture | None = None
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -116,14 +106,12 @@ class HighScoresView:
         layout_w = float(self.state.config.screen_width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         self._action = None
-        self._assets = load_menu_assets(self.state)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
         self._close_action = None
-        self._small_font = None
         self._scroll_index = 0
         self._dirty = False
         self._update_button = UiButtonState("Update scores", force_wide=True)
@@ -135,16 +123,6 @@ class HighScoresView:
         self._show_scores_open = False
         self._score_list_open = False
 
-        cache = _ensure_texture_cache(self.state)
-        self._check_on = cache.texture(TextureId.UI_CHECK_ON)
-        self._check_off = cache.texture(TextureId.UI_CHECK_OFF)
-        self._drop_on = cache.texture(TextureId.UI_DROP_ON)
-        self._drop_off = cache.texture(TextureId.UI_DROP_OFF)
-        self._arrow_tex = cache.texture(TextureId.UI_ARROW)
-        self._wicons_tex = cache.texture(TextureId.UI_WICONS)
-        self._clock_table_tex = cache.texture(TextureId.UI_CLOCK_TABLE)
-        self._clock_pointer_tex = cache.texture(TextureId.UI_CLOCK_POINTER)
-
         request = resolve_request(self.state)
         self._request = request
         self._records = load_records(self.state, request)
@@ -154,17 +132,6 @@ class HighScoresView:
 
     def close(self) -> None:
         self._is_open = False
-        if self._small_font is not None:
-            self._small_font = None
-        self._wicons_tex = None
-        self._clock_table_tex = None
-        self._clock_pointer_tex = None
-        self._assets = None
-        self._check_on = None
-        self._check_off = None
-        self._drop_on = None
-        self._drop_off = None
-        self._arrow_tex = None
         self._request = None
         self._records = []
         self._scroll_index = 0
@@ -209,9 +176,7 @@ class HighScoresView:
 
         screen_width = float(self.state.config.screen_width)
         scale = 1.0
-        # Defer small font loading to draw(); update() should be able to run
-        # in unit tests without extracted font assets present.
-        font = self._small_font
+        font = require_runtime_resources(self.state).small_font
 
         # Compute animated panel positions so hit-tests match the draw path even while sliding.
         panel_w = MENU_PANEL_WIDTH * scale
@@ -239,7 +204,7 @@ class HighScoresView:
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
         if enabled:
-            if self._update_right_panel_widgets(font=font, right_top_left=right_panel_top_left, scale=scale):
+            if self._update_right_panel_widgets(right_top_left=right_panel_top_left, scale=scale):
                 return
             if self._update_quest_arrows(left_panel_top_left=left_panel_top_left, scale=scale):
                 return
@@ -384,10 +349,12 @@ class HighScoresView:
         rows = 10
         self._scroll_index = max(0, min(int(self._scroll_index), max(0, len(self._records) - rows)))
 
-    def _update_right_panel_widgets(self, *, font: SmallFontData | None, right_top_left: Vec2, scale: float) -> bool:
+    def _update_right_panel_widgets(self, *, right_top_left: Vec2, scale: float) -> bool:
         request = self._request
         if request is None:
             return False
+        resources = require_runtime_resources(self.state)
+        font = resources.small_font
 
         # Widgets are only shown in the "options" right panel (not the local-score detail panel).
         # We don't explicitly track which right panel is active; hit tests are enough.
@@ -397,25 +364,24 @@ class HighScoresView:
 
         # Checkbox: "Show internet scores" (config.score_load_gate).
         if not dropdown_blocked:
-            check_tex = self._check_on if self.state.config.score_load_gate else self._check_off
-            if check_tex is not None:
-                label = "Show internet scores"
-                check_pos = shifted_right_top_left + Vec2(HS_RIGHT_CHECK_X * scale, HS_RIGHT_CHECK_Y * scale)
-                if font is None:
-                    label_w = float(rl.measure_text(label, int(20 * scale)))
-                    font_h = 16.0 * scale
-                else:
-                    label_w = measure_small_text_width(font, label)
-                    font_h = float(font.cell_size) * scale
-                rect_w = float(check_tex.width) * scale + 6.0 * scale + label_w
-                rect_h = max(float(check_tex.height) * scale, font_h)
-                mouse_pos = Vec2.from_xy(rl.get_mouse_position())
-                if Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos):
-                    if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-                        self.state.config.score_load_gate = not self.state.config.score_load_gate
-                        self._dirty = True
-                        self._reload_records()
-                        return True
+            check_tex = (
+                resources.texture(TextureId.UI_CHECK_ON)
+                if self.state.config.score_load_gate
+                else resources.texture(TextureId.UI_CHECK_OFF)
+            )
+            label = "Show internet scores"
+            check_pos = shifted_right_top_left + Vec2(HS_RIGHT_CHECK_X * scale, HS_RIGHT_CHECK_Y * scale)
+            label_w = measure_small_text_width(font, label)
+            font_h = float(font.cell_size) * scale
+            rect_w = float(check_tex.width) * scale + 6.0 * scale + label_w
+            rect_h = max(float(check_tex.height) * scale, font_h)
+            mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+            if Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos):
+                if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+                    self.state.config.score_load_gate = not self.state.config.score_load_gate
+                    self._dirty = True
+                    self._reload_records()
+                    return True
 
         # Dropdown: show scores date filter (config.highscore_date_mode).
         show_scores_items = ("Best of all time", "Best of month", "Best of week", "Best of day")
@@ -562,8 +528,7 @@ class HighScoresView:
 
     def _update_quest_arrows(self, *, left_panel_top_left: Vec2, scale: float) -> bool:
         request = self._request
-        arrow = self._arrow_tex
-        if request is None or arrow is None:
+        if request is None:
             return False
         if request.game_mode_id != GameMode.QUESTS:
             return False
@@ -577,6 +542,7 @@ class HighScoresView:
 
         unlock = int(self.state.status.quest_unlock_index_full) if self.state.config.hardcore else int(self.state.status.quest_unlock_index)
         max_index = max(0, min(49, unlock))
+        arrow = require_runtime_resources(self.state).texture(TextureId.UI_ARROW)
 
         mouse = Vec2.from_xy(rl.get_mouse_position())
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -615,10 +581,8 @@ class HighScoresView:
             self._ground.draw(menu_ground_camera(self.state))
         _draw_screen_fade(self.state)
 
-        assets = self._assets
-        assert assets is not None, "HighScoresView assets must be loaded before draw()"
-
-        font = self._ensure_small_font()
+        resources = require_runtime_resources(self.state)
+        font = resources.small_font
         request = self._request
         if request is not None:
             mode_id = request.game_mode_id
@@ -659,13 +623,13 @@ class HighScoresView:
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
         draw_classic_menu_panel(
-            assets.panel,
+            resources.texture(TextureId.UI_MENU_PANEL),
             dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, panel_w, HS_LEFT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
         )
         draw_classic_menu_panel(
-            assets.panel,
+            resources.texture(TextureId.UI_MENU_PANEL),
             dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, HS_RIGHT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
@@ -674,6 +638,7 @@ class HighScoresView:
 
         selected_rank = draw_main_panel(
             self,
+            resources=resources,
             font=font,
             left_panel_top_left=left_panel_top_left,
             scale=scale,
@@ -685,16 +650,17 @@ class HighScoresView:
 
         draw_right_panel(
             self,
+            resources=resources,
             font=font,
             right_top_left=right_panel_top_left,
             scale=scale,
             highlight_rank=selected_rank,
         )
-        self._draw_sign(assets)
+        self._draw_sign()
         _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
 
-    def _draw_sign(self, assets: MenuAssets) -> None:
-        sign = assets.sign
+    def _draw_sign(self) -> None:
+        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
@@ -746,13 +712,7 @@ class HighScoresView:
     def _assert_open(self) -> None:
         assert self._is_open, "HighScoresView must be opened before use"
 
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
-
-    def _visible_rows(self, font: SmallFontData) -> int:
+    def _visible_rows(self, font) -> int:
         row_step = float(font.cell_size)
         table_top = 188.0 + row_step
         reserved_bottom = 96.0

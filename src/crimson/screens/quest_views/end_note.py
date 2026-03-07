@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -11,7 +11,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
-from ..assets import _ensure_texture_cache
+from ..assets import require_runtime_resources
 from ..menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..transitions import _draw_screen_fade
@@ -45,8 +45,6 @@ class EndNoteView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._ground: GroundRenderer | None = None
-        self._small_font: SmallFontData | None = None
-        self._panel_tex: rl.Texture | None = None
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
@@ -68,14 +66,8 @@ class EndNoteView:
         self._close_action = None
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
 
-        cache = _ensure_texture_cache(self.state)
-        self._panel_tex = cache.texture(TextureId.UI_MENU_PANEL)
-        self._small_font = None
-
     def close(self) -> None:
         self._ground = None
-        self._small_font = None
-        self._panel_tex = None
         self._closing = False
         self._close_action = None
 
@@ -117,7 +109,7 @@ class EndNoteView:
         )
         button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
 
-        font = self._ensure_small_font()
+        font = require_runtime_resources(self.state).small_font
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
@@ -188,9 +180,7 @@ class EndNoteView:
             self._ground.draw(menu_ground_camera(self.state))
         _draw_screen_fade(self.state)
 
-        panel_tex = self._panel_tex
-        if panel_tex is None:
-            return
+        resources = require_runtime_resources(self.state)
 
         screen_w = float(rl.get_screen_width())
         scale = 1.0
@@ -209,9 +199,9 @@ class EndNoteView:
         )
 
         fx_detail = self.state.config.fx_detail(level=0, default=False)
-        draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=fx_detail)
+        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
-        font = self._ensure_small_font()
+        font = resources.small_font
         hardcore = self.state.config.hardcore
         header = "   Incredible!" if hardcore else "Congratulations!"
         levels_line = (
@@ -254,7 +244,6 @@ class EndNoteView:
         body_pos = body_pos.offset(dy=END_NOTE_AFTER_BODY_Y_GAP * scale)
         draw_small_text(font, "Good luck with your battles, trooper!", body_pos, body_color)
 
-        resources = _ensure_texture_cache(self.state)
         button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
         survival_w = button_width(
             font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide,
@@ -278,12 +267,6 @@ class EndNoteView:
         action = self._action
         self._action = None
         return action
-
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
 
     def _world_entity_alpha(self) -> float:
         if not self._closing:

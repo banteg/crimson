@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 import crimson.screens.results.game_over as game_over_module
 from crimson.game_modes import GameMode
 from crimson.persistence.highscores import HighScoreRecord
-from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
+from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg_data
@@ -40,32 +41,17 @@ class _ResourcesStub:
             TextureId.UI_WICONS: _texture(width=256, height=256),
             TextureId.UI_CLOCK_TABLE: tex,
             TextureId.UI_CLOCK_POINTER: tex,
+            TextureId.UI_TEXT_REAPER: _texture(width=256, height=64),
+            TextureId.UI_TEXT_WELL_DONE: _texture(width=256, height=64),
         }
+        self.small_font = SimpleNamespace(cell_size=8, widths=[8] * 256)
 
     def texture(self, texture_id: TextureId) -> rl.Texture:
         return self._textures[texture_id]
 
 
-def _game_over_assets(
-    *,
-    menu_panel: rl.Texture | None = None,
-    text_reaper: rl.Texture | None = None,
-    text_well_done: rl.Texture | None = None,
-    resources: RuntimeResources | None = None,
-) -> GameOverAssets:
-    return GameOverAssets(
-        resources=_resources_for_score_card() if resources is None else resources,
-        text_reaper=_texture(width=32, height=32) if text_reaper is None else text_reaper,
-        text_well_done=_texture(width=32, height=32) if text_well_done is None else text_well_done,
-    )
-
-
 def _resources_for_score_card() -> RuntimeResources:
     return _ResourcesStub()  # type: ignore[return-value]
-
-
-def _set_assets(ui: GameOverUi, assets: GameOverAssets) -> None:
-    ui.assets = assets
 
 
 def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None:
@@ -83,10 +69,10 @@ def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None
 
 def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_raylib_module, tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config())
-    _set_assets(ui, _game_over_assets())
     ui.phase = 1
     ui.rank = 0
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
+    mocker.patch.object(game_over_module, "runtime_resources_for", return_value=_resources_for_score_card())
 
     button_update = mocker.patch.object(game_over_module, "button_update", return_value=False)
     patch_raylib_module("crimson.screens.results.game_over")
@@ -106,9 +92,9 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_
 
 def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_raylib_module, tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config(game_mode=1))
-    _set_assets(ui, _game_over_assets())
     ui.phase = -1
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
+    mocker.patch.object(game_over_module, "runtime_resources_for", return_value=_resources_for_score_card())
 
     record = HighScoreRecord.blank()
     record.game_mode_id = GameMode.SURVIVAL
@@ -148,13 +134,13 @@ def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_ray
 
 def test_game_over_name_entry_waits_for_controls_release(patch_raylib_module, tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config(game_mode=1))
-    _set_assets(ui, _game_over_assets())
     ui.phase = 0
     ui.rank = 0
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
     ui.input_text = "user"
     ui.input_caret = len(ui.input_text)
     ui._defer_name_input_until_controls_released = True
+    mocker.patch.object(game_over_module, "runtime_resources_for", return_value=_resources_for_score_card())
 
     patch_raylib_module("crimson.screens.results.game_over")
     mocker.patch.object(game_over_module, "button_update", return_value=False)
@@ -186,7 +172,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
     ui.phase = 1
     ui.rank = 0
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
-    _set_assets(ui, _game_over_assets(menu_panel=_texture(width=512, height=256)))
+    mocker.patch.object(game_over_module, "runtime_resources_for", return_value=_resources_for_score_card())
 
     draw_classic_menu_panel = mocker.patch.object(game_over_module, "draw_classic_menu_panel")
     mocker.patch.object(game_over_module, "draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
@@ -261,6 +247,7 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
     mocker.patch.object(game_over_module.rl, "measure_text", side_effect=lambda text, _size: len(str(text)) * 8)
     mocker.patch.object(game_over_module.rl, "draw_line", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(game_over_module.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(game_over_module, "runtime_resources_for", return_value=_resources_for_score_card())
     draw_small = mocker.patch.object(
         GameOverUi,
         "_draw_small",

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -7,7 +8,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
-from ..assets import MenuAssets, load_menu_assets
+from ..assets import require_runtime_resources
 from ..menu import (
     MENU_ITEM_OFFSET_X,
     MENU_ITEM_OFFSET_Y,
@@ -78,7 +79,6 @@ class PanelMenuView:
         self._panel_height = panel_height
         self._back_pos = back_pos
         self._back_action = back_action
-        self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._entry: MenuEntry | None = None
         self._hovered = False
@@ -96,7 +96,6 @@ class PanelMenuView:
         layout_w = float(self.state.config.screen_width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self.state)
         self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos.y)
         self._hovered = False
         self._timeline_ms = 0
@@ -165,9 +164,7 @@ class PanelMenuView:
         self._assert_open()
         self._draw_background()
         _draw_screen_fade(self.state)
-        assets = self._assets
         entry = self._entry
-        assert assets is not None, "PanelMenuView assets must be loaded before draw()"
         assert entry is not None, "PanelMenuView entry must be initialized before draw()"
         self._draw_panel()
         self._draw_entry(entry)
@@ -223,9 +220,7 @@ class PanelMenuView:
             self._ground.draw(menu_ground_camera(self.state))
 
     def _draw_panel(self) -> None:
-        assets = self._assets
-        assert assets is not None, "PanelMenuView assets must be loaded before drawing panel"
-        panel = assets.panel
+        panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
         _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
             index=1,
@@ -248,10 +243,9 @@ class PanelMenuView:
         draw_classic_menu_panel(panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
     def _draw_entry(self, entry: MenuEntry) -> None:
-        assets = self._assets
-        assert assets is not None, "PanelMenuView assets must be loaded before drawing entry"
-        item = assets.item
-        label_tex = assets.labels
+        resources = require_runtime_resources(self.state)
+        item = resources.texture(TextureId.UI_MENU_ITEM)
+        label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         item_w = float(item.width)
         item_h = float(item.height)
         _angle_rad, slide_x = MenuView._ui_element_anim(
@@ -327,8 +321,6 @@ class PanelMenuView:
             rl.end_blend_mode()
 
     def _draw_sign(self) -> None:
-        assets = self._assets
-        assert assets is not None, "PanelMenuView assets must be loaded before drawing sign"
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
@@ -342,7 +334,7 @@ class PanelMenuView:
         # Quest screen is only reachable after the Play Game panel is fully visible,
         # so the sign is already locked in place. Keep it static here.
         rotation_deg = 0.0
-        sign = assets.sign
+        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
@@ -375,10 +367,9 @@ class PanelMenuView:
         return 1.0, 0.0
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
-        assets = self._assets
-        assert assets is not None, "PanelMenuView assets must be loaded before computing menu bounds"
-        item_w = float(assets.item.width)
-        item_h = float(assets.item.height)
+        item = require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM)
+        item_w = float(item.width)
+        item_h = float(item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
         offset_min = Vec2(
             MENU_ITEM_OFFSET_X * item_scale,
