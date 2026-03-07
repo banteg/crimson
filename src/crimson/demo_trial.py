@@ -23,6 +23,7 @@ class DemoTrialOverlayInfo(msgspec.Struct, frozen=True):
     kind: str  # "none" | "quest_tier_limit" | "quest_grace_left" | "time_up"
     remaining_ms: int
     remaining_label: str
+    show_remaining_line: bool
 
 
 def tick_demo_trial_timers(
@@ -97,11 +98,11 @@ def demo_trial_overlay_info(
     """
 
     if not demo_build:
-        return DemoTrialOverlayInfo(False, "none", 0, format_demo_trial_time(0))
+        return DemoTrialOverlayInfo(False, "none", 0, format_demo_trial_time(0), False)
 
     match game_mode_id:
         case GameMode.TUTORIAL:  # tutorial
-            return DemoTrialOverlayInfo(False, "none", 0, format_demo_trial_time(0))
+            return DemoTrialOverlayInfo(False, "none", 0, format_demo_trial_time(0), False)
         case _:
             pass
 
@@ -115,13 +116,14 @@ def demo_trial_overlay_info(
 
     if grace_ms > 0:
         if grace_remaining_ms <= 0:
-            return DemoTrialOverlayInfo(True, "time_up", 0, format_demo_trial_time(0))
+            return DemoTrialOverlayInfo(True, "time_up", 0, format_demo_trial_time(0), False)
         if tier_locked:
             return DemoTrialOverlayInfo(
                 True,
                 "quest_tier_limit",
                 int(grace_remaining_ms),
                 format_demo_trial_time(grace_remaining_ms),
+                False,
             )
         # During the quest-only grace period, the classic demo blocks other modes
         # and points the player back to Quests.
@@ -131,11 +133,18 @@ def demo_trial_overlay_info(
                 "quest_grace_left",
                 int(grace_remaining_ms),
                 format_demo_trial_time(grace_remaining_ms),
+                False,
             )
-        return DemoTrialOverlayInfo(False, "none", int(grace_remaining_ms), format_demo_trial_time(grace_remaining_ms))
+        return DemoTrialOverlayInfo(
+            False,
+            "none",
+            int(grace_remaining_ms),
+            format_demo_trial_time(grace_remaining_ms),
+            False,
+        )
 
     if global_remaining_ms <= 0:
-        return DemoTrialOverlayInfo(True, "time_up", 0, format_demo_trial_time(0))
+        return DemoTrialOverlayInfo(True, "time_up", 0, format_demo_trial_time(0), False)
 
     # Demo tier gating: the classic demo lets you play stage 1 quests only; once
     # the player reaches stage > 1, it shows the upsell overlay even if time remains.
@@ -145,6 +154,13 @@ def demo_trial_overlay_info(
             "quest_tier_limit",
             int(global_remaining_ms),
             format_demo_trial_time(global_remaining_ms),
+            True,
         )
 
-    return DemoTrialOverlayInfo(False, "none", int(global_remaining_ms), format_demo_trial_time(global_remaining_ms))
+    return DemoTrialOverlayInfo(
+        False,
+        "none",
+        int(global_remaining_ms),
+        format_demo_trial_time(global_remaining_ms),
+        False,
+    )

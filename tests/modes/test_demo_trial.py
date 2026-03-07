@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+import crimson.game.loop_view as loop_view_mod
 from crimson.demo_trial import (
     DEMO_QUEST_GRACE_TIME_MS,
     DEMO_TOTAL_PLAY_TIME_MS,
@@ -9,6 +10,7 @@ from crimson.demo_trial import (
     format_demo_trial_time,
     tick_demo_trial_timers,
 )
+from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 
 
@@ -30,11 +32,12 @@ def test_format_demo_trial_time() -> None:
         "expected_visible",
         "expected_kind",
         "expected_remaining_ms",
+        "expected_show_remaining_line",
     ),
     [
-        (False, GameMode.SURVIVAL, DEMO_TOTAL_PLAY_TIME_MS, DEMO_QUEST_GRACE_TIME_MS, 4, 10, False, "none", None),
-        (True, GameMode.SURVIVAL, DEMO_TOTAL_PLAY_TIME_MS, 0, 1, 1, True, "time_up", 0),
-        (True, GameMode.QUESTS, 0, 0, 2, 1, True, "quest_tier_limit", None),
+        (False, GameMode.SURVIVAL, DEMO_TOTAL_PLAY_TIME_MS, DEMO_QUEST_GRACE_TIME_MS, 4, 10, False, "none", None, False),
+        (True, GameMode.SURVIVAL, DEMO_TOTAL_PLAY_TIME_MS, 0, 1, 1, True, "time_up", 0, False),
+        (True, GameMode.QUESTS, 0, 0, 2, 1, True, "quest_tier_limit", None, True),
         (
             True,
             GameMode.SURVIVAL,
@@ -45,8 +48,9 @@ def test_format_demo_trial_time() -> None:
             True,
             "quest_grace_left",
             DEMO_QUEST_GRACE_TIME_MS - 1_000,
+            False,
         ),
-        (True, GameMode.QUESTS, DEMO_TOTAL_PLAY_TIME_MS, 1_000, 1, 1, False, "none", None),
+        (True, GameMode.QUESTS, DEMO_TOTAL_PLAY_TIME_MS, 1_000, 1, 1, False, "none", None, False),
         (
             True,
             GameMode.QUESTS,
@@ -57,6 +61,7 @@ def test_format_demo_trial_time() -> None:
             True,
             "quest_tier_limit",
             DEMO_QUEST_GRACE_TIME_MS - 1_000,
+            False,
         ),
     ],
     ids=[
@@ -78,6 +83,7 @@ def test_demo_trial_overlay_info(
     expected_visible: bool,
     expected_kind: str,
     expected_remaining_ms: int | None,
+    expected_show_remaining_line: bool,
 ) -> None:
     info = demo_trial_overlay_info(
         demo_build=demo_build,
@@ -89,8 +95,27 @@ def test_demo_trial_overlay_info(
     )
     assert info.visible is expected_visible
     assert info.kind == expected_kind
+    assert info.show_remaining_line is expected_show_remaining_line
     if expected_remaining_ms is not None:
         assert info.remaining_ms == expected_remaining_ms
+
+
+def test_demo_trial_purchase_requests_quit(make_game_state, mocker) -> None:
+    state = make_game_state(
+        demo_enabled=True,
+        config_updates={"game_mode": int(GameMode.SURVIVAL)},
+    )
+    state.status.game_sequence_id = DEMO_TOTAL_PLAY_TIME_MS
+    loop = GameLoopView(state)
+
+    mocker.patch.object(loop._demo_trial_overlay, "update", return_value="purchase")
+    open_mock = mocker.patch.object(loop_view_mod.webbrowser, "open", return_value=True)
+
+    handled = loop._update_demo_trial_overlay(0.016)
+
+    assert handled is True
+    assert state.quit_requested is True
+    open_mock.assert_called_once()
 
 
 @pytest.mark.parametrize(

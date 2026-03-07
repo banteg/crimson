@@ -827,6 +827,7 @@ class GameLoopView:
 
         action = self._demo_trial_overlay.update(dt_ms)
         if action == "purchase":
+            self.state.quit_requested = True
             try:
                 webbrowser.open(DEMO_PURCHASE_URL)
             except (OSError, webbrowser.Error):

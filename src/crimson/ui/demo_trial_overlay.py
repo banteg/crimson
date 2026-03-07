@@ -147,20 +147,29 @@ class DemoTrialOverlayUi:
         font = self._font
         header = "You have been playing the Demo version of Crimsonland."
         if font is not None:
-            draw_small_text(font, header, Vec2(panel_pos.x + 28.0, panel_pos.y + 9.0), rl.Color(220, 220, 220, 255))
+            draw_small_text(font, header, Vec2(panel_pos.x + 131.0, panel_pos.y + 9.0), rl.Color(220, 220, 220, 255))
         else:
-            rl.draw_text(header, int(panel_pos.x + 28.0), int(panel_pos.y + 9.0), 16, rl.Color(220, 220, 220, 255))
+            rl.draw_text(header, int(panel_pos.x + 131.0), int(panel_pos.y + 9.0), 16, rl.Color(220, 220, 220, 255))
 
         body = ""
         if info.kind == "quest_tier_limit":
-            body = (
-                "You have completed all Quest mode levels.\n"
-                f"However, you still have {info.remaining_label} time left.\n\n"
-                "If you would like to have unlimited play time and access to all features,\n"
-                "please upgrade to the full version.\n\n"
-                "Buy the full version to gain unrestricted game modes and be able to post your high scores online.\n"
-                "Buy it now. You'll have a great time."
-            )
+            if info.show_remaining_line:
+                body = (
+                    "You have completed all Quest mode levels.\n"
+                    f"However, you still have {info.remaining_label} time left.\n\n"
+                    "If you would like to have unlimited play time and access to all features,\n"
+                    "please upgrade to the full version.\n\n"
+                    "Buy the full version to gain unrestricted game modes and be able to post your high scores online.\n"
+                    "Buy it now. You'll have a great time."
+                )
+            else:
+                body = (
+                    "You have completed all Quest mode levels.\n\n"
+                    "If you would like to have unlimited play time and access to all features,\n"
+                    "please upgrade to the full version.\n\n"
+                    "Buy the full version to gain unrestricted game modes and be able to post your high scores online.\n"
+                    "Buy it now. You'll have a great time."
+                )
         elif info.kind == "quest_grace_left":
             body = (
                 "You have used up your play time in the Demo version.\n"
