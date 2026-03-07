@@ -370,12 +370,12 @@ class RushMode(BaseGameplayMode):
         self._draw_screen_fade()
 
         hud_bottom = 0.0
-        if (not self._game_over_active) and self._hud_resources is not None:
+        if not self._game_over_active:
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
                 HudRenderContext(
-                    resources=self._hud_resources,
+                    resources=self.hud_resources,
                     state=self._hud_state,
                     font=self._small,
                     show_health=hud_flags.show_health,
@@ -417,7 +417,7 @@ class RushMode(BaseGameplayMode):
                 self._game_over_ui.draw(
                     record=self._game_over_record,
                     banner_kind=self._game_over_banner,
-                    hud_resources=self._hud_resources,
+                    hud_resources=self.hud_resources,
                     mouse=self._ui_mouse_pos(),
                 )
         self._draw_lan_wait_overlay()

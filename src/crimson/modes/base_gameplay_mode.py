@@ -358,6 +358,12 @@ class BaseGameplayMode:
         self._tick_runner_local_clock: FixedStepClock | None = None
 
     @property
+    def hud_resources(self) -> RuntimeResources:
+        resources = self._hud_resources
+        assert resources is not None, "HUD resources must be loaded before gameplay draw"
+        return resources
+
+    @property
     def world_runtime(self) -> WorldRuntime:
         return self._world_runtime
 

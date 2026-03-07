@@ -208,7 +208,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
     ui.draw(
         record=HighScoreRecord.blank(),
         banner_kind="reaper",
-        hud_resources=None,
+        hud_resources=_hud_resources_for_score_card(),
         mouse=rl.Vector2(0.0, 0.0),
     )
 

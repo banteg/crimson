@@ -392,12 +392,12 @@ class TutorialMode(BaseGameplayMode):
         self._draw_screen_fade()
 
         hud_bottom = 0.0
-        if (not perk_menu_active) and self._hud_resources is not None:
+        if not perk_menu_active:
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
                 HudRenderContext(
-                    resources=self._hud_resources,
+                    resources=self.hud_resources,
                     state=self._hud_state,
                     font=self._small,
                     alpha=1.0,

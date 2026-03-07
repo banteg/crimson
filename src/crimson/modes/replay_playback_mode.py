@@ -143,6 +143,12 @@ class ReplayPlaybackMode:
         self._audio_rng: Crand | None = None
 
     @property
+    def hud_resources(self) -> RuntimeResources:
+        resources = self._hud_resources
+        assert resources is not None, "HUD resources must be loaded before replay draw"
+        return resources
+
+    @property
     def tick_index(self) -> int:
         return int(self._tick_index)
 
@@ -227,37 +233,35 @@ class ReplayPlaybackMode:
         panel_x += float(_REPLAY_WIDGET_PANEL_OFFSET_X) * scale
         panel_y += float(_REPLAY_WIDGET_PANEL_OFFSET_Y) * scale
 
-        resources = self._hud_resources
+        resources = self.hud_resources
 
         icon_w = _REPLAY_WIDGET_ICON_SIZE.x * scale
         icon_h = _REPLAY_WIDGET_ICON_SIZE.y * scale
         icon_x = panel_x + 2.0 * scale + float(_REPLAY_WIDGET_CLOCK_OFFSET_X) * scale
         icon_y = panel_y + 8.0 * scale + float(_REPLAY_WIDGET_CLOCK_OFFSET_Y) * scale
 
-        if resources is not None:
-            clock_table = resources.texture(TextureId.UI_CLOCK_TABLE)
-            src = rl.Rectangle(0.0, 0.0, float(clock_table.width), float(clock_table.height))
-            dst = rl.Rectangle(icon_x, icon_y, icon_w, icon_h)
-            rl.draw_texture_pro(clock_table, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, 230))
+        clock_table = resources.texture(TextureId.UI_CLOCK_TABLE)
+        src = rl.Rectangle(0.0, 0.0, float(clock_table.width), float(clock_table.height))
+        dst = rl.Rectangle(icon_x, icon_y, icon_w, icon_h)
+        rl.draw_texture_pro(clock_table, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, 230))
 
         elapsed_seconds = float(self._tick_index) / float(self._tick_rate)
 
-        if resources is not None:
-            clock_pointer = resources.texture(TextureId.UI_CLOCK_POINTER)
-            src = rl.Rectangle(0.0, 0.0, float(clock_pointer.width), float(clock_pointer.height))
-            center_x = icon_x + icon_w * 0.5
-            center_y = icon_y + icon_h * 0.5
-            dst = rl.Rectangle(center_x, center_y, icon_w, icon_h)
-            origin = rl.Vector2(icon_w * 0.5, icon_h * 0.5)
-            rotation = max(0.0, float(elapsed_seconds)) * 6.0
-            rl.draw_texture_pro(
-                clock_pointer,
-                src,
-                dst,
-                origin,
-                rotation,
-                rl.Color(255, 255, 255, 220),
-            )
+        clock_pointer = resources.texture(TextureId.UI_CLOCK_POINTER)
+        src = rl.Rectangle(0.0, 0.0, float(clock_pointer.width), float(clock_pointer.height))
+        center_x = icon_x + icon_w * 0.5
+        center_y = icon_y + icon_h * 0.5
+        dst = rl.Rectangle(center_x, center_y, icon_w, icon_h)
+        origin = rl.Vector2(icon_w * 0.5, icon_h * 0.5)
+        rotation = max(0.0, float(elapsed_seconds)) * 6.0
+        rl.draw_texture_pro(
+            clock_pointer,
+            src,
+            dst,
+            origin,
+            rotation,
+            rl.Color(255, 255, 255, 220),
+        )
 
         total_ticks = len(replay.ticks)
         total_seconds = float(total_ticks) / float(self._tick_rate)
@@ -719,7 +723,6 @@ class ReplayPlaybackMode:
         if (
             sim_world is not None
             and replay is not None
-            and self._hud_resources is not None
             and sim_world.players
         ):
             mode_id = replay.header.game_mode_id
@@ -740,7 +743,7 @@ class ReplayPlaybackMode:
                         elapsed_ms = float(driver.elapsed_ms)
             draw_hud_overlay(
                 HudRenderContext(
-                    resources=self._hud_resources,
+                    resources=self.hud_resources,
                     state=self._hud_state,
                     font=self._small,
                     show_health=bool(hud_flags.show_health),

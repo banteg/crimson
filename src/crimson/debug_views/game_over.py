@@ -67,6 +67,12 @@ class GameOverDebugView:
 
         self.close_requested = False
 
+    @property
+    def hud_resources(self) -> RuntimeResources:
+        resources = self._hud_resources
+        assert resources is not None, "HUD resources must be loaded before game-over debug draw"
+        return resources
+
     def open(self) -> None:
         self.close_requested = False
         rl.hide_cursor()
@@ -120,7 +126,7 @@ class GameOverDebugView:
 
     def draw(self) -> None:
         rl.clear_background(rl.Color(8, 8, 10, 255))
-        self._ui.draw(record=self._record, banner_kind=self._banner, hud_resources=self._hud_resources)
+        self._ui.draw(record=self._record, banner_kind=self._banner, hud_resources=self.hud_resources)
         rl.draw_text("F1 toggle qualify | B toggle banner | R reset | ESC close", 18, 18, 18, rl.Color(200, 200, 200, 255))
 
 
