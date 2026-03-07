@@ -7,8 +7,8 @@ tags:
 
 ## Thesis
 
-After reading the native decompile again, the right simplification is stronger than a better
-`bootstrap_kind` type.
+After reading the native decompile again, the right simplification was stronger than a better
+replay bootstrap type.
 
 The native game does not have a replay-specific "bootstrap mode" abstraction at all. It has:
 
@@ -19,8 +19,8 @@ So the clean end shape in our code is:
 
 - `ReplayHeader.seed` always means the true reset seed for the run
 - replay calls the same mode-start path that live gameplay uses
-- replay schema does not carry `bootstrap_kind` / `bootstrap_seed`
-- any legacy compatibility is normalized at load/codec boundaries only
+- replay schema carries no separate bootstrap fields
+- old replay files and old Frida raw traces are intentionally rejected
 
 ## Native picture
 
@@ -235,69 +235,35 @@ flowchart TD
 
 That is one shared startup pipeline with a quest-specific second prelude, not separate replay bootstrap modes.
 
-## What our current rewrite still does
+## Implemented shape
 
-Today we still encode a replay-specific split:
+The rewrite now follows that model directly.
 
-- survival/rush write
-  - `header.seed = post-bootstrap tick-0 RNG`
-  - `header.bootstrap_seed = pre-bootstrap reset seed`
-  - `header.bootstrap_kind = "terrain_v1"`
-- quests write
-  - `header.seed = reset/current seed`
-  - `header.bootstrap_kind = "none"`
+### Replay schema
 
-Then replay reconstructs that split in:
+- `ReplayHeader.seed` always means the true reset seed
+- replay format version is `10`
+- old replay files are rejected instead of translated
+- Frida raw capture format version is `11`
+- old raw traces with extra replay-start fields are rejected instead of normalized
 
-- [bootstrap.py](/Users/banteg/.codex/worktrees/1c4c/crimson/src/crimson/replay/bootstrap.py)
-- [types.py](/Users/banteg/.codex/worktrees/1c4c/crimson/src/crimson/replay/types.py)
-- [replay_playback_mode.py](/Users/banteg/.codex/worktrees/1c4c/crimson/src/crimson/modes/replay_playback_mode.py)
+### Live start path
 
-This is the split brain:
+- menu, survival, and rush all run the same unlock-driven random terrain prelude
+- quest start now runs that same generic prelude first
+- quest then runs its second-stage startup work and overwrites terrain with the quest descriptor
+- terrain setup is passed around only as the final `(slots, seed)` needed by the live render boundary
 
-- live mode startup owns one flavor of terrain/RNG prelude
-- replay schema encodes another copy of that decision
-- quests are special-cased differently in both
+### Replay start path
 
-## Where we already diverge from native
+- replay playback resets from `header.seed`
+- replay then runs the same startup ordering as live gameplay for the selected mode
+- replay no longer reconstructs a later seed or branches on replay-only terrain policy
+- replay session construction reuses the shared session builders used by live startup
 
-The decompile also sharpens one important divergence in our current model:
-
-- native quest start still passes through generic `gameplay_reset_state()`, which already calls `terrain_generate_random()`
-- native quest start then does more quest-specific reset/RNG work before building the quest
-- our current quest path models only the quest-specific terrain/session setup, not that full two-stage startup
-
-That may be an intentional simplification, but if we want the architecture to make sense, that logic should live in one shared mode-start path, not in replay header fields.
-
-Another native quirk worth remembering:
-
-- `terrain_generate_random()` burns a few `crt_rand()` calls before settling on either a gated unlock descriptor or the default descriptor
-
-If we decide those calls matter for parity, they should be modeled once in the shared terrain-start path. They should not force replay to carry extra bootstrap schema forever.
-
-## Better end shape
-
-The correct abstraction boundary is not "replay bootstrap kind".
-
-It is:
+That makes the real boundary explicit:
 
 - `start a run from reset seed S in mode M`
-
-That path should own all of:
-
-- reset world state
-- generic startup RNG/reset work
-- generic terrain reset prelude
-- quest-specific second prelude when mode is quests
-- any resulting terrain setup needed by live rendering
-- final authoritative tick-0 RNG state
-
-Replay should then be:
-
-- load replay header
-- get true reset seed
-- call the same shared start path
-- feed recorded inputs into the shared runner
 
 Like this:
 
@@ -316,41 +282,21 @@ flowchart LR
     I --> J["Shared tick runner / frame pump"]
 ```
 
-## Cleanup direction
+## Notes on parity
 
-### Schema
+Two native details matter here:
 
-- redefine `ReplayHeader.seed` to always mean true reset seed
-- delete `bootstrap_kind`
-- delete `bootstrap_seed`
+- `terrain_generate_random()` burns a few `crt_rand()` calls before settling on either a gated unlock descriptor or the default descriptor
+- quest start is not a separate universe; it is a second-stage startup layered after the shared gameplay reset prelude
 
-### Runtime
+Those are exactly the kinds of details that belong in one shared start path. They should not be encoded a second time in replay-specific schema.
 
-- delete [bootstrap.py](/Users/banteg/.codex/worktrees/1c4c/crimson/src/crimson/replay/bootstrap.py)
-- delete `_world_reset_seed_for_replay(...)`
-- stop having replay mode understand terrain bootstrap policy at all
+## Breaking changes
 
-### Startup path
-
-Unify the existing mode-start path so both live gameplay and replay use the same beginning-of-run semantics.
-
-That path should decide:
-
-- which startup RNG/reset work belongs to every run
-- whether to run generic random terrain prelude
-- whether to layer quest-specific second-stage startup
-- what terrain setup to pass to `TerrainRuntime`
-- what the resulting tick-0 RNG state is
-
-### Legacy compatibility
-
-If old replay files still matter:
-
-- normalize them in [codec.py](/Users/banteg/.codex/worktrees/1c4c/crimson/src/crimson/replay/codec.py)
-- convert legacy `(seed, bootstrap_kind, bootstrap_seed)` into the new canonical true-reset-seed interpretation during decode
-- keep that compatibility code out of live replay/runtime paths
-
-If old replay files do not matter, drop the compatibility entirely.
+- replay format `9` is unsupported; the loader requires format `10`
+- Frida raw capture format `10` is unsupported; finalization requires format `11`
+- the reset seed is the only recorded seed in the replay pipeline
+- replay tooling and playback reject extra legacy run-start fields instead of translating them
 
 ## Bottom line
 
@@ -358,10 +304,10 @@ The decompile makes the answer clearer:
 
 - native has one shared terrain/startup pipeline
 - quests are a second-stage startup layered on top of that shared path, not a separate bootstrap universe
-- our replay `bootstrap_kind` split is scaffolding around inconsistent seed semantics
+- the rewrite is cleanest when replay starts from the same reset-seed boundary as live gameplay
 
-So the right cleanup is:
+So the implemented cleanup is:
 
 - unify seed semantics
 - align all modes on one shared beginning-of-run path from reset seed
-- keep any legacy replay translation at the codec edge only
+- reject old replay artifacts instead of carrying compatibility logic through the runtime path
