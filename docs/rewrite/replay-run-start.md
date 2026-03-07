@@ -84,6 +84,7 @@ The terrain story lines up much better across modes than our current replay sche
 ```mermaid
 flowchart LR
     subgraph Menu["Menu / startup"]
+        direction TB
         M0["Reset seed / current menu RNG"] --> M1["gameplay_reset_state()"]
         M1 --> M2["generic RNG draws"]
         M2 --> M3["terrain_generate_random()"]
@@ -91,6 +92,7 @@ flowchart LR
     end
 
     subgraph Survival["Survival start"]
+        direction TB
         S0["Reset seed"] --> S1["gameplay_reset_state()"]
         S1 --> S2["generic RNG draws"]
         S2 --> S3["terrain_generate_random()"]
@@ -98,6 +100,7 @@ flowchart LR
     end
 
     subgraph Rush["Rush start"]
+        direction TB
         R0["Reset seed"] --> R1["gameplay_reset_state()"]
         R1 --> R2["generic RNG draws"]
         R2 --> R3["terrain_generate_random()"]
@@ -105,6 +108,7 @@ flowchart LR
     end
 
     subgraph Quest["Quest start"]
+        direction TB
         Q0["Reset seed"] --> Q1["gameplay_reset_state()"]
         Q1 --> Q2["generic RNG draws"]
         Q2 --> Q3["terrain_generate_random()"]
@@ -113,6 +117,22 @@ flowchart LR
         Q5 --> Q6["quest-specific RNG / reset work"]
         Q6 --> Q7["terrain_generate(quest_desc)"]
     end
+
+    M0 ~~~ S0
+    S0 ~~~ R0
+    R0 ~~~ Q0
+    M1 ~~~ S1
+    S1 ~~~ R1
+    R1 ~~~ Q1
+    M2 ~~~ S2
+    S2 ~~~ R2
+    R2 ~~~ Q2
+    M3 ~~~ S3
+    S3 ~~~ R3
+    R3 ~~~ Q3
+    M4 ~~~ S4
+    S4 ~~~ R4
+    R4 ~~~ Q4
 ```
 
 So the real branching is minimal:
