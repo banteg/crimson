@@ -10,7 +10,7 @@ from .types import ProjectileDrawCtx
 
 def draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
-    resources = renderer.resources
+    resources = renderer.frame.resources
     type_id = int(ctx.type_id)
     if not renderer._is_bullet_trail_type(type_id):
         return False

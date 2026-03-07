@@ -38,7 +38,7 @@ def draw_projectile(
         return
 
     projectile_render_ctx = render_ctx.with_projection(camera=camera, view_scale=view_scale)
-    texture = projectile_render_ctx.resources.texture(TextureId.PROJS)
+    texture = projectile_render_ctx.frame.resources.texture(TextureId.PROJS)
     type_id = proj.type_id
     proj_pos = proj.pos
     screen = projectile_render_ctx.world_to_screen(proj_pos)
@@ -64,17 +64,6 @@ def draw_projectile(
     mapping = KNOWN_PROJ_FRAMES.get(type_id)
     if mapping is None:
         return
-    if texture is None:
-        if life < 0.39:
-            return
-        rl.draw_circle(
-            int(screen.x),
-            int(screen.y),
-            max(1.0, 2.0 * scale),
-            rl.Color(180, 180, 180, int(180 * alpha + 0.5)),
-        )
-        return
-
     grid, frame = mapping
     alpha_byte = int(clamp(clamp(life / 0.4, 0.0, 1.0) * 255.0 * alpha, 0.0, 255.0) + 0.5)
     red, green, blue = known_proj_rgb(type_id)
@@ -131,9 +120,9 @@ def draw_sharpshooter_laser_sight(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    bullet_trail_texture = render_ctx.resources.texture(TextureId.BULLET_TRAIL)
+    bullet_trail_texture = render_ctx.frame.resources.texture(TextureId.BULLET_TRAIL)
 
-    players = render_ctx.players
+    players = render_ctx.frame.players
     if not players:
         return
 

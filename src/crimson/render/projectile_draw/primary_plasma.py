@@ -16,7 +16,8 @@ from .types import ProjectileDrawCtx
 
 def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
-    resources = renderer.resources
+    render_frame = renderer.frame
+    resources = render_frame.resources
     type_id = int(ctx.type_id)
     if type_id not in PLASMA_PARTICLE_TYPES:
         return False
@@ -33,9 +34,9 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
 
     cell_w = float(particles_texture.width) / float(grid)
     cell_h = float(particles_texture.height) / float(grid)
-    frame = int(atlas.frame)
-    col = frame % grid
-    row = frame // grid
+    atlas_frame = int(atlas.frame)
+    col = atlas_frame % grid
+    row = atlas_frame // grid
     src = rl.Rectangle(
         cell_w * float(col),
         cell_h * float(row),
@@ -44,7 +45,9 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
     )
 
     speed_scale = float(ctx.proj.speed_scale)
-    fx_detail_1 = renderer.config.fx_detail(level=1, default=True) if renderer.config is not None else True
+    fx_detail_1 = (
+        render_frame.config.fx_detail(level=1, default=True) if render_frame.config is not None else True
+    )
 
     plasma_cfg = plasma_projectile_render_config(type_id)
     rgb = plasma_cfg.rgb

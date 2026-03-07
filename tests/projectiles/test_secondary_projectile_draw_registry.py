@@ -25,8 +25,7 @@ class _ResourcesLike(Protocol):
 
 
 class _RendererLike(Protocol):
-    resources: _ResourcesLike
-    config: object | None
+    frame: object
 
 
 def _as_renderer(renderer: Any) -> WorldRenderCtx:
@@ -56,9 +55,14 @@ class _ResourcesStub:
 
 
 @dataclass(slots=True)
-class _RendererStub:
+class _FrameStub:
     resources: _ResourcesStub = field(default_factory=_ResourcesStub)
     config: object | None = None
+
+
+@dataclass(slots=True)
+class _RendererStub:
+    frame: _FrameStub = field(default_factory=_FrameStub)
 
 
 def test_secondary_draw_registry_returns_false_when_not_handled() -> None:
@@ -78,7 +82,7 @@ def test_secondary_draw_registry_returns_false_when_not_handled() -> None:
 
 def test_secondary_draw_registry_returns_true_for_rocket_like_when_texture_invalid() -> None:
     renderer = _RendererStub()
-    renderer.resources.projs = _TextureStub(width=0, height=128)
+    renderer.frame.resources.projs = _TextureStub(width=0, height=128)
     proj = SecondaryProjectile(type_id=SecondaryProjectileTypeId.ROCKET, pos=Vec2(), angle=0.0)
     ctx = SecondaryProjectileDrawCtx(
         renderer=_as_renderer(renderer),

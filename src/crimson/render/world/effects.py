@@ -24,9 +24,10 @@ def draw_particle_pool(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    texture = render_ctx.resources.texture(TextureId.PARTICLES)
+    frame = render_ctx.frame
+    texture = frame.resources.texture(TextureId.PARTICLES)
 
-    particles = render_ctx.state.particles.entries
+    particles = frame.state.particles.entries
     if not any(entry.active for entry in particles):
         return
 
@@ -57,7 +58,7 @@ def draw_particle_pool(
     if src_normal is None or src_style_8 is None:
         return
 
-    fx_detail_1 = render_ctx.config.fx_detail(level=1, default=True) if render_ctx.config is not None else True
+    fx_detail_1 = frame.config.fx_detail(level=1, default=True) if frame.config is not None else True
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
@@ -124,11 +125,12 @@ def draw_sprite_effect_pool(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    if render_ctx.config is not None and not render_ctx.config.fx_detail(level=2, default=False):
+    frame = render_ctx.frame
+    if frame.config is not None and not frame.config.fx_detail(level=2, default=False):
         return
-    texture = render_ctx.resources.texture(TextureId.PARTICLES)
+    texture = frame.resources.texture(TextureId.PARTICLES)
 
-    effects = render_ctx.state.sprite_effects.entries
+    effects = frame.state.sprite_effects.entries
     if not any(entry.active for entry in effects):
         return
 
@@ -172,9 +174,10 @@ def draw_effect_pool(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    texture = render_ctx.resources.texture(TextureId.PARTICLES)
+    frame = render_ctx.frame
+    texture = frame.resources.texture(TextureId.PARTICLES)
 
-    effects = render_ctx.state.effects.entries
+    effects = frame.state.effects.entries
     if not any(entry.flags and entry.age >= 0.0 for entry in effects):
         return
 

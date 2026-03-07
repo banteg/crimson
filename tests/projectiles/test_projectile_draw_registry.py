@@ -26,10 +26,7 @@ class _ResourcesLike(Protocol):
 
 
 class _RendererLike(Protocol):
-    resources: _ResourcesLike
-    config: object | None
-    players: list[object]
-    rtx_mode: RtxRenderMode
+    frame: object
 
     def _is_bullet_trail_type(self, type_id: int) -> bool: ...
 
@@ -93,14 +90,42 @@ class _ResourcesStub:
 
 @dataclass(slots=True)
 class _RendererStub:
-    resources: _ResourcesStub = field(default_factory=_ResourcesStub)
-    config: object | None = None
-    players: list[object] = field(default_factory=list)
-    rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC
+    frame: object
 
     @staticmethod
     def _is_bullet_trail_type(type_id: int) -> bool:
         return 0 <= int(type_id) < 8 or int(type_id) == int(ProjectileTemplateId.SPLITTER_GUN)
+
+
+@dataclass(slots=True)
+class _FrameStub:
+    resources: _ResourcesStub = field(default_factory=_ResourcesStub)
+    config: object | None = None
+    players: list[object] = field(default_factory=list)
+    rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC
+    creatures: object = field(default_factory=lambda: type("_Creatures", (), {"entries": []})())
+    elapsed_ms: float = 0.0
+
+
+def _renderer(
+    *,
+    resources: _ResourcesStub | None = None,
+    config: object | None = None,
+    players: list[object] | None = None,
+    rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC,
+    creatures: object | None = None,
+    elapsed_ms: float = 0.0,
+) -> _RendererStub:
+    return _RendererStub(
+        frame=_FrameStub(
+            resources=_ResourcesStub() if resources is None else resources,
+            config=config,
+            players=[] if players is None else players,
+            rtx_mode=rtx_mode,
+            creatures=type("_Creatures", (), {"entries": []})() if creatures is None else creatures,
+            elapsed_ms=elapsed_ms,
+        ),
+    )
 
 
 @dataclass(slots=True)
@@ -132,7 +157,7 @@ class _BeamRendererStub(_RendererStub):
 
 
 def test_draw_registry_returns_false_for_bullet_when_nothing_drawn() -> None:
-    renderer = _RendererStub()
+    renderer = _renderer()
     proj = _projectile(type_id=0)
     ctx = ProjectileDrawCtx(
         renderer=_as_renderer(renderer),
@@ -151,7 +176,7 @@ def test_draw_registry_returns_false_for_bullet_when_nothing_drawn() -> None:
 
 
 def test_draw_registry_returns_false_for_plasma_without_particles_texture() -> None:
-    renderer = _RendererStub()
+    renderer = _renderer()
     proj = _projectile(type_id=int(ProjectileTemplateId.PLASMA_RIFLE))
     ctx = ProjectileDrawCtx(
         renderer=_as_renderer(renderer),
@@ -170,7 +195,7 @@ def test_draw_registry_returns_false_for_plasma_without_particles_texture() -> N
 
 
 def test_draw_registry_returns_true_for_beam_types_even_when_dist_is_zero() -> None:
-    renderer = _RendererStub()
+    renderer = _renderer()
     proj = _projectile(
         type_id=int(ProjectileTemplateId.FIRE_BULLETS),
         pos=Vec2(10.0, 20.0),
@@ -195,7 +220,7 @@ def test_draw_registry_returns_true_for_beam_types_even_when_dist_is_zero() -> N
 
 
 def test_draw_registry_returns_false_for_beam_types_without_texture() -> None:
-    renderer = _RendererStub()
+    renderer = _renderer()
     proj = _projectile(
         type_id=int(ProjectileTemplateId.FIRE_BULLETS),
         pos=Vec2(10.0, 20.0),
@@ -220,7 +245,7 @@ def test_draw_registry_returns_false_for_beam_types_without_texture() -> None:
 
 
 def test_draw_registry_returns_true_for_pulse_gun_branch() -> None:
-    renderer = _RendererStub()
+    renderer = _renderer()
     proj = _projectile(
         type_id=int(ProjectileTemplateId.PULSE_GUN),
         pos=Vec2(10.0, 20.0),
@@ -245,7 +270,7 @@ def test_draw_registry_returns_true_for_pulse_gun_branch() -> None:
 
 
 def test_draw_registry_returns_true_for_plague_spreader_branch() -> None:
-    renderer = _RendererStub()
+    renderer = _renderer()
     proj = _projectile(
         type_id=int(ProjectileTemplateId.PLAGUE_SPREADER),
         pos=Vec2(10.0, 20.0),
@@ -274,7 +299,7 @@ def test_draw_registry_fire_bullets_streak_unrotated_head_rotated(mocker) -> Non
     mocker.patch.object(primary_beam_mod.rl, "begin_blend_mode")
     mocker.patch.object(primary_beam_mod.rl, "end_blend_mode")
 
-    renderer = _BeamRendererStub()
+    renderer = _BeamRendererStub(frame=_FrameStub())
     angle = 0.8
     proj = _projectile(
         type_id=int(ProjectileTemplateId.FIRE_BULLETS),

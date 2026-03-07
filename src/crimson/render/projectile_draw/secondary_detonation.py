@@ -22,7 +22,7 @@ def draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
         return True
 
     scale = ctx.scale
-    particles_texture = renderer.resources.texture(TextureId.PARTICLES)
+    particles_texture = renderer.frame.resources.texture(TextureId.PARTICLES)
     if particles_texture is None:
         radius = det_scale * t * 80.0
         alpha_byte = int(clamp((1.0 - t) * 180.0 * ctx.alpha, 0.0, 255.0) + 0.5)
