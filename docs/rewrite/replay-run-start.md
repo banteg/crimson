@@ -141,6 +141,31 @@ So the real branching is minimal:
 - quest uses that same generic path first, then overwrites terrain through quest metadata
 - the real special case is quest's second-stage startup, not an entirely different terrain system
 
+### 3.6 Shared path view
+
+The same picture becomes simpler if we collapse the duplicated columns and show only the shared path plus the quest-only tail:
+
+```mermaid
+flowchart TD
+    A["Reset seed"] --> B["gameplay_reset_state()"]
+    B --> C["generic startup RNG draws"]
+    C --> D["terrain_generate_random()"]
+    D --> E["terrain_generate(desc)"]
+
+    E --> F{"mode"}
+    F -->|"menu / survival / rush"| G["run continues"]
+    F -->|"quest"| H["quest_start_selected()"]
+    H --> I["quest-specific RNG / reset work"]
+    I --> J["terrain_generate(quest_desc)"]
+    J --> G
+```
+
+This is the version that matters architecturally:
+
+- there is one shared beginning-of-run path
+- quest is an extra startup stage after that path, not a separate terrain policy
+- replay should line up with this shared path from the reset seed instead of encoding a different midpoint
+
 ### 4. The generic prelude already burns RNG before terrain
 
 `gameplay_reset_state()` is not a pure structural reset.
