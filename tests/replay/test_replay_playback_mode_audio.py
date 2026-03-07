@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Protocol
 from unittest.mock import call
 
@@ -326,7 +327,15 @@ def test_draw_quest_complete_banner_uses_shared_overlay_helper(mocker, replay_pl
         _replay_with_ticks(1, game_mode_id=int(replay_playback_mode.GameMode.QUESTS)),
     )
     texture = object()
-    _set_private(view, "_quest_complete_texture", texture)
+    _set_private(
+        view,
+        "_runtime",
+        SimpleNamespace(
+            render_resources=SimpleNamespace(
+                resources=SimpleNamespace(texture=lambda _texture_id: texture),
+            ),
+        ),
+    )
     _set_private(
         view,
         "_driver",

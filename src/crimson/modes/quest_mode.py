@@ -732,7 +732,7 @@ class QuestMode(BaseGameplayMode):
             self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
                 HudRenderContext(
-                    resources=self.hud_resources,
+                    resources=self.render_resources.resources,
                     state=self._hud_state,
                     font=self._small,
                     show_health=hud_flags.show_health,

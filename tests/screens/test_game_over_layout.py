@@ -58,7 +58,7 @@ def _game_over_assets(
     )
 
 
-class _HudResourcesStub:
+class _ResourcesStub:
     def __init__(self) -> None:
         self._textures = {
             TextureId.UI_WICONS: _texture(width=256, height=256),
@@ -70,8 +70,8 @@ class _HudResourcesStub:
         return self._textures[texture_id]
 
 
-def _hud_resources_for_score_card() -> RuntimeResources:
-    return _HudResourcesStub()  # type: ignore[return-value]
+def _resources_for_score_card() -> RuntimeResources:
+    return _ResourcesStub()  # type: ignore[return-value]
 
 
 def _set_assets(ui: GameOverUi, assets: GameOverAssets) -> None:
@@ -208,7 +208,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
     ui.draw(
         record=HighScoreRecord.blank(),
         banner_kind="reaper",
-        hud_resources=_hud_resources_for_score_card(),
+        resources=_resources_for_score_card(),
         mouse=rl.Vector2(0.0, 0.0),
     )
 
@@ -280,7 +280,7 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
     ui._draw_score_card(
         pos=Vec2(0.0, 0.0),
         record=record,
-        hud_resources=_hud_resources_for_score_card(),
+        resources=_resources_for_score_card(),
         alpha=1.0,
         show_weapon_row=True,
         scale=1.0,

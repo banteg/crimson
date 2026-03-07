@@ -436,7 +436,7 @@ class GameOverUi(msgspec.Struct):
         *,
         pos: Vec2,
         record: HighScoreRecord,
-        hud_resources: RuntimeResources,
+        resources: RuntimeResources,
         alpha: float,
         show_weapon_row: bool,
         scale: float,
@@ -520,7 +520,7 @@ class GameOverUi(msgspec.Struct):
                 self._hover_time = float(max(0.0, min(1.0, self._hover_time + (dt_hover if hovering_time else -dt_hover))))
 
                 elapsed_ms = int(record.survival_elapsed_ms)
-                clock_table = hud_resources.texture(TextureId.UI_CLOCK_TABLE)
+                clock_table = resources.texture(TextureId.UI_CLOCK_TABLE)
                 src = rl.Rectangle(0.0, 0.0, float(clock_table.width), float(clock_table.height))
                 clock_table_pos = col2_pos + Vec2(8.0 * scale, 14.0 * scale)
                 dst = rl.Rectangle(clock_table_pos.x, clock_table_pos.y, 32.0 * scale, 32.0 * scale)
@@ -532,7 +532,7 @@ class GameOverUi(msgspec.Struct):
                     0.0,
                     rl.Color(255, 255, 255, int(255 * alpha)),
                 )
-                clock_pointer = hud_resources.texture(TextureId.UI_CLOCK_POINTER)
+                clock_pointer = resources.texture(TextureId.UI_CLOCK_POINTER)
                 src = rl.Rectangle(
                     0.0, 0.0, float(clock_pointer.width), float(clock_pointer.height),
                 )
@@ -562,7 +562,7 @@ class GameOverUi(msgspec.Struct):
                 max(0.0, min(1.0, self._hover_weapon + (dt_hover if hovering_weapon else -dt_hover))),
             )
 
-            wicons = hud_resources.texture(TextureId.UI_WICONS)
+            wicons = resources.texture(TextureId.UI_WICONS)
             src = _weapon_icon_src(wicons, record.most_used_weapon_id)
             if src is not None:
                 dst = rl.Rectangle(weapon_pos.x, weapon_pos.y, 64.0 * scale, 32.0 * scale)
@@ -640,7 +640,7 @@ class GameOverUi(msgspec.Struct):
         *,
         record: HighScoreRecord,
         banner_kind: str,
-        hud_resources: RuntimeResources,
+        resources: RuntimeResources,
         mouse: rl.Vector2 | None = None,
     ) -> None:
         if self.assets is None:
@@ -724,7 +724,7 @@ class GameOverUi(msgspec.Struct):
             self._draw_score_card(
                 pos=score_pos,
                 record=record,
-                hud_resources=hud_resources,
+                resources=resources,
                 alpha=1.0,
                 show_weapon_row=False,
                 scale=scale,
@@ -746,7 +746,7 @@ class GameOverUi(msgspec.Struct):
             self._draw_score_card(
                 pos=score_card_pos,
                 record=record,
-                hud_resources=hud_resources,
+                resources=resources,
                 alpha=1.0,
                 show_weapon_row=True,
                 scale=scale,

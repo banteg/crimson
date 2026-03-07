@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import msgspec
 
-from grim.assets import RuntimeResources, runtime_resources_for
 from grim.audio import AudioState, stop_music, update_audio
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.console import ConsoleState
@@ -242,7 +241,6 @@ class BaseGameplayMode:
     ) -> None:
         self._assets_root = ctx.assets_dir
         self._small: SmallFontData | None = None
-        self._hud_resources: RuntimeResources | None = None
         self._hud_state = HudState()
         self.default_game_mode_id = default_game_mode_id
 
@@ -356,12 +354,6 @@ class BaseGameplayMode:
         self._tick_runner_frame_index = 0
         self._tick_runner_next_tick_index = 0
         self._tick_runner_local_clock: FixedStepClock | None = None
-
-    @property
-    def hud_resources(self) -> RuntimeResources:
-        resources = self._hud_resources
-        assert resources is not None, "HUD resources must be loaded before gameplay draw"
-        return resources
 
     @property
     def world_runtime(self) -> WorldRuntime:
@@ -1170,8 +1162,6 @@ class BaseGameplayMode:
         self._action = None
         self._paused = False
         self._small = load_small_font(self._assets_root)
-
-        self._hud_resources = runtime_resources_for(self._assets_root)
         self._hud_state = HudState()
 
         self._game_over_active = False
@@ -1252,7 +1242,6 @@ class BaseGameplayMode:
         self._game_over_ui.close()
         if self._small is not None:
             self._small = None
-        self._hud_resources = None
         self._reset_tick_runner_state()
         self._reset_replay_capture_state(clear_recorder=True)
         self._world_runtime.close_runtime()

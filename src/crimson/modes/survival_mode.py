@@ -682,7 +682,7 @@ class SurvivalMode(BaseGameplayMode):
             self._draw_target_health_bar(alpha=hud_alpha)
             hud_bottom = draw_hud_overlay(
                 HudRenderContext(
-                    resources=self.hud_resources,
+                    resources=self.render_resources.resources,
                     state=self._hud_state,
                     font=self._small,
                     alpha=hud_alpha,
@@ -742,7 +742,7 @@ class SurvivalMode(BaseGameplayMode):
             self._game_over_ui.draw(
                 record=self._game_over_record,
                 banner_kind=self._game_over_banner,
-                hud_resources=self.hud_resources,
+                resources=self.render_resources.resources,
                 mouse=self._ui_mouse_pos(),
             )
         self._draw_lan_wait_overlay()

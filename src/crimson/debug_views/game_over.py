@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from grim.assets import RuntimeResources, runtime_resources_for
+from grim.assets import runtime_resources_for
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.raylib_api import rl
 from grim.view import ViewContext
@@ -53,8 +53,6 @@ class GameOverDebugView:
         data["game_mode"] = 1
         data["player_name"] = _config_player_name_bytes("debugger")
         self._config = CrimsonConfig(path=_BASE_DIR / "crimson.cfg", data=data)
-        self._hud_resources: RuntimeResources | None = None
-
         self._ui = GameOverUi(
             assets_root=self._assets_root,
             base_dir=_BASE_DIR,
@@ -67,16 +65,9 @@ class GameOverDebugView:
 
         self.close_requested = False
 
-    @property
-    def hud_resources(self) -> RuntimeResources:
-        resources = self._hud_resources
-        assert resources is not None, "HUD resources must be loaded before game-over debug draw"
-        return resources
-
     def open(self) -> None:
         self.close_requested = False
         rl.hide_cursor()
-        self._hud_resources = runtime_resources_for(self._assets_root)
         _seed_highscores(self._config)
         self._reset_record()
         self._ui.open()
@@ -84,8 +75,6 @@ class GameOverDebugView:
     def close(self) -> None:
         rl.show_cursor()
         self._ui.close()
-        if self._hud_resources is not None:
-            self._hud_resources = None
 
     def _reset_record(self) -> None:
         record = HighScoreRecord.blank()
@@ -126,7 +115,11 @@ class GameOverDebugView:
 
     def draw(self) -> None:
         rl.clear_background(rl.Color(8, 8, 10, 255))
-        self._ui.draw(record=self._record, banner_kind=self._banner, hud_resources=self.hud_resources)
+        self._ui.draw(
+            record=self._record,
+            banner_kind=self._banner,
+            resources=runtime_resources_for(self._assets_root),
+        )
         rl.draw_text("F1 toggle qualify | B toggle banner | R reset | ESC close", 18, 18, 18, rl.Color(200, 200, 200, 255))
 
 

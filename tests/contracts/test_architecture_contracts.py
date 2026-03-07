@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import inspect
 from pathlib import Path
-from types import SimpleNamespace
 
 import crimson.audio_router as audio_router_module
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
@@ -271,11 +270,6 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
 
     mocker.patch.object(replay_playback_mode, "load_small_font", return_value=None)
     mocker.patch.object(replay_playback_mode, "init_audio_state", return_value=None)
-    mocker.patch.object(
-        replay_playback_mode,
-        "runtime_resources_for",
-        return_value=SimpleNamespace(texture=lambda *_args, **_kwargs: None),
-    )
 
     # WorldRuntime is created inside open(); stub it to avoid GPU/resource
     # initialisation while still exposing a real SimWorldState for the

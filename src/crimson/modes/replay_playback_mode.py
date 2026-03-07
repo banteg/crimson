@@ -4,9 +4,7 @@ from pathlib import Path
 
 from grim import music as grim_music
 from grim.assets import (
-    RuntimeResources,
     TextureId,
-    runtime_resources_for,
 )
 from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio, update_audio
 from grim.config import CrimsonConfig
@@ -118,10 +116,8 @@ class ReplayPlaybackMode:
         self._replay: Replay | None = None
         self._runtime: WorldRuntime | None = None
         self._small: SmallFontData | None = None
-        self._hud_resources: RuntimeResources | None = None
         self._hud_state = HudState()
         self._grim_mono: GrimMonoFont | None = None
-        self._quest_complete_texture: rl.Texture | None = None
         self._quest_title = ""
         self._quest_level = ""
 
@@ -141,12 +137,6 @@ class ReplayPlaybackMode:
 
         self._audio: AudioState | None = None
         self._audio_rng: Crand | None = None
-
-    @property
-    def hud_resources(self) -> RuntimeResources:
-        resources = self._hud_resources
-        assert resources is not None, "HUD resources must be loaded before replay draw"
-        return resources
 
     @property
     def tick_index(self) -> int:
@@ -233,7 +223,9 @@ class ReplayPlaybackMode:
         panel_x += float(_REPLAY_WIDGET_PANEL_OFFSET_X) * scale
         panel_y += float(_REPLAY_WIDGET_PANEL_OFFSET_Y) * scale
 
-        resources = self.hud_resources
+        runtime = self._runtime
+        assert runtime is not None, "World runtime must be open before replay draw"
+        resources = runtime.render_resources.resources
 
         icon_w = _REPLAY_WIDGET_ICON_SIZE.x * scale
         icon_h = _REPLAY_WIDGET_ICON_SIZE.y * scale
@@ -312,10 +304,8 @@ class ReplayPlaybackMode:
 
     def open(self) -> None:
         self._small = load_small_font(self._ctx.assets_dir)
-        self._hud_resources = runtime_resources_for(self._ctx.assets_dir)
         self._hud_state = HudState()
         self._grim_mono = None
-        self._quest_complete_texture = None
         self._quest_title = ""
         self._quest_level = ""
 
@@ -407,7 +397,6 @@ class ReplayPlaybackMode:
                 self._quest_title = str(quest.title)
                 self._quest_level = quest_level_label(quest.major, quest.minor)
                 self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
-                self._quest_complete_texture = self._load_quest_complete_texture()
                 quest_stage_major, quest_stage_minor = quest.level_key
 
                 runtime.terrain_runtime.set_terrain_slots(terrain_slots=quest.terrain_slots)
@@ -443,8 +432,6 @@ class ReplayPlaybackMode:
     def close(self) -> None:
         self._small = None
         self._grim_mono = None
-        self._quest_complete_texture = None
-        self._hud_resources = None
         self._driver = None
         if self._runtime is not None:
             self._runtime.close_runtime()
@@ -470,9 +457,6 @@ class ReplayPlaybackMode:
         if self._small is not None:
             return float(measure_small_text_width(self._small, text))
         return float(len(text)) * 8.0 * float(scale)
-
-    def _load_quest_complete_texture(self) -> rl.Texture | None:
-        return runtime_resources_for(self._ctx.assets_dir).texture(TextureId.UI_TEXT_LEVEL_COMPLETE)
 
     def _build_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
         driver = self._driver
@@ -701,65 +685,60 @@ class ReplayPlaybackMode:
         replay = self._replay
         if replay is None or replay.header.game_mode_id != GameMode.QUESTS:
             return
-        tex = self._quest_complete_texture
-        if tex is None:
-            return
+        runtime = self._runtime
+        assert runtime is not None, "World runtime must be open before replay quest banner draw"
         driver = self._driver
         if driver is None or driver.quest_spawn_state is None:
             return
         draw_quest_complete_banner_overlay(
-            tex,
+            runtime.render_resources.resources.texture(TextureId.UI_TEXT_LEVEL_COMPLETE),
             timer_ms=float(driver.quest_spawn_state.completion_transition_ms),
         )
 
     def draw(self) -> None:
-        sim_world = self._runtime.sim_world if self._runtime is not None else None
-        if sim_world is not None:
-            self._draw_world(draw_aim_indicators=True)
-        else:
-            rl.clear_background(rl.BLACK)
-
+        runtime = self._runtime
+        assert runtime is not None, "World runtime must be open before replay draw"
         replay = self._replay
-        if (
-            sim_world is not None
-            and replay is not None
-            and sim_world.players
-        ):
-            mode_id = replay.header.game_mode_id
-            hud_flags = hud_flags_for_game_mode(mode_id)
-            quest_progress_ratio: float | None = None
-            elapsed_ms = float(sim_world.presentation_elapsed_ms)
-            match mode_id:
-                case GameMode.QUESTS:
-                    total = int(self._quest_total_spawn_count)
-                    kills = int(sim_world.creatures.kill_count)
-                    quest_progress_ratio = float(kills) / float(total) if total > 0 else None
-                    driver = self._driver
-                    if driver is not None:
-                        elapsed_ms = float(driver.elapsed_ms)
-                case _:
-                    driver = self._driver
-                    if driver is not None:
-                        elapsed_ms = float(driver.elapsed_ms)
-            draw_hud_overlay(
-                HudRenderContext(
-                    resources=self.hud_resources,
-                    state=self._hud_state,
-                    font=self._small,
-                    show_health=bool(hud_flags.show_health),
-                    show_weapon=bool(hud_flags.show_weapon),
-                    show_xp=bool(hud_flags.show_xp),
-                    show_time=bool(hud_flags.show_time),
-                    show_quest_hud=bool(hud_flags.show_quest_hud),
-                    small_indicators=False,
-                ),
-                player=sim_world.players[0],
-                players=sim_world.players,
-                bonus_hud=sim_world.state.bonus_hud,
-                elapsed_ms=elapsed_ms,
-                frame_dt_ms=float(max(0.0, rl.get_frame_time()) * 1000.0),
-                quest_progress_ratio=quest_progress_ratio,
-            )
+        assert replay is not None, "Replay must be loaded before replay draw"
+        sim_world = runtime.sim_world
+        players = sim_world.players
+        assert players, "Replay runtime must have at least one player before draw"
+        self._draw_world(draw_aim_indicators=True)
+        mode_id = replay.header.game_mode_id
+        hud_flags = hud_flags_for_game_mode(mode_id)
+        quest_progress_ratio: float | None = None
+        elapsed_ms = float(sim_world.presentation_elapsed_ms)
+        match mode_id:
+            case GameMode.QUESTS:
+                total = int(self._quest_total_spawn_count)
+                kills = int(sim_world.creatures.kill_count)
+                quest_progress_ratio = float(kills) / float(total) if total > 0 else None
+                driver = self._driver
+                if driver is not None:
+                    elapsed_ms = float(driver.elapsed_ms)
+            case _:
+                driver = self._driver
+                if driver is not None:
+                    elapsed_ms = float(driver.elapsed_ms)
+        draw_hud_overlay(
+            HudRenderContext(
+                resources=runtime.render_resources.resources,
+                state=self._hud_state,
+                font=self._small,
+                show_health=bool(hud_flags.show_health),
+                show_weapon=bool(hud_flags.show_weapon),
+                show_xp=bool(hud_flags.show_xp),
+                show_time=bool(hud_flags.show_time),
+                show_quest_hud=bool(hud_flags.show_quest_hud),
+                small_indicators=False,
+            ),
+            player=players[0],
+            players=players,
+            bonus_hud=sim_world.state.bonus_hud,
+            elapsed_ms=elapsed_ms,
+            frame_dt_ms=float(max(0.0, rl.get_frame_time()) * 1000.0),
+            quest_progress_ratio=quest_progress_ratio,
+        )
 
         self._draw_quest_title()
         self._draw_quest_complete_banner()
