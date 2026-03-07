@@ -77,6 +77,50 @@ They share the generic gameplay reset prelude, then run a second quest-specific 
 
 The first terrain pass is visually superseded, but its RNG consumption still happened, and the quest path adds more RNG/reset work after that.
 
+### 3.5 Mode-by-mode terrain flow
+
+The terrain story lines up much better across modes than our current replay schema suggests:
+
+```mermaid
+flowchart LR
+    subgraph Menu["Menu / startup"]
+        M0["Reset seed / current menu RNG"] --> M1["gameplay_reset_state()"]
+        M1 --> M2["generic RNG draws"]
+        M2 --> M3["terrain_generate_random()"]
+        M3 --> M4["terrain_generate(desc)"]
+    end
+
+    subgraph Survival["Survival start"]
+        S0["Reset seed"] --> S1["gameplay_reset_state()"]
+        S1 --> S2["generic RNG draws"]
+        S2 --> S3["terrain_generate_random()"]
+        S3 --> S4["terrain_generate(desc)"]
+    end
+
+    subgraph Rush["Rush start"]
+        R0["Reset seed"] --> R1["gameplay_reset_state()"]
+        R1 --> R2["generic RNG draws"]
+        R2 --> R3["terrain_generate_random()"]
+        R3 --> R4["terrain_generate(desc)"]
+    end
+
+    subgraph Quest["Quest start"]
+        Q0["Reset seed"] --> Q1["gameplay_reset_state()"]
+        Q1 --> Q2["generic RNG draws"]
+        Q2 --> Q3["terrain_generate_random()"]
+        Q3 --> Q4["terrain_generate(desc)"]
+        Q4 --> Q5["quest_start_selected()"]
+        Q5 --> Q6["quest-specific RNG / reset work"]
+        Q6 --> Q7["terrain_generate(quest_desc)"]
+    end
+```
+
+So the real branching is minimal:
+
+- menu, survival, and rush all use the same generic random terrain path
+- quest uses that same generic path first, then overwrites terrain through quest metadata
+- the real special case is quest's second-stage startup, not an entirely different terrain system
+
 ### 4. The generic prelude already burns RNG before terrain
 
 `gameplay_reset_state()` is not a pure structural reset.
