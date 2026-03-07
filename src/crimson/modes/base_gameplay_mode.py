@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import msgspec
 
+from grim.assets import RuntimeResources, runtime_resources_for
 from grim.audio import AudioState, stop_music, update_audio
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.console import ConsoleState
@@ -85,7 +86,7 @@ from ..sim.presentation_reactions import (
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..terrain_slots import TerrainSlotTriplet
-from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
+from ..ui.hud import HudState, draw_target_health_bar
 from ..weapon_runtime import most_used_weapon_id_for_player
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import shots_from_state
@@ -241,7 +242,7 @@ class BaseGameplayMode:
     ) -> None:
         self._assets_root = ctx.assets_dir
         self._small: SmallFontData | None = None
-        self._hud_assets: HudAssets | None = None
+        self._hud_resources: RuntimeResources | None = None
         self._hud_state = HudState()
         self.default_game_mode_id = default_game_mode_id
 
@@ -1164,7 +1165,7 @@ class BaseGameplayMode:
         self._paused = False
         self._small = load_small_font(self._assets_root)
 
-        self._hud_assets = load_hud_assets(self._assets_root)
+        self._hud_resources = runtime_resources_for(self._assets_root)
         self._hud_state = HudState()
 
         self._game_over_active = False
@@ -1245,7 +1246,7 @@ class BaseGameplayMode:
         self._game_over_ui.close()
         if self._small is not None:
             self._small = None
-        self._hud_assets = None
+        self._hud_resources = None
         self._reset_tick_runner_state()
         self._reset_replay_capture_state(clear_recorder=True)
         self._world_runtime.close_runtime()

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from grim import music as grim_music
 from grim.assets import (
+    RuntimeResources,
     TextureId,
     runtime_resources_for,
 )
@@ -48,13 +49,11 @@ from ..sim.presentation_reactions import (
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
     HUD_AMMO_TEXT_OFFSET,
-    HudAssets,
     HudRenderContext,
     HudState,
     draw_hud_overlay,
     hud_flags_for_game_mode,
     hud_ui_scale,
-    load_hud_assets,
 )
 from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
@@ -119,7 +118,7 @@ class ReplayPlaybackMode:
         self._replay: Replay | None = None
         self._runtime: WorldRuntime | None = None
         self._small: SmallFontData | None = None
-        self._hud_assets: HudAssets | None = None
+        self._hud_resources: RuntimeResources | None = None
         self._hud_state = HudState()
         self._grim_mono: GrimMonoFont | None = None
         self._quest_complete_texture: rl.Texture | None = None
@@ -228,29 +227,31 @@ class ReplayPlaybackMode:
         panel_x += float(_REPLAY_WIDGET_PANEL_OFFSET_X) * scale
         panel_y += float(_REPLAY_WIDGET_PANEL_OFFSET_Y) * scale
 
-        assets = self._hud_assets
+        resources = self._hud_resources
 
         icon_w = _REPLAY_WIDGET_ICON_SIZE.x * scale
         icon_h = _REPLAY_WIDGET_ICON_SIZE.y * scale
         icon_x = panel_x + 2.0 * scale + float(_REPLAY_WIDGET_CLOCK_OFFSET_X) * scale
         icon_y = panel_y + 8.0 * scale + float(_REPLAY_WIDGET_CLOCK_OFFSET_Y) * scale
 
-        if assets is not None:
-            src = rl.Rectangle(0.0, 0.0, float(assets.clock_table.width), float(assets.clock_table.height))
+        if resources is not None:
+            clock_table = resources.texture(TextureId.UI_CLOCK_TABLE)
+            src = rl.Rectangle(0.0, 0.0, float(clock_table.width), float(clock_table.height))
             dst = rl.Rectangle(icon_x, icon_y, icon_w, icon_h)
-            rl.draw_texture_pro(assets.clock_table, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, 230))
+            rl.draw_texture_pro(clock_table, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, 230))
 
         elapsed_seconds = float(self._tick_index) / float(self._tick_rate)
 
-        if assets is not None:
-            src = rl.Rectangle(0.0, 0.0, float(assets.clock_pointer.width), float(assets.clock_pointer.height))
+        if resources is not None:
+            clock_pointer = resources.texture(TextureId.UI_CLOCK_POINTER)
+            src = rl.Rectangle(0.0, 0.0, float(clock_pointer.width), float(clock_pointer.height))
             center_x = icon_x + icon_w * 0.5
             center_y = icon_y + icon_h * 0.5
             dst = rl.Rectangle(center_x, center_y, icon_w, icon_h)
             origin = rl.Vector2(icon_w * 0.5, icon_h * 0.5)
             rotation = max(0.0, float(elapsed_seconds)) * 6.0
             rl.draw_texture_pro(
-                assets.clock_pointer,
+                clock_pointer,
                 src,
                 dst,
                 origin,
@@ -307,7 +308,7 @@ class ReplayPlaybackMode:
 
     def open(self) -> None:
         self._small = load_small_font(self._ctx.assets_dir)
-        self._hud_assets = load_hud_assets(self._ctx.assets_dir)
+        self._hud_resources = runtime_resources_for(self._ctx.assets_dir)
         self._hud_state = HudState()
         self._grim_mono = None
         self._quest_complete_texture = None
@@ -439,7 +440,7 @@ class ReplayPlaybackMode:
         self._small = None
         self._grim_mono = None
         self._quest_complete_texture = None
-        self._hud_assets = None
+        self._hud_resources = None
         self._driver = None
         if self._runtime is not None:
             self._runtime.close_runtime()
@@ -718,7 +719,7 @@ class ReplayPlaybackMode:
         if (
             sim_world is not None
             and replay is not None
-            and self._hud_assets is not None
+            and self._hud_resources is not None
             and sim_world.players
         ):
             mode_id = replay.header.game_mode_id
@@ -739,7 +740,7 @@ class ReplayPlaybackMode:
                         elapsed_ms = float(driver.elapsed_ms)
             draw_hud_overlay(
                 HudRenderContext(
-                    assets=self._hud_assets,
+                    resources=self._hud_resources,
                     state=self._hud_state,
                     font=self._small,
                     show_health=bool(hud_flags.show_health),

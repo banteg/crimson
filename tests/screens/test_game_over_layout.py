@@ -8,9 +8,9 @@ import crimson.screens.results.game_over as game_over_module
 from crimson.game_modes import GameMode
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
-from crimson.ui.hud import HudAssets
 from crimson.ui.perk_menu import PerkMenuAssets
 from crimson.weapons import WeaponId
+from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -58,21 +58,20 @@ def _game_over_assets(
     )
 
 
-def _hud_assets_for_score_card() -> HudAssets:
-    return HudAssets(
-        game_top=_texture(width=512, height=64),
-        life_heart=_texture(width=32, height=32),
-        ind_life=_texture(width=120, height=9),
-        ind_panel=_texture(width=182, height=53),
-        ind_bullet=_texture(width=6, height=16),
-        ind_fire=_texture(width=6, height=16),
-        ind_rocket=_texture(width=6, height=16),
-        ind_electric=_texture(width=6, height=16),
-        wicons=_texture(width=256, height=256),
-        clock_table=_texture(width=32, height=32),
-        clock_pointer=_texture(width=32, height=32),
-        bonuses=_texture(width=256, height=256),
-    )
+class _HudResourcesStub:
+    def __init__(self) -> None:
+        self._textures = {
+            TextureId.UI_WICONS: _texture(width=256, height=256),
+            TextureId.UI_CLOCK_TABLE: _texture(width=32, height=32),
+            TextureId.UI_CLOCK_POINTER: _texture(width=32, height=32),
+        }
+
+    def texture(self, texture_id: TextureId) -> rl.Texture:
+        return self._textures[texture_id]
+
+
+def _hud_resources_for_score_card() -> RuntimeResources:
+    return _HudResourcesStub()  # type: ignore[return-value]
 
 
 def _set_assets(ui: GameOverUi, assets: GameOverAssets) -> None:
@@ -209,7 +208,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
     ui.draw(
         record=HighScoreRecord.blank(),
         banner_kind="reaper",
-        hud_assets=None,
+        hud_resources=None,
         mouse=rl.Vector2(0.0, 0.0),
     )
 
@@ -281,7 +280,7 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
     ui._draw_score_card(
         pos=Vec2(0.0, 0.0),
         record=record,
-        hud_assets=_hud_assets_for_score_card(),
+        hud_resources=_hud_resources_for_score_card(),
         alpha=1.0,
         show_weapon_row=True,
         scale=1.0,

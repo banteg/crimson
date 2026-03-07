@@ -724,7 +724,7 @@ class QuestMode(BaseGameplayMode):
         self._draw_screen_fade()
 
         hud_bottom = 0.0
-        if (not perk_menu_active) and self._hud_assets is not None:
+        if (not perk_menu_active) and self._hud_resources is not None:
             total = int(self._quest_total_spawn_count)
             kills = int(self.creatures.kill_count)
             quest_progress_ratio = float(kills) / float(total) if total > 0 else None
@@ -732,7 +732,7 @@ class QuestMode(BaseGameplayMode):
             self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
                 HudRenderContext(
-                    assets=self._hud_assets,
+                    resources=self._hud_resources,
                     state=self._hud_state,
                     font=self._small,
                     show_health=hud_flags.show_health,
