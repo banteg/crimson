@@ -25,7 +25,13 @@ from crimson.replay import (
 from crimson.replay import types as replay_types
 from crimson.replay.types import REPLAY_FORMAT_VERSION, WEAPON_USAGE_COUNT, current_replay_game_version
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
+from crimson.sim.input_providers import (
+    PerkMenuOpenCommand,
+    PerkPickCommand,
+    TypoBackspaceCommand,
+    TypoCharCommand,
+    TypoSubmitCommand,
+)
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
@@ -107,6 +113,35 @@ def test_replay_codec_roundtrip_perk_menu_open_command() -> None:
 
     decoded = load_replay(dump_replay(replay))
     assert decoded.ticks[1].commands == [PerkMenuOpenCommand(player_index=0)]
+
+
+def test_replay_codec_roundtrip_typo_commands_and_dictionary_words() -> None:
+    header = ReplayHeader(
+        game_mode_id=GameMode.TYPO,
+        seed=0x1234,
+        tick_rate=60,
+        player_count=1,
+        typo_dictionary_words=("amber", "onyx"),
+    )
+    rec = ReplayRecorder(header)
+    rec.record_tick(
+        [PlayerInput(aim=Vec2(512.0, 512.0))],
+        commands=[TypoCharCommand(player_index=0, ch="a")],
+    )
+    rec.record_tick(
+        [PlayerInput(aim=Vec2(512.0, 512.0))],
+        commands=[TypoBackspaceCommand(player_index=0), TypoSubmitCommand(player_index=0)],
+    )
+    replay = rec.finish()
+
+    decoded = load_replay(dump_replay(replay))
+
+    assert decoded.header.typo_dictionary_words == ("amber", "onyx")
+    assert decoded.ticks[0].commands == [TypoCharCommand(player_index=0, ch="a")]
+    assert decoded.ticks[1].commands == [
+        TypoBackspaceCommand(player_index=0),
+        TypoSubmitCommand(player_index=0),
+    ]
 
 
 def test_replay_codec_roundtrip_claimed_stats() -> None:
@@ -212,6 +247,16 @@ def test_replay_load_rejects_missing_quest_level_for_quest_mode() -> None:
     replay_header["game_mode_id"] = int(GameMode.QUESTS)
 
     with pytest.raises(ReplayCodecError, match="quest replays require a valid header.quest_level"):
+        load_replay(msgspec.msgpack.encode(replay_obj))
+
+
+def test_replay_load_rejects_typo_multiplayer() -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    replay_header = cast("dict[str, object]", replay_obj["header"])
+    replay_header["game_mode_id"] = int(GameMode.TYPO)
+    replay_header["player_count"] = 2
+
+    with pytest.raises(ReplayCodecError, match="Typ-o replays require player_count == 1"):
         load_replay(msgspec.msgpack.encode(replay_obj))
 
 

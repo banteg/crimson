@@ -302,7 +302,7 @@ class BaseGameplayMode:
         self.lan_local_aim_indicators_only = False
         self.lan_local_player_slot_index = 0
         self._sync_world_runtime_config()
-        player_count = self.config.player_count
+        player_count = self._runtime_player_count()
         self._world_runtime.reset(player_count=max(1, min(4, int(player_count))))
         self._bind_world()
 
@@ -700,6 +700,9 @@ class BaseGameplayMode:
     def _replay_claimed_stats_elapsed_ms(self) -> int:
         return int(self._replay_checkpoint_elapsed_ms())
 
+    def _replay_claimed_shots(self) -> tuple[int, int]:
+        return shots_from_state(self.state, player_index=int(self.player.index))
+
     def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
         _ = replay
         mode_name = str(self.__class__.__name__).replace("Mode", "").lower() or "replay"
@@ -750,7 +753,7 @@ class BaseGameplayMode:
         self._record_replay_checkpoint(max(0, int(recorder.tick_index) - 1), force=True)
         replay = recorder.finish()
 
-        shots_fired, shots_hit = shots_from_state(self.state, player_index=int(self.player.index))
+        shots_fired, shots_hit = self._replay_claimed_shots()
         most_used_weapon_id = most_used_weapon_id_for_player(
             self.state,
             player_index=int(self.player.index),
@@ -1127,6 +1130,9 @@ class BaseGameplayMode:
     def _player_name_default(self) -> str:
         return str(self.config.player_name or "")
 
+    def _runtime_player_count(self) -> int:
+        return self.config.player_count
+
     def _deterministic_detail_preset(self) -> int:
         if self._lan_enabled:
             return int(LAN_SIM_DETAIL_PRESET)
@@ -1172,7 +1178,7 @@ class BaseGameplayMode:
         self._refresh_effective_status(reset_lan_status=True)
 
         self._sync_world_runtime_config()
-        self._world_runtime.reset(seed=seed, player_count=max(1, min(4, player_count)))
+        self._world_runtime.reset(seed=seed, player_count=max(1, min(4, int(player_count))))
         self._world_runtime.open_runtime()
         self._bind_world()
         ground = self.render_resources.ground

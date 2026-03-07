@@ -51,6 +51,27 @@ def _blank_rush_replay(
     return header, rec
 
 
+def _blank_typo_replay(
+    *,
+    ticks: int,
+    seed: int = 0xBEEF,
+    game_version: str | None = None,
+    typo_dictionary_words: tuple[str, ...] = (),
+) -> tuple[ReplayHeader, ReplayRecorder]:
+    header = ReplayHeader(
+        game_mode_id=GameMode.TYPO,
+        seed=int(seed),
+        tick_rate=60,
+        player_count=1,
+        game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
+        typo_dictionary_words=tuple(typo_dictionary_words),
+    )
+    rec = ReplayRecorder(header)
+    for _ in range(int(ticks)):
+        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
+    return header, rec
+
+
 def _blank_quest_replay(
     *, ticks: int, seed: int = 101, game_version: str | None = None,
 ) -> tuple[ReplayHeader, ReplayRecorder]:

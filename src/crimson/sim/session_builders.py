@@ -8,6 +8,8 @@ from ..game_modes import GameMode
 from ..quests.level import QuestLevel
 from ..quests.types import SpawnEntry
 from ..sim.world_state import WorldState
+from ..typo.runtime import typo_before_step, typo_input_transform, typo_mid_step, typo_post_step
+from ..typo.state import reset_typo_state
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from .sessions import (
@@ -151,3 +153,41 @@ def build_quest_session(
         post_step_hook=lambda ctx: quest_post_step(ctx, quest_state),
     )
     return session, quest_state
+
+
+def build_typo_session(
+    *,
+    world: WorldState,
+    world_size: float,
+    damage_scale_by_type: dict[int, float],
+    fx_queue: FxQueue,
+    fx_queue_rotated: FxQueueRotated,
+    detail_preset: int,
+    gore_disabled: int,
+    game_tune_started: bool,
+    dictionary_words: tuple[str, ...] = (),
+    session_factory: DeterministicSessionFactory = DeterministicSession,
+) -> DeterministicSession:
+    reset_typo_state(
+        world.state.typo,
+        creature_capacity=len(world.creatures.entries),
+        dictionary_words=dictionary_words,
+    )
+    session = session_factory(
+        world=world,
+        world_size=float(world_size),
+        damage_scale_by_type=damage_scale_by_type,
+        fx_queue=fx_queue,
+        fx_queue_rotated=fx_queue_rotated,
+        game_mode=GameMode.TYPO,
+        perk_progression_enabled=False,
+        detail_preset=int(detail_preset),
+        gore_disabled=int(gore_disabled),
+        game_tune_started=bool(game_tune_started),
+        clear_fx_queues_each_tick=False,
+        before_step_hook=lambda: typo_before_step(world),
+        mid_step_hook=typo_mid_step,
+        post_step_hook=typo_post_step,
+        input_transform=lambda inputs: typo_input_transform(world, inputs),
+    )
+    return session

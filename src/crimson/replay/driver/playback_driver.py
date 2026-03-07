@@ -26,6 +26,7 @@ from ...sim.session_builders import (
     build_quest_session,
     build_rush_session,
     build_survival_session,
+    build_typo_session,
     enforce_rush_loadout,
 )
 from ...sim.sessions import (
@@ -34,6 +35,7 @@ from ...sim.sessions import (
 )
 from ...sim.world_state import WorldState
 from ...status_snapshot import game_status_from_replay_status
+from ...typo.state import typo_shot_counts
 from ...weapons import WeaponId
 from ...world.sim_world_state import reset_world_players
 from .replay_timing import should_apply_world_dt_steps_for_replay
@@ -224,6 +226,17 @@ class PlaybackDriver:
                     terrain_slots=terrain.terrain_slots,
                     terrain_seed=int(terrain.terrain_seed),
                 )
+            case GameMode.TYPO:
+                terrain = run_unlock_terrain_prelude(
+                    world.state.rng,
+                    unlock_index=int(self.replay.header.status.quest_unlock_index),
+                    width=int(self.world_size),
+                    height=int(self.world_size),
+                )
+                self._terrain_setup = ReplayTerrainSetup(
+                    terrain_slots=terrain.terrain_slots,
+                    terrain_seed=int(terrain.terrain_seed),
+                )
             case GameMode.QUESTS:
                 quest_definition = resolve_replay_quest_definition(self.replay)
                 quest_level = quest_definition.level
@@ -351,6 +364,18 @@ class PlaybackDriver:
                 )
                 self._quest_spawn_state = quest_state
                 return session
+            case GameMode.TYPO:
+                return build_typo_session(
+                    world=self.world,
+                    world_size=float(self.world_size),
+                    damage_scale_by_type=damage_scale_by_type,
+                    fx_queue=self.fx_queue,
+                    fx_queue_rotated=self.fx_queue_rotated,
+                    detail_preset=int(self.replay.header.detail_preset),
+                    gore_disabled=int(self.replay.header.gore_disabled),
+                    game_tune_started=False,
+                    dictionary_words=tuple(self.replay.header.typo_dictionary_words),
+                )
             case _:
                 raise ReplayRunnerError(f"unsupported replay game_mode_id={int(self.mode_id)}")
 
@@ -481,7 +506,10 @@ class PlaybackDriver:
         return self.build_run_result(ticks=int(self.tick_limit))
 
     def build_run_result(self, *, ticks: int) -> RunResult:
-        shots_fired, shots_hit = player0_shots(self.world.state)
+        if self.mode_id == GameMode.TYPO:
+            shots_fired, shots_hit = typo_shot_counts(self.world.state.typo)
+        else:
+            shots_fired, shots_hit = player0_shots(self.world.state)
         most_used_weapon_id = player0_most_used_weapon_id(self.world.state, self.world.players)
         score_xp = int(self.world.players[0].experience) if self.world.players else 0
 

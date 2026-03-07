@@ -1,50 +1,35 @@
 from __future__ import annotations
 
-import math
 from collections.abc import Callable
 
 from grim.assets import TextureId
 from grim.audio import AudioState
-from grim.color import RGBA
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
-from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
-from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
 from ..game_modes import GameMode
+from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
+from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
+from ..sim.bootstrap import run_unlock_terrain_prelude
 from ..sim.input import PlayerInput
+from ..sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
+from ..sim.session_builders import build_typo_session
 from ..sim.sessions import DeterministicSession
-from ..sim.timing import ftol_ms_i32
-from ..typo.names import CreatureNameTable, load_typo_dictionary
-from ..typo.player import build_typo_player_input, enforce_typo_player_frame
-from ..typo.spawns import tick_typo_spawns
-from ..typo.typing import TypingBuffer
+from ..typo.names import load_typo_dictionary
+from ..typo.player import build_typo_player_input
+from ..typo.state import typo_shot_counts
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
 from ..ui.perk_menu import load_perk_menu_assets
+from ..weapon_usage import normalize_weapon_usage_counts
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
 WORLD_SIZE = 1024.0
-
-UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
-UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
-UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
-
-NAME_LABEL_SCALE = 1.0
-NAME_LABEL_BG_ALPHA = 0.67
-
-# Original typoshooter input box constants (from 0x004457C0)
-TYPING_PANEL_WIDTH = 182.0
-TYPING_PANEL_HEIGHT = 53.0
-TYPING_PANEL_ALPHA = 0.7
-TYPING_TEXT_X = 6.0
-TYPING_PROMPT = ">"
-TYPING_CURSOR = "_"
-TYPING_CURSOR_X_OFFSET = 14.0
 
 
 TypoSessionFactory = Callable[..., DeterministicSession]
@@ -73,67 +58,93 @@ class TypoShooterMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._elapsed_ms: int = 0
-        self._spawn_cooldown_ms: int = 0
-        self._typing = TypingBuffer()
-        self._names = CreatureNameTable.sized(0)
-        self._aim_target = Vec2()
-        self._unique_words: list[str] | None = None
 
         self._ui_assets = None
         self._session_factory = session_factory
         self._sim_session: DeterministicSession | None = self._new_sim_session()
-        self._frame_input_state: PlayerInput | None = None
 
     def _new_sim_session(self) -> DeterministicSession:
-        return self._session_factory(
+        return build_typo_session(
             world=self.sim_world.world_state,
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             fx_queue=self.render_resources.fx_queue,
             fx_queue_rotated=self.render_resources.fx_queue_rotated,
-            game_mode=GameMode.TYPO,
-            perk_progression_enabled=False,
             detail_preset=5,
             gore_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
-            clear_fx_queues_each_tick=False,
+            dictionary_words=self.state.typo.dictionary_words,
+            session_factory=self._session_factory,
         )
 
     def open(self) -> None:
         super().open()
         self._ui_assets = load_perk_menu_assets(self._assets_root)
-        self._sim_session = self._new_sim_session()
-        self._elapsed_ms = 0
-        self._spawn_cooldown_ms = 0
-        self._typing = TypingBuffer()
-        self._names = CreatureNameTable.sized(len(self.creatures.entries))
-        self._unique_words = None
-        self._frame_input_state = None
-
         dictionary_path = self._base_dir / "typo_dictionary.txt"
+        dictionary_words: tuple[str, ...] = ()
         if dictionary_path.is_file():
-            words = load_typo_dictionary(dictionary_path)
-            if words:
-                self._unique_words = words
+            dictionary_words = tuple(load_typo_dictionary(dictionary_path))
 
-        self._aim_target = self.player.pos.offset(dx=128.0)
+        status = self.state.status
+        terrain = run_unlock_terrain_prelude(
+            self.state.rng,
+            unlock_index=int(status.quest_unlock_index) if status is not None else 0,
+            width=int(self.world_size),
+            height=int(self.world_size),
+        )
+        self.apply_terrain_setup(
+            terrain_slots=terrain.terrain_slots,
+            seed=int(terrain.terrain_seed),
+        )
+        self.sim_world.state.rng.srand(int(terrain.seed_after))
+        self.state.typo.dictionary_words = dictionary_words
+        self._sim_session = self._new_sim_session()
 
-        enforce_typo_player_frame(self.player, state=self.state)
+        weapon_usage_counts = normalize_weapon_usage_counts(
+            status.data.get("weapon_usage_counts") if status is not None else None,
+        )
+        self._replay_recorder = ReplayRecorder(
+            ReplayHeader(
+                game_mode_id=GameMode.TYPO,
+                seed=int(self._run_reset_seed),
+                tick_rate=int(self._gameplay_tick_rate()),
+                quest_fail_retry_count=int(self.quest_fail_retry_count),
+                hardcore=bool(self.hardcore),
+                preserve_bugs=bool(self.state.preserve_bugs),
+                detail_preset=int(self._deterministic_detail_preset()),
+                gore_disabled=int(self._deterministic_gore_disabled()),
+                world_size=float(self.world_size),
+                player_count=1,
+                status=ReplayStatusSnapshot(
+                    quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
+                    quest_unlock_index_full=int(status.quest_unlock_index_full) if status is not None else 0,
+                    weapon_usage_counts=weapon_usage_counts,
+                ),
+                typo_dictionary_words=tuple(dictionary_words),
+            ),
+        )
+        self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
 
     def close(self) -> None:
         if self._ui_assets is not None:
             self._ui_assets = None
         self._sim_session = None
-        self._frame_input_state = None
         super().close()
+
+    def _runtime_player_count(self) -> int:
+        return 1
 
     def _build_local_inputs(self, *, dt: float) -> list[PlayerInput]:
         _ = dt
-        frame_input_state = self._frame_input_state
-        if frame_input_state is None:
-            return [build_typo_player_input(aim=self.player.aim, fire_requested=False, reload_requested=False)]
-        return [frame_input_state]
+        return [
+            build_typo_player_input(
+                aim=self.screen_to_world(self._ui_mouse),
+                fire_requested=False,
+                reload_requested=False,
+            ),
+        ]
 
     def _handle_input(self) -> None:
         if self._game_over_active:
@@ -149,46 +160,14 @@ class TypoShooterMode(BaseGameplayMode):
             self._action = "open_pause_menu"
             return
 
-    def _active_mask(self) -> list[bool]:
-        return [bool(entry.active) for entry in self.creatures.entries]
-
-    def _handle_typing_input(self) -> tuple[bool, bool]:
-        fire_pressed = False
-        reload_pressed = False
-
+    def _enqueue_typing_commands(self) -> None:
         enter_pressed = rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
-        if enter_pressed:
-            had_text = bool(self._typing.text)
-            active = self._active_mask()
-
-            def _find_target(name: str) -> int | None:
-                return self._names.find_by_name(name, active_mask=active)
-
-            result = self._typing.enter(find_target=_find_target)
-            if had_text and self.audio_bridge.router is not None:
-                self.audio_bridge.router.play_sfx_resolved("sfx_ui_typeenter")
-            if result.fire_requested and result.target_creature_idx is not None:
-                target_idx = int(result.target_creature_idx)
-                if 0 <= target_idx < len(self.creatures.entries):
-                    creature = self.creatures.entries[target_idx]
-                    if creature.active:
-                        self._aim_target = creature.pos
-                fire_pressed = True
-            if result.reload_requested:
-                reload_pressed = True
-
-        def _typeclick_key() -> str:
-            # Native Typ-o + ui_text_input_update pick click variants via `crt_rand() % 2`.
-            if (int(self.state.rng.rand()) & 1) == 0:
-                return "sfx_ui_typeclick_01"
-            return "sfx_ui_typeclick_02"
+        if enter_pressed and self.state.typo.typing.text:
+            self.enqueue_input_command(TypoSubmitCommand(player_index=0))
 
         # Native processes at most one keychar per frame via `console_input_poll`.
         if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE) or rl.is_key_pressed_repeat(rl.KeyboardKey.KEY_BACKSPACE):
-            self._typing.backspace()
-            key = _typeclick_key()
-            if self.audio_bridge.router is not None:
-                self.audio_bridge.router.play_sfx_resolved(key)
+            self.enqueue_input_command(TypoBackspaceCommand(player_index=0))
         else:
             codepoint = int(rl.get_char_pressed())
             if codepoint not in (13, 8) and 0x20 <= codepoint <= 0xFF:
@@ -197,61 +176,45 @@ class TypoShooterMode(BaseGameplayMode):
                 except ValueError:
                     ch = ""
                 if ch:
-                    self._typing.push_char(ch)
-                    key = _typeclick_key()
-                    if self.audio_bridge.router is not None:
-                        self.audio_bridge.router.play_sfx_resolved(key)
-
-        return fire_pressed, reload_pressed
-
-    def _spawn_tinted_creature(self, *, type_id: CreatureTypeId, pos: Vec2, tint_rgba: RGBA) -> int:
-        rand = self.state.rng.rand
-        heading = float(int(rand()) % 314) * 0.01
-        size = float(int(rand()) % 20 + 47)
-
-        flags = CreatureFlags(0)
-        move_speed = 1.7
-        if int(type_id) in (int(CreatureTypeId.SPIDER_SP1), int(CreatureTypeId.SPIDER_SP2)):
-            flags |= CreatureFlags.AI7_LINK_TIMER
-            move_speed *= 1.2
-            size *= 0.8
-
-        init = CreatureInit(
-            origin_template_id=0,
-            pos=pos,
-            heading=float(heading),
-            phase_seed=0.0,
-            type_id=type_id,
-            flags=flags,
-            ai_mode=CreatureAiMode.CHASE_PLAYER,
-            health=1.0,
-            max_health=1.0,
-            move_speed=float(move_speed),
-            reward_value=1.0,
-            size=float(size),
-            contact_damage=100.0,
-            tint=tint_rgba.to_tuple(),
-        )
-        return self.creatures.spawn_init(init, rand=rand)
+                    self.enqueue_input_command(TypoCharCommand(player_index=0, ch=ch[0]))
 
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
 
+        shots_fired, shots_hit = typo_shot_counts(self.state.typo)
         record = build_highscore_record_for_game_over(
             state=self.state,
             player=self.player,
-            survival_elapsed_ms=int(self._elapsed_ms),
+            survival_elapsed_ms=int(self._session_elapsed_ms()),
             creature_kill_count=int(self.creatures.kill_count),
             game_mode_id=GameMode.TYPO,
-            shots_fired=int(self._typing.shots_fired),
-            shots_hit=int(self._typing.shots_hit),
+            shots_fired=int(shots_fired),
+            shots_hit=int(shots_hit),
             clamp_shots_hit=False,
         )
 
         self._game_over_record = record
         self._game_over_ui.open()
         self._game_over_active = True
+        self._save_replay()
+
+    def _replay_checkpoint_elapsed_ms(self) -> float:
+        return self._session_elapsed_ms()
+
+    def _replay_claimed_stats_complete(self) -> bool:
+        return bool(self._game_over_active)
+
+    def _replay_claimed_stats_elapsed_ms(self) -> int:
+        return int(self._session_elapsed_ms())
+
+    def _replay_claimed_shots(self) -> tuple[int, int]:
+        return typo_shot_counts(self.state.typo)
+
+    def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
+        _ = replay
+        score = int(self.player.experience)
+        return f"typo_{stamp}_score{score}"
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)
@@ -278,64 +241,29 @@ class TypoShooterMode(BaseGameplayMode):
                 return
             return
 
-        fire_pressed = False
-        reload_pressed = False
         if dt_world > 0.0:
-            fire_pressed, reload_pressed = self._handle_typing_input()
+            self._enqueue_typing_commands()
 
         if dt_world <= 0.0:
             return
 
-        enforce_typo_player_frame(self.player, state=self.state)
-        input_state = build_typo_player_input(
-            aim=self._aim_target,
-            fire_requested=bool(fire_pressed),
-            reload_requested=bool(reload_pressed),
-        )
-        self._frame_input_state = input_state
         session = self._sim_session
-        if session is not None:
-            try:
-                self._run_deterministic_session_ticks(
-                    dt_frame=float(dt_world),
-                    session=session,
-                    recorder=None,
-                    on_tick=lambda _tick, _tick_index: False,
-                )
-            finally:
-                self._frame_input_state = None
-        else:
-            self._frame_input_state = None
-        enforce_typo_player_frame(self.player, state=self.state)
+        if session is None:
+            return
 
-        self.state.bonuses.weapon_power_up = 0.0
-        self.state.bonuses.reflex_boost = 0.0
-        self.state.bonus_pool.reset()
+        def _on_checkpoint(tick_index: int, tick) -> None:
+            self._record_replay_checkpoint_from_tick(
+                tick_index=int(tick_index),
+                tick=tick,
+            )
 
-        cooldown, spawns = tick_typo_spawns(
-            elapsed_ms=int(self._elapsed_ms),
-            spawn_cooldown_ms=int(self._spawn_cooldown_ms),
-            frame_dt_ms=ftol_ms_i32(float(dt_world)),
-            player_count=1,
-            world_width=float(self.world_size),
-            world_height=float(self.world_size),
+        self._run_deterministic_session_ticks(
+            dt_frame=float(dt_world),
+            session=session,
+            recorder=self._replay_recorder,
+            on_tick=lambda _tick, _tick_index: False,
+            on_checkpoint=_on_checkpoint,
         )
-        self._spawn_cooldown_ms = int(cooldown)
-        for call in spawns:
-            creature_idx = self._spawn_tinted_creature(
-                type_id=call.type_id,
-                pos=call.pos,
-                tint_rgba=call.tint_rgba,
-            )
-            self._names.assign_random(
-                creature_idx,
-                self.state.rng,
-                score_xp=int(self.player.experience),
-                active_mask=self._active_mask(),
-                unique_words=self._unique_words,
-            )
-
-        self._elapsed_ms += ftol_ms_i32(float(dt_world))
         # Death/game-over flow is handled at the start of the next frame so the
         # trooper death animation can play before the UI slides in.
 
@@ -351,80 +279,22 @@ class TypoShooterMode(BaseGameplayMode):
         )
 
     def _draw_name_labels(self) -> None:
-        names = self._names.names
-        if not names:
-            return
-
-        for idx, creature in enumerate(self.creatures.entries):
-            if not creature.active:
-                continue
-            if not (0 <= idx < len(names)):
-                continue
-            text = names[idx]
-            if not text:
-                continue
-
-            label_alpha = 1.0
-            hitbox = float(creature.lifecycle_stage)
-            if hitbox < 0.0:
-                label_alpha = max(0.0, min(1.0, (hitbox + 10.0) * 0.1))
-            if label_alpha <= 1e-3:
-                continue
-
-            screen_pos = self.world_to_screen(creature.pos)
-            y = screen_pos.y - 50.0
-            text_w = float(self._ui_text_width(text, scale=NAME_LABEL_SCALE))
-            text_h = 15.0
-            x = screen_pos.x - text_w * 0.5
-
-            bg_alpha = label_alpha * NAME_LABEL_BG_ALPHA
-            bg = rl.Color(0, 0, 0, int(255 * bg_alpha))
-            fg = rl.Color(255, 255, 255, int(255 * label_alpha))
-            rl.draw_rectangle_rec(rl.Rectangle(x - 4.0, y, text_w + 8.0, text_h), bg)
-            self._draw_ui_text(text, Vec2(x, y), fg, scale=NAME_LABEL_SCALE)
+        draw_typo_name_labels(
+            creatures=self.creatures.entries,
+            names=self.state.typo.names.names,
+            world_to_screen=self.world_to_screen,
+            draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
+            measure_text_width=lambda text, scale: float(self._ui_text_width(text, scale=scale)),
+        )
 
     def _draw_typing_box(self) -> None:
-        screen_h = float(rl.get_screen_height())
-
-        # Original positioning from 0x004457C0:
-        # v38 = screen_height - 128.0
-        # Panel Y = v38 - 16.0 = screen_height - 144.0
-        # Text Y = v38 + 1.0 = screen_height - 127.0
-        panel_x = -1.0
-        panel_y = screen_h - 144.0  # v38 - 16.0
-        text_y = screen_h - 127.0  # v38 + 1.0
-
-        # Draw panel backdrop using ind_panel texture (original: DAT_0048f7c4)
-        tex = self.render_resources.resources.texture(TextureId.UI_IND_PANEL)
-        src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-        dst = rl.Rectangle(
-            panel_x,
-            panel_y,
-            TYPING_PANEL_WIDTH,
-            TYPING_PANEL_HEIGHT,
+        draw_typing_box(
+            self.render_resources.resources.texture(TextureId.UI_IND_PANEL),
+            text=self.state.typo.typing.text,
+            cursor_pulse_time=float(self._cursor_pulse_time),
+            draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
+            measure_text_width=lambda text, scale: float(self._ui_text_width(text, scale=scale)),
         )
-        tint = rl.Color(255, 255, 255, int(255 * TYPING_PANEL_ALPHA))
-        rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
-
-        # Draw prompt + typing text
-        # Original draws with format string that includes prompt "> "
-        text = self._typing.text
-        full_text = TYPING_PROMPT + text
-        text_color = rl.Color(255, 255, 255, 255)
-        self._draw_ui_text(full_text, Vec2(TYPING_TEXT_X, text_y), text_color, scale=1.0)
-
-        # Draw cursor (original: alpha = sin(game_time_s * 4.0) > 0.0 ? 0.4 : 1.0)
-        cursor_dim = math.sin(float(self._cursor_pulse_time) * 4.0) > 0.0
-        cursor_alpha = 0.4 if cursor_dim else 1.0
-        cursor_color = rl.Color(255, 255, 255, int(255 * cursor_alpha))
-
-        # Cursor position: text_width + 14.0 (original)
-        text_w = float(self._ui_text_width(text))
-        cursor_x = text_w + TYPING_CURSOR_X_OFFSET
-        cursor_y = text_y
-
-        # Draw cursor as "_" character (original: DAT_004712b8 = "_")
-        self._draw_ui_text(TYPING_CURSOR, Vec2(cursor_x, cursor_y), cursor_color, scale=1.0)
 
     def draw(self) -> None:
         alive = self.player.health > 0.0
@@ -454,7 +324,7 @@ class TypoShooterMode(BaseGameplayMode):
                 player=self.player,
                 players=self.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
-                elapsed_ms=float(self._elapsed_ms),
+                elapsed_ms=float(self._session_elapsed_ms()),
                 frame_dt_ms=self._last_dt_ms,
             )
 

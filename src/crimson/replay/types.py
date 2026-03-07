@@ -245,6 +245,7 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     seed: int
     replay_format_version: int = REPLAY_FORMAT_VERSION
     quest_level: QuestLevel | None = None
+    typo_dictionary_words: tuple[str, ...] = ()
     game_version: str = msgspec.field(default_factory=_default_game_version)
     tick_rate: PositiveInt = 60
     # Mirrors the native quest retry scaling counter (`quest_fail_retry_count`).

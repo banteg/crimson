@@ -11,6 +11,7 @@ from grim.geom import Vec2
 
 from ..bonuses import BonusId
 from ..creatures.runtime import CreatureDeath
+from ..game_modes import GameMode
 from ..sim.state_types import PlayerState
 from ..sim.timing import ftol_ms_i32
 from ..sim.world_state import WorldEvents, WorldState
@@ -35,6 +36,20 @@ class ReplayPlayerCheckpoint(msgspec.Struct, frozen=True):
     experience: int
     level: int
 
+
+class ReplayTypoNameEntry(msgspec.Struct, frozen=True):
+    creature_index: int
+    name: str
+
+
+class ReplayTypoSnapshot(msgspec.Struct, frozen=True):
+    input_text: str = ""
+    submit_count: int = 0
+    match_count: int = 0
+    spawn_cooldown_ms: int = 0
+    active_names: list[ReplayTypoNameEntry] = msgspec.field(default_factory=list)
+
+
 class ReplayCheckpoint(msgspec.Struct, frozen=True):
     tick_index: int
     rng_state: int
@@ -48,6 +63,7 @@ class ReplayCheckpoint(msgspec.Struct, frozen=True):
     deaths: list["ReplayDeathLedgerEntry"] = msgspec.field(default_factory=list)
     perk: "ReplayPerkSnapshot" = msgspec.field(default_factory=lambda: ReplayPerkSnapshot())
     events: "ReplayEventSummary" = msgspec.field(default_factory=lambda: ReplayEventSummary())
+    typo: ReplayTypoSnapshot | None = None
 
 
 class ReplayDeathLedgerEntry(msgspec.Struct, frozen=True):
@@ -189,6 +205,24 @@ def build_checkpoint(
         sfx_head=[str(key) for key in sfx[:4]],
     )
 
+    typo_snapshot: ReplayTypoSnapshot | None = None
+    if state.game_mode == GameMode.TYPO:
+        active_mask = [bool(creature.active) for creature in world.creatures.entries]
+        active_names = [
+            ReplayTypoNameEntry(
+                creature_index=int(creature_index),
+                name=str(name),
+            )
+            for creature_index, name in state.typo.names.active_entries(active_mask=active_mask)
+        ]
+        typo_snapshot = ReplayTypoSnapshot(
+            input_text=str(state.typo.typing.text),
+            submit_count=int(state.typo.typing.submit_count),
+            match_count=int(state.typo.typing.match_count),
+            spawn_cooldown_ms=int(state.typo.spawn_cooldown_ms),
+            active_names=active_names,
+        )
+
     return ReplayCheckpoint(
         tick_index=int(tick_index),
         rng_state=int(state.rng.state),
@@ -202,6 +236,7 @@ def build_checkpoint(
         deaths=death_entries,
         perk=perk_snapshot,
         events=event_summary,
+        typo=typo_snapshot,
     )
 
 
