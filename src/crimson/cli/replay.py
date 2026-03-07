@@ -491,13 +491,17 @@ def _is_version_older(*, replay_version: str, current_version: str) -> bool:
     return replay_norm < current_norm
 
 
-def _replay_list_mode_label(*, game_mode_id: GameMode, player_count: int, quest_level: str) -> str:
+def _replay_list_mode_label(
+    *,
+    game_mode_id: GameMode,
+    player_count: int,
+    quest_level: tuple[int, int] | None,
+) -> str:
     match game_mode_id:
         case GameMode.QUESTS:
             label = "quest"
-            level = str(quest_level).strip()
-            if level:
-                label = f"{label} {level}"
+            if quest_level is not None:
+                label = f"{label} {int(quest_level[0])}.{int(quest_level[1])}"
         case _:
             label = _replay_mode_label(game_mode_id)
     if int(player_count) > 1:
@@ -587,15 +591,10 @@ def _build_replay_list_row(
     ticks = len(replay.ticks)
     game_version = str(header.game_version).strip() or "-"
     player_count = int(header.player_count)
-    quest_level = (
-        ""
-        if header.quest_level is None
-        else f"{int(header.quest_level[0])}.{int(header.quest_level[1])}"
-    )
     mode_label = _replay_list_mode_label(
         game_mode_id=game_mode_id,
         player_count=player_count,
-        quest_level=quest_level,
+        quest_level=header.quest_level,
     )
     score_xp, kills = _replay_list_score_kills(
         replay=replay,
