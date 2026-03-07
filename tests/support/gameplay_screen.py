@@ -24,6 +24,7 @@ class GameplayScreenStub:
         self._console_elapsed_ms = float(console_elapsed_ms)
         self._action = action
         self.regenerate_calls = 0
+        self.prepare_demo_trial_overlay_calls = 0
         self.last_status = None
         self.last_screen_fade = None
         self.last_audio = None
@@ -97,6 +98,9 @@ class GameplayScreenStub:
 
     def console_elapsed_ms(self) -> float:
         return self._console_elapsed_ms
+
+    def prepare_demo_trial_overlay_frame(self) -> None:
+        self.prepare_demo_trial_overlay_calls += 1
 
     def regenerate_terrain_for_console(self) -> None:
         self.regenerate_calls += 1

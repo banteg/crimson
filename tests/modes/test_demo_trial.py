@@ -14,6 +14,74 @@ from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 
 
+class _DummyGameplay:
+    close_requested = False
+    default_game_mode_id = GameMode.SURVIVAL
+
+    def __init__(self) -> None:
+        self.prepare_overlay_calls = 0
+
+    def open(self) -> None:
+        return None
+
+    def close(self) -> None:
+        return None
+
+    def update(self, dt: float) -> None:
+        _ = dt
+
+    def draw(self) -> None:
+        return None
+
+    def take_action(self) -> str | None:
+        return None
+
+    def bind_status(self, status) -> None:
+        _ = status
+
+    def bind_screen_fade(self, fade) -> None:
+        _ = fade
+
+    def bind_audio(self, audio, audio_rng) -> None:
+        _ = audio, audio_rng
+
+    def set_lan_runtime(self, *, enabled: bool, role: str, expected_players: int, connected_players: int, waiting_for_players: bool) -> None:
+        _ = enabled, role, expected_players, connected_players, waiting_for_players
+
+    def bind_lan_runtime(self, runtime) -> None:
+        _ = runtime
+
+    def set_lan_match_start(self, *, seed: int, start_tick: int = 0, status_snapshot=None) -> None:
+        _ = seed, start_tick, status_snapshot
+
+    def steal_ground_for_menu(self):
+        return None
+
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        _ = entity_alpha
+
+    def menu_ground_camera(self):
+        return None
+
+    def console_elapsed_ms(self) -> float:
+        return 0.0
+
+    def prepare_demo_trial_overlay_frame(self) -> None:
+        self.prepare_overlay_calls += 1
+
+    def regenerate_terrain_for_console(self) -> None:
+        return None
+
+    def set_rtx_mode(self, mode) -> None:
+        _ = mode
+
+    def set_runtime_updates_per_frame(self, value: int) -> None:
+        _ = value
+
+    def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
+        return 0, 0, 0, 0.0, 0.0, 0.0
+
+
 def test_format_demo_trial_time() -> None:
     assert format_demo_trial_time(0) == "0:00.00"
     assert format_demo_trial_time(12_340) == "0:12.34"
@@ -116,6 +184,25 @@ def test_demo_trial_purchase_requests_quit(make_game_state, mocker) -> None:
     assert handled is True
     assert state.quit_requested is True
     open_mock.assert_called_once()
+
+
+def test_demo_trial_overlay_prepares_gameplay_frame_when_visible(make_game_state, mocker) -> None:
+    state = make_game_state(
+        demo_enabled=True,
+        config_updates={"game_mode": int(GameMode.SURVIVAL)},
+    )
+    state.status.game_sequence_id = DEMO_TOTAL_PLAY_TIME_MS
+    loop = GameLoopView(state)
+    gameplay = _DummyGameplay()
+    loop._front_active = gameplay
+    loop._active = gameplay
+
+    mocker.patch.object(loop._demo_trial_overlay, "update", return_value=None)
+
+    handled = loop._update_demo_trial_overlay(0.016)
+
+    assert handled is True
+    assert gameplay.prepare_overlay_calls == 1
 
 
 @pytest.mark.parametrize(

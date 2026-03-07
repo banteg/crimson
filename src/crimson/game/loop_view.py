@@ -777,6 +777,7 @@ class GameLoopView:
     def _update_demo_trial_overlay(self, dt: float) -> bool:
         if not self.state.demo_enabled:
             return False
+        gameplay = self._gameplay_screen(self._front_active)
 
         mode_raw = self.state.config.game_mode
         try:
@@ -824,6 +825,8 @@ class GameLoopView:
         self._demo_trial_info = info
         if not info.visible:
             return False
+        if gameplay is not None:
+            gameplay.prepare_demo_trial_overlay_frame()
 
         action = self._demo_trial_overlay.update(dt_ms)
         if action == "purchase":

@@ -1306,6 +1306,10 @@ class BaseGameplayMode:
     def console_elapsed_ms(self) -> float:
         return float(self.sim_world.presentation_elapsed_ms)
 
+    def prepare_demo_trial_overlay_frame(self) -> None:
+        self._world_runtime.update_camera(0.0)
+        self._sync_audio_and_ground()
+
     def regenerate_terrain_for_console(self) -> None:
         if self.render_resources.ground is None:
             return
