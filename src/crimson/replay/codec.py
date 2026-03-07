@@ -102,7 +102,7 @@ def _validate_header(header: ReplayHeader, *, from_load: bool) -> None:
     _validate_usage_counts(header.status.weapon_usage_counts)
     _validate_claimed_stats(header.claimed_stats)
     if int(header.game_mode_id) == int(GameMode.QUESTS):
-        if header.quest_level is None or QuestLevel.from_parts_or_none(*header.quest_level) is None:
+        if header.quest_level is None or QuestLevel.try_parse(header.quest_level.text) is None:
             raise ReplayCodecError("quest replays require a valid header.quest_level")
 
 

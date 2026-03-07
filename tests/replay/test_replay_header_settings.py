@@ -4,6 +4,7 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.net.session_settings import session_settings_for_lockstep
+from crimson.quests.level import QuestLevel
 from crimson.replay.header_settings import replay_header_from_session_settings, session_settings_from_replay_header
 from crimson.replay.types import ReplayHeader, ReplayStatusSnapshot
 
@@ -12,7 +13,7 @@ def test_replay_header_from_session_settings_roundtrip() -> None:
     settings = session_settings_for_lockstep(
         mode_id=int(GameMode.RUSH),
         player_count=3,
-        quest_level="",
+        quest_level=None,
         preserve_bugs=True,
         tick_rate=75,
         input_delay_ticks=2,
@@ -43,7 +44,7 @@ def test_replay_header_from_session_settings_rejects_unknown_mode() -> None:
     settings = session_settings_for_lockstep(
         mode_id=999,
         player_count=1,
-        quest_level="",
+        quest_level=None,
         preserve_bugs=False,
         tick_rate=60,
         input_delay_ticks=0,
@@ -56,7 +57,7 @@ def test_replay_header_from_session_settings_rejects_missing_quest_level() -> No
     settings = session_settings_for_lockstep(
         mode_id=int(GameMode.QUESTS),
         player_count=1,
-        quest_level="",
+        quest_level=None,
         preserve_bugs=False,
         tick_rate=60,
         input_delay_ticks=0,
@@ -69,7 +70,7 @@ def test_session_settings_from_replay_header_uses_lockstep_defaults() -> None:
     header = ReplayHeader(
         game_mode_id=GameMode.QUESTS,
         seed=42,
-        quest_level=(2, 3),
+        quest_level=QuestLevel(2, 3),
         tick_rate=60,
         preserve_bugs=False,
         player_count=2,
@@ -77,7 +78,7 @@ def test_session_settings_from_replay_header_uses_lockstep_defaults() -> None:
     settings = session_settings_from_replay_header(header)
     assert settings.mode_id == int(GameMode.QUESTS)
     assert settings.player_count == 2
-    assert settings.quest_level == "2.3"
+    assert settings.quest_level == QuestLevel(2, 3)
     assert settings.preserve_bugs is False
     assert settings.tick_rate == 60
     assert settings.input_delay_ticks == 1

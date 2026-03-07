@@ -4,6 +4,7 @@ from typing import Literal, TypeAlias
 
 import msgspec
 
+from ..quests.level import QuestLevel
 from ..replay.types import PackedPlayerInput
 from .lockstep_protocol import (
     INPUT_STALL_TIMEOUT_MS,
@@ -53,7 +54,7 @@ class ClientWelcome(msgspec.Struct, tag="client_welcome", forbid_unknown_fields=
 class RoomCreate(msgspec.Struct, tag="room_create", forbid_unknown_fields=True):
     mode_id: int = 0
     player_count: int = 1
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
     tick_rate: int = TICK_RATE
     input_delay_ticks: int = INPUT_DELAY_TICKS
@@ -77,7 +78,7 @@ class RoomState(msgspec.Struct, tag="room_state", forbid_unknown_fields=True):
     session_id: str = ""
     mode_id: int = 0
     player_count: int = 1
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
     tick_rate: int = TICK_RATE
     input_delay_ticks: int = INPUT_DELAY_TICKS
@@ -95,7 +96,7 @@ class RoomStart(msgspec.Struct, tag="room_start", forbid_unknown_fields=True):
     start_tick: int = 0
     mode_id: int = 0
     player_count: int = 1
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
     tick_rate: int = TICK_RATE
     input_delay_ticks: int = INPUT_DELAY_TICKS

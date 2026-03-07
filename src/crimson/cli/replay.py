@@ -13,6 +13,7 @@ from tqdm import tqdm
 
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
+from ..quests.level import QuestLevel
 
 if TYPE_CHECKING:
     from ..dbg.checkpoint_diff import ReplayDiffResult
@@ -495,13 +496,13 @@ def _replay_list_mode_label(
     *,
     game_mode_id: GameMode,
     player_count: int,
-    quest_level: tuple[int, int] | None,
+    quest_level: QuestLevel | None,
 ) -> str:
     match game_mode_id:
         case GameMode.QUESTS:
             label = "quest"
             if quest_level is not None:
-                label = f"{label} {int(quest_level[0])}.{int(quest_level[1])}"
+                label = f"{label} {quest_level.text}"
         case _:
             label = _replay_mode_label(game_mode_id)
     if int(player_count) > 1:

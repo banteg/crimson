@@ -6,6 +6,7 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
+from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.replay import (
@@ -36,7 +37,7 @@ def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
     header = ReplayHeader(
         game_mode_id=game_mode,
         seed=int(seed),
-        quest_level=((1, 1) if game_mode == GameMode.QUESTS else None),
+        quest_level=(QuestLevel(1, 1) if game_mode == GameMode.QUESTS else None),
         tick_rate=60,
         player_count=1,
     )

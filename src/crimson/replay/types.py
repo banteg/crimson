@@ -13,13 +13,13 @@ from ..aim_schemes import AimScheme, aim_scheme_from_value
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..movement_controls import MovementControlType, movement_control_type_from_value
+from ..quests.level import QuestLevel
 from ..sim.input_providers import GameCommand
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
 REPLAY_FORMAT_VERSION = 10
 ReplayFormatVersion: TypeAlias = Literal[10]
-ReplayQuestLevel: TypeAlias = tuple[int, int]
 
 WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 
@@ -256,8 +256,7 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     game_mode_id: GameMode
     seed: int
     replay_format_version: int = REPLAY_FORMAT_VERSION
-    # Canonical quest stage pair `(major, minor)`. Use `None` for non-quest modes.
-    quest_level: ReplayQuestLevel | None = None
+    quest_level: QuestLevel | None = None
     game_version: str = msgspec.field(default_factory=_default_game_version)
     tick_rate: int = 60
     # Mirrors the native quest retry scaling counter (`quest_fail_retry_count`).

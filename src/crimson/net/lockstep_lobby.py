@@ -4,6 +4,7 @@ import uuid
 
 import msgspec
 
+from ..quests.level import QuestLevel
 from .lockstep_protocol import (
     PROTOCOL_VERSION,
     Hello,
@@ -37,7 +38,7 @@ class HostLobby(msgspec.Struct):
     build_id: str
     tick_rate: int
     input_delay_ticks: int
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
     session_id: str = msgspec.field(default_factory=lambda: uuid.uuid4().hex[:12])
     started: bool = False
@@ -48,7 +49,7 @@ class HostLobby(msgspec.Struct):
         return session_settings_for_lockstep(
             mode_id=int(self.mode_id),
             player_count=int(self.player_count),
-            quest_level=str(self.quest_level),
+            quest_level=self.quest_level,
             preserve_bugs=bool(self.preserve_bugs),
             tick_rate=int(self.tick_rate),
             input_delay_ticks=int(self.input_delay_ticks),
@@ -164,7 +165,7 @@ class HostLobby(msgspec.Struct):
             slots=slots,
             all_ready=bool(self.all_ready()),
             started=bool(self.started),
-            quest_level=str(self.quest_level),
+            quest_level=self.quest_level,
         )
 
     def start_match(

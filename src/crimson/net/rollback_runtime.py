@@ -8,7 +8,7 @@ from typing import Literal, TypeAlias, cast
 
 import msgspec
 
-from crimson.quests.level import normalize_quest_level_text
+from crimson.quests.level import QuestLevel
 
 from ..replay.types import PackedPlayerInput
 from .debug_log import lan_debug_log
@@ -63,7 +63,7 @@ class _RollbackRuntimeConfigBase(msgspec.Struct):
     relay_host: str
     relay_port: int = DEFAULT_PORT
     room_code: str = ""
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
     netcode_mode: NetcodeMode = "rollback"
     tick_rate: int = 60
@@ -142,7 +142,6 @@ class RollbackRuntime(msgspec.Struct):
     _neutral_input: PackedPlayerInput = msgspec.field(default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0])
 
     def __post_init__(self) -> None:
-        self.cfg.quest_level = normalize_quest_level_text(self.cfg.quest_level)
         self.transport = RelayUdpTransport(bind_host="0.0.0.0", bind_port=0)
 
     @property
@@ -380,7 +379,7 @@ class RollbackRuntime(msgspec.Struct):
                 settings = session_settings_for_relay(
                     mode_id=int(self.cfg.mode_id),
                     player_count=int(self.cfg.player_count),
-                    quest_level=str(self.cfg.quest_level),
+                    quest_level=self.cfg.quest_level,
                     preserve_bugs=bool(self.cfg.preserve_bugs),
                     tick_rate=int(self.cfg.tick_rate),
                     input_delay_ticks=int(self.cfg.input_delay_ticks),

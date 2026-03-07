@@ -10,6 +10,7 @@ from typing import TypeAlias
 import msgspec
 
 from .. import __version__
+from ..quests.level import QuestLevel
 from ..replay.types import PackedPlayerInput
 from ..sim.input_providers import GameCommand
 from .schema_shared import PacketHeader, SlotState
@@ -122,7 +123,7 @@ class Hello(msgspec.Struct, tag="hello", forbid_unknown_fields=True):
     player_count: int = 1
     tick_rate: int = TICK_RATE
     input_delay_ticks: int = INPUT_DELAY_TICKS
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
     host: bool = False
 
@@ -140,7 +141,7 @@ class Welcome(msgspec.Struct, tag="welcome", forbid_unknown_fields=True):
     tick_rate: int = TICK_RATE
     input_delay_ticks: int = INPUT_DELAY_TICKS
     seed: int = 0
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
     started: bool = False
 
@@ -156,7 +157,7 @@ class LobbyState(msgspec.Struct, tag="lobby_state", forbid_unknown_fields=True):
     slots: list[LobbySlot] = msgspec.field(default_factory=list)
     all_ready: bool = False
     started: bool = False
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
 
 
 class Ready(msgspec.Struct, tag="ready", forbid_unknown_fields=True):
@@ -189,7 +190,7 @@ class MatchStart(msgspec.Struct, tag="match_start", forbid_unknown_fields=True):
     player_count: int = 1
     seed: int = 0
     start_tick: int = 0
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
     status_snapshot: StatusSnapshot | None = None
 

@@ -5,6 +5,7 @@ from typing import Literal
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, NetworkSessionConfig, PendingNetworkSession
 from crimson.game_modes import GameMode
+from crimson.quests.level import QuestLevel
 from crimson.screens.panels.play_game import PlayGameMenuView
 
 
@@ -20,7 +21,7 @@ def _lockstep_pending(
     *,
     mode: Literal["survival", "rush", "quests"],
     players: int,
-    quest_level: str = "",
+    quest_level: QuestLevel | None = None,
     auto_start: bool = False,
 ) -> PendingNetworkSession:
     return PendingNetworkSession(
@@ -46,7 +47,7 @@ def _lockstep_pending(
 
 def test_loop_view_maps_lan_start_action_into_mode_action(make_game_state) -> None:
     state = make_game_state()
-    state.pending_network_session = _lockstep_pending(mode="quests", players=3, quest_level="1.1")
+    state.pending_network_session = _lockstep_pending(mode="quests", players=3, quest_level=QuestLevel(1, 1))
     loop = GameLoopView(state)
 
     action = loop._resolve_lan_action("start_quest_lan")
@@ -54,7 +55,7 @@ def test_loop_view_maps_lan_start_action_into_mode_action(make_game_state) -> No
     assert action == "open_lan_lobby"
     assert state.config.game_mode == int(GameMode.QUESTS)
     assert state.config.player_count == 3
-    assert state.pending_quest_level == "1.1"
+    assert state.pending_quest_level == QuestLevel(1, 1)
     assert state.network_in_lobby is True
     assert state.network_waiting_for_players is True
     assert state.network_expected_players == 3

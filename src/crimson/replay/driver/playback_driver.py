@@ -63,10 +63,9 @@ class ReplayTerrainSetup:
 
 
 def require_quest_level_from_replay(replay: Replay) -> QuestLevel:
-    quest_level_pair = replay.header.quest_level
-    if quest_level_pair is None:
+    if replay.header.quest_level is None:
         raise ReplayRunnerError("quest replays require a valid header.quest_level")
-    return QuestLevel(int(quest_level_pair[0]), int(quest_level_pair[1]))
+    return replay.header.quest_level
 
 
 def resolve_replay_quest_definition(
@@ -75,7 +74,7 @@ def resolve_replay_quest_definition(
     quest_level: QuestLevel | None = None,
 ) -> QuestDefinition:
     level = quest_level if quest_level is not None else require_quest_level_from_replay(replay)
-    level_text = level.to_string()
+    level_text = level.text
     quest = quest_by_level(level_text)
     if quest is None:
         raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={level_text!r}")
@@ -228,7 +227,7 @@ class PlaybackDriver:
                 )
             case GameMode.QUESTS:
                 quest_definition = resolve_replay_quest_definition(self.replay)
-                quest_level = quest_definition.level_value
+                quest_level = quest_definition.level
                 start_weapon_id = (
                     quest_definition.start_weapon_id
                     if self._quest_start_weapon_id is None
@@ -332,7 +331,7 @@ class PlaybackDriver:
                 if quest_definition is None:
                     raise ReplayRunnerError("quest replay startup must resolve quest definition before session build")
                 spawn_entries = tuple(self._quest_spawn_entries_resolved)
-                quest_level = quest_definition.level_value
+                quest_level = quest_definition.level
                 start_weapon_id = self._quest_start_weapon_resolved
                 session, quest_state = build_quest_session(
                     world=self.world,

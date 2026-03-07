@@ -4,6 +4,7 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
+from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
@@ -68,7 +69,7 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
     _header, rec = _blank_quest_replay(ticks=0, seed=101)
     replay = msgspec.structs.replace(
         rec.finish(),
-        header=msgspec.structs.replace(rec.header, quest_level=(1, 3)),
+        header=msgspec.structs.replace(rec.header, quest_level=QuestLevel(1, 3)),
     )
     quest = quest_by_level("1.3")
     assert quest is not None
