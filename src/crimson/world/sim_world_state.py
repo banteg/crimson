@@ -26,6 +26,36 @@ def _weapon_damage_scale_map() -> dict[int, float]:
     return table
 
 
+def reset_world_players(
+    players: list[PlayerState],
+    *,
+    state: GameplayState,
+    world_size: float,
+    player_count: int,
+    spawn_pos: Vec2 | None = None,
+) -> None:
+    players.clear()
+
+    base = Vec2(float(world_size) * 0.5, float(world_size) * 0.5) if spawn_pos is None else spawn_pos
+    count = max(1, int(player_count))
+    if count <= 1:
+        offsets = [Vec2()]
+    else:
+        radius = 32.0
+        step = math.tau / float(count)
+        offsets = [Vec2.from_angle(float(idx) * step) * radius for idx in range(count)]
+
+    for idx in range(count):
+        pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(world_size), float(world_size))
+        player = PlayerState(index=idx, pos=pos)
+        weapon_assign_player(player, WeaponId.PISTOL, state=state)
+        init_default_alt_weapon(player)
+        players.append(player)
+
+    # Reset-time loadout bootstrap should not leak queued reload SFX.
+    state.sfx_queue.clear()
+
+
 class SimWorldState(msgspec.Struct):
     world_size: float = 1024.0
     demo_mode_active: bool = False
@@ -77,24 +107,13 @@ class SimWorldState(msgspec.Struct):
         self.bonus_anim_phase = 0.0
         self.game_tune_started = False
 
-        base = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5) if spawn_pos is None else spawn_pos
-        count = max(1, int(player_count))
-        if count <= 1:
-            offsets = [Vec2()]
-        else:
-            radius = 32.0
-            step = math.tau / float(count)
-            offsets = [Vec2.from_angle(float(idx) * step) * radius for idx in range(count)]
-
-        for idx in range(count):
-            pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(self.world_size), float(self.world_size))
-            player = PlayerState(index=idx, pos=pos)
-            weapon_assign_player(player, WeaponId.PISTOL, state=self.state)
-            init_default_alt_weapon(player)
-            self.players.append(player)
-
-        # Reset-time loadout bootstrap should not leak queued reload SFX.
-        self.state.sfx_queue.clear()
+        reset_world_players(
+            self.players,
+            state=self.state,
+            world_size=float(self.world_size),
+            player_count=int(player_count),
+            spawn_pos=spawn_pos,
+        )
 
     def load_world_state(self, world_state: WorldState) -> None:
         self.world_state = world_state

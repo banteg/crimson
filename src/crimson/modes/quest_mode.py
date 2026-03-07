@@ -33,6 +33,7 @@ from ..net.rollback_resync_v5 import (
 )
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
+from ..quests.level import QuestLevel
 from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
@@ -45,7 +46,8 @@ from ..sim.presentation_reactions import (
     apply_post_apply_reaction,
     build_post_apply_reaction,
 )
-from ..sim.sessions import DeterministicSession, DeterministicSessionTick, QuestSpawnState, quest_post_step
+from ..sim.session_builders import build_quest_session
+from ..sim.sessions import DeterministicSession, DeterministicSessionTick, QuestSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.overlays.quest_run import (
@@ -179,23 +181,27 @@ class QuestMode(BaseGameplayMode):
         return runtime_resources_for(self._assets_root).texture(TextureId.UI_TEXT_LEVEL_COMPLETE)
 
     def _new_sim_session(self, *, spawn_entries: tuple[SpawnEntry, ...]) -> DeterministicSession:
-        quest_spawn_state = QuestSpawnState(spawn_entries=tuple(spawn_entries))
-        self._quest_spawn_state = quest_spawn_state
-        return self._session_factory(
+        quest_def = self._quest_def
+        session, quest_spawn_state = build_quest_session(
             world=self.sim_world.world_state,
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             fx_queue=self.render_resources.fx_queue,
             fx_queue_rotated=self.render_resources.fx_queue_rotated,
-            game_mode=GameMode.QUESTS,
-            perk_progression_enabled=True,
             detail_preset=5,
             gore_disabled=0,
+            game_tune_started=bool(self.sim_world.game_tune_started),
             demo_mode_active=bool(self.demo_mode_active),
+            apply_world_dt_steps=False,
             clear_fx_queues_each_tick=False,
             finalize_post_render_lifecycle=True,
-            post_step_hook=lambda ctx: quest_post_step(ctx, quest_spawn_state),
+            spawn_entries=tuple(spawn_entries),
+            quest_level=(None if quest_def is None else QuestLevel.from_parts(*quest_def.level_key)),
+            start_weapon_id=(None if quest_def is None else quest_def.start_weapon_id),
+            session_factory=self._session_factory,
         )
+        self._quest_spawn_state = quest_spawn_state
+        return session
 
     def _reset_perk_prompt(self) -> None:
         if int(self.state.perk_selection.pending_count) > 0:
@@ -405,16 +411,7 @@ class QuestMode(BaseGameplayMode):
         self._bind_world()
         self._local_input.reset(players=self.sim_world.players)
         self.bind_status(status)
-        self.state.quest_stage_major, self.state.quest_stage_minor = quest.level_key
-
         self.set_terrain_slots(terrain_slots=quest.terrain_slots)
-
-        # Quest metadata already stores native (1-based) weapon ids.
-        start_weapon_id = quest.start_weapon_id
-        if start_weapon_id <= WeaponId.NONE:
-            start_weapon_id = WeaponId.PISTOL
-        for player in self.sim_world.players:
-            weapon_assign_player(player, start_weapon_id, state=self.state)
 
         ctx = QuestContext(
             width=int(self.world_size),
