@@ -54,6 +54,7 @@ from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
     draw_quest_title_timer_overlay,
 )
+from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
 from ..world.runtime import WorldRuntime
 
 _PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
@@ -647,6 +648,30 @@ class ReplayPlaybackMode:
             timer_ms=float(driver.quest_spawn_state.completion_transition_ms),
         )
 
+    def _draw_typo_name_labels(self) -> None:
+        runtime = self._runtime
+        assert runtime is not None, "World runtime must be open before Typ-o replay draw"
+        draw_typo_name_labels(
+            creatures=runtime.sim_world.creatures.entries,
+            names=runtime.sim_world.state.typo.names.names,
+            world_to_screen=runtime.renderer.world_to_screen,
+            draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
+            measure_text_width=lambda text, scale: float(self._measure_ui_text_width(text, scale=scale)),
+        )
+
+    def _draw_typing_box(self) -> None:
+        runtime = self._runtime
+        assert runtime is not None, "World runtime must be open before Typ-o replay draw"
+        driver = self._driver
+        cursor_pulse_time = 0.0 if driver is None else float(driver.elapsed_ms) * 0.001
+        draw_typing_box(
+            runtime.render_resources.resources.texture(TextureId.UI_IND_PANEL),
+            text=runtime.sim_world.state.typo.typing.text,
+            cursor_pulse_time=float(cursor_pulse_time),
+            draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
+            measure_text_width=lambda text, scale: float(self._measure_ui_text_width(text, scale=scale)),
+        )
+
     def draw(self) -> None:
         runtime = self._runtime
         assert runtime is not None, "World runtime must be open before replay draw"
@@ -657,6 +682,7 @@ class ReplayPlaybackMode:
         assert players, "Replay runtime must have at least one player before draw"
         self._draw_world(draw_aim_indicators=True)
         mode_id = replay.header.game_mode_id
+        show_typo_ui = mode_id == GameMode.TYPO and players[0].health > 0.0
         hud_flags = hud_flags_for_game_mode(mode_id)
         quest_progress_ratio: float | None = None
         elapsed_ms = float(sim_world.presentation_elapsed_ms)
@@ -672,6 +698,8 @@ class ReplayPlaybackMode:
                 driver = self._driver
                 if driver is not None:
                     elapsed_ms = float(driver.elapsed_ms)
+        if show_typo_ui:
+            self._draw_typo_name_labels()
         draw_hud_overlay(
             HudRenderContext(
                 resources=runtime.render_resources.resources,
@@ -694,6 +722,8 @@ class ReplayPlaybackMode:
 
         self._draw_quest_title()
         self._draw_quest_complete_banner()
+        if show_typo_ui:
+            self._draw_typing_box()
 
         if bool(self._show_replay_widget):
             self._draw_replay_widget()

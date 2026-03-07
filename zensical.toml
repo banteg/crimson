@@ -39,6 +39,7 @@ nav = [
     { "Architecture" = [
       { "Overview" = "rewrite/architecture/index.md" },
       { "Module map" = "rewrite/module-map.md" },
+      { "Mode systems" = "rewrite/mode-systems.md" },
       { "Perks architecture" = "rewrite/perks-architecture.md" },
     ]},
     { "Contracts" = [

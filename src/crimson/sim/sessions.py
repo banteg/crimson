@@ -14,8 +14,16 @@ from ..perks.selection import perk_selection_current_choices, perk_selection_pic
 from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
+from ..typo.runtime import apply_typo_command
 from .input import PlayerInput
-from .input_providers import GameCommand, PerkMenuOpenCommand, PerkPickCommand
+from .input_providers import (
+    GameCommand,
+    PerkMenuOpenCommand,
+    PerkPickCommand,
+    TypoBackspaceCommand,
+    TypoCharCommand,
+    TypoSubmitCommand,
+)
 from .step_pipeline import (
     DeterministicStepResult,
     StepPipelineOptions,
@@ -257,10 +265,6 @@ class DeterministicSession(msgspec.Struct):
         if self.before_step_hook is not None:
             self.before_step_hook()
 
-        tick_inputs = inputs
-        if tick_inputs is not None and self.input_transform is not None:
-            tick_inputs = self.input_transform(tick_inputs)
-
         post_apply_sfx_keys: list[str] = []
         for cmd in (commands or ()):
             match cmd:
@@ -294,8 +298,16 @@ class DeterministicSession(msgspec.Struct):
                         game_mode=self.game_mode,
                         player_count=len(self.world.players),
                     )
+                case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
+                    if self.game_mode != GameMode.TYPO:
+                        raise RuntimeError(f"Typ-o command in non-Typo session: {type(cmd).__name__}")
+                    apply_typo_command(self.world, cmd)
                 case _:
                     raise RuntimeError(f"unhandled command type: {type(cmd).__name__}")
+
+        tick_inputs = inputs
+        if tick_inputs is not None and self.input_transform is not None:
+            tick_inputs = self.input_transform(tick_inputs)
 
         state = self.world.state
         dt_sim_ms = float(timing.dt_sim_ms_i32)

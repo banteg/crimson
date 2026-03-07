@@ -181,6 +181,16 @@ class CreatureNameTable(msgspec.Struct):
         if 0 <= int(idx) < len(self.names):
             self.names[int(idx)] = ""
 
+    def active_entries(self, *, active_mask: Sequence[bool]) -> list[tuple[int, str]]:
+        entries: list[tuple[int, str]] = []
+        for idx, name in enumerate(self.names):
+            if not name:
+                continue
+            if not (0 <= idx < len(active_mask) and bool(active_mask[idx])):
+                continue
+            entries.append((int(idx), str(name)))
+        return entries
+
     def find_by_name(self, name: str, *, active_mask: Sequence[bool]) -> int | None:
         for idx, existing in enumerate(self.names):
             if not (0 <= idx < len(active_mask) and bool(active_mask[idx])):

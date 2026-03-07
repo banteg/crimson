@@ -353,6 +353,37 @@ def test_draw_quest_complete_banner_uses_shared_overlay_helper(mocker, replay_pl
     draw_overlay.assert_called_once_with(texture, timer_ms=777.0)
 
 
+def test_draw_typing_box_uses_shared_overlay_helper_and_driver_elapsed_ms(mocker, replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    texture = object()
+    _set_private(
+        view,
+        "_runtime",
+        SimpleNamespace(
+            render_resources=SimpleNamespace(
+                resources=SimpleNamespace(texture=lambda _texture_id: texture),
+            ),
+            sim_world=SimpleNamespace(
+                state=SimpleNamespace(
+                    typo=SimpleNamespace(
+                        typing=SimpleNamespace(text="reload"),
+                    ),
+                ),
+            ),
+        ),
+    )
+    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=1, elapsed_ms=250.0))
+
+    draw_overlay = mocker.patch.object(replay_playback_mode, "draw_typing_box")
+
+    view._draw_typing_box()
+
+    draw_overlay.assert_called_once()
+    assert draw_overlay.call_args.args == (texture,)
+    assert draw_overlay.call_args.kwargs["text"] == "reload"
+    assert draw_overlay.call_args.kwargs["cursor_pulse_time"] == 0.25
+
+
 def test_post_apply_reaction_reads_quest_runtime_from_driver(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
     audio_bridge = _AudioBridgeStub()

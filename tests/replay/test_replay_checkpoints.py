@@ -8,6 +8,7 @@ import crimson.replay.checkpoints as replay_checkpoints_mod
 from crimson.bonuses.ids import BonusId
 from crimson.creatures.runtime import CreatureDeath
 from crimson.creatures.spawn_ids import CreatureTypeId
+from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
@@ -16,12 +17,14 @@ from crimson.replay.checkpoints import (
     FORMAT_VERSION,
     ReplayCheckpoints,
     ReplayCheckpointsError,
+    ReplayTypoNameEntry,
     build_checkpoint,
     dump_checkpoints,
     load_checkpoints,
 )
 from crimson.sim.state_types import BonusPickupEvent
 from crimson.sim.world_state import WorldEvents, WorldState
+from crimson.typo.state import reset_typo_state
 
 
 def test_checkpoints_codec_roundtrip_is_stable(base_world: WorldState) -> None:
@@ -127,6 +130,32 @@ def test_load_checkpoints_defaults_optional_checkpoint_fields() -> None:
     assert loaded.checkpoints[0].events.hit_count == 0
     assert loaded.checkpoints[0].events.pickup_count == 0
     assert loaded.checkpoints[0].events.sfx_count == 0
+    assert loaded.checkpoints[0].typo is None
+
+
+def test_build_checkpoint_captures_typo_sidecar(base_world: WorldState) -> None:
+    world = base_world
+    world.state.game_mode = GameMode.TYPO
+    reset_typo_state(
+        world.state.typo,
+        creature_capacity=len(world.creatures.entries),
+        dictionary_words=("amber", "onyx"),
+    )
+    world.state.typo.typing.text = "alpha"
+    world.state.typo.typing.submit_count = 3
+    world.state.typo.typing.match_count = 2
+    world.state.typo.spawn_cooldown_ms = 777
+    world.creatures.entries[4].active = True
+    world.state.typo.names.names[4] = "alpha"
+
+    ckpt = build_checkpoint(tick_index=7, world=world, elapsed_ms=500.0)
+
+    assert ckpt.typo is not None
+    assert ckpt.typo.input_text == "alpha"
+    assert ckpt.typo.submit_count == 3
+    assert ckpt.typo.match_count == 2
+    assert ckpt.typo.spawn_cooldown_ms == 777
+    assert ckpt.typo.active_names == [ReplayTypoNameEntry(creature_index=4, name="alpha")]
 
 
 def test_load_checkpoints_rejects_invalid_msgpack_payload() -> None:
