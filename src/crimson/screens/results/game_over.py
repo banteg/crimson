@@ -39,23 +39,15 @@ from ...ui.perk_menu import (
 from ...ui.text_input import flush_text_input_events, gameplay_controls_held, poll_text_input
 from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
-GAME_OVER_PANEL_X = -45.0
 # `ui_menu_layout_init` sets game-over panel pos to (-45, 110):
 #   _DAT_0048cc60 = 0xc2340000 (-45.0)
 #   _DAT_0048cc64 = 0x42dc0000 (110.0)
-GAME_OVER_PANEL_Y = 110.0
 # `DAT_0048cc48` is cloned from the 3-slice menu panel layout (`ui_menu_item_element._pad4+0xac`)
 # in `ui_menu_layout_init`; trace confirms a 510x378 bbox for both phase 0 and phase 1.
 GAME_OVER_PANEL_W = 510.0
-GAME_OVER_PANEL_H = 378.0
 
 # Measured from ui_render_trace at 1024x768 (stable timeline):
 # panel top-left is (pos_x + 21, pos_y - 81) and size is 510x254, plus a shadow pass at +7,+7.
-GAME_OVER_PANEL_OFFSET_X = 21.0
-GAME_OVER_PANEL_OFFSET_Y = -81.0
-
-TEXTURE_TOP_BANNER_W = 256.0
-TEXTURE_TOP_BANNER_H = 64.0
 
 # `game_over_screen_update` (0x0040ffc0) computes banner/content X from:
 #   local_10 = quad0_x0 + pos_x + 180.0
@@ -227,13 +219,13 @@ class GameOverUi(msgspec.Struct):
         eased = _ease_out_cubic(t)
         panel_slide_x = -GAME_OVER_PANEL_W * (1.0 - eased)
 
-        panel_pos = Vec2((GAME_OVER_PANEL_X + panel_slide_x) * scale, 0.0)
+        panel_pos = Vec2((-45.0 + panel_slide_x) * scale, 0.0)
         layout_w = screen_w / scale if scale else screen_w
         widescreen_shift_y = menu_widescreen_y_shift(layout_w)
-        panel_pos = Vec2(panel_pos.x, (GAME_OVER_PANEL_Y + widescreen_shift_y) * scale)
-        panel_origin = Vec2(-(GAME_OVER_PANEL_OFFSET_X * scale), -(GAME_OVER_PANEL_OFFSET_Y * scale))
+        panel_pos = Vec2(panel_pos.x, (110.0 + widescreen_shift_y) * scale)
+        panel_origin = Vec2(-21.0 * scale, 81.0 * scale)
         top_left = panel_pos - panel_origin
-        panel = Rect.from_top_left(top_left, GAME_OVER_PANEL_W * scale, GAME_OVER_PANEL_H * scale)
+        panel = Rect.from_top_left(top_left, GAME_OVER_PANEL_W * scale, 378.0 * scale)
         return _GameOverPanelLayout(panel=panel, top_left=top_left)
 
     def _begin_close_transition(self, action: str) -> None:
@@ -673,8 +665,8 @@ class GameOverUi(msgspec.Struct):
             _draw_texture_centered(
                 banner,
                 banner_pos,
-                TEXTURE_TOP_BANNER_W * scale,
-                TEXTURE_TOP_BANNER_H * scale,
+                256.0 * scale,
+                64.0 * scale,
                 1.0,
             )
 

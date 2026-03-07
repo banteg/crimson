@@ -38,10 +38,6 @@ from ..menu import (
 )
 from ..transitions import _draw_screen_fade
 
-PANEL_POS_X = -45.0
-PANEL_POS_Y = 210.0
-PANEL_BACK_POS_X = -55.0
-PANEL_BACK_POS_Y = 430.0
 PANEL_TIMELINE_START_MS = 300
 PANEL_TIMELINE_END_MS = 0
 
@@ -63,10 +59,10 @@ class PanelMenuView:
         *,
         title: str,
         body: str | None = None,
-        panel_pos: Vec2 = Vec2(PANEL_POS_X, PANEL_POS_Y),
+        panel_pos: Vec2 = Vec2(-45.0, 210.0),
         panel_offset: Vec2 = Vec2(MENU_PANEL_OFFSET_X, MENU_PANEL_OFFSET_Y),
         panel_height: float = MENU_PANEL_HEIGHT,
-        back_pos: Vec2 = Vec2(PANEL_BACK_POS_X, PANEL_BACK_POS_Y),
+        back_pos: Vec2 = Vec2(-55.0, 430.0),
         back_action: str = "back_to_menu",
     ) -> None:
         self.state = state

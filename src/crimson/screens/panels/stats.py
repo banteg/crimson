@@ -37,16 +37,9 @@ from ..menu import (
 from ..transitions import _draw_screen_fade
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
-# Measured from ui_render_trace_oracle_1024x768.json (state_4:played for # hours # minutes, timeline=300).
-STATISTICS_PANEL_POS_X = -89.0
-STATISTICS_PANEL_POS_Y = 185.0
-STATISTICS_PANEL_HEIGHT = 378.0
-
 # Child layout inside the panel (relative to panel top-left).
 _TITLE_X = 290.0
 _TITLE_Y = 52.0
-_TITLE_W = 128.0
-_TITLE_H = 32.0
 
 _BUTTON_X = 270.0
 _BUTTON_Y0 = 104.0
@@ -55,13 +48,9 @@ _BUTTON_STEP_Y = 34.0
 _BACK_BUTTON_X = 394.0
 _BACK_BUTTON_Y = 290.0
 
-_PLAYTIME_X = 204.0
-_PLAYTIME_Y = 334.0
-
 _STATS_EASTER_ROLL_UNSET = -1
 _STATS_EASTER_TRIGGER_ROLL = 3
 _STATS_EASTER_TEXT = "Orbes Volantes Exstare"
-_STATS_EASTER_TEXT_Y = 5.0
 
 
 def _stats_menu_easter_roll(current_roll: int, *, rng: Crand) -> int:
@@ -201,9 +190,10 @@ class StatisticsMenuView:
         return self._small_font
 
     def _panel_top_left(self, *, scale: float) -> Vec2:
+        # Measured from ui_render_trace_oracle_1024x768.json (state_4:played for # hours # minutes, timeline=300).
         return Vec2(
-            STATISTICS_PANEL_POS_X + MENU_PANEL_OFFSET_X * scale,
-            STATISTICS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
+            -89.0 + MENU_PANEL_OFFSET_X * scale,
+            185.0 + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
         )
 
     def _begin_close_transition(self, action: str) -> None:
@@ -325,7 +315,7 @@ class StatisticsMenuView:
         )
         panel_top_left = self._panel_top_left(scale=scale).offset(dx=float(slide_x))
         dst = rl.Rectangle(
-            panel_top_left.x, panel_top_left.y, panel_w, STATISTICS_PANEL_HEIGHT * scale,
+            panel_top_left.x, panel_top_left.y, panel_w, 378.0 * scale,
         )
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
@@ -340,8 +330,8 @@ class StatisticsMenuView:
             dst=rl.Rectangle(
                 panel_top_left.x + _TITLE_X * scale,
                 panel_top_left.y + _TITLE_Y * scale,
-                _TITLE_W * scale,
-                _TITLE_H * scale,
+                128.0 * scale,
+                32.0 * scale,
             ),
             origin=rl.Vector2(0.0, 0.0),
             rotation_deg=0.0,
@@ -353,12 +343,12 @@ class StatisticsMenuView:
         draw_small_text(font, _format_playtime_text(
             int(self.state.status.game_sequence_id),
             preserve_bugs=bool(self.state.preserve_bugs),
-        ), panel_top_left + Vec2(_PLAYTIME_X * scale, _PLAYTIME_Y * scale), rl.Color(255, 255, 255, int(255 * 0.8)))
+        ), panel_top_left + Vec2(204.0 * scale, 334.0 * scale), rl.Color(255, 255, 255, int(255 * 0.8)))
 
         if _is_orbes_volantes_day(dt.date.today()) and int(self.state.stats_menu_easter_egg_roll) == _STATS_EASTER_TRIGGER_ROLL:
             self.state.stats_menu_easter_egg_roll = _STATS_EASTER_ROLL_UNSET
             x = float(self.state.rng.rand() % 64 + 16)
-            draw_small_text(font, _STATS_EASTER_TEXT, Vec2(x, _STATS_EASTER_TEXT_Y), rl.Color(51, 255, 153, 128))
+            draw_small_text(font, _STATS_EASTER_TEXT, Vec2(x, 5.0), rl.Color(51, 255, 153, 128))
 
         # Buttons.
         textures = self._button_textures

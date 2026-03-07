@@ -37,12 +37,9 @@ from .hit_test import mouse_inside_rect_with_padding
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_3:Configure for:, timeline=300).
 CONTROLS_LEFT_PANEL_POS_X = -165.0
-CONTROLS_LEFT_PANEL_POS_Y = 200.0
 CONTROLS_RIGHT_PANEL_POS_X = 590.0
 CONTROLS_RIGHT_PANEL_POS_Y = 110.0
 CONTROLS_RIGHT_PANEL_HEIGHT = 378.0
-CONTROLS_BACK_POS_X = -155.0
-CONTROLS_BACK_POS_Y = 420.0
 
 # `ui_menu_item_update`: idle rebind value tint (rgb 70,180,240 @ alpha 0.6).
 CONTROLS_REBIND_VALUE_COLOR = rl.Color(70, 180, 240, 153)
@@ -118,8 +115,8 @@ class ControlsMenuView(PanelMenuView):
             state,
             title="Controls",
             back_action="open_options",
-            panel_pos=Vec2(CONTROLS_LEFT_PANEL_POS_X, CONTROLS_LEFT_PANEL_POS_Y),
-            back_pos=Vec2(CONTROLS_BACK_POS_X, CONTROLS_BACK_POS_Y),
+            panel_pos=Vec2(CONTROLS_LEFT_PANEL_POS_X, 200.0),
+            back_pos=Vec2(-155.0, 420.0),
         )
         self._small_font: SmallFontData | None = None
         self._text_controls: rl.Texture | None = None

@@ -35,9 +35,6 @@ from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 # Shared panel layout (state_14/15/16 in the oracle): tall left panel + short right panel.
 LEFT_PANEL_POS_Y = 185.0
-LEFT_PANEL_HEIGHT = 378.0
-RIGHT_PANEL_POS_Y = 200.0
-RIGHT_PANEL_HEIGHT = 254.0
 
 
 class _DatabaseBaseView:
@@ -259,19 +256,19 @@ class _DatabaseBaseView:
         left_panel_pos_x = hs_left_panel_pos_x(screen_width)
         left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y), scale=scale)
         right_panel_pos_x = hs_right_panel_pos_x(screen_width)
-        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, RIGHT_PANEL_POS_Y), scale=scale)
+        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, 200.0), scale=scale)
         left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
         draw_classic_menu_panel(
             assets.panel,
-            dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, panel_w, LEFT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, panel_w, 378.0 * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
         )
         draw_classic_menu_panel(
             assets.panel,
-            dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, RIGHT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, 254.0 * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
             flip_x=True,

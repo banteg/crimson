@@ -49,23 +49,13 @@ from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 # - pos_x/pos_y are `ui_element_t` position fields set to (-45, 110)
 # - geom_x0/geom_y0 are the first vertex coordinates of the `ui_menuPanel` geo,
 #   after `ui_menu_assets_init` transforms it into an 8-vertex 3-slice panel.
-QUEST_RESULTS_PANEL_POS_X = -45.0
-QUEST_RESULTS_PANEL_POS_Y = 110.0
-QUEST_RESULTS_PANEL_GEOM_X0 = -63.0
-QUEST_RESULTS_PANEL_GEOM_Y0 = -81.0
-
 QUEST_RESULTS_PANEL_W = 510.0
-QUEST_RESULTS_PANEL_H = 378.0
-
-TEXTURE_TOP_BANNER_W = 256.0
-TEXTURE_TOP_BANNER_H = 64.0
 
 # `quest_results_screen_update` uses the classic UI element sums for positioning:
 #   content_x = (pos_x + offset_x + slide_x) + 180.0 + 40.0
 #   banner_x  = content_x - 18.0
 #   score_x   = content_x + 30.0
 QUEST_RESULTS_CONTENT_X = 220.0
-QUEST_RESULTS_BANNER_X_FROM_CONTENT = -18.0
 QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT = 30.0
 
 INPUT_BOX_W = 166.0
@@ -386,13 +376,13 @@ class QuestResultsUi(msgspec.Struct):
         else:
             panel_slide_x = 0.0
 
-        panel_pos = Vec2((QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + panel_slide_x) * scale, 0.0)
+        panel_pos = Vec2((-63.0 - 45.0 + panel_slide_x) * scale, 0.0)
         layout_w = screen_w / scale if scale else screen_w
         widescreen_shift_y = menu_widescreen_y_shift(layout_w)
         panel_pos = Vec2(
-            panel_pos.x, (QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y) * scale,
+            panel_pos.x, (-81.0 + 110.0 + widescreen_shift_y) * scale,
         )
-        panel = Rect.from_top_left(panel_pos, QUEST_RESULTS_PANEL_W * scale, QUEST_RESULTS_PANEL_H * scale)
+        panel = Rect.from_top_left(panel_pos, QUEST_RESULTS_PANEL_W * scale, 378.0 * scale)
         return _QuestResultsPanelLayout(panel=panel, top_left=panel_pos)
 
     def update(
@@ -665,12 +655,12 @@ class QuestResultsUi(msgspec.Struct):
             )
 
         content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)
-        banner_pos = content_pos + Vec2(QUEST_RESULTS_BANNER_X_FROM_CONTENT * scale, 36.0 * scale)
+        banner_pos = content_pos + Vec2(-18.0 * scale, 36.0 * scale)
         if self.assets.text_well_done is not None:
             src = rl.Rectangle(
                 0.0, 0.0, float(self.assets.text_well_done.width), float(self.assets.text_well_done.height),
             )
-            dst = rl.Rectangle(banner_pos.x, banner_pos.y, TEXTURE_TOP_BANNER_W * scale, TEXTURE_TOP_BANNER_H * scale)
+            dst = rl.Rectangle(banner_pos.x, banner_pos.y, 256.0 * scale, 64.0 * scale)
             rl.draw_texture_pro(self.assets.text_well_done, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         qualifies = int(self.rank) < TABLE_MAX

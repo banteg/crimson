@@ -33,7 +33,6 @@ MENU_LABEL_ROW_MODS = 4
 MENU_LABEL_ROW_OTHER_GAMES = 5
 MENU_LABEL_ROW_QUIT = 6
 MENU_LABEL_ROW_BACK = 7
-MENU_LABEL_BASE_X = -60.0
 MENU_LABEL_BASE_Y = 210.0
 MENU_LABEL_OFFSET_X = 271.0
 MENU_LABEL_OFFSET_Y = -37.0
@@ -49,10 +48,6 @@ MENU_PANEL_OFFSET_Y = -81.0
 MENU_PANEL_BASE_X = -45.0
 MENU_PANEL_BASE_Y = 210.0
 MENU_SCALE_SMALL_THRESHOLD = 640
-MENU_SCALE_LARGE_MIN = 801
-MENU_SCALE_LARGE_MAX = 1024
-MENU_SCALE_SMALL = 0.8
-MENU_SCALE_LARGE = 1.2
 MENU_SCALE_SHIFT = 10.0
 
 MENU_SIGN_WIDTH = 571.44
@@ -580,7 +575,7 @@ class MenuView:
     @staticmethod
     def _menu_slot_pos_x(slot: int) -> float:
         # ui_menu_layout_init: subtract 20, 40, ... from later menu items
-        return MENU_LABEL_BASE_X - float(slot * 20)
+        return -60.0 - float(slot * 20)
 
     @staticmethod
     def _menu_slot_start_ms(slot: int) -> int:
@@ -704,7 +699,7 @@ class MenuView:
     @staticmethod
     def _sign_layout_scale(width: int) -> tuple[float, float]:
         if width <= MENU_SCALE_SMALL_THRESHOLD:
-            return MENU_SCALE_SMALL, MENU_SCALE_SHIFT
-        if MENU_SCALE_LARGE_MIN <= width <= MENU_SCALE_LARGE_MAX:
-            return MENU_SCALE_LARGE, MENU_SCALE_SHIFT
+            return 0.8, MENU_SCALE_SHIFT
+        if 801 <= width <= 1024:
+            return 1.2, MENU_SCALE_SHIFT
         return 1.0, 0.0

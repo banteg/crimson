@@ -40,11 +40,6 @@ from ..menu import (
 from ..transitions import _draw_screen_fade
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
-# Measured from ui_render_trace_oracle_1024x768.json (state_17:credits, timeline=300).
-CREDITS_PANEL_POS_X = -119.0
-CREDITS_PANEL_POS_Y = 185.0
-CREDITS_PANEL_HEIGHT = 378.0
-
 # Child layout inside the panel (relative to panel top-left).
 _TITLE_X = 202.0
 _TITLE_Y = 46.0
@@ -53,8 +48,6 @@ _TEXT_ANCHOR_X = 198.0
 _TEXT_CENTER_OFFSET_X = 140.0
 _TEXT_BASE_Y = 60.0
 _TEXT_LINE_HEIGHT = 16.0
-_TEXT_FADE_PX = 24.0
-_TEXT_RECT_H = 16.0
 
 _BACK_BUTTON_X = 298.0
 _BACK_BUTTON_Y = 310.0
@@ -326,9 +319,10 @@ class CreditsView:
         return self._small_font
 
     def _panel_top_left(self, *, scale: float) -> Vec2:
+        # Measured from ui_render_trace_oracle_1024x768.json (state_17:credits, timeline=300).
         return Vec2(
-            CREDITS_PANEL_POS_X + MENU_PANEL_OFFSET_X * scale,
-            CREDITS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
+            -119.0 + MENU_PANEL_OFFSET_X * scale,
+            185.0 + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
         )
 
     @staticmethod
@@ -393,7 +387,7 @@ class CreditsView:
         visible_count: int,
         scale: float,
     ) -> float:
-        fade_px = _TEXT_FADE_PX * scale
+        fade_px = 24.0 * scale
         top = base_y + (8.0 * scale)
         alpha = 1.0
         if y < top:
@@ -438,7 +432,7 @@ class CreditsView:
                 x=x,
                 y=y,
                 w=text_w,
-                h=_TEXT_RECT_H * scale,
+                h=16.0 * scale,
             ):
                 continue
 
@@ -572,7 +566,7 @@ class CreditsView:
             panel_top_left.x,
             panel_top_left.y,
             MENU_PANEL_WIDTH * scale,
-            CREDITS_PANEL_HEIGHT * scale,
+            378.0 * scale,
         )
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
