@@ -9,6 +9,7 @@ from crimson.quests.types import QuestContext
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession, QuestSpawnState, quest_post_step
 from grim.geom import Vec2
+from grim.rand import Crand
 from tests.support.world_runtime import WorldRuntimeHost
 
 
@@ -22,7 +23,7 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> tuple[Deterministi
         build_quest_spawn_table(
             quest,
             QuestContext(width=1024, height=1024, player_count=1),
-            seed=int(seed),
+            rng=Crand(int(seed)),
             hardcore=False,
             full_version=True,
         ),

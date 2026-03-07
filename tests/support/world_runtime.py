@@ -230,27 +230,18 @@ class WorldRuntimeHost:
         self._runtime.render_resources.config = self._runtime.config
         self._runtime.render_resources.sync_ground_settings()
 
-    def apply_bootstrap_terrain(
+    def apply_terrain_setup(
         self,
         *,
         terrain_slots: TerrainSlotTriplet,
         seed: int,
         layers: int = 3,
     ) -> None:
-        self._runtime.terrain_runtime.apply_bootstrap_terrain(
+        self._runtime.terrain_runtime.apply_terrain_setup(
             terrain_slots=terrain_slots,
             seed=int(seed),
             layers=int(layers),
         )
-
-    def set_terrain_slots(
-        self,
-        *,
-        terrain_slots: TerrainSlotTriplet,
-    ) -> None:
-        self._runtime.terrain_runtime.set_terrain_slots(terrain_slots=terrain_slots)
-        terrain_seed = int(self._runtime.sim_world.state.rng.state)
-        self._runtime.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
 
     def _bake_fx_queues(self) -> None:
         self._runtime.render_resources.bake_fx_queues(corpse_frame_for_type=creature_corpse_frame_for_type)

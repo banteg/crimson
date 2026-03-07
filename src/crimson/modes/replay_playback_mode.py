@@ -29,12 +29,10 @@ from ..replay.driver.playback_driver import (
 )
 from ..replay.driver.playback_pump import advance_playback_frame
 from ..replay.driver.setup import ReplayRunnerError
-from ..replay.types import ReplayHeader
 from ..sim.batch_apply import (
     PresentationTickOutput,
     apply_presentation_outputs,
 )
-from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1
 from ..sim.clock import FixedStepClock
 from ..sim.hooks import TickResult
 from ..sim.presentation_reactions import (
@@ -76,16 +74,6 @@ _REPLAY_WIDGET_TEXT_OFFSET_X = 0.0
 _REPLAY_WIDGET_TEXT_OFFSET_Y = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_X = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_Y = 0.0
-
-
-def _world_reset_seed_for_replay(header: ReplayHeader) -> int:
-    match str(header.bootstrap_kind):
-        case kind if kind == BOOTSTRAP_KIND_TERRAIN_V1:
-            return int(header.bootstrap_seed)
-        case _:
-            return int(header.seed)
-
-
 class ReplayPlaybackMode:
     def __init__(
         self,
@@ -352,7 +340,7 @@ class ReplayPlaybackMode:
         )
         self._runtime = runtime
         runtime.reset(
-            seed=_world_reset_seed_for_replay(replay.header),
+            seed=int(replay.header.seed),
             player_count=int(replay.header.player_count),
         )
         runtime.open_runtime()
@@ -380,7 +368,7 @@ class ReplayPlaybackMode:
         assert driver is not None, "Replay driver must be initialized before replay view setup"
         terrain_setup = driver.terrain_setup
         if terrain_setup is not None:
-            runtime.terrain_runtime.apply_bootstrap_terrain(
+            runtime.terrain_runtime.apply_terrain_setup(
                 terrain_slots=terrain_setup.terrain_slots,
                 seed=int(terrain_setup.terrain_seed),
                 layers=3,

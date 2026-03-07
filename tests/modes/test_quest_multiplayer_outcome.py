@@ -18,7 +18,7 @@ def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, 
     cfg.data["player_count"] = 4
     ctx = ViewContext(assets_dir=assets_dir)
 
-    mocker.patch.object(QuestMode, "set_terrain_slots", return_value=None)
+    mocker.patch.object(QuestMode, "apply_terrain_setup", return_value=None)
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     mode.prepare_new_run("1.1", status=None)
     health_values = (91.2, 50.6, 10.4, 0.49)
@@ -40,7 +40,7 @@ def test_prepare_new_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) 
     cfg.data["player_count"] = 2
     ctx = ViewContext(assets_dir=assets_dir)
 
-    mocker.patch.object(QuestMode, "set_terrain_slots", return_value=None)
+    mocker.patch.object(QuestMode, "apply_terrain_setup", return_value=None)
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     mode.prepare_new_run("1.1", status=None)
 
@@ -58,7 +58,7 @@ def test_prepare_new_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_p
     cfg = ensure_crimson_cfg(tmp_path)
     ctx = ViewContext(assets_dir=assets_dir)
 
-    mocker.patch.object(QuestMode, "set_terrain_slots", return_value=None)
+    mocker.patch.object(QuestMode, "apply_terrain_setup", return_value=None)
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
 
     seed_before_run = 0xCAFE

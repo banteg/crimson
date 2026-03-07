@@ -17,10 +17,8 @@ from ..sim.input_providers import GameCommand
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
-REPLAY_FORMAT_VERSION = 9
-ReplayFormatVersion: TypeAlias = Literal[9]
-
-BootstrapKind: TypeAlias = Literal["none", "terrain_v1"]
+REPLAY_FORMAT_VERSION = 10
+ReplayFormatVersion: TypeAlias = Literal[10]
 
 WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 
@@ -260,8 +258,6 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     # Quests can recover their spawn script deterministically from the level id.
     # Leave empty for non-quest modes or legacy replays.
     quest_level: str = ""
-    bootstrap_kind: BootstrapKind = "none"
-    bootstrap_seed: int = 0
     game_version: str = msgspec.field(default_factory=_default_game_version)
     tick_rate: int = 60
     # Mirrors the native quest retry scaling counter (`quest_fail_retry_count`).

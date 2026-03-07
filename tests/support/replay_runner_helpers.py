@@ -15,6 +15,7 @@ from crimson.replay.types import current_replay_game_version
 from crimson.sim.input import PlayerInput
 from crimson.sim.world_state import WorldEvents, WorldState
 from grim.geom import Vec2
+from grim.rand import Crand
 
 
 def _blank_survival_replay(
@@ -55,6 +56,7 @@ def _blank_quest_replay(
     header = ReplayHeader(
         game_mode_id=GameMode.QUESTS,
         seed=int(seed),
+        quest_level="1.1",
         tick_rate=60,
         player_count=1,
         game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
@@ -72,7 +74,7 @@ def _quest_spawn_entries(level: str = "1.1", *, player_count: int = 1, seed: int
     return build_quest_spawn_table(
         quest,
         ctx,
-        seed=int(seed),
+        rng=Crand(int(seed)),
         hardcore=False,
         full_version=True,
     )

@@ -6,19 +6,16 @@ from contextlib import suppress
 from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import BinaryIO, cast
+from typing import BinaryIO
 
 import msgspec
-
-from grim.rand import CrtRand
 
 from ..game_modes import GameMode
 from ..net.session_settings import session_settings_for_lockstep
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
 from ..replay.header_settings import replay_header_from_session_settings
-from ..replay.types import WEAPON_USAGE_COUNT, BootstrapKind, Replay, ReplayStatusSnapshot, ReplayTick
-from ..sim.bootstrap import run_terrain_bootstrap
+from ..replay.types import WEAPON_USAGE_COUNT, Replay, ReplayStatusSnapshot, ReplayTick
 from ..status_snapshot import progress_status_from_debug_snapshot, replay_status_from_progress
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
 from .payloads import BuiltinObject
@@ -37,15 +34,11 @@ _FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
-_GAME_MODE_SURVIVAL = int(GameMode.SURVIVAL)
-_GAME_MODE_RUSH = int(GameMode.RUSH)
-_TERRAIN_BOOTSTRAP_MODES = {_GAME_MODE_SURVIVAL, _GAME_MODE_RUSH}
-_BOOTSTRAP_KINDS: set[BootstrapKind] = {"none", "terrain_v1"}
-_SUPPORTED_CAPTURE_FORMAT_VERSION = 10
+_SUPPORTED_CAPTURE_FORMAT_VERSION = 11
 _SUPPORTED_JSONL_SCHEMA_VERSION = 1
 _RUN_START_REASONS = frozenset(("run_start", "first_tick", "quest_attempt", "mode_or_stage_change"))
 _RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change", "shutdown"))
-_SEED_SOURCES = frozenset(("unknown", "crt_srand", "terrain_bootstrap_sim"))
+_SEED_SOURCES = frozenset(("unknown", "crt_srand"))
 _MODE_LABEL_BY_ID = {
     int(GameMode.DEMO): "demo",
     int(GameMode.SURVIVAL): "survival",
@@ -154,8 +147,6 @@ class _RunStartRow(
     reason: str = "run_start"
     quest_stage_major: int = -1
     quest_stage_minor: int = -1
-    bootstrap_kind: str = "none"
-    bootstrap_seed: int = 0
     seed_source: str = "unknown"
     tick_index_global: int | None = None
 
@@ -248,8 +239,6 @@ class _OpenRun(msgspec.Struct):
     quest_stage_major: int
     quest_stage_minor: int
     replay_seed: int
-    replay_bootstrap_kind: BootstrapKind
-    replay_bootstrap_seed: int
     replay_player_count: int
     temp_path: Path
     stream: BinaryIO
@@ -280,12 +269,6 @@ def _decode_capture_row(line: bytes, *, field: str) -> _CaptureRow:
         return _CAPTURE_ROW_DECODER.decode(line)
     except (msgspec.DecodeError, msgspec.ValidationError) as exc:
         raise FridaFinalizeError(f"{field} invalid capture row: {exc}") from exc
-
-
-def _validate_bootstrap_kind(kind: str, *, field: str) -> BootstrapKind:
-    if kind not in _BOOTSTRAP_KINDS:
-        raise FridaFinalizeError(f"{field} must be one of {sorted(_BOOTSTRAP_KINDS)!r}, got {kind!r}")
-    return cast("BootstrapKind", kind)
 
 
 def _canonical_channels_payload(
@@ -388,32 +371,6 @@ def _run_output_path(
     return Path(output_dir) / name
 
 
-def _validate_run_seed_for_replay(run: _OpenRun) -> None:
-    if int(run.mode_id) not in _TERRAIN_BOOTSTRAP_MODES:
-        return
-    bootstrap_seed = int(run.replay_bootstrap_seed)
-    world_size = 1024
-    quest_unlock_index = int(run.replay_status.quest_unlock_index)
-    rng = CrtRand(seed=int(bootstrap_seed))
-    terrain = run_terrain_bootstrap(
-        rng,
-        quest_unlock_index=int(quest_unlock_index),
-        width=int(world_size),
-        height=int(world_size),
-        layers=3,
-    )
-    if int(run.replay_seed) != int(terrain.seed_after):
-        raise FridaFinalizeError(
-            f"run {run.run_id}: terrain bootstrap seed mismatch "
-            f"mode_id={run.mode_id} "
-            f"bootstrap_seed={bootstrap_seed} "
-            f"quest_unlock_index={quest_unlock_index} "
-            f"expected_seed_after={int(terrain.seed_after)} "
-            f"run_start.seed={int(run.replay_seed)} "
-            f"seed_source={run.replay_seed_source!r}",
-        )
-
-
 def _build_meta(
     *,
     raw_fingerprint: BuiltinObject,
@@ -484,7 +441,6 @@ def _write_run_trace(
             f"run {run.run_id}: replay_dt count {len(run.replay_dt)} "
             f"does not match tick_count {run.tick_count}",
         )
-    _validate_run_seed_for_replay(run)
     out_path = _run_output_path(
         raw_path=raw_path,
         output_dir=output_dir,
@@ -521,8 +477,6 @@ def _write_run_trace(
     replay_header = replay_header_from_session_settings(
         settings,
         seed=int(run.replay_seed),
-        bootstrap_kind=run.replay_bootstrap_kind,
-        bootstrap_seed=int(run.replay_bootstrap_seed),
         status=run.replay_status,
     )
     replay_ticks = [
@@ -629,27 +583,13 @@ def finalize_frida_jsonl_to_traces(
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}].reason must be one of {sorted(_RUN_START_REASONS)!r}",
                             )
-                        bootstrap_kind = _validate_bootstrap_kind(
-                            run_start.bootstrap_kind,
-                            field=f"{raw_path}.lines[{line_no}].bootstrap_kind",
-                        )
                         if str(run_start.seed_source) not in _SEED_SOURCES:
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}].seed_source must be one of {sorted(_SEED_SOURCES)!r}",
                             )
                         mode_id = int(run_start.mode_id)
-                        if mode_id in _TERRAIN_BOOTSTRAP_MODES:
-                            if bootstrap_kind != "terrain_v1":
-                                raise FridaFinalizeError(
-                                    f"{raw_path}.lines[{line_no}] mode_id={mode_id} requires "
-                                    "bootstrap_kind='terrain_v1'; recapture with updated gameplay_diff_capture.js",
-                                )
-                        elif bootstrap_kind != "none":
-                            raise FridaFinalizeError(
-                                f"{raw_path}.lines[{line_no}] mode_id={mode_id} requires bootstrap_kind='none'",
-                            )
-                        if int(run_start.bootstrap_seed) < 0:
-                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].bootstrap_seed must be >= 0")
+                        if int(run_start.seed) < 0:
+                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].seed must be >= 0")
                         if int(run_start.player_count) <= 0:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].player_count must be positive")
                         spool_path = temp_root / f"run_{int(run_start.run_id)}.ticks"
@@ -659,8 +599,6 @@ def finalize_frida_jsonl_to_traces(
                             quest_stage_major=int(run_start.quest_stage_major),
                             quest_stage_minor=int(run_start.quest_stage_minor),
                             replay_seed=int(run_start.seed),
-                            replay_bootstrap_kind=bootstrap_kind,
-                            replay_bootstrap_seed=int(run_start.bootstrap_seed),
                             replay_player_count=int(run_start.player_count),
                             temp_path=spool_path,
                             stream=spool_path.open("wb"),

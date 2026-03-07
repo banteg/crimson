@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TypeAlias
 
 from crimson.quests.level import QuestLevel
@@ -11,13 +12,14 @@ from grim.rand import CrtRand, RngTraceSink
 from ...effects import FxQueue, FxQueueRotated
 from ...game_modes import GameMode
 from ...quests import quest_by_level
-from ...quests.runtime import build_quest_spawn_table
+from ...quests.runtime import advance_quest_start_prelude, build_quest_spawn_table
 from ...quests.types import QuestContext, QuestDefinition, SpawnEntry
-from ...replay import Replay, apply_replay_bootstrap, warn_on_game_version_mismatch
+from ...replay import Replay, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.header_settings import session_settings_from_replay_header
 from ...replay.input_codec import unpack_tick_inputs
+from ...sim.bootstrap import run_explicit_terrain_prelude, run_unlock_terrain_prelude
 from ...sim.hooks import TickResult
 from ...sim.input_providers import ResolvedTick
 from ...sim.session_builders import (
@@ -31,8 +33,9 @@ from ...sim.sessions import (
     QuestSpawnState,
 )
 from ...sim.world_state import WorldState
-from ...terrain_slots import TerrainSlotTriplet
+from ...status_snapshot import game_status_from_replay_status
 from ...weapons import WeaponId
+from ...world.sim_world_state import reset_world_players
 from .replay_timing import should_apply_world_dt_steps_for_replay
 from .setup import (
     ReplayRunnerError,
@@ -41,8 +44,6 @@ from .setup import (
     build_empty_fx_queues,
     player0_most_used_weapon_id,
     player0_shots,
-    reset_players,
-    status_from_snapshot,
 )
 
 RngTraceDraw: TypeAlias = tuple[int, int, int]
@@ -57,7 +58,7 @@ TickEndObserver: TypeAlias = Callable[[TickResult, WorldState], None]
 
 @dataclass(slots=True, frozen=True)
 class ReplayTerrainSetup:
-    terrain_slots: TerrainSlotTriplet
+    terrain_slots: tuple[int, int, int]
     terrain_seed: int
 
 
@@ -65,14 +66,6 @@ def resolve_quest_level_from_replay(replay: Replay) -> str:
     quest_level = QuestLevel.try_parse(str(replay.header.quest_level))
     if quest_level is not None:
         return quest_level.to_string()
-
-    # Legacy replays (e.g. capture-derived) may not encode the quest id. Classic quest RNG
-    # seeding uses `major*100 + minor`, so we can often recover the level from `header.seed`.
-    seed = int(replay.header.seed)
-    major = seed // 100
-    minor = seed % 100
-    if 1 <= int(major) <= 5 and 1 <= int(minor) <= 10:
-        return QuestLevel.from_parts(major, minor).to_string()
     return ""
 
 
@@ -86,30 +79,6 @@ def resolve_replay_quest_definition(
     if quest is None:
         raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={level_text!r}")
     return quest
-
-
-def resolve_replay_quest_setup(
-    replay: Replay,
-    *,
-    world_size: float,
-    player_count: int,
-) -> tuple[QuestDefinition, tuple[SpawnEntry, ...]]:
-    quest = resolve_replay_quest_definition(replay)
-    ctx = QuestContext(
-        width=int(world_size),
-        height=int(world_size),
-        player_count=int(player_count),
-    )
-    spawn_entries = tuple(
-        build_quest_spawn_table(
-            quest,
-            ctx,
-            seed=int(replay.header.seed),
-            hardcore=bool(replay.header.hardcore),
-            full_version=True,
-        ),
-    )
-    return quest, spawn_entries
 
 @contextmanager
 def _tick_rng_trace(rng: object, *, enabled: bool) -> Iterator[list[RngTraceDraw]]:
@@ -178,6 +147,8 @@ class PlaybackDriver:
         self._quest_definition: QuestDefinition | None = None
         self._quest_total_spawn_count = 0
         self._terrain_setup: ReplayTerrainSetup | None = None
+        self._quest_spawn_entries_resolved: tuple[SpawnEntry, ...] = ()
+        self._quest_start_weapon_resolved: WeaponId | None = None
 
         if version_mismatch_action is not None:
             warn_on_game_version_mismatch(replay, action=str(version_mismatch_action))
@@ -225,26 +196,92 @@ class PlaybackDriver:
             quest_fail_retry_count=int(self.replay.header.quest_fail_retry_count),
             preserve_bugs=bool(self.session_settings.preserve_bugs),
         )
-        reset_players(
+        reset_world_players(
             world.players,
             state=world.state,
             world_size=float(self.world_size),
             player_count=int(self.session_settings.player_count),
         )
-        world.state.status = status_from_snapshot(
-            quest_unlock_index=int(self.replay.header.status.quest_unlock_index),
-            quest_unlock_index_full=int(self.replay.header.status.quest_unlock_index_full),
-            weapon_usage_counts=self.replay.header.status.weapon_usage_counts,
+        world.state.status = game_status_from_replay_status(
+            self.replay.header.status,
+            path=Path("replay://status"),
         )
-        bootstrap = apply_replay_bootstrap(
-            self.replay.header,
-            rng=world.state.rng,
-            world_size=float(self.world_size),
-        )
-        if bootstrap is not None:
+        self._quest_definition = None
+        self._quest_total_spawn_count = 0
+        self._terrain_setup = None
+        self._quest_spawn_entries_resolved = ()
+        self._quest_start_weapon_resolved = None
+
+        match self.mode_id:
+            case GameMode.SURVIVAL | GameMode.RUSH:
+                terrain = run_unlock_terrain_prelude(
+                    world.state.rng,
+                    unlock_index=int(self.replay.header.status.quest_unlock_index),
+                    width=int(self.world_size),
+                    height=int(self.world_size),
+                    layers=3,
+                )
+                self._terrain_setup = ReplayTerrainSetup(
+                    terrain_slots=terrain.terrain_slots,
+                    terrain_seed=int(terrain.terrain_seed),
+                )
+            case GameMode.QUESTS:
+                quest_definition = resolve_replay_quest_definition(self.replay)
+                quest_level = quest_definition.level_value
+                start_weapon_id = (
+                    quest_definition.start_weapon_id
+                    if self._quest_start_weapon_id is None
+                    else self._quest_start_weapon_id
+                )
+                ctx = QuestContext(
+                    width=int(self.world_size),
+                    height=int(self.world_size),
+                    player_count=int(self.session_settings.player_count),
+                )
+                _generic_terrain = run_unlock_terrain_prelude(
+                    world.state.rng,
+                    unlock_index=int(self.replay.header.status.quest_unlock_index),
+                    width=int(self.world_size),
+                    height=int(self.world_size),
+                    layers=3,
+                )
+                advance_quest_start_prelude(world.state.rng)
+                quest_terrain = run_explicit_terrain_prelude(
+                    world.state.rng,
+                    terrain_slots=quest_definition.terrain_slots,
+                    width=int(self.world_size),
+                    height=int(self.world_size),
+                    layers=3,
+                )
+                spawn_entries = (
+                    tuple(self._quest_spawn_entries)
+                    if self._quest_spawn_entries is not None
+                    else tuple(
+                        build_quest_spawn_table(
+                            quest_definition,
+                            ctx,
+                            rng=world.state.rng,
+                            hardcore=bool(self.replay.header.hardcore),
+                            full_version=True,
+                        ),
+                    )
+                )
+                world.state.quest_level = quest_level
+                self._quest_definition = quest_definition
+                self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
+                self._quest_spawn_entries_resolved = spawn_entries
+                self._quest_start_weapon_resolved = start_weapon_id
+                self._terrain_setup = ReplayTerrainSetup(
+                    terrain_slots=quest_definition.terrain_slots,
+                    terrain_seed=int(quest_terrain.terrain_seed),
+                )
+            case _:
+                pass
+
+        if self._terrain_setup is not None:
             self._terrain_setup = ReplayTerrainSetup(
-                terrain_slots=bootstrap.terrain.terrain_slots,
-                terrain_seed=int(bootstrap.terrain.terrain_seed),
+                terrain_slots=tuple(self._terrain_setup.terrain_slots),
+                terrain_seed=int(self._terrain_setup.terrain_seed),
             )
 
         return world
@@ -254,31 +291,9 @@ class PlaybackDriver:
             return self._provided_fx_queue, self._provided_fx_queue_rotated
         return build_empty_fx_queues()
 
-    def _resolve_quest_setup(
-        self,
-    ) -> tuple[QuestDefinition, tuple[SpawnEntry, ...], QuestLevel, WeaponId]:
-        spawn_entries = self._quest_spawn_entries
-        quest_definition = resolve_replay_quest_definition(self.replay)
-        quest_level = quest_definition.level_value
-        start_weapon_id = quest_definition.start_weapon_id if self._quest_start_weapon_id is None else self._quest_start_weapon_id
-
-        if spawn_entries is None:
-            _quest_definition, spawn_entries = resolve_replay_quest_setup(
-                self.replay,
-                world_size=float(self.world_size),
-                player_count=int(self.session_settings.player_count),
-            )
-            quest_definition = _quest_definition
-        else:
-            spawn_entries = tuple(spawn_entries)
-
-        return quest_definition, spawn_entries, quest_level, start_weapon_id
-
     def _build_session(self, *, apply_world_dt_steps: bool) -> DeterministicSession:
         damage_scale_by_type = build_damage_scale_by_type()
         self._quest_spawn_state = None
-        self._quest_definition = None
-        self._quest_total_spawn_count = 0
         match self.mode_id:
             case GameMode.SURVIVAL:
                 session, _ = build_survival_session(
@@ -311,14 +326,12 @@ class PlaybackDriver:
                 )
                 return session
             case GameMode.QUESTS:
-                quest_definition, spawn_entries, quest_level, start_weapon_id = self._resolve_quest_setup()
-                self._quest_definition = quest_definition
-                self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
-                self._terrain_setup = ReplayTerrainSetup(
-                    terrain_slots=quest_definition.terrain_slots,
-                    terrain_seed=int(self.world.state.rng.state),
-                )
-
+                quest_definition = self._quest_definition
+                if quest_definition is None:
+                    raise ReplayRunnerError("quest replay startup must resolve quest definition before session build")
+                spawn_entries = tuple(self._quest_spawn_entries_resolved)
+                quest_level = quest_definition.level_value
+                start_weapon_id = self._quest_start_weapon_resolved
                 session, quest_state = build_quest_session(
                     world=self.world,
                     world_size=float(self.world_size),

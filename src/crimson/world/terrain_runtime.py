@@ -34,7 +34,7 @@ class TerrainRuntime(msgspec.Struct):
             detail=detail,
         )
 
-    def apply_bootstrap_terrain(
+    def apply_terrain_setup(
         self,
         *,
         terrain_slots: TerrainSlotTriplet,
@@ -48,18 +48,6 @@ class TerrainRuntime(msgspec.Struct):
             detail_texture_id=detail_texture_id,
         )
         self.render_resources.schedule_ground_generation(seed=int(seed), layers=int(layers))
-
-    def set_terrain_slots(
-        self,
-        *,
-        terrain_slots: TerrainSlotTriplet,
-    ) -> None:
-        base_texture_id, overlay_texture_id, detail_texture_id = terrain_slots_to_texture_ids(terrain_slots)
-        self._apply_ground_texture_ids(
-            base_texture_id=base_texture_id,
-            overlay_texture_id=overlay_texture_id,
-            detail_texture_id=detail_texture_id,
-        )
 
     def schedule_from_rng_seed(self, *, seed: int, layers: int = 3) -> None:
         self.render_resources.schedule_ground_generation(seed=int(seed), layers=int(layers))

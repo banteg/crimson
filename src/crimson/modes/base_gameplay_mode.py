@@ -315,7 +315,7 @@ class BaseGameplayMode:
         self._last_dt_ms = 0.0
         self._screen_fade: GameState | None = None
         self._terrain_regen_counter = 0
-        self._bootstrap_seed = 0
+        self._run_reset_seed = 0
         self._replay_recorder: ReplayRecorder | None = None
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate = 60
@@ -407,27 +407,14 @@ class BaseGameplayMode:
         self.render_resources.config = self.config
         self.render_resources.sync_ground_settings()
 
-    def apply_bootstrap_terrain(
+    def apply_terrain_setup(
         self,
         *,
         terrain_slots: TerrainSlotTriplet,
         seed: int,
         layers: int = 3,
     ) -> None:
-        self.terrain_runtime.apply_bootstrap_terrain(
-            terrain_slots=terrain_slots,
-            seed=int(seed),
-            layers=int(layers),
-        )
-
-    def set_terrain_slots(
-        self,
-        *,
-        terrain_slots: TerrainSlotTriplet,
-    ) -> None:
-        self.terrain_runtime.set_terrain_slots(terrain_slots=terrain_slots)
-        terrain_seed = int(self.sim_world.state.rng.state)
-        self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
+        self.terrain_runtime.apply_terrain_setup(terrain_slots=terrain_slots, seed=int(seed), layers=int(layers))
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self.render_resources.bake_fx_queues()
@@ -1179,7 +1166,7 @@ class BaseGameplayMode:
             seed = int(self._lan_seed_override)
         else:
             seed = int(self.state.rng.state)
-        self._bootstrap_seed = int(seed) & 0xFFFFFFFF
+        self._run_reset_seed = int(seed) & 0xFFFFFFFF
 
         # Reset LAN sim status at the start of each run so per-session usage
         # counts (weapon bias) start from a consistent baseline across peers.
@@ -1193,7 +1180,7 @@ class BaseGameplayMode:
         lan_debug_log(
             "mode_world_reset",
             mode=self.__class__.__name__,
-            seed=int(self._bootstrap_seed),
+            seed=int(self._run_reset_seed),
             seed_source=str(seed_source),
             rng_state=int(self.sim_world.state.rng.state),
             world_size=float(self.world_size),

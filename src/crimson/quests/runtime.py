@@ -52,18 +52,24 @@ def apply_hardcore_spawn_table_adjustment(entries: list[SpawnEntry]) -> list[Spa
     return adjusted
 
 
+def advance_quest_start_prelude(rng: CrandLike) -> None:
+    """Consume the quest-specific startup draw before quest terrain/spawn setup."""
+
+    rng.rand()
+
+
 def build_quest_spawn_table(
     quest: QuestDefinition,
     ctx: QuestContext,
     *,
-    seed: int | None = None,
+    rng: CrandLike | None = None,
     hardcore: bool = False,
     full_version: bool = True,
 ) -> tuple[SpawnEntry, ...]:
-    """Build the quest spawn script (with optional hardcore modifications)."""
+    """Build the quest spawn script from the active startup RNG state."""
 
-    rng = Crand(seed) if seed is not None else Crand()
-    entries = _call_builder(quest.builder, ctx, rng=rng, full_version=full_version)
+    builder_rng = rng if rng is not None else Crand()
+    entries = _call_builder(quest.builder, ctx, rng=builder_rng, full_version=full_version)
     if hardcore:
         entries = apply_hardcore_spawn_table_adjustment(list(entries))
     return tuple(entries)

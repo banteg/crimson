@@ -33,11 +33,12 @@ from ..net.rollback_resync_v5 import (
 )
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
-from ..quests.runtime import build_quest_spawn_table
+from ..quests.runtime import advance_quest_start_prelude, build_quest_spawn_table
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..replay.types import normalize_weapon_usage_counts
+from ..sim.bootstrap import run_explicit_terrain_prelude, run_unlock_terrain_prelude
 from ..sim.hooks import TickResult
 from ..sim.input_providers import PerkMenuOpenCommand
 from ..sim.presentation_reactions import (
@@ -403,6 +404,7 @@ class QuestMode(BaseGameplayMode):
         # Native quest start does not reseed RNG per level; carry the current
         # session RNG state into the next run.
         seed = int(self.state.rng.state) & 0xFFFFFFFF
+        self._run_reset_seed = int(seed)
 
         player_count = self.config.player_count
         self._sync_world_runtime_config()
@@ -410,7 +412,28 @@ class QuestMode(BaseGameplayMode):
         self._bind_world()
         self._local_input.reset(players=self.sim_world.players)
         self.bind_status(status)
-        self.set_terrain_slots(terrain_slots=quest.terrain_slots)
+        bound_status = self.state.status
+        generic_unlock_index = int(bound_status.quest_unlock_index) if bound_status is not None else 0
+        _generic_terrain = run_unlock_terrain_prelude(
+            self.state.rng,
+            unlock_index=int(generic_unlock_index),
+            width=int(self.world_size),
+            height=int(self.world_size),
+            layers=3,
+        )
+        advance_quest_start_prelude(self.state.rng)
+        quest_terrain = run_explicit_terrain_prelude(
+            self.state.rng,
+            terrain_slots=quest.terrain_slots,
+            width=int(self.world_size),
+            height=int(self.world_size),
+            layers=3,
+        )
+        self.apply_terrain_setup(
+            terrain_slots=quest_terrain.terrain_slots,
+            seed=int(quest_terrain.terrain_seed),
+            layers=3,
+        )
 
         ctx = QuestContext(
             width=int(self.world_size),
@@ -420,10 +443,11 @@ class QuestMode(BaseGameplayMode):
         entries = build_quest_spawn_table(
             quest,
             ctx,
-            seed=seed,
+            rng=self.state.rng,
             hardcore=hardcore_flag,
             full_version=not self.demo_mode_active,
         )
+        self.sim_world.state.rng.srand(int(self.state.rng.state))
         total_spawn_count = sum(int(entry.count) for entry in entries)
         self._quest_def = quest
         self._quest_level = str(quest.level)
@@ -446,7 +470,7 @@ class QuestMode(BaseGameplayMode):
             self._replay_recorder = ReplayRecorder(
                 ReplayHeader(
                     game_mode_id=GameMode.QUESTS,
-                    seed=int(self.state.rng.state),
+                    seed=int(self._run_reset_seed),
                     quest_level=str(quest.level),
                     tick_rate=int(self._gameplay_tick_rate()),
                     quest_fail_retry_count=int(self.quest_fail_retry_count),

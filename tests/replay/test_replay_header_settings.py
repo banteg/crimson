@@ -21,8 +21,6 @@ def test_replay_header_from_session_settings_roundtrip() -> None:
     header = replay_header_from_session_settings(
         settings,
         seed=1234,
-        bootstrap_kind="terrain_v1",
-        bootstrap_seed=11,
         quest_fail_retry_count=2,
         hardcore=True,
         detail_preset=4,
@@ -34,8 +32,7 @@ def test_replay_header_from_session_settings_roundtrip() -> None:
     assert header.tick_rate == 75
     assert header.player_count == 3
     assert header.preserve_bugs is True
-    assert header.bootstrap_kind == "terrain_v1"
-    assert header.bootstrap_seed == 11
+    assert header.seed == 1234
     assert header.status == status
 
     restored = session_settings_from_replay_header(header, input_delay_ticks=2)
@@ -71,4 +68,3 @@ def test_session_settings_from_replay_header_uses_lockstep_defaults() -> None:
     assert settings.preserve_bugs is False
     assert settings.tick_rate == 60
     assert settings.input_delay_ticks == 1
-

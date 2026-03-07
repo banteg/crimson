@@ -3,7 +3,7 @@ from __future__ import annotations
 from ..game_modes import GameMode
 from ..net.lockstep_protocol import INPUT_DELAY_TICKS as LOCKSTEP_INPUT_DELAY_TICKS
 from ..net.session_settings import LockstepSessionSettings, session_settings_for_lockstep
-from .types import BootstrapKind, ReplayHeader, ReplayStatusSnapshot
+from .types import ReplayHeader, ReplayStatusSnapshot
 
 
 def session_settings_from_replay_header(
@@ -25,8 +25,6 @@ def replay_header_from_session_settings(
     settings: LockstepSessionSettings,
     *,
     seed: int,
-    bootstrap_kind: BootstrapKind = "none",
-    bootstrap_seed: int = 0,
     quest_fail_retry_count: int = 0,
     hardcore: bool = False,
     detail_preset: int = 5,
@@ -44,8 +42,6 @@ def replay_header_from_session_settings(
         game_mode_id=game_mode_id,
         seed=int(seed),
         quest_level=str(settings.quest_level),
-        bootstrap_kind=bootstrap_kind,
-        bootstrap_seed=int(bootstrap_seed),
         tick_rate=int(settings.tick_rate),
         quest_fail_retry_count=int(quest_fail_retry_count),
         hardcore=bool(hardcore),

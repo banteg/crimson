@@ -10,11 +10,11 @@ def test_demo_variant_1_uses_q2_descriptor_slots(make_game_state, mocker) -> Non
     view = DemoView(state)
     mocker.patch.object(view, "_setup_world_players")
     mocker.patch.object(view, "_spawn")
-    set_terrain_slots = mocker.patch.object(view, "_set_terrain_slots")
+    apply_terrain_setup = mocker.patch.object(view, "_apply_terrain_setup")
 
     view._setup_variant_1()
 
-    set_terrain_slots.assert_called_once_with(terrain_slots=Q2_TERRAIN_SLOTS)
+    apply_terrain_setup.assert_called_once_with(terrain_slots=Q2_TERRAIN_SLOTS)
 
 
 def test_demo_variant_3_uses_first_quest_descriptor_slots(make_game_state, mocker) -> None:
@@ -22,19 +22,19 @@ def test_demo_variant_3_uses_first_quest_descriptor_slots(make_game_state, mocke
     view = DemoView(state)
     mocker.patch.object(view, "_setup_world_players")
     mocker.patch.object(view, "_spawn")
-    set_terrain_slots = mocker.patch.object(view, "_set_terrain_slots")
+    apply_terrain_setup = mocker.patch.object(view, "_apply_terrain_setup")
 
     view._setup_variant_3()
 
     quest = quest_by_stage(1, 1)
     assert quest is not None
-    set_terrain_slots.assert_called_once_with(terrain_slots=quest.terrain_slots)
+    apply_terrain_setup.assert_called_once_with(terrain_slots=quest.terrain_slots)
 
 
 def test_demo_variants_without_descriptor_keep_existing_terrain(make_game_state, mocker) -> None:
     state = make_game_state()
     view = DemoView(state)
-    set_terrain_slots = mocker.patch.object(view, "_set_terrain_slots")
+    apply_terrain_setup = mocker.patch.object(view, "_apply_terrain_setup")
     mocker.patch.object(view, "_setup_variant_0")
     mocker.patch.object(view, "_setup_variant_2")
 
@@ -42,4 +42,4 @@ def test_demo_variants_without_descriptor_keep_existing_terrain(make_game_state,
         view._demo_variant_index = variant_index
         view._demo_mode_start()
 
-    set_terrain_slots.assert_not_called()
+    apply_terrain_setup.assert_not_called()

@@ -97,8 +97,6 @@ def _validate_header(header: ReplayHeader, *, from_load: bool) -> None:
         raise ReplayCodecError(f"replay header player_count must be positive, got {int(header.player_count)}")
     if str(header.input_quantization) != "f32":
         raise ReplayCodecError(f"unsupported input_quantization: {header.input_quantization!r}; expected 'f32'")
-    if str(header.bootstrap_kind) not in ("none", "terrain_v1"):
-        raise ReplayCodecError(f"unknown bootstrap_kind: {header.bootstrap_kind!r}")
     _validate_usage_counts(header.status.weapon_usage_counts)
     _validate_claimed_stats(header.claimed_stats)
 
