@@ -9,18 +9,17 @@ import msgspec
 from .persistence.save_status import (
     QUEST_PLAY_COUNT,
     UNKNOWN_TAIL_SIZE,
-    WEAPON_USAGE_COUNT,
     GameStatus,
     build_status_blob,
     default_status_data,
 )
 from .replay.types import ReplayStatusSnapshot
+from .weapon_usage import ZERO_WEAPON_USAGE_COUNTS, normalize_weapon_usage_counts
 
 if TYPE_CHECKING:
     from .dbg.canonical_channels import SnapshotStatus
     from .net.lockstep_protocol import StatusSnapshot
 
-_ZERO_WEAPON_USAGE_COUNTS: tuple[int, ...] = tuple(0 for _ in range(int(WEAPON_USAGE_COUNT)))
 _ZERO_QUEST_PLAY_COUNTS: tuple[int, ...] = tuple(0 for _ in range(int(QUEST_PLAY_COUNT)))
 _ZERO_UNKNOWN_TAIL = b"\x00" * int(UNKNOWN_TAIL_SIZE)
 
@@ -28,7 +27,7 @@ _ZERO_UNKNOWN_TAIL = b"\x00" * int(UNKNOWN_TAIL_SIZE)
 class ProgressStatusSnapshot(msgspec.Struct, frozen=True):
     quest_unlock_index: int = 0
     quest_unlock_index_full: int = 0
-    weapon_usage_counts: tuple[int, ...] = msgspec.field(default_factory=lambda: _ZERO_WEAPON_USAGE_COUNTS)
+    weapon_usage_counts: tuple[int, ...] = msgspec.field(default_factory=lambda: ZERO_WEAPON_USAGE_COUNTS)
     quest_play_counts: tuple[int, ...] = msgspec.field(default_factory=lambda: _ZERO_QUEST_PLAY_COUNTS)
     mode_play_survival: int = 0
     mode_play_rush: int = 0
@@ -92,7 +91,7 @@ def progress_status_from_game_status(status: GameStatus | None) -> ProgressStatu
     return ProgressStatusSnapshot(
         quest_unlock_index=_mask_u16(data.get("quest_unlock_index", 0)),
         quest_unlock_index_full=_mask_u16(data.get("quest_unlock_index_full", 0)),
-        weapon_usage_counts=_normalize_u32_seq(data.get("weapon_usage_counts"), size=int(WEAPON_USAGE_COUNT)),
+        weapon_usage_counts=normalize_weapon_usage_counts(data.get("weapon_usage_counts")),
         quest_play_counts=_normalize_u32_seq(data.get("quest_play_counts"), size=int(QUEST_PLAY_COUNT)),
         mode_play_survival=_mask_u32(data.get("mode_play_survival", 0)),
         mode_play_rush=_mask_u32(data.get("mode_play_rush", 0)),
@@ -122,7 +121,7 @@ def progress_status_from_lockstep(snapshot: StatusSnapshot | None) -> ProgressSt
     return ProgressStatusSnapshot(
         quest_unlock_index=_mask_u16(snapshot.quest_unlock_index),
         quest_unlock_index_full=_mask_u16(snapshot.quest_unlock_index_full),
-        weapon_usage_counts=_normalize_u32_seq(snapshot.weapon_usage_counts, size=int(WEAPON_USAGE_COUNT)),
+        weapon_usage_counts=normalize_weapon_usage_counts(snapshot.weapon_usage_counts),
         quest_play_counts=_normalize_u32_seq(snapshot.quest_play_counts, size=int(QUEST_PLAY_COUNT)),
         mode_play_survival=_mask_u32(snapshot.mode_play_survival),
         mode_play_rush=_mask_u32(snapshot.mode_play_rush),
@@ -156,7 +155,7 @@ def progress_status_from_replay(snapshot: ReplayStatusSnapshot | None) -> Progre
     return ProgressStatusSnapshot(
         quest_unlock_index=_mask_u16(snapshot.quest_unlock_index),
         quest_unlock_index_full=_mask_u16(snapshot.quest_unlock_index_full),
-        weapon_usage_counts=_normalize_u32_seq(snapshot.weapon_usage_counts, size=int(WEAPON_USAGE_COUNT)),
+        weapon_usage_counts=normalize_weapon_usage_counts(snapshot.weapon_usage_counts),
     )
 
 
@@ -174,7 +173,7 @@ def progress_status_from_debug_snapshot(snapshot: SnapshotStatus | None) -> Prog
     return ProgressStatusSnapshot(
         quest_unlock_index=_mask_u16(snapshot.quest_unlock_index),
         quest_unlock_index_full=_mask_u16(snapshot.quest_unlock_index_full),
-        weapon_usage_counts=_normalize_u32_seq(snapshot.weapon_usage_counts, size=int(WEAPON_USAGE_COUNT)),
+        weapon_usage_counts=normalize_weapon_usage_counts(snapshot.weapon_usage_counts),
     )
 
 

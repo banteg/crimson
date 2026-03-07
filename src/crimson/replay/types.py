@@ -5,7 +5,7 @@ import shutil
 import subprocess
 from functools import lru_cache
 from pathlib import Path
-from typing import Annotated, Literal, TypeAlias
+from typing import Literal, TypeAlias
 
 import msgspec
 
@@ -16,16 +16,12 @@ from ..movement_controls import MovementControlType, movement_control_type_from_
 from ..msgspec_types import NonNegativeInt, PlayerCount, PositiveFloat, PositiveInt
 from ..quests.level import QuestLevel
 from ..sim.input_providers import GameCommand
-from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
+from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT, WeaponUsageCounts
 from ..weapons import WeaponId
 
 REPLAY_FORMAT_VERSION = 10
 
 WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
-WeaponUsageCounts: TypeAlias = Annotated[
-    tuple[NonNegativeInt, ...],
-    msgspec.Meta(min_length=WEAPON_USAGE_COUNT, max_length=WEAPON_USAGE_COUNT),
-]
 
 FIRE_DOWN_FLAG = 1 << 0
 FIRE_PRESSED_FLAG = 1 << 1
@@ -103,18 +99,6 @@ def _default_game_version() -> str:
 
 def quantize_f32(value: float) -> float:
     return float(f32(float(value)))
-
-
-def normalize_weapon_usage_counts(values: object) -> tuple[int, ...]:
-    if not isinstance(values, (list, tuple)):
-        return (0,) * WEAPON_USAGE_COUNT
-    normalized: list[int] = [0] * WEAPON_USAGE_COUNT
-    for idx, value in enumerate(values[:WEAPON_USAGE_COUNT]):
-        try:
-            normalized[idx] = int(value) & 0xFFFFFFFF
-        except (TypeError, ValueError, OverflowError):
-            normalized[idx] = 0
-    return tuple(normalized)
 
 
 def pack_input_flags(

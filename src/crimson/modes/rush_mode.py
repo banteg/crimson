@@ -22,13 +22,13 @@ from ..net.rollback_resync_v5 import (
 )
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
-from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import run_unlock_terrain_prelude
 from ..sim.session_builders import build_rush_session, enforce_rush_loadout
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, RushSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
+from ..weapon_usage import normalize_weapon_usage_counts
 from .base_gameplay_mode import (
     BaseGameplayMode,
     LanSession,

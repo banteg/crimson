@@ -39,7 +39,6 @@ from ..quests.status import tracked_quest_games_counter_index
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
-from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import run_explicit_terrain_prelude, run_unlock_terrain_prelude
 from ..sim.hooks import TickResult
 from ..sim.input_providers import PerkMenuOpenCommand
@@ -58,6 +57,7 @@ from ..ui.overlays.quest_run import (
 )
 from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
+from ..weapon_usage import normalize_weapon_usage_counts
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
