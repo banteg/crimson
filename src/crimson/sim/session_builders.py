@@ -127,9 +127,7 @@ def build_quest_session(
 ) -> tuple[DeterministicSession, QuestSpawnState]:
     world.state.quest_level = quest_level
 
-    weapon_id = start_weapon_id or WeaponId.PISTOL
-    if weapon_id <= WeaponId.NONE:
-        weapon_id = WeaponId.PISTOL
+    weapon_id = WeaponId.PISTOL if start_weapon_id in (None, WeaponId.NONE) else start_weapon_id
     for player in world.players:
         weapon_assign_player(player, weapon_id, state=world.state)
 

@@ -90,8 +90,6 @@ def _run_verify_playback(
     inter_tick_rand_draws: int = 0,
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     spawn_entries=None,
-    quest_stage_major: int | None = None,
-    quest_stage_minor: int | None = None,
     start_weapon_id=None,
     tick_progress_callback: Callable[[int], None] | None = None,
     tick_observer: Callable[[int, WorldState], None] | None = None,
@@ -106,8 +104,6 @@ def _run_verify_playback(
         inter_tick_rand_draws=int(inter_tick_rand_draws),
         inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         spawn_entries=spawn_entries,
-        quest_stage_major=quest_stage_major,
-        quest_stage_minor=quest_stage_minor,
         start_weapon_id=start_weapon_id,
     )
 

@@ -55,6 +55,12 @@ TickBeginObserver: TypeAlias = Callable[
 TickEndObserver: TypeAlias = Callable[[TickResult, WorldState], None]
 
 
+@dataclass(slots=True, frozen=True)
+class ReplayTerrainSetup:
+    terrain_slots: TerrainSlotTriplet
+    terrain_seed: int
+
+
 def resolve_quest_level_from_replay(replay: Replay) -> str:
     quest_level = QuestLevel.try_parse(str(replay.header.quest_level))
     if quest_level is not None:
@@ -70,17 +76,25 @@ def resolve_quest_level_from_replay(replay: Replay) -> str:
     return ""
 
 
+def resolve_replay_quest_definition(
+    replay: Replay,
+    *,
+    quest_level: QuestLevel | None = None,
+) -> QuestDefinition:
+    level_text = quest_level.to_string() if quest_level is not None else resolve_quest_level_from_replay(replay)
+    quest = quest_by_level(level_text) if level_text else None
+    if quest is None:
+        raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={level_text!r}")
+    return quest
+
+
 def resolve_replay_quest_setup(
     replay: Replay,
     *,
     world_size: float,
     player_count: int,
 ) -> tuple[QuestDefinition, tuple[SpawnEntry, ...]]:
-    quest_level = resolve_quest_level_from_replay(replay)
-    quest = quest_by_level(quest_level) if quest_level else None
-    if quest is None:
-        raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={quest_level!r}")
-
+    quest = resolve_replay_quest_definition(replay)
     ctx = QuestContext(
         width=int(world_size),
         height=int(world_size),
@@ -148,8 +162,6 @@ class PlaybackDriver:
         inter_tick_rand_draws: int = 0,
         inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
         spawn_entries: tuple[SpawnEntry, ...] | None = None,
-        quest_stage_major: int | None = None,
-        quest_stage_minor: int | None = None,
         start_weapon_id: WeaponId | None = None,
     ) -> None:
         self.replay = replay
@@ -161,14 +173,11 @@ class PlaybackDriver:
         self._provided_fx_queue = fx_queue
         self._provided_fx_queue_rotated = fx_queue_rotated
         self._quest_spawn_entries = tuple(spawn_entries) if spawn_entries is not None else None
-        self._quest_stage_major = quest_stage_major
-        self._quest_stage_minor = quest_stage_minor
         self._quest_start_weapon_id = start_weapon_id
         self._quest_spawn_state: QuestSpawnState | None = None
         self._quest_definition: QuestDefinition | None = None
         self._quest_total_spawn_count = 0
-        self._terrain_slots: TerrainSlotTriplet | None = None
-        self._terrain_seed: int | None = None
+        self._terrain_setup: ReplayTerrainSetup | None = None
 
         if version_mismatch_action is not None:
             warn_on_game_version_mismatch(replay, action=str(version_mismatch_action))
@@ -227,18 +236,16 @@ class PlaybackDriver:
             quest_unlock_index_full=int(self.replay.header.status.quest_unlock_index_full),
             weapon_usage_counts=self.replay.header.status.weapon_usage_counts,
         )
-
-        if self.mode_id in (GameMode.SURVIVAL, GameMode.RUSH):
-            bootstrap = apply_replay_bootstrap(
-                self.replay.header,
-                rng=world.state.rng,
-                world_size=float(self.world_size),
+        bootstrap = apply_replay_bootstrap(
+            self.replay.header,
+            rng=world.state.rng,
+            world_size=float(self.world_size),
+        )
+        if bootstrap is not None:
+            self._terrain_setup = ReplayTerrainSetup(
+                terrain_slots=bootstrap.terrain.terrain_slots,
+                terrain_seed=int(bootstrap.terrain.terrain_seed),
             )
-            if bootstrap is not None:
-                self._terrain_slots = bootstrap.terrain.terrain_slots
-                self._terrain_seed = int(bootstrap.terrain.terrain_seed)
-        else:
-            world.state.rng.srand(int(self.replay.header.seed))
 
         return world
 
@@ -249,27 +256,19 @@ class PlaybackDriver:
 
     def _resolve_quest_setup(
         self,
-    ) -> tuple[QuestDefinition | None, tuple[SpawnEntry, ...], QuestLevel | None, WeaponId | None]:
+    ) -> tuple[QuestDefinition, tuple[SpawnEntry, ...], QuestLevel, WeaponId]:
         spawn_entries = self._quest_spawn_entries
-        quest_definition: QuestDefinition | None = None
-        quest_level: QuestLevel | None = None
-        if self._quest_stage_major is not None and self._quest_stage_minor is not None:
-            quest_level = QuestLevel.from_parts_or_none(
-                int(self._quest_stage_major),
-                int(self._quest_stage_minor),
-            )
-        start_weapon_id = self._quest_start_weapon_id
+        quest_definition = resolve_replay_quest_definition(self.replay)
+        quest_level = quest_definition.level_value
+        start_weapon_id = quest_definition.start_weapon_id if self._quest_start_weapon_id is None else self._quest_start_weapon_id
 
         if spawn_entries is None:
-            quest_definition, spawn_entries = resolve_replay_quest_setup(
+            _quest_definition, spawn_entries = resolve_replay_quest_setup(
                 self.replay,
                 world_size=float(self.world_size),
                 player_count=int(self.session_settings.player_count),
             )
-            if quest_level is None:
-                quest_level = QuestLevel.from_parts(*quest_definition.level_key)
-            if start_weapon_id is None:
-                start_weapon_id = quest_definition.start_weapon_id
+            quest_definition = _quest_definition
         else:
             spawn_entries = tuple(spawn_entries)
 
@@ -315,9 +314,10 @@ class PlaybackDriver:
                 quest_definition, spawn_entries, quest_level, start_weapon_id = self._resolve_quest_setup()
                 self._quest_definition = quest_definition
                 self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
-                if quest_definition is not None:
-                    self._terrain_slots = quest_definition.terrain_slots
-                    self._terrain_seed = int(self.world.state.rng.state)
+                self._terrain_setup = ReplayTerrainSetup(
+                    terrain_slots=quest_definition.terrain_slots,
+                    terrain_seed=int(self.world.state.rng.state),
+                )
 
                 session, quest_state = build_quest_session(
                     world=self.world,
@@ -505,12 +505,8 @@ class PlaybackDriver:
         return int(self._quest_total_spawn_count)
 
     @property
-    def terrain_slots(self) -> TerrainSlotTriplet | None:
-        return self._terrain_slots
-
-    @property
-    def terrain_seed(self) -> int | None:
-        return self._terrain_seed
+    def terrain_setup(self) -> ReplayTerrainSetup | None:
+        return self._terrain_setup
 
 
 def build_verify_playback_driver(
@@ -522,8 +518,6 @@ def build_verify_playback_driver(
     inter_tick_rand_draws: int = 0,
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     spawn_entries: tuple[SpawnEntry, ...] | None = None,
-    quest_stage_major: int | None = None,
-    quest_stage_minor: int | None = None,
     start_weapon_id: WeaponId | None = None,
 ) -> PlaybackDriver:
     """Build the canonical headless/verification replay driver."""
@@ -536,8 +530,6 @@ def build_verify_playback_driver(
         inter_tick_rand_draws=int(inter_tick_rand_draws),
         inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         spawn_entries=spawn_entries,
-        quest_stage_major=quest_stage_major,
-        quest_stage_minor=quest_stage_minor,
         start_weapon_id=start_weapon_id,
     )
 
@@ -551,8 +543,6 @@ def build_runtime_playback_driver(
     fx_queue: FxQueue,
     fx_queue_rotated: FxQueueRotated,
     spawn_entries: tuple[SpawnEntry, ...] | None = None,
-    quest_stage_major: int | None = None,
-    quest_stage_minor: int | None = None,
     start_weapon_id: WeaponId | None = None,
 ) -> PlaybackDriver:
     """Build the canonical live replay-playback driver."""
@@ -566,7 +556,5 @@ def build_runtime_playback_driver(
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
         spawn_entries=spawn_entries,
-        quest_stage_major=quest_stage_major,
-        quest_stage_minor=quest_stage_minor,
         start_weapon_id=start_weapon_id,
     )

@@ -75,9 +75,6 @@ class RushMode(BaseGameplayMode):
         self._spawn_state = RushSpawnState()
         self._sim_session: DeterministicSession | None = self._new_sim_session()
 
-    def _enforce_rush_loadout(self) -> None:
-        enforce_rush_loadout(self.sim_world.world_state)
-
     def _new_sim_session(self) -> DeterministicSession:
         session, spawn_state = build_rush_session(
             world=self.sim_world.world_state,
@@ -143,7 +140,7 @@ class RushMode(BaseGameplayMode):
         )
         self.sim_world.state.rng.srand(int(bootstrap.seed_after))
         self._sim_session = self._new_sim_session()
-        self._enforce_rush_loadout()
+        enforce_rush_loadout(self.sim_world.world_state)
         weapon_usage_counts = normalize_weapon_usage_counts(
             status.data.get("weapon_usage_counts") if status is not None else None,
         )

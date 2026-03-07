@@ -40,9 +40,7 @@ class _PlaybackStepRunner:
         ticks_requested: int,
         tick_dt: float,
     ) -> TickBatchResult:
-        if float(tick_dt) <= 0.0:
-            raise ValueError("tick_dt must be positive")
-
+        _ = tick_dt
         completed_results: list[TickResult] = []
         next_tick_index = int(start_tick)
         batch_status = InputStatus.READY

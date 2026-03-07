@@ -54,13 +54,13 @@ def status_from_snapshot(
     *,
     quest_unlock_index: int,
     quest_unlock_index_full: int,
-    weapon_usage_counts: tuple[int, ...] | None = None,
+    weapon_usage_counts: tuple[int, ...] = (),
 ) -> GameStatus:
     return game_status_from_replay_status(
         ReplayStatusSnapshot(
             quest_unlock_index=int(quest_unlock_index),
             quest_unlock_index_full=int(quest_unlock_index_full),
-            weapon_usage_counts=tuple(weapon_usage_counts or ()),
+            weapon_usage_counts=tuple(weapon_usage_counts),
         ),
         path=Path("replay://status"),
     )

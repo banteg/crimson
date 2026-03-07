@@ -19,6 +19,7 @@ from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from crimson.replay.driver.playback_driver import resolve_quest_level_from_replay
 from crimson.replay.driver.setup import status_from_snapshot
 from crimson.sim.input import PlayerInput
+from crimson.sim.session_builders import enforce_rush_loadout
 from crimson.sim.sessions import (
     DeterministicSession,
     QuestSpawnState,
@@ -80,14 +81,6 @@ def _inputs_for_tick(replay: Replay, tick_index: int) -> list[PlayerInput]:
         )
     return inputs
 
-
-def _enforce_rush_loadout(world: WorldRuntimeHost) -> None:
-    for player in world.sim_world.players:
-        if player.weapon.weapon_id != WeaponId.ASSAULT_RIFLE:
-            weapon_assign_player(player, WeaponId.ASSAULT_RIFLE, state=world.sim_world.state)
-        player.weapon.ammo = 30.0
-
-
 def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     repo_root = Path(__file__).resolve().parents[1]
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
@@ -147,7 +140,7 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         gore_disabled=0,
         clear_fx_queues_each_tick=True,
         mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),
-        before_step_hook=lambda: _enforce_rush_loadout(world),
+        before_step_hook=lambda: enforce_rush_loadout(world.sim_world.world_state),
         input_transform=rush_input_transform,
         elapsed_uses_raw_dt=True,
         finalize_post_render_lifecycle=True,

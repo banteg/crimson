@@ -33,7 +33,6 @@ from ..net.rollback_resync_v5 import (
 )
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
-from ..quests.level import QuestLevel
 from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
@@ -196,7 +195,7 @@ class QuestMode(BaseGameplayMode):
             clear_fx_queues_each_tick=False,
             finalize_post_render_lifecycle=True,
             spawn_entries=tuple(spawn_entries),
-            quest_level=(None if quest_def is None else QuestLevel.from_parts(*quest_def.level_key)),
+            quest_level=(None if quest_def is None else quest_def.level_value),
             start_weapon_id=(None if quest_def is None else quest_def.start_weapon_id),
             session_factory=self._session_factory,
         )
