@@ -710,43 +710,44 @@ class ReplayPlaybackMode:
         replay = self._replay
         assert replay is not None, "Replay must be loaded before replay draw"
         sim_world = runtime.sim_world
+        players = sim_world.players
+        assert players, "Replay runtime must have at least one player before draw"
         self._draw_world(draw_aim_indicators=True)
-        if sim_world.players:
-            mode_id = replay.header.game_mode_id
-            hud_flags = hud_flags_for_game_mode(mode_id)
-            quest_progress_ratio: float | None = None
-            elapsed_ms = float(sim_world.presentation_elapsed_ms)
-            match mode_id:
-                case GameMode.QUESTS:
-                    total = int(self._quest_total_spawn_count)
-                    kills = int(sim_world.creatures.kill_count)
-                    quest_progress_ratio = float(kills) / float(total) if total > 0 else None
-                    driver = self._driver
-                    if driver is not None:
-                        elapsed_ms = float(driver.elapsed_ms)
-                case _:
-                    driver = self._driver
-                    if driver is not None:
-                        elapsed_ms = float(driver.elapsed_ms)
-            draw_hud_overlay(
-                HudRenderContext(
-                    resources=runtime.render_resources.resources,
-                    state=self._hud_state,
-                    font=self._small,
-                    show_health=bool(hud_flags.show_health),
-                    show_weapon=bool(hud_flags.show_weapon),
-                    show_xp=bool(hud_flags.show_xp),
-                    show_time=bool(hud_flags.show_time),
-                    show_quest_hud=bool(hud_flags.show_quest_hud),
-                    small_indicators=False,
-                ),
-                player=sim_world.players[0],
-                players=sim_world.players,
-                bonus_hud=sim_world.state.bonus_hud,
-                elapsed_ms=elapsed_ms,
-                frame_dt_ms=float(max(0.0, rl.get_frame_time()) * 1000.0),
-                quest_progress_ratio=quest_progress_ratio,
-            )
+        mode_id = replay.header.game_mode_id
+        hud_flags = hud_flags_for_game_mode(mode_id)
+        quest_progress_ratio: float | None = None
+        elapsed_ms = float(sim_world.presentation_elapsed_ms)
+        match mode_id:
+            case GameMode.QUESTS:
+                total = int(self._quest_total_spawn_count)
+                kills = int(sim_world.creatures.kill_count)
+                quest_progress_ratio = float(kills) / float(total) if total > 0 else None
+                driver = self._driver
+                if driver is not None:
+                    elapsed_ms = float(driver.elapsed_ms)
+            case _:
+                driver = self._driver
+                if driver is not None:
+                    elapsed_ms = float(driver.elapsed_ms)
+        draw_hud_overlay(
+            HudRenderContext(
+                resources=runtime.render_resources.resources,
+                state=self._hud_state,
+                font=self._small,
+                show_health=bool(hud_flags.show_health),
+                show_weapon=bool(hud_flags.show_weapon),
+                show_xp=bool(hud_flags.show_xp),
+                show_time=bool(hud_flags.show_time),
+                show_quest_hud=bool(hud_flags.show_quest_hud),
+                small_indicators=False,
+            ),
+            player=players[0],
+            players=players,
+            bonus_hud=sim_world.state.bonus_hud,
+            elapsed_ms=elapsed_ms,
+            frame_dt_ms=float(max(0.0, rl.get_frame_time()) * 1000.0),
+            quest_progress_ratio=quest_progress_ratio,
+        )
 
         self._draw_quest_title()
         self._draw_quest_complete_banner()
