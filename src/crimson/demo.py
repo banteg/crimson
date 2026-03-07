@@ -100,7 +100,7 @@ class DemoView:
         self._purchase_active = False
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
-        self._runtime.init_tick_runner(
+        self._runtime.init_standalone_tick_harness(
             game_mode=GameMode.DEMO,
             build_inputs=self._build_runner_inputs,
         )
@@ -159,7 +159,7 @@ class DemoView:
     def close(self) -> None:
         self._finished = True
         self._purchase_active = False
-        self._runtime.reset_tick_runner()
+        self._runtime.reset_standalone_tick_harness()
         self._close_world_runtime()
         self._upsell_font = None
         self._small_font = None
@@ -442,7 +442,7 @@ class DemoView:
         self._purchase_active = False
         player_count = 2 if index in (0, 1, 4) else 1
         self._runtime.reset(seed=int(self.state.rng.state), player_count=player_count)
-        self._runtime.reset_tick_runner()
+        self._runtime.reset_standalone_tick_harness()
         self._sync_live_rng_state()
         self._runtime.sim_world.state.bonuses.weapon_power_up = 0.0
         if index == 0:
@@ -639,7 +639,7 @@ class DemoView:
     def _update_world(self, dt: float) -> None:
         if not self._runtime.sim_world.players:
             return
-        self._runtime.advance_tick_frame(float(dt))
+        self._runtime.advance_standalone_tick_frame(float(dt))
 
     def _build_demo_inputs(self, dt: float) -> list[PlayerInput]:
         players = self._runtime.sim_world.players

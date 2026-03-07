@@ -1286,7 +1286,7 @@ class LightingDebugView:
         self.close_requested = False
         self._paused = False
         self._screenshot_requested = False
-        self._runtime.init_tick_runner(
+        self._runtime.init_standalone_tick_harness(
             game_mode=GameMode.SURVIVAL,
             build_inputs=self._build_runner_inputs,
         )
@@ -2092,7 +2092,7 @@ class LightingDebugView:
         return [self._build_input()]
 
     def _reset_tick_runner(self) -> None:
-        self._runtime.reset_tick_runner()
+        self._runtime.reset_standalone_tick_harness()
 
     @staticmethod
     def _burst_angle(profile: EmissiveProfile, index: int) -> float:
@@ -2909,7 +2909,7 @@ class LightingDebugView:
         elif self._player is not None:
             self._apply_debug_player_cheats()
             self._update_auto_emit(sim_dt)
-            self._runtime.advance_tick_frame(float(sim_dt))
+            self._runtime.advance_standalone_tick_frame(float(sim_dt))
         elif self._runtime.sim_world.players:
             self._player = self._runtime.sim_world.players[0]
 

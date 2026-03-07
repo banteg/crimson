@@ -118,7 +118,7 @@ class ArsenalDebugView:
         self.close_requested = False
         self._paused = False
         self._screenshot_requested = False
-        self._runtime.init_tick_runner(
+        self._runtime.init_standalone_tick_harness(
             game_mode=GameMode.SURVIVAL,
             build_inputs=self._build_runner_inputs,
         )
@@ -286,7 +286,7 @@ class ArsenalDebugView:
         return [self._build_input()]
 
     def _reset_tick_runner(self) -> None:
-        self._runtime.reset_tick_runner()
+        self._runtime.reset_standalone_tick_harness()
 
     def _weapon_projectile_desc(self, weapon_id: WeaponId) -> str:
         weapon = WEAPON_BY_ID[weapon_id]
@@ -395,7 +395,7 @@ class ArsenalDebugView:
             return
 
         self._apply_debug_player_cheats()
-        self._runtime.advance_tick_frame(float(dt))
+        self._runtime.advance_standalone_tick_frame(float(dt))
 
         if self._audio is not None:
             update_audio(self._audio, dt)
