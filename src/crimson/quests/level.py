@@ -18,24 +18,16 @@ class QuestLevel(msgspec.Struct, frozen=True):
 
     @classmethod
     def parse(cls, value: str) -> QuestLevel:
-        text = str(value).strip()
-        major_text, sep, minor_text = text.partition(".")
-        if sep != "." or not major_text or not minor_text:
-            raise ValueError(f"invalid quest level: {value!r}")
         try:
-            major = int(major_text)
-            minor = int(minor_text)
-        except ValueError as exc:
-            raise ValueError(f"invalid quest level: {value!r}") from exc
-        try:
+            major_text, minor_text = str(value).strip().split(".")
             return msgspec.convert(
                 {
-                    "major": major,
-                    "minor": minor,
+                    "major": int(major_text),
+                    "minor": int(minor_text),
                 },
                 type=cls,
             )
-        except msgspec.ValidationError as exc:
+        except (ValueError, msgspec.ValidationError) as exc:
             raise ValueError(f"invalid quest level: {value!r}") from exc
 
     @classmethod
