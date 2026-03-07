@@ -7,6 +7,7 @@ import crimson.screens.panels.network_lobby as lan_lobby_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import NetworkSessionConfig, PendingNetworkSession, RollbackEndpoint
 from crimson.net.relay_protocol import RoomState
+from crimson.quests.level import QuestLevel
 from crimson.screens.panels.network_lobby import NetworkLobbyPanelView
 from grim.geom import Vec2
 
@@ -66,7 +67,7 @@ def test_loop_view_resolves_lan_action_using_pending_network_session(make_game_s
             ),
             netcode_mode="rollback",
             player_count=2,
-            quest_level="",
+            quest_level=None,
             rollback_max_ticks=8,
             reconnect_timeout_ms=15_000,
             input_delay_ticks=1,
@@ -96,7 +97,7 @@ def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, moc
             ),
             netcode_mode="rollback",
             player_count=2,
-            quest_level="",
+            quest_level=None,
             rollback_max_ticks=8,
             reconnect_timeout_ms=15_000,
             input_delay_ticks=1,
@@ -152,7 +153,7 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
             ),
             netcode_mode="rollback",
             player_count=2,
-            quest_level="1.1",
+            quest_level=QuestLevel(1, 1),
             rollback_max_ticks=8,
             reconnect_timeout_ms=15_000,
             input_delay_ticks=1,
@@ -160,7 +161,7 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
         ),
     )
     state.pending_network_session = pending
-    event = SimpleNamespace(mode_id=3, player_count=5, quest_level="2.4")
+    event = SimpleNamespace(mode_id=3, player_count=5, quest_level=QuestLevel(2, 4))
     state.network_runtime = cast(
         "Any",
         SimpleNamespace(
@@ -182,7 +183,7 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
     assert state.network_connected_players == 4
     assert state.config.player_count == 4
     assert state.config.game_mode == 3
-    assert state.pending_quest_level == "2.4"
+    assert state.pending_quest_level == QuestLevel(2, 4)
     assert panel._closing is True
     assert panel._close_action == "start_quest"
     assert state.screen_fade_ramp is True

@@ -4,6 +4,7 @@ from collections.abc import Callable
 
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
+from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.replay import ReplayHeader, ReplayRecorder
@@ -56,7 +57,7 @@ def _blank_quest_replay(
     header = ReplayHeader(
         game_mode_id=GameMode.QUESTS,
         seed=int(seed),
-        quest_level=(1, 1),
+        quest_level=QuestLevel(1, 1),
         tick_rate=60,
         player_count=1,
         game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
@@ -68,7 +69,7 @@ def _blank_quest_replay(
 
 
 def _quest_spawn_entries(level: str = "1.1", *, player_count: int = 1, seed: int = 101):
-    quest = quest_by_level(level)
+    quest = quest_by_level(QuestLevel.parse(level))
     assert quest is not None
     ctx = QuestContext(width=1024, height=1024, player_count=int(player_count))
     return build_quest_spawn_table(

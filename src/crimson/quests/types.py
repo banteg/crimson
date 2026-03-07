@@ -33,17 +33,8 @@ class QuestBuilder(Protocol):
         ...
 
 
-def parse_level(level: str) -> tuple[int, int]:
-    return QuestLevel.parse(level).to_stage_pair()
-
-
-def format_level(major: int, minor: int) -> str:
-    return QuestLevel.from_parts(major, minor).to_string()
-
-
 class QuestDefinition(msgspec.Struct, frozen=True, kw_only=True):
-    major: int
-    minor: int
+    level: QuestLevel
     title: str
     builder: QuestBuilder
     time_limit_ms: int
@@ -54,13 +45,9 @@ class QuestDefinition(msgspec.Struct, frozen=True, kw_only=True):
     builder_address: int | None = None
 
     @property
-    def level(self) -> str:
-        return format_level(self.major, self.minor)
+    def major(self) -> int:
+        return int(self.level.major)
 
     @property
-    def level_key(self) -> tuple[int, int]:
-        return self.major, self.minor
-
-    @property
-    def level_value(self) -> QuestLevel:
-        return QuestLevel.from_parts(self.major, self.minor)
+    def minor(self) -> int:
+        return int(self.level.minor)

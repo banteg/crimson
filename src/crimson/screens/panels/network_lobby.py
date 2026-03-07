@@ -116,7 +116,7 @@ class NetworkLobbyPanelView(PanelMenuView):
             self._error = f"Unsupported network mode id: {mode_raw}"
             return
         player_count = int(event.player_count)
-        quest_level = str(event.quest_level)
+        quest_level = event.quest_level
 
         self.state.network_in_lobby = True
         self.state.network_waiting_for_players = False

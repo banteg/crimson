@@ -12,6 +12,7 @@ import msgspec
 
 from ..game_modes import GameMode
 from ..net.session_settings import session_settings_for_lockstep
+from ..quests.level import QuestLevel
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
 from ..replay.header_settings import replay_header_from_session_settings
@@ -471,7 +472,11 @@ def _write_run_trace(
     settings = session_settings_for_lockstep(
         mode_id=int(run.mode_id),
         player_count=int(run.replay_player_count),
-        quest_level=(f"{int(run.quest_stage_major)}.{int(run.quest_stage_minor)}" if is_quest_run else ""),
+        quest_level=(
+            QuestLevel(int(run.quest_stage_major), int(run.quest_stage_minor))
+            if is_quest_run
+            else None
+        ),
         preserve_bugs=False,
     )
     replay_header = replay_header_from_session_settings(

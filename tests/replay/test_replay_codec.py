@@ -215,6 +215,15 @@ def test_replay_load_rejects_missing_quest_level_for_quest_mode() -> None:
         load_replay(msgspec.msgpack.encode(replay_obj))
 
 
+def test_replay_load_rejects_out_of_range_player_count_via_msgspec_constraints() -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    replay_header = cast("dict[str, object]", replay_obj["header"])
+    replay_header["player_count"] = 0
+
+    with pytest.raises(ReplayCodecError, match="invalid replay msgpack payload"):
+        load_replay(msgspec.msgpack.encode(replay_obj))
+
+
 def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
     move_x = 0.123456789123
     move_y = -0.987654321987

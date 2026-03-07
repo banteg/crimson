@@ -1,18 +1,25 @@
 from __future__ import annotations
 
+import msgspec
 import pytest
 
 from crimson.quests.level import QuestLevel
 
 
-def test_quest_level_rejects_non_int_parts() -> None:
-    with pytest.raises(TypeError, match="quest stage must be int"):
-        QuestLevel.from_parts("1", 1)  # type: ignore[arg-type]
+def test_quest_level_parse_rejects_invalid_parts() -> None:
+    with pytest.raises(ValueError, match="invalid quest level"):
+        QuestLevel.parse("q.1")
 
-    with pytest.raises(TypeError, match="quest row must be int"):
-        QuestLevel.from_parts(1, True)
+    with pytest.raises(ValueError, match="invalid quest level"):
+        QuestLevel.parse("1.true")
+
+    with pytest.raises(ValueError, match="invalid quest level"):
+        QuestLevel.parse("")
 
 
-def test_quest_level_from_parts_or_none_returns_none_for_zero_zero_and_invalid_types() -> None:
-    assert QuestLevel.from_parts_or_none(0, 0) is None
-    assert QuestLevel.from_parts_or_none("1", 1) is None  # type: ignore[arg-type]
+def test_quest_level_msgspec_constraints_reject_out_of_range_parts() -> None:
+    with pytest.raises(msgspec.ValidationError, match="Expected `int` >= 1"):
+        msgspec.convert({"major": 0, "minor": 1}, type=QuestLevel)
+
+    with pytest.raises(msgspec.ValidationError, match="Expected `int` <= 10"):
+        msgspec.convert({"major": 1, "minor": 11}, type=QuestLevel)

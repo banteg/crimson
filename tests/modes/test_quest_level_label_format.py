@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-from crimson.ui.overlays.quest_run import quest_level_label
+from crimson.quests.level import QuestLevel
 
 
-def test_quest_level_label_matches_exe_format() -> None:
-    assert quest_level_label(1, 1) == "1.1"
-    assert quest_level_label(1, 10) == "1.10"
-
-
-def test_quest_level_label_carries_minor_overflow() -> None:
-    assert quest_level_label(1, 11) == "2.1"
+def test_quest_level_text_matches_exe_format() -> None:
+    assert QuestLevel(1, 1).text == "1.1"
+    assert QuestLevel(1, 10).text == "1.10"

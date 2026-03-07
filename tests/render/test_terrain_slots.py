@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.quests import all_quests
+from crimson.quests.level import QuestLevel
 from crimson.terrain_slots import (
     DEFAULT_TERRAIN_SLOTS,
     Q2_TERRAIN_SLOTS,
@@ -8,17 +9,17 @@ from crimson.terrain_slots import (
     Q4_TERRAIN_SLOTS,
     TerrainSlotTriplet,
     choose_unlock_terrain_slots,
-    terrain_slots_for_level,
+    terrain_slots_for_quest,
     terrain_slots_to_texture_ids,
 )
 from grim.assets import TextureId
 
 
-def test_terrain_slots_for_level_matches_native_layout() -> None:
-    assert terrain_slots_for_level(1, 1) == DEFAULT_TERRAIN_SLOTS
-    assert terrain_slots_for_level(4, 5) == Q4_TERRAIN_SLOTS
-    assert terrain_slots_for_level(2, 6) == (2, 2, 3)
-    assert terrain_slots_for_level(5, 7) == (3, 1, 3)
+def test_terrain_slots_for_quest_matches_native_layout() -> None:
+    assert terrain_slots_for_quest(QuestLevel(1, 1)) == DEFAULT_TERRAIN_SLOTS
+    assert terrain_slots_for_quest(QuestLevel(4, 5)) == Q4_TERRAIN_SLOTS
+    assert terrain_slots_for_quest(QuestLevel(2, 6)) == (2, 2, 3)
+    assert terrain_slots_for_quest(QuestLevel(5, 7)) == (3, 1, 3)
 
 
 def test_choose_unlock_terrain_slots_uses_sequential_unlock_rolls() -> None:

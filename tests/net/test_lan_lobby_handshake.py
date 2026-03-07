@@ -12,7 +12,7 @@ def _hello(*, build_id: str = "b1", mode_id: int = 1, player_count: int = 2) -> 
         player_count=player_count,
         tick_rate=TICK_RATE,
         input_delay_ticks=INPUT_DELAY_TICKS,
-        quest_level="",
+        quest_level=None,
         preserve_bugs=False,
         host=False,
     )
@@ -111,7 +111,7 @@ def test_host_lobby_accepts_mismatched_client_mode_and_players() -> None:
             player_count=1,
             tick_rate=999,
             input_delay_ticks=0,
-            quest_level="",
+            quest_level=None,
             preserve_bugs=True,
             host=False,
         ),

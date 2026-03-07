@@ -9,6 +9,7 @@ from crimson.perks import PerkId
 from crimson.perks.availability import perks_rebuild_available
 from crimson.perks.selection import PERK_ID_MAX, perk_generate_choices
 from crimson.persistence import save_status
+from crimson.quests.level import QuestLevel
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -53,8 +54,7 @@ def test_perk_generate_choices_inserts_monster_vision_on_quest_3_4() -> None:
     # `perk_generate_choices` always fills a 7-entry list; provide enough entropy to avoid
     # degenerately selecting from a tiny, repeatedly invalid subset.
     state = GameplayState(rng=_as_rng(_SeqRng(list(range(2048)))))
-    state.quest_stage_major = 3
-    state.quest_stage_minor = 4
+    state.quest_level = QuestLevel(3, 4)
     player = PlayerState(index=0, pos=Vec2())
 
     choices = perk_generate_choices(state, player, game_mode=GameMode.QUESTS, player_count=1)
@@ -63,8 +63,7 @@ def test_perk_generate_choices_inserts_monster_vision_on_quest_3_4() -> None:
 
 def test_perk_generate_choices_inserts_monster_vision_when_capture_counts_unknown() -> None:
     state = GameplayState(rng=_as_rng(_SeqRng(list(range(2048)))))
-    state.quest_stage_major = 3
-    state.quest_stage_minor = 4
+    state.quest_level = QuestLevel(3, 4)
     state.perk_selection.capture_player_perk_counts_known = False
     player = PlayerState(index=0, pos=Vec2())
 
@@ -85,8 +84,7 @@ def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order
     status.quest_unlock_index = 49
     status.quest_unlock_index_full = 49
     state.status = status
-    state.quest_stage_major = 3
-    state.quest_stage_minor = 4
+    state.quest_level = QuestLevel(3, 4)
     player = PlayerState(index=0, pos=Vec2())
 
     choices = perk_generate_choices(
@@ -216,8 +214,7 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
     rng = _LcgRng(123)
     state = GameplayState(rng=_as_rng(rng))
     state.status = status
-    state.quest_stage_major = 4
-    state.quest_stage_minor = 10
+    state.quest_level = QuestLevel(4, 10)
     perks_rebuild_available(state)
 
     player = PlayerState(index=0, pos=Vec2())
@@ -252,8 +249,7 @@ def test_perk_generate_choices_caches_offerability_checks(mocker) -> None:
     status.quest_unlock_index = 40
     state = GameplayState(rng=_as_rng(_SeqRng(list(range(2048)))))
     state.status = status
-    state.quest_stage_major = 4
-    state.quest_stage_minor = 10
+    state.quest_level = QuestLevel(4, 10)
     perks_rebuild_available(state)
 
     player = PlayerState(index=0, pos=Vec2())

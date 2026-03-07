@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from crimson.demo import DemoView
-from crimson.quests import quest_by_stage
+from crimson.quests import quest_by_level
+from crimson.quests.level import QuestLevel
 from crimson.terrain_slots import Q2_TERRAIN_SLOTS
 
 
@@ -26,7 +27,7 @@ def test_demo_variant_3_uses_first_quest_descriptor_slots(make_game_state, mocke
 
     view._setup_variant_3()
 
-    quest = quest_by_stage(1, 1)
+    quest = quest_by_level(QuestLevel(1, 1))
     assert quest is not None
     apply_terrain_setup.assert_called_once_with(terrain_slots=quest.terrain_slots)
 

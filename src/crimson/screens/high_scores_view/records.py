@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from ...game.types import GameState, HighScoresRequest
 from ...game_modes import GameMode
-from .shared import parse_quest_level
+from ...quests.level import QuestLevel
 
 if TYPE_CHECKING:
     from ...persistence.highscores import HighScoreRecord
@@ -17,22 +17,12 @@ def resolve_request(state: GameState) -> HighScoresRequest:
     if request is None:
         request = HighScoresRequest(game_mode_id=GameMode(state.config.game_mode))
 
-    if request.game_mode_id == GameMode.QUESTS and (
-        int(request.quest_stage_major) <= 0 or int(request.quest_stage_minor) <= 0
-    ):
-        major, minor = parse_quest_level(state.pending_quest_level)
-        if major <= 0 or minor <= 0:
-            major, minor = parse_quest_level(state.config.quest_level)
-        if major <= 0 or minor <= 0:
-            major = state.config.quest_stage_major
-            minor = state.config.quest_stage_minor
+    if request.game_mode_id == GameMode.QUESTS and request.quest_level is None:
+        level = state.pending_quest_level
+        if level is None:
+            level = state.config.quest_level_value
         # Native screen always has a valid quest stage selected (defaults to 1.1).
-        if major <= 0 or minor <= 0:
-            major, minor = 1, 1
-        major = max(1, min(5, int(major)))
-        minor = max(1, min(10, int(minor)))
-        request.quest_stage_major = int(major)
-        request.quest_stage_minor = int(minor)
+        request.quest_level = level if level is not None else QuestLevel(1, 1)
 
     return request
 
@@ -74,8 +64,8 @@ def load_records(state: GameState, request: HighScoresRequest) -> list[HighScore
         state.base_dir,
         request.game_mode_id,
         hardcore=state.config.hardcore,
-        quest_stage_major=int(request.quest_stage_major),
-        quest_stage_minor=int(request.quest_stage_minor),
+        quest_stage_major=(0 if request.quest_level is None else int(request.quest_level.major)),
+        quest_stage_minor=(0 if request.quest_level is None else int(request.quest_level.minor)),
         player_count=state.config.player_count,
     )
     try:

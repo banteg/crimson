@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.quests.level import QuestLevel
+from crimson.quests.status import tracked_quest_completed_counter_index
 from grim.audio import play_sfx, update_audio
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -17,10 +18,8 @@ class QuestResultsView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._ground: GroundRenderer | None = None
-        self._quest_level: str = ""
+        self._quest_level: QuestLevel | None = None
         self._quest_title: str = ""
-        self._quest_stage_major = 0
-        self._quest_stage_minor = 0
         self._unlock_weapon_name: str = ""
         self._unlock_perk_name: str = ""
         self._ui = None
@@ -36,22 +35,18 @@ class QuestResultsView:
         self.state.quest_fail_retry_count = 0
         outcome = self.state.quest_outcome
         self.state.quest_outcome = None
-        self._quest_level = ""
+        self._quest_level = None
         self._quest_title = ""
-        self._quest_stage_major = 0
-        self._quest_stage_minor = 0
         self._unlock_weapon_name = ""
         self._unlock_perk_name = ""
         self._ui = None
         if outcome is None:
             return
-        level = QuestLevel.parse(str(outcome.level))
-        self._quest_level = level.to_string()
-        major, minor = level.to_stage_pair()
-        self._quest_stage_major = int(major)
-        self._quest_stage_minor = int(minor)
+        level = outcome.level
+        self._quest_level = level
+        major, minor = level.major, level.minor
 
-        quest = quest_by_level(self._quest_level)
+        quest = quest_by_level(level)
 
         self._quest_title = str(quest.title or "") if quest is not None else ""
         if quest is not None:
@@ -109,7 +104,7 @@ class QuestResultsView:
         record.set_name(player_name_default)
 
         global_index = int(level.global_index)
-        completed_idx = level.tracked_completed_counter_index
+        completed_idx = tracked_quest_completed_counter_index(level)
         if completed_idx is not None:
             try:
                 self.state.status.increment_quest_play_count(completed_idx)
@@ -144,10 +139,8 @@ class QuestResultsView:
         self._ui.open(
             record=record,
             breakdown=breakdown,
-            quest_level=str(outcome.level or ""),
+            quest_level=level,
             quest_title=str(self._quest_title or ""),
-            quest_stage_major=int(self._quest_stage_major),
-            quest_stage_minor=int(self._quest_stage_minor),
             unlock_weapon_name=str(self._unlock_weapon_name or ""),
             unlock_perk_name=str(self._unlock_perk_name or ""),
             player_name_default=player_name_default,
@@ -158,9 +151,7 @@ class QuestResultsView:
             self._ui.close()
             self._ui = None
         self._ground = None
-        self._quest_stage_major = 0
-        self._quest_stage_minor = 0
-        self._quest_level = ""
+        self._quest_level = None
         self._quest_title = ""
         self._unlock_weapon_name = ""
         self._unlock_perk_name = ""
@@ -183,13 +174,15 @@ class QuestResultsView:
 
         action = ui.update(dt, play_sfx=_play if audio is not None else None, rand=rng.rand)
         if action == "play_again":
+            assert self._quest_level is not None
             self._set_pending_quest_level(self._quest_level)
             self._action = "start_quest"
             return
         if action == "play_next":
-            if int(self._quest_stage_major) == 5 and int(self._quest_stage_minor) == 10:
+            if self._quest_level == QuestLevel(5, 10):
                 self._action = "end_note"
                 return
+            assert self._quest_level is not None
             next_level = _next_quest_level(self._quest_level)
             if next_level is not None:
                 self._set_pending_quest_level(next_level)
@@ -232,23 +225,18 @@ class QuestResultsView:
         highlight_rank = None
         if self._ui is not None:
             highlight_rank = self._ui.highlight_rank
+        assert self._quest_level is not None
         self.state.pending_high_scores = HighScoresRequest(
             game_mode_id=GameMode.QUESTS,
-            quest_stage_major=int(self._quest_stage_major),
-            quest_stage_minor=int(self._quest_stage_minor),
+            quest_level=self._quest_level,
             highlight_rank=highlight_rank,
         )
         self._action = "open_high_scores"
 
-    def _set_pending_quest_level(self, level: str) -> None:
-        parsed = QuestLevel.parse(str(level))
-        level_text = parsed.to_string()
-        self.state.pending_quest_level = level_text
+    def _set_pending_quest_level(self, level: QuestLevel) -> None:
+        self.state.pending_quest_level = level
         self.state.config.game_mode = int(GameMode.QUESTS)
-        self.state.config.quest_level = level_text
-        major, minor = parsed.to_stage_pair()
-        self.state.config.quest_stage_major = int(major)
-        self.state.config.quest_stage_minor = int(minor)
+        self.state.config.quest_level_value = level
         try:
             self.state.config.save()
         except (OSError, ValueError) as exc:

@@ -20,15 +20,6 @@ QUEST_COMPLETE_BANNER_HOLD_END_MS = 1500.0
 QUEST_COMPLETE_BANNER_FADE_OUT_END_MS = 2000.0
 
 
-def quest_level_label(major: int, minor: int) -> str:
-    major = int(major)
-    minor = int(minor)
-    while minor > 10:
-        major += 1
-        minor -= 10
-    return f"{major}.{minor}"
-
-
 def quest_title_alpha(timer_ms: float) -> float:
     timer_ms = float(timer_ms)
     if timer_ms <= 0.0 or timer_ms > QUEST_TITLE_TOTAL_MS:

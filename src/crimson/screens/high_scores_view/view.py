@@ -519,9 +519,8 @@ class HighScoresView:
                     self.state.config.player_count = 1
                 case GameMode.QUESTS:
                     # Ensure quest selection exists when switching into quests.
-                    if int(request.quest_stage_major) <= 0 or int(request.quest_stage_minor) <= 0:
-                        request.quest_stage_major = max(1, int(self.state.config.quest_stage_major or 1))
-                        request.quest_stage_minor = max(1, int(self.state.config.quest_stage_minor or 1))
+                    if request.quest_level is None:
+                        request.quest_level = self.state.config.quest_level_value or QuestLevel(1, 1)
                 case _:
                     pass
             self._dirty = True
@@ -578,15 +577,12 @@ class HighScoresView:
         if request.game_mode_id != GameMode.QUESTS:
             return False
 
-        major = int(request.quest_stage_major)
-        minor = int(request.quest_stage_minor)
-        if major <= 0 or minor <= 0:
+        level = request.quest_level
+        if level is None:
             return False
 
         # Clamp to a sane range.
-        major = max(1, min(5, major))
-        minor = max(1, min(10, minor))
-        global_index = int(QuestLevel.from_parts(major, minor).global_index)
+        global_index = int(level.global_index)
 
         unlock = int(self.state.status.quest_unlock_index_full) if self.state.config.hardcore else int(self.state.status.quest_unlock_index)
         max_index = max(0, min(49, unlock))
@@ -605,12 +601,8 @@ class HighScoresView:
         def _set_level(index: int) -> None:
             index = max(0, min(max_index, int(index)))
             level = QuestLevel.from_global_index(index)
-            new_major, new_minor = level.to_stage_pair()
-            request.quest_stage_major = int(new_major)
-            request.quest_stage_minor = int(new_minor)
-            self.state.config.quest_level = level.to_string()
-            self.state.config.quest_stage_major = int(new_major)
-            self.state.config.quest_stage_minor = int(new_minor)
+            request.quest_level = level
+            self.state.config.quest_level_value = level
             self._dirty = True
             self._reload_records()
 
@@ -644,8 +636,8 @@ class HighScoresView:
                 mode_id = GameMode(self.state.config.game_mode)
             except ValueError:
                 mode_id = GameMode.DEMO
-        quest_major = int(request.quest_stage_major) if request is not None else 0
-        quest_minor = int(request.quest_stage_minor) if request is not None else 0
+        quest_major = int(request.quest_level.major) if request is not None and request.quest_level is not None else 0
+        quest_minor = int(request.quest_level.minor) if request is not None and request.quest_level is not None else 0
 
         screen_width = float(self.state.config.screen_width)
         scale = 1.0

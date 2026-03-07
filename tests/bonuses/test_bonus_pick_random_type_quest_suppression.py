@@ -6,6 +6,7 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.selection import bonus_pick_random_type
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
+from crimson.quests.level import QuestLevel
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 
@@ -50,8 +51,7 @@ def test_bonus_pick_random_type_quest_suppression(
     state = GameplayState(rng=_SeqRng(rng_values))  # type: ignore[arg-type]
     state.game_mode = GameMode.QUESTS
     state.hardcore = hardcore
-    state.quest_stage_major = quest_stage_major
-    state.quest_stage_minor = quest_stage_minor
+    state.quest_level = QuestLevel(quest_stage_major, quest_stage_minor)
     players = [PlayerState(index=0, pos=Vec2())]
 
     bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)

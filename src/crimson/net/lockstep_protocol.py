@@ -10,6 +10,8 @@ from typing import TypeAlias
 import msgspec
 
 from .. import __version__
+from ..msgspec_types import NonNegativeInt, PlayerCount, PositiveInt, SignedIndex
+from ..quests.level import QuestLevel
 from ..replay.types import PackedPlayerInput
 from ..sim.input_providers import GameCommand
 from .schema_shared import PacketHeader, SlotState
@@ -116,13 +118,13 @@ def current_build_id() -> str:
 
 
 class Hello(msgspec.Struct, tag="hello", forbid_unknown_fields=True):
-    protocol_version: int = PROTOCOL_VERSION
+    protocol_version: PositiveInt = PROTOCOL_VERSION
     build_id: str = ""
     mode_id: int = 0
-    player_count: int = 1
-    tick_rate: int = TICK_RATE
-    input_delay_ticks: int = INPUT_DELAY_TICKS
-    quest_level: str = ""
+    player_count: PlayerCount = 1
+    tick_rate: PositiveInt = TICK_RATE
+    input_delay_ticks: NonNegativeInt = INPUT_DELAY_TICKS
+    quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
     host: bool = False
 
@@ -131,16 +133,16 @@ class Welcome(msgspec.Struct, tag="welcome", forbid_unknown_fields=True):
     accepted: bool = False
     reason: str = ""
     session_id: str = ""
-    protocol_version: int = PROTOCOL_VERSION
+    protocol_version: PositiveInt = PROTOCOL_VERSION
     build_id: str = ""
     mode_id: int = 0
-    player_count: int = 1
-    slot_index: int = -1
-    host_slot_index: int = 0
-    tick_rate: int = TICK_RATE
-    input_delay_ticks: int = INPUT_DELAY_TICKS
+    player_count: PlayerCount = 1
+    slot_index: SignedIndex = -1
+    host_slot_index: NonNegativeInt = 0
+    tick_rate: PositiveInt = TICK_RATE
+    input_delay_ticks: NonNegativeInt = INPUT_DELAY_TICKS
     seed: int = 0
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
     started: bool = False
 
@@ -152,15 +154,15 @@ class LobbySlot(SlotState, forbid_unknown_fields=True):
 class LobbyState(msgspec.Struct, tag="lobby_state", forbid_unknown_fields=True):
     session_id: str = ""
     mode_id: int = 0
-    player_count: int = 1
+    player_count: PlayerCount = 1
     slots: list[LobbySlot] = msgspec.field(default_factory=list)
     all_ready: bool = False
     started: bool = False
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
 
 
 class Ready(msgspec.Struct, tag="ready", forbid_unknown_fields=True):
-    slot_index: int = -1
+    slot_index: SignedIndex = -1
     ready: bool = False
 
 
@@ -186,26 +188,26 @@ class StatusSnapshot(msgspec.Struct, forbid_unknown_fields=True):
 class MatchStart(msgspec.Struct, tag="match_start", forbid_unknown_fields=True):
     session_id: str = ""
     mode_id: int = 0
-    player_count: int = 1
+    player_count: PlayerCount = 1
     seed: int = 0
-    start_tick: int = 0
-    quest_level: str = ""
+    start_tick: NonNegativeInt = 0
+    quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
     status_snapshot: StatusSnapshot | None = None
 
 
 class InputSample(msgspec.Struct, forbid_unknown_fields=True):
-    tick_index: int = 0
+    tick_index: NonNegativeInt = 0
     packed_input: PackedPlayerInput = msgspec.field(default_factory=list)
 
 
 class InputBatch(msgspec.Struct, tag="input_batch", forbid_unknown_fields=True):
-    slot_index: int = -1
+    slot_index: SignedIndex = -1
     samples: list[InputSample] = msgspec.field(default_factory=list)
 
 
 class TickFrame(msgspec.Struct, tag="tick_frame", forbid_unknown_fields=True):
-    tick_index: int = 0
+    tick_index: NonNegativeInt = 0
     frame_inputs: list[PackedPlayerInput] = msgspec.field(default_factory=list)
     commands: list[GameCommand] = msgspec.field(default_factory=list)
 
@@ -218,33 +220,33 @@ class PauseState(msgspec.Struct, tag="pause_state", forbid_unknown_fields=True):
 class KeepAlive(msgspec.Struct, tag="keep_alive", forbid_unknown_fields=True):
     """Best-effort keepalive packet to prevent timeouts during stalls/pauses."""
 
-    tick_index: int = 0
+    tick_index: NonNegativeInt = 0
 
 
 class DebugLogBatch(msgspec.Struct, tag="debug_log_batch", forbid_unknown_fields=True):
     """Client-to-host debug log forwarding payload (best-effort)."""
 
-    slot_index: int = -1
+    slot_index: SignedIndex = -1
     lines: list[str] = msgspec.field(default_factory=list)
 
 
 class ResyncBegin(msgspec.Struct, tag="resync_begin", forbid_unknown_fields=True):
     stream_id: str = ""
-    total_chunks: int = 0
-    compressed_size: int = 0
-    replay_size: int = 0
-    checkpoints_size: int = 0
+    total_chunks: NonNegativeInt = 0
+    compressed_size: NonNegativeInt = 0
+    replay_size: NonNegativeInt = 0
+    checkpoints_size: NonNegativeInt = 0
 
 
 class ResyncChunk(msgspec.Struct, tag="resync_chunk", forbid_unknown_fields=True):
     stream_id: str = ""
-    chunk_index: int = 0
+    chunk_index: NonNegativeInt = 0
     payload: bytes = b""
 
 
 class ResyncCommit(msgspec.Struct, tag="resync_commit", forbid_unknown_fields=True):
     stream_id: str = ""
-    tick_index: int = -1
+    tick_index: SignedIndex = -1
 
 
 class Disconnect(msgspec.Struct, tag="disconnect", forbid_unknown_fields=True):

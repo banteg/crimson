@@ -71,10 +71,11 @@ def _bonus_pick_suppressed(
         return True
     if bonus_id == BonusId.MEDIKIT and any(perk_active(player, PerkId.DEATH_CLOCK) for player in players):
         return True
-    if state.game_mode != GameMode.QUESTS or state.quest_stage_minor != 10:
+    level = state.quest_level
+    if state.game_mode != GameMode.QUESTS or level is None or level.minor != 10:
         return False
 
-    major = state.quest_stage_major
+    major = level.major
     if bonus_id == BonusId.NUKE:
         return major in (2, 4, 5) or (state.hardcore and major == 3)
     if bonus_id == BonusId.FREEZE:

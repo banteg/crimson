@@ -5,7 +5,7 @@ import shutil
 import subprocess
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal, TypeAlias
+from typing import Annotated, Literal, TypeAlias
 
 import msgspec
 
@@ -13,15 +13,19 @@ from ..aim_schemes import AimScheme, aim_scheme_from_value
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..movement_controls import MovementControlType, movement_control_type_from_value
+from ..msgspec_types import NonNegativeInt, PlayerCount, PositiveFloat, PositiveInt
+from ..quests.level import QuestLevel
 from ..sim.input_providers import GameCommand
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
 REPLAY_FORMAT_VERSION = 10
-ReplayFormatVersion: TypeAlias = Literal[10]
-ReplayQuestLevel: TypeAlias = tuple[int, int]
 
 WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
+WeaponUsageCounts: TypeAlias = Annotated[
+    tuple[NonNegativeInt, ...],
+    msgspec.Meta(min_length=WEAPON_USAGE_COUNT, max_length=WEAPON_USAGE_COUNT),
+]
 
 FIRE_DOWN_FLAG = 1 << 0
 FIRE_PRESSED_FLAG = 1 << 1
@@ -236,38 +240,37 @@ def unpack_packed_player_input(packed: PackedPlayerInput) -> tuple[float, float,
 
 
 class ReplayStatusSnapshot(msgspec.Struct, frozen=True):
-    quest_unlock_index: int = 0
-    quest_unlock_index_full: int = 0
-    weapon_usage_counts: tuple[int, ...] = msgspec.field(default_factory=lambda: (0,) * WEAPON_USAGE_COUNT)
+    quest_unlock_index: NonNegativeInt = 0
+    quest_unlock_index_full: NonNegativeInt = 0
+    weapon_usage_counts: WeaponUsageCounts = msgspec.field(default_factory=lambda: (0,) * WEAPON_USAGE_COUNT)
 
 
 class ReplayClaimedStatsSnapshot(msgspec.Struct, frozen=True):
     complete: bool = False
-    ticks: int = 0
-    elapsed_ms: int = 0
-    score_xp: int = 0
-    kills: int = 0
+    ticks: NonNegativeInt = 0
+    elapsed_ms: NonNegativeInt = 0
+    score_xp: NonNegativeInt = 0
+    kills: NonNegativeInt = 0
     most_used_weapon_id: WeaponId = WeaponId.NONE
-    shots_fired: int = 0
-    shots_hit: int = 0
+    shots_fired: NonNegativeInt = 0
+    shots_hit: NonNegativeInt = 0
 
 
 class ReplayHeader(msgspec.Struct, frozen=True):
     game_mode_id: GameMode
     seed: int
     replay_format_version: int = REPLAY_FORMAT_VERSION
-    # Canonical quest stage pair `(major, minor)`. Use `None` for non-quest modes.
-    quest_level: ReplayQuestLevel | None = None
+    quest_level: QuestLevel | None = None
     game_version: str = msgspec.field(default_factory=_default_game_version)
-    tick_rate: int = 60
+    tick_rate: PositiveInt = 60
     # Mirrors the native quest retry scaling counter (`quest_fail_retry_count`).
-    quest_fail_retry_count: int = 0
+    quest_fail_retry_count: NonNegativeInt = 0
     hardcore: bool = False
     preserve_bugs: bool = False
-    detail_preset: int = 5
-    gore_disabled: int = 0
-    world_size: float = 1024.0
-    player_count: int = 1
+    detail_preset: NonNegativeInt = 5
+    gore_disabled: NonNegativeInt = 0
+    world_size: PositiveFloat = 1024.0
+    player_count: PlayerCount = 1
     status: ReplayStatusSnapshot = msgspec.field(default_factory=ReplayStatusSnapshot)
     claimed_stats: ReplayClaimedStatsSnapshot = msgspec.field(default_factory=ReplayClaimedStatsSnapshot)
     input_quantization: InputQuantization = "f32"

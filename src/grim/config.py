@@ -7,6 +7,8 @@ from typing import Any, cast
 import msgspec
 from construct import Byte, Bytes, Float32l, Int32ul, Struct
 
+from crimson.quests.level import QuestLevel
+
 CRIMSON_CFG_NAME = "crimson.cfg"
 CRIMSON_CFG_SIZE = 0x480
 PLAYER_NAME_SIZE = 0x20
@@ -675,6 +677,23 @@ class CrimsonConfig(msgspec.Struct):
             self.data.pop("quest_level", None)
             return
         self.set_raw_value("quest_level", str(value))
+
+    @property
+    def quest_level_value(self) -> QuestLevel | None:
+        major = int(self.quest_stage_major)
+        minor = int(self.quest_stage_minor)
+        if major <= 0 or minor <= 0:
+            return None
+        return QuestLevel(major, minor)
+
+    @quest_level_value.setter
+    def quest_level_value(self, value: QuestLevel | None) -> None:
+        if value is None:
+            self.quest_stage_major = 0
+            self.quest_stage_minor = 0
+            return
+        self.quest_stage_major = int(value.major)
+        self.quest_stage_minor = int(value.minor)
 
     @property
     def hud_indicators(self) -> bytes:

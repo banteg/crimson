@@ -72,7 +72,7 @@ class NetworkSessionConfig(msgspec.Struct, frozen=True):
     endpoint: NetworkEndpoint
     netcode_mode: NetcodeMode = "rollback"
     player_count: int = 1
-    quest_level: str = ""
+    quest_level: QuestLevel | None = None
     rollback_max_ticks: int = 8
     reconnect_timeout_ms: int = 15_000
     input_delay_ticks: int = 1
@@ -87,10 +87,6 @@ class NetworkSessionConfig(msgspec.Struct, frozen=True):
         if not isinstance(endpoint, RollbackEndpoint):
             raise TypeError("rollback sessions require RollbackEndpoint")
 
-    @property
-    def quest_level_value(self) -> QuestLevel | None:
-        return QuestLevel.try_parse(self.quest_level)
-
 
 class PendingNetworkSession(msgspec.Struct):
     role: NetworkSessionRole
@@ -102,8 +98,7 @@ class PendingNetworkSession(msgspec.Struct):
 
 class HighScoresRequest(msgspec.Struct):
     game_mode_id: GameMode
-    quest_stage_major: int = 0
-    quest_stage_minor: int = 0
+    quest_level: QuestLevel | None = None
     highlight_rank: int | None = None
 
 
@@ -196,7 +191,7 @@ class GameState(msgspec.Struct):
     network_desync_count: int = 0
     network_resync_failure_count: int = 0
     network_last_error: str = ""
-    pending_quest_level: str | None = None
+    pending_quest_level: QuestLevel | None = None
     pending_high_scores: HighScoresRequest | None = None
     quest_outcome: QuestRunOutcome | None = None
     quest_fail_retry_count: int = 0
@@ -212,15 +207,6 @@ class GameState(msgspec.Struct):
     sim_ms: float = 0.0
     presentation_plan_ms: float = 0.0
     presentation_apply_ms: float = 0.0
-
-    @property
-    def pending_quest_level_value(self) -> QuestLevel | None:
-        return QuestLevel.try_parse(self.pending_quest_level)
-
-    @pending_quest_level_value.setter
-    def pending_quest_level_value(self, value: QuestLevel | None) -> None:
-        self.pending_quest_level = value.to_string() if value is not None else None
-
 
 __all__ = [
     "GameplayScreen",

@@ -9,7 +9,6 @@ import zstandard as zstd
 
 from ..game_modes import GameMode
 from ..math_parity import f32
-from ..quests.level import QuestLevel
 from .types import (
     REPLAY_FORMAT_VERSION,
     WEAPON_USAGE_COUNT,
@@ -62,26 +61,6 @@ def _validate_usage_counts(counts: tuple[int, ...] | list[int]) -> None:
 
 
 def _validate_claimed_stats(stats: ReplayClaimedStatsSnapshot) -> None:
-    if int(stats.ticks) < 0:
-        raise ReplayCodecError(f"replay header claimed_stats.ticks must be non-negative, got {int(stats.ticks)}")
-    if int(stats.elapsed_ms) < 0:
-        raise ReplayCodecError(
-            f"replay header claimed_stats.elapsed_ms must be non-negative, got {int(stats.elapsed_ms)}",
-        )
-    if int(stats.score_xp) < 0:
-        raise ReplayCodecError(
-            f"replay header claimed_stats.score_xp must be non-negative, got {int(stats.score_xp)}",
-        )
-    if int(stats.kills) < 0:
-        raise ReplayCodecError(f"replay header claimed_stats.kills must be non-negative, got {int(stats.kills)}")
-    if int(stats.shots_fired) < 0:
-        raise ReplayCodecError(
-            f"replay header claimed_stats.shots_fired must be non-negative, got {int(stats.shots_fired)}",
-        )
-    if int(stats.shots_hit) < 0:
-        raise ReplayCodecError(
-            f"replay header claimed_stats.shots_hit must be non-negative, got {int(stats.shots_hit)}",
-        )
     if int(stats.shots_hit) > int(stats.shots_fired):
         raise ReplayCodecError(
             "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
@@ -95,14 +74,10 @@ def _validate_header(header: ReplayHeader, *, from_load: bool) -> None:
         raise ReplayCodecError(
             f"unsupported replay format version in header: {int(header.replay_format_version)}",
         )
-    if int(header.player_count) <= 0:
-        raise ReplayCodecError(f"replay header player_count must be positive, got {int(header.player_count)}")
-    if str(header.input_quantization) != "f32":
-        raise ReplayCodecError(f"unsupported input_quantization: {header.input_quantization!r}; expected 'f32'")
     _validate_usage_counts(header.status.weapon_usage_counts)
     _validate_claimed_stats(header.claimed_stats)
     if int(header.game_mode_id) == int(GameMode.QUESTS):
-        if header.quest_level is None or QuestLevel.from_parts_or_none(*header.quest_level) is None:
+        if header.quest_level is None:
             raise ReplayCodecError("quest replays require a valid header.quest_level")
 
 

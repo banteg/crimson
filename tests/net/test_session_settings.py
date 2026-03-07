@@ -20,13 +20,14 @@ from crimson.net.session_settings import (
     session_settings_from_welcome,
     welcome_from_session_settings,
 )
+from crimson.quests.level import QuestLevel
 
 
 def test_lockstep_session_settings_build_hello() -> None:
     settings = session_settings_for_lockstep(
         mode_id=3,
         player_count=9,
-        quest_level="q_2_3",
+        quest_level=QuestLevel(2, 3),
         preserve_bugs=True,
         tick_rate=0,
         input_delay_ticks=-5,
@@ -42,7 +43,7 @@ def test_lockstep_session_settings_build_hello() -> None:
     assert hello.build_id == "dev+g1234"
     assert hello.mode_id == 3
     assert hello.player_count == 4
-    assert hello.quest_level == "q_2_3"
+    assert hello.quest_level == QuestLevel(2, 3)
     assert hello.preserve_bugs is True
     assert hello.tick_rate == 1
     assert hello.input_delay_ticks == 0
@@ -53,7 +54,7 @@ def test_lockstep_session_settings_roundtrip_with_welcome_and_match_start() -> N
     settings = session_settings_for_lockstep(
         mode_id=2,
         player_count=2,
-        quest_level="q_2_2",
+        quest_level=QuestLevel(2, 2),
         preserve_bugs=True,
         tick_rate=60,
         input_delay_ticks=3,
@@ -88,7 +89,7 @@ def test_lockstep_session_settings_roundtrip_with_welcome_and_match_start() -> N
     assert isinstance(start, MatchStart)
     assert start.mode_id == 2
     assert start.player_count == 2
-    assert start.quest_level == "q_2_2"
+    assert start.quest_level == QuestLevel(2, 2)
     assert start.preserve_bugs is True
     assert session_settings_from_match_start(start, tick_rate=60, input_delay_ticks=3) == settings
 
@@ -97,7 +98,7 @@ def test_relay_session_settings_roundtrip_from_room_create() -> None:
     settings = session_settings_for_relay(
         mode_id=2,
         player_count=0,
-        quest_level="",
+        quest_level=None,
         preserve_bugs=False,
         tick_rate=0,
         input_delay_ticks=-1,
@@ -121,7 +122,7 @@ def test_relay_session_settings_build_room_state_and_start() -> None:
     settings = session_settings_for_relay(
         mode_id=1,
         player_count=2,
-        quest_level="q_1_1",
+        quest_level=QuestLevel(1, 1),
         preserve_bugs=True,
         tick_rate=60,
         input_delay_ticks=2,
@@ -142,7 +143,7 @@ def test_relay_session_settings_build_room_state_and_start() -> None:
     )
     assert state.mode_id == 1
     assert state.player_count == 2
-    assert state.quest_level == "q_1_1"
+    assert state.quest_level == QuestLevel(1, 1)
     assert state.netcode_mode == "lockstep"
     assert state.rollback_max_ticks == 6
     assert len(state.slots) == 2

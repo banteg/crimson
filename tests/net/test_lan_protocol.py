@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import subprocess
 
+import msgspec
+import pytest
+
 from crimson.net import lockstep_protocol as protocol
 from crimson.net.lockstep_protocol import (
     DebugLogBatch,
@@ -102,6 +105,31 @@ def test_decode_packet_rejects_invalid_blob() -> None:
     bad = encode_packet(LockstepPacket(seq=0, ack=0, reliable=False, message=PauseState(paused=False, reason="")))
     decoded = decode_packet(bad)
     assert isinstance(decoded.message, PauseState)
+
+
+def test_decode_packet_rejects_out_of_range_player_count_via_msgspec_constraints() -> None:
+    blob = msgspec.msgpack.encode(
+        {
+            "seq": 0,
+            "ack": 0,
+            "reliable": False,
+            "message": {
+                "type": "hello",
+                "protocol_version": protocol.PROTOCOL_VERSION,
+                "build_id": "",
+                "mode_id": 1,
+                "player_count": 0,
+                "tick_rate": protocol.TICK_RATE,
+                "input_delay_ticks": protocol.INPUT_DELAY_TICKS,
+                "quest_level": None,
+                "preserve_bugs": False,
+                "host": False,
+            },
+        },
+    )
+
+    with pytest.raises(msgspec.ValidationError, match="Expected `int` >= 1"):
+        decode_packet(blob)
 
 
 def test_build_compatibility_rejects_mismatched_git_hashes() -> None:

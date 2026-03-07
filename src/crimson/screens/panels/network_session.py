@@ -18,6 +18,7 @@ from ...game.types import (
     RollbackEndpoint,
 )
 from ...net.relay_protocol import ROOM_CODE_LENGTH
+from ...quests.level import QuestLevel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ...ui.text_input import poll_text_input
 from ..assets import _ensure_texture_cache
@@ -59,6 +60,12 @@ class NetworkSessionPanelView(PanelMenuView):
         self._port_text: str = "31993"
         self._active_field: str = ""
         self._error: str = ""
+
+    def _parsed_quest_level(self) -> QuestLevel | None:
+        value = self._quest_level.strip()
+        if not value:
+            return None
+        return QuestLevel.parse(value)
 
     def open(self) -> None:
         super().open()
@@ -278,8 +285,13 @@ class NetworkSessionPanelView(PanelMenuView):
         self._error = ""
         mode = self._current_mode()
         port = self._parse_port()
+        try:
+            quest_level = self._parsed_quest_level()
+        except ValueError:
+            self._error = "Quest level must use the format major.minor."
+            return
 
-        if mode == "quests" and not self._quest_level.strip():
+        if mode == "quests" and quest_level is None:
             self._error = "Quest level is required for quest network sessions."
             return
 
@@ -297,7 +309,7 @@ class NetworkSessionPanelView(PanelMenuView):
                 endpoint=endpoint,
                 netcode_mode="lockstep",
                 player_count=max(1, min(4, int(self._player_count))),
-                quest_level=str(self._quest_level.strip()),
+                quest_level=quest_level,
                 rollback_max_ticks=8,
                 reconnect_timeout_ms=15_000,
                 input_delay_ticks=1,
@@ -320,7 +332,7 @@ class NetworkSessionPanelView(PanelMenuView):
                 endpoint=endpoint,
                 netcode_mode="rollback",
                 player_count=max(1, min(4, int(self._player_count))),
-                quest_level=str(self._quest_level.strip()),
+                quest_level=quest_level,
                 rollback_max_ticks=8,
                 reconnect_timeout_ms=15_000,
                 input_delay_ticks=1,

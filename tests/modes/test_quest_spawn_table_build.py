@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.creatures.spawn import SpawnId
+from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import (
     apply_hardcore_spawn_table_adjustment,
     build_quest_spawn_table,
@@ -63,8 +64,7 @@ def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
         ]
 
     quest = QuestDefinition(
-        major=1,
-        minor=1,
+        level=QuestLevel(1, 1),
         title="dummy",
         builder=builder,
         time_limit_ms=1000,

@@ -60,7 +60,7 @@ def _start_two_peer_room(server: RelayServer, *, now_ms: int) -> tuple[Any, Any,
         message=RoomCreate(
             mode_id=1,
             player_count=2,
-            quest_level="",
+            quest_level=None,
             preserve_bugs=False,
             netcode_mode="rollback",
         ),
@@ -97,7 +97,7 @@ def test_room_create_join_ready_start_flow(mocker) -> None:
         message=RoomCreate(
             mode_id=2,
             player_count=2,
-            quest_level="",
+            quest_level=None,
             preserve_bugs=False,
             netcode_mode="rollback",
         ),

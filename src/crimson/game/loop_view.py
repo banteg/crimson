@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import webbrowser
 
-from crimson.quests.level import QuestLevel
 from grim.audio import stop_music
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -381,7 +380,7 @@ class GameLoopView:
                     bind_host=str(endpoint.bind_host),
                     host_ip=str(endpoint.host),
                     port=int(endpoint.port),
-                    quest_level=str(cfg.quest_level or ""),
+                    quest_level=cfg.quest_level,
                     preserve_bugs=False,
                     input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
                     sim_status_snapshot=sim_status_snapshot,
@@ -393,7 +392,7 @@ class GameLoopView:
                     bind_host=str(endpoint.bind_host),
                     host_ip=str(endpoint.host),
                     port=int(endpoint.port),
-                    quest_level=str(cfg.quest_level or ""),
+                    quest_level=cfg.quest_level,
                     preserve_bugs=False,
                     input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
                     sim_status_snapshot=sim_status_snapshot,
@@ -410,7 +409,7 @@ class GameLoopView:
                     relay_host=str(endpoint.relay_host),
                     relay_port=int(endpoint.relay_port),
                     room_code=str(endpoint.room_code).strip().upper(),
-                    quest_level=str(cfg.quest_level or ""),
+                    quest_level=cfg.quest_level,
                     preserve_bugs=False,
                     netcode_mode="rollback",
                     input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
@@ -425,7 +424,7 @@ class GameLoopView:
                     relay_host=str(endpoint.relay_host),
                     relay_port=int(endpoint.relay_port),
                     room_code=str(endpoint.room_code).strip().upper(),
-                    quest_level=str(cfg.quest_level or ""),
+                    quest_level=cfg.quest_level,
                     preserve_bugs=False,
                     netcode_mode="rollback",
                     input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
@@ -451,19 +450,13 @@ class GameLoopView:
         )
 
         if expected_mode == "quests":
-            raw_level = str(cfg.quest_level or "").strip()
-            if not raw_level:
+            level = cfg.quest_level
+            if level is None:
                 self.state.network_last_error = "Quest LAN mode requires --quest-level."
                 pending.error = self.state.network_last_error
                 lan_debug_log("lan_action_error", action=action, reason=str(self.state.network_last_error))
                 return None
-            level = QuestLevel.try_parse(raw_level)
-            if level is None:
-                self.state.network_last_error = f"Invalid quest level for LAN: {raw_level!r}"
-                pending.error = self.state.network_last_error
-                lan_debug_log("lan_action_error", action=action, reason=str(self.state.network_last_error))
-                return None
-            self.state.pending_quest_level = level.to_string()
+            self.state.pending_quest_level = level
 
         return forward_action
 
@@ -790,13 +783,10 @@ class GameLoopView:
             mode_id = GameMode(mode_raw)
         except ValueError:
             mode_id = GameMode.DEMO
-        quest_major, quest_minor = 0, 0
+        quest_level = None
         match mode_id:
             case GameMode.QUESTS:
-                level_text = str(self.state.pending_quest_level or "")
-                if level_text:
-                    level = QuestLevel.parse(level_text)
-                    quest_major, quest_minor = level.to_stage_pair()
+                quest_level = self.state.pending_quest_level
             case _:
                 pass
 
@@ -805,8 +795,8 @@ class GameLoopView:
             game_mode_id=mode_id,
             global_playtime_ms=int(self.state.status.game_sequence_id),
             quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),
-            quest_stage_major=int(quest_major),
-            quest_stage_minor=int(quest_minor),
+            quest_stage_major=(0 if quest_level is None else int(quest_level.major)),
+            quest_stage_minor=(0 if quest_level is None else int(quest_level.minor)),
         )
 
         frame_dt = min(float(dt), 0.1)
@@ -828,8 +818,8 @@ class GameLoopView:
             game_mode_id=mode_id,
             global_playtime_ms=int(self.state.status.game_sequence_id),
             quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),
-            quest_stage_major=int(quest_major),
-            quest_stage_minor=int(quest_minor),
+            quest_stage_major=(0 if quest_level is None else int(quest_level.major)),
+            quest_stage_minor=(0 if quest_level is None else int(quest_level.minor)),
         )
         self._demo_trial_info = info
         if not info.visible:
@@ -950,10 +940,7 @@ class GameLoopView:
         level = self.state.pending_quest_level
         if level is None:
             return
-        parsed = QuestLevel.parse(level)
-        normalized = parsed.to_string()
-        self.state.pending_quest_level = normalized
-        gameplay.prepare_new_run(normalized, status=self.state.status)
+        gameplay.prepare_new_run(level.text, status=self.state.status)
 
     def _resolve_gameplay_action(self, gameplay: GameplayScreen, action: str | None) -> str | None:
         if action == "open_high_scores":

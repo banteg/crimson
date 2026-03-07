@@ -48,7 +48,7 @@ def test_host_writes_remote_client_log_batches(tmp_path: Path) -> None:
             player_count=2,
             tick_rate=TICK_RATE,
             input_delay_ticks=INPUT_DELAY_TICKS,
-            quest_level="",
+            quest_level=None,
             preserve_bugs=False,
             host=False,
         ),

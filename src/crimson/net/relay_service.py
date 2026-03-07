@@ -9,6 +9,7 @@ import msgspec
 import structlog
 
 from ..logging import ensure_structlog_stdlib_defaults
+from ..quests.level import QuestLevel
 from .relay_protocol import (
     LINK_TIMEOUT_MS,
     PROTOCOL_VERSION,
@@ -93,7 +94,7 @@ class _Room(msgspec.Struct):
     session_id: str
     mode_id: int
     player_count: int
-    quest_level: str
+    quest_level: QuestLevel | None
     preserve_bugs: bool
     tick_rate: int
     input_delay_ticks: int
@@ -374,7 +375,7 @@ class RelayServer:
             session_id=uuid.uuid4().hex[:12],
             mode_id=int(settings.mode_id),
             player_count=int(player_count),
-            quest_level=str(settings.quest_level),
+            quest_level=settings.quest_level,
             preserve_bugs=bool(settings.preserve_bugs),
             tick_rate=int(settings.tick_rate),
             input_delay_ticks=int(settings.input_delay_ticks),
@@ -647,7 +648,7 @@ class RelayServer:
         settings = session_settings_for_relay(
             mode_id=int(room.mode_id),
             player_count=int(room.player_count),
-            quest_level=str(room.quest_level),
+            quest_level=room.quest_level,
             preserve_bugs=bool(room.preserve_bugs),
             tick_rate=int(room.tick_rate),
             input_delay_ticks=int(room.input_delay_ticks),
@@ -697,7 +698,7 @@ class RelayServer:
         settings = session_settings_for_relay(
             mode_id=int(room.mode_id),
             player_count=int(room.player_count),
-            quest_level=str(room.quest_level),
+            quest_level=room.quest_level,
             preserve_bugs=bool(room.preserve_bugs),
             tick_rate=int(room.tick_rate),
             input_delay_ticks=int(room.input_delay_ticks),

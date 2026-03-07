@@ -93,20 +93,11 @@ def _player_name_default(config: CrimsonConfig) -> str:
     return config.player_name
 
 
-def _next_quest_level(level: str) -> str | None:
-    parsed = QuestLevel.parse(level)
-    major, minor = parsed.to_stage_pair()
-
-    from ...quests import quest_by_stage
-
-    for _ in range(100):
-        minor += 1
-        if minor > 10:
-            minor = 1
-            major += 1
-        if quest_by_stage(major, minor) is not None:
-            return QuestLevel.from_parts(major, minor).to_string()
-    return None
+def _next_quest_level(level: QuestLevel) -> QuestLevel | None:
+    next_index = int(level.global_index) + 1
+    if next_index >= 50:
+        return None
+    return QuestLevel.from_global_index(next_index)
 
 
 __all__ = [

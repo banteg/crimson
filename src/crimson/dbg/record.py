@@ -251,8 +251,8 @@ def _sim_state_from_world(world: WorldState, *, replay: Replay) -> SimStateSnaps
     return SimStateSnapshot(
         gameplay=SnapshotGameplay(
             mode_id=int(replay.header.game_mode_id),
-            quest_stage_major=int(gameplay.quest_stage_major),
-            quest_stage_minor=int(gameplay.quest_stage_minor),
+            quest_stage_major=(0 if gameplay.quest_level is None else int(gameplay.quest_level.major)),
+            quest_stage_minor=(0 if gameplay.quest_level is None else int(gameplay.quest_level.minor)),
             perk_pending_count=int(gameplay.perk_selection.pending_count),
             perk_choices_dirty=bool(gameplay.perk_selection.choices_dirty),
             bonus_timers=SnapshotBonusTimers(
@@ -276,7 +276,7 @@ def _build_replay_fingerprint(*, replay_path: Path, replay: Replay) -> BuiltinOb
     replay_fingerprint["quest_level"] = (
         ""
         if replay.header.quest_level is None
-        else f"{int(replay.header.quest_level[0])}.{int(replay.header.quest_level[1])}"
+        else replay.header.quest_level.text
     )
     return replay_fingerprint
 

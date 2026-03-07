@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from ..game_modes import GameMode
 from ..quests import all_quests
+from ..quests.level import QuestLevel
 from ..sim.state_types import GameplayState
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
 from ..weapons import WeaponId
@@ -96,8 +97,7 @@ def weapon_pick_random_available(state: GameplayState) -> int:
         # Quest 5-10 special-case: suppress Ion Cannon.
         if (
             state.game_mode == GameMode.QUESTS
-            and int(state.quest_stage_major) == 5
-            and int(state.quest_stage_minor) == 10
+            and state.quest_level == QuestLevel(5, 10)
             and weapon_id == WeaponId.ION_CANNON
         ):
             continue

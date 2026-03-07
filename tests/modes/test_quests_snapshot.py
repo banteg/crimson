@@ -42,7 +42,7 @@ def test_quest_builders_snapshot(snapshot: SnapshotAssertion) -> None:
     matcher = cast(PropertyMatcher, _round_matcher)
     for quest in all_quests():
         payload = {
-            "level": quest.level,
+            "level": quest.level.text,
             "title": quest.title,
             "time_limit_ms": quest.time_limit_ms,
             "start_weapon_id": quest.start_weapon_id,
@@ -52,6 +52,6 @@ def test_quest_builders_snapshot(snapshot: SnapshotAssertion) -> None:
             "builder_address": quest.builder_address,
             "entries": _build_entries(quest.builder, ctx, seed=1337),
         }
-        snapshot(name=f"quest_{quest.level}", matcher=matcher).assert_match(
+        snapshot(name=f"quest_{quest.level.text}", matcher=matcher).assert_match(
             payload,
         )

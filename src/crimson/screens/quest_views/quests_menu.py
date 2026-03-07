@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 from crimson.quests.level import QuestLevel
+from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
@@ -405,26 +406,23 @@ class QuestsMenuView:
         unlock = int(status.quest_unlock_index)
         if config.hardcore:
             unlock = int(status.quest_unlock_index_full)
-        level = QuestLevel.from_stage_row(stage, row)
+        level = QuestLevel(int(stage), int(row) + 1)
         return unlock >= int(level.global_index)
 
     def _try_start_quest(self, stage: int, row: int) -> None:
         if not self._quest_unlocked(stage, row):
             return
-        level = QuestLevel.from_stage_row(stage, row)
-        level_text = level.to_string()
-        self.state.pending_quest_level = level_text
+        level = QuestLevel(int(stage), int(row) + 1)
+        self.state.pending_quest_level = level
         self.state.config.game_mode = int(GameMode.QUESTS)
-        self.state.config.quest_level = level_text
-        self.state.config.quest_stage_major = int(level.major)
-        self.state.config.quest_stage_minor = int(level.minor)
+        self.state.config.quest_level_value = level
         self._dirty = True
         self._begin_close_transition("start_quest")
 
     def _quest_title(self, stage: int, row: int) -> str:
-        from ...quests import quest_by_stage
+        from ...quests import quest_by_level
 
-        quest = quest_by_stage(stage, int(row) + 1)
+        quest = quest_by_level(QuestLevel(int(stage), int(row) + 1))
         if quest is None:
             return "???"
         return quest.title
@@ -451,12 +449,12 @@ class QuestsMenuView:
         #   the decoded payload.
         #
         # We emulate this layout so the debug `F1` overlay matches the classic build.
-        level = QuestLevel.from_stage_row(stage, row)
+        level = QuestLevel(int(stage), int(row) + 1)
         global_index = int(level.global_index)
 
         status = self.state.status
-        games_idx = int(level.games_counter_index)
-        completed_idx = int(level.completed_counter_index)
+        games_idx = quest_games_counter_index(level)
+        completed_idx = quest_completed_counter_index(level)
         try:
             games = int(status.quest_play_count(games_idx))
         except IndexError:
