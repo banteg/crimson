@@ -121,12 +121,10 @@ class DemoView:
             terrain_slots=terrain_slots,
             width=int(WORLD_SIZE),
             height=int(WORLD_SIZE),
-            layers=3,
         )
         self._runtime.terrain_runtime.apply_terrain_setup(
             terrain_slots=terrain.terrain_slots,
             seed=int(terrain.terrain_seed),
-            layers=3,
         )
         self._sync_live_rng_state()
 

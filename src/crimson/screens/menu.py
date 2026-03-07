@@ -95,7 +95,6 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
             unlock_index=int(state.status.quest_unlock_index),
             width=1024,
             height=1024,
-            layers=3,
         )
         base_id, overlay_id, detail_id = terrain_slots_to_texture_ids(terrain.terrain_slots)
         base = resources.texture(base_id)
@@ -132,10 +131,10 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
     if regenerate:
         assert ground is not None
         if generated_new_terrain:
-            ground.schedule_generate(seed=int(terrain.terrain_seed), layers=3)
+            ground.schedule_generate(seed=int(terrain.terrain_seed))
         else:
-            ground.schedule_generate(seed=int(state.rng.state), layers=3)
-            for _ in range(terrain_stamping_draws(width=int(ground.width), height=int(ground.height), layers=3)):
+            ground.schedule_generate(seed=int(state.rng.state))
+            for _ in range(terrain_stamping_draws(width=int(ground.width), height=int(ground.height))):
                 state.rng.rand()
         state.menu_ground_camera = None
     return ground

@@ -235,12 +235,10 @@ class WorldRuntimeHost:
         *,
         terrain_slots: TerrainSlotTriplet,
         seed: int,
-        layers: int = 3,
     ) -> None:
         self._runtime.terrain_runtime.apply_terrain_setup(
             terrain_slots=terrain_slots,
             seed=int(seed),
-            layers=int(layers),
         )
 
     def _bake_fx_queues(self) -> None:

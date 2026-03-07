@@ -371,7 +371,6 @@ class ReplayPlaybackMode:
             runtime.terrain_runtime.apply_terrain_setup(
                 terrain_slots=terrain_setup.terrain_slots,
                 seed=int(terrain_setup.terrain_seed),
-                layers=3,
             )
 
         quest = driver.quest_definition

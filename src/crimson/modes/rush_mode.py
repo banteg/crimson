@@ -114,7 +114,6 @@ class RushMode(BaseGameplayMode):
             unlock_index=int(quest_unlock_index),
             width=int(self.world_size),
             height=int(self.world_size),
-            layers=3,
         )
         lan_debug_log(
             "terrain_prelude",
@@ -136,7 +135,6 @@ class RushMode(BaseGameplayMode):
         self.apply_terrain_setup(
             terrain_slots=terrain.terrain_slots,
             seed=terrain.terrain_seed,
-            layers=3,
         )
         self.sim_world.state.rng.srand(int(terrain.seed_after))
         self._sim_session = self._new_sim_session()

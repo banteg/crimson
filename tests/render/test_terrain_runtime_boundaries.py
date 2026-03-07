@@ -26,7 +26,6 @@ def test_apply_terrain_setup_keeps_sim_rng_state(assets_dir: Path, monkeypatch) 
     world.apply_terrain_setup(
         terrain_slots=DEFAULT_TERRAIN_SLOTS,
         seed=1337,
-        layers=3,
     )
 
     assert int(world.sim_world.state.rng.state) == before_rng_state
@@ -54,7 +53,7 @@ def test_apply_terrain_setup_updates_render_cache_without_touching_sim_rng(asset
 
     monkeypatch.setattr(type(world.render_resources), "registry_texture", _texture, raising=True)
 
-    world.apply_terrain_setup(terrain_slots=(0, 1, 3), seed=before_rng_state, layers=3)
+    world.apply_terrain_setup(terrain_slots=(0, 1, 3), seed=before_rng_state)
 
     assert int(world.sim_world.state.rng.state) == before_rng_state
     assert world.render_resources.ground is not None

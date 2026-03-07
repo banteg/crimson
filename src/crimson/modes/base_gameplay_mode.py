@@ -412,9 +412,8 @@ class BaseGameplayMode:
         *,
         terrain_slots: TerrainSlotTriplet,
         seed: int,
-        layers: int = 3,
     ) -> None:
-        self.terrain_runtime.apply_terrain_setup(terrain_slots=terrain_slots, seed=int(seed), layers=int(layers))
+        self.terrain_runtime.apply_terrain_setup(terrain_slots=terrain_slots, seed=int(seed))
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self.render_resources.bake_fx_queues()
@@ -1307,7 +1306,7 @@ class BaseGameplayMode:
         # Keep this deterministic without consuming gameplay RNG.
         self._terrain_regen_counter = (int(self._terrain_regen_counter) + 1) & 0xFFFFFFFF
         terrain_seed = (int(self.state.rng.state) + int(self._terrain_regen_counter)) & 0xFFFFFFFF
-        self.render_resources.ground.schedule_generate(seed=terrain_seed, layers=3)
+        self.render_resources.ground.schedule_generate(seed=terrain_seed)
 
     def _draw_screen_fade(self) -> None:
         fade_alpha = 0.0

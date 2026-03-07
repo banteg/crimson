@@ -152,7 +152,7 @@ class WorldRuntime:
         )
         if self.render_resources.ground is not None:
             terrain_seed = int(self.sim_world.state.rng.state)
-            self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
+            self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed)
 
     def open_runtime(self) -> None:
         self.render_resources.config = self.config

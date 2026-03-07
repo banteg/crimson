@@ -419,7 +419,6 @@ class QuestMode(BaseGameplayMode):
             unlock_index=int(generic_unlock_index),
             width=int(self.world_size),
             height=int(self.world_size),
-            layers=3,
         )
         # Native `quest_start_selected()` burns one `crt_rand()` for
         # `highscore_record_random_tag` before quest terrain and spawn setup.
@@ -429,12 +428,10 @@ class QuestMode(BaseGameplayMode):
             terrain_slots=quest.terrain_slots,
             width=int(self.world_size),
             height=int(self.world_size),
-            layers=3,
         )
         self.apply_terrain_setup(
             terrain_slots=quest_terrain.terrain_slots,
             seed=int(quest_terrain.terrain_seed),
-            layers=3,
         )
 
         ctx = QuestContext(

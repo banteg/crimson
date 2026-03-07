@@ -17,21 +17,17 @@ TERRAIN_DENSITY_SHIFT = 19
 TERRAIN_RAND_DRAWS_PER_STAMP = 3  # rotation, then position draws (see terrain renderer parity notes)
 
 
-def terrain_stamping_draws(*, width: int, height: int, layers: int = 3) -> int:
+def terrain_stamping_draws(*, width: int, height: int) -> int:
     """Return the number of `rand()` draws consumed by the procedural terrain stamps."""
 
     w = max(0, int(width))
     h = max(0, int(height))
     area = int(w * h)
-    layers = max(0, min(int(layers), 3))
-
-    stamps = 0
-    if layers >= 1:
-        stamps += int((area * TERRAIN_DENSITY_BASE) >> TERRAIN_DENSITY_SHIFT)
-    if layers >= 2:
-        stamps += int((area * TERRAIN_DENSITY_OVERLAY) >> TERRAIN_DENSITY_SHIFT)
-    if layers >= 3:
-        stamps += int((area * TERRAIN_DENSITY_DETAIL) >> TERRAIN_DENSITY_SHIFT)
+    stamps = (
+        int((area * TERRAIN_DENSITY_BASE) >> TERRAIN_DENSITY_SHIFT)
+        + int((area * TERRAIN_DENSITY_OVERLAY) >> TERRAIN_DENSITY_SHIFT)
+        + int((area * TERRAIN_DENSITY_DETAIL) >> TERRAIN_DENSITY_SHIFT)
+    )
 
     return int(stamps * TERRAIN_RAND_DRAWS_PER_STAMP)
 
@@ -54,9 +50,8 @@ def _advance_terrain_stamping_rng(
     *,
     width: int,
     height: int,
-    layers: int,
 ) -> int:
-    stamping_draws = terrain_stamping_draws(width=int(width), height=int(height), layers=int(layers))
+    stamping_draws = terrain_stamping_draws(width=int(width), height=int(height))
     for _ in range(int(stamping_draws)):
         rng.rand()
     return int(stamping_draws)
@@ -68,7 +63,6 @@ def run_unlock_terrain_prelude(
     unlock_index: int,
     width: int,
     height: int,
-    layers: int = 3,
 ) -> TerrainPreludeResult:
     """Consume RNG draws for the shared unlock-driven terrain prelude.
 
@@ -90,7 +84,6 @@ def run_unlock_terrain_prelude(
         rng,
         width=int(width),
         height=int(height),
-        layers=int(layers),
     )
     seed_after = int(rng.state)
     return TerrainPreludeResult(
@@ -108,7 +101,6 @@ def run_explicit_terrain_prelude(
     terrain_slots: TerrainSlotTriplet,
     width: int,
     height: int,
-    layers: int = 3,
 ) -> TerrainPreludeResult:
     """Consume RNG draws for terrain generation when slots are fixed up front."""
 
@@ -118,7 +110,6 @@ def run_explicit_terrain_prelude(
         rng,
         width=int(width),
         height=int(height),
-        layers=int(layers),
     )
     seed_after = int(rng.state)
     return TerrainPreludeResult(

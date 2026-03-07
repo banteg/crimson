@@ -219,7 +219,6 @@ class PlaybackDriver:
                     unlock_index=int(self.replay.header.status.quest_unlock_index),
                     width=int(self.world_size),
                     height=int(self.world_size),
-                    layers=3,
                 )
                 self._terrain_setup = ReplayTerrainSetup(
                     terrain_slots=terrain.terrain_slots,
@@ -243,7 +242,6 @@ class PlaybackDriver:
                     unlock_index=int(self.replay.header.status.quest_unlock_index),
                     width=int(self.world_size),
                     height=int(self.world_size),
-                    layers=3,
                 )
                 # Native `quest_start_selected()` burns one `crt_rand()` for
                 # `highscore_record_random_tag` before quest terrain and spawn setup.
@@ -253,7 +251,6 @@ class PlaybackDriver:
                     terrain_slots=quest_definition.terrain_slots,
                     width=int(self.world_size),
                     height=int(self.world_size),
-                    layers=3,
                 )
                 spawn_entries = (
                     tuple(self._quest_spawn_entries)
