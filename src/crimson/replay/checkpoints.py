@@ -50,6 +50,21 @@ class ReplayTypoSnapshot(msgspec.Struct, frozen=True):
     active_names: list[ReplayTypoNameEntry] = msgspec.field(default_factory=list)
 
 
+class ReplayTutorialSnapshot(msgspec.Struct, frozen=True):
+    stage_index: int = -1
+    stage_timer_ms: int = 0
+    stage_transition_timer_ms: int = -1000
+    hint_index: int = -1
+    hint_alpha: int = 0
+    hint_fade_in: bool = False
+    repeat_spawn_count: int = 0
+    hint_bonus_creature_ref: int | None = None
+    prompt_text: str = ""
+    prompt_alpha: float = 0.0
+    hint_text: str = ""
+    hint_alpha_overlay: float = 0.0
+
+
 class ReplayCheckpoint(msgspec.Struct, frozen=True):
     tick_index: int
     rng_state: int
@@ -63,6 +78,7 @@ class ReplayCheckpoint(msgspec.Struct, frozen=True):
     deaths: list["ReplayDeathLedgerEntry"] = msgspec.field(default_factory=list)
     perk: "ReplayPerkSnapshot" = msgspec.field(default_factory=lambda: ReplayPerkSnapshot())
     events: "ReplayEventSummary" = msgspec.field(default_factory=lambda: ReplayEventSummary())
+    tutorial: ReplayTutorialSnapshot | None = None
     typo: ReplayTypoSnapshot | None = None
 
 
@@ -206,6 +222,26 @@ def build_checkpoint(
     )
 
     typo_snapshot: ReplayTypoSnapshot | None = None
+    tutorial_snapshot: ReplayTutorialSnapshot | None = None
+    if state.game_mode == GameMode.TUTORIAL:
+        tutorial = state.tutorial
+        overlay = state.tutorial_overlay
+        tutorial_snapshot = ReplayTutorialSnapshot(
+            stage_index=int(tutorial.stage_index),
+            stage_timer_ms=int(tutorial.stage_timer_ms),
+            stage_transition_timer_ms=int(tutorial.stage_transition_timer_ms),
+            hint_index=int(tutorial.hint_index),
+            hint_alpha=int(tutorial.hint_alpha),
+            hint_fade_in=bool(tutorial.hint_fade_in),
+            repeat_spawn_count=int(tutorial.repeat_spawn_count),
+            hint_bonus_creature_ref=(
+                None if tutorial.hint_bonus_creature_ref is None else int(tutorial.hint_bonus_creature_ref)
+            ),
+            prompt_text=str(overlay.prompt_text),
+            prompt_alpha=float(overlay.prompt_alpha),
+            hint_text=str(overlay.hint_text),
+            hint_alpha_overlay=float(overlay.hint_alpha),
+        )
     if state.game_mode == GameMode.TYPO:
         active_mask = [bool(creature.active) for creature in world.creatures.entries]
         active_names = [
@@ -236,6 +272,7 @@ def build_checkpoint(
         deaths=death_entries,
         perk=perk_snapshot,
         events=event_summary,
+        tutorial=tutorial_snapshot,
         typo=typo_snapshot,
     )
 

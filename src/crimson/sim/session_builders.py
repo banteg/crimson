@@ -8,6 +8,8 @@ from ..game_modes import GameMode
 from ..quests.level import QuestLevel
 from ..quests.types import SpawnEntry
 from ..sim.world_state import WorldState
+from ..tutorial import reset_tutorial_state
+from ..tutorial.runtime import tutorial_before_step, tutorial_input_transform, tutorial_post_step
 from ..typo.runtime import typo_before_step, typo_input_transform, typo_mid_step, typo_post_step
 from ..typo.state import reset_typo_state
 from ..weapon_runtime import weapon_assign_player
@@ -206,6 +208,11 @@ def build_tutorial_session(
     demo_mode_active: bool,
     session_factory: DeterministicSessionFactory = DeterministicSession,
 ) -> DeterministicSession:
+    reset_tutorial_state(
+        world.state.tutorial,
+        world.state.tutorial_overlay,
+        preserve_bugs=bool(world.state.preserve_bugs),
+    )
     session = session_factory(
         world=world,
         world_size=float(world_size),
@@ -220,5 +227,8 @@ def build_tutorial_session(
         game_tune_started=bool(game_tune_started),
         demo_mode_active=bool(demo_mode_active),
         clear_fx_queues_each_tick=False,
+        before_step_hook=lambda: tutorial_before_step(world),
+        post_step_hook=tutorial_post_step,
+        input_transform=lambda inputs: tutorial_input_transform(world, inputs),
     )
     return session

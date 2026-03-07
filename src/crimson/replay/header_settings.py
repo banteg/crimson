@@ -40,6 +40,8 @@ def replay_header_from_session_settings(
     quest_level = settings.quest_level
     if game_mode_id == GameMode.QUESTS and quest_level is None:
         raise ValueError("quest replays require quest_level")
+    if game_mode_id == GameMode.TUTORIAL and int(settings.player_count) != 1:
+        raise ValueError("tutorial replays require player_count == 1")
 
     return ReplayHeader(
         game_mode_id=game_mode_id,

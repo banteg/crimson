@@ -10,17 +10,21 @@ from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
-from ..creatures.runtime import CreatureFlags
-from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
-from ..gameplay import survival_check_level_up
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
+from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
+from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
+from ..sim.bootstrap import run_unlock_terrain_prelude
 from ..sim.input import PlayerInput
 from ..sim.session_builders import DeterministicSessionFactory, build_tutorial_session
 from ..sim.sessions import DeterministicSession
-from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.overlays.tutorial_run import (
+    TUTORIAL_PANEL_POS,
+    draw_tutorial_overlay_panels,
+    tutorial_prompt_panel_rect,
+)
 from ..ui.perk_menu import (
     PerkMenuAssets,
     UiButtonState,
@@ -30,16 +34,13 @@ from ..ui.perk_menu import (
     load_perk_menu_assets,
 )
 from ..weapon_runtime import weapon_assign_player
+from ..weapon_usage import normalize_weapon_usage_counts
 from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 
-UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
-UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
-UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
-_TUTORIAL_PANEL_POS = Vec2(0.0, 64.0)
-_TUTORIAL_PANEL_PADDING = Vec2(20.0, 8.0)
+
 
 class TutorialMode(BaseGameplayMode):
     def __init__(
@@ -65,9 +66,6 @@ class TutorialMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._tutorial = TutorialState(preserve_bugs=bool(self.state.preserve_bugs))
-        self._tutorial_actions = TutorialFrameActions()
-
         self._ui_assets: PerkMenuAssets | None = None
 
         self._perk_menu = PerkMenuController()
@@ -77,6 +75,7 @@ class TutorialMode(BaseGameplayMode):
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
         self._session_factory = session_factory
         self._sim_session: DeterministicSession | None = None
+        self._replay_recorder: ReplayRecorder | None = None
         self._frame_input_state: PlayerInput | None = None
 
     def _new_sim_session(self) -> DeterministicSession:
@@ -86,15 +85,20 @@ class TutorialMode(BaseGameplayMode):
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             fx_queue=self.render_resources.fx_queue,
             fx_queue_rotated=self.render_resources.fx_queue_rotated,
-            detail_preset=5,
-            gore_disabled=0,
+            detail_preset=int(self._deterministic_detail_preset()),
+            gore_disabled=int(self._deterministic_gore_disabled()),
             game_tune_started=bool(self.sim_world.game_tune_started),
             demo_mode_active=bool(self.demo_mode_active),
             session_factory=self._session_factory,
         )
 
     def open(self) -> None:
-        super().open()
+        original_player_count = self.config.player_count
+        self.config.player_count = 1
+        try:
+            super().open()
+        finally:
+            self.config.player_count = original_player_count
         self._ui_assets = load_perk_menu_assets(self._assets_root)
 
         self._perk_menu.reset()
@@ -103,23 +107,73 @@ class TutorialMode(BaseGameplayMode):
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
 
-        self._tutorial = TutorialState(preserve_bugs=bool(self.state.preserve_bugs))
-        self._tutorial_actions = TutorialFrameActions()
         self._frame_input_state = None
 
         self.state.perk_selection.pending_count = 0
         self.state.perk_selection.choices.clear()
         self.state.perk_selection.choices_dirty = True
 
+        status = self.state.status
+        terrain = run_unlock_terrain_prelude(
+            self.state.rng,
+            unlock_index=(0 if status is None else int(status.quest_unlock_index)),
+            width=int(self.world_size),
+            height=int(self.world_size),
+        )
+        self.apply_terrain_setup(
+            terrain_slots=terrain.terrain_slots,
+            seed=int(terrain.terrain_seed),
+        )
+        self.sim_world.state.rng.srand(int(terrain.seed_after))
+
         self.player.pos = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5)
         weapon_assign_player(self.player, WeaponId.PISTOL, state=self.state)
         self._sim_session = self._new_sim_session()
+        weapon_usage_counts = normalize_weapon_usage_counts(
+            status.data.get("weapon_usage_counts") if status is not None else None,
+        )
+        self._replay_recorder = ReplayRecorder(
+            ReplayHeader(
+                game_mode_id=GameMode.TUTORIAL,
+                seed=int(self._run_reset_seed),
+                tick_rate=int(self._gameplay_tick_rate()),
+                quest_fail_retry_count=int(self.quest_fail_retry_count),
+                hardcore=bool(self.hardcore),
+                preserve_bugs=bool(self.state.preserve_bugs),
+                detail_preset=int(self._deterministic_detail_preset()),
+                gore_disabled=int(self._deterministic_gore_disabled()),
+                world_size=float(self.world_size),
+                player_count=1,
+                status=ReplayStatusSnapshot(
+                    quest_unlock_index=(0 if status is None else int(status.quest_unlock_index)),
+                    quest_unlock_index_full=(0 if status is None else int(status.quest_unlock_index_full)),
+                    weapon_usage_counts=weapon_usage_counts,
+                ),
+            ),
+        )
+        self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
 
     def close(self) -> None:
         self._ui_assets = None
         self._sim_session = None
+        self._replay_recorder = None
         self._frame_input_state = None
         super().close()
+
+    def _replay_claimed_stats_complete(self) -> bool:
+        return int(self.state.tutorial.stage_index) >= 8
+
+    def _replay_claimed_stats_elapsed_ms(self) -> int:
+        session = self._sim_session
+        if session is None:
+            return 0
+        return int(session.elapsed_ms)
+
+    def _replay_output_basename(self, *, stamp: str, replay) -> str:
+        _ = replay
+        return f"tutorial_{stamp}"
 
     def _perk_menu_context(self) -> PerkMenuContext:
         gore_disabled = self.config.gore_disabled
@@ -186,43 +240,37 @@ class TutorialMode(BaseGameplayMode):
             frame_input_state = self._build_input()
         return [frame_input_state]
 
-    def _prompt_panel_rect(self, text: str, *, pos: Vec2, scale: float) -> tuple[rl.Rectangle, list[str], float]:
-        lines = text.splitlines() if text else [""]
-        line_h = float(self._ui_line_height(scale))
-        max_w = 0.0
-        for line in lines:
-            max_w = max(max_w, float(self._ui_text_width(line, scale)))
-
-        pad_x = _TUTORIAL_PANEL_PADDING.x * scale
-        pad_y = _TUTORIAL_PANEL_PADDING.y * scale
-        w = max_w + pad_x * 2.0
-        h = float(len(lines)) * line_h + pad_y * 2.0
-
-        screen_w = float(rl.get_screen_width())
-        x = (screen_w - w) * 0.5
-        rect = rl.Rectangle(float(x), pos.y, float(w), float(h))
-        return rect, lines, line_h
+    def _finish_tutorial_run(self, *, restart: bool) -> None:
+        self._save_replay()
+        if restart:
+            self.open()
+            return
+        self.close_requested = True
 
     def _update_prompt_buttons(self, *, dt_ms: float, mouse: rl.Vector2, click: bool) -> None:
         if self._ui_assets is None:
             return
 
-        stage = int(self._tutorial.stage_index)
-        prompt_alpha = float(self._tutorial_actions.prompt_alpha)
+        tutorial = self.state.tutorial
+        overlay = self.state.tutorial_overlay
+        stage = int(tutorial.stage_index)
+        prompt_alpha = float(overlay.prompt_alpha)
         if stage == 8:
             self._play_button.alpha = prompt_alpha
             self._repeat_button.alpha = prompt_alpha
             self._play_button.enabled = prompt_alpha > 1e-3
             self._repeat_button.enabled = prompt_alpha > 1e-3
         else:
-            skip_alpha = clamp(float(self._tutorial.stage_timer_ms - 1000) * 0.001, 0.0, 1.0)
+            skip_alpha = clamp(float(tutorial.stage_timer_ms - 1000) * 0.001, 0.0, 1.0)
             self._skip_button.alpha = skip_alpha
             self._skip_button.enabled = skip_alpha > 1e-3
 
         if stage == 8:
-            rect, _lines, _line_h = self._prompt_panel_rect(
-                self._tutorial_actions.prompt_text,
-                pos=_TUTORIAL_PANEL_POS,
+            rect, _lines, _line_h = tutorial_prompt_panel_rect(
+                overlay.prompt_text,
+                measure_text_width=lambda text, scale: float(self._ui_text_width(text, scale)),
+                measure_line_height=self._ui_line_height,
+                pos=TUTORIAL_PANEL_POS,
                 scale=1.0,
             )
             gap = 18.0
@@ -237,7 +285,7 @@ class TutorialMode(BaseGameplayMode):
                 mouse=mouse,
                 click=click,
             ):
-                self.close_requested = True
+                self._finish_tutorial_run(restart=False)
                 return
             if button_update(
                 self._repeat_button,
@@ -247,7 +295,7 @@ class TutorialMode(BaseGameplayMode):
                 mouse=mouse,
                 click=click,
             ):
-                self.open()
+                self._finish_tutorial_run(restart=True)
                 return
             return
 
@@ -255,7 +303,7 @@ class TutorialMode(BaseGameplayMode):
             y = float(rl.get_screen_height()) - 50.0
             w = button_width(self._small, self._skip_button.label, scale=1.0, force_wide=True)
             if button_update(self._skip_button, pos=Vec2(10.0, y), width=w, dt_ms=dt_ms, mouse=mouse, click=click):
-                self.close_requested = True
+                self._finish_tutorial_run(restart=False)
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)
@@ -269,7 +317,7 @@ class TutorialMode(BaseGameplayMode):
 
         perk_ctx = self._perk_menu_context()
         perk_pending = int(self.state.perk_selection.pending_count) > 0 and self.player.health > 0.0
-        if int(self._tutorial.stage_index) == 6 and perk_pending and not self._perk_menu.open:
+        if int(self.state.tutorial.stage_index) == 6 and perk_pending and not self._perk_menu.open:
             self._perk_menu.open_if_available(perk_ctx)
 
         perk_menu_active = self._perk_menu.active
@@ -280,96 +328,25 @@ class TutorialMode(BaseGameplayMode):
         dt_world = 0.0 if self._paused or perk_menu_active else dt
 
         input_state = self._build_input()
-        any_move_active = input_state.move.length_sq() > 0.0
-        any_fire_active = bool(input_state.fire_pressed or input_state.fire_down)
-
-        hint_alive_before = False
-        hint_ref = self._tutorial.hint_bonus_creature_ref
-        if hint_ref is not None and 0 <= int(hint_ref) < len(self.creatures.entries):
-            entry = self.creatures.entries[int(hint_ref)]
-            hint_alive_before = bool(entry.active and entry.hp > 0.0)
-
         if dt_world > 0.0:
             session = self._sim_session
             if session is not None:
+                session.detail_preset = int(self._deterministic_detail_preset())
+                session.gore_disabled = int(self._deterministic_gore_disabled())
                 self._frame_input_state = input_state
                 try:
                     self._run_deterministic_session_ticks(
                         dt_frame=float(dt_world),
                         session=session,
-                        recorder=None,
+                        recorder=self._replay_recorder,
                         on_tick=lambda _tick, _tick_index: False,
+                        on_checkpoint=lambda tick_index, tick: self._record_replay_checkpoint_from_tick(
+                            tick_index=int(tick_index),
+                            tick=tick,
+                        ),
                     )
                 finally:
                     self._frame_input_state = None
-
-        hint_alive_after = hint_alive_before
-        if hint_ref is not None and 0 <= int(hint_ref) < len(self.creatures.entries):
-            entry = self.creatures.entries[int(hint_ref)]
-            hint_alive_after = bool(entry.active and entry.hp > 0.0)
-        hint_bonus_died = hint_alive_before and (not hint_alive_after)
-
-        creatures_none_active = not bool(self.creatures.iter_active())
-        bonus_pool_empty = not bool(self.state.bonus_pool.iter_active())
-        perk_pending_count = int(self.state.perk_selection.pending_count)
-        self._tutorial.preserve_bugs = bool(self.state.preserve_bugs)
-
-        self._tutorial, actions = tick_tutorial_timeline(
-            self._tutorial,
-            frame_dt_ms=dt_world * 1000.0,
-            any_move_active=any_move_active,
-            any_fire_active=any_fire_active,
-            creatures_none_active=creatures_none_active,
-            bonus_pool_empty=bonus_pool_empty,
-            perk_pending_count=perk_pending_count,
-            hint_bonus_died=hint_bonus_died,
-        )
-        self._tutorial_actions = actions
-
-        self.player.health = float(actions.force_player_health)
-        if actions.force_player_experience is not None:
-            self.player.experience = int(actions.force_player_experience)
-            survival_check_level_up(self.player, self.state.perk_selection)
-
-        detail_preset = self.config.detail_preset
-
-        for call in actions.spawn_bonuses:
-            spawned = self.state.bonus_pool.spawn_at(
-                pos=call.pos,
-                bonus_id=call.bonus_id,
-                duration_override=int(call.amount),
-                state=self.state,
-                world_width=float(self.world_size),
-                world_height=float(self.world_size),
-            )
-            if spawned is not None:
-                self.state.effects.spawn_burst(
-                    pos=spawned.pos,
-                    count=12,
-                    rand=self.state.rng.rand,
-                    detail_preset=detail_preset,
-                )
-
-        for call in actions.spawn_templates:
-            mapping, primary = self.creatures.spawn_template(
-                call.template_id,
-                call.pos,
-                float(call.heading),
-                self.state.rng,
-                rand=self.state.rng.rand,
-            )
-            if (
-                call.template_id == SpawnId.ALIEN_CONST_WEAPON_BONUS_27
-                and primary is not None
-                and actions.stage5_bonus_carrier_drop is not None
-            ):
-                drop_id, drop_amount = actions.stage5_bonus_carrier_drop
-                self._tutorial.hint_bonus_creature_ref = int(primary)
-                if 0 <= int(primary) < len(self.creatures.entries):
-                    creature = self.creatures.entries[int(primary)]
-                    creature.flags |= CreatureFlags.BONUS_ON_DEATH
-                    creature.bonus_id = drop_id
-                    creature.bonus_duration_override = int(drop_amount)
 
         mouse = self._ui_mouse_pos()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -403,7 +380,7 @@ class TutorialMode(BaseGameplayMode):
                 player=self.player,
                 players=self.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
-                elapsed_ms=float(self._tutorial.stage_timer_ms),
+                elapsed_ms=float(self._session_elapsed_ms() if self._sim_session is not None else 0.0),
                 score=int(self.player.experience),
                 frame_dt_ms=self._last_dt_ms,
             )
@@ -415,28 +392,24 @@ class TutorialMode(BaseGameplayMode):
             self._draw_menu_cursor()
 
     def _draw_tutorial_prompts(self, *, hud_bottom: float) -> None:
-        actions = self._tutorial_actions
-        if actions.prompt_text and actions.prompt_alpha > 1e-3:
-            self._draw_prompt_panel(
-                actions.prompt_text,
-                alpha=float(actions.prompt_alpha),
-                pos=_TUTORIAL_PANEL_POS,
-            )
-        if actions.hint_text and actions.hint_alpha > 1e-3:
-            self._draw_prompt_panel(
-                actions.hint_text,
-                alpha=float(actions.hint_alpha),
-                pos=_TUTORIAL_PANEL_POS.offset(dy=84.0),
-            )
+        overlay = self.state.tutorial_overlay
+        draw_tutorial_overlay_panels(
+            overlay,
+            draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
+            measure_text_width=lambda text, scale: float(self._ui_text_width(text, scale)),
+            measure_line_height=self._ui_line_height,
+        )
 
         if self._ui_assets is None:
             return
 
-        stage = int(self._tutorial.stage_index)
+        stage = int(self.state.tutorial.stage_index)
         if stage == 8:
-            rect, _lines, _line_h = self._prompt_panel_rect(
-                actions.prompt_text,
-                pos=_TUTORIAL_PANEL_POS,
+            rect, _lines, _line_h = tutorial_prompt_panel_rect(
+                overlay.prompt_text,
+                measure_text_width=lambda text, scale: float(self._ui_text_width(text, scale)),
+                measure_line_height=self._ui_line_height,
+                pos=TUTORIAL_PANEL_POS,
                 scale=1.0,
             )
             gap = 18.0
@@ -470,22 +443,6 @@ class TutorialMode(BaseGameplayMode):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
-
-    def _draw_prompt_panel(self, text: str, *, alpha: float, pos: Vec2) -> None:
-        alpha = clamp(float(alpha), 0.0, 1.0)
-        rect, lines, line_h = self._prompt_panel_rect(text, pos=pos, scale=1.0)
-        fill = rl.Color(0, 0, 0, int(255 * alpha * 0.8))
-        border = rl.Color(255, 255, 255, int(255 * alpha))
-        rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height), fill)
-        rl.draw_rectangle_lines(int(rect.x), int(rect.y), int(rect.width), int(rect.height), border)
-
-        text_alpha = int(255 * clamp(alpha * 0.9, 0.0, 1.0))
-        color = rl.Color(255, 255, 255, text_alpha)
-        x = rect.x + _TUTORIAL_PANEL_PADDING.x
-        line_y = rect.y + _TUTORIAL_PANEL_PADDING.y
-        for line in lines:
-            self._draw_ui_text(line, Vec2(x, line_y), color, scale=1.0)
-            line_y += line_h
 
     def _draw_menu_cursor(self) -> None:
         assets = self._ui_assets
