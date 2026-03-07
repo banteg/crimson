@@ -381,9 +381,6 @@ class SurvivalMode(BaseGameplayMode):
             label = PerkPromptUi.label(self.config, pending_count=int(self.state.perk_selection.pending_count))
             if label:
                 rect = PerkPromptUi.rect(
-                    label,
-                    ui_text_width=self._ui_text_width,
-                    ui_line_height=self._ui_line_height,
                     resources=self.render_resources.resources,
                     scale=UI_TEXT_SCALE,
                 )
@@ -523,9 +520,6 @@ class SurvivalMode(BaseGameplayMode):
             label = PerkPromptUi.label(self.config, pending_count=int(self.state.perk_selection.pending_count))
             if label:
                 rect = PerkPromptUi.rect(
-                    label,
-                    ui_text_width=self._ui_text_width,
-                    ui_line_height=self._ui_line_height,
                     resources=self.render_resources.resources,
                     scale=UI_TEXT_SCALE,
                 )

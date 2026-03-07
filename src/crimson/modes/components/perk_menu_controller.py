@@ -54,7 +54,7 @@ class PerkMenuContext(msgspec.Struct, frozen=True):
     gore_disabled: int
 
     font: SmallFontData | None
-    resources: RuntimeResources | None
+    resources: RuntimeResources
     mouse: rl.Vector2
     fx_detail: bool = False
     play_sfx: PlaySfxFn | None = None
@@ -186,8 +186,6 @@ class PerkMenuController:
     def open_if_available(self, ctx: PerkMenuContext) -> bool:
         if self._open:
             return True
-        if ctx.resources is None:
-            return False
         choices = perk_selection_current_choices(
             ctx.state,
             ctx.players,
@@ -211,10 +209,6 @@ class PerkMenuController:
             self._timeline_ms = clamp(self._timeline_ms - float(dt_ui_ms), 0.0, PERK_MENU_TRANSITION_MS)
 
     def handle_input(self, ctx: PerkMenuContext, *, dt: float, dt_ui_ms: float) -> None:
-        if ctx.resources is None:
-            self.close()
-            return
-
         choices = perk_selection_current_choices(
             ctx.state,
             ctx.players,
@@ -332,8 +326,6 @@ class PerkMenuController:
     def draw(self, ctx: PerkMenuContext) -> None:
         menu_t = clamp(self._timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
         if menu_t <= 1e-3:
-            return
-        if ctx.resources is None:
             return
 
         choices = perk_selection_current_choices(
