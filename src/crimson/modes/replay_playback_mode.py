@@ -292,7 +292,6 @@ class ReplayPlaybackMode:
         self._hud_state = HudState()
         self._grim_mono = None
         self._quest_title = ""
-        self._quest_level = None
 
         replay = load_replay_file(self._replay_path)
         self._replay = replay

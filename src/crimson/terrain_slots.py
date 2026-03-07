@@ -33,15 +33,13 @@ _TEXTURE_ID_BY_TERRAIN_SLOT: dict[int, TextureId] = {
 }
 
 def terrain_slots_for_quest(level: QuestLevel) -> TerrainSlotTriplet:
-    tier = int(level.major)
-    quest = int(level.minor)
-    if tier <= 4:
-        base = (tier - 1) * 2
+    if level.major <= 4:
+        base = (level.major - 1) * 2
         alt = base + 1
-        if quest < 6:
+        if level.minor < 6:
             return base, alt, base
         return base, base, alt
-    return quest & 3, 1, 3
+    return level.minor & 3, 1, 3
 
 
 def choose_unlock_terrain_slots(

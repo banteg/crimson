@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.quests.level import QuestLevel
-from crimson.quests.status import quest_completed_counter_index
+from crimson.quests.status import tracked_quest_completed_counter_index
 from grim.audio import play_sfx, update_audio
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -104,7 +104,7 @@ class QuestResultsView:
         record.set_name(player_name_default)
 
         global_index = int(level.global_index)
-        completed_idx = quest_completed_counter_index(level)
+        completed_idx = tracked_quest_completed_counter_index(level)
         if completed_idx is not None:
             try:
                 self.state.status.increment_quest_play_count(completed_idx)
