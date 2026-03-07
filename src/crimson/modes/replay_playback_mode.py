@@ -706,20 +706,12 @@ class ReplayPlaybackMode:
 
     def draw(self) -> None:
         runtime = self._runtime
-        sim_world = runtime.sim_world if runtime is not None else None
-        if sim_world is not None:
-            self._draw_world(draw_aim_indicators=True)
-        else:
-            rl.clear_background(rl.BLACK)
-
+        assert runtime is not None, "World runtime must be open before replay draw"
         replay = self._replay
-        if (
-            runtime is not None
-            and
-            sim_world is not None
-            and replay is not None
-            and sim_world.players
-        ):
+        assert replay is not None, "Replay must be loaded before replay draw"
+        sim_world = runtime.sim_world
+        self._draw_world(draw_aim_indicators=True)
+        if sim_world.players:
             mode_id = replay.header.game_mode_id
             hud_flags = hud_flags_for_game_mode(mode_id)
             quest_progress_ratio: float | None = None
