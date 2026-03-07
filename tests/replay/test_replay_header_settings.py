@@ -52,6 +52,19 @@ def test_replay_header_from_session_settings_rejects_unknown_mode() -> None:
         replay_header_from_session_settings(settings, seed=1)
 
 
+def test_replay_header_from_session_settings_rejects_missing_quest_level() -> None:
+    settings = session_settings_for_lockstep(
+        mode_id=int(GameMode.QUESTS),
+        player_count=1,
+        quest_level="",
+        preserve_bugs=False,
+        tick_rate=60,
+        input_delay_ticks=0,
+    )
+    with pytest.raises(ValueError, match="quest replays require quest_level"):
+        replay_header_from_session_settings(settings, seed=1)
+
+
 def test_session_settings_from_replay_header_uses_lockstep_defaults() -> None:
     header = ReplayHeader(
         game_mode_id=GameMode.QUESTS,

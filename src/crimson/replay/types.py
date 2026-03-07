@@ -256,7 +256,7 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     seed: int
     replay_format_version: int = REPLAY_FORMAT_VERSION
     # Quests can recover their spawn script deterministically from the level id.
-    # Leave empty for non-quest modes or legacy replays.
+    # Leave empty for non-quest modes.
     quest_level: str = ""
     game_version: str = msgspec.field(default_factory=_default_game_version)
     tick_rate: int = 60

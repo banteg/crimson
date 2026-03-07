@@ -37,6 +37,8 @@ def replay_header_from_session_settings(
         game_mode_id = GameMode(mode_raw)
     except ValueError as exc:
         raise ValueError(f"unsupported replay game_mode_id={mode_raw}") from exc
+    if game_mode_id == GameMode.QUESTS and not str(settings.quest_level).strip():
+        raise ValueError("quest replays require quest_level")
 
     return ReplayHeader(
         game_mode_id=game_mode_id,

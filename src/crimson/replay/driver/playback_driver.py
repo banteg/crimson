@@ -62,11 +62,11 @@ class ReplayTerrainSetup:
     terrain_seed: int
 
 
-def resolve_quest_level_from_replay(replay: Replay) -> str:
+def require_quest_level_from_replay(replay: Replay) -> str:
     quest_level = QuestLevel.try_parse(str(replay.header.quest_level))
-    if quest_level is not None:
-        return quest_level.to_string()
-    return ""
+    if quest_level is None:
+        raise ReplayRunnerError("quest replays require a valid header.quest_level")
+    return quest_level.to_string()
 
 
 def resolve_replay_quest_definition(
@@ -74,8 +74,8 @@ def resolve_replay_quest_definition(
     *,
     quest_level: QuestLevel | None = None,
 ) -> QuestDefinition:
-    level_text = quest_level.to_string() if quest_level is not None else resolve_quest_level_from_replay(replay)
-    quest = quest_by_level(level_text) if level_text else None
+    level_text = quest_level.to_string() if quest_level is not None else require_quest_level_from_replay(replay)
+    quest = quest_by_level(level_text)
     if quest is None:
         raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={level_text!r}")
     return quest

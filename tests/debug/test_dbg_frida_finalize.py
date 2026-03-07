@@ -823,7 +823,14 @@ def test_finalize_frida_jsonl_to_traces_rejects_session_start_fingerprint_sessio
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_invalid_run_start_seed_source(tmp_path: Path) -> None:
-    run_start = _run_start_row(run_id=1, mode_id=3, seed=101, player_count=1)
+    run_start = _run_start_row(
+        run_id=1,
+        mode_id=3,
+        seed=101,
+        player_count=1,
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
     run_start["seed_source"] = "thread_rng_sample"
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
@@ -842,8 +849,17 @@ def test_finalize_frida_jsonl_to_traces_rejects_tick_mode_mismatch(tmp_path: Pat
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=3, seed=102, player_count=1),
-            _tick_row(run_id=1, tick_index=0, elapsed_ms=16, dt_ms_i32=16, dt=0.016, mode_id=2),
+            _run_start_row(run_id=1, mode_id=3, seed=102, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            _tick_row(
+                run_id=1,
+                tick_index=0,
+                elapsed_ms=16,
+                dt_ms_i32=16,
+                dt=0.016,
+                mode_id=2,
+                quest_stage_major=1,
+                quest_stage_minor=1,
+            ),
         ],
     )
 
@@ -856,9 +872,18 @@ def test_finalize_frida_jsonl_to_traces_rejects_run_end_tick_count_mismatch(tmp_
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=3, seed=103, player_count=1),
-            _tick_row(run_id=1, tick_index=0, elapsed_ms=16, dt_ms_i32=16, dt=0.016, mode_id=3),
-            _run_end_row(run_id=1, mode_id=3, ticks_written=0),
+            _run_start_row(run_id=1, mode_id=3, seed=103, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            _tick_row(
+                run_id=1,
+                tick_index=0,
+                elapsed_ms=16,
+                dt_ms_i32=16,
+                dt=0.016,
+                mode_id=3,
+                quest_stage_major=1,
+                quest_stage_minor=1,
+            ),
+            _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=1, ticks_written=0),
         ],
     )
 
@@ -902,9 +927,18 @@ def test_finalize_frida_jsonl_to_traces_rejects_session_end_tick_count_mismatch(
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=3, seed=104, player_count=1),
-            _tick_row(run_id=1, tick_index=0, elapsed_ms=16, dt_ms_i32=16, dt=0.016, mode_id=3),
-            _run_end_row(run_id=1, mode_id=3, ticks_written=1),
+            _run_start_row(run_id=1, mode_id=3, seed=104, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            _tick_row(
+                run_id=1,
+                tick_index=0,
+                elapsed_ms=16,
+                dt_ms_i32=16,
+                dt=0.016,
+                mode_id=3,
+                quest_stage_major=1,
+                quest_stage_minor=1,
+            ),
+            _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=1, ticks_written=1),
             _session_end_row(ticks_written=0),
         ],
     )
