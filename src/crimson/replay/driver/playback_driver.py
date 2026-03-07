@@ -63,10 +63,10 @@ class ReplayTerrainSetup:
 
 
 def require_quest_level_from_replay(replay: Replay) -> QuestLevel:
-    quest_level = replay.header.quest_level_value
-    if quest_level is None:
+    quest_level_pair = replay.header.quest_level
+    if quest_level_pair is None:
         raise ReplayRunnerError("quest replays require a valid header.quest_level")
-    return quest_level
+    return QuestLevel(int(quest_level_pair[0]), int(quest_level_pair[1]))
 
 
 def resolve_replay_quest_definition(

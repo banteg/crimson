@@ -13,7 +13,6 @@ from ..aim_schemes import AimScheme, aim_scheme_from_value
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..movement_controls import MovementControlType, movement_control_type_from_value
-from ..quests.level import QuestLevel
 from ..sim.input_providers import GameCommand
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
@@ -272,18 +271,6 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     status: ReplayStatusSnapshot = msgspec.field(default_factory=ReplayStatusSnapshot)
     claimed_stats: ReplayClaimedStatsSnapshot = msgspec.field(default_factory=ReplayClaimedStatsSnapshot)
     input_quantization: InputQuantization = "f32"
-
-    @property
-    def quest_level_value(self) -> QuestLevel | None:
-        if self.quest_level is None:
-            return None
-        major, minor = self.quest_level
-        return QuestLevel.from_parts_or_none(int(major), int(minor))
-
-    @property
-    def quest_level_text(self) -> str:
-        level = self.quest_level_value
-        return level.to_string() if level is not None else ""
 
 
 class ReplayTick(msgspec.Struct, frozen=True):

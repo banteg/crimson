@@ -12,10 +12,13 @@ def session_settings_from_replay_header(
     *,
     input_delay_ticks: int = LOCKSTEP_INPUT_DELAY_TICKS,
 ) -> LockstepSessionSettings:
+    quest_level = ""
+    if header.quest_level is not None:
+        quest_level = f"{int(header.quest_level[0])}.{int(header.quest_level[1])}"
     return session_settings_for_lockstep(
         mode_id=int(header.game_mode_id),
         player_count=int(header.player_count),
-        quest_level=header.quest_level_text,
+        quest_level=quest_level,
         preserve_bugs=bool(header.preserve_bugs),
         tick_rate=int(header.tick_rate),
         input_delay_ticks=int(input_delay_ticks),
