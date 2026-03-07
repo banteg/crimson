@@ -85,12 +85,6 @@ class RushMode(BaseGameplayMode):
         self._spawn_state = spawn_state
         return session
 
-    @property
-    def ui_assets(self) -> PerkMenuAssets:
-        assets = self._ui_assets
-        assert assets is not None, "perk menu assets must be loaded before use"
-        return assets
-
     def open(self) -> None:
         super().open()
         self._ui_assets = load_perk_menu_assets(self._assets_root)
@@ -325,11 +319,13 @@ class RushMode(BaseGameplayMode):
         )
 
     def _draw_game_cursor(self) -> None:
+        assets = self._ui_assets
+        assert assets is not None, "perk menu assets must be loaded before use"
         resources = self.render_resources.resources
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
             resources.texture(TextureId.PARTICLES),
-            self.ui_assets.cursor,
+            assets.cursor,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )

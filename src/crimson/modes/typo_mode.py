@@ -56,12 +56,6 @@ class TypoShooterMode(BaseGameplayMode):
         self._ui_assets: PerkMenuAssets | None = None
         self._sim_session: DeterministicSession | None = self._new_sim_session()
 
-    @property
-    def ui_assets(self) -> PerkMenuAssets:
-        assets = self._ui_assets
-        assert assets is not None, "perk menu assets must be loaded before use"
-        return assets
-
     def _new_sim_session(self) -> DeterministicSession:
         return build_typo_session(
             world=self.sim_world.world_state,
@@ -265,11 +259,13 @@ class TypoShooterMode(BaseGameplayMode):
         # trooper death animation can play before the UI slides in.
 
     def _draw_game_cursor(self) -> None:
+        assets = self._ui_assets
+        assert assets is not None, "perk menu assets must be loaded before use"
         resources = self.render_resources.resources
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
             resources.texture(TextureId.PARTICLES),
-            self.ui_assets.cursor,
+            assets.cursor,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )

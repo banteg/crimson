@@ -132,12 +132,6 @@ class QuestMode(BaseGameplayMode):
         self._sim_session: DeterministicSession | None = None
         self._replay_recorder: ReplayRecorder | None = None
 
-    @property
-    def perk_menu_assets(self) -> PerkMenuAssets:
-        assets = self._perk_menu_assets
-        assert assets is not None, "perk menu assets must be loaded before use"
-        return assets
-
     def open(self) -> None:
         super().open()
         self._quest_def = None
@@ -365,7 +359,7 @@ class QuestMode(BaseGameplayMode):
             gore_disabled=gore_disabled,
             fx_detail=fx_detail,
             font=self._small,
-            assets=self.perk_menu_assets,
+            assets=self._perk_menu_assets,
             mouse=self._ui_mouse_pos(),
             play_sfx=self.audio_bridge.router.play_sfx,
         )
@@ -586,7 +580,7 @@ class QuestMode(BaseGameplayMode):
             return
         PerkPromptUi.draw(
             font=self._small,
-            assets=self.perk_menu_assets,
+            assets=self._perk_menu_assets,
             label=label,
             timer_ms=float(self._perk_prompt_timer_ms),
             pulse=float(self._perk_prompt_pulse),
@@ -622,7 +616,7 @@ class QuestMode(BaseGameplayMode):
                     label,
                     ui_text_width=self._ui_text_width,
                     ui_line_height=self._ui_line_height,
-                    assets=self.perk_menu_assets,
+                    assets=self._perk_menu_assets,
                     scale=UI_TEXT_SCALE,
                 )
                 self._perk_prompt_hover = rect.contains(self._ui_mouse_pos())
@@ -786,11 +780,13 @@ class QuestMode(BaseGameplayMode):
         self._draw_lan_wait_overlay()
 
     def _draw_game_cursor(self) -> None:
+        assets = self._perk_menu_assets
+        assert assets is not None, "perk menu assets must be loaded before use"
         resources = self.render_resources.resources
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
             resources.texture(TextureId.PARTICLES),
-            self.perk_menu_assets.cursor,
+            assets.cursor,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )
