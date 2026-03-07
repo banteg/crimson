@@ -15,10 +15,6 @@ def ftol_ms_i32(dt_seconds: float) -> int:
     return int(math.trunc(float(scaled_ms_f32)))
 
 
-def zero_gate_active_from_state(*, demo_mode_active: bool) -> bool:
-    return bool(demo_mode_active)
-
-
 class FrameTiming(msgspec.Struct, frozen=True):
     dt: float
     time_scale_active_entry: bool
