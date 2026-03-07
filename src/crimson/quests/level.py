@@ -32,10 +32,9 @@ class QuestLevel(msgspec.Struct, frozen=True):
 
     @classmethod
     def from_global_index(cls, index: int) -> QuestLevel:
-        idx = int(index)
-        if not (0 <= idx < QUEST_COUNT):
-            raise ValueError(f"quest global index out of range: {idx} (expected 0..{QUEST_COUNT - 1})")
-        major, row_index = divmod(idx, QUESTS_PER_STAGE)
+        if not (0 <= index < QUEST_COUNT):
+            raise ValueError(f"quest global index out of range: {index} (expected 0..{QUEST_COUNT - 1})")
+        major, row_index = divmod(index, QUESTS_PER_STAGE)
         return cls(major=major + 1, minor=row_index + 1)
 
     @property
