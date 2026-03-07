@@ -159,6 +159,8 @@ class DemoView:
         self._demo_mode_start()
 
     def close(self) -> None:
+        self._finished = True
+        self._purchase_active = False
         self._runtime.reset_tick_runner()
         self._close_world_runtime()
         self._upsell_font = None
@@ -205,6 +207,8 @@ class DemoView:
             self._demo_mode_start()
 
     def draw(self) -> None:
+        if self._finished:
+            return
         if self._purchase_active:
             self._draw_purchase_screen()
             return
