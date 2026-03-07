@@ -17,9 +17,8 @@ class QuestLevel:
     major: int
     minor: int
 
-    def __post_init__(self) -> None:
-        major = self.major
-        minor = self.minor
+    @staticmethod
+    def _validate_parts(major: int, minor: int) -> None:
         if isinstance(major, bool) or not isinstance(major, int):
             raise TypeError(f"quest stage must be int, got {type(major).__name__}")
         if isinstance(minor, bool) or not isinstance(minor, int):
@@ -31,6 +30,7 @@ class QuestLevel:
 
     @classmethod
     def from_parts(cls, major: int, minor: int) -> QuestLevel:
+        cls._validate_parts(major, minor)
         return cls(major, minor)
 
     @classmethod
@@ -38,7 +38,7 @@ class QuestLevel:
         if major == 0 and minor == 0:
             return None
         try:
-            return cls(major, minor)
+            return cls.from_parts(major, minor)
         except (TypeError, ValueError):
             return None
 
@@ -53,7 +53,7 @@ class QuestLevel:
             minor = int(minor_text)
         except ValueError as exc:
             raise ValueError(f"invalid quest level: {value!r}") from exc
-        return cls(major=major, minor=minor)
+        return cls.from_parts(major=major, minor=minor)
 
     @classmethod
     def try_parse(cls, value: str | None) -> QuestLevel | None:
@@ -71,11 +71,11 @@ class QuestLevel:
         if not (0 <= idx < QUEST_COUNT):
             raise ValueError(f"quest global index out of range: {idx} (expected 0..{QUEST_COUNT - 1})")
         major, row_index = divmod(idx, QUESTS_PER_STAGE)
-        return cls(major=major + 1, minor=row_index + 1)
+        return cls.from_parts(major=major + 1, minor=row_index + 1)
 
     @classmethod
     def from_stage_row(cls, stage: int, row_index: int) -> QuestLevel:
-        return cls(major=int(stage), minor=int(row_index) + 1)
+        return cls.from_parts(major=int(stage), minor=int(row_index) + 1)
 
     def to_string(self) -> str:
         return f"{self.major}.{self.minor}"
