@@ -4,6 +4,7 @@ from pathlib import Path
 
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
+from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.sim.input import PlayerInput
@@ -17,7 +18,7 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> tuple[Deterministi
     repo_root = Path(__file__).resolve().parents[1]
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     world.reset(seed=int(seed), player_count=1)
-    quest = quest_by_level(level)
+    quest = quest_by_level(QuestLevel.parse(level))
     assert quest is not None
     entries = tuple(
         build_quest_spawn_table(

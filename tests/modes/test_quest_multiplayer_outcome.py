@@ -4,6 +4,7 @@ from pathlib import Path
 
 from crimson.modes.quest_mode import QuestMode
 from crimson.quests import quest_by_level
+from crimson.quests.level import QuestLevel
 from crimson.weapons import WEAPON_BY_ID
 from grim.config import ensure_crimson_cfg
 from grim.rand import Crand
@@ -44,7 +45,7 @@ def test_prepare_new_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) 
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     mode.prepare_new_run("1.1", status=None)
 
-    quest = quest_by_level("1.1")
+    quest = quest_by_level(QuestLevel(1, 1))
     assert quest is not None
     weapon = WEAPON_BY_ID[quest.start_weapon_id]
     reload_sfx = weapon.reload_sound

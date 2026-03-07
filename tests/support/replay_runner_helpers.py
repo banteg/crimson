@@ -69,7 +69,7 @@ def _blank_quest_replay(
 
 
 def _quest_spawn_entries(level: str = "1.1", *, player_count: int = 1, seed: int = 101):
-    quest = quest_by_level(level)
+    quest = quest_by_level(QuestLevel.parse(level))
     assert quest is not None
     ctx = QuestContext(width=1024, height=1024, player_count=int(player_count))
     return build_quest_spawn_table(

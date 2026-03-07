@@ -34,7 +34,7 @@ def build_replay(
     player_count: int = 1,
     quest_level: str = "",
 ) -> Replay:
-    parsed_level = QuestLevel.try_parse(quest_level)
+    parsed_level = QuestLevel.parse(quest_level) if str(quest_level).strip() else None
     header = ReplayHeader(
         game_mode_id=mode,
         seed=int(seed),

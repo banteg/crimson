@@ -31,16 +31,6 @@ class QuestLevel(msgspec.Struct, frozen=True):
             raise ValueError(f"invalid quest level: {value!r}") from exc
 
     @classmethod
-    def try_parse(cls, value: str | None) -> QuestLevel | None:
-        text = str(value or "").strip()
-        if not text:
-            return None
-        try:
-            return cls.parse(text)
-        except ValueError:
-            return None
-
-    @classmethod
     def from_global_index(cls, index: int) -> QuestLevel:
         idx = int(index)
         if not (0 <= idx < QUEST_COUNT):

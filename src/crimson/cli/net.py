@@ -10,6 +10,18 @@ from ..paths import default_runtime_dir
 from .session import _parse_netcode_mode, _parse_session_mode, _run_game_with_pending_session
 
 net_app = typer.Typer(add_completion=False)
+
+
+def _parse_optional_quest_level(value: str | None, *, param_hint: str) -> QuestLevel | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        return QuestLevel.parse(text)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc), param_hint=param_hint) from exc
+
+
 @net_app.command("host")
 def cmd_net_host(
     mode: str = typer.Option(..., "--mode", help="survival|rush|quests"),
@@ -62,9 +74,7 @@ def cmd_net_host(
         raw_quest_level = str(quest_level).strip()
         if not raw_quest_level:
             raise typer.BadParameter("quest level is required for quests mode", param_hint="--quest-level")
-        normalized_quest_level = QuestLevel.try_parse(raw_quest_level)
-        if normalized_quest_level is None:
-            raise typer.BadParameter(f"invalid quest level: {raw_quest_level!r}", param_hint="--quest-level")
+        normalized_quest_level = _parse_optional_quest_level(raw_quest_level, param_hint="--quest-level")
 
     if resolved_netcode == "lockstep":
         if str(room_code).strip():
@@ -176,7 +186,7 @@ def cmd_net_join(
     resolved_netcode = _parse_netcode_mode(netcode)
     normalized_host = str(host).strip()
     room_code = str(code).strip().upper()
-    normalized_quest_level = QuestLevel.try_parse(quest_level)
+    normalized_quest_level = _parse_optional_quest_level(quest_level, param_hint="--quest-level")
 
     if resolved_netcode == "lockstep":
         if not normalized_host:

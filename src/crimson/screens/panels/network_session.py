@@ -65,7 +65,7 @@ class NetworkSessionPanelView(PanelMenuView):
         value = self._quest_level.strip()
         if not value:
             return None
-        return QuestLevel.try_parse(value)
+        return QuestLevel.parse(value)
 
     def open(self) -> None:
         super().open()
@@ -285,7 +285,11 @@ class NetworkSessionPanelView(PanelMenuView):
         self._error = ""
         mode = self._current_mode()
         port = self._parse_port()
-        quest_level = self._parsed_quest_level()
+        try:
+            quest_level = self._parsed_quest_level()
+        except ValueError:
+            self._error = "Quest level must use the format major.minor."
+            return
 
         if mode == "quests" and quest_level is None:
             self._error = "Quest level is required for quest network sessions."

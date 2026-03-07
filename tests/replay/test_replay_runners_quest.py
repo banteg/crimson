@@ -71,7 +71,7 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
         rec.finish(),
         header=msgspec.structs.replace(rec.header, quest_level=QuestLevel(1, 3)),
     )
-    quest = quest_by_level("1.3")
+    quest = quest_by_level(QuestLevel(1, 3))
     assert quest is not None
 
     ctx = QuestContext(
@@ -127,7 +127,7 @@ def test_quest_runner_replays_start_weapon_reload_sfx_at_tick_zero() -> None:
     tick0 = checkpoints[0]
     assert int(tick0.events.sfx_count) == 1
 
-    quest = quest_by_level("1.1")
+    quest = quest_by_level(QuestLevel(1, 1))
     assert quest is not None
     weapon = WEAPON_BY_ID[quest.start_weapon_id]
     expected_reload_sfx = weapon.reload_sound

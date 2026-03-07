@@ -54,8 +54,7 @@ def register_quest(
 
 def all_quests() -> list[QuestDefinition]:
     return sorted(_QUESTS.values(), key=lambda quest: quest.level.global_index)
-def quest_by_level(level: QuestLevel | str) -> QuestDefinition | None:
-    resolved = level if isinstance(level, QuestLevel) else QuestLevel.try_parse(level)
-    if resolved is None:
-        return None
-    return _QUESTS.get(resolved)
+
+
+def quest_by_level(level: QuestLevel) -> QuestDefinition | None:
+    return _QUESTS.get(level)

@@ -74,10 +74,9 @@ def resolve_replay_quest_definition(
     quest_level: QuestLevel | None = None,
 ) -> QuestDefinition:
     level = quest_level if quest_level is not None else require_quest_level_from_replay(replay)
-    level_text = level.text
-    quest = quest_by_level(level_text)
+    quest = quest_by_level(level)
     if quest is None:
-        raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={level_text!r}")
+        raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={level.text!r}")
     return quest
 
 @contextmanager
