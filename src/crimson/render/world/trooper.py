@@ -42,9 +42,10 @@ def draw_lan_player_ring(
     scale: float,
     alpha: float,
 ) -> None:
-    if not bool(render_ctx.lan_player_rings_enabled):
+    frame = render_ctx.frame
+    if not bool(frame.lan_player_rings_enabled):
         return
-    if len(render_ctx.players) <= 1:
+    if len(frame.players) <= 1:
         return
     if float(player.health) <= 0.0:
         return
@@ -81,7 +82,8 @@ def draw_player_trooper_sprite(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    resources = render_ctx.resources
+    render_frame = render_ctx.frame
+    resources = render_frame.resources
     particles_texture = resources.texture(TextureId.PARTICLES)
     muzzle_flash_texture = resources.texture(TextureId.MUZZLE_FLASH)
     sprite_grid = 8
@@ -107,9 +109,9 @@ def draw_player_trooper_sprite(
         if atlas is not None:
             aura_grid = SIZE_CODE_GRID.get(int(atlas.size_code))
             if aura_grid:
-                frame = int(atlas.frame)
-                col = frame % aura_grid
-                row = frame // aura_grid
+                atlas_frame = int(atlas.frame)
+                col = atlas_frame % aura_grid
+                row = atlas_frame // aura_grid
                 cell_w = float(particles_texture.width) / float(aura_grid)
                 cell_h = float(particles_texture.height) / float(aura_grid)
                 src = rl.Rectangle(
@@ -118,7 +120,7 @@ def draw_player_trooper_sprite(
                     max(0.0, cell_w - 2.0),
                     max(0.0, cell_h - 2.0),
                 )
-                t = float(render_ctx.elapsed_ms) * 0.001
+                t = float(render_frame.elapsed_ms) * 0.001
                 aura_alpha = ((math.sin(t) + 1.0) * 0.1875 + 0.25) * alpha
                 if aura_alpha > 1e-3:
                     size = 100.0 * scale
@@ -132,7 +134,7 @@ def draw_player_trooper_sprite(
     tint = rl.Color(240, 240, 255, int(255 * alpha + 0.5))
     shadow_tint = rl.Color(0, 0, 0, int(90 * alpha + 0.5))
     overlay_tint = tint
-    if len(render_ctx.players) > 1:
+    if len(render_frame.players) > 1:
         index = int(player.index)
         if index == 0:
             overlay_tint = rl.Color(77, 77, 255, tint.a)
@@ -198,9 +200,9 @@ def draw_player_trooper_sprite(
             if atlas is not None:
                 shield_grid = SIZE_CODE_GRID.get(int(atlas.size_code))
                 if shield_grid:
-                    frame = int(atlas.frame)
-                    col = frame % shield_grid
-                    row = frame // shield_grid
+                    atlas_frame = int(atlas.frame)
+                    col = atlas_frame % shield_grid
+                    row = atlas_frame // shield_grid
                     cell_w = float(particles_texture.width) / float(shield_grid)
                     cell_h = float(particles_texture.height) / float(shield_grid)
                     src = rl.Rectangle(
@@ -209,7 +211,7 @@ def draw_player_trooper_sprite(
                         max(0.0, cell_w - 2.0),
                         max(0.0, cell_h - 2.0),
                     )
-                    t = float(render_ctx.elapsed_ms) * 0.001
+                    t = float(render_frame.elapsed_ms) * 0.001
                     timer = float(player.shield_timer)
                     strength = (math.sin(t) + 1.0) * 0.25 + timer
                     if timer < 1.0:

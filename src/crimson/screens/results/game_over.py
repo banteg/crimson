@@ -6,7 +6,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.assets import TextureId, runtime_resources_for
+from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -24,7 +24,6 @@ from ...persistence.highscores import (
 )
 from ...ui.cursor import draw_menu_cursor
 from ...ui.formatting import format_ordinal, format_time_mm_ss
-from ...ui.hud import HudAssets
 from ...ui.layout import menu_widescreen_y_shift, ui_scale
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
@@ -437,7 +436,7 @@ class GameOverUi(msgspec.Struct):
         *,
         pos: Vec2,
         record: HighScoreRecord,
-        hud_assets: HudAssets | None,
+        hud_resources: RuntimeResources,
         alpha: float,
         show_weapon_row: bool,
         scale: float,
@@ -521,32 +520,32 @@ class GameOverUi(msgspec.Struct):
                 self._hover_time = float(max(0.0, min(1.0, self._hover_time + (dt_hover if hovering_time else -dt_hover))))
 
                 elapsed_ms = int(record.survival_elapsed_ms)
-                if hud_assets is not None and hud_assets.clock_table is not None:
-                    src = rl.Rectangle(0.0, 0.0, float(hud_assets.clock_table.width), float(hud_assets.clock_table.height))
-                    clock_table_pos = col2_pos + Vec2(8.0 * scale, 14.0 * scale)
-                    dst = rl.Rectangle(clock_table_pos.x, clock_table_pos.y, 32.0 * scale, 32.0 * scale)
-                    rl.draw_texture_pro(
-                        hud_assets.clock_table,
-                        src,
-                        dst,
-                        rl.Vector2(0.0, 0.0),
-                        0.0,
-                        rl.Color(255, 255, 255, int(255 * alpha)),
-                    )
-                if hud_assets is not None and hud_assets.clock_pointer is not None:
-                    src = rl.Rectangle(
-                        0.0, 0.0, float(hud_assets.clock_pointer.width), float(hud_assets.clock_pointer.height),
-                    )
-                    # NOTE: Raylib's draw_texture_pro uses dst.x/y as the rotation origin position;
-                    # offset by half-size so the 32x32 quad stays aligned with the table.
-                    clock_pointer_pos = col2_pos + Vec2(24.0 * scale, 30.0 * scale)
-                    dst = rl.Rectangle(clock_pointer_pos.x, clock_pointer_pos.y, 32.0 * scale, 32.0 * scale)
-                    seconds = max(0, elapsed_ms // 1000)
-                    rotation = float(seconds) * 6.0
-                    origin = rl.Vector2(16.0 * scale, 16.0 * scale)
-                    rl.draw_texture_pro(
-                        hud_assets.clock_pointer, src, dst, origin, rotation, rl.Color(255, 255, 255, int(255 * alpha)),
-                    )
+                clock_table = hud_resources.texture(TextureId.UI_CLOCK_TABLE)
+                src = rl.Rectangle(0.0, 0.0, float(clock_table.width), float(clock_table.height))
+                clock_table_pos = col2_pos + Vec2(8.0 * scale, 14.0 * scale)
+                dst = rl.Rectangle(clock_table_pos.x, clock_table_pos.y, 32.0 * scale, 32.0 * scale)
+                rl.draw_texture_pro(
+                    clock_table,
+                    src,
+                    dst,
+                    rl.Vector2(0.0, 0.0),
+                    0.0,
+                    rl.Color(255, 255, 255, int(255 * alpha)),
+                )
+                clock_pointer = hud_resources.texture(TextureId.UI_CLOCK_POINTER)
+                src = rl.Rectangle(
+                    0.0, 0.0, float(clock_pointer.width), float(clock_pointer.height),
+                )
+                # NOTE: Raylib's draw_texture_pro uses dst.x/y as the rotation origin position;
+                # offset by half-size so the 32x32 quad stays aligned with the table.
+                clock_pointer_pos = col2_pos + Vec2(24.0 * scale, 30.0 * scale)
+                dst = rl.Rectangle(clock_pointer_pos.x, clock_pointer_pos.y, 32.0 * scale, 32.0 * scale)
+                seconds = max(0, elapsed_ms // 1000)
+                rotation = float(seconds) * 6.0
+                origin = rl.Vector2(16.0 * scale, 16.0 * scale)
+                rl.draw_texture_pro(
+                    clock_pointer, src, dst, origin, rotation, rl.Color(255, 255, 255, int(255 * alpha)),
+                )
 
                 time_text = format_time_mm_ss(elapsed_ms)
                 self._draw_small(time_text, col2_pos + Vec2(40.0 * scale, 19.0 * scale), 1.0 * scale, label_color)
@@ -555,7 +554,7 @@ class GameOverUi(msgspec.Struct):
         row_pos = card_origin.offset(dy=52.0 * scale)
         self._hover_weapon = float(max(0.0, min(1.0, self._hover_weapon)))
         self._hover_hit_ratio = float(max(0.0, min(1.0, self._hover_hit_ratio)))
-        if show_weapon_row and hud_assets is not None and hud_assets.wicons is not None:
+        if show_weapon_row:
             weapon_pos = row_pos
             weapon_rect = Rect.from_top_left(weapon_pos, 64.0 * scale, 32.0 * scale)
             hovering_weapon = weapon_rect.contains(mouse)
@@ -563,11 +562,12 @@ class GameOverUi(msgspec.Struct):
                 max(0.0, min(1.0, self._hover_weapon + (dt_hover if hovering_weapon else -dt_hover))),
             )
 
-            src = _weapon_icon_src(hud_assets.wicons, record.most_used_weapon_id)
+            wicons = hud_resources.texture(TextureId.UI_WICONS)
+            src = _weapon_icon_src(wicons, record.most_used_weapon_id)
             if src is not None:
                 dst = rl.Rectangle(weapon_pos.x, weapon_pos.y, 64.0 * scale, 32.0 * scale)
                 rl.draw_texture_pro(
-                    hud_assets.wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, int(255 * alpha)),
+                    wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, int(255 * alpha)),
                 )
 
             weapon_id = record.most_used_weapon_id
@@ -640,7 +640,7 @@ class GameOverUi(msgspec.Struct):
         *,
         record: HighScoreRecord,
         banner_kind: str,
-        hud_assets: HudAssets | None,
+        hud_resources: RuntimeResources,
         mouse: rl.Vector2 | None = None,
     ) -> None:
         if self.assets is None:
@@ -724,7 +724,7 @@ class GameOverUi(msgspec.Struct):
             self._draw_score_card(
                 pos=score_pos,
                 record=record,
-                hud_assets=hud_assets,
+                hud_resources=hud_resources,
                 alpha=1.0,
                 show_weapon_row=False,
                 scale=scale,
@@ -746,7 +746,7 @@ class GameOverUi(msgspec.Struct):
             self._draw_score_card(
                 pos=score_card_pos,
                 record=record,
-                hud_assets=hud_assets,
+                hud_resources=hud_resources,
                 alpha=1.0,
                 show_weapon_row=True,
                 scale=scale,

@@ -676,13 +676,13 @@ class SurvivalMode(BaseGameplayMode):
         self._draw_screen_fade()
 
         hud_bottom = 0.0
-        if (not self._game_over_active) and (not perk_menu_active) and self._hud_assets is not None:
+        if (not self._game_over_active) and (not perk_menu_active):
             hud_alpha = clamp(self._hud_fade_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar(alpha=hud_alpha)
             hud_bottom = draw_hud_overlay(
                 HudRenderContext(
-                    assets=self._hud_assets,
+                    resources=self.hud_resources,
                     state=self._hud_state,
                     font=self._small,
                     alpha=hud_alpha,
@@ -742,7 +742,7 @@ class SurvivalMode(BaseGameplayMode):
             self._game_over_ui.draw(
                 record=self._game_over_record,
                 banner_kind=self._game_over_banner,
-                hud_assets=self._hud_assets,
+                hud_resources=self.hud_resources,
                 mouse=self._ui_mouse_pos(),
             )
         self._draw_lan_wait_overlay()

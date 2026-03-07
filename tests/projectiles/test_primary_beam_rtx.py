@@ -48,11 +48,18 @@ class _ResourcesStub:
 
 
 @dataclass(slots=True)
-class _RendererStub:
+class _FrameStub:
     rtx_mode: RtxRenderMode
     players: list[object] = field(default_factory=list)
     resources: _ResourcesStub = field(default_factory=_ResourcesStub)
     creatures: _CreaturesStub = field(default_factory=_CreaturesStub)
+    elapsed_ms: float = 0.0
+    config: object | None = None
+
+
+@dataclass(slots=True)
+class _RendererStub:
+    frame: _FrameStub
     atlas_calls: int = 0
 
     @staticmethod
@@ -101,7 +108,7 @@ def test_rtx_beam_path_uses_virtual_head_when_available(mocker) -> None:
     body_mock = mocker.patch.object(primary_beam, "draw_beam_fast_stamped_body", return_value=True)
     head_mock = mocker.patch.object(primary_beam, "draw_beam_fast_stamped_head", return_value=True)
 
-    renderer = _RendererStub(rtx_mode=RtxRenderMode.RTX)
+    renderer = _RendererStub(frame=_FrameStub(rtx_mode=RtxRenderMode.RTX))
     ctx = _beam_ctx(renderer, life=1.0)
 
     assert primary_beam.draw_beam_effect(ctx) is True
@@ -121,7 +128,7 @@ def test_rtx_beam_path_raises_when_virtual_head_unavailable(mocker) -> None:
         side_effect=RuntimeError("rtx head shader unavailable"),
     )
 
-    renderer = _RendererStub(rtx_mode=RtxRenderMode.RTX)
+    renderer = _RendererStub(frame=_FrameStub(rtx_mode=RtxRenderMode.RTX))
     ctx = _beam_ctx(renderer, life=1.0)
 
     with pytest.raises(RuntimeError, match="rtx head shader unavailable"):
@@ -140,7 +147,7 @@ def test_rtx_beam_path_raises_when_virtual_body_unavailable(mocker) -> None:
     )
     head_mock = mocker.patch.object(primary_beam, "draw_beam_fast_stamped_head", return_value=True)
 
-    renderer = _RendererStub(rtx_mode=RtxRenderMode.RTX)
+    renderer = _RendererStub(frame=_FrameStub(rtx_mode=RtxRenderMode.RTX))
     ctx = _beam_ctx(renderer, life=1.0)
 
     with pytest.raises(RuntimeError, match="rtx body shader unavailable"):
@@ -156,7 +163,7 @@ def test_classic_beam_path_does_not_call_rtx_virtual_helpers(mocker) -> None:
     body_mock = mocker.patch.object(primary_beam, "draw_beam_fast_stamped_body", return_value=True)
     head_mock = mocker.patch.object(primary_beam, "draw_beam_fast_stamped_head", return_value=True)
 
-    renderer = _RendererStub(rtx_mode=RtxRenderMode.CLASSIC)
+    renderer = _RendererStub(frame=_FrameStub(rtx_mode=RtxRenderMode.CLASSIC))
     ctx = _beam_ctx(renderer, life=1.0)
 
     assert primary_beam.draw_beam_effect(ctx) is True
@@ -177,12 +184,14 @@ def test_classic_ion_chain_strip_width_scales_with_effect_scale(mocker) -> None:
     vertex_mock = mocker.patch.object(primary_beam.rl, "rl_vertex2f")
 
     renderer = _RendererStub(
-        rtx_mode=RtxRenderMode.CLASSIC,
-        creatures=_CreaturesStub(
-            entries=[
-                _CreatureStub(active=False, lifecycle_stage=0.0, pos=Vec2(), size=0.0),
-                _CreatureStub(active=True, lifecycle_stage=16.0, pos=Vec2(0.0, 90.0), size=35.0),
-            ],
+        frame=_FrameStub(
+            rtx_mode=RtxRenderMode.CLASSIC,
+            creatures=_CreaturesStub(
+                entries=[
+                    _CreatureStub(active=False, lifecycle_stage=0.0, pos=Vec2(), size=0.0),
+                    _CreatureStub(active=True, lifecycle_stage=16.0, pos=Vec2(0.0, 90.0), size=35.0),
+                ],
+            ),
         ),
     )
     pos = Vec2(0.0, 0.0)

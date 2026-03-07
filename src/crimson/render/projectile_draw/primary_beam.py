@@ -58,7 +58,8 @@ def _draw_beam_body_sprites(
 
 def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
-    resources = renderer.resources
+    render_frame = renderer.frame
+    resources = render_frame.resources
     type_id = int(ctx.type_id)
     texture = ctx.texture
     if type_id not in BEAM_TYPES:
@@ -68,7 +69,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
     # Ion weapons and Fire Bullets use the projs.png streak effect (and Ion adds chain arcs on impact).
     grid = 4
-    frame = 2
+    atlas_frame = 2
 
     is_fire_bullets = type_id == ProjectileTemplateId.FIRE_BULLETS.value
     is_ion = type_id in ION_TYPES
@@ -81,7 +82,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
     # In the native renderer, Ion Gun Master increases the chain effect thickness and reach.
     perk_scale = 1.0
-    if any(perk_active(player, PerkId.ION_GUN_MASTER) for player in renderer.players):
+    if any(perk_active(player, PerkId.ION_GUN_MASTER) for player in render_frame.players):
         perk_scale = 1.2
 
     effect_scale = beam_effect_scale(type_id)
@@ -112,7 +113,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
-    if renderer.rtx_mode is RtxRenderMode.RTX:
+    if render_frame.rtx_mode is RtxRenderMode.RTX:
         draw_beam_fast_stamped_body(
             origin_screen=renderer.world_to_screen(origin),
             head_screen=ctx.screen_pos,
@@ -137,12 +138,12 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             streak_rgb=streak_rgb,
             texture=texture,
             grid=grid,
-            frame=frame,
+            frame=atlas_frame,
             sprite_scale=sprite_scale,
         )
 
     if life >= 0.4:
-        if renderer.rtx_mode is RtxRenderMode.RTX:
+        if render_frame.rtx_mode is RtxRenderMode.RTX:
             draw_beam_fast_stamped_head(
                 center_screen=ctx.screen_pos,
                 rotation_rad=ctx.angle,
@@ -157,7 +158,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             renderer._draw_atlas_sprite(
                 texture,
                 grid=grid,
-                frame=frame,
+                frame=atlas_frame,
                 pos=ctx.screen_pos,
                 scale=sprite_scale,
                 rotation_rad=ctx.angle,
@@ -173,9 +174,9 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 if grid:
                     cell_w = float(particles_texture.width) / float(grid)
                     cell_h = float(particles_texture.height) / float(grid)
-                    frame = int(atlas.frame)
-                    col = frame % grid
-                    row = frame // grid
+                    atlas_frame = int(atlas.frame)
+                    col = atlas_frame % grid
+                    row = atlas_frame // grid
                     src = rl.Rectangle(
                         cell_w * float(col),
                         cell_h * float(row),
@@ -190,7 +191,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
     else:
         # Native draws a small blue "core" at the head during the fade stage (life_timer < 0.4).
         core_rgb = (0.5, 0.6, 1.0)
-        if renderer.rtx_mode is RtxRenderMode.RTX:
+        if render_frame.rtx_mode is RtxRenderMode.RTX:
             draw_beam_fast_stamped_head(
                 center_screen=ctx.screen_pos,
                 rotation_rad=ctx.angle,
@@ -205,7 +206,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             renderer._draw_atlas_sprite(
                 texture,
                 grid=grid,
-                frame=frame,
+                frame=atlas_frame,
                 pos=ctx.screen_pos,
                 scale=ctx.scale,
                 rotation_rad=ctx.angle,
@@ -218,7 +219,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
             # Native iterates via creature_find_in_radius(pos, radius, start_index) in pool order.
             targets = []
-            for creature in renderer.creatures.entries[1:]:
+            for creature in render_frame.creatures.entries[1:]:
                 if not creature.active:
                     continue
                 if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
@@ -294,7 +295,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 renderer._draw_atlas_sprite(
                     texture,
                     grid=grid,
-                    frame=frame,
+                    frame=atlas_frame,
                     pos=target_screen,
                     scale=sprite_scale,
                     rotation_rad=0.0,

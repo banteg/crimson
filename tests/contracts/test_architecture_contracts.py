@@ -270,7 +270,6 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
     )
 
     mocker.patch.object(replay_playback_mode, "load_small_font", return_value=None)
-    mocker.patch.object(replay_playback_mode, "load_hud_assets", return_value=None)
     mocker.patch.object(replay_playback_mode, "init_audio_state", return_value=None)
     mocker.patch.object(
         replay_playback_mode,

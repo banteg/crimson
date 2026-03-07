@@ -4,43 +4,22 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
-from grim.assets import RuntimeResources, TextureId
+from grim.assets import TextureId
 from grim.geom import Vec2
 from grim.raylib_api import rd, rl
 
 from ...projectiles.types import ProjectileTemplateId
-from ..rtx.mode import RtxRenderMode
 from . import viewport
 from .constants import _RAD_TO_DEG
 
 if TYPE_CHECKING:
-    from grim.config import CrimsonConfig
-    from grim.terrain_render import GroundRenderer
-
-    from ...creatures.runtime import CreaturePool
-    from ...gameplay import GameplayState
-    from ...sim.state_types import PlayerState
     from ..frame import RenderFrame
     from .renderer import WorldRenderer
 
 
 class WorldRenderCtx(msgspec.Struct):
     renderer: WorldRenderer
-    world_size: float
-    demo_mode_active: bool
-    config: CrimsonConfig | None
-    camera: Vec2
-    ground: GroundRenderer | None
-    state: GameplayState
-    players: list[PlayerState]
-    creatures: CreaturePool
-    resources: RuntimeResources
-    elapsed_ms: float
-    bonus_anim_phase: float
-    lan_player_rings_enabled: bool
-    lan_local_aim_indicators_only: bool
-    lan_local_player_slot_index: int
-    rtx_mode: RtxRenderMode
+    frame: RenderFrame
     projection_camera: Vec2 | None = None
     projection_view_scale: Vec2 | None = None
 
@@ -53,15 +32,15 @@ class WorldRenderCtx(msgspec.Struct):
         out_w = runtime_w if runtime_w is not None else float(rl.get_screen_width())
         out_h = runtime_h if runtime_h is not None else float(rl.get_screen_height())
         return viewport.camera_screen_size(
-            world_size=self.world_size,
-            config=self.config,
+            world_size=self.frame.world_size,
+            config=self.frame.config,
             runtime_w=out_w,
             runtime_h=out_h,
         )
 
     def _clamp_camera(self, camera: Vec2, screen_size: Vec2) -> Vec2:
         return viewport.clamp_camera(
-            world_size=self.world_size,
+            world_size=self.frame.world_size,
             camera=camera,
             screen_size=screen_size,
         )
@@ -69,9 +48,9 @@ class WorldRenderCtx(msgspec.Struct):
     def _world_params(self) -> tuple[Vec2, Vec2]:
         out_size = Vec2(float(rl.get_screen_width()), float(rl.get_screen_height()))
         camera, view_scale, _screen_size = viewport.view_transform(
-            world_size=self.world_size,
-            config=self.config,
-            camera=self.camera,
+            world_size=self.frame.world_size,
+            config=self.frame.config,
+            camera=self.frame.camera,
             out_size=out_size,
         )
         return camera, view_scale
@@ -111,21 +90,7 @@ class WorldRenderCtx(msgspec.Struct):
     def with_projection(self, *, camera: Vec2, view_scale: Vec2) -> WorldRenderCtx:
         return WorldRenderCtx(
             renderer=self.renderer,
-            world_size=self.world_size,
-            demo_mode_active=self.demo_mode_active,
-            config=self.config,
-            camera=self.camera,
-            ground=self.ground,
-            state=self.state,
-            players=self.players,
-            creatures=self.creatures,
-            resources=self.resources,
-            elapsed_ms=self.elapsed_ms,
-            bonus_anim_phase=self.bonus_anim_phase,
-            lan_player_rings_enabled=self.lan_player_rings_enabled,
-            lan_local_aim_indicators_only=self.lan_local_aim_indicators_only,
-            lan_local_player_slot_index=self.lan_local_player_slot_index,
-            rtx_mode=self.rtx_mode,
+            frame=self.frame,
             projection_camera=camera,
             projection_view_scale=view_scale,
         )
@@ -180,21 +145,7 @@ def build_world_render_ctx(
 ) -> WorldRenderCtx:
     return WorldRenderCtx(
         renderer=renderer,
-        world_size=render_frame.world_size,
-        demo_mode_active=render_frame.demo_mode_active,
-        config=render_frame.config,
-        camera=render_frame.camera,
-        ground=render_frame.ground,
-        state=render_frame.state,
-        players=render_frame.players,
-        creatures=render_frame.creatures,
-        resources=render_frame.resources,
-        elapsed_ms=render_frame.elapsed_ms,
-        bonus_anim_phase=render_frame.bonus_anim_phase,
-        lan_player_rings_enabled=render_frame.lan_player_rings_enabled,
-        lan_local_aim_indicators_only=render_frame.lan_local_aim_indicators_only,
-        lan_local_player_slot_index=render_frame.lan_local_player_slot_index,
-        rtx_mode=render_frame.rtx_mode,
+        frame=render_frame,
     )
 
 
@@ -221,7 +172,7 @@ def _draw_bullet_trail(
     scale: float,
     angle: float,
 ) -> bool:
-    bullet_trail_texture = render_ctx.resources.texture(TextureId.BULLET_TRAIL)
+    bullet_trail_texture = render_ctx.frame.resources.texture(TextureId.BULLET_TRAIL)
     if alpha <= 0:
         return False
 

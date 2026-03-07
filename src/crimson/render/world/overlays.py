@@ -58,7 +58,7 @@ def draw_clock_gauge(
     scale: float,
     alpha: float = 1.0,
 ) -> None:
-    resources = render_ctx.resources
+    resources = render_ctx.frame.resources
     table = resources.texture(TextureId.UI_CLOCK_TABLE)
     pointer = resources.texture(TextureId.UI_CLOCK_POINTER)
     size = 32.0 * scale
@@ -90,9 +90,10 @@ def draw_clock_gauge(
 
 
 def hud_indicator_enabled(render_ctx: WorldRenderCtx, player_index: int) -> bool:
-    if render_ctx.config is None:
+    config = render_ctx.frame.config
+    if config is None:
         return True
-    raw = render_ctx.config.hud_indicators
+    raw = config.hud_indicators
     if not isinstance(raw, (bytes, bytearray)):
         return True
     idx = int(player_index)
@@ -105,7 +106,7 @@ def hud_indicator_enabled(render_ctx: WorldRenderCtx, player_index: int) -> bool
 
 def direction_arrow_tint(render_ctx: WorldRenderCtx, player_index: int, *, alpha: float) -> rl.Color:
     alpha = clamp(float(alpha), 0.0, 1.0)
-    if len(render_ctx.players) == 2:
+    if len(render_ctx.frame.players) == 2:
         if int(player_index) == 0:
             return rl.Color(204, 230, 255, int(153.0 * alpha + 0.5))
         return rl.Color(255, 230, 204, int(153.0 * alpha + 0.5))
@@ -123,14 +124,14 @@ def draw_direction_arrows(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    arrow = render_ctx.resources.texture(TextureId.ARROW)
+    arrow = render_ctx.frame.resources.texture(TextureId.ARROW)
 
     src = rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
     width = max(1.0, float(arrow.width) * scale)
     height = max(1.0, float(arrow.height) * scale)
     origin = rl.Vector2(width * 0.5, height * 0.5)
 
-    for player in render_ctx.players:
+    for player in render_ctx.frame.players:
         if float(player.health) <= 0.0:
             continue
         index = int(player.index)

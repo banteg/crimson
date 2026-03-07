@@ -106,13 +106,14 @@ def draw_world(
 
 
 def compute_view_transform(render_ctx: WorldRenderCtx) -> tuple[Vec2, Vec2, float, Vec2, Vec2]:
+    frame = render_ctx.frame
     out_w = float(rl.get_screen_width())
     out_h = float(rl.get_screen_height())
     out_size = Vec2(out_w, out_h)
     camera, view_scale, screen_size = viewport.view_transform(
-        world_size=render_ctx.world_size,
-        config=render_ctx.config,
-        camera=render_ctx.camera,
+        world_size=frame.world_size,
+        config=frame.config,
+        camera=frame.camera,
         out_size=out_size,
     )
     scale = viewport.view_scale_avg(view_scale)
@@ -127,7 +128,7 @@ def draw_background(
     out_size: Vec2,
 ) -> None:
     clear_color = rl.Color(10, 10, 12, 255)
-    ground = render_ctx.ground
+    ground = render_ctx.frame.ground
     assert ground is not None, "ground renderer must be initialized before live world draw"
     rl.clear_background(clear_color)
     ground.draw(
@@ -140,7 +141,7 @@ def draw_background(
 
 
 def alpha_test_enabled(render_ctx: WorldRenderCtx) -> bool:
-    ground = render_ctx.ground
+    ground = render_ctx.frame.ground
     assert ground is not None, "ground renderer must be initialized before live world draw"
     return ground.alpha_test
 
@@ -173,12 +174,13 @@ def build_draw_context(
     scale: float,
     entity_alpha: float,
 ) -> WorldDrawContext:
-    resources = render_ctx.resources
+    frame = render_ctx.frame
+    resources = frame.resources
     trooper_asset = CREATURE_ASSET.get(CreatureTypeId.TROOPER)
     trooper_texture = _creature_texture(resources, trooper_asset)
     particles_texture = resources.texture(TextureId.PARTICLES)
 
-    monster_vision = bool(render_ctx.players) and perk_active(render_ctx.players[0], PerkId.MONSTER_VISION)
+    monster_vision = bool(frame.players) and perk_active(frame.players[0], PerkId.MONSTER_VISION)
     monster_vision_src = None
     if monster_vision:
         monster_vision_src = effect_src_rect(particles_texture, EffectId.AURA)
@@ -219,7 +221,7 @@ def draw_player(render_ctx: WorldRenderCtx, player: PlayerState, *, ctx: WorldDr
 
 
 def draw_players(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, alive: bool) -> None:
-    for player in render_ctx.players:
+    for player in render_ctx.frame.players:
         if alive and player.health <= 0.0:
             continue
         if not alive and player.health > 0.0:
@@ -283,7 +285,8 @@ def draw_creature_overlays(
 
 
 def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
-    creature_entries = render_ctx.creatures.entries
+    frame = render_ctx.frame
+    creature_entries = frame.creatures.entries
 
     # Native `creature_render_all` batches all overlays across the active pool
     # before any species-specific sprite passes.
@@ -292,7 +295,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
         lifecycle_stage = float(creature.lifecycle_stage)
         draw_creature_overlays(render_ctx, creature, screen=screen, lifecycle_stage=lifecycle_stage, ctx=ctx)
 
-    resources = render_ctx.resources
+    resources = frame.resources
     for creature in iter_native_creature_sprite_pass(creature_entries):
         screen = render_ctx._world_to_screen_with(creature.pos, camera=ctx.camera, view_scale=ctx.view_scale)
         lifecycle_stage = float(creature.lifecycle_stage)
@@ -313,7 +316,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
         # Energizer: tint "weak" creatures blue-ish while active.
         # Mirrors `creature_render_type` (0x00418b60) branch when
         # `_bonus_energizer_timer > 0` and `max_health < 500`.
-        energizer_timer = float(render_ctx.state.bonuses.energizer)
+        energizer_timer = float(frame.state.bonuses.energizer)
         if energizer_timer > 0.0 and float(creature.max_hp) < 500.0:
             # Native clamps to 1.0, then blends towards (0.5, 0.5, 1.0, 1.0).
             # Effect is full strength while timer >= 1 and fades out during the last second.
@@ -331,10 +334,10 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
         tint = tint_rgba.scaled_alpha(ctx.entity_alpha).clamped().to_rl()
 
         size_scale = clamp(float(creature.size) / 64.0, 0.25, 2.0)
-        fx_detail = render_ctx.config.fx_detail(level=0, default=True) if render_ctx.config is not None else True
+        fx_detail = frame.config.fx_detail(level=0, default=True) if frame.config is not None else True
         # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by fx_detail_0
         # and is disabled when the Monster Vision perk is active.
-        shadow = fx_detail and (not render_ctx.players or not perk_active(render_ctx.players[0], PerkId.MONSTER_VISION))
+        shadow = fx_detail and (not frame.players or not perk_active(frame.players[0], PerkId.MONSTER_VISION))
         long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
             creature.flags & CreatureFlags.ANIM_LONG_STRIP
         ) != 0
@@ -380,7 +383,7 @@ def draw_freeze_overlay(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
     if ctx.particles_texture is None:
         return
 
-    freeze_timer = float(render_ctx.state.bonuses.freeze)
+    freeze_timer = float(render_ctx.frame.state.bonuses.freeze)
     if freeze_timer <= 0.0:
         return
 
@@ -395,7 +398,7 @@ def draw_freeze_overlay(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
 
     tint = rl.Color(255, 255, 255, int(freeze_alpha * 255.0 + 0.5))
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
-    for idx, creature in enumerate(render_ctx.creatures.entries):
+    for idx, creature in enumerate(render_ctx.frame.creatures.entries):
         if not creature.active:
             continue
         size = float(creature.size) * ctx.scale
@@ -414,6 +417,7 @@ def draw_freeze_overlay(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
 
 
 def draw_projectiles_and_effects(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
+    frame = render_ctx.frame
     with profile_pass("laser_sight"):
         draw_sharpshooter_laser_sight(
             render_ctx,
@@ -424,7 +428,7 @@ def draw_projectiles_and_effects(render_ctx: WorldRenderCtx, *, ctx: WorldDrawCo
         )
 
     with profile_pass("primary_projectiles"):
-        for proj_index, proj in enumerate(render_ctx.state.projectiles.entries):
+        for proj_index, proj in enumerate(frame.state.projectiles.entries):
             if not proj.active:
                 continue
             draw_projectile(
@@ -446,7 +450,7 @@ def draw_projectiles_and_effects(render_ctx: WorldRenderCtx, *, ctx: WorldDrawCo
         )
 
     with profile_pass("secondary_projectiles"):
-        for proj in render_ctx.state.secondary_projectiles.entries:
+        for proj in frame.state.secondary_projectiles.entries:
             if not proj.active:
                 continue
             draw_secondary_projectile(
@@ -475,10 +479,11 @@ def draw_projectiles_and_effects(render_ctx: WorldRenderCtx, *, ctx: WorldDrawCo
 
 
 def iter_visible_aim_players(render_ctx: WorldRenderCtx) -> tuple[PlayerState, ...]:
-    players = render_ctx.players
-    if not bool(render_ctx.lan_local_aim_indicators_only):
+    frame = render_ctx.frame
+    players = frame.players
+    if not bool(frame.lan_local_aim_indicators_only):
         return tuple(players)
-    local_slot = int(render_ctx.lan_local_player_slot_index)
+    local_slot = int(frame.lan_local_player_slot_index)
     return tuple(player for player in players if int(player.index) == local_slot)
 
 
@@ -559,7 +564,7 @@ def draw_aim_enhancements(
         if player.health <= 0.0:
             continue
         aim_screen = transform(player.aim, ctx.camera, ctx.view_scale)
-        draw_aim_cursor(ctx.particles_texture, render_ctx.resources.texture(TextureId.UI_AIM), pos=aim_screen)
+        draw_aim_cursor(ctx.particles_texture, render_ctx.frame.resources.texture(TextureId.UI_AIM), pos=aim_screen)
 
 
 def _creature_texture(resources: RuntimeResources, asset_name: str | None) -> rl.Texture | None:
@@ -593,7 +598,7 @@ def draw_bonus_and_ui(
             alpha=ctx.entity_alpha,
         )
 
-    draw_world_aim = draw_aim_indicators_enabled and (not render_ctx.demo_mode_active)
+    draw_world_aim = draw_aim_indicators_enabled and (not render_ctx.frame.demo_mode_active)
     if draw_world_aim:
         with profile_pass("aim_indicators"):
             draw_aim_indicators(render_ctx, ctx=ctx)

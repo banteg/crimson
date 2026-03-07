@@ -130,7 +130,7 @@ def draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
     rotation_rad = ctx.angle
     rgb = (1.0, 1.0, 1.0)
     if type_id == ProjectileTemplateId.BLADE_GUN:
-        rotation_rad = float(int(ctx.proj_index)) * 0.1 - float(renderer.elapsed_ms) * 0.1
+        rotation_rad = float(int(ctx.proj_index)) * 0.1 - float(renderer.frame.elapsed_ms) * 0.1
         rgb = (0.8, 0.8, 0.8)
 
     tint = RGBA(rgb[0], rgb[1], rgb[2], float(ctx.alpha)).to_rl()
@@ -192,7 +192,7 @@ def draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
                 size=60.0,
             )
 
-            phase = float(int(ctx.proj_index)) + float(renderer.elapsed_ms) * 0.01
+            phase = float(int(ctx.proj_index)) + float(renderer.frame.elapsed_ms) * 0.01
             cos_phase = math.cos(phase)
             sin_phase = math.sin(phase)
             draw_plague_quad(

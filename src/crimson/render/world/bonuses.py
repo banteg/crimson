@@ -59,14 +59,15 @@ def draw_bonus_pickups(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    resources = render_ctx.resources
+    frame = render_ctx.frame
+    resources = frame.resources
     bonuses_texture = resources.texture(TextureId.BONUSES)
     wicons_texture = resources.texture(TextureId.UI_WICONS)
 
     bubble_src = bonus_icon_src(bonuses_texture, 0)
     bubble_size = 32.0 * scale
 
-    for idx, bonus in enumerate(render_ctx.state.bonus_pool.entries):
+    for idx, bonus in enumerate(frame.state.bonus_pool.entries):
         if bonus.bonus_id == BonusId.UNUSED:
             continue
 
@@ -88,7 +89,7 @@ def draw_bonus_pickups(
             if not (0 <= icon_index <= 31):
                 continue
 
-            pulse = math.sin(float(render_ctx.bonus_anim_phase)) ** 4 * 0.25 + 0.75
+            pulse = math.sin(float(frame.bonus_anim_phase)) ** 4 * 0.25 + 0.75
             icon_scale = fade * pulse
             if icon_scale <= 1e-3:
                 continue
@@ -108,14 +109,14 @@ def draw_bonus_pickups(
         if bonus_id == BonusId.POINTS and isinstance(bonus.payload, BonusPointsPayload) and int(bonus.payload.points) == 1000:
             icon_id += 1
 
-        pulse = math.sin(float(idx) + float(render_ctx.bonus_anim_phase)) ** 4 * 0.25 + 0.75
+        pulse = math.sin(float(idx) + float(frame.bonus_anim_phase)) ** 4 * 0.25 + 0.75
         icon_scale = fade * pulse
         if icon_scale <= 1e-3:
             continue
 
         src = bonus_icon_src(bonuses_texture, icon_id)
         size = 32.0 * icon_scale * scale
-        rotation_rad = math.sin(float(idx) - float(render_ctx.elapsed_ms) * 0.003) * 0.2
+        rotation_rad = math.sin(float(idx) - float(frame.elapsed_ms) * 0.003) * 0.2
         dst = rl.Rectangle(screen.x, screen.y, size, size)
         origin = rl.Vector2(size * 0.5, size * 0.5)
         rl.draw_texture_pro(bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
@@ -132,21 +133,22 @@ def draw_bonus_hover_labels(
     if alpha <= 1e-3:
         return
 
-    font = render_ctx.resources.small_font
+    frame = render_ctx.frame
+    font = frame.resources.small_font
     text_scale = 1.0
     screen_w = float(rl.get_screen_width())
 
     shadow = rl.Color(0, 0, 0, int(180 * alpha + 0.5))
     color = rl.Color(230, 230, 230, int(255 * alpha + 0.5))
 
-    for player in render_ctx.players:
+    for player in frame.players:
         if player.health <= 0.0:
             continue
-        hovered = bonus_find_aim_hover_entry(player, render_ctx.state.bonus_pool)
+        hovered = bonus_find_aim_hover_entry(player, frame.state.bonus_pool)
         if hovered is None:
             continue
         _idx, entry = hovered
-        label = bonus_label_for_entry(entry, preserve_bugs=bool(render_ctx.state.preserve_bugs))
+        label = bonus_label_for_entry(entry, preserve_bugs=bool(frame.state.preserve_bugs))
         if not label:
             continue
 

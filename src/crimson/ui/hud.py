@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import math
-from pathlib import Path
 from typing import Protocol
 
 import msgspec
 
-from grim.assets import TextureId, runtime_resources_for
+from grim.assets import RuntimeResources, TextureId
 from grim.color import RGBA
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
@@ -68,21 +67,6 @@ class SmallFontLike(Protocol):
     def cell_size(self) -> int: ...
 
 
-class HudAssets(msgspec.Struct):
-    game_top: rl.Texture | None
-    life_heart: rl.Texture | None
-    ind_life: rl.Texture | None
-    ind_panel: rl.Texture | None
-    ind_bullet: rl.Texture | None
-    ind_fire: rl.Texture | None
-    ind_rocket: rl.Texture | None
-    ind_electric: rl.Texture | None
-    wicons: rl.Texture | None
-    clock_table: rl.Texture | None
-    clock_pointer: rl.Texture | None
-    bonuses: rl.Texture | None
-
-
 class HudRenderFlags(msgspec.Struct, frozen=True):
     show_health: bool
     show_weapon: bool
@@ -92,7 +76,7 @@ class HudRenderFlags(msgspec.Struct, frozen=True):
 
 
 class HudRenderContext(msgspec.Struct, frozen=True):
-    assets: HudAssets
+    resources: RuntimeResources
     state: HudState
     font: SmallFontData | None = None
     alpha: float = 1.0
@@ -205,25 +189,6 @@ def hud_layout(screen_w: float, screen_h: float, *, font: SmallFontLike | None, 
     hud_y_shift = HUD_QUEST_LEFT_Y_SHIFT if show_quest_hud else 0.0
     return HudLayout(scale=scale, text_scale=text_scale, line_h=line_h, hud_y_shift=hud_y_shift)
 
-
-def load_hud_assets(assets_root: Path) -> HudAssets:
-    resources = runtime_resources_for(assets_root)
-    return HudAssets(
-        game_top=resources.texture(TextureId.UI_GAME_TOP),
-        life_heart=resources.texture(TextureId.UI_LIFE_HEART),
-        ind_life=resources.texture(TextureId.UI_IND_LIFE),
-        ind_panel=resources.texture(TextureId.UI_IND_PANEL),
-        ind_bullet=resources.texture(TextureId.UI_IND_BULLET),
-        ind_fire=resources.texture(TextureId.UI_IND_FIRE),
-        ind_rocket=resources.texture(TextureId.UI_IND_ROCKET),
-        ind_electric=resources.texture(TextureId.UI_IND_ELECTRIC),
-        wicons=resources.texture(TextureId.UI_WICONS),
-        clock_table=resources.texture(TextureId.UI_CLOCK_TABLE),
-        clock_pointer=resources.texture(TextureId.UI_CLOCK_POINTER),
-        bonuses=resources.texture(TextureId.BONUSES),
-    )
-
-
 def _draw_text(font: SmallFontData | None, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
     if font is not None:
         draw_small_text(font, text, pos, color)
@@ -331,7 +296,7 @@ def draw_hud_overlay(
     frame_dt_ms: float | None = None,
     quest_progress_ratio: float | None = None,
 ) -> float:
-    assets = context.assets
+    resources = context.resources
     state = context.state
     font = context.font
     alpha = float(context.alpha)
@@ -341,6 +306,18 @@ def draw_hud_overlay(
     show_time = bool(context.show_time)
     show_quest_hud = bool(context.show_quest_hud)
     small_indicators = bool(context.small_indicators)
+    game_top = resources.texture(TextureId.UI_GAME_TOP)
+    life_heart = resources.texture(TextureId.UI_LIFE_HEART)
+    ind_life = resources.texture(TextureId.UI_IND_LIFE)
+    ind_panel = resources.texture(TextureId.UI_IND_PANEL)
+    ind_bullet = resources.texture(TextureId.UI_IND_BULLET)
+    ind_fire = resources.texture(TextureId.UI_IND_FIRE)
+    ind_rocket = resources.texture(TextureId.UI_IND_ROCKET)
+    ind_electric = resources.texture(TextureId.UI_IND_ELECTRIC)
+    wicons = resources.texture(TextureId.UI_WICONS)
+    clock_table = resources.texture(TextureId.UI_CLOCK_TABLE)
+    clock_pointer = resources.texture(TextureId.UI_CLOCK_POINTER)
+    bonuses_texture = resources.texture(TextureId.BONUSES)
 
     if frame_dt_ms is None:
         frame_dt_ms = max(0.0, float(rl.get_frame_time()) * 1000.0)
@@ -366,29 +343,28 @@ def draw_hud_overlay(
     hud_y_shift = layout.hud_y_shift
 
     # Top bar background.
-    if assets.game_top is not None:
-        src = rl.Rectangle(0.0, 0.0, float(assets.game_top.width), float(assets.game_top.height))
-        dst = rl.Rectangle(
-            ui(HUD_TOP_BAR_POS[0]),
-            ui(HUD_TOP_BAR_POS[1]),
-            ui(HUD_TOP_BAR_SIZE[0]),
-            ui(HUD_TOP_BAR_SIZE[1]),
-        )
-        top_alpha = alpha * HUD_TOP_BAR_ALPHA
-        rl.draw_texture_pro(
-            assets.game_top,
-            src,
-            dst,
-            rl.Vector2(0.0, 0.0),
-            0.0,
-            rl.Color(255, 255, 255, int(255 * top_alpha)),
-        )
-        max_y = max(max_y, dst.y + dst.height)
+    src = rl.Rectangle(0.0, 0.0, float(game_top.width), float(game_top.height))
+    dst = rl.Rectangle(
+        ui(HUD_TOP_BAR_POS[0]),
+        ui(HUD_TOP_BAR_POS[1]),
+        ui(HUD_TOP_BAR_SIZE[0]),
+        ui(HUD_TOP_BAR_SIZE[1]),
+    )
+    top_alpha = alpha * HUD_TOP_BAR_ALPHA
+    rl.draw_texture_pro(
+        game_top,
+        src,
+        dst,
+        rl.Vector2(0.0, 0.0),
+        0.0,
+        rl.Color(255, 255, 255, int(255 * top_alpha)),
+    )
+    max_y = max(max_y, dst.y + dst.height)
 
     # Pulsing heart.
-    if show_health and assets.life_heart is not None:
+    if show_health:
         t = max(0.0, elapsed_ms) / 1000.0
-        src = rl.Rectangle(0.0, 0.0, float(assets.life_heart.width), float(assets.life_heart.height))
+        src = rl.Rectangle(0.0, 0.0, float(life_heart.width), float(life_heart.height))
         if player_count == 1:
             heart_center_base = Vec2(*HUD_HEART_CENTER)
             heart_step = Vec2()
@@ -416,7 +392,7 @@ def draw_hud_overlay(
                 ui(size),
             )
             rl.draw_texture_pro(
-                assets.life_heart,
+                life_heart,
                 src,
                 dst,
                 rl.Vector2(0.0, 0.0),
@@ -426,10 +402,10 @@ def draw_hud_overlay(
             max_y = max(max_y, dst.y + dst.height)
 
     # Health bar.
-    if show_health and assets.ind_life is not None:
+    if show_health:
         bar_base_pos = Vec2(*HUD_HEALTH_BAR_POS)
         bar_size = Vec2(*HUD_HEALTH_BAR_SIZE)
-        bg_src = rl.Rectangle(0.0, 0.0, float(assets.ind_life.width), float(assets.ind_life.height))
+        bg_src = rl.Rectangle(0.0, 0.0, float(ind_life.width), float(ind_life.height))
         if player_count > 1:
             bar_base_pos = Vec2(bar_base_pos.x, 6.0)
 
@@ -437,7 +413,7 @@ def draw_hud_overlay(
             bar_pos = bar_base_pos.offset(dy=float(idx) * 16.0 if player_count > 1 else 0.0)
             bg_dst = rl.Rectangle(ui(bar_pos.x), ui(bar_pos.y), ui(bar_size.x), ui(bar_size.y))
             rl.draw_texture_pro(
-                assets.ind_life,
+                ind_life,
                 bg_src,
                 bg_dst,
                 rl.Vector2(0.0, 0.0),
@@ -451,11 +427,11 @@ def draw_hud_overlay(
                 fill_src = rl.Rectangle(
                     0.0,
                     0.0,
-                    float(assets.ind_life.width) * health_ratio,
-                    float(assets.ind_life.height),
+                    float(ind_life.width) * health_ratio,
+                    float(ind_life.height),
                 )
                 rl.draw_texture_pro(
-                    assets.ind_life,
+                    ind_life,
                     fill_src,
                     fill_dst,
                     rl.Vector2(0.0, 0.0),
@@ -465,7 +441,7 @@ def draw_hud_overlay(
             max_y = max(max_y, bg_dst.y + bg_dst.height)
 
     # Weapon icon.
-    if show_weapon and assets.wicons is not None:
+    if show_weapon:
         if player_count == 1:
             icon_base_pos = Vec2(*HUD_WEAPON_ICON_POS)
             icon_size = Vec2(*HUD_WEAPON_ICON_SIZE)
@@ -479,7 +455,7 @@ def draw_hud_overlay(
             icon_index = _weapon_icon_index(hud_player.weapon.weapon_id)
             if icon_index is None:
                 continue
-            src = _weapon_icon_src(assets.wicons, icon_index)
+            src = _weapon_icon_src(wicons, icon_index)
             icon_pos = icon_base_pos + icon_step * float(idx)
             dst = rl.Rectangle(
                 ui(icon_pos.x),
@@ -488,7 +464,7 @@ def draw_hud_overlay(
                 ui(icon_size.y),
             )
             rl.draw_texture_pro(
-                assets.wicons,
+                wicons,
                 src,
                 dst,
                 rl.Vector2(0.0, 0.0),
@@ -508,18 +484,15 @@ def draw_hud_overlay(
 
         base_alpha = alpha * HUD_ICON_ALPHA
         for player_idx, hud_player in enumerate(hud_players):
-            ammo_tex = None
             ammo_class = _weapon_ammo_class(hud_player.weapon.weapon_id)
             if ammo_class == 1:
-                ammo_tex = assets.ind_fire
+                ammo_tex = ind_fire
             elif ammo_class == 2:
-                ammo_tex = assets.ind_rocket
+                ammo_tex = ind_rocket
             elif ammo_class == 0:
-                ammo_tex = assets.ind_bullet
+                ammo_tex = ind_bullet
             else:
-                ammo_tex = assets.ind_electric
-            if ammo_tex is None:
-                continue
+                ammo_tex = ind_electric
 
             player_ammo_base = ammo_base_pos + ammo_step * float(player_idx)
             bars = max(0, int(hud_player.weapon.clip_size))
@@ -561,80 +534,77 @@ def draw_hud_overlay(
         quest_panel_alpha = alpha * 0.7
         quest_text_color = _with_alpha(HUD_TEXT_COLOR, quest_panel_alpha)
 
-        if assets.ind_panel is not None:
-            src = rl.Rectangle(0.0, 0.0, float(assets.ind_panel.width), float(assets.ind_panel.height))
+        src = rl.Rectangle(0.0, 0.0, float(ind_panel.width), float(ind_panel.height))
 
-            # Sliding top panel (first second).
-            slide_panel_pos = Vec2(slide_x - 90.0, 67.0)
-            slide_panel_size = Vec2(182.0, 53.0)
-            dst = rl.Rectangle(
-                ui(slide_panel_pos.x),
-                ui(slide_panel_pos.y),
-                ui(slide_panel_size.x),
-                ui(slide_panel_size.y),
-            )
-            rl.draw_texture_pro(
-                assets.ind_panel,
-                src,
-                dst,
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.Color(255, 255, 255, int(255 * quest_panel_alpha)),
-            )
-            max_y = max(max_y, dst.y + dst.height)
+        # Sliding top panel (first second).
+        slide_panel_pos = Vec2(slide_x - 90.0, 67.0)
+        slide_panel_size = Vec2(182.0, 53.0)
+        dst = rl.Rectangle(
+            ui(slide_panel_pos.x),
+            ui(slide_panel_pos.y),
+            ui(slide_panel_size.x),
+            ui(slide_panel_size.y),
+        )
+        rl.draw_texture_pro(
+            ind_panel,
+            src,
+            dst,
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.Color(255, 255, 255, int(255 * quest_panel_alpha)),
+        )
+        max_y = max(max_y, dst.y + dst.height)
 
-            # Static progress panel.
-            progress_panel_pos = Vec2(-80.0, 107.0)
-            progress_panel_size = Vec2(182.0, 53.0)
-            dst = rl.Rectangle(
-                ui(progress_panel_pos.x),
-                ui(progress_panel_pos.y),
-                ui(progress_panel_size.x),
-                ui(progress_panel_size.y),
-            )
-            rl.draw_texture_pro(
-                assets.ind_panel,
-                src,
-                dst,
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.Color(255, 255, 255, int(255 * quest_panel_alpha)),
-            )
-            max_y = max(max_y, dst.y + dst.height)
+        # Static progress panel.
+        progress_panel_pos = Vec2(-80.0, 107.0)
+        progress_panel_size = Vec2(182.0, 53.0)
+        dst = rl.Rectangle(
+            ui(progress_panel_pos.x),
+            ui(progress_panel_pos.y),
+            ui(progress_panel_size.x),
+            ui(progress_panel_size.y),
+        )
+        rl.draw_texture_pro(
+            ind_panel,
+            src,
+            dst,
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.Color(255, 255, 255, int(255 * quest_panel_alpha)),
+        )
+        max_y = max(max_y, dst.y + dst.height)
 
         # Clock table + pointer inside the sliding panel.
         clock_alpha = alpha * HUD_CLOCK_ALPHA
-        if assets.clock_table is not None:
-            clock_table_pos = Vec2(slide_x + 2.0, 78.0)
-            clock_size = Vec2(32.0, 32.0)
-            dst = rl.Rectangle(ui(clock_table_pos.x), ui(clock_table_pos.y), ui(clock_size.x), ui(clock_size.y))
-            src = rl.Rectangle(0.0, 0.0, float(assets.clock_table.width), float(assets.clock_table.height))
-            rl.draw_texture_pro(
-                assets.clock_table,
-                src,
-                dst,
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.Color(255, 255, 255, int(255 * clock_alpha)),
-            )
+        clock_table_pos = Vec2(slide_x + 2.0, 78.0)
+        clock_size = Vec2(32.0, 32.0)
+        dst = rl.Rectangle(ui(clock_table_pos.x), ui(clock_table_pos.y), ui(clock_size.x), ui(clock_size.y))
+        src = rl.Rectangle(0.0, 0.0, float(clock_table.width), float(clock_table.height))
+        rl.draw_texture_pro(
+            clock_table,
+            src,
+            dst,
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.Color(255, 255, 255, int(255 * clock_alpha)),
+        )
 
-        if assets.clock_pointer is not None:
-            # NOTE: Raylib's draw_texture_pro uses dst.x/y as the rotation origin position;
-            # offset by half-size so the 32x32 quad stays aligned with the table.
-            clock_pointer_pos = Vec2(slide_x + 18.0, 94.0)
-            clock_size = Vec2(32.0, 32.0)
-            dst = rl.Rectangle(ui(clock_pointer_pos.x), ui(clock_pointer_pos.y), ui(clock_size.x), ui(clock_size.y))
-            src = rl.Rectangle(0.0, 0.0, float(assets.clock_pointer.width), float(assets.clock_pointer.height))
-            rotation = time_ms / 1000.0 * 6.0
-            origin = rl.Vector2(ui(16.0), ui(16.0))
-            rl.draw_texture_pro(
-                assets.clock_pointer,
-                src,
-                dst,
-                origin,
-                rotation,
-                rl.Color(255, 255, 255, int(255 * clock_alpha)),
-            )
+        # NOTE: Raylib's draw_texture_pro uses dst.x/y as the rotation origin position;
+        # offset by half-size so the 32x32 quad stays aligned with the table.
+        clock_pointer_pos = Vec2(slide_x + 18.0, 94.0)
+        clock_size = Vec2(32.0, 32.0)
+        dst = rl.Rectangle(ui(clock_pointer_pos.x), ui(clock_pointer_pos.y), ui(clock_size.x), ui(clock_size.y))
+        src = rl.Rectangle(0.0, 0.0, float(clock_pointer.width), float(clock_pointer.height))
+        rotation = time_ms / 1000.0 * 6.0
+        origin = rl.Vector2(ui(16.0), ui(16.0))
+        rl.draw_texture_pro(
+            clock_pointer,
+            src,
+            dst,
+            origin,
+            rotation,
+            rl.Color(255, 255, 255, int(255 * clock_alpha)),
+        )
 
         total_seconds = max(0, int(time_ms) // 1000)
         minutes = total_seconds // 60
@@ -666,13 +636,13 @@ def draw_hud_overlay(
     # Survival XP panel.
     xp_target = int(player.experience if score is None else score)
     xp_display = state.smooth_xp(xp_target, frame_dt_ms) if show_xp else xp_target
-    if show_xp and assets.ind_panel is not None:
+    if show_xp:
         panel_pos = Vec2(*HUD_SURV_PANEL_POS).offset(dy=hud_y_shift)
         panel_size = Vec2(*HUD_SURV_PANEL_SIZE)
         dst = rl.Rectangle(ui(panel_pos.x), ui(panel_pos.y), ui(panel_size.x), ui(panel_size.y))
-        src = rl.Rectangle(0.0, 0.0, float(assets.ind_panel.width), float(assets.ind_panel.height))
+        src = rl.Rectangle(0.0, 0.0, float(ind_panel.width), float(ind_panel.height))
         rl.draw_texture_pro(
-            assets.ind_panel,
+            ind_panel,
             src,
             dst,
             rl.Vector2(0.0, 0.0),
@@ -724,44 +694,42 @@ def draw_hud_overlay(
         time_ms = max(0.0, float(elapsed_ms))
         clock_pos = Vec2(*HUD_CLOCK_POS)
         clock_size = Vec2(*HUD_CLOCK_SIZE)
-        if assets.clock_table is not None:
-            dst = rl.Rectangle(
-                ui(clock_pos.x),
-                ui(clock_pos.y),
-                ui(clock_size.x),
-                ui(clock_size.y),
-            )
-            src = rl.Rectangle(0.0, 0.0, float(assets.clock_table.width), float(assets.clock_table.height))
-            rl.draw_texture_pro(
-                assets.clock_table,
-                src,
-                dst,
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.Color(255, 255, 255, int(255 * alpha * HUD_CLOCK_ALPHA)),
-            )
-            max_y = max(max_y, dst.y + dst.height)
-        if assets.clock_pointer is not None:
-            # NOTE: Raylib's draw_texture_pro uses dst.x/y as the rotation origin position;
-            # offset by half-size so the 32x32 quad stays aligned with the table.
-            clock_center = clock_pos + clock_size * 0.5
-            dst = rl.Rectangle(
-                ui(clock_center.x),
-                ui(clock_center.y),
-                ui(clock_size.x),
-                ui(clock_size.y),
-            )
-            src = rl.Rectangle(0.0, 0.0, float(assets.clock_pointer.width), float(assets.clock_pointer.height))
-            rotation = time_ms / 1000.0 * 6.0
-            origin = rl.Vector2(ui(clock_size.x * 0.5), ui(clock_size.y * 0.5))
-            rl.draw_texture_pro(
-                assets.clock_pointer,
-                src,
-                dst,
-                origin,
-                rotation,
-                rl.Color(255, 255, 255, int(255 * alpha * HUD_CLOCK_ALPHA)),
-            )
+        dst = rl.Rectangle(
+            ui(clock_pos.x),
+            ui(clock_pos.y),
+            ui(clock_size.x),
+            ui(clock_size.y),
+        )
+        src = rl.Rectangle(0.0, 0.0, float(clock_table.width), float(clock_table.height))
+        rl.draw_texture_pro(
+            clock_table,
+            src,
+            dst,
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.Color(255, 255, 255, int(255 * alpha * HUD_CLOCK_ALPHA)),
+        )
+        max_y = max(max_y, dst.y + dst.height)
+        # NOTE: Raylib's draw_texture_pro uses dst.x/y as the rotation origin position;
+        # offset by half-size so the 32x32 quad stays aligned with the table.
+        clock_center = clock_pos + clock_size * 0.5
+        dst = rl.Rectangle(
+            ui(clock_center.x),
+            ui(clock_center.y),
+            ui(clock_size.x),
+            ui(clock_size.y),
+        )
+        src = rl.Rectangle(0.0, 0.0, float(clock_pointer.width), float(clock_pointer.height))
+        rotation = time_ms / 1000.0 * 6.0
+        origin = rl.Vector2(ui(clock_size.x * 0.5), ui(clock_size.y * 0.5))
+        rl.draw_texture_pro(
+            clock_pointer,
+            src,
+            dst,
+            origin,
+            rotation,
+            rl.Color(255, 255, 255, int(255 * alpha * HUD_CLOCK_ALPHA)),
+        )
         total_seconds = max(0, int(time_ms) // 1000)
         time_text = f"{total_seconds} seconds"
         _draw_text(font, time_text, Vec2(ui(255.0), ui(10.0)), text_scale, text_color)
@@ -790,29 +758,28 @@ def draw_hud_overlay(
             timer_alt = float(slot.timer_value_alt) if has_alt else 0.0
 
             # Slot panel.
-            if assets.ind_panel is not None:
-                if not small_indicators:
-                    panel_pos = slot_pos.offset(dy=HUD_BONUS_PANEL_OFFSET_Y)
-                    panel_size = Vec2(182.0, 53.0)
-                else:
-                    panel_pos = slot_pos + Vec2(-96.0, 5.0)
-                    panel_size = Vec2(182.0, 26.5)
+            if not small_indicators:
+                panel_pos = slot_pos.offset(dy=HUD_BONUS_PANEL_OFFSET_Y)
+                panel_size = Vec2(182.0, 53.0)
+            else:
+                panel_pos = slot_pos + Vec2(-96.0, 5.0)
+                panel_size = Vec2(182.0, 26.5)
 
-                src = rl.Rectangle(0.0, 0.0, float(assets.ind_panel.width), float(assets.ind_panel.height))
-                dst = rl.Rectangle(ui(panel_pos.x), ui(panel_pos.y), ui(panel_size.x), ui(panel_size.y))
-                rl.draw_texture_pro(
-                    assets.ind_panel,
-                    src,
-                    dst,
-                    rl.Vector2(0.0, 0.0),
-                    0.0,
-                    rl.Color(255, 255, 255, int(255 * bonus_panel_alpha)),
-                )
-                max_y = max(max_y, dst.y + dst.height)
+            src = rl.Rectangle(0.0, 0.0, float(ind_panel.width), float(ind_panel.height))
+            dst = rl.Rectangle(ui(panel_pos.x), ui(panel_pos.y), ui(panel_size.x), ui(panel_size.y))
+            rl.draw_texture_pro(
+                ind_panel,
+                src,
+                dst,
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.Color(255, 255, 255, int(255 * bonus_panel_alpha)),
+            )
+            max_y = max(max_y, dst.y + dst.height)
 
             # Slot icon.
-            if assets.bonuses is not None and slot.icon_id >= 0:
-                src = _bonus_icon_src(assets.bonuses, slot.icon_id)
+            if slot.icon_id >= 0:
+                src = _bonus_icon_src(bonuses_texture, slot.icon_id)
                 icon_pos = slot_pos.offset(dx=-1.0)
                 dst = rl.Rectangle(
                     ui(icon_pos.x),
@@ -821,7 +788,7 @@ def draw_hud_overlay(
                     ui(HUD_BONUS_ICON_SIZE),
                 )
                 rl.draw_texture_pro(
-                    assets.bonuses,
+                    bonuses_texture,
                     src,
                     dst,
                     rl.Vector2(0.0, 0.0),
@@ -907,31 +874,45 @@ def draw_hud_overlay(
         bonus_bottom_y = bonus_y
 
     # Weapon aux timer overlay (weapon name popup).
-    if assets.ind_panel is not None and assets.wicons is not None:
-        aux_panel_base_pos = Vec2(-12.0, float(bonus_bottom_y) - 17.0)
-        aux_icon_base_pos = Vec2(105.0, float(bonus_bottom_y) - 5.0)
-        aux_text_base_pos = Vec2(8.0, float(bonus_bottom_y) + 1.0)
-        aux_step = Vec2(0.0, 32.0)
-        for idx, hud_player in enumerate(hud_players):
-            aux_timer = float(hud_player.aux_timer)
-            if aux_timer <= 0.0:
-                continue
+    aux_panel_base_pos = Vec2(-12.0, float(bonus_bottom_y) - 17.0)
+    aux_icon_base_pos = Vec2(105.0, float(bonus_bottom_y) - 5.0)
+    aux_text_base_pos = Vec2(8.0, float(bonus_bottom_y) + 1.0)
+    aux_step = Vec2(0.0, 32.0)
+    for idx, hud_player in enumerate(hud_players):
+        aux_timer = float(hud_player.aux_timer)
+        if aux_timer <= 0.0:
+            continue
 
-            fade = 2.0 - aux_timer if aux_timer > 1.0 else aux_timer
-            fade = max(0.0, min(1.0, fade)) * alpha
-            if fade <= 1e-3:
-                continue
+        fade = 2.0 - aux_timer if aux_timer > 1.0 else aux_timer
+        fade = max(0.0, min(1.0, fade)) * alpha
+        if fade <= 1e-3:
+            continue
 
-            panel_alpha = fade * 0.8
-            text_alpha = fade
+        panel_alpha = fade * 0.8
+        text_alpha = fade
 
-            panel_pos = aux_panel_base_pos + aux_step * float(idx)
-            panel_size = Vec2(182.0, 53.0)
+        panel_pos = aux_panel_base_pos + aux_step * float(idx)
+        panel_size = Vec2(182.0, 53.0)
 
-            src = rl.Rectangle(0.0, 0.0, float(assets.ind_panel.width), float(assets.ind_panel.height))
-            dst = rl.Rectangle(ui(panel_pos.x), ui(panel_pos.y), ui(panel_size.x), ui(panel_size.y))
+        src = rl.Rectangle(0.0, 0.0, float(ind_panel.width), float(ind_panel.height))
+        dst = rl.Rectangle(ui(panel_pos.x), ui(panel_pos.y), ui(panel_size.x), ui(panel_size.y))
+        rl.draw_texture_pro(
+            ind_panel,
+            src,
+            dst,
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.Color(255, 255, 255, int(255 * panel_alpha)),
+        )
+        max_y = max(max_y, dst.y + dst.height)
+
+        icon_index = _weapon_icon_index(hud_player.weapon.weapon_id)
+        if icon_index is not None:
+            src = _weapon_icon_src(wicons, icon_index)
+            icon_pos = aux_icon_base_pos + aux_step * float(idx)
+            dst = rl.Rectangle(ui(icon_pos.x), ui(icon_pos.y), ui(60.0), ui(30.0))
             rl.draw_texture_pro(
-                assets.ind_panel,
+                wicons,
                 src,
                 dst,
                 rl.Vector2(0.0, 0.0),
@@ -940,33 +921,18 @@ def draw_hud_overlay(
             )
             max_y = max(max_y, dst.y + dst.height)
 
-            icon_index = _weapon_icon_index(hud_player.weapon.weapon_id)
-            if icon_index is not None:
-                src = _weapon_icon_src(assets.wicons, icon_index)
-                icon_pos = aux_icon_base_pos + aux_step * float(idx)
-                dst = rl.Rectangle(ui(icon_pos.x), ui(icon_pos.y), ui(60.0), ui(30.0))
-                rl.draw_texture_pro(
-                    assets.wicons,
-                    src,
-                    dst,
-                    rl.Vector2(0.0, 0.0),
-                    0.0,
-                    rl.Color(255, 255, 255, int(255 * panel_alpha)),
-                )
-                max_y = max(max_y, dst.y + dst.height)
-
-            weapon_name = weapon_display_name(
-                hud_player.weapon.weapon_id,
-                preserve_bugs=bool(state.preserve_bugs),
-            )
-            weapon_color = _with_alpha(HUD_TEXT_COLOR, text_alpha)
-            text_pos = aux_text_base_pos + aux_step * float(idx)
-            _draw_text(
-                font,
-                weapon_name,
-                Vec2(ui(text_pos.x), ui(text_pos.y)),
-                text_scale,
-                weapon_color,
-            )
+        weapon_name = weapon_display_name(
+            hud_player.weapon.weapon_id,
+            preserve_bugs=bool(state.preserve_bugs),
+        )
+        weapon_color = _with_alpha(HUD_TEXT_COLOR, text_alpha)
+        text_pos = aux_text_base_pos + aux_step * float(idx)
+        _draw_text(
+            font,
+            weapon_name,
+            Vec2(ui(text_pos.x), ui(text_pos.y)),
+            text_scale,
+            weapon_color,
+        )
 
     return max_y

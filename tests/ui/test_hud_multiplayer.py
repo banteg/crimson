@@ -4,8 +4,9 @@ from typing import cast
 
 import crimson.ui.hud as hud_module
 from crimson.sim.state_types import PlayerState
-from crimson.ui.hud import HudAssets, HudRenderContext, HudState, draw_hud_overlay
+from crimson.ui.hud import HudRenderContext, HudState, draw_hud_overlay
 from crimson.weapons import WeaponId
+from grim.assets import RuntimeResources, TextureId
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -20,32 +21,38 @@ def _texture(width: int, height: int) -> rl.Texture:
     return cast("rl.Texture", _TextureStub(width, height))
 
 
+class _ResourcesStub:
+    def __init__(self, textures: dict[TextureId, rl.Texture]) -> None:
+        self._textures = dict(textures)
+
+    def texture(self, texture_id: TextureId) -> rl.Texture:
+        return self._textures[texture_id]
+
+
+def _resources(textures: dict[TextureId, rl.Texture]) -> RuntimeResources:
+    return cast("RuntimeResources", _ResourcesStub(textures))
+
+
 def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(mocker) -> None:
     # Force HUD scale = 1.0 for easy coordinate assertions.
     mocker.patch.object(hud_module.rl, "get_screen_width", side_effect=lambda: 1024)
     mocker.patch.object(hud_module.rl, "get_screen_height", side_effect=lambda: 768)
 
-    textures: dict[str, rl.Texture] = {
-        "game_top": _texture(512, 64),
-        "life_heart": _texture(32, 32),
-        "ind_life": _texture(120, 9),
-        "wicons": _texture(256, 128),
-        "ind_bullet": _texture(6, 16),
+    textures: dict[TextureId, rl.Texture] = {
+        TextureId.UI_GAME_TOP: _texture(512, 64),
+        TextureId.UI_LIFE_HEART: _texture(32, 32),
+        TextureId.UI_IND_LIFE: _texture(120, 9),
+        TextureId.UI_IND_PANEL: _texture(182, 53),
+        TextureId.UI_IND_BULLET: _texture(6, 16),
+        TextureId.UI_IND_FIRE: _texture(6, 16),
+        TextureId.UI_IND_ROCKET: _texture(6, 16),
+        TextureId.UI_IND_ELECTRIC: _texture(6, 16),
+        TextureId.UI_WICONS: _texture(256, 128),
+        TextureId.UI_CLOCK_TABLE: _texture(32, 32),
+        TextureId.UI_CLOCK_POINTER: _texture(32, 32),
+        TextureId.BONUSES: _texture(256, 256),
     }
-    assets = HudAssets(
-        game_top=textures["game_top"],
-        life_heart=textures["life_heart"],
-        ind_life=textures["ind_life"],
-        ind_panel=None,
-        ind_bullet=textures["ind_bullet"],
-        ind_fire=None,
-        ind_rocket=None,
-        ind_electric=None,
-        wicons=textures["wicons"],
-        clock_table=None,
-        clock_pointer=None,
-        bonuses=None,
-    )
+    resources = _resources(textures)
 
     player0 = PlayerState(index=0, pos=Vec2(), health=80.0)
     player0.weapon.weapon_id = WeaponId.PISTOL
@@ -62,7 +69,7 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(mocker) -> None:
 
     draw_hud_overlay(
         HudRenderContext(
-            assets=assets,
+            resources=resources,
             state=HudState(),
             alpha=1.0,
             show_weapon=True,
@@ -86,19 +93,19 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(mocker) -> None:
         )
         for call in draw_texture_pro.call_args_list
     ]
-    weapon_icons = [tuple(dst) for tex, *dst in draws if tex is textures["wicons"]]
+    weapon_icons = [tuple(dst) for tex, *dst in draws if tex is textures[TextureId.UI_WICONS]]
     assert weapon_icons == [
         (220.0, 4.0, 32.0, 16.0),
         (220.0, 20.0, 32.0, 16.0),
     ]
 
-    ammo_bars = [tuple(dst) for tex, *dst in draws if tex is textures["ind_bullet"]]
+    ammo_bars = [tuple(dst) for tex, *dst in draws if tex is textures[TextureId.UI_IND_BULLET]]
     assert ammo_bars == [
         (290.0, 4.0, 6.0, 16.0),
         (290.0, 18.0, 6.0, 16.0),
     ]
 
-    health_bars = [tuple(dst) for tex, *dst in draws if tex is textures["ind_life"]]
+    health_bars = [tuple(dst) for tex, *dst in draws if tex is textures[TextureId.UI_IND_LIFE]]
     assert (64.0, 6.0, 120.0, 9.0) in health_bars
     assert (64.0, 22.0, 120.0, 9.0) in health_bars
     assert (64.0, 6.0, 96.0, 9.0) in health_bars
@@ -111,19 +118,21 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker)
     mocker.patch.object(hud_module.rl, "draw_text", side_effect=lambda *args, **kwargs: None)
 
     life_heart = _texture(32, 32)
-    assets = HudAssets(
-        game_top=None,
-        life_heart=life_heart,
-        ind_life=None,
-        ind_panel=None,
-        ind_bullet=None,
-        ind_fire=None,
-        ind_rocket=None,
-        ind_electric=None,
-        wicons=None,
-        clock_table=None,
-        clock_pointer=None,
-        bonuses=None,
+    resources = _resources(
+        {
+            TextureId.UI_GAME_TOP: _texture(512, 64),
+            TextureId.UI_LIFE_HEART: life_heart,
+            TextureId.UI_IND_LIFE: _texture(120, 9),
+            TextureId.UI_IND_PANEL: _texture(182, 53),
+            TextureId.UI_IND_BULLET: _texture(6, 16),
+            TextureId.UI_IND_FIRE: _texture(6, 16),
+            TextureId.UI_IND_ROCKET: _texture(6, 16),
+            TextureId.UI_IND_ELECTRIC: _texture(6, 16),
+            TextureId.UI_WICONS: _texture(256, 128),
+            TextureId.UI_CLOCK_TABLE: _texture(32, 32),
+            TextureId.UI_CLOCK_POINTER: _texture(32, 32),
+            TextureId.BONUSES: _texture(256, 256),
+        },
     )
 
     player0 = PlayerState(index=0, pos=Vec2(), health=20.0)
@@ -134,7 +143,7 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker)
     draw_texture_pro.reset_mock()
     draw_hud_overlay(
         HudRenderContext(
-            assets=assets,
+            resources=resources,
             state=HudState(preserve_bugs=False),
             alpha=1.0,
             show_weapon=False,
@@ -162,7 +171,7 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker)
     draw_texture_pro.reset_mock()
     draw_hud_overlay(
         HudRenderContext(
-            assets=assets,
+            resources=resources,
             state=HudState(preserve_bugs=True),
             alpha=1.0,
             show_weapon=False,
