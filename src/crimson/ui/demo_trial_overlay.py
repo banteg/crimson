@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from grim.assets import RuntimeResources, TextureId, runtime_resources_for
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.assets import TextureId, runtime_resources_for
+from grim.fonts.small import draw_small_text, load_small_font
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
@@ -81,32 +81,21 @@ class DemoTrialOverlayUi:
     def __init__(self, assets_root: Path) -> None:
         self._assets_root = assets_root
 
-        self._font: SmallFontData | None = None
-        self._resources: RuntimeResources | None = None
+        self._font = load_small_font(self._assets_root)
+        self._resources = runtime_resources_for(self._assets_root)
         self._cursor_pulse_time = 0.0
 
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
 
     def close(self) -> None:
-        self._font = None
-        self._resources = None
         self._cursor_pulse_time = 0.0
-
-    def _ensure_loaded(self) -> None:
-        if self._font is None:
-            self._font = load_small_font(self._assets_root)
-
-        if self._resources is None:
-            self._resources = runtime_resources_for(self._assets_root)
 
     @staticmethod
     def _panel_xy(*, screen_w: float, screen_h: float) -> Vec2:
         return Vec2(screen_w * 0.5 - 256.0, screen_h * 0.5 - 128.0)
 
     def update(self, dt_ms: int) -> str | None:
-        self._ensure_loaded()
-
         dt_ms = max(0, int(dt_ms))
         self._cursor_pulse_time += float(dt_ms) * 0.001 * 1.1
         mouse = rl.get_mouse_position()
@@ -151,7 +140,6 @@ class DemoTrialOverlayUi:
     def draw(self, info: DemoTrialOverlayInfo) -> None:
         if not info.visible:
             return
-        self._ensure_loaded()
 
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
@@ -159,8 +147,6 @@ class DemoTrialOverlayUi:
 
         rl.draw_rectangle(int(panel_pos.x), int(panel_pos.y), 512, 256, rl.Color(18, 18, 22, 230))
         rl.draw_rectangle_lines(int(panel_pos.x), int(panel_pos.y), 512, 256, rl.Color(255, 255, 255, 255))
-
-        assert self._resources is not None, "demo trial overlay resources must be loaded before draw"
 
         logo = self._resources.texture(TextureId.CL_LOGO)
         src = rl.Rectangle(0.0, 0.0, float(logo.width), float(logo.height))

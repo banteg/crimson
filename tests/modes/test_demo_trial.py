@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 import crimson.game.loop_view as loop_view_mod
@@ -171,8 +173,9 @@ def test_demo_trial_purchase_requests_quit(make_game_state, mocker) -> None:
     )
     state.status.game_sequence_id = DEMO_TOTAL_PLAY_TIME_MS
     loop = GameLoopView(state)
+    overlay = SimpleNamespace(update=mocker.Mock(return_value="purchase"))
 
-    mocker.patch.object(loop._demo_trial_overlay, "update", return_value="purchase")
+    mocker.patch.object(loop, "_demo_trial_overlay_view", return_value=overlay)
     open_mock = mocker.patch.object(loop_view_mod.webbrowser, "open", return_value=True)
 
     handled = loop._update_demo_trial_overlay(0.016)
@@ -192,8 +195,9 @@ def test_demo_trial_overlay_prepares_gameplay_frame_when_visible(make_game_state
     gameplay = _DummyGameplay()
     loop._front_active = gameplay
     loop._active = gameplay
+    overlay = SimpleNamespace(update=mocker.Mock(return_value=None))
 
-    mocker.patch.object(loop._demo_trial_overlay, "update", return_value=None)
+    mocker.patch.object(loop, "_demo_trial_overlay_view", return_value=overlay)
 
     handled = loop._update_demo_trial_overlay(0.016)
 
