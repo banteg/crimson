@@ -470,7 +470,7 @@ def _write_run_trace(
         and int(run.quest_stage_minor) > 0
     )
     settings = session_settings_for_lockstep(
-        mode_id=int(run.mode_id),
+        mode_id=GameMode(int(run.mode_id)),
         player_count=int(run.replay_player_count),
         quest_level=(
             QuestLevel(int(run.quest_stage_major), int(run.quest_stage_minor))

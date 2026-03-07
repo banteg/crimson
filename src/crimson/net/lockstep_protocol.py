@@ -10,6 +10,7 @@ from typing import TypeAlias
 import msgspec
 
 from .. import __version__
+from ..game_modes import GameMode
 from ..msgspec_types import NonNegativeInt, PlayerCount, PositiveInt, SignedIndex
 from ..quests.level import QuestLevel
 from ..replay.types import PackedPlayerInput
@@ -120,7 +121,7 @@ def current_build_id() -> str:
 class Hello(msgspec.Struct, tag="hello", forbid_unknown_fields=True):
     protocol_version: PositiveInt = PROTOCOL_VERSION
     build_id: str = ""
-    mode_id: int = 0
+    mode_id: GameMode = GameMode.DEMO
     player_count: PlayerCount = 1
     tick_rate: PositiveInt = TICK_RATE
     input_delay_ticks: NonNegativeInt = INPUT_DELAY_TICKS
@@ -135,7 +136,7 @@ class Welcome(msgspec.Struct, tag="welcome", forbid_unknown_fields=True):
     session_id: str = ""
     protocol_version: PositiveInt = PROTOCOL_VERSION
     build_id: str = ""
-    mode_id: int = 0
+    mode_id: GameMode = GameMode.DEMO
     player_count: PlayerCount = 1
     slot_index: SignedIndex = -1
     host_slot_index: NonNegativeInt = 0
@@ -153,7 +154,7 @@ class LobbySlot(SlotState, forbid_unknown_fields=True):
 
 class LobbyState(msgspec.Struct, tag="lobby_state", forbid_unknown_fields=True):
     session_id: str = ""
-    mode_id: int = 0
+    mode_id: GameMode = GameMode.DEMO
     player_count: PlayerCount = 1
     slots: list[LobbySlot] = msgspec.field(default_factory=list)
     all_ready: bool = False
@@ -187,7 +188,7 @@ class StatusSnapshot(msgspec.Struct, forbid_unknown_fields=True):
 
 class MatchStart(msgspec.Struct, tag="match_start", forbid_unknown_fields=True):
     session_id: str = ""
-    mode_id: int = 0
+    mode_id: GameMode = GameMode.DEMO
     player_count: PlayerCount = 1
     seed: int = 0
     start_tick: NonNegativeInt = 0

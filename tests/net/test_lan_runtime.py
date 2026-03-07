@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 
+from crimson.game_modes import GameMode
 from crimson.net.lockstep_protocol import (
     INPUT_DELAY_TICKS,
     LINK_TIMEOUT_MS,
@@ -32,7 +33,7 @@ def test_join_hello_retries_keep_reliable_backlog_bounded() -> None:
     start = int(time.monotonic() * 1000.0)
     runtime = LockstepRuntime(
         JoinLockstepRuntimeConfig(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             bind_host="0.0.0.0",
             host_ip="10.255.255.1",
@@ -56,7 +57,7 @@ def test_join_hello_retries_keep_reliable_backlog_bounded() -> None:
 def test_host_does_not_track_unknown_non_hello_packets(mocker) -> None:
     runtime = LockstepRuntime(
         HostLockstepRuntimeConfig(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             bind_host="127.0.0.1",
             host_ip="",
@@ -83,7 +84,7 @@ def test_host_does_not_track_unknown_non_hello_packets(mocker) -> None:
 def test_host_pop_tick_frame_attaches_pending_commands_to_first_canonical_frame() -> None:
     runtime = LockstepRuntime(
         HostLockstepRuntimeConfig(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             bind_host="127.0.0.1",
             host_ip="",
@@ -110,7 +111,7 @@ def test_host_pop_tick_frame_attaches_pending_commands_to_first_canonical_frame(
 def test_host_timeout_aborts_started_match() -> None:
     runtime = LockstepRuntime(
         HostLockstepRuntimeConfig(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             bind_host="127.0.0.1",
             host_ip="",
@@ -127,7 +128,7 @@ def test_host_timeout_aborts_started_match() -> None:
         Hello(
             protocol_version=int(PROTOCOL_VERSION),
             build_id=str(runtime.build_id),
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             tick_rate=int(TICK_RATE),
             input_delay_ticks=int(INPUT_DELAY_TICKS),
@@ -154,7 +155,7 @@ def test_host_timeout_aborts_started_match() -> None:
 def test_host_waiting_input_pause_uses_extended_timeout() -> None:
     runtime = LockstepRuntime(
         HostLockstepRuntimeConfig(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             bind_host="127.0.0.1",
             host_ip="",
@@ -171,7 +172,7 @@ def test_host_waiting_input_pause_uses_extended_timeout() -> None:
         Hello(
             protocol_version=int(PROTOCOL_VERSION),
             build_id=str(runtime.build_id),
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             tick_rate=int(TICK_RATE),
             input_delay_ticks=int(INPUT_DELAY_TICKS),
@@ -210,7 +211,7 @@ def test_host_waiting_input_pause_uses_extended_timeout() -> None:
 def test_client_waiting_input_sends_idle_heartbeat(mocker) -> None:
     runtime = LockstepRuntime(
         JoinLockstepRuntimeConfig(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             bind_host="127.0.0.1",
             host_ip="127.0.0.1",

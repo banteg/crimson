@@ -4,6 +4,7 @@ from typing import Literal, TypeAlias
 
 import msgspec
 
+from ..game_modes import GameMode
 from ..msgspec_types import NonNegativeInt, PlayerCount, PositiveInt, SignedIndex
 from ..quests.level import QuestLevel
 from ..replay.types import PackedPlayerInput
@@ -18,6 +19,7 @@ from .lockstep_protocol import (
     builds_compatible,
     current_build_id,
 )
+from .room_code import ROOM_CODE_LENGTH, RoomCode
 from .schema_shared import PacketHeader, SlotState
 
 PROTOCOL_VERSION = 5
@@ -25,7 +27,6 @@ DEFAULT_PORT = 31993
 INPUT_DELAY_TICKS = 1
 ROLLBACK_MAX_TICKS = 8
 RECONNECT_TIMEOUT_MS = 15_000
-ROOM_CODE_LENGTH = 4
 LINK_TIMEOUT_MS = 5_000
 PING_INTERVAL_MS = 250
 RESYNC_CHUNK_PAYLOAD_BYTES = 1_024
@@ -53,7 +54,7 @@ class ClientWelcome(msgspec.Struct, tag="client_welcome", forbid_unknown_fields=
 
 
 class RoomCreate(msgspec.Struct, tag="room_create", forbid_unknown_fields=True):
-    mode_id: int = 0
+    mode_id: GameMode = GameMode.DEMO
     player_count: PlayerCount = 1
     quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
@@ -65,7 +66,7 @@ class RoomCreate(msgspec.Struct, tag="room_create", forbid_unknown_fields=True):
 
 
 class RoomJoin(msgspec.Struct, tag="room_join", forbid_unknown_fields=True):
-    room_code: str = ""
+    room_code: RoomCode | None = None
     reconnect_token: str = ""
 
 
@@ -75,9 +76,9 @@ class RoomReady(msgspec.Struct, tag="room_ready", forbid_unknown_fields=True):
 
 
 class RoomState(msgspec.Struct, tag="room_state", forbid_unknown_fields=True):
-    room_code: str = ""
+    room_code: RoomCode
     session_id: str = ""
-    mode_id: int = 0
+    mode_id: GameMode = GameMode.DEMO
     player_count: PlayerCount = 1
     quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
@@ -91,11 +92,11 @@ class RoomState(msgspec.Struct, tag="room_state", forbid_unknown_fields=True):
 
 
 class RoomStart(msgspec.Struct, tag="room_start", forbid_unknown_fields=True):
-    room_code: str = ""
+    room_code: RoomCode
     session_id: str = ""
     seed: int = 0
     start_tick: NonNegativeInt = 0
-    mode_id: int = 0
+    mode_id: GameMode = GameMode.DEMO
     player_count: PlayerCount = 1
     quest_level: QuestLevel | None = None
     preserve_bugs: bool = False

@@ -8,8 +8,8 @@ from typing import Literal, TypeAlias, cast
 
 import msgspec
 
-from crimson.quests.level import QuestLevel
-
+from ..game_modes import GameMode
+from ..quests.level import QuestLevel
 from ..replay.types import PackedPlayerInput
 from .debug_log import lan_debug_log
 from .lockstep_protocol import TickFrame
@@ -50,6 +50,7 @@ from .rollback_resync_v5 import (
     build_rb_resync_messages,
     decode_mode_snapshot,
 )
+from .room_code import RoomCode
 from .session_settings import room_create_from_session_settings, session_settings_for_relay
 
 
@@ -58,11 +59,11 @@ def _now_ms() -> int:
 
 
 class _RollbackRuntimeConfigBase(msgspec.Struct):
-    mode_id: int
+    mode_id: GameMode
     player_count: int
     relay_host: str
     relay_port: int = DEFAULT_PORT
-    room_code: str = ""
+    room_code: RoomCode | None = None
     quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
     netcode_mode: NetcodeMode = "rollback"
@@ -111,7 +112,7 @@ class RollbackRuntime(msgspec.Struct):
     _last_ping_ms: int = 0
     _reconnect_token: str = ""
     _paused_for_reconnect: bool = False
-    _announced_room_code: str = ""
+    _announced_room_code: RoomCode | None = None
     _reconnect_state: ReconnectState = "idle"
 
     _rollback: RollbackController | None = None
@@ -181,7 +182,7 @@ class RollbackRuntime(msgspec.Struct):
         self._reconnect_token = ""
         self._paused_for_reconnect = False
         self._reconnect_state = "idle"
-        self._announced_room_code = ""
+        self._announced_room_code = None
         self._rollback = None
         self._frame_queue.clear()
         self._remote_seen_slots.clear()
@@ -368,7 +369,7 @@ class RollbackRuntime(msgspec.Struct):
                     return
                 self._sent_join_request = True
                 self._send(
-                    RoomJoin(room_code=str(self.cfg.room_code), reconnect_token=str(self._reconnect_token)),
+                    RoomJoin(room_code=self.cfg.room_code, reconnect_token=str(self._reconnect_token)),
                     reliable=True,
                     now_ms=int(now_ms),
                 )
@@ -377,7 +378,7 @@ class RollbackRuntime(msgspec.Struct):
             if str(self.cfg.role) == "host" and (not self._created_room):
                 self._created_room = True
                 settings = session_settings_for_relay(
-                    mode_id=int(self.cfg.mode_id),
+                    mode_id=self.cfg.mode_id,
                     player_count=int(self.cfg.player_count),
                     quest_level=self.cfg.quest_level,
                     preserve_bugs=bool(self.cfg.preserve_bugs),
@@ -400,7 +401,7 @@ class RollbackRuntime(msgspec.Struct):
                     return
                 self._sent_join_request = True
                 self._send(
-                    RoomJoin(room_code=str(self.cfg.room_code), reconnect_token=""),
+                    RoomJoin(room_code=self.cfg.room_code, reconnect_token=""),
                     reliable=True,
                     now_ms=int(now_ms),
                 )
@@ -451,10 +452,10 @@ class RollbackRuntime(msgspec.Struct):
                 if self._is_reconnect_in_progress() and self._room_state_has_local_slot(message):
                     self._finish_reconnect(now_ms=int(now_ms))
                 if str(self.cfg.role) == "host":
-                    self.cfg.room_code = str(message.room_code or "")
+                    self.cfg.room_code = message.room_code
                     self._announce_room_code(self.cfg.room_code)
-                elif str(self.cfg.room_code or "") != str(message.room_code or ""):
-                    self.cfg.room_code = str(message.room_code or "")
+                elif self.cfg.room_code != message.room_code:
+                    self.cfg.room_code = message.room_code
                 return
 
             case RoomStart():
@@ -468,8 +469,8 @@ class RollbackRuntime(msgspec.Struct):
                 if first_start:
                     self._init_rollback(message)
                 self._sent_ready = True
-                if str(self.cfg.room_code or "") != str(message.room_code or ""):
-                    self.cfg.room_code = str(message.room_code or "")
+                if self.cfg.room_code != message.room_code:
+                    self.cfg.room_code = message.room_code
                 if str(self.cfg.role) == "host":
                     self._announce_room_code(self.cfg.room_code)
                 return
@@ -831,14 +832,13 @@ class RollbackRuntime(msgspec.Struct):
                 room_code=str(self.cfg.room_code or ""),
             )
 
-    def _announce_room_code(self, room_code: str) -> None:
-        code = str(room_code or "").strip().upper()
-        if not code:
+    def _announce_room_code(self, room_code: RoomCode | None) -> None:
+        if room_code is None:
             return
-        if code == str(self._announced_room_code):
+        if room_code == self._announced_room_code:
             return
-        self._announced_room_code = code
-        print(f"[crimson] Invite code: {code}", flush=True)
+        self._announced_room_code = room_code
+        print(f"[crimson] Invite code: {room_code}", flush=True)
 
 
 __all__ = [

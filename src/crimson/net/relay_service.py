@@ -8,13 +8,13 @@ import uuid
 import msgspec
 import structlog
 
+from ..game_modes import GameMode
 from ..logging import ensure_structlog_stdlib_defaults
 from ..quests.level import QuestLevel
 from .relay_protocol import (
     LINK_TIMEOUT_MS,
     PROTOCOL_VERSION,
     RECONNECT_TIMEOUT_MS,
-    ROOM_CODE_LENGTH,
     ClientHello,
     ClientWelcome,
     LockstepControl,
@@ -40,6 +40,7 @@ from .relay_protocol import (
 )
 from .relay_reliable import RelayReliableLink
 from .relay_transport import PeerAddr, RelayUdpTransport
+from .room_code import ROOM_CODE_LENGTH, RoomCode
 from .session_settings import (
     room_start_from_session_settings,
     room_state_from_session_settings,
@@ -52,8 +53,8 @@ def _now_ms() -> int:
     return int(time.monotonic() * 1000.0)
 
 
-def _room_code(rand: random.Random) -> str:
-    alphabet = string.ascii_uppercase + string.digits
+def _room_code(rand: random.Random) -> RoomCode:
+    alphabet = string.ascii_lowercase + string.digits
     return "".join(rand.choice(alphabet) for _ in range(int(ROOM_CODE_LENGTH)))
 
 
@@ -71,7 +72,7 @@ class _Peer(msgspec.Struct):
     peer_id: str = ""
     build_id: str = ""
     peer_name: str = ""
-    room_code: str = ""
+    room_code: RoomCode | None = None
     slot_index: int = -1
     last_seen_ms: int = 0
 
@@ -90,9 +91,9 @@ class _RoomSlot(msgspec.Struct):
 
 
 class _Room(msgspec.Struct):
-    room_code: str
+    room_code: RoomCode
     session_id: str
-    mode_id: int
+    mode_id: GameMode
     player_count: int
     quest_level: QuestLevel | None
     preserve_bugs: bool
@@ -132,10 +133,10 @@ class RelayServer:
         ensure_structlog_stdlib_defaults()
         self.cfg = cfg
         self.transport = RelayUdpTransport(bind_host=str(cfg.bind_host), bind_port=int(cfg.bind_port))
-        self._rooms: dict[str, _Room] = {}
+        self._rooms: dict[RoomCode, _Room] = {}
         self._peers_by_addr: dict[PeerAddr, _Peer] = {}
         self._peers_by_id: dict[str, _Peer] = {}
-        self._room_by_reconnect: dict[str, tuple[str, int]] = {}
+        self._room_by_reconnect: dict[str, tuple[RoomCode, int]] = {}
         self._rand = random.Random()
         self.log = structlog.stdlib.get_logger("crimson.relay").bind(
             component="relay_service",
@@ -345,14 +346,14 @@ class RelayServer:
             self._send_peer(peer, RelayError(reason="room_capacity"), reliable=True, now_ms=int(now_ms))
             return
 
-        code = ""
+        code: RoomCode | None = None
         for _ in range(32):
             candidate = _room_code(self._rand)
             if candidate in self._rooms:
                 continue
             code = candidate
             break
-        if not code:
+        if code is None:
             self.log.error(
                 "relay_room_create_rejected",
                 reason="room_code_exhausted",
@@ -371,9 +372,9 @@ class RelayServer:
         host_slot.reconnect_token = uuid.uuid4().hex
 
         room = _Room(
-            room_code=str(code),
+            room_code=code,
             session_id=uuid.uuid4().hex[:12],
-            mode_id=int(settings.mode_id),
+            mode_id=settings.mode_id,
             player_count=int(player_count),
             quest_level=settings.quest_level,
             preserve_bugs=bool(settings.preserve_bugs),
@@ -384,10 +385,10 @@ class RelayServer:
             status_snapshot=message.status_snapshot,
             slots=slots,
         )
-        self._rooms[str(code)] = room
-        self._room_by_reconnect[str(host_slot.reconnect_token)] = (str(code), 0)
+        self._rooms[code] = room
+        self._room_by_reconnect[str(host_slot.reconnect_token)] = (code, 0)
 
-        peer.room_code = str(code)
+        peer.room_code = code
         peer.slot_index = 0
         self.log.info(
             "relay_room_created",
@@ -402,7 +403,7 @@ class RelayServer:
         self._broadcast_room_state(room=room, now_ms=int(now_ms))
 
     def _handle_room_join(self, *, peer: _Peer, message: RoomJoin, now_ms: int) -> None:
-        room_code = str(message.room_code or "").upper().strip()
+        room_code = message.room_code
         reconnect_token = str(message.reconnect_token or "").strip()
 
         if peer.room_code:
@@ -421,11 +422,11 @@ class RelayServer:
         if reconnect_token:
             mapping = self._room_by_reconnect.get(str(reconnect_token))
             if mapping is not None:
-                room = self._rooms.get(str(mapping[0]))
+                room = self._rooms.get(mapping[0])
                 slot_index = int(mapping[1])
 
         if room is None:
-            room = self._rooms.get(str(room_code))
+            room = self._rooms.get(room_code) if room_code is not None else None
             if room is None:
                 self.log.warning(
                     "relay_room_join_rejected",
@@ -482,9 +483,9 @@ class RelayServer:
         slot.disconnected_ms = 0
         if not slot.reconnect_token:
             slot.reconnect_token = uuid.uuid4().hex
-        self._room_by_reconnect[str(slot.reconnect_token)] = (str(room.room_code), int(slot.slot_index))
+        self._room_by_reconnect[str(slot.reconnect_token)] = (room.room_code, int(slot.slot_index))
 
-        peer.room_code = str(room.room_code)
+        peer.room_code = room.room_code
         peer.slot_index = int(slot.slot_index)
         self.log.info(
             "relay_room_joined",
@@ -501,7 +502,7 @@ class RelayServer:
             self._send_room_start(peer=peer, room=room, now_ms=int(now_ms))
 
     def _handle_room_ready(self, *, peer: _Peer, message: RoomReady, now_ms: int) -> None:
-        room = self._rooms.get(str(peer.room_code))
+        room = self._rooms.get(peer.room_code) if peer.room_code is not None else None
         if room is None:
             self.log.warning(
                 "relay_room_ready_rejected",
@@ -557,7 +558,7 @@ class RelayServer:
         self._broadcast_room_state(room=room, now_ms=int(now_ms))
 
     def _forward_room_message(self, *, peer: _Peer, message: NetMessage, now_ms: int) -> None:
-        room = self._rooms.get(str(peer.room_code))
+        room = self._rooms.get(peer.room_code) if peer.room_code is not None else None
         if room is None:
             self.log.warning(
                 "relay_forward_rejected",
@@ -646,7 +647,7 @@ class RelayServer:
             for slot in room.slots
         ]
         settings = session_settings_for_relay(
-            mode_id=int(room.mode_id),
+            mode_id=room.mode_id,
             player_count=int(room.player_count),
             quest_level=room.quest_level,
             preserve_bugs=bool(room.preserve_bugs),
@@ -696,7 +697,7 @@ class RelayServer:
         if 0 <= int(slot_index) < len(room.slots):
             reconnect_token = str(room.slots[int(slot_index)].reconnect_token)
         settings = session_settings_for_relay(
-            mode_id=int(room.mode_id),
+            mode_id=room.mode_id,
             player_count=int(room.player_count),
             quest_level=room.quest_level,
             preserve_bugs=bool(room.preserve_bugs),
@@ -775,7 +776,7 @@ class RelayServer:
             self._peers_by_addr.pop(peer.addr, None)
 
     def _disconnect_peer(self, *, peer: _Peer, reason: str, now_ms: int) -> None:
-        room = self._rooms.get(str(peer.room_code))
+        room = self._rooms.get(peer.room_code) if peer.room_code is not None else None
         if room is None:
             self.log.info(
                 "relay_peer_disconnected_without_room",
@@ -810,7 +811,7 @@ class RelayServer:
             self._send_peer(dst, notice, reliable=True, now_ms=int(now_ms))
 
         if all((not slot.connected) for slot in room.slots):
-            self._rooms.pop(str(room.room_code), None)
+            self._rooms.pop(room.room_code, None)
             self.log.info(
                 "relay_room_evicted",
                 room_code=str(room.room_code),

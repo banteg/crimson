@@ -239,13 +239,13 @@ class NetworkLobbyPanelView(PanelMenuView):
                 room_code = "-"
                 relay_text = f"{endpoint.host}:{int(endpoint.port)}"
             else:
-                room_code = str(endpoint.room_code).upper().strip() or "-"
+                room_code = endpoint.room_code or "-"
                 relay_text = f"{endpoint.relay_host}:{int(endpoint.relay_port)}"
 
         runtime: RollbackRuntime | LockstepRuntime | None = self.state.network_runtime
         lobby_state: LobbyState | RoomState | None = runtime.lobby_state() if runtime is not None else None
         if isinstance(lobby_state, RoomState):
-            candidate = str(lobby_state.room_code).upper().strip()
+            candidate = lobby_state.room_code
             if candidate:
                 room_code = candidate
 

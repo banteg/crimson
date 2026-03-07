@@ -75,7 +75,7 @@ def test_fallback_netcode_mode_is_not_switched_mid_match(make_game_state) -> Non
         endpoint=RollbackEndpoint(
             relay_host="127.0.0.1",
             relay_port=31993,
-            room_code="",
+            room_code=None,
         ),
         netcode_mode="rollback",
         player_count=2,

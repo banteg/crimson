@@ -8,6 +8,7 @@ import msgspec
 from grim.rand import Crand
 
 from ..game_modes import GameMode
+from ..net.room_code import RoomCode
 from ..paths import default_runtime_dir
 from ..pause_background import PauseBackground
 from ..quests.level import QuestLevel
@@ -61,7 +62,7 @@ class LockstepEndpoint(msgspec.Struct, frozen=True):
 class RollbackEndpoint(msgspec.Struct, frozen=True):
     relay_host: str = "127.0.0.1"
     relay_port: int = 31993
-    room_code: str = ""
+    room_code: RoomCode | None = None
 
 
 NetworkEndpoint: TypeAlias = LockstepEndpoint | RollbackEndpoint

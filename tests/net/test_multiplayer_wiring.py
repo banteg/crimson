@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode
+from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
@@ -175,13 +176,13 @@ def test_lan_player_rings_follow_lan_state_and_cvar(tmp_path: Path) -> None:
     mode = RushMode(ctx, config=cfg, console=console, audio_rng=Crand(0xBEEF))
     runtime = RollbackRuntime(
         JoinRollbackRuntimeConfig(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             relay_host="127.0.0.1",
             relay_port=32000,
         ),
     )
-    runtime.match_start_event = RoomStart(slot_index=2)
+    runtime.match_start_event = RoomStart(room_code="ab12", slot_index=2)
     mode.bind_lan_runtime(runtime)
 
     mode.set_lan_runtime(

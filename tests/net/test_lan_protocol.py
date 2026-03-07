@@ -5,6 +5,7 @@ import subprocess
 import msgspec
 import pytest
 
+from crimson.game_modes import GameMode
 from crimson.net import lockstep_protocol as protocol
 from crimson.net.lockstep_protocol import (
     DebugLogBatch,
@@ -26,7 +27,7 @@ def test_packet_msgpack_round_trip() -> None:
         reliable=True,
         message=Hello(
             build_id="build123",
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             host=False,
         ),

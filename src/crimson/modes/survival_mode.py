@@ -32,7 +32,6 @@ from ..net.rollback_resync_v5 import (
 )
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
-from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import run_unlock_terrain_prelude
 from ..sim.input_providers import PerkMenuOpenCommand
 from ..sim.session_builders import build_survival_session
@@ -41,6 +40,7 @@ from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
 from ..weapon_runtime import weapon_assign_player
+from ..weapon_usage import normalize_weapon_usage_counts
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,

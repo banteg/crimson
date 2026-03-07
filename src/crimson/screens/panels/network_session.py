@@ -18,6 +18,7 @@ from ...game.types import (
     RollbackEndpoint,
 )
 from ...net.relay_protocol import ROOM_CODE_LENGTH
+from ...net.room_code import parse_optional_room_code
 from ...quests.level import QuestLevel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ...ui.text_input import poll_text_input
@@ -97,7 +98,7 @@ class NetworkSessionPanelView(PanelMenuView):
             else:
                 self._bind_host = str(endpoint.relay_host or "127.0.0.1")
                 self._host = str(endpoint.relay_host or "127.0.0.1")
-                self._room_code = "".join(ch for ch in str(endpoint.room_code).upper() if ch.isalnum())[
+                self._room_code = "".join(ch for ch in str(endpoint.room_code or "").lower() if ch.isalnum())[
                     : int(ROOM_CODE_LENGTH)
                 ]
                 self._port_text = str(max(1, int(endpoint.relay_port)))
@@ -174,7 +175,7 @@ class NetworkSessionPanelView(PanelMenuView):
             elif self._active_field == "host":
                 self._host = (self._host + typed)[:64]
             elif self._active_field == "room_code":
-                self._room_code = "".join(ch for ch in (self._room_code + typed).upper() if ch.isalnum())[
+                self._room_code = "".join(ch for ch in (self._room_code + typed).lower() if ch.isalnum())[
                     : int(ROOM_CODE_LENGTH)
                 ]
             elif self._active_field == "port":
@@ -322,10 +323,15 @@ class NetworkSessionPanelView(PanelMenuView):
             if self._role == "join" and not self._room_code.strip():
                 self._error = "Room code is required to join rollback sessions."
                 return
+            try:
+                room_code = parse_optional_room_code(self._room_code)
+            except msgspec.ValidationError:
+                self._error = f"Room code must be {int(ROOM_CODE_LENGTH)} uppercase letters or digits."
+                return
             endpoint = RollbackEndpoint(
                 relay_host=str(self._host.strip()),
                 relay_port=int(port),
-                room_code=str(self._room_code.strip().upper()),
+                room_code=room_code,
             )
             config = NetworkSessionConfig(
                 mode=mode,

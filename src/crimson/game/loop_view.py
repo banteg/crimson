@@ -298,9 +298,9 @@ class GameLoopView:
             return "open_play_game"
 
         mode_by_action = {
-            "start_survival_lan": ("survival", "open_lan_lobby", 1),
-            "start_rush_lan": ("rush", "open_lan_lobby", 2),
-            "start_quest_lan": ("quests", "open_lan_lobby", 3),
+            "start_survival_lan": ("survival", "open_lan_lobby", GameMode.SURVIVAL),
+            "start_rush_lan": ("rush", "open_lan_lobby", GameMode.RUSH),
+            "start_quest_lan": ("quests", "open_lan_lobby", GameMode.QUESTS),
         }
         resolved = mode_by_action.get(action)
         if resolved is None:
@@ -375,7 +375,7 @@ class GameLoopView:
             endpoint = cfg.endpoint
             if pending.role == "host":
                 runtime_cfg = HostLockstepRuntimeConfig(
-                    mode_id=int(mode_id),
+                    mode_id=mode_id,
                     player_count=int(player_count),
                     bind_host=str(endpoint.bind_host),
                     host_ip=str(endpoint.host),
@@ -387,7 +387,7 @@ class GameLoopView:
                 )
             else:
                 runtime_cfg = JoinLockstepRuntimeConfig(
-                    mode_id=int(mode_id),
+                    mode_id=mode_id,
                     player_count=int(player_count),
                     bind_host=str(endpoint.bind_host),
                     host_ip=str(endpoint.host),
@@ -404,11 +404,11 @@ class GameLoopView:
             endpoint = cfg.endpoint
             if pending.role == "host":
                 runtime_cfg = HostRollbackRuntimeConfig(
-                    mode_id=int(mode_id),
+                    mode_id=mode_id,
                     player_count=int(player_count),
                     relay_host=str(endpoint.relay_host),
                     relay_port=int(endpoint.relay_port),
-                    room_code=str(endpoint.room_code).strip().upper(),
+                    room_code=endpoint.room_code,
                     quest_level=cfg.quest_level,
                     preserve_bugs=False,
                     netcode_mode="rollback",
@@ -419,11 +419,11 @@ class GameLoopView:
                 )
             else:
                 runtime_cfg = JoinRollbackRuntimeConfig(
-                    mode_id=int(mode_id),
+                    mode_id=mode_id,
                     player_count=int(player_count),
                     relay_host=str(endpoint.relay_host),
                     relay_port=int(endpoint.relay_port),
-                    room_code=str(endpoint.room_code).strip().upper(),
+                    room_code=endpoint.room_code,
                     quest_level=cfg.quest_level,
                     preserve_bugs=False,
                     netcode_mode="rollback",

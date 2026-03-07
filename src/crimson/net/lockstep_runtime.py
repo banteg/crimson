@@ -9,8 +9,8 @@ from typing import Literal, TypeAlias, cast
 
 import msgspec
 
-from crimson.quests.level import QuestLevel
-
+from ..game_modes import GameMode
+from ..quests.level import QuestLevel
 from ..replay.types import PackedPlayerInput
 from ..sim.input_providers import GameCommand
 from ..sim.timing import ftol_ms_i32
@@ -83,7 +83,7 @@ IDLE_HEARTBEAT_MS = 250
 
 
 class _LockstepRuntimeConfigBase(msgspec.Struct):
-    mode_id: int
+    mode_id: GameMode
     player_count: int
     bind_host: str
     host_ip: str
@@ -214,7 +214,7 @@ class LockstepRuntime(msgspec.Struct):
         )
         if str(self.cfg.role) == "host":
             self.host_lobby = HostLobby(
-                mode_id=int(self.cfg.mode_id),
+                mode_id=self.cfg.mode_id,
                 player_count=int(self.cfg.player_count),
                 build_id=str(self.build_id),
                 tick_rate=int(self.cfg.tick_rate),
@@ -243,7 +243,7 @@ class LockstepRuntime(msgspec.Struct):
             set_lan_debug_forwarder(self._client_forward_log_line)
             self._client_log_forward_enabled = True
             settings = session_settings_for_lockstep(
-                mode_id=int(self.cfg.mode_id),
+                mode_id=self.cfg.mode_id,
                 player_count=int(self.cfg.player_count),
                 quest_level=self.cfg.quest_level,
                 preserve_bugs=bool(self.cfg.preserve_bugs),
@@ -1129,7 +1129,7 @@ class LockstepRuntime(msgspec.Struct):
 
             # Host is authoritative; adopt its config so lockstep + validation use
             # canonical values (CLI joiners may start with placeholders).
-            self.cfg.mode_id = int(welcome_settings.mode_id)
+            self.cfg.mode_id = welcome_settings.mode_id
             self.cfg.player_count = int(welcome_settings.player_count)
             self.cfg.tick_rate = int(welcome_settings.tick_rate)
             self.cfg.input_delay_ticks = int(welcome_settings.input_delay_ticks)
@@ -1186,7 +1186,7 @@ class LockstepRuntime(msgspec.Struct):
                     )
                     return
             expected_settings = session_settings_for_lockstep(
-                mode_id=int(self.cfg.mode_id),
+                mode_id=self.cfg.mode_id,
                 player_count=int(self.cfg.player_count),
                 quest_level=self.cfg.quest_level,
                 preserve_bugs=bool(self.cfg.preserve_bugs),
