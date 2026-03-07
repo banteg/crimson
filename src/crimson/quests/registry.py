@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from ..terrain_slots import TerrainSlotTriplet, terrain_slots_for_level
+from ..terrain_slots import TerrainSlotTriplet, terrain_slots_for_quest
 from ..weapons import WeaponId
 from .level import QuestLevel
 from .types import QuestBuilder, QuestDefinition
@@ -27,7 +27,7 @@ def register_quest(
     def decorator(builder: QuestBuilder) -> QuestBuilder:
         quest_level = QuestLevel.parse(level)
         resolved_terrain_slots = (
-            terrain_slots if terrain_slots is not None else terrain_slots_for_level(quest_level.major, quest_level.minor)
+            terrain_slots if terrain_slots is not None else terrain_slots_for_quest(quest_level)
         )
         normalized_unlock_weapon_id = WeaponId(unlock_weapon_id) if unlock_weapon_id is not None else None
         quest = QuestDefinition(
@@ -54,16 +54,6 @@ def register_quest(
 
 def all_quests() -> list[QuestDefinition]:
     return sorted(_QUESTS.values(), key=lambda quest: quest.level.global_index)
-
-
-def quest_by_stage(major: int, minor: int) -> QuestDefinition | None:
-    try:
-        level = QuestLevel(int(major), int(minor))
-    except TypeError:
-        return None
-    return _QUESTS.get(level)
-
-
 def quest_by_level(level: QuestLevel | str) -> QuestDefinition | None:
     resolved = level if isinstance(level, QuestLevel) else QuestLevel.try_parse(level)
     if resolved is None:

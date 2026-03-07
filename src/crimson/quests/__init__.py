@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from . import tier1, tier2, tier3, tier4, tier5
-from .registry import all_quests, quest_by_level, quest_by_stage
+from .registry import all_quests, quest_by_level
 from .types import QuestContext, QuestDefinition, SpawnEntry
 
 __all__ = [
@@ -10,7 +10,6 @@ __all__ = [
     "SpawnEntry",
     "all_quests",
     "quest_by_level",
-    "quest_by_stage",
     "tier1",
     "tier2",
     "tier3",

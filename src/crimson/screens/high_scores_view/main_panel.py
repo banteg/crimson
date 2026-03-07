@@ -9,6 +9,7 @@ from grim.raylib_api import rl
 
 from ...game.types import HighScoresRequest
 from ...game_modes import GameMode
+from ...quests import quest_by_level
 from ...ui.perk_menu import button_draw, button_width
 from ..high_scores_layout import (
     HS_BACK_BUTTON_X,
@@ -24,7 +25,7 @@ from ..high_scores_layout import (
     HS_SCORE_FRAME_Y,
     HS_TITLE_UNDERLINE_Y,
 )
-from .shared import mode_label, quest_title
+from .shared import mode_label
 
 if TYPE_CHECKING:
     from .view import HighScoresView
@@ -71,13 +72,13 @@ def draw_main_panel(
             quest_color = rl.Color(250, 70, 60, int(255 * 0.7))
         else:
             quest_color = rl.Color(70, 180, 240, int(255 * 0.7))
-        quest_label = f"{int(quest_major)}.{int(quest_minor)}: {quest_title(quest_major, quest_minor)}"
+        quest_level = QuestLevel(int(quest_major), int(quest_minor))
+        quest = quest_by_level(quest_level)
+        quest_label = f"{quest_level.text}: {quest.title if quest is not None else '???'}"
         draw_small_text(font, quest_label, left_panel_top_left + Vec2(236.0 * scale, 63.0 * scale), quest_color)
         arrow = view._arrow_tex
         if arrow is not None:
-            major = max(1, min(5, int(quest_major)))
-            minor = max(1, min(10, int(quest_minor)))
-            global_index = int(QuestLevel(major, minor).global_index)
+            global_index = int(quest_level.global_index)
             unlock = (
                 int(view.state.status.quest_unlock_index_full)
                 if view.state.config.hardcore

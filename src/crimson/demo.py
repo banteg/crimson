@@ -14,7 +14,8 @@ from grim.raylib_api import rd, rl
 from .creatures.spawn import RANDOM_HEADING_SENTINEL, SpawnId
 from .game.types import GameState
 from .game_modes import GameMode
-from .quests import quest_by_stage
+from .quests import quest_by_level
+from .quests.level import QuestLevel
 from .screens.assets import require_runtime_resources
 from .sim.bootstrap import run_explicit_terrain_prelude
 from .sim.input import PlayerInput
@@ -553,7 +554,7 @@ class DemoView:
         weapon_id = 18
         rng = self._runtime.sim_world.state.rng
         self._setup_world_players([(Vec2(512.0, 512.0), weapon_id)])
-        quest = quest_by_stage(1, 1)
+        quest = quest_by_level(QuestLevel(1, 1))
         assert quest is not None
         # Native variant 3 calls terrain_generate(&quest_selected_meta), which is the
         # base of the quest metadata array in this build, so it resolves to quest 1.1.

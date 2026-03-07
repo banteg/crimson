@@ -17,6 +17,7 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
+from ..quests.level import QuestLevel
 from ..render.rtx.mode import mode_from_rtx_flag
 from ..replay import (
     Replay,
@@ -52,7 +53,6 @@ from ..ui.hud import (
 from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
     draw_quest_title_timer_overlay,
-    quest_level_label,
 )
 from ..world.runtime import WorldRuntime
 
@@ -104,7 +104,7 @@ class ReplayPlaybackMode:
         self._hud_state = HudState()
         self._grim_mono: GrimMonoFont | None = None
         self._quest_title = ""
-        self._quest_level = ""
+        self._quest_level: QuestLevel | None = None
 
         self._tick_rate = 60
         self._dt = 1.0 / 60.0
@@ -292,7 +292,7 @@ class ReplayPlaybackMode:
         self._hud_state = HudState()
         self._grim_mono = None
         self._quest_title = ""
-        self._quest_level = ""
+        self._quest_level = None
 
         replay = load_replay_file(self._replay_path)
         self._replay = replay
@@ -376,7 +376,7 @@ class ReplayPlaybackMode:
         quest = driver.quest_definition
         if quest is not None:
             self._quest_title = str(quest.title)
-            self._quest_level = quest_level_label(quest.major, quest.minor)
+            self._quest_level = quest.level
             self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
             self._quest_total_spawn_count = int(driver.quest_total_spawn_count)
         else:
@@ -620,8 +620,8 @@ class ReplayPlaybackMode:
         if font is None:
             return
         title = str(self._quest_title or "")
-        level = str(self._quest_level or "")
-        if not title or not level:
+        level = self._quest_level
+        if not title or level is None:
             return
         driver = self._driver
         if driver is None or driver.quest_spawn_state is None:
@@ -630,7 +630,7 @@ class ReplayPlaybackMode:
         draw_quest_title_timer_overlay(
             font,
             title,
-            level,
+            level.text,
             timer_ms=float(driver.quest_spawn_state.spawn_timeline_ms),
         )
 

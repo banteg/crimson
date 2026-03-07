@@ -48,21 +48,9 @@ def mode_label(mode_id: GameMode, quest_major: int, quest_minor: int) -> str:
             return "Quests"
         case _:
             return "Unknown"
-
-
-def quest_title(major: int, minor: int) -> str:
-    from ...quests import quest_by_stage
-
-    q = quest_by_stage(major, minor)
-    if q is not None and q.title:
-        return str(q.title)
-    return "???"
-
-
 __all__ = [
     "format_elapsed_mm_ss",
     "format_score_date",
     "mode_label",
     "ordinal",
-    "quest_title",
 ]

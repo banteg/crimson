@@ -35,6 +35,7 @@ from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.level import QuestLevel
 from ..quests.runtime import build_quest_spawn_table
+from ..quests.status import tracked_quest_games_counter_index
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
@@ -54,7 +55,6 @@ from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
     draw_quest_title_timer_overlay,
-    quest_level_label,
 )
 from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
@@ -94,17 +94,6 @@ class QuestRunOutcome(msgspec.Struct, frozen=True):
     shots_hit: int
     most_used_weapon_id: WeaponId
     player_health_values: tuple[float, ...] = ()
-
-
-def _quest_attempt_counter_index(major: int, minor: int) -> int | None:
-    tier = int(major)
-    quest = int(minor)
-    global_index = (tier - 1) * 10 + (quest - 1)
-    if not (0 <= global_index < 40):
-        return None
-    return global_index + 11
-
-
 class QuestMode(BaseGameplayMode):
     def __init__(
         self,
@@ -497,7 +486,7 @@ class QuestMode(BaseGameplayMode):
         self._replay_checkpoints_last_tick = None
 
         if status is not None:
-            idx = _quest_attempt_counter_index(quest.major, quest.minor)
+            idx = tracked_quest_games_counter_index(quest.level)
             if idx is not None:
                 status.increment_quest_play_count(idx)
 
@@ -823,7 +812,7 @@ class QuestMode(BaseGameplayMode):
         draw_quest_title_timer_overlay(
             font,
             quest.title,
-            quest_level_label(quest.major, quest.minor),
+            quest.level.text,
             timer_ms=float(self._quest_spawn_state.spawn_timeline_ms),
         )
 

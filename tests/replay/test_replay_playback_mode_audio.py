@@ -10,6 +10,7 @@ from unittest.mock import call
 import pytest
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
+from crimson.quests.level import QuestLevel
 from crimson.replay import Replay, ReplayHeader, ReplayTick
 from crimson.sim.sessions import QuestSpawnState
 from crimson.world.sim_world_state import SimWorldState
@@ -302,7 +303,7 @@ def test_draw_quest_title_uses_shared_overlay_helper(mocker, replay_playback_vie
     )
     _set_private(view, "_grim_mono", object())
     _set_private(view, "_quest_title", "Castle Keep")
-    _set_private(view, "_quest_level", "4.7")
+    _set_private(view, "_quest_level", QuestLevel(4, 7))
     _set_private(
         view,
         "_driver",

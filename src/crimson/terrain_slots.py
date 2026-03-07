@@ -5,6 +5,8 @@ from typing import TypeAlias
 
 from grim.assets import TextureId
 
+from .quests.level import QuestLevel
+
 TerrainSlotTriplet: TypeAlias = tuple[int, int, int]
 
 Q1_TERRAIN_SLOTS: TerrainSlotTriplet = (0, 1, 0)
@@ -30,9 +32,9 @@ _TEXTURE_ID_BY_TERRAIN_SLOT: dict[int, TextureId] = {
     7: TextureId.TER_Q4_OVERLAY,
 }
 
-def terrain_slots_for_level(major: int, minor: int) -> TerrainSlotTriplet:
-    tier = major
-    quest = minor
+def terrain_slots_for_quest(level: QuestLevel) -> TerrainSlotTriplet:
+    tier = int(level.major)
+    quest = int(level.minor)
     if tier <= 4:
         base = (tier - 1) * 2
         alt = base + 1
@@ -73,6 +75,6 @@ __all__ = [
     "Q4_TERRAIN_SLOTS",
     "TerrainSlotTriplet",
     "choose_unlock_terrain_slots",
-    "terrain_slots_for_level",
+    "terrain_slots_for_quest",
     "terrain_slots_to_texture_ids",
 ]

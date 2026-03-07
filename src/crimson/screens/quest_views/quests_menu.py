@@ -420,9 +420,9 @@ class QuestsMenuView:
         self._begin_close_transition("start_quest")
 
     def _quest_title(self, stage: int, row: int) -> str:
-        from ...quests import quest_by_stage
+        from ...quests import quest_by_level
 
-        quest = quest_by_stage(stage, int(row) + 1)
+        quest = quest_by_level(QuestLevel(int(stage), int(row) + 1))
         if quest is None:
             return "???"
         return quest.title
