@@ -7,7 +7,9 @@ from pathlib import Path
 import msgspec
 import zstandard as zstd
 
+from ..game_modes import GameMode
 from ..math_parity import f32
+from ..quests.level import QuestLevel
 from .types import (
     REPLAY_FORMAT_VERSION,
     WEAPON_USAGE_COUNT,
@@ -97,10 +99,11 @@ def _validate_header(header: ReplayHeader, *, from_load: bool) -> None:
         raise ReplayCodecError(f"replay header player_count must be positive, got {int(header.player_count)}")
     if str(header.input_quantization) != "f32":
         raise ReplayCodecError(f"unsupported input_quantization: {header.input_quantization!r}; expected 'f32'")
-    if str(header.bootstrap_kind) not in ("none", "terrain_v1"):
-        raise ReplayCodecError(f"unknown bootstrap_kind: {header.bootstrap_kind!r}")
     _validate_usage_counts(header.status.weapon_usage_counts)
     _validate_claimed_stats(header.claimed_stats)
+    if int(header.game_mode_id) == int(GameMode.QUESTS):
+        if header.quest_level is None or QuestLevel.from_parts_or_none(*header.quest_level) is None:
+            raise ReplayCodecError("quest replays require a valid header.quest_level")
 
 
 def _normalize_packed_input(

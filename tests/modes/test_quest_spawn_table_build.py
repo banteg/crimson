@@ -73,8 +73,8 @@ def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
     )
     ctx = QuestContext(width=1024, height=1024, player_count=1)
 
-    full_entries = build_quest_spawn_table(quest, ctx, seed=123, hardcore=False, full_version=True)
-    demo_entries = build_quest_spawn_table(quest, ctx, seed=123, hardcore=False, full_version=False)
+    full_entries = build_quest_spawn_table(quest, ctx, rng=Crand(123), hardcore=False, full_version=True)
+    demo_entries = build_quest_spawn_table(quest, ctx, rng=Crand(123), hardcore=False, full_version=False)
 
     assert len(full_entries) == 1
     assert len(demo_entries) == 1

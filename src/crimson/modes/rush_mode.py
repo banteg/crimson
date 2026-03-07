@@ -23,7 +23,7 @@ from ..net.rollback_resync_v5 import (
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..replay.types import normalize_weapon_usage_counts
-from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
+from ..sim.bootstrap import run_unlock_terrain_prelude
 from ..sim.session_builders import build_rush_session, enforce_rush_loadout
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, RushSpawnState
 from ..ui.cursor import draw_menu_cursor
@@ -109,15 +109,14 @@ class RushMode(BaseGameplayMode):
             else int(sim_unlock_index_full)
         )
         quest_unlock_index = int(sim_unlock_index)
-        bootstrap = run_terrain_bootstrap(
+        terrain = run_unlock_terrain_prelude(
             self.state.rng,
-            quest_unlock_index=int(quest_unlock_index),
+            unlock_index=int(quest_unlock_index),
             width=int(self.world_size),
             height=int(self.world_size),
-            layers=3,
         )
         lan_debug_log(
-            "terrain_bootstrap",
+            "terrain_prelude",
             mode="RushMode",
             lan_enabled=bool(self._lan_enabled),
             lan_role=str(self._lan_role),
@@ -126,19 +125,18 @@ class RushMode(BaseGameplayMode):
             sim_quest_unlock_index=int(sim_unlock_index),
             sim_quest_unlock_index_full=int(sim_unlock_index_full),
             quest_unlock_index=int(quest_unlock_index),
-            seed_before=int(bootstrap.seed_before),
-            seed_after=int(bootstrap.seed_after),
-            selection_draws=int(bootstrap.selection_draws),
-            stamping_draws=int(bootstrap.stamping_draws),
-            terrain_slots=bootstrap.terrain_slots,
-            terrain_seed=int(bootstrap.terrain_seed),
+            seed_before=int(terrain.seed_before),
+            seed_after=int(terrain.seed_after),
+            selection_draws=int(terrain.selection_draws),
+            stamping_draws=int(terrain.stamping_draws),
+            terrain_slots=terrain.terrain_slots,
+            terrain_seed=int(terrain.terrain_seed),
         )
-        self.apply_bootstrap_terrain(
-            terrain_slots=bootstrap.terrain_slots,
-            seed=bootstrap.terrain_seed,
-            layers=3,
+        self.apply_terrain_setup(
+            terrain_slots=terrain.terrain_slots,
+            seed=terrain.terrain_seed,
         )
-        self.sim_world.state.rng.srand(int(bootstrap.seed_after))
+        self.sim_world.state.rng.srand(int(terrain.seed_after))
         self._sim_session = self._new_sim_session()
         enforce_rush_loadout(self.sim_world.world_state)
         weapon_usage_counts = normalize_weapon_usage_counts(
@@ -156,9 +154,7 @@ class RushMode(BaseGameplayMode):
             self._replay_recorder = ReplayRecorder(
                 ReplayHeader(
                     game_mode_id=GameMode.RUSH,
-                    seed=int(self.state.rng.state),
-                    bootstrap_kind=BOOTSTRAP_KIND_TERRAIN_V1,
-                    bootstrap_seed=int(self._bootstrap_seed),
+                    seed=int(self._run_reset_seed),
                     tick_rate=int(self._gameplay_tick_rate()),
                     quest_fail_retry_count=int(self.quest_fail_retry_count),
                     hardcore=bool(self.hardcore),

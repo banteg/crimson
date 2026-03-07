@@ -13,9 +13,8 @@ from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ..game.types import GameState
-from ..sim.bootstrap import terrain_stamping_draws
+from ..sim.bootstrap import run_unlock_terrain_prelude, terrain_stamping_draws
 from ..terrain_slots import (
-    choose_menu_terrain_slots,
     terrain_slots_to_texture_ids,
 )
 from ..ui.cursor import draw_menu_cursor
@@ -85,21 +84,24 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
     screen_height = float(state.config.screen_height)
     texture_scale = state.config.texture_scale
     explicit_regenerate = bool(regenerate)
+    generated_new_terrain = ground is None or explicit_regenerate
     scale_changed = False
     if ground is not None:
         scale_changed = abs(float(ground.texture_scale) - texture_scale) > 1e-6
 
-    if ground is None or explicit_regenerate:
-        base_id, overlay_id, detail_id = terrain_slots_to_texture_ids(
-            choose_menu_terrain_slots(
-                quest_unlock_index=int(state.status.quest_unlock_index),
-                rand=lambda: state.rng.rand(),
-            ),
+    if generated_new_terrain:
+        terrain = run_unlock_terrain_prelude(
+            state.rng,
+            unlock_index=int(state.status.quest_unlock_index),
+            width=1024,
+            height=1024,
         )
+        base_id, overlay_id, detail_id = terrain_slots_to_texture_ids(terrain.terrain_slots)
         base = resources.texture(base_id)
         overlay = resources.texture(overlay_id)
         detail = resources.texture(detail_id)
     else:
+        assert ground is not None
         base = ground.texture
         overlay = ground.overlay
         detail = ground.overlay_detail
@@ -127,9 +129,13 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         if scale_changed:
             regenerate = True
     if regenerate:
-        ground.schedule_generate(seed=int(state.rng.state), layers=3)
-        for _ in range(terrain_stamping_draws(width=int(ground.width), height=int(ground.height), layers=3)):
-            state.rng.rand()
+        assert ground is not None
+        if generated_new_terrain:
+            ground.schedule_generate(seed=int(terrain.terrain_seed))
+        else:
+            ground.schedule_generate(seed=int(state.rng.state))
+            for _ in range(terrain_stamping_draws(width=int(ground.width), height=int(ground.height))):
+                state.rng.rand()
         state.menu_ground_camera = None
     return ground
 

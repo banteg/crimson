@@ -291,7 +291,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
             )
             self.sim_world = sw
             self.render_resources = RenderResources(assets_dir=_assets_dir())
-            self.terrain_runtime = TerrainRuntime(render_resources=self.render_resources)
+            self.terrain_runtime = mocker.Mock(spec=TerrainRuntime)
             self.audio_bridge = AudioBridge(audio_rng=kwargs.get("audio_rng", Crand(0xBEEF)))  # type: ignore[arg-type]
             self.camera = Vec2(-1.0, -1.0)
 

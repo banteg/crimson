@@ -273,7 +273,11 @@ def _build_replay_fingerprint(*, replay_path: Path, replay: Replay) -> BuiltinOb
     replay_fingerprint["tick_rate"] = replay.header.tick_rate
     replay_fingerprint["seed"] = replay.header.seed
     replay_fingerprint["mode_id"] = replay.header.game_mode_id
-    replay_fingerprint["quest_level"] = str(replay.header.quest_level)
+    replay_fingerprint["quest_level"] = (
+        ""
+        if replay.header.quest_level is None
+        else f"{int(replay.header.quest_level[0])}.{int(replay.header.quest_level[1])}"
+    )
     return replay_fingerprint
 
 

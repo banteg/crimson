@@ -7,7 +7,7 @@ from crimson.terrain_slots import (
     Q3_TERRAIN_SLOTS,
     Q4_TERRAIN_SLOTS,
     TerrainSlotTriplet,
-    choose_menu_terrain_slots,
+    choose_unlock_terrain_slots,
     terrain_slots_for_level,
     terrain_slots_to_texture_ids,
 )
@@ -21,40 +21,40 @@ def test_terrain_slots_for_level_matches_native_layout() -> None:
     assert terrain_slots_for_level(5, 7) == (3, 1, 3)
 
 
-def test_choose_menu_terrain_slots_uses_sequential_unlock_rolls() -> None:
+def test_choose_unlock_terrain_slots_uses_sequential_unlock_rolls() -> None:
     rolls = iter((0, 0, 3))
 
-    chosen = choose_menu_terrain_slots(
-        quest_unlock_index=0x28,
+    chosen = choose_unlock_terrain_slots(
+        unlock_index=0x28,
         rand=lambda: next(rolls),
     )
 
     assert chosen == Q2_TERRAIN_SLOTS
 
 
-def test_choose_menu_terrain_slots_prefers_first_matching_unlock() -> None:
-    chosen = choose_menu_terrain_slots(
-        quest_unlock_index=0x28,
+def test_choose_unlock_terrain_slots_prefers_first_matching_unlock() -> None:
+    chosen = choose_unlock_terrain_slots(
+        unlock_index=0x28,
         rand=lambda: 3,
     )
 
     assert chosen == Q4_TERRAIN_SLOTS
 
 
-def test_choose_menu_terrain_slots_keeps_default_below_unlock_thresholds() -> None:
-    chosen = choose_menu_terrain_slots(
-        quest_unlock_index=0x13,
+def test_choose_unlock_terrain_slots_keeps_default_below_unlock_thresholds() -> None:
+    chosen = choose_unlock_terrain_slots(
+        unlock_index=0x13,
         rand=lambda: 3,
     )
 
     assert chosen == DEFAULT_TERRAIN_SLOTS
 
 
-def test_choose_menu_terrain_slots_can_fall_to_mid_tiers() -> None:
+def test_choose_unlock_terrain_slots_can_fall_to_mid_tiers() -> None:
     rolls = iter((0, 3))
 
-    chosen = choose_menu_terrain_slots(
-        quest_unlock_index=0x28,
+    chosen = choose_unlock_terrain_slots(
+        unlock_index=0x28,
         rand=lambda: next(rolls),
     )
 
@@ -67,8 +67,8 @@ def test_all_produced_terrain_slots_map_without_fallback_logic() -> None:
     for unlock_index in range(51):
         for roll in range(8):
             produced_slots.add(
-                choose_menu_terrain_slots(
-                    quest_unlock_index=unlock_index,
+                choose_unlock_terrain_slots(
+                    unlock_index=unlock_index,
                     rand=lambda r=roll: r,
                 ),
             )

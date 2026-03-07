@@ -6,11 +6,8 @@ from grim.rand import CrandLike
 
 from ..terrain_slots import (
     TerrainSlotTriplet,
-    choose_menu_terrain_slots,
+    choose_unlock_terrain_slots,
 )
-
-BOOTSTRAP_KIND_NONE = "none"
-BOOTSTRAP_KIND_TERRAIN_V1 = "terrain_v1"
 
 # Terrain stamping RNG consumption mirrors `grim/terrain_render.py` + `docs/crimsonland-exe/terrain.md`.
 TERRAIN_DENSITY_BASE = 800
@@ -20,27 +17,22 @@ TERRAIN_DENSITY_SHIFT = 19
 TERRAIN_RAND_DRAWS_PER_STAMP = 3  # rotation, then position draws (see terrain renderer parity notes)
 
 
-def terrain_stamping_draws(*, width: int, height: int, layers: int = 3) -> int:
+def terrain_stamping_draws(*, width: int, height: int) -> int:
     """Return the number of `rand()` draws consumed by the procedural terrain stamps."""
 
     w = max(0, int(width))
     h = max(0, int(height))
     area = int(w * h)
-    layers = max(0, min(int(layers), 3))
-
-    stamps = 0
-    if layers >= 1:
-        stamps += int((area * TERRAIN_DENSITY_BASE) >> TERRAIN_DENSITY_SHIFT)
-    if layers >= 2:
-        stamps += int((area * TERRAIN_DENSITY_OVERLAY) >> TERRAIN_DENSITY_SHIFT)
-    if layers >= 3:
-        stamps += int((area * TERRAIN_DENSITY_DETAIL) >> TERRAIN_DENSITY_SHIFT)
+    stamps = (
+        int((area * TERRAIN_DENSITY_BASE) >> TERRAIN_DENSITY_SHIFT)
+        + int((area * TERRAIN_DENSITY_OVERLAY) >> TERRAIN_DENSITY_SHIFT)
+        + int((area * TERRAIN_DENSITY_DETAIL) >> TERRAIN_DENSITY_SHIFT)
+    )
 
     return int(stamps * TERRAIN_RAND_DRAWS_PER_STAMP)
 
 
-class TerrainBootstrapResult(msgspec.Struct, frozen=True):
-    kind: str
+class TerrainPreludeResult(msgspec.Struct, frozen=True):
     seed_before: int
     seed_after: int
     terrain_slots: TerrainSlotTriplet
@@ -53,19 +45,29 @@ class TerrainBootstrapResult(msgspec.Struct, frozen=True):
         return int(self.selection_draws) + int(self.stamping_draws)
 
 
-def run_terrain_bootstrap(
+def _advance_terrain_stamping_rng(
     rng: CrandLike,
     *,
-    quest_unlock_index: int,
     width: int,
     height: int,
-    layers: int = 3,
-) -> TerrainBootstrapResult:
-    """Consume RNG draws performed by the classic boot/menu terrain generation.
+) -> int:
+    stamping_draws = terrain_stamping_draws(width=int(width), height=int(height))
+    for _ in range(int(stamping_draws)):
+        rng.rand()
+    return int(stamping_draws)
 
-    This is a simulation bootstrap step: it advances the authoritative gameplay RNG
-    to match the exe's terrain generation window while also returning the terrain
-    descriptor + seed needed for deterministic rendering.
+
+def run_unlock_terrain_prelude(
+    rng: CrandLike,
+    *,
+    unlock_index: int,
+    width: int,
+    height: int,
+) -> TerrainPreludeResult:
+    """Consume RNG draws for the shared unlock-driven terrain prelude.
+
+    This advances the authoritative run RNG to match the classic terrain-generation
+    window while also returning the terrain descriptor + seed needed for rendering.
     """
 
     seed_before = int(rng.state)
@@ -76,20 +78,45 @@ def run_terrain_bootstrap(
         selection_draws += 1
         return int(rng.rand())
 
-    terrain_slots = choose_menu_terrain_slots(quest_unlock_index=int(quest_unlock_index), rand=_rand)
+    terrain_slots = choose_unlock_terrain_slots(unlock_index=int(unlock_index), rand=_rand)
     terrain_seed = int(rng.state)
-
-    stamping_draws = terrain_stamping_draws(width=int(width), height=int(height), layers=int(layers))
-    for _ in range(int(stamping_draws)):
-        rng.rand()
-
+    stamping_draws = _advance_terrain_stamping_rng(
+        rng,
+        width=int(width),
+        height=int(height),
+    )
     seed_after = int(rng.state)
-    return TerrainBootstrapResult(
-        kind=BOOTSTRAP_KIND_TERRAIN_V1,
+    return TerrainPreludeResult(
         seed_before=int(seed_before),
         seed_after=int(seed_after),
         terrain_slots=terrain_slots,
         terrain_seed=int(terrain_seed),
         selection_draws=int(selection_draws),
+        stamping_draws=int(stamping_draws),
+    )
+
+def run_explicit_terrain_prelude(
+    rng: CrandLike,
+    *,
+    terrain_slots: TerrainSlotTriplet,
+    width: int,
+    height: int,
+) -> TerrainPreludeResult:
+    """Consume RNG draws for terrain generation when slots are fixed up front."""
+
+    seed_before = int(rng.state)
+    terrain_seed = int(rng.state)
+    stamping_draws = _advance_terrain_stamping_rng(
+        rng,
+        width=int(width),
+        height=int(height),
+    )
+    seed_after = int(rng.state)
+    return TerrainPreludeResult(
+        seed_before=int(seed_before),
+        seed_after=int(seed_after),
+        terrain_slots=terrain_slots,
+        terrain_seed=int(terrain_seed),
+        selection_draws=0,
         stamping_draws=int(stamping_draws),
     )

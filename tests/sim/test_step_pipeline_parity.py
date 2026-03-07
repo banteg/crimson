@@ -16,21 +16,10 @@ from crimson.replay import (
     unpack_packed_player_input,
 )
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
-from crimson.replay.driver.playback_driver import resolve_quest_level_from_replay
-from crimson.replay.driver.setup import status_from_snapshot
+from crimson.replay.driver.playback_driver import build_runtime_playback_driver
 from crimson.sim.input import PlayerInput
-from crimson.sim.session_builders import enforce_rush_loadout
-from crimson.sim.sessions import (
-    DeterministicSession,
-    QuestSpawnState,
-    RushSpawnState,
-    quest_post_step,
-    rush_input_transform,
-    rush_mid_step,
-)
-from crimson.weapon_runtime import weapon_assign_player
-from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from grim.rand import Crand
 from tests.support.replay_runner_helpers import _run_verify_playback
 from tests.support.world_runtime import WorldRuntimeHost
 
@@ -43,9 +32,11 @@ def _checkpoint_state_projection(checkpoint: ReplayCheckpoint) -> dict[str, obje
 
 
 def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
+    game_mode = GameMode(int(mode))
     header = ReplayHeader(
-        game_mode_id=GameMode(int(mode)),
+        game_mode_id=game_mode,
         seed=int(seed),
+        quest_level=((1, 1) if game_mode == GameMode.QUESTS else None),
         tick_rate=60,
         player_count=1,
     )
@@ -81,95 +72,45 @@ def _inputs_for_tick(replay: Replay, tick_index: int) -> list[PlayerInput]:
         )
     return inputs
 
-def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
+
+def _live_runtime_checkpoints(
+    replay: Replay,
+    *,
+    spawn_entries: tuple | None = None,
+    start_weapon_id=None,
+) -> list[ReplayCheckpoint]:
     repo_root = Path(__file__).resolve().parents[1]
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    world.reset(seed=int(replay.header.seed), player_count=int(replay.header.player_count))
-    world.sim_world.state.status = status_from_snapshot(
-        quest_unlock_index=int(replay.header.status.quest_unlock_index),
-        quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
-        weapon_usage_counts=replay.header.status.weapon_usage_counts,
-    )
-
-    checkpoints: list[ReplayCheckpoint] = []
-    dt = 1.0 / float(replay.header.tick_rate)
-
-    for tick_index in range(len(replay.ticks)):
-        tick = world.step_survival_frame(
-            dt,
-            inputs=_inputs_for_tick(replay, tick_index),
-            auto_pick_perks=False,
-            perk_progression_enabled=True,
-            defer_camera_shake_update=True,
-            apply_audio=False,
-        )
-
-        checkpoints.append(
-            build_checkpoint(
-                tick_index=int(tick_index),
-                world=world.sim_world.world_state,
-                elapsed_ms=float(tick.elapsed_ms),
-                deaths=tick.step.events.deaths,
-                events=tick.step.events,
-            ),
-        )
-
-    return checkpoints
-
-
-def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
-    repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    world.reset(seed=int(replay.header.seed), player_count=int(replay.header.player_count))
-    world.sim_world.state.status = status_from_snapshot(
-        quest_unlock_index=int(replay.header.status.quest_unlock_index),
-        quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
-        weapon_usage_counts=replay.header.status.weapon_usage_counts,
-    )
-
-    spawn = RushSpawnState()
-    session = DeterministicSession(
-        world=world.sim_world.world_state,
-        world_size=float(world.world_size),
-        damage_scale_by_type=world.sim_world.damage_scale_by_type,
+    driver = build_runtime_playback_driver(
+        replay,
+        max_ticks=None,
+        trace_rng=False,
+        world_size=float(replay.header.world_size),
         fx_queue=world.render_resources.fx_queue,
         fx_queue_rotated=world.render_resources.fx_queue_rotated,
-        game_mode=GameMode.RUSH,
-        perk_progression_enabled=False,
-        detail_preset=5,
-        gore_disabled=0,
-        clear_fx_queues_each_tick=True,
-        mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),
-        before_step_hook=lambda: enforce_rush_loadout(world.sim_world.world_state),
-        input_transform=rush_input_transform,
-        elapsed_uses_raw_dt=True,
-        finalize_post_render_lifecycle=True,
+        spawn_entries=spawn_entries,
+        start_weapon_id=start_weapon_id,
     )
+    world.load_world_state(driver.world)
 
     checkpoints: list[ReplayCheckpoint] = []
-    dt = 1.0 / float(replay.header.tick_rate)
     for tick_index in range(len(replay.ticks)):
-        tick_inputs = _inputs_for_tick(replay, tick_index)
-        timing = session.timing_for_dt(float(dt))
-        tick = session.step_tick(
-            timing=timing,
-            inputs=tick_inputs,
-            trace_rng=False,
-        )
-        step = tick.step
+        tick = driver.step_tick(tick_index)
+        step = tick.payload.step
         world.sim_world.apply_step_metadata(
             events=step.events,
             presentation=step.presentation,
             dt_sim=float(step.dt_sim),
-            game_tune_started=bool(session.game_tune_started),
+            game_tune_started=bool(driver.session.game_tune_started),
         )
         world.sync_audio_bridge_state()
         world.audio_bridge.apply_plan(plan=step.presentation, apply_audio=False)
+
         checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
                 world=world.sim_world.world_state,
-                elapsed_ms=float(tick.elapsed_ms),
+                elapsed_ms=float(driver.elapsed_ms),
                 deaths=step.events.deaths,
                 events=step.events,
             ),
@@ -186,7 +127,7 @@ def _quest_spawn_entries(*, level: str, player_count: int, seed: int) -> tuple:
         build_quest_spawn_table(
             quest,
             ctx,
-            seed=int(seed),
+            rng=Crand(int(seed)),
             hardcore=False,
             full_version=True,
         ),
@@ -194,77 +135,13 @@ def _quest_spawn_entries(*, level: str, player_count: int, seed: int) -> tuple:
 
 
 def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[ReplayCheckpoint]:
-    repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    world.reset(seed=int(replay.header.seed), player_count=int(replay.header.player_count))
-    world.sim_world.state.status = status_from_snapshot(
-        quest_unlock_index=int(replay.header.status.quest_unlock_index),
-        quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
-        weapon_usage_counts=replay.header.status.weapon_usage_counts,
-    )
-    quest_level = resolve_quest_level_from_replay(replay)
-    quest = quest_by_level(quest_level) if quest_level else None
-    if quest is not None:
-        world.sim_world.state.quest_stage_major = int(quest.level_key[0])
-        world.sim_world.state.quest_stage_minor = int(quest.level_key[1])
-    weapon_id = quest.start_weapon_id if quest is not None else WeaponId.PISTOL
-    for player in world.sim_world.players:
-        weapon_assign_player(player, weapon_id, state=world.sim_world.state)
-
-    quest_spawn_state = QuestSpawnState(spawn_entries=tuple(spawn_entries))
-    session = DeterministicSession(
-        world=world.sim_world.world_state,
-        world_size=float(world.world_size),
-        damage_scale_by_type=world.sim_world.damage_scale_by_type,
-        fx_queue=world.render_resources.fx_queue,
-        fx_queue_rotated=world.render_resources.fx_queue_rotated,
-        game_mode=GameMode.QUESTS,
-        perk_progression_enabled=True,
-        detail_preset=5,
-        gore_disabled=0,
-        clear_fx_queues_each_tick=True,
-        finalize_post_render_lifecycle=True,
-        post_step_hook=lambda ctx: quest_post_step(ctx, quest_spawn_state),
-    )
-
-    checkpoints: list[ReplayCheckpoint] = []
-    dt = 1.0 / float(replay.header.tick_rate)
-
-    for tick_index in range(len(replay.ticks)):
-        timing = session.timing_for_dt(float(dt))
-        tick = session.step_tick(
-            timing=timing,
-            inputs=_inputs_for_tick(replay, tick_index),
-            trace_rng=False,
-        )
-        step = tick.step
-
-        world.sim_world.apply_step_metadata(
-            events=step.events,
-            presentation=step.presentation,
-            dt_sim=float(step.dt_sim),
-            game_tune_started=False,
-        )
-        world.sync_audio_bridge_state()
-        world.audio_bridge.apply_plan(plan=step.presentation, apply_audio=False)
-
-        checkpoints.append(
-            build_checkpoint(
-                tick_index=int(tick_index),
-                world=world.sim_world.world_state,
-                elapsed_ms=float(quest_spawn_state.spawn_timeline_ms),
-                deaths=step.events.deaths,
-                events=step.events,
-            ),
-        )
-
-    return checkpoints
+    return _live_runtime_checkpoints(replay, spawn_entries=spawn_entries)
 
 
 def test_survival_live_vs_headless_tick_pipeline() -> None:
     replay = _build_replay(mode=int(GameMode.SURVIVAL), ticks=6, seed=0x1234)
 
-    live = _live_survival_checkpoints(replay)
+    live = _live_runtime_checkpoints(replay)
     headless: list[ReplayCheckpoint] = []
     _run_verify_playback(
         replay,
@@ -279,7 +156,7 @@ def test_survival_live_vs_headless_tick_pipeline() -> None:
 def test_rush_live_vs_headless_tick_pipeline() -> None:
     replay = _build_replay(mode=int(GameMode.RUSH), ticks=6, seed=0x5678)
 
-    live = _live_rush_checkpoints(replay)
+    live = _live_runtime_checkpoints(replay)
     headless: list[ReplayCheckpoint] = []
     _run_verify_playback(
         replay,

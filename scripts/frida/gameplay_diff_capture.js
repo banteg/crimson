@@ -20,27 +20,17 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 10;
+const CAPTURE_FORMAT_VERSION = 11;
 const FRIDA_JSONL_SCHEMA_VERSION = 1;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
-const GAME_MODE_SURVIVAL = 1;
-const GAME_MODE_RUSH = 2;
 const GAME_MODE_QUESTS = 3;
 const BONUS_ID_ENERGIZER = "2";
 const BONUS_ID_WEAPON_POWER_UP = "4";
 const BONUS_ID_DOUBLE_EXPERIENCE = "6";
 const BONUS_ID_REFLEX_BOOST = "9";
 const BONUS_ID_FREEZE = "11";
-const TERRAIN_DENSITY_BASE = 800;
-const TERRAIN_DENSITY_OVERLAY = 0x23;
-const TERRAIN_DENSITY_DETAIL = 0x0f;
-const TERRAIN_DENSITY_SHIFT = 19;
-const TERRAIN_RAND_DRAWS_PER_STAMP = 3;
-const TERRAIN_BOOTSTRAP_LAYERS = 3;
-const TERRAIN_BOOTSTRAP_WORLD_SIZE_DEFAULT = 1024;
-const TERRAIN_UNLOCK_THRESHOLDS = [0x28, 0x1e, 0x14];
 const REPLAY_FIRE_DOWN_FLAG = 1 << 0;
 const REPLAY_FIRE_PRESSED_FLAG = 1 << 1;
 const REPLAY_RELOAD_PRESSED_FLAG = 1 << 2;
@@ -655,104 +645,6 @@ function requireRunStartSeedU32(tickObj) {
   return emitCaptureContractError("missing_run_start_seed", tickObj);
 }
 
-function requireRunBootstrap(modeId, tickObj) {
-  const mode = modeId | 0;
-  if (mode === GAME_MODE_SURVIVAL || mode === GAME_MODE_RUSH) {
-    if (outState.lastSrandSeed == null) {
-      return emitCaptureContractError("missing_bootstrap_seed", tickObj);
-    }
-    return {
-      kind: "terrain_v1",
-      seed: outState.lastSrandSeed >>> 0,
-    };
-  }
-  return {
-    kind: "none",
-    seed: 0,
-  };
-}
-
-function terrainStampingDraws(width, height, layers) {
-  const w = Math.max(0, width | 0);
-  const h = Math.max(0, height | 0);
-  const layerCount = Math.max(0, Math.min(3, layers | 0));
-  const area = Math.imul(w, h);
-  let stamps = 0;
-  if (layerCount >= 1) stamps += (Math.imul(area, TERRAIN_DENSITY_BASE) >>> TERRAIN_DENSITY_SHIFT) | 0;
-  if (layerCount >= 2) stamps += (Math.imul(area, TERRAIN_DENSITY_OVERLAY) >>> TERRAIN_DENSITY_SHIFT) | 0;
-  if (layerCount >= 3) stamps += (Math.imul(area, TERRAIN_DENSITY_DETAIL) >>> TERRAIN_DENSITY_SHIFT) | 0;
-  return Math.max(0, Math.imul(stamps, TERRAIN_RAND_DRAWS_PER_STAMP));
-}
-
-function questUnlockIndexFromTick(tickObj) {
-  const checkpoint = tickObj && tickObj.checkpoint ? tickObj.checkpoint : null;
-  const status = checkpoint && checkpoint.status ? checkpoint.status : null;
-  const fromCheckpoint =
-    status && status.quest_unlock_index != null ? status.quest_unlock_index | 0 : null;
-  if (fromCheckpoint != null && fromCheckpoint >= 0) return fromCheckpoint | 0;
-  const statusSnapshot = readStatusSnapshotCompact();
-  const fromMemory =
-    statusSnapshot && statusSnapshot.quest_unlock_index != null
-      ? statusSnapshot.quest_unlock_index | 0
-      : null;
-  if (fromMemory != null && fromMemory >= 0) return fromMemory | 0;
-  return 0;
-}
-
-function simulateTerrainBootstrapSeedAfter(seedBeforeU32, questUnlockIndex, worldSize, layers) {
-  let state = seedBeforeU32 >>> 0;
-  let selectionDraws = 0;
-  const unlock = questUnlockIndex | 0;
-  for (let i = 0; i < TERRAIN_UNLOCK_THRESHOLDS.length; i++) {
-    const threshold = TERRAIN_UNLOCK_THRESHOLDS[i] | 0;
-    if (unlock < threshold) continue;
-    state = stepCrtRandState(state);
-    selectionDraws += 1;
-    const value15 = (state >>> 16) & 0x7fff;
-    if ((value15 & 7) === 3) break;
-  }
-  const terrainSeedU32 = state >>> 0;
-  const stampingDraws = terrainStampingDraws(worldSize, worldSize, layers);
-  for (let i = 0; i < stampingDraws; i++) {
-    state = stepCrtRandState(state);
-  }
-  return {
-    seed_before_u32: seedBeforeU32 >>> 0,
-    seed_after_u32: state >>> 0,
-    terrain_seed_u32: terrainSeedU32 >>> 0,
-    selection_draws: selectionDraws | 0,
-    stamping_draws: stampingDraws | 0,
-    quest_unlock_index: unlock,
-    world_size: worldSize | 0,
-    layers: layers | 0,
-  };
-}
-
-function resolveRunStartSeed(modeId, tickObj, runBootstrap) {
-  const runSeedFromSrand = requireRunStartSeedU32(tickObj);
-  if (runSeedFromSrand == null) return null;
-
-  if (modeId === GAME_MODE_SURVIVAL || modeId === GAME_MODE_RUSH) {
-    const questUnlock = questUnlockIndexFromTick(tickObj);
-    const worldSize = TERRAIN_BOOTSTRAP_WORLD_SIZE_DEFAULT;
-    const sim = simulateTerrainBootstrapSeedAfter(
-      runBootstrap.seed >>> 0,
-      questUnlock | 0,
-      worldSize,
-      TERRAIN_BOOTSTRAP_LAYERS
-    );
-    return {
-      seed: sim.seed_after_u32 >>> 0,
-      source: "terrain_bootstrap_sim",
-    };
-  }
-
-  return {
-    seed: runSeedFromSrand >>> 0,
-    source: "crt_srand",
-  };
-}
-
 function openOutFile() {
   if (outState.outFile) return;
   const outPath = outState.currentOutPath || CONFIG.outPath;
@@ -894,10 +786,8 @@ function startRunForTick(tickObj, reason) {
   const questMajor = tickQuestMajor(tickObj);
   const questMinor = tickQuestMinor(tickObj);
   const runKey = runKeyForTick(tickObj);
-  const runBootstrap = requireRunBootstrap(modeId, tickObj);
-  if (!runBootstrap) return false;
-  const runSeed = resolveRunStartSeed(modeId, tickObj, runBootstrap);
-  if (!runSeed) return false;
+  const runSeed = requireRunStartSeedU32(tickObj);
+  if (runSeed == null) return false;
   outState.currentRunId = (outState.currentRunId | 0) + 1;
   outState.currentRunTickCount = 0;
   outState.currentRunModeId = modeId;
@@ -919,10 +809,8 @@ function startRunForTick(tickObj, reason) {
       mode_id: outState.currentRunModeId | 0,
       quest_stage_major: outState.currentRunQuestMajor | 0,
       quest_stage_minor: outState.currentRunQuestMinor | 0,
-      seed: runSeed.seed >>> 0,
-      bootstrap_kind: String(runBootstrap.kind),
-      bootstrap_seed: runBootstrap.seed >>> 0,
-      seed_source: String(runSeed.source),
+      seed: runSeed >>> 0,
+      seed_source: "crt_srand",
       player_count: runPlayerCountFromTick(tickObj),
       tick_index_global:
         tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,

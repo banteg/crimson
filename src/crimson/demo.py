@@ -16,7 +16,7 @@ from .game.types import GameState
 from .game_modes import GameMode
 from .quests import quest_by_stage
 from .screens.assets import require_runtime_resources
-from .sim.bootstrap import terrain_stamping_draws
+from .sim.bootstrap import run_explicit_terrain_prelude
 from .sim.input import PlayerInput
 from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
@@ -111,21 +111,21 @@ class DemoView:
     def _close_world_runtime(self) -> None:
         self._runtime.close_runtime()
 
-    def _set_terrain_slots(
+    def _apply_terrain_setup(
         self,
         *,
         terrain_slots: TerrainSlotTriplet,
     ) -> None:
-        self._runtime.terrain_runtime.set_terrain_slots(
+        terrain = run_explicit_terrain_prelude(
+            self._runtime.sim_world.state.rng,
             terrain_slots=terrain_slots,
+            width=int(WORLD_SIZE),
+            height=int(WORLD_SIZE),
         )
-        rng = self._runtime.sim_world.state.rng
-        self._runtime.terrain_runtime.schedule_from_rng_seed(
-            seed=int(rng.state),
-            layers=3,
+        self._runtime.terrain_runtime.apply_terrain_setup(
+            terrain_slots=terrain.terrain_slots,
+            seed=int(terrain.terrain_seed),
         )
-        for _ in range(terrain_stamping_draws(width=int(WORLD_SIZE), height=int(WORLD_SIZE), layers=3)):
-            rng.rand()
         self._sync_live_rng_state()
 
     def _sync_live_rng_state(self) -> None:
@@ -521,7 +521,7 @@ class DemoView:
             ],
         )
         # Native variant 1 calls terrain_generate(&quest_meta_terrain_desc_unlock_gt_0x13).
-        self._set_terrain_slots(terrain_slots=Q2_TERRAIN_SLOTS)
+        self._apply_terrain_setup(terrain_slots=Q2_TERRAIN_SLOTS)
         self._runtime.sim_world.state.bonuses.weapon_power_up = 15.0
         for idx in range(20):
             x = float(int(rng.rand() % 200) + 32)
@@ -557,7 +557,7 @@ class DemoView:
         assert quest is not None
         # Native variant 3 calls terrain_generate(&quest_selected_meta), which is the
         # base of the quest metadata array in this build, so it resolves to quest 1.1.
-        self._set_terrain_slots(terrain_slots=quest.terrain_slots)
+        self._apply_terrain_setup(terrain_slots=quest.terrain_slots)
         for idx in range(20):
             x = float(int(rng.rand() % 200) + 32)
             y = float(int(rng.rand() % 899) + 64)

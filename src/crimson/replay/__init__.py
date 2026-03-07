@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from .bootstrap import AppliedReplayBootstrap, ReplayBootstrapError, apply_replay_bootstrap
 from .codec import ReplayCodecError, dump_replay, dump_replay_file, load_replay, load_replay_file
 from .input_codec import pack_player_input, pack_tick_inputs, unpack_player_input, unpack_tick_inputs
 from .recorder import ReplayRecorder
@@ -50,8 +49,6 @@ __all__ = [
     "ReplayClaimedStatsSnapshot",
     "Replay",
     "ReplayCodecError",
-    "AppliedReplayBootstrap",
-    "ReplayBootstrapError",
     "ReplayHeader",
     "ReplayRecorder",
     "ReplayStatusSnapshot",
@@ -63,7 +60,6 @@ __all__ = [
     "load_replay",
     "load_replay_file",
     "pack_player_input",
-    "apply_replay_bootstrap",
     "pack_input_flags",
     "pack_tick_inputs",
     "unpack_player_input",

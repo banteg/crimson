@@ -81,10 +81,10 @@ class RenderResources(msgspec.Struct):
             self.ground.overlay_detail = detail
         self.sync_ground_settings()
 
-    def schedule_ground_generation(self, *, seed: int, layers: int = 3) -> None:
+    def schedule_ground_generation(self, *, seed: int) -> None:
         if self.ground is None:
             return
-        self.ground.schedule_generate(seed=int(seed), layers=int(layers))
+        self.ground.schedule_generate(seed=int(seed))
 
     def process_ground_pending(self) -> None:
         if self.ground is None:
@@ -100,7 +100,7 @@ class RenderResources(msgspec.Struct):
         base = resources.texture(TextureId.TER_Q1_BASE)
         overlay = resources.texture(TextureId.TER_Q1_OVERLAY)
         self.set_ground_textures(base=base, overlay=overlay, detail=overlay)
-        self.schedule_ground_generation(seed=int(terrain_seed), layers=3)
+        self.schedule_ground_generation(seed=int(terrain_seed))
         self.fx_textures = FxQueueTextures(
             particles=resources.texture(TextureId.PARTICLES),
             bodyset=resources.texture(TextureId.BODYSET),

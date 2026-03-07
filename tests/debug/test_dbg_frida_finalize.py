@@ -9,10 +9,8 @@ from crimson.dbg.frida_finalize import FridaFinalizeError, finalize_frida_jsonl_
 from crimson.dbg.trace import load_trace
 from crimson.replay.codec import load_replay_file
 from crimson.replay.types import WEAPON_USAGE_COUNT
-from crimson.sim.bootstrap import run_terrain_bootstrap
-from grim.rand import CrtRand
 
-CAPTURE_FORMAT_VERSION = 10
+CAPTURE_FORMAT_VERSION = 11
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> Path:
@@ -234,18 +232,6 @@ def _channels_stub(
     }
 
 
-def _terrain_seed_after(*, bootstrap_seed: int, quest_unlock_index: int = 0, world_size: int = 1024) -> int:
-    rng = CrtRand(seed=int(bootstrap_seed))
-    terrain = run_terrain_bootstrap(
-        rng,
-        quest_unlock_index=int(quest_unlock_index),
-        width=int(world_size),
-        height=int(world_size),
-        layers=3,
-    )
-    return int(terrain.seed_after)
-
-
 def _replay_inputs_stub(*, player_count: int = 1) -> list[list[float | int]]:
     return [[0.0, 0.0, 0.0, 0.0, 0] for _ in range(max(1, int(player_count)))]
 
@@ -258,27 +244,14 @@ def _run_start_row(
     player_count: int = 1,
     quest_stage_major: int = -1,
     quest_stage_minor: int = -1,
-    bootstrap_kind: str | None = None,
-    bootstrap_seed: int | None = None,
+    seed_source: str = "crt_srand",
 ) -> dict[str, object]:
-    mode = int(mode_id)
-    kind = bootstrap_kind
-    if kind is None:
-        kind = "terrain_v1" if mode in (1, 2) else "none"
-    seed_val = bootstrap_seed
-    if seed_val is None:
-        seed_val = int(seed) if str(kind) == "terrain_v1" else 0
-    run_seed = int(seed)
-    if str(kind) == "terrain_v1":
-        run_seed = _terrain_seed_after(bootstrap_seed=int(seed_val), quest_unlock_index=0)
     return {
         "event": "run_start",
         "run_id": int(run_id),
-        "mode_id": mode,
-        "seed": int(run_seed),
-        "bootstrap_kind": str(kind),
-        "bootstrap_seed": int(seed_val),
-        "seed_source": "terrain_bootstrap_sim" if str(kind) == "terrain_v1" else "crt_srand",
+        "mode_id": int(mode_id),
+        "seed": int(seed),
+        "seed_source": str(seed_source),
         "player_count": int(player_count),
         "quest_stage_major": int(quest_stage_major),
         "quest_stage_minor": int(quest_stage_minor),
@@ -421,9 +394,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
 
     replay = load_replay_file(out_trace.replay_path)
     assert replay.header.game_mode_id == 1
-    assert replay.header.seed == _terrain_seed_after(bootstrap_seed=777)
-    assert replay.header.bootstrap_kind == "terrain_v1"
-    assert replay.header.bootstrap_seed == 777
+    assert replay.header.seed == 777
     assert replay.header.player_count == 1
     assert len(replay.ticks) == 2
 
@@ -661,7 +632,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_null_run_start_seed_with_actiona
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_terrain_mode_without_bootstrap_metadata(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_rejects_legacy_bootstrap_kind_field(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
@@ -671,20 +642,19 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_mode_without_bootstrap_m
                 "run_id": 1,
                 "mode_id": 1,
                 "seed": 7,
-                "bootstrap_kind": "none",
-                "bootstrap_seed": 0,
                 "player_count": 1,
                 "quest_stage_major": -1,
                 "quest_stage_minor": -1,
+                "bootstrap_kind": "terrain_v1",
             },
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="requires bootstrap_kind='terrain_v1'"):
+    with pytest.raises(FridaFinalizeError, match="unknown field `bootstrap_kind`"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_rejects_legacy_bootstrap_seed_field(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
@@ -694,30 +664,16 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: 
                 "run_id": 1,
                 "mode_id": 1,
                 "seed": 7,
-                "bootstrap_kind": "terrain_v1",
                 "bootstrap_seed": 7,
-                "seed_source": "terrain_bootstrap_sim",
+                "seed_source": "crt_srand",
                 "player_count": 1,
                 "quest_stage_major": -1,
                 "quest_stage_minor": -1,
             },
-            {
-                "event": "tick",
-                "run_id": 1,
-                "elapsed_ms": 0,
-                "dt_ms_i32": 16,
-                "dt": 0.016,
-                "mode_id": 1,
-                "phase_markers": [],
-                "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": _channels_stub(tick_index=0, elapsed_ms=0, mode_id=1),
-            },
-            _run_end_row(run_id=1, mode_id=1, ticks_written=1),
-            _session_end_row(ticks_written=1),
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="terrain bootstrap seed mismatch"):
+    with pytest.raises(FridaFinalizeError, match="unknown field `bootstrap_seed`"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -745,7 +701,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 10"):
+    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 11"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -867,7 +823,14 @@ def test_finalize_frida_jsonl_to_traces_rejects_session_start_fingerprint_sessio
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_invalid_run_start_seed_source(tmp_path: Path) -> None:
-    run_start = _run_start_row(run_id=1, mode_id=3, seed=101, player_count=1)
+    run_start = _run_start_row(
+        run_id=1,
+        mode_id=3,
+        seed=101,
+        player_count=1,
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
     run_start["seed_source"] = "thread_rng_sample"
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
@@ -886,8 +849,17 @@ def test_finalize_frida_jsonl_to_traces_rejects_tick_mode_mismatch(tmp_path: Pat
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=3, seed=102, player_count=1),
-            _tick_row(run_id=1, tick_index=0, elapsed_ms=16, dt_ms_i32=16, dt=0.016, mode_id=2),
+            _run_start_row(run_id=1, mode_id=3, seed=102, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            _tick_row(
+                run_id=1,
+                tick_index=0,
+                elapsed_ms=16,
+                dt_ms_i32=16,
+                dt=0.016,
+                mode_id=2,
+                quest_stage_major=1,
+                quest_stage_minor=1,
+            ),
         ],
     )
 
@@ -900,9 +872,18 @@ def test_finalize_frida_jsonl_to_traces_rejects_run_end_tick_count_mismatch(tmp_
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=3, seed=103, player_count=1),
-            _tick_row(run_id=1, tick_index=0, elapsed_ms=16, dt_ms_i32=16, dt=0.016, mode_id=3),
-            _run_end_row(run_id=1, mode_id=3, ticks_written=0),
+            _run_start_row(run_id=1, mode_id=3, seed=103, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            _tick_row(
+                run_id=1,
+                tick_index=0,
+                elapsed_ms=16,
+                dt_ms_i32=16,
+                dt=0.016,
+                mode_id=3,
+                quest_stage_major=1,
+                quest_stage_minor=1,
+            ),
+            _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=1, ticks_written=0),
         ],
     )
 
@@ -917,14 +898,14 @@ def test_finalize_frida_jsonl_to_traces_rejects_capture_error_row(tmp_path: Path
             _session_start_row(),
             {
                 "event": "error",
-                "error": "missing_bootstrap_seed",
+                "error": "missing_run_start_seed",
                 "run_id": 1,
                 "tick_index_global": 77,
             },
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="capture error='missing_bootstrap_seed' tick_index_global=77"):
+    with pytest.raises(FridaFinalizeError, match="capture error='missing_run_start_seed' tick_index_global=77"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -946,9 +927,18 @@ def test_finalize_frida_jsonl_to_traces_rejects_session_end_tick_count_mismatch(
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=3, seed=104, player_count=1),
-            _tick_row(run_id=1, tick_index=0, elapsed_ms=16, dt_ms_i32=16, dt=0.016, mode_id=3),
-            _run_end_row(run_id=1, mode_id=3, ticks_written=1),
+            _run_start_row(run_id=1, mode_id=3, seed=104, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            _tick_row(
+                run_id=1,
+                tick_index=0,
+                elapsed_ms=16,
+                dt_ms_i32=16,
+                dt=0.016,
+                mode_id=3,
+                quest_stage_major=1,
+                quest_stage_minor=1,
+            ),
+            _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=1, ticks_written=1),
             _session_end_row(ticks_written=0),
         ],
     )

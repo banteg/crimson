@@ -197,6 +197,24 @@ def test_replay_load_accepts_plain_msgpack_bytes() -> None:
     assert decoded.header == header
 
 
+def test_replay_load_rejects_older_format_version() -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    replay_header = cast("dict[str, object]", replay_obj["header"])
+    replay_header["replay_format_version"] = 9
+
+    with pytest.raises(ReplayCodecError, match="unsupported replay format version: 9"):
+        load_replay(msgspec.msgpack.encode(replay_obj))
+
+
+def test_replay_load_rejects_missing_quest_level_for_quest_mode() -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    replay_header = cast("dict[str, object]", replay_obj["header"])
+    replay_header["game_mode_id"] = int(GameMode.QUESTS)
+
+    with pytest.raises(ReplayCodecError, match="quest replays require a valid header.quest_level"):
+        load_replay(msgspec.msgpack.encode(replay_obj))
+
+
 def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
     move_x = 0.123456789123
     move_y = -0.987654321987
