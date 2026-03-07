@@ -18,10 +18,12 @@ class QuestLevel:
     minor: int
 
     def __post_init__(self) -> None:
-        major = int(self.major)
-        minor = int(self.minor)
-        object.__setattr__(self, "major", major)
-        object.__setattr__(self, "minor", minor)
+        major = self.major
+        minor = self.minor
+        if isinstance(major, bool) or not isinstance(major, int):
+            raise TypeError(f"quest stage must be int, got {type(major).__name__}")
+        if isinstance(minor, bool) or not isinstance(minor, int):
+            raise TypeError(f"quest row must be int, got {type(minor).__name__}")
         if not (1 <= major <= QUEST_STAGE_COUNT):
             raise ValueError(f"quest stage out of range: {major} (expected 1..{QUEST_STAGE_COUNT})")
         if not (1 <= minor <= QUESTS_PER_STAGE):
@@ -29,17 +31,15 @@ class QuestLevel:
 
     @classmethod
     def from_parts(cls, major: int, minor: int) -> QuestLevel:
-        return cls(int(major), int(minor))
+        return cls(major, minor)
 
     @classmethod
     def from_parts_or_none(cls, major: int, minor: int) -> QuestLevel | None:
-        major_i = int(major)
-        minor_i = int(minor)
-        if major_i == 0 and minor_i == 0:
+        if major == 0 and minor == 0:
             return None
         try:
-            return cls(major_i, minor_i)
-        except ValueError:
+            return cls(major, minor)
+        except (TypeError, ValueError):
             return None
 
     @classmethod
