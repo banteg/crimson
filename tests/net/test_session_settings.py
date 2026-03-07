@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.game_modes import GameMode
 from crimson.net.lockstep_protocol import MatchStart, Welcome
 from crimson.net.lockstep_protocol import StatusSnapshot as LockstepStatusSnapshot
 from crimson.net.relay_protocol import RelaySlot
@@ -25,7 +26,7 @@ from crimson.quests.level import QuestLevel
 
 def test_lockstep_session_settings_build_hello() -> None:
     settings = session_settings_for_lockstep(
-        mode_id=3,
+        mode_id=GameMode.QUESTS,
         player_count=9,
         quest_level=QuestLevel(2, 3),
         preserve_bugs=True,
@@ -52,7 +53,7 @@ def test_lockstep_session_settings_build_hello() -> None:
 
 def test_lockstep_session_settings_roundtrip_with_welcome_and_match_start() -> None:
     settings = session_settings_for_lockstep(
-        mode_id=2,
+        mode_id=GameMode.RUSH,
         player_count=2,
         quest_level=QuestLevel(2, 2),
         preserve_bugs=True,
@@ -96,7 +97,7 @@ def test_lockstep_session_settings_roundtrip_with_welcome_and_match_start() -> N
 
 def test_relay_session_settings_roundtrip_from_room_create() -> None:
     settings = session_settings_for_relay(
-        mode_id=2,
+        mode_id=GameMode.RUSH,
         player_count=0,
         quest_level=None,
         preserve_bugs=False,
@@ -120,7 +121,7 @@ def test_relay_session_settings_roundtrip_from_room_create() -> None:
 
 def test_relay_session_settings_build_room_state_and_start() -> None:
     settings = session_settings_for_relay(
-        mode_id=1,
+        mode_id=GameMode.SURVIVAL,
         player_count=2,
         quest_level=QuestLevel(1, 1),
         preserve_bugs=True,
@@ -135,7 +136,7 @@ def test_relay_session_settings_build_room_state_and_start() -> None:
     ]
     state = room_state_from_session_settings(
         settings,
-        room_code="ABCD",
+        room_code="abcd",
         session_id="session42",
         slots=slots,
         all_ready=False,
@@ -150,7 +151,7 @@ def test_relay_session_settings_build_room_state_and_start() -> None:
 
     start = room_start_from_session_settings(
         settings,
-        room_code="ABCD",
+        room_code="abcd",
         session_id="session42",
         seed=123,
         start_tick=5,

@@ -4,6 +4,7 @@ from typing import Literal, TypeAlias
 
 import msgspec
 
+from ..game_modes import GameMode
 from ..msgspec_types import NonNegativeInt, PlayerCount, PositiveInt
 from ..quests.level import QuestLevel
 from .lockstep_protocol import INPUT_DELAY_TICKS as LOCKSTEP_INPUT_DELAY_TICKS
@@ -26,10 +27,11 @@ from .relay_protocol import (
 from .relay_protocol import (
     TICK_RATE as RELAY_TICK_RATE,
 )
+from .room_code import RoomCode
 
 
 class LockstepSessionSettings(msgspec.Struct, frozen=True):
-    mode_id: int = 0
+    mode_id: GameMode = GameMode.DEMO
     player_count: PlayerCount = 1
     quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
@@ -39,7 +41,7 @@ class LockstepSessionSettings(msgspec.Struct, frozen=True):
 
 
 class RelaySessionSettings(msgspec.Struct, frozen=True):
-    mode_id: int = 0
+    mode_id: GameMode = GameMode.DEMO
     player_count: PlayerCount = 1
     quest_level: QuestLevel | None = None
     preserve_bugs: bool = False
@@ -54,7 +56,7 @@ SessionSettings: TypeAlias = LockstepSessionSettings | RelaySessionSettings
 
 def session_settings_from_hello(message: Hello) -> LockstepSessionSettings:
     return session_settings_for_lockstep(
-        mode_id=int(message.mode_id),
+        mode_id=message.mode_id,
         player_count=int(message.player_count),
         quest_level=message.quest_level,
         preserve_bugs=bool(message.preserve_bugs),
@@ -65,7 +67,7 @@ def session_settings_from_hello(message: Hello) -> LockstepSessionSettings:
 
 def session_settings_for_lockstep(
     *,
-    mode_id: int,
+    mode_id: GameMode,
     player_count: int,
     quest_level: QuestLevel | None,
     preserve_bugs: bool,
@@ -73,7 +75,7 @@ def session_settings_for_lockstep(
     input_delay_ticks: int = LOCKSTEP_INPUT_DELAY_TICKS,
 ) -> LockstepSessionSettings:
     return LockstepSessionSettings(
-        mode_id=int(mode_id),
+        mode_id=mode_id,
         player_count=max(1, min(4, int(player_count))),
         quest_level=quest_level,
         preserve_bugs=bool(preserve_bugs),
@@ -84,7 +86,7 @@ def session_settings_for_lockstep(
 
 def session_settings_from_welcome(message: Welcome) -> LockstepSessionSettings:
     return session_settings_for_lockstep(
-        mode_id=int(message.mode_id),
+        mode_id=message.mode_id,
         player_count=int(message.player_count),
         quest_level=message.quest_level,
         preserve_bugs=bool(message.preserve_bugs),
@@ -112,7 +114,7 @@ def welcome_from_session_settings(
         session_id=str(session_id),
         protocol_version=int(protocol_version),
         build_id=str(build_id),
-        mode_id=int(settings.mode_id),
+        mode_id=settings.mode_id,
         player_count=int(settings.player_count),
         slot_index=int(slot_index),
         host_slot_index=int(host_slot_index),
@@ -132,7 +134,7 @@ def session_settings_from_match_start(
     input_delay_ticks: int = LOCKSTEP_INPUT_DELAY_TICKS,
 ) -> LockstepSessionSettings:
     return session_settings_for_lockstep(
-        mode_id=int(message.mode_id),
+        mode_id=message.mode_id,
         player_count=int(message.player_count),
         quest_level=message.quest_level,
         preserve_bugs=bool(message.preserve_bugs),
@@ -151,7 +153,7 @@ def match_start_from_session_settings(
 ) -> MatchStart:
     return MatchStart(
         session_id=str(session_id),
-        mode_id=int(settings.mode_id),
+        mode_id=settings.mode_id,
         player_count=int(settings.player_count),
         seed=int(seed),
         start_tick=int(start_tick),
@@ -163,7 +165,7 @@ def match_start_from_session_settings(
 
 def session_settings_for_relay(
     *,
-    mode_id: int,
+    mode_id: GameMode,
     player_count: int,
     quest_level: QuestLevel | None,
     preserve_bugs: bool,
@@ -173,7 +175,7 @@ def session_settings_for_relay(
     netcode_mode: NetcodeMode = "rollback",
 ) -> RelaySessionSettings:
     return RelaySessionSettings(
-        mode_id=int(mode_id),
+        mode_id=mode_id,
         player_count=max(1, min(4, int(player_count))),
         quest_level=quest_level,
         preserve_bugs=bool(preserve_bugs),
@@ -186,7 +188,7 @@ def session_settings_for_relay(
 
 def session_settings_from_room_create(message: RoomCreate) -> RelaySessionSettings:
     return session_settings_for_relay(
-        mode_id=int(message.mode_id),
+        mode_id=message.mode_id,
         player_count=int(message.player_count),
         quest_level=message.quest_level,
         preserve_bugs=bool(message.preserve_bugs),
@@ -207,7 +209,7 @@ def hello_from_session_settings(
     return Hello(
         protocol_version=int(protocol_version),
         build_id=str(build_id),
-        mode_id=int(settings.mode_id),
+        mode_id=settings.mode_id,
         player_count=int(settings.player_count),
         tick_rate=int(settings.tick_rate),
         input_delay_ticks=int(settings.input_delay_ticks),
@@ -223,7 +225,7 @@ def room_create_from_session_settings(
     status_snapshot: StatusSnapshot | None = None,
 ) -> RoomCreate:
     return RoomCreate(
-        mode_id=int(settings.mode_id),
+        mode_id=settings.mode_id,
         player_count=int(settings.player_count),
         quest_level=settings.quest_level,
         preserve_bugs=bool(settings.preserve_bugs),
@@ -238,16 +240,16 @@ def room_create_from_session_settings(
 def room_state_from_session_settings(
     settings: RelaySessionSettings,
     *,
-    room_code: str,
+    room_code: RoomCode,
     session_id: str,
     slots: list[RelaySlot],
     all_ready: bool,
     started: bool,
 ) -> RoomState:
     return RoomState(
-        room_code=str(room_code),
+        room_code=room_code,
         session_id=str(session_id),
-        mode_id=int(settings.mode_id),
+        mode_id=settings.mode_id,
         player_count=int(settings.player_count),
         quest_level=settings.quest_level,
         preserve_bugs=bool(settings.preserve_bugs),
@@ -264,7 +266,7 @@ def room_state_from_session_settings(
 def room_start_from_session_settings(
     settings: RelaySessionSettings,
     *,
-    room_code: str,
+    room_code: RoomCode,
     session_id: str,
     seed: int,
     start_tick: int,
@@ -274,11 +276,11 @@ def room_start_from_session_settings(
     status_snapshot: StatusSnapshot | None = None,
 ) -> RoomStart:
     return RoomStart(
-        room_code=str(room_code),
+        room_code=room_code,
         session_id=str(session_id),
         seed=int(seed),
         start_tick=int(start_tick),
-        mode_id=int(settings.mode_id),
+        mode_id=settings.mode_id,
         player_count=int(settings.player_count),
         quest_level=settings.quest_level,
         preserve_bugs=bool(settings.preserve_bugs),

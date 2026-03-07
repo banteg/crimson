@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
+from crimson.game_modes import GameMode
 from crimson.net.relay_protocol import (
     NetMessage,
     RbResyncBegin,
@@ -36,7 +37,7 @@ def _started_runtime(mocker, *, role: str, slot_index: int) -> tuple[RollbackRun
             player_count=2,
             relay_host="127.0.0.1",
             relay_port=31993,
-            room_code="AB12",
+            room_code="ab12",
             input_delay_ticks=0,
         ),
     )
@@ -47,9 +48,9 @@ def _started_runtime(mocker, *, role: str, slot_index: int) -> tuple[RollbackRun
     runtime._sent_ready = True
     runtime._handle_message(
         message=RoomStart(
-            room_code="AB12",
+            room_code="ab12",
             session_id="s1",
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             slot_index=slot_index,
             host_slot_index=0,

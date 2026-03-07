@@ -28,7 +28,7 @@ def test_net_host_command_builds_pending_network_session(mocker, tmp_path: Path)
             "--relay-port",
             "32011",
             "--room-code",
-            "ab12cd",
+            "ab12",
             "--base-dir",
             str(tmp_path),
         ],
@@ -48,7 +48,7 @@ def test_net_host_command_builds_pending_network_session(mocker, tmp_path: Path)
     endpoint = pending.config.endpoint
     assert endpoint.relay_host == "203.0.113.10"
     assert endpoint.relay_port == 32011
-    assert endpoint.room_code == "AB12CD"
+    assert endpoint.room_code == "ab12"
 
 
 def test_net_host_quests_requires_quest_level(mocker, tmp_path: Path) -> None:
@@ -81,7 +81,7 @@ def test_net_join_command_builds_pending_join_session(mocker, tmp_path: Path) ->
             "net",
             "join",
             "--code",
-            "room42",
+            "rm42",
             "--relay-host",
             "198.51.100.15",
             "--relay-port",
@@ -101,7 +101,7 @@ def test_net_join_command_builds_pending_join_session(mocker, tmp_path: Path) ->
     assert pending.auto_start is True
     assert pending.config.netcode_mode == "rollback"
     endpoint = pending.config.endpoint
-    assert endpoint.room_code == "ROOM42"
+    assert endpoint.room_code == "rm42"
     assert endpoint.relay_host == "198.51.100.15"
     assert endpoint.relay_port == 31999
 
@@ -115,7 +115,7 @@ def test_net_join_lockstep_requires_host(mocker, tmp_path: Path) -> None:
             "net",
             "join",
             "--code",
-            "room42",
+            "rm42",
             "--netcode",
             "lockstep",
             "--base-dir",

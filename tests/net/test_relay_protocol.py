@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.game_modes import GameMode
 from crimson.net.relay_protocol import (
     DEFAULT_PORT,
     INPUT_DELAY_TICKS,
@@ -29,7 +30,7 @@ def test_relay_packet_round_trip_for_control_message() -> None:
         ack=3,
         reliable=True,
         message=RoomCreate(
-            mode_id=2,
+            mode_id=GameMode.RUSH,
             player_count=3,
             quest_level=None,
             preserve_bugs=False,

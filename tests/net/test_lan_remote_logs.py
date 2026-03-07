@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from crimson.game_modes import GameMode
 from crimson.net.debug_log import close_lan_debug_log, init_lan_debug_log
 from crimson.net.lockstep_lobby import HostLobby
 from crimson.net.lockstep_protocol import INPUT_DELAY_TICKS, PROTOCOL_VERSION, TICK_RATE, DebugLogBatch, Hello
@@ -24,7 +25,7 @@ def test_host_writes_remote_client_log_batches(tmp_path: Path) -> None:
 
     runtime = LockstepRuntime(
         HostLockstepRuntimeConfig(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             bind_host="127.0.0.1",
             host_ip="",
@@ -32,7 +33,7 @@ def test_host_writes_remote_client_log_batches(tmp_path: Path) -> None:
         ),
     )
     lobby = HostLobby(
-        mode_id=1,
+        mode_id=GameMode.SURVIVAL,
         player_count=2,
         build_id="0.1.0",
         tick_rate=TICK_RATE,
@@ -44,7 +45,7 @@ def test_host_writes_remote_client_log_batches(tmp_path: Path) -> None:
         Hello(
             protocol_version=int(PROTOCOL_VERSION),
             build_id="0.1.0",
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             tick_rate=TICK_RATE,
             input_delay_ticks=INPUT_DELAY_TICKS,

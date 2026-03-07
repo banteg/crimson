@@ -3,6 +3,7 @@ from __future__ import annotations
 import builtins
 from unittest.mock import MagicMock
 
+from crimson.game_modes import GameMode
 from crimson.net.relay_protocol import (
     ClientWelcome,
     NetMessage,
@@ -36,11 +37,11 @@ def _sent_messages(send_packet: MagicMock) -> list[NetMessage]:
 def _start_runtime(mocker, *, rollback_max_ticks: int = 8) -> tuple[RollbackRuntime, MagicMock]:
     runtime = RollbackRuntime(
         HostRollbackRuntimeConfig(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             relay_host="127.0.0.1",
             relay_port=31993,
-            room_code="ABCD12",
+            room_code="ab12",
             rollback_max_ticks=int(rollback_max_ticks),
             input_delay_ticks=0,
         ),
@@ -49,9 +50,9 @@ def _start_runtime(mocker, *, rollback_max_ticks: int = 8) -> tuple[RollbackRunt
     runtime._server_addr = ("127.0.0.1", 31993)
     runtime._handle_message(
         message=RoomStart(
-            room_code="ABCD12",
+            room_code="ab12",
             session_id="s1",
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             slot_index=0,
             host_slot_index=0,
@@ -173,35 +174,35 @@ def test_runtime_accepts_resync_stream_and_exposes_pending_snapshot(mocker) -> N
 def test_runtime_prints_host_invite_code_once(mocker) -> None:
     runtime = RollbackRuntime(
         HostRollbackRuntimeConfig(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             relay_host="127.0.0.1",
             relay_port=31993,
-            room_code="",
+            room_code=None,
         ),
     )
     print_mock = mocker.patch.object(builtins, "print")
 
     runtime._handle_message(
-        message=RoomState(room_code="AB12", player_count=2),
+        message=RoomState(room_code="ab12", player_count=2),
         now_ms=1000,
     )
     runtime._handle_message(
-        message=RoomState(room_code="AB12", player_count=2),
+        message=RoomState(room_code="ab12", player_count=2),
         now_ms=1001,
     )
 
-    print_mock.assert_called_once_with("[crimson] Invite code: AB12", flush=True)
+    print_mock.assert_called_once_with("[crimson] Invite code: ab12", flush=True)
 
 
 def test_client_sends_ready_only_after_room_state(mocker) -> None:
     runtime = RollbackRuntime(
         JoinRollbackRuntimeConfig(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             relay_host="127.0.0.1",
             relay_port=31993,
-            room_code="AB12",
+            room_code="ab12",
         ),
     )
     send_packet = mocker.patch.object(type(runtime.transport), "send_packet")
@@ -216,7 +217,7 @@ def test_client_sends_ready_only_after_room_state(mocker) -> None:
     assert not any(isinstance(message, RoomReady) for message in first_wave)
 
     send_packet.reset_mock()
-    runtime._handle_message(message=RoomState(room_code="AB12", player_count=2), now_ms=1100)
+    runtime._handle_message(message=RoomState(room_code="ab12", player_count=2), now_ms=1100)
     runtime.update(now_ms=1100)
     second_wave = _sent_messages(send_packet)
     assert any(isinstance(message, RoomReady) for message in second_wave)
@@ -225,11 +226,11 @@ def test_client_sends_ready_only_after_room_state(mocker) -> None:
 def test_host_keeps_lobby_heartbeat_alive(mocker) -> None:
     runtime = RollbackRuntime(
         HostRollbackRuntimeConfig(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             relay_host="127.0.0.1",
             relay_port=31993,
-            room_code="AB12",
+            room_code="ab12",
         ),
     )
     send_packet = mocker.patch.object(type(runtime.transport), "send_packet")

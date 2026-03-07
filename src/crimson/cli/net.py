@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import msgspec
 import typer
 
 from crimson.quests.level import QuestLevel
 
+from ..net.room_code import parse_optional_room_code
 from ..paths import default_runtime_dir
 from .session import _parse_netcode_mode, _parse_session_mode, _run_game_with_pending_session
 
@@ -106,10 +108,14 @@ def cmd_net_host(
                 "--host/--port are lockstep-only; use --relay-host/--relay-port for rollback",
                 param_hint="--host/--port",
             )
+        try:
+            normalized_room_code = parse_optional_room_code(room_code)
+        except msgspec.ValidationError as exc:
+            raise typer.BadParameter(str(exc), param_hint="--room-code") from exc
         endpoint = RollbackEndpoint(
             relay_host=str(relay_host).strip() or "127.0.0.1",
             relay_port=int(relay_port),
-            room_code=str(room_code).strip().upper(),
+            room_code=normalized_room_code,
         )
         config = NetworkSessionConfig(
             mode=resolved_mode,
@@ -185,13 +191,16 @@ def cmd_net_join(
 
     resolved_netcode = _parse_netcode_mode(netcode)
     normalized_host = str(host).strip()
-    room_code = str(code).strip().upper()
+    try:
+        room_code = parse_optional_room_code(code)
+    except msgspec.ValidationError as exc:
+        raise typer.BadParameter(str(exc), param_hint="--code") from exc
     normalized_quest_level = _parse_optional_quest_level(quest_level, param_hint="--quest-level")
 
     if resolved_netcode == "lockstep":
         if not normalized_host:
             raise typer.BadParameter("host is required in lockstep mode", param_hint="--host")
-        if room_code:
+        if room_code is not None:
             raise typer.BadParameter("room code is not used in lockstep mode", param_hint="--code")
         if str(relay_host).strip() != "127.0.0.1" or int(relay_port) != 31993:
             raise typer.BadParameter(
@@ -215,7 +224,7 @@ def cmd_net_join(
             preserve_bugs=False,
         )
     else:
-        if not room_code:
+        if room_code is None:
             raise typer.BadParameter("room code is required in rollback mode", param_hint="--code")
         if normalized_host:
             raise typer.BadParameter("--host is lockstep-only", param_hint="--host")

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import MagicMock
 
+from crimson.game_modes import GameMode
 from crimson.net.relay_protocol import (
     PROTOCOL_VERSION,
     ROOM_CODE_LENGTH,
@@ -58,7 +59,7 @@ def _start_two_peer_room(server: RelayServer, *, now_ms: int) -> tuple[Any, Any,
     server._handle_message(
         peer=host_peer,
         message=RoomCreate(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             quest_level=None,
             preserve_bugs=False,
@@ -95,7 +96,7 @@ def test_room_create_join_ready_start_flow(mocker) -> None:
     server._handle_message(
         peer=host_peer,
         message=RoomCreate(
-            mode_id=2,
+            mode_id=GameMode.RUSH,
             player_count=2,
             quest_level=None,
             preserve_bugs=False,
@@ -153,7 +154,7 @@ def test_reconnect_token_reclaims_slot_and_receives_room_start(mocker) -> None:
     new_peer = _hello_peer(server, addr=new_addr, build_id="0.1.0", now_ms=2201)
     server._handle_message(
         peer=new_peer,
-        message=RoomJoin(room_code="", reconnect_token=reconnect_token),
+        message=RoomJoin(room_code=None, reconnect_token=reconnect_token),
         now_ms=2202,
     )
 

@@ -32,7 +32,7 @@ def test_rollback_runtime_is_selected_for_all_network_modes(
             endpoint=RollbackEndpoint(
                 relay_host="127.0.0.1",
                 relay_port=31993,
-                room_code="",
+                room_code=None,
             ),
             netcode_mode="rollback",
             player_count=2,

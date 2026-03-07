@@ -12,7 +12,7 @@ def session_settings_from_replay_header(
     input_delay_ticks: int = LOCKSTEP_INPUT_DELAY_TICKS,
 ) -> LockstepSessionSettings:
     return session_settings_for_lockstep(
-        mode_id=int(header.game_mode_id),
+        mode_id=header.game_mode_id,
         player_count=int(header.player_count),
         quest_level=header.quest_level,
         preserve_bugs=bool(header.preserve_bugs),
@@ -32,9 +32,9 @@ def replay_header_from_session_settings(
     world_size: float = 1024.0,
     status: ReplayStatusSnapshot | None = None,
 ) -> ReplayHeader:
-    mode_raw = int(settings.mode_id)
+    mode_raw = settings.mode_id
     try:
-        game_mode_id = GameMode(mode_raw)
+        game_mode_id = mode_raw if isinstance(mode_raw, GameMode) else GameMode(int(mode_raw))
     except ValueError as exc:
         raise ValueError(f"unsupported replay game_mode_id={mode_raw}") from exc
     quest_level = settings.quest_level

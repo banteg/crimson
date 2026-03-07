@@ -38,7 +38,7 @@ def test_network_session_panel_writes_pending_network_session(make_game_state) -
     panel._host = "203.0.113.20"
     panel._port_text = "32031"
     panel._netcode_mode = "rollback"
-    panel._room_code = "rB42"
+    panel._room_code = "rb42"
 
     panel._start_session()
 
@@ -51,7 +51,7 @@ def test_network_session_panel_writes_pending_network_session(make_game_state) -
     endpoint = pending.config.endpoint
     assert endpoint.relay_host == "203.0.113.20"
     assert endpoint.relay_port == 32031
-    assert endpoint.room_code == "RB42"
+    assert endpoint.room_code == "rb42"
 
 
 def test_loop_view_resolves_lan_action_using_pending_network_session(make_game_state) -> None:
@@ -63,7 +63,7 @@ def test_loop_view_resolves_lan_action_using_pending_network_session(make_game_s
             endpoint=RollbackEndpoint(
                 relay_host="127.0.0.1",
                 relay_port=31993,
-                room_code="",
+                room_code=None,
             ),
             netcode_mode="rollback",
             player_count=2,
@@ -93,7 +93,7 @@ def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, moc
             endpoint=RollbackEndpoint(
                 relay_host="127.0.0.1",
                 relay_port=31993,
-                room_code="ZZ99",
+                room_code="zz99",
             ),
             netcode_mode="rollback",
             player_count=2,
@@ -108,7 +108,7 @@ def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, moc
     state.network_runtime = cast(
         "Any",
         SimpleNamespace(
-            lobby_state=lambda: RoomState(room_code="AB12", session_id="session123", player_count=2, slots=[]),
+            lobby_state=lambda: RoomState(room_code="ab12", session_id="session123", player_count=2, slots=[]),
         ),
     )
 
@@ -136,7 +136,7 @@ def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, moc
 
     captured = [str(call.args[1]) for call in draw_small_text.call_args_list]
     code_label_index = captured.index("Code:")
-    assert captured[code_label_index + 1] == "AB12"
+    assert captured[code_label_index + 1] == "ab12"
     assert "Session:" in captured
 
 
@@ -149,7 +149,7 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
             endpoint=RollbackEndpoint(
                 relay_host="127.0.0.1",
                 relay_port=31993,
-                room_code="QZ42",
+                room_code="qz42",
             ),
             netcode_mode="rollback",
             player_count=2,

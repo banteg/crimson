@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+from crimson.game_modes import GameMode
 from crimson.net.lockstep_lobby import HostLobby
 from crimson.net.lockstep_protocol import INPUT_DELAY_TICKS, PROTOCOL_VERSION, TICK_RATE, Hello, Ready
 
 
-def _hello(*, build_id: str = "b1", mode_id: int = 1, player_count: int = 2) -> Hello:
+def _hello(
+    *,
+    build_id: str = "b1",
+    mode_id: GameMode = GameMode.SURVIVAL,
+    player_count: int = 2,
+) -> Hello:
     return Hello(
         protocol_version=int(PROTOCOL_VERSION),
         build_id=build_id,
@@ -20,7 +26,7 @@ def _hello(*, build_id: str = "b1", mode_id: int = 1, player_count: int = 2) -> 
 
 def test_host_lobby_assigns_slot_and_starts_when_ready() -> None:
     lobby = HostLobby(
-        mode_id=1,
+        mode_id=GameMode.SURVIVAL,
         player_count=2,
         build_id="b1",
         tick_rate=TICK_RATE,
@@ -53,7 +59,7 @@ def test_host_lobby_assigns_slot_and_starts_when_ready() -> None:
 
 def test_host_lobby_rejects_build_mismatch() -> None:
     lobby = HostLobby(
-        mode_id=1,
+        mode_id=GameMode.SURVIVAL,
         player_count=2,
         build_id="0.1.0+g1234567",
         tick_rate=TICK_RATE,
@@ -67,7 +73,7 @@ def test_host_lobby_rejects_build_mismatch() -> None:
 
 def test_host_lobby_accepts_release_version_against_git_build_id() -> None:
     lobby = HostLobby(
-        mode_id=1,
+        mode_id=GameMode.SURVIVAL,
         player_count=2,
         build_id="0.1.0+g1234567",
         tick_rate=TICK_RATE,
@@ -80,7 +86,7 @@ def test_host_lobby_accepts_release_version_against_git_build_id() -> None:
 
 def test_host_lobby_rejects_same_version_with_different_git_hashes() -> None:
     lobby = HostLobby(
-        mode_id=1,
+        mode_id=GameMode.SURVIVAL,
         player_count=2,
         build_id="0.1.0+g1234567",
         tick_rate=TICK_RATE,
@@ -94,7 +100,7 @@ def test_host_lobby_rejects_same_version_with_different_git_hashes() -> None:
 
 def test_host_lobby_accepts_mismatched_client_mode_and_players() -> None:
     lobby = HostLobby(
-        mode_id=2,
+        mode_id=GameMode.RUSH,
         player_count=4,
         build_id="b1",
         tick_rate=TICK_RATE,
@@ -107,7 +113,7 @@ def test_host_lobby_accepts_mismatched_client_mode_and_players() -> None:
         Hello(
             protocol_version=int(PROTOCOL_VERSION),
             build_id="b1",
-            mode_id=0,
+            mode_id=GameMode.DEMO,
             player_count=1,
             tick_rate=999,
             input_delay_ticks=0,
@@ -117,13 +123,13 @@ def test_host_lobby_accepts_mismatched_client_mode_and_players() -> None:
         ),
     )
     assert welcome.accepted is True
-    assert welcome.mode_id == 2
+    assert welcome.mode_id == GameMode.RUSH
     assert welcome.player_count == 4
 
 
 def test_host_lobby_rejects_when_full() -> None:
     lobby = HostLobby(
-        mode_id=1,
+        mode_id=GameMode.SURVIVAL,
         player_count=2,
         build_id="b1",
         tick_rate=TICK_RATE,

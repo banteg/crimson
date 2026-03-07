@@ -4,6 +4,7 @@ import uuid
 
 import msgspec
 
+from ..game_modes import GameMode
 from ..quests.level import QuestLevel
 from .lockstep_protocol import (
     PROTOCOL_VERSION,
@@ -33,7 +34,7 @@ class HostPeer(msgspec.Struct):
 
 
 class HostLobby(msgspec.Struct):
-    mode_id: int
+    mode_id: GameMode
     player_count: int
     build_id: str
     tick_rate: int
@@ -47,7 +48,7 @@ class HostLobby(msgspec.Struct):
 
     def session_settings(self) -> LockstepSessionSettings:
         return session_settings_for_lockstep(
-            mode_id=int(self.mode_id),
+            mode_id=self.mode_id,
             player_count=int(self.player_count),
             quest_level=self.quest_level,
             preserve_bugs=bool(self.preserve_bugs),
@@ -160,7 +161,7 @@ class HostLobby(msgspec.Struct):
             )
         return LobbyState(
             session_id=str(self.session_id),
-            mode_id=int(self.mode_id),
+            mode_id=self.mode_id,
             player_count=int(self.player_count),
             slots=slots,
             all_ready=bool(self.all_ready()),

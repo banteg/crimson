@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.net.session_settings import session_settings_for_lockstep
+from crimson.net.session_settings import LockstepSessionSettings, session_settings_for_lockstep
 from crimson.quests.level import QuestLevel
 from crimson.replay.header_settings import replay_header_from_session_settings, session_settings_from_replay_header
 from crimson.replay.types import ReplayHeader, ReplayStatusSnapshot
@@ -11,7 +13,7 @@ from crimson.replay.types import ReplayHeader, ReplayStatusSnapshot
 
 def test_replay_header_from_session_settings_roundtrip() -> None:
     settings = session_settings_for_lockstep(
-        mode_id=int(GameMode.RUSH),
+        mode_id=GameMode.RUSH,
         player_count=3,
         quest_level=None,
         preserve_bugs=True,
@@ -41,8 +43,8 @@ def test_replay_header_from_session_settings_roundtrip() -> None:
 
 
 def test_replay_header_from_session_settings_rejects_unknown_mode() -> None:
-    settings = session_settings_for_lockstep(
-        mode_id=999,
+    settings = LockstepSessionSettings(
+        mode_id=cast(GameMode, 999),
         player_count=1,
         quest_level=None,
         preserve_bugs=False,
@@ -55,7 +57,7 @@ def test_replay_header_from_session_settings_rejects_unknown_mode() -> None:
 
 def test_replay_header_from_session_settings_rejects_missing_quest_level() -> None:
     settings = session_settings_for_lockstep(
-        mode_id=int(GameMode.QUESTS),
+        mode_id=GameMode.QUESTS,
         player_count=1,
         quest_level=None,
         preserve_bugs=False,
