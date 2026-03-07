@@ -56,7 +56,7 @@ def _blank_quest_replay(
     header = ReplayHeader(
         game_mode_id=GameMode.QUESTS,
         seed=int(seed),
-        quest_level="1.1",
+        quest_level=(1, 1),
         tick_rate=60,
         player_count=1,
         game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),

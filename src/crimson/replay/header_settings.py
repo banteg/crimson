@@ -3,6 +3,7 @@ from __future__ import annotations
 from ..game_modes import GameMode
 from ..net.lockstep_protocol import INPUT_DELAY_TICKS as LOCKSTEP_INPUT_DELAY_TICKS
 from ..net.session_settings import LockstepSessionSettings, session_settings_for_lockstep
+from ..quests.level import QuestLevel
 from .types import ReplayHeader, ReplayStatusSnapshot
 
 
@@ -14,7 +15,7 @@ def session_settings_from_replay_header(
     return session_settings_for_lockstep(
         mode_id=int(header.game_mode_id),
         player_count=int(header.player_count),
-        quest_level=str(header.quest_level),
+        quest_level=header.quest_level_text,
         preserve_bugs=bool(header.preserve_bugs),
         tick_rate=int(header.tick_rate),
         input_delay_ticks=int(input_delay_ticks),
@@ -37,13 +38,14 @@ def replay_header_from_session_settings(
         game_mode_id = GameMode(mode_raw)
     except ValueError as exc:
         raise ValueError(f"unsupported replay game_mode_id={mode_raw}") from exc
-    if game_mode_id == GameMode.QUESTS and not str(settings.quest_level).strip():
+    quest_level = QuestLevel.try_parse(str(settings.quest_level))
+    if game_mode_id == GameMode.QUESTS and quest_level is None:
         raise ValueError("quest replays require quest_level")
 
     return ReplayHeader(
         game_mode_id=game_mode_id,
         seed=int(seed),
-        quest_level=str(settings.quest_level),
+        quest_level=((0, 0) if quest_level is None else quest_level.to_stage_pair()),
         tick_rate=int(settings.tick_rate),
         quest_fail_retry_count=int(quest_fail_retry_count),
         hardcore=bool(hardcore),

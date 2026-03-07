@@ -587,7 +587,7 @@ def _build_replay_list_row(
     ticks = len(replay.ticks)
     game_version = str(header.game_version).strip() or "-"
     player_count = int(header.player_count)
-    quest_level = str(header.quest_level)
+    quest_level = header.quest_level_text
     mode_label = _replay_list_mode_label(
         game_mode_id=game_mode_id,
         player_count=player_count,

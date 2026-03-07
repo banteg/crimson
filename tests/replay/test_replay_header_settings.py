@@ -69,7 +69,7 @@ def test_session_settings_from_replay_header_uses_lockstep_defaults() -> None:
     header = ReplayHeader(
         game_mode_id=GameMode.QUESTS,
         seed=42,
-        quest_level="2.3",
+        quest_level=(2, 3),
         tick_rate=60,
         preserve_bugs=False,
         player_count=2,

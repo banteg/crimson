@@ -68,7 +68,7 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
     _header, rec = _blank_quest_replay(ticks=0, seed=101)
     replay = msgspec.structs.replace(
         rec.finish(),
-        header=msgspec.structs.replace(rec.header, quest_level="1.3"),
+        header=msgspec.structs.replace(rec.header, quest_level=(1, 3)),
     )
     quest = quest_by_level("1.3")
     assert quest is not None

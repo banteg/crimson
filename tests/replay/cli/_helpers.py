@@ -5,6 +5,7 @@ from pathlib import Path
 import msgspec
 
 from crimson.game_modes import GameMode
+from crimson.quests.level import QuestLevel
 from crimson.replay import (
     Replay,
     ReplayClaimedStatsSnapshot,
@@ -33,12 +34,13 @@ def build_replay(
     player_count: int = 1,
     quest_level: str = "",
 ) -> Replay:
+    parsed_level = QuestLevel.try_parse(quest_level)
     header = ReplayHeader(
         game_mode_id=mode,
         seed=int(seed),
         tick_rate=60,
         player_count=int(player_count),
-        quest_level=str(quest_level),
+        quest_level=((0, 0) if parsed_level is None else parsed_level.to_stage_pair()),
     )
     recorder = ReplayRecorder(header)
     for _ in range(int(ticks)):

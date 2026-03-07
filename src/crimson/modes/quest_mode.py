@@ -224,7 +224,7 @@ class QuestMode(BaseGameplayMode):
         return int(self._quest_spawn_state.spawn_timeline_ms)
 
     def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
-        level = str(self._quest_level) if self._quest_level else str(replay.header.quest_level or "quest")
+        level = str(self._quest_level) if self._quest_level else (replay.header.quest_level_text or "quest")
         kind = str(self._outcome.kind) if self._outcome is not None else "quest"
         base_time_ms = int(self._quest_spawn_state.spawn_timeline_ms)
         return f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
@@ -470,7 +470,7 @@ class QuestMode(BaseGameplayMode):
                 ReplayHeader(
                     game_mode_id=GameMode.QUESTS,
                     seed=int(self._run_reset_seed),
-                    quest_level=str(quest.level),
+                    quest_level=quest.level_value.to_stage_pair(),
                     tick_rate=int(self._gameplay_tick_rate()),
                     quest_fail_retry_count=int(self.quest_fail_retry_count),
                     hardcore=bool(self.hardcore),

@@ -13,12 +13,14 @@ from ..aim_schemes import AimScheme, aim_scheme_from_value
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..movement_controls import MovementControlType, movement_control_type_from_value
+from ..quests.level import QuestLevel
 from ..sim.input_providers import GameCommand
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
 REPLAY_FORMAT_VERSION = 10
 ReplayFormatVersion: TypeAlias = Literal[10]
+ReplayQuestLevel: TypeAlias = tuple[int, int]
 
 WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 
@@ -255,9 +257,8 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     game_mode_id: GameMode
     seed: int
     replay_format_version: int = REPLAY_FORMAT_VERSION
-    # Quests can recover their spawn script deterministically from the level id.
-    # Leave empty for non-quest modes.
-    quest_level: str = ""
+    # Canonical quest stage pair `(major, minor)`. Use `(0, 0)` for non-quest modes.
+    quest_level: ReplayQuestLevel = (0, 0)
     game_version: str = msgspec.field(default_factory=_default_game_version)
     tick_rate: int = 60
     # Mirrors the native quest retry scaling counter (`quest_fail_retry_count`).
@@ -271,6 +272,16 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     status: ReplayStatusSnapshot = msgspec.field(default_factory=ReplayStatusSnapshot)
     claimed_stats: ReplayClaimedStatsSnapshot = msgspec.field(default_factory=ReplayClaimedStatsSnapshot)
     input_quantization: InputQuantization = "f32"
+
+    @property
+    def quest_level_value(self) -> QuestLevel | None:
+        major, minor = self.quest_level
+        return QuestLevel.from_parts_or_none(int(major), int(minor))
+
+    @property
+    def quest_level_text(self) -> str:
+        level = self.quest_level_value
+        return level.to_string() if level is not None else ""
 
 
 class ReplayTick(msgspec.Struct, frozen=True):
