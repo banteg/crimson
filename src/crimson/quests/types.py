@@ -60,3 +60,7 @@ class QuestDefinition(msgspec.Struct, frozen=True, kw_only=True):
     @property
     def level_key(self) -> tuple[int, int]:
         return self.major, self.minor
+
+    @property
+    def level_value(self) -> QuestLevel:
+        return QuestLevel.from_parts(self.major, self.minor)

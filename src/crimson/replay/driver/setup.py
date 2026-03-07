@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from pathlib import Path
 from typing import cast
 
@@ -15,9 +14,10 @@ from ...persistence.save_status import GameStatus
 from ...replay.types import ReplayStatusSnapshot
 from ...sim.state_types import GameplayState, PlayerState
 from ...sim.step_pipeline import time_scale_reflex_boost_bonus as _time_scale_reflex_boost_bonus
-from ...status_snapshot import game_status_from_progress_status, progress_status_from_replay
-from ...weapon_runtime import init_default_alt_weapon, most_used_weapon_id_for_player, weapon_assign_player
+from ...status_snapshot import game_status_from_replay_status
+from ...weapon_runtime import most_used_weapon_id_for_player
 from ...weapons import WEAPON_TABLE, WeaponId
+from ...world.sim_world_state import reset_world_players
 
 
 class ReplayRunnerError(ValueError):
@@ -54,15 +54,16 @@ def status_from_snapshot(
     *,
     quest_unlock_index: int,
     quest_unlock_index_full: int,
-    weapon_usage_counts: tuple[int, ...] | None = None,
+    weapon_usage_counts: tuple[int, ...] = (),
 ) -> GameStatus:
-    replay_status = ReplayStatusSnapshot(
-        quest_unlock_index=int(quest_unlock_index),
-        quest_unlock_index_full=int(quest_unlock_index_full),
-        weapon_usage_counts=tuple(weapon_usage_counts or ()),
+    return game_status_from_replay_status(
+        ReplayStatusSnapshot(
+            quest_unlock_index=int(quest_unlock_index),
+            quest_unlock_index_full=int(quest_unlock_index_full),
+            weapon_usage_counts=tuple(weapon_usage_counts),
+        ),
+        path=Path("replay://status"),
     )
-    progress = progress_status_from_replay(replay_status)
-    return game_status_from_progress_status(progress, path=Path("replay://status"))
 
 
 def reset_players(
@@ -75,26 +76,13 @@ def reset_players(
 ) -> None:
     """Reset `players` to the classic initial layout used by runtime reset."""
 
-    players.clear()
-
-    base = Vec2(float(world_size) * 0.5, float(world_size) * 0.5) if spawn_pos is None else spawn_pos
-    count = max(1, int(player_count))
-    if count <= 1:
-        offsets = [Vec2()]
-    else:
-        radius = 32.0
-        step = math.tau / float(count)
-        offsets = [Vec2.from_angle(float(idx) * step) * radius for idx in range(count)]
-
-    for idx in range(count):
-        pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(world_size), float(world_size))
-        player = PlayerState(index=idx, pos=pos)
-        weapon_assign_player(player, WeaponId.PISTOL, state=state)
-        init_default_alt_weapon(player)
-        players.append(player)
-    # Player bootstrap mirrors runtime reset: start with a clean runtime SFX
-    # queue so replay/session tick 0 does not include setup reload sounds.
-    state.sfx_queue.clear()
+    reset_world_players(
+        players,
+        state=state,
+        world_size=float(world_size),
+        player_count=int(player_count),
+        spawn_pos=spawn_pos,
+    )
 
 
 def player0_shots(state: GameplayState) -> tuple[int, int]:

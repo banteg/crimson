@@ -109,6 +109,13 @@ def game_status_from_progress_status(snapshot: ProgressStatusSnapshot, *, path: 
     return GameStatus(path=path, data=data, dirty=False)
 
 
+def game_status_from_replay_status(snapshot: ReplayStatusSnapshot | None, *, path: Path) -> GameStatus:
+    return game_status_from_progress_status(
+        progress_status_from_replay(snapshot),
+        path=path,
+    )
+
+
 def progress_status_from_lockstep(snapshot: StatusSnapshot | None) -> ProgressStatusSnapshot:
     if snapshot is None:
         return ProgressStatusSnapshot()

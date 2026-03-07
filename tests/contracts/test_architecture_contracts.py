@@ -426,13 +426,13 @@ def test_contract_8_replay_frame_advancement_uses_shared_helper() -> None:
     helper_source = inspect.getsource(playback_pump_module.advance_playback_frame)
     replay_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._advance_runner)
 
-    assert "driver.step_tick(" in helper_source
+    assert "advance_tick_runner_frame(" in helper_source
     assert "apply_tick_to_sim(" in helper_source
-    assert "clock.accum +=" in helper_source
+    assert "_PlaybackStepRunner(" in helper_source
     assert "advance_playback_frame(" in replay_source
     assert "driver.step_tick(" not in replay_source
     assert "apply_tick_to_sim(" not in replay_source
-    assert "clock.advance(" not in replay_source
+    assert "advance_tick_runner_frame(" not in replay_source
 
 
 def test_contract_9_post_apply_reactions_are_shared() -> None:

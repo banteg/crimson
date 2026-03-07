@@ -131,7 +131,7 @@ def test_advance_playback_frame_does_not_refund_when_all_ticks_complete() -> Non
     assert clock.accum == pytest.approx(0.0)
 
 
-def test_advance_playback_frame_applies_sim_metadata_for_each_tick_in_step_order(mocker) -> None:
+def test_advance_playback_frame_applies_sim_metadata_after_shared_batch_step_order(mocker) -> None:
     sequence = mocker.Mock()
     clock = FixedStepClock(tick_rate=60)
 
@@ -157,5 +157,5 @@ def test_advance_playback_frame_applies_sim_metadata_for_each_tick_in_step_order
     )
 
     assert advance.ticks_completed == 2
-    assert sequence.mock_calls == [call.step(), call.apply(), call.step(), call.apply()]
+    assert sequence.mock_calls == [call.step(), call.step(), call.apply(), call.apply()]
     assert apply_tick_to_sim.call_count == 2

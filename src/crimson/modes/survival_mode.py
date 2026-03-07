@@ -35,7 +35,8 @@ from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.input_providers import PerkMenuOpenCommand
-from ..sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSpawnState, survival_mid_step
+from ..sim.session_builders import build_survival_session
+from ..sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
@@ -104,23 +105,21 @@ class SurvivalMode(BaseGameplayMode):
         self._lan_last_tick_index: int = -1
 
     def _new_sim_session(self) -> DeterministicSession:
-        self._spawn_state = SurvivalSpawnState()
-        spawn = self._spawn_state
-        return self._session_factory(
+        session, spawn_state = build_survival_session(
             world=self.sim_world.world_state,
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             fx_queue=self.render_resources.fx_queue,
             fx_queue_rotated=self.render_resources.fx_queue_rotated,
-            game_mode=GameMode.SURVIVAL,
             detail_preset=5,
             gore_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             clear_fx_queues_each_tick=False,
             finalize_post_render_lifecycle=True,
-            perk_progression_enabled=True,
-            mid_step_hook=lambda ctx: survival_mid_step(ctx, spawn),
+            session_factory=self._session_factory,
         )
+        self._spawn_state = spawn_state
+        return session
 
     def _reset_perk_prompt(self) -> None:
         if int(self.state.perk_selection.pending_count) > 0:

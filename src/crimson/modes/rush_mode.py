@@ -24,18 +24,11 @@ from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
-from ..sim.sessions import (
-    DeterministicSession,
-    DeterministicSessionTick,
-    RushSpawnState,
-    rush_input_transform,
-    rush_mid_step,
-)
+from ..sim.session_builders import build_rush_session, enforce_rush_loadout
+from ..sim.sessions import DeterministicSession, DeterministicSessionTick, RushSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
-from ..weapon_runtime import weapon_assign_player
-from ..weapons import WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
     LanSession,
@@ -44,8 +37,6 @@ from .base_gameplay_mode import (
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
 WORLD_SIZE = 1024.0
-RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
-RUSH_FORCED_AMMO = 30.0
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -84,34 +75,22 @@ class RushMode(BaseGameplayMode):
         self._spawn_state = RushSpawnState()
         self._sim_session: DeterministicSession | None = self._new_sim_session()
 
-    def _enforce_rush_loadout(self) -> None:
-        for player in self.sim_world.players:
-            if player.weapon.weapon_id != RUSH_WEAPON_ID:
-                weapon_assign_player(player, RUSH_WEAPON_ID, state=self.state)
-            # Native `rush_mode_update` forces assault rifle + 30 ammo every frame.
-            player.weapon.ammo = float(RUSH_FORCED_AMMO)
-
     def _new_sim_session(self) -> DeterministicSession:
-        self._spawn_state = RushSpawnState()
-        spawn = self._spawn_state
-        return self._session_factory(
+        session, spawn_state = build_rush_session(
             world=self.sim_world.world_state,
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             fx_queue=self.render_resources.fx_queue,
             fx_queue_rotated=self.render_resources.fx_queue_rotated,
-            game_mode=GameMode.RUSH,
-            perk_progression_enabled=False,
             detail_preset=5,
             gore_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             clear_fx_queues_each_tick=False,
             finalize_post_render_lifecycle=True,
-            elapsed_uses_raw_dt=True,
-            mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),
-            before_step_hook=self._enforce_rush_loadout,
-            input_transform=rush_input_transform,
+            session_factory=self._session_factory,
         )
+        self._spawn_state = spawn_state
+        return session
 
     def open(self) -> None:
         super().open()
@@ -161,7 +140,7 @@ class RushMode(BaseGameplayMode):
         )
         self.sim_world.state.rng.srand(int(bootstrap.seed_after))
         self._sim_session = self._new_sim_session()
-        self._enforce_rush_loadout()
+        enforce_rush_loadout(self.sim_world.world_state)
         weapon_usage_counts = normalize_weapon_usage_counts(
             status.data.get("weapon_usage_counts") if status is not None else None,
         )
