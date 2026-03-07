@@ -115,6 +115,7 @@ See also:
 - [Module map (Grim vs Crimson)](module-map.md)
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
 - [Replay run start](replay-run-start.md)
+- [Quest identifiers](quest-identifiers.md)
 - [Netplay (rollback primary)](netplay-rollback.md)
 - [LAN lockstep (fallback mode)](lan-lockstep.md)
 - [Local multiplayer rewrite notes](local-multiplayer.md)
