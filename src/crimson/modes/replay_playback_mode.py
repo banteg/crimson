@@ -5,7 +5,6 @@ from pathlib import Path
 from grim import music as grim_music
 from grim.assets import (
     TextureId,
-    runtime_resources_for,
 )
 from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio, update_audio
 from grim.config import CrimsonConfig
@@ -119,7 +118,6 @@ class ReplayPlaybackMode:
         self._small: SmallFontData | None = None
         self._hud_state = HudState()
         self._grim_mono: GrimMonoFont | None = None
-        self._quest_complete_texture: rl.Texture | None = None
         self._quest_title = ""
         self._quest_level = ""
 
@@ -308,7 +306,6 @@ class ReplayPlaybackMode:
         self._small = load_small_font(self._ctx.assets_dir)
         self._hud_state = HudState()
         self._grim_mono = None
-        self._quest_complete_texture = None
         self._quest_title = ""
         self._quest_level = ""
 
@@ -400,7 +397,6 @@ class ReplayPlaybackMode:
                 self._quest_title = str(quest.title)
                 self._quest_level = quest_level_label(quest.major, quest.minor)
                 self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
-                self._quest_complete_texture = self._load_quest_complete_texture()
                 quest_stage_major, quest_stage_minor = quest.level_key
 
                 runtime.terrain_runtime.set_terrain_slots(terrain_slots=quest.terrain_slots)
@@ -436,7 +432,6 @@ class ReplayPlaybackMode:
     def close(self) -> None:
         self._small = None
         self._grim_mono = None
-        self._quest_complete_texture = None
         self._driver = None
         if self._runtime is not None:
             self._runtime.close_runtime()
@@ -462,9 +457,6 @@ class ReplayPlaybackMode:
         if self._small is not None:
             return float(measure_small_text_width(self._small, text))
         return float(len(text)) * 8.0 * float(scale)
-
-    def _load_quest_complete_texture(self) -> rl.Texture | None:
-        return runtime_resources_for(self._ctx.assets_dir).texture(TextureId.UI_TEXT_LEVEL_COMPLETE)
 
     def _build_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
         driver = self._driver
@@ -693,14 +685,13 @@ class ReplayPlaybackMode:
         replay = self._replay
         if replay is None or replay.header.game_mode_id != GameMode.QUESTS:
             return
-        tex = self._quest_complete_texture
-        if tex is None:
-            return
+        runtime = self._runtime
+        assert runtime is not None, "World runtime must be open before replay quest banner draw"
         driver = self._driver
         if driver is None or driver.quest_spawn_state is None:
             return
         draw_quest_complete_banner_overlay(
-            tex,
+            runtime.render_resources.resources.texture(TextureId.UI_TEXT_LEVEL_COMPLETE),
             timer_ms=float(driver.quest_spawn_state.completion_transition_ms),
         )
 
