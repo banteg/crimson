@@ -191,3 +191,34 @@ def build_typo_session(
         input_transform=lambda inputs: typo_input_transform(world, inputs),
     )
     return session
+
+
+def build_tutorial_session(
+    *,
+    world: WorldState,
+    world_size: float,
+    damage_scale_by_type: dict[int, float],
+    fx_queue: FxQueue,
+    fx_queue_rotated: FxQueueRotated,
+    detail_preset: int,
+    gore_disabled: int,
+    game_tune_started: bool,
+    demo_mode_active: bool,
+    session_factory: DeterministicSessionFactory = DeterministicSession,
+) -> DeterministicSession:
+    session = session_factory(
+        world=world,
+        world_size=float(world_size),
+        damage_scale_by_type=damage_scale_by_type,
+        fx_queue=fx_queue,
+        fx_queue_rotated=fx_queue_rotated,
+        game_mode=GameMode.TUTORIAL,
+        auto_pick_perks=False,
+        perk_progression_enabled=True,
+        detail_preset=int(detail_preset),
+        gore_disabled=int(gore_disabled),
+        game_tune_started=bool(game_tune_started),
+        demo_mode_active=bool(demo_mode_active),
+        clear_fx_queues_each_tick=False,
+    )
+    return session

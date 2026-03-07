@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-
 from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -18,6 +16,7 @@ from ..game_modes import GameMode
 from ..gameplay import survival_check_level_up
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
 from ..sim.input import PlayerInput
+from ..sim.session_builders import DeterministicSessionFactory, build_tutorial_session
 from ..sim.sessions import DeterministicSession
 from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline
 from ..ui.cursor import draw_menu_cursor
@@ -42,10 +41,6 @@ UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 _TUTORIAL_PANEL_POS = Vec2(0.0, 64.0)
 _TUTORIAL_PANEL_PADDING = Vec2(20.0, 8.0)
 
-
-TutorialSessionFactory = Callable[..., DeterministicSession]
-
-
 class TutorialMode(BaseGameplayMode):
     def __init__(
         self,
@@ -56,7 +51,7 @@ class TutorialMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: Crand,
-        session_factory: TutorialSessionFactory = DeterministicSession,
+        session_factory: DeterministicSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -81,30 +76,26 @@ class TutorialMode(BaseGameplayMode):
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
         self._session_factory = session_factory
-        self._sim_session: DeterministicSession | None = self._new_sim_session()
+        self._sim_session: DeterministicSession | None = None
         self._frame_input_state: PlayerInput | None = None
 
     def _new_sim_session(self) -> DeterministicSession:
-        return self._session_factory(
+        return build_tutorial_session(
             world=self.sim_world.world_state,
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             fx_queue=self.render_resources.fx_queue,
             fx_queue_rotated=self.render_resources.fx_queue_rotated,
-            game_mode=GameMode.TUTORIAL,
             detail_preset=5,
             gore_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             demo_mode_active=bool(self.demo_mode_active),
-            auto_pick_perks=False,
-            perk_progression_enabled=True,
-            clear_fx_queues_each_tick=False,
+            session_factory=self._session_factory,
         )
 
     def open(self) -> None:
         super().open()
         self._ui_assets = load_perk_menu_assets(self._assets_root)
-        self._sim_session = self._new_sim_session()
 
         self._perk_menu.reset()
 
@@ -122,6 +113,7 @@ class TutorialMode(BaseGameplayMode):
 
         self.player.pos = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5)
         weapon_assign_player(self.player, WeaponId.PISTOL, state=self.state)
+        self._sim_session = self._new_sim_session()
 
     def close(self) -> None:
         self._ui_assets = None
