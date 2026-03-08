@@ -52,19 +52,18 @@ def ensure_crimson_cfg(base_dir: Path) -> CrimsonConfig:
             save_crimson_cfg(config)
         # Patch up missing keybind defaults (older revisions left the entire keybind blob as 0).
         keybind_blob = config.keybinds
-        default_keybinds = default_crimson_cfg_data().get("keybinds")
-        if isinstance(default_keybinds, (bytes, bytearray)) and len(default_keybinds) == 0x80:
-            patched = bytearray(keybind_blob)
-            changed = False
-            for offset in range(0, 0x80, 4):
-                value = int.from_bytes(patched[offset : offset + 4], "little")
-                if value != 0:
-                    continue
-                patched[offset : offset + 4] = default_keybinds[offset : offset + 4]
-                changed = True
-            if changed:
-                config.keybinds = bytes(patched)
-                save_crimson_cfg(config)
+        default_keybinds = default_crimson_cfg_data()["keybinds"]
+        patched = bytearray(keybind_blob)
+        changed = False
+        for offset in range(0, 0x80, 4):
+            value = int.from_bytes(patched[offset : offset + 4], "little")
+            if value != 0:
+                continue
+            patched[offset : offset + 4] = default_keybinds[offset : offset + 4]
+            changed = True
+        if changed:
+            config.keybinds = bytes(patched)
+            save_crimson_cfg(config)
         return config
     parsed = default_crimson_cfg_data()
     config = CrimsonConfig(path=path, data=parsed)

@@ -209,11 +209,7 @@ class CrimsonConfig(msgspec.Struct):
         return QuestLevel(major, minor)
 
     @quest_level_value.setter
-    def quest_level_value(self, value: QuestLevel | None) -> None:
-        if value is None:
-            self.quest_stage_major = 0
-            self.quest_stage_minor = 0
-            return
+    def quest_level_value(self, value: QuestLevel) -> None:
         self.quest_stage_major = int(value.major)
         self.quest_stage_minor = int(value.minor)
 
