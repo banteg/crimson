@@ -49,8 +49,8 @@ def test_quest_mode_closes_run_when_player_dies_during_perk_menu_transition(monk
     # delay instead of freezing.
     mode.player.health = -1.0
     mode.player.death_timer = 0.3
-    mode._perk_menu.open = False
-    mode._perk_menu.timeline_ms = 100.0
+    mode._perk_flow._menu.open = False
+    mode._perk_flow._menu.timeline_ms = 100.0
 
     mocker.patch.object(base_gameplay_mode_module.rl, "get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
     mocker.patch.object(base_gameplay_mode_module.rl, "get_screen_width", side_effect=lambda: 640)

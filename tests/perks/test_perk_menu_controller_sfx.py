@@ -5,11 +5,8 @@ from types import SimpleNamespace
 from typing import cast
 
 import crimson.modes.components.perk_menu_controller as perk_menu_controller_module
-from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
-from crimson.modes.components.perk_menu_controller import PerkMenuContext, PerkMenuController
+from crimson.modes.components.perk_menu_controller import PerkMenuController, PerkMenuUiContext
 from crimson.perks import PerkId
-from crimson.perks.state import PerkSelectionState
 from crimson.sim.state_types import PlayerState
 from grim.assets import RuntimeResources
 from grim.fonts.small import SmallFontData
@@ -67,17 +64,11 @@ def _patch_perk_menu_raylib(
     return stub
 
 
-def _ctx(*, play_sfx=None) -> PerkMenuContext:
-    return PerkMenuContext(
-        state=GameplayState(),
-        perk_state=PerkSelectionState(),
-        players=[],
-        creatures=[],
+def _ctx(*, play_sfx=None) -> PerkMenuUiContext:
+    return PerkMenuUiContext(
         player=_dummy_player(),
-        game_mode=GameMode.SURVIVAL,
-        player_count=1,
         gore_disabled=0,
-        font=_dummy_font(),
+        preserve_bugs=False,
         resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=play_sfx,

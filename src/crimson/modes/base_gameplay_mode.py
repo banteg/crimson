@@ -89,7 +89,7 @@ from ..ui.hud import HudState, draw_target_health_bar
 from ..weapon_runtime import most_used_weapon_id_for_player
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import shots_from_state
-from .components.perk_menu_controller import PerkMenuContext
+from .components.perk_menu_controller import PerkMenuUiContext
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreatureDeath, CreaturePool
@@ -609,26 +609,15 @@ class BaseGameplayMode:
         assert font is not None, "small font must be loaded before ui text draw"
         draw_small_text(font, text, pos, color)
 
-    def _perk_menu_game_mode(self) -> GameMode:
-        return self.default_game_mode_id
-
     def _perk_menu_play_sfx(self) -> Callable[[str], None] | None:
         return self.audio_bridge.router.play_sfx
 
-    def _perk_menu_context(self) -> PerkMenuContext:
-        font = self._small
-        assert font is not None, "perk menu requires small font after mode open"
-        return PerkMenuContext(
-            state=self.state,
-            perk_state=self.state.perk_selection,
-            players=self.sim_world.players,
-            creatures=self.creatures.entries,
+    def _perk_menu_ui_context(self) -> PerkMenuUiContext:
+        return PerkMenuUiContext(
             player=self.player,
-            game_mode=self._perk_menu_game_mode(),
-            player_count=max(1, len(self.sim_world.players)),
             gore_disabled=self.config.gore_disabled,
+            preserve_bugs=bool(self.state.preserve_bugs),
             fx_detail=self.config.fx_detail(level=0, default=False),
-            font=font,
             resources=self.render_resources.resources,
             mouse=self._ui_mouse_pos(),
             play_sfx=self._perk_menu_play_sfx(),

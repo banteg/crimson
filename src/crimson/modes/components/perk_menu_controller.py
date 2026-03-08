@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -10,10 +9,7 @@ from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
 from grim.raylib_api import rl
 
-from ...game_modes import GameMode
-from ...gameplay import GameplayState
 from ...perks import PerkId, perk_display_description, perk_display_name
-from ...perks.state import PerkSelectionState
 from ...sim.state_types import PlayerState
 from ...ui.layout import ui_origin, ui_scale
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -31,9 +27,6 @@ from ...ui.perk_menu import (
     perk_menu_panel_slide_x,
 )
 
-if TYPE_CHECKING:
-    from ...creatures.runtime import CreatureState
-
 PlaySfxFn = Callable[[str], None]
 OnCloseFn = Callable[[], None]
 
@@ -41,17 +34,10 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 
-class PerkMenuContext(msgspec.Struct, frozen=True):
-    state: GameplayState
-    perk_state: PerkSelectionState
-    players: list[PlayerState]
-    creatures: Sequence[CreatureState]
+class PerkMenuUiContext(msgspec.Struct, frozen=True):
     player: PlayerState
-    game_mode: GameMode
-    player_count: int
     gore_disabled: int
-
-    font: SmallFontData
+    preserve_bugs: bool
     resources: RuntimeResources
     mouse: rl.Vector2
     fx_detail: bool = False
@@ -191,7 +177,7 @@ class PerkMenuController:
 
     def handle_input(
         self,
-        ctx: PerkMenuContext,
+        ctx: PerkMenuUiContext,
         choices: Sequence[PerkId],
         *,
         dt_ui_ms: float,
@@ -229,7 +215,7 @@ class PerkMenuController:
             panel_slide_x=slide_x,
         )
 
-        preserve_bugs = bool(ctx.state.preserve_bugs)
+        preserve_bugs = bool(ctx.preserve_bugs)
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
                 perk_id,
@@ -273,7 +259,7 @@ class PerkMenuController:
             return int(self._selected_index)
         return None
 
-    def draw(self, ctx: PerkMenuContext, choices: Sequence[PerkId]) -> None:
+    def draw(self, ctx: PerkMenuUiContext, choices: Sequence[PerkId]) -> None:
         menu_t = clamp(self._timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
         if menu_t <= 1e-3:
             return
@@ -324,7 +310,7 @@ class PerkMenuController:
         if sponsor:
             draw_ui_text(ctx.resources, sponsor, computed.sponsor_pos, scale=scale, color=UI_SPONSOR_COLOR)
 
-        preserve_bugs = bool(ctx.state.preserve_bugs)
+        preserve_bugs = bool(ctx.preserve_bugs)
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
                 perk_id,
