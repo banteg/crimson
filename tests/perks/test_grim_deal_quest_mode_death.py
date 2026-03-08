@@ -52,14 +52,14 @@ def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_tran
     # paused during the perk-menu transition.
     assert mode.player.health > 0.0
     mode.player.death_timer = 0.3
-    mode._perk_flow._menu.open = True
-    mode._perk_flow._menu.timeline_ms = 100.0
+    mode._perk_ui._menu.open = True
+    mode._perk_ui._menu.timeline_ms = 100.0
 
     def _apply_grim_deal_and_close(_ctx, _choices, *, dt_ui_ms: float) -> None:
         perk_apply(mode.state, mode.sim_world.players, PerkId.GRIM_DEAL)
-        mode._perk_flow._menu.close()
+        mode._perk_ui._menu.close()
 
-    mocker.patch.object(mode._perk_flow._menu, "handle_input", side_effect=_apply_grim_deal_and_close)
+    mocker.patch.object(mode._perk_ui._menu, "handle_input", side_effect=_apply_grim_deal_and_close)
 
     mocker.patch.object(base_gameplay_mode_module.rl, "get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
     mocker.patch.object(base_gameplay_mode_module.rl, "get_screen_width", side_effect=lambda: 640)

@@ -39,6 +39,7 @@ from ..net.rollback_runtime import RollbackRuntime
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
+from ..perks.selection import perk_selection_open_choices
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
 from ..replay import Replay, ReplayClaimedStatsSnapshot, dump_replay
@@ -73,6 +74,7 @@ from ..sim.input_providers import (
     GameCommand,
     InputStatus,
     LocalInputProvider,
+    PerkMenuOpenCommand,
     PerkPickCommand,
     ResolvedTick,
     TickSupply,
@@ -100,6 +102,7 @@ if TYPE_CHECKING:
     from ..replay import ReplayRecorder
     from ..sim.state_types import PlayerState
     from ..sim.world_state import WorldEvents
+    from .components.perk_ui_state import PerkUiState
 
 LanRuntime = LockstepRuntime | RollbackRuntime
 
@@ -622,6 +625,29 @@ class BaseGameplayMode:
             mouse=self._ui_mouse_pos(),
             play_sfx=self._perk_menu_play_sfx(),
         )
+
+    def _open_perk_menu_ui(
+        self,
+        *,
+        ui_state: PerkUiState,
+        players: list[PlayerState],
+        game_mode: GameMode,
+        player_count: int,
+    ) -> None:
+        perk_ctx = self._perk_menu_ui_context()
+        recorder = getattr(self, "_replay_recorder", None)
+        if recorder is not None:
+            self._record_replay_checkpoint(max(0, int(recorder.tick_index) - 1), force=True)
+        choices = perk_selection_open_choices(
+            self.state,
+            players,
+            self.state.perk_selection,
+            game_mode=game_mode,
+            player_count=int(player_count),
+        )
+        assert choices, "perk menu open requires prepared perk choices"
+        ui_state.open_menu(play_sfx=perk_ctx.play_sfx)
+        self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 
     def _ui_mouse_pos(self) -> rl.Vector2:
         return self._ui_mouse.to_rl()
