@@ -12,15 +12,12 @@ from grim.raylib_api import rl
 from ...game.types import GameState
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
+from ..chrome import draw_ui_quad
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_OPTIONS,
-    MENU_PANEL_WIDTH,
-    MenuView,
-    _draw_menu_cursor,
 )
-from ..transitions import _draw_screen_fade
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .base import PanelMenuView, save_dirty_config
 from .hit_test import mouse_inside_rect_with_padding
 
 
@@ -138,31 +135,11 @@ class OptionsMenuView(PanelMenuView):
         ):
             self._begin_close_transition("open_controls")
 
-    def draw(self) -> None:
-        self._assert_open()
-        self._draw_background()
-        _draw_screen_fade(self.state)
-        entry = self._entry
-        assert entry is not None, "OptionsMenuView entry must be initialized before draw()"
-        self._draw_panel()
-        self._draw_entry(entry)
-        self._draw_sign()
-        self._draw_options_contents()
-        _draw_menu_cursor(
-            self.state,
-            resources=require_runtime_resources(self.state),
-            pulse_time=self._cursor_pulse_time,
-        )
-
-    def _begin_close_transition(self, action: str) -> None:
+    def _before_close_transition(self, action: str) -> None:
+        del action
         if self._dirty:
-            try:
-                self.state.config.save()
-            except (OSError, ValueError) as exc:
-                self.state.console.log.log(f"config: save failed: {exc}")
-            else:
+            if save_dirty_config(self.state):
                 self._dirty = False
-        super()._begin_close_transition(action)
 
     def _sync_from_config(self) -> None:
         config = self.state.config
@@ -190,22 +167,9 @@ class OptionsMenuView(PanelMenuView):
         )
 
     def _content_layout(self) -> _OptionsContentLayout:
-        panel_scale, _local_shift = self._menu_item_scale(0)
-        panel_w = MENU_PANEL_WIDTH * panel_scale
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
-        )
-        panel_top_left = (
-            Vec2(
-                self._panel_pos.x + slide_x,
-                self._panel_pos.y + self._widescreen_y_shift,
-            )
-            + self._panel_offset * panel_scale
-        )
+        frame = self._panel_frame()
+        panel_scale = frame.scale
+        panel_top_left = frame.panel_top_left
         base_pos = panel_top_left + Vec2(212.0 * panel_scale, 40.0 * panel_scale)
         # `sub_4475d0`: title label is anchored at panel_top + 40.
         label_pos = base_pos.offset(dx=8.0 * panel_scale)
@@ -283,7 +247,7 @@ class OptionsMenuView(PanelMenuView):
             return True
         return False
 
-    def _draw_options_contents(self) -> None:
+    def _draw_contents(self) -> None:
         resources = require_runtime_resources(self.state)
         labels_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         layout = self._content_layout()
@@ -308,7 +272,7 @@ class OptionsMenuView(PanelMenuView):
             title_w * scale,
             MENU_LABEL_ROW_HEIGHT * scale,
         )
-        MenuView._draw_ui_quad(
+        draw_ui_quad(
             texture=labels_tex,
             src=src,
             dst=dst,

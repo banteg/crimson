@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -14,10 +13,10 @@ from ...net.lockstep_protocol import LobbyState
 from ...net.lockstep_runtime import LockstepRuntime
 from ...net.relay_protocol import RoomState
 from ...net.rollback_runtime import RollbackRuntime
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw
 from ..assets import require_runtime_resources
-from ..menu import MENU_PANEL_OFFSET_Y, MENU_PANEL_WIDTH, MenuEntry, MenuView
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from ..menu import MENU_PANEL_OFFSET_Y
+from .base import PanelMenuView
 
 
 class _LobbyLayout(msgspec.Struct, frozen=True):
@@ -37,6 +36,7 @@ class NetworkLobbyPanelView(PanelMenuView):
             panel_height=278.0,
             back_action="open_play_game",
         )
+        self._back_control = "button"
         self._back_button = UiButtonState("Back", force_wide=False)
         self._error: str = ""
 
@@ -45,7 +45,7 @@ class NetworkLobbyPanelView(PanelMenuView):
         self._back_button = UiButtonState("Back", force_wide=False)
         self._error = ""
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _before_close_transition(self, action: str) -> None:
         if action == "open_play_game":
             runtime = self.state.network_runtime
             if runtime is not None:
@@ -55,35 +55,9 @@ class NetworkLobbyPanelView(PanelMenuView):
             self.state.network_waiting_for_players = False
             self.state.network_expected_players = 1
             self.state.network_connected_players = 1
-        super()._begin_close_transition(action)
 
     def update(self, dt: float) -> None:
-        self._assert_open()
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
-        dt_ms = int(min(dt, 0.1) * 1000.0)
-
-        if self._closing:
-            if dt_ms > 0 and self._pending_action is None:
-                self._timeline_ms -= dt_ms
-                if self._timeline_ms < 0 and self._close_action is not None:
-                    self._pending_action = self._close_action
-                    self._close_action = None
-            return
-
-        if dt_ms > 0:
-            self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
-            if self._timeline_ms >= self._timeline_max_ms:
-                self.state.menu_sign_locked = True
-                if (not self._panel_open_sfx_played) and (self.state.audio is not None):
-                    play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
-                    self._panel_open_sfx_played = True
-
-        enabled = self._timeline_ms >= PANEL_TIMELINE_START_MS
-        self._update_back_button(dt_ms=dt_ms, enabled=enabled)
+        super().update(dt)
         if self._closing or self._timeline_ms < self._timeline_max_ms:
             return
 
@@ -135,33 +109,12 @@ class NetworkLobbyPanelView(PanelMenuView):
                 return
         self._begin_close_transition(action)
 
-    def _draw_entry(self, entry: MenuEntry) -> None:
-        _ = entry
-        return
-
     def _layout(self) -> _LobbyLayout:
-        panel_scale, _local_shift = self._menu_item_scale(0)
-        panel_w = MENU_PANEL_WIDTH * panel_scale
-        _, slide_x = MenuView._ui_element_anim(
-            self,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
-        )
-        panel_top_left = (
-            Vec2(
-                self._panel_pos.x + slide_x,
-                self._panel_pos.y + self._widescreen_y_shift,
-            )
-            + self._panel_offset * panel_scale
-        )
+        frame = self._panel_frame()
+        panel_scale = frame.scale
+        panel_top_left = frame.panel_top_left
         base_pos = panel_top_left + Vec2(212.0 * panel_scale, 40.0 * panel_scale)
-
-        resources = require_runtime_resources(self.state)
-        back_w = button_width(resources, self._back_button.label, scale=panel_scale, force_wide=self._back_button.force_wide)
-        panel_h = float(self._panel_height) * panel_scale
-        back_pos = panel_top_left + Vec2(panel_w - back_w - 22.0 * panel_scale, panel_h - 44.0 * panel_scale)
+        back_pos, back_w = self._button_back_layout()
 
         return _LobbyLayout(
             scale=panel_scale,
@@ -170,28 +123,6 @@ class NetworkLobbyPanelView(PanelMenuView):
             back_pos=back_pos,
             back_w=float(back_w),
         )
-
-    def _update_back_button(self, *, dt_ms: int, enabled: bool) -> None:
-        if not enabled:
-            return
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._begin_close_transition(self._back_action)
-            return
-
-        layout = self._layout()
-        mouse = rl.get_mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-
-        self._back_button.enabled = True
-        if button_update(
-            self._back_button,
-            pos=layout.back_pos,
-            width=float(layout.back_w),
-            dt_ms=float(dt_ms),
-            mouse=mouse,
-            click=bool(click),
-        ):
-            self._begin_close_transition(self._back_action)
 
     def _draw_contents(self) -> None:
         layout = self._layout()
@@ -309,6 +240,7 @@ class NetworkLobbyPanelView(PanelMenuView):
             y += line_h
             draw_small_text(font, f"logs: {str(self.state.base_dir)}/logs/lan/", Vec2(base_pos.x, y), rl.Color(232, 197, 117, 255))
 
+        assert self._back_button is not None
         button_draw(
             resources,
             self._back_button,

@@ -9,11 +9,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
-from ..menu import (
-    MENU_PANEL_WIDTH,
-    MenuView,
-)
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .base import PanelMenuView
 
 
 class _ModsContentLayout(msgspec.Struct, frozen=True):
@@ -32,22 +28,9 @@ class ModsMenuView(PanelMenuView):
         self._lines = self._build_lines()
 
     def _content_layout(self) -> _ModsContentLayout:
-        panel_scale, _local_shift = self._menu_item_scale(0)
-        panel_w = MENU_PANEL_WIDTH * panel_scale
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
-        )
-        panel_top_left = (
-            Vec2(
-                self._panel_pos.x + slide_x,
-                self._panel_pos.y + self._widescreen_y_shift,
-            )
-            + self._panel_offset * panel_scale
-        )
+        frame = self._panel_frame()
+        panel_scale = frame.scale
+        panel_top_left = frame.panel_top_left
         base_pos = panel_top_left + Vec2(212.0 * panel_scale, 32.0 * panel_scale)
         label_pos = base_pos.offset(dx=8.0 * panel_scale)
         return _ModsContentLayout(scale=panel_scale, base_pos=base_pos, label_pos=label_pos)

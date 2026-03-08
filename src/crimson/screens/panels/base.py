@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from grim.assets import TextureId
-from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
-from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.perk_menu import UiButtonState, button_update, button_width
+from ...ui.shadow import UI_SHADOW_OFFSET
 from ..assets import require_runtime_resources
-from ..menu import (
+from ..chrome import (
     MENU_ITEM_OFFSET_X,
     MENU_ITEM_OFFSET_Y,
     MENU_LABEL_HEIGHT,
@@ -21,23 +21,19 @@ from ..menu import (
     MENU_PANEL_HEIGHT,
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
-    MENU_SCALE_SMALL_THRESHOLD,
-    MENU_SIGN_HEIGHT,
-    MENU_SIGN_OFFSET_X,
-    MENU_SIGN_OFFSET_Y,
-    MENU_SIGN_POS_X_PAD,
-    MENU_SIGN_POS_Y,
-    MENU_SIGN_POS_Y_SMALL,
-    MENU_SIGN_WIDTH,
-    UI_SHADOW_OFFSET,
+    ActionDispatchPolicy,
+    BackdropPolicy,
+    ChromeRuntime,
+    ChromeSpec,
     MenuEntry,
-    MenuView,
-    _draw_menu_cursor,
-    ensure_menu_ground,
-    menu_ground_camera,
+    SignPolicy,
+    draw_ui_quad,
+    draw_ui_quad_shadow,
+    label_alpha,
+    menu_item_scale,
+    single_panel_frame,
+    ui_element_anim,
 )
-from ..transitions import _draw_screen_fade
 
 PANEL_POS_X = -45.0
 PANEL_POS_Y = 210.0
@@ -57,6 +53,15 @@ FADE_TO_GAME_ACTIONS = frozenset(
 )
 
 
+def save_dirty_config(state: GameState) -> bool:
+    try:
+        state.config.save()
+    except (OSError, ValueError) as exc:
+        state.console.log.log(f"config: save failed: {exc}")
+        return False
+    return True
+
+
 class PanelMenuView:
     def __init__(
         self,
@@ -71,7 +76,6 @@ class PanelMenuView:
         back_action: str = "back_to_menu",
     ) -> None:
         self.state = state
-        self._is_open = False
         self._title = title
         self._body_lines = (body or "").splitlines()
         self._panel_pos = panel_pos
@@ -79,108 +83,59 @@ class PanelMenuView:
         self._panel_height = panel_height
         self._back_pos = back_pos
         self._back_action = back_action
-        self._ground: GroundRenderer | None = None
+        self._chrome = ChromeRuntime(
+            state,
+            spec=ChromeSpec(
+                backdrop=BackdropPolicy(),
+                sign=SignPolicy(lock_on_fully_open=True),
+                dispatch=ActionDispatchPolicy(mode="pending_once"),
+                open_sfx="sfx_ui_panelclick",
+                open_sfx_mode="on_fully_open",
+                close_sfx="sfx_ui_buttonclick",
+                fade_to_game_actions=FADE_TO_GAME_ACTIONS,
+            ),
+        )
         self._entry: MenuEntry | None = None
         self._hovered = False
-        self._menu_screen_width = 0
-        self._widescreen_y_shift = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = 0
-        self._cursor_pulse_time = 0.0
-        self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
-        self._panel_open_sfx_played = False
+        self._back_control = "menu_entry"
+        self._back_enter_enabled = True
+        self._back_button: UiButtonState | None = None
 
     def open(self) -> None:
-        layout_w = float(self.state.config.screen_width)
-        self._menu_screen_width = int(layout_w)
-        self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
+        self._chrome.open()
         self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos.y)
         self._hovered = False
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._cursor_pulse_time = 0.0
-        self._closing = False
-        self._close_action = None
-        self._pending_action = None
-        self._panel_open_sfx_played = False
-        self._init_ground()
-        self._is_open = True
+        if self._back_control != "menu_entry":
+            self._entry = None
 
     def close(self) -> None:
-        self._is_open = False
-        self._ground = None
+        self._chrome.close()
 
     def update(self, dt: float) -> None:
         self._assert_open()
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
-        dt_ms = int(min(dt, 0.1) * 1000.0)
+        tick = self._chrome.update(dt)
         if self._closing:
-            if dt_ms > 0 and self._pending_action is None:
-                self._timeline_ms -= dt_ms
-                if self._timeline_ms < 0 and self._close_action is not None:
-                    self._pending_action = self._close_action
-                    self._close_action = None
             return
-
-        if dt_ms > 0:
-            self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
-            if self._timeline_ms >= self._timeline_max_ms:
-                self.state.menu_sign_locked = True
-                if (not self._panel_open_sfx_played) and (self.state.audio is not None):
-                    play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
-                    self._panel_open_sfx_played = True
-
-        entry = self._entry
-        if entry is None:
-            return
-
-        enabled = self._entry_enabled(entry)
-        hovered = enabled and self._hovered_entry(entry)
-        self._hovered = hovered
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            self._begin_close_transition(self._back_action)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and enabled:
-            self._begin_close_transition(self._back_action)
-        if enabled and hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            self._begin_close_transition(self._back_action)
-
-        if hovered:
-            entry.hover_amount += dt_ms * 6
+        back_interactive = self._timeline_ms >= PANEL_TIMELINE_START_MS
+        if self._back_control == "button":
+            self._update_button_back_control(dt_ms=tick.dt_ms, interactive=back_interactive)
         else:
-            entry.hover_amount -= dt_ms * 2
-        entry.hover_amount = max(0, min(1000, entry.hover_amount))
-
-        if entry.ready_timer_ms < 0x100:
-            entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
+            self._update_menu_entry_back_control(dt_ms=tick.dt_ms, interactive=back_interactive)
 
     def draw(self) -> None:
         self._assert_open()
         self._draw_background()
-        _draw_screen_fade(self.state)
-        entry = self._entry
-        assert entry is not None, "PanelMenuView entry must be initialized before draw()"
+        self._chrome.draw_fade()
         self._draw_panel()
-        self._draw_entry(entry)
+        entry = self._entry
+        if entry is not None:
+            self._draw_entry(entry)
         self._draw_sign()
         self._draw_contents()
-        _draw_menu_cursor(
-            self.state,
-            resources=require_runtime_resources(self.state),
-            pulse_time=self._cursor_pulse_time,
-        )
+        self._chrome.draw_cursor(resources=require_runtime_resources(self.state))
 
     def take_action(self) -> str | None:
-        self._assert_open()
-        action = self._pending_action
-        self._pending_action = None
-        return action
+        return self._chrome.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, f"{self.__class__.__name__} must be opened before use"
@@ -198,51 +153,34 @@ class PanelMenuView:
             y += 22
 
     def _begin_close_transition(self, action: str) -> None:
-        if self._closing:
-            return
-        if action in FADE_TO_GAME_ACTIONS:
-            self.state.screen_fade_alpha = 0.0
-            self.state.screen_fade_ramp = True
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-        self._closing = True
-        self._close_action = action
+        self._chrome.begin_close_transition(action, before_close=self._before_close_transition)
 
-    def _init_ground(self) -> None:
-        if self.state.pause_background is not None:
-            self._ground = None
-            return
-        self._ground = ensure_menu_ground(self.state)
+    def _before_close_transition(self, action: str) -> None:
+        del action
 
     def _draw_background(self) -> None:
-        rl.clear_background(rl.BLACK)
-        pause_background = self.state.pause_background
-        if pause_background is not None:
-            pause_background.draw_pause_background()
-            return
-        if self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
+        self._chrome.draw_background()
+
+    def _panel_frame(self):
+        return single_panel_frame(
+            self._timeline_ms,
+            screen_width=float(self._menu_screen_width),
+            widescreen_y_shift=self._widescreen_y_shift,
+            panel_pos=self._panel_pos,
+            panel_offset=self._panel_offset,
+            panel_height=self._panel_height,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            small_scale=self._small_panel_scale(),
+        )
+
+    def _small_panel_scale(self) -> float:
+        return 0.9
 
     def _draw_panel(self) -> None:
         panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            width=MENU_PANEL_WIDTH * self._menu_item_scale(0)[0],
-        )
-        item_scale, _local_y_shift = self._menu_item_scale(0)
-        panel_w = MENU_PANEL_WIDTH * item_scale
-        panel_h = float(self._panel_height) * item_scale
-        panel_top_left = (
-            Vec2(
-                self._panel_pos.x + slide_x,
-                self._panel_pos.y + self._widescreen_y_shift,
-            )
-            + self._panel_offset * item_scale
-        )
-        dst = rl.Rectangle(panel_top_left.x, panel_top_left.y, float(panel_w), float(panel_h))
+        frame = self._panel_frame()
+        dst = rl.Rectangle(frame.panel_top_left.x, frame.panel_top_left.y, frame.panel_width, frame.panel_height)
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
@@ -252,8 +190,8 @@ class PanelMenuView:
         label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         item_w = float(item.width)
         item_h = float(item.height)
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
+        _angle_rad, slide_x = ui_element_anim(
+            self._timeline_ms,
             index=2,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -272,14 +210,14 @@ class PanelMenuView:
         origin = rl.Vector2(-offset_x, -offset_y)
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
-            MenuView._draw_ui_quad_shadow(
+            draw_ui_quad_shadow(
                 texture=item,
                 src=rl.Rectangle(0.0, 0.0, item_w, item_h),
                 dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
                 origin=origin,
                 rotation_deg=0.0,
             )
-        MenuView._draw_ui_quad(
+        draw_ui_quad(
             texture=item,
             src=rl.Rectangle(0.0, 0.0, item_w, item_h),
             dst=dst,
@@ -287,7 +225,7 @@ class PanelMenuView:
             rotation_deg=0.0,
             tint=rl.WHITE,
         )
-        alpha = MenuView._label_alpha(entry.hover_amount)
+        alpha = label_alpha(entry.hover_amount)
         tint = rl.Color(255, 255, 255, alpha)
         src = rl.Rectangle(
             0.0,
@@ -304,7 +242,7 @@ class PanelMenuView:
             MENU_LABEL_HEIGHT * item_scale,
         )
         label_origin = rl.Vector2(-label_offset_x, -label_offset_y)
-        MenuView._draw_ui_quad(
+        draw_ui_quad(
             texture=label_tex,
             src=src,
             dst=label_dst,
@@ -314,7 +252,7 @@ class PanelMenuView:
         )
         if self._entry_enabled(entry):
             rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-            MenuView._draw_ui_quad(
+            draw_ui_quad(
                 texture=label_tex,
                 src=src,
                 dst=label_dst,
@@ -325,37 +263,7 @@ class PanelMenuView:
             rl.end_blend_mode()
 
     def _draw_sign(self) -> None:
-        screen_w = float(self.state.config.screen_width)
-        scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        sign_pos = Vec2(
-            screen_w + MENU_SIGN_POS_X_PAD,
-            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
-        )
-        sign_w = MENU_SIGN_WIDTH * scale
-        sign_h = MENU_SIGN_HEIGHT * scale
-        offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
-        offset_y = MENU_SIGN_OFFSET_Y * scale
-        # Quest screen is only reachable after the Play Game panel is fully visible,
-        # so the sign is already locked in place. Keep it static here.
-        rotation_deg = 0.0
-        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
-        if fx_detail:
-            MenuView._draw_ui_quad_shadow(
-                texture=sign,
-                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
-                origin=rl.Vector2(-offset_x, -offset_y),
-                rotation_deg=rotation_deg,
-            )
-        MenuView._draw_ui_quad(
-            texture=sign,
-            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
-            origin=rl.Vector2(-offset_x, -offset_y),
-            rotation_deg=rotation_deg,
-            tint=rl.WHITE,
-        )
+        self._chrome.draw_sign(resources=require_runtime_resources(self.state), animated=False)
 
     def _entry_enabled(self, entry: MenuEntry) -> bool:
         return self._timeline_ms >= PANEL_TIMELINE_START_MS
@@ -366,9 +274,7 @@ class PanelMenuView:
         return self._menu_item_bounds(entry).contains(mouse_pos)
 
     def _menu_item_scale(self, slot: int) -> tuple[float, float]:
-        if self._menu_screen_width < 641:
-            return 0.9, float(slot) * 11.0
-        return 1.0, 0.0
+        return menu_item_scale(float(self._menu_screen_width), int(slot), small_scale=self._small_panel_scale())
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         item = require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM)
@@ -384,8 +290,8 @@ class PanelMenuView:
             (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift,
         )
         size = offset_max - offset_min
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
+        _angle_rad, slide_x = ui_element_anim(
+            self._timeline_ms,
             index=2,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -401,3 +307,153 @@ class PanelMenuView:
             offset_max.y - size.y * 0.10,
         )
         return Rect.from_pos_size(top_left, bottom_right - top_left)
+
+    def _update_menu_entry_back_control(self, *, dt_ms: int, interactive: bool) -> None:
+        entry = self._entry
+        if entry is None:
+            return
+        enabled = interactive and self._entry_enabled(entry)
+        hovered = enabled and self._hovered_entry(entry)
+        self._hovered = hovered
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+            self._begin_close_transition(self._back_action)
+        if self._back_enter_enabled and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and enabled:
+            self._begin_close_transition(self._back_action)
+        if enabled and hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+            self._begin_close_transition(self._back_action)
+
+        if hovered:
+            entry.hover_amount += int(dt_ms) * 6
+        else:
+            entry.hover_amount -= int(dt_ms) * 2
+        entry.hover_amount = max(0, min(1000, int(entry.hover_amount)))
+        if int(entry.ready_timer_ms) < 0x100:
+            entry.ready_timer_ms = min(0x100, int(entry.ready_timer_ms) + int(dt_ms))
+
+    def _update_button_back_control(self, *, dt_ms: int, interactive: bool) -> None:
+        if not interactive or self._back_button is None:
+            return
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self._begin_close_transition(self._back_action)
+            return
+
+        pos, width = self._button_back_layout()
+        mouse = rl.get_mouse_position()
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        self._back_button.enabled = True
+        if button_update(
+            self._back_button,
+            pos=pos,
+            width=width,
+            dt_ms=float(dt_ms),
+            mouse=mouse,
+            click=bool(click),
+        ):
+            self._begin_close_transition(self._back_action)
+
+    def _button_back_layout(self) -> tuple[Vec2, float]:
+        assert self._back_button is not None
+        frame = self._panel_frame()
+        resources = require_runtime_resources(self.state)
+        width = float(
+            button_width(
+                resources,
+                self._back_button.label,
+                scale=frame.scale,
+                force_wide=self._back_button.force_wide,
+            ),
+        )
+        pos = frame.panel_top_left + Vec2(
+            frame.panel_width - width - 22.0 * frame.scale,
+            frame.panel_height - 44.0 * frame.scale,
+        )
+        return pos, width
+
+    @property
+    def _is_open(self) -> bool:
+        return self._chrome.is_open
+
+    @_is_open.setter
+    def _is_open(self, value: bool) -> None:
+        self._chrome.is_open = bool(value)
+
+    @property
+    def _ground(self):
+        return self._chrome.ground
+
+    @_ground.setter
+    def _ground(self, value) -> None:
+        self._chrome.ground = value
+
+    @property
+    def _menu_screen_width(self) -> int:
+        return int(self._chrome.chrome.screen_width)
+
+    @_menu_screen_width.setter
+    def _menu_screen_width(self, value: int) -> None:
+        self._chrome.chrome.screen_width = int(value)
+
+    @property
+    def _widescreen_y_shift(self) -> float:
+        return float(self._chrome.chrome.widescreen_y_shift)
+
+    @_widescreen_y_shift.setter
+    def _widescreen_y_shift(self, value: float) -> None:
+        self._chrome.chrome.widescreen_y_shift = float(value)
+
+    @property
+    def _timeline_ms(self) -> int:
+        return int(self._chrome.chrome.timeline_ms)
+
+    @_timeline_ms.setter
+    def _timeline_ms(self, value: int) -> None:
+        self._chrome.chrome.timeline_ms = int(value)
+
+    @property
+    def _timeline_max_ms(self) -> int:
+        return int(self._chrome.chrome.timeline_max_ms)
+
+    @_timeline_max_ms.setter
+    def _timeline_max_ms(self, value: int) -> None:
+        self._chrome.chrome.timeline_max_ms = int(value)
+
+    @property
+    def _cursor_pulse_time(self) -> float:
+        return float(self._chrome.chrome.cursor_pulse_time)
+
+    @_cursor_pulse_time.setter
+    def _cursor_pulse_time(self, value: float) -> None:
+        self._chrome.chrome.cursor_pulse_time = float(value)
+
+    @property
+    def _closing(self) -> bool:
+        return bool(self._chrome.chrome.closing)
+
+    @_closing.setter
+    def _closing(self, value: bool) -> None:
+        self._chrome.chrome.closing = bool(value)
+
+    @property
+    def _close_action(self) -> str | None:
+        return self._chrome.chrome.close_action
+
+    @_close_action.setter
+    def _close_action(self, value: str | None) -> None:
+        self._chrome.chrome.close_action = value
+
+    @property
+    def _pending_action(self) -> str | None:
+        return self._chrome.chrome.pending_action
+
+    @_pending_action.setter
+    def _pending_action(self, value: str | None) -> None:
+        self._chrome.chrome.pending_action = value
+
+    @property
+    def _panel_open_sfx_played(self) -> bool:
+        return bool(self._chrome.chrome.panel_open_sfx_played)
+
+    @_panel_open_sfx_played.setter
+    def _panel_open_sfx_played(self, value: bool) -> None:
+        self._chrome.chrome.panel_open_sfx_played = bool(value)

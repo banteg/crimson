@@ -18,12 +18,9 @@ from ...movement_controls import MovementControlType
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ..assets import require_runtime_resources
-from ..menu import (
-    MENU_PANEL_HEIGHT,
-    MENU_PANEL_WIDTH,
-    MenuView,
-)
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from ..chrome import draw_ui_quad, split_panel_frame
+from ..menu import MENU_PANEL_HEIGHT
+from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView, save_dirty_config
 from .controls_labels import (
     PICK_PERK_BIND_SLOT,
     RELOAD_BIND_SLOT,
@@ -171,15 +168,29 @@ class ControlsMenuView(PanelMenuView):
         ):
             self._dirty = True
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _before_close_transition(self, action: str) -> None:
+        del action
         if self._dirty:
-            try:
-                self.state.config.save()
-            except (OSError, ValueError) as exc:
-                self.state.console.log.log(f"config: save failed: {exc}")
-            else:
+            if save_dirty_config(self.state):
                 self._dirty = False
-        super()._begin_close_transition(action)
+
+    def _split_panel_frame(self):
+        screen_width = float(self.state.config.screen_width)
+        return split_panel_frame(
+            self._timeline_ms,
+            left_panel_pos=Vec2(_controls_left_panel_pos_x(screen_width), self._panel_pos.y),
+            left_panel_height=MENU_PANEL_HEIGHT,
+            right_panel_pos=Vec2(_controls_right_panel_pos_x(screen_width), _controls_right_panel_pos_y(screen_width)),
+            right_panel_height=CONTROLS_RIGHT_PANEL_HEIGHT,
+            screen_width=screen_width,
+            widescreen_y_shift=self._widescreen_y_shift,
+            panel_offset=self._panel_offset,
+            small_scale=self._small_panel_scale(),
+            left_index=1,
+            right_index=3,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+        )
 
     def _current_player_index(self) -> int:
         return max(0, min(3, int(self._config_player) - 1))
@@ -246,39 +257,12 @@ class ControlsMenuView(PanelMenuView):
         )
 
     def _left_panel_top_left(self, panel_scale: float) -> Vec2:
-        panel_w = MENU_PANEL_WIDTH * panel_scale
-        _, slide_x = MenuView._ui_element_anim(
-            self,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
-        )
-        return (
-            Vec2(
-                _controls_left_panel_pos_x(float(self.state.config.screen_width)) + slide_x,
-                self._panel_pos.y + self._widescreen_y_shift,
-            )
-            + self._panel_offset * panel_scale
-        )
+        del panel_scale
+        return self._split_panel_frame().left_top_left
 
     def _right_panel_top_left(self, panel_scale: float) -> Vec2:
-        panel_w = MENU_PANEL_WIDTH * panel_scale
-        _, slide_x = MenuView._ui_element_anim(
-            self,
-            index=3,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
-            direction_flag=1,
-        )
-        return (
-            Vec2(
-                _controls_right_panel_pos_x(float(self.state.config.screen_width)) + slide_x,
-                _controls_right_panel_pos_y(float(self.state.config.screen_width)) + self._widescreen_y_shift,
-            )
-            + self._panel_offset * panel_scale
-        )
+        del panel_scale
+        return self._split_panel_frame().right_top_left
 
     def _direction_arrow_enabled(self) -> bool:
         return self.state.config.hud_indicator_enabled_for_player(player_index=int(self._current_player_index()))
@@ -621,26 +605,21 @@ class ControlsMenuView(PanelMenuView):
 
     def _draw_panel(self) -> None:
         fx_detail = self.state.config.fx_detail(level=0, default=False)
-        panel_scale, _local_y_shift = self._menu_item_scale(0)
-        panel_w = MENU_PANEL_WIDTH * panel_scale
+        frame = self._split_panel_frame()
         panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
 
         # Left (controls options) panel: standard 254px height => a single quad.
-        left_top_left = self._left_panel_top_left(panel_scale)
-        left_h = MENU_PANEL_HEIGHT * panel_scale
         draw_classic_menu_panel(
             panel,
-            dst=rl.Rectangle(left_top_left.x, left_top_left.y, panel_w, left_h),
+            dst=rl.Rectangle(frame.left_top_left.x, frame.left_top_left.y, frame.panel_width, frame.left_panel_height),
             tint=rl.WHITE,
             shadow=fx_detail,
         )
 
         # Right (configured bindings) panel: tall 378px panel rendered as 3 vertical slices.
-        right_top_left = self._right_panel_top_left(panel_scale)
-        right_h = float(CONTROLS_RIGHT_PANEL_HEIGHT) * panel_scale
         draw_classic_menu_panel(
             panel,
-            dst=rl.Rectangle(right_top_left.x, right_top_left.y, panel_w, right_h),
+            dst=rl.Rectangle(frame.right_top_left.x, frame.right_top_left.y, frame.panel_width, frame.right_panel_height),
             tint=rl.WHITE,
             shadow=fx_detail,
             # Original ui_element_slot_40 sets direction_flag=1, which mirrors panel UVs.
@@ -697,7 +676,7 @@ class ControlsMenuView(PanelMenuView):
 
         # --- Left panel: "Configure for" + method selectors (state_3 in trace) ---
         text_controls = resources.texture(TextureId.UI_TEXT_CONTROLS)
-        MenuView._draw_ui_quad(
+        draw_ui_quad(
             texture=text_controls,
             src=rl.Rectangle(0.0, 0.0, float(text_controls.width), float(text_controls.height)),
             dst=rl.Rectangle(
@@ -722,7 +701,7 @@ class ControlsMenuView(PanelMenuView):
             if self._direction_arrow_enabled()
             else resources.texture(TextureId.UI_CHECK_OFF)
         )
-        MenuView._draw_ui_quad(
+        draw_ui_quad(
             texture=check_tex,
             src=rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
             dst=rl.Rectangle(

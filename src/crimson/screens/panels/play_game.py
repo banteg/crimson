@@ -3,7 +3,6 @@ from __future__ import annotations
 import msgspec
 
 from grim.assets import RuntimeResources, TextureId
-from grim.audio import update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -13,14 +12,13 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
+from ..chrome import draw_ui_quad
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_PLAY_GAME,
     MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
-    MenuView,
 )
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .base import PanelMenuView, save_dirty_config
 from .hit_test import mouse_inside_rect_with_padding
 
 
@@ -68,6 +66,7 @@ class PlayGameMenuView(PanelMenuView):
             panel_height=278.0,
             back_pos=Vec2(-55.0, 462.0),
         )
+        self._back_enter_enabled = False
         self._player_list_open = False
         self._dirty = False
 
@@ -83,52 +82,14 @@ class PlayGameMenuView(PanelMenuView):
         self._mode_buttons.clear()
 
     def update(self, dt: float) -> None:
-        self._assert_open()
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
+        super().update(dt)
         dt_ms = int(min(dt, 0.1) * 1000.0)
-
-        # Close transition (matches PanelMenuView).
         if self._closing:
-            if dt_ms > 0 and self._pending_action is None:
-                self._timeline_ms -= dt_ms
-                if self._timeline_ms < 0 and self._close_action is not None:
-                    self._pending_action = self._close_action
-                    self._close_action = None
             return
-
-        if dt_ms > 0:
-            self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
-            if self._timeline_ms >= self._timeline_max_ms:
-                self.state.menu_sign_locked = True
-
         entry = self._entry
         if entry is None:
             return
-
-        enabled = self._entry_enabled(entry)
-        hovered_back = enabled and self._hovered_entry(entry)
-        self._hovered = hovered_back
-
-        # ESC always goes back; Enter should not auto-back on this screen.
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            self._begin_close_transition(self._back_action)
-        if enabled and hovered_back and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            self._begin_close_transition(self._back_action)
-
-        if hovered_back:
-            entry.hover_amount += dt_ms * 6
-        else:
-            entry.hover_amount -= dt_ms * 2
-        entry.hover_amount = max(0, min(1000, entry.hover_amount))
-
-        if entry.ready_timer_ms < 0x100:
-            entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
-
-        if not enabled:
+        if not self._entry_enabled(entry):
             return
 
         layout = self._content_layout()
@@ -172,33 +133,16 @@ class PlayGameMenuView(PanelMenuView):
                 continue
             self._tooltip_ms[key] = max(0, self._tooltip_ms[key] - dt_ms * 2)
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _before_close_transition(self, action: str) -> None:
+        del action
         if self._dirty:
-            try:
-                self.state.config.save()
-            except (OSError, ValueError) as exc:
-                self.state.console.log.log(f"config: save failed: {exc}")
-            else:
+            if save_dirty_config(self.state):
                 self._dirty = False
-        super()._begin_close_transition(action)
 
     def _content_layout(self) -> _PlayGameContentLayout:
-        panel_scale, _local_shift = self._menu_item_scale(0)
-        panel_w = MENU_PANEL_WIDTH * panel_scale
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
-        )
-        panel_top_left = (
-            Vec2(
-                self._panel_pos.x + slide_x,
-                self._panel_pos.y + self._widescreen_y_shift,
-            )
-            + self._panel_offset * panel_scale
-        )
+        frame = self._panel_frame()
+        panel_scale = frame.scale
+        panel_top_left = frame.panel_top_left
 
         # `sub_44ed80`:
         #   xy = panel_offset_x + panel_x + 330 - 64  (+ animated X offset)
@@ -472,7 +416,7 @@ class PlayGameMenuView(PanelMenuView):
             title_w * scale,
             title_h * scale,
         )
-        MenuView._draw_ui_quad(
+        draw_ui_quad(
             texture=labels_tex,
             src=src,
             dst=dst,
