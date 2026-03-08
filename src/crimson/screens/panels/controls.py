@@ -12,6 +12,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ...aim_schemes import AimScheme
+from ...game.loop_actions import ViewAction
 from ...game.types import GameState
 from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code, input_code_name
 from ...movement_controls import MovementControlType
@@ -171,7 +172,7 @@ class ControlsMenuView(PanelMenuView):
         ):
             self._dirty = True
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ViewAction | str) -> None:
         if self._dirty:
             try:
                 self.state.config.save()

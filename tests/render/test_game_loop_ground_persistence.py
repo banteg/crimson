@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 from typing import cast
 
+from crimson.game.loop_actions import ViewAction
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import GameState
 from crimson.persistence import save_status
@@ -66,7 +67,7 @@ class _AdoptMenuGroundView:
     def draw(self) -> None:
         return None
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ViewAction | None:
         return None
 
 
@@ -84,7 +85,7 @@ class _OverlayView:
     def draw(self) -> None:
         return None
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ViewAction | None:
         return None
 
 
@@ -140,7 +141,7 @@ def test_capture_gameplay_ground_from_stacked_view(tmp_path: Path) -> None:
 
     state.menu_ground = menu_ground
     state.menu_ground_camera = Vec2(-1.0, -1.0)
-    loop._front_active = overlay_view
+    loop._front_active = cast("object", overlay_view)  # type: ignore[assignment]
     loop._front_stack = [gameplay_view]
 
     loop._capture_gameplay_ground_for_menu()

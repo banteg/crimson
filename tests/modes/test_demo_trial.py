@@ -193,7 +193,7 @@ def test_demo_trial_overlay_prepares_gameplay_frame_when_visible(make_game_state
     state.status.game_sequence_id = DEMO_TOTAL_PLAY_TIME_MS
     loop = GameLoopView(state)
     gameplay = _DummyGameplay()
-    loop._front_active = gameplay
+    loop._front_active = gameplay  # type: ignore[assignment]
     loop._active = gameplay
     overlay = SimpleNamespace(update=mocker.Mock(return_value=None))
 

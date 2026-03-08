@@ -10,7 +10,14 @@ from .lockstep_protocol import (
     RELIABLE_RESEND_MS,
     TICK_RATE,
 )
-from .lockstep_runtime import LockstepRuntime, LockstepRuntimeConfig
+from .lockstep_runtime import (
+    HostLockstepRuntime,
+    HostLockstepRuntimeConfig,
+    JoinLockstepRuntime,
+    JoinLockstepRuntimeConfig,
+    LockstepRuntime,
+    LockstepRuntimeConfig,
+)
 from .lockstep_state import ClientLockstepState, HostLockstepState
 from .relay_service import RelayServer, RelayServerConfig
 from .reliable import ReliableLink
@@ -25,8 +32,12 @@ __all__ = [
     "DEFAULT_PORT",
     "HostLanAdapter",
     "HostLobby",
+    "HostLockstepRuntime",
+    "HostLockstepRuntimeConfig",
     "HostLockstepState",
     "INPUT_DELAY_TICKS",
+    "JoinLockstepRuntime",
+    "JoinLockstepRuntimeConfig",
     "LockstepRuntime",
     "LockstepRuntimeConfig",
     "MAX_PLAYERS",

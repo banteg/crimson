@@ -7,6 +7,7 @@ from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+from ...game.loop_actions import START_QUEST_LAN, START_RUSH_LAN, START_SURVIVAL_LAN, ViewAction
 from ...game.types import (
     GameState,
     LockstepEndpoint,
@@ -258,12 +259,12 @@ class NetworkSessionPanelView(PanelMenuView):
             port = 31993
         return max(1, min(65535, int(port)))
 
-    def _mode_start_action(self, mode: NetworkSessionMode) -> str:
+    def _mode_start_action(self, mode: NetworkSessionMode) -> ViewAction:
         if mode == "rush":
-            return "start_rush_lan"
+            return START_RUSH_LAN
         if mode == "quests":
-            return "start_quest_lan"
-        return "start_survival_lan"
+            return START_QUEST_LAN
+        return START_SURVIVAL_LAN
 
     def _start_session(self) -> None:
         self._error = ""

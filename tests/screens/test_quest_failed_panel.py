@@ -6,6 +6,7 @@ from typing import cast
 import pytest
 
 import crimson.screens.quest_views.quest_failed as quest_failed_module
+from crimson.game.loop_actions import BACK_TO_MENU, OPEN_QUESTS, START_QUEST
 from crimson.modes.quest_mode import QuestRunOutcome
 from crimson.quests.level import QuestLevel
 from crimson.screens.quest_views import QUEST_FAILED_PANEL_SLIDE_DURATION_MS, QUEST_FAILED_PANEL_W, QuestFailedView
@@ -135,7 +136,7 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, quest_failed_stat
         action = view.take_action()
         if action is not None:
             break
-    assert action == "start_quest"
+    assert action == START_QUEST
 
 
 def test_quest_failed_q_opens_quest_list(monkeypatch, quest_failed_state, mocker) -> None:
@@ -161,7 +162,7 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, quest_failed_state, mocker
         action = view.take_action()
         if action is not None:
             break
-    assert action == "open_quests"
+    assert action == OPEN_QUESTS
 
 
 def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_failed_state, mocker) -> None:
@@ -187,7 +188,7 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_fai
         action = view.take_action()
         if action is not None:
             break
-    assert action == "back_to_menu"
+    assert action == BACK_TO_MENU
 
 
 def test_quest_failed_score_block_matches_native_fields(monkeypatch, quest_failed_state, mocker) -> None:

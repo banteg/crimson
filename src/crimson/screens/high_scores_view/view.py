@@ -8,6 +8,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
+from ...game.loop_actions import ViewAction, action_fades_to_game, coerce_view_action
 from ...game.types import GameState, HighScoresRequest
 from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
@@ -63,7 +64,7 @@ from ..menu import (
     ensure_menu_ground,
     menu_ground_camera,
 )
-from ..panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
+from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..panels.hit_test import mouse_inside_rect_with_padding
 from ..transitions import _draw_screen_fade
 from .main_panel import draw_main_panel
@@ -80,13 +81,13 @@ class HighScoresView:
         self.state = state
         self._is_open = False
         self._ground: GroundRenderer | None = None
-        self._action: str | None = None
+        self._action: ViewAction | str | None = None
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: str | None = None
+        self._close_action: ViewAction | str | None = None
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -281,7 +282,7 @@ class HighScoresView:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
                 self._scroll_index = max_scroll
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ViewAction | str) -> None:
         if self._dirty:
             try:
                 self.state.config.save()
@@ -291,13 +292,15 @@ class HighScoresView:
                 self._dirty = False
         if self._closing:
             return
-        if action in FADE_TO_GAME_ACTIONS:
+        resolved = coerce_view_action(action)
+        assert resolved is not None
+        if action_fades_to_game(resolved):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._closing = True
-        self._close_action = action
+        self._close_action = resolved
 
     def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int, scale: float) -> _ScoresDropdownLayout:
         header_h = 16.0 * scale
@@ -724,9 +727,9 @@ class HighScoresView:
             return 1.0
         return alpha
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ViewAction | None:
         self._assert_open()
-        action = self._action
+        action = coerce_view_action(self._action)
         self._action = None
         return action
 

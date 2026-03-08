@@ -9,6 +9,7 @@ from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
+from ...game.loop_actions import ViewAction
 from ...game.types import GameState
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
@@ -154,7 +155,7 @@ class OptionsMenuView(PanelMenuView):
             pulse_time=self._cursor_pulse_time,
         )
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ViewAction | str) -> None:
         if self._dirty:
             try:
                 self.state.config.save()

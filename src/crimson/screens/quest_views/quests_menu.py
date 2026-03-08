@@ -12,6 +12,7 @@ from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ...debug import debug_enabled
+from ...game.loop_actions import ViewAction, action_fades_to_game, coerce_view_action
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -34,7 +35,7 @@ from ..menu import (
     ensure_menu_ground,
     menu_ground_camera,
 )
-from ..panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
+from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..transitions import _draw_screen_fade
 from .shared import (
     QUEST_BACK_BUTTON_X_OFFSET,
@@ -86,13 +87,13 @@ class QuestsMenuView:
         self._widescreen_y_shift = 0.0
 
         self._stage = 1
-        self._action: str | None = None
+        self._action: ViewAction | str | None = None
         self._dirty = False
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: str | None = None
+        self._close_action: ViewAction | str | None = None
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -247,9 +248,9 @@ class QuestsMenuView:
             pulse_time=self._cursor_pulse_time,
         )
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ViewAction | None:
         self._assert_open()
-        action = self._action
+        action = coerce_view_action(self._action)
         self._action = None
         return action
 
@@ -640,16 +641,18 @@ class QuestsMenuView:
             shadow=fx_detail,
         )
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ViewAction | str) -> None:
         if self._closing:
             return
-        if action in FADE_TO_GAME_ACTIONS:
+        resolved = coerce_view_action(action)
+        assert resolved is not None
+        if action_fades_to_game(resolved):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._closing = True
-        self._close_action = action
+        self._close_action = resolved
 
 
 __all__ = ["QuestsMenuView"]

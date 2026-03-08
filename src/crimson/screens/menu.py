@@ -12,6 +12,18 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
+from ..game.loop_actions import (
+    OPEN_MODS,
+    OPEN_OPTIONS,
+    OPEN_OTHER_GAMES,
+    OPEN_PLAY_GAME,
+    OPEN_STATISTICS,
+    QUIT_AFTER_DEMO,
+    QUIT_APP,
+    START_DEMO,
+    ViewAction,
+    coerce_view_action,
+)
 from ..game.types import GameState
 from ..sim.bootstrap import run_unlock_terrain_prelude, terrain_stamping_draws
 from ..terrain_slots import (
@@ -174,8 +186,8 @@ class MenuView:
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
         self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
+        self._close_action: ViewAction | str | None = None
+        self._pending_action: ViewAction | str | None = None
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -302,7 +314,7 @@ class MenuView:
             and self._timeline_ms >= self._timeline_max_ms
             and self._idle_ms >= MENU_DEMO_IDLE_START_MS
         ):
-            self._begin_close_transition("start_demo")
+            self._begin_close_transition(START_DEMO)
         self._update_ready_timers(dt_ms)
         self._update_hover_amounts(dt_ms)
 
@@ -317,9 +329,9 @@ class MenuView:
         self._draw_menu_sign(resources)
         _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ViewAction | None:
         self._assert_open()
-        action = self._pending_action
+        action = coerce_view_action(self._pending_action)
         self._pending_action = None
         return action
 
@@ -337,25 +349,25 @@ class MenuView:
         if entry.row == MENU_LABEL_ROW_QUIT:
             self._begin_quit_transition()
         elif entry.row == MENU_LABEL_ROW_PLAY_GAME:
-            self._begin_close_transition("open_play_game")
+            self._begin_close_transition(OPEN_PLAY_GAME)
         elif entry.row == MENU_LABEL_ROW_OPTIONS:
-            self._begin_close_transition("open_options")
+            self._begin_close_transition(OPEN_OPTIONS)
         elif entry.row == MENU_LABEL_ROW_STATISTICS:
-            self._begin_close_transition("open_statistics")
+            self._begin_close_transition(OPEN_STATISTICS)
         elif entry.row == MENU_LABEL_ROW_MODS:
-            self._begin_close_transition("open_mods")
+            self._begin_close_transition(OPEN_MODS)
         elif entry.row == MENU_LABEL_ROW_OTHER_GAMES:
-            self._begin_close_transition("open_other_games")
+            self._begin_close_transition(OPEN_OTHER_GAMES)
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ViewAction | str) -> None:
         if self._closing:
             return
         self._closing = True
-        self._close_action = action
+        self._close_action = coerce_view_action(action)
 
     def _begin_quit_transition(self) -> None:
         self.state.menu_sign_locked = False
-        self._begin_close_transition("quit_after_demo" if self.state.demo_enabled else "quit_app")
+        self._begin_close_transition(QUIT_AFTER_DEMO if self.state.demo_enabled else QUIT_APP)
 
     def _init_ground(self) -> None:
         self._ground = ensure_menu_ground(self.state)

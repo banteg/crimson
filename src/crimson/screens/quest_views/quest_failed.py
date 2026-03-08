@@ -9,6 +9,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
+from ...game.loop_actions import ViewAction, coerce_view_action
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -249,8 +250,8 @@ class QuestFailedView:
 
         _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
-    def take_action(self) -> str | None:
-        action = self._action
+    def take_action(self) -> ViewAction | None:
+        action = coerce_view_action(self._action)
         self._action = None
         return action
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.game.loop_actions import ViewAction, coerce_view_action
 from crimson.game_modes import GameMode
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
@@ -47,8 +48,8 @@ class GameplayScreenStub:
     def draw(self) -> None:
         return None
 
-    def take_action(self) -> str | None:
-        action = self._action
+    def take_action(self) -> ViewAction | None:
+        action = coerce_view_action(self._action)
         self._action = None
         return action
 

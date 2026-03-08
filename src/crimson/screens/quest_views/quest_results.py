@@ -6,6 +6,7 @@ from grim.audio import play_sfx, update_audio
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
+from ...game.loop_actions import ViewAction, coerce_view_action
 from ...game.types import GameState, HighScoresRequest
 from ...game_modes import GameMode
 from ...quests import quest_by_level
@@ -216,8 +217,8 @@ class QuestResultsView:
         rl.draw_text("Quest results unavailable.", 32, 140, 28, rl.Color(235, 235, 235, 255))
         rl.draw_text("Press ESC to return to the menu.", 32, 180, 18, rl.Color(190, 190, 200, 255))
 
-    def take_action(self) -> str | None:
-        action = self._action
+    def take_action(self) -> ViewAction | None:
+        action = coerce_view_action(self._action)
         self._action = None
         return action
 

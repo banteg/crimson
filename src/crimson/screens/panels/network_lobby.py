@@ -8,6 +8,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...debug import debug_enabled
+from ...game.loop_actions import OPEN_PLAY_GAME, START_QUEST, START_RUSH, START_SURVIVAL, ViewAction, coerce_view_action
 from ...game.types import GameState, LockstepEndpoint
 from ...game_modes import GameMode
 from ...net.lockstep_protocol import LobbyState
@@ -45,8 +46,10 @@ class NetworkLobbyPanelView(PanelMenuView):
         self._back_button = UiButtonState("Back", force_wide=False)
         self._error = ""
 
-    def _begin_close_transition(self, action: str) -> None:
-        if action == "open_play_game":
+    def _begin_close_transition(self, action: ViewAction | str) -> None:
+        resolved = coerce_view_action(action)
+        assert resolved is not None
+        if resolved == OPEN_PLAY_GAME:
             runtime = self.state.network_runtime
             if runtime is not None:
                 runtime.close()
@@ -55,7 +58,7 @@ class NetworkLobbyPanelView(PanelMenuView):
             self.state.network_waiting_for_players = False
             self.state.network_expected_players = 1
             self.state.network_connected_players = 1
-        super()._begin_close_transition(action)
+        super()._begin_close_transition(resolved)
 
     def update(self, dt: float) -> None:
         self._assert_open()
@@ -125,11 +128,11 @@ class NetworkLobbyPanelView(PanelMenuView):
 
         match mode_id:
             case GameMode.SURVIVAL:
-                action = "start_survival"
+                action = START_SURVIVAL
             case GameMode.RUSH:
-                action = "start_rush"
+                action = START_RUSH
             case GameMode.QUESTS:
-                action = "start_quest"
+                action = START_QUEST
             case _:
                 self._error = f"Unsupported network mode id: {int(mode_id)}"
                 return

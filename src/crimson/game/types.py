@@ -13,6 +13,7 @@ from ..paths import default_runtime_dir
 from ..pause_background import PauseBackground
 from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
+from .loop_actions import ViewAction
 
 
 def _default_rtx_render_mode() -> RtxRenderMode:
@@ -113,7 +114,7 @@ class Screen(Protocol):
 
     def draw(self) -> None: ...
 
-    def take_action(self) -> str | None: ...
+    def take_action(self) -> ViewAction | None: ...
 
 
 @runtime_checkable

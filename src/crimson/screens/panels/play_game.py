@@ -9,6 +9,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ...debug import debug_enabled
+from ...game.loop_actions import ViewAction
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
@@ -172,7 +173,7 @@ class PlayGameMenuView(PanelMenuView):
                 continue
             self._tooltip_ms[key] = max(0, self._tooltip_ms[key] - dt_ms * 2)
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ViewAction | str) -> None:
         if self._dirty:
             try:
                 self.state.config.save()

@@ -19,9 +19,10 @@ from crimson.net.lockstep_protocol import (
 from crimson.net.lockstep_runtime import (
     IDLE_HEARTBEAT_MS,
     PAUSED_LINK_TIMEOUT_MS,
+    HostLockstepRuntime,
     HostLockstepRuntimeConfig,
+    JoinLockstepRuntime,
     JoinLockstepRuntimeConfig,
-    LockstepRuntime,
 )
 from crimson.net.lockstep_state import HostReadyTick
 from crimson.net.reliable import ReliableLink
@@ -31,7 +32,7 @@ from crimson.sim.input_providers import PerkPickCommand
 
 def test_join_hello_retries_keep_reliable_backlog_bounded() -> None:
     start = int(time.monotonic() * 1000.0)
-    runtime = LockstepRuntime(
+    runtime = JoinLockstepRuntime(
         JoinLockstepRuntimeConfig(
             mode_id=GameMode.SURVIVAL,
             player_count=2,
@@ -47,7 +48,7 @@ def test_join_hello_retries_keep_reliable_backlog_bounded() -> None:
         runtime.update(now_ms=int(now))
         now += 16
 
-    link = runtime.client_link
+    link = runtime.link
     assert link is not None
     assert int(link.pending_count) <= 1
     assert runtime.error in {"", "timeout"}
@@ -55,7 +56,7 @@ def test_join_hello_retries_keep_reliable_backlog_bounded() -> None:
 
 
 def test_host_does_not_track_unknown_non_hello_packets(mocker) -> None:
-    runtime = LockstepRuntime(
+    runtime = HostLockstepRuntime(
         HostLockstepRuntimeConfig(
             mode_id=GameMode.SURVIVAL,
             player_count=2,
@@ -74,15 +75,15 @@ def test_host_does_not_track_unknown_non_hello_packets(mocker) -> None:
 
     runtime.update(now_ms=int(time.monotonic() * 1000.0))
 
-    assert addr not in runtime.host_peers
-    lobby = runtime.host_lobby
+    assert addr not in runtime.peers
+    lobby = runtime.lobby
     assert lobby is not None
     assert addr not in lobby.peers_by_addr
     runtime.close()
 
 
 def test_host_pop_tick_frame_attaches_pending_commands_to_first_canonical_frame() -> None:
-    runtime = LockstepRuntime(
+    runtime = HostLockstepRuntime(
         HostLockstepRuntimeConfig(
             mode_id=GameMode.SURVIVAL,
             player_count=2,
@@ -92,8 +93,8 @@ def test_host_pop_tick_frame_attaches_pending_commands_to_first_canonical_frame(
             sim_status_snapshot=StatusSnapshot(),
         ),
     )
-    runtime.host_ready_ticks.append(HostReadyTick(tick_index=7, frame_inputs=[[0.0, 0.0, 0.0, 0.0, 0]]))
-    runtime.host_ready_ticks.append(HostReadyTick(tick_index=8, frame_inputs=[[1.0, 0.0, 0.0, 0.0, 0]]))
+    runtime.ready_ticks.append(HostReadyTick(tick_index=7, frame_inputs=[[0.0, 0.0, 0.0, 0.0, 0]]))
+    runtime.ready_ticks.append(HostReadyTick(tick_index=8, frame_inputs=[[1.0, 0.0, 0.0, 0.0, 0]]))
     command = PerkPickCommand(player_index=0, choice_index=2)
     runtime.submit_local_command(command)
 
@@ -109,7 +110,7 @@ def test_host_pop_tick_frame_attaches_pending_commands_to_first_canonical_frame(
 
 
 def test_host_timeout_aborts_started_match() -> None:
-    runtime = LockstepRuntime(
+    runtime = HostLockstepRuntime(
         HostLockstepRuntimeConfig(
             mode_id=GameMode.SURVIVAL,
             player_count=2,
@@ -123,7 +124,7 @@ def test_host_timeout_aborts_started_match() -> None:
 
     now = int(time.monotonic() * 1000.0)
     addr = ("127.0.0.1", 32001)
-    runtime._handle_host_message(
+    runtime._handle_message(
         addr,
         Hello(
             protocol_version=int(PROTOCOL_VERSION),
@@ -136,16 +137,16 @@ def test_host_timeout_aborts_started_match() -> None:
         ),
         now_ms=int(now),
     )
-    lobby = runtime.host_lobby
+    lobby = runtime.lobby
     assert lobby is not None
     slot = lobby.slot_for_addr(addr)
     assert slot == 1
     lobby.process_ready(addr, Ready(slot_index=int(slot), ready=True))
     runtime.update(now_ms=int(now + 1))
     assert runtime.started is True
-    assert addr in runtime.host_peers
+    assert addr in runtime.peers
 
-    runtime.host_peers[addr].last_seen_ms = int(now - 20_000)
+    runtime.peers[addr].last_seen_ms = int(now - 20_000)
     runtime.update(now_ms=int(now + 20_001))
 
     assert runtime.error == "peer_timeout"
@@ -153,7 +154,7 @@ def test_host_timeout_aborts_started_match() -> None:
 
 
 def test_host_waiting_input_pause_uses_extended_timeout() -> None:
-    runtime = LockstepRuntime(
+    runtime = HostLockstepRuntime(
         HostLockstepRuntimeConfig(
             mode_id=GameMode.SURVIVAL,
             player_count=2,
@@ -167,7 +168,7 @@ def test_host_waiting_input_pause_uses_extended_timeout() -> None:
 
     now = int(time.monotonic() * 1000.0)
     addr = ("127.0.0.1", 32011)
-    runtime._handle_host_message(
+    runtime._handle_message(
         addr,
         Hello(
             protocol_version=int(PROTOCOL_VERSION),
@@ -180,36 +181,36 @@ def test_host_waiting_input_pause_uses_extended_timeout() -> None:
         ),
         now_ms=int(now),
     )
-    lobby = runtime.host_lobby
+    lobby = runtime.lobby
     assert lobby is not None
     slot = lobby.slot_for_addr(addr)
     assert slot == 1
     lobby.process_ready(addr, Ready(slot_index=int(slot), ready=True))
     runtime.update(now_ms=int(now + 1))
     assert runtime.started is True
-    assert addr in runtime.host_peers
+    assert addr in runtime.peers
 
     # Bypass initial loading timeout path and force "paused waiting_input".
-    runtime._host_seen_input_slots.add(1)
-    lockstep = runtime.host_lockstep
+    runtime._seen_input_slots.add(1)
+    lockstep = runtime.lockstep
     assert lockstep is not None
     lockstep._paused = True
 
     check_ms = int(now + 5_000)
-    runtime.host_peers[addr].last_seen_ms = int(check_ms - int(LINK_TIMEOUT_MS) - 250)
+    runtime.peers[addr].last_seen_ms = int(check_ms - int(LINK_TIMEOUT_MS) - 250)
     runtime.update(now_ms=int(check_ms))
     assert runtime.error == ""
-    assert addr in runtime.host_peers
+    assert addr in runtime.peers
 
     timeout_ms = int(check_ms + int(PAUSED_LINK_TIMEOUT_MS) + 500)
-    runtime.host_peers[addr].last_seen_ms = int(timeout_ms - int(PAUSED_LINK_TIMEOUT_MS) - 1)
+    runtime.peers[addr].last_seen_ms = int(timeout_ms - int(PAUSED_LINK_TIMEOUT_MS) - 1)
     runtime.update(now_ms=int(timeout_ms))
     assert runtime.error == "peer_timeout"
     runtime.close()
 
 
 def test_client_waiting_input_sends_idle_heartbeat(mocker) -> None:
-    runtime = LockstepRuntime(
+    runtime = JoinLockstepRuntime(
         JoinLockstepRuntimeConfig(
             mode_id=GameMode.SURVIVAL,
             player_count=2,
@@ -220,12 +221,12 @@ def test_client_waiting_input_sends_idle_heartbeat(mocker) -> None:
     )
     runtime.open()
     now = int(time.monotonic() * 1000.0)
-    runtime.client_last_seen_ms = int(now)
+    runtime.last_seen_ms = int(now)
     runtime.started = True
-    runtime.client_pause_state = PauseState(paused=True, reason="waiting_input")
-    runtime._client_last_send_ms = int(now - int(IDLE_HEARTBEAT_MS) - 1)
+    runtime.pause_state = PauseState(paused=True, reason="waiting_input")
+    runtime.last_client_send_ms = int(now - int(IDLE_HEARTBEAT_MS) - 1)
 
-    lobby = runtime.client_lobby
+    lobby = runtime.lobby
     assert lobby is not None
     lobby.ingest_welcome(Welcome(accepted=True, slot_index=1, session_id="s"))
 

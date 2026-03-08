@@ -20,6 +20,7 @@ from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
+from ..game.loop_actions import BACK_TO_MENU, OPEN_HIGH_SCORES, ViewAction, coerce_view_action
 from ..game_modes import GameMode
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
@@ -27,7 +28,7 @@ from ..net.deterministic_status import build_lan_deterministic_status
 from ..net.lockstep_protocol import (
     TickFrame,
 )
-from ..net.lockstep_runtime import LockstepRuntime
+from ..net.lockstep_runtime import HostLockstepRuntime, JoinLockstepRuntime, LockstepRuntime
 from ..net.rollback_resync_v5 import (
     ModeStateSnapshotV2,
     ReplayStateSnapshotV2,
@@ -213,7 +214,7 @@ class _LanRuntimeInputProvider:
             return
         if str(self._role) != "host":
             return
-        if isinstance(runtime, LockstepRuntime):
+        if isinstance(runtime, HostLockstepRuntime):
             runtime.submit_local_command(command)
 
 
@@ -257,7 +258,7 @@ class BaseGameplayMode:
         self._base_dir = base_dir
 
         self.close_requested = False
-        self._action: str | None = None
+        self._action: ViewAction | str | None = None
         self._paused = False
         self._status_base: GameStatus | None = None
         self._status_sim: GameStatus | None = None
@@ -455,7 +456,7 @@ class BaseGameplayMode:
 
     def _lockstep_runtime(self) -> LockstepRuntime | None:
         runtime = self._lan_runtime
-        if isinstance(runtime, LockstepRuntime):
+        if isinstance(runtime, (HostLockstepRuntime, JoinLockstepRuntime)):
             return runtime
         return None
 
@@ -1238,8 +1239,8 @@ class BaseGameplayMode:
         self._reset_replay_capture_state(clear_recorder=True)
         self._world_runtime.close_runtime()
 
-    def take_action(self) -> str | None:
-        action = self._action
+    def take_action(self) -> ViewAction | None:
+        action = coerce_view_action(self._action)
         self._action = None
         return action
 
@@ -1266,10 +1267,10 @@ class BaseGameplayMode:
             self.open()
             return
         if action == "high_scores":
-            self._action = "open_high_scores"
+            self._action = OPEN_HIGH_SCORES
             return
         if action == "main_menu":
-            self._action = "back_to_menu"
+            self._action = BACK_TO_MENU
             self.close_requested = True
 
     def _world_entity_alpha(self) -> float:
@@ -1391,7 +1392,7 @@ class BaseGameplayMode:
         self,
         *,
         runtime: LanRuntime,
-        lockstep_runtime: LockstepRuntime | None,
+        lockstep_runtime: HostLockstepRuntime | None,
         role: str,
         provider: _LanRuntimeInputProvider,
     ) -> LanSyncCallbacks:
@@ -1698,9 +1699,10 @@ class BaseGameplayMode:
             if provider.pop_blocked:
                 return False
         else:
+            host_lockstep_runtime = lockstep_runtime if isinstance(lockstep_runtime, HostLockstepRuntime) else None
             lan_sync_callbacks = self._build_lan_sync_callbacks(
                 runtime=runtime,
-                lockstep_runtime=lockstep_runtime,
+                lockstep_runtime=host_lockstep_runtime,
                 role=str(role),
                 provider=provider,
             )

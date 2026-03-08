@@ -7,6 +7,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
+from ...game.loop_actions import ViewAction, coerce_view_action
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
@@ -83,16 +84,16 @@ class _DatabaseBaseView:
         self._pending_action = None
         self._action = None
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ViewAction | None:
         self._assert_open()
         if self._pending_action is not None:
-            action = self._pending_action
+            action = coerce_view_action(self._pending_action)
             self._pending_action = None
             self._closing = False
             self._close_action = None
             self._timeline_ms = self._timeline_max_ms
             return action
-        action = self._action
+        action = coerce_view_action(self._action)
         self._action = None
         return action
 

@@ -6,7 +6,7 @@ from crimson.game_modes import GameMode
 from crimson.net.debug_log import close_lan_debug_log, init_lan_debug_log
 from crimson.net.lockstep_lobby import HostLobby
 from crimson.net.lockstep_protocol import INPUT_DELAY_TICKS, PROTOCOL_VERSION, TICK_RATE, DebugLogBatch, Hello
-from crimson.net.lockstep_runtime import HostLockstepRuntimeConfig, LockstepRuntime
+from crimson.net.lockstep_runtime import HostLockstepRuntime, HostLockstepRuntimeConfig
 
 
 def test_host_writes_remote_client_log_batches(tmp_path: Path) -> None:
@@ -23,7 +23,7 @@ def test_host_writes_remote_client_log_batches(tmp_path: Path) -> None:
         debug_enabled=True,
     )
 
-    runtime = LockstepRuntime(
+    runtime = HostLockstepRuntime(
         HostLockstepRuntimeConfig(
             mode_id=GameMode.SURVIVAL,
             player_count=2,
@@ -56,8 +56,8 @@ def test_host_writes_remote_client_log_batches(tmp_path: Path) -> None:
     )
     assert welcome.accepted is True
 
-    runtime.host_lobby = lobby
-    runtime._handle_host_message(
+    runtime.lobby = lobby
+    runtime._handle_message(
         addr,
         DebugLogBatch(slot_index=int(welcome.slot_index), lines=["2000-01-01T00:00:00.000Z event=test foo=bar\n"]),
         now_ms=0,

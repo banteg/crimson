@@ -5,6 +5,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import crimson.screens.panels.network_lobby as lan_lobby_module
+from crimson.game.loop_actions import OPEN_LAN_LOBBY, START_QUEST, START_RUSH_LAN
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import NetworkSessionConfig, PendingNetworkSession, RollbackEndpoint
 from crimson.net.relay_protocol import RoomState
@@ -90,9 +91,9 @@ def test_loop_view_resolves_lan_action_using_pending_network_session(make_game_s
     )
     loop = GameLoopView(state)
 
-    action = loop._resolve_lan_action("start_rush_lan")
+    action = loop._resolve_lan_action(START_RUSH_LAN)
 
-    assert action == "open_lan_lobby"
+    assert action == OPEN_LAN_LOBBY
     assert state.network_runtime is not None
     assert state.network_in_lobby is True
 
@@ -199,5 +200,5 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
     assert state.config.game_mode == 3
     assert state.pending_quest_level == QuestLevel(2, 4)
     assert panel._closing is True
-    assert panel._close_action == "start_quest"
+    assert panel._close_action == START_QUEST
     assert state.screen_fade_ramp is True
