@@ -11,7 +11,8 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
-from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
+from ..input_codes import input_code_is_down, input_code_is_pressed, player_move_fire_keybinds
+from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..sim.bootstrap import run_unlock_terrain_prelude
@@ -35,7 +36,7 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapon_usage import normalize_weapon_usage_counts
 from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
-from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
+from .components.perk_menu_controller import PerkMenuController
 
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 
@@ -71,6 +72,7 @@ class TutorialMode(BaseGameplayMode):
         self._sim_session: DeterministicSession | None = None
         self._replay_recorder: ReplayRecorder | None = None
         self._frame_input_state: PlayerInput | None = None
+        self._perk_pick_pending = False
 
     def _new_sim_session(self) -> DeterministicSession:
         return build_tutorial_session(
@@ -85,13 +87,11 @@ class TutorialMode(BaseGameplayMode):
             demo_mode_active=bool(self.demo_mode_active),
         )
 
+    def _runtime_player_count(self) -> int:
+        return 1
+
     def open(self) -> None:
-        original_player_count = self.config.player_count
-        self.config.player_count = 1
-        try:
-            super().open()
-        finally:
-            self.config.player_count = original_player_count
+        super().open()
         self._perk_menu.reset()
 
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
@@ -99,6 +99,7 @@ class TutorialMode(BaseGameplayMode):
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
 
         self._frame_input_state = None
+        self._perk_pick_pending = False
 
         self.state.perk_selection.pending_count = 0
         self.state.perk_selection.choices.clear()
@@ -165,24 +166,12 @@ class TutorialMode(BaseGameplayMode):
         _ = replay
         return f"tutorial_{stamp}"
 
-    def _perk_menu_context(self) -> PerkMenuContext:
-        gore_disabled = self.config.gore_disabled
-        fx_detail = self.config.fx_detail(level=0, default=False)
-        assert self._small is not None, "perk menu requires small font after mode open"
-        return PerkMenuContext(
-            state=self.state,
-            perk_state=self.state.perk_selection,
+    def _open_perk_menu(self) -> None:
+        self._open_perk_menu_ui(
+            menu=self._perk_menu,
             players=[self.player],
-            creatures=self.creatures.entries,
-            player=self.player,
             game_mode=GameMode.TUTORIAL,
             player_count=1,
-            gore_disabled=gore_disabled,
-            fx_detail=fx_detail,
-            font=self._small,
-            resources=self.render_resources.resources,
-            mouse=self._ui_mouse_pos(),
-            play_sfx=None,
         )
 
     def _handle_input(self) -> None:
@@ -198,10 +187,10 @@ class TutorialMode(BaseGameplayMode):
             return
 
     def _build_input(self) -> PlayerInput:
-        keybinds = config_keybinds(self.config)
-        if not keybinds:
-            keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
-        up_key, down_key, left_key, right_key, fire_key = player_move_fire_binds(keybinds, 0)
+        up_key, down_key, left_key, right_key, fire_key = player_move_fire_keybinds(
+            self.config,
+            player_index=0,
+        )
 
         move = Vec2(
             float(input_code_is_down(right_key)) - float(input_code_is_down(left_key)),
@@ -307,15 +296,24 @@ class TutorialMode(BaseGameplayMode):
         if self.close_requested:
             return
 
-        perk_ctx = self._perk_menu_context()
         perk_pending = int(self.state.perk_selection.pending_count) > 0 and self.player.health > 0.0
-        if int(self.state.tutorial.stage_index) == 6 and perk_pending and not self._perk_menu.open:
-            self._perk_menu.open_if_available(perk_ctx)
+        choices = perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection)
+        if int(self.state.tutorial.stage_index) == 6 and perk_pending and (not self._perk_menu.active) and (
+            not self._perk_pick_pending
+        ):
+            self._open_perk_menu()
+        if self._perk_menu.open:
+            choice_index = self._perk_menu.handle_input(
+                self._perk_menu_ui_context(),
+                choices,
+                dt_ui_ms=dt_ui_ms,
+            )
+            if choice_index is not None:
+                self._perk_pick_pending = True
+                self.record_perk_pick_command(int(choice_index), player_index=0)
+        self._perk_menu.tick_timeline(dt_ui_ms)
 
         perk_menu_active = self._perk_menu.active
-        if self._perk_menu.open:
-            self._perk_menu.handle_input(perk_ctx, dt=dt, dt_ui_ms=dt_ui_ms)
-        self._perk_menu.tick_timeline(dt_ui_ms)
 
         dt_world = 0.0 if self._paused or perk_menu_active else dt
 
@@ -323,6 +321,7 @@ class TutorialMode(BaseGameplayMode):
         if dt_world > 0.0:
             session = self._sim_session
             if session is not None:
+                elapsed_before_ms = float(session.elapsed_ms)
                 session.detail_preset = int(self._deterministic_detail_preset())
                 session.gore_disabled = int(self._deterministic_gore_disabled())
                 self._frame_input_state = input_state
@@ -339,6 +338,8 @@ class TutorialMode(BaseGameplayMode):
                     )
                 finally:
                     self._frame_input_state = None
+                if float(session.elapsed_ms) != elapsed_before_ms:
+                    self._perk_pick_pending = False
 
         mouse = self._ui_mouse_pos()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -380,7 +381,10 @@ class TutorialMode(BaseGameplayMode):
         self._draw_tutorial_prompts(hud_bottom=hud_bottom)
 
         if perk_menu_active:
-            self._perk_menu.draw(self._perk_menu_context())
+            self._perk_menu.draw(
+                self._perk_menu_ui_context(),
+                perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection),
+            )
             self._draw_menu_cursor()
 
     def _draw_tutorial_prompts(self, *, hud_bottom: float) -> None:

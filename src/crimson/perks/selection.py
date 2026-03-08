@@ -242,7 +242,7 @@ def perk_auto_pick(
     return picks
 
 
-def perk_selection_current_choices(
+def _perk_selection_prepare_if_needed(
     state: GameplayState,
     players: list[PlayerState],
     perk_state: PerkSelectionState,
@@ -250,12 +250,6 @@ def perk_selection_current_choices(
     game_mode: GameMode,
     player_count: int | None = None,
 ) -> list[PerkId]:
-    """Return the current perk choices, generating them if needed.
-
-    Mirrors `perk_choices_dirty` + `perks_generate_choices` before entering the
-    perk selection screen (state 6).
-    """
-
     if not players:
         return []
     if player_count is None:
@@ -270,8 +264,45 @@ def perk_selection_current_choices(
             count=7,
         )
         perk_state.choices_dirty = False
+    return perk_state.choices
+
+
+def perk_selection_prepared_choices(
+    players: list[PlayerState],
+    perk_state: PerkSelectionState,
+) -> list[PerkId]:
+    """Return already-prepared visible choices without mutating state."""
+
+    if not players:
+        return []
+    if perk_state.choices_dirty or not perk_state.choices:
+        return []
     visible_count = max(1, int(perk_choice_count(players[0])))
     return perk_state.choices[:visible_count]
+
+
+def perk_selection_open_choices(
+    state: GameplayState,
+    players: list[PlayerState],
+    perk_state: PerkSelectionState,
+    *,
+    game_mode: GameMode,
+    player_count: int | None = None,
+) -> list[PerkId]:
+    """Prepare current perk choices for the selection UI and return the visible list.
+
+    Mirrors `perk_choices_dirty` + `perks_generate_choices` before entering the
+    perk selection screen (state 6).
+    """
+
+    _perk_selection_prepare_if_needed(
+        state,
+        players,
+        perk_state,
+        game_mode=game_mode,
+        player_count=player_count,
+    )
+    return perk_selection_prepared_choices(players, perk_state)
 
 
 def perk_selection_pick(
@@ -284,6 +315,7 @@ def perk_selection_pick(
     player_count: int | None = None,
     dt: float | None = None,
     creatures: Sequence[CreatureState] | None = None,
+    refresh_choices: bool = False,
 ) -> PerkId | None:
     """Pick a perk from the current choice list and apply it.
 
@@ -293,7 +325,14 @@ def perk_selection_pick(
 
     if perk_state.pending_count <= 0:
         return None
-    choices = perk_selection_current_choices(state, players, perk_state, game_mode=game_mode, player_count=player_count)
+    _perk_selection_prepare_if_needed(
+        state,
+        players,
+        perk_state,
+        game_mode=game_mode,
+        player_count=player_count,
+    )
+    choices = perk_selection_prepared_choices(players, perk_state)
     if not choices:
         return None
     idx = int(choice_index)
@@ -301,6 +340,15 @@ def perk_selection_pick(
         return None
     perk_id = choices[idx]
     perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
-    perk_state.pending_count = max(0, int(perk_state.pending_count) - 1)
+    assert int(perk_state.pending_count) > 0, "picked perk must leave a pending perk to resolve"
+    perk_state.pending_count -= 1
     perk_state.choices_dirty = True
+    if refresh_choices:
+        _perk_selection_prepare_if_needed(
+            state,
+            players,
+            perk_state,
+            game_mode=game_mode,
+            player_count=player_count,
+        )
     return perk_id

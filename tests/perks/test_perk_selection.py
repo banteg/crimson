@@ -7,8 +7,9 @@ from crimson.perks import PerkId
 from crimson.perks.selection import (
     perk_auto_pick,
     perk_generate_choices,
-    perk_selection_current_choices,
+    perk_selection_open_choices,
     perk_selection_pick,
+    perk_selection_prepared_choices,
 )
 from crimson.perks.state import PerkSelectionState
 from crimson.sim.state_types import PlayerState
@@ -68,7 +69,7 @@ def test_perk_generate_choices_tutorial_returns_fixed_list() -> None:
     ]
 
 
-def test_perk_selection_current_choices_keeps_hidden_internal_entries(mocker) -> None:
+def test_perk_selection_open_choices_keeps_hidden_internal_entries(mocker) -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
     perk_state = PerkSelectionState(pending_count=1, choices=[], choices_dirty=True)
@@ -86,7 +87,7 @@ def test_perk_selection_current_choices_keeps_hidden_internal_entries(mocker) ->
 
     mocker.patch.object(perk_selection_module, "perk_generate_choices", side_effect=_fake_perk_generate_choices)
 
-    visible = perk_selection_current_choices(
+    visible = perk_selection_open_choices(
         state,
         [player],
         perk_state,
@@ -111,6 +112,112 @@ def test_perk_selection_current_choices_keeps_hidden_internal_entries(mocker) ->
         PerkId.INSTANT_WINNER,
     ]
     assert perk_state.choices_dirty is False
+
+
+def test_perk_selection_prepared_choices_is_pure_when_dirty() -> None:
+    player = PlayerState(index=0, pos=Vec2())
+    perk_state = PerkSelectionState(
+        pending_count=1,
+        choices=[PerkId.SHARPSHOOTER],
+        choices_dirty=True,
+    )
+
+    visible = perk_selection_prepared_choices([player], perk_state)
+
+    assert visible == []
+    assert perk_state.choices == [PerkId.SHARPSHOOTER]
+    assert perk_state.choices_dirty is True
+
+
+def test_perk_selection_open_choices_generates_then_prepared_reads_without_regenerating(mocker) -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    perk_state = PerkSelectionState(pending_count=1, choices=[], choices_dirty=True)
+    generate_choices = mocker.patch.object(
+        perk_selection_module,
+        "perk_generate_choices",
+        return_value=[
+            PerkId.SHARPSHOOTER,
+            PerkId.FASTSHOT,
+            PerkId.AMMO_MANIAC,
+            PerkId.LONG_DISTANCE_RUNNER,
+            PerkId.TOUGH_RELOADER,
+            PerkId.PERK_MASTER,
+            PerkId.INSTANT_WINNER,
+        ],
+    )
+
+    prepared = perk_selection_open_choices(
+        state,
+        [player],
+        perk_state,
+        game_mode=GameMode.SURVIVAL,
+        player_count=1,
+    )
+    visible = perk_selection_prepared_choices([player], perk_state)
+
+    assert prepared == visible
+    assert generate_choices.call_count == 1
+
+
+def test_perk_selection_pick_prepares_choices_when_dirty(mocker) -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    perk_state = PerkSelectionState(
+        pending_count=1,
+        choices=[],
+        choices_dirty=True,
+    )
+    mocker.patch.object(
+        perk_selection_module,
+        "perk_generate_choices",
+        return_value=[PerkId.INSTANT_WINNER] * 7,
+    )
+
+    picked = perk_selection_pick(
+        state,
+        [player],
+        perk_state,
+        0,
+        game_mode=GameMode.QUESTS,
+        player_count=1,
+    )
+
+    assert picked == PerkId.INSTANT_WINNER
+    assert player.perk_counts[int(PerkId.INSTANT_WINNER)] == 1
+
+
+def test_perk_selection_pick_can_refresh_choices_to_preserve_rng_behavior(mocker) -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    perk_state = PerkSelectionState(
+        pending_count=1,
+        choices=[],
+        choices_dirty=True,
+    )
+    generate_choices = mocker.patch.object(
+        perk_selection_module,
+        "perk_generate_choices",
+        side_effect=[
+            [PerkId.INSTANT_WINNER] * 7,
+            [PerkId.FASTSHOT] * 7,
+        ],
+    )
+
+    picked = perk_selection_pick(
+        state,
+        [player],
+        perk_state,
+        0,
+        game_mode=GameMode.QUESTS,
+        player_count=1,
+        refresh_choices=True,
+    )
+
+    assert picked == PerkId.INSTANT_WINNER
+    assert perk_state.choices_dirty is False
+    assert perk_state.choices == [PerkId.FASTSHOT] * 7
+    assert generate_choices.call_count == 2
 
 
 def test_perk_selection_pick_syncs_perk_counts_across_players() -> None:

@@ -185,6 +185,19 @@ class WorldRuntime:
             camera=self.camera,
         )
 
+    def draw(
+        self,
+        *,
+        draw_aim_indicators: bool = True,
+        entity_alpha: float = 1.0,
+    ) -> None:
+        self.render_resources.bake_fx_queues()
+        self.renderer.draw(
+            render_frame=self.build_render_frame(),
+            draw_aim_indicators=draw_aim_indicators,
+            entity_alpha=entity_alpha,
+        )
+
     def build_render_frame(self) -> RenderFrame:
         return self.render_resources.build_render_frame(
             state=self.sim_world.state,

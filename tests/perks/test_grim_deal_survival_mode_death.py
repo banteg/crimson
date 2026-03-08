@@ -66,7 +66,7 @@ def test_grim_deal_kills_player_during_perk_menu_transition(mocker, mode_cls: ty
     mode._perk_menu.open = True
     mode._perk_menu.timeline_ms = 100.0
 
-    def _apply_grim_deal_and_close(_ctx, *, dt: float, dt_ui_ms: float) -> None:
+    def _apply_grim_deal_and_close(_ctx, _choices, *, dt_ui_ms: float) -> None:
         perk_apply(mode.state, mode.sim_world.players, PerkId.GRIM_DEAL)
         mode._perk_menu.close()
 

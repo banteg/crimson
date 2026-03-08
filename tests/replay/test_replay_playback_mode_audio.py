@@ -15,6 +15,8 @@ from crimson.replay import Replay, ReplayHeader, ReplayTick
 from crimson.sim.sessions import QuestSpawnState
 from crimson.world.sim_world_state import SimWorldState
 from grim.console import ConsoleState
+from grim.geom import Vec2
+from grim.raylib_api import rl
 from tests.support.builders import FakePlaybackDriver
 
 
@@ -137,6 +139,27 @@ def test_replay_playback_progress_ratio_and_time_formatting(replay_playback_view
 
     assert replay_playback_mode.ReplayPlaybackMode._format_time_text(0.0) == "0:00"
     assert replay_playback_mode.ReplayPlaybackMode._format_time_text(65.9) == "1:05"
+
+
+def test_replay_playback_helpers_delegate_to_runtime_and_small_font(mocker, replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    draw_text = mocker.patch.object(replay_playback_mode, "draw_small_text")
+    measure_text = mocker.patch.object(replay_playback_mode, "measure_small_text_width", return_value=42.0)
+    color = rl.Color(20, 30, 40, 255)
+    pos = Vec2(12.0, 34.0)
+    font = object()
+    runtime = SimpleNamespace(draw=mocker.Mock())
+    _set_private(view, "_small", font)
+    _set_private(view, "_runtime", runtime)
+
+    view._draw_world(draw_aim_indicators=False, entity_alpha=0.5)
+    view._draw_ui_text("replay", pos, color, scale=0.8)
+    width = view._measure_ui_text_width("replay", scale=0.8)
+
+    runtime.draw.assert_called_once_with(draw_aim_indicators=False, entity_alpha=0.5)
+    draw_text.assert_called_once_with(font, "replay", pos, color)
+    measure_text.assert_called_once_with(font, "replay")
+    assert width == 42.0
 
 
 def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:

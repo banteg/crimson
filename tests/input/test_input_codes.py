@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import crimson.input_codes as input_codes
 from crimson.input_codes import INPUT_CODE_UNBOUND, input_code_name
+from grim.config import default_player_keybind_block
 
 
 def test_input_code_name_extended_axes_match_original_labels() -> None:
@@ -94,3 +95,9 @@ def test_input_primary_just_pressed_latches_across_multiplayer_fire_keys(mocker)
     input_codes.input_begin_frame()
     down[(0, 0x100)] = True
     assert input_codes.input_primary_just_pressed(None, player_count=2)
+
+
+def test_player_move_fire_keybinds_falls_back_to_default_block() -> None:
+    expected = tuple(int(value) for value in default_player_keybind_block(0)[:5])
+
+    assert input_codes.player_move_fire_keybinds(None, player_index=0) == expected

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -10,11 +9,7 @@ from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
 from grim.raylib_api import rl
 
-from ...game_modes import GameMode
-from ...gameplay import GameplayState
 from ...perks import PerkId, perk_display_description, perk_display_name
-from ...perks.selection import perk_selection_current_choices, perk_selection_pick
-from ...perks.state import PerkSelectionState
 from ...sim.state_types import PlayerState
 from ...ui.layout import ui_origin, ui_scale
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -32,28 +27,17 @@ from ...ui.perk_menu import (
     perk_menu_panel_slide_x,
 )
 
-if TYPE_CHECKING:
-    from ...creatures.runtime import CreatureState
-
 PlaySfxFn = Callable[[str], None]
 OnCloseFn = Callable[[], None]
-OnPickFn = Callable[[int], bool]
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 
-class PerkMenuContext(msgspec.Struct, frozen=True):
-    state: GameplayState
-    perk_state: PerkSelectionState
-    players: list[PlayerState]
-    creatures: Sequence[CreatureState]
+class PerkMenuUiContext(msgspec.Struct, frozen=True):
     player: PlayerState
-    game_mode: GameMode
-    player_count: int
     gore_disabled: int
-
-    font: SmallFontData
+    preserve_bugs: bool
     resources: RuntimeResources
     mouse: rl.Vector2
     fx_detail: bool = False
@@ -68,15 +52,9 @@ class PerkMenuController:
         *,
         cancel_label: str = "Cancel",
         on_close: OnCloseFn | None = None,
-        on_pick: OnPickFn | None = None,
-        defer_pick_apply: bool = False,
     ) -> None:
-        if bool(defer_pick_apply) and on_pick is None:
-            raise ValueError("on_pick is required when defer_pick_apply=True")
         self._cancel_label = cancel_label
         self._on_close = on_close
-        self._on_pick = on_pick
-        self._defer_pick_apply = bool(defer_pick_apply)
         self.reset()
 
     @property
@@ -183,24 +161,13 @@ class PerkMenuController:
         if self._on_close is not None:
             self._on_close()
 
-    def open_if_available(self, ctx: PerkMenuContext) -> bool:
+    def open_menu(self, *, play_sfx: PlaySfxFn | None = None) -> None:
         if self._open:
-            return True
-        choices = perk_selection_current_choices(
-            ctx.state,
-            ctx.players,
-            ctx.perk_state,
-            game_mode=ctx.game_mode,
-            player_count=int(ctx.player_count),
-        )
-        if not choices:
-            self._open = False
-            return False
-        if ctx.play_sfx is not None:
-            ctx.play_sfx("sfx_ui_panelclick")
+            return
+        if play_sfx is not None:
+            play_sfx("sfx_ui_panelclick")
         self._open = True
         self._selected_index = 0
-        return True
 
     def tick_timeline(self, dt_ui_ms: float) -> None:
         if self._open:
@@ -208,44 +175,19 @@ class PerkMenuController:
         else:
             self._timeline_ms = clamp(self._timeline_ms - float(dt_ui_ms), 0.0, PERK_MENU_TRANSITION_MS)
 
-    def handle_input(self, ctx: PerkMenuContext, *, dt: float, dt_ui_ms: float) -> None:
-        choices = perk_selection_current_choices(
-            ctx.state,
-            ctx.players,
-            ctx.perk_state,
-            game_mode=ctx.game_mode,
-            player_count=int(ctx.player_count),
-        )
+    def handle_input(
+        self,
+        ctx: PerkMenuUiContext,
+        choices: Sequence[PerkId],
+        *,
+        dt_ui_ms: float,
+    ) -> int | None:
         if not choices:
             self.close()
-            return
+            return None
 
         if self._selected_index >= len(choices):
             self._selected_index = 0
-
-        def _submit_pick(choice_index: int) -> bool:
-            if bool(self._defer_pick_apply):
-                callback = self._on_pick
-                if callback is None:
-                    raise RuntimeError("deferred perk pick callback missing")
-                accepted = callback(int(choice_index))
-                if not isinstance(accepted, bool):
-                    raise TypeError("deferred perk pick callback must return bool")
-                return accepted
-
-            picked = perk_selection_pick(
-                ctx.state,
-                ctx.players,
-                ctx.perk_state,
-                int(choice_index),
-                game_mode=ctx.game_mode,
-                player_count=int(ctx.player_count),
-                dt=float(dt),
-                creatures=ctx.creatures,
-            )
-            if picked is not None and self._on_pick is not None:
-                self._on_pick(int(choice_index))
-            return picked is not None
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
             self._selected_index = (self._selected_index + 1) % len(choices)
@@ -273,7 +215,7 @@ class PerkMenuController:
             panel_slide_x=slide_x,
         )
 
-        preserve_bugs = bool(ctx.state.preserve_bugs)
+        preserve_bugs = bool(ctx.preserve_bugs)
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
                 perk_id,
@@ -287,12 +229,8 @@ class PerkMenuController:
                 if click:
                     if ctx.play_sfx is not None:
                         ctx.play_sfx("sfx_ui_buttonclick")
-                    picked = _submit_pick(int(idx))
-                    if picked:
-                        if (not bool(self._defer_pick_apply)) and ctx.play_sfx is not None:
-                            ctx.play_sfx("sfx_ui_bonus")
-                        self.close()
-                        return
+                    self.close()
+                    return int(idx)
                 break
 
         cancel_w = button_width(
@@ -312,31 +250,24 @@ class PerkMenuController:
             if ctx.play_sfx is not None:
                 ctx.play_sfx("sfx_ui_buttonclick")
             self.close()
-            return
+            return None
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
             if ctx.play_sfx is not None:
                 ctx.play_sfx("sfx_ui_buttonclick")
-            picked = _submit_pick(int(self._selected_index))
-            if picked:
-                if (not bool(self._defer_pick_apply)) and ctx.play_sfx is not None:
-                    ctx.play_sfx("sfx_ui_bonus")
-                self.close()
+            self.close()
+            return int(self._selected_index)
+        return None
 
-    def draw(self, ctx: PerkMenuContext) -> None:
+    def draw(self, ctx: PerkMenuUiContext, choices: Sequence[PerkId]) -> None:
         menu_t = clamp(self._timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
         if menu_t <= 1e-3:
             return
 
-        choices = perk_selection_current_choices(
-            ctx.state,
-            ctx.players,
-            ctx.perk_state,
-            game_mode=ctx.game_mode,
-            player_count=int(ctx.player_count),
-        )
         if not choices:
             return
+        if self._selected_index >= len(choices):
+            self._selected_index = 0
 
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
@@ -379,7 +310,7 @@ class PerkMenuController:
         if sponsor:
             draw_ui_text(ctx.resources, sponsor, computed.sponsor_pos, scale=scale, color=UI_SPONSOR_COLOR)
 
-        preserve_bugs = bool(ctx.state.preserve_bugs)
+        preserve_bugs = bool(ctx.preserve_bugs)
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
                 perk_id,

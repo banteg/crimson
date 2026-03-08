@@ -76,6 +76,8 @@ _REPLAY_WIDGET_TEXT_OFFSET_X = 0.0
 _REPLAY_WIDGET_TEXT_OFFSET_Y = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_X = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_Y = 0.0
+
+
 class ReplayPlaybackMode:
     def __init__(
         self,
@@ -182,9 +184,7 @@ class ReplayPlaybackMode:
         runtime = self._runtime
         if runtime is None:
             return
-        runtime.render_resources.bake_fx_queues()
-        runtime.renderer.draw(
-            render_frame=runtime.build_render_frame(),
+        runtime.draw(
             draw_aim_indicators=draw_aim_indicators,
             entity_alpha=entity_alpha,
         )
@@ -402,15 +402,16 @@ class ReplayPlaybackMode:
         return False
 
     def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, *, scale: float = 1.0) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, pos, color)
-        else:
-            rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
+        _ = scale
+        font = self._small
+        assert font is not None, "small font must be loaded before replay ui draw"
+        draw_small_text(font, text, pos, color)
 
     def _measure_ui_text_width(self, text: str, *, scale: float = 1.0) -> float:
-        if self._small is not None:
-            return float(measure_small_text_width(self._small, text))
-        return float(len(text)) * 8.0 * float(scale)
+        _ = scale
+        font = self._small
+        assert font is not None, "small font must be loaded before replay ui measurement"
+        return float(measure_small_text_width(font, text))
 
     def _build_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
         driver = self._driver
