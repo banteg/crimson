@@ -125,6 +125,30 @@ def test_chrome_runtime_draw_background_uses_close_fraction_for_pause_alpha(make
     pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)
 
 
+def test_chrome_runtime_draw_background_keeps_close_fraction_opaque_while_opening(make_game_state, mocker) -> None:
+    state = make_game_state()
+    pause_background = mocker.Mock()
+    state.pause_background = pause_background
+    runtime = ChromeRuntime(
+        state,
+        spec=ChromeSpec(
+            backdrop=BackdropPolicy(
+                entity_alpha_mode="close_timeline_fraction",
+                entity_alpha_duration_ms=500,
+            ),
+            open_sfx=None,
+            close_sfx=None,
+        ),
+    )
+    runtime.open()
+    runtime.chrome.timeline_ms = 250
+
+    mocker.patch.object(chrome_runtime.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
+    runtime.draw_background()
+
+    pause_background.draw_pause_background.assert_called_once_with(entity_alpha=1.0)
+
+
 def test_chrome_runtime_frame_uses_runtime_resources(make_game_state) -> None:
     state = make_game_state()
     state.resources = _resources_stub()
