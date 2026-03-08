@@ -201,8 +201,8 @@ class QuestsMenuView:
             QUEST_BACK_BUTTON_Y_OFFSET,
         )
         dt_ms = min(float(dt), 0.1) * 1000.0
-        font = require_runtime_resources(self.state).small_font
-        back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
+        resources = require_runtime_resources(self.state)
+        back_w = button_width(resources, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if button_update(
@@ -570,10 +570,9 @@ class QuestsMenuView:
 
         # Back button.
         back_pos = Vec2(list_pos.x, y0) + Vec2(QUEST_BACK_BUTTON_X_OFFSET, QUEST_BACK_BUTTON_Y_OFFSET)
-        back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
-            font,
             self._back_button,
             pos=back_pos,
             width=float(back_w),

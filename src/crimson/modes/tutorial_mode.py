@@ -256,6 +256,7 @@ class TutorialMode(BaseGameplayMode):
             self._skip_button.enabled = skip_alpha > 1e-3
 
         if stage == 8:
+            resources = self.render_resources.resources
             rect, _lines, _line_h = tutorial_prompt_panel_rect(
                 overlay.prompt_text,
                 measure_text_width=lambda text, scale: float(self._ui_text_width(text, scale)),
@@ -265,8 +266,8 @@ class TutorialMode(BaseGameplayMode):
             )
             gap = 18.0
             button_base_pos = Vec2(rect.x + 10.0, rect.y + rect.height + 10.0)
-            play_w = button_width(font, self._play_button.label, scale=1.0, force_wide=True)
-            repeat_w = button_width(font, self._repeat_button.label, scale=1.0, force_wide=True)
+            play_w = button_width(resources, self._play_button.label, scale=1.0, force_wide=True)
+            repeat_w = button_width(resources, self._repeat_button.label, scale=1.0, force_wide=True)
             if button_update(
                 self._play_button,
                 pos=button_base_pos,
@@ -290,8 +291,9 @@ class TutorialMode(BaseGameplayMode):
             return
 
         if self._skip_button.enabled:
+            resources = self.render_resources.resources
             y = float(rl.get_screen_height()) - 50.0
-            w = button_width(font, self._skip_button.label, scale=1.0, force_wide=True)
+            w = button_width(resources, self._skip_button.label, scale=1.0, force_wide=True)
             if button_update(self._skip_button, pos=Vec2(10.0, y), width=w, dt_ms=dt_ms, mouse=mouse, click=click):
                 self._finish_tutorial_run(restart=False)
 
@@ -404,11 +406,10 @@ class TutorialMode(BaseGameplayMode):
             )
             gap = 18.0
             button_base_pos = Vec2(rect.x + 10.0, rect.y + rect.height + 10.0)
-            play_w = button_width(font, self._play_button.label, scale=1.0, force_wide=True)
-            repeat_w = button_width(font, self._repeat_button.label, scale=1.0, force_wide=True)
+            play_w = button_width(resources, self._play_button.label, scale=1.0, force_wide=True)
+            repeat_w = button_width(resources, self._repeat_button.label, scale=1.0, force_wide=True)
             button_draw(
                 resources,
-                font,
                 self._play_button,
                 pos=button_base_pos,
                 width=play_w,
@@ -416,7 +417,6 @@ class TutorialMode(BaseGameplayMode):
             )
             button_draw(
                 resources,
-                font,
                 self._repeat_button,
                 pos=button_base_pos.offset(dx=play_w + gap),
                 width=repeat_w,
@@ -426,8 +426,8 @@ class TutorialMode(BaseGameplayMode):
 
         if self._skip_button.alpha > 1e-3:
             y = float(rl.get_screen_height()) - 50.0
-            w = button_width(font, self._skip_button.label, scale=1.0, force_wide=True)
-            button_draw(resources, font, self._skip_button, pos=Vec2(10.0, y), width=w, scale=1.0)
+            w = button_width(resources, self._skip_button.label, scale=1.0, force_wide=True)
+            button_draw(resources, self._skip_button, pos=Vec2(10.0, y), width=w, scale=1.0)
 
         if self._paused:
             x = 18.0

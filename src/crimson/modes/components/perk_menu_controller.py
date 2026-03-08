@@ -281,7 +281,7 @@ class PerkMenuController:
                 preserve_bugs=preserve_bugs,
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
-            rect = menu_item_hit_rect(ctx.font, label, pos=item_pos, scale=scale)
+            rect = menu_item_hit_rect(ctx.resources, label, pos=item_pos, scale=scale)
             if rect.contains(ctx.mouse):
                 self._selected_index = idx
                 if click:
@@ -296,7 +296,7 @@ class PerkMenuController:
                 break
 
         cancel_w = button_width(
-            ctx.font,
+            ctx.resources,
             self._cancel_button.label,
             scale=scale,
             force_wide=self._cancel_button.force_wide,
@@ -377,7 +377,7 @@ class PerkMenuController:
         elif expert_owned:
             sponsor = "extra perk sponsored by the Perk Expert"
         if sponsor:
-            draw_ui_text(ctx.font, sponsor, computed.sponsor_pos, scale=scale, color=UI_SPONSOR_COLOR)
+            draw_ui_text(ctx.resources, sponsor, computed.sponsor_pos, scale=scale, color=UI_SPONSOR_COLOR)
 
         preserve_bugs = bool(ctx.state.preserve_bugs)
         for idx, perk_id in enumerate(choices):
@@ -387,9 +387,9 @@ class PerkMenuController:
                 preserve_bugs=preserve_bugs,
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
-            rect = menu_item_hit_rect(ctx.font, label, pos=item_pos, scale=scale)
+            rect = menu_item_hit_rect(ctx.resources, label, pos=item_pos, scale=scale)
             hovered = rect.contains(ctx.mouse) or (idx == self._selected_index)
-            draw_menu_item(ctx.font, label, pos=item_pos, scale=scale, hovered=hovered)
+            draw_menu_item(ctx.resources, label, pos=item_pos, scale=scale, hovered=hovered)
 
         selected = choices[self._selected_index]
         desc = perk_display_description(
@@ -397,15 +397,14 @@ class PerkMenuController:
             gore_disabled=int(ctx.gore_disabled),
             preserve_bugs=preserve_bugs,
         )
-        if ctx.font is not None:
-            desc = self._prewrapped_perk_desc(
-                selected,
-                ctx.font,
-                gore_disabled=int(ctx.gore_disabled),
-                preserve_bugs=preserve_bugs,
-            )
+        desc = self._prewrapped_perk_desc(
+            selected,
+            ctx.resources.small_font,
+            gore_disabled=int(ctx.gore_disabled),
+            preserve_bugs=preserve_bugs,
+        )
         draw_ui_text(
-            ctx.font,
+            ctx.resources,
             desc,
             computed.desc.top_left,
             scale=scale,
@@ -413,11 +412,10 @@ class PerkMenuController:
         )
 
         cancel_w = button_width(
-            ctx.font, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide,
+            ctx.resources, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide,
         )
         button_draw(
             ctx.resources,
-            ctx.font,
             self._cancel_button,
             pos=computed.cancel_pos,
             width=cancel_w,

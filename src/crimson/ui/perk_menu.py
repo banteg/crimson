@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from grim.assets import RuntimeResources, TextureId
-from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
+from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
@@ -167,24 +167,26 @@ def perk_menu_panel_slide_x(t_ms: float, *, width: float) -> float:
     )
 
 
-def _ui_text_width(font: SmallFontData, text: str, scale: float) -> float:
+def _ui_text_width(resources: RuntimeResources, text: str, scale: float) -> float:
+    font = resources.small_font
     del scale
     return measure_small_text_width(font, text)
 
 
 def draw_ui_text(
-    font: SmallFontData,
+    resources: RuntimeResources,
     text: str,
     pos: Vec2,
     *,
     scale: float,
     color: rl.Color,
 ) -> None:
+    font = resources.small_font
     del scale
     draw_small_text(font, text, pos, color)
 
 
-def wrap_ui_text(font: SmallFontData, text: str, *, max_width: float, scale: float) -> list[str]:
+def wrap_ui_text(resources: RuntimeResources, text: str, *, max_width: float, scale: float) -> list[str]:
     lines: list[str] = []
     for raw in text.splitlines() or [""]:
         para = raw.strip()
@@ -194,7 +196,7 @@ def wrap_ui_text(font: SmallFontData, text: str, *, max_width: float, scale: flo
         current = ""
         for word in para.split():
             candidate = word if not current else f"{current} {word}"
-            if current and _ui_text_width(font, candidate, scale) > max_width:
+            if current and _ui_text_width(resources, candidate, scale) > max_width:
                 lines.append(current)
                 current = word
             else:
@@ -205,21 +207,22 @@ def wrap_ui_text(font: SmallFontData, text: str, *, max_width: float, scale: flo
 
 
 def draw_wrapped_ui_text_in_rect(
-    font: SmallFontData,
+    resources: RuntimeResources,
     text: str,
     *,
     rect: Rect,
     scale: float,
     color: rl.Color,
 ) -> None:
-    lines = wrap_ui_text(font, text, max_width=rect.w, scale=scale)
-    line_h = font.cell_size * scale if font is not None else 20 * scale
+    font = resources.small_font
+    lines = wrap_ui_text(resources, text, max_width=rect.w, scale=scale)
+    line_h = font.cell_size * scale
     pos = rect.top_left
     max_y = rect.bottom
     for line in lines:
         if pos.y + line_h > max_y:
             break
-        draw_ui_text(font, line, pos, scale=scale, color=color)
+        draw_ui_text(resources, line, pos, scale=scale, color=color)
         pos = pos.offset(dy=line_h)
 
 
@@ -228,14 +231,14 @@ MENU_ITEM_ALPHA_IDLE = 0.6
 MENU_ITEM_ALPHA_HOVER = 1.0
 
 
-def menu_item_hit_rect(font: SmallFontData, label: str, *, pos: Vec2, scale: float) -> Rect:
-    width = _ui_text_width(font, label, scale)
+def menu_item_hit_rect(resources: RuntimeResources, label: str, *, pos: Vec2, scale: float) -> Rect:
+    width = _ui_text_width(resources, label, scale)
     height = 16.0 * scale
     return Rect.from_top_left(pos, width, height)
 
 
 def draw_menu_item(
-    font: SmallFontData,
+    resources: RuntimeResources,
     label: str,
     *,
     pos: Vec2,
@@ -245,8 +248,8 @@ def draw_menu_item(
     alpha = MENU_ITEM_ALPHA_HOVER if hovered else MENU_ITEM_ALPHA_IDLE
     r, g, b = MENU_ITEM_RGB
     color = rl.Color(int(r), int(g), int(b), int(255 * alpha))
-    draw_ui_text(font, label, pos, scale=scale, color=color)
-    width = _ui_text_width(font, label, scale)
+    draw_ui_text(resources, label, pos, scale=scale, color=color)
+    width = _ui_text_width(resources, label, scale)
     line_y = pos.y + 13.0 * scale
     rl.draw_line(int(pos.x), int(line_y), int(pos.x + width), int(line_y), color)
     return width
@@ -270,8 +273,8 @@ def _resolve_button_textures(resources: RuntimeResources) -> tuple[rl.Texture, r
     )
 
 
-def button_width(font: SmallFontData, label: str, *, scale: float, force_wide: bool) -> float:
-    text_w = _ui_text_width(font, label, scale)
+def button_width(resources: RuntimeResources, label: str, *, scale: float, force_wide: bool) -> float:
+    text_w = _ui_text_width(resources, label, scale)
     if force_wide:
         return 145.0 * scale
     if text_w < 40.0 * scale:
@@ -312,7 +315,6 @@ def button_update(
 
 def button_draw(
     resources: RuntimeResources,
-    font: SmallFontData,
     state: UiButtonState,
     *,
     pos: Vec2,
@@ -358,9 +360,9 @@ def button_draw(
 
     text_a = state.alpha if state.hovered else state.alpha * 0.7
     text_tint = rl.Color(255, 255, 255, int(255 * clamp(text_a, 0.0, 1.0)))
-    text_w = _ui_text_width(font, state.label, scale)
+    text_w = _ui_text_width(resources, state.label, scale)
     text_pos = Vec2(pos.x + width * 0.5 - text_w * 0.5 + 1.0 * scale, pos.y + 10.0 * scale)
-    draw_ui_text(font, state.label, text_pos, scale=scale, color=text_tint)
+    draw_ui_text(resources, state.label, text_pos, scale=scale, color=text_tint)
 
 
 def cursor_draw(resources: RuntimeResources, *, mouse: rl.Vector2, scale: float, alpha: float = 1.0) -> None:

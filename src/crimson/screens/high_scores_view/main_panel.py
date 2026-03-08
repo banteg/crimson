@@ -174,21 +174,19 @@ def draw_main_panel(
             y += row_step
 
     button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
-    w = button_width(font, view._update_button.label, scale=scale, force_wide=view._update_button.force_wide)
-    button_draw(resources, font, view._update_button, pos=button_base_pos, width=w, scale=scale)
-    w = button_width(font, view._play_button.label, scale=scale, force_wide=view._play_button.force_wide)
+    w = button_width(resources, view._update_button.label, scale=scale, force_wide=view._update_button.force_wide)
+    button_draw(resources, view._update_button, pos=button_base_pos, width=w, scale=scale)
+    w = button_width(resources, view._play_button.label, scale=scale, force_wide=view._play_button.force_wide)
     button_draw(
         resources,
-        font,
         view._play_button,
         pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y * scale),
         width=w,
         scale=scale,
     )
-    w = button_width(font, view._back_button.label, scale=scale, force_wide=view._back_button.force_wide)
+    w = button_width(resources, view._back_button.label, scale=scale, force_wide=view._back_button.force_wide)
     button_draw(
         resources,
-        font,
         view._back_button,
         pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),
         width=w,

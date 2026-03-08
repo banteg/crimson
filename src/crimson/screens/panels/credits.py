@@ -474,14 +474,14 @@ class CreditsView:
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         slide_x = self._panel_slide_x(scale=scale)
         panel_top_left = self._panel_top_left(scale=scale).offset(dx=slide_x)
-        font = require_runtime_resources(self.state).small_font
+        resources = require_runtime_resources(self.state)
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
         self._update_line_clicks(
             panel_top_left=panel_top_left,
             scale=scale,
-            font=font,
+            font=resources.small_font,
             mouse=mouse,
             click=click,
         )
@@ -489,7 +489,7 @@ class CreditsView:
 
         dt_ms_f = dt_clamped * 1000.0
 
-        back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
             pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
@@ -505,7 +505,7 @@ class CreditsView:
 
         if self._secret_button_visible():
             secret_w = button_width(
-                font,
+                resources,
                 self._secret_button.label,
                 scale=scale,
                 force_wide=self._secret_button.force_wide,
@@ -568,10 +568,9 @@ class CreditsView:
                 text_w = measure_small_text_width(font, line.text)
                 draw_small_text(font, line.text, Vec2(center_x - (text_w * 0.5), y), color)
 
-        back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
-            font,
             self._back_button,
             pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
             width=back_w,
@@ -580,14 +579,13 @@ class CreditsView:
 
         if self._secret_button_visible():
             secret_w = button_width(
-                font,
+                resources,
                 self._secret_button.label,
                 scale=scale,
                 force_wide=self._secret_button.force_wide,
             )
             button_draw(
                 resources,
-                font,
                 self._secret_button,
                 pos=panel_top_left + Vec2(_SECRET_BUTTON_X * scale, _SECRET_BUTTON_Y * scale),
                 width=secret_w,

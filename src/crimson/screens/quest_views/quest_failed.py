@@ -121,10 +121,10 @@ class QuestFailedView:
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        font = require_runtime_resources(self.state).small_font
+        resources = require_runtime_resources(self.state)
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET * scale, QUEST_FAILED_BUTTON_Y_OFFSET * scale)
 
-        retry_w = button_width(font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
+        retry_w = button_width(resources, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
         if button_update(
             self._retry_button,
             pos=button_pos,
@@ -138,7 +138,7 @@ class QuestFailedView:
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y * scale)
 
         play_another_w = button_width(
-            font,
+            resources,
             self._quest_list_button.label,
             scale=scale,
             force_wide=self._quest_list_button.force_wide,
@@ -156,7 +156,7 @@ class QuestFailedView:
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y * scale)
 
         main_menu_w = button_width(
-            font,
+            resources,
             self._main_menu_button.label,
             scale=scale,
             force_wide=self._main_menu_button.force_wide,
@@ -213,20 +213,19 @@ class QuestFailedView:
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
         retry_w = button_width(
-            font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide,
+            resources, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide,
         )
-        button_draw(resources, font, self._retry_button, pos=button_pos, width=retry_w, scale=scale)
+        button_draw(resources, self._retry_button, pos=button_pos, width=retry_w, scale=scale)
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
         play_another_w = button_width(
-            font,
+            resources,
             self._quest_list_button.label,
             scale=scale,
             force_wide=self._quest_list_button.force_wide,
         )
         button_draw(
             resources,
-            font,
             self._quest_list_button,
             pos=button_pos,
             width=play_another_w,
@@ -235,14 +234,13 @@ class QuestFailedView:
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
         main_menu_w = button_width(
-            font,
+            resources,
             self._main_menu_button.label,
             scale=scale,
             force_wide=self._main_menu_button.force_wide,
         )
         button_draw(
             resources,
-            font,
             self._main_menu_button,
             pos=button_pos,
             width=main_menu_w,

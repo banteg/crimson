@@ -109,12 +109,12 @@ class EndNoteView:
         )
         button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
 
-        font = require_runtime_resources(self.state).small_font
+        resources = require_runtime_resources(self.state)
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
         survival_w = button_width(
-            font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide,
+            resources, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide,
         )
         if button_update(
             self._survival_button,
@@ -129,7 +129,7 @@ class EndNoteView:
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
-        rush_w = button_width(font, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
+        rush_w = button_width(resources, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
         if button_update(
             self._rush_button,
             pos=button_pos,
@@ -143,7 +143,7 @@ class EndNoteView:
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
-        typo_w = button_width(font, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
+        typo_w = button_width(resources, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
         if button_update(
             self._typo_button,
             pos=button_pos,
@@ -158,7 +158,7 @@ class EndNoteView:
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
         main_w = button_width(
-            font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
+            resources, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
         )
         if button_update(
             self._main_menu_button,
@@ -246,20 +246,20 @@ class EndNoteView:
 
         button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
         survival_w = button_width(
-            font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide,
+            resources, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide,
         )
-        button_draw(resources, font, self._survival_button, pos=button_pos, width=survival_w, scale=scale)
+        button_draw(resources, self._survival_button, pos=button_pos, width=survival_w, scale=scale)
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
-        rush_w = button_width(font, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
-        button_draw(resources, font, self._rush_button, pos=button_pos, width=rush_w, scale=scale)
+        rush_w = button_width(resources, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
+        button_draw(resources, self._rush_button, pos=button_pos, width=rush_w, scale=scale)
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
-        typo_w = button_width(font, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
-        button_draw(resources, font, self._typo_button, pos=button_pos, width=typo_w, scale=scale)
+        typo_w = button_width(resources, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
+        button_draw(resources, self._typo_button, pos=button_pos, width=typo_w, scale=scale)
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
         main_w = button_width(
-            font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
+            resources, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
         )
-        button_draw(resources, font, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
+        button_draw(resources, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
 
         _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 

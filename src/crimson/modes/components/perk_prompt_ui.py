@@ -99,7 +99,7 @@ class PerkPromptUi:
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
         y = hinge.y + PERK_PROMPT_TEXT_OFFSET_Y
         color = rl.Color(int(text_color.r), int(text_color.g), int(text_color.b), int(255 * alpha))
-        draw_ui_text(font, label, Vec2(x, y), scale=text_scale, color=color)
+        draw_ui_text(resources, label, Vec2(x, y), scale=text_scale, color=color)
 
         tex = resources.texture(TextureId.UI_MENU_ITEM)
         bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE

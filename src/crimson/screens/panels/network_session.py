@@ -212,8 +212,8 @@ class NetworkSessionPanelView(PanelMenuView):
         )
         base_pos = panel_top_left + Vec2(212.0 * panel_scale, 40.0 * panel_scale)
 
-        font = require_runtime_resources(self.state).small_font
-        back_w = button_width(font, self._back_button.label, scale=panel_scale, force_wide=self._back_button.force_wide)
+        resources = require_runtime_resources(self.state)
+        back_w = button_width(resources, self._back_button.label, scale=panel_scale, force_wide=self._back_button.force_wide)
         panel_h = float(self._panel_height) * panel_scale
         back_pos = panel_top_left + Vec2(panel_w - back_w - 22.0 * panel_scale, panel_h - 44.0 * panel_scale)
 
@@ -338,7 +338,8 @@ class NetworkSessionPanelView(PanelMenuView):
 
     def _draw_contents(self) -> None:
         layout = self._layout()
-        font = require_runtime_resources(self.state).small_font
+        resources = require_runtime_resources(self.state)
+        font = resources.small_font
         scale = float(layout.scale)
         base_pos = layout.base_pos
         text_scale = 1.0 * scale
@@ -426,8 +427,7 @@ class NetworkSessionPanelView(PanelMenuView):
             draw_small_text(font, self._error, Vec2(base_pos.x, y), rl.Color(240, 90, 90, 255))
 
         button_draw(
-            require_runtime_resources(self.state),
-            font,
+            resources,
             self._back_button,
             pos=layout.back_pos,
             width=float(layout.back_w),

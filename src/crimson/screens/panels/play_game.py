@@ -153,7 +153,7 @@ class PlayGameMenuView(PanelMenuView):
                 mode,
                 Vec2(base_pos.x, y),
                 scale,
-                font=font,
+                resources=resources,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -346,7 +346,7 @@ class PlayGameMenuView(PanelMenuView):
         pos: Vec2,
         scale: float,
         *,
-        font: SmallFontData,
+        resources: RuntimeResources,
         dt_ms: int,
         mouse: rl.Vector2,
         click: bool,
@@ -354,7 +354,7 @@ class PlayGameMenuView(PanelMenuView):
     ) -> tuple[bool, bool]:
         state = self._mode_button_state(mode)
         state.enabled = bool(enabled)
-        width = button_width(font, state.label, scale=scale, force_wide=state.force_wide)
+        width = button_width(resources, state.label, scale=scale, force_wide=state.force_wide)
         clicked = button_update(state, pos=pos, width=width, dt_ms=float(dt_ms), mouse=mouse, click=bool(click))
         return clicked, state.hovered
 
@@ -587,8 +587,8 @@ class PlayGameMenuView(PanelMenuView):
         font: SmallFontData,
     ) -> None:
         state = self._mode_button_state(mode)
-        width = button_width(font, state.label, scale=scale, force_wide=state.force_wide)
-        button_draw(resources, font, state, pos=pos, width=width, scale=scale)
+        width = button_width(resources, state.label, scale=scale, force_wide=state.force_wide)
+        button_draw(resources, state, pos=pos, width=width, scale=scale)
 
     def _draw_mode_count(self, key: str, pos: Vec2, scale: float, color: rl.Color, *, font: SmallFontData) -> None:
         status = self.state.status

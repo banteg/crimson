@@ -177,14 +177,14 @@ class _DatabaseBaseView:
         scale = 1.0
         left_panel_pos_x = hs_left_panel_pos_x(screen_width)
         left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y), scale=scale)
-        font = require_runtime_resources(self.state).small_font
+        resources = require_runtime_resources(self.state)
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         self._update_content_interaction(left_top_left=left_top_left, scale=scale, mouse=mouse)
 
         back_pos = self._back_button_pos()
-        back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
             pos=left_top_left + back_pos * scale,
@@ -255,10 +255,9 @@ class _DatabaseBaseView:
         self._draw_contents(left_panel_top_left, right_panel_top_left, scale=scale, font=font)
 
         back_pos = self._back_button_pos()
-        back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
-            font,
             self._back_button,
             pos=left_panel_top_left + back_pos * scale,
             width=back_w,

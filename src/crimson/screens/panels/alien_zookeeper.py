@@ -360,10 +360,10 @@ class AlienZooKeeperView:
         if click:
             self._resolve_tile_click(layout=layout, mouse=mouse)
 
-        font = require_runtime_resources(self.state).small_font
+        resources = require_runtime_resources(self.state)
         dt_ms_f = dt_clamped * 1000.0
 
-        reset_w = button_width(font, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide)
+        reset_w = button_width(resources, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide)
         if button_update(
             self._reset_button,
             pos=layout.reset_pos,
@@ -377,7 +377,7 @@ class AlienZooKeeperView:
             self._reset_state()
             return
 
-        back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
             pos=layout.back_pos,
@@ -489,20 +489,18 @@ class AlienZooKeeperView:
         if self._timer_ms == 0 and math.cos(float(self._anim_time_ms) * 0.005) > 0.0:
             draw_small_text(font, _LABEL_GAME_OVER, Vec2(layout.game_over_x, layout.game_over_y), rl.WHITE)
 
-        reset_w = button_width(font, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide)
+        reset_w = button_width(resources, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide)
         button_draw(
             resources,
-            font,
             self._reset_button,
             pos=layout.reset_pos,
             width=reset_w,
             scale=scale,
         )
 
-        back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
-            font,
             self._back_button,
             pos=layout.back_pos,
             width=back_w,

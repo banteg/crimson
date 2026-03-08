@@ -223,7 +223,7 @@ class HighScoresView:
             button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            w = button_width(font, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
+            w = button_width(resources, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
             if button_update(
                 self._update_button,
                 pos=button_base_pos,
@@ -237,7 +237,7 @@ class HighScoresView:
                     play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
                 self.open()
                 return
-            w = button_width(font, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
+            w = button_width(resources, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
             if button_update(
                 self._play_button,
                 pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y * scale),
@@ -248,7 +248,7 @@ class HighScoresView:
             ):
                 self._begin_close_transition("open_play_game")
                 return
-            back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+            back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             if button_update(
                 self._back_button,
                 pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),

@@ -25,7 +25,13 @@ def _texture() -> rl.Texture:
 
 def _dummy_resources() -> RuntimeResources:
     texture = _texture()
-    return cast("RuntimeResources", SimpleNamespace(texture=lambda _texture_id: texture))
+    return cast(
+        "RuntimeResources",
+        SimpleNamespace(
+            texture=lambda _texture_id: texture,
+            small_font=_dummy_font(),
+        ),
+    )
 
 
 def _dummy_font() -> SmallFontData:

@@ -272,7 +272,7 @@ class DemoView:
             self._finished = True
             return
 
-        font = require_runtime_resources(self.state).small_font
+        resources = require_runtime_resources(self.state)
 
         w = float(self.state.config.screen_width)
         h = float(self.state.config.screen_height)
@@ -284,7 +284,7 @@ class DemoView:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         scale = 1.0
         button_w = button_width(
-            font, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
+            resources, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
         )
         purchase_requested = button_update(
             self._purchase_button,
@@ -383,10 +383,10 @@ class DemoView:
         src = rl.Rectangle(0.0, 0.0, float(cl_logo.width), float(cl_logo.height))
         rl.draw_texture_pro(cl_logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
-        small = resources.small_font
         x_text = screen_w / 2.0 - 296.0 - wide_shift * 0.8
         y = screen_h / 2.0 - 104.0
         color = rl.Color(255, 255, 255, 255)
+        small = resources.small_font
         draw_small_text(small, _DEMO_PURCHASE_TITLE, Vec2(x_text, y), color)
         y += 28.0
         draw_small_text(small, _DEMO_PURCHASE_FEATURES_TITLE, Vec2(x_text, y), color)
@@ -406,12 +406,11 @@ class DemoView:
         button_base_pos = Vec2(screen_w / 2.0 + 128.0, button_base_y + 50.0)
         scale = 1.0
         button_w = button_width(
-            small, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
+            resources, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
         )
-        button_draw(resources, small, self._purchase_button, pos=button_base_pos, width=button_w, scale=scale)
+        button_draw(resources, self._purchase_button, pos=button_base_pos, width=button_w, scale=scale)
         button_draw(
             resources,
-            small,
             self._maybe_later_button,
             pos=button_base_pos.offset(dy=40.0),
             width=button_w,

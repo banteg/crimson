@@ -121,8 +121,9 @@ class OptionsMenuView(PanelMenuView):
         dt_ms = min(float(dt), 0.1) * 1000.0
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        resources = require_runtime_resources(self.state)
         width = button_width(
-            require_runtime_resources(self.state).small_font,
+            resources,
             self._controls_button.label,
             scale=scale,
             force_wide=self._controls_button.force_wide,
@@ -378,11 +379,10 @@ class OptionsMenuView(PanelMenuView):
 
         button_pos = base_pos.offset(dy=155.0 * scale)
         button_w = button_width(
-            font, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide,
+            resources, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide,
         )
         button_draw(
             resources,
-            font,
             self._controls_button,
             pos=button_pos,
             width=button_w,

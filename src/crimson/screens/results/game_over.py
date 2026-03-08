@@ -225,7 +225,7 @@ class GameOverUi(msgspec.Struct):
             def rand() -> int:
                 return 0
 
-        font = runtime_resources_for(self.assets_root).small_font
+        resources = runtime_resources_for(self.assets_root)
 
         if self._closing:
             self._intro_ms = max(0.0, float(self._intro_ms) - dt_ms)
@@ -314,7 +314,7 @@ class GameOverUi(msgspec.Struct):
             banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET * scale, 40.0 * scale)
             form_pos = banner_pos + Vec2(8.0 * scale, 84.0 * scale)
             ok_pos = form_pos + Vec2(170.0 * scale, 32.0 * scale)
-            ok_w = button_width(font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
+            ok_w = button_width(resources, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
             ok_clicked = button_update(self._ok_button, pos=ok_pos, width=ok_w, dt_ms=dt_ms, mouse=mouse, click=click)
 
             if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
@@ -343,7 +343,7 @@ class GameOverUi(msgspec.Struct):
             banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET * scale, 40.0 * scale)
             button_pos = banner_pos + Vec2(52.0 * scale, (210.0 if self.rank < TABLE_MAX else 208.0) * scale)
             play_again_w = button_width(
-                font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
+                resources, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
             )
             if button_update(
                 self._play_again_button,
@@ -360,7 +360,7 @@ class GameOverUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             high_scores_w = button_width(
-                font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
+                resources, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
             )
             if button_update(
                 self._high_scores_button,
@@ -377,7 +377,7 @@ class GameOverUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             main_menu_w = button_width(
-                font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
+                resources, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
             )
             if button_update(
                 self._main_menu_button,
@@ -665,7 +665,7 @@ class GameOverUi(msgspec.Struct):
                 rl.Color(0, 0, 0, 255),
             )
             draw_ui_text(
-                resources.small_font,
+                resources,
                 self.input_text,
                 input_pos + Vec2(4.0 * scale, 2.0 * scale),
                 scale=1.0 * scale,
@@ -681,10 +681,9 @@ class GameOverUi(msgspec.Struct):
             )
 
             ok_pos = form_pos + Vec2(170.0 * scale, 32.0 * scale)
-            ok_w = button_width(resources.small_font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
+            ok_w = button_width(resources, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
             button_draw(
                 resources,
-                resources.small_font,
                 self._ok_button,
                 pos=ok_pos,
                 width=ok_w,
@@ -731,14 +730,13 @@ class GameOverUi(msgspec.Struct):
         if self.phase == 1:
             button_pos = banner_pos + Vec2(52.0 * scale, (210.0 if self.rank < TABLE_MAX else 208.0) * scale)
             play_again_w = button_width(
-                resources.small_font,
+                resources,
                 self._play_again_button.label,
                 scale=scale,
                 force_wide=self._play_again_button.force_wide,
             )
             button_draw(
                 resources,
-                resources.small_font,
                 self._play_again_button,
                 pos=button_pos,
                 width=play_again_w,
@@ -747,14 +745,13 @@ class GameOverUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             high_scores_w = button_width(
-                resources.small_font,
+                resources,
                 self._high_scores_button.label,
                 scale=scale,
                 force_wide=self._high_scores_button.force_wide,
             )
             button_draw(
                 resources,
-                resources.small_font,
                 self._high_scores_button,
                 pos=button_pos,
                 width=high_scores_w,
@@ -763,14 +760,13 @@ class GameOverUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             main_menu_w = button_width(
-                resources.small_font,
+                resources,
                 self._main_menu_button.label,
                 scale=scale,
                 force_wide=self._main_menu_button.force_wide,
             )
             button_draw(
                 resources,
-                resources.small_font,
                 self._main_menu_button,
                 pos=button_pos,
                 width=main_menu_w,

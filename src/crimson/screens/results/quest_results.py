@@ -484,8 +484,7 @@ class QuestResultsUi(msgspec.Struct):
             input_pos = content_pos.offset(dy=150.0 * scale)
             ok_pos = input_pos + Vec2(170.0 * scale, -8.0 * scale)
             resources = runtime_resources_for(self.assets_root)
-            font = resources.small_font
-            ok_w = button_width(font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
+            ok_w = button_width(resources, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
             ok_clicked = button_update(self._ok_button, pos=ok_pos, width=ok_w, dt_ms=dt_ms, mouse=mouse, click=click)
 
             if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
@@ -546,10 +545,9 @@ class QuestResultsUi(msgspec.Struct):
 
             button_pos = Vec2(score_card_pos.x + 20.0 * scale, var_c_14 + 6.0 * scale)
             resources = runtime_resources_for(self.assets_root)
-            font = resources.small_font
 
             play_next_w = button_width(
-                font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
+                resources, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
             )
             if button_update(
                 self._play_next_button,
@@ -566,7 +564,7 @@ class QuestResultsUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             play_again_w = button_width(
-                font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
+                resources, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
             )
             if button_update(
                 self._play_again_button,
@@ -583,7 +581,7 @@ class QuestResultsUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             high_scores_w = button_width(
-                font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
+                resources, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
             )
             if button_update(
                 self._high_scores_button,
@@ -600,7 +598,7 @@ class QuestResultsUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             main_menu_w = button_width(
-                font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
+                resources, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
             )
             if button_update(
                 self._main_menu_button,
@@ -734,7 +732,7 @@ class QuestResultsUi(msgspec.Struct):
                 rl.Color(0, 0, 0, 255),
             )
             draw_ui_text(
-                font,
+                resources,
                 self.input_text,
                 input_pos + Vec2(4.0 * scale, 2.0 * scale),
                 scale=1.0 * scale,
@@ -750,8 +748,8 @@ class QuestResultsUi(msgspec.Struct):
             )
 
             ok_pos = input_pos + Vec2(170.0 * scale, -8.0 * scale)
-            ok_w = button_width(font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
-            button_draw(resources, font, self._ok_button, pos=ok_pos, width=ok_w, scale=scale)
+            ok_w = button_width(resources, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
+            button_draw(resources, self._ok_button, pos=ok_pos, width=ok_w, scale=scale)
 
             # Native phase 1 still renders the quest score card while entering the name.
             score_card_pos = input_pos + Vec2(26.0 * scale, 46.0 * scale)
@@ -818,11 +816,10 @@ class QuestResultsUi(msgspec.Struct):
             # Buttons
             button_pos = Vec2(score_card_pos.x + 20.0 * scale, var_c_14 + 6.0 * scale)
             play_next_w = button_width(
-                font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
+                resources, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
             )
             button_draw(
                 resources,
-                font,
                 self._play_next_button,
                 pos=button_pos,
                 width=play_next_w,
@@ -830,11 +827,10 @@ class QuestResultsUi(msgspec.Struct):
             )
             button_pos = button_pos.offset(dy=32.0 * scale)
             play_again_w = button_width(
-                font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
+                resources, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
             )
             button_draw(
                 resources,
-                font,
                 self._play_again_button,
                 pos=button_pos,
                 width=play_again_w,
@@ -842,11 +838,10 @@ class QuestResultsUi(msgspec.Struct):
             )
             button_pos = button_pos.offset(dy=32.0 * scale)
             high_scores_w = button_width(
-                font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
+                resources, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
             )
             button_draw(
                 resources,
-                font,
                 self._high_scores_button,
                 pos=button_pos,
                 width=high_scores_w,
@@ -854,11 +849,10 @@ class QuestResultsUi(msgspec.Struct):
             )
             button_pos = button_pos.offset(dy=32.0 * scale)
             main_menu_w = button_width(
-                font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
+                resources, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
             )
             button_draw(
                 resources,
-                font,
                 self._main_menu_button,
                 pos=button_pos,
                 width=main_menu_w,
