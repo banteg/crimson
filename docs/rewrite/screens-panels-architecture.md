@@ -16,16 +16,34 @@ behavior.
 
 Scope:
 
-- the menu and panel shell code under `src/crimson/screens/menu.py` and
-  `src/crimson/screens/panels/*`
+- the shared screen-chrome surface under `src/crimson/screens/menu.py`,
+  `src/crimson/screens/pause_menu.py`, and `src/crimson/screens/panels/*`
 - closely related panel-like screens that already duplicate the same shell
   (`StatisticsMenuView`, `CreditsView`, `AlienZooKeeperView`,
   `_DatabaseBaseView`)
 
-Out of scope for the first implementation pass:
+Implementation-wave scope:
+
+- the first code migration should prove the chrome against panel-like adopters
+  first:
+  - `PanelMenuView` and its direct subclasses
+  - `StatisticsMenuView`
+  - `_DatabaseBaseView`
+  - `CreditsView`
+  - `AlienZooKeeperView`
+- `MenuView` and `PauseMenuView` stay in architecture scope, but get their own
+  dedicated migration phase after the panel-like screens because they carry
+  extra behaviors that are central to validating the final shell:
+  - menu music policy
+  - idle-demo triggering
+  - sign lock/unlock behavior on quit
+  - pause-background entity alpha rules
+
+Out of scope for the first implementation wave:
 
 - result/game-over/quest-result screens
 - quest select / quest failed / end note screens
+- `HighScoresView`
 - changing action names or `GameLoopView` routing
 - changing visible timing, audio, or layout behavior unless explicitly called
   out and reviewed
@@ -292,11 +310,13 @@ The core runtime should own the repeated shell:
 - open/close bookkeeping
 - timeline stepping
 - close-transition handoff
-- pending action state
+- action dispatch state
 - cursor pulse stepping
-- audio update hook
+- audio update hook plus music policy evaluation where the screen needs it
 - menu-ground / pause-background selection
+- pause-background entity alpha policy
 - fade/sign/cursor drawing
+- sign lock / unlock / animation policy
 
 It should not know the details of any specific panel body.
 
@@ -308,17 +328,35 @@ Suggested internal types:
 
 - `ChromeSpec`
   - static configuration for a screen shell
-  - backdrop policy
-  - sign mode
+  - `BackdropPolicy`
+  - `MusicPolicy`
+  - `SignPolicy`
+  - `ActionDispatchPolicy`
   - open/close SFX
   - fade-to-game action set
   - layout kind
 - `ChromeState`
   - shared mutable runtime state for the shell
-  - `_timeline_ms`, `_closing`, `_pending_action`, and related fields
+  - `_timeline_ms`, `_closing`, action-buffer fields, idle timer fields, and
+    related state
 - `ChromeFrame`
   - per-frame resolved values passed into body/control code
-  - `resources`, `scale`, `interactive`, `mouse_pos`, panel origins, and timing
+  - `resources`, `scale`, `interactive`, `mouse_pos`, panel origins, sign
+    geometry, and timing
+- `BackdropPolicy`
+  - background source
+  - whether pause background is allowed
+  - entity alpha mode for pause-background-backed screens
+- `MusicPolicy`
+  - track selection
+  - whether the track is refreshed while open
+  - whether close transitions keep or stop music
+- `SignPolicy`
+  - static vs animated sign behavior
+  - lock-on-fully-open behavior
+  - unlock-on-actions behavior for quit or other exceptional flows
+- `ActionDispatchPolicy`
+  - how a close transition result is surfaced from the shell
 - `SinglePanelLayout`
 - `SplitPanelLayout`
 - `BackLabelLayout`
@@ -328,6 +366,42 @@ Suggested internal types:
 `ChromeState` can be a mutable `msgspec.Struct` or a small class if that proves
 clearer in implementation. The important point is that the framework should own
 this state in one place instead of every screen spelling it out manually.
+
+The policy structs matter because current screens already need them:
+
+- `MenuView` chooses music dynamically and unlocks the sign before quitting
+- `PauseMenuView` computes pause-background entity alpha during one close path
+- `StatisticsMenuView` chooses a different music policy from `MenuView`
+- `PanelMenuView` and siblings need a simpler static-sign policy
+
+If those behaviors are not modeled explicitly in the chrome contract, the
+abstraction will leak back into every adopter.
+
+### 2.5. Action dispatch modes are part of the contract
+
+The current screens do not all deliver actions the same way, so the shared
+chrome must model this intentionally instead of assuming a single
+`_pending_action` convention.
+
+Recommended `ActionDispatchPolicy` modes:
+
+- `pending_once`
+  - close transition writes to a pending slot
+  - `take_action()` drains it once
+  - used by `MenuView`, `PauseMenuView`, and the current `PanelMenuView` shape
+- `pending_rearm`
+  - close transition writes to a pending slot
+  - `take_action()` drains it and re-arms the shell to a fully-open state
+  - used by hub screens that remain mounted while a child screen is shown, such
+    as `StatisticsMenuView` and `_DatabaseBaseView`
+- `direct_action`
+  - close transition writes directly to the action slot consumed by
+    `take_action()`
+  - matches the current `HighScoresView` shape
+
+The chrome runtime should implement these modes directly so that adopters do not
+need to fork `take_action()` or the close-transition state machine just to get a
+different delivery contract.
 
 ### 3. Pure geometry helpers
 
@@ -367,12 +441,27 @@ Suggested adapters:
 - `DropdownController`
   - shared open/select/close behavior for the small dropdown widgets already
     used in Play Game, Controls, and High Scores
-- `ListDetailController`
-  - shared framed-list interaction for database-like screens
-  - selection, hover, wheel scroll, drag-scrollbar, and keyboard scroll
+- `ListViewportController`
+  - visible window management for framed lists
+  - row window math plus wheel or keyboard scroll
+- `ListSelectionController`
+  - hovered-row and selected-row semantics
+  - supports screens that only need hover-driven selection as well as screens
+    that keep a separate selected row
+- `ScrollbarController`
+  - track/thumb geometry and drag behavior
+- `ListDetailWidget`
+  - optional thin composition of the three smaller list primitives for screens
+    that really use the whole stack
 
 These adapters should update and draw against `ChromeFrame` plus a screen-local
 state object.
+
+This split matters for the current database screens:
+
+- `UnlockedWeaponsDatabaseView` only needs viewport math plus hover selection
+- `UnlockedPerksDatabaseView` additionally needs keyboard focus, distinct
+  selected vs hovered rows, and drag-scrollbar behavior
 
 ### 5. Concrete screen bodies
 
@@ -400,8 +489,9 @@ Recommended shape:
   - keep as the main menu class
   - rebuild on top of shared chrome plus `MenuEntryController`
 - `PauseMenuView`
-  - either keep separate for the first pass or adopt the same chrome with a
-    pause-background-specific spec
+  - keep as a separate adopter class
+  - migrate in the dedicated menu/pause phase with a pause-background-specific
+    `BackdropPolicy`
 - `PanelMenuView`
   - shrink into a thin adapter over shared chrome
   - default body is title/body text
@@ -482,7 +572,17 @@ The exact home is less important than keeping view files focused on view logic.
 - `CreditsView`
 - `AlienZooKeeperView`
 
-### Phase 4: optional adjacent adopters
+### Phase 4: migrate `MenuView` and `PauseMenuView`
+
+- `MenuView`
+- `PauseMenuView`
+- validate the menu-specific behaviors that the chrome contract must support:
+  - menu music selection/refresh
+  - idle-demo triggering
+  - sign lock/unlock semantics
+  - pause-background entity alpha behavior
+
+### Phase 5: optional adjacent adopters
 
 - `HighScoresView`
 - later, evaluate whether quest/result screens should share the same shell or a
@@ -494,6 +594,7 @@ Before refactoring, the current screen-focused baseline passes:
 
 ```bash
 uv run pytest \
+  tests/modes/test_menu_idle_demo.py \
   tests/screens/test_pause_menu_view.py \
   tests/screens/test_credits_view.py \
   tests/screens/test_stats_easter_egg.py \
@@ -511,24 +612,26 @@ The rewrite should add dedicated tests for:
 - open/close SFX behavior
 - fade-to-game actions
 - menu-ground vs pause-background selection
+- music policy selection and refresh behavior
+- sign lock/unlock semantics
+- pause-background entity alpha policy
+- idle-demo trigger behavior for `MenuView`
 - single-panel and split-panel geometry at `640` and `1024`
 - menu-entry controller hover/ready/alpha behavior
 - button-backed back control
 - dropdown open/select/close behavior
-- list/detail selection and scroll behavior
+- list viewport, selection, and scrollbar primitives
 - dirty-config close hook behavior
 
 ## Questions to tighten in review
 
 These are the main design questions worth resolving before code motion starts:
 
-1. Should `PauseMenuView` adopt the shared chrome in the first migration, or
-   remain a sibling until the panel rewrite settles?
-2. Should `HighScoresView` stay explicitly out of the first migration even if
+1. Should `HighScoresView` stay explicitly out of the first migration even if
    the new chrome makes it easy to adopt?
-3. Where should weapon/perk database availability helpers live long term:
+2. Where should weapon/perk database availability helpers live long term:
    panel-owned query helpers or domain-owned helpers?
-4. Should `ChromeState` be a `msgspec.Struct` or a small imperative helper
+3. Should `ChromeState` be a `msgspec.Struct` or a small imperative helper
    class with a `msgspec.Struct` only for immutable frame/spec values?
 
 ## Bottom line
