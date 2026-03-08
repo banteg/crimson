@@ -28,6 +28,11 @@ AIM_SCHEME_KEYS = (
     "aim_scheme_p4",
 )
 
+# Native config stores one 16-dword bind block per player. The slot order is:
+# move up/down/left/right, fire, two spare digital slots, torso left/right,
+# aim axis Y/X, move axis Y/X, then three unused tail slots. P1/P2 mirror the
+# original keyboard defaults; P3/P4 are rewrite-only extensions that preserve
+# the same block shape so the blob helpers can treat every player uniformly.
 _DEFAULT_PLAYER_BIND_BLOCKS: tuple[tuple[int, ...], ...] = (
     (
         0x11,
