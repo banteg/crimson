@@ -73,7 +73,6 @@ from ..sim.input_providers import (
     GameCommand,
     InputStatus,
     LocalInputProvider,
-    PerkMenuOpenCommand,
     PerkPickCommand,
     ResolvedTick,
     TickSupply,
@@ -90,8 +89,7 @@ from ..ui.hud import HudState, draw_target_health_bar
 from ..weapon_runtime import most_used_weapon_id_for_player
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import shots_from_state
-from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
-from .components.perk_prompt_controller import PerkPromptController
+from .components.perk_menu_controller import PerkMenuContext
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreatureDeath, CreaturePool
@@ -611,24 +609,6 @@ class BaseGameplayMode:
         assert font is not None, "small font must be loaded before ui text draw"
         draw_small_text(font, text, pos, color)
 
-    def _build_deferred_perk_menu(
-        self,
-        *,
-        on_pick: Callable[[int], bool],
-    ) -> tuple[PerkPromptController, PerkMenuController]:
-        prompt = PerkPromptController(
-            pending_count=lambda: int(self.state.perk_selection.pending_count),
-        )
-        return prompt, PerkMenuController(
-            on_close=prompt.reset_on_close,
-            on_pick=on_pick,
-            defer_pick_apply=True,
-        )
-
-    def _record_primary_perk_pick(self, choice_index: int) -> bool:
-        self.record_perk_pick_command(int(choice_index), player_index=0)
-        return True
-
     def _perk_menu_game_mode(self) -> GameMode:
         return self.default_game_mode_id
 
@@ -652,61 +632,6 @@ class BaseGameplayMode:
             resources=self.render_resources.resources,
             mouse=self._ui_mouse_pos(),
             play_sfx=self._perk_menu_play_sfx(),
-        )
-
-    def _record_perk_prompt_open_attempt(self) -> None:
-        recorder = self._replay_recorder
-        if recorder is not None:
-            self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
-
-    def _enqueue_perk_prompt_open_command(self) -> None:
-        self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
-
-    def _update_perk_prompt(
-        self,
-        *,
-        prompt: PerkPromptController,
-        menu: PerkMenuController,
-        dt: float,
-        dt_ui_ms: float,
-        paused: bool,
-        allow_input: bool = True,
-        allow_pulse: bool = True,
-        scale: float = 1.0,
-    ) -> None:
-        prompt.update(
-            menu=menu,
-            ctx=self._perk_menu_context(),
-            config=self.config,
-            dt=float(dt),
-            dt_ui_ms=float(dt_ui_ms),
-            any_alive=self._any_player_alive(),
-            paused=bool(paused),
-            allow_input=bool(allow_input),
-            allow_pulse=bool(allow_pulse),
-            scale=float(scale),
-            on_open_attempt=self._record_perk_prompt_open_attempt,
-            on_open_success=self._enqueue_perk_prompt_open_command,
-        )
-
-    def _draw_perk_prompt(
-        self,
-        *,
-        prompt: PerkPromptController,
-        menu: PerkMenuController,
-        text_color: rl.Color,
-        scale: float = 1.0,
-        hidden: bool = False,
-    ) -> None:
-        prompt.draw(
-            menu=menu,
-            any_alive=self._any_player_alive(),
-            config=self.config,
-            resources=self.render_resources.resources,
-            ui_text_width=self._ui_text_width,
-            text_color=text_color,
-            scale=float(scale),
-            hidden=bool(hidden),
         )
 
     def _ui_mouse_pos(self) -> rl.Vector2:

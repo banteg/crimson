@@ -1,62 +1,26 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from types import SimpleNamespace
-from typing import cast
 
 import crimson.modes.components.perk_prompt_controller as perk_prompt_controller_module
-from crimson.modes.components.perk_menu_controller import PerkMenuContext, PerkMenuController
-from crimson.modes.components.perk_prompt_controller import PerkPromptController
+from crimson.modes.components.perk_prompt_controller import PerkPromptState
 from grim.config import CrimsonConfig
-
-
-@dataclass
-class _MenuStub:
-    events: list[str] = field(default_factory=list)
-    open: bool = False
-    active: bool = False
-    handle_input_calls: list[tuple[float, float]] = field(default_factory=list)
-    timeline_ticks: list[float] = field(default_factory=list)
-
-    def handle_input(self, _ctx, *, dt: float, dt_ui_ms: float) -> None:
-        self.handle_input_calls.append((float(dt), float(dt_ui_ms)))
-
-    def open_if_available(self, _ctx) -> bool:
-        self.events.append("open")
-        self.open = True
-        self.active = True
-        return True
-
-    def tick_timeline(self, dt_ui_ms: float) -> None:
-        self.timeline_ticks.append(float(dt_ui_ms))
+from grim.raylib_api import rl
 
 
 def _config() -> CrimsonConfig:
-    return cast(
-        CrimsonConfig,
-        SimpleNamespace(
-            keybind_pick_perk=0x101,
-            ui_info_texts=True,
-        ),
+    return SimpleNamespace(  # type: ignore[return-value]
+        keybind_pick_perk=0x101,
+        ui_info_texts=True,
     )
 
 
-def _ctx() -> PerkMenuContext:
-    resources = SimpleNamespace(texture=lambda _texture_id: SimpleNamespace(width=64, height=32))
-    return cast(
-        PerkMenuContext,
-        SimpleNamespace(
-            resources=resources,
-            mouse=SimpleNamespace(x=0.0, y=0.0),
-            player_count=1,
-        ),
-    )
+def _resources() -> object:
+    return SimpleNamespace(texture=lambda _texture_id: SimpleNamespace(width=64, height=32))
 
 
-def test_perk_prompt_controller_opens_menu_from_pick_key_before_success_callback(mocker) -> None:
-    controller = PerkPromptController(pending_count=lambda: 1)
-    events: list[str] = []
-    menu = _MenuStub(events=events)
+def test_perk_prompt_state_requests_open_from_pick_key(mocker) -> None:
+    prompt = PerkPromptState()
 
     mocker.patch.object(
         perk_prompt_controller_module,
@@ -79,26 +43,24 @@ def test_perk_prompt_controller_opens_menu_from_pick_key_before_success_callback
         return_value=False,
     )
 
-    controller.update(
-        menu=cast(PerkMenuController, menu),
-        ctx=_ctx(),
+    opened = prompt.update(
         config=_config(),
-        dt=1.0 / 60.0,
-        dt_ui_ms=16.0,
+        resources=_resources(),  # type: ignore[arg-type]
+        mouse=rl.Vector2(0.0, 0.0),
+        pending_count=1,
+        player_count=1,
         any_alive=True,
+        menu_active=False,
         paused=False,
-        on_open_attempt=lambda: events.append("attempt"),
-        on_open_success=lambda: events.append("success"),
+        dt_ui_ms=16.0,
     )
 
-    assert events == ["attempt", "open", "success"]
-    assert menu.timeline_ticks == [16.0]
+    assert opened is True
+    assert prompt.pulse == 968.0
 
 
-def test_perk_prompt_controller_opens_menu_from_prompt_hover_click(mocker) -> None:
-    controller = PerkPromptController(pending_count=lambda: 1)
-    events: list[str] = []
-    menu = _MenuStub(events=events)
+def test_perk_prompt_state_requests_open_from_hover_click(mocker) -> None:
+    prompt = PerkPromptState()
 
     mocker.patch.object(
         perk_prompt_controller_module,
@@ -121,25 +83,24 @@ def test_perk_prompt_controller_opens_menu_from_prompt_hover_click(mocker) -> No
         return_value=SimpleNamespace(contains=lambda _mouse: True),
     )
 
-    controller.update(
-        menu=cast(PerkMenuController, menu),
-        ctx=_ctx(),
+    opened = prompt.update(
         config=_config(),
-        dt=1.0 / 60.0,
-        dt_ui_ms=16.0,
+        resources=_resources(),  # type: ignore[arg-type]
+        mouse=rl.Vector2(0.0, 0.0),
+        pending_count=1,
+        player_count=1,
         any_alive=True,
+        menu_active=False,
         paused=False,
-        on_open_attempt=lambda: events.append("attempt"),
-        on_open_success=lambda: events.append("success"),
+        dt_ui_ms=16.0,
     )
 
-    assert events == ["attempt", "open", "success"]
+    assert opened is True
+    assert prompt.hover is True
 
 
-def test_perk_prompt_controller_blocks_open_when_input_is_disabled(mocker) -> None:
-    controller = PerkPromptController(pending_count=lambda: 1)
-    menu = _MenuStub()
-    events: list[str] = []
+def test_perk_prompt_state_blocks_open_when_input_is_disabled(mocker) -> None:
+    prompt = PerkPromptState()
 
     mocker.patch.object(
         perk_prompt_controller_module,
@@ -157,19 +118,18 @@ def test_perk_prompt_controller_blocks_open_when_input_is_disabled(mocker) -> No
         return_value=False,
     )
 
-    controller.update(
-        menu=cast(PerkMenuController, menu),
-        ctx=_ctx(),
+    opened = prompt.update(
         config=_config(),
-        dt=1.0 / 60.0,
-        dt_ui_ms=16.0,
+        resources=_resources(),  # type: ignore[arg-type]
+        mouse=rl.Vector2(0.0, 0.0),
+        pending_count=1,
+        player_count=1,
         any_alive=True,
+        menu_active=False,
         paused=False,
+        dt_ui_ms=16.0,
         allow_input=False,
-        on_open_attempt=lambda: events.append("attempt"),
-        on_open_success=lambda: events.append("success"),
     )
 
-    assert events == []
-    assert menu.handle_input_calls == []
-    assert menu.timeline_ticks == [16.0]
+    assert opened is False
+    assert prompt.pulse == 0.0

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 
 from grim.assets import RuntimeResources
 from grim.config import CrimsonConfig
@@ -13,81 +14,71 @@ from ...input_codes import (
     input_code_is_pressed_for_player,
     input_primary_just_pressed,
 )
-from .perk_menu_controller import PerkMenuContext, PerkMenuController
 from .perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
 
-PendingCountFn = Callable[[], int]
-OnPromptOpenFn = Callable[[], None]
 UiTextWidthFn = Callable[[str, float], int]
 
 
-class PerkPromptController:
-    def __init__(self, *, pending_count: PendingCountFn) -> None:
-        self._pending_count = pending_count
-        self.reset()
+@dataclass(slots=True)
+class PerkPromptState:
+    timer_ms: float = 0.0
+    hover: bool = False
+    pulse: float = 0.0
 
     def reset(self) -> None:
-        self._timer_ms = 0.0
-        self._hover = False
-        self._pulse = 0.0
+        self.timer_ms = 0.0
+        self.hover = False
+        self.pulse = 0.0
 
-    def reset_on_close(self) -> None:
-        if int(self._pending_count()) > 0:
+    def reset_if_pending(self, *, pending_count: int) -> None:
+        if int(pending_count) > 0:
             self.reset()
 
     def update(
         self,
         *,
-        menu: PerkMenuController,
-        ctx: PerkMenuContext,
         config: CrimsonConfig,
-        dt: float,
-        dt_ui_ms: float,
+        resources: RuntimeResources,
+        mouse: rl.Vector2,
+        pending_count: int,
+        player_count: int,
         any_alive: bool,
+        menu_active: bool,
         paused: bool,
+        dt_ui_ms: float,
         allow_input: bool = True,
         allow_pulse: bool = True,
         scale: float = 1.0,
-        on_open_attempt: OnPromptOpenFn,
-        on_open_success: OnPromptOpenFn,
-    ) -> None:
-        pending_count = int(self._pending_count())
-        prompt_pending = pending_count > 0 and bool(any_alive)
+    ) -> bool:
+        prompt_pending = int(pending_count) > 0 and bool(any_alive)
+        self.hover = False
+        open_requested = False
 
-        self._hover = False
-        if menu.open and allow_input:
-            menu.handle_input(ctx, dt=float(dt), dt_ui_ms=float(dt_ui_ms))
-
-        menu_active = menu.active
         if allow_input and (not menu_active) and prompt_pending and (not paused):
-            label = PerkPromptUi.label(config, pending_count=pending_count)
+            label = PerkPromptUi.label(config, pending_count=int(pending_count))
             if label:
-                rect = PerkPromptUi.rect(resources=ctx.resources, scale=scale)
-                self._hover = rect.contains(ctx.mouse)
-            if self._prompt_open_requested(config=config, player_count=int(ctx.player_count)):
-                self._pulse = 1000.0
-                on_open_attempt()
-                opened = menu.open_if_available(ctx)
-                if opened:
-                    on_open_success()
+                rect = PerkPromptUi.rect(resources=resources, scale=scale)
+                self.hover = rect.contains(mouse)
+            if self._prompt_open_requested(config=config, player_count=int(player_count)):
+                self.pulse = 1000.0
+                open_requested = True
 
-        menu_active = menu.active
         if allow_pulse:
-            pulse_delta = float(dt_ui_ms) * (6.0 if self._hover else -2.0)
-            self._pulse = clamp(self._pulse + pulse_delta, 0.0, 1000.0)
+            pulse_delta = float(dt_ui_ms) * (6.0 if self.hover else -2.0)
+            self.pulse = clamp(self.pulse + pulse_delta, 0.0, 1000.0)
 
         if prompt_pending and (not menu_active) and (not paused):
             delta = float(dt_ui_ms)
         else:
             delta = -float(dt_ui_ms)
-        self._timer_ms = clamp(self._timer_ms + delta, 0.0, PERK_PROMPT_MAX_TIMER_MS)
-
-        menu.tick_timeline(float(dt_ui_ms))
+        self.timer_ms = clamp(self.timer_ms + delta, 0.0, PERK_PROMPT_MAX_TIMER_MS)
+        return bool(open_requested)
 
     def draw(
         self,
         *,
-        menu: PerkMenuController,
+        pending_count: int,
+        menu_active: bool,
         any_alive: bool,
         config: CrimsonConfig,
         resources: RuntimeResources,
@@ -96,19 +87,18 @@ class PerkPromptController:
         scale: float = 1.0,
         hidden: bool = False,
     ) -> None:
-        if hidden or menu.active or (not any_alive):
+        if hidden or menu_active or (not any_alive):
             return
-        pending_count = int(self._pending_count())
-        if pending_count <= 0:
+        if int(pending_count) <= 0:
             return
-        label = PerkPromptUi.label(config, pending_count=pending_count)
+        label = PerkPromptUi.label(config, pending_count=int(pending_count))
         if not label:
             return
         PerkPromptUi.draw(
             resources=resources,
             label=label,
-            timer_ms=float(self._timer_ms),
-            pulse=float(self._pulse),
+            timer_ms=float(self.timer_ms),
+            pulse=float(self.pulse),
             ui_text_width=ui_text_width,
             text_color=text_color,
             scale=scale,
@@ -125,4 +115,4 @@ class PerkPromptController:
             not input_code_is_down_for_player(fire_key, player_index=0)
         ):
             return True
-        return self._hover and input_primary_just_pressed(config, player_count=player_count)
+        return self.hover and input_primary_just_pressed(config, player_count=player_count)

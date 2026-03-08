@@ -10,7 +10,10 @@ from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawn
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..gameplay import survival_update_weapon_handouts
-from ..perks.selection import perk_selection_current_choices, perk_selection_pick
+from ..perks.selection import (
+    perk_selection_pick_prepared,
+    perk_selection_prepare_choices,
+)
 from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
@@ -270,20 +273,25 @@ class DeterministicSession(msgspec.Struct):
         for cmd in (commands or ()):
             match cmd:
                 case PerkPickCommand(choice_index=ci):
-                    picked = perk_selection_pick(
+                    perk_selection_prepare_choices(
+                        self.world.state,
+                        self.world.players,
+                        self.world.state.perk_selection,
+                        game_mode=self.game_mode,
+                        player_count=len(self.world.players),
+                    )
+                    picked = perk_selection_pick_prepared(
                         self.world.state,
                         self.world.players,
                         self.world.state.perk_selection,
                         ci,
-                        game_mode=self.game_mode,
-                        player_count=len(self.world.players),
                         dt=float(timing.dt_sim),
                         creatures=self.world.creatures.entries,
                     )
                     if picked is not None:
                         # Eagerly regenerate choices so the RNG sequence matches
                         # the recording path (pick sets choices_dirty=True).
-                        perk_selection_current_choices(
+                        perk_selection_prepare_choices(
                             self.world.state,
                             self.world.players,
                             self.world.state.perk_selection,
@@ -292,7 +300,7 @@ class DeterministicSession(msgspec.Struct):
                         )
                         post_apply_sfx_keys.append("sfx_ui_bonus")
                 case PerkMenuOpenCommand():
-                    perk_selection_current_choices(
+                    perk_selection_prepare_choices(
                         self.world.state,
                         self.world.players,
                         self.world.state.perk_selection,
