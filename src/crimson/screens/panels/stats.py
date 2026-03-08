@@ -360,7 +360,7 @@ class StatisticsMenuView:
         )
 
         self._draw_sign(scale=scale)
-        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
     def _draw_sign(self, *, scale: float) -> None:
         sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)

@@ -595,7 +595,7 @@ class CreditsView:
             )
 
         self._draw_sign()
-        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
     def _draw_sign(self) -> None:
         sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)

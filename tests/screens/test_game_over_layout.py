@@ -258,11 +258,12 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
         pos=Vec2(0.0, 0.0),
         record=record,
         resources=_resources_for_score_card(),
+        font=_resources_for_score_card().small_font,
         alpha=1.0,
         show_weapon_row=True,
         scale=1.0,
         mouse=rl.Vector2(-1000.0, -1000.0),
     )
 
-    captured_text = [str(call.args[1]) for call in draw_small.call_args_list]
+    captured_text = [str(call.args[2]) for call in draw_small.call_args_list]
     assert expected_tooltip in captured_text

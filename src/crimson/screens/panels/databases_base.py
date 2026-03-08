@@ -266,7 +266,7 @@ class _DatabaseBaseView:
         )
 
         self._draw_sign()
-        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
     def _back_button_pos(self) -> Vec2:
         raise NotImplementedError

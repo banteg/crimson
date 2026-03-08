@@ -8,7 +8,7 @@ import msgspec
 
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
-from grim.fonts.small import draw_small_text, measure_small_text_width
+from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
@@ -176,11 +176,13 @@ class GameOverUi(msgspec.Struct):
             return 1.0
         return alpha
 
-    def _text_width(self, text: str, scale: float) -> float:
-        return float(measure_small_text_width(runtime_resources_for(self.assets_root).small_font, text))
+    def _text_width(self, font: SmallFontData, text: str, scale: float) -> float:
+        del scale
+        return float(measure_small_text_width(font, text))
 
-    def _draw_small(self, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
-        draw_small_text(runtime_resources_for(self.assets_root).small_font, text, pos, color)
+    def _draw_small(self, font: SmallFontData, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
+        del scale
+        draw_small_text(font, text, pos, color)
 
     def _panel_layout(self, *, screen_w: float, scale: float) -> _GameOverPanelLayout:
         # Keep consistent with the main menu panel offsets.
@@ -222,6 +224,8 @@ class GameOverUi(msgspec.Struct):
 
             def rand() -> int:
                 return 0
+
+        font = runtime_resources_for(self.assets_root).small_font
 
         if self._closing:
             self._intro_ms = max(0.0, float(self._intro_ms) - dt_ms)
@@ -310,7 +314,6 @@ class GameOverUi(msgspec.Struct):
             banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET * scale, 40.0 * scale)
             form_pos = banner_pos + Vec2(8.0 * scale, 84.0 * scale)
             ok_pos = form_pos + Vec2(170.0 * scale, 32.0 * scale)
-            font = runtime_resources_for(self.assets_root).small_font
             ok_w = button_width(font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
             ok_clicked = button_update(self._ok_button, pos=ok_pos, width=ok_w, dt_ms=dt_ms, mouse=mouse, click=click)
 
@@ -339,8 +342,6 @@ class GameOverUi(msgspec.Struct):
             panel_layout = self._panel_layout(screen_w=screen_w, scale=scale)
             banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET * scale, 40.0 * scale)
             button_pos = banner_pos + Vec2(52.0 * scale, (210.0 if self.rank < TABLE_MAX else 208.0) * scale)
-            font = runtime_resources_for(self.assets_root).small_font
-
             play_again_w = button_width(
                 font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
             )
@@ -398,6 +399,7 @@ class GameOverUi(msgspec.Struct):
         pos: Vec2,
         record: HighScoreRecord,
         resources: RuntimeResources,
+        font: SmallFontData,
         alpha: float,
         show_weapon_row: bool,
         scale: float,
@@ -417,8 +419,9 @@ class GameOverUi(msgspec.Struct):
 
         # Left column: Score + value + Rank.
         score_label = "Score"
-        score_label_w = self._text_width(score_label, 1.0 * scale)
+        score_label_w = self._text_width(font, score_label, 1.0 * scale)
         self._draw_small(
+            font,
             score_label,
             card_origin.offset(dx=32.0 * scale - score_label_w * 0.5),
             1.0 * scale,
@@ -431,8 +434,9 @@ class GameOverUi(msgspec.Struct):
                 score_value = f"{seconds:.2f} secs"
             case _:
                 score_value = f"{int(record.score_xp)}"
-        score_value_w = self._text_width(score_value, 1.0 * scale)
+        score_value_w = self._text_width(font, score_value, 1.0 * scale)
         self._draw_small(
+            font,
             score_value,
             card_origin + Vec2(32.0 * scale - score_value_w * 0.5, 15.0 * scale),
             1.0 * scale,
@@ -441,8 +445,9 @@ class GameOverUi(msgspec.Struct):
 
         rank_value = format_ordinal(int(self.rank) + 1)
         rank_text = f"Rank: {rank_value}"
-        rank_w = self._text_width(rank_text, 1.0 * scale)
+        rank_w = self._text_width(font, rank_text, 1.0 * scale)
         self._draw_small(
+            font,
             rank_text,
             card_origin + Vec2(32.0 * scale - rank_w * 0.5, 30.0 * scale),
             1.0 * scale,
@@ -463,10 +468,11 @@ class GameOverUi(msgspec.Struct):
         col2_pos = card_origin.offset(dx=96.0 * scale)
         match mode_id:
             case GameMode.QUESTS:
-                self._draw_small("Experience", col2_pos, 1.0 * scale, label_color)
+                self._draw_small(font, "Experience", col2_pos, 1.0 * scale, label_color)
                 xp_value = f"{int(record.score_xp)}"
-                xp_w = self._text_width(xp_value, 1.0 * scale)
+                xp_w = self._text_width(font, xp_value, 1.0 * scale)
                 self._draw_small(
+                    font,
                     xp_value,
                     col2_pos + Vec2(32.0 * scale - xp_w * 0.5, 15.0 * scale),
                     1.0 * scale,
@@ -474,7 +480,7 @@ class GameOverUi(msgspec.Struct):
                 )
                 self._hover_time = max(0.0, float(self._hover_time) - dt_hover)
             case _:
-                self._draw_small("Game time", col2_pos.offset(dx=6.0 * scale), 1.0 * scale, label_color)
+                self._draw_small(font, "Game time", col2_pos.offset(dx=6.0 * scale), 1.0 * scale, label_color)
                 time_rect_pos = col2_pos + Vec2(8.0 * scale, 16.0 * scale)
                 time_rect = Rect.from_top_left(time_rect_pos, 64.0 * scale, 29.0 * scale)
                 hovering_time = time_rect.contains(mouse)
@@ -509,7 +515,7 @@ class GameOverUi(msgspec.Struct):
                 )
 
                 time_text = format_time_mm_ss(elapsed_ms)
-                self._draw_small(time_text, col2_pos + Vec2(40.0 * scale, 19.0 * scale), 1.0 * scale, label_color)
+                self._draw_small(font, time_text, col2_pos + Vec2(40.0 * scale, 19.0 * scale), 1.0 * scale, label_color)
 
         # Second row: weapon icon + frags + hit ratio (suppressed while entering the name).
         row_pos = card_origin.offset(dy=52.0 * scale)
@@ -533,19 +539,19 @@ class GameOverUi(msgspec.Struct):
 
             weapon_id = record.most_used_weapon_id
             weapon_name = weapon_display_name(weapon_id, preserve_bugs=bool(self.preserve_bugs))
-            name_w = self._text_width(weapon_name, 1.0 * scale)
+            name_w = self._text_width(font, weapon_name, 1.0 * scale)
             name_pos = Vec2(card_origin.x + max(0.0, (32.0 * scale - name_w * 0.5)), row_pos.y + 32.0 * scale)
-            self._draw_small(weapon_name, name_pos, 1.0 * scale, hint_color)
+            self._draw_small(font, weapon_name, name_pos, 1.0 * scale, hint_color)
 
             frags_text = f"Frags: {int(record.creature_kill_count)}"
             stats_pos = row_pos.offset(dx=110.0 * scale)
-            self._draw_small(frags_text, stats_pos.offset(dy=1.0 * scale), 1.0 * scale, label_color)
+            self._draw_small(font, frags_text, stats_pos.offset(dy=1.0 * scale), 1.0 * scale, label_color)
 
             fired = max(0, int(record.shots_fired))
             hit = max(0, int(record.shots_hit))
             ratio = int((hit * 100) / fired) if fired > 0 else 0
             hit_text = f"Hit %: {ratio}%"
-            self._draw_small(hit_text, stats_pos.offset(dy=15.0 * scale), 1.0 * scale, label_color)
+            self._draw_small(font, hit_text, stats_pos.offset(dy=15.0 * scale), 1.0 * scale, label_color)
 
             hit_rect_pos = stats_pos.offset(dy=15.0 * scale)
             hit_rect = Rect.from_top_left(hit_rect_pos, 64.0 * scale, 17.0 * scale)
@@ -567,6 +573,7 @@ class GameOverUi(msgspec.Struct):
             t = (self._hover_weapon - 0.5) * 2.0
             col = rl.Color(label_color.r, label_color.g, label_color.b, int(255 * alpha * t))
             self._draw_small(
+                font,
                 "Most used weapon during the game",
                 tooltip_pos.offset(dx=-20.0 * scale),
                 1.0 * scale,
@@ -576,6 +583,7 @@ class GameOverUi(msgspec.Struct):
             t = (self._hover_time - 0.5) * 2.0
             col = rl.Color(label_color.r, label_color.g, label_color.b, int(255 * alpha * t))
             self._draw_small(
+                font,
                 "The time the game lasted",
                 tooltip_pos.offset(dx=12.0 * scale),
                 1.0 * scale,
@@ -590,6 +598,7 @@ class GameOverUi(msgspec.Struct):
                 else "The % of bullets that hit the target"
             )
             self._draw_small(
+                font,
                 hit_ratio_tooltip,
                 tooltip_pos.offset(dx=-22.0 * scale),
                 1.0 * scale,
@@ -606,6 +615,7 @@ class GameOverUi(msgspec.Struct):
     ) -> None:
         if mouse is None:
             mouse = rl.get_mouse_position()
+        font = resources.small_font
 
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
@@ -641,7 +651,7 @@ class GameOverUi(msgspec.Struct):
 
         if self.phase == 0:
             form_pos = banner_pos + Vec2(8.0 * scale, 84.0 * scale)
-            self._draw_small("State your name, trooper!", form_pos.offset(dx=42.0 * scale), 1.0 * scale, COLOR_TEXT)
+            self._draw_small(font, "State your name, trooper!", form_pos.offset(dx=42.0 * scale), 1.0 * scale, COLOR_TEXT)
 
             input_pos = form_pos.offset(dy=40.0 * scale)
             rl.draw_rectangle_lines(
@@ -665,7 +675,7 @@ class GameOverUi(msgspec.Struct):
             if math.sin(float(rl.get_time()) * 4.0) > 0.0:
                 caret_alpha = 0.4
             caret_color = rl.Color(255, 255, 255, int(255 * caret_alpha))
-            caret_x = input_pos.x + 4.0 * scale + self._text_width(self.input_text[: self.input_caret], 1.0 * scale)
+            caret_x = input_pos.x + 4.0 * scale + self._text_width(font, self.input_text[: self.input_caret], 1.0 * scale)
             rl.draw_rectangle(
                 int(caret_x), int(input_pos.y + 2.0 * scale), int(1.0 * scale), int(14.0 * scale), caret_color,
             )
@@ -686,6 +696,7 @@ class GameOverUi(msgspec.Struct):
                 pos=score_pos,
                 record=record,
                 resources=resources,
+                font=font,
                 alpha=1.0,
                 show_weapon_row=False,
                 scale=scale,
@@ -698,6 +709,7 @@ class GameOverUi(msgspec.Struct):
             )
             if self.rank >= TABLE_MAX and banner_kind == "reaper":
                 self._draw_small(
+                    font,
                     "Score too low for top100.",
                     banner_pos + Vec2(38.0 * scale, 62.0 * scale),
                     1.0 * scale,
@@ -708,6 +720,7 @@ class GameOverUi(msgspec.Struct):
                 pos=score_card_pos,
                 record=record,
                 resources=resources,
+                font=font,
                 alpha=1.0,
                 show_weapon_row=True,
                 scale=scale,

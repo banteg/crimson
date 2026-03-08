@@ -101,7 +101,7 @@ def _patch_draw_environment(
         QuestResultsUi,
         "_text_width",
         autospec=True,
-        side_effect=lambda _self, text, _scale: float(len(text) * 8),
+        side_effect=lambda _self, _font, text, _scale: float(len(text) * 8),
     )
     draw_small = mocker.patch.object(
         QuestResultsUi,
@@ -118,7 +118,7 @@ def test_quest_results_name_entry_draws_stats_card(tmp_path: Path, mocker) -> No
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
-    captured_text = [str(call.args[1]) for call in draw_small.call_args_list]
+    captured_text = [str(call.args[2]) for call in draw_small.call_args_list]
     assert "State your name, trooper!" in captured_text
     assert "Score" in captured_text
     assert "Experience" in captured_text
@@ -136,7 +136,7 @@ def test_quest_results_name_prompt_preserve_bugs(tmp_path: Path, mocker) -> None
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
-    captured_text = [str(call.args[1]) for call in draw_small.call_args_list]
+    captured_text = [str(call.args[2]) for call in draw_small.call_args_list]
     assert "State your name trooper!" in captured_text
     assert "State your name, trooper!" not in captured_text
 
@@ -148,7 +148,7 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(tmp_path: Path,
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
     draw_map = {
-        str(call.args[1]): (float(call.args[2].x), float(call.args[2].y), call.args[4])
+        str(call.args[2]): (float(call.args[3].x), float(call.args[3].y), call.args[5])
         for call in draw_small.call_args_list
     }
 
@@ -181,7 +181,7 @@ def test_quest_results_buttons_phase_keeps_weapon_stats_hidden(tmp_path: Path, m
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
-    captured_text = [str(call.args[1]) for call in draw_small.call_args_list]
+    captured_text = [str(call.args[2]) for call in draw_small.call_args_list]
     assert "Score" in captured_text
     assert "Experience" in captured_text
     assert "Frags: 10" not in captured_text

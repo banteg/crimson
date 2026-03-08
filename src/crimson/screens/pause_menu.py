@@ -159,7 +159,11 @@ class PauseMenuView:
 
         self._draw_menu_items()
         self._draw_menu_sign()
-        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(
+            self.state,
+            resources=require_runtime_resources(self.state),
+            pulse_time=self._cursor_pulse_time,
+        )
 
     def take_action(self) -> str | None:
         self._assert_open()

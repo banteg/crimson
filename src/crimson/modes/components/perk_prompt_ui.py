@@ -8,7 +8,7 @@ from grim.fonts.small import SmallFontData
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
-from ...ui.perk_menu import draw_ui_text, texture_loaded
+from ...ui.perk_menu import draw_ui_text
 
 PERK_PROMPT_MAX_TIMER_MS = 200.0
 PERK_PROMPT_OUTSET_X = 50.0
@@ -62,8 +62,6 @@ class PerkPromptUi:
     ) -> Rect:
         hinge = cls.hinge()
         tex = resources.texture(TextureId.UI_MENU_ITEM)
-        if not texture_loaded(tex):
-            raise AssertionError("perk prompt menu-item texture must be loaded before use")
         bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
         bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
         local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
@@ -104,8 +102,6 @@ class PerkPromptUi:
         draw_ui_text(font, label, Vec2(x, y), scale=text_scale, color=color)
 
         tex = resources.texture(TextureId.UI_MENU_ITEM)
-        if not texture_loaded(tex):
-            raise AssertionError("perk prompt menu-item texture must be loaded before use")
         bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
         bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
         local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
@@ -119,8 +115,6 @@ class PerkPromptUi:
         rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
 
         tex = resources.texture(TextureId.UI_TEXT_LEVEL_UP)
-        if not texture_loaded(tex):
-            raise AssertionError("perk prompt level-up texture must be loaded before use")
         local_x = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_X * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_X
         local_y = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_Y * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_Y
         w = PERK_PROMPT_LEVEL_UP_BASE_W * PERK_PROMPT_LEVEL_UP_SCALE

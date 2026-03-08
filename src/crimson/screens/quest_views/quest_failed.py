@@ -249,7 +249,7 @@ class QuestFailedView:
             scale=scale,
         )
 
-        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._action

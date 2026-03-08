@@ -167,31 +167,24 @@ def perk_menu_panel_slide_x(t_ms: float, *, width: float) -> float:
     )
 
 
-def texture_loaded(texture: rl.Texture | None) -> bool:
-    return texture is not None and int(texture.width) > 0 and int(texture.height) > 0
-
-
-def _ui_text_width(font: SmallFontData | None, text: str, scale: float) -> float:
-    if font is None:
-        return rl.measure_text(text, int(20 * scale))
+def _ui_text_width(font: SmallFontData, text: str, scale: float) -> float:
+    del scale
     return measure_small_text_width(font, text)
 
 
 def draw_ui_text(
-    font: SmallFontData | None,
+    font: SmallFontData,
     text: str,
     pos: Vec2,
     *,
     scale: float,
     color: rl.Color,
 ) -> None:
-    if font is not None:
-        draw_small_text(font, text, pos, color)
-    else:
-        rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
+    del scale
+    draw_small_text(font, text, pos, color)
 
 
-def wrap_ui_text(font: SmallFontData | None, text: str, *, max_width: float, scale: float) -> list[str]:
+def wrap_ui_text(font: SmallFontData, text: str, *, max_width: float, scale: float) -> list[str]:
     lines: list[str] = []
     for raw in text.splitlines() or [""]:
         para = raw.strip()
@@ -212,7 +205,7 @@ def wrap_ui_text(font: SmallFontData | None, text: str, *, max_width: float, sca
 
 
 def draw_wrapped_ui_text_in_rect(
-    font: SmallFontData | None,
+    font: SmallFontData,
     text: str,
     *,
     rect: Rect,
@@ -235,14 +228,14 @@ MENU_ITEM_ALPHA_IDLE = 0.6
 MENU_ITEM_ALPHA_HOVER = 1.0
 
 
-def menu_item_hit_rect(font: SmallFontData | None, label: str, *, pos: Vec2, scale: float) -> Rect:
+def menu_item_hit_rect(font: SmallFontData, label: str, *, pos: Vec2, scale: float) -> Rect:
     width = _ui_text_width(font, label, scale)
     height = 16.0 * scale
     return Rect.from_top_left(pos, width, height)
 
 
 def draw_menu_item(
-    font: SmallFontData | None,
+    font: SmallFontData,
     label: str,
     *,
     pos: Vec2,
@@ -277,7 +270,7 @@ def _resolve_button_textures(resources: RuntimeResources) -> tuple[rl.Texture, r
     )
 
 
-def button_width(font: SmallFontData | None, label: str, *, scale: float, force_wide: bool) -> float:
+def button_width(font: SmallFontData, label: str, *, scale: float, force_wide: bool) -> float:
     text_w = _ui_text_width(font, label, scale)
     if force_wide:
         return 145.0 * scale
@@ -319,7 +312,7 @@ def button_update(
 
 def button_draw(
     resources: RuntimeResources,
-    font: SmallFontData | None,
+    font: SmallFontData,
     state: UiButtonState,
     *,
     pos: Vec2,
@@ -328,8 +321,6 @@ def button_draw(
 ) -> None:
     button_sm, button_md = _resolve_button_textures(resources)
     texture = button_md if width > 120.0 * scale else button_sm
-    if not texture_loaded(texture):
-        return
 
     if state.hover_t > 0:
         # ui_button_update: highlight fill uses a hover-scaled alpha and click-biased blue tint.
@@ -374,8 +365,6 @@ def button_draw(
 
 def cursor_draw(resources: RuntimeResources, *, mouse: rl.Vector2, scale: float, alpha: float = 1.0) -> None:
     tex = resources.texture(TextureId.UI_CURSOR)
-    if not texture_loaded(tex):
-        return
     a = int(255 * clamp(alpha, 0.0, 1.0))
     tint = rl.Color(255, 255, 255, a)
     size = 32.0 * scale

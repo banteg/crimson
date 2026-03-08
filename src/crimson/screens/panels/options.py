@@ -147,7 +147,11 @@ class OptionsMenuView(PanelMenuView):
         self._draw_entry(entry)
         self._draw_sign()
         self._draw_options_contents()
-        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(
+            self.state,
+            resources=require_runtime_resources(self.state),
+            pulse_time=self._cursor_pulse_time,
+        )
 
     def _begin_close_transition(self, action: str) -> None:
         if self._dirty:

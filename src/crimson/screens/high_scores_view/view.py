@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from crimson.quests.level import QuestLevel
-from grim.assets import TextureId
+from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_sfx, update_audio
-from grim.fonts.small import measure_small_text_width
+from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -176,7 +176,8 @@ class HighScoresView:
 
         screen_width = float(self.state.config.screen_width)
         scale = 1.0
-        font = require_runtime_resources(self.state).small_font
+        resources = require_runtime_resources(self.state)
+        font = resources.small_font
 
         # Compute animated panel positions so hit-tests match the draw path even while sliding.
         panel_w = MENU_PANEL_WIDTH * scale
@@ -204,9 +205,18 @@ class HighScoresView:
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
         if enabled:
-            if self._update_right_panel_widgets(right_top_left=right_panel_top_left, scale=scale):
+            if self._update_right_panel_widgets(
+                right_top_left=right_panel_top_left,
+                scale=scale,
+                resources=resources,
+                font=font,
+            ):
                 return
-            if self._update_quest_arrows(left_panel_top_left=left_panel_top_left, scale=scale):
+            if self._update_quest_arrows(
+                left_panel_top_left=left_panel_top_left,
+                scale=scale,
+                resources=resources,
+            ):
                 return
 
         if enabled:
@@ -349,12 +359,17 @@ class HighScoresView:
         rows = 10
         self._scroll_index = max(0, min(int(self._scroll_index), max(0, len(self._records) - rows)))
 
-    def _update_right_panel_widgets(self, *, right_top_left: Vec2, scale: float) -> bool:
+    def _update_right_panel_widgets(
+        self,
+        *,
+        right_top_left: Vec2,
+        scale: float,
+        resources: RuntimeResources,
+        font: SmallFontData,
+    ) -> bool:
         request = self._request
         if request is None:
             return False
-        resources = require_runtime_resources(self.state)
-        font = resources.small_font
 
         # Widgets are only shown in the "options" right panel (not the local-score detail panel).
         # We don't explicitly track which right panel is active; hit tests are enough.
@@ -526,7 +541,13 @@ class HighScoresView:
 
         return False
 
-    def _update_quest_arrows(self, *, left_panel_top_left: Vec2, scale: float) -> bool:
+    def _update_quest_arrows(
+        self,
+        *,
+        left_panel_top_left: Vec2,
+        scale: float,
+        resources: RuntimeResources,
+    ) -> bool:
         request = self._request
         if request is None:
             return False
@@ -542,7 +563,7 @@ class HighScoresView:
 
         unlock = int(self.state.status.quest_unlock_index_full) if self.state.config.hardcore else int(self.state.status.quest_unlock_index)
         max_index = max(0, min(49, unlock))
-        arrow = require_runtime_resources(self.state).texture(TextureId.UI_ARROW)
+        arrow = resources.texture(TextureId.UI_ARROW)
 
         mouse = Vec2.from_xy(rl.get_mouse_position())
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -656,11 +677,11 @@ class HighScoresView:
             scale=scale,
             highlight_rank=selected_rank,
         )
-        self._draw_sign()
-        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
+        self._draw_sign(resources=resources)
+        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
-    def _draw_sign(self) -> None:
-        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
+    def _draw_sign(self, *, resources: RuntimeResources) -> None:
+        sign = resources.texture(TextureId.UI_SIGN_CRIMSON)
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(

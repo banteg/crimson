@@ -6,7 +6,7 @@ from typing import Protocol
 
 import msgspec
 
-from grim.assets import TextureId
+from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -140,8 +140,7 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
     return ground
 
 
-def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
-    resources = require_runtime_resources(state)
+def _draw_menu_cursor(state: GameState, *, resources: RuntimeResources, pulse_time: float) -> None:
     particles = resources.texture(TextureId.PARTICLES)
     cursor_tex = resources.texture(TextureId.UI_CURSOR)
 
@@ -270,7 +269,8 @@ class MenuView:
         if not self._menu_entries:
             return
 
-        self._hovered_index = self._hovered_entry_index()
+        resources = require_runtime_resources(self.state)
+        self._hovered_index = self._hovered_entry_index(resources)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             reverse = rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT)
@@ -312,9 +312,10 @@ class MenuView:
         if self._ground is not None:
             self._ground.draw(menu_ground_camera(self.state))
         _draw_screen_fade(self.state)
-        self._draw_menu_items()
-        self._draw_menu_sign()
-        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
+        resources = require_runtime_resources(self.state)
+        self._draw_menu_items(resources)
+        self._draw_menu_sign(resources)
+        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         self._assert_open()
@@ -410,10 +411,9 @@ class MenuView:
             return [show_top, True, True, True, True, True]
         return [show_top, True, True, True, True, False]
 
-    def _draw_menu_items(self) -> None:
+    def _draw_menu_items(self, resources: RuntimeResources) -> None:
         if not self._menu_entries:
             return
-        resources = require_runtime_resources(self.state)
         item = resources.texture(TextureId.UI_MENU_ITEM)
         label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         item_w = float(item.width)
@@ -512,7 +512,7 @@ class MenuView:
         # Our config-var system is not implemented yet; allow a simple env opt-in.
         return os.getenv("CRIMSON_GRIM_CONFIG_VAR_100", "").strip() != ""
 
-    def _hovered_entry_index(self) -> int | None:
+    def _hovered_entry_index(self, resources: RuntimeResources) -> int | None:
         if not self._menu_entries:
             return None
         mouse = rl.get_mouse_position()
@@ -520,7 +520,7 @@ class MenuView:
         for idx, entry in enumerate(self._menu_entries):
             if not self._menu_entry_enabled(entry):
                 continue
-            if self._menu_item_bounds(entry).contains(mouse_pos):
+            if self._menu_item_bounds(entry, resources).contains(mouse_pos):
                 return idx
         return None
 
@@ -557,9 +557,8 @@ class MenuView:
             return 0.9, float(slot) * 11.0
         return 1.0, 0.0
 
-    def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
+    def _menu_item_bounds(self, entry: MenuEntry, resources: RuntimeResources) -> Rect:
         # FUN_0044fb50: inset bounds derived from quad0 v0/v2 and pos_x/pos_y.
-        resources = require_runtime_resources(self.state)
         item = resources.texture(TextureId.UI_MENU_ITEM)
         item_w = float(item.width)
         item_h = float(item.height)
@@ -660,7 +659,7 @@ class MenuView:
     ) -> None:
         draw_ui_quad_shadow(texture=texture, src=src, dst=dst, origin=origin, rotation_deg=rotation_deg)
 
-    def _draw_menu_sign(self) -> None:
+    def _draw_menu_sign(self, resources: RuntimeResources) -> None:
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = self._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
@@ -681,7 +680,7 @@ class MenuView:
             )
             _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
             rotation_deg = math.degrees(angle_rad)
-        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
+        sign = resources.texture(TextureId.UI_SIGN_CRIMSON)
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             self._draw_ui_quad_shadow(
