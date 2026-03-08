@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from grim.assets import TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -9,7 +8,10 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
+from ...game_modes import GameMode
+from ...weapon_runtime.availability import unlocked_weapon_ids
 from ..assets import require_runtime_resources
+from ..chrome import list_window
 from ..high_scores_layout import weapons_db_right_detail_x_shift
 from .databases_base import _DatabaseBaseView
 
@@ -87,9 +89,11 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         list_top_left = left + Vec2(218.0 * scale, 130.0 * scale)
         row_step = 16.0 * scale
         visible_rows = 10
-        max_scroll = max(0, len(weapon_ids) - visible_rows)
-        start = max(0, min(max_scroll, int(self._list_scroll_index)))
-        end = min(len(weapon_ids), start + visible_rows)
+        start, end, max_scroll = list_window(
+            count=len(weapon_ids),
+            visible_rows=visible_rows,
+            scroll_index=self._list_scroll_index,
+        )
         visible_weapon_ids = weapon_ids[start:end]
         for row, weapon_id in enumerate(visible_weapon_ids):
             name, _icon = self._weapon_label_and_icon(weapon_id)
@@ -129,12 +133,19 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             return
 
         visible_rows = 10
-        max_scroll = max(0, len(weapon_ids) - visible_rows)
         mouse_wheel = int(rl.get_mouse_wheel_move())
+        _start, _end, max_scroll = list_window(
+            count=len(weapon_ids),
+            visible_rows=visible_rows,
+            scroll_index=self._list_scroll_index,
+        )
         if mouse_wheel:
             self._list_scroll_index = max(0, min(max_scroll, int(self._list_scroll_index) - mouse_wheel))
-        start = max(0, min(max_scroll, int(self._list_scroll_index)))
-        end = min(len(weapon_ids), start + visible_rows)
+        start, end, _max_scroll = list_window(
+            count=len(weapon_ids),
+            visible_rows=visible_rows,
+            scroll_index=self._list_scroll_index,
+        )
         row_count = end - start
         if row_count <= 0:
             self._selected_weapon_id = None
@@ -157,63 +168,14 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         self._selected_weapon_id = None
 
     def _build_weapon_database_ids(self) -> list[int]:
-        from ...weapon_usage import weapon_usage_slot_for_weapon_id
-        from ...weapons import WEAPON_TABLE, WeaponId
-
-        available: list[bool] | None = None
-        from ...gameplay import WEAPON_COUNT_SIZE
-        from ...weapon_runtime import (
-            weapon_refresh_available as refresh_available,
-        )
-
-        weapon_refresh_available = cast(Callable[..., None], refresh_available)
-
-        if weapon_refresh_available is not None:
-            class _Stub:
-                status: object | None
-                game_mode: int
-                demo_mode_active: bool
-                weapon_available: list[bool]
-                _weapon_available_game_mode: int
-                _weapon_available_unlock_index: int
-                _weapon_available_unlock_index_full: int
-
-            stub = _Stub()
-            stub.status = self.state.status
-            stub.game_mode = self.state.config.game_mode
-            stub.demo_mode_active = self.state.demo_enabled
-            stub.weapon_available = [False] * int(WEAPON_COUNT_SIZE)
-            stub._weapon_available_game_mode = -1
-            stub._weapon_available_unlock_index = -1
-            stub._weapon_available_unlock_index_full = -1
-            try:
-                weapon_refresh_available(stub)
-                available = stub.weapon_available
-            except (AttributeError, IndexError, TypeError, ValueError):
-                available = None
-
-        status = self.state.status
-        used: list[int] = []
-        for weapon in WEAPON_TABLE:
-            weapon_id = int(weapon.weapon_id)
-            include = False
-            if available is not None:
-                if 0 <= weapon_id < len(available):
-                    include = bool(available[weapon_id])
-            else:
-                if weapon_id == WeaponId.PISTOL:
-                    include = True
-                else:
-                    usage_slot = weapon_usage_slot_for_weapon_id(weapon_id)
-                    include = bool(
-                        status is not None
-                        and usage_slot is not None
-                        and status.weapon_usage_count_slot(usage_slot) != 0,
-                    )
-            if include:
-                used.append(weapon_id)
-        used.sort()
-        return used
+        return [
+            int(weapon_id)
+            for weapon_id in unlocked_weapon_ids(
+                status=self.state.status,
+                game_mode=GameMode(self.state.config.game_mode),
+                demo_mode_active=self.state.demo_enabled,
+            )
+        ]
 
     def _weapon_entry(self, weapon_id: int) -> Weapon:
         from ...weapons import WEAPON_BY_ID, WeaponId

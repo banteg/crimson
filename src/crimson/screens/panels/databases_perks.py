@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import cast
-
 from grim.audio import play_sfx
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
@@ -9,6 +7,8 @@ from grim.raylib_api import rl
 
 from ...game.types import GameState
 from ...perks import PerkId
+from ...perks.availability import unlocked_perk_ids
+from ..chrome import list_window, scrollbar_update
 from ..high_scores_layout import perks_db_right_detail_x_shift
 from .databases_base import _DatabaseBaseView
 
@@ -99,9 +99,11 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             rl.BLACK,
         )
 
-        max_scroll = max(0, len(perk_ids) - self._VISIBLE_ROWS)
-        start = max(0, min(max_scroll, int(self._list_scroll_index)))
-        end = min(len(perk_ids), start + self._VISIBLE_ROWS)
+        start, end, _max_scroll = list_window(
+            count=len(perk_ids),
+            visible_rows=self._VISIBLE_ROWS,
+            scroll_index=self._list_scroll_index,
+        )
         list_top_left = left + Vec2(self._LIST_TEXT_X * scale, self._LIST_TEXT_Y * scale)
         row_step = self._LIST_ROW_HEIGHT * scale
         preserve_bugs = self._preserve_bugs()
@@ -188,7 +190,11 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             self._scroll_drag_active = False
             return
 
-        max_scroll = max(0, count - self._VISIBLE_ROWS)
+        _start, _end, max_scroll = list_window(
+            count=count,
+            visible_rows=self._VISIBLE_ROWS,
+            scroll_index=self._list_scroll_index,
+        )
         self._list_scroll_index = max(0, min(max_scroll, int(self._list_scroll_index)))
         self._selected_row_index = max(0, int(self._selected_row_index))
 
@@ -220,48 +226,47 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             self._list_scroll_index -= wheel
 
         if count > self._VISIBLE_ROWS:
-            start = max(0, min(max_scroll, int(self._list_scroll_index)))
+            start, _end, _max_scroll = list_window(
+                count=count,
+                visible_rows=self._VISIBLE_ROWS,
+                scroll_index=self._list_scroll_index,
+            )
             track_x, track_y, track_h, thumb_top, thumb_h, scroll_span = self._scrollbar_geometry(
                 left_top_left=left_top_left,
                 scale=scale,
                 count=count,
                 start=start,
             )
-            thumb_x = track_x + 1.0 * scale
-            thumb_w = 8.0 * scale
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            in_track = track_x <= mouse.x < track_x + 10.0 * scale and track_y <= mouse.y < track_y + track_h
-            in_thumb = thumb_x <= mouse.x < thumb_x + thumb_w and thumb_top <= mouse.y < thumb_top + thumb_h + 1.0 * scale
-
-            if click and in_track:
+            prev_scroll_index = self._list_scroll_index
+            self._list_scroll_index, self._scroll_drag_active, self._scroll_drag_offset = scrollbar_update(
+                mouse=mouse,
+                click=bool(click),
+                down=bool(down),
+                track_x=track_x,
+                track_y=track_y,
+                track_h=track_h,
+                thumb_top=thumb_top,
+                thumb_h=thumb_h,
+                scroll_span=scroll_span,
+                scale=scale,
+                scroll_index=self._list_scroll_index,
+                drag_active=self._scroll_drag_active,
+                drag_offset=self._scroll_drag_offset,
+            )
+            if self._list_scroll_index != prev_scroll_index or self._scroll_drag_active:
                 self._nav_focus_index = 1
-                if in_thumb:
-                    self._scroll_drag_active = True
-                    self._scroll_drag_offset = float(mouse.y - thumb_top)
-                else:
-                    travel = max(1.0, track_h - 3.0 * scale - thumb_h)
-                    target = float(mouse.y - track_y - 1.0 * scale - thumb_h * 0.5)
-                    target = max(0.0, min(travel, target))
-                    self._list_scroll_index = int(round((target / travel) * float(scroll_span)))
-                    self._scroll_drag_active = True
-                    self._scroll_drag_offset = thumb_h * 0.5
-
-            if self._scroll_drag_active:
-                if down:
-                    travel = max(1.0, track_h - 3.0 * scale - thumb_h)
-                    target = float(mouse.y - track_y - 1.0 * scale - self._scroll_drag_offset)
-                    target = max(0.0, min(travel, target))
-                    self._list_scroll_index = int(round((target / travel) * float(scroll_span)))
-                else:
-                    self._scroll_drag_active = False
         else:
             self._scroll_drag_active = False
 
         self._list_scroll_index = max(0, min(max_scroll, int(self._list_scroll_index)))
 
-        start = max(0, min(max_scroll, int(self._list_scroll_index)))
-        end = min(count, start + self._VISIBLE_ROWS)
+        start, end, _max_scroll = list_window(
+            count=count,
+            visible_rows=self._VISIBLE_ROWS,
+            scroll_index=self._list_scroll_index,
+        )
         row_count = end - start
         if row_count > 0 and mouse_in_list:
             row_step = self._LIST_ROW_HEIGHT * scale
@@ -307,24 +312,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         return track_x, track_y, track_h, thumb_top, thumb_h, scroll_span
 
     def _build_perk_database_ids(self) -> list[PerkId]:
-        from ...perks.availability import perks_rebuild_available
-        from ...sim.state_types import PERK_COUNT_SIZE, GameplayState
-
-        # Avoid spinning up a full GameplayState; perks_rebuild_available only needs these fields.
-        class _Stub:
-            status: object | None
-            perk_available: list[bool]
-            _perk_available_unlock_index: int
-
-        stub = _Stub()
-        stub.status = self.state.status
-        stub.perk_available = [False] * int(PERK_COUNT_SIZE)
-        stub._perk_available_unlock_index = -1
-        perks_rebuild_available(cast(GameplayState, stub))
-
-        perk_ids = [PerkId(idx) for idx, available in enumerate(stub.perk_available) if available and idx > 0]
-        perk_ids.sort()
-        return perk_ids
+        return unlocked_perk_ids(status=self.state.status)
 
     @staticmethod
     def _perk_name(perk_id: PerkId, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:

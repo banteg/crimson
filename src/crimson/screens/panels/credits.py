@@ -3,37 +3,18 @@ from __future__ import annotations
 import msgspec
 
 from grim.assets import TextureId
-from grim.audio import play_sfx, update_audio
+from grim.audio import play_sfx
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
-from grim.terrain_render import GroundRenderer
 
 from ...debug import debug_enabled
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..menu import (
-    MENU_PANEL_OFFSET_X,
-    MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
-    MENU_SCALE_SMALL_THRESHOLD,
-    MENU_SIGN_HEIGHT,
-    MENU_SIGN_OFFSET_X,
-    MENU_SIGN_OFFSET_Y,
-    MENU_SIGN_POS_X_PAD,
-    MENU_SIGN_POS_Y,
-    MENU_SIGN_POS_Y_SMALL,
-    MENU_SIGN_WIDTH,
-    UI_SHADOW_OFFSET,
-    MenuView,
-    _draw_menu_cursor,
-    ensure_menu_ground,
-    menu_ground_camera,
-)
-from ..transitions import _draw_screen_fade
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
+from ..chrome import ActionDispatchPolicy, BackdropPolicy, ChromeSpec, SignPolicy
+from .base import _ChromePanelView
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_17:credits, timeline=300).
 CREDITS_PANEL_POS_X = -119.0
@@ -158,7 +139,6 @@ def _credits_build_lines() -> tuple[list[_CreditsLine], int, int]:
     _line_set(0x40, "Zach Young", 0)
     _line_set(0x41, "", 0)
 
-    # This repeated index sequence is present in the decompile.
     _line_set(0x42, "Greeting to:", 0)
     _line_set(0x42, "Chaos^", 0)
     _line_set(0x42, "Matricks", 0)
@@ -220,21 +200,19 @@ def _credits_unlock_secret_lines(lines: list[_CreditsLine], base_index: int) -> 
         line.text = text
 
 
-class CreditsView:
+class CreditsView(_ChromePanelView):
     def __init__(self, state: GameState) -> None:
-        self.state = state
-        self._is_open = False
-        self._ground: GroundRenderer | None = None
-
-        self._cursor_pulse_time = 0.0
-        self._widescreen_y_shift = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
-        self._action: str | None = None
-
+        super().__init__(
+            state,
+            chrome_spec=ChromeSpec(
+                backdrop=BackdropPolicy(),
+                sign=SignPolicy(),
+                dispatch=ActionDispatchPolicy(mode="pending_rearm"),
+                open_sfx="sfx_ui_panelclick",
+                open_sfx_mode="on_open",
+                close_sfx="sfx_ui_buttonclick",
+            ),
+        )
         self._lines: list[_CreditsLine] = []
         self._line_max_index = 0
         self._secret_line_base_index = 0x54
@@ -242,70 +220,17 @@ class CreditsView:
         self._scroll_time_s = 0.0
         self._scroll_line_start_index = 0
         self._scroll_line_end_index = 0
-
         self._back_button = UiButtonState("Back", force_wide=False)
         self._secret_button = UiButtonState("Secret", force_wide=False)
 
-    def open(self) -> None:
-        layout_w = float(self.state.config.screen_width)
-        self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action = None
-        self._pending_action = None
-        self._action = None
-
+    def _reset_view_state(self) -> None:
         self._lines, self._line_max_index, self._secret_line_base_index = _credits_build_lines()
         self._secret_unlock = False
         self._scroll_time_s = 0.0
         self._scroll_line_start_index = 0
         self._scroll_line_end_index = 0
-
         self._back_button = UiButtonState("Back", force_wide=False)
         self._secret_button = UiButtonState("Secret", force_wide=False)
-
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
-        self._is_open = True
-
-    def close(self) -> None:
-        self._is_open = False
-        self._ground = None
-        self._closing = False
-        self._close_action = None
-        self._pending_action = None
-        self._action = None
-
-    def take_action(self) -> str | None:
-        self._assert_open()
-        if self._pending_action is not None:
-            action = self._pending_action
-            self._pending_action = None
-            self._closing = False
-            self._close_action = None
-            self._timeline_ms = self._timeline_max_ms
-            return action
-        action = self._action
-        self._action = None
-        return action
-
-    def _assert_open(self) -> None:
-        assert self._is_open, "CreditsView must be opened before use"
-
-    def _begin_close_transition(self, action: str) -> None:
-        if self._closing:
-            return
-        self._closing = True
-        self._close_action = action
-
-    def _panel_top_left(self, *, scale: float) -> Vec2:
-        return Vec2(
-            CREDITS_PANEL_POS_X + MENU_PANEL_OFFSET_X * scale,
-            CREDITS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
-        )
 
     @staticmethod
     def _scroll_fraction_px(scroll_time_s: float, *, scale: float) -> float:
@@ -325,18 +250,6 @@ class CreditsView:
         self._scroll_line_end_index = whole_scroll + 1
         if self._line_max_index < self._scroll_line_end_index:
             self._scroll_line_end_index = self._line_max_index
-
-    def _panel_slide_x(self, *, scale: float) -> float:
-        panel_w = MENU_PANEL_WIDTH * scale
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
-            direction_flag=0,
-        )
-        return float(slide_x)
 
     @staticmethod
     def _mouse_inside_rect(mouse: rl.Vector2, *, x: float, y: float, w: float, h: float) -> bool:
@@ -409,13 +322,7 @@ class CreditsView:
             text_w = measure_small_text_width(font, line.text)
             x = center_x - (text_w * 0.5)
             y = base_y + (float(row) * (_TEXT_LINE_HEIGHT * scale)) - frac_px
-            if not self._mouse_inside_rect(
-                mouse,
-                x=x,
-                y=y,
-                w=text_w,
-                h=_TEXT_RECT_H * scale,
-            ):
+            if not self._mouse_inside_rect(mouse, x=x, y=y, w=text_w, h=_TEXT_RECT_H * scale):
                 continue
 
             if "o" in line.text:
@@ -440,66 +347,47 @@ class CreditsView:
 
     def update(self, dt: float) -> None:
         self._assert_open()
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
-        dt_clamped = min(float(dt), 0.1)
-        dt_ms = int(dt_clamped * 1000.0)
-        self._cursor_pulse_time += dt_clamped * 1.1
-
+        tick = self._chrome.update(dt)
         if self._closing:
-            if dt_ms > 0 and self._pending_action is None:
-                self._timeline_ms -= dt_ms
-                if self._timeline_ms < 0 and self._close_action is not None:
-                    self._pending_action = self._close_action
-                    self._close_action = None
             return
 
-        if dt_ms > 0:
-            self._timeline_ms = min(self._timeline_max_ms, int(self._timeline_ms + dt_ms))
+        dt_clamped = min(float(dt), 0.1)
         self._scroll_time_s += dt_clamped
         self._update_scroll_window()
 
-        interactive = self._timeline_ms >= self._timeline_max_ms
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+        if tick.interactive and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._begin_close_transition("back_to_previous")
             return
-
-        if not interactive:
+        if not tick.interactive:
             return
 
-        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
-        slide_x = self._panel_slide_x(scale=scale)
-        panel_top_left = self._panel_top_left(scale=scale).offset(dx=slide_x)
+        frame = self._panel_frame(
+            panel_pos=Vec2(CREDITS_PANEL_POS_X, CREDITS_PANEL_POS_Y),
+            panel_height=CREDITS_PANEL_HEIGHT,
+        )
         resources = require_runtime_resources(self.state)
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
         self._update_line_clicks(
-            panel_top_left=panel_top_left,
-            scale=scale,
+            panel_top_left=frame.panel_top_left,
+            scale=frame.scale,
             font=resources.small_font,
             mouse=mouse,
-            click=click,
+            click=bool(click),
         )
         self._update_secret_unlock()
 
-        dt_ms_f = dt_clamped * 1000.0
-
-        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        dt_ms = dt_clamped * 1000.0
+        back_w = button_width(resources, self._back_button.label, scale=frame.scale, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
-            pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
+            pos=frame.panel_top_left + Vec2(_BACK_BUTTON_X * frame.scale, _BACK_BUTTON_Y * frame.scale),
             width=back_w,
-            dt_ms=dt_ms_f,
+            dt_ms=dt_ms,
             mouse=mouse,
-            click=click,
+            click=bool(click),
         ):
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
             self._begin_close_transition("back_to_previous")
             return
 
@@ -507,121 +395,86 @@ class CreditsView:
             secret_w = button_width(
                 resources,
                 self._secret_button.label,
-                scale=scale,
+                scale=frame.scale,
                 force_wide=self._secret_button.force_wide,
             )
             if button_update(
                 self._secret_button,
-                pos=panel_top_left + Vec2(_SECRET_BUTTON_X * scale, _SECRET_BUTTON_Y * scale),
+                pos=frame.panel_top_left + Vec2(_SECRET_BUTTON_X * frame.scale, _SECRET_BUTTON_Y * frame.scale),
                 width=secret_w,
-                dt_ms=dt_ms_f,
+                dt_ms=dt_ms,
                 mouse=mouse,
-                click=click,
+                click=bool(click),
             ):
-                if self.state.audio is not None:
-                    play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
                 self._begin_close_transition("open_alien_zookeeper")
-                return
 
     def draw(self) -> None:
         self._assert_open()
-        rl.clear_background(rl.BLACK)
-        pause_background = self.state.pause_background
-        if pause_background is not None:
-            pause_background.draw_pause_background()
-        elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
-        _draw_screen_fade(self.state)
-
+        self._draw_background()
+        self._chrome.draw_fade()
         resources = require_runtime_resources(self.state)
-
-        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
-        slide_x = self._panel_slide_x(scale=scale)
-        panel_top_left = self._panel_top_left(scale=scale).offset(dx=slide_x)
+        frame = self._panel_frame(
+            panel_pos=Vec2(CREDITS_PANEL_POS_X, CREDITS_PANEL_POS_Y),
+            panel_height=CREDITS_PANEL_HEIGHT,
+        )
 
         dst = rl.Rectangle(
-            panel_top_left.x,
-            panel_top_left.y,
-            MENU_PANEL_WIDTH * scale,
-            CREDITS_PANEL_HEIGHT * scale,
+            frame.panel_top_left.x,
+            frame.panel_top_left.y,
+            frame.panel_width,
+            frame.panel_height,
         )
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
         font = resources.small_font
-        draw_small_text(font, "credits", panel_top_left + Vec2(_TITLE_X * scale, _TITLE_Y * scale), rl.Color(255, 255, 255, 255))
+        draw_small_text(font, "credits", frame.panel_top_left + Vec2(_TITLE_X * frame.scale, _TITLE_Y * frame.scale), rl.Color(255, 255, 255, 255))
 
         visible_count = self._scroll_line_end_index - self._scroll_line_start_index
         if visible_count > 0:
-            base_y = panel_top_left.y + (_TEXT_BASE_Y * scale)
-            frac_px = self._scroll_fraction_px(self._scroll_time_s, scale=scale)
-            center_x = panel_top_left.x + ((_TEXT_ANCHOR_X + _TEXT_CENTER_OFFSET_X) * scale)
+            base_y = frame.panel_top_left.y + (_TEXT_BASE_Y * frame.scale)
+            frac_px = self._scroll_fraction_px(self._scroll_time_s, scale=frame.scale)
+            center_x = frame.panel_top_left.x + ((_TEXT_ANCHOR_X + _TEXT_CENTER_OFFSET_X) * frame.scale)
 
             for row in range(visible_count):
                 index = self._scroll_line_start_index + row
                 if index < 0 or index >= len(self._lines):
                     continue
                 line = self._lines[index]
-                y = base_y + (float(row) * (_TEXT_LINE_HEIGHT * scale)) - frac_px
-                alpha = self._line_alpha(y=y, base_y=base_y, visible_count=visible_count, scale=scale)
+                y = base_y + (float(row) * (_TEXT_LINE_HEIGHT * frame.scale)) - frac_px
+                alpha = self._line_alpha(
+                    y=y,
+                    base_y=base_y,
+                    visible_count=visible_count,
+                    scale=frame.scale,
+                )
                 color = self._line_color(line.flags, alpha=alpha)
                 text_w = measure_small_text_width(font, line.text)
                 draw_small_text(font, line.text, Vec2(center_x - (text_w * 0.5), y), color)
 
-        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, scale=frame.scale, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
             self._back_button,
-            pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
+            pos=frame.panel_top_left + Vec2(_BACK_BUTTON_X * frame.scale, _BACK_BUTTON_Y * frame.scale),
             width=back_w,
-            scale=scale,
+            scale=frame.scale,
         )
 
         if self._secret_button_visible():
             secret_w = button_width(
                 resources,
                 self._secret_button.label,
-                scale=scale,
+                scale=frame.scale,
                 force_wide=self._secret_button.force_wide,
             )
             button_draw(
                 resources,
                 self._secret_button,
-                pos=panel_top_left + Vec2(_SECRET_BUTTON_X * scale, _SECRET_BUTTON_Y * scale),
+                pos=frame.panel_top_left + Vec2(_SECRET_BUTTON_X * frame.scale, _SECRET_BUTTON_Y * frame.scale),
                 width=secret_w,
-                scale=scale,
+                scale=frame.scale,
             )
 
         self._draw_sign()
-        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
-
-    def _draw_sign(self) -> None:
-        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        screen_w = float(self.state.config.screen_width)
-        sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        sign_pos = Vec2(
-            screen_w + MENU_SIGN_POS_X_PAD,
-            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
-        )
-        sign_w = MENU_SIGN_WIDTH * sign_scale
-        sign_h = MENU_SIGN_HEIGHT * sign_scale
-        offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
-        offset_y = MENU_SIGN_OFFSET_Y * sign_scale
-        rotation_deg = 0.0
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
-        if fx_detail:
-            MenuView._draw_ui_quad_shadow(
-                texture=sign,
-                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
-                origin=rl.Vector2(-offset_x, -offset_y),
-                rotation_deg=rotation_deg,
-            )
-        MenuView._draw_ui_quad(
-            texture=sign,
-            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
-            origin=rl.Vector2(-offset_x, -offset_y),
-            rotation_deg=rotation_deg,
-            tint=rl.WHITE,
-        )
+        self._draw_cursor()

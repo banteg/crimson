@@ -5,36 +5,17 @@ import math
 import msgspec
 
 from grim.assets import TextureId
-from grim.audio import play_sfx, update_audio
-from grim.fonts.small import (
-    draw_small_text,
-)
+from grim.audio import play_sfx
+from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.raylib_api import rl
-from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..menu import (
-    MENU_PANEL_WIDTH,
-    MENU_SCALE_SMALL_THRESHOLD,
-    MENU_SIGN_HEIGHT,
-    MENU_SIGN_OFFSET_X,
-    MENU_SIGN_OFFSET_Y,
-    MENU_SIGN_POS_X_PAD,
-    MENU_SIGN_POS_Y,
-    MENU_SIGN_POS_Y_SMALL,
-    MENU_SIGN_WIDTH,
-    UI_SHADOW_OFFSET,
-    MenuView,
-    _draw_menu_cursor,
-    ensure_menu_ground,
-    menu_ground_camera,
-)
-from ..transitions import _draw_screen_fade
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
+from ..chrome import MENU_PANEL_WIDTH, ActionDispatchPolicy, BackdropPolicy, ChromeSpec, SignPolicy
+from .base import _ChromePanelView
 
 _BOARD_SIDE = 6
 _BOARD_CELLS = _BOARD_SIDE * _BOARD_SIDE
@@ -44,15 +25,13 @@ _BOARD_SIZE = 192.0
 _TIMER_RESET_MS = 0x2580
 _MATCH_TIMER_BONUS_MS = 2000
 
-# Directly mirrored from the native flow for 1024x768 mode:
-#   data_489df8 = -35, data_489dfc = 275, data_489e1c = -63, data_489e20 = -81.
 _LAYOUT_OFFSET_X = -35.0
 _LAYOUT_OFFSET_X_SMALL = -85.0
 _LAYOUT_POS_X = -63.0
 _LAYOUT_POS_Y = -81.0
 _LAYOUT_BASE_Y = 275.0
 _TITLE_BASE_Y_OFFSET = 50.0
-_BOARD_X_OFFSET = 220.0  # 300 - 80
+_BOARD_X_OFFSET = 220.0
 _BOARD_Y_OFFSET = 40.0
 
 _TITLE = "AlienZooKeeper"
@@ -101,119 +80,64 @@ def _mouse_inside_rect(mouse: rl.Vector2, *, x: float, y: float, w: float, h: fl
 
 
 def _credits_secret_match3_find(board: list[int]) -> tuple[bool, int, int]:
-    # Native order: horizontal first, then vertical.
     for row in range(_BOARD_SIDE):
         base = row * _BOARD_SIDE
         for col in range(_BOARD_SIDE - 2):
             idx = base + col
-            v = board[idx]
-            if v < 0:
+            value = board[idx]
+            if value < 0:
                 continue
-            if board[idx + 1] == v and board[idx + 2] == v:
+            if board[idx + 1] == value and board[idx + 2] == value:
                 return True, idx, 1
 
     for col in range(_BOARD_SIDE):
         for row in range(_BOARD_SIDE - 2):
             idx = row * _BOARD_SIDE + col
-            v = board[idx]
-            if v < 0:
+            value = board[idx]
+            if value < 0:
                 continue
-            if board[idx + _BOARD_SIDE] == v and board[idx + (_BOARD_SIDE * 2)] == v:
+            if board[idx + _BOARD_SIDE] == value and board[idx + (_BOARD_SIDE * 2)] == value:
                 return True, idx, 0
 
     return False, 0, 0
 
 
-class AlienZooKeeperView:
+class AlienZooKeeperView(_ChromePanelView):
     def __init__(self, state: GameState) -> None:
-        self.state = state
-        self._is_open = False
-        self._ground: GroundRenderer | None = None
-
-        self._cursor_pulse_time = 0.0
-        self._widescreen_y_shift = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
-        self._action: str | None = None
-
+        super().__init__(
+            state,
+            chrome_spec=ChromeSpec(
+                backdrop=BackdropPolicy(),
+                sign=SignPolicy(),
+                dispatch=ActionDispatchPolicy(mode="pending_rearm"),
+                open_sfx=None,
+                close_sfx="sfx_ui_buttonclick",
+            ),
+        )
         self._board: list[int] = [0] * _BOARD_CELLS
         self._selected_index = -1
         self._timer_ms = _TIMER_RESET_MS
         self._anim_time_ms = 0
         self._score = 0
-
         self._reset_button = UiButtonState(_RESET_LABEL, force_wide=False)
         self._back_button = UiButtonState(_BACK_LABEL, force_wide=False)
 
-    def open(self) -> None:
-        layout_w = float(self.state.config.screen_width)
-        self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action = None
-        self._pending_action = None
-        self._action = None
-
+    def _reset_view_state(self) -> None:
         self._reset_button = UiButtonState(_RESET_LABEL, force_wide=False)
         self._back_button = UiButtonState(_BACK_LABEL, force_wide=False)
-
         self._anim_time_ms = 0
         self._reset_state()
-        self._is_open = True
-
-    def close(self) -> None:
-        self._is_open = False
-        self._ground = None
-        self._action = None
-        self._closing = False
-        self._close_action = None
-        self._pending_action = None
-
-    def take_action(self) -> str | None:
-        self._assert_open()
-        if self._pending_action is not None:
-            action = self._pending_action
-            self._pending_action = None
-            self._closing = False
-            self._close_action = None
-            self._timeline_ms = self._timeline_max_ms
-            return action
-        action = self._action
-        self._action = None
-        return action
-
-    def _assert_open(self) -> None:
-        assert self._is_open, "AlienZooKeeperView must be opened before use"
-
-    def _begin_close_transition(self, action: str) -> None:
-        if self._closing:
-            return
-        self._closing = True
-        self._close_action = action
-
-    def _panel_slide_x(self, *, scale: float) -> float:
-        panel_w = MENU_PANEL_WIDTH * scale
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
-            direction_flag=0,
-        )
-        return float(slide_x)
 
     def _layout(self, *, scale: float) -> _AzkLayout:
         layout_offset_x = _LAYOUT_OFFSET_X_SMALL if float(self.state.config.screen_width) < 641.0 else _LAYOUT_OFFSET_X
-        slide_x = self._panel_slide_x(scale=scale)
-        anchor_x = _LAYOUT_POS_X + layout_offset_x + _BOARD_X_OFFSET + slide_x
-        title_base_y = _LAYOUT_BASE_Y + _LAYOUT_POS_Y + _TITLE_BASE_Y_OFFSET + self._widescreen_y_shift
+        frame = self._panel_frame(
+            panel_pos=Vec2(_LAYOUT_POS_X + layout_offset_x, _LAYOUT_BASE_Y + _LAYOUT_POS_Y),
+            panel_height=378.0,
+            panel_offset=Vec2(),
+            small_scale=0.9,
+        )
+        anchor_x = frame.panel_top_left.x + _BOARD_X_OFFSET
+        title_base_y = frame.panel_top_left.y + _TITLE_BASE_Y_OFFSET
         board_x = anchor_x + (22.0 * scale)
         board_y = title_base_y + (_BOARD_Y_OFFSET * scale)
 
@@ -222,8 +146,8 @@ class AlienZooKeeperView:
 
         return _AzkLayout(
             scale=scale,
-            panel_x=_LAYOUT_POS_X + layout_offset_x + slide_x,
-            panel_y=_LAYOUT_BASE_Y + _LAYOUT_POS_Y + self._widescreen_y_shift,
+            panel_x=frame.panel_top_left.x,
+            panel_y=frame.panel_top_left.y,
             board_x=board_x,
             board_y=board_y,
             tile_size=tile_size,
@@ -237,26 +161,25 @@ class AlienZooKeeperView:
             score_x=board_x + (124.0 * scale),
             score_y=board_y - (16.0 * scale),
             game_over_x=board_x + (38.0 * scale),
-            game_over_y=board_y + (74.0 * scale),  # 96 - 22
+            game_over_y=board_y + (74.0 * scale),
             reset_pos=Vec2(anchor_x + (38.0 * scale), title_base_y + (256.0 * scale)),
             back_pos=Vec2(anchor_x + (138.0 * scale), title_base_y + (256.0 * scale)),
         )
 
     def _fill_empty_cells(self) -> None:
-        for i, value in enumerate(self._board):
+        for index, value in enumerate(self._board):
             if value == -1:
-                self._board[i] = int(self.state.rng.rand() % 5)
+                self._board[index] = int(self.state.rng.rand() % 5)
 
     def _reroll_board_no_initial_match(self) -> None:
         for _ in range(4096):
-            for i in range(_BOARD_CELLS):
-                self._board[i] = int(self.state.rng.rand() % 5)
+            for index in range(_BOARD_CELLS):
+                self._board[index] = int(self.state.rng.rand() % 5)
             has_match, _out_idx, _out_dir = _credits_secret_match3_find(self._board)
             if not has_match:
                 return
-        # Fallback to avoid a hard loop even though this should never happen in practice.
-        for i in range(_BOARD_CELLS):
-            self._board[i] = int(self.state.rng.rand() % 5)
+        for index in range(_BOARD_CELLS):
+            self._board[index] = int(self.state.rng.rand() % 5)
 
     def _reset_state(self) -> None:
         self._reroll_board_no_initial_match()
@@ -313,28 +236,14 @@ class AlienZooKeeperView:
 
     def update(self, dt: float) -> None:
         self._assert_open()
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
-
-        dt_clamped = min(float(dt), 0.1)
-        dt_ms = int(dt_clamped * 1000.0)
-        self._cursor_pulse_time += dt_clamped * 1.1
-
+        tick = self._chrome.update(dt)
         if self._closing:
-            if dt_ms > 0 and self._pending_action is None:
-                self._timeline_ms -= dt_ms
-                if self._timeline_ms < 0 and self._close_action is not None:
-                    self._pending_action = self._close_action
-                    self._close_action = None
             return
 
-        if dt_ms > 0:
-            self._timeline_ms = min(self._timeline_max_ms, int(self._timeline_ms + dt_ms))
-            self._anim_time_ms += dt_ms
+        if tick.dt_ms > 0:
+            self._anim_time_ms += tick.dt_ms
             if self._timer_ms > 0:
-                self._timer_ms -= dt_ms
+                self._timer_ms -= tick.dt_ms
                 if self._timer_ms <= 0:
                     self._timer_ms = 0
                     if self.state.audio is not None:
@@ -344,13 +253,10 @@ class AlienZooKeeperView:
 
         self._fill_empty_cells()
 
-        interactive = self._timeline_ms >= self._timeline_max_ms
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+        if tick.interactive and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._begin_close_transition("open_statistics")
             return
-        if not interactive:
+        if not tick.interactive:
             return
 
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
@@ -361,16 +267,16 @@ class AlienZooKeeperView:
             self._resolve_tile_click(layout=layout, mouse=mouse)
 
         resources = require_runtime_resources(self.state)
-        dt_ms_f = dt_clamped * 1000.0
+        dt_ms = min(float(dt), 0.1) * 1000.0
 
         reset_w = button_width(resources, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide)
         if button_update(
             self._reset_button,
             pos=layout.reset_pos,
             width=reset_w,
-            dt_ms=dt_ms_f,
+            dt_ms=dt_ms,
             mouse=mouse,
-            click=click,
+            click=bool(click),
         ):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
@@ -382,24 +288,16 @@ class AlienZooKeeperView:
             self._back_button,
             pos=layout.back_pos,
             width=back_w,
-            dt_ms=dt_ms_f,
+            dt_ms=dt_ms,
             mouse=mouse,
-            click=click,
+            click=bool(click),
         ):
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
             self._begin_close_transition("open_statistics")
-            return
 
     def draw(self) -> None:
         self._assert_open()
-        rl.clear_background(rl.BLACK)
-        pause_background = self.state.pause_background
-        if pause_background is not None:
-            pause_background.draw_pause_background()
-        elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
-        _draw_screen_fade(self.state)
+        self._draw_background()
+        self._chrome.draw_fade()
 
         resources = require_runtime_resources(self.state)
         font = resources.small_font
@@ -508,35 +406,4 @@ class AlienZooKeeperView:
         )
 
         self._draw_sign()
-        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
-
-    def _draw_sign(self) -> None:
-        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        screen_w = float(self.state.config.screen_width)
-        sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        sign_pos = Vec2(
-            screen_w + MENU_SIGN_POS_X_PAD,
-            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
-        )
-        sign_w = MENU_SIGN_WIDTH * sign_scale
-        sign_h = MENU_SIGN_HEIGHT * sign_scale
-        offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
-        offset_y = MENU_SIGN_OFFSET_Y * sign_scale
-        rotation_deg = 0.0
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
-        if fx_detail:
-            MenuView._draw_ui_quad_shadow(
-                texture=sign,
-                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
-                origin=rl.Vector2(-offset_x, -offset_y),
-                rotation_deg=rotation_deg,
-            )
-        MenuView._draw_ui_quad(
-            texture=sign,
-            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
-            origin=rl.Vector2(-offset_x, -offset_y),
-            rotation_deg=rotation_deg,
-            tint=rl.WHITE,
-        )
+        self._draw_cursor()

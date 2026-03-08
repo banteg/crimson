@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from grim.assets import TextureId
+from grim.audio import play_sfx
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
@@ -26,6 +27,7 @@ from ..chrome import (
     ChromeRuntime,
     ChromeSpec,
     MenuEntry,
+    MusicPolicy,
     SignPolicy,
     draw_ui_quad,
     draw_ui_quad_shadow,
@@ -62,6 +64,176 @@ def save_dirty_config(state: GameState) -> bool:
     return True
 
 
+class _ChromePanelView:
+    def __init__(self, state: GameState, *, chrome_spec: ChromeSpec) -> None:
+        self.state = state
+        self._chrome = ChromeRuntime(state, spec=chrome_spec)
+
+    def open(self) -> None:
+        self._chrome.open()
+        self._reset_view_state()
+
+    def close(self) -> None:
+        self._chrome.close()
+        self._reset_closed_state()
+
+    def take_action(self) -> str | None:
+        return self._chrome.take_action()
+
+    def _assert_open(self) -> None:
+        assert self._is_open, f"{self.__class__.__name__} must be opened before use"
+
+    def _begin_close_transition(self, action: str) -> None:
+        self._chrome.begin_close_transition(action, before_close=self._before_close_transition)
+
+    def _before_close_transition(self, action: str) -> None:
+        del action
+
+    def _draw_background(self) -> None:
+        self._chrome.draw_background()
+
+    def _draw_sign(self, *, animated: bool = False) -> None:
+        self._chrome.draw_sign(resources=require_runtime_resources(self.state), animated=animated)
+
+    def _draw_cursor(self) -> None:
+        self._chrome.draw_cursor(resources=require_runtime_resources(self.state))
+
+    def _panel_frame(
+        self,
+        *,
+        panel_pos: Vec2,
+        panel_height: float,
+        panel_offset: Vec2 = Vec2(MENU_PANEL_OFFSET_X, MENU_PANEL_OFFSET_Y),
+        small_scale: float = 0.9,
+    ):
+        return single_panel_frame(
+            self._timeline_ms,
+            screen_width=float(self._menu_screen_width),
+            widescreen_y_shift=self._widescreen_y_shift,
+            panel_pos=panel_pos,
+            panel_offset=panel_offset,
+            panel_height=panel_height,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            small_scale=small_scale,
+        )
+
+    def _reset_view_state(self) -> None:
+        return
+
+    def _reset_closed_state(self) -> None:
+        return
+
+    def _rearm_view(self, *, play_open_sfx: bool = False) -> None:
+        self._assert_open()
+        self._timeline_ms = 0
+        self._closing = False
+        self._close_action = None
+        self._pending_action = None
+        self._action = None
+        self._panel_open_sfx_played = False
+        if play_open_sfx and self.state.audio is not None and self._chrome.spec.open_sfx is not None:
+            if self._chrome.spec.open_sfx_mode == "on_open":
+                play_sfx(self.state.audio, self._chrome.spec.open_sfx, rng=self.state.rng)
+                self._panel_open_sfx_played = True
+
+    @property
+    def _is_open(self) -> bool:
+        return self._chrome.is_open
+
+    @_is_open.setter
+    def _is_open(self, value: bool) -> None:
+        self._chrome.is_open = bool(value)
+
+    @property
+    def _ground(self):
+        return self._chrome.ground
+
+    @_ground.setter
+    def _ground(self, value) -> None:
+        self._chrome.ground = value
+
+    @property
+    def _menu_screen_width(self) -> int:
+        return int(self._chrome.chrome.screen_width)
+
+    @_menu_screen_width.setter
+    def _menu_screen_width(self, value: int) -> None:
+        self._chrome.chrome.screen_width = int(value)
+
+    @property
+    def _widescreen_y_shift(self) -> float:
+        return float(self._chrome.chrome.widescreen_y_shift)
+
+    @_widescreen_y_shift.setter
+    def _widescreen_y_shift(self, value: float) -> None:
+        self._chrome.chrome.widescreen_y_shift = float(value)
+
+    @property
+    def _timeline_ms(self) -> int:
+        return int(self._chrome.chrome.timeline_ms)
+
+    @_timeline_ms.setter
+    def _timeline_ms(self, value: int) -> None:
+        self._chrome.chrome.timeline_ms = int(value)
+
+    @property
+    def _timeline_max_ms(self) -> int:
+        return int(self._chrome.chrome.timeline_max_ms)
+
+    @_timeline_max_ms.setter
+    def _timeline_max_ms(self, value: int) -> None:
+        self._chrome.chrome.timeline_max_ms = int(value)
+
+    @property
+    def _cursor_pulse_time(self) -> float:
+        return float(self._chrome.chrome.cursor_pulse_time)
+
+    @_cursor_pulse_time.setter
+    def _cursor_pulse_time(self, value: float) -> None:
+        self._chrome.chrome.cursor_pulse_time = float(value)
+
+    @property
+    def _closing(self) -> bool:
+        return bool(self._chrome.chrome.closing)
+
+    @_closing.setter
+    def _closing(self, value: bool) -> None:
+        self._chrome.chrome.closing = bool(value)
+
+    @property
+    def _close_action(self) -> str | None:
+        return self._chrome.chrome.close_action
+
+    @_close_action.setter
+    def _close_action(self, value: str | None) -> None:
+        self._chrome.chrome.close_action = value
+
+    @property
+    def _pending_action(self) -> str | None:
+        return self._chrome.chrome.pending_action
+
+    @_pending_action.setter
+    def _pending_action(self, value: str | None) -> None:
+        self._chrome.chrome.pending_action = value
+
+    @property
+    def _action(self) -> str | None:
+        return self._chrome.chrome.action
+
+    @_action.setter
+    def _action(self, value: str | None) -> None:
+        self._chrome.chrome.action = value
+
+    @property
+    def _panel_open_sfx_played(self) -> bool:
+        return bool(self._chrome.chrome.panel_open_sfx_played)
+
+    @_panel_open_sfx_played.setter
+    def _panel_open_sfx_played(self, value: bool) -> None:
+        self._chrome.chrome.panel_open_sfx_played = bool(value)
+
+
 class PanelMenuView:
     def __init__(
         self,
@@ -87,6 +259,7 @@ class PanelMenuView:
             state,
             spec=ChromeSpec(
                 backdrop=BackdropPolicy(),
+                music=MusicPolicy(),
                 sign=SignPolicy(lock_on_fully_open=True),
                 dispatch=ActionDispatchPolicy(mode="pending_once"),
                 open_sfx="sfx_ui_panelclick",
