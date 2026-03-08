@@ -178,7 +178,7 @@ class QuestMode(BaseGameplayMode):
         perk_ctx = self._perk_menu_ui_context()
         pending_count = int(self.state.perk_selection.pending_count)
         choices = perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection)
-        self._perk_prompt.begin_frame(pending_count=pending_count)
+        self._perk_prompt.begin_frame()
         if self._perk_menu.open:
             choice_index = self._perk_menu.handle_input(
                 perk_ctx,

@@ -33,8 +33,7 @@ class PerkPromptState:
         if int(pending_count) > 0:
             self.reset()
 
-    def begin_frame(self, *, pending_count: int) -> None:
-        _ = pending_count
+    def begin_frame(self) -> None:
         self.hover = False
 
     def poll_open_request(

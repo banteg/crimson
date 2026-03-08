@@ -57,7 +57,7 @@ def _ctx() -> PerkMenuUiContext:
 
 def test_prompt_open_request_from_pick_key(mocker) -> None:
     prompt = PerkPromptState()
-    prompt.begin_frame(pending_count=1)
+    prompt.begin_frame()
 
     mocker.patch.object(
         perk_prompt_controller_module,
@@ -93,7 +93,7 @@ def test_prompt_open_request_from_pick_key(mocker) -> None:
 
 def test_prompt_open_request_from_hover_click(mocker) -> None:
     prompt = PerkPromptState()
-    prompt.begin_frame(pending_count=1)
+    prompt.begin_frame()
 
     mocker.patch.object(
         perk_prompt_controller_module,
@@ -132,7 +132,7 @@ def test_begin_prompt_frame_clears_stale_hover_before_pulse_tick() -> None:
     prompt.hover = True
     prompt.pulse = 100.0
 
-    prompt.begin_frame(pending_count=1)
+    prompt.begin_frame()
     prompt.tick_pulse(16.0)
 
     assert prompt.hover is False
@@ -141,7 +141,7 @@ def test_begin_prompt_frame_clears_stale_hover_before_pulse_tick() -> None:
 
 def test_prompt_open_request_returns_false_while_menu_active(mocker) -> None:
     prompt = PerkPromptState()
-    prompt.begin_frame(pending_count=1)
+    prompt.begin_frame()
 
     mocker.patch.object(
         perk_prompt_controller_module,
