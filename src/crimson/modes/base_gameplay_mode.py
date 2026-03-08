@@ -12,7 +12,7 @@ import msgspec
 from grim.audio import AudioState, stop_music, update_audio
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.console import ConsoleState
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
@@ -89,6 +89,15 @@ from ..ui.hud import HudState, draw_target_health_bar
 from ..weapon_runtime import most_used_weapon_id_for_player
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import shots_from_state
+from .components.mode_presenter import (
+    draw_ui_text as draw_mode_ui_text,
+)
+from .components.mode_presenter import (
+    draw_world_runtime,
+)
+from .components.mode_presenter import (
+    measure_ui_text_width as measure_mode_ui_text_width,
+)
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreatureDeath, CreaturePool
@@ -416,9 +425,8 @@ class BaseGameplayMode:
         self.terrain_runtime.apply_terrain_setup(terrain_slots=terrain_slots, seed=int(seed))
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        self.render_resources.bake_fx_queues()
-        self.renderer.draw(
-            render_frame=self._world_runtime.build_render_frame(),
+        draw_world_runtime(
+            self._world_runtime,
             draw_aim_indicators=draw_aim_indicators,
             entity_alpha=entity_alpha,
         )
@@ -599,15 +607,10 @@ class BaseGameplayMode:
         return int(20 * scale)
 
     def _ui_text_width(self, text: str, scale: float = 1.0) -> int:
-        if self._small is not None:
-            return int(measure_small_text_width(self._small, text))
-        return int(rl.measure_text(text, int(20 * scale)))
+        return int(measure_mode_ui_text_width(self._small, text, scale=float(scale)))
 
     def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, scale: float = 1.0) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, pos, color)
-        else:
-            rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
+        draw_mode_ui_text(self._small, text, pos, color, scale=float(scale))
 
     def _ui_mouse_pos(self) -> rl.Vector2:
         return self._ui_mouse.to_rl()
@@ -1165,7 +1168,7 @@ class BaseGameplayMode:
         # tracks before restarting gameplay ("Play Again"), resetting first-hit tune gate.
         stop_music(self.audio)
 
-        player_count = self.config.player_count
+        player_count = self._runtime_player_count()
         seed_source = "lan_override" if self._lan_seed_override is not None else "session_state"
         if self._lan_seed_override is not None:
             seed = int(self._lan_seed_override)

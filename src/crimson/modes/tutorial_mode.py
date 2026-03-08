@@ -85,13 +85,11 @@ class TutorialMode(BaseGameplayMode):
             demo_mode_active=bool(self.demo_mode_active),
         )
 
+    def _runtime_player_count(self) -> int:
+        return 1
+
     def open(self) -> None:
-        original_player_count = self.config.player_count
-        self.config.player_count = 1
-        try:
-            super().open()
-        finally:
-            self.config.player_count = original_player_count
+        super().open()
         self._perk_menu.reset()
 
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)

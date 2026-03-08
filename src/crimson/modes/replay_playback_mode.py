@@ -10,7 +10,7 @@ from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio,
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
@@ -57,6 +57,15 @@ from ..ui.overlays.quest_run import (
 from ..ui.overlays.tutorial_run import draw_tutorial_overlay_panels
 from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
 from ..world.runtime import WorldRuntime
+from .components.mode_presenter import (
+    draw_ui_text as draw_mode_ui_text,
+)
+from .components.mode_presenter import (
+    draw_world_runtime,
+)
+from .components.mode_presenter import (
+    measure_ui_text_width as measure_mode_ui_text_width,
+)
 
 _PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
 _DEFAULT_SPEED_INDEX = 2
@@ -179,12 +188,8 @@ class ReplayPlaybackMode:
         self._console.exec_line("exec music/game_tunes.txt")
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        runtime = self._runtime
-        if runtime is None:
-            return
-        runtime.render_resources.bake_fx_queues()
-        runtime.renderer.draw(
-            render_frame=runtime.build_render_frame(),
+        draw_world_runtime(
+            self._runtime,
             draw_aim_indicators=draw_aim_indicators,
             entity_alpha=entity_alpha,
         )
@@ -402,15 +407,15 @@ class ReplayPlaybackMode:
         return False
 
     def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, *, scale: float = 1.0) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, pos, color)
-        else:
-            rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
+        draw_mode_ui_text(self._small, text, pos, color, scale=float(scale))
 
     def _measure_ui_text_width(self, text: str, *, scale: float = 1.0) -> float:
-        if self._small is not None:
-            return float(measure_small_text_width(self._small, text))
-        return float(len(text)) * 8.0 * float(scale)
+        return measure_mode_ui_text_width(
+            self._small,
+            text,
+            scale=float(scale),
+            fallback=lambda raw, text_scale: float(len(raw)) * 8.0 * float(text_scale),
+        )
 
     def _build_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
         driver = self._driver
