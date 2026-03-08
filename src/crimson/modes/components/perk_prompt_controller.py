@@ -49,8 +49,8 @@ class PerkPromptController:
         allow_input: bool = True,
         allow_pulse: bool = True,
         scale: float = 1.0,
-        on_open_attempt: OnPromptOpenFn | None = None,
-        on_open_success: OnPromptOpenFn | None = None,
+        on_open_attempt: OnPromptOpenFn,
+        on_open_success: OnPromptOpenFn,
     ) -> None:
         pending_count = int(self._pending_count())
         prompt_pending = pending_count > 0 and bool(any_alive)
@@ -67,10 +67,9 @@ class PerkPromptController:
                 self._hover = rect.contains(ctx.mouse)
             if self._prompt_open_requested(config=config, player_count=int(ctx.player_count)):
                 self._pulse = 1000.0
-                if on_open_attempt is not None:
-                    on_open_attempt()
+                on_open_attempt()
                 opened = menu.open_if_available(ctx)
-                if opened and on_open_success is not None:
+                if opened:
                     on_open_success()
 
         menu_active = menu.active
@@ -92,7 +91,7 @@ class PerkPromptController:
         menu: PerkMenuController,
         any_alive: bool,
         config: CrimsonConfig,
-        font: SmallFontData | None,
+        font: SmallFontData,
         resources: RuntimeResources,
         ui_text_width: UiTextWidthFn,
         text_color: rl.Color,
@@ -107,7 +106,6 @@ class PerkPromptController:
         label = PerkPromptUi.label(config, pending_count=pending_count)
         if not label:
             return
-        assert font is not None, "perk prompt requires small font after mode open"
         PerkPromptUi.draw(
             font=font,
             resources=resources,

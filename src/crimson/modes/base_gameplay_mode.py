@@ -607,10 +607,14 @@ class BaseGameplayMode:
         return int(20 * scale)
 
     def _ui_text_width(self, text: str, scale: float = 1.0) -> int:
-        return int(measure_mode_ui_text_width(self._small, text, scale=float(scale)))
+        font = self._small
+        assert font is not None, "small font must be loaded before ui text measurement"
+        return int(measure_mode_ui_text_width(font, text, scale=float(scale)))
 
     def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, scale: float = 1.0) -> None:
-        draw_mode_ui_text(self._small, text, pos, color, scale=float(scale))
+        font = self._small
+        assert font is not None, "small font must be loaded before ui text draw"
+        draw_mode_ui_text(font, text, pos, color, scale=float(scale))
 
     def _ui_mouse_pos(self) -> rl.Vector2:
         return self._ui_mouse.to_rl()

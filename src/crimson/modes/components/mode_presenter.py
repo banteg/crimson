@@ -8,13 +8,11 @@ from ...world.runtime import WorldRuntime
 
 
 def draw_world_runtime(
-    runtime: WorldRuntime | None,
+    runtime: WorldRuntime,
     *,
     draw_aim_indicators: bool = True,
     entity_alpha: float = 1.0,
 ) -> None:
-    if runtime is None:
-        return
     runtime.render_resources.bake_fx_queues()
     runtime.renderer.draw(
         render_frame=runtime.build_render_frame(),
@@ -24,25 +22,22 @@ def draw_world_runtime(
 
 
 def draw_ui_text(
-    font: SmallFontData | None,
+    font: SmallFontData,
     text: str,
     pos: Vec2,
     color: rl.Color,
     *,
     scale: float = 1.0,
 ) -> None:
-    if font is not None:
-        draw_small_text(font, text, pos, color)
-        return
-    rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
+    _ = scale
+    draw_small_text(font, text, pos, color)
 
 
 def measure_ui_text_width(
-    font: SmallFontData | None,
+    font: SmallFontData,
     text: str,
     *,
     scale: float = 1.0,
 ) -> float:
-    if font is not None:
-        return float(measure_small_text_width(font, text))
-    return float(rl.measure_text(text, int(20 * scale)))
+    _ = scale
+    return float(measure_small_text_width(font, text))

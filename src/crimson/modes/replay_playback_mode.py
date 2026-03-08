@@ -188,8 +188,11 @@ class ReplayPlaybackMode:
         self._console.exec_line("exec music/game_tunes.txt")
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
+        runtime = self._runtime
+        if runtime is None:
+            return
         draw_world_runtime(
-            self._runtime,
+            runtime,
             draw_aim_indicators=draw_aim_indicators,
             entity_alpha=entity_alpha,
         )
@@ -407,10 +410,14 @@ class ReplayPlaybackMode:
         return False
 
     def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, *, scale: float = 1.0) -> None:
-        draw_mode_ui_text(self._small, text, pos, color, scale=float(scale))
+        font = self._small
+        assert font is not None, "small font must be loaded before replay ui draw"
+        draw_mode_ui_text(font, text, pos, color, scale=float(scale))
 
     def _measure_ui_text_width(self, text: str, *, scale: float = 1.0) -> float:
-        return measure_mode_ui_text_width(self._small, text, scale=float(scale))
+        font = self._small
+        assert font is not None, "small font must be loaded before replay ui measurement"
+        return measure_mode_ui_text_width(font, text, scale=float(scale))
 
     def _build_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
         driver = self._driver

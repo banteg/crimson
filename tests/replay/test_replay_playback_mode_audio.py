@@ -148,14 +148,18 @@ def test_replay_playback_presenter_helpers_delegate_to_shared_module(mocker, rep
     measure_text = mocker.patch.object(replay_playback_mode, "measure_mode_ui_text_width", return_value=42.0)
     color = rl.Color(20, 30, 40, 255)
     pos = Vec2(12.0, 34.0)
+    font = object()
+    runtime = object()
+    _set_private(view, "_small", font)
+    _set_private(view, "_runtime", runtime)
 
     view._draw_world(draw_aim_indicators=False, entity_alpha=0.5)
     view._draw_ui_text("replay", pos, color, scale=0.8)
     width = view._measure_ui_text_width("replay", scale=0.8)
 
-    draw_world.assert_called_once_with(None, draw_aim_indicators=False, entity_alpha=0.5)
-    draw_text.assert_called_once_with(view._small, "replay", pos, color, scale=0.8)
-    measure_text.assert_called_once_with(view._small, "replay", scale=0.8)
+    draw_world.assert_called_once_with(runtime, draw_aim_indicators=False, entity_alpha=0.5)
+    draw_text.assert_called_once_with(font, "replay", pos, color, scale=0.8)
+    measure_text.assert_called_once_with(font, "replay", scale=0.8)
     assert width == 42.0
 
 

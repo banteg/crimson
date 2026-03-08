@@ -677,11 +677,13 @@ class QuestMode(BaseGameplayMode):
         self._draw_quest_title()
         self._draw_quest_complete_banner()
 
+        font = self._small
+        assert font is not None, "perk prompt requires small font after mode open"
         self._perk_prompt.draw(
             menu=self._perk_menu,
             any_alive=self._any_player_alive(),
             config=self.config,
-            font=self._small,
+            font=font,
             resources=self.render_resources.resources,
             ui_text_width=self._ui_text_width,
             text_color=UI_TEXT_COLOR,
