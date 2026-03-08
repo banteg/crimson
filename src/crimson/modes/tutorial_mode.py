@@ -35,7 +35,7 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapon_usage import normalize_weapon_usage_counts
 from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
-from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
+from .components.perk_menu_controller import PerkMenuController
 
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 
@@ -163,25 +163,8 @@ class TutorialMode(BaseGameplayMode):
         _ = replay
         return f"tutorial_{stamp}"
 
-    def _perk_menu_context(self) -> PerkMenuContext:
-        gore_disabled = self.config.gore_disabled
-        fx_detail = self.config.fx_detail(level=0, default=False)
-        assert self._small is not None, "perk menu requires small font after mode open"
-        return PerkMenuContext(
-            state=self.state,
-            perk_state=self.state.perk_selection,
-            players=[self.player],
-            creatures=self.creatures.entries,
-            player=self.player,
-            game_mode=GameMode.TUTORIAL,
-            player_count=1,
-            gore_disabled=gore_disabled,
-            fx_detail=fx_detail,
-            font=self._small,
-            resources=self.render_resources.resources,
-            mouse=self._ui_mouse_pos(),
-            play_sfx=None,
-        )
+    def _perk_menu_play_sfx(self) -> None:
+        return None
 
     def _handle_input(self) -> None:
         if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):

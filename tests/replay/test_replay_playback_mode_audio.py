@@ -141,15 +141,14 @@ def test_replay_playback_progress_ratio_and_time_formatting(replay_playback_view
     assert replay_playback_mode.ReplayPlaybackMode._format_time_text(65.9) == "1:05"
 
 
-def test_replay_playback_presenter_helpers_delegate_to_shared_module(mocker, replay_playback_view) -> None:
+def test_replay_playback_helpers_delegate_to_runtime_and_small_font(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
-    draw_world = mocker.patch.object(replay_playback_mode, "draw_world_runtime")
-    draw_text = mocker.patch.object(replay_playback_mode, "draw_mode_ui_text")
-    measure_text = mocker.patch.object(replay_playback_mode, "measure_mode_ui_text_width", return_value=42.0)
+    draw_text = mocker.patch.object(replay_playback_mode, "draw_small_text")
+    measure_text = mocker.patch.object(replay_playback_mode, "measure_small_text_width", return_value=42.0)
     color = rl.Color(20, 30, 40, 255)
     pos = Vec2(12.0, 34.0)
     font = object()
-    runtime = object()
+    runtime = SimpleNamespace(draw=mocker.Mock())
     _set_private(view, "_small", font)
     _set_private(view, "_runtime", runtime)
 
@@ -157,9 +156,9 @@ def test_replay_playback_presenter_helpers_delegate_to_shared_module(mocker, rep
     view._draw_ui_text("replay", pos, color, scale=0.8)
     width = view._measure_ui_text_width("replay", scale=0.8)
 
-    draw_world.assert_called_once_with(runtime, draw_aim_indicators=False, entity_alpha=0.5)
-    draw_text.assert_called_once_with(font, "replay", pos, color, scale=0.8)
-    measure_text.assert_called_once_with(font, "replay", scale=0.8)
+    runtime.draw.assert_called_once_with(draw_aim_indicators=False, entity_alpha=0.5)
+    draw_text.assert_called_once_with(font, "replay", pos, color)
+    measure_text.assert_called_once_with(font, "replay")
     assert width == 42.0
 
 

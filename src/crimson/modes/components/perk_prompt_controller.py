@@ -4,7 +4,6 @@ from collections.abc import Callable
 
 from grim.assets import RuntimeResources
 from grim.config import CrimsonConfig
-from grim.fonts.small import SmallFontData
 from grim.math import clamp
 from grim.raylib_api import rl
 
@@ -91,7 +90,6 @@ class PerkPromptController:
         menu: PerkMenuController,
         any_alive: bool,
         config: CrimsonConfig,
-        font: SmallFontData,
         resources: RuntimeResources,
         ui_text_width: UiTextWidthFn,
         text_color: rl.Color,
@@ -107,7 +105,6 @@ class PerkPromptController:
         if not label:
             return
         PerkPromptUi.draw(
-            font=font,
             resources=resources,
             label=label,
             timer_ms=float(self._timer_ms),

@@ -26,7 +26,6 @@ from ..net.rollback_resync_v5 import (
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..sim.bootstrap import run_unlock_terrain_prelude
-from ..sim.input_providers import PerkMenuOpenCommand
 from ..sim.session_builders import build_survival_session
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSpawnState
 from ..ui.cursor import draw_menu_cursor
@@ -41,8 +40,6 @@ from .base_gameplay_mode import (
     LanStepAction,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
-from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
-from .components.perk_prompt_controller import PerkPromptController
 
 WORLD_SIZE = 1024.0
 
@@ -53,6 +50,7 @@ UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
+
 
 class SurvivalMode(BaseGameplayMode):
     def __init__(
@@ -76,13 +74,8 @@ class SurvivalMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._perk_prompt = PerkPromptController(
-            pending_count=lambda: int(self.state.perk_selection.pending_count),
-        )
-        self._perk_menu = PerkMenuController(
-            on_close=self._perk_prompt.reset_on_close,
-            on_pick=self._record_perk_pick,
-            defer_pick_apply=True,
+        self._perk_prompt, self._perk_menu = self._build_deferred_perk_menu(
+            on_pick=self._record_primary_perk_pick,
         )
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._cursor_time = 0.0
@@ -107,18 +100,6 @@ class SurvivalMode(BaseGameplayMode):
         self._spawn_state = spawn_state
         return session
 
-    def _record_perk_pick(self, choice_index: int) -> bool:
-        self.record_perk_pick_command(int(choice_index), player_index=0)
-        return True
-
-    def _record_perk_prompt_open_attempt(self) -> None:
-        recorder = self._replay_recorder
-        if recorder is not None:
-            self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
-
-    def _enqueue_perk_prompt_open_command(self) -> None:
-        self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
-
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return self._session_elapsed_ms()
 
@@ -132,27 +113,6 @@ class SurvivalMode(BaseGameplayMode):
         _ = replay
         score = int(self.player.experience)
         return f"survival_{stamp}_score{score}"
-
-    def _perk_menu_context(self) -> PerkMenuContext:
-        gore_disabled = self.config.gore_disabled
-        fx_detail = self.config.fx_detail(level=0, default=False)
-        players = self.sim_world.players
-        assert self._small is not None, "perk menu requires small font after mode open"
-        return PerkMenuContext(
-            state=self.state,
-            perk_state=self.state.perk_selection,
-            players=players,
-            creatures=self.creatures.entries,
-            player=self.player,
-            game_mode=GameMode.SURVIVAL,
-            player_count=len(players),
-            gore_disabled=gore_disabled,
-            fx_detail=fx_detail,
-            font=self._small,
-            resources=self.render_resources.resources,
-            mouse=self._ui_mouse_pos(),
-            play_sfx=self.audio_bridge.router.play_sfx,
-        )
 
     def _wrap_ui_text(self, text: str, *, max_width: float, scale: float = UI_TEXT_SCALE) -> list[str]:
         lines: list[str] = []
@@ -357,19 +317,15 @@ class SurvivalMode(BaseGameplayMode):
     ) -> bool:
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
-        self._perk_prompt.update(
+        self._update_perk_prompt(
+            prompt=self._perk_prompt,
             menu=self._perk_menu,
-            ctx=self._perk_menu_context(),
-            config=self.config,
             dt=float(dt_tick),
             dt_ui_ms=float(dt_ui_ms),
-            any_alive=self._any_player_alive(),
             paused=self._paused,
             allow_input=(role == "host"),
             allow_pulse=(not self._paused) and (not self._game_over_active),
             scale=UI_TEXT_SCALE,
-            on_open_attempt=self._record_perk_prompt_open_attempt,
-            on_open_success=self._enqueue_perk_prompt_open_command,
         )
         if self._perk_menu.active:
             self._hud_fade_ms = 0.0
@@ -443,19 +399,14 @@ class SurvivalMode(BaseGameplayMode):
             self._update_lan_match(dt=float(frame.dt), dt_ui_ms=float(frame.dt_ui_ms))
             return
 
-        perk_ctx = self._perk_menu_context()
-        self._perk_prompt.update(
+        self._update_perk_prompt(
+            prompt=self._perk_prompt,
             menu=self._perk_menu,
-            ctx=perk_ctx,
-            config=self.config,
             dt=float(frame.dt),
             dt_ui_ms=float(frame.dt_ui_ms),
-            any_alive=self._any_player_alive(),
             paused=self._paused,
             allow_pulse=(not self._paused) and (not self._game_over_active),
             scale=UI_TEXT_SCALE,
-            on_open_attempt=self._record_perk_prompt_open_attempt,
-            on_open_success=self._enqueue_perk_prompt_open_command,
         )
         if self._perk_menu.active:
             self._hud_fade_ms = 0.0
@@ -572,15 +523,9 @@ class SurvivalMode(BaseGameplayMode):
                 self._draw_ui_text("game over", Vec2(x, y_extra), UI_ERROR_COLOR)
                 y_extra += line
             self._draw_lan_debug_info(x=x, y=y_extra, line_h=line)
-        font = self._small
-        assert font is not None, "perk prompt requires small font after mode open"
-        self._perk_prompt.draw(
+        self._draw_perk_prompt(
+            prompt=self._perk_prompt,
             menu=self._perk_menu,
-            any_alive=self._any_player_alive(),
-            config=self.config,
-            font=font,
-            resources=self.render_resources.resources,
-            ui_text_width=self._ui_text_width,
             text_color=UI_TEXT_COLOR,
             scale=UI_TEXT_SCALE,
             hidden=self._game_over_active,
