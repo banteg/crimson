@@ -477,6 +477,15 @@ def player_fire_keybind(config: CrimsonConfig | None, *, player_index: int) -> i
     return int(default_player_keybind_block(idx)[4])
 
 
+def player_move_fire_keybinds(config: CrimsonConfig | None, *, player_index: int) -> tuple[int, int, int, int, int]:
+    idx = max(0, min(3, int(player_index)))
+    keybinds = config_keybinds_for_player(config, player_index=idx)
+    if len(keybinds) >= 5:
+        return player_move_fire_binds(keybinds, 0)
+    defaults = tuple(int(value) for value in default_player_keybind_block(idx))
+    return int(defaults[0]), int(defaults[1]), int(defaults[2]), int(defaults[3]), int(defaults[4])
+
+
 def _input_primary_any_down(config: CrimsonConfig | None, *, player_count: int) -> bool:
     if input_code_is_down_for_player(0x100, player_index=0):
         return True

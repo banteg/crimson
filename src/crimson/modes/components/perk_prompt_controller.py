@@ -20,13 +20,11 @@ UiTextWidthFn = Callable[[str, float], int]
 
 @dataclass(slots=True)
 class PerkPromptState:
-    pending_count: int = 0
     timer_ms: float = 0.0
     hover: bool = False
     pulse: float = 0.0
 
     def reset(self) -> None:
-        self.pending_count = 0
         self.timer_ms = 0.0
         self.hover = False
         self.pulse = 0.0
@@ -36,7 +34,7 @@ class PerkPromptState:
             self.reset()
 
     def begin_frame(self, *, pending_count: int) -> None:
-        self.pending_count = int(pending_count)
+        _ = pending_count
         self.hover = False
 
     def poll_open_request(
@@ -51,7 +49,6 @@ class PerkPromptState:
         menu_active: bool,
         prompt_scale: float = 1.0,
     ) -> bool:
-        self.pending_count = int(pending_count)
         if int(pending_count) <= 0 or (not any_alive) or paused or menu_active:
             return False
         label = PerkPromptUi.label(config, pending_count=int(pending_count))
@@ -72,7 +69,6 @@ class PerkPromptState:
         menu_active: bool,
         dt_ui_ms: float,
     ) -> None:
-        self.pending_count = int(pending_count)
         prompt_visible = int(pending_count) > 0 and bool(any_alive) and (not paused) and (not menu_active)
         timer_delta = float(dt_ui_ms) if prompt_visible else -float(dt_ui_ms)
         self.timer_ms = clamp(self.timer_ms + timer_delta, 0.0, PERK_PROMPT_MAX_TIMER_MS)

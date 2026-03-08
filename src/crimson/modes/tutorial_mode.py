@@ -11,7 +11,7 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
-from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
+from ..input_codes import input_code_is_down, input_code_is_pressed, player_move_fire_keybinds
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
@@ -166,9 +166,6 @@ class TutorialMode(BaseGameplayMode):
         _ = replay
         return f"tutorial_{stamp}"
 
-    def _perk_menu_play_sfx(self) -> None:
-        return None
-
     def _open_perk_menu(self) -> None:
         self._open_perk_menu_ui(
             menu=self._perk_menu,
@@ -190,10 +187,10 @@ class TutorialMode(BaseGameplayMode):
             return
 
     def _build_input(self) -> PlayerInput:
-        keybinds = config_keybinds(self.config)
-        if not keybinds:
-            keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
-        up_key, down_key, left_key, right_key, fire_key = player_move_fire_binds(keybinds, 0)
+        up_key, down_key, left_key, right_key, fire_key = player_move_fire_keybinds(
+            self.config,
+            player_index=0,
+        )
 
         move = Vec2(
             float(input_code_is_down(right_key)) - float(input_code_is_down(left_key)),
