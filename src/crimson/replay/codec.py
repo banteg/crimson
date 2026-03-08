@@ -82,6 +82,9 @@ def _validate_header(header: ReplayHeader, *, from_load: bool) -> None:
     if int(header.game_mode_id) == int(GameMode.TYPO):
         if int(header.player_count) != 1:
             raise ReplayCodecError("Typ-o replays require player_count == 1")
+    if int(header.game_mode_id) == int(GameMode.TUTORIAL):
+        if int(header.player_count) != 1:
+            raise ReplayCodecError("tutorial replays require player_count == 1")
 
 
 def _normalize_packed_input(

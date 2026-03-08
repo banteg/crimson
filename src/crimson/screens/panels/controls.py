@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.assets import TextureId
+from grim.assets import RuntimeResources, TextureId
 from grim.config import (
     KEYBIND_UNBOUND_CODE,
     default_player_keybind_block,
 )
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
@@ -17,7 +17,7 @@ from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code,
 from ...movement_controls import MovementControlType
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
-from ..assets import _ensure_texture_cache
+from ..assets import require_runtime_resources
 from ..menu import (
     MENU_PANEL_HEIGHT,
     MENU_PANEL_WIDTH,
@@ -121,13 +121,6 @@ class ControlsMenuView(PanelMenuView):
             panel_pos=Vec2(CONTROLS_LEFT_PANEL_POS_X, CONTROLS_LEFT_PANEL_POS_Y),
             back_pos=Vec2(CONTROLS_BACK_POS_X, CONTROLS_BACK_POS_Y),
         )
-        self._small_font: SmallFontData | None = None
-        self._text_controls: rl.Texture | None = None
-        self._drop_on: rl.Texture | None = None
-        self._drop_off: rl.Texture | None = None
-        self._check_on: rl.Texture | None = None
-        self._check_off: rl.Texture | None = None
-
         self._config_player = 1
         self._move_method_open = False
         self._aim_method_open = False
@@ -139,13 +132,6 @@ class ControlsMenuView(PanelMenuView):
 
     def open(self) -> None:
         super().open()
-        cache = _ensure_texture_cache(self.state)
-        # UI elements used by the classic controls screen.
-        self._text_controls = cache.texture(TextureId.UI_TEXT_CONTROLS)
-        self._drop_on = cache.texture(TextureId.UI_DROP_ON)
-        self._drop_off = cache.texture(TextureId.UI_DROP_OFF)
-        self._check_on = cache.texture(TextureId.UI_CHECK_ON)
-        self._check_off = cache.texture(TextureId.UI_CHECK_OFF)
         self._config_player = max(1, min(4, int(self._config_player)))
         self._move_method_open = False
         self._aim_method_open = False
@@ -163,13 +149,25 @@ class ControlsMenuView(PanelMenuView):
         panel_scale, _local_y_shift = self._menu_item_scale(0)
         left_top_left = self._left_panel_top_left(panel_scale)
         right_top_left = self._right_panel_top_left(panel_scale)
-        click_consumed = self._update_method_dropdowns(left_top_left=left_top_left, panel_scale=panel_scale)
+        resources = require_runtime_resources(self.state)
+        font = resources.small_font
+        click_consumed = self._update_method_dropdowns(
+            left_top_left=left_top_left,
+            panel_scale=panel_scale,
+            font=font,
+        )
         if not click_consumed:
-            click_consumed = self._update_rebind_capture(right_top_left=right_top_left, panel_scale=panel_scale)
+            click_consumed = self._update_rebind_capture(
+                right_top_left=right_top_left,
+                panel_scale=panel_scale,
+                font=font,
+            )
         if (not click_consumed) and self._update_direction_arrow_checkbox(
             left_top_left=left_top_left,
             panel_scale=panel_scale,
             enabled=self._checkbox_enabled(),
+            resources=resources,
+            font=font,
         ):
             self._dirty = True
 
@@ -182,12 +180,6 @@ class ControlsMenuView(PanelMenuView):
             else:
                 self._dirty = False
         super()._begin_close_transition(action)
-
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
 
     def _current_player_index(self) -> int:
         return max(0, min(3, int(self._config_player) - 1))
@@ -300,14 +292,18 @@ class ControlsMenuView(PanelMenuView):
     def _checkbox_enabled(self) -> bool:
         return not (self._move_method_open or self._aim_method_open or self._rebind_active())
 
-    def _checkbox_hovered(self, *, left_top_left: Vec2, panel_scale: float, enabled: bool) -> bool:
+    def _checkbox_hovered(
+        self,
+        *,
+        left_top_left: Vec2,
+        panel_scale: float,
+        enabled: bool,
+        resources: RuntimeResources,
+        font: SmallFontData,
+    ) -> bool:
         if not enabled:
             return False
-        check_on = self._check_on
-        check_off = self._check_off
-        if check_on is None or check_off is None:
-            return False
-        font = self._ensure_small_font()
+        check_on = resources.texture(TextureId.UI_CHECK_ON)
         text_scale = 1.0 * panel_scale
         label = "Show direction arrow"
         check_pos = Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 174.0 * panel_scale)
@@ -317,15 +313,24 @@ class ControlsMenuView(PanelMenuView):
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
         return Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
 
-    def _update_direction_arrow_checkbox(self, *, left_top_left: Vec2, panel_scale: float, enabled: bool) -> bool:
+    def _update_direction_arrow_checkbox(
+        self,
+        *,
+        left_top_left: Vec2,
+        panel_scale: float,
+        enabled: bool,
+        resources: RuntimeResources,
+        font: SmallFontData,
+    ) -> bool:
         if not enabled:
             return False
-        check_on = self._check_on
-        check_off = self._check_off
-        if check_on is None or check_off is None:
-            return False
-
-        hovered = self._checkbox_hovered(left_top_left=left_top_left, panel_scale=panel_scale, enabled=enabled)
+        hovered = self._checkbox_hovered(
+            left_top_left=left_top_left,
+            panel_scale=panel_scale,
+            enabled=enabled,
+            resources=resources,
+            font=font,
+        )
         if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._set_direction_arrow_enabled(not self._direction_arrow_enabled())
             return True
@@ -355,8 +360,8 @@ class ControlsMenuView(PanelMenuView):
         panel_scale: float,
         player_index: int,
         sections: tuple[tuple[str, tuple[tuple[str, int], ...]], ...],
+        font: SmallFontData,
     ) -> tuple[_RebindRowLayout, ...]:
-        font = self._ensure_small_font()
         rows: list[_RebindRowLayout] = []
         y = right_top_left.y + 64.0 * panel_scale
         for _section_title, section_rows in sections:
@@ -384,7 +389,7 @@ class ControlsMenuView(PanelMenuView):
             y = row_y + 8.0 * panel_scale
         return tuple(rows)
 
-    def _update_rebind_capture(self, *, right_top_left: Vec2, panel_scale: float) -> bool:
+    def _update_rebind_capture(self, *, right_top_left: Vec2, panel_scale: float, font: SmallFontData) -> bool:
         player_idx = self._current_player_index()
         aim_scheme, move_mode = controls_method_values(self.state.config.data, player_index=player_idx)
         sections = self._rebind_sections(player_index=player_idx, aim_scheme=aim_scheme, move_mode=move_mode)
@@ -393,6 +398,7 @@ class ControlsMenuView(PanelMenuView):
             panel_scale=panel_scale,
             player_index=player_idx,
             sections=sections,
+            font=font,
         )
 
         if self._rebind_active():
@@ -468,8 +474,14 @@ class ControlsMenuView(PanelMenuView):
             items.append(MovementControlType.MOUSE_POINT_CLICK)
         return tuple(items)
 
-    def _dropdown_layout(self, *, pos: Vec2, items: tuple[str, ...], scale: float) -> _ControlsDropdownLayout:
-        font = self._ensure_small_font()
+    def _dropdown_layout(
+        self,
+        *,
+        pos: Vec2,
+        items: tuple[str, ...],
+        scale: float,
+        font: SmallFontData,
+    ) -> _ControlsDropdownLayout:
         text_scale = 1.0 * scale
         max_label_w = 0.0
         for label in items:
@@ -531,7 +543,7 @@ class ControlsMenuView(PanelMenuView):
 
         return is_open, None, False
 
-    def _update_method_dropdowns(self, *, left_top_left: Vec2, panel_scale: float) -> bool:
+    def _update_method_dropdowns(self, *, left_top_left: Vec2, panel_scale: float, font: SmallFontData) -> bool:
         config = self.state.config
         player_idx = self._current_player_index()
         aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
@@ -545,16 +557,19 @@ class ControlsMenuView(PanelMenuView):
             pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 144.0 * panel_scale),
             items=move_items,
             scale=panel_scale,
+            font=font,
         )
         aim_layout = self._dropdown_layout(
             pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 102.0 * panel_scale),
             items=aim_items,
             scale=panel_scale,
+            font=font,
         )
         player_layout = self._dropdown_layout(
             pos=Vec2(left_top_left.x + 340.0 * panel_scale, left_top_left.y + 56.0 * panel_scale),
             items=player_items,
             scale=panel_scale,
+            font=font,
         )
 
         rebind_active = self._rebind_active()
@@ -605,13 +620,10 @@ class ControlsMenuView(PanelMenuView):
         return False
 
     def _draw_panel(self) -> None:
-        assets = self._assets
-        assert assets is not None, "ControlsMenuView assets must be loaded before drawing panel"
-        panel = assets.panel
-
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         panel_scale, _local_y_shift = self._menu_item_scale(0)
         panel_w = MENU_PANEL_WIDTH * panel_scale
+        panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
 
         # Left (controls options) panel: standard 254px height => a single quad.
         left_top_left = self._left_panel_top_left(panel_scale)
@@ -642,7 +654,9 @@ class ControlsMenuView(PanelMenuView):
         left_top_left = self._left_panel_top_left(panel_scale)
         right_top_left = self._right_panel_top_left(panel_scale)
 
-        font = self._ensure_small_font()
+        resources = require_runtime_resources(self.state)
+        font = resources.small_font
+
         text_color_full = rl.Color(255, 255, 255, 255)
         text_color_soft = rl.Color(255, 255, 255, 204)
         config = self.state.config
@@ -666,33 +680,36 @@ class ControlsMenuView(PanelMenuView):
             pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 144.0 * panel_scale),
             items=move_items,
             scale=panel_scale,
+            font=font,
         )
         aim_layout = self._dropdown_layout(
             pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 102.0 * panel_scale),
             items=aim_items,
             scale=panel_scale,
+            font=font,
         )
         player_layout = self._dropdown_layout(
             pos=Vec2(left_top_left.x + 340.0 * panel_scale, left_top_left.y + 56.0 * panel_scale),
             items=player_items,
             scale=panel_scale,
+            font=font,
         )
 
         # --- Left panel: "Configure for" + method selectors (state_3 in trace) ---
-        if self._text_controls is not None:
-            MenuView._draw_ui_quad(
-                texture=self._text_controls,
-                src=rl.Rectangle(0.0, 0.0, float(self._text_controls.width), float(self._text_controls.height)),
-                dst=rl.Rectangle(
-                    left_top_left.x + 206.0 * panel_scale,
-                    left_top_left.y + 44.0 * panel_scale,
-                    128.0 * panel_scale,
-                    32.0 * panel_scale,
-                ),
-                origin=rl.Vector2(0.0, 0.0),
-                rotation_deg=0.0,
-                tint=rl.WHITE,
-            )
+        text_controls = resources.texture(TextureId.UI_TEXT_CONTROLS)
+        MenuView._draw_ui_quad(
+            texture=text_controls,
+            src=rl.Rectangle(0.0, 0.0, float(text_controls.width), float(text_controls.height)),
+            dst=rl.Rectangle(
+                left_top_left.x + 206.0 * panel_scale,
+                left_top_left.y + 44.0 * panel_scale,
+                128.0 * panel_scale,
+                32.0 * panel_scale,
+            ),
+            origin=rl.Vector2(0.0, 0.0),
+            rotation_deg=0.0,
+            tint=rl.WHITE,
+        )
 
         draw_small_text(font, "Configure for:", Vec2(left_top_left.x + 339.0 * panel_scale, left_top_left.y + 41.0 * panel_scale), text_color_soft)
 
@@ -700,25 +717,30 @@ class ControlsMenuView(PanelMenuView):
 
         draw_small_text(font, "Moving method:", Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 128.0 * panel_scale), text_color_full)
 
-        check_tex = self._check_on if self._direction_arrow_enabled() else self._check_off
-        if check_tex is not None:
-            MenuView._draw_ui_quad(
-                texture=check_tex,
-                src=rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
-                dst=rl.Rectangle(
-                    left_top_left.x + 213.0 * panel_scale,
-                    left_top_left.y + 174.0 * panel_scale,
-                    16.0 * panel_scale,
-                    16.0 * panel_scale,
-                ),
-                origin=rl.Vector2(0.0, 0.0),
-                rotation_deg=0.0,
-                tint=rl.WHITE,
-            )
+        check_tex = (
+            resources.texture(TextureId.UI_CHECK_ON)
+            if self._direction_arrow_enabled()
+            else resources.texture(TextureId.UI_CHECK_OFF)
+        )
+        MenuView._draw_ui_quad(
+            texture=check_tex,
+            src=rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
+            dst=rl.Rectangle(
+                left_top_left.x + 213.0 * panel_scale,
+                left_top_left.y + 174.0 * panel_scale,
+                16.0 * panel_scale,
+                16.0 * panel_scale,
+            ),
+            origin=rl.Vector2(0.0, 0.0),
+            rotation_deg=0.0,
+            tint=rl.WHITE,
+        )
         checkbox_hovered = self._checkbox_hovered(
             left_top_left=left_top_left,
             panel_scale=panel_scale,
             enabled=self._checkbox_enabled(),
+            resources=resources,
+            font=font,
         )
         checkbox_alpha = 255 if checkbox_hovered else 178
         draw_small_text(font, "Show direction arrow", Vec2(left_top_left.x + 235.0 * panel_scale, left_top_left.y + 175.0 * panel_scale), rl.Color(255, 255, 255, checkbox_alpha))
@@ -757,6 +779,8 @@ class ControlsMenuView(PanelMenuView):
                 is_open=is_open,
                 enabled=enabled,
                 scale=panel_scale,
+                resources=resources,
+                font=font,
             )
         for is_open, layout, items, selected_index, enabled in dropdowns:
             if not is_open:
@@ -768,6 +792,8 @@ class ControlsMenuView(PanelMenuView):
                 is_open=is_open,
                 enabled=enabled,
                 scale=panel_scale,
+                resources=resources,
+                font=font,
             )
 
         # --- Right panel: configured bindings list ---
@@ -798,6 +824,7 @@ class ControlsMenuView(PanelMenuView):
             panel_scale=panel_scale,
             player_index=player_idx,
             sections=sections,
+            font=font,
         )
         row_iter = iter(rows)
         mouse = Vec2.from_xy(rl.get_mouse_position())
@@ -858,6 +885,8 @@ class ControlsMenuView(PanelMenuView):
         is_open: bool,
         enabled: bool,
         scale: float,
+        resources: RuntimeResources,
+        font: SmallFontData,
     ) -> None:
         mouse = rl.get_mouse_position()
         hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
@@ -881,24 +910,24 @@ class ControlsMenuView(PanelMenuView):
                 line_h,
                 rl.Color(255, 255, 255, 128),
             )
-
-        arrow_tex = self._drop_on if ((is_open or hovered_header) and enabled) else self._drop_off
-        if arrow_tex is None:
-            arrow_tex = self._drop_off
-        if arrow_tex is not None:
-            rl.draw_texture_pro(
-                arrow_tex,
-                rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
-                rl.Rectangle(layout.arrow_pos.x, layout.arrow_pos.y, layout.arrow_size.x, layout.arrow_size.y),
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.WHITE,
-            )
+        arrow_tex = (
+            resources.texture(TextureId.UI_DROP_ON)
+            if ((is_open or hovered_header) and enabled)
+            else resources.texture(TextureId.UI_DROP_OFF)
+        )
+        rl.draw_texture_pro(
+            arrow_tex,
+            rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
+            rl.Rectangle(layout.arrow_pos.x, layout.arrow_pos.y, layout.arrow_size.x, layout.arrow_size.y),
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.WHITE,
+        )
 
         idx = max(0, min(len(items) - 1, int(selected_index))) if items else 0
         header_alpha = 242 if ((is_open or hovered_header) and enabled) else 191
         if items:
-            draw_small_text(self._ensure_small_font(), items[idx], layout.text_pos, rl.Color(255, 255, 255, header_alpha))
+            draw_small_text(font, items[idx], layout.text_pos, rl.Color(255, 255, 255, header_alpha))
 
         if not is_open:
             return
@@ -916,4 +945,4 @@ class ControlsMenuView(PanelMenuView):
                 alpha = 242
             if idx == selected_index:
                 alpha = max(alpha, 245)
-            draw_small_text(self._ensure_small_font(), item, Vec2(layout.text_pos.x, item_y), rl.Color(255, 255, 255, alpha))
+            draw_small_text(font, item, Vec2(layout.text_pos.x, item_y), rl.Color(255, 255, 255, alpha))

@@ -67,6 +67,9 @@ class PostStepContext(msgspec.Struct, frozen=True):
     world: WorldState
     rng_marks: dict[str, int]
     step_result: DeterministicStepResult
+    dt_sim_ms: float
+    world_size: float
+    detail_preset: int
 
 PostStepHook: TypeAlias = Callable[[PostStepContext], None]
 
@@ -367,6 +370,9 @@ class DeterministicSession(msgspec.Struct):
                     world=self.world,
                     rng_marks=rng_marks,
                     step_result=step,
+                    dt_sim_ms=float(dt_sim_ms),
+                    world_size=float(self.world_size),
+                    detail_preset=int(self.detail_preset),
                 ),
             )
 

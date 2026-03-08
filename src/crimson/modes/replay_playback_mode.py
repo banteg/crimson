@@ -54,6 +54,7 @@ from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
     draw_quest_title_timer_overlay,
 )
+from ..ui.overlays.tutorial_run import draw_tutorial_overlay_panels
 from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
 from ..world.runtime import WorldRuntime
 
@@ -672,6 +673,18 @@ class ReplayPlaybackMode:
             measure_text_width=lambda text, scale: float(self._measure_ui_text_width(text, scale=scale)),
         )
 
+    def _draw_tutorial_overlays(self) -> None:
+        runtime = self._runtime
+        assert runtime is not None, "World runtime must be open before tutorial replay draw"
+        draw_tutorial_overlay_panels(
+            runtime.sim_world.state.tutorial_overlay,
+            draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
+            measure_text_width=lambda text, scale: float(self._measure_ui_text_width(text, scale=scale)),
+            measure_line_height=lambda scale: int(
+                self._small.cell_size * scale if self._small is not None else 20 * scale,
+            ),
+        )
+
     def draw(self) -> None:
         runtime = self._runtime
         assert runtime is not None, "World runtime must be open before replay draw"
@@ -722,6 +735,8 @@ class ReplayPlaybackMode:
 
         self._draw_quest_title()
         self._draw_quest_complete_banner()
+        if mode_id == GameMode.TUTORIAL:
+            self._draw_tutorial_overlays()
         if show_typo_ui:
             self._draw_typing_box()
 

@@ -9,6 +9,7 @@ def test_menu_demo_idle_starts_demo(mocker, make_game_state) -> None:
     import crimson.screens.menu as menu_mod
 
     state = make_game_state(demo_enabled=True)
+    state.resources = SimpleNamespace()
     view = MenuView(state)
     view._is_open = True
     view._menu_entries = [MenuEntry(slot=0, row=1, y=0.0)]
@@ -31,6 +32,7 @@ def test_menu_idle_does_not_start_demo_in_full_version(mocker, make_game_state) 
     import crimson.screens.menu as menu_mod
 
     state = make_game_state(demo_enabled=False)
+    state.resources = SimpleNamespace()
     view = MenuView(state)
     view._is_open = True
     view._menu_entries = [MenuEntry(slot=0, row=1, y=0.0)]
@@ -51,6 +53,7 @@ def test_menu_idle_resets_on_key_press(mocker, make_game_state) -> None:
     import crimson.screens.menu as menu_mod
 
     state = make_game_state(demo_enabled=True)
+    state.resources = SimpleNamespace()
     view = MenuView(state)
     view._is_open = True
     view._menu_entries = [MenuEntry(slot=0, row=1, y=0.0)]

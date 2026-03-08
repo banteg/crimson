@@ -4,6 +4,8 @@ import inspect
 from pathlib import Path
 
 import crimson.audio_router as audio_router_module
+import crimson.debug_views.arsenal_debug as arsenal_debug_module
+import crimson.demo as demo_module
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
 import crimson.replay.driver.playback_driver as playback_driver_module
@@ -14,7 +16,7 @@ import crimson.replay.driver.replay_render as replay_render_module
 import crimson.sim.batch_apply as batch_apply_module
 import crimson.sim.frame_pump as frame_pump_module
 import crimson.sim.presentation_reactions as presentation_reactions_module
-import crimson.world.runtime as world_runtime_module
+import crimson.world.standalone_tick_harness as standalone_tick_harness_module
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
 from crimson.sim.clock import FixedStepClock
@@ -406,7 +408,9 @@ def test_contract_7_live_frame_advancement_uses_shared_helper() -> None:
     helper_source = inspect.getsource(frame_pump_module.advance_tick_runner_frame)
     gameplay_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._run_deterministic_session_ticks)
     lan_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._consume_lan_tick_frames)
-    world_source = inspect.getsource(world_runtime_module.WorldRuntime.advance_tick_frame)
+    harness_source = inspect.getsource(standalone_tick_harness_module.StandaloneTickHarness.advance_frame)
+    demo_source = inspect.getsource(demo_module.DemoView._update_world)
+    debug_source = inspect.getsource(arsenal_debug_module.ArsenalDebugView.update)
 
     assert "runner.begin_frame(" in helper_source
     assert "runner.advance_ticks(" in helper_source
@@ -417,9 +421,11 @@ def test_contract_7_live_frame_advancement_uses_shared_helper() -> None:
     assert "runner.advance_ticks(" not in gameplay_source
     assert "runner.begin_frame(" not in lan_source
     assert "runner.advance_ticks(" not in lan_source
-    assert "advance_tick_runner_frame(" in world_source
-    assert "runner.begin_frame(" not in world_source
-    assert "runner.advance_ticks(" not in world_source
+    assert "advance_tick_runner_frame(" in harness_source
+    assert "runner.begin_frame(" not in harness_source
+    assert "runner.advance_ticks(" not in harness_source
+    assert "self._tick_harness.advance_frame(" in demo_source
+    assert "self._tick_harness.advance_frame(" in debug_source
 
 
 def test_contract_8_replay_frame_advancement_uses_shared_helper() -> None:
@@ -439,7 +445,7 @@ def test_contract_9_post_apply_reactions_are_shared() -> None:
     helper_source = inspect.getsource(presentation_reactions_module.apply_post_apply_reaction)
     gameplay_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._process_tick_batch_results)
     replay_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._apply_post_apply_reaction)
-    world_source = inspect.getsource(world_runtime_module.WorldRuntime._apply_tick_batch)
+    world_source = inspect.getsource(standalone_tick_harness_module.StandaloneTickHarness._apply_tick_batch)
 
     assert 'play_sfx("sfx_questhit")' in helper_source
     assert "PerkPickCommand" not in gameplay_source

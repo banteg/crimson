@@ -17,6 +17,7 @@ from ..game_modes import GameMode
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext
+from ..tooling.audio_bootstrap import init_view_audio
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
 from ..weapon_runtime.fire_recipes import (
@@ -34,8 +35,8 @@ from ..weapons import (
     projectile_type_id_for_weapon_id,
 )
 from ..world import WorldRuntime
+from ..world.standalone_tick_harness import StandaloneTickHarness
 from ._ui_helpers import draw_ui_text, ui_line_height
-from .audio_bootstrap import init_view_audio
 from .registry import register_view
 
 WORLD_SIZE = 1024.0
@@ -118,7 +119,7 @@ class ArsenalDebugView:
         self.close_requested = False
         self._paused = False
         self._screenshot_requested = False
-        self._runtime.init_tick_runner(
+        self._tick_harness = StandaloneTickHarness(
             game_mode=GameMode.SURVIVAL,
             build_inputs=self._build_runner_inputs,
         )
@@ -286,7 +287,7 @@ class ArsenalDebugView:
         return [self._build_input()]
 
     def _reset_tick_runner(self) -> None:
-        self._runtime.reset_tick_runner()
+        self._tick_harness.reset()
 
     def _weapon_projectile_desc(self, weapon_id: WeaponId) -> str:
         weapon = WEAPON_BY_ID[weapon_id]
@@ -395,7 +396,7 @@ class ArsenalDebugView:
             return
 
         self._apply_debug_player_cheats()
-        self._runtime.advance_tick_frame(float(dt))
+        self._tick_harness.advance_frame(self._runtime, float(dt))
 
         if self._audio is not None:
             update_audio(self._audio, dt)

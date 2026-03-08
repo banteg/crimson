@@ -2,17 +2,17 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.assets import TextureId
+from grim.assets import RuntimeResources, TextureId
 from grim.audio import update_audio
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import _ensure_texture_cache
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ..assets import require_runtime_resources
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_PLAY_GAME,
@@ -68,13 +68,6 @@ class PlayGameMenuView(PanelMenuView):
             panel_height=278.0,
             back_pos=Vec2(-55.0, 462.0),
         )
-        self._small_font: SmallFontData | None = None
-        self._button_sm: rl.Texture | None = None
-        self._button_md: rl.Texture | None = None
-        self._button_textures: UiButtonTextureSet | None = None
-        self._drop_on: rl.Texture | None = None
-        self._drop_off: rl.Texture | None = None
-
         self._player_list_open = False
         self._dirty = False
 
@@ -84,12 +77,6 @@ class PlayGameMenuView(PanelMenuView):
 
     def open(self) -> None:
         super().open()
-        cache = _ensure_texture_cache(self.state)
-        self._button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        self._button_textures = UiButtonTextureSet(button_sm=self._button_sm, button_md=self._button_md)
-        self._drop_on = cache.texture(TextureId.UI_DROP_ON)
-        self._drop_off = cache.texture(TextureId.UI_DROP_OFF)
         self._player_list_open = False
         self._dirty = False
         self._tooltip_ms.clear()
@@ -147,8 +134,10 @@ class PlayGameMenuView(PanelMenuView):
         layout = self._content_layout()
         scale = layout.scale
         base_pos = layout.base_pos
+        resources = require_runtime_resources(self.state)
+        font = resources.small_font
 
-        consumed_click = self._update_player_count(layout.drop_pos, scale)
+        consumed_click = self._update_player_count(layout.drop_pos, scale, font=font)
         if consumed_click:
             return
 
@@ -164,6 +153,7 @@ class PlayGameMenuView(PanelMenuView):
                 mode,
                 Vec2(base_pos.x, y),
                 scale,
+                resources=resources,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -191,12 +181,6 @@ class PlayGameMenuView(PanelMenuView):
             else:
                 self._dirty = False
         super()._begin_close_transition(action)
-
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
 
     def _content_layout(self) -> _PlayGameContentLayout:
         panel_scale, _local_shift = self._menu_item_scale(0)
@@ -362,6 +346,7 @@ class PlayGameMenuView(PanelMenuView):
         pos: Vec2,
         scale: float,
         *,
+        resources: RuntimeResources,
         dt_ms: int,
         mouse: rl.Vector2,
         click: bool,
@@ -369,8 +354,7 @@ class PlayGameMenuView(PanelMenuView):
     ) -> tuple[bool, bool]:
         state = self._mode_button_state(mode)
         state.enabled = bool(enabled)
-        font = self._ensure_small_font()
-        width = button_width(font, state.label, scale=scale, force_wide=state.force_wide)
+        width = button_width(resources, state.label, scale=scale, force_wide=state.force_wide)
         clicked = button_update(state, pos=pos, width=width, dt_ms=float(dt_ms), mouse=mouse, click=bool(click))
         return clicked, state.hovered
 
@@ -388,7 +372,7 @@ class PlayGameMenuView(PanelMenuView):
             value -= dt_ms * 2
         self._tooltip_ms[key] = max(0, min(1000, value))
 
-    def _player_count_widget_layout(self, pos: Vec2, scale: float) -> _PlayerCountWidgetLayout:
+    def _player_count_widget_layout(self, pos: Vec2, scale: float, *, font: SmallFontData) -> _PlayerCountWidgetLayout:
         """Return Play Game player-count dropdown metrics.
 
         `ui_list_widget_update` (0x43efc0):
@@ -399,7 +383,6 @@ class PlayGameMenuView(PanelMenuView):
           - selected label at (x + 4, y + 1)
           - list rows start at y + 17, step 16
         """
-        font = self._ensure_small_font()
         text_scale = 1.0 * scale
         max_label_w = 0.0
         for label in self._PLAYER_COUNT_LABELS:
@@ -422,9 +405,9 @@ class PlayGameMenuView(PanelMenuView):
             text_scale=text_scale,
         )
 
-    def _update_player_count(self, pos: Vec2, scale: float) -> bool:
+    def _update_player_count(self, pos: Vec2, scale: float, *, font: SmallFontData) -> bool:
         config = self.state.config
-        layout = self._player_count_widget_layout(pos, scale)
+        layout = self._player_count_widget_layout(pos, scale, font=font)
 
         mouse = rl.get_mouse_position()
         hovered_header = mouse_inside_rect_with_padding(
@@ -463,15 +446,12 @@ class PlayGameMenuView(PanelMenuView):
         return False
 
     def _draw_contents(self) -> None:
-        assets = self._assets
-        if assets is None:
-            return
-        labels_tex = assets.labels
+        resources = require_runtime_resources(self.state)
+        font = resources.small_font
+        labels_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         layout = self._content_layout()
         base_pos = layout.base_pos
         scale = layout.scale
-
-        font = self._ensure_small_font()
         text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
@@ -480,29 +460,26 @@ class PlayGameMenuView(PanelMenuView):
         title_h = MENU_LABEL_ROW_HEIGHT
         title_pos = base_pos + Vec2(-64.0 * scale, -8.0 * scale)
 
-        if labels_tex is not None:
-            src = rl.Rectangle(
-                0.0,
-                float(MENU_LABEL_ROW_PLAY_GAME) * MENU_LABEL_ROW_HEIGHT,
-                title_w,
-                title_h,
-            )
-            dst = rl.Rectangle(
-                title_pos.x,
-                title_pos.y,
-                title_w * scale,
-                title_h * scale,
-            )
-            MenuView._draw_ui_quad(
-                texture=labels_tex,
-                src=src,
-                dst=dst,
-                origin=rl.Vector2(0.0, 0.0),
-                rotation_deg=0.0,
-                tint=rl.WHITE,
-            )
-        else:
-            rl.draw_text(self._title, int(title_pos.x), int(title_pos.y), int(24 * scale), rl.WHITE)
+        src = rl.Rectangle(
+            0.0,
+            float(MENU_LABEL_ROW_PLAY_GAME) * MENU_LABEL_ROW_HEIGHT,
+            title_w,
+            title_h,
+        )
+        dst = rl.Rectangle(
+            title_pos.x,
+            title_pos.y,
+            title_w * scale,
+            title_h * scale,
+        )
+        MenuView._draw_ui_quad(
+            texture=labels_tex,
+            src=src,
+            dst=dst,
+            origin=rl.Vector2(0.0, 0.0),
+            rotation_deg=0.0,
+            tint=rl.WHITE,
+        )
 
         entries, y_step, y_start, y_end = self._mode_entries()
         y = base_pos.y + y_start * scale
@@ -512,22 +489,32 @@ class PlayGameMenuView(PanelMenuView):
             draw_small_text(font, "times played:", base_pos + Vec2(132.0 * scale, 16.0 * scale), text_color)
 
         for mode in entries:
-            self._draw_mode_button(mode, Vec2(base_pos.x, y), scale)
+            self._draw_mode_button(mode, Vec2(base_pos.x, y), scale, resources=resources, font=font)
             if show_counts and mode.show_count:
                 self._draw_mode_count(
-                    mode.key, Vec2(base_pos.x + 158.0 * scale, y + 8.0 * scale), text_scale, text_color,
+                    mode.key,
+                    Vec2(base_pos.x + 158.0 * scale, y + 8.0 * scale),
+                    text_scale,
+                    text_color,
+                    font=font,
                 )
             y += y_step * scale
 
         # `sub_44ed80`: the list widget is drawn before tooltips, so tooltips can overlay it.
-        self._draw_player_count(layout.drop_pos, scale)
-        self._draw_tooltips(entries, base_pos, y_end, scale)
+        self._draw_player_count(layout.drop_pos, scale, resources=resources, font=font)
+        self._draw_tooltips(entries, base_pos, y_end, scale, font=font)
 
-    def _draw_player_count(self, pos: Vec2, scale: float) -> None:
-        drop_on = self._drop_on
-        drop_off = self._drop_off
-        font = self._ensure_small_font()
-        layout = self._player_count_widget_layout(pos, scale)
+    def _draw_player_count(
+        self,
+        pos: Vec2,
+        scale: float,
+        *,
+        resources: RuntimeResources,
+        font: SmallFontData,
+    ) -> None:
+        drop_on = resources.texture(TextureId.UI_DROP_ON)
+        drop_off = resources.texture(TextureId.UI_DROP_OFF)
+        layout = self._player_count_widget_layout(pos, scale, font=font)
 
         # `ui_list_widget_update` draws a single bordered black rect for the widget.
         widget_h = layout.full_h if self._player_list_open else layout.header_h
@@ -554,15 +541,14 @@ class PlayGameMenuView(PanelMenuView):
                 line_h,
                 rl.Color(255, 255, 255, 128),
             )
-        if arrow_tex is not None:
-            rl.draw_texture_pro(
-                arrow_tex,
-                rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
-                rl.Rectangle(layout.arrow_pos.x, layout.arrow_pos.y, layout.arrow_size.x, layout.arrow_size.y),
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.WHITE,
-            )
+        rl.draw_texture_pro(
+            arrow_tex,
+            rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
+            rl.Rectangle(layout.arrow_pos.x, layout.arrow_pos.y, layout.arrow_size.x, layout.arrow_size.y),
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.WHITE,
+        )
 
         player_count = self.state.config.player_count
         if player_count < 1:
@@ -591,18 +577,20 @@ class PlayGameMenuView(PanelMenuView):
                 alpha = max(alpha, 245)  # 0x3f75c28f
             draw_small_text(font, item, Vec2(layout.text_pos.x, item_y), rl.Color(255, 255, 255, alpha))
 
-    def _draw_mode_button(self, mode: _PlayGameModeEntry, pos: Vec2, scale: float) -> None:
-        textures = self._button_textures
-        if textures is None:
-            return
-        if textures.button_sm is None and textures.button_md is None:
-            return
-        font = self._ensure_small_font()
+    def _draw_mode_button(
+        self,
+        mode: _PlayGameModeEntry,
+        pos: Vec2,
+        scale: float,
+        *,
+        resources: RuntimeResources,
+        font: SmallFontData,
+    ) -> None:
         state = self._mode_button_state(mode)
-        width = button_width(font, state.label, scale=scale, force_wide=state.force_wide)
-        button_draw(textures, font, state, pos=pos, width=width, scale=scale)
+        width = button_width(resources, state.label, scale=scale, force_wide=state.force_wide)
+        button_draw(resources, state, pos=pos, width=width, scale=scale)
 
-    def _draw_mode_count(self, key: str, pos: Vec2, scale: float, color: rl.Color) -> None:
+    def _draw_mode_count(self, key: str, pos: Vec2, scale: float, color: rl.Color, *, font: SmallFontData) -> None:
         status = self.state.status
         if key == "quests":
             count = self._quests_total_played()
@@ -614,11 +602,18 @@ class PlayGameMenuView(PanelMenuView):
             count = int(status.mode_play_count("typo"))
         else:
             return
-        draw_small_text(self._ensure_small_font(), f"{count}", pos, color)
+        draw_small_text(font, f"{count}", pos, color)
 
-    def _draw_tooltips(self, entries: list[_PlayGameModeEntry], base_pos: Vec2, y_end: float, scale: float) -> None:
+    def _draw_tooltips(
+        self,
+        entries: list[_PlayGameModeEntry],
+        base_pos: Vec2,
+        y_end: float,
+        scale: float,
+        *,
+        font: SmallFontData,
+    ) -> None:
         # `sub_44ed80` draws these below the mode list based on per-button hover timers.
-        font = self._ensure_small_font()
         tooltip_x = base_pos.x - 55.0 * scale
         tooltip_y = base_pos.y + (y_end + 16.0) * scale
 

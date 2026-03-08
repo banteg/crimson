@@ -89,6 +89,22 @@ def _blank_quest_replay(
     return header, rec
 
 
+def _blank_tutorial_replay(
+    *, ticks: int, seed: int = 0xBEEF, game_version: str | None = None,
+) -> tuple[ReplayHeader, ReplayRecorder]:
+    header = ReplayHeader(
+        game_mode_id=GameMode.TUTORIAL,
+        seed=int(seed),
+        tick_rate=60,
+        player_count=1,
+        game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
+    )
+    rec = ReplayRecorder(header)
+    for _ in range(int(ticks)):
+        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
+    return header, rec
+
+
 def _quest_spawn_entries(level: str = "1.1", *, player_count: int = 1, seed: int = 101):
     quest = quest_by_level(QuestLevel.parse(level))
     assert quest is not None

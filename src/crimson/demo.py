@@ -6,7 +6,7 @@ import webbrowser
 from grim.assets import TextureId
 from grim.audio import update_audio
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
@@ -23,10 +23,11 @@ from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
 from .terrain_slots import Q2_TERRAIN_SLOTS, TerrainSlotTriplet
 from .ui.cursor import draw_menu_cursor
-from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from .ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
 from .weapons import WeaponId, weapon_display_name
 from .world import WorldRuntime
+from .world.standalone_tick_harness import StandaloneTickHarness
 
 WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 6
@@ -96,14 +97,14 @@ class DemoView:
         self._upsell_message_index = 0
         self._upsell_pulse_ms = 0
         self._upsell_font: GrimMonoFont | None = None
-        self._small_font: SmallFontData | None = None
         self._purchase_active = False
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
-        self._runtime.init_tick_runner(
+        self._tick_harness = StandaloneTickHarness(
             game_mode=GameMode.DEMO,
             build_inputs=self._build_runner_inputs,
         )
+        self._seed_from_app_state = True
 
     def _open_world_runtime(self) -> None:
         self._runtime.open_runtime()
@@ -126,13 +127,21 @@ class DemoView:
             terrain_slots=terrain.terrain_slots,
             seed=int(terrain.terrain_seed),
         )
-        self._sync_live_rng_state()
+        self._sync_audio_rng_from_runtime()
 
-    def _sync_live_rng_state(self) -> None:
+    def _sync_audio_rng_from_runtime(self) -> None:
         live_rng = self._runtime.sim_world.state.rng
         self._runtime.audio_rng = live_rng
         self._runtime.sync_audio_bridge_state()
-        self.state.rng.srand(int(live_rng.state))
+
+    def _commit_live_rng_state_to_app(self) -> None:
+        self.state.rng.srand(int(self._runtime.sim_world.state.rng.state))
+
+    def _next_demo_reset_seed(self) -> int:
+        if self._seed_from_app_state:
+            self._seed_from_app_state = False
+            return int(self.state.rng.state)
+        return int(self._runtime.sim_world.state.rng.state)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self._runtime.render_resources.bake_fx_queues()
@@ -159,10 +168,12 @@ class DemoView:
     def close(self) -> None:
         self._finished = True
         self._purchase_active = False
-        self._runtime.reset_tick_runner()
+        if not self._seed_from_app_state:
+            self._commit_live_rng_state_to_app()
+        self._tick_harness.reset()
         self._close_world_runtime()
         self._upsell_font = None
-        self._small_font = None
+        self._seed_from_app_state = True
 
     def is_finished(self) -> bool:
         return self._finished
@@ -200,7 +211,7 @@ class DemoView:
 
         self._quest_spawn_timeline_ms += frame_dt_ms
         self._update_world(frame_dt)
-        self._sync_live_rng_state()
+        self._sync_audio_rng_from_runtime()
         if self._quest_spawn_timeline_ms > self._demo_time_limit_ms:
             self._demo_mode_start()
 
@@ -239,12 +250,6 @@ class DemoView:
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
 
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
-
     def _purchase_layout_wide_shift(self) -> float:
         screen_w = self.state.config.screen_width
         if screen_w == 0x320:  # 800
@@ -260,13 +265,6 @@ class DemoView:
         except (OSError, webbrowser.Error):
             return
 
-    def _purchase_button_textures(self) -> UiButtonTextureSet:
-        resources = require_runtime_resources(self.state)
-        return UiButtonTextureSet(
-            button_sm=resources.texture(TextureId.UI_BUTTON_SM),
-            button_md=resources.texture(TextureId.UI_BUTTON_MD),
-        )
-
     def _update_purchase_screen(self, dt_ms: int) -> None:
         dt_ms = max(0, int(dt_ms))
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -274,8 +272,7 @@ class DemoView:
             self._finished = True
             return
 
-        font = self._ensure_small_font()
-        textures = self._purchase_button_textures()
+        resources = require_runtime_resources(self.state)
 
         w = float(self.state.config.screen_width)
         h = float(self.state.config.screen_height)
@@ -287,7 +284,7 @@ class DemoView:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         scale = 1.0
         button_w = button_width(
-            font, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
+            resources, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
         )
         purchase_requested = button_update(
             self._purchase_button,
@@ -314,9 +311,6 @@ class DemoView:
         purchase_requested = purchase_requested or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
         if purchase_requested:
             self._trigger_purchase()
-
-        # Keep referenced to avoid unused warnings if this method grows.
-        _ = textures
 
     def _draw_purchase_screen(self) -> None:
         rl.clear_background(rl.BLACK)
@@ -389,10 +383,10 @@ class DemoView:
         src = rl.Rectangle(0.0, 0.0, float(cl_logo.width), float(cl_logo.height))
         rl.draw_texture_pro(cl_logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
-        small = self._ensure_small_font()
         x_text = screen_w / 2.0 - 296.0 - wide_shift * 0.8
         y = screen_h / 2.0 - 104.0
         color = rl.Color(255, 255, 255, 255)
+        small = resources.small_font
         draw_small_text(small, _DEMO_PURCHASE_TITLE, Vec2(x_text, y), color)
         y += 28.0
         draw_small_text(small, _DEMO_PURCHASE_FEATURES_TITLE, Vec2(x_text, y), color)
@@ -408,18 +402,15 @@ class DemoView:
         draw_small_text(small, _DEMO_PURCHASE_FOOTER, Vec2(x_text, y), color)
 
         # Buttons on the right.
-        textures = self._purchase_button_textures()
-
         button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.3
         button_base_pos = Vec2(screen_w / 2.0 + 128.0, button_base_y + 50.0)
         scale = 1.0
         button_w = button_width(
-            small, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
+            resources, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
         )
-        button_draw(textures, small, self._purchase_button, pos=button_base_pos, width=button_w, scale=scale)
+        button_draw(resources, self._purchase_button, pos=button_base_pos, width=button_w, scale=scale)
         button_draw(
-            textures,
-            small,
+            resources,
             self._maybe_later_button,
             pos=button_base_pos.offset(dy=40.0),
             width=button_w,
@@ -441,9 +432,9 @@ class DemoView:
         self._demo_time_limit_ms = 0
         self._purchase_active = False
         player_count = 2 if index in (0, 1, 4) else 1
-        self._runtime.reset(seed=int(self.state.rng.state), player_count=player_count)
-        self._runtime.reset_tick_runner()
-        self._sync_live_rng_state()
+        self._runtime.reset(seed=self._next_demo_reset_seed(), player_count=player_count)
+        self._tick_harness.reset()
+        self._sync_audio_rng_from_runtime()
         self._runtime.sim_world.state.bonuses.weapon_power_up = 0.0
         if index == 0:
             self._setup_variant_0()
@@ -463,7 +454,7 @@ class DemoView:
         # timeline resets (quest_spawn_timeline == 0) and the purchase screen is inactive.
         if (not self._purchase_active) and _DEMO_UPSELL_MESSAGES:
             self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
-        self._sync_live_rng_state()
+        self._sync_audio_rng_from_runtime()
 
     def _setup_world_players(self, specs: list[tuple[Vec2, int]]) -> None:
         for idx, (pos, weapon_id) in enumerate(specs):
@@ -639,7 +630,7 @@ class DemoView:
     def _update_world(self, dt: float) -> None:
         if not self._runtime.sim_world.players:
             return
-        self._runtime.advance_tick_frame(float(dt))
+        self._tick_harness.advance_frame(self._runtime, float(dt))
 
     def _build_demo_inputs(self, dt: float) -> list[PlayerInput]:
         players = self._runtime.sim_world.players

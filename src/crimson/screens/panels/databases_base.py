@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
-from grim.fonts.small import SmallFontData, load_small_font
+from grim.fonts.small import SmallFontData
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ..assets import require_runtime_resources
 from ..high_scores_layout import hs_left_panel_pos_x, hs_right_panel_pos_x
 from ..menu import (
     MENU_PANEL_OFFSET_X,
@@ -44,10 +44,7 @@ class _DatabaseBaseView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._is_open = False
-        self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
-        self._small_font: SmallFontData | None = None
-        self._button_textures: UiButtonTextureSet | None = None
 
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
@@ -63,9 +60,7 @@ class _DatabaseBaseView:
     def open(self) -> None:
         layout_w = float(self.state.config.screen_width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self.state)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._small_font = None
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
@@ -74,10 +69,6 @@ class _DatabaseBaseView:
         self._pending_action = None
         self._action = None
 
-        cache = _ensure_texture_cache(self.state)
-        button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._back_button = UiButtonState("Back", force_wide=False)
 
         if self.state.audio is not None:
@@ -86,10 +77,6 @@ class _DatabaseBaseView:
 
     def close(self) -> None:
         self._is_open = False
-        if self._small_font is not None:
-            self._small_font = None
-        self._button_textures = None
-        self._assets = None
         self._ground = None
         self._closing = False
         self._close_action = None
@@ -112,12 +99,6 @@ class _DatabaseBaseView:
     def _assert_open(self) -> None:
         assert self._is_open, f"{self.__class__.__name__} must be opened before use"
 
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
-
     def _panel_top_left(self, *, pos: Vec2, scale: float) -> Vec2:
         return Vec2(
             pos.x + MENU_PANEL_OFFSET_X * scale,
@@ -131,9 +112,7 @@ class _DatabaseBaseView:
         self._close_action = action
 
     def _draw_sign(self) -> None:
-        assets = self._assets
-        assert assets is not None, "Database panel assets must be loaded before drawing sign"
-        sign = assets.sign
+        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
@@ -191,9 +170,6 @@ class _DatabaseBaseView:
             self._begin_close_transition("back_to_previous")
             return
 
-        textures = self._button_textures
-        if textures is None or (textures.button_md is None and textures.button_sm is None):
-            return
         if not enabled:
             return
 
@@ -201,14 +177,14 @@ class _DatabaseBaseView:
         scale = 1.0
         left_panel_pos_x = hs_left_panel_pos_x(screen_width)
         left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y), scale=scale)
-        font = self._ensure_small_font()
+        resources = require_runtime_resources(self.state)
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         self._update_content_interaction(left_top_left=left_top_left, scale=scale, mouse=mouse)
 
         back_pos = self._back_button_pos()
-        back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
             pos=left_top_left + back_pos * scale,
@@ -230,9 +206,6 @@ class _DatabaseBaseView:
         elif self._ground is not None:
             self._ground.draw(menu_ground_camera(self.state))
         _draw_screen_fade(self.state)
-
-        assets = self._assets
-        assert assets is not None, "Database panel assets must be loaded before draw()"
 
         screen_width = float(self.state.config.screen_width)
         scale = 1.0
@@ -264,37 +237,35 @@ class _DatabaseBaseView:
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
         draw_classic_menu_panel(
-            assets.panel,
+            require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
             dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, panel_w, LEFT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
         )
         draw_classic_menu_panel(
-            assets.panel,
+            require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
             dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, RIGHT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
             flip_x=True,
         )
 
-        font = self._ensure_small_font()
+        resources = require_runtime_resources(self.state)
+        font = resources.small_font
         self._draw_contents(left_panel_top_left, right_panel_top_left, scale=scale, font=font)
 
-        textures = self._button_textures
-        if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
-            back_pos = self._back_button_pos()
-            back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
-            button_draw(
-                textures,
-                font,
-                self._back_button,
-                pos=left_panel_top_left + back_pos * scale,
-                width=back_w,
-                scale=scale,
-            )
+        back_pos = self._back_button_pos()
+        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        button_draw(
+            resources,
+            self._back_button,
+            pos=left_panel_top_left + back_pos * scale,
+            width=back_w,
+            scale=scale,
+        )
 
         self._draw_sign()
-        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
     def _back_button_pos(self) -> Vec2:
         raise NotImplementedError

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import crimson.screens.results.quest_results as quest_results_module
@@ -9,11 +10,10 @@ from crimson.quests.results import QuestFinalTime
 from crimson.screens.results.quest_results import (
     PANEL_SLIDE_END_MS,
     PANEL_SLIDE_START_MS,
-    QuestResultsAssets,
     QuestResultsUi,
 )
-from crimson.ui.perk_menu import PerkMenuAssets
 from crimson.weapons import WeaponId
+from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.raylib_api import rl
 
@@ -31,31 +31,26 @@ def _texture(*, width: int = 0, height: int = 0) -> rl.Texture:
     return texture
 
 
-def _perk_menu_assets() -> PerkMenuAssets:
-    return PerkMenuAssets(
-        menu_panel=None,
-        title_pick_perk=None,
-        title_level_up=None,
-        menu_item=None,
-        button_sm=None,
-        button_md=None,
-        cursor=None,
-        aim=None,
-    )
+class _ResourcesStub:
+    def __init__(self) -> None:
+        tex = _texture(width=32, height=32)
+        self._textures = {
+            TextureId.UI_MENU_PANEL: tex,
+            TextureId.UI_BUTTON_SM: tex,
+            TextureId.UI_BUTTON_MD: tex,
+            TextureId.UI_CURSOR: tex,
+            TextureId.PARTICLES: tex,
+            TextureId.UI_WICONS: _texture(width=256, height=256),
+            TextureId.UI_TEXT_WELL_DONE: _texture(width=256, height=64),
+        }
+        self.small_font = SimpleNamespace(cell_size=8, widths=[8] * 256)
+
+    def texture(self, texture_id: TextureId) -> rl.Texture:
+        return self._textures[texture_id]
 
 
-def _quest_results_assets() -> QuestResultsAssets:
-    return QuestResultsAssets(
-        menu_panel=None,
-        text_well_done=None,
-        particles=None,
-        wicons=_texture(width=256, height=256),
-        perk_menu_assets=_perk_menu_assets(),
-    )
-
-
-def _set_assets(ui: QuestResultsUi, assets: QuestResultsAssets) -> None:
-    ui.assets = assets
+def _resources_stub() -> RuntimeResources:
+    return _ResourcesStub()  # type: ignore[return-value]
 
 
 def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
@@ -75,7 +70,6 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
     )
     ui.input_text = "banteg"
     ui.input_caret = len(ui.input_text)
-    _set_assets(ui, _quest_results_assets())
 
     record = HighScoreRecord.blank()
     record.survival_elapsed_ms = 17_610
@@ -91,11 +85,13 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
 def _patch_draw_environment(
     mocker,
 ) -> tuple[MagicMock, MagicMock, MagicMock]:
+    mocker.patch.object(quest_results_module, "runtime_resources_for", return_value=_resources_stub())
     mocker.patch.object(quest_results_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(quest_results_module.rl, "get_screen_height", side_effect=lambda: 480)
     mocker.patch.object(quest_results_module.rl, "get_time", side_effect=lambda: 0.0)
     mocker.patch.object(quest_results_module.rl, "draw_rectangle_lines", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_results_module.rl, "draw_rectangle", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_results_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     draw_line = mocker.patch.object(quest_results_module.rl, "draw_line")
     mocker.patch.object(quest_results_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_results_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
@@ -105,7 +101,7 @@ def _patch_draw_environment(
         QuestResultsUi,
         "_text_width",
         autospec=True,
-        side_effect=lambda _self, text, _scale: float(len(text) * 8),
+        side_effect=lambda _self, _font, text, _scale: float(len(text) * 8),
     )
     draw_small = mocker.patch.object(
         QuestResultsUi,
@@ -122,7 +118,7 @@ def test_quest_results_name_entry_draws_stats_card(tmp_path: Path, mocker) -> No
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
-    captured_text = [str(call.args[1]) for call in draw_small.call_args_list]
+    captured_text = [str(call.args[2]) for call in draw_small.call_args_list]
     assert "State your name, trooper!" in captured_text
     assert "Score" in captured_text
     assert "Experience" in captured_text
@@ -130,7 +126,7 @@ def test_quest_results_name_entry_draws_stats_card(tmp_path: Path, mocker) -> No
     assert "Shotgun" in captured_text
     assert "Frags: 10" in captured_text
     assert "Hit %: 23%" in captured_text
-    assert len(draw_texture_pro.call_args_list) == 1
+    assert len(draw_texture_pro.call_args_list) == 2
 
 
 def test_quest_results_name_prompt_preserve_bugs(tmp_path: Path, mocker) -> None:
@@ -140,7 +136,7 @@ def test_quest_results_name_prompt_preserve_bugs(tmp_path: Path, mocker) -> None
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
-    captured_text = [str(call.args[1]) for call in draw_small.call_args_list]
+    captured_text = [str(call.args[2]) for call in draw_small.call_args_list]
     assert "State your name trooper!" in captured_text
     assert "State your name, trooper!" not in captured_text
 
@@ -152,7 +148,7 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(tmp_path: Path,
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
     draw_map = {
-        str(call.args[1]): (float(call.args[2].x), float(call.args[2].y), call.args[4])
+        str(call.args[2]): (float(call.args[3].x), float(call.args[3].y), call.args[5])
         for call in draw_small.call_args_list
     }
 
@@ -185,13 +181,13 @@ def test_quest_results_buttons_phase_keeps_weapon_stats_hidden(tmp_path: Path, m
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
-    captured_text = [str(call.args[1]) for call in draw_small.call_args_list]
+    captured_text = [str(call.args[2]) for call in draw_small.call_args_list]
     assert "Score" in captured_text
     assert "Experience" in captured_text
     assert "Frags: 10" not in captured_text
     assert "Hit %: 23%" not in captured_text
     assert "Shotgun" not in captured_text
-    assert draw_texture_pro.call_args_list == []
+    assert len(draw_texture_pro.call_args_list) == 1
 
 
 def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> None:

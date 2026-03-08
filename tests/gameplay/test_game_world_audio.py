@@ -4,6 +4,7 @@ from pathlib import Path
 
 import crimson.audio_router as audio_router_module
 from crimson.bonuses import BonusId
+from crimson.game_modes import GameMode
 from crimson.gameplay import player_update
 from crimson.perks import PerkId
 from crimson.sim.hooks import TickResult
@@ -11,6 +12,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import InputStatus, ResolvedTick
 from crimson.sim.tick_runner import TickBatchResult
 from crimson.weapons import WeaponId
+from crimson.world.standalone_tick_harness import StandaloneTickHarness
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state
@@ -199,7 +201,11 @@ def test_world_runtime_apply_tick_batch_applies_post_apply_bonus_sfx(mocker) -> 
         ],
     )
 
-    world._runtime._apply_tick_batch(
+    StandaloneTickHarness(
+        game_mode=GameMode.SURVIVAL,
+        build_inputs=lambda _ctx: [],
+    )._apply_tick_batch(
+        world._runtime,
         batch=batch,
         session=make_session()[0],
     )

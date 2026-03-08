@@ -6,7 +6,7 @@ from crimson.quests.level import QuestLevel
 from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -15,8 +15,8 @@ from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ..assets import require_runtime_resources
 from ..menu import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
@@ -79,17 +79,7 @@ class QuestsMenuView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._is_open = False
-        self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
-
-        self._small_font: SmallFontData | None = None
-        self._text_quest: rl.Texture | None = None
-        self._stage_icons: dict[int, rl.Texture | None] = {}
-        self._check_on: rl.Texture | None = None
-        self._check_off: rl.Texture | None = None
-        self._button_sm: rl.Texture | None = None
-        self._button_md: rl.Texture | None = None
-        self._button_textures: UiButtonTextureSet | None = None
         self._back_button = UiButtonState("Back")
 
         self._menu_screen_width = 0
@@ -109,26 +99,8 @@ class QuestsMenuView:
         layout_w = float(self.state.config.screen_width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        cache = _ensure_texture_cache(self.state)
-
         # Sign and ground match the main menu/panels.
-        self._assets = load_menu_assets(self.state)
         self._init_ground()
-
-        self._text_quest = cache.texture(TextureId.UI_TEXT_QUEST)
-        self._stage_icons = {
-            1: cache.texture(TextureId.UI_NUM1),
-            2: cache.texture(TextureId.UI_NUM2),
-            3: cache.texture(TextureId.UI_NUM3),
-            4: cache.texture(TextureId.UI_NUM4),
-            5: cache.texture(TextureId.UI_NUM5),
-        }
-        self._check_on = cache.texture(TextureId.UI_CHECK_ON)
-        self._check_off = cache.texture(TextureId.UI_CHECK_OFF)
-        self._button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        self._button_textures = UiButtonTextureSet(button_sm=self._button_sm, button_md=self._button_md)
-
         self._action = None
         self._dirty = False
         self._stage = max(1, min(5, int(self._stage)))
@@ -156,7 +128,6 @@ class QuestsMenuView:
                 self.state.console.log.log(f"failed to save quest menu config: {exc}")
             self._dirty = False
         self._ground = None
-        self._button_textures = None
 
     def update(self, dt: float) -> None:
         self._assert_open()
@@ -225,27 +196,25 @@ class QuestsMenuView:
         if self._hardcore_checkbox_clicked(layout):
             return
 
-        textures = self._button_textures
-        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            back_pos = Vec2(layout.list_pos.x, self._rows_y0(layout)) + Vec2(
-                QUEST_BACK_BUTTON_X_OFFSET,
-                QUEST_BACK_BUTTON_Y_OFFSET,
-            )
-            dt_ms = min(float(dt), 0.1) * 1000.0
-            font = self._ensure_small_font()
-            back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
-            mouse = rl.get_mouse_position()
-            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            if button_update(
-                self._back_button,
-                pos=back_pos,
-                width=float(back_w),
-                dt_ms=float(dt_ms),
-                mouse=mouse,
-                click=bool(click),
-            ):
-                self._begin_close_transition("open_play_game")
-                return
+        back_pos = Vec2(layout.list_pos.x, self._rows_y0(layout)) + Vec2(
+            QUEST_BACK_BUTTON_X_OFFSET,
+            QUEST_BACK_BUTTON_Y_OFFSET,
+        )
+        dt_ms = min(float(dt), 0.1) * 1000.0
+        resources = require_runtime_resources(self.state)
+        back_w = button_width(resources, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
+        mouse = rl.get_mouse_position()
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        if button_update(
+            self._back_button,
+            pos=back_pos,
+            width=float(back_w),
+            dt_ms=float(dt_ms),
+            mouse=mouse,
+            click=bool(click),
+        ):
+            self._begin_close_transition("open_play_game")
+            return
 
         # Quick-select row numbers 1..0 (10).
         row_from_key = self._digit_row_pressed()
@@ -272,7 +241,11 @@ class QuestsMenuView:
         self._draw_panel()
         self._draw_sign()
         self._draw_contents()
-        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(
+            self.state,
+            resources=require_runtime_resources(self.state),
+            pulse_time=self._cursor_pulse_time,
+        )
 
     def take_action(self) -> str | None:
         self._assert_open()
@@ -282,12 +255,6 @@ class QuestsMenuView:
 
     def _assert_open(self) -> None:
         assert self._is_open, "QuestsMenuView must be opened before use"
-
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
 
     def _init_ground(self) -> None:
         self._ground = ensure_menu_ground(self.state)
@@ -332,14 +299,12 @@ class QuestsMenuView:
         status = self.state.status
         if int(status.quest_unlock_index) < QUEST_HARDCORE_UNLOCK_INDEX:
             return False
-        check_on = self._check_on
-        check_off = self._check_off
-        if check_on is None or check_off is None:
-            return False
+        resources = require_runtime_resources(self.state)
+        check_on = resources.texture(TextureId.UI_CHECK_ON)
         config = self.state.config
         hardcore = config.hardcore
 
-        font = self._ensure_small_font()
+        font = resources.small_font
         text_scale = 1.0
         label = "Hardcore"
         label_w = measure_small_text_width(font, label)
@@ -489,6 +454,7 @@ class QuestsMenuView:
         return completed, games
 
     def _draw_contents(self) -> None:
+        resources = require_runtime_resources(self.state)
         layout = self._layout()
         title_pos = layout.title_pos
         icons_start_pos = layout.icons_start_pos
@@ -505,25 +471,29 @@ class QuestsMenuView:
         show_counts = debug_enabled() and rl.is_key_down(rl.KeyboardKey.KEY_F1)
 
         # Title texture is tinted by (0.7, 0.7, 0.7, 0.7).
-        title_tex = self._text_quest
-        if title_tex is not None:
-            rl.draw_texture_pro(
-                title_tex,
-                rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height)),
-                rl.Rectangle(title_pos.x, title_pos.y, QUEST_TITLE_W, QUEST_TITLE_H),
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.Color(179, 179, 179, 179),
-            )
+        title_tex = resources.texture(TextureId.UI_TEXT_QUEST)
+        rl.draw_texture_pro(
+            title_tex,
+            rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height)),
+            rl.Rectangle(title_pos.x, title_pos.y, QUEST_TITLE_W, QUEST_TITLE_H),
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.Color(179, 179, 179, 179),
+        )
 
         # Stage icons (1..5).
         hover_tint = rl.Color(255, 255, 255, 204)  # 0.8 alpha
         base_tint = rl.Color(179, 179, 179, 179)  # 0.7 RGBA
         selected_tint = rl.WHITE
+        stage_icons = {
+            1: resources.texture(TextureId.UI_NUM1),
+            2: resources.texture(TextureId.UI_NUM2),
+            3: resources.texture(TextureId.UI_NUM3),
+            4: resources.texture(TextureId.UI_NUM4),
+            5: resources.texture(TextureId.UI_NUM5),
+        }
         for idx in range(1, 6):
-            icon = self._stage_icons.get(idx)
-            if icon is None:
-                continue
+            icon = stage_icons[idx]
             x = icons_start_pos.x + float(idx - 1) * QUEST_STAGE_ICON_STEP
             local_scale = 1.0 if idx == stage else QUEST_STAGE_ICON_SCALE_UNSELECTED
             size = QUEST_STAGE_ICON_SIZE * local_scale
@@ -546,25 +516,26 @@ class QuestsMenuView:
         hardcore_flag = config.hardcore
         base_color, hover_color = self._quest_row_colors(hardcore=hardcore_flag)
 
-        font = self._ensure_small_font()
+        font = resources.small_font
 
         y0 = self._rows_y0(layout)
         # Hardcore checkbox (only drawn once tier5 is reachable in normal mode).
         if int(status.quest_unlock_index) >= QUEST_HARDCORE_UNLOCK_INDEX:
-            check_on = self._check_on
-            check_off = self._check_off
-            if check_on is not None and check_off is not None:
-                check_tex = check_on if hardcore_flag else check_off
-                check_pos = list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET)
-                rl.draw_texture_pro(
-                    check_tex,
-                    rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
-                    rl.Rectangle(check_pos.x, check_pos.y, float(check_tex.width), float(check_tex.height)),
-                    rl.Vector2(0.0, 0.0),
-                    0.0,
-                    rl.WHITE,
-                )
-                draw_small_text(font, "Hardcore", check_pos + Vec2(float(check_tex.width) + 6.0, 1.0), base_color)
+            check_tex = (
+                resources.texture(TextureId.UI_CHECK_ON)
+                if hardcore_flag
+                else resources.texture(TextureId.UI_CHECK_OFF)
+            )
+            check_pos = list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET)
+            rl.draw_texture_pro(
+                check_tex,
+                rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
+                rl.Rectangle(check_pos.x, check_pos.y, float(check_tex.width), float(check_tex.height)),
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.WHITE,
+            )
+            draw_small_text(font, "Hardcore", check_pos + Vec2(float(check_tex.width) + 6.0, 1.0), base_color)
 
         # Quest list (10 rows).
         for row in range(10):
@@ -598,22 +569,17 @@ class QuestsMenuView:
             draw_small_text(font, "(completed/games)", Vec2(header_x, header_y), base_color)
 
         # Back button.
-        textures = self._button_textures
-        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            back_pos = Vec2(list_pos.x, y0) + Vec2(QUEST_BACK_BUTTON_X_OFFSET, QUEST_BACK_BUTTON_Y_OFFSET)
-            back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
-            button_draw(
-                textures,
-                font,
-                self._back_button,
-                pos=back_pos,
-                width=float(back_w),
-                scale=1.0,
-            )
+        back_pos = Vec2(list_pos.x, y0) + Vec2(QUEST_BACK_BUTTON_X_OFFSET, QUEST_BACK_BUTTON_Y_OFFSET)
+        back_w = button_width(resources, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
+        button_draw(
+            resources,
+            self._back_button,
+            pos=back_pos,
+            width=float(back_w),
+            scale=1.0,
+        )
 
     def _draw_sign(self) -> None:
-        assets = self._assets
-        assert assets is not None, "QuestsMenuView assets must be loaded before drawing sign"
         screen_w = float(self.state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
@@ -635,7 +601,7 @@ class QuestsMenuView:
             )
             _ = slide_x
             rotation_deg = math.degrees(angle_rad)
-        sign = assets.sign
+        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
@@ -655,9 +621,6 @@ class QuestsMenuView:
         )
 
     def _draw_panel(self) -> None:
-        assets = self._assets
-        assert assets is not None, "QuestsMenuView assets must be loaded before drawing panel"
-        panel = assets.panel
         _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
             index=1,
@@ -667,7 +630,7 @@ class QuestsMenuView:
         )
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(
-            panel,
+            require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
             dst=rl.Rectangle(
                 float(QUEST_MENU_BASE_X + slide_x + QUEST_MENU_PANEL_OFFSET_X),
                 float(QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + self._widescreen_y_shift),

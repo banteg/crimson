@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
 from grim.raylib_api import rl
@@ -19,7 +20,6 @@ from ...ui.layout import ui_origin, ui_scale
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
     PERK_MENU_TRANSITION_MS,
-    PerkMenuAssets,
     PerkMenuLayout,
     UiButtonState,
     button_draw,
@@ -53,8 +53,8 @@ class PerkMenuContext(msgspec.Struct, frozen=True):
     player_count: int
     gore_disabled: int
 
-    font: SmallFontData | None
-    assets: PerkMenuAssets | None
+    font: SmallFontData
+    resources: RuntimeResources
     mouse: rl.Vector2
     fx_detail: bool = False
     play_sfx: PlaySfxFn | None = None
@@ -186,8 +186,6 @@ class PerkMenuController:
     def open_if_available(self, ctx: PerkMenuContext) -> bool:
         if self._open:
             return True
-        if ctx.assets is None:
-            return False
         choices = perk_selection_current_choices(
             ctx.state,
             ctx.players,
@@ -211,10 +209,6 @@ class PerkMenuController:
             self._timeline_ms = clamp(self._timeline_ms - float(dt_ui_ms), 0.0, PERK_MENU_TRANSITION_MS)
 
     def handle_input(self, ctx: PerkMenuContext, *, dt: float, dt_ui_ms: float) -> None:
-        if ctx.assets is None:
-            self.close()
-            return
-
         choices = perk_selection_current_choices(
             ctx.state,
             ctx.players,
@@ -287,7 +281,7 @@ class PerkMenuController:
                 preserve_bugs=preserve_bugs,
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
-            rect = menu_item_hit_rect(ctx.font, label, pos=item_pos, scale=scale)
+            rect = menu_item_hit_rect(ctx.resources, label, pos=item_pos, scale=scale)
             if rect.contains(ctx.mouse):
                 self._selected_index = idx
                 if click:
@@ -302,7 +296,7 @@ class PerkMenuController:
                 break
 
         cancel_w = button_width(
-            ctx.font,
+            ctx.resources,
             self._cancel_button.label,
             scale=scale,
             force_wide=self._cancel_button.force_wide,
@@ -332,8 +326,6 @@ class PerkMenuController:
     def draw(self, ctx: PerkMenuContext) -> None:
         menu_t = clamp(self._timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
         if menu_t <= 1e-3:
-            return
-        if ctx.assets is None:
             return
 
         choices = perk_selection_current_choices(
@@ -365,21 +357,19 @@ class PerkMenuController:
             panel_slide_x=slide_x,
         )
 
-        panel_tex = ctx.assets.menu_panel
-        if panel_tex is not None:
-            draw_classic_menu_panel(panel_tex, dst=computed.panel.to_rl(), shadow=bool(ctx.fx_detail))
+        panel_tex = ctx.resources.texture(TextureId.UI_MENU_PANEL)
+        draw_classic_menu_panel(panel_tex, dst=computed.panel.to_rl(), shadow=bool(ctx.fx_detail))
 
-        title_tex = ctx.assets.title_pick_perk
-        if title_tex is not None:
-            src = rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height))
-            rl.draw_texture_pro(
-                title_tex,
-                src,
-                computed.title.to_rl(),
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.WHITE,
-            )
+        title_tex = ctx.resources.texture(TextureId.UI_TEXT_PICK_A_PERK)
+        src = rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height))
+        rl.draw_texture_pro(
+            title_tex,
+            src,
+            computed.title.to_rl(),
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.WHITE,
+        )
 
         sponsor = None
         if master_owned:
@@ -387,7 +377,7 @@ class PerkMenuController:
         elif expert_owned:
             sponsor = "extra perk sponsored by the Perk Expert"
         if sponsor:
-            draw_ui_text(ctx.font, sponsor, computed.sponsor_pos, scale=scale, color=UI_SPONSOR_COLOR)
+            draw_ui_text(ctx.resources, sponsor, computed.sponsor_pos, scale=scale, color=UI_SPONSOR_COLOR)
 
         preserve_bugs = bool(ctx.state.preserve_bugs)
         for idx, perk_id in enumerate(choices):
@@ -397,9 +387,9 @@ class PerkMenuController:
                 preserve_bugs=preserve_bugs,
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
-            rect = menu_item_hit_rect(ctx.font, label, pos=item_pos, scale=scale)
+            rect = menu_item_hit_rect(ctx.resources, label, pos=item_pos, scale=scale)
             hovered = rect.contains(ctx.mouse) or (idx == self._selected_index)
-            draw_menu_item(ctx.font, label, pos=item_pos, scale=scale, hovered=hovered)
+            draw_menu_item(ctx.resources, label, pos=item_pos, scale=scale, hovered=hovered)
 
         selected = choices[self._selected_index]
         desc = perk_display_description(
@@ -407,15 +397,14 @@ class PerkMenuController:
             gore_disabled=int(ctx.gore_disabled),
             preserve_bugs=preserve_bugs,
         )
-        if ctx.font is not None:
-            desc = self._prewrapped_perk_desc(
-                selected,
-                ctx.font,
-                gore_disabled=int(ctx.gore_disabled),
-                preserve_bugs=preserve_bugs,
-            )
+        desc = self._prewrapped_perk_desc(
+            selected,
+            ctx.resources.small_font,
+            gore_disabled=int(ctx.gore_disabled),
+            preserve_bugs=preserve_bugs,
+        )
         draw_ui_text(
-            ctx.font,
+            ctx.resources,
             desc,
             computed.desc.top_left,
             scale=scale,
@@ -423,11 +412,10 @@ class PerkMenuController:
         )
 
         cancel_w = button_width(
-            ctx.font, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide,
+            ctx.resources, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide,
         )
         button_draw(
-            ctx.assets,
-            ctx.font,
+            ctx.resources,
             self._cancel_button,
             pos=computed.cancel_pos,
             width=cancel_w,

@@ -31,6 +31,7 @@ from .projectiles.runtime import (
 from .projectiles.types import ProjectileTemplateId
 from .sim.state_types import PERK_COUNT_SIZE
 from .sim.timing import ftol_ms_i32
+from .tutorial import TutorialOverlayState, TutorialState
 from .typo.state import TypoState
 from .weapon_runtime import (
     WeaponFireCtx as _WeaponFireCtx,
@@ -120,6 +121,8 @@ class GameplayState(msgspec.Struct):
     preserve_bugs: bool = False
     status: GameStatus | None = None
     quest_level: QuestLevel | None = None
+    tutorial: TutorialState = msgspec.field(default_factory=TutorialState)
+    tutorial_overlay: TutorialOverlayState = msgspec.field(default_factory=TutorialOverlayState)
     typo: TypoState = msgspec.field(default_factory=TypoState)
     perk_available: list[bool] = msgspec.field(default_factory=lambda: [False] * PERK_COUNT_SIZE)
     _perk_available_unlock_index: int = -1

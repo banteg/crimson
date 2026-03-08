@@ -4,7 +4,7 @@ import datetime as dt
 
 from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
@@ -12,8 +12,8 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ..assets import require_runtime_resources
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_STATISTICS,
@@ -98,10 +98,7 @@ class StatisticsMenuView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._is_open = False
-        self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
-        self._small_font: SmallFontData | None = None
-        self._button_textures: UiButtonTextureSet | None = None
 
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
@@ -122,9 +119,7 @@ class StatisticsMenuView:
     def open(self) -> None:
         layout_w = float(self.state.config.screen_width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._assets = load_menu_assets(self.state)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._small_font = None
         self._cursor_pulse_time = 0.0
         self._action = None
         self._timeline_ms = 0
@@ -132,11 +127,6 @@ class StatisticsMenuView:
         self._closing = False
         self._close_action = None
         self._pending_action = None
-
-        cache = _ensure_texture_cache(self.state)
-        button_md = cache.texture(TextureId.UI_BUTTON_MD)
-        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
 
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
@@ -153,10 +143,6 @@ class StatisticsMenuView:
 
     def close(self) -> None:
         self._is_open = False
-        if self._small_font is not None:
-            self._small_font = None
-        self._button_textures = None
-        self._assets = None
         self._ground = None
         self._action = None
         self._closing = False
@@ -193,12 +179,6 @@ class StatisticsMenuView:
 
     def _assert_open(self) -> None:
         assert self._is_open, "StatisticsMenuView must be opened before use"
-
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        self._small_font = load_small_font(self.state.assets_dir)
-        return self._small_font
 
     def _panel_top_left(self, *, scale: float) -> Vec2:
         return Vec2(
@@ -245,9 +225,6 @@ class StatisticsMenuView:
             self._begin_close_transition("back_to_menu")
             return
 
-        textures = self._button_textures
-        if textures is None or (textures.button_md is None and textures.button_sm is None):
-            return
         if not interactive:
             return
 
@@ -262,14 +239,14 @@ class StatisticsMenuView:
             direction_flag=0,
         )
         panel_top_left = self._panel_top_left(scale=scale).offset(dx=float(slide_x))
-        font = self._ensure_small_font()
+        resources = require_runtime_resources(self.state)
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         dt_ms_f = min(float(dt), 0.1) * 1000.0
 
         def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:
-            w = button_width(font, btn.label, scale=scale, force_wide=btn.force_wide)
+            w = button_width(resources, btn.label, scale=scale, force_wide=btn.force_wide)
             return button_update(btn, pos=pos, width=w, dt_ms=dt_ms_f, mouse=mouse, click=click)
 
         button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
@@ -310,8 +287,7 @@ class StatisticsMenuView:
             self._ground.draw(menu_ground_camera(self.state))
         _draw_screen_fade(self.state)
 
-        assets = self._assets
-        assert assets is not None, "StatisticsMenuView assets must be loaded before draw()"
+        resources = require_runtime_resources(self.state)
 
         scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
         panel_w = MENU_PANEL_WIDTH * scale
@@ -328,10 +304,10 @@ class StatisticsMenuView:
             panel_top_left.x, panel_top_left.y, panel_w, STATISTICS_PANEL_HEIGHT * scale,
         )
         fx_detail = self.state.config.fx_detail(level=0, default=False)
-        draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
+        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
         # Title: full-size row from ui_itemTexts.jaz (128x32).
-        label_tex = assets.labels
+        label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         row_h = float(MENU_LABEL_ROW_HEIGHT)
         src = rl.Rectangle(0.0, float(MENU_LABEL_ROW_STATISTICS) * row_h, float(label_tex.width), row_h)
         MenuView._draw_ui_quad(
@@ -349,7 +325,7 @@ class StatisticsMenuView:
         )
 
         # "played for # hours # minutes"
-        font = self._ensure_small_font()
+        font = resources.small_font
         draw_small_text(font, _format_playtime_text(
             int(self.state.status.game_sequence_id),
             preserve_bugs=bool(self.state.preserve_bugs),
@@ -361,37 +337,31 @@ class StatisticsMenuView:
             draw_small_text(font, _STATS_EASTER_TEXT, Vec2(x, _STATS_EASTER_TEXT_Y), rl.Color(51, 255, 153, 128))
 
         # Buttons.
-        textures = self._button_textures
-        if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
-            button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
-            for i, btn in enumerate((self._btn_high_scores, self._btn_weapons, self._btn_perks, self._btn_credits)):
-                w = button_width(font, btn.label, scale=scale, force_wide=btn.force_wide)
-                button_draw(
-                    textures,
-                    font,
-                    btn,
-                    pos=button_base.offset(dy=_BUTTON_STEP_Y * float(i) * scale),
-                    width=w,
-                    scale=scale,
-                )
-
-            back_w = button_width(font, self._btn_back.label, scale=scale, force_wide=self._btn_back.force_wide)
+        button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
+        for i, btn in enumerate((self._btn_high_scores, self._btn_weapons, self._btn_perks, self._btn_credits)):
+            w = button_width(resources, btn.label, scale=scale, force_wide=btn.force_wide)
             button_draw(
-                textures,
-                font,
-                self._btn_back,
-                pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
-                width=back_w,
+                resources,
+                btn,
+                pos=button_base.offset(dy=_BUTTON_STEP_Y * float(i) * scale),
+                width=w,
                 scale=scale,
             )
 
+        back_w = button_width(resources, self._btn_back.label, scale=scale, force_wide=self._btn_back.force_wide)
+        button_draw(
+            resources,
+            self._btn_back,
+            pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
+            width=back_w,
+            scale=scale,
+        )
+
         self._draw_sign(scale=scale)
-        _draw_menu_cursor(self.state, pulse_time=self._cursor_pulse_time)
+        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
     def _draw_sign(self, *, scale: float) -> None:
-        assets = self._assets
-        assert assets is not None, "StatisticsMenuView assets must be loaded before drawing sign"
-        sign = assets.sign
+        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
         screen_w = float(self.state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(

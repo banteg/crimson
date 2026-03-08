@@ -206,7 +206,7 @@ class GameLoopView:
         self._front_active: Screen | None = None
         self._front_stack: list[Screen] = []
         self._active: View = self._boot
-        self._demo_trial_overlay = DemoTrialOverlayUi(state.assets_dir)
+        self._demo_trial_overlay: DemoTrialOverlayUi | None = None
         self._demo_trial_info: DemoTrialOverlayInfo | None = None
         self._demo_active = False
         self._menu_active = False
@@ -216,6 +216,13 @@ class GameLoopView:
 
     def _pending_session(self):
         return self.state.pending_network_session
+
+    def _demo_trial_overlay_view(self) -> DemoTrialOverlayUi:
+        overlay = self._demo_trial_overlay
+        if overlay is None:
+            overlay = DemoTrialOverlayUi(self.state.assets_dir)
+            self._demo_trial_overlay = overlay
+        return overlay
 
     def _ensure_lan_debug_log_started(self) -> None:
         if lan_debug_log_path() is not None:
@@ -826,7 +833,7 @@ class GameLoopView:
         if gameplay is not None:
             gameplay.prepare_demo_trial_overlay_frame()
 
-        action = self._demo_trial_overlay.update(dt_ms)
+        action = self._demo_trial_overlay_view().update(dt_ms)
         if action == "purchase":
             self.state.quit_requested = True
             try:
@@ -942,7 +949,7 @@ class GameLoopView:
         level = self.state.pending_quest_level
         if level is None:
             return
-        gameplay.prepare_new_run(level.text, status=self.state.status)
+        gameplay.start_run(level, status=self.state.status)
 
     def _resolve_gameplay_action(self, gameplay: GameplayScreen, action: str | None) -> str | None:
         if action == "open_high_scores":
@@ -1040,7 +1047,7 @@ class GameLoopView:
         self._active.draw()
         info = self._demo_trial_info
         if info is not None and bool(info.visible):
-            self._demo_trial_overlay.draw(info)
+            self._demo_trial_overlay_view().draw(info)
         self.state.console.draw()
         self.state.console.draw_fps_counter()
 
@@ -1074,7 +1081,9 @@ class GameLoopView:
             self._front_stack.pop().close()
         if self._demo_active:
             self._demo.close()
-        self._demo_trial_overlay.close()
+        overlay = self._demo_trial_overlay
+        if overlay is not None:
+            overlay.close()
         if self.state.menu_ground is not None and self.state.menu_ground.render_target is not None:
             rl.unload_render_texture(self.state.menu_ground.render_target)
             self.state.menu_ground.render_target = None

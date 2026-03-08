@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-
 from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -24,15 +22,11 @@ from ..typo.state import typo_shot_counts
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
-from ..ui.perk_menu import load_perk_menu_assets
 from ..weapon_usage import normalize_weapon_usage_counts
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
 WORLD_SIZE = 1024.0
-
-
-TypoSessionFactory = Callable[..., DeterministicSession]
 
 
 class TypoShooterMode(BaseGameplayMode):
@@ -44,7 +38,6 @@ class TypoShooterMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: Crand,
-        session_factory: TypoSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -58,9 +51,6 @@ class TypoShooterMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-
-        self._ui_assets = None
-        self._session_factory = session_factory
         self._sim_session: DeterministicSession | None = self._new_sim_session()
 
     def _new_sim_session(self) -> DeterministicSession:
@@ -74,12 +64,10 @@ class TypoShooterMode(BaseGameplayMode):
             gore_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             dictionary_words=self.state.typo.dictionary_words,
-            session_factory=self._session_factory,
         )
 
     def open(self) -> None:
         super().open()
-        self._ui_assets = load_perk_menu_assets(self._assets_root)
         dictionary_path = self._base_dir / "typo_dictionary.txt"
         dictionary_words: tuple[str, ...] = ()
         if dictionary_path.is_file():
@@ -128,8 +116,6 @@ class TypoShooterMode(BaseGameplayMode):
         self._replay_checkpoints_last_tick = None
 
     def close(self) -> None:
-        if self._ui_assets is not None:
-            self._ui_assets = None
         self._sim_session = None
         super().close()
 
@@ -270,10 +256,9 @@ class TypoShooterMode(BaseGameplayMode):
     def _draw_game_cursor(self) -> None:
         resources = self.render_resources.resources
         mouse_pos = self._ui_mouse
-        cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(
             resources.texture(TextureId.PARTICLES),
-            cursor_tex,
+            resources.texture(TextureId.UI_CURSOR),
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )

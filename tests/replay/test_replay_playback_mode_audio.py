@@ -384,6 +384,32 @@ def test_draw_typing_box_uses_shared_overlay_helper_and_driver_elapsed_ms(mocker
     assert draw_overlay.call_args.kwargs["cursor_pulse_time"] == 0.25
 
 
+def test_draw_tutorial_overlays_uses_shared_overlay_helper(mocker, replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    overlay = SimpleNamespace(
+        prompt_text="move",
+        prompt_alpha=1.0,
+        hint_text="shoot",
+        hint_alpha=0.5,
+    )
+    _set_private(
+        view,
+        "_runtime",
+        SimpleNamespace(
+            sim_world=SimpleNamespace(
+                state=SimpleNamespace(tutorial_overlay=overlay),
+            ),
+        ),
+    )
+
+    draw_overlay = mocker.patch.object(replay_playback_mode, "draw_tutorial_overlay_panels")
+
+    view._draw_tutorial_overlays()
+
+    draw_overlay.assert_called_once()
+    assert draw_overlay.call_args.args == (overlay,)
+
+
 def test_post_apply_reaction_reads_quest_runtime_from_driver(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
     audio_bridge = _AudioBridgeStub()

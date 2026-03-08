@@ -26,6 +26,7 @@ from ...sim.session_builders import (
     build_quest_session,
     build_rush_session,
     build_survival_session,
+    build_tutorial_session,
     build_typo_session,
     enforce_rush_loadout,
 )
@@ -237,6 +238,17 @@ class PlaybackDriver:
                     terrain_slots=terrain.terrain_slots,
                     terrain_seed=int(terrain.terrain_seed),
                 )
+            case GameMode.TUTORIAL:
+                terrain = run_unlock_terrain_prelude(
+                    world.state.rng,
+                    unlock_index=int(self.replay.header.status.quest_unlock_index),
+                    width=int(self.world_size),
+                    height=int(self.world_size),
+                )
+                self._terrain_setup = ReplayTerrainSetup(
+                    terrain_slots=terrain.terrain_slots,
+                    terrain_seed=int(terrain.terrain_seed),
+                )
             case GameMode.QUESTS:
                 quest_definition = resolve_replay_quest_definition(self.replay)
                 quest_level = quest_definition.level
@@ -375,6 +387,18 @@ class PlaybackDriver:
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
                     dictionary_words=tuple(self.replay.header.typo_dictionary_words),
+                )
+            case GameMode.TUTORIAL:
+                return build_tutorial_session(
+                    world=self.world,
+                    world_size=float(self.world_size),
+                    damage_scale_by_type=damage_scale_by_type,
+                    fx_queue=self.fx_queue,
+                    fx_queue_rotated=self.fx_queue_rotated,
+                    detail_preset=int(self.replay.header.detail_preset),
+                    gore_disabled=int(self.replay.header.gore_disabled),
+                    game_tune_started=False,
+                    demo_mode_active=False,
                 )
             case _:
                 raise ReplayRunnerError(f"unsupported replay game_mode_id={int(self.mode_id)}")

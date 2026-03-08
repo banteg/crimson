@@ -13,6 +13,7 @@ from ..creatures.spawn import (
     build_tutorial_stage5_repeat_spawns,
     build_tutorial_stage6_perks_done_spawns,
 )
+from .state import TutorialState
 
 _TUTORIAL_STAGE_TEXT: tuple[str, ...] = (
     "In this tutorial you'll learn how to play Crimsonland",
@@ -45,19 +46,6 @@ _TUTORIAL_HINT_TEXT_BUGS: tuple[str, ...] = (
     "",
     "",
 )
-
-
-class TutorialState(msgspec.Struct):
-    stage_index: int = -1
-    stage_timer_ms: int = 0
-    stage_transition_timer_ms: int = -1000
-    hint_index: int = -1
-    hint_alpha: int = 0
-    hint_fade_in: bool = False
-    repeat_spawn_count: int = 0
-    hint_bonus_creature_ref: int | None = None
-    preserve_bugs: bool = False
-
 
 class BonusSpawnCall(msgspec.Struct, frozen=True):
     bonus_id: BonusId

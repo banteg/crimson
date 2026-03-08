@@ -9,7 +9,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
-from ..assets import _ensure_texture_cache
+from ..assets import require_runtime_resources
 from ..high_scores_layout import weapons_db_right_detail_x_shift
 from .databases_base import _DatabaseBaseView
 
@@ -20,7 +20,6 @@ if TYPE_CHECKING:
 class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
     def __init__(self, state: GameState) -> None:
         super().__init__(state)
-        self._wicons_tex: rl.Texture | None = None
         self._weapon_ids: list[int] = []
         self._selected_weapon_id: int | None = None
         self._list_scroll_index: int = 0
@@ -30,11 +29,8 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         self._weapon_ids = self._build_weapon_database_ids()
         self._selected_weapon_id = None
         self._list_scroll_index = 0
-        cache = _ensure_texture_cache(self.state)
-        self._wicons_tex = cache.texture(TextureId.UI_WICONS)
 
     def close(self) -> None:
-        self._wicons_tex = None
         self._selected_weapon_id = None
         super().close()
 
@@ -228,9 +224,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         return int(60.0 / float(weapon.shot_cooldown))
 
     def _draw_wicon(self, icon_index: int, *, pos: Vec2, scale: float) -> None:
-        tex = self._wicons_tex
-        if tex is None:
-            return
+        tex = require_runtime_resources(self.state).texture(TextureId.UI_WICONS)
         idx = int(icon_index)
         if idx < 0 or idx > 31:
             return

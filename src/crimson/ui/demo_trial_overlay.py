@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from grim.assets import TextureId, runtime_resources_for
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import draw_small_text, load_small_font
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
@@ -12,7 +12,6 @@ from ..demo_trial import DemoTrialOverlayInfo
 from .cursor import draw_menu_cursor
 from .perk_menu import (
     UiButtonState,
-    UiButtonTextureSet,
     button_draw,
     button_update,
     button_width,
@@ -82,54 +81,21 @@ class DemoTrialOverlayUi:
     def __init__(self, assets_root: Path) -> None:
         self._assets_root = assets_root
 
-        self._font: SmallFontData | None = None
-        self._button_textures: UiButtonTextureSet | None = None
-        self._cursor: rl.Texture | None = None
-        self._cl_logo: rl.Texture | None = None
-        self._particles: rl.Texture | None = None
+        self._font = load_small_font(self._assets_root)
+        self._resources = runtime_resources_for(self._assets_root)
         self._cursor_pulse_time = 0.0
 
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
 
     def close(self) -> None:
-        self._font = None
-        self._button_textures = None
-        self._cursor = None
-        self._cl_logo = None
-        self._particles = None
         self._cursor_pulse_time = 0.0
-
-    def _ensure_loaded(self) -> None:
-        if self._font is None:
-            self._font = load_small_font(self._assets_root)
-
-        resources = runtime_resources_for(self._assets_root)
-
-        if self._button_textures is None:
-            button_sm = resources.texture(TextureId.UI_BUTTON_SM)
-            button_md = resources.texture(TextureId.UI_BUTTON_MD)
-            self._button_textures = UiButtonTextureSet(
-                button_sm=button_sm,
-                button_md=button_md,
-            )
-
-        if self._cursor is None:
-            self._cursor = resources.texture(TextureId.UI_CURSOR)
-
-        if self._cl_logo is None:
-            self._cl_logo = resources.texture(TextureId.CL_LOGO)
-
-        if self._particles is None:
-            self._particles = resources.texture(TextureId.PARTICLES)
 
     @staticmethod
     def _panel_xy(*, screen_w: float, screen_h: float) -> Vec2:
         return Vec2(screen_w * 0.5 - 256.0, screen_h * 0.5 - 128.0)
 
     def update(self, dt_ms: int) -> str | None:
-        self._ensure_loaded()
-
         dt_ms = max(0, int(dt_ms))
         self._cursor_pulse_time += float(dt_ms) * 0.001 * 1.1
         mouse = rl.get_mouse_position()
@@ -141,9 +107,8 @@ class DemoTrialOverlayUi:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         panel_pos = self._panel_xy(screen_w=screen_w, screen_h=screen_h)
 
-        font = self._font
         scale = 1.0
-        button_w = button_width(font, self._purchase_button.label, scale=scale, force_wide=True)
+        button_w = button_width(self._resources, self._purchase_button.label, scale=scale, force_wide=True)
         gap = 20.0
         row_w = button_w * 2.0 + gap
         button_base_pos = panel_pos + Vec2(256.0 - row_w * 0.5, 214.0)
@@ -174,7 +139,6 @@ class DemoTrialOverlayUi:
     def draw(self, info: DemoTrialOverlayInfo) -> None:
         if not info.visible:
             return
-        self._ensure_loaded()
 
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
@@ -183,11 +147,10 @@ class DemoTrialOverlayUi:
         rl.draw_rectangle(int(panel_pos.x), int(panel_pos.y), 512, 256, rl.Color(18, 18, 22, 230))
         rl.draw_rectangle_lines(int(panel_pos.x), int(panel_pos.y), 512, 256, rl.Color(255, 255, 255, 255))
 
-        logo = self._cl_logo
-        if logo is not None:
-            src = rl.Rectangle(0.0, 0.0, float(logo.width), float(logo.height))
-            dst = rl.Rectangle(panel_pos.x + 72.0, panel_pos.y + 22.0, 371.2, 46.4)
-            rl.draw_texture_pro(logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        logo = self._resources.texture(TextureId.CL_LOGO)
+        src = rl.Rectangle(0.0, 0.0, float(logo.width), float(logo.height))
+        dst = rl.Rectangle(panel_pos.x + 72.0, panel_pos.y + 22.0, 371.2, 46.4)
+        rl.draw_texture_pro(logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         font = self._font
         if font is not None:
@@ -203,34 +166,28 @@ class DemoTrialOverlayUi:
             else:
                 rl.draw_text(line, int(body_x), int(panel_pos.y + y_offset), 16, body_color)
 
-        textures = self._button_textures
-        cursor = self._cursor
-        if textures is not None:
-            scale = 1.0
-            button_w = 145.0 * scale
-            gap = 20.0
-            row_w = button_w * 2.0 + gap
-            button_base_pos = panel_pos + Vec2(256.0 - row_w * 0.5, 214.0)
-            button_draw(
-                textures,
-                font,
-                self._purchase_button,
-                pos=button_base_pos,
-                width=float(button_w),
-                scale=float(scale),
-            )
-            button_draw(
-                textures,
-                font,
-                self._maybe_later_button,
-                pos=button_base_pos.offset(dx=button_w + gap),
-                width=float(button_w),
-                scale=float(scale),
-            )
-        if cursor is not None:
-            draw_menu_cursor(
-                self._particles,
-                cursor,
-                pos=Vec2.from_xy(rl.get_mouse_position()),
-                pulse_time=float(self._cursor_pulse_time),
-            )
+        scale = 1.0
+        button_w = 145.0 * scale
+        gap = 20.0
+        row_w = button_w * 2.0 + gap
+        button_base_pos = panel_pos + Vec2(256.0 - row_w * 0.5, 214.0)
+        button_draw(
+            self._resources,
+            self._purchase_button,
+            pos=button_base_pos,
+            width=float(button_w),
+            scale=float(scale),
+        )
+        button_draw(
+            self._resources,
+            self._maybe_later_button,
+            pos=button_base_pos.offset(dx=button_w + gap),
+            width=float(button_w),
+            scale=float(scale),
+        )
+        draw_menu_cursor(
+            self._resources.texture(TextureId.PARTICLES),
+            self._resources.texture(TextureId.UI_CURSOR),
+            pos=Vec2.from_xy(rl.get_mouse_position()),
+            pulse_time=float(self._cursor_pulse_time),
+        )

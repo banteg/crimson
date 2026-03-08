@@ -13,23 +13,29 @@ from crimson.modes.components.perk_menu_controller import PerkMenuContext, PerkM
 from crimson.perks import PerkId
 from crimson.perks.state import PerkSelectionState
 from crimson.sim.state_types import PlayerState
-from crimson.ui.perk_menu import PerkMenuAssets
+from grim.assets import RuntimeResources
 from grim.fonts.small import SmallFontData
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
 
-def _dummy_assets() -> PerkMenuAssets:
-    return PerkMenuAssets(
-        menu_panel=None,
-        title_pick_perk=None,
-        title_level_up=None,
-        menu_item=None,
-        button_sm=None,
-        button_md=None,
-        cursor=None,
-        aim=None,
+def _texture() -> rl.Texture:
+    return rl.Texture()
+
+
+def _dummy_resources() -> RuntimeResources:
+    texture = _texture()
+    return cast(
+        "RuntimeResources",
+        SimpleNamespace(
+            texture=lambda _texture_id: texture,
+            small_font=_dummy_font(),
+        ),
     )
+
+
+def _dummy_font() -> SmallFontData:
+    return SmallFontData(widths=[8] * 256, texture=_texture(), cell_size=16, grid=16)
 
 
 def _dummy_player() -> PlayerState:
@@ -77,8 +83,8 @@ def test_open_perk_menu_plays_panel_click(mocker) -> None:
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
-        assets=_dummy_assets(),
+        font=_dummy_font(),
+        resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=play_sfx,
     )
@@ -116,8 +122,8 @@ def test_perk_menu_pick_plays_button_click(mocker) -> None:
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
-        assets=_dummy_assets(),
+        font=_dummy_font(),
+        resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=play_sfx,
     )
@@ -155,8 +161,8 @@ def test_perk_menu_pick_invokes_on_pick(mocker) -> None:
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
-        assets=_dummy_assets(),
+        font=_dummy_font(),
+        resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=None,
     )
@@ -197,8 +203,8 @@ def test_perk_menu_deferred_pick_invokes_callback_without_direct_pick_apply(mock
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
-        assets=_dummy_assets(),
+        font=_dummy_font(),
+        resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=None,
     )
@@ -241,8 +247,8 @@ def test_perk_menu_deferred_pick_does_not_play_bonus_sfx_immediately(mocker) -> 
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
-        assets=_dummy_assets(),
+        font=_dummy_font(),
+        resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=play_sfx,
     )
@@ -286,8 +292,8 @@ def test_perk_menu_deferred_pick_rejected_keeps_menu_open(mocker) -> None:
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
-        assets=_dummy_assets(),
+        font=_dummy_font(),
+        resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=play_sfx,
     )
@@ -324,8 +330,8 @@ def test_perk_menu_deferred_pick_callback_requires_bool_return(mocker) -> None:
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
-        assets=_dummy_assets(),
+        font=_dummy_font(),
+        resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=None,
     )
@@ -357,8 +363,8 @@ def test_perk_menu_cancel_plays_button_click(mocker) -> None:
         game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
-        font=None,
-        assets=_dummy_assets(),
+        font=_dummy_font(),
+        resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
         play_sfx=play_sfx,
     )

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from crimson.quests.level import QuestLevel
+from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -34,6 +35,7 @@ if TYPE_CHECKING:
 def draw_main_panel(
     view: "HighScoresView",
     *,
+    resources: RuntimeResources,
     font: SmallFontData,
     left_panel_top_left: Vec2,
     scale: float,
@@ -76,34 +78,33 @@ def draw_main_panel(
         quest = quest_by_level(quest_level)
         quest_label = f"{quest_level.text}: {quest.title if quest is not None else '???'}"
         draw_small_text(font, quest_label, left_panel_top_left + Vec2(236.0 * scale, 63.0 * scale), quest_color)
-        arrow = view._arrow_tex
-        if arrow is not None:
-            global_index = int(quest_level.global_index)
-            unlock = (
-                int(view.state.status.quest_unlock_index_full)
-                if view.state.config.hardcore
-                else int(view.state.status.quest_unlock_index)
-            )
-            max_index = max(0, min(49, unlock))
+        arrow = resources.texture(TextureId.UI_ARROW)
+        global_index = int(quest_level.global_index)
+        unlock = (
+            int(view.state.status.quest_unlock_index_full)
+            if view.state.config.hardcore
+            else int(view.state.status.quest_unlock_index)
+        )
+        max_index = max(0, min(49, unlock))
 
-            dst_w = float(arrow.width) * scale
-            dst_h = float(arrow.height) * scale
-            tint = rl.Color(255, 255, 255, int(255 * 0.51))
+        dst_w = float(arrow.width) * scale
+        dst_h = float(arrow.height) * scale
+        tint = rl.Color(255, 255, 255, int(255 * 0.51))
 
-            if global_index > 0:
-                src = rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
-                arrow_pos = left_panel_top_left + Vec2((HS_QUEST_ARROW_X - 255.0) * scale, HS_QUEST_ARROW_Y * scale)
-                dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
-                rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+        if global_index > 0:
+            src = rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
+            arrow_pos = left_panel_top_left + Vec2((HS_QUEST_ARROW_X - 255.0) * scale, HS_QUEST_ARROW_Y * scale)
+            dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
+            rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
-            if global_index < max_index:
-                # state_14 flips ui_arrow.jaz (uv 1..0) for the right arrow.
-                # Keep src.x in-range; with CLAMP wrap, raylib can collapse flipped UVs
-                # when the rect starts at x=tex.width.
-                src = rl.Rectangle(0.0, 0.0, -float(arrow.width), float(arrow.height))
-                arrow_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X * scale, HS_QUEST_ARROW_Y * scale)
-                dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
-                rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+        if global_index < max_index:
+            # state_14 flips ui_arrow.jaz (uv 1..0) for the right arrow.
+            # Keep src.x in-range; with CLAMP wrap, raylib can collapse flipped UVs
+            # when the rect starts at x=tex.width.
+            src = rl.Rectangle(0.0, 0.0, -float(arrow.width), float(arrow.height))
+            arrow_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X * scale, HS_QUEST_ARROW_Y * scale)
+            dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
+            rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
     header_color = rl.Color(255, 255, 255, 255)
     draw_small_text(font, "Rank", left_panel_top_left + Vec2(211.0 * scale, 84.0 * scale), header_color)
@@ -172,29 +173,25 @@ def draw_main_panel(
             draw_small_text(font, name, Vec2(left_panel_top_left.x + 304.0 * scale, y), color)
             y += row_step
 
-    textures = view._button_textures
-    if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-        button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
-        w = button_width(font, view._update_button.label, scale=scale, force_wide=view._update_button.force_wide)
-        button_draw(textures, font, view._update_button, pos=button_base_pos, width=w, scale=scale)
-        w = button_width(font, view._play_button.label, scale=scale, force_wide=view._play_button.force_wide)
-        button_draw(
-            textures,
-            font,
-            view._play_button,
-            pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y * scale),
-            width=w,
-            scale=scale,
-        )
-        w = button_width(font, view._back_button.label, scale=scale, force_wide=view._back_button.force_wide)
-        button_draw(
-            textures,
-            font,
-            view._back_button,
-            pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),
-            width=w,
-            scale=scale,
-        )
+    button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
+    w = button_width(resources, view._update_button.label, scale=scale, force_wide=view._update_button.force_wide)
+    button_draw(resources, view._update_button, pos=button_base_pos, width=w, scale=scale)
+    w = button_width(resources, view._play_button.label, scale=scale, force_wide=view._play_button.force_wide)
+    button_draw(
+        resources,
+        view._play_button,
+        pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y * scale),
+        width=w,
+        scale=scale,
+    )
+    w = button_width(resources, view._back_button.label, scale=scale, force_wide=view._back_button.force_wide)
+    button_draw(
+        resources,
+        view._back_button,
+        pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),
+        width=w,
+        scale=scale,
+    )
 
     return selected_rank
 

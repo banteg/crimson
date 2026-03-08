@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
-from ...ui.perk_menu import PerkMenuAssets, draw_ui_text
+from ...ui.perk_menu import draw_ui_text
 
 PERK_PROMPT_MAX_TIMER_MS = 200.0
 PERK_PROMPT_OUTSET_X = 50.0
@@ -55,39 +56,28 @@ class PerkPromptUi:
     @classmethod
     def rect(
         cls,
-        label: str,
         *,
-        ui_text_width: Callable[[str, float], int],
-        ui_line_height: Callable[[float], int],
-        assets: PerkMenuAssets | None,
+        resources: RuntimeResources,
         scale: float = 1.0,
     ) -> Rect:
         hinge = cls.hinge()
-        if assets is not None and assets.menu_item is not None:
-            tex = assets.menu_item
-            bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
-            bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
-            local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
-            local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-            return Rect.from_top_left(
-                hinge.offset(dx=local_x, dy=local_y),
-                bar_w,
-                bar_h,
-            )
-
-        margin = 16.0 * float(scale)
-        text_w = float(ui_text_width(label, float(scale)))
-        text_h = float(ui_line_height(float(scale)))
-        x = float(rl.get_screen_width()) - margin - text_w
-        y = margin
-        return Rect.from_top_left(Vec2(x, y), text_w, text_h)
+        tex = resources.texture(TextureId.UI_MENU_ITEM)
+        bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
+        bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
+        local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
+        local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
+        return Rect.from_top_left(
+            hinge.offset(dx=local_x, dy=local_y),
+            bar_w,
+            bar_h,
+        )
 
     @classmethod
     def draw(
         cls,
         *,
-        font: SmallFontData | None,
-        assets: PerkMenuAssets | None,
+        font: SmallFontData,
+        resources: RuntimeResources,
         label: str,
         timer_ms: float,
         pulse: float,
@@ -109,37 +99,35 @@ class PerkPromptUi:
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
         y = hinge.y + PERK_PROMPT_TEXT_OFFSET_Y
         color = rl.Color(int(text_color.r), int(text_color.g), int(text_color.b), int(255 * alpha))
-        draw_ui_text(font, label, Vec2(x, y), scale=text_scale, color=color)
+        draw_ui_text(resources, label, Vec2(x, y), scale=text_scale, color=color)
 
-        if assets is not None and assets.menu_item is not None:
-            tex = assets.menu_item
-            bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
-            bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
-            local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
-            local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-            # Raylib clamps out-of-range UVs when the texture wrap mode is CLAMP.
-            # Using src.x=tex.width with a negative width relies on REPEAT wrap to
-            # wrap UVs back into range, making the bar disappear when clamped.
-            src = rl.Rectangle(0.0, 0.0, -float(tex.width), float(tex.height))
-            dst = rl.Rectangle(hinge.x, hinge.y, bar_w, bar_h)
-            origin = rl.Vector2(float(-local_x), float(-local_y))
-            rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
+        tex = resources.texture(TextureId.UI_MENU_ITEM)
+        bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
+        bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
+        local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
+        local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
+        # Raylib clamps out-of-range UVs when the texture wrap mode is CLAMP.
+        # Using src.x=tex.width with a negative width relies on REPEAT wrap to
+        # wrap UVs back into range, making the bar disappear when clamped.
+        src = rl.Rectangle(0.0, 0.0, -float(tex.width), float(tex.height))
+        dst = rl.Rectangle(hinge.x, hinge.y, bar_w, bar_h)
+        origin = rl.Vector2(float(-local_x), float(-local_y))
+        rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
 
-        if assets is not None and assets.title_level_up is not None:
-            tex = assets.title_level_up
-            local_x = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_X * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_X
-            local_y = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_Y * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_Y
-            w = PERK_PROMPT_LEVEL_UP_BASE_W * PERK_PROMPT_LEVEL_UP_SCALE
-            h = PERK_PROMPT_LEVEL_UP_BASE_H * PERK_PROMPT_LEVEL_UP_SCALE
-            pulse_alpha = (100.0 + float(int(float(pulse) * 155.0 / 1000.0))) / 255.0
-            pulse_alpha = max(0.0, min(1.0, pulse_alpha))
-            label_alpha = max(0.0, min(1.0, alpha * pulse_alpha))
-            pulse_tint = rl.Color(255, 255, 255, int(255 * label_alpha))
-            src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-            dst = rl.Rectangle(hinge.x, hinge.y, w, h)
-            origin = rl.Vector2(float(-local_x), float(-local_y))
+        tex = resources.texture(TextureId.UI_TEXT_LEVEL_UP)
+        local_x = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_X * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_X
+        local_y = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_Y * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_Y
+        w = PERK_PROMPT_LEVEL_UP_BASE_W * PERK_PROMPT_LEVEL_UP_SCALE
+        h = PERK_PROMPT_LEVEL_UP_BASE_H * PERK_PROMPT_LEVEL_UP_SCALE
+        pulse_alpha = (100.0 + float(int(float(pulse) * 155.0 / 1000.0))) / 255.0
+        pulse_alpha = max(0.0, min(1.0, pulse_alpha))
+        label_alpha = max(0.0, min(1.0, alpha * pulse_alpha))
+        pulse_tint = rl.Color(255, 255, 255, int(255 * label_alpha))
+        src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
+        dst = rl.Rectangle(hinge.x, hinge.y, w, h)
+        origin = rl.Vector2(float(-local_x), float(-local_y))
+        rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
+        if label_alpha > 0.0:
+            rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
-            if label_alpha > 0.0:
-                rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-                rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
-                rl.end_blend_mode()
+            rl.end_blend_mode()

@@ -11,14 +11,14 @@ from crimson.game.types import GameState, HighScoresRequest, PauseBackground
 from crimson.game_modes import GameMode
 from crimson.persistence import save_status
 from crimson.persistence.highscores import HighScoreRecord
-from crimson.screens.assets import MenuAssets
 from crimson.screens.high_scores_view import HighScoresView
 from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
-from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
-from crimson.ui.perk_menu import PerkMenuAssets
+from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
+from grim.assets import RuntimeResources
 from grim.audio import AudioState
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
+from grim.fonts.small import SmallFontData
 from grim.music import init_music_state
 from grim.rand import Crand
 from grim.raylib_api import rl
@@ -37,39 +37,26 @@ def _texture_stub() -> rl.Texture:
     return cast("rl.Texture", SimpleNamespace(width=1, height=1))
 
 
-def _menu_assets_stub(*, tex: rl.Texture | None = None) -> MenuAssets:
+def _runtime_resources_stub(*, tex: rl.Texture | None = None) -> RuntimeResources:
     t = _texture_stub() if tex is None else tex
-    return MenuAssets(sign=t, item=t, panel=t, labels=t)
-
-
-def _game_over_assets_stub() -> GameOverAssets:
-    return GameOverAssets(
-        menu_panel=None,
-        text_reaper=None,
-        text_well_done=None,
-        particles=None,
-        perk_menu_assets=PerkMenuAssets(
-            menu_panel=None,
-            title_pick_perk=None,
-            title_level_up=None,
-            menu_item=None,
-            button_sm=None,
-            button_md=None,
-            cursor=None,
-            aim=None,
+    small_font = cast("SmallFontData", SimpleNamespace(cell_size=8, widths=[8] * 256))
+    return cast(
+        "RuntimeResources",
+        SimpleNamespace(
+            texture=lambda _texture_id: t,
+            small_font=small_font,
         ),
     )
 
-
 def test_game_over_panel_open_plays_panel_click(tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=ensure_crimson_cfg(tmp_path))
-    ui.assets = _game_over_assets_stub()
     ui.phase = 1
     ui._intro_ms = PANEL_SLIDE_DURATION_MS - 60.0
     ui._panel_open_sfx_played = False
 
     play_sfx = mocker.Mock()
 
+    mocker.patch.object(game_over_module, "runtime_resources_for", return_value=_runtime_resources_stub())
     mocker.patch.object(game_over_module, "button_update", side_effect=lambda *args, **kwargs: False)
     mocker.patch.object(game_over_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(game_over_module.rl, "get_screen_height", side_effect=lambda: 480)
@@ -109,18 +96,13 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
         session_start=time.monotonic(),
     )
     state.pending_high_scores = HighScoresRequest(game_mode_id=GameMode.SURVIVAL)
+    state.resources = _runtime_resources_stub()
 
     play_sfx = mocker.Mock()
-
-    class _DummyResources:
-        def texture(self, *_args, **_kwargs):
-            return _texture_stub()
 
     mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(high_scores_view_module, "play_sfx", side_effect=play_sfx)
     mocker.patch.object(high_scores_view_module, "ensure_menu_ground", return_value=None)
-    mocker.patch.object(high_scores_view_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
-    mocker.patch.object(high_scores_view_module, "load_menu_assets", side_effect=lambda _state: _menu_assets_stub())
 
     view = HighScoresView(state)
     view.open()
@@ -166,24 +148,18 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
         session_start=time.monotonic(),
     )
     state.pending_high_scores = HighScoresRequest(game_mode_id=GameMode.SURVIVAL)
+    dummy_tex = _texture_stub()
+    state.resources = _runtime_resources_stub(tex=dummy_tex)
     draw_pause_background_mock = mocker.Mock()
     state.pause_background = cast("PauseBackground", SimpleNamespace(draw_pause_background=draw_pause_background_mock))
 
-    class _DummyResources:
-        def texture(self, *_args, **_kwargs):
-            return _texture_stub()
-
-    dummy_tex = _texture_stub()
     mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(high_scores_view_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
-    mocker.patch.object(high_scores_view_module, "load_menu_assets", side_effect=lambda _state: _menu_assets_stub(tex=dummy_tex))
     mocker.patch.object(high_scores_view_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "draw_main_panel", side_effect=lambda *_args, **_kwargs: 0)
     mocker.patch.object(high_scores_view_module, "draw_right_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(HighScoresView, "_ensure_small_font", return_value=SimpleNamespace(texture=dummy_tex))
     mocker.patch.object(HighScoresView, "_draw_sign", return_value=None)
 
     view = HighScoresView(state)
