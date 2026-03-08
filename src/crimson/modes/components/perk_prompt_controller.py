@@ -48,10 +48,11 @@ class PerkPromptState:
         player_count: int,
         any_alive: bool,
         paused: bool,
+        menu_active: bool,
         prompt_scale: float = 1.0,
     ) -> bool:
         self.pending_count = int(pending_count)
-        if int(pending_count) <= 0 or (not any_alive) or paused:
+        if int(pending_count) <= 0 or (not any_alive) or paused or menu_active:
             return False
         label = PerkPromptUi.label(config, pending_count=int(pending_count))
         if label:

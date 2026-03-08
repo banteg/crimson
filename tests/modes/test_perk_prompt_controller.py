@@ -87,6 +87,7 @@ def test_prompt_open_request_from_pick_key(mocker) -> None:
         player_count=1,
         any_alive=True,
         paused=False,
+        menu_active=False,
     )
 
 
@@ -122,6 +123,7 @@ def test_prompt_open_request_from_hover_click(mocker) -> None:
         player_count=1,
         any_alive=True,
         paused=False,
+        menu_active=False,
     )
 
 
@@ -135,3 +137,24 @@ def test_begin_prompt_frame_clears_stale_hover_before_pulse_tick() -> None:
 
     assert prompt.hover is False
     assert prompt.pulse == 68.0
+
+
+def test_prompt_open_request_returns_false_while_menu_active(mocker) -> None:
+    prompt = PerkPromptState()
+    prompt.begin_frame(pending_count=1)
+
+    mocker.patch.object(
+        perk_prompt_controller_module,
+        "input_code_is_pressed_for_player",
+        return_value=True,
+    )
+
+    assert not prompt.poll_open_request(
+        ctx=_ctx(),
+        config=_config(),  # type: ignore[arg-type]
+        pending_count=1,
+        player_count=1,
+        any_alive=True,
+        paused=False,
+        menu_active=True,
+    )

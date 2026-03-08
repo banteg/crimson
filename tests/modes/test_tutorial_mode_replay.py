@@ -112,3 +112,24 @@ def test_tutorial_stage6_pick_waits_for_sim_progress_before_reopen(mocker, tmp_p
 
     mode.update(1.0 / 60.0)
     assert open_calls == 2
+
+
+def test_open_perk_menu_ignores_reopen_while_menu_active(mocker, tmp_path: Path) -> None:
+    cfg = ensure_crimson_cfg(tmp_path)
+    mode = TutorialMode(ViewContext(assets_dir=_assets_dir()), config=cfg, audio_rng=Crand(0xBEEF))
+    mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
+    resources = SimpleNamespace(texture=lambda _texture_id: object())
+    small_font = SimpleNamespace(cell_size=10, widths=[8] * 256)
+    mocker.patch.object(render_resources_module, "runtime_resources_for", return_value=resources)
+    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=small_font)
+    mode.open()
+
+    mode._perk_menu.open = True
+
+    record_checkpoint = mocker.patch.object(mode, "_record_replay_checkpoint")
+    enqueue_command = mocker.patch.object(mode, "enqueue_input_command")
+
+    mode._open_perk_menu()
+
+    record_checkpoint.assert_not_called()
+    enqueue_command.assert_not_called()

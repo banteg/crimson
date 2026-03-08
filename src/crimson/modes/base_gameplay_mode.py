@@ -633,6 +633,8 @@ class BaseGameplayMode:
         game_mode: GameMode,
         player_count: int,
     ) -> None:
+        if menu.active:
+            return
         perk_ctx = self._perk_menu_ui_context()
         recorder = getattr(self, "_replay_recorder", None)
         if recorder is not None:

@@ -194,6 +194,7 @@ class QuestMode(BaseGameplayMode):
             player_count=max(1, len(self.sim_world.players)),
             any_alive=self._any_player_alive(),
             paused=self._paused,
+            menu_active=self._perk_menu.active,
             prompt_scale=UI_TEXT_SCALE,
         ):
             self._try_open_perk_menu()
