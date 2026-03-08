@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from grim.audio import play_sfx
-from grim.raylib_api import rl
 
 from ..game.types import GameState
 from .chrome import (
@@ -18,7 +17,6 @@ from .chrome import (
     menu_slot_start_ms,
 )
 from .menu import _MenuEntriesViewBase
-from .transitions import _draw_screen_fade
 
 PAUSE_MENU_TO_MAIN_MENU_FADE_MS = 500
 
@@ -42,7 +40,6 @@ class PauseMenuView(_MenuEntriesViewBase):
                 close_sfx=None,
             ),
         )
-        self._chrome.draw_fade_fn = lambda runtime_state: _draw_screen_fade(runtime_state)
 
     def open(self) -> None:
         super().open()
@@ -85,9 +82,6 @@ class PauseMenuView(_MenuEntriesViewBase):
             return "back_to_previous"
         return None
 
-    def _pause_background_entity_alpha(self) -> float | None:
-        return self._chrome._pause_background_entity_alpha()
-
     def _entry_index_for_row(self, row: int) -> int | None:
         for idx, entry in enumerate(self._menu_entries):
             if entry.row == row:
@@ -98,6 +92,4 @@ class PauseMenuView(_MenuEntriesViewBase):
 __all__ = [
     "PAUSE_MENU_TO_MAIN_MENU_FADE_MS",
     "PauseMenuView",
-    "_draw_screen_fade",
-    "rl",
 ]

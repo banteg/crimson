@@ -5,6 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
 
+import crimson.screens.chrome.runtime as chrome_runtime
 import crimson.screens.high_scores_view.view as high_scores_view_module
 import crimson.screens.results.game_over as game_over_module
 from crimson.game.types import GameState, HighScoresRequest, PauseBackground
@@ -100,9 +101,9 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
 
     play_sfx = mocker.Mock()
 
-    mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(high_scores_view_module, "play_sfx", side_effect=play_sfx)
-    mocker.patch.object(high_scores_view_module, "ensure_menu_ground", return_value=None)
+    mocker.patch.object(chrome_runtime, "update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch.object(chrome_runtime, "play_sfx", side_effect=play_sfx)
+    mocker.patch.object(chrome_runtime, "ensure_menu_ground", return_value=None)
 
     view = HighScoresView(state)
     view.open()
@@ -153,9 +154,9 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
     draw_pause_background_mock = mocker.Mock()
     state.pause_background = cast("PauseBackground", SimpleNamespace(draw_pause_background=draw_pause_background_mock))
 
-    mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch.object(chrome_runtime, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(high_scores_view_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(high_scores_view_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(chrome_runtime, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "draw_main_panel", side_effect=lambda *_args, **_kwargs: 0)
     mocker.patch.object(high_scores_view_module, "draw_right_panel", side_effect=lambda *_args, **_kwargs: None)
@@ -194,9 +195,9 @@ def test_high_scores_view_draw_keeps_pause_background_opaque_while_opening(tmp_p
     draw_pause_background_mock = mocker.Mock()
     state.pause_background = cast("PauseBackground", SimpleNamespace(draw_pause_background=draw_pause_background_mock))
 
-    mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch.object(chrome_runtime, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(high_scores_view_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(high_scores_view_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(chrome_runtime, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "draw_main_panel", side_effect=lambda *_args, **_kwargs: 0)
     mocker.patch.object(high_scores_view_module, "draw_right_panel", side_effect=lambda *_args, **_kwargs: None)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from crimson.quests.level import QuestLevel
 from grim.assets import RuntimeResources, TextureId
-from grim.audio import play_sfx, update_audio
+from grim.audio import play_sfx
 from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -20,7 +20,6 @@ from ..chrome import (
     ChromeSpec,
     SignPolicy,
     dropdown_update,
-    ensure_menu_ground,
     list_window,
     split_panel_frame,
 )
@@ -61,7 +60,6 @@ from ..panels.base import (
     _ChromePanelView,
     save_dirty_config,
 )
-from ..transitions import _draw_screen_fade
 from .main_panel import draw_main_panel
 from .records import load_records, resolve_request
 from .right_panel import draw_right_panel
@@ -88,14 +86,6 @@ class HighScoresView(_ChromePanelView):
                 fade_to_game_actions=FADE_TO_GAME_ACTIONS,
             ),
         )
-        self._chrome.ensure_menu_ground_fn = lambda runtime_state, *, regenerate=False: ensure_menu_ground(
-            runtime_state,
-            regenerate=regenerate,
-        )
-        self._chrome.update_audio_fn = lambda audio_state, dt_s: update_audio(audio_state, dt_s)
-        self._chrome.draw_fade_fn = lambda runtime_state: _draw_screen_fade(runtime_state)
-        self._chrome.clear_background_fn = lambda color: rl.clear_background(color)
-        self._chrome.play_sfx_fn = lambda audio_state, sfx_name, *, rng: play_sfx(audio_state, sfx_name, rng=rng)
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -547,12 +537,6 @@ class HighScoresView(_ChromePanelView):
     def _draw_sign(self, *, animated: bool = False) -> None:
         self._chrome.draw_sign(resources=require_runtime_resources(self.state), animated=animated)
 
-    def _world_entity_alpha(self) -> float:
-        alpha = self._chrome._pause_background_entity_alpha()
-        if alpha is None:
-            return 1.0
-        return alpha
-
     def _visible_rows(self, font) -> int:
         row_step = float(font.cell_size)
         table_top = 188.0 + row_step
@@ -564,7 +548,4 @@ class HighScoresView(_ChromePanelView):
 __all__ = [
     "HighScoresView",
     "_ScoresDropdownLayout",
-    "_draw_screen_fade",
-    "ensure_menu_ground",
-    "update_audio",
 ]

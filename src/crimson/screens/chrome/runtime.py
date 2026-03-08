@@ -190,24 +190,6 @@ class ChromeRuntime:
         self.chrome = ChromeState()
         self.ground: GroundRenderer | None = None
         self.is_open = False
-        self.update_audio_fn: Callable[[object, float], None] = lambda audio_state, dt_s: update_audio(audio_state, dt_s)
-        self.ensure_menu_ground_fn: Callable[..., GroundRenderer] = (
-            lambda runtime_state, *, regenerate=False: ensure_menu_ground(runtime_state, regenerate=regenerate)
-        )
-        self.draw_fade_fn: Callable[[GameState], None] = lambda runtime_state: _draw_screen_fade(runtime_state)
-        self.clear_background_fn: Callable[[rl.Color], None] = lambda color: rl.clear_background(color)
-        self.play_sfx_fn: Callable[..., None] = lambda audio_state, sfx_name, *, rng: play_sfx(
-            audio_state,
-            sfx_name,
-            rng=rng,
-        )
-        self.cursor_draw_fn: Callable[[GameState, RuntimeResources, float], None] = (
-            lambda runtime_state, resources, pulse_time: draw_menu_cursor_frame(
-                runtime_state,
-                resources=resources,
-                pulse_time=pulse_time,
-            )
-        )
 
     def open(self) -> None:
         screen_width = float(self.state.config.screen_width)
@@ -235,7 +217,7 @@ class ChromeRuntime:
         dt_clamped = min(float(dt), 0.1)
         if self.state.audio is not None:
             self._refresh_music()
-            self.update_audio_fn(self.state.audio, dt_clamped)
+            update_audio(self.state.audio, dt_clamped)
         if self.ground is not None:
             self.ground.process_pending()
         self.chrome.cursor_pulse_time += dt_clamped * 1.1
@@ -308,13 +290,13 @@ class ChromeRuntime:
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None and self.spec.close_sfx is not None:
-            self.play_sfx_fn(self.state.audio, self.spec.close_sfx, rng=self.state.rng)
+            play_sfx(self.state.audio, self.spec.close_sfx, rng=self.state.rng)
         self.chrome.closing = True
         self.chrome.close_action = str(action)
 
     def draw_background(self) -> None:
         self._assert_open()
-        self.clear_background_fn(rl.BLACK)
+        rl.clear_background(rl.BLACK)
         pause_background = self.state.pause_background if self.spec.backdrop.allow_pause_background else None
         if pause_background is not None:
             kwargs: dict[str, float] = {}
@@ -327,7 +309,7 @@ class ChromeRuntime:
             self.ground.draw(menu_ground_camera(self.state))
 
     def draw_fade(self) -> None:
-        self.draw_fade_fn(self.state)
+        _draw_screen_fade(self.state)
 
     def draw_sign(self, *, resources: RuntimeResources | None = None, animated: bool | None = None) -> None:
         self._assert_open()
@@ -343,7 +325,7 @@ class ChromeRuntime:
     def draw_cursor(self, *, resources: RuntimeResources | None = None) -> None:
         self._assert_open()
         resources = require_runtime_resources(self.state) if resources is None else resources
-        self.cursor_draw_fn(self.state, resources, float(self.chrome.cursor_pulse_time))
+        draw_menu_cursor_frame(self.state, resources=resources, pulse_time=float(self.chrome.cursor_pulse_time))
 
     def _draw_sign_frame(self, *, resources: RuntimeResources, frame: SignFrame) -> None:
         sign = resources.texture(TextureId.UI_SIGN_CRIMSON)
@@ -391,7 +373,7 @@ class ChromeRuntime:
             return None
         if not self.spec.backdrop.use_menu_ground:
             return None
-        return self.ensure_menu_ground_fn(self.state)
+        return ensure_menu_ground(self.state)
 
     def _dispatch_close_action(self, action: str) -> None:
         mode = self.spec.dispatch.mode
@@ -429,7 +411,7 @@ class ChromeRuntime:
             return
         if self.state.audio is None:
             return
-        self.play_sfx_fn(self.state.audio, self.spec.open_sfx, rng=self.state.rng)
+        play_sfx(self.state.audio, self.spec.open_sfx, rng=self.state.rng)
         self.chrome.panel_open_sfx_played = True
 
     def _assert_open(self) -> None:

@@ -3,7 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import cast
 
-import crimson.screens.pause_menu as pause_menu_module
+import crimson.screens.chrome.runtime as chrome_runtime
 from crimson.screens.pause_menu import PAUSE_MENU_TO_MAIN_MENU_FADE_MS, PauseMenuView
 from grim.assets import RuntimeResources
 from grim.raylib_api import rl
@@ -38,10 +38,10 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(make_game_sta
     view._chrome.chrome.closing = True
     view._chrome.chrome.close_action = "back_to_menu"
     view._chrome.chrome.timeline_ms = PAUSE_MENU_TO_MAIN_MENU_FADE_MS // 2
-    view._chrome.clear_background_fn = lambda *_args, **_kwargs: None
-    view._chrome.cursor_draw_fn = lambda *_args, **_kwargs: None
 
-    mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(chrome_runtime.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(chrome_runtime, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(chrome_runtime, "draw_menu_cursor_frame", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(PauseMenuView, "_draw_menu_items", side_effect=lambda: None)
     mocker.patch.object(PauseMenuView, "_draw_menu_sign", side_effect=lambda: None)
 
@@ -65,10 +65,10 @@ def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(make_ga
     view._chrome.chrome.closing = True
     view._chrome.chrome.close_action = "back_to_previous"
     view._chrome.chrome.timeline_ms = 0
-    view._chrome.clear_background_fn = lambda *_args, **_kwargs: None
-    view._chrome.cursor_draw_fn = lambda *_args, **_kwargs: None
 
-    mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(chrome_runtime.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(chrome_runtime, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(chrome_runtime, "draw_menu_cursor_frame", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(PauseMenuView, "_draw_menu_items", side_effect=lambda: None)
     mocker.patch.object(PauseMenuView, "_draw_menu_sign", side_effect=lambda: None)
 
