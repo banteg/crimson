@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Protocol
-from unittest.mock import ANY, call
+from unittest.mock import call
 
 import pytest
 
@@ -155,12 +155,7 @@ def test_replay_playback_presenter_helpers_delegate_to_shared_module(mocker, rep
 
     draw_world.assert_called_once_with(None, draw_aim_indicators=False, entity_alpha=0.5)
     draw_text.assert_called_once_with(view._small, "replay", pos, color, scale=0.8)
-    measure_text.assert_called_once_with(
-        view._small,
-        "replay",
-        scale=0.8,
-        fallback=ANY,
-    )
+    measure_text.assert_called_once_with(view._small, "replay", scale=0.8)
     assert width == 42.0
 
 

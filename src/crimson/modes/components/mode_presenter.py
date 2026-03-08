@@ -1,14 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...world.runtime import WorldRuntime
-
-FallbackMeasureFn = Callable[[str, float], float]
 
 
 def draw_world_runtime(
@@ -46,10 +42,7 @@ def measure_ui_text_width(
     text: str,
     *,
     scale: float = 1.0,
-    fallback: FallbackMeasureFn | None = None,
 ) -> float:
     if font is not None:
         return float(measure_small_text_width(font, text))
-    if fallback is not None:
-        return float(fallback(text, scale))
     return float(rl.measure_text(text, int(20 * scale)))

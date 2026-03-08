@@ -410,12 +410,7 @@ class ReplayPlaybackMode:
         draw_mode_ui_text(self._small, text, pos, color, scale=float(scale))
 
     def _measure_ui_text_width(self, text: str, *, scale: float = 1.0) -> float:
-        return measure_mode_ui_text_width(
-            self._small,
-            text,
-            scale=float(scale),
-            fallback=lambda raw, text_scale: float(len(raw)) * 8.0 * float(text_scale),
-        )
+        return measure_mode_ui_text_width(self._small, text, scale=float(scale))
 
     def _build_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
         driver = self._driver
