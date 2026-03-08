@@ -3,7 +3,7 @@ from __future__ import annotations
 from ..game_modes import GameMode
 from ..quests import all_quests
 from ..quests.level import QuestLevel
-from ..sim.state_types import GameplayState, PlayerState
+from ..sim.state_types import PERK_COUNT_SIZE, GameplayState, PlayerState
 from .helpers import perk_count_get
 from .ids import PERK_BY_ID, PerkFlags, PerkId
 
@@ -16,23 +16,12 @@ _PERK_ALWAYS_AVAILABLE: tuple[PerkId, ...] = (
 )
 
 
-def perks_rebuild_available(state: GameplayState) -> None:
-    """Rebuild quest unlock driven `perk_meta_table[perk_id].available` flags.
-
-    Port of `perks_rebuild_available` (0x0042fc30).
-    """
-
+def perk_available_mask(*, status) -> list[bool]:
     unlock_index = 0
-    if state.status is not None:
-        unlock_index = int(state.status.quest_unlock_index)
+    if status is not None:
+        unlock_index = int(status.quest_unlock_index)
 
-    if int(state._perk_available_unlock_index) == unlock_index:
-        return
-
-    available = state.perk_available
-    for idx in range(len(available)):
-        available[idx] = False
-
+    available = [False] * int(PERK_COUNT_SIZE)
     for perk_id in range(1, _PERK_BASE_AVAILABLE_MAX_ID + 1):
         if 0 <= perk_id < len(available):
             available[perk_id] = True
@@ -50,6 +39,30 @@ def perks_rebuild_available(state: GameplayState) -> None:
                 available[perk_id] = True
 
     available[int(PerkId.ANTIPERK)] = False
+    return available
+
+
+def unlocked_perk_ids(*, status) -> list[PerkId]:
+    return [PerkId(idx) for idx, available in enumerate(perk_available_mask(status=status)) if available and idx > 0]
+
+
+def perks_rebuild_available(state: GameplayState) -> None:
+    """Rebuild quest unlock driven `perk_meta_table[perk_id].available` flags.
+
+    Port of `perks_rebuild_available` (0x0042fc30).
+    """
+
+    unlock_index = 0
+    if state.status is not None:
+        unlock_index = int(state.status.quest_unlock_index)
+
+    if int(state._perk_available_unlock_index) == unlock_index:
+        return
+
+    available = perk_available_mask(status=state.status)
+    target = state.perk_available
+    for idx, value in enumerate(available):
+        target[idx] = bool(value)
     state._perk_available_unlock_index = unlock_index
 
 
