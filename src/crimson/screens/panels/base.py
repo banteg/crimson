@@ -68,6 +68,7 @@ class _ChromePanelView:
     def __init__(self, state: GameState, *, chrome_spec: ChromeSpec) -> None:
         self.state = state
         self._chrome = ChromeRuntime(state, spec=chrome_spec)
+        self._chrome.play_sfx_fn = lambda audio_state, sfx_name, *, rng: play_sfx(audio_state, sfx_name, rng=rng)
 
     def open(self) -> None:
         self._chrome.open()
