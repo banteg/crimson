@@ -9,7 +9,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
-from ...game.loop_actions import ViewAction, coerce_view_action
+from ...game.loop_actions import BACK_TO_MENU, OPEN_QUESTS, START_QUEST, ViewAction
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -51,11 +51,11 @@ class QuestFailedView:
         self._outcome: QuestRunOutcome | None = None
         self._record: HighScoreRecord | None = None
         self._quest_title: str = ""
-        self._action: str | None = None
+        self._action: ViewAction | None = None
         self._cursor_pulse_time = 0.0
         self._intro_ms = 0.0
         self._closing = False
-        self._close_action: str | None = None
+        self._close_action: ViewAction | None = None
         self._retry_button = UiButtonState("Play Again", force_wide=True)
         self._quest_list_button = UiButtonState("Play Another", force_wide=True)
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
@@ -251,7 +251,7 @@ class QuestFailedView:
         _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> ViewAction | None:
-        action = coerce_view_action(self._action)
+        action = self._action
         self._action = None
         return action
 
@@ -346,21 +346,21 @@ class QuestFailedView:
             self.state.console.log.log(f"quest failed: failed to save quest selection config: {exc}")
         if self.state.audio is not None:
             play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-        self._begin_close("start_quest")
+        self._begin_close(START_QUEST)
 
     def _activate_play_another(self) -> None:
         self.state.quest_fail_retry_count = 0
         if self.state.audio is not None:
             play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-        self._begin_close("open_quests")
+        self._begin_close(OPEN_QUESTS)
 
     def _activate_main_menu(self) -> None:
         self.state.quest_fail_retry_count = 0
         if self.state.audio is not None:
             play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-        self._begin_close("back_to_menu")
+        self._begin_close(BACK_TO_MENU)
 
-    def _begin_close(self, action: str) -> None:
+    def _begin_close(self, action: ViewAction) -> None:
         if self._closing:
             return
         self._closing = True

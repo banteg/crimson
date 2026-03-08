@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 from typing import cast
 
-from crimson.game.loop_actions import ViewAction
+from crimson.game.loop_actions import START_SURVIVAL, ViewAction
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import GameState
 from crimson.persistence import save_status
@@ -45,30 +45,6 @@ class _RngStub(Crand):
         if not self._values:
             return 0
         return int(self._values.pop(0))
-
-
-class _AdoptMenuGroundView:
-    def __init__(self) -> None:
-        self.adopted: GroundRenderer | None = None
-
-    def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
-        self.adopted = ground
-
-    def open(self) -> None:
-        return None
-
-    def close(self) -> None:
-        return None
-
-    def update(self, dt: float) -> None:
-        _ = dt
-        return None
-
-    def draw(self) -> None:
-        return None
-
-    def take_action(self) -> ViewAction | None:
-        return None
 
 
 class _OverlayView:
@@ -183,9 +159,9 @@ def test_start_survival_does_not_adopt_existing_menu_ground(tmp_path: Path) -> N
     state = _build_state(tmp_path)
     loop = GameLoopView(state)
     menu_ground = GroundRenderer(texture=rl.Texture())
-    adopter = _AdoptMenuGroundView()
+    gameplay_view = GameplayScreenStub()
     state.menu_ground = menu_ground
 
-    loop._maybe_adopt_menu_ground("start_survival", adopter)
+    loop._open_front_view(START_SURVIVAL, gameplay_view)
 
-    assert adopter.adopted is None
+    assert state.menu_ground is menu_ground

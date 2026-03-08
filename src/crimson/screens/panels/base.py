@@ -6,7 +6,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
-from ...game.loop_actions import BACK_TO_MENU, ViewAction, action_fades_to_game, coerce_view_action
+from ...game.loop_actions import BACK_TO_MENU, ViewAction, action_fades_to_game
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ..assets import require_runtime_resources
@@ -58,7 +58,7 @@ class PanelMenuView:
         panel_offset: Vec2 = Vec2(MENU_PANEL_OFFSET_X, MENU_PANEL_OFFSET_Y),
         panel_height: float = MENU_PANEL_HEIGHT,
         back_pos: Vec2 = Vec2(PANEL_BACK_POS_X, PANEL_BACK_POS_Y),
-        back_action: ViewAction | str = BACK_TO_MENU,
+        back_action: ViewAction = BACK_TO_MENU,
     ) -> None:
         self.state = state
         self._is_open = False
@@ -68,9 +68,7 @@ class PanelMenuView:
         self._panel_offset = panel_offset
         self._panel_height = panel_height
         self._back_pos = back_pos
-        resolved_back_action = coerce_view_action(back_action)
-        assert resolved_back_action is not None
-        self._back_action: ViewAction = resolved_back_action
+        self._back_action = back_action
         self._ground: GroundRenderer | None = None
         self._entry: MenuEntry | None = None
         self._hovered = False
@@ -170,7 +168,7 @@ class PanelMenuView:
 
     def take_action(self) -> ViewAction | None:
         self._assert_open()
-        action = coerce_view_action(self._pending_action)
+        action = self._pending_action
         self._pending_action = None
         return action
 
@@ -189,18 +187,16 @@ class PanelMenuView:
             rl.draw_text(line, x, y, 18, rl.Color(190, 190, 200, 255))
             y += 22
 
-    def _begin_close_transition(self, action: ViewAction | str) -> None:
+    def _begin_close_transition(self, action: ViewAction) -> None:
         if self._closing:
             return
-        resolved = coerce_view_action(action)
-        assert resolved is not None
-        if action_fades_to_game(resolved):
+        if action_fades_to_game(action):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._closing = True
-        self._close_action = resolved
+        self._close_action = action
 
     def _init_ground(self) -> None:
         if self.state.pause_background is not None:

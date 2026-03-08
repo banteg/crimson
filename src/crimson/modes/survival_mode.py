@@ -15,6 +15,7 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
+from ..game.loop_actions import BACK_TO_MENU, OPEN_PAUSE_MENU
 from ..game_modes import GameMode
 from ..gameplay import survival_check_level_up
 from ..input_codes import (
@@ -272,7 +273,7 @@ class SurvivalMode(BaseGameplayMode):
     def _handle_input(self) -> None:
         if self._game_over_active:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-                self._action = "back_to_menu"
+                self._action = BACK_TO_MENU
                 self.close_requested = True
             return
         if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -302,7 +303,7 @@ class SurvivalMode(BaseGameplayMode):
                 survival_check_level_up(self.player, self.state.perk_selection)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._action = "open_pause_menu"
+            self._action = OPEN_PAUSE_MENU
             return
 
     def _debug_cycle_weapon(self, delta: int) -> None:

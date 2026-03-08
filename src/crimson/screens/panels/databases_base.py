@@ -7,7 +7,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
-from ...game.loop_actions import ViewAction, coerce_view_action
+from ...game.loop_actions import BACK_TO_PREVIOUS, ViewAction
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
@@ -52,9 +52,9 @@ class _DatabaseBaseView:
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
-        self._action: str | None = None
+        self._close_action: ViewAction | None = None
+        self._pending_action: ViewAction | None = None
+        self._action: ViewAction | None = None
 
         self._back_button = UiButtonState("Back", force_wide=False)
 
@@ -87,13 +87,13 @@ class _DatabaseBaseView:
     def take_action(self) -> ViewAction | None:
         self._assert_open()
         if self._pending_action is not None:
-            action = coerce_view_action(self._pending_action)
+            action = self._pending_action
             self._pending_action = None
             self._closing = False
             self._close_action = None
             self._timeline_ms = self._timeline_max_ms
             return action
-        action = coerce_view_action(self._action)
+        action = self._action
         self._action = None
         return action
 
@@ -106,7 +106,7 @@ class _DatabaseBaseView:
             pos.y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
         )
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ViewAction) -> None:
         if self._closing:
             return
         self._closing = True
@@ -168,7 +168,7 @@ class _DatabaseBaseView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(BACK_TO_PREVIOUS)
             return
 
         if not enabled:
@@ -196,7 +196,7 @@ class _DatabaseBaseView:
         ):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(BACK_TO_PREVIOUS)
 
     def draw(self) -> None:
         self._assert_open()

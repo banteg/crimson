@@ -6,7 +6,7 @@ from grim.audio import play_sfx, update_audio
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
-from ...game.loop_actions import ViewAction, coerce_view_action
+from ...game.loop_actions import BACK_TO_MENU, OPEN_END_NOTE, OPEN_HIGH_SCORES, START_QUEST, ViewAction
 from ...game.types import GameState, HighScoresRequest
 from ...game_modes import GameMode
 from ...quests import quest_by_level
@@ -24,7 +24,7 @@ class QuestResultsView:
         self._unlock_weapon_name: str = ""
         self._unlock_perk_name: str = ""
         self._ui = None
-        self._action: str | None = None
+        self._action: ViewAction | None = None
 
     def open(self) -> None:
         from ...persistence.highscores import HighScoreRecord
@@ -177,25 +177,25 @@ class QuestResultsView:
         if action == "play_again":
             assert self._quest_level is not None
             self._set_pending_quest_level(self._quest_level)
-            self._action = "start_quest"
+            self._action = START_QUEST
             return
         if action == "play_next":
             if self._quest_level == QuestLevel(5, 10):
-                self._action = "end_note"
+                self._action = OPEN_END_NOTE
                 return
             assert self._quest_level is not None
             next_level = _next_quest_level(self._quest_level)
             if next_level is not None:
                 self._set_pending_quest_level(next_level)
-                self._action = "start_quest"
+                self._action = START_QUEST
             else:
-                self._action = "back_to_menu"
+                self._action = BACK_TO_MENU
             return
         if action == "high_scores":
             self._open_high_scores_list()
             return
         if action == "main_menu":
-            self._action = "back_to_menu"
+            self._action = BACK_TO_MENU
             return
 
     def draw(self) -> None:
@@ -218,7 +218,7 @@ class QuestResultsView:
         rl.draw_text("Press ESC to return to the menu.", 32, 180, 18, rl.Color(190, 190, 200, 255))
 
     def take_action(self) -> ViewAction | None:
-        action = coerce_view_action(self._action)
+        action = self._action
         self._action = None
         return action
 
@@ -232,7 +232,7 @@ class QuestResultsView:
             quest_level=self._quest_level,
             highlight_rank=highlight_rank,
         )
-        self._action = "open_high_scores"
+        self._action = OPEN_HIGH_SCORES
 
     def _set_pending_quest_level(self, level: QuestLevel) -> None:
         self.state.pending_quest_level = level

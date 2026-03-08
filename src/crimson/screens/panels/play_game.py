@@ -9,7 +9,15 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ...debug import debug_enabled
-from ...game.loop_actions import ViewAction
+from ...game.loop_actions import (
+    OPEN_LAN_SESSION,
+    OPEN_QUESTS,
+    START_RUSH,
+    START_SURVIVAL,
+    START_TUTORIAL,
+    START_TYPO,
+    ViewAction,
+)
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
@@ -29,7 +37,7 @@ class _PlayGameModeEntry(msgspec.Struct):
     key: str
     label: str
     tooltip: str
-    action: str
+    action: ViewAction
     game_mode: int | None = None
     show_count: bool = False
 
@@ -173,7 +181,7 @@ class PlayGameMenuView(PanelMenuView):
                 continue
             self._tooltip_ms[key] = max(0, self._tooltip_ms[key] - dt_ms * 2)
 
-    def _begin_close_transition(self, action: ViewAction | str) -> None:
+    def _begin_close_transition(self, action: ViewAction) -> None:
         if self._dirty:
             try:
                 self.state.config.save()
@@ -262,7 +270,7 @@ class PlayGameMenuView(PanelMenuView):
                     key="tutorial",
                     label="Tutorial",
                     tooltip="Learn how to play Crimsonland.",
-                    action="start_tutorial",
+                    action=START_TUTORIAL,
                     game_mode=GameMode.TUTORIAL,
                 ),
             )
@@ -273,14 +281,14 @@ class PlayGameMenuView(PanelMenuView):
                     key="quests",
                     label=" Quests ",
                     tooltip="Unlock new weapons and perks in Quest mode.",
-                    action="open_quests",
+                    action=OPEN_QUESTS,
                     show_count=True,
                 ),
                 _PlayGameModeEntry(
                     key="rush",
                     label="  Rush  ",
                     tooltip="Face a rush of aliens in Rush mode.",
-                    action="start_rush",
+                    action=START_RUSH,
                     game_mode=GameMode.RUSH,
                     show_count=True,
                 ),
@@ -288,7 +296,7 @@ class PlayGameMenuView(PanelMenuView):
                     key="survival",
                     label="Survival",
                     tooltip="Gain perks and weapons and fight back.",
-                    action="start_survival",
+                    action=START_SURVIVAL,
                     game_mode=GameMode.SURVIVAL,
                     show_count=True,
                 ),
@@ -301,7 +309,7 @@ class PlayGameMenuView(PanelMenuView):
                     key="typo",
                     label="Typ'o'Shooter",
                     tooltip="Use your typing skills as the weapon to lay\nthem down.",
-                    action="start_typo",
+                    action=START_TYPO,
                     game_mode=GameMode.TYPO,
                     show_count=True,
                 ),
@@ -313,7 +321,7 @@ class PlayGameMenuView(PanelMenuView):
                     key="tutorial",
                     label="Tutorial",
                     tooltip="Learn how to play Crimsonland.",
-                    action="start_tutorial",
+                    action=START_TUTORIAL,
                     game_mode=GameMode.TUTORIAL,
                 ),
             )
@@ -324,7 +332,7 @@ class PlayGameMenuView(PanelMenuView):
                     key="lan",
                     label=" Network ",
                     tooltip="Host or join a rollback-first network session.",
-                    action="open_lan_session",
+                    action=OPEN_LAN_SESSION,
                 ),
             )
 

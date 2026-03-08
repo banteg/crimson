@@ -7,7 +7,7 @@ from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from ...game.loop_actions import START_QUEST_LAN, START_RUSH_LAN, START_SURVIVAL_LAN, ViewAction
+from ...game.loop_actions import OPEN_PLAY_GAME, START_QUEST_LAN, START_RUSH_LAN, START_SURVIVAL_LAN, ViewAction
 from ...game.types import (
     GameState,
     LockstepEndpoint,
@@ -44,7 +44,7 @@ class NetworkSessionPanelView(PanelMenuView):
             title="Network Session",
             panel_offset=Vec2(-63.0, MENU_PANEL_OFFSET_Y),
             panel_height=278.0,
-            back_action="open_play_game",
+            back_action=OPEN_PLAY_GAME,
         )
         self._back_button = UiButtonState("Back", force_wide=False)
 

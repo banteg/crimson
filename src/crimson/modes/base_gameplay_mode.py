@@ -20,7 +20,7 @@ from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
-from ..game.loop_actions import BACK_TO_MENU, OPEN_HIGH_SCORES, ViewAction, coerce_view_action
+from ..game.loop_actions import BACK_TO_MENU, OPEN_HIGH_SCORES, OPEN_PAUSE_MENU, ViewAction
 from ..game_modes import GameMode
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
@@ -258,7 +258,7 @@ class BaseGameplayMode:
         self._base_dir = base_dir
 
         self.close_requested = False
-        self._action: ViewAction | str | None = None
+        self._action: ViewAction | None = None
         self._paused = False
         self._status_base: GameStatus | None = None
         self._status_sim: GameStatus | None = None
@@ -643,7 +643,7 @@ class BaseGameplayMode:
         frame_dt, frame_dt_ui_ms = self._tick_frame(dt)
         self._reset_frame_telemetry()
         self._handle_input()
-        if self._action == "open_pause_menu":
+        if self._action == OPEN_PAUSE_MENU:
             return None
         return _ModeFrameState(
             dt=float(frame_dt),
@@ -1240,7 +1240,7 @@ class BaseGameplayMode:
         self._world_runtime.close_runtime()
 
     def take_action(self) -> ViewAction | None:
-        action = coerce_view_action(self._action)
+        action = self._action
         self._action = None
         return action
 

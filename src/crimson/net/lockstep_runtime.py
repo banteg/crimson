@@ -6,7 +6,7 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, TypeAlias
+from typing import Literal, Protocol, TypeAlias
 
 import msgspec
 
@@ -113,20 +113,36 @@ class _HostPeerLink(msgspec.Struct):
     last_seen_ms: int = 0
 
 
-def _reset_desync_counters(runtime: object) -> None:
-    runtime.desync_count = 0  # type: ignore[attr-defined]
-    runtime.last_desync_tick = -1  # type: ignore[attr-defined]
-    runtime.last_desync_kind = ""  # type: ignore[attr-defined]
-    runtime.last_desync_expected = ""  # type: ignore[attr-defined]
-    runtime.last_desync_actual = ""  # type: ignore[attr-defined]
+class _DesyncTrackingRuntime(Protocol):
+    desync_count: int
+    last_desync_tick: int
+    last_desync_kind: str
+    last_desync_expected: str
+    last_desync_actual: str
 
 
-def _note_desync(*, role: str, runtime: object, kind: str, tick_index: int, expected: str, actual: str) -> None:
-    runtime.desync_count = int(runtime.desync_count) + 1  # type: ignore[attr-defined]
-    runtime.last_desync_tick = int(tick_index)  # type: ignore[attr-defined]
-    runtime.last_desync_kind = str(kind)  # type: ignore[attr-defined]
-    runtime.last_desync_expected = str(expected)  # type: ignore[attr-defined]
-    runtime.last_desync_actual = str(actual)  # type: ignore[attr-defined]
+def _reset_desync_counters(runtime: _DesyncTrackingRuntime) -> None:
+    runtime.desync_count = 0
+    runtime.last_desync_tick = -1
+    runtime.last_desync_kind = ""
+    runtime.last_desync_expected = ""
+    runtime.last_desync_actual = ""
+
+
+def _note_desync(
+    *,
+    role: str,
+    runtime: _DesyncTrackingRuntime,
+    kind: str,
+    tick_index: int,
+    expected: str,
+    actual: str,
+) -> None:
+    runtime.desync_count = int(runtime.desync_count) + 1
+    runtime.last_desync_tick = int(tick_index)
+    runtime.last_desync_kind = str(kind)
+    runtime.last_desync_expected = str(expected)
+    runtime.last_desync_actual = str(actual)
     lan_debug_log(
         "lan_desync",
         role=str(role),

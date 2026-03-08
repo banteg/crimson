@@ -12,7 +12,7 @@ from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ...debug import debug_enabled
-from ...game.loop_actions import ViewAction, action_fades_to_game, coerce_view_action
+from ...game.loop_actions import OPEN_PLAY_GAME, START_QUEST, ViewAction, action_fades_to_game
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -87,13 +87,13 @@ class QuestsMenuView:
         self._widescreen_y_shift = 0.0
 
         self._stage = 1
-        self._action: ViewAction | str | None = None
+        self._action: ViewAction | None = None
         self._dirty = False
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: ViewAction | str | None = None
+        self._close_action: ViewAction | None = None
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -175,7 +175,7 @@ class QuestsMenuView:
         enabled = self._timeline_ms >= self._timeline_max_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            self._begin_close_transition("open_play_game")
+            self._begin_close_transition(OPEN_PLAY_GAME)
             return
 
         if not enabled:
@@ -214,7 +214,7 @@ class QuestsMenuView:
             mouse=mouse,
             click=bool(click),
         ):
-            self._begin_close_transition("open_play_game")
+            self._begin_close_transition(OPEN_PLAY_GAME)
             return
 
         # Quick-select row numbers 1..0 (10).
@@ -250,7 +250,7 @@ class QuestsMenuView:
 
     def take_action(self) -> ViewAction | None:
         self._assert_open()
-        action = coerce_view_action(self._action)
+        action = self._action
         self._action = None
         return action
 
@@ -383,7 +383,7 @@ class QuestsMenuView:
         self.state.config.game_mode = int(GameMode.QUESTS)
         self.state.config.quest_level_value = level
         self._dirty = True
-        self._begin_close_transition("start_quest")
+        self._begin_close_transition(START_QUEST)
 
     def _quest_title(self, stage: int, row: int) -> str:
         from ...quests import quest_by_level
@@ -641,18 +641,16 @@ class QuestsMenuView:
             shadow=fx_detail,
         )
 
-    def _begin_close_transition(self, action: ViewAction | str) -> None:
+    def _begin_close_transition(self, action: ViewAction) -> None:
         if self._closing:
             return
-        resolved = coerce_view_action(action)
-        assert resolved is not None
-        if action_fades_to_game(resolved):
+        if action_fades_to_game(action):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._closing = True
-        self._close_action = resolved
+        self._close_action = action
 
 
 __all__ = ["QuestsMenuView"]

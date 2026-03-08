@@ -7,7 +7,7 @@ from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
-from ..game.loop_actions import BACK_TO_MENU, BACK_TO_PREVIOUS, OPEN_OPTIONS, ViewAction, coerce_view_action
+from ..game.loop_actions import BACK_TO_MENU, BACK_TO_PREVIOUS, OPEN_OPTIONS, ViewAction
 from ..game.types import GameState
 from ..pause_background import PauseBackground
 from .assets import require_runtime_resources
@@ -56,8 +56,8 @@ class PauseMenuView:
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
         self._closing = False
-        self._close_action: ViewAction | str | None = None
-        self._pending_action: ViewAction | str | None = None
+        self._close_action: ViewAction | None = None
+        self._pending_action: ViewAction | None = None
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -168,7 +168,7 @@ class PauseMenuView:
 
     def take_action(self) -> ViewAction | None:
         self._assert_open()
-        action = coerce_view_action(self._pending_action)
+        action = self._pending_action
         self._pending_action = None
         return action
 
@@ -181,7 +181,7 @@ class PauseMenuView:
     def _pause_background_entity_alpha(self) -> float:
         # Native gameplay_render_world keeps gameplay entities fully visible for most transitions,
         # but fades them out when pause menu closes to main menu (ui_element_slot_28 timing = 0x1f4 ms).
-        if (not self._closing) or (coerce_view_action(self._close_action) != BACK_TO_MENU):
+        if (not self._closing) or (self._close_action != BACK_TO_MENU):
             return 1.0
         alpha = float(self._timeline_ms) / float(PAUSE_MENU_TO_MAIN_MENU_FADE_MS)
         if alpha < 0.0:
@@ -211,11 +211,11 @@ class PauseMenuView:
             return BACK_TO_PREVIOUS
         return None
 
-    def _begin_close_transition(self, action: ViewAction | str) -> None:
+    def _begin_close_transition(self, action: ViewAction) -> None:
         if self._closing:
             return
         self._closing = True
-        self._close_action = coerce_view_action(action)
+        self._close_action = action
 
     def _menu_item_scale(self, slot: int) -> tuple[float, float]:
         if self._menu_screen_width < (MENU_SCALE_SMALL_THRESHOLD + 1):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.game.loop_actions import ViewAction, coerce_view_action
+from crimson.game.loop_actions import ViewAction
 from crimson.game_modes import GameMode
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
@@ -15,7 +15,7 @@ class GameplayScreenStub:
         camera: Vec2 | None = None,
         telemetry: tuple[int, int, int, float, float, float] = (0, 0, 0, 0.0, 0.0, 0.0),
         console_elapsed_ms: float = 0.0,
-        action: str | None = None,
+        action: ViewAction | None = None,
     ) -> None:
         self.close_requested = False
         self.default_game_mode_id = game_mode_id
@@ -49,7 +49,7 @@ class GameplayScreenStub:
         return None
 
     def take_action(self) -> ViewAction | None:
-        action = coerce_view_action(self._action)
+        action = self._action
         self._action = None
         return action
 

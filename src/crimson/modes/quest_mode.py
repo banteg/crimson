@@ -18,6 +18,7 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
+from ..game.loop_actions import OPEN_PAUSE_MENU
 from ..game_modes import GameMode
 from ..input_codes import (
     config_keybinds_for_player,
@@ -497,7 +498,7 @@ class QuestMode(BaseGameplayMode):
                 self._debug_cycle_weapon(1)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._action = "open_pause_menu"
+            self._action = OPEN_PAUSE_MENU
             return
 
     def _debug_cycle_weapon(self, delta: int) -> None:

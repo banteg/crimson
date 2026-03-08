@@ -51,9 +51,9 @@ def test_tick_statistics_playtime_behavior(
     state = make_game_state(demo_enabled=demo_enabled)
     loop = GameLoopView(state)
     if isinstance(front_view_id, ModeId):
-        loop._front_active = loop._screen_factory.gameplay(front_view_id)
+        loop._front_active = loop._screens.gameplay(front_view_id)
     else:
-        loop._front_active = loop._screen_factory.screen(front_view_id)
+        loop._front_active = loop._screens.screen(front_view_id)
     state.status.game_sequence_id = start_value
 
     loop._tick_statistics_playtime(dt)

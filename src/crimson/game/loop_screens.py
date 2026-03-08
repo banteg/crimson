@@ -32,7 +32,7 @@ def _mode_view_context(state: GameState) -> ViewContext:
     return ViewContext(assets_dir=state.assets_dir, preserve_bugs=preserve_bugs)
 
 
-class LoopScreenFactory:
+class LoopScreens:
     def __init__(self, state: GameState) -> None:
         ctx = _mode_view_context(state)
         self._screens: dict[ScreenId, Screen] = {
@@ -118,4 +118,4 @@ class LoopScreenFactory:
         return self.gameplay(action.mode)
 
 
-__all__ = ["LoopScreenFactory"]
+__all__ = ["LoopScreens"]

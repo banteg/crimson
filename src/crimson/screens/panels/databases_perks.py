@@ -7,6 +7,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+from ...game.loop_actions import BACK_TO_PREVIOUS
 from ...game.types import GameState
 from ...perks import PerkId
 from ..high_scores_layout import perks_db_right_detail_x_shift
@@ -277,7 +278,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         ):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(BACK_TO_PREVIOUS)
 
     def _hovered_perk_id(self) -> PerkId | None:
         if 0 <= int(self._hovered_row_index) < len(self._perk_ids):

@@ -13,7 +13,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
-from ...game.loop_actions import ViewAction, coerce_view_action
+from ...game.loop_actions import OPEN_STATISTICS, ViewAction
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
@@ -136,9 +136,9 @@ class AlienZooKeeperView:
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
-        self._action: str | None = None
+        self._close_action: ViewAction | None = None
+        self._pending_action: ViewAction | None = None
+        self._action: ViewAction | None = None
 
         self._board: list[int] = [0] * _BOARD_CELLS
         self._selected_index = -1
@@ -179,20 +179,20 @@ class AlienZooKeeperView:
     def take_action(self) -> ViewAction | None:
         self._assert_open()
         if self._pending_action is not None:
-            action = coerce_view_action(self._pending_action)
+            action = self._pending_action
             self._pending_action = None
             self._closing = False
             self._close_action = None
             self._timeline_ms = self._timeline_max_ms
             return action
-        action = coerce_view_action(self._action)
+        action = self._action
         self._action = None
         return action
 
     def _assert_open(self) -> None:
         assert self._is_open, "AlienZooKeeperView must be opened before use"
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ViewAction) -> None:
         if self._closing:
             return
         self._closing = True
@@ -349,7 +349,7 @@ class AlienZooKeeperView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-            self._begin_close_transition("open_statistics")
+            self._begin_close_transition(OPEN_STATISTICS)
             return
         if not interactive:
             return
@@ -389,7 +389,7 @@ class AlienZooKeeperView:
         ):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-            self._begin_close_transition("open_statistics")
+            self._begin_close_transition(OPEN_STATISTICS)
             return
 
     def draw(self) -> None:

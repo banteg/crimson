@@ -7,7 +7,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
-from ...game.loop_actions import ViewAction, coerce_view_action
+from ...game.loop_actions import BACK_TO_MENU, START_RUSH, START_SURVIVAL, START_TYPO, ViewAction
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -46,12 +46,12 @@ class EndNoteView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._ground: GroundRenderer | None = None
-        self._action: str | None = None
+        self._action: ViewAction | None = None
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: str | None = None
+        self._close_action: ViewAction | None = None
 
         self._survival_button = UiButtonState("Survival", force_wide=True)
         self._rush_button = UiButtonState("  Rush  ", force_wide=True)
@@ -92,7 +92,7 @@ class EndNoteView:
 
         enabled = self._timeline_ms >= self._timeline_max_ms
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            self._begin_close_transition("back_to_menu")
+            self._begin_close_transition(BACK_TO_MENU)
             return
 
         if not enabled:
@@ -126,7 +126,7 @@ class EndNoteView:
             click=click,
         ):
             self.state.config.game_mode = int(GameMode.SURVIVAL)
-            self._begin_close_transition("start_survival")
+            self._begin_close_transition(START_SURVIVAL)
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -140,7 +140,7 @@ class EndNoteView:
             click=click,
         ):
             self.state.config.game_mode = int(GameMode.RUSH)
-            self._begin_close_transition("start_rush")
+            self._begin_close_transition(START_RUSH)
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -154,7 +154,7 @@ class EndNoteView:
             click=click,
         ):
             self.state.config.game_mode = int(GameMode.TYPO)
-            self._begin_close_transition("start_typo", fade_to_black=True)
+            self._begin_close_transition(START_TYPO, fade_to_black=True)
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -169,7 +169,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self._begin_close_transition("back_to_menu")
+            self._begin_close_transition(BACK_TO_MENU)
             return
 
     def draw(self) -> None:
@@ -265,7 +265,7 @@ class EndNoteView:
         _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> ViewAction | None:
-        action = coerce_view_action(self._action)
+        action = self._action
         self._action = None
         return action
 
@@ -282,7 +282,7 @@ class EndNoteView:
             return 1.0
         return alpha
 
-    def _begin_close_transition(self, action: str, *, fade_to_black: bool = False) -> None:
+    def _begin_close_transition(self, action: ViewAction, *, fade_to_black: bool = False) -> None:
         if self._closing:
             return
         if fade_to_black:

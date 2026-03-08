@@ -22,7 +22,6 @@ from ..game.loop_actions import (
     QUIT_APP,
     START_DEMO,
     ViewAction,
-    coerce_view_action,
 )
 from ..game.types import GameState
 from ..sim.bootstrap import run_unlock_terrain_prelude, terrain_stamping_draws
@@ -186,8 +185,8 @@ class MenuView:
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
         self._closing = False
-        self._close_action: ViewAction | str | None = None
-        self._pending_action: ViewAction | str | None = None
+        self._close_action: ViewAction | None = None
+        self._pending_action: ViewAction | None = None
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -331,7 +330,7 @@ class MenuView:
 
     def take_action(self) -> ViewAction | None:
         self._assert_open()
-        action = coerce_view_action(self._pending_action)
+        action = self._pending_action
         self._pending_action = None
         return action
 
@@ -359,11 +358,11 @@ class MenuView:
         elif entry.row == MENU_LABEL_ROW_OTHER_GAMES:
             self._begin_close_transition(OPEN_OTHER_GAMES)
 
-    def _begin_close_transition(self, action: ViewAction | str) -> None:
+    def _begin_close_transition(self, action: ViewAction) -> None:
         if self._closing:
             return
         self._closing = True
-        self._close_action = coerce_view_action(action)
+        self._close_action = action
 
     def _begin_quit_transition(self) -> None:
         self.state.menu_sign_locked = False

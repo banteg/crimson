@@ -9,7 +9,7 @@ from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
-from ...game.loop_actions import ViewAction
+from ...game.loop_actions import OPEN_CONTROLS, OPEN_PAUSE_MENU, ViewAction
 from ...game.types import GameState
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
@@ -47,7 +47,7 @@ class OptionsMenuView(PanelMenuView):
     )
 
     def __init__(self, state: GameState) -> None:
-        super().__init__(state, title="Options", back_action="open_pause_menu")
+        super().__init__(state, title="Options", back_action=OPEN_PAUSE_MENU)
         self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
         self._slider_sfx = SliderState(10, 0, 10)
         self._slider_music = SliderState(10, 0, 10)
@@ -137,7 +137,7 @@ class OptionsMenuView(PanelMenuView):
             mouse=mouse,
             click=click,
         ):
-            self._begin_close_transition("open_controls")
+            self._begin_close_transition(OPEN_CONTROLS)
 
     def draw(self) -> None:
         self._assert_open()
@@ -155,7 +155,7 @@ class OptionsMenuView(PanelMenuView):
             pulse_time=self._cursor_pulse_time,
         )
 
-    def _begin_close_transition(self, action: ViewAction | str) -> None:
+    def _begin_close_transition(self, action: ViewAction) -> None:
         if self._dirty:
             try:
                 self.state.config.save()

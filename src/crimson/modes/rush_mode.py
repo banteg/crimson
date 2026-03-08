@@ -12,6 +12,7 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
+from ..game.loop_actions import BACK_TO_MENU, OPEN_PAUSE_MENU
 from ..game_modes import GameMode
 from ..net.debug_log import lan_debug_log
 from ..net.rollback_resync_v5 import (
@@ -169,7 +170,7 @@ class RushMode(BaseGameplayMode):
     def _handle_input(self) -> None:
         if self._game_over_active:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-                self._action = "back_to_menu"
+                self._action = BACK_TO_MENU
                 self.close_requested = True
             return
 
@@ -177,7 +178,7 @@ class RushMode(BaseGameplayMode):
             self._paused = not self._paused
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._action = "open_pause_menu"
+            self._action = OPEN_PAUSE_MENU
             return
 
     def _enter_game_over(self) -> None:

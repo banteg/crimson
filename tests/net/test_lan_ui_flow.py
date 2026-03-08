@@ -23,7 +23,7 @@ def test_play_game_network_entry_is_available_by_default(make_game_state) -> Non
     view = PlayGameMenuView(state)
 
     entries = view._mode_entries()[0]
-    assert any(entry.action == "open_lan_session" for entry in entries)
+    assert any(entry.action == OPEN_LAN_SESSION for entry in entries)
 
 
 def _lockstep_pending(

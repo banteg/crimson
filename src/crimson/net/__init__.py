@@ -23,6 +23,7 @@ from .relay_service import RelayServer, RelayServerConfig
 from .reliable import ReliableLink
 from .resync import ResyncAssembler, ResyncBuildError, build_resync_messages
 from .rollback_runtime import RollbackRuntime, RollbackRuntimeConfig
+from .runtime_factory import BuiltNetworkRuntime, NetworkRuntime, build_network_runtime
 from .transport import PeerAddr, UdpTransport
 
 __all__ = [
@@ -41,6 +42,7 @@ __all__ = [
     "LockstepRuntime",
     "LockstepRuntimeConfig",
     "MAX_PLAYERS",
+    "NetworkRuntime",
     "RollbackRuntime",
     "RollbackRuntimeConfig",
     "PROTOCOL_VERSION",
@@ -49,9 +51,11 @@ __all__ = [
     "ReliableLink",
     "RelayServer",
     "RelayServerConfig",
+    "BuiltNetworkRuntime",
     "ResyncAssembler",
     "ResyncBuildError",
     "TICK_RATE",
     "UdpTransport",
+    "build_network_runtime",
     "build_resync_messages",
 ]

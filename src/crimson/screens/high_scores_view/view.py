@@ -8,7 +8,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
-from ...game.loop_actions import ViewAction, action_fades_to_game, coerce_view_action
+from ...game.loop_actions import BACK_TO_PREVIOUS, OPEN_PLAY_GAME, ViewAction, action_fades_to_game
 from ...game.types import GameState, HighScoresRequest
 from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
@@ -81,13 +81,13 @@ class HighScoresView:
         self.state = state
         self._is_open = False
         self._ground: GroundRenderer | None = None
-        self._action: ViewAction | str | None = None
+        self._action: ViewAction | None = None
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: ViewAction | str | None = None
+        self._close_action: ViewAction | None = None
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -172,7 +172,7 @@ class HighScoresView:
         enabled = self._timeline_ms >= self._timeline_max_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(BACK_TO_PREVIOUS)
             return
 
         screen_width = float(self.state.config.screen_width)
@@ -247,7 +247,7 @@ class HighScoresView:
                 mouse=mouse,
                 click=click,
             ):
-                self._begin_close_transition("open_play_game")
+                self._begin_close_transition(OPEN_PLAY_GAME)
                 return
             back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             if button_update(
@@ -258,7 +258,7 @@ class HighScoresView:
                 mouse=mouse,
                 click=click,
             ):
-                self._begin_close_transition("back_to_previous")
+                self._begin_close_transition(BACK_TO_PREVIOUS)
                 return
 
         rows = 10
@@ -282,7 +282,7 @@ class HighScoresView:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
                 self._scroll_index = max_scroll
 
-    def _begin_close_transition(self, action: ViewAction | str) -> None:
+    def _begin_close_transition(self, action: ViewAction) -> None:
         if self._dirty:
             try:
                 self.state.config.save()
@@ -292,15 +292,13 @@ class HighScoresView:
                 self._dirty = False
         if self._closing:
             return
-        resolved = coerce_view_action(action)
-        assert resolved is not None
-        if action_fades_to_game(resolved):
+        if action_fades_to_game(action):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._closing = True
-        self._close_action = resolved
+        self._close_action = action
 
     def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int, scale: float) -> _ScoresDropdownLayout:
         header_h = 16.0 * scale
@@ -729,7 +727,7 @@ class HighScoresView:
 
     def take_action(self) -> ViewAction | None:
         self._assert_open()
-        action = coerce_view_action(self._action)
+        action = self._action
         self._action = None
         return action
 

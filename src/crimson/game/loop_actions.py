@@ -123,55 +123,9 @@ START_DEMO = StartDemoAction()
 QUIT_AFTER_DEMO = QuitAfterDemoAction()
 RESTART_MODE = RestartModeAction()
 
-_ACTION_BY_NAME: dict[str, ViewAction] = {
-    "back_to_menu": BACK_TO_MENU,
-    "back_to_previous": BACK_TO_PREVIOUS,
-    "open_play_game": OPEN_PLAY_GAME,
-    "open_lan_session": OPEN_LAN_SESSION,
-    "open_lan_lobby": OPEN_LAN_LOBBY,
-    "open_quests": OPEN_QUESTS,
-    "open_pause_menu": OPEN_PAUSE_MENU,
-    "quest_results": OPEN_QUEST_RESULTS,
-    "quest_failed": OPEN_QUEST_FAILED,
-    "end_note": OPEN_END_NOTE,
-    "open_high_scores": OPEN_HIGH_SCORES,
-    "open_options": OPEN_OPTIONS,
-    "open_controls": OPEN_CONTROLS,
-    "open_statistics": OPEN_STATISTICS,
-    "open_weapon_database": OPEN_WEAPON_DATABASE,
-    "open_perk_database": OPEN_PERK_DATABASE,
-    "open_credits": OPEN_CREDITS,
-    "open_alien_zookeeper": OPEN_ALIEN_ZOOKEEPER,
-    "open_mods": OPEN_MODS,
-    "open_other_games": OPEN_OTHER_GAMES,
-    "start_survival": START_SURVIVAL,
-    "start_rush": START_RUSH,
-    "start_typo": START_TYPO,
-    "start_tutorial": START_TUTORIAL,
-    "start_quest": START_QUEST,
-    "start_survival_lan": START_SURVIVAL_LAN,
-    "start_rush_lan": START_RUSH_LAN,
-    "start_quest_lan": START_QUEST_LAN,
-    "quit_app": QUIT_APP,
-    "start_demo": START_DEMO,
-    "quit_after_demo": QUIT_AFTER_DEMO,
-    "play_again": RESTART_MODE,
-}
-
 
 def action_fades_to_game(action: ViewAction) -> bool:
     return isinstance(action, StartModeAction)
-
-
-def coerce_view_action(action: ViewAction | str | None) -> ViewAction | None:
-    if action is None:
-        return None
-    if not isinstance(action, str):
-        return action
-    mapped = _ACTION_BY_NAME.get(action)
-    if mapped is None:
-        raise KeyError(f"Unknown view action {action!r}")
-    return mapped
 
 
 def action_label(action: ViewAction) -> str:
@@ -241,5 +195,4 @@ __all__ = [
     "ViewAction",
     "action_fades_to_game",
     "action_label",
-    "coerce_view_action",
 ]

@@ -12,7 +12,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ...aim_schemes import AimScheme
-from ...game.loop_actions import ViewAction
+from ...game.loop_actions import OPEN_OPTIONS, ViewAction
 from ...game.types import GameState
 from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code, input_code_name
 from ...movement_controls import MovementControlType
@@ -118,7 +118,7 @@ class ControlsMenuView(PanelMenuView):
         super().__init__(
             state,
             title="Controls",
-            back_action="open_options",
+            back_action=OPEN_OPTIONS,
             panel_pos=Vec2(CONTROLS_LEFT_PANEL_POS_X, CONTROLS_LEFT_PANEL_POS_Y),
             back_pos=Vec2(CONTROLS_BACK_POS_X, CONTROLS_BACK_POS_Y),
         )
@@ -172,7 +172,7 @@ class ControlsMenuView(PanelMenuView):
         ):
             self._dirty = True
 
-    def _begin_close_transition(self, action: ViewAction | str) -> None:
+    def _begin_close_transition(self, action: ViewAction) -> None:
         if self._dirty:
             try:
                 self.state.config.save()
