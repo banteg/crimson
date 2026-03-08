@@ -29,8 +29,8 @@ def test_perk_prompt_state_requests_open_from_pick_key(mocker) -> None:
     )
     mocker.patch.object(
         perk_prompt_controller_module,
-        "config_keybinds_for_player",
-        return_value=(0, 0, 0, 0, 0x100),
+        "player_fire_keybind",
+        return_value=0x100,
     )
     mocker.patch.object(
         perk_prompt_controller_module,
@@ -69,8 +69,8 @@ def test_perk_prompt_state_requests_open_from_hover_click(mocker) -> None:
     )
     mocker.patch.object(
         perk_prompt_controller_module,
-        "config_keybinds_for_player",
-        return_value=(0, 0, 0, 0, 0x100),
+        "player_fire_keybind",
+        return_value=0x100,
     )
     mocker.patch.object(
         perk_prompt_controller_module,
@@ -109,8 +109,8 @@ def test_perk_prompt_state_blocks_open_when_input_is_disabled(mocker) -> None:
     )
     mocker.patch.object(
         perk_prompt_controller_module,
-        "config_keybinds_for_player",
-        return_value=(0, 0, 0, 0, 0x100),
+        "player_fire_keybind",
+        return_value=0x100,
     )
     mocker.patch.object(
         perk_prompt_controller_module,

@@ -23,6 +23,7 @@ from ..net.rollback_resync_v5 import (
     QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,
 )
+from ..perks import PerkId
 from ..perks.selection import perk_selection_prepare_choices, perk_selection_visible_choices
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
@@ -167,7 +168,7 @@ class QuestMode(BaseGameplayMode):
     def _reset_perk_prompt(self) -> None:
         self._perk_prompt.reset_if_pending(pending_count=int(self.state.perk_selection.pending_count))
 
-    def _perk_choices(self) -> list:
+    def _perk_choices(self) -> list[PerkId]:
         return perk_selection_visible_choices(self.sim_world.players, self.state.perk_selection)
 
     def _try_open_perk_menu(self) -> None:
@@ -182,8 +183,7 @@ class QuestMode(BaseGameplayMode):
             game_mode=GameMode.QUESTS,
             player_count=int(perk_ctx.player_count),
         )
-        if not choices:
-            return
+        assert choices, "perk menu open requires prepared perk choices"
         self._perk_menu.open_menu(play_sfx=perk_ctx.play_sfx)
         self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 

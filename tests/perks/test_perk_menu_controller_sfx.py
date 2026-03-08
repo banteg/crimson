@@ -89,7 +89,7 @@ def test_open_perk_menu_plays_panel_click(mocker) -> None:
     play_sfx = mocker.Mock()
 
     assert menu.open is False
-    assert menu.open_menu(play_sfx=play_sfx) is True
+    menu.open_menu(play_sfx=play_sfx)
     assert menu.open is True
     play_sfx.assert_called_once_with("sfx_ui_panelclick")
 

@@ -175,14 +175,13 @@ class PerkMenuController:
         if self._on_close is not None:
             self._on_close()
 
-    def open_menu(self, *, play_sfx: PlaySfxFn | None = None) -> bool:
+    def open_menu(self, *, play_sfx: PlaySfxFn | None = None) -> None:
         if self._open:
-            return True
+            return
         if play_sfx is not None:
             play_sfx("sfx_ui_panelclick")
         self._open = True
         self._selected_index = 0
-        return True
 
     def tick_timeline(self, dt_ui_ms: float) -> None:
         if self._open:

@@ -12,6 +12,7 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
+from ..perks import PerkId
 from ..perks.selection import perk_selection_prepare_choices, perk_selection_visible_choices
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
@@ -170,7 +171,7 @@ class TutorialMode(BaseGameplayMode):
     def _perk_menu_play_sfx(self) -> None:
         return None
 
-    def _perk_choices(self) -> list:
+    def _perk_choices(self) -> list[PerkId]:
         return perk_selection_visible_choices(self.sim_world.players, self.state.perk_selection)
 
     def _open_perk_menu(self) -> None:
@@ -185,8 +186,7 @@ class TutorialMode(BaseGameplayMode):
             game_mode=GameMode.TUTORIAL,
             player_count=1,
         )
-        if not choices:
-            return
+        assert choices, "perk menu open requires prepared perk choices"
         self._perk_menu.open_menu(play_sfx=perk_ctx.play_sfx)
         self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 

@@ -9,10 +9,10 @@ from grim.math import clamp
 from grim.raylib_api import rl
 
 from ...input_codes import (
-    config_keybinds_for_player,
     input_code_is_down_for_player,
     input_code_is_pressed_for_player,
     input_primary_just_pressed,
+    player_fire_keybind,
 )
 from .perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
 
@@ -105,11 +105,7 @@ class PerkPromptState:
         )
 
     def _prompt_open_requested(self, *, config: CrimsonConfig, player_count: int) -> bool:
-        player0_binds = config_keybinds_for_player(config, player_index=0)
-        fire_key = 0x100
-        if len(player0_binds) >= 5:
-            fire_key = int(player0_binds[4])
-
+        fire_key = player_fire_keybind(config, player_index=0)
         pick_key = config.keybind_pick_perk
         if input_code_is_pressed_for_player(pick_key, player_index=0) and (
             not input_code_is_down_for_player(fire_key, player_index=0)
