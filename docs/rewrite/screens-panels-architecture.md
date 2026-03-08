@@ -432,6 +432,16 @@ into the view shell.
 
 Suggested adapters:
 
+- `MenuListController`
+  - shared multi-entry navigation model for menu-style screens
+  - owns list-level state and flow:
+    - current selected index
+    - focus timer
+    - hovered index
+    - Tab / Shift+Tab cycling
+    - Enter activation
+    - click-to-focus and click-to-activate behavior
+    - optional idle timer support for menu-specific flows such as demo trigger
 - `MenuEntryController`
   - atlas-backed entry behavior used by the main menu and the default Back label
   - owns hover timers, ready timers, alpha, hit-testing, and draw logic
@@ -456,6 +466,18 @@ Suggested adapters:
 
 These adapters should update and draw against `ChromeFrame` plus a screen-local
 state object.
+
+The split between `MenuListController` and `MenuEntryController` is deliberate:
+
+- `MenuEntryController` owns per-entry state and rendering
+- `MenuListController` owns list-level selection/focus/activation flow
+
+That matches the current duplication between `MenuView` and `PauseMenuView`,
+which share both:
+
+- per-entry hover/ready/draw behavior
+- list-level `_selected_index` / `_focus_timer_ms` / `_hovered_index` state and
+  the Tab / Enter / click activation loop
 
 This split matters for the current database screens:
 
@@ -487,11 +509,13 @@ Recommended shape:
 
 - `MenuView`
   - keep as the main menu class
-  - rebuild on top of shared chrome plus `MenuEntryController`
+  - rebuild on top of shared chrome plus `MenuListController` and
+    `MenuEntryController`
 - `PauseMenuView`
   - keep as a separate adopter class
   - migrate in the dedicated menu/pause phase with a pause-background-specific
     `BackdropPolicy`
+  - reuse the same `MenuListController` with a pause-specific action map
 - `PanelMenuView`
   - shrink into a thin adapter over shared chrome
   - default body is title/body text
@@ -618,6 +642,7 @@ The rewrite should add dedicated tests for:
 - idle-demo trigger behavior for `MenuView`
 - single-panel and split-panel geometry at `640` and `1024`
 - menu-entry controller hover/ready/alpha behavior
+- menu-list controller selection, focus, and activation behavior
 - button-backed back control
 - dropdown open/select/close behavior
 - list viewport, selection, and scrollbar primitives
