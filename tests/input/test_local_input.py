@@ -9,7 +9,8 @@ from crimson import local_input
 from crimson.aim_schemes import AimScheme
 from crimson.movement_controls import MovementControlType
 from crimson.sim.state_types import PlayerState
-from grim.config import CrimsonConfig, default_crimson_cfg_data
+from grim.config.defaults import default_crimson_cfg_data
+from grim.config.model import CrimsonConfig
 from grim.geom import Vec2
 from tests.support.helpers import assert_float_close
 

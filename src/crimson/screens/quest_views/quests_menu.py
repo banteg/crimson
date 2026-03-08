@@ -6,6 +6,7 @@ from crimson.quests.level import QuestLevel
 from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
+from grim.config.storage import save_crimson_cfg
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -123,7 +124,7 @@ class QuestsMenuView:
         self._is_open = False
         if self._dirty:
             try:
-                self.state.config.save()
+                save_crimson_cfg(self.state.config)
             except (OSError, ValueError) as exc:
                 self.state.console.log.log(f"failed to save quest menu config: {exc}")
             self._dirty = False

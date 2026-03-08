@@ -6,7 +6,7 @@ from pathlib import Path
 import msgspec
 
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer

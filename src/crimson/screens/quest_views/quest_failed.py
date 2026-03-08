@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
+from grim.config.storage import save_crimson_cfg
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -340,7 +341,7 @@ class QuestFailedView:
         self.state.config.game_mode = int(GameMode.QUESTS)
         self.state.config.quest_level_value = level
         try:
-            self.state.config.save()
+            save_crimson_cfg(self.state.config)
         except (OSError, ValueError) as exc:
             self.state.console.log.log(f"quest failed: failed to save quest selection config: {exc}")
         if self.state.audio is not None:

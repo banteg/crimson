@@ -13,7 +13,7 @@ from typing import Literal, Protocol, cast
 import msgspec
 from tqdm import tqdm
 
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.console import ConsoleState
 from grim.raylib_api import rl
 from grim.view import ViewContext
@@ -161,7 +161,7 @@ def run_replay_render_benchmark(
     show_progress: bool = False,
 ) -> ReplayBenchmarkResult:
     from grim.assets import load_runtime_resources, unload_runtime_resources
-    from grim.config import ensure_crimson_cfg
+    from grim.config.storage import ensure_crimson_cfg
     from grim.console import create_console
     from grim.raylib_api import rl
 

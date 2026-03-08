@@ -14,7 +14,8 @@ from crimson.screens.results.quest_results import (
 )
 from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
-from grim.config import CrimsonConfig, default_crimson_cfg_data
+from grim.config.defaults import default_crimson_cfg_data
+from grim.config.model import CrimsonConfig
 from grim.raylib_api import rl
 
 

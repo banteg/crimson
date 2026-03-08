@@ -11,7 +11,7 @@ from crimson.perks.availability import perk_can_offer
 from crimson.persistence.highscores import HighScoreRecord, rank_index, scores_path_for_config, sort_highscores
 from crimson.quests.level import QuestLevel
 from crimson.sim.state_types import PlayerState
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.geom import Vec2
 
 

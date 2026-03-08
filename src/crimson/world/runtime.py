@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from grim.audio import AudioState
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl

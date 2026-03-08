@@ -7,7 +7,8 @@ from pathlib import Path
 import msgspec
 
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
+from grim.config.storage import save_crimson_cfg
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -324,7 +325,7 @@ class GameOverUi(msgspec.Struct):
                     candidate = (self._candidate_record or record).copy()
                     candidate.set_name(self.input_text)
                     self.config.set_player_name(self.input_text)
-                    self.config.save()
+                    save_crimson_cfg(self.config)
                     path = scores_path_for_config(self.base_dir, self.config)
                     if not self._saved:
                         upsert_highscore_record(path, candidate)

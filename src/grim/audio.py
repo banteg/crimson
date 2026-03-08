@@ -8,7 +8,7 @@ import msgspec
 from grim.raylib_api import rl
 
 from . import music, sfx
-from .config import CrimsonConfig
+from .config.model import CrimsonConfig
 from .console import ConsoleState
 from .rand import Crand
 

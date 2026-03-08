@@ -10,7 +10,8 @@ import pytest
 import grim.terrain_render as terrain_render
 from crimson.render.world import renderer as world_renderer
 from crimson.world import runtime as world_runtime
-from grim.config import CrimsonConfig, default_crimson_cfg_data
+from grim.config.defaults import default_crimson_cfg_data
+from grim.config.model import CrimsonConfig
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 from tests.support.helpers import assert_float_close

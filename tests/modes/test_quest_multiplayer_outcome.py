@@ -6,7 +6,7 @@ from crimson.modes.quest_mode import QuestMode
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.weapons import WEAPON_BY_ID
-from grim.config import ensure_crimson_cfg
+from grim.config.storage import ensure_crimson_cfg
 from grim.rand import Crand
 from grim.view import ViewContext
 

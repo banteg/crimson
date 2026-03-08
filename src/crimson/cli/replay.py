@@ -644,7 +644,7 @@ def cmd_replay_play(
 ) -> None:
     """Play back a recorded replay."""
     from grim.app import RunViewHooks, run_view
-    from grim.config import ensure_crimson_cfg
+    from grim.config.storage import ensure_crimson_cfg
     from grim.console import create_console
     from grim.view import ViewContext
 

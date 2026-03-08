@@ -3,10 +3,8 @@ from __future__ import annotations
 import msgspec
 
 from grim.assets import RuntimeResources, TextureId
-from grim.config import (
-    KEYBIND_UNBOUND_CODE,
-    default_player_keybind_block,
-)
+from grim.config.controls import KEYBIND_UNBOUND_CODE, default_player_keybind_block
+from grim.config.storage import save_crimson_cfg
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -174,7 +172,7 @@ class ControlsMenuView(PanelMenuView):
     def _begin_close_transition(self, action: str) -> None:
         if self._dirty:
             try:
-                self.state.config.save()
+                save_crimson_cfg(self.state.config)
             except (OSError, ValueError) as exc:
                 self.state.console.log.log(f"config: save failed: {exc}")
             else:
@@ -391,7 +389,7 @@ class ControlsMenuView(PanelMenuView):
 
     def _update_rebind_capture(self, *, right_top_left: Vec2, panel_scale: float, font: SmallFontData) -> bool:
         player_idx = self._current_player_index()
-        aim_scheme, move_mode = controls_method_values(self.state.config.data, player_index=player_idx)
+        aim_scheme, move_mode = controls_method_values(self.state.config, player_index=player_idx)
         sections = self._rebind_sections(player_index=player_idx, aim_scheme=aim_scheme, move_mode=move_mode)
         rows = self._collect_rebind_rows(
             right_top_left=right_top_left,
@@ -546,7 +544,7 @@ class ControlsMenuView(PanelMenuView):
     def _update_method_dropdowns(self, *, left_top_left: Vec2, panel_scale: float, font: SmallFontData) -> bool:
         config = self.state.config
         player_idx = self._current_player_index()
-        aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
+        aim_scheme, move_mode = controls_method_values(config, player_index=player_idx)
         move_mode_ids = self._move_method_ids(move_mode=move_mode)
         move_items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
         aim_item_ids = controls_aim_method_dropdown_ids(aim_scheme)
@@ -661,7 +659,7 @@ class ControlsMenuView(PanelMenuView):
         text_color_soft = rl.Color(255, 255, 255, 204)
         config = self.state.config
         player_idx = self._current_player_index()
-        aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
+        aim_scheme, move_mode = controls_method_values(config, player_index=player_idx)
         move_mode_ids = self._move_method_ids(move_mode=move_mode)
         move_items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
         aim_item_ids = controls_aim_method_dropdown_ids(aim_scheme)

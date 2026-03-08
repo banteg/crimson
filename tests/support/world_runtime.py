@@ -15,7 +15,7 @@ from crimson.sim.world_state import WorldState
 from crimson.terrain_slots import TerrainSlotTriplet
 from crimson.world import WorldRuntime
 from grim.audio import AudioState
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.geom import Vec2
 from grim.rand import Crand
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from grim.assets import RuntimeResources, TextureId
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.fonts.small import SmallFontData
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl

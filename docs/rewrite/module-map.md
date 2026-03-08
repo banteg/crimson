@@ -27,7 +27,7 @@ View protocol/context | `src/grim/view.py` | `src/grim/view.py` | Shared by debu
 Atlas helpers | `src/crimson/atlas.py` | `src/grim/atlas.py` (future) | Scripts import `crimson.atlas` today.
 Terrain rendering | `src/grim/terrain_render.py` | `src/grim/terrain_render.py` | Pure render pipeline; game selects params.
 Audio (music) | `src/grim/audio.py` | `src/grim/audio.py` | Later: split `music.py` / `sfx.py`.
-Config (crimson.cfg) | `src/grim/config.py` | `src/grim/config.py` | Global settings + persistence.
+Config (crimson.cfg) | `src/grim/config/` | `src/grim/config/` | Global settings + persistence split across codec, controls, defaults, model, and storage.
 Console/log | `src/grim/console.py` | `src/grim/console.py` | Console as engine/debug layer.
 Fonts (small, mono) | `src/grim/fonts/small.py`, `src/grim/fonts/grim_mono.py` | `src/grim/fonts/*` | Font loaders + draw/measure helpers.
 CLI entrypoint | `src/crimson/cli.py` | `src/crimson/cli.py` | Stays in game package.

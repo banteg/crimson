@@ -7,7 +7,8 @@ from pathlib import Path
 import msgspec
 
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
+from grim.config.storage import save_crimson_cfg
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -503,7 +504,7 @@ class QuestResultsUi(msgspec.Struct):
                             self.highlight_rank = None
                         self._saved = True
                     self.config.set_player_name(self.input_text)
-                    self.config.save()
+                    save_crimson_cfg(self.config)
                     self.phase = 2
                     return None
                 if play_sfx is not None:

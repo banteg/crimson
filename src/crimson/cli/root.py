@@ -331,7 +331,8 @@ def cmd_config(
     ),
 ) -> None:
     """Inspect crimson.cfg configuration values."""
-    from grim.config import CRIMSON_CFG_NAME, CRIMSON_CFG_STRUCT, load_crimson_cfg
+    from grim.config.codec import CRIMSON_CFG_NAME, iter_crimson_cfg_field_names
+    from grim.config.storage import load_crimson_cfg
 
     cfg_path = path if path is not None else base_dir / CRIMSON_CFG_NAME
     config = load_crimson_cfg(cfg_path)
@@ -341,11 +342,8 @@ def cmd_config(
     typer.echo(f"bpp: {config.screen_bpp}")
     typer.echo(f"texture_scale: {config.texture_scale}")
     typer.echo("fields:")
-    for sub in CRIMSON_CFG_STRUCT.subcons:
-        name = sub.name
-        if not name:
-            continue
-        value = config.data[name]
+    for name in iter_crimson_cfg_field_names():
+        value = config.raw_value(name)
         typer.echo(f"{name}: {_format_cfg_value(value)}")
 
 

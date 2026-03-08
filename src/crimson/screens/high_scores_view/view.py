@@ -3,6 +3,7 @@ from __future__ import annotations
 from crimson.quests.level import QuestLevel
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_sfx, update_audio
+from grim.config.storage import save_crimson_cfg
 from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -284,7 +285,7 @@ class HighScoresView:
     def _begin_close_transition(self, action: str) -> None:
         if self._dirty:
             try:
-                self.state.config.save()
+                save_crimson_cfg(self.state.config)
             except (OSError, ValueError) as exc:
                 self.state.console.log.log(f"config: save failed: {exc}")
             else:

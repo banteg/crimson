@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.raylib_api import rl
 
 from ..input_codes import INPUT_CODE_UNBOUND, config_keybinds_for_player, input_code_is_down_for_player

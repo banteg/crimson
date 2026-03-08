@@ -4,7 +4,8 @@ from collections.abc import Sequence
 
 import msgspec
 
-from grim.config import CrimsonConfig, default_player_keybind_block, player_keybind_block
+from grim.config.controls import default_player_keybind_block
+from grim.config.model import CrimsonConfig
 from grim.raylib_api import rl
 
 INPUT_CODE_UNBOUND = 0x17E
@@ -466,7 +467,7 @@ def config_keybinds(config: CrimsonConfig | None) -> tuple[int, ...]:
 def config_keybinds_for_player(config: CrimsonConfig | None, *, player_index: int) -> tuple[int, ...]:
     if config is None:
         return ()
-    return tuple(int(value) for value in player_keybind_block(config.data, player_index=int(player_index)))
+    return tuple(int(value) for value in config.player_keybind_block(player_index=int(player_index)))
 
 
 def player_fire_keybind(config: CrimsonConfig | None, *, player_index: int) -> int:

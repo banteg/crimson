@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from grim.assets import TextureId
 from grim.audio import AudioState
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.console import ConsoleState
 from grim.rand import Crand
 from grim.raylib_api import rl

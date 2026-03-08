@@ -16,7 +16,7 @@ from crimson.quests.level import QuestLevel
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
 from grim.assets import RuntimeResources, TextureId, register_runtime_resources
-from grim.config import ensure_crimson_cfg
+from grim.config.storage import ensure_crimson_cfg
 from grim.console import create_console, register_core_cvars
 from grim.fonts.small import SmallFontData
 from grim.geom import Vec2

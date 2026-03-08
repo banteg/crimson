@@ -101,7 +101,7 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 @pytest.fixture
 def replay_playback_view() -> tuple["replay_playback_mode.ReplayPlaybackMode", "ConsoleState"]:
     import crimson.modes.replay_playback_mode as replay_playback_mode
-    from grim.config import CrimsonConfig
+    from grim.config.model import CrimsonConfig
     from grim.console import ConsoleLog, ConsoleState
     from grim.view import ViewContext
 
@@ -125,7 +125,7 @@ def assets_dir() -> Path:
 def make_game_state(tmp_path: Path, assets_dir: Path) -> Callable[..., "GameState"]:
     from crimson.game.types import GameState
     from crimson.persistence import save_status
-    from grim.config import ensure_crimson_cfg
+    from grim.config.storage import ensure_crimson_cfg
     from grim.console import create_console
 
     def _make(

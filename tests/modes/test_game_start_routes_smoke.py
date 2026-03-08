@@ -13,7 +13,7 @@ from crimson.modes.typo_mode import TypoShooterMode
 from crimson.persistence import save_status
 from crimson.screens.high_scores_view import HighScoresView
 from crimson.screens.panels.network_session import NetworkSessionPanelView
-from grim.config import ensure_crimson_cfg
+from grim.config.storage import ensure_crimson_cfg
 from grim.console import create_console
 from grim.rand import Crand
 

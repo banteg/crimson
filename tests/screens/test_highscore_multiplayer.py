@@ -5,7 +5,7 @@ from pathlib import Path
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.screens.results.game_over import GameOverUi
 from crimson.sim.sessions import DeterministicSession
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.rand import Crand
 from grim.view import ViewContext
 

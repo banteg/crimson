@@ -6,7 +6,8 @@ import msgspec
 from construct import ConstructError
 
 from grim.audio import AudioState, init_audio_state
-from grim.config import CrimsonConfig, ensure_crimson_cfg
+from grim.config.model import CrimsonConfig
+from grim.config.storage import ensure_crimson_cfg
 from grim.console import ConsoleLog, ConsoleState
 from grim.rand import Crand
 

@@ -7,7 +7,7 @@ from grim.assets import (
     TextureId,
 )
 from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio, update_audio
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width

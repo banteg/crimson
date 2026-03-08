@@ -11,7 +11,8 @@ from crimson.persistence.highscores import HighScoreRecord
 from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
-from grim.config import CrimsonConfig, default_crimson_cfg_data
+from grim.config.defaults import default_crimson_cfg_data
+from grim.config.model import CrimsonConfig
 from grim.geom import Vec2
 from grim.raylib_api import rl
 

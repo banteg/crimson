@@ -1,35 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from grim.config.model import CrimsonConfig
 
 from ...aim_schemes import AimScheme, aim_scheme_from_value
 from ...movement_controls import MovementControlType, movement_control_type_from_value
 
 PICK_PERK_BIND_SLOT = -1
 RELOAD_BIND_SLOT = -2
-_PLAYER_MODE_FLAG_KEYS = (
-    "player_mode_flag_p1",
-    "player_mode_flag_p2",
-    "player_mode_flag_p3",
-    "player_mode_flag_p4",
-)
-_AIM_SCHEME_KEYS = (
-    "aim_scheme_p1",
-    "aim_scheme_p2",
-    "aim_scheme_p3",
-    "aim_scheme_p4",
-)
-
-
-def _coerce_int(value: object, default: int = 0) -> int:
-    if isinstance(value, bool):
-        return int(value)
-    if isinstance(value, (int, float, str, bytes, bytearray)):
-        try:
-            return int(value)
-        except (TypeError, ValueError, OverflowError):
-            return default
-    return default
 
 
 def input_configure_for_label(config_id: AimScheme) -> str:
@@ -61,22 +38,22 @@ def input_scheme_label(scheme: MovementControlType) -> str:
 
 
 def _read_player_mode_flags(
-    config_data: Mapping[str, object],
+    config: CrimsonConfig,
 ) -> tuple[MovementControlType, MovementControlType, MovementControlType, MovementControlType]:
     # Defaults from `config_init_defaults`: 2 (Static) for player mode flags.
     values = [MovementControlType.STATIC] * 4
-    for idx, key in enumerate(_PLAYER_MODE_FLAG_KEYS):
-        value = _coerce_int(config_data.get(key), 2 if idx < 2 else 0)
+    for idx in range(4):
+        value = config.player_mode_flag(player_index=idx, default=2 if idx < 2 else 0)
         if value > 0:
             values[idx] = movement_control_type_from_value(value)
     return (values[0], values[1], values[2], values[3])
 
 
-def _read_aim_schemes(config_data: Mapping[str, object]) -> tuple[AimScheme, AimScheme, AimScheme, AimScheme]:
+def _read_aim_schemes(config: CrimsonConfig) -> tuple[AimScheme, AimScheme, AimScheme, AimScheme]:
     # Defaults from `config_init_defaults`: 0 (Mouse) for aim schemes.
     values = [AimScheme.MOUSE] * 4
-    for idx, key in enumerate(_AIM_SCHEME_KEYS):
-        values[idx] = aim_scheme_from_value(_coerce_int(config_data.get(key), 0))
+    for idx in range(4):
+        values[idx] = aim_scheme_from_value(config.aim_scheme_for_player(player_index=idx, default=0))
 
     for idx in range(4):
         if values[idx] is AimScheme.UNKNOWN:
@@ -86,18 +63,18 @@ def _read_aim_schemes(config_data: Mapping[str, object]) -> tuple[AimScheme, Aim
 
 
 def controls_method_values(
-    config_data: Mapping[str, object],
+    config: CrimsonConfig,
     *,
     player_index: int,
 ) -> tuple[AimScheme, MovementControlType]:
     player_idx = max(0, min(3, int(player_index)))
-    aim_scheme = _read_aim_schemes(config_data)[player_idx]
-    move_mode = _read_player_mode_flags(config_data)[player_idx]
+    aim_scheme = _read_aim_schemes(config)[player_idx]
+    move_mode = _read_player_mode_flags(config)[player_idx]
     return aim_scheme, move_mode
 
 
-def controls_method_labels(config_data: Mapping[str, object], *, player_index: int) -> tuple[str, str]:
-    aim_scheme, move_mode = controls_method_values(config_data, player_index=player_index)
+def controls_method_labels(config: CrimsonConfig, *, player_index: int) -> tuple[str, str]:
+    aim_scheme, move_mode = controls_method_values(config, player_index=player_index)
     return input_configure_for_label(aim_scheme), input_scheme_label(move_mode)
 
 

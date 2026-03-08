@@ -9,7 +9,7 @@ from crimson.persistence.highscores import (
     scores_path_for_config,
     upsert_highscore_record,
 )
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 
 
 def _record(*, time_ms: int) -> HighScoreRecord:

@@ -10,7 +10,8 @@ from typing import TYPE_CHECKING, Literal, TypeAlias
 import msgspec
 
 from grim.audio import AudioState, stop_music, update_audio
-from grim.config import CrimsonConfig, default_crimson_cfg_data
+from grim.config.defaults import default_crimson_cfg_data
+from grim.config.model import CrimsonConfig
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2

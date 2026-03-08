@@ -4,9 +4,7 @@ from typing import Literal
 
 from grim.assets import TextureId
 from grim.audio import AudioState
-from grim.config import (
-    CrimsonConfig,
-)
+from grim.config.model import CrimsonConfig
 from grim.console import ConsoleState
 from grim.geom import Vec2
 from grim.math import clamp

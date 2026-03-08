@@ -6,9 +6,7 @@ import msgspec
 
 from grim.assets import TextureId
 from grim.audio import AudioState, play_music
-from grim.config import (
-    CrimsonConfig,
-)
+from grim.config.model import CrimsonConfig
 from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.geom import Vec2

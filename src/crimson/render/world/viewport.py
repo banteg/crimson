@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.geom import Vec2
 
 

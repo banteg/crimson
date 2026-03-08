@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from crimson.quests.level import QuestLevel
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.geom import Vec2
 
 QUEST_MENU_BASE_X = -5.0

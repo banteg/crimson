@@ -35,7 +35,7 @@ from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfi
 from crimson.world.audio_bridge import AudioBridge
 from crimson.world.render_resources import RenderResources
 from crimson.world.terrain_runtime import TerrainRuntime
-from grim.config import ensure_crimson_cfg
+from grim.config.storage import ensure_crimson_cfg
 from grim.console import create_console
 from grim.geom import Vec2
 from grim.rand import Crand

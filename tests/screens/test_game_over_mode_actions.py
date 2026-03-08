@@ -9,7 +9,7 @@ from crimson.persistence.highscores import HighScoreRecord
 from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from crimson.sim.sessions import DeterministicSession
 from grim.audio import AudioState
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.music import init_music_state
 from grim.rand import Crand
 from grim.sfx import init_sfx_state

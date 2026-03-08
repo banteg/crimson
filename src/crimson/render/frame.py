@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from grim.assets import RuntimeResources
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 

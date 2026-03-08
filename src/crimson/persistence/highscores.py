@@ -7,7 +7,7 @@ from pathlib import Path
 import msgspec
 
 from crimson.quests.level import QuestLevel
-from grim.config import CrimsonConfig
+from grim.config.model import CrimsonConfig
 
 from ..game_modes import GameMode
 from ..weapons import WeaponId

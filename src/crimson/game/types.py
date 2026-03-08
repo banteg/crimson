@@ -21,7 +21,7 @@ def _default_rtx_render_mode() -> RtxRenderMode:
 if TYPE_CHECKING:
     from grim.assets import RuntimeResources
     from grim.audio import AudioState
-    from grim.config import CrimsonConfig
+    from grim.config.model import CrimsonConfig
     from grim.console import ConsoleState
     from grim.geom import Vec2
     from grim.terrain_render import GroundRenderer

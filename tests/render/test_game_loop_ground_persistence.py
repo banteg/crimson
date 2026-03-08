@@ -9,7 +9,7 @@ from crimson.game.types import GameState
 from crimson.persistence import save_status
 from crimson.screens.menu import ensure_menu_ground
 from grim.assets import RuntimeResources, TextureId
-from grim.config import ensure_crimson_cfg
+from grim.config.storage import ensure_crimson_cfg
 from grim.console import create_console
 from grim.geom import Vec2
 from grim.rand import Crand

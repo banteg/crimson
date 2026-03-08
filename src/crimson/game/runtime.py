@@ -8,7 +8,7 @@ from pathlib import Path
 
 from grim import music
 from grim.app import RunViewHooks, run_view
-from grim.config import ensure_crimson_cfg
+from grim.config.storage import ensure_crimson_cfg
 from grim.console import (
     CommandHandler,
     ConsoleState,

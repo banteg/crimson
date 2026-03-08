@@ -6,7 +6,8 @@ from typing import Protocol
 
 import msgspec
 
-from grim.config import CrimsonConfig, default_player_keybind_block
+from grim.config.controls import default_player_keybind_block
+from grim.config.model import CrimsonConfig
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -277,7 +278,7 @@ class LocalInputInterpreter:
     def _safe_controls_modes(config: CrimsonConfig | None, *, player_index: int) -> tuple[AimScheme, MovementControlType]:
         if config is None:
             return AimScheme.MOUSE, MovementControlType.STATIC
-        aim_scheme, move_mode = controls_method_values(config.data, player_index=int(player_index))
+        aim_scheme, move_mode = controls_method_values(config, player_index=int(player_index))
         return aim_scheme, move_mode
 
     def build_player_input(

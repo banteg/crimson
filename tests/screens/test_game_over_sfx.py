@@ -16,7 +16,7 @@ from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
 from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from grim.assets import RuntimeResources
 from grim.audio import AudioState
-from grim.config import ensure_crimson_cfg
+from grim.config.storage import ensure_crimson_cfg
 from grim.console import create_console
 from grim.fonts.small import SmallFontData
 from grim.music import init_music_state

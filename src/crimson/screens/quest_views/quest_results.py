@@ -3,6 +3,7 @@ from __future__ import annotations
 from crimson.quests.level import QuestLevel
 from crimson.quests.status import tracked_quest_completed_counter_index
 from grim.audio import play_sfx, update_audio
+from grim.config.storage import save_crimson_cfg
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
@@ -238,7 +239,7 @@ class QuestResultsView:
         self.state.config.game_mode = int(GameMode.QUESTS)
         self.state.config.quest_level_value = level
         try:
-            self.state.config.save()
+            save_crimson_cfg(self.state.config)
         except (OSError, ValueError) as exc:
             self._log_nonfatal("failed to save quest selection config", exc)
 
