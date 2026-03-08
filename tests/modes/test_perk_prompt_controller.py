@@ -3,9 +3,9 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import cast
 
-import crimson.modes.components.perk_ui_state as perk_ui_state_module
+import crimson.modes.components.perk_prompt_controller as perk_prompt_controller_module
 from crimson.modes.components.perk_menu_controller import PerkMenuUiContext
-from crimson.modes.components.perk_ui_state import PerkUiState
+from crimson.modes.components.perk_prompt_controller import PerkPromptState
 from crimson.sim.state_types import PlayerState
 from grim.assets import RuntimeResources
 from grim.fonts.small import SmallFontData
@@ -56,31 +56,31 @@ def _ctx() -> PerkMenuUiContext:
 
 
 def test_prompt_open_request_from_pick_key(mocker) -> None:
-    perk_ui = PerkUiState()
-    perk_ui.begin_prompt_frame(pending_count=1)
+    prompt = PerkPromptState()
+    prompt.begin_frame(pending_count=1)
 
     mocker.patch.object(
-        perk_ui_state_module,
+        perk_prompt_controller_module,
         "input_code_is_pressed_for_player",
         return_value=True,
     )
     mocker.patch.object(
-        perk_ui_state_module,
+        perk_prompt_controller_module,
         "player_fire_keybind",
         return_value=0x100,
     )
     mocker.patch.object(
-        perk_ui_state_module,
+        perk_prompt_controller_module,
         "input_code_is_down_for_player",
         return_value=False,
     )
     mocker.patch.object(
-        perk_ui_state_module,
+        perk_prompt_controller_module,
         "input_primary_just_pressed",
         return_value=False,
     )
 
-    assert perk_ui.poll_prompt_open_request(
+    assert prompt.poll_open_request(
         ctx=_ctx(),
         config=_config(),  # type: ignore[arg-type]
         pending_count=1,
@@ -91,31 +91,31 @@ def test_prompt_open_request_from_pick_key(mocker) -> None:
 
 
 def test_prompt_open_request_from_hover_click(mocker) -> None:
-    perk_ui = PerkUiState()
-    perk_ui.begin_prompt_frame(pending_count=1)
+    prompt = PerkPromptState()
+    prompt.begin_frame(pending_count=1)
 
     mocker.patch.object(
-        perk_ui_state_module,
+        perk_prompt_controller_module,
         "input_code_is_pressed_for_player",
         return_value=False,
     )
     mocker.patch.object(
-        perk_ui_state_module,
+        perk_prompt_controller_module,
         "player_fire_keybind",
         return_value=0x100,
     )
     mocker.patch.object(
-        perk_ui_state_module,
+        perk_prompt_controller_module,
         "input_primary_just_pressed",
         return_value=True,
     )
     mocker.patch.object(
-        perk_ui_state_module.PerkPromptUi,
+        perk_prompt_controller_module.PerkPromptUi,
         "rect",
         return_value=SimpleNamespace(contains=lambda _mouse: True),
     )
 
-    assert perk_ui.poll_prompt_open_request(
+    assert prompt.poll_open_request(
         ctx=_ctx(),
         config=_config(),  # type: ignore[arg-type]
         pending_count=1,
@@ -126,12 +126,12 @@ def test_prompt_open_request_from_hover_click(mocker) -> None:
 
 
 def test_begin_prompt_frame_clears_stale_hover_before_pulse_tick() -> None:
-    perk_ui = PerkUiState()
-    perk_ui._prompt.hover = True
-    perk_ui._prompt.pulse = 100.0
+    prompt = PerkPromptState()
+    prompt.hover = True
+    prompt.pulse = 100.0
 
-    perk_ui.begin_prompt_frame(pending_count=1)
-    perk_ui.tick_prompt_pulse(16.0)
+    prompt.begin_frame(pending_count=1)
+    prompt.tick_pulse(16.0)
 
-    assert perk_ui._prompt.hover is False
-    assert perk_ui._prompt.pulse == 68.0
+    assert prompt.hover is False
+    assert prompt.pulse == 68.0

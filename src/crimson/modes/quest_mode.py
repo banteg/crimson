@@ -56,7 +56,8 @@ from .base_gameplay_mode import (
     LanStepAction,
 )
 from .components.highscore_record_builder import shots_from_state
-from .components.perk_ui_state import PerkUiState
+from .components.perk_menu_controller import PerkMenuController
+from .components.perk_prompt_controller import PerkPromptState
 
 WORLD_SIZE = 1024.0
 
@@ -112,7 +113,8 @@ class QuestMode(BaseGameplayMode):
         self._quest_total_spawn_count: int = 0
         self._outcome: QuestRunOutcome | None = None
         self._grim_mono: GrimMonoFont | None = None
-        self._perk_ui = PerkUiState()
+        self._perk_prompt = PerkPromptState()
+        self._perk_menu = PerkMenuController(on_close=self._reset_perk_prompt)
         self._quest_spawn_state = QuestSpawnState()
         self._sim_session: DeterministicSession | None = None
         self._replay_recorder: ReplayRecorder | None = None
@@ -125,7 +127,8 @@ class QuestMode(BaseGameplayMode):
         self._outcome = None
         self._grim_mono = load_grim_mono_font(self._assets_root)
 
-        self._perk_ui.reset()
+        self._perk_prompt.reset()
+        self._perk_menu.reset()
         self._reset_gameplay_frame_clock()
         self._reset_lan_capture_clock()
         self._replay_recorder = None
@@ -162,26 +165,29 @@ class QuestMode(BaseGameplayMode):
 
     def _try_open_perk_menu(self) -> None:
         self._open_perk_menu_ui(
-            ui_state=self._perk_ui,
+            menu=self._perk_menu,
             players=self.sim_world.players,
             game_mode=GameMode.QUESTS,
             player_count=max(1, len(self.sim_world.players)),
         )
 
+    def _reset_perk_prompt(self) -> None:
+        self._perk_prompt.reset_if_pending(pending_count=int(self.state.perk_selection.pending_count))
+
     def _update_perk_ui(self, *, dt_ui_ms: float) -> None:
         perk_ctx = self._perk_menu_ui_context()
         pending_count = int(self.state.perk_selection.pending_count)
         choices = perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection)
-        self._perk_ui.begin_prompt_frame(pending_count=pending_count)
-        if self._perk_ui.menu_open:
-            choice_index = self._perk_ui.handle_menu_input(
+        self._perk_prompt.begin_frame(pending_count=pending_count)
+        if self._perk_menu.open:
+            choice_index = self._perk_menu.handle_input(
                 perk_ctx,
                 choices,
                 dt_ui_ms=float(dt_ui_ms),
             )
             if choice_index is not None:
                 self.record_perk_pick_command(int(choice_index), player_index=0)
-        if self._perk_ui.poll_prompt_open_request(
+        if self._perk_prompt.poll_open_request(
             ctx=perk_ctx,
             config=self.config,
             pending_count=pending_count,
@@ -191,15 +197,16 @@ class QuestMode(BaseGameplayMode):
             prompt_scale=UI_TEXT_SCALE,
         ):
             self._try_open_perk_menu()
-        self._perk_ui.tick_prompt_timer(
+        self._perk_prompt.tick_timer(
             pending_count=pending_count,
             any_alive=self._any_player_alive(),
             paused=self._paused,
+            menu_active=self._perk_menu.active,
             dt_ui_ms=float(dt_ui_ms),
         )
         if not self._paused:
-            self._perk_ui.tick_prompt_pulse(float(dt_ui_ms))
-        self._perk_ui.tick_menu(float(dt_ui_ms))
+            self._perk_prompt.tick_pulse(float(dt_ui_ms))
+        self._perk_menu.tick_timeline(float(dt_ui_ms))
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return float(self._quest_spawn_state.spawn_timeline_ms)
@@ -468,15 +475,15 @@ class QuestMode(BaseGameplayMode):
                 status.increment_quest_play_count(idx)
 
     def _handle_input(self) -> None:
-        if self._perk_ui.menu_open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self.audio_bridge.router.play_sfx("sfx_ui_buttonclick")
-            self._perk_ui.close_menu()
+            self._perk_menu.close()
             return
 
         if (not bool(self._lan_enabled)) and rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._paused = not self._paused
 
-        if debug_enabled() and (not self._perk_ui.menu_open):
+        if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
                 self.state.debug_god_mode = not bool(self.state.debug_god_mode)
                 self.audio_bridge.router.play_sfx("sfx_ui_buttonclick")
@@ -569,7 +576,7 @@ class QuestMode(BaseGameplayMode):
 
         self._update_perk_ui(dt_ui_ms=float(frame.dt_ui_ms))
 
-        sim_dt = 0.0 if (self._paused or self._perk_ui.menu_active) else float(frame.dt)
+        sim_dt = 0.0 if (self._paused or self._perk_menu.active) else float(frame.dt)
         session = self._sim_session
         if self._lan_wait_gate_active():
             self._reset_gameplay_frame_clock()
@@ -618,7 +625,7 @@ class QuestMode(BaseGameplayMode):
         )
 
     def draw(self) -> None:
-        perk_menu_active = self._perk_ui.menu_active
+        perk_menu_active = self._perk_menu.active
         debug_overlay_height = 0.0
         self._draw_world(
             draw_aim_indicators=not perk_menu_active,
@@ -665,16 +672,17 @@ class QuestMode(BaseGameplayMode):
         self._draw_quest_title()
         self._draw_quest_complete_banner()
 
-        self._perk_ui.draw_prompt(
+        self._perk_prompt.draw(
             ctx=self._perk_menu_ui_context(),
             pending_count=int(self.state.perk_selection.pending_count),
             any_alive=self._any_player_alive(),
+            menu_active=self._perk_menu.active,
             config=self.config,
             ui_text_width=self._ui_text_width,
             text_color=UI_TEXT_COLOR,
             prompt_scale=UI_TEXT_SCALE,
         )
-        self._perk_ui.draw_menu(
+        self._perk_menu.draw(
             self._perk_menu_ui_context(),
             perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection),
         )

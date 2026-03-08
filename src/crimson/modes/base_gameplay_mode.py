@@ -91,7 +91,7 @@ from ..ui.hud import HudState, draw_target_health_bar
 from ..weapon_runtime import most_used_weapon_id_for_player
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import shots_from_state
-from .components.perk_menu_controller import PerkMenuUiContext
+from .components.perk_menu_controller import PerkMenuController, PerkMenuUiContext
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreatureDeath, CreaturePool
@@ -102,7 +102,6 @@ if TYPE_CHECKING:
     from ..replay import ReplayRecorder
     from ..sim.state_types import PlayerState
     from ..sim.world_state import WorldEvents
-    from .components.perk_ui_state import PerkUiState
 
 LanRuntime = LockstepRuntime | RollbackRuntime
 
@@ -629,7 +628,7 @@ class BaseGameplayMode:
     def _open_perk_menu_ui(
         self,
         *,
-        ui_state: PerkUiState,
+        menu: PerkMenuController,
         players: list[PlayerState],
         game_mode: GameMode,
         player_count: int,
@@ -646,7 +645,7 @@ class BaseGameplayMode:
             player_count=int(player_count),
         )
         assert choices, "perk menu open requires prepared perk choices"
-        ui_state.open_menu(play_sfx=perk_ctx.play_sfx)
+        menu.open_menu(play_sfx=perk_ctx.play_sfx)
         self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 
     def _ui_mouse_pos(self) -> rl.Vector2:

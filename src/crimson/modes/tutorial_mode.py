@@ -36,7 +36,7 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapon_usage import normalize_weapon_usage_counts
 from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
-from .components.perk_ui_state import PerkUiState
+from .components.perk_menu_controller import PerkMenuController
 
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 
@@ -64,7 +64,7 @@ class TutorialMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._perk_ui = PerkUiState()
+        self._perk_menu = PerkMenuController()
 
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
@@ -92,7 +92,7 @@ class TutorialMode(BaseGameplayMode):
 
     def open(self) -> None:
         super().open()
-        self._perk_ui.reset()
+        self._perk_menu.reset()
 
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
@@ -171,15 +171,15 @@ class TutorialMode(BaseGameplayMode):
 
     def _open_perk_menu(self) -> None:
         self._open_perk_menu_ui(
-            ui_state=self._perk_ui,
+            menu=self._perk_menu,
             players=[self.player],
             game_mode=GameMode.TUTORIAL,
             player_count=1,
         )
 
     def _handle_input(self) -> None:
-        if self._perk_ui.menu_open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._perk_ui.close_menu()
+        if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self._perk_menu.close()
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
@@ -301,12 +301,12 @@ class TutorialMode(BaseGameplayMode):
 
         perk_pending = int(self.state.perk_selection.pending_count) > 0 and self.player.health > 0.0
         choices = perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection)
-        if int(self.state.tutorial.stage_index) == 6 and perk_pending and (not self._perk_ui.menu_active) and (
+        if int(self.state.tutorial.stage_index) == 6 and perk_pending and (not self._perk_menu.active) and (
             not self._perk_pick_pending
         ):
             self._open_perk_menu()
-        if self._perk_ui.menu_open:
-            choice_index = self._perk_ui.handle_menu_input(
+        if self._perk_menu.open:
+            choice_index = self._perk_menu.handle_input(
                 self._perk_menu_ui_context(),
                 choices,
                 dt_ui_ms=dt_ui_ms,
@@ -314,9 +314,9 @@ class TutorialMode(BaseGameplayMode):
             if choice_index is not None:
                 self._perk_pick_pending = True
                 self.record_perk_pick_command(int(choice_index), player_index=0)
-        self._perk_ui.tick_menu(dt_ui_ms)
+        self._perk_menu.tick_timeline(dt_ui_ms)
 
-        perk_menu_active = self._perk_ui.menu_active
+        perk_menu_active = self._perk_menu.active
 
         dt_world = 0.0 if self._paused or perk_menu_active else dt
 
@@ -349,7 +349,7 @@ class TutorialMode(BaseGameplayMode):
         self._update_prompt_buttons(dt_ms=dt_ui_ms, mouse=mouse, click=click)
 
     def draw(self) -> None:
-        perk_menu_active = self._perk_ui.menu_active
+        perk_menu_active = self._perk_menu.active
         self._draw_world(
             draw_aim_indicators=not perk_menu_active,
             entity_alpha=self._world_entity_alpha(),
@@ -384,7 +384,7 @@ class TutorialMode(BaseGameplayMode):
         self._draw_tutorial_prompts(hud_bottom=hud_bottom)
 
         if perk_menu_active:
-            self._perk_ui.draw_menu(
+            self._perk_menu.draw(
                 self._perk_menu_ui_context(),
                 perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection),
             )
