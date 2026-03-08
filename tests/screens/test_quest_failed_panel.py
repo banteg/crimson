@@ -235,7 +235,7 @@ def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_stat
     mocker.patch.object(quest_failed_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(quest_failed_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(quest_failed_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_failed_module, "draw_menu_cursor_frame", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module, "draw_small_text", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)

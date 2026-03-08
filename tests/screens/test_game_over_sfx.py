@@ -159,14 +159,54 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
     mocker.patch.object(high_scores_view_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "draw_main_panel", side_effect=lambda *_args, **_kwargs: 0)
     mocker.patch.object(high_scores_view_module, "draw_right_panel", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(high_scores_view_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(HighScoresView, "_draw_sign", return_value=None)
+    mocker.patch.object(HighScoresView, "_draw_cursor", return_value=None)
 
     view = HighScoresView(state)
     view.open()
-    view._closing = True
-    view._timeline_ms = PANEL_TIMELINE_START_MS // 2
+    view._chrome.chrome.closing = True
+    view._chrome.chrome.timeline_ms = PANEL_TIMELINE_START_MS // 2
     view.draw()
 
     draw_pause_background_mock.assert_called()
     assert draw_pause_background_mock.call_args.kwargs["entity_alpha"] == 0.5
+
+
+def test_high_scores_view_draw_keeps_pause_background_opaque_while_opening(tmp_path: Path, mocker) -> None:
+    assets_dir = tmp_path
+    cfg = ensure_crimson_cfg(tmp_path)
+    state = GameState(
+        base_dir=tmp_path,
+        assets_dir=assets_dir,
+        rng=Crand(0),
+        config=cfg,
+        status=save_status.ensure_game_status(tmp_path),
+        console=create_console(tmp_path, assets_dir=assets_dir),
+        demo_enabled=False,
+        preserve_bugs=False,
+        resources=None,
+        audio=None,
+        session_start=time.monotonic(),
+    )
+    state.pending_high_scores = HighScoresRequest(game_mode_id=GameMode.SURVIVAL)
+    dummy_tex = _texture_stub()
+    state.resources = _runtime_resources_stub(tex=dummy_tex)
+    draw_pause_background_mock = mocker.Mock()
+    state.pause_background = cast("PauseBackground", SimpleNamespace(draw_pause_background=draw_pause_background_mock))
+
+    mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch.object(high_scores_view_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(high_scores_view_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(high_scores_view_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(high_scores_view_module, "draw_main_panel", side_effect=lambda *_args, **_kwargs: 0)
+    mocker.patch.object(high_scores_view_module, "draw_right_panel", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(HighScoresView, "_draw_sign", return_value=None)
+    mocker.patch.object(HighScoresView, "_draw_cursor", return_value=None)
+
+    view = HighScoresView(state)
+    view.open()
+    view._chrome.chrome.timeline_ms = PANEL_TIMELINE_START_MS // 2
+    view.draw()
+
+    draw_pause_background_mock.assert_called()
+    assert draw_pause_background_mock.call_args.kwargs["entity_alpha"] == 1.0

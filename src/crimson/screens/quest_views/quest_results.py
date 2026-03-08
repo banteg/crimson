@@ -9,7 +9,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState, HighScoresRequest
 from ...game_modes import GameMode
 from ...quests import quest_by_level
-from ..menu import ensure_menu_ground, menu_ground_camera
+from ..chrome import ensure_menu_ground, menu_ground_camera
 from ..transitions import _draw_screen_fade
 from .shared import _next_quest_level, _player_name_default
 

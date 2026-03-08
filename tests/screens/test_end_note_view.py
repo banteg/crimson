@@ -69,7 +69,7 @@ def test_end_note_draw_fades_pause_background_during_close(make_game_state, tmp_
     mocker.patch.object(end_note_module, "draw_small_text", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(end_note_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(end_note_module, "button_width", side_effect=lambda *_args, **_kwargs: 96.0)
-    mocker.patch.object(end_note_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(end_note_module, "draw_menu_cursor_frame", side_effect=lambda *_args, **_kwargs: None)
 
     view = EndNoteView(state)
     view.open()

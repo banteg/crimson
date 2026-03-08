@@ -18,8 +18,7 @@ from ...movement_controls import MovementControlType
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ..assets import require_runtime_resources
-from ..chrome import draw_ui_quad, split_panel_frame
-from ..menu import MENU_PANEL_HEIGHT
+from ..chrome import MENU_PANEL_HEIGHT, draw_ui_quad, split_panel_frame
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView, save_dirty_config
 from .controls_labels import (
     PICK_PERK_BIND_SLOT,
@@ -138,7 +137,7 @@ class ControlsMenuView(PanelMenuView):
 
     def update(self, dt: float) -> None:
         super().update(dt)
-        if self._closing:
+        if self._chrome.chrome.closing:
             return
         entry = self._entry
         if entry is None or not self._entry_enabled(entry):
@@ -176,14 +175,15 @@ class ControlsMenuView(PanelMenuView):
 
     def _split_panel_frame(self):
         screen_width = float(self.state.config.screen_width)
+        chrome = self._chrome.chrome
         return split_panel_frame(
-            self._timeline_ms,
+            chrome.timeline_ms,
             left_panel_pos=Vec2(_controls_left_panel_pos_x(screen_width), self._panel_pos.y),
             left_panel_height=MENU_PANEL_HEIGHT,
             right_panel_pos=Vec2(_controls_right_panel_pos_x(screen_width), _controls_right_panel_pos_y(screen_width)),
             right_panel_height=CONTROLS_RIGHT_PANEL_HEIGHT,
             screen_width=screen_width,
-            widescreen_y_shift=self._widescreen_y_shift,
+            widescreen_y_shift=chrome.widescreen_y_shift,
             panel_offset=self._panel_offset,
             small_scale=self._small_panel_scale(),
             left_index=1,

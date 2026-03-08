@@ -12,7 +12,7 @@ from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
+from ..chrome import draw_menu_cursor_frame, ensure_menu_ground, menu_ground_camera, menu_widescreen_y_shift
 from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..transitions import _draw_screen_fade
 from .shared import (
@@ -101,7 +101,7 @@ class EndNoteView:
         scale = 1.0
 
         layout_w = screen_w / scale if scale else screen_w
-        widescreen_shift_y = MenuView._menu_widescreen_y_shift(layout_w)
+        widescreen_shift_y = menu_widescreen_y_shift(layout_w)
 
         panel_top_left = Vec2(
             (END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X) * scale,
@@ -185,7 +185,7 @@ class EndNoteView:
         screen_w = float(rl.get_screen_width())
         scale = 1.0
         layout_w = screen_w / scale if scale else screen_w
-        widescreen_shift_y = MenuView._menu_widescreen_y_shift(layout_w)
+        widescreen_shift_y = menu_widescreen_y_shift(layout_w)
 
         panel_top_left = Vec2(
             (END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X) * scale,
@@ -261,7 +261,7 @@ class EndNoteView:
         )
         button_draw(resources, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
 
-        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
+        draw_menu_cursor_frame(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._action

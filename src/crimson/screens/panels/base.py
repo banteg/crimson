@@ -82,7 +82,7 @@ class _ChromePanelView:
         return self._chrome.take_action()
 
     def _assert_open(self) -> None:
-        assert self._is_open, f"{self.__class__.__name__} must be opened before use"
+        assert self._chrome.is_open, f"{self.__class__.__name__} must be opened before use"
 
     def _begin_close_transition(self, action: str) -> None:
         self._chrome.begin_close_transition(action, before_close=self._before_close_transition)
@@ -107,10 +107,11 @@ class _ChromePanelView:
         panel_offset: Vec2 = Vec2(MENU_PANEL_OFFSET_X, MENU_PANEL_OFFSET_Y),
         small_scale: float = 0.9,
     ):
+        chrome = self._chrome.chrome
         return single_panel_frame(
-            self._timeline_ms,
-            screen_width=float(self._menu_screen_width),
-            widescreen_y_shift=self._widescreen_y_shift,
+            chrome.timeline_ms,
+            screen_width=float(chrome.screen_width),
+            widescreen_y_shift=chrome.widescreen_y_shift,
             panel_pos=panel_pos,
             panel_offset=panel_offset,
             panel_height=panel_height,
@@ -127,112 +128,17 @@ class _ChromePanelView:
 
     def _rearm_view(self, *, play_open_sfx: bool = False) -> None:
         self._assert_open()
-        self._timeline_ms = 0
-        self._closing = False
-        self._close_action = None
-        self._pending_action = None
-        self._action = None
-        self._panel_open_sfx_played = False
+        chrome = self._chrome.chrome
+        chrome.timeline_ms = 0
+        chrome.closing = False
+        chrome.close_action = None
+        chrome.pending_action = None
+        chrome.action = None
+        chrome.panel_open_sfx_played = False
         if play_open_sfx and self.state.audio is not None and self._chrome.spec.open_sfx is not None:
             if self._chrome.spec.open_sfx_mode == "on_open":
                 play_sfx(self.state.audio, self._chrome.spec.open_sfx, rng=self.state.rng)
-                self._panel_open_sfx_played = True
-
-    @property
-    def _is_open(self) -> bool:
-        return self._chrome.is_open
-
-    @_is_open.setter
-    def _is_open(self, value: bool) -> None:
-        self._chrome.is_open = bool(value)
-
-    @property
-    def _ground(self):
-        return self._chrome.ground
-
-    @_ground.setter
-    def _ground(self, value) -> None:
-        self._chrome.ground = value
-
-    @property
-    def _menu_screen_width(self) -> int:
-        return int(self._chrome.chrome.screen_width)
-
-    @_menu_screen_width.setter
-    def _menu_screen_width(self, value: int) -> None:
-        self._chrome.chrome.screen_width = int(value)
-
-    @property
-    def _widescreen_y_shift(self) -> float:
-        return float(self._chrome.chrome.widescreen_y_shift)
-
-    @_widescreen_y_shift.setter
-    def _widescreen_y_shift(self, value: float) -> None:
-        self._chrome.chrome.widescreen_y_shift = float(value)
-
-    @property
-    def _timeline_ms(self) -> int:
-        return int(self._chrome.chrome.timeline_ms)
-
-    @_timeline_ms.setter
-    def _timeline_ms(self, value: int) -> None:
-        self._chrome.chrome.timeline_ms = int(value)
-
-    @property
-    def _timeline_max_ms(self) -> int:
-        return int(self._chrome.chrome.timeline_max_ms)
-
-    @_timeline_max_ms.setter
-    def _timeline_max_ms(self, value: int) -> None:
-        self._chrome.chrome.timeline_max_ms = int(value)
-
-    @property
-    def _cursor_pulse_time(self) -> float:
-        return float(self._chrome.chrome.cursor_pulse_time)
-
-    @_cursor_pulse_time.setter
-    def _cursor_pulse_time(self, value: float) -> None:
-        self._chrome.chrome.cursor_pulse_time = float(value)
-
-    @property
-    def _closing(self) -> bool:
-        return bool(self._chrome.chrome.closing)
-
-    @_closing.setter
-    def _closing(self, value: bool) -> None:
-        self._chrome.chrome.closing = bool(value)
-
-    @property
-    def _close_action(self) -> str | None:
-        return self._chrome.chrome.close_action
-
-    @_close_action.setter
-    def _close_action(self, value: str | None) -> None:
-        self._chrome.chrome.close_action = value
-
-    @property
-    def _pending_action(self) -> str | None:
-        return self._chrome.chrome.pending_action
-
-    @_pending_action.setter
-    def _pending_action(self, value: str | None) -> None:
-        self._chrome.chrome.pending_action = value
-
-    @property
-    def _action(self) -> str | None:
-        return self._chrome.chrome.action
-
-    @_action.setter
-    def _action(self, value: str | None) -> None:
-        self._chrome.chrome.action = value
-
-    @property
-    def _panel_open_sfx_played(self) -> bool:
-        return bool(self._chrome.chrome.panel_open_sfx_played)
-
-    @_panel_open_sfx_played.setter
-    def _panel_open_sfx_played(self, value: bool) -> None:
-        self._chrome.chrome.panel_open_sfx_played = bool(value)
+                chrome.panel_open_sfx_played = True
 
 
 class PanelMenuView:
@@ -288,9 +194,10 @@ class PanelMenuView:
     def update(self, dt: float) -> None:
         self._assert_open()
         tick = self._chrome.update(dt)
-        if self._closing:
+        chrome = self._chrome.chrome
+        if chrome.closing:
             return
-        back_interactive = self._timeline_ms >= PANEL_TIMELINE_START_MS
+        back_interactive = chrome.timeline_ms >= PANEL_TIMELINE_START_MS
         if self._back_control == "button":
             self._update_button_back_control(dt_ms=tick.dt_ms, interactive=back_interactive)
         else:
@@ -312,7 +219,7 @@ class PanelMenuView:
         return self._chrome.take_action()
 
     def _assert_open(self) -> None:
-        assert self._is_open, f"{self.__class__.__name__} must be opened before use"
+        assert self._chrome.is_open, f"{self.__class__.__name__} must be opened before use"
 
     def _draw_contents(self) -> None:
         self._draw_title_text()
@@ -336,10 +243,11 @@ class PanelMenuView:
         self._chrome.draw_background()
 
     def _panel_frame(self):
+        chrome = self._chrome.chrome
         return single_panel_frame(
-            self._timeline_ms,
-            screen_width=float(self._menu_screen_width),
-            widescreen_y_shift=self._widescreen_y_shift,
+            chrome.timeline_ms,
+            screen_width=float(chrome.screen_width),
+            widescreen_y_shift=chrome.widescreen_y_shift,
             panel_pos=self._panel_pos,
             panel_offset=self._panel_offset,
             panel_height=self._panel_height,
@@ -364,14 +272,15 @@ class PanelMenuView:
         label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         item_w = float(item.width)
         item_h = float(item.height)
+        chrome = self._chrome.chrome
         _angle_rad, slide_x = ui_element_anim(
-            self._timeline_ms,
+            chrome.timeline_ms,
             index=2,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
             width=item_w * self._menu_item_scale(entry.slot)[0],
         )
-        pos = Vec2(self._back_pos.x + slide_x, entry.y + self._widescreen_y_shift)
+        pos = Vec2(self._back_pos.x + slide_x, entry.y + chrome.widescreen_y_shift)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
         offset_x = MENU_ITEM_OFFSET_X * item_scale
         offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
@@ -440,7 +349,7 @@ class PanelMenuView:
         self._chrome.draw_sign(resources=require_runtime_resources(self.state), animated=False)
 
     def _entry_enabled(self, entry: MenuEntry) -> bool:
-        return self._timeline_ms >= PANEL_TIMELINE_START_MS
+        return self._chrome.chrome.timeline_ms >= PANEL_TIMELINE_START_MS
 
     def _hovered_entry(self, entry: MenuEntry) -> bool:
         mouse = rl.get_mouse_position()
@@ -448,7 +357,7 @@ class PanelMenuView:
         return self._menu_item_bounds(entry).contains(mouse_pos)
 
     def _menu_item_scale(self, slot: int) -> tuple[float, float]:
-        return menu_item_scale(float(self._menu_screen_width), int(slot), small_scale=self._small_panel_scale())
+        return menu_item_scale(float(self._chrome.chrome.screen_width), int(slot), small_scale=self._small_panel_scale())
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         item = require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM)
@@ -464,14 +373,15 @@ class PanelMenuView:
             (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift,
         )
         size = offset_max - offset_min
+        chrome = self._chrome.chrome
         _angle_rad, slide_x = ui_element_anim(
-            self._timeline_ms,
+            chrome.timeline_ms,
             index=2,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
             width=item_w * item_scale,
         )
-        pos = Vec2(self._back_pos.x + slide_x, entry.y + self._widescreen_y_shift)
+        pos = Vec2(self._back_pos.x + slide_x, entry.y + chrome.widescreen_y_shift)
         top_left = pos + Vec2(
             offset_min.x + size.x * 0.54,
             offset_min.y + size.y * 0.28,
@@ -543,91 +453,3 @@ class PanelMenuView:
             frame.panel_height - 44.0 * frame.scale,
         )
         return pos, width
-
-    @property
-    def _is_open(self) -> bool:
-        return self._chrome.is_open
-
-    @_is_open.setter
-    def _is_open(self, value: bool) -> None:
-        self._chrome.is_open = bool(value)
-
-    @property
-    def _ground(self):
-        return self._chrome.ground
-
-    @_ground.setter
-    def _ground(self, value) -> None:
-        self._chrome.ground = value
-
-    @property
-    def _menu_screen_width(self) -> int:
-        return int(self._chrome.chrome.screen_width)
-
-    @_menu_screen_width.setter
-    def _menu_screen_width(self, value: int) -> None:
-        self._chrome.chrome.screen_width = int(value)
-
-    @property
-    def _widescreen_y_shift(self) -> float:
-        return float(self._chrome.chrome.widescreen_y_shift)
-
-    @_widescreen_y_shift.setter
-    def _widescreen_y_shift(self, value: float) -> None:
-        self._chrome.chrome.widescreen_y_shift = float(value)
-
-    @property
-    def _timeline_ms(self) -> int:
-        return int(self._chrome.chrome.timeline_ms)
-
-    @_timeline_ms.setter
-    def _timeline_ms(self, value: int) -> None:
-        self._chrome.chrome.timeline_ms = int(value)
-
-    @property
-    def _timeline_max_ms(self) -> int:
-        return int(self._chrome.chrome.timeline_max_ms)
-
-    @_timeline_max_ms.setter
-    def _timeline_max_ms(self, value: int) -> None:
-        self._chrome.chrome.timeline_max_ms = int(value)
-
-    @property
-    def _cursor_pulse_time(self) -> float:
-        return float(self._chrome.chrome.cursor_pulse_time)
-
-    @_cursor_pulse_time.setter
-    def _cursor_pulse_time(self, value: float) -> None:
-        self._chrome.chrome.cursor_pulse_time = float(value)
-
-    @property
-    def _closing(self) -> bool:
-        return bool(self._chrome.chrome.closing)
-
-    @_closing.setter
-    def _closing(self, value: bool) -> None:
-        self._chrome.chrome.closing = bool(value)
-
-    @property
-    def _close_action(self) -> str | None:
-        return self._chrome.chrome.close_action
-
-    @_close_action.setter
-    def _close_action(self, value: str | None) -> None:
-        self._chrome.chrome.close_action = value
-
-    @property
-    def _pending_action(self) -> str | None:
-        return self._chrome.chrome.pending_action
-
-    @_pending_action.setter
-    def _pending_action(self, value: str | None) -> None:
-        self._chrome.chrome.pending_action = value
-
-    @property
-    def _panel_open_sfx_played(self) -> bool:
-        return bool(self._chrome.chrome.panel_open_sfx_played)
-
-    @_panel_open_sfx_played.setter
-    def _panel_open_sfx_played(self, value: bool) -> None:
-        self._chrome.chrome.panel_open_sfx_played = bool(value)

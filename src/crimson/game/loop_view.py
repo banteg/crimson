@@ -21,8 +21,9 @@ from ..modes.typo_mode import TypoShooterMode
 from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
 from ..screens.boot import BootView
+from ..screens.chrome import ensure_menu_ground
 from ..screens.high_scores_view import HighScoresView
-from ..screens.menu import MenuView, ensure_menu_ground
+from ..screens.menu import MenuView
 from ..screens.panels.alien_zookeeper import AlienZooKeeperView
 from ..screens.panels.base import PanelMenuView
 from ..screens.panels.controls import ControlsMenuView

@@ -16,8 +16,9 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.shadow import UI_SHADOW_OFFSET
 from ..assets import require_runtime_resources
-from ..menu import (
+from ..chrome import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
     MENU_SCALE_SMALL_THRESHOLD,
@@ -28,11 +29,14 @@ from ..menu import (
     MENU_SIGN_POS_Y,
     MENU_SIGN_POS_Y_SMALL,
     MENU_SIGN_WIDTH,
-    UI_SHADOW_OFFSET,
-    MenuView,
-    _draw_menu_cursor,
+    draw_menu_cursor_frame,
+    draw_ui_quad,
+    draw_ui_quad_shadow,
     ensure_menu_ground,
     menu_ground_camera,
+    menu_widescreen_y_shift,
+    sign_layout_scale,
+    ui_element_anim,
 )
 from ..panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..transitions import _draw_screen_fade
@@ -98,7 +102,7 @@ class QuestsMenuView:
     def open(self) -> None:
         layout_w = float(self.state.config.screen_width)
         self._menu_screen_width = int(layout_w)
-        self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
+        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         # Sign and ground match the main menu/panels.
         self._init_ground()
         self._action = None
@@ -241,7 +245,7 @@ class QuestsMenuView:
         self._draw_panel()
         self._draw_sign()
         self._draw_contents()
-        _draw_menu_cursor(
+        draw_menu_cursor_frame(
             self.state,
             resources=require_runtime_resources(self.state),
             pulse_time=self._cursor_pulse_time,
@@ -260,8 +264,8 @@ class QuestsMenuView:
         self._ground = ensure_menu_ground(self.state)
 
     def _layout(self) -> _QuestMenuLayout:
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
+        _angle_rad, slide_x = ui_element_anim(
+            self._timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -581,7 +585,7 @@ class QuestsMenuView:
 
     def _draw_sign(self) -> None:
         screen_w = float(self.state.config.screen_width)
-        scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
+        scale, shift_x = sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
             MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
@@ -592,8 +596,8 @@ class QuestsMenuView:
         offset_y = MENU_SIGN_OFFSET_Y * scale
         rotation_deg = 0.0
         if not self.state.menu_sign_locked:
-            angle_rad, slide_x = MenuView._ui_element_anim(
-                self,
+            angle_rad, slide_x = ui_element_anim(
+                self._timeline_ms,
                 index=0,
                 start_ms=300,
                 end_ms=0,
@@ -604,14 +608,14 @@ class QuestsMenuView:
         sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         if fx_detail:
-            MenuView._draw_ui_quad_shadow(
+            draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
                 dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
                 origin=rl.Vector2(-offset_x, -offset_y),
                 rotation_deg=rotation_deg,
             )
-        MenuView._draw_ui_quad(
+        draw_ui_quad(
             texture=sign,
             src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
             dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
@@ -621,8 +625,8 @@ class QuestsMenuView:
         )
 
     def _draw_panel(self) -> None:
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
+        _angle_rad, slide_x = ui_element_anim(
+            self._timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,

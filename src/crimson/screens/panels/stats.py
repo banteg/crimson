@@ -129,7 +129,7 @@ class StatisticsMenuView(_ChromePanelView):
             self.state.stats_menu_easter_egg_roll,
             rng=self.state.rng,
         )
-        if self._closing:
+        if self._chrome.chrome.closing:
             return
 
         if not tick.interactive:

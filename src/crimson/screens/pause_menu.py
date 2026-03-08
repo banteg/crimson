@@ -17,7 +17,7 @@ from .chrome import (
     SignPolicy,
     menu_slot_start_ms,
 )
-from .menu import _draw_menu_cursor, _MenuEntriesViewBase
+from .menu import _MenuEntriesViewBase
 from .transitions import _draw_screen_fade
 
 PAUSE_MENU_TO_MAIN_MENU_FADE_MS = 500
@@ -42,25 +42,18 @@ class PauseMenuView(_MenuEntriesViewBase):
                 close_sfx=None,
             ),
         )
-        self._chrome.clear_background_fn = lambda color: rl.clear_background(color)
         self._chrome.draw_fade_fn = lambda runtime_state: _draw_screen_fade(runtime_state)
-        self._chrome.cursor_draw_fn = (
-            lambda runtime_state, resources, pulse_time: _draw_menu_cursor(
-                runtime_state,
-                resources=resources,
-                pulse_time=pulse_time,
-            )
-        )
 
     def open(self) -> None:
         super().open()
-        self._timeline_max_ms = max(300, *(menu_slot_start_ms(entry.slot) for entry in self._menu_entries))
+        self._chrome.chrome.timeline_max_ms = max(300, *(menu_slot_start_ms(entry.slot) for entry in self._menu_entries))
 
     def _build_menu_entries(self) -> list[MenuEntry]:
+        widescreen_y_shift = self._chrome.chrome.widescreen_y_shift
         ys = [
-            MENU_LABEL_BASE_Y + self._widescreen_y_shift,
-            MENU_LABEL_BASE_Y + MENU_LABEL_STEP + self._widescreen_y_shift,
-            MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 2.0 + self._widescreen_y_shift,
+            MENU_LABEL_BASE_Y + widescreen_y_shift,
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP + widescreen_y_shift,
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 2.0 + widescreen_y_shift,
         ]
         return [
             MenuEntry(slot=0, row=MENU_LABEL_ROW_OPTIONS, y=ys[0]),
@@ -105,7 +98,6 @@ class PauseMenuView(_MenuEntriesViewBase):
 __all__ = [
     "PAUSE_MENU_TO_MAIN_MENU_FADE_MS",
     "PauseMenuView",
-    "_draw_menu_cursor",
     "_draw_screen_fade",
     "rl",
 ]

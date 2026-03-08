@@ -14,7 +14,7 @@ from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
+from ..chrome import draw_menu_cursor_frame, ensure_menu_ground, menu_ground_camera, menu_widescreen_y_shift
 from ..transitions import _draw_screen_fade
 from .shared import (
     QUEST_FAILED_BANNER_H,
@@ -247,7 +247,7 @@ class QuestFailedView:
             scale=scale,
         )
 
-        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
+        draw_menu_cursor_frame(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._action
@@ -256,7 +256,7 @@ class QuestFailedView:
 
     def _panel_origin(self) -> Vec2:
         screen_w = float(rl.get_screen_width())
-        widescreen_shift_y = MenuView._menu_widescreen_y_shift(screen_w)
+        widescreen_shift_y = menu_widescreen_y_shift(screen_w)
         return Vec2(
             QUEST_FAILED_PANEL_GEOM_X0 + QUEST_FAILED_PANEL_POS_X,
             QUEST_FAILED_PANEL_GEOM_Y0 + QUEST_FAILED_PANEL_POS_Y + widescreen_shift_y,

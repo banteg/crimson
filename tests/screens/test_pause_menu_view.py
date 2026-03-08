@@ -34,16 +34,16 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(make_game_sta
     state.pause_background = pause_background
     state.resources = _resources_stub()
     view = PauseMenuView(state)
-    view._is_open = True
-    view._closing = True
-    view._close_action = "back_to_menu"
-    view._timeline_ms = PAUSE_MENU_TO_MAIN_MENU_FADE_MS // 2
+    view._chrome.is_open = True
+    view._chrome.chrome.closing = True
+    view._chrome.chrome.close_action = "back_to_menu"
+    view._chrome.chrome.timeline_ms = PAUSE_MENU_TO_MAIN_MENU_FADE_MS // 2
+    view._chrome.clear_background_fn = lambda *_args, **_kwargs: None
+    view._chrome.cursor_draw_fn = lambda *_args, **_kwargs: None
 
-    mocker.patch.object(pause_menu_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(PauseMenuView, "_draw_menu_items", side_effect=lambda: None)
     mocker.patch.object(PauseMenuView, "_draw_menu_sign", side_effect=lambda: None)
-    mocker.patch.object(pause_menu_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
 
     view.draw()
 
@@ -61,16 +61,16 @@ def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(make_ga
     state.pause_background = pause_background
     state.resources = _resources_stub()
     view = PauseMenuView(state)
-    view._is_open = True
-    view._closing = True
-    view._close_action = "back_to_previous"
-    view._timeline_ms = 0
+    view._chrome.is_open = True
+    view._chrome.chrome.closing = True
+    view._chrome.chrome.close_action = "back_to_previous"
+    view._chrome.chrome.timeline_ms = 0
+    view._chrome.clear_background_fn = lambda *_args, **_kwargs: None
+    view._chrome.cursor_draw_fn = lambda *_args, **_kwargs: None
 
-    mocker.patch.object(pause_menu_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(PauseMenuView, "_draw_menu_items", side_effect=lambda: None)
     mocker.patch.object(PauseMenuView, "_draw_menu_sign", side_effect=lambda: None)
-    mocker.patch.object(pause_menu_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
 
     view.draw()
 

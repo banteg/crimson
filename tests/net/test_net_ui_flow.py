@@ -185,9 +185,9 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
     )
 
     panel = NetworkLobbyPanelView(state)
-    panel._is_open = True
-    panel._timeline_ms = 0
-    panel._timeline_max_ms = 0
+    panel._chrome.is_open = True
+    panel._chrome.chrome.timeline_ms = 0
+    panel._chrome.chrome.timeline_max_ms = 0
 
     panel.update(0.0)
 
@@ -198,6 +198,6 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
     assert state.config.player_count == 4
     assert state.config.game_mode == 3
     assert state.pending_quest_level == QuestLevel(2, 4)
-    assert panel._closing is True
-    assert panel._close_action == "start_quest"
+    assert panel._chrome.chrome.closing is True
+    assert panel._chrome.chrome.close_action == "start_quest"
     assert state.screen_fade_ramp is True

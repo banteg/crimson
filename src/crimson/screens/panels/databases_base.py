@@ -46,21 +46,22 @@ class _DatabaseBaseView(_ChromePanelView):
 
     def _split_frame(self):
         screen_width = float(self.state.config.screen_width)
+        chrome = self._chrome.chrome
         return split_panel_frame(
-            self._timeline_ms,
+            chrome.timeline_ms,
             left_panel_pos=Vec2(hs_left_panel_pos_x(screen_width), LEFT_PANEL_POS_Y),
             left_panel_height=LEFT_PANEL_HEIGHT,
             right_panel_pos=Vec2(hs_right_panel_pos_x(screen_width), RIGHT_PANEL_POS_Y),
             right_panel_height=RIGHT_PANEL_HEIGHT,
             screen_width=screen_width,
-            widescreen_y_shift=self._widescreen_y_shift,
+            widescreen_y_shift=chrome.widescreen_y_shift,
             small_scale=1.0,
         )
 
     def update(self, dt: float) -> None:
         self._assert_open()
         tick = self._chrome.update(dt)
-        if self._closing:
+        if self._chrome.chrome.closing:
             return
         if not tick.interactive:
             return

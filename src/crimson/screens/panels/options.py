@@ -12,10 +12,10 @@ from grim.raylib_api import rl
 from ...game.types import GameState
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..chrome import draw_ui_quad
-from ..menu import (
+from ..chrome import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_OPTIONS,
+    draw_ui_quad,
 )
 from .base import PanelMenuView, save_dirty_config
 from .hit_test import mouse_inside_rect_with_padding
@@ -62,7 +62,7 @@ class OptionsMenuView(PanelMenuView):
 
     def update(self, dt: float) -> None:
         super().update(dt)
-        if self._closing:
+        if self._chrome.chrome.closing:
             return
         entry = self._entry
         if entry is None or not self._entry_enabled(entry):

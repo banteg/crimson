@@ -21,7 +21,7 @@ from ...quests.level import QuestLevel
 from ...ui.perk_menu import UiButtonState, button_draw
 from ...ui.text_input import poll_text_input
 from ..assets import require_runtime_resources
-from ..menu import MENU_PANEL_OFFSET_Y
+from ..chrome import MENU_PANEL_OFFSET_Y
 from .base import PanelMenuView
 
 
@@ -101,7 +101,8 @@ class NetworkSessionPanelView(PanelMenuView):
 
     def update(self, dt: float) -> None:
         super().update(dt)
-        if self._closing or self._timeline_ms < self._timeline_max_ms:
+        chrome = self._chrome.chrome
+        if chrome.closing or chrome.timeline_ms < chrome.timeline_max_ms:
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):

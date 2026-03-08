@@ -12,11 +12,11 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..chrome import draw_ui_quad
-from ..menu import (
+from ..chrome import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_PLAY_GAME,
     MENU_PANEL_OFFSET_Y,
+    draw_ui_quad,
 )
 from .base import PanelMenuView, save_dirty_config
 from .hit_test import mouse_inside_rect_with_padding
@@ -84,7 +84,7 @@ class PlayGameMenuView(PanelMenuView):
     def update(self, dt: float) -> None:
         super().update(dt)
         dt_ms = int(min(dt, 0.1) * 1000.0)
-        if self._closing:
+        if self._chrome.chrome.closing:
             return
         entry = self._entry
         if entry is None:

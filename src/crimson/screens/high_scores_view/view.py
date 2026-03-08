@@ -54,7 +54,6 @@ from ..high_scores_layout import (
     hs_right_options_x_shift,
     hs_right_panel_pos_x,
 )
-from ..menu import _draw_menu_cursor
 from ..panels.base import (
     FADE_TO_GAME_ACTIONS,
     PANEL_TIMELINE_END_MS,
@@ -97,13 +96,6 @@ class HighScoresView(_ChromePanelView):
         self._chrome.draw_fade_fn = lambda runtime_state: _draw_screen_fade(runtime_state)
         self._chrome.clear_background_fn = lambda color: rl.clear_background(color)
         self._chrome.play_sfx_fn = lambda audio_state, sfx_name, *, rng: play_sfx(audio_state, sfx_name, rng=rng)
-        self._chrome.cursor_draw_fn = (
-            lambda runtime_state, resources, pulse_time: _draw_menu_cursor(
-                runtime_state,
-                resources=resources,
-                pulse_time=pulse_time,
-            )
-        )
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -147,21 +139,22 @@ class HighScoresView(_ChromePanelView):
 
     def _split_frame(self):
         screen_width = float(self.state.config.screen_width)
+        chrome = self._chrome.chrome
         return split_panel_frame(
-            self._timeline_ms,
+            chrome.timeline_ms,
             left_panel_pos=Vec2(hs_left_panel_pos_x(screen_width), HS_LEFT_PANEL_POS_Y),
             left_panel_height=HS_LEFT_PANEL_HEIGHT,
             right_panel_pos=Vec2(hs_right_panel_pos_x(screen_width), HS_RIGHT_PANEL_POS_Y),
             right_panel_height=HS_RIGHT_PANEL_HEIGHT,
             screen_width=screen_width,
-            widescreen_y_shift=self._widescreen_y_shift,
+            widescreen_y_shift=chrome.widescreen_y_shift,
             small_scale=1.0,
         )
 
     def update(self, dt: float) -> None:
         self._assert_open()
         tick = self._chrome.update(dt)
-        if self._closing:
+        if self._chrome.chrome.closing:
             return
 
         frame = self._split_frame()
@@ -549,7 +542,7 @@ class HighScoresView(_ChromePanelView):
             highlight_rank=selected_rank,
         )
         self._draw_sign()
-        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
+        self._draw_cursor()
 
     def _draw_sign(self, *, animated: bool = False) -> None:
         self._chrome.draw_sign(resources=require_runtime_resources(self.state), animated=animated)
@@ -571,7 +564,6 @@ class HighScoresView(_ChromePanelView):
 __all__ = [
     "HighScoresView",
     "_ScoresDropdownLayout",
-    "_draw_menu_cursor",
     "_draw_screen_fade",
     "ensure_menu_ground",
     "update_audio",

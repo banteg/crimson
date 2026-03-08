@@ -348,7 +348,7 @@ class CreditsView(_ChromePanelView):
     def update(self, dt: float) -> None:
         self._assert_open()
         tick = self._chrome.update(dt)
-        if self._closing:
+        if self._chrome.chrome.closing:
             return
 
         dt_clamped = min(float(dt), 0.1)

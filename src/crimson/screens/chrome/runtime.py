@@ -372,9 +372,11 @@ class ChromeRuntime:
         if mode == "opaque":
             return 1.0
         action = self.spec.backdrop.entity_alpha_action
-        if action is not None and (not self.chrome.closing or self.chrome.close_action != action):
-            return 1.0
         if mode == "close_timeline_fraction":
+            if not self.chrome.closing:
+                return 1.0
+            if action is not None and self.chrome.close_action != action:
+                return 1.0
             duration_ms = max(1, int(self.spec.backdrop.entity_alpha_duration_ms))
             alpha = float(self.chrome.timeline_ms) / float(duration_ms)
             if alpha < 0.0:

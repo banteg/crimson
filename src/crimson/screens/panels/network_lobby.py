@@ -15,7 +15,7 @@ from ...net.relay_protocol import RoomState
 from ...net.rollback_runtime import RollbackRuntime
 from ...ui.perk_menu import UiButtonState, button_draw
 from ..assets import require_runtime_resources
-from ..menu import MENU_PANEL_OFFSET_Y
+from ..chrome import MENU_PANEL_OFFSET_Y
 from .base import PanelMenuView
 
 
@@ -58,7 +58,8 @@ class NetworkLobbyPanelView(PanelMenuView):
 
     def update(self, dt: float) -> None:
         super().update(dt)
-        if self._closing or self._timeline_ms < self._timeline_max_ms:
+        chrome = self._chrome.chrome
+        if chrome.closing or chrome.timeline_ms < chrome.timeline_max_ms:
             return
 
         pending = self.state.pending_network_session
@@ -174,7 +175,7 @@ class NetworkLobbyPanelView(PanelMenuView):
             connected = int(self.state.network_connected_players)
         connected = max(0, min(4, int(connected)))
 
-        dots = "." * int((self._cursor_pulse_time * 2.5) % 4)
+        dots = "." * int((self._chrome.chrome.cursor_pulse_time * 2.5) % 4)
         connected_text = f"{connected}/{expected}{dots}"
         role_label = "Host" if role == "host" else "Client"
         code_text = room_code or "-"
