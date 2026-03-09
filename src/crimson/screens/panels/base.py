@@ -9,23 +9,16 @@ from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_update, button_width
 from ...ui.shadow import UI_SHADOW_OFFSET
 from ..assets import require_runtime_resources
-from ..chrome.controls import MenuEntry
+from ..chrome.controls import MenuEntry, MenuEntryController
 from ..chrome.geometry import (
-    MENU_ITEM_OFFSET_X,
-    MENU_ITEM_OFFSET_Y,
-    MENU_LABEL_HEIGHT,
-    MENU_LABEL_OFFSET_X,
-    MENU_LABEL_OFFSET_Y,
     MENU_LABEL_ROW_BACK,
-    MENU_LABEL_ROW_HEIGHT,
-    MENU_LABEL_WIDTH,
     MENU_PANEL_HEIGHT,
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
-    label_alpha,
     menu_item_scale,
     ui_element_anim,
 )
+from ..chrome.menu_entries import _MenuEntriesScreenView, draw_menu_entry, menu_entry_bounds
 from ..chrome.runtime import (
     BackdropPolicy,
     ChromeSpec,
@@ -33,10 +26,8 @@ from ..chrome.runtime import (
     PendingOnceDispatch,
     PlayOpenSfxOnFullyOpen,
     SignPolicy,
-    draw_ui_quad,
-    draw_ui_quad_shadow,
 )
-from ..chrome.view import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, ChromeScreenView
+from ..chrome.view import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 PANEL_POS_X = -45.0
 PANEL_POS_Y = 210.0
@@ -63,7 +54,7 @@ def save_dirty_config(state: GameState) -> bool:
     return True
 
 
-class _PanelMenuScreenView(ChromeScreenView):
+class _PanelMenuScreenView(_MenuEntriesScreenView):
     def __init__(
         self,
         state: GameState,
@@ -95,39 +86,34 @@ class _PanelMenuScreenView(ChromeScreenView):
                 fade_to_game_actions=FADE_TO_GAME_ACTIONS,
             ),
         )
-        self._entry: MenuEntry | None = None
-        self._hovered = False
         self._uses_button_back_control = False
         self._back_enter_enabled = True
         self._back_button: UiButtonState | None = None
 
-    def open(self) -> None:
-        super().open()
-        self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos.y)
-        self._hovered = False
-        if self._uses_button_back_control:
-            self._entry = None
+    @property
+    def _entry(self) -> MenuEntry | None:
+        if self._uses_button_back_control or not self._menu_entries:
+            return None
+        return self._menu_entries[0]
 
     def update(self, dt: float) -> None:
-        self._assert_open()
-        tick = self._update_chrome(dt)
-        chrome = self._chrome_state
-        if chrome.closing:
-            return
-        back_interactive = chrome.timeline_ms >= PANEL_TIMELINE_START_MS
         if self._uses_button_back_control:
+            self._assert_open()
+            tick = self._update_chrome(dt)
+            chrome = self._chrome_state
+            if chrome.closing:
+                return
+            back_interactive = chrome.timeline_ms >= PANEL_TIMELINE_START_MS
             self._update_button_back_control(dt_ms=tick.dt_ms, interactive=back_interactive)
-        else:
-            self._update_menu_entry_back_control(dt_ms=tick.dt_ms, interactive=back_interactive)
+            return
+        super().update(dt)
 
     def draw(self) -> None:
         self._assert_open()
         self._draw_background()
         self._draw_fade()
         self._draw_panel()
-        entry = self._entry
-        if entry is not None:
-            self._draw_entry(entry)
+        self._draw_menu_items()
         self._draw_sign()
         self._draw_contents()
         self._draw_cursor()
@@ -166,6 +152,24 @@ class _PanelMenuScreenView(ChromeScreenView):
     def _small_panel_scale(self) -> float:
         return 0.9
 
+    def _build_menu_entries(self) -> list[MenuEntry]:
+        if self._uses_button_back_control:
+            return []
+        return [MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos.y)]
+
+    def _activate_menu_entry(self, index: int) -> None:
+        if index != 0:
+            return
+        self._begin_close_transition(self._back_action)
+
+    def _escape_entry_index(self) -> int | None:
+        if self._uses_button_back_control:
+            return None
+        return 0
+
+    def _enter_enabled(self) -> bool:
+        return self._back_enter_enabled
+
     def _draw_panel(self) -> None:
         panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
         frame = self._panel_frame()
@@ -176,9 +180,7 @@ class _PanelMenuScreenView(ChromeScreenView):
     def _draw_entry(self, entry: MenuEntry) -> None:
         resources = require_runtime_resources(self.state)
         item = resources.texture(TextureId.UI_MENU_ITEM)
-        label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         item_w = float(item.width)
-        item_h = float(item.height)
         chrome = self._chrome_state
         _angle_rad, slide_x = ui_element_anim(
             chrome.timeline_ms,
@@ -188,95 +190,37 @@ class _PanelMenuScreenView(ChromeScreenView):
             width=item_w * self._menu_item_scale(entry.slot)[0],
         )
         pos = Vec2(self._back_pos.x + slide_x, entry.y + chrome.widescreen_y_shift)
-        item_scale, local_y_shift = self._menu_item_scale(entry.slot)
-        offset_x = MENU_ITEM_OFFSET_X * item_scale
-        offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
-        dst = rl.Rectangle(
-            pos.x,
-            pos.y,
-            item_w * item_scale,
-            item_h * item_scale,
-        )
-        origin = rl.Vector2(-offset_x, -offset_y)
         fx_detail = self.state.config.fx_detail(level=0, default=False)
-        if fx_detail:
-            draw_ui_quad_shadow(
-                texture=item,
-                src=rl.Rectangle(0.0, 0.0, item_w, item_h),
-                dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
-                origin=origin,
-                rotation_deg=0.0,
-            )
-        draw_ui_quad(
-            texture=item,
-            src=rl.Rectangle(0.0, 0.0, item_w, item_h),
-            dst=dst,
-            origin=origin,
+        alpha = MenuEntryController.alpha_for_entry(entry=entry, index=0, list_state=self._list_state)
+        draw_menu_entry(
+            resources,
+            screen_width=float(chrome.screen_width),
+            entry=entry,
+            pos=pos,
+            small_scale=self._small_panel_scale(),
             rotation_deg=0.0,
-            tint=rl.WHITE,
+            label_alpha=alpha,
+            glow_alpha=alpha if self._entry_enabled(entry) else None,
+            shadow_offset=UI_SHADOW_OFFSET,
+            fx_detail=fx_detail,
         )
-        alpha = label_alpha(entry.hover_amount)
-        tint = rl.Color(255, 255, 255, alpha)
-        src = rl.Rectangle(
-            0.0,
-            float(entry.row) * MENU_LABEL_ROW_HEIGHT,
-            MENU_LABEL_WIDTH,
-            MENU_LABEL_ROW_HEIGHT,
-        )
-        label_offset_x = MENU_LABEL_OFFSET_X * item_scale
-        label_offset_y = MENU_LABEL_OFFSET_Y * item_scale - local_y_shift
-        label_dst = rl.Rectangle(
-            pos.x,
-            pos.y,
-            MENU_LABEL_WIDTH * item_scale,
-            MENU_LABEL_HEIGHT * item_scale,
-        )
-        label_origin = rl.Vector2(-label_offset_x, -label_offset_y)
-        draw_ui_quad(
-            texture=label_tex,
-            src=src,
-            dst=label_dst,
-            origin=label_origin,
-            rotation_deg=0.0,
-            tint=tint,
-        )
-        if self._entry_enabled(entry):
-            rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-            draw_ui_quad(
-                texture=label_tex,
-                src=src,
-                dst=label_dst,
-                origin=label_origin,
-                rotation_deg=0.0,
-                tint=rl.Color(255, 255, 255, alpha),
-            )
-            rl.end_blend_mode()
+
+    def _draw_menu_items(self) -> None:
+        entry = self._entry
+        if entry is None:
+            return
+        self._draw_entry(entry)
 
     def _entry_enabled(self, entry: MenuEntry) -> bool:
         return self._chrome_state.timeline_ms >= PANEL_TIMELINE_START_MS
 
-    def _hovered_entry(self, entry: MenuEntry) -> bool:
-        mouse = rl.get_mouse_position()
-        mouse_pos = Vec2.from_xy(mouse)
-        return self._menu_item_bounds(entry).contains(mouse_pos)
-
     def _menu_item_scale(self, slot: int) -> tuple[float, float]:
         return menu_item_scale(float(self._chrome_state.screen_width), int(slot), small_scale=self._small_panel_scale())
 
-    def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
-        item = require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM)
+    def _menu_item_bounds(self, entry: MenuEntry, resources) -> Rect:
+        item = resources.texture(TextureId.UI_MENU_ITEM)
         item_w = float(item.width)
-        item_h = float(item.height)
-        item_scale, local_y_shift = self._menu_item_scale(entry.slot)
-        offset_min = Vec2(
-            MENU_ITEM_OFFSET_X * item_scale,
-            MENU_ITEM_OFFSET_Y * item_scale - local_y_shift,
-        )
-        offset_max = Vec2(
-            (MENU_ITEM_OFFSET_X + item_w) * item_scale,
-            (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift,
-        )
-        size = offset_max - offset_min
+        item_scale = self._menu_item_scale(entry.slot)[0]
         chrome = self._chrome_state
         _angle_rad, slide_x = ui_element_anim(
             chrome.timeline_ms,
@@ -286,42 +230,13 @@ class _PanelMenuScreenView(ChromeScreenView):
             width=item_w * item_scale,
         )
         pos = Vec2(self._back_pos.x + slide_x, entry.y + chrome.widescreen_y_shift)
-        top_left = pos + Vec2(
-            offset_min.x + size.x * 0.54,
-            offset_min.y + size.y * 0.28,
+        return menu_entry_bounds(
+            resources,
+            screen_width=float(chrome.screen_width),
+            entry=entry,
+            pos=pos,
+            small_scale=self._small_panel_scale(),
         )
-        bottom_right = pos + Vec2(
-            offset_max.x - size.x * 0.05,
-            offset_max.y - size.y * 0.10,
-        )
-        return Rect.from_pos_size(top_left, bottom_right - top_left)
-
-    def _update_menu_entry_back_control(self, *, dt_ms: int, interactive: bool) -> None:
-        entry = self._entry
-        if entry is None:
-            return
-        enabled = interactive and self._entry_enabled(entry)
-        hovered = enabled and self._hovered_entry(entry)
-        self._hovered = hovered
-
-        trigger_close = False
-        if enabled:
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-                trigger_close = True
-            elif self._back_enter_enabled and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-                trigger_close = True
-            elif hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-                trigger_close = True
-        if trigger_close:
-            self._begin_close_transition(self._back_action)
-
-        if hovered:
-            entry.hover_amount += int(dt_ms) * 6
-        else:
-            entry.hover_amount -= int(dt_ms) * 2
-        entry.hover_amount = max(0, min(1000, int(entry.hover_amount)))
-        if int(entry.ready_timer_ms) < 0x100:
-            entry.ready_timer_ms = min(0x100, int(entry.ready_timer_ms) + int(dt_ms))
 
     def _update_button_back_control(self, *, dt_ms: int, interactive: bool) -> None:
         if not interactive or self._back_button is None:

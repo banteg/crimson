@@ -158,7 +158,7 @@ class QuestFailedView(_QuestChromeViewBase):
             return
 
     def draw(self) -> None:
-        self._draw_chrome(draw_cursor=True)
+        self._draw_chrome()
         panel_top_left = self._panel_top_left()
         resources = require_runtime_resources(self.state)
         panel_tex = resources.texture(TextureId.UI_MENU_PANEL)
@@ -224,6 +224,7 @@ class QuestFailedView(_QuestChromeViewBase):
             width=main_menu_w,
             scale=scale,
         )
+        self._draw_cursor()
 
     def _panel_origin(self) -> Vec2:
         screen_w = float(rl.get_screen_width())
@@ -306,7 +307,7 @@ class QuestFailedView(_QuestChromeViewBase):
 
     def _activate_play_another(self) -> None:
         self.state.quest_fail_retry_count = 0
-        self._begin_close_transition("open_quests")
+        self._begin_close_transition("open_quests_from_play_game")
 
     def _activate_main_menu(self) -> None:
         self.state.quest_fail_retry_count = 0

@@ -103,10 +103,10 @@ outer shell:
 - menu-ground / pause-background ownership
 - fade drawing
 - runtime-owned close dispatch
-- optional sign / cursor drawing
+- optional sign drawing
 
 Quest-specific layout, buttons, and result-state logic stay in the concrete
-quest views.
+quest views, including drawing the cursor last over the panel content.
 
 ### Geometry, controls, and widgets
 
@@ -114,6 +114,7 @@ The shared support modules remain split by responsibility:
 
 - `chrome/geometry.py`: animation and panel/sign layout math
 - `chrome/controls.py`: shared menu-list / menu-entry control logic
+- `chrome/menu_entries.py`: shared menu-entry chrome shell, hit-testing, and drawing
 - `chrome/widgets.py`: shared dropdown and list-window helpers
 
 Shared control code should stay generic. Engine-specific side effects that are
@@ -123,17 +124,16 @@ not broadly reusable belong in concrete screens.
 
 ### `ChromeScreenView` direct adopters
 
-- `MenuView`
-- `PauseMenuView`
 - `HighScoresView`
 - `StatisticsMenuView`
 - `CreditsView`
 - `AlienZooKeeperView`
 - `_DatabaseBaseView`
-- `QuestsMenuView`
-- `EndNoteView`
-- `QuestFailedView`
-- `QuestResultsView`
+
+### `_MenuEntriesScreenView` adopters
+
+- `MenuView`
+- `PauseMenuView`
 
 ### `_PanelMenuScreenView` adopters
 
@@ -143,6 +143,14 @@ not broadly reusable belong in concrete screens.
 - `ModsMenuView`
 - `NetworkSessionPanelView`
 - `NetworkLobbyPanelView`
+- `OtherGamesView`
+
+### `_QuestChromeViewBase` adopters
+
+- `QuestsMenuView`
+- `EndNoteView`
+- `QuestFailedView`
+- `QuestResultsView`
 
 This split is deliberate:
 
@@ -170,8 +178,10 @@ forking their own transition state machine.
 
 ### Child navigation stays stack-based
 
-Child chrome screens use `back_to_previous`, and `GameLoopView` preserves the
-parent on the front stack instead of reinterpreting action names later.
+`GameLoopView` owns a single typed route table for front-screen transitions.
+Route stack semantics live next to the screen registry instead of in separate
+allowlists, and screen-local actions can request explicit parent rebuilds when
+the default "push current" child flow is wrong.
 
 When a chrome-backed parent resurfaces, `resume_from_child()` is the explicit
 hook for replaying any needed shell animation or state reset. The router no

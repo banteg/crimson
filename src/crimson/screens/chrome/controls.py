@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from .geometry import label_alpha
@@ -20,26 +19,32 @@ class MenuListState(msgspec.Struct):
     selected_index: int = -1
     hovered_index: int | None = None
     focus_timer_ms: int = 0
-    idle_ms: int = 0
-    last_mouse_pos: Vec2 = Vec2()
 
 
 class MenuEntryController:
     @staticmethod
+    def update_ready_timer(entry: MenuEntry, dt_ms: int) -> None:
+        if int(entry.ready_timer_ms) < 0x100:
+            entry.ready_timer_ms = min(0x100, int(entry.ready_timer_ms) + int(dt_ms))
+
+    @staticmethod
     def update_ready_timers(entries: list[MenuEntry], dt_ms: int) -> None:
         for entry in entries:
-            if int(entry.ready_timer_ms) < 0x100:
-                entry.ready_timer_ms = min(0x100, int(entry.ready_timer_ms) + int(dt_ms))
+            MenuEntryController.update_ready_timer(entry, int(dt_ms))
+
+    @staticmethod
+    def update_hover_amount(entry: MenuEntry, *, hovered: bool, dt_ms: int) -> None:
+        if bool(hovered):
+            entry.hover_amount += int(dt_ms) * 6
+        else:
+            entry.hover_amount -= int(dt_ms) * 2
+        entry.hover_amount = max(0, min(1000, int(entry.hover_amount)))
 
     @staticmethod
     def update_hover_amounts(entries: list[MenuEntry], *, hovered_index: int | None, dt_ms: int) -> None:
         hovered = None if hovered_index is None else int(hovered_index)
         for idx, entry in enumerate(entries):
-            if hovered is not None and idx == hovered:
-                entry.hover_amount += int(dt_ms) * 6
-            else:
-                entry.hover_amount -= int(dt_ms) * 2
-            entry.hover_amount = max(0, min(1000, int(entry.hover_amount)))
+            MenuEntryController.update_hover_amount(entry, hovered=hovered is not None and idx == hovered, dt_ms=int(dt_ms))
 
     @staticmethod
     def counter_value(*, entry: MenuEntry, index: int, list_state: MenuListState) -> int:
@@ -58,13 +63,10 @@ class MenuListController:
         list_state: MenuListState,
         *,
         entry_count: int,
-        mouse_pos: Vec2,
     ) -> None:
         list_state.selected_index = 0 if int(entry_count) > 0 else -1
         list_state.hovered_index = None
         list_state.focus_timer_ms = 0
-        list_state.idle_ms = 0
-        list_state.last_mouse_pos = Vec2(float(mouse_pos.x), float(mouse_pos.y))
 
     @staticmethod
     def hovered_index(

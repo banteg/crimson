@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import webbrowser
+from collections.abc import Callable
+from dataclasses import dataclass
+from enum import Enum, auto
 
 from grim.audio import stop_music
 from grim.geom import Vec2
@@ -45,6 +48,22 @@ from .types import GameplayScreen, GameState, HighScoresRequest, Screen
 _GAMMA_RAMP_SHADER: rl.Shader | None = None
 _GAMMA_RAMP_SHADER_GAIN_LOC: int = -1
 _GAMMA_RAMP_SHADER_TRIED = False
+
+
+class _FrontRouteMode(Enum):
+    REPLACE_CURRENT = auto()
+    PUSH_CURRENT = auto()
+    OPEN_WITH_PARENT = auto()
+
+
+@dataclass(frozen=True)
+class _FrontRoute:
+    view: Screen
+    mode: _FrontRouteMode = _FrontRouteMode.REPLACE_CURRENT
+    clear_stack: bool = False
+    parent_action: str | None = None
+    require_gameplay: bool = False
+    before_open: Callable[[], None] | None = None
 
 _GAMMA_RAMP_VS_330 = r"""
 #version 330
@@ -144,62 +163,116 @@ class GameLoopView:
         self._boot = BootView(state)
         self._demo = DemoView(state)
         self._menu = MenuView(state)
-        self._front_views: dict[str, Screen] = {
-            "open_play_game": PlayGameMenuView(state),
-            "open_lan_session": NetworkSessionPanelView(state),
-            "open_lan_lobby": NetworkLobbyPanelView(state),
-            "open_quests": QuestsMenuView(state),
-            "open_pause_menu": PauseMenuView(state),
-            "start_quest": QuestMode(
-                _mode_view_context(state),
-                config=state.config,
-                console=state.console,
-                audio=state.audio,
-                audio_rng=state.rng,
-                demo_mode_active=state.demo_enabled,
+        play_game = PlayGameMenuView(state)
+        network_session = NetworkSessionPanelView(state)
+        network_lobby = NetworkLobbyPanelView(state)
+        quests_menu = QuestsMenuView(state)
+        pause_menu = PauseMenuView(state)
+        quest_mode = QuestMode(
+            _mode_view_context(state),
+            config=state.config,
+            console=state.console,
+            audio=state.audio,
+            audio_rng=state.rng,
+            demo_mode_active=state.demo_enabled,
+        )
+        quest_results = QuestResultsView(state)
+        quest_failed = QuestFailedView(state)
+        end_note = EndNoteView(state)
+        high_scores = HighScoresView(state)
+        survival_mode = SurvivalMode(
+            _mode_view_context(state),
+            config=state.config,
+            console=state.console,
+            audio=state.audio,
+            audio_rng=state.rng,
+        )
+        rush_mode = RushMode(
+            _mode_view_context(state),
+            config=state.config,
+            console=state.console,
+            audio=state.audio,
+            audio_rng=state.rng,
+        )
+        typo_mode = TypoShooterMode(
+            _mode_view_context(state),
+            config=state.config,
+            console=state.console,
+            audio=state.audio,
+            audio_rng=state.rng,
+        )
+        tutorial_mode = TutorialMode(
+            _mode_view_context(state),
+            config=state.config,
+            console=state.console,
+            audio=state.audio,
+            audio_rng=state.rng,
+            demo_mode_active=state.demo_enabled,
+        )
+        options_menu = OptionsMenuView(state)
+        controls_menu = ControlsMenuView(state)
+        statistics_menu = StatisticsMenuView(state)
+        weapons_database = UnlockedWeaponsDatabaseView(state)
+        perks_database = UnlockedPerksDatabaseView(state)
+        credits_view = CreditsView(state)
+        alien_zookeeper = AlienZooKeeperView(state)
+        mods_menu = ModsMenuView(state)
+        other_games = OtherGamesView(state)
+
+        self._front_routes: dict[str, _FrontRoute] = {
+            "open_play_game": _FrontRoute(play_game, clear_stack=True),
+            "open_lan_session": _FrontRoute(network_session, mode=_FrontRouteMode.PUSH_CURRENT),
+            "open_lan_lobby": _FrontRoute(network_lobby, mode=_FrontRouteMode.PUSH_CURRENT),
+            "open_quests": _FrontRoute(quests_menu, mode=_FrontRouteMode.PUSH_CURRENT),
+            "open_quests_from_play_game": _FrontRoute(
+                quests_menu,
+                mode=_FrontRouteMode.OPEN_WITH_PARENT,
+                clear_stack=True,
+                parent_action="open_play_game",
             ),
-            "quest_results": QuestResultsView(state),
-            "quest_failed": QuestFailedView(state),
-            "end_note": EndNoteView(state),
-            "open_high_scores": HighScoresView(state),
-            "start_survival": SurvivalMode(
-                _mode_view_context(state),
-                config=state.config,
-                console=state.console,
-                audio=state.audio,
-                audio_rng=state.rng,
+            "open_pause_menu": _FrontRoute(
+                pause_menu,
+                mode=_FrontRouteMode.PUSH_CURRENT,
+                require_gameplay=True,
             ),
-            "start_rush": RushMode(
-                _mode_view_context(state),
-                config=state.config,
-                console=state.console,
-                audio=state.audio,
-                audio_rng=state.rng,
+            "start_quest": _FrontRoute(quest_mode, clear_stack=True),
+            "quest_results": _FrontRoute(
+                quest_results,
+                mode=_FrontRouteMode.PUSH_CURRENT,
+                require_gameplay=True,
             ),
-            "start_typo": TypoShooterMode(
-                _mode_view_context(state),
-                config=state.config,
-                console=state.console,
-                audio=state.audio,
-                audio_rng=state.rng,
+            "quest_failed": _FrontRoute(
+                quest_failed,
+                mode=_FrontRouteMode.PUSH_CURRENT,
+                require_gameplay=True,
             ),
-            "start_tutorial": TutorialMode(
-                _mode_view_context(state),
-                config=state.config,
-                console=state.console,
-                audio=state.audio,
-                audio_rng=state.rng,
-                demo_mode_active=state.demo_enabled,
+            "end_note": _FrontRoute(end_note),
+            "open_high_scores": _FrontRoute(high_scores, mode=_FrontRouteMode.PUSH_CURRENT),
+            "start_survival": _FrontRoute(
+                survival_mode,
+                clear_stack=True,
+                before_open=lambda: self.state.status.increment_mode_play_count("survival"),
             ),
-            "open_options": OptionsMenuView(state),
-            "open_controls": ControlsMenuView(state),
-            "open_statistics": StatisticsMenuView(state),
-            "open_weapon_database": UnlockedWeaponsDatabaseView(state),
-            "open_perk_database": UnlockedPerksDatabaseView(state),
-            "open_credits": CreditsView(state),
-            "open_alien_zookeeper": AlienZooKeeperView(state),
-            "open_mods": ModsMenuView(state),
-            "open_other_games": OtherGamesView(state),
+            "start_rush": _FrontRoute(
+                rush_mode,
+                clear_stack=True,
+                before_open=lambda: self.state.status.increment_mode_play_count("rush"),
+            ),
+            "start_typo": _FrontRoute(
+                typo_mode,
+                clear_stack=True,
+                before_open=lambda: self.state.status.increment_mode_play_count("typo"),
+            ),
+            "start_tutorial": _FrontRoute(tutorial_mode, clear_stack=True),
+            "open_options": _FrontRoute(options_menu, mode=_FrontRouteMode.PUSH_CURRENT),
+            "open_controls": _FrontRoute(controls_menu, mode=_FrontRouteMode.PUSH_CURRENT),
+            "open_statistics": _FrontRoute(statistics_menu),
+            "open_weapon_database": _FrontRoute(weapons_database, mode=_FrontRouteMode.PUSH_CURRENT),
+            "open_perk_database": _FrontRoute(perks_database, mode=_FrontRouteMode.PUSH_CURRENT),
+            "open_credits": _FrontRoute(credits_view, mode=_FrontRouteMode.PUSH_CURRENT),
+            "open_alien_zookeeper": _FrontRoute(alien_zookeeper, mode=_FrontRouteMode.PUSH_CURRENT),
+            "open_mods": _FrontRoute(mods_menu),
+            "open_other_games": _FrontRoute(other_games, mode=_FrontRouteMode.PUSH_CURRENT),
         }
         self._front_active: Screen | None = None
         self._front_stack: list[Screen] = []
@@ -577,8 +650,7 @@ class GameLoopView:
                 self.state.pause_background = None
                 self._front_active.close()
                 self._front_active = None
-                while self._front_stack:
-                    self._front_stack.pop().close()
+                self._close_front_stack()
                 self._menu.open()
                 self._active = self._menu
                 self._menu_active = True
@@ -600,70 +672,14 @@ class GameLoopView:
                 self._active = self._menu
                 self._menu_active = True
                 return
-            if action == "open_pause_menu":
-                pause_view = self._front_views.get("open_pause_menu")
-                if pause_view is None:
-                    return
-                if gameplay is None:
-                    return
-                self.state.pause_background = gameplay
-                self._front_stack.append(front_active)
-                pause_view.open()
-                self._front_active = pause_view
-                self._active = pause_view
-                return
-            if action in {"start_survival", "start_rush", "start_typo"}:
-                # Temporary: bump the counter on mode start so the Play Game overlay (F1)
-                # and Statistics screen reflect activity.
-                mode_name = {
-                    "start_survival": "survival",
-                    "start_rush": "rush",
-                    "start_typo": "typo",
-                }.get(action)
-                if mode_name is not None:
-                    self.state.status.increment_mode_play_count(mode_name)
             if action is not None:
-                view = self._front_views.get(action)
-                if view is not None:
-                    push_current = action in {
-                        "open_options",
-                        "open_controls",
-                        "open_lan_session",
-                        "open_lan_lobby",
-                        "open_quests",
-                        "open_high_scores",
-                        "open_weapon_database",
-                        "open_perk_database",
-                        "open_credits",
-                        "open_alien_zookeeper",
-                        "open_other_games",
-                    }
-                    if action in {"quest_results", "quest_failed"} and gameplay is not None:
-                        push_current = True
-                    if push_current:
-                        if gameplay is not None and self.state.pause_background is None:
-                            self.state.pause_background = gameplay
-                        elif action in {"quest_results", "quest_failed"} and gameplay is not None:
-                            self.state.pause_background = gameplay
-                        self._front_stack.append(front_active)
-                    else:
-                        if action in {
-                            "start_survival",
-                            "start_rush",
-                            "start_typo",
-                            "start_tutorial",
-                            "start_quest",
-                            "open_play_game",
-                            "open_lan_session",
-                            "open_quests",
-                        }:
-                            self.state.pause_background = None
-                            while self._front_stack:
-                                self._front_stack.pop().close()
-                        front_active.close()
-                    self._open_front_view(action, view)
-                    self._front_active = view
-                    self._active = view
+                route = self._front_route(action)
+                if route is not None and self._transition_to_front_route(
+                    action,
+                    route,
+                    current=front_active,
+                    gameplay=gameplay,
+                ):
                     return
         if self._menu_active:
             action = self._menu.take_action()
@@ -691,14 +707,12 @@ class GameLoopView:
                 action = self._resolve_lan_action(action)
                 if action is None:
                     return
-                view = self._front_views.get(action)
-                if view is not None:
+                route = self._front_route(action)
+                if route is not None:
                     self._menu.close()
                     self._menu_active = False
-                    self._open_front_view(action, view)
-                    self._front_active = view
-                    self._active = view
-                    return
+                    if self._transition_to_front_route(action, route, current=None, gameplay=None):
+                        return
         if (
             (not self._demo_active)
             and (not self._menu_active)
@@ -864,6 +878,57 @@ class GameLoopView:
         if view is None or not isinstance(view, GameplayScreen):
             return None
         return view
+
+    def _front_route(self, action: str) -> _FrontRoute | None:
+        return self._front_routes.get(action)
+
+    def _close_front_stack(self) -> None:
+        while self._front_stack:
+            self._front_stack.pop().close()
+
+    def _open_route_parent(self, action: str) -> Screen:
+        route = self._front_route(action)
+        assert route is not None, f"missing front route: {action}"
+        parent_view = route.view
+        parent_view.open()
+        return parent_view
+
+    def _transition_to_front_route(
+        self,
+        action: str,
+        route: _FrontRoute,
+        *,
+        current: Screen | None,
+        gameplay: GameplayScreen | None,
+    ) -> bool:
+        if route.require_gameplay and gameplay is None:
+            return False
+
+        if route.clear_stack:
+            self.state.pause_background = None
+            self._close_front_stack()
+
+        if route.mode is _FrontRouteMode.PUSH_CURRENT:
+            if current is not None:
+                if gameplay is not None and self.state.pause_background is None:
+                    self.state.pause_background = gameplay
+                self._front_stack.append(current)
+        else:
+            if current is not None:
+                current.close()
+
+        if route.mode is _FrontRouteMode.OPEN_WITH_PARENT:
+            assert route.parent_action is not None, f"{action} requires a parent route"
+            self.state.pause_background = None
+            self._front_stack.append(self._open_route_parent(route.parent_action))
+
+        if route.before_open is not None:
+            route.before_open()
+
+        self._open_front_view(action, route.view)
+        self._front_active = route.view
+        self._active = route.view
+        return True
 
     def _open_front_view(self, action: str, view: Screen) -> None:
         gameplay = self._gameplay_screen(view)

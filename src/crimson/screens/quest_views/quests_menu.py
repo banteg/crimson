@@ -179,9 +179,10 @@ class QuestsMenuView(_QuestChromeViewBase):
 
     def draw(self) -> None:
         self._assert_open()
-        self._draw_chrome(draw_cursor=True)
+        self._draw_chrome()
         self._draw_panel()
         self._draw_contents()
+        self._draw_cursor()
 
     def _layout(self) -> _QuestMenuLayout:
         chrome = self._chrome_state

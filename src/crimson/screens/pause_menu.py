@@ -12,6 +12,7 @@ from .chrome.geometry import (
     MENU_LABEL_STEP,
     menu_slot_start_ms,
 )
+from .chrome.menu_entries import _MenuEntriesScreenView
 from .chrome.runtime import (
     BackdropPolicy,
     ChromeSpec,
@@ -20,12 +21,11 @@ from .chrome.runtime import (
     PlayOpenSfxOnFullyOpen,
     SignPolicy,
 )
-from .menu import _MenuEntriesViewBase
 
 PAUSE_MENU_TO_MAIN_MENU_FADE_MS = 500
 
 
-class PauseMenuView(_MenuEntriesViewBase):
+class PauseMenuView(_MenuEntriesScreenView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
             state,

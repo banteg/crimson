@@ -38,12 +38,26 @@ def test_start_actions_map_to_expected_views(tmp_path: Path) -> None:
     )
 
     loop = GameLoopView(state)
-    views = loop._front_views  # intentional: routing smoke test
+    start_survival = loop._front_route("start_survival")
+    start_rush = loop._front_route("start_rush")
+    start_typo = loop._front_route("start_typo")
+    start_tutorial = loop._front_route("start_tutorial")
+    start_quest = loop._front_route("start_quest")
+    open_high_scores = loop._front_route("open_high_scores")
+    open_lan_session = loop._front_route("open_lan_session")
 
-    assert isinstance(views["start_survival"], SurvivalMode)
-    assert isinstance(views["start_rush"], RushMode)
-    assert isinstance(views["start_typo"], TypoShooterMode)
-    assert isinstance(views["start_tutorial"], TutorialMode)
-    assert isinstance(views["start_quest"], QuestMode)
-    assert isinstance(views["open_high_scores"], HighScoresView)
-    assert isinstance(views["open_lan_session"], NetworkSessionPanelView)
+    assert start_survival is not None
+    assert start_rush is not None
+    assert start_typo is not None
+    assert start_tutorial is not None
+    assert start_quest is not None
+    assert open_high_scores is not None
+    assert open_lan_session is not None
+
+    assert isinstance(start_survival.view, SurvivalMode)
+    assert isinstance(start_rush.view, RushMode)
+    assert isinstance(start_typo.view, TypoShooterMode)
+    assert isinstance(start_tutorial.view, TutorialMode)
+    assert isinstance(start_quest.view, QuestMode)
+    assert isinstance(open_high_scores.view, HighScoresView)
+    assert isinstance(open_lan_session.view, NetworkSessionPanelView)

@@ -49,7 +49,9 @@ def test_tick_statistics_playtime_behavior(
 ) -> None:
     state = make_game_state(demo_enabled=demo_enabled)
     loop = GameLoopView(state)
-    loop._front_active = loop._front_views[front_view_key]
+    route = loop._front_route(front_view_key)
+    assert route is not None
+    loop._front_active = route.view
     state.status.game_sequence_id = start_value
 
     loop._tick_statistics_playtime(dt)

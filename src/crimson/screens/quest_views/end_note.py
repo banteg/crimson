@@ -147,7 +147,7 @@ class EndNoteView(_QuestChromeViewBase):
             return
 
     def draw(self) -> None:
-        self._draw_chrome(draw_cursor=True)
+        self._draw_chrome()
         resources = require_runtime_resources(self.state)
 
         screen_w = float(rl.get_screen_width())
@@ -228,6 +228,7 @@ class EndNoteView(_QuestChromeViewBase):
             resources, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
         )
         button_draw(resources, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
+        self._draw_cursor()
 
 
 __all__ = ["EndNoteView"]

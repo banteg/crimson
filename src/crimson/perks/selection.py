@@ -270,6 +270,14 @@ def perk_selection_current_choices(
             count=7,
         )
         perk_state.choices_dirty = False
+    return perk_selection_visible_choices(players, perk_state)
+
+
+def perk_selection_visible_choices(players: list[PlayerState], perk_state: PerkSelectionState) -> list[PerkId]:
+    """Return the currently visible choice slice without mutating selection state."""
+
+    if not players or not perk_state.choices:
+        return []
     visible_count = max(1, int(perk_choice_count(players[0])))
     return perk_state.choices[:visible_count]
 
@@ -301,6 +309,9 @@ def perk_selection_pick(
         return None
     perk_id = choices[idx]
     perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
-    perk_state.pending_count = max(0, int(perk_state.pending_count) - 1)
+    pending_count = int(perk_state.pending_count)
+    if pending_count <= 0:
+        raise RuntimeError("perk_selection_pick() requires a positive pending_count after perk_apply()")
+    perk_state.pending_count = pending_count - 1
     perk_state.choices_dirty = True
     return perk_id

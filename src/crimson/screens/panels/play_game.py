@@ -57,12 +57,18 @@ class PlayGameMenuView(_PanelMenuScreenView):
         self._tooltip_ms: dict[str, int] = {}
         self._mode_buttons: dict[str, UiButtonState] = {}
 
-    def open(self) -> None:
-        super().open()
+    def _reset_view_state(self) -> None:
         self._player_list_open = False
-        self._dirty = False
         self._tooltip_ms.clear()
         self._mode_buttons.clear()
+
+    def open(self) -> None:
+        super().open()
+        self._dirty = False
+
+    def resume_from_child(self) -> None:
+        self._reset_view_state()
+        self._restart_open_timeline(play_open_sfx=True)
 
     def update(self, dt: float) -> None:
         super().update(dt)

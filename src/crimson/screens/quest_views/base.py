@@ -51,7 +51,6 @@ class _QuestChromeViewBase(ChromeScreenView):
     def _draw_chrome(
         self,
         *,
-        draw_cursor: bool = False,
         draw_sign: bool | None = None,
         entity_alpha: float | None = None,
     ) -> None:
@@ -59,8 +58,6 @@ class _QuestChromeViewBase(ChromeScreenView):
         self._draw_fade()
         if self._quest_show_sign if draw_sign is None else bool(draw_sign):
             self._draw_sign()
-        if draw_cursor:
-            self._draw_cursor()
 
 
 __all__ = ["_QuestChromeViewBase"]

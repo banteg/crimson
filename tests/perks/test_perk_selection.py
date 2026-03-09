@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 import crimson.perks.selection as perk_selection_module
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
@@ -9,6 +11,7 @@ from crimson.perks.selection import (
     perk_generate_choices,
     perk_selection_current_choices,
     perk_selection_pick,
+    perk_selection_visible_choices,
 )
 from crimson.perks.state import PerkSelectionState
 from crimson.sim.state_types import PlayerState
@@ -33,6 +36,38 @@ def test_perk_selection_pick_applies_perk_and_marks_dirty() -> None:
     assert perk_state.choices_dirty is True
     assert player.perk_counts[int(PerkId.INSTANT_WINNER)] == 1
     assert player.experience == 2500
+
+
+def test_perk_selection_pick_returns_none_for_stale_pick() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    perk_state = PerkSelectionState(
+        pending_count=0,
+        choices=[PerkId.INSTANT_WINNER],
+        choices_dirty=False,
+    )
+
+    picked = perk_selection_pick(state, [player], perk_state, 0, game_mode=GameMode.QUESTS, player_count=1)
+
+    assert picked is None
+
+
+def test_perk_selection_pick_fails_if_apply_consumes_pending_slot(mocker) -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    perk_state = PerkSelectionState(
+        pending_count=1,
+        choices=[PerkId.INSTANT_WINNER],
+        choices_dirty=False,
+    )
+
+    def _fake_apply(*_args: object, **_kwargs: object) -> None:
+        perk_state.pending_count = 0
+
+    mocker.patch.object(perk_selection_module, "perk_apply", side_effect=_fake_apply)
+
+    with pytest.raises(RuntimeError, match="positive pending_count after perk_apply"):
+        perk_selection_pick(state, [player], perk_state, 0, game_mode=GameMode.QUESTS, player_count=1)
 
 
 def test_perk_selection_pick_infernal_contract_adds_pending_perks() -> None:
@@ -113,6 +148,37 @@ def test_perk_selection_current_choices_keeps_hidden_internal_entries(mocker) ->
     assert perk_state.choices_dirty is False
 
 
+def test_perk_selection_visible_choices_keeps_existing_choices_without_regenerating(mocker) -> None:
+    player = PlayerState(index=0, pos=Vec2())
+    perk_state = PerkSelectionState(
+        pending_count=1,
+        choices=[
+            PerkId.SHARPSHOOTER,
+            PerkId.FASTSHOT,
+            PerkId.AMMO_MANIAC,
+            PerkId.LONG_DISTANCE_RUNNER,
+            PerkId.TOUGH_RELOADER,
+            PerkId.PERK_MASTER,
+            PerkId.INSTANT_WINNER,
+        ],
+        choices_dirty=True,
+    )
+
+    generate = mocker.patch.object(perk_selection_module, "perk_generate_choices")
+
+    visible = perk_selection_visible_choices([player], perk_state)
+
+    assert visible == [
+        PerkId.SHARPSHOOTER,
+        PerkId.FASTSHOT,
+        PerkId.AMMO_MANIAC,
+        PerkId.LONG_DISTANCE_RUNNER,
+        PerkId.TOUGH_RELOADER,
+    ]
+    generate.assert_not_called()
+    assert perk_state.choices_dirty is True
+
+
 def test_perk_selection_pick_syncs_perk_counts_across_players() -> None:
     state = GameplayState()
     p1 = PlayerState(index=0, pos=Vec2(), health=90.0)
@@ -130,6 +196,31 @@ def test_perk_selection_pick_syncs_perk_counts_across_players() -> None:
     assert p2.perk_counts[int(PerkId.THICK_SKINNED)] == 1
     assert_float_close(p1.health, 60.0)
     assert_float_close(p2.health, 40.0)
+
+
+def test_perk_selection_pick_raises_when_apply_breaks_pending_invariant(mocker) -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    perk_state = PerkSelectionState(
+        pending_count=1,
+        choices=[PerkId.SHARPSHOOTER],
+        choices_dirty=False,
+    )
+
+    def _broken_apply(*_args: object, **_kwargs: object) -> None:
+        perk_state.pending_count = 0
+
+    mocker.patch.object(perk_selection_module, "perk_apply", side_effect=_broken_apply)
+
+    with pytest.raises(RuntimeError, match="pending_count"):
+        perk_selection_pick(
+            state,
+            [player],
+            perk_state,
+            0,
+            game_mode=GameMode.QUESTS,
+            player_count=1,
+        )
 
 
 def test_perk_auto_pick_uses_visible_choices_only() -> None:

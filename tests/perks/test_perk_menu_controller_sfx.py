@@ -53,12 +53,16 @@ def _patch_perk_menu_raylib(
     stub = SimpleNamespace(
         KeyboardKey=rl.KeyboardKey,
         MouseButton=rl.MouseButton,
+        Rectangle=rl.Rectangle,
+        Vector2=rl.Vector2,
+        WHITE=rl.WHITE,
         get_screen_width=mocker.Mock(return_value=640),
         get_screen_height=mocker.Mock(return_value=480),
         is_mouse_button_pressed=mocker.Mock(side_effect=lambda _button: False),
         check_collision_point_rec=mocker.Mock(side_effect=lambda _pos, _rect: False),
         measure_text=mocker.Mock(side_effect=lambda _text, _size: 10),
         is_key_pressed=mocker.Mock(side_effect=lambda key: bool(key_handler(int(key)))),
+        draw_texture_pro=mocker.Mock(side_effect=lambda *_args, **_kwargs: None),
     )
     mocker.patch.object(perk_menu_controller_module, "rl", stub)
     return stub
@@ -93,6 +97,79 @@ def test_open_perk_menu_plays_panel_click(mocker) -> None:
     assert menu.open_if_available(ctx) is True
     assert menu.open is True
     play_sfx.assert_called_once_with("sfx_ui_panelclick")
+
+
+def test_perk_menu_draw_uses_cached_visible_choices_only(mocker) -> None:
+    menu = PerkMenuController()
+    menu.open = True
+    menu.timeline_ms = 300.0
+
+    state = GameplayState()
+    player = _dummy_player()
+    perk_state = PerkSelectionState(
+        pending_count=1,
+        choices=[PerkId.SHARPSHOOTER],
+        choices_dirty=True,
+    )
+
+    current_choices = mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_selection_current_choices",
+        side_effect=AssertionError("draw must not regenerate perk choices"),
+    )
+    visible_choices = mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_selection_visible_choices",
+        return_value=[PerkId.SHARPSHOOTER],
+    )
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_menu_compute_layout",
+        return_value=SimpleNamespace(
+            panel=SimpleNamespace(to_rl=lambda: rl.Rectangle(0.0, 0.0, 1.0, 1.0)),
+            title=SimpleNamespace(to_rl=lambda: rl.Rectangle(0.0, 0.0, 1.0, 1.0)),
+            sponsor_pos=Vec2(),
+            list_pos=Vec2(),
+            list_step_y=16.0,
+            desc=SimpleNamespace(top_left=Vec2()),
+            cancel_pos=Vec2(),
+        ),
+    )
+    mocker.patch.object(perk_menu_controller_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(perk_menu_controller_module, "draw_menu_item", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(perk_menu_controller_module, "draw_ui_text", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(perk_menu_controller_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(perk_menu_controller_module, "button_width", return_value=80.0)
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "menu_item_hit_rect",
+        return_value=SimpleNamespace(contains=lambda *_args, **_kwargs: False),
+    )
+    mocker.patch.object(perk_menu_controller_module, "perk_display_name", return_value="Sharpshooter")
+    mocker.patch.object(perk_menu_controller_module, "perk_display_description", return_value="desc")
+    mocker.patch.object(menu, "_prewrapped_perk_desc", return_value="desc")
+
+    _patch_perk_menu_raylib(mocker)
+
+    ctx = PerkMenuContext(
+        state=state,
+        perk_state=perk_state,
+        players=[player],
+        creatures=[],
+        player=player,
+        game_mode=GameMode.SURVIVAL,
+        player_count=1,
+        gore_disabled=0,
+        font=_dummy_font(),
+        resources=_dummy_resources(),
+        mouse=rl.Vector2(0.0, 0.0),
+        play_sfx=None,
+    )
+
+    menu.draw(ctx)
+
+    current_choices.assert_not_called()
+    visible_choices.assert_called_once_with([player], perk_state)
 
 
 def test_perk_menu_pick_plays_button_click(mocker) -> None:

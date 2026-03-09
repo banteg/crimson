@@ -160,7 +160,7 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, quest_failed_state, mocker
         action = view.take_action()
         if action is not None:
             break
-    assert action == "open_quests"
+    assert action == "open_quests_from_play_game"
 
 
 def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_failed_state, mocker) -> None:
@@ -247,3 +247,28 @@ def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_stat
     view.draw()
 
     pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)
+
+
+def test_quest_failed_draws_cursor_after_panel(quest_failed_state, mocker) -> None:
+    state = quest_failed_state
+    state.quest_outcome = _failed_outcome()
+    view = QuestFailedView(state)
+    draw_order = mocker.Mock()
+
+    mocker.patch.object(chrome_runtime.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(chrome_runtime, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    panel_draw = mocker.patch.object(quest_failed_module, "draw_classic_menu_panel")
+    cursor_draw = mocker.patch.object(chrome_runtime, "draw_menu_cursor_frame")
+    draw_order.attach_mock(panel_draw, "panel")
+    draw_order.attach_mock(cursor_draw, "cursor")
+    mocker.patch.object(quest_failed_module, "draw_small_text", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_failed_module.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_failed_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_failed_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
+    mocker.patch.object(view, "_draw_score_preview", side_effect=lambda *_args, **_kwargs: None)
+
+    view.open()
+    view.draw()
+
+    call_names = [call[0] for call in draw_order.mock_calls if call[0] in {"panel", "cursor"}]
+    assert call_names.index("panel") < call_names.index("cursor")

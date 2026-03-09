@@ -13,7 +13,7 @@ from grim.raylib_api import rl
 from ...game_modes import GameMode
 from ...gameplay import GameplayState
 from ...perks import PerkId, perk_display_description, perk_display_name
-from ...perks.selection import perk_selection_current_choices, perk_selection_pick
+from ...perks.selection import perk_selection_current_choices, perk_selection_pick, perk_selection_visible_choices
 from ...perks.state import PerkSelectionState
 from ...sim.state_types import PlayerState
 from ...ui.layout import ui_origin, ui_scale
@@ -328,13 +328,7 @@ class PerkMenuController:
         if menu_t <= 1e-3:
             return
 
-        choices = perk_selection_current_choices(
-            ctx.state,
-            ctx.players,
-            ctx.perk_state,
-            game_mode=ctx.game_mode,
-            player_count=int(ctx.player_count),
-        )
+        choices = perk_selection_visible_choices(ctx.players, ctx.perk_state)
         if not choices:
             return
 
