@@ -20,6 +20,7 @@ from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
+from ..game.types import BackToMenu, FrontRouteId, OpenFrontRoute, ScreenAction
 from ..game_modes import GameMode
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
@@ -257,7 +258,7 @@ class BaseGameplayMode:
         self._base_dir = base_dir
 
         self.close_requested = False
-        self._action: str | None = None
+        self._action: ScreenAction | None = None
         self._paused = False
         self._status_base: GameStatus | None = None
         self._status_sim: GameStatus | None = None
@@ -642,7 +643,7 @@ class BaseGameplayMode:
         frame_dt, frame_dt_ui_ms = self._tick_frame(dt)
         self._reset_frame_telemetry()
         self._handle_input()
-        if self._action == "open_pause_menu":
+        if self._action == OpenFrontRoute(FrontRouteId.OPEN_PAUSE_MENU):
             return None
         return _ModeFrameState(
             dt=float(frame_dt),
@@ -1238,7 +1239,7 @@ class BaseGameplayMode:
         self._reset_replay_capture_state(clear_recorder=True)
         self._world_runtime.close_runtime()
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         action = self._action
         self._action = None
         return action
@@ -1266,10 +1267,10 @@ class BaseGameplayMode:
             self.open()
             return
         if action == "high_scores":
-            self._action = "open_high_scores"
+            self._action = OpenFrontRoute(FrontRouteId.OPEN_HIGH_SCORES)
             return
         if action == "main_menu":
-            self._action = "back_to_menu"
+            self._action = BackToMenu()
             self.close_requested = True
 
     def _world_entity_alpha(self) -> float:

@@ -9,7 +9,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...debug import debug_enabled
-from ...game.types import GameState
+from ...game.types import BackToPrevious, FrontRouteId, GameState, OpenFrontRoute
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
@@ -355,7 +355,7 @@ class CreditsView(ChromeScreenView):
         self._update_scroll_window()
 
         if tick.interactive and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(BackToPrevious())
             return
         if not tick.interactive:
             return
@@ -387,7 +387,7 @@ class CreditsView(ChromeScreenView):
             mouse=mouse,
             click=bool(click),
         ):
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(BackToPrevious())
             return
 
         if self._secret_button_visible():
@@ -405,7 +405,7 @@ class CreditsView(ChromeScreenView):
                 mouse=mouse,
                 click=bool(click),
             ):
-                self._begin_close_transition("open_alien_zookeeper")
+                self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_ALIEN_ZOOKEEPER))
 
     def draw(self) -> None:
         self._assert_open()

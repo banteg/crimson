@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import (
+    FrontRouteId,
     LockstepEndpoint,
     NetworkSessionConfig,
     PendingNetworkSession,
     RollbackEndpoint,
+    StartLanMatch,
 )
 from crimson.net.lockstep_runtime import LockstepRuntime
 
@@ -34,9 +36,7 @@ def test_manual_lockstep_fallback_selects_lockstep_runtime(make_game_state) -> N
     state.pending_network_session = pending
     loop = GameLoopView(state)
 
-    resolved = loop._resolve_lan_action("start_survival_lan")
-
-    assert resolved == "open_lan_lobby"
+    loop._prepare_lan_lobby(FrontRouteId.START_SURVIVAL)
     assert isinstance(state.network_runtime, LockstepRuntime)
     assert state.network_in_lobby is True
 
@@ -64,7 +64,7 @@ def test_fallback_netcode_mode_is_not_switched_mid_match(make_game_state) -> Non
     )
     state.pending_network_session = pending
     loop = GameLoopView(state)
-    assert loop._resolve_lan_action("start_survival_lan") == "open_lan_lobby"
+    loop._prepare_lan_lobby(FrontRouteId.START_SURVIVAL)
 
     runtime = state.network_runtime
     assert isinstance(runtime, LockstepRuntime)
@@ -85,6 +85,6 @@ def test_fallback_netcode_mode_is_not_switched_mid_match(make_game_state) -> Non
         input_delay_ticks=1,
         preserve_bugs=False,
     )
-    assert loop._resolve_lan_action("start_survival") == "start_survival"
+    loop._prepare_lan_match(StartLanMatch(route=FrontRouteId.START_SURVIVAL, player_count=2))
     assert state.network_runtime is runtime
     assert isinstance(state.network_runtime, LockstepRuntime)

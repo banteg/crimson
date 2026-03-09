@@ -9,7 +9,7 @@ from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
-from ...game.types import GameState
+from ...game.types import BackToPrevious, FrontRouteId, GameState, OpenFrontRoute, ScreenAction
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
 from ..chrome.geometry import MENU_LABEL_ROW_HEIGHT, MENU_LABEL_ROW_OPTIONS
@@ -40,7 +40,7 @@ class OptionsMenuView(_PanelMenuScreenView):
     )
 
     def __init__(self, state: GameState) -> None:
-        super().__init__(state, title="Options", back_action="back_to_previous")
+        super().__init__(state, title="Options", back_action=BackToPrevious())
         self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
         self._slider_sfx = SliderState(10, 0, 10)
         self._slider_music = SliderState(10, 0, 10)
@@ -130,9 +130,9 @@ class OptionsMenuView(_PanelMenuScreenView):
             mouse=mouse,
             click=click,
         ):
-            self._begin_close_transition("open_controls")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_CONTROLS))
 
-    def _before_close_transition(self, action: str) -> None:
+    def _before_close_transition(self, action: ScreenAction) -> None:
         del action
         if self._dirty:
             if save_dirty_config(self.state):

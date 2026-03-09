@@ -5,7 +5,7 @@ from crimson.quests.status import tracked_quest_completed_counter_index
 from grim.audio import play_sfx
 from grim.raylib_api import rl
 
-from ...game.types import GameState, HighScoresRequest
+from ...game.types import BackToMenu, FrontRouteId, GameState, HighScoresRequest, OpenFrontRoute
 from ...game_modes import GameMode
 from ...quests import quest_by_level
 from ..chrome.runtime import NoOpenSfx
@@ -171,25 +171,25 @@ class QuestResultsView(_QuestChromeViewBase):
         if action == "play_again":
             assert self._quest_level is not None
             self._set_pending_quest_level(self._quest_level)
-            self._begin_close_transition("start_quest")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.START_QUEST))
             return
         if action == "play_next":
             if self._quest_level == QuestLevel(5, 10):
-                self._begin_close_transition("end_note")
+                self._begin_close_transition(OpenFrontRoute(FrontRouteId.END_NOTE))
                 return
             assert self._quest_level is not None
             next_level = _next_quest_level(self._quest_level)
             if next_level is not None:
                 self._set_pending_quest_level(next_level)
-                self._begin_close_transition("start_quest")
+                self._begin_close_transition(OpenFrontRoute(FrontRouteId.START_QUEST))
             else:
-                self._begin_close_transition("back_to_menu")
+                self._begin_close_transition(BackToMenu())
             return
         if action == "high_scores":
             self._open_high_scores_list()
             return
         if action == "main_menu":
-            self._begin_close_transition("back_to_menu")
+            self._begin_close_transition(BackToMenu())
             return
 
     def draw(self) -> None:
@@ -215,7 +215,7 @@ class QuestResultsView(_QuestChromeViewBase):
             quest_level=self._quest_level,
             highlight_rank=highlight_rank,
         )
-        self._begin_close_transition("open_high_scores")
+        self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_HIGH_SCORES))
 
     def _set_pending_quest_level(self, level: QuestLevel) -> None:
         self.state.pending_quest_level = level

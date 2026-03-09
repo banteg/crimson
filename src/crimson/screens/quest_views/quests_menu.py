@@ -8,7 +8,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ...debug import debug_enabled
-from ...game.types import GameState
+from ...game.types import BackToPrevious, FrontRouteId, GameState, OpenFrontRoute
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
@@ -120,7 +120,7 @@ class QuestsMenuView(_QuestChromeViewBase):
             self.state.console.log.log("debug: unlocked all quests")
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and tick.interactive:
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(BackToPrevious())
             return
 
         if not tick.interactive:
@@ -159,7 +159,7 @@ class QuestsMenuView(_QuestChromeViewBase):
             mouse=mouse,
             click=bool(click),
         ):
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(BackToPrevious())
             return
 
         # Quick-select row numbers 1..0 (10).
@@ -308,7 +308,7 @@ class QuestsMenuView(_QuestChromeViewBase):
         self.state.config.game_mode = int(GameMode.QUESTS)
         self.state.config.quest_level_value = level
         self._dirty = True
-        self._begin_close_transition("start_quest")
+        self._begin_close_transition(OpenFrontRoute(FrontRouteId.START_QUEST))
 
     def _quest_title(self, stage: int, row: int) -> str:
         from ...quests import quest_by_level

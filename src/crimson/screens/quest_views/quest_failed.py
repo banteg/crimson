@@ -7,7 +7,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from ...game.types import GameState
+from ...game.types import BackToMenu, FrontRouteId, GameState, OpenFrontRoute, OpenFrontRouteWithParent
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
@@ -303,15 +303,21 @@ class QuestFailedView(_QuestChromeViewBase):
             self.state.config.save()
         except (OSError, ValueError) as exc:
             self.state.console.log.log(f"quest failed: failed to save quest selection config: {exc}")
-        self._begin_close_transition("start_quest")
+        self._begin_close_transition(OpenFrontRoute(FrontRouteId.START_QUEST))
 
     def _activate_play_another(self) -> None:
         self.state.quest_fail_retry_count = 0
-        self._begin_close_transition("open_quests_from_play_game")
+        self._begin_close_transition(
+            OpenFrontRouteWithParent(
+                route=FrontRouteId.OPEN_QUESTS,
+                parent=FrontRouteId.OPEN_PLAY_GAME,
+                clear_stack=True,
+            ),
+        )
 
     def _activate_main_menu(self) -> None:
         self.state.quest_fail_retry_count = 0
-        self._begin_close_transition("back_to_menu")
+        self._begin_close_transition(BackToMenu())
 
     def _text_width(self, text: str, scale: float) -> float:
         del scale

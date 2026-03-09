@@ -8,7 +8,7 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 
-from ...game.types import GameState
+from ...game.types import BackToMenu, FrontRouteId, GameState, OpenFrontRoute
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
@@ -141,7 +141,7 @@ class StatisticsMenuView(ChromeScreenView):
         dt_ms = min(float(dt), 0.1) * 1000.0
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._begin_close_transition("back_to_menu")
+            self._begin_close_transition(BackToMenu())
             return
 
         button_base = frame.panel_top_left + Vec2(_BUTTON_X * frame.scale, _BUTTON_Y0 * frame.scale)
@@ -153,7 +153,7 @@ class StatisticsMenuView(ChromeScreenView):
             click=bool(click),
             dt_ms=dt_ms,
         ):
-            self._begin_close_transition("open_high_scores")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_HIGH_SCORES))
             return
         if self._update_button(
             self._btn_weapons,
@@ -163,7 +163,7 @@ class StatisticsMenuView(ChromeScreenView):
             click=bool(click),
             dt_ms=dt_ms,
         ):
-            self._begin_close_transition("open_weapon_database")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_WEAPON_DATABASE))
             return
         if self._update_button(
             self._btn_perks,
@@ -173,7 +173,7 @@ class StatisticsMenuView(ChromeScreenView):
             click=bool(click),
             dt_ms=dt_ms,
         ):
-            self._begin_close_transition("open_perk_database")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_PERK_DATABASE))
             return
         if self._update_button(
             self._btn_credits,
@@ -183,7 +183,7 @@ class StatisticsMenuView(ChromeScreenView):
             click=bool(click),
             dt_ms=dt_ms,
         ):
-            self._begin_close_transition("open_credits")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_CREDITS))
             return
         if self._update_button(
             self._btn_back,
@@ -193,7 +193,7 @@ class StatisticsMenuView(ChromeScreenView):
             click=bool(click),
             dt_ms=dt_ms,
         ):
-            self._begin_close_transition("back_to_menu")
+            self._begin_close_transition(BackToMenu())
 
     def draw(self) -> None:
         self._assert_open()

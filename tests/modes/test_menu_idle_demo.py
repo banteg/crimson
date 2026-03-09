@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+from crimson.game.types import StartDemo
 from crimson.screens.chrome.controls import MenuEntry
 from crimson.screens.chrome.geometry import MENU_DEMO_IDLE_START_MS
 from crimson.screens.menu import MenuView
@@ -27,7 +28,7 @@ def test_menu_demo_idle_starts_demo(mocker, make_game_state) -> None:
     assert view._chrome_state.closing is True
 
     view.update(0.1)
-    assert view.take_action() == "start_demo"
+    assert view.take_action() == StartDemo()
 
 
 def test_menu_idle_does_not_start_demo_in_full_version(mocker, make_game_state) -> None:

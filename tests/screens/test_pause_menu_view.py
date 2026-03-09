@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from typing import cast
 
 import crimson.screens.chrome.runtime as chrome_runtime
+from crimson.game.types import BackToMenu, BackToPrevious
 from crimson.screens.pause_menu import PAUSE_MENU_TO_MAIN_MENU_FADE_MS, PauseMenuView
 from grim.assets import RuntimeResources
 from grim.raylib_api import rl
@@ -37,7 +38,7 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(make_game_sta
     view = PauseMenuView(state)
     view._chrome.is_open = True
     view._chrome_state.closing = True
-    view._chrome_state.close_action = "back_to_menu"
+    view._chrome_state.close_action = BackToMenu()
     view._chrome_state.timeline_ms = PAUSE_MENU_TO_MAIN_MENU_FADE_MS // 2
 
     mocker.patch.object(chrome_runtime.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
@@ -64,7 +65,7 @@ def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(make_ga
     view = PauseMenuView(state)
     view._chrome.is_open = True
     view._chrome_state.closing = True
-    view._chrome_state.close_action = "back_to_previous"
+    view._chrome_state.close_action = BackToPrevious()
     view._chrome_state.timeline_ms = 0
 
     mocker.patch.object(chrome_runtime.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)

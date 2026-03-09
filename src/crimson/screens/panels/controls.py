@@ -12,7 +12,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ...aim_schemes import AimScheme
-from ...game.types import GameState
+from ...game.types import BackToPrevious, GameState, ScreenAction
 from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code, input_code_name
 from ...movement_controls import MovementControlType
 from ...ui.layout import DropdownLayoutBase
@@ -107,7 +107,7 @@ class ControlsMenuView(_PanelMenuScreenView):
         super().__init__(
             state,
             title="Controls",
-            back_action="back_to_previous",
+            back_action=BackToPrevious(),
             panel_pos=Vec2(CONTROLS_LEFT_PANEL_POS_X, CONTROLS_LEFT_PANEL_POS_Y),
             back_pos=Vec2(CONTROLS_BACK_POS_X, CONTROLS_BACK_POS_Y),
         )
@@ -161,7 +161,7 @@ class ControlsMenuView(_PanelMenuScreenView):
         ):
             self._dirty = True
 
-    def _before_close_transition(self, action: str) -> None:
+    def _before_close_transition(self, action: ScreenAction) -> None:
         del action
         if self._dirty:
             if save_dirty_config(self.state):

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from ...game.types import GameState
+from ...game.types import GameState, ScreenAction
 from ..assets import require_runtime_resources
 from .geometry import MENU_PANEL_OFFSET_X, MENU_PANEL_OFFSET_Y, single_panel_frame
 from .runtime import ChromeRuntime, ChromeSpec, ChromeState, ChromeTick
@@ -28,7 +28,7 @@ class ChromeScreenView:
         self._chrome.close()
         self._reset_closed_state()
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         return self._chrome.take_action()
 
     def resume_from_child(self) -> None:
@@ -40,10 +40,10 @@ class ChromeScreenView:
     def _update_chrome(self, dt: float) -> ChromeTick:
         return self._chrome.update(dt)
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         self._chrome.begin_close_transition(action, before_close=self._before_close_transition)
 
-    def _before_close_transition(self, action: str) -> None:
+    def _before_close_transition(self, action: ScreenAction) -> None:
         del action
 
     def _draw_background(self, *, entity_alpha: float | None = None) -> None:

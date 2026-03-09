@@ -7,7 +7,7 @@ from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
-from ...game.types import GameState, HighScoresRequest
+from ...game.types import BackToPrevious, FrontRouteId, GameState, HighScoresRequest, OpenFrontRoute, ScreenAction
 from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -118,7 +118,7 @@ class HighScoresView(ChromeScreenView):
         self._show_scores_open = False
         self._score_list_open = False
 
-    def _before_close_transition(self, action: str) -> None:
+    def _before_close_transition(self, action: ScreenAction) -> None:
         del action
         if self._dirty and save_dirty_config(self.state):
             self._dirty = False
@@ -163,7 +163,7 @@ class HighScoresView(ChromeScreenView):
                 return
 
         if tick.interactive and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(BackToPrevious())
             return
 
         if tick.interactive:
@@ -192,7 +192,7 @@ class HighScoresView(ChromeScreenView):
                 mouse=mouse,
                 click=bool(click),
             ):
-                self._begin_close_transition("open_play_game")
+                self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_PLAY_GAME))
                 return
             back_w = button_width(resources, self._back_button.label, scale=frame.scale, force_wide=self._back_button.force_wide)
             if button_update(
@@ -203,7 +203,7 @@ class HighScoresView(ChromeScreenView):
                 mouse=mouse,
                 click=bool(click),
             ):
-                self._begin_close_transition("back_to_previous")
+                self._begin_close_transition(BackToPrevious())
                 return
 
         rows = 10

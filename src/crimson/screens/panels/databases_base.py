@@ -5,7 +5,7 @@ from grim.fonts.small import SmallFontData
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from ...game.types import GameState
+from ...game.types import BackToPrevious, GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
@@ -66,7 +66,7 @@ class _DatabaseBaseView(ChromeScreenView):
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(BackToPrevious())
             return
 
         self._update_content_interaction(left_top_left=frame.left_top_left, scale=frame.scale, mouse=mouse)
@@ -81,7 +81,7 @@ class _DatabaseBaseView(ChromeScreenView):
             mouse=mouse,
             click=bool(click),
         ):
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(BackToPrevious())
 
     def draw(self) -> None:
         self._assert_open()

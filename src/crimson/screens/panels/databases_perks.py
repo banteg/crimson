@@ -5,7 +5,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from ...game.types import GameState
+from ...game.types import BackToPrevious, GameState
 from ...perks import PerkId
 from ...perks.availability import unlocked_perk_ids
 from ..chrome.widgets import list_window, scrollbar_update
@@ -282,7 +282,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         ):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(BackToPrevious())
 
     def _hovered_perk_id(self) -> PerkId | None:
         if 0 <= int(self._hovered_row_index) < len(self._perk_ids):

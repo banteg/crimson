@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ...game.types import GameState
+from ...game.types import GameState, ScreenAction
 from ..chrome.runtime import (
     BackdropPolicy,
     ChromeSpec,
@@ -25,7 +25,7 @@ class _QuestChromeViewBase(ChromeScreenView):
         lock_sign_on_open: bool = False,
         open_sfx: OpenSfxPolicy = NoOpenSfx(),
         close_sfx: str | None = "sfx_ui_buttonclick",
-        fade_actions: frozenset[str] = frozenset(),
+        fade_actions: frozenset[ScreenAction] = frozenset(),
         pause_background_close_alpha: CloseTimelineEntityAlpha | None = None,
     ) -> None:
         backdrop = BackdropPolicy(

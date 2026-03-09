@@ -43,7 +43,25 @@ from ..screens.pause_menu import PauseMenuView
 from ..screens.quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
 from ..screens.transitions import _update_screen_fade
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
-from .types import GameplayScreen, GameState, HighScoresRequest, Screen
+from .types import (
+    BackToMenu,
+    BackToPrevious,
+    FrontRouteId,
+    GameplayScreen,
+    GameState,
+    HighScoresRequest,
+    OpenFrontRoute,
+    OpenFrontRouteWithParent,
+    OpenLanLobby,
+    QuitAfterDemo,
+    QuitApp,
+    Screen,
+    ScreenAction,
+    StartDemo,
+    StartLanMatch,
+    front_route_for_network_mode,
+    game_mode_for_front_route,
+)
 
 _GAMMA_RAMP_SHADER: rl.Shader | None = None
 _GAMMA_RAMP_SHADER_GAIN_LOC: int = -1
@@ -53,7 +71,6 @@ _GAMMA_RAMP_SHADER_TRIED = False
 class _FrontRouteMode(Enum):
     REPLACE_CURRENT = auto()
     PUSH_CURRENT = auto()
-    OPEN_WITH_PARENT = auto()
 
 
 @dataclass(frozen=True)
@@ -61,7 +78,6 @@ class _FrontRoute:
     view: Screen
     mode: _FrontRouteMode = _FrontRouteMode.REPLACE_CURRENT
     clear_stack: bool = False
-    parent_action: str | None = None
     require_gameplay: bool = False
     before_open: Callable[[], None] | None = None
 
@@ -219,60 +235,54 @@ class GameLoopView:
         mods_menu = ModsMenuView(state)
         other_games = OtherGamesView(state)
 
-        self._front_routes: dict[str, _FrontRoute] = {
-            "open_play_game": _FrontRoute(play_game, clear_stack=True),
-            "open_lan_session": _FrontRoute(network_session, mode=_FrontRouteMode.PUSH_CURRENT),
-            "open_lan_lobby": _FrontRoute(network_lobby, mode=_FrontRouteMode.PUSH_CURRENT),
-            "open_quests": _FrontRoute(quests_menu, mode=_FrontRouteMode.PUSH_CURRENT),
-            "open_quests_from_play_game": _FrontRoute(
-                quests_menu,
-                mode=_FrontRouteMode.OPEN_WITH_PARENT,
-                clear_stack=True,
-                parent_action="open_play_game",
-            ),
-            "open_pause_menu": _FrontRoute(
+        self._front_routes: dict[FrontRouteId, _FrontRoute] = {
+            FrontRouteId.OPEN_PLAY_GAME: _FrontRoute(play_game, clear_stack=True),
+            FrontRouteId.OPEN_LAN_SESSION: _FrontRoute(network_session, mode=_FrontRouteMode.PUSH_CURRENT),
+            FrontRouteId.OPEN_LAN_LOBBY: _FrontRoute(network_lobby, mode=_FrontRouteMode.PUSH_CURRENT),
+            FrontRouteId.OPEN_QUESTS: _FrontRoute(quests_menu, mode=_FrontRouteMode.PUSH_CURRENT),
+            FrontRouteId.OPEN_PAUSE_MENU: _FrontRoute(
                 pause_menu,
                 mode=_FrontRouteMode.PUSH_CURRENT,
                 require_gameplay=True,
             ),
-            "start_quest": _FrontRoute(quest_mode, clear_stack=True),
-            "quest_results": _FrontRoute(
+            FrontRouteId.START_QUEST: _FrontRoute(quest_mode, clear_stack=True),
+            FrontRouteId.QUEST_RESULTS: _FrontRoute(
                 quest_results,
                 mode=_FrontRouteMode.PUSH_CURRENT,
                 require_gameplay=True,
             ),
-            "quest_failed": _FrontRoute(
+            FrontRouteId.QUEST_FAILED: _FrontRoute(
                 quest_failed,
                 mode=_FrontRouteMode.PUSH_CURRENT,
                 require_gameplay=True,
             ),
-            "end_note": _FrontRoute(end_note),
-            "open_high_scores": _FrontRoute(high_scores, mode=_FrontRouteMode.PUSH_CURRENT),
-            "start_survival": _FrontRoute(
+            FrontRouteId.END_NOTE: _FrontRoute(end_note),
+            FrontRouteId.OPEN_HIGH_SCORES: _FrontRoute(high_scores, mode=_FrontRouteMode.PUSH_CURRENT),
+            FrontRouteId.START_SURVIVAL: _FrontRoute(
                 survival_mode,
                 clear_stack=True,
                 before_open=lambda: self.state.status.increment_mode_play_count("survival"),
             ),
-            "start_rush": _FrontRoute(
+            FrontRouteId.START_RUSH: _FrontRoute(
                 rush_mode,
                 clear_stack=True,
                 before_open=lambda: self.state.status.increment_mode_play_count("rush"),
             ),
-            "start_typo": _FrontRoute(
+            FrontRouteId.START_TYPO: _FrontRoute(
                 typo_mode,
                 clear_stack=True,
                 before_open=lambda: self.state.status.increment_mode_play_count("typo"),
             ),
-            "start_tutorial": _FrontRoute(tutorial_mode, clear_stack=True),
-            "open_options": _FrontRoute(options_menu, mode=_FrontRouteMode.PUSH_CURRENT),
-            "open_controls": _FrontRoute(controls_menu, mode=_FrontRouteMode.PUSH_CURRENT),
-            "open_statistics": _FrontRoute(statistics_menu),
-            "open_weapon_database": _FrontRoute(weapons_database, mode=_FrontRouteMode.PUSH_CURRENT),
-            "open_perk_database": _FrontRoute(perks_database, mode=_FrontRouteMode.PUSH_CURRENT),
-            "open_credits": _FrontRoute(credits_view, mode=_FrontRouteMode.PUSH_CURRENT),
-            "open_alien_zookeeper": _FrontRoute(alien_zookeeper, mode=_FrontRouteMode.PUSH_CURRENT),
-            "open_mods": _FrontRoute(mods_menu),
-            "open_other_games": _FrontRoute(other_games, mode=_FrontRouteMode.PUSH_CURRENT),
+            FrontRouteId.START_TUTORIAL: _FrontRoute(tutorial_mode, clear_stack=True),
+            FrontRouteId.OPEN_OPTIONS: _FrontRoute(options_menu, mode=_FrontRouteMode.PUSH_CURRENT),
+            FrontRouteId.OPEN_CONTROLS: _FrontRoute(controls_menu, mode=_FrontRouteMode.PUSH_CURRENT),
+            FrontRouteId.OPEN_STATISTICS: _FrontRoute(statistics_menu),
+            FrontRouteId.OPEN_WEAPON_DATABASE: _FrontRoute(weapons_database, mode=_FrontRouteMode.PUSH_CURRENT),
+            FrontRouteId.OPEN_PERK_DATABASE: _FrontRoute(perks_database, mode=_FrontRouteMode.PUSH_CURRENT),
+            FrontRouteId.OPEN_CREDITS: _FrontRoute(credits_view, mode=_FrontRouteMode.PUSH_CURRENT),
+            FrontRouteId.OPEN_ALIEN_ZOOKEEPER: _FrontRoute(alien_zookeeper, mode=_FrontRouteMode.PUSH_CURRENT),
+            FrontRouteId.OPEN_MODS: _FrontRoute(mods_menu),
+            FrontRouteId.OPEN_OTHER_GAMES: _FrontRoute(other_games, mode=_FrontRouteMode.PUSH_CURRENT),
         }
         self._front_active: Screen | None = None
         self._front_stack: list[Screen] = []
@@ -340,7 +350,7 @@ class GameLoopView:
             return True
         return bool(cvar.value_f)
 
-    def _auto_lan_start_action(self) -> str | None:
+    def _auto_lan_start_action(self) -> ScreenAction | None:
         pending = self._pending_session()
         if pending is None:
             return None
@@ -356,64 +366,43 @@ class GameLoopView:
             auto_start=bool(pending.auto_start),
             player_count=pending.config.player_count,
         )
-        if mode == "rush":
-            return "start_rush_lan"
-        if mode == "quests":
-            return "start_quest_lan"
-        if mode == "survival":
-            return "start_survival_lan"
-        pending.error = f"Unsupported LAN mode: {mode}"
-        self.state.network_last_error = pending.error
-        lan_debug_log("auto_lan_start_error", error=str(pending.error))
-        return "open_lan_session"
+        try:
+            route = front_route_for_network_mode(pending.config.mode)
+        except ValueError:
+            pending.error = f"Unsupported LAN mode: {mode}"
+            self.state.network_last_error = pending.error
+            lan_debug_log("auto_lan_start_error", error=str(pending.error))
+            return OpenFrontRoute(FrontRouteId.OPEN_LAN_SESSION)
+        return OpenLanLobby(route)
 
-    def _resolve_lan_action(self, action: str) -> str | None:
-        if action == "open_lan_session":
-            if self._lan_ui_enabled():
-                return action
-            self.state.network_last_error = "LAN UI is disabled (set cv_lanLockstepEnabled 1 to enable)."
-            lan_debug_log("lan_action_denied", action=action, reason=str(self.state.network_last_error))
-            return "open_play_game"
+    def _reset_local_network_state(self) -> None:
+        self.state.network_in_lobby = False
+        self.state.network_waiting_for_players = False
+        self.state.network_expected_players = 1
+        self.state.network_connected_players = 1
+        runtime = self.state.network_runtime
+        if runtime is not None:
+            runtime.close()
+        self.state.network_runtime = None
 
-        mode_by_action = {
-            "start_survival_lan": ("survival", "open_lan_lobby", GameMode.SURVIVAL),
-            "start_rush_lan": ("rush", "open_lan_lobby", GameMode.RUSH),
-            "start_quest_lan": ("quests", "open_lan_lobby", GameMode.QUESTS),
-        }
-        resolved = mode_by_action.get(action)
-        if resolved is None:
-            if action in {"start_survival", "start_rush", "start_typo", "start_tutorial", "start_quest"}:
-                # Starting gameplay from the LAN lobby uses the normal mode start actions
-                # (`start_survival`, `start_rush`, etc) but must keep the LAN runtime alive.
-                pending = self._pending_session()
-                runtime = self.state.network_runtime
-                if bool(self.state.network_in_lobby) and pending is not None and runtime is not None:
-                    return action
-
-                self.state.network_in_lobby = False
-                self.state.network_waiting_for_players = False
-                self.state.network_expected_players = 1
-                self.state.network_connected_players = 1
-                if runtime is not None:
-                    runtime.close()
-                self.state.network_runtime = None
-            return action
-
+    def _prepare_lan_lobby(self, route: FrontRouteId) -> None:
         self._ensure_lan_debug_log_started()
-
-        expected_mode, forward_action, mode_id = resolved
         pending = self._pending_session()
         if pending is None:
             self.state.network_last_error = "LAN session is not configured."
-            lan_debug_log("lan_action_error", action=action, reason=str(self.state.network_last_error))
-            return None
+            lan_debug_log("lan_action_error", route=route.name, reason=str(self.state.network_last_error))
+            raise RuntimeError(self.state.network_last_error)
         cfg = pending.config
-        if str(cfg.mode) != expected_mode:
+        expected_route = front_route_for_network_mode(cfg.mode)
+        if expected_route is not route:
             self.state.network_last_error = (
-                f"LAN mode mismatch: pending={cfg.mode!r} action={expected_mode!r}"
+                f"LAN mode mismatch: pending={cfg.mode!r} route={route.name!r}"
             )
-            lan_debug_log("lan_action_error", action=action, reason=str(self.state.network_last_error))
-            return None
+            lan_debug_log("lan_action_error", route=route.name, reason=str(self.state.network_last_error))
+            raise RuntimeError(self.state.network_last_error)
+        mode_id = game_mode_for_front_route(route)
+        if mode_id is None:
+            raise RuntimeError(f"LAN lobby route must target gameplay: {route!r}")
 
         player_count = max(1, min(4, int(cfg.player_count)))
         self.state.config.player_count = int(player_count)
@@ -475,9 +464,7 @@ class GameLoopView:
                     input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
                     sim_status_snapshot=sim_status_snapshot,
                 )
-            runtime = LockstepRuntime(
-                runtime_cfg,
-            )
+            runtime = LockstepRuntime(runtime_cfg)
         else:
             endpoint = cfg.endpoint
             if pending.role == "host":
@@ -510,16 +497,14 @@ class GameLoopView:
                     reconnect_timeout_ms=max(1000, int(cfg.reconnect_timeout_ms)),
                     sim_status_snapshot=sim_status_snapshot,
                 )
-            runtime = RollbackRuntime(
-                runtime_cfg,
-            )
+            runtime = RollbackRuntime(runtime_cfg)
         self.state.network_runtime = runtime
         lan_debug_log(
             "lan_action_resolved",
-            action=action,
-            forward_action=forward_action,
+            route=route.name,
+            forward_route=FrontRouteId.OPEN_LAN_LOBBY.name,
             role=str(pending.role),
-            mode=str(expected_mode),
+            mode=str(cfg.mode),
             netcode_mode=netcode_mode,
             auto_start=bool(pending.auto_start),
             player_count=int(player_count),
@@ -527,16 +512,30 @@ class GameLoopView:
             waiting_for_players=bool(self.state.network_waiting_for_players),
         )
 
-        if expected_mode == "quests":
+        if route is FrontRouteId.START_QUEST:
             level = cfg.quest_level
             if level is None:
                 self.state.network_last_error = "Quest LAN mode requires --quest-level."
                 pending.error = self.state.network_last_error
-                lan_debug_log("lan_action_error", action=action, reason=str(self.state.network_last_error))
-                return None
+                lan_debug_log("lan_action_error", route=route.name, reason=str(self.state.network_last_error))
+                raise RuntimeError(self.state.network_last_error)
             self.state.pending_quest_level = level
 
-        return forward_action
+    def _prepare_lan_match(self, action: StartLanMatch) -> None:
+        mode_id = game_mode_for_front_route(action.route)
+        if mode_id is None:
+            raise RuntimeError(f"LAN gameplay route must target gameplay: {action.route!r}")
+        player_count = max(1, min(4, int(action.player_count)))
+        self.state.network_in_lobby = True
+        self.state.network_waiting_for_players = False
+        self.state.network_expected_players = int(player_count)
+        self.state.network_connected_players = int(player_count)
+        self.state.config.player_count = int(player_count)
+        self.state.config.game_mode = int(mode_id)
+        if action.route is FrontRouteId.START_QUEST:
+            if action.quest_level is None:
+                raise RuntimeError("LAN quest match start requires a quest level")
+            self.state.pending_quest_level = action.quest_level
 
     def _tick_network_runtime(self) -> None:
         self._runtime_updates_per_frame = 0
@@ -642,77 +641,15 @@ class GameLoopView:
             if gameplay is not None:
                 action = self._resolve_gameplay_action(gameplay, action)
             if action is not None:
-                action = self._resolve_lan_action(action)
-                if action is None:
-                    return
-            if action == "back_to_menu":
-                self._capture_gameplay_ground_for_menu()
-                self.state.pause_background = None
-                self._front_active.close()
-                self._front_active = None
-                self._close_front_stack()
-                self._menu.open()
-                self._active = self._menu
-                self._menu_active = True
+                self._apply_screen_action(action, current=front_active, gameplay=gameplay)
                 return
-            if action == "back_to_previous":
-                if self._front_stack:
-                    front_active.close()
-                    self._front_active = self._front_stack.pop()
-                    if self._gameplay_screen(self._front_active) is not None:
-                        self.state.pause_background = None
-                    elif isinstance(self._front_active, ChromeScreenView):
-                        self._front_active.resume_from_child()
-                    self._active = self._front_active
-                    return
-                front_active.close()
-                self._front_active = None
-                self.state.pause_background = None
-                self._menu.open()
-                self._active = self._menu
-                self._menu_active = True
-                return
-            if action is not None:
-                route = self._front_route(action)
-                if route is not None and self._transition_to_front_route(
-                    action,
-                    route,
-                    current=front_active,
-                    gameplay=gameplay,
-                ):
-                    return
         if self._menu_active:
             action = self._menu.take_action()
             if action is None:
                 action = self._auto_lan_start_action()
-            if action == "quit_app":
-                self.state.quit_requested = True
-                return
-            if action == "start_demo":
-                self._menu.close()
-                self._menu_active = False
-                self._demo.open()
-                self._active = self._demo
-                self._demo_active = True
-                return
-            if action == "quit_after_demo":
-                self._menu.close()
-                self._menu_active = False
-                self._quit_after_demo = True
-                self._demo.open()
-                self._active = self._demo
-                self._demo_active = True
-                return
             if action is not None:
-                action = self._resolve_lan_action(action)
-                if action is None:
-                    return
-                route = self._front_route(action)
-                if route is not None:
-                    self._menu.close()
-                    self._menu_active = False
-                    if self._transition_to_front_route(action, route, current=None, gameplay=None):
-                        return
+                self._apply_screen_action(action, current=None, gameplay=None)
+                return
         if (
             (not self._demo_active)
             and (not self._menu_active)
@@ -866,9 +803,14 @@ class GameLoopView:
 
         return True
 
-    def _maybe_adopt_menu_ground(self, action: str, _view: Screen | None = None) -> None:
-        if action not in {"start_survival", "start_rush"}:
-            return
+    def _maybe_adopt_menu_ground(self, action: ScreenAction, _view: Screen | None = None) -> None:
+        match action:
+            case OpenFrontRoute(route=FrontRouteId.START_SURVIVAL | FrontRouteId.START_RUSH):
+                pass
+            case StartLanMatch(route=FrontRouteId.START_SURVIVAL | FrontRouteId.START_RUSH):
+                pass
+            case _:
+                return
         # Native `game_state_set(9)` always calls `gameplay_reset_state()`, which
         # runs `terrain_generate_random()`. Menu terrain should carry back to menu,
         # but entering a fresh gameplay run must regenerate terrain instead of
@@ -879,30 +821,122 @@ class GameLoopView:
             return None
         return view
 
-    def _front_route(self, action: str) -> _FrontRoute | None:
-        return self._front_routes.get(action)
+    def _front_route(self, route_id: FrontRouteId) -> _FrontRoute:
+        route = self._front_routes.get(route_id)
+        assert route is not None, f"missing front route: {route_id!r}"
+        return route
 
     def _close_front_stack(self) -> None:
         while self._front_stack:
             self._front_stack.pop().close()
 
-    def _open_route_parent(self, action: str) -> Screen:
-        route = self._front_route(action)
-        assert route is not None, f"missing front route: {action}"
-        parent_view = route.view
+    def _open_route_parent(self, route_id: FrontRouteId) -> Screen:
+        parent_view = self._front_route(route_id).view
         parent_view.open()
         return parent_view
 
-    def _transition_to_front_route(
+    def _close_menu_for_transition(self) -> None:
+        if not self._menu_active:
+            return
+        self._menu.close()
+        self._menu_active = False
+
+    def _apply_screen_action(
         self,
-        action: str,
-        route: _FrontRoute,
+        action: ScreenAction,
         *,
         current: Screen | None,
         gameplay: GameplayScreen | None,
-    ) -> bool:
+    ) -> None:
+        match action:
+            case QuitApp():
+                self.state.quit_requested = True
+            case StartDemo():
+                self._close_menu_for_transition()
+                self._demo.open()
+                self._active = self._demo
+                self._demo_active = True
+            case QuitAfterDemo():
+                self._close_menu_for_transition()
+                self._quit_after_demo = True
+                self._demo.open()
+                self._active = self._demo
+                self._demo_active = True
+            case BackToMenu():
+                if gameplay is not None:
+                    self._capture_gameplay_ground_for_menu()
+                self.state.pause_background = None
+                if self._front_active is not None:
+                    self._front_active.close()
+                self._front_active = None
+                self._close_front_stack()
+                self._menu.open()
+                self._active = self._menu
+                self._menu_active = True
+            case BackToPrevious():
+                if current is None:
+                    raise RuntimeError("BackToPrevious requires an active front screen")
+                if self._front_stack:
+                    current.close()
+                    self._front_active = self._front_stack.pop()
+                    if self._gameplay_screen(self._front_active) is not None:
+                        self.state.pause_background = None
+                    elif isinstance(self._front_active, ChromeScreenView):
+                        self._front_active.resume_from_child()
+                    self._active = self._front_active
+                    return
+                current.close()
+                self._front_active = None
+                self.state.pause_background = None
+                self._menu.open()
+                self._active = self._menu
+                self._menu_active = True
+            case OpenFrontRoute(route=route_id):
+                if route_id is FrontRouteId.OPEN_LAN_SESSION and not self._lan_ui_enabled():
+                    self.state.network_last_error = "LAN UI is disabled (set cv_lanLockstepEnabled 1 to enable)."
+                    lan_debug_log("lan_action_denied", route=route_id.name, reason=str(self.state.network_last_error))
+                    self._apply_screen_action(
+                        OpenFrontRoute(FrontRouteId.OPEN_PLAY_GAME),
+                        current=current,
+                        gameplay=gameplay,
+                    )
+                    return
+                if current is None:
+                    self._close_menu_for_transition()
+                if game_mode_for_front_route(route_id) is not None:
+                    self._reset_local_network_state()
+                self._transition_to_front_route(route_id, current=current, gameplay=gameplay)
+            case OpenFrontRouteWithParent(route=route_id, parent=parent_id, clear_stack=clear_stack):
+                if current is None:
+                    self._close_menu_for_transition()
+                self._transition_to_front_route_with_parent(
+                    route_id,
+                    parent=parent_id,
+                    clear_stack=clear_stack,
+                    current=current,
+                    gameplay=gameplay,
+                )
+            case OpenLanLobby(route=route_id):
+                if current is None:
+                    self._close_menu_for_transition()
+                self._prepare_lan_lobby(route_id)
+                self._transition_to_front_route(FrontRouteId.OPEN_LAN_LOBBY, current=current, gameplay=gameplay)
+            case StartLanMatch():
+                self._prepare_lan_match(action)
+                self._transition_to_front_route(action.route, current=current, gameplay=gameplay)
+            case _:
+                raise AssertionError(f"Unsupported ScreenAction: {action!r}")
+
+    def _transition_to_front_route(
+        self,
+        route_id: FrontRouteId,
+        *,
+        current: Screen | None,
+        gameplay: GameplayScreen | None,
+    ) -> None:
+        route = self._front_route(route_id)
         if route.require_gameplay and gameplay is None:
-            return False
+            raise RuntimeError(f"{route_id.name} requires gameplay context")
 
         if route.clear_stack:
             self.state.pause_background = None
@@ -917,20 +951,39 @@ class GameLoopView:
             if current is not None:
                 current.close()
 
-        if route.mode is _FrontRouteMode.OPEN_WITH_PARENT:
-            assert route.parent_action is not None, f"{action} requires a parent route"
-            self.state.pause_background = None
-            self._front_stack.append(self._open_route_parent(route.parent_action))
-
         if route.before_open is not None:
             route.before_open()
 
-        self._open_front_view(action, route.view)
+        self._open_front_view(OpenFrontRoute(route_id), route.view)
         self._front_active = route.view
         self._active = route.view
-        return True
 
-    def _open_front_view(self, action: str, view: Screen) -> None:
+    def _transition_to_front_route_with_parent(
+        self,
+        route_id: FrontRouteId,
+        *,
+        parent: FrontRouteId,
+        clear_stack: bool,
+        current: Screen | None,
+        gameplay: GameplayScreen | None,
+    ) -> None:
+        route = self._front_route(route_id)
+        if route.require_gameplay and gameplay is None:
+            raise RuntimeError(f"{route_id.name} requires gameplay context")
+        if clear_stack:
+            self.state.pause_background = None
+            self._close_front_stack()
+        if current is not None:
+            current.close()
+        self.state.pause_background = None
+        self._front_stack.append(self._open_route_parent(parent))
+        if route.before_open is not None:
+            route.before_open()
+        self._open_front_view(OpenFrontRouteWithParent(route=route_id, parent=parent, clear_stack=clear_stack), route.view)
+        self._front_active = route.view
+        self._active = route.view
+
+    def _open_front_view(self, action: ScreenAction, view: Screen) -> None:
         gameplay = self._gameplay_screen(view)
         if gameplay is not None:
             self._open_gameplay_screen(gameplay)
@@ -1012,11 +1065,11 @@ class GameLoopView:
             return
         gameplay.start_run(level, status=self.state.status)
 
-    def _resolve_gameplay_action(self, gameplay: GameplayScreen, action: str | None) -> str | None:
-        if action == "open_high_scores":
+    def _resolve_gameplay_action(self, gameplay: GameplayScreen, action: ScreenAction | None) -> ScreenAction | None:
+        if action == OpenFrontRoute(FrontRouteId.OPEN_HIGH_SCORES):
             self.state.pending_high_scores = HighScoresRequest(game_mode_id=gameplay.default_game_mode_id)
             return action
-        if action == "back_to_menu":
+        if action == BackToMenu():
             gameplay.close_requested = False
             return action
         if action is not None:
@@ -1029,11 +1082,11 @@ class GameLoopView:
             if outcome is not None:
                 self.state.quest_outcome = outcome
                 if outcome.kind == "completed":
-                    return "quest_results"
+                    return OpenFrontRoute(FrontRouteId.QUEST_RESULTS)
                 if outcome.kind == "failed":
-                    return "quest_failed"
-            return "back_to_menu"
-        return "back_to_menu"
+                    return OpenFrontRoute(FrontRouteId.QUEST_FAILED)
+            return BackToMenu()
+        return BackToMenu()
 
     def _set_rtx_mode(self, mode: RtxRenderMode, *, source: str) -> None:
         if mode is self.state.rtx_mode:

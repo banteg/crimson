@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from grim.audio import play_sfx
 
-from ..game.types import GameState
+from ..game.types import BackToMenu, BackToPrevious, FrontRouteId, GameState, OpenFrontRoute, ScreenAction
 from .chrome.controls import MenuEntry
 from .chrome.geometry import (
     MENU_LABEL_BASE_Y,
@@ -35,7 +35,7 @@ class PauseMenuView(_MenuEntriesScreenView):
                     use_menu_ground=False,
                     entity_alpha=CloseTimelineEntityAlpha(
                         duration_ms=PAUSE_MENU_TO_MAIN_MENU_FADE_MS,
-                        action="back_to_menu",
+                        action=BackToMenu(),
                     ),
                 ),
                 sign=SignPolicy(animated=True, lock_on_fully_open=True),
@@ -77,13 +77,13 @@ class PauseMenuView(_MenuEntriesScreenView):
         self._begin_close_transition(action)
 
     @staticmethod
-    def _action_for_entry(entry: MenuEntry) -> str | None:
+    def _action_for_entry(entry: MenuEntry) -> ScreenAction | None:
         if entry.row == MENU_LABEL_ROW_OPTIONS:
-            return "open_options"
+            return OpenFrontRoute(FrontRouteId.OPEN_OPTIONS)
         if entry.row == MENU_LABEL_ROW_QUIT:
-            return "back_to_menu"
+            return BackToMenu()
         if entry.row == MENU_LABEL_ROW_BACK:
-            return "back_to_previous"
+            return BackToPrevious()
         return None
 
     def _entry_index_for_row(self, row: int) -> int | None:

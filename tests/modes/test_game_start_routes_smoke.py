@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import GameState
+from crimson.game.types import FrontRouteId, GameState
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
@@ -38,21 +38,13 @@ def test_start_actions_map_to_expected_views(tmp_path: Path) -> None:
     )
 
     loop = GameLoopView(state)
-    start_survival = loop._front_route("start_survival")
-    start_rush = loop._front_route("start_rush")
-    start_typo = loop._front_route("start_typo")
-    start_tutorial = loop._front_route("start_tutorial")
-    start_quest = loop._front_route("start_quest")
-    open_high_scores = loop._front_route("open_high_scores")
-    open_lan_session = loop._front_route("open_lan_session")
-
-    assert start_survival is not None
-    assert start_rush is not None
-    assert start_typo is not None
-    assert start_tutorial is not None
-    assert start_quest is not None
-    assert open_high_scores is not None
-    assert open_lan_session is not None
+    start_survival = loop._front_route(FrontRouteId.START_SURVIVAL)
+    start_rush = loop._front_route(FrontRouteId.START_RUSH)
+    start_typo = loop._front_route(FrontRouteId.START_TYPO)
+    start_tutorial = loop._front_route(FrontRouteId.START_TUTORIAL)
+    start_quest = loop._front_route(FrontRouteId.START_QUEST)
+    open_high_scores = loop._front_route(FrontRouteId.OPEN_HIGH_SCORES)
+    open_lan_session = loop._front_route(FrontRouteId.OPEN_LAN_SESSION)
 
     assert isinstance(start_survival.view, SurvivalMode)
     assert isinstance(start_rush.view, RushMode)

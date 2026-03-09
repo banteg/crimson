@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 import crimson.screens.chrome.runtime as chrome_runtime
 import crimson.screens.quest_views.end_note as end_note_module
+from crimson.game.types import BackToMenu
 from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
 from crimson.screens.quest_views import EndNoteView
 from grim.assets import RuntimeResources
@@ -54,7 +55,7 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
         action = view.take_action()
         if action is not None:
             break
-    assert action == "back_to_menu"
+    assert action == BackToMenu()
 
 
 def test_end_note_draw_fades_pause_background_during_close(make_game_state, tmp_path, mocker) -> None:

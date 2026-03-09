@@ -4,7 +4,7 @@ from grim.assets import TextureId
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
-from ...game.types import GameState
+from ...game.types import BackToMenu, FrontRouteId, GameState, OpenFrontRoute, ScreenAction
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_update, button_width
 from ...ui.shadow import UI_SHADOW_OFFSET
@@ -36,11 +36,11 @@ PANEL_BACK_POS_Y = 430.0
 
 FADE_TO_GAME_ACTIONS = frozenset(
     {
-        "start_survival",
-        "start_rush",
-        "start_typo",
-        "start_tutorial",
-        "start_quest",
+        OpenFrontRoute(FrontRouteId.START_SURVIVAL),
+        OpenFrontRoute(FrontRouteId.START_RUSH),
+        OpenFrontRoute(FrontRouteId.START_TYPO),
+        OpenFrontRoute(FrontRouteId.START_TUTORIAL),
+        OpenFrontRoute(FrontRouteId.START_QUEST),
     },
 )
 
@@ -65,7 +65,7 @@ class _PanelMenuScreenView(_MenuEntriesScreenView):
         panel_offset: Vec2 = Vec2(MENU_PANEL_OFFSET_X, MENU_PANEL_OFFSET_Y),
         panel_height: float = MENU_PANEL_HEIGHT,
         back_pos: Vec2 = Vec2(PANEL_BACK_POS_X, PANEL_BACK_POS_Y),
-        back_action: str = "back_to_menu",
+        back_action: ScreenAction = BackToMenu(),
     ) -> None:
         self._title = title
         self._body_lines = (body or "").splitlines()

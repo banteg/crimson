@@ -10,6 +10,7 @@ from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
+from ..game.types import FrontRouteId, OpenFrontRoute
 from ..game_modes import GameMode
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
@@ -194,7 +195,7 @@ class TutorialMode(BaseGameplayMode):
             self._paused = not self._paused
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._action = "open_pause_menu"
+            self._action = OpenFrontRoute(FrontRouteId.OPEN_PAUSE_MENU)
             return
 
     def _build_input(self) -> PlayerInput:
@@ -302,7 +303,7 @@ class TutorialMode(BaseGameplayMode):
         dt, dt_ui_ms = self._tick_frame(dt, clamp_cursor_pulse=True)
 
         self._handle_input()
-        if self._action == "open_pause_menu":
+        if self._action == OpenFrontRoute(FrontRouteId.OPEN_PAUSE_MENU):
             return
         if self.close_requested:
             return

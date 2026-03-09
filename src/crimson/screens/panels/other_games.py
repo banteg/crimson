@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ...game.types import GameState
+from ...game.types import BackToPrevious, GameState
 from .base import _PanelMenuScreenView
 
 
@@ -10,7 +10,7 @@ class OtherGamesView(_PanelMenuScreenView):
             state,
             title="Other games",
             body="This menu is out of scope for the rewrite.",
-            back_action="back_to_previous",
+            back_action=BackToPrevious(),
         )
 
 

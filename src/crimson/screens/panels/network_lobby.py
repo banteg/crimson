@@ -7,7 +7,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...debug import debug_enabled
-from ...game.types import GameState, LockstepEndpoint
+from ...game.types import BackToPrevious, FrontRouteId, GameState, LockstepEndpoint, ScreenAction, StartLanMatch
 from ...game_modes import GameMode
 from ...net.lockstep_protocol import LobbyState
 from ...net.lockstep_runtime import LockstepRuntime
@@ -34,7 +34,7 @@ class NetworkLobbyPanelView(_PanelMenuScreenView):
             title="Network Lobby",
             panel_offset=Vec2(-63.0, MENU_PANEL_OFFSET_Y),
             panel_height=278.0,
-            back_action="back_to_previous",
+            back_action=BackToPrevious(),
         )
         self._uses_button_back_control = True
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -45,8 +45,8 @@ class NetworkLobbyPanelView(_PanelMenuScreenView):
         self._back_button = UiButtonState("Back", force_wide=False)
         self._error = ""
 
-    def _before_close_transition(self, action: str) -> None:
-        if action == "back_to_previous":
+    def _before_close_transition(self, action: ScreenAction) -> None:
+        if action == BackToPrevious():
             runtime = self.state.network_runtime
             if runtime is not None:
                 runtime.close()
@@ -55,6 +55,10 @@ class NetworkLobbyPanelView(_PanelMenuScreenView):
             self.state.network_waiting_for_players = False
             self.state.network_expected_players = 1
             self.state.network_connected_players = 1
+            return
+        if isinstance(action, StartLanMatch):
+            self.state.screen_fade_alpha = 0.0
+            self.state.screen_fade_ramp = True
 
     def update(self, dt: float) -> None:
         super().update(dt)
@@ -100,15 +104,17 @@ class NetworkLobbyPanelView(_PanelMenuScreenView):
 
         match mode_id:
             case GameMode.SURVIVAL:
-                action = "start_survival"
+                route = FrontRouteId.START_SURVIVAL
             case GameMode.RUSH:
-                action = "start_rush"
+                route = FrontRouteId.START_RUSH
             case GameMode.QUESTS:
-                action = "start_quest"
+                route = FrontRouteId.START_QUEST
             case _:
                 self._error = f"Unsupported network mode id: {int(mode_id)}"
                 return
-        self._begin_close_transition(action)
+        self._begin_close_transition(
+            StartLanMatch(route=route, player_count=int(self.state.network_expected_players), quest_level=quest_level),
+        )
 
     def _layout(self) -> _LobbyLayout:
         frame = self._panel_frame()

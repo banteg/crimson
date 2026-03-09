@@ -8,7 +8,7 @@ from typing import cast
 import crimson.screens.chrome.runtime as chrome_runtime
 import crimson.screens.high_scores_view.view as high_scores_view_module
 import crimson.screens.results.game_over as game_over_module
-from crimson.game.types import GameState, HighScoresRequest, PauseBackground
+from crimson.game.types import BackToPrevious, GameState, HighScoresRequest, PauseBackground
 from crimson.game_modes import GameMode
 from crimson.persistence import save_status
 from crimson.persistence.highscores import HighScoreRecord
@@ -130,7 +130,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
         action = view.take_action()
         if action is not None:
             break
-    assert action == "back_to_previous"
+    assert action == BackToPrevious()
 
 
 def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Path, mocker) -> None:

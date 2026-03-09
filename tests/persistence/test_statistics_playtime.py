@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from crimson.game.loop_view import GameLoopView
+from crimson.game.types import FrontRouteId
 from crimson.screens.panels.stats import _format_playtime_text
 
 
@@ -27,11 +28,11 @@ def test_format_playtime_text_preserve_bugs_keeps_native_plural_form() -> None:
 
 
 @pytest.mark.parametrize(
-    ("demo_enabled", "front_view_key", "dt", "start_value", "expected_value"),
+    ("demo_enabled", "front_route_id", "dt", "start_value", "expected_value"),
     [
-        (False, "start_survival", 0.0169, 10, 26),
-        (False, "open_statistics", 0.5, 123, 123),
-        (True, "start_survival", 0.5, 123, 123),
+        (False, FrontRouteId.START_SURVIVAL, 0.0169, 10, 26),
+        (False, FrontRouteId.OPEN_STATISTICS, 0.5, 123, 123),
+        (True, FrontRouteId.START_SURVIVAL, 0.5, 123, 123),
     ],
     ids=[
         "accumulates-for-non-demo-gameplay",
@@ -42,15 +43,14 @@ def test_format_playtime_text_preserve_bugs_keeps_native_plural_form() -> None:
 def test_tick_statistics_playtime_behavior(
     make_game_state,
     demo_enabled: bool,
-    front_view_key: str,
+    front_route_id: FrontRouteId,
     dt: float,
     start_value: int,
     expected_value: int,
 ) -> None:
     state = make_game_state(demo_enabled=demo_enabled)
     loop = GameLoopView(state)
-    route = loop._front_route(front_view_key)
-    assert route is not None
+    route = loop._front_route(front_route_id)
     loop._front_active = route.view
     state.status.game_sequence_id = start_value
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import Enum, auto
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol, TypeAlias, runtime_checkable
 
@@ -103,6 +104,167 @@ class HighScoresRequest(msgspec.Struct):
     highlight_rank: int | None = None
 
 
+class FrontRouteId(Enum):
+    OPEN_PLAY_GAME = auto()
+    OPEN_LAN_SESSION = auto()
+    OPEN_LAN_LOBBY = auto()
+    OPEN_QUESTS = auto()
+    OPEN_PAUSE_MENU = auto()
+    START_QUEST = auto()
+    QUEST_RESULTS = auto()
+    QUEST_FAILED = auto()
+    END_NOTE = auto()
+    OPEN_HIGH_SCORES = auto()
+    START_SURVIVAL = auto()
+    START_RUSH = auto()
+    START_TYPO = auto()
+    START_TUTORIAL = auto()
+    OPEN_OPTIONS = auto()
+    OPEN_CONTROLS = auto()
+    OPEN_STATISTICS = auto()
+    OPEN_WEAPON_DATABASE = auto()
+    OPEN_PERK_DATABASE = auto()
+    OPEN_CREDITS = auto()
+    OPEN_ALIEN_ZOOKEEPER = auto()
+    OPEN_MODS = auto()
+    OPEN_OTHER_GAMES = auto()
+
+
+_LAN_GAMEPLAY_FRONT_ROUTES = frozenset(
+    {
+        FrontRouteId.START_QUEST,
+        FrontRouteId.START_SURVIVAL,
+        FrontRouteId.START_RUSH,
+    },
+)
+
+
+def front_route_for_network_mode(mode: NetworkSessionMode) -> FrontRouteId:
+    if mode == "quests":
+        return FrontRouteId.START_QUEST
+    if mode == "rush":
+        return FrontRouteId.START_RUSH
+    if mode == "survival":
+        return FrontRouteId.START_SURVIVAL
+    raise ValueError(f"unsupported network session mode: {mode!r}")
+
+
+def game_mode_for_front_route(route: FrontRouteId) -> GameMode | None:
+    match route:
+        case FrontRouteId.START_QUEST:
+            return GameMode.QUESTS
+        case FrontRouteId.START_SURVIVAL:
+            return GameMode.SURVIVAL
+        case FrontRouteId.START_RUSH:
+            return GameMode.RUSH
+        case FrontRouteId.START_TYPO:
+            return GameMode.TYPO
+        case FrontRouteId.START_TUTORIAL:
+            return GameMode.TUTORIAL
+        case _:
+            return None
+
+
+class BackToMenu(msgspec.Struct, frozen=True, tag="back_to_menu"):
+    pass
+
+
+class BackToPrevious(msgspec.Struct, frozen=True, tag="back_to_previous"):
+    pass
+
+
+class QuitApp(msgspec.Struct, frozen=True, tag="quit_app"):
+    pass
+
+
+class QuitAfterDemo(msgspec.Struct, frozen=True, tag="quit_after_demo"):
+    pass
+
+
+class StartDemo(msgspec.Struct, frozen=True, tag="start_demo"):
+    pass
+
+
+class OpenFrontRoute(msgspec.Struct, frozen=True, tag="open_front_route"):
+    route: FrontRouteId
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.route, FrontRouteId):
+            raise TypeError("OpenFrontRoute.route must be a FrontRouteId")
+
+
+class OpenFrontRouteWithParent(msgspec.Struct, frozen=True, tag="open_front_route_with_parent"):
+    route: FrontRouteId
+    parent: FrontRouteId
+    clear_stack: bool = False
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.route, FrontRouteId):
+            raise TypeError("OpenFrontRouteWithParent.route must be a FrontRouteId")
+        if not isinstance(self.parent, FrontRouteId):
+            raise TypeError("OpenFrontRouteWithParent.parent must be a FrontRouteId")
+        if type(self.clear_stack) is not bool:
+            raise TypeError("OpenFrontRouteWithParent.clear_stack must be a bool")
+
+
+class OpenLanLobby(msgspec.Struct, frozen=True, tag="open_lan_lobby"):
+    route: FrontRouteId
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.route, FrontRouteId):
+            raise TypeError("OpenLanLobby.route must be a FrontRouteId")
+        if self.route not in _LAN_GAMEPLAY_FRONT_ROUTES:
+            raise ValueError("OpenLanLobby.route must be a LAN gameplay FrontRouteId")
+
+
+class StartLanMatch(msgspec.Struct, frozen=True, tag="start_lan_match"):
+    route: FrontRouteId
+    player_count: int
+    quest_level: QuestLevel | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.route, FrontRouteId):
+            raise TypeError("StartLanMatch.route must be a FrontRouteId")
+        if self.route not in _LAN_GAMEPLAY_FRONT_ROUTES:
+            raise ValueError("StartLanMatch.route must be a LAN gameplay FrontRouteId")
+        if type(self.player_count) is not int:
+            raise TypeError("StartLanMatch.player_count must be an int")
+        if self.player_count <= 0:
+            raise ValueError("StartLanMatch.player_count must be positive")
+        if self.quest_level is not None and not isinstance(self.quest_level, QuestLevel):
+            raise TypeError("StartLanMatch.quest_level must be a QuestLevel | None")
+
+
+ScreenAction: TypeAlias = (
+    BackToMenu
+    | BackToPrevious
+    | QuitApp
+    | QuitAfterDemo
+    | StartDemo
+    | OpenFrontRoute
+    | OpenFrontRouteWithParent
+    | OpenLanLobby
+    | StartLanMatch
+)
+
+
+def is_screen_action(value: object) -> bool:
+    return isinstance(
+        value,
+        (
+            BackToMenu,
+            BackToPrevious,
+            QuitApp,
+            QuitAfterDemo,
+            StartDemo,
+            OpenFrontRoute,
+            OpenFrontRouteWithParent,
+            OpenLanLobby,
+            StartLanMatch,
+        ),
+    )
+
+
 @runtime_checkable
 class Screen(Protocol):
     def open(self) -> None: ...
@@ -113,7 +275,7 @@ class Screen(Protocol):
 
     def draw(self) -> None: ...
 
-    def take_action(self) -> str | None: ...
+    def take_action(self) -> ScreenAction | None: ...
 
 
 @runtime_checkable
@@ -212,6 +374,9 @@ class GameState(msgspec.Struct):
     presentation_apply_ms: float = 0.0
 
 __all__ = [
+    "BackToMenu",
+    "BackToPrevious",
+    "FrontRouteId",
     "GameplayScreen",
     "GameConfig",
     "GameState",
@@ -221,8 +386,19 @@ __all__ = [
     "NetworkEndpoint",
     "NetworkSessionConfig",
     "NetworkSessionMode",
+    "OpenFrontRoute",
+    "OpenFrontRouteWithParent",
+    "OpenLanLobby",
     "PendingNetworkSession",
     "PauseBackground",
+    "QuitAfterDemo",
+    "QuitApp",
     "RollbackEndpoint",
     "Screen",
+    "ScreenAction",
+    "StartDemo",
+    "StartLanMatch",
+    "front_route_for_network_mode",
+    "game_mode_for_front_route",
+    "is_screen_action",
 ]

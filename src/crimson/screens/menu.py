@@ -6,7 +6,14 @@ from grim.audio import play_sfx
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from ..game.types import GameState
+from ..game.types import (
+    FrontRouteId,
+    GameState,
+    OpenFrontRoute,
+    QuitAfterDemo,
+    QuitApp,
+    StartDemo,
+)
 from .chrome.controls import MenuEntry
 from .chrome.geometry import (
     MENU_DEMO_IDLE_START_MS,
@@ -47,7 +54,7 @@ class MenuView(_MenuEntriesScreenView):
                 sign=SignPolicy(
                     animated=True,
                     lock_on_fully_open=True,
-                    unlock_on_actions=("quit_after_demo", "quit_app"),
+                    unlock_on_actions=(QuitAfterDemo(), QuitApp()),
                 ),
                 dispatch=PendingOnceDispatch(),
                 open_sfx=PlayOpenSfxOnFullyOpen(),
@@ -104,7 +111,7 @@ class MenuView(_MenuEntriesScreenView):
             and interactive
             and self._idle_ms >= MENU_DEMO_IDLE_START_MS
         ):
-            self._begin_close_transition("start_demo")
+            self._begin_close_transition(StartDemo())
 
     def _activate_menu_entry(self, index: int) -> None:
         if not (0 <= index < len(self._menu_entries)):
@@ -117,18 +124,18 @@ class MenuView(_MenuEntriesScreenView):
         if entry.row == MENU_LABEL_ROW_QUIT:
             self._begin_quit_transition()
         elif entry.row == MENU_LABEL_ROW_PLAY_GAME:
-            self._begin_close_transition("open_play_game")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_PLAY_GAME))
         elif entry.row == MENU_LABEL_ROW_OPTIONS:
-            self._begin_close_transition("open_options")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_OPTIONS))
         elif entry.row == MENU_LABEL_ROW_STATISTICS:
-            self._begin_close_transition("open_statistics")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_STATISTICS))
         elif entry.row == MENU_LABEL_ROW_MODS:
-            self._begin_close_transition("open_mods")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_MODS))
         elif entry.row == MENU_LABEL_ROW_OTHER_GAMES:
-            self._begin_close_transition("open_other_games")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_OTHER_GAMES))
 
     def _begin_quit_transition(self) -> None:
-        self._begin_close_transition("quit_after_demo" if self.state.demo_enabled else "quit_app")
+        self._begin_close_transition(QuitAfterDemo() if self.state.demo_enabled else QuitApp())
 
     def _menu_entries_for_flags(
         self,

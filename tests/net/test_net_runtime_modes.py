@@ -3,24 +3,30 @@ from __future__ import annotations
 import pytest
 
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import NetworkSessionConfig, NetworkSessionMode, PendingNetworkSession, RollbackEndpoint
+from crimson.game.types import (
+    FrontRouteId,
+    NetworkSessionConfig,
+    NetworkSessionMode,
+    PendingNetworkSession,
+    RollbackEndpoint,
+)
 from crimson.game_modes import GameMode
 from crimson.net.rollback_runtime import RollbackRuntime
 from crimson.quests.level import QuestLevel
 
 
 @pytest.mark.parametrize(
-    ("mode", "action", "mode_id", "quest_level"),
+    ("mode", "route", "mode_id", "quest_level"),
     [
-        ("survival", "start_survival_lan", int(GameMode.SURVIVAL), None),
-        ("rush", "start_rush_lan", int(GameMode.RUSH), None),
-        ("quests", "start_quest_lan", int(GameMode.QUESTS), QuestLevel(1, 1)),
+        ("survival", FrontRouteId.START_SURVIVAL, int(GameMode.SURVIVAL), None),
+        ("rush", FrontRouteId.START_RUSH, int(GameMode.RUSH), None),
+        ("quests", FrontRouteId.START_QUEST, int(GameMode.QUESTS), QuestLevel(1, 1)),
     ],
 )
 def test_rollback_runtime_is_selected_for_all_network_modes(
     make_game_state,
     mode: NetworkSessionMode,
-    action: str,
+    route: FrontRouteId,
     mode_id: int,
     quest_level: QuestLevel | None,
 ) -> None:
@@ -47,9 +53,7 @@ def test_rollback_runtime_is_selected_for_all_network_modes(
     state.pending_network_session = pending
     loop = GameLoopView(state)
 
-    resolved = loop._resolve_lan_action(action)
-
-    assert resolved == "open_lan_lobby"
+    loop._prepare_lan_lobby(route)
     assert state.config.game_mode == mode_id
     assert state.network_in_lobby is True
     assert isinstance(state.network_runtime, RollbackRuntime)

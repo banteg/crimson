@@ -7,13 +7,17 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import (
+    BackToPrevious,
+    FrontRouteId,
     GameState,
     LockstepEndpoint,
     NetcodeMode,
     NetworkSessionConfig,
     NetworkSessionMode,
+    OpenLanLobby,
     PendingNetworkSession,
     RollbackEndpoint,
+    ScreenAction,
 )
 from ...net.relay_protocol import ROOM_CODE_LENGTH
 from ...net.room_code import parse_optional_room_code
@@ -42,7 +46,7 @@ class NetworkSessionPanelView(_PanelMenuScreenView):
             title="Network Session",
             panel_offset=Vec2(-63.0, MENU_PANEL_OFFSET_Y),
             panel_height=278.0,
-            back_action="back_to_previous",
+            back_action=BackToPrevious(),
         )
         self._uses_button_back_control = True
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -191,12 +195,12 @@ class NetworkSessionPanelView(_PanelMenuScreenView):
             port = 31993
         return max(1, min(65535, int(port)))
 
-    def _mode_start_action(self, mode: NetworkSessionMode) -> str:
+    def _mode_start_action(self, mode: NetworkSessionMode) -> ScreenAction:
         if mode == "rush":
-            return "start_rush_lan"
+            return OpenLanLobby(FrontRouteId.START_RUSH)
         if mode == "quests":
-            return "start_quest_lan"
-        return "start_survival_lan"
+            return OpenLanLobby(FrontRouteId.START_QUEST)
+        return OpenLanLobby(FrontRouteId.START_SURVIVAL)
 
     def _start_session(self) -> None:
         self._error = ""

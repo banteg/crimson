@@ -6,7 +6,14 @@ from typing import Any, cast
 
 import crimson.screens.panels.network_lobby as lan_lobby_module
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import NetworkSessionConfig, PendingNetworkSession, RollbackEndpoint
+from crimson.game.types import (
+    BackToPrevious,
+    FrontRouteId,
+    NetworkSessionConfig,
+    PendingNetworkSession,
+    RollbackEndpoint,
+    StartLanMatch,
+)
 from crimson.net.relay_protocol import RoomState
 from crimson.quests.level import QuestLevel
 from crimson.screens.panels.network_lobby import NetworkLobbyPanelView
@@ -67,7 +74,7 @@ def test_network_session_panel_writes_pending_network_session(make_game_state) -
     assert endpoint.room_code == "rb42"
 
 
-def test_loop_view_resolves_lan_action_using_pending_network_session(make_game_state) -> None:
+def test_loop_view_prepares_lan_lobby_using_pending_network_session(make_game_state) -> None:
     state = make_game_state()
     state.pending_network_session = PendingNetworkSession(
         role="host",
@@ -90,9 +97,8 @@ def test_loop_view_resolves_lan_action_using_pending_network_session(make_game_s
     )
     loop = GameLoopView(state)
 
-    action = loop._resolve_lan_action("start_rush_lan")
+    loop._prepare_lan_lobby(FrontRouteId.START_RUSH)
 
-    assert action == "open_lan_lobby"
     assert state.network_runtime is not None
     assert state.network_in_lobby is True
 
@@ -199,7 +205,11 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
     assert state.config.game_mode == 3
     assert state.pending_quest_level == QuestLevel(2, 4)
     assert panel._chrome_state.closing is True
-    assert panel._chrome_state.close_action == "start_quest"
+    assert panel._chrome_state.close_action == StartLanMatch(
+        route=FrontRouteId.START_QUEST,
+        player_count=4,
+        quest_level=QuestLevel(2, 4),
+    )
     assert state.screen_fade_ramp is True
 
 
@@ -216,8 +226,8 @@ def test_network_lobby_close_hook_runs_teardown_once(make_game_state, mocker) ->
     panel = NetworkLobbyPanelView(state)
     panel.open()
 
-    panel._begin_close_transition("back_to_previous")
-    panel._begin_close_transition("back_to_previous")
+    panel._begin_close_transition(BackToPrevious())
+    panel._begin_close_transition(BackToPrevious())
 
     runtime.close.assert_called_once_with()
     assert state.network_runtime is None
@@ -226,4 +236,4 @@ def test_network_lobby_close_hook_runs_teardown_once(make_game_state, mocker) ->
     assert state.network_expected_players == 1
     assert state.network_connected_players == 1
     assert panel._chrome_state.closing is True
-    assert panel._chrome_state.close_action == "back_to_previous"
+    assert panel._chrome_state.close_action == BackToPrevious()

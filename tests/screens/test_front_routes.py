@@ -1,19 +1,15 @@
 from __future__ import annotations
 
 from crimson.game.loop_view import GameLoopView
+from crimson.game.types import FrontRouteId
 
 
-def test_open_quests_from_play_game_route_restores_play_game_parent(make_game_state, mocker) -> None:
+def test_open_front_route_with_parent_restores_play_game_parent(make_game_state, mocker) -> None:
     state = make_game_state()
     loop = GameLoopView(state)
-    route = loop._front_route("open_quests_from_play_game")
-    quest_failed = loop._front_route("quest_failed")
-    open_play_game = loop._front_route("open_play_game")
-    open_quests = loop._front_route("open_quests")
-    assert route is not None
-    assert quest_failed is not None
-    assert open_play_game is not None
-    assert open_quests is not None
+    quest_failed = loop._front_route(FrontRouteId.QUEST_FAILED)
+    open_play_game = loop._front_route(FrontRouteId.OPEN_PLAY_GAME)
+    open_quests = loop._front_route(FrontRouteId.OPEN_QUESTS)
 
     current = quest_failed.view
     parent = open_play_game.view
@@ -25,14 +21,14 @@ def test_open_quests_from_play_game_route_restores_play_game_parent(make_game_st
     parent_open = mocker.patch.object(parent, "open")
     target_open = mocker.patch.object(target, "open")
 
-    handled = loop._transition_to_front_route(
-        "open_quests_from_play_game",
-        route,
+    loop._transition_to_front_route_with_parent(
+        FrontRouteId.OPEN_QUESTS,
+        parent=FrontRouteId.OPEN_PLAY_GAME,
+        clear_stack=True,
         current=current,
         gameplay=None,
     )
 
-    assert handled is True
     stacked.close.assert_called_once_with()
     current_close.assert_called_once_with()
     parent_open.assert_called_once_with()

@@ -5,7 +5,7 @@ from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from ...game.types import GameState
+from ...game.types import BackToMenu, FrontRouteId, GameState, OpenFrontRoute
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
@@ -45,7 +45,7 @@ class EndNoteView(_QuestChromeViewBase):
         super().__init__(
             state,
             open_sfx=NoOpenSfx(),
-            fade_actions=frozenset({"start_typo"}),
+            fade_actions=frozenset({OpenFrontRoute(FrontRouteId.START_TYPO)}),
             pause_background_close_alpha=CloseTimelineEntityAlpha(duration_ms=PANEL_TIMELINE_START_MS),
         )
         self._survival_button = UiButtonState("Survival", force_wide=True)
@@ -66,7 +66,7 @@ class EndNoteView(_QuestChromeViewBase):
         dt_ms = float(tick.dt_ms)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and tick.interactive:
-            self._begin_close_transition("back_to_menu")
+            self._begin_close_transition(BackToMenu())
             return
 
         if not tick.interactive:
@@ -100,7 +100,7 @@ class EndNoteView(_QuestChromeViewBase):
             click=click,
         ):
             self.state.config.game_mode = int(GameMode.SURVIVAL)
-            self._begin_close_transition("start_survival")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.START_SURVIVAL))
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -114,7 +114,7 @@ class EndNoteView(_QuestChromeViewBase):
             click=click,
         ):
             self.state.config.game_mode = int(GameMode.RUSH)
-            self._begin_close_transition("start_rush")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.START_RUSH))
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -128,7 +128,7 @@ class EndNoteView(_QuestChromeViewBase):
             click=click,
         ):
             self.state.config.game_mode = int(GameMode.TYPO)
-            self._begin_close_transition("start_typo")
+            self._begin_close_transition(OpenFrontRoute(FrontRouteId.START_TYPO))
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -143,7 +143,7 @@ class EndNoteView(_QuestChromeViewBase):
             mouse=mouse,
             click=click,
         ):
-            self._begin_close_transition("back_to_menu")
+            self._begin_close_transition(BackToMenu())
             return
 
     def draw(self) -> None:

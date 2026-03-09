@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import cast
 
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import GameState
+from crimson.game.types import FrontRouteId, GameState, OpenFrontRoute, ScreenAction
 from crimson.persistence import save_status
 from crimson.screens.chrome.runtime import ensure_menu_ground
 from grim.assets import RuntimeResources, TextureId
@@ -66,7 +66,7 @@ class _AdoptMenuGroundView:
     def draw(self) -> None:
         return None
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         return None
 
 
@@ -84,7 +84,7 @@ class _OverlayView:
     def draw(self) -> None:
         return None
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         return None
 
 
@@ -185,6 +185,6 @@ def test_start_survival_does_not_adopt_existing_menu_ground(tmp_path: Path) -> N
     adopter = _AdoptMenuGroundView()
     state.menu_ground = menu_ground
 
-    loop._maybe_adopt_menu_ground("start_survival", adopter)
+    loop._maybe_adopt_menu_ground(OpenFrontRoute(FrontRouteId.START_SURVIVAL), adopter)
 
     assert adopter.adopted is None

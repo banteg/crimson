@@ -13,6 +13,7 @@ from crimson.demo_trial import (
     tick_demo_trial_timers,
 )
 from crimson.game.loop_view import GameLoopView
+from crimson.game.types import ScreenAction
 from crimson.game_modes import GameMode
 from crimson.quests.level import QuestLevel
 
@@ -36,7 +37,7 @@ class _DummyGameplay:
     def draw(self) -> None:
         return None
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         return None
 
     def bind_status(self, status) -> None:

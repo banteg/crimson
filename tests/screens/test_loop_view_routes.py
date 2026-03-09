@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from typing import cast
 
 from crimson.game.loop_view import GameLoopView
+from crimson.game.types import BackToPrevious, FrontRouteId
 from grim.assets import RuntimeResources
 from grim.raylib_api import rl
 from tests.support.gameplay_screen import GameplayScreenStub
@@ -21,26 +22,23 @@ def _resources_stub() -> RuntimeResources:
 
 
 def _open_quests_from_play_game(loop: GameLoopView) -> tuple[object, object]:
-    current_route = loop._front_route("quest_failed")
-    route = loop._front_route("open_quests_from_play_game")
-    parent_route = loop._front_route("open_play_game")
-    assert current_route is not None
-    assert route is not None
-    assert parent_route is not None
+    current_route = loop._front_route(FrontRouteId.QUEST_FAILED)
+    route = loop._front_route(FrontRouteId.OPEN_QUESTS)
+    parent_route = loop._front_route(FrontRouteId.OPEN_PLAY_GAME)
     current = current_route.view
     current.open()
     loop._front_active = current
     loop._active = current
     loop._front_stack = [GameplayScreenStub()]
 
-    transitioned = loop._transition_to_front_route(
-        "open_quests_from_play_game",
-        route,
+    loop._transition_to_front_route_with_parent(
+        FrontRouteId.OPEN_QUESTS,
+        parent=FrontRouteId.OPEN_PLAY_GAME,
+        clear_stack=True,
         current=current,
         gameplay=None,
     )
 
-    assert transitioned is True
     assert loop._front_active is route.view
     assert loop._front_stack == [parent_route.view]
     return current, loop._front_stack[0]
@@ -66,7 +64,7 @@ def test_quest_list_back_returns_to_play_game_after_play_another(make_game_state
     assert quest_list is not None
 
     quest_update = mocker.patch.object(quest_list, "update", return_value=None)
-    mocker.patch.object(quest_list, "take_action", return_value="back_to_previous")
+    mocker.patch.object(quest_list, "take_action", return_value=BackToPrevious())
     resume_from_child = mocker.patch.object(parent, "resume_from_child")
 
     loop.update(0.0)

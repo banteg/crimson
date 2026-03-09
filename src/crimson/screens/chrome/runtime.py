@@ -11,7 +11,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
-from ...game.types import GameState
+from ...game.types import GameState, ScreenAction, is_screen_action
 from ...sim.bootstrap import run_unlock_terrain_prelude, terrain_stamping_draws
 from ...terrain_slots import terrain_slots_to_texture_ids
 from ...ui.cursor import draw_menu_cursor
@@ -135,9 +135,14 @@ def _require_optional_str(value: object, *, name: str) -> None:
         raise TypeError(f"{name} must be a str | None")
 
 
-def _require_str_tuple(value: object, *, name: str) -> None:
-    if type(value) is not tuple or any(not isinstance(item, str) for item in value):
-        raise TypeError(f"{name} must be a tuple[str, ...]")
+def _require_action_tuple(value: object, *, name: str) -> None:
+    if type(value) is not tuple or any(not is_screen_action(item) for item in value):
+        raise TypeError(f"{name} must be a tuple[ScreenAction, ...]")
+
+
+def _require_action_frozenset(value: object, *, name: str) -> None:
+    if type(value) is not frozenset or any(not is_screen_action(item) for item in value):
+        raise TypeError(f"{name} must be a frozenset[ScreenAction]")
 
 
 class OpaqueEntityAlpha(msgspec.Struct, frozen=True, tag="opaque"):
@@ -146,15 +151,15 @@ class OpaqueEntityAlpha(msgspec.Struct, frozen=True, tag="opaque"):
 
 class CloseTimelineEntityAlpha(msgspec.Struct, frozen=True, tag="close_timeline_fraction"):
     duration_ms: int = 300
-    action: str | None = None
+    action: ScreenAction | None = None
 
     def __post_init__(self) -> None:
         if type(self.duration_ms) is not int:
             raise TypeError("CloseTimelineEntityAlpha.duration_ms must be an int")
         if self.duration_ms <= 0:
             raise ValueError("CloseTimelineEntityAlpha.duration_ms must be positive")
-        if self.action is not None and not isinstance(self.action, str):
-            raise TypeError("CloseTimelineEntityAlpha.action must be a str | None")
+        if self.action is not None and not is_screen_action(self.action):
+            raise TypeError("CloseTimelineEntityAlpha.action must be a ScreenAction | None")
 
 
 EntityAlphaPolicy: TypeAlias = OpaqueEntityAlpha | CloseTimelineEntityAlpha
@@ -188,12 +193,12 @@ class MusicPolicy(msgspec.Struct, frozen=True):
 class SignPolicy(msgspec.Struct, frozen=True):
     animated: bool = False
     lock_on_fully_open: bool = False
-    unlock_on_actions: tuple[str, ...] = ()
+    unlock_on_actions: tuple[ScreenAction, ...] = ()
 
     def __post_init__(self) -> None:
         _require_bool(self.animated, name="SignPolicy.animated")
         _require_bool(self.lock_on_fully_open, name="SignPolicy.lock_on_fully_open")
-        _require_str_tuple(self.unlock_on_actions, name="SignPolicy.unlock_on_actions")
+        _require_action_tuple(self.unlock_on_actions, name="SignPolicy.unlock_on_actions")
 
 
 class PendingOnceDispatch(msgspec.Struct, frozen=True, tag="pending_once"):
@@ -238,7 +243,7 @@ class ChromeSpec(msgspec.Struct, frozen=True):
     timeline_max_ms: int = 300
     open_sfx: OpenSfxPolicy = PlayOpenSfxOnFullyOpen()
     close_sfx: str | None = "sfx_ui_buttonclick"
-    fade_to_game_actions: frozenset[str] = frozenset()
+    fade_to_game_actions: frozenset[ScreenAction] = frozenset()
 
     def __post_init__(self) -> None:
         if not isinstance(self.backdrop, BackdropPolicy):
@@ -256,10 +261,7 @@ class ChromeSpec(msgspec.Struct, frozen=True):
         if not isinstance(self.open_sfx, (NoOpenSfx, PlayOpenSfxOnOpen, PlayOpenSfxOnFullyOpen)):
             raise TypeError("ChromeSpec.open_sfx must be an OpenSfxPolicy")
         _require_optional_str(self.close_sfx, name="ChromeSpec.close_sfx")
-        if type(self.fade_to_game_actions) is not frozenset or any(
-            not isinstance(action, str) for action in self.fade_to_game_actions
-        ):
-            raise TypeError("ChromeSpec.fade_to_game_actions must be a frozenset[str]")
+        _require_action_frozenset(self.fade_to_game_actions, name="ChromeSpec.fade_to_game_actions")
 
 
 class ChromeState(msgspec.Struct):
@@ -269,9 +271,9 @@ class ChromeState(msgspec.Struct):
     timeline_max_ms: int = 0
     cursor_pulse_time: float = 0.0
     closing: bool = False
-    close_action: str | None = None
-    pending_action: str | None = None
-    action: str | None = None
+    close_action: ScreenAction | None = None
+    pending_action: ScreenAction | None = None
+    action: ScreenAction | None = None
     panel_open_sfx_played: bool = False
 
 
@@ -349,7 +351,7 @@ class ChromeRuntime:
         interactive = self.chrome.timeline_ms >= self.chrome.timeline_max_ms
         return ChromeTick(dt_ms=dt_ms, interactive=interactive)
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         self._assert_open()
         dispatch = self.spec.dispatch
         match dispatch:
@@ -366,14 +368,14 @@ class ChromeRuntime:
 
     def begin_close_transition(
         self,
-        action: str,
+        action: ScreenAction,
         *,
-        before_close: Callable[[str], None] | None = None,
+        before_close: Callable[[ScreenAction], None] | None = None,
     ) -> None:
         if self.chrome.closing:
             return
-        if not isinstance(action, str):
-            raise TypeError("ChromeRuntime.begin_close_transition action must be a str")
+        if not is_screen_action(action):
+            raise TypeError("ChromeRuntime.begin_close_transition action must be a ScreenAction")
         close_action = action
         self.chrome.closing = True
         self.chrome.close_action = close_action
@@ -470,9 +472,9 @@ class ChromeRuntime:
             return None
         return ensure_menu_ground(self.state)
 
-    def _dispatch_close_action(self, action: str) -> None:
-        if not isinstance(action, str):
-            raise TypeError("ChromeRuntime close action must be a str")
+    def _dispatch_close_action(self, action: ScreenAction) -> None:
+        if not is_screen_action(action):
+            raise TypeError("ChromeRuntime close action must be a ScreenAction")
         dispatch = self.spec.dispatch
         match dispatch:
             case DirectActionDispatch():

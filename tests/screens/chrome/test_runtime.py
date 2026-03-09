@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
-from typing import cast
+from typing import Any, cast
 
 import pytest
 
 import crimson.screens.chrome.runtime as chrome_runtime
+from crimson.game.types import BackToMenu, BackToPrevious, FrontRouteId, OpenFrontRoute
 from crimson.screens.chrome.runtime import (
     BackdropPolicy,
     ChromeRuntime,
@@ -36,9 +37,9 @@ def test_chrome_runtime_pending_once_drains_pending_action(make_game_state) -> N
         ),
     )
     runtime.open()
-    runtime._dispatch_close_action("open_credits")
+    runtime._dispatch_close_action(OpenFrontRoute(FrontRouteId.OPEN_CREDITS))
 
-    assert runtime.take_action() == "open_credits"
+    assert runtime.take_action() == OpenFrontRoute(FrontRouteId.OPEN_CREDITS)
     assert runtime.take_action() is None
 
 
@@ -54,9 +55,9 @@ def test_chrome_runtime_direct_action_drains_action_slot(make_game_state) -> Non
         ),
     )
     runtime.open()
-    runtime._dispatch_close_action("back_to_previous")
+    runtime._dispatch_close_action(BackToPrevious())
 
-    assert runtime.take_action() == "back_to_previous"
+    assert runtime.take_action() == BackToPrevious()
     assert runtime.take_action() is None
 
 
@@ -94,7 +95,7 @@ def test_chrome_runtime_draw_background_uses_close_fraction_for_pause_alpha(make
         state,
         spec=ChromeSpec(
             backdrop=BackdropPolicy(
-                entity_alpha=CloseTimelineEntityAlpha(duration_ms=500, action="back_to_menu"),
+                entity_alpha=CloseTimelineEntityAlpha(duration_ms=500, action=BackToMenu()),
             ),
             open_sfx=NoOpenSfx(),
             close_sfx=None,
@@ -102,7 +103,7 @@ def test_chrome_runtime_draw_background_uses_close_fraction_for_pause_alpha(make
     )
     runtime.open()
     runtime.chrome.closing = True
-    runtime.chrome.close_action = "back_to_menu"
+    runtime.chrome.close_action = BackToMenu()
     runtime.chrome.timeline_ms = 250
 
     mocker.patch.object(chrome_runtime.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
@@ -147,12 +148,12 @@ def test_chrome_runtime_begin_close_transition_runs_hook_once(make_game_state, m
     runtime.open()
     before_close = mocker.Mock()
 
-    runtime.begin_close_transition("open_credits", before_close=before_close)
-    runtime.begin_close_transition("open_options", before_close=before_close)
+    runtime.begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_CREDITS), before_close=before_close)
+    runtime.begin_close_transition(OpenFrontRoute(FrontRouteId.OPEN_OPTIONS), before_close=before_close)
 
-    before_close.assert_called_once_with("open_credits")
+    before_close.assert_called_once_with(OpenFrontRoute(FrontRouteId.OPEN_CREDITS))
     assert runtime.chrome.closing is True
-    assert runtime.chrome.close_action == "open_credits"
+    assert runtime.chrome.close_action == OpenFrontRoute(FrontRouteId.OPEN_CREDITS)
 
 
 def test_backdrop_policy_rejects_raw_entity_alpha() -> None:
@@ -189,7 +190,7 @@ def test_music_policy_rejects_non_bool_refresh_flag() -> None:
 
 def test_sign_policy_rejects_non_tuple_unlock_actions() -> None:
     with pytest.raises(TypeError, match="SignPolicy.unlock_on_actions"):
-        SignPolicy(unlock_on_actions=cast(tuple[str, ...], ("ok", 1)))
+        SignPolicy(unlock_on_actions=cast(Any, ("ok", 1)))
 
 
 def test_backdrop_policy_rejects_non_bool_pause_background_flag() -> None:
@@ -203,4 +204,4 @@ def test_chrome_spec_rejects_invalid_scalar_fields() -> None:
     with pytest.raises(TypeError, match="ChromeSpec.close_sfx"):
         ChromeSpec(close_sfx=cast(str | None, 123))
     with pytest.raises(TypeError, match="ChromeSpec.fade_to_game_actions"):
-        ChromeSpec(fade_to_game_actions=cast(frozenset[str], {"start_quest"}))
+        ChromeSpec(fade_to_game_actions=cast(Any, frozenset({"start_quest"})))
