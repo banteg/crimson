@@ -1,20 +1,19 @@
 from __future__ import annotations
 
 from grim.assets import TextureId
-from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.raylib_api import rl
-from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..chrome import draw_menu_cursor_frame, ensure_menu_ground, menu_ground_camera, menu_widescreen_y_shift
-from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
-from ..transitions import _draw_screen_fade
+from ..chrome.geometry import menu_widescreen_y_shift
+from ..chrome.runtime import CloseTimelineEntityAlpha, NoOpenSfx
+from ..panels.base import PANEL_TIMELINE_START_MS
+from .base import _QuestChromeViewBase
 from .shared import (
     END_NOTE_AFTER_BODY_Y_GAP,
     END_NOTE_BODY_X_OFFSET,
@@ -34,7 +33,7 @@ from .shared import (
 )
 
 
-class EndNoteView:
+class EndNoteView(_QuestChromeViewBase):
     """Final quest "Show End Note" flow.
 
     Classic:
@@ -43,58 +42,34 @@ class EndNoteView:
     """
 
     def __init__(self, state: GameState) -> None:
-        self.state = state
-        self._ground: GroundRenderer | None = None
-        self._action: str | None = None
-        self._cursor_pulse_time = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action: str | None = None
-
+        super().__init__(
+            state,
+            open_sfx=NoOpenSfx(),
+            fade_actions=frozenset({"start_typo"}),
+            pause_background_close_alpha=CloseTimelineEntityAlpha(duration_ms=PANEL_TIMELINE_START_MS),
+        )
         self._survival_button = UiButtonState("Survival", force_wide=True)
         self._rush_button = UiButtonState("  Rush  ", force_wide=True)
         self._typo_button = UiButtonState("Typ'o'Shooter", force_wide=True)
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
 
-    def open(self) -> None:
-        self._action = None
-        self._cursor_pulse_time = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action = None
-        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-
-    def close(self) -> None:
-        self._ground = None
-        self._closing = False
-        self._close_action = None
+    def _reset_view_state(self) -> None:
+        self._survival_button = UiButtonState("Survival", force_wide=True)
+        self._rush_button = UiButtonState("  Rush  ", force_wide=True)
+        self._typo_button = UiButtonState("Typ'o'Shooter", force_wide=True)
+        self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
 
     def update(self, dt: float) -> None:
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
-        dt_step = min(float(dt), 0.1)
-        self._cursor_pulse_time += dt_step * 1.1
-        dt_ms = int(dt_step * 1000.0)
-        if self._closing:
-            if dt_ms > 0 and self._action is None:
-                self._timeline_ms -= dt_ms
-                if self._timeline_ms < 0 and self._close_action is not None:
-                    self._action = self._close_action
-                    self._close_action = None
+        tick = self._tick_chrome(dt)
+        if self._chrome_state.closing:
             return
-        if dt_ms > 0:
-            self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
+        dt_ms = float(tick.dt_ms)
 
-        enabled = self._timeline_ms >= self._timeline_max_ms
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and tick.interactive:
             self._begin_close_transition("back_to_menu")
             return
 
-        if not enabled:
+        if not tick.interactive:
             return
 
         screen_w = float(rl.get_screen_width())
@@ -153,7 +128,7 @@ class EndNoteView:
             click=click,
         ):
             self.state.config.game_mode = int(GameMode.TYPO)
-            self._begin_close_transition("start_typo", fade_to_black=True)
+            self._begin_close_transition("start_typo")
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -172,14 +147,7 @@ class EndNoteView:
             return
 
     def draw(self) -> None:
-        rl.clear_background(rl.BLACK)
-        pause_background = self.state.pause_background
-        if pause_background is not None:
-            pause_background.draw_pause_background(entity_alpha=self._world_entity_alpha())
-        elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
-        _draw_screen_fade(self.state)
-
+        self._draw_chrome(draw_cursor=True)
         resources = require_runtime_resources(self.state)
 
         screen_w = float(rl.get_screen_width())
@@ -260,37 +228,6 @@ class EndNoteView:
             resources, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
         )
         button_draw(resources, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
-
-        draw_menu_cursor_frame(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
-
-    def take_action(self) -> str | None:
-        action = self._action
-        self._action = None
-        return action
-
-    def _world_entity_alpha(self) -> float:
-        if not self._closing:
-            return 1.0
-        span = PANEL_TIMELINE_START_MS - PANEL_TIMELINE_END_MS
-        if span <= 0:
-            return 0.0
-        alpha = (float(self._timeline_ms) - PANEL_TIMELINE_END_MS) / float(span)
-        if alpha < 0.0:
-            return 0.0
-        if alpha > 1.0:
-            return 1.0
-        return alpha
-
-    def _begin_close_transition(self, action: str, *, fade_to_black: bool = False) -> None:
-        if self._closing:
-            return
-        if fade_to_black:
-            self.state.screen_fade_alpha = 0.0
-            self.state.screen_fade_ramp = True
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-        self._closing = True
-        self._close_action = action
 
 
 __all__ = ["EndNoteView"]

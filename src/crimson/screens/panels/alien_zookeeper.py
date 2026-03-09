@@ -14,8 +14,9 @@ from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..chrome import MENU_PANEL_WIDTH, ActionDispatchPolicy, BackdropPolicy, ChromeSpec, SignPolicy
-from .base import _ChromePanelView
+from ..chrome.geometry import MENU_PANEL_WIDTH
+from ..chrome.runtime import BackdropPolicy, ChromeSpec, NoOpenSfx, PendingOnceDispatch, SignPolicy
+from ..chrome.view import ChromeScreenView
 
 _BOARD_SIDE = 6
 _BOARD_CELLS = _BOARD_SIDE * _BOARD_SIDE
@@ -102,15 +103,15 @@ def _credits_secret_match3_find(board: list[int]) -> tuple[bool, int, int]:
     return False, 0, 0
 
 
-class AlienZooKeeperView(_ChromePanelView):
+class AlienZooKeeperView(ChromeScreenView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
             state,
             chrome_spec=ChromeSpec(
                 backdrop=BackdropPolicy(),
                 sign=SignPolicy(),
-                dispatch=ActionDispatchPolicy(mode="pending_rearm"),
-                open_sfx=None,
+                dispatch=PendingOnceDispatch(),
+                open_sfx=NoOpenSfx(),
                 close_sfx="sfx_ui_buttonclick",
             ),
         )
@@ -236,8 +237,8 @@ class AlienZooKeeperView(_ChromePanelView):
 
     def update(self, dt: float) -> None:
         self._assert_open()
-        tick = self._chrome.update(dt)
-        if self._chrome.chrome.closing:
+        tick = self._update_chrome(dt)
+        if self._chrome_state.closing:
             return
 
         if tick.dt_ms > 0:
@@ -254,7 +255,7 @@ class AlienZooKeeperView(_ChromePanelView):
         self._fill_empty_cells()
 
         if tick.interactive and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._begin_close_transition("open_statistics")
+            self._begin_close_transition("back_to_previous")
             return
         if not tick.interactive:
             return
@@ -292,12 +293,12 @@ class AlienZooKeeperView(_ChromePanelView):
             mouse=mouse,
             click=bool(click),
         ):
-            self._begin_close_transition("open_statistics")
+            self._begin_close_transition("back_to_previous")
 
     def draw(self) -> None:
         self._assert_open()
         self._draw_background()
-        self._chrome.draw_fade()
+        self._draw_fade()
 
         resources = require_runtime_resources(self.state)
         font = resources.small_font

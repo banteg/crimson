@@ -5,10 +5,9 @@ from ..quests import all_quests
 from ..quests.level import QuestLevel
 from ..sim.state_types import GameplayState
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
-from ..weapons import WeaponId
+from ..weapons import WEAPON_COUNT_SIZE, WeaponId
 
 WEAPON_DROP_ID_COUNT = 0x21  # weapon ids 1..33
-WEAPON_AVAILABLE_COUNT = WEAPON_DROP_ID_COUNT + 1
 
 
 def weapon_available_mask(*, status, game_mode: GameMode, demo_mode_active: bool) -> list[bool]:
@@ -18,7 +17,7 @@ def weapon_available_mask(*, status, game_mode: GameMode, demo_mode_active: bool
         unlock_index = int(status.quest_unlock_index)
         unlock_index_full = int(status.quest_unlock_index_full)
 
-    available = [False] * int(WEAPON_AVAILABLE_COUNT)
+    available = [False] * int(WEAPON_COUNT_SIZE)
 
     pistol_id = WeaponId.PISTOL
     if 0 <= pistol_id < len(available):
@@ -85,9 +84,7 @@ def weapon_refresh_available(state: GameplayState) -> None:
         game_mode=game_mode,
         demo_mode_active=bool(state.demo_mode_active),
     )
-    target = state.weapon_available
-    for idx, value in enumerate(available):
-        target[idx] = bool(value)
+    state.weapon_available[:] = available
 
     state._weapon_available_game_mode = int(game_mode)
     state._weapon_available_unlock_index = unlock_index

@@ -62,6 +62,16 @@ def test_weapon_refresh_available_unlocks_quest_weapon_ids() -> None:
     assert not state.weapon_available[WeaponId.SHOTGUN]
 
 
+def test_weapon_refresh_available_clears_higher_slots() -> None:
+    state = GameplayState()
+    state.game_mode = GameMode.QUESTS
+    state.weapon_available[WeaponId.NUKE_LAUNCHER] = True
+
+    weapon_refresh_available(state)
+
+    assert state.weapon_available[WeaponId.NUKE_LAUNCHER] is False
+
+
 def test_weapon_pick_random_available_enforces_unlocked() -> None:
     status = _status_default()
     status.quest_unlock_index = 0

@@ -63,7 +63,7 @@ from .weapon_runtime import (
 from .weapon_runtime import (
     weapon_entry as _weapon_entry,
 )
-from .weapons import WEAPON_TABLE, WeaponId
+from .weapons import WEAPON_COUNT_SIZE, WeaponId
 
 if TYPE_CHECKING:
     from .creatures.runtime import CreatureState
@@ -71,9 +71,6 @@ if TYPE_CHECKING:
     from .persistence.save_status import GameStatus
     from .sim.input import PlayerInput
     from .sim.state_types import PlayerState
-
-
-WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
 
 class BonusTimers(msgspec.Struct):

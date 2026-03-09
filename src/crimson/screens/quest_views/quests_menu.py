@@ -1,45 +1,26 @@
 from __future__ import annotations
 
-import math
-
 from crimson.quests.level import QuestLevel
 from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
 from grim.assets import TextureId
-from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
-from grim.terrain_render import GroundRenderer
 
 from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
-from ...ui.shadow import UI_SHADOW_OFFSET
 from ..assets import require_runtime_resources
-from ..chrome import (
+from ..chrome.geometry import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
-    MENU_SCALE_SMALL_THRESHOLD,
-    MENU_SIGN_HEIGHT,
-    MENU_SIGN_OFFSET_X,
-    MENU_SIGN_OFFSET_Y,
-    MENU_SIGN_POS_X_PAD,
-    MENU_SIGN_POS_Y,
-    MENU_SIGN_POS_Y_SMALL,
-    MENU_SIGN_WIDTH,
-    draw_menu_cursor_frame,
-    draw_ui_quad,
-    draw_ui_quad_shadow,
-    ensure_menu_ground,
-    menu_ground_camera,
-    menu_widescreen_y_shift,
-    sign_layout_scale,
     ui_element_anim,
 )
+from ..chrome.runtime import PlayOpenSfxOnFullyOpen
 from ..panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
-from ..transitions import _draw_screen_fade
+from .base import _QuestChromeViewBase
 from .shared import (
     QUEST_BACK_BUTTON_X_OFFSET,
     QUEST_BACK_BUTTON_Y_OFFSET,
@@ -71,7 +52,7 @@ from .shared import (
 )
 
 
-class QuestsMenuView:
+class QuestsMenuView(_QuestChromeViewBase):
     """Quest selection menu.
 
     Layout and gating are based on `sub_447d40` (crimsonland.exe).
@@ -81,39 +62,23 @@ class QuestsMenuView:
     """
 
     def __init__(self, state: GameState) -> None:
-        self.state = state
-        self._is_open = False
-        self._ground: GroundRenderer | None = None
+        super().__init__(
+            state,
+            allow_pause_background=False,
+            show_sign=True,
+            lock_sign_on_open=True,
+            open_sfx=PlayOpenSfxOnFullyOpen(),
+            fade_actions=FADE_TO_GAME_ACTIONS,
+        )
         self._back_button = UiButtonState("Back")
 
-        self._menu_screen_width = 0
-        self._widescreen_y_shift = 0.0
-
         self._stage = 1
-        self._action: str | None = None
         self._dirty = False
-        self._cursor_pulse_time = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action: str | None = None
-        self._panel_open_sfx_played = False
 
     def open(self) -> None:
-        layout_w = float(self.state.config.screen_width)
-        self._menu_screen_width = int(layout_w)
-        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
-        # Sign and ground match the main menu/panels.
-        self._init_ground()
-        self._action = None
+        super().open()
         self._dirty = False
         self._stage = max(1, min(5, int(self._stage)))
-        self._cursor_pulse_time = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action = None
-        self._panel_open_sfx_played = False
         self._back_button = UiButtonState("Back")
 
         # Ensure the quest registry is populated so titles render.
@@ -121,42 +86,21 @@ class QuestsMenuView:
         from ... import quests as _quests
 
         _ = _quests
-        self._is_open = True
 
     def close(self) -> None:
-        self._is_open = False
+        super().close()
         if self._dirty:
             try:
                 self.state.config.save()
             except (OSError, ValueError) as exc:
                 self.state.console.log.log(f"failed to save quest menu config: {exc}")
             self._dirty = False
-        self._ground = None
 
     def update(self, dt: float) -> None:
         self._assert_open()
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
-        dt_ms = int(min(float(dt), 0.1) * 1000.0)
-
-        if self._closing:
-            if dt_ms > 0 and self._action is None:
-                self._timeline_ms -= dt_ms
-                if self._timeline_ms < 0 and self._close_action is not None:
-                    self._action = self._close_action
-                    self._close_action = None
+        tick = self._tick_chrome(dt)
+        if self._chrome_state.closing:
             return
-
-        if dt_ms > 0:
-            self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
-            if self._timeline_ms >= self._timeline_max_ms:
-                self.state.menu_sign_locked = True
-                if (not self._panel_open_sfx_played) and (self.state.audio is not None):
-                    play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
-                    self._panel_open_sfx_played = True
 
         config = self.state.config
         status = self.state.status
@@ -175,13 +119,11 @@ class QuestsMenuView:
                 status.quest_unlock_index_full = unlock
             self.state.console.log.log("debug: unlocked all quests")
 
-        enabled = self._timeline_ms >= self._timeline_max_ms
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            self._begin_close_transition("open_play_game")
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and tick.interactive:
+            self._begin_close_transition("back_to_previous")
             return
 
-        if not enabled:
+        if not tick.interactive:
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
@@ -217,7 +159,7 @@ class QuestsMenuView:
             mouse=mouse,
             click=bool(click),
         ):
-            self._begin_close_transition("open_play_game")
+            self._begin_close_transition("back_to_previous")
             return
 
         # Quick-select row numbers 1..0 (10).
@@ -237,35 +179,14 @@ class QuestsMenuView:
 
     def draw(self) -> None:
         self._assert_open()
-        rl.clear_background(rl.BLACK)
-        if self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
-        _draw_screen_fade(self.state)
-
+        self._draw_chrome(draw_cursor=True)
         self._draw_panel()
-        self._draw_sign()
         self._draw_contents()
-        draw_menu_cursor_frame(
-            self.state,
-            resources=require_runtime_resources(self.state),
-            pulse_time=self._cursor_pulse_time,
-        )
-
-    def take_action(self) -> str | None:
-        self._assert_open()
-        action = self._action
-        self._action = None
-        return action
-
-    def _assert_open(self) -> None:
-        assert self._is_open, "QuestsMenuView must be opened before use"
-
-    def _init_ground(self) -> None:
-        self._ground = ensure_menu_ground(self.state)
 
     def _layout(self) -> _QuestMenuLayout:
+        chrome = self._chrome_state
         _angle_rad, slide_x = ui_element_anim(
-            self._timeline_ms,
+            chrome.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -275,7 +196,7 @@ class QuestsMenuView:
         #   x_sum = <ui_element_x> + <ui_element_offset_x>  (x=-5)
         #   y_sum = <ui_element_y> + <ui_element_offset_y>  (y=185 + widescreen shift via ui_menu_layout_init)
         x_sum = QUEST_MENU_BASE_X + slide_x + QUEST_MENU_PANEL_OFFSET_X
-        y_sum = QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + self._widescreen_y_shift
+        y_sum = QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + chrome.widescreen_y_shift
 
         title_pos = Vec2(x_sum + QUEST_TITLE_X_OFFSET, y_sum + QUEST_TITLE_Y_OFFSET)
         icons_start_pos = title_pos + Vec2(QUEST_STAGE_ICON_X_OFFSET, QUEST_STAGE_ICON_Y_OFFSET)
@@ -583,50 +504,10 @@ class QuestsMenuView:
             scale=1.0,
         )
 
-    def _draw_sign(self) -> None:
-        screen_w = float(self.state.config.screen_width)
-        scale, shift_x = sign_layout_scale(int(screen_w))
-        sign_pos = Vec2(
-            screen_w + MENU_SIGN_POS_X_PAD,
-            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
-        )
-        sign_w = MENU_SIGN_WIDTH * scale
-        sign_h = MENU_SIGN_HEIGHT * scale
-        offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
-        offset_y = MENU_SIGN_OFFSET_Y * scale
-        rotation_deg = 0.0
-        if not self.state.menu_sign_locked:
-            angle_rad, slide_x = ui_element_anim(
-                self._timeline_ms,
-                index=0,
-                start_ms=300,
-                end_ms=0,
-                width=sign_w,
-            )
-            _ = slide_x
-            rotation_deg = math.degrees(angle_rad)
-        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
-        if fx_detail:
-            draw_ui_quad_shadow(
-                texture=sign,
-                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
-                origin=rl.Vector2(-offset_x, -offset_y),
-                rotation_deg=rotation_deg,
-            )
-        draw_ui_quad(
-            texture=sign,
-            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
-            origin=rl.Vector2(-offset_x, -offset_y),
-            rotation_deg=rotation_deg,
-            tint=rl.WHITE,
-        )
-
     def _draw_panel(self) -> None:
+        chrome = self._chrome_state
         _angle_rad, slide_x = ui_element_anim(
-            self._timeline_ms,
+            chrome.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -637,23 +518,12 @@ class QuestsMenuView:
             require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
             dst=rl.Rectangle(
                 float(QUEST_MENU_BASE_X + slide_x + QUEST_MENU_PANEL_OFFSET_X),
-                float(QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + self._widescreen_y_shift),
+                float(QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + chrome.widescreen_y_shift),
                 float(MENU_PANEL_WIDTH),
                 float(QUEST_PANEL_HEIGHT),
             ),
             shadow=fx_detail,
         )
-
-    def _begin_close_transition(self, action: str) -> None:
-        if self._closing:
-            return
-        if action in FADE_TO_GAME_ACTIONS:
-            self.state.screen_fade_alpha = 0.0
-            self.state.screen_fade_ramp = True
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-        self._closing = True
-        self._close_action = action
 
 
 __all__ = ["QuestsMenuView"]

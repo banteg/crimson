@@ -10,19 +10,20 @@ from grim.raylib_api import rl
 from ...game.types import GameState, HighScoresRequest
 from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
-from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_update, button_width
 from ..assets import require_runtime_resources
-from ..chrome import (
-    ActionDispatchPolicy,
+from ..chrome.geometry import split_panel_frame
+from ..chrome.runtime import (
     BackdropPolicy,
     ChromeSpec,
+    CloseTimelineEntityAlpha,
+    DirectActionDispatch,
+    PlayOpenSfxOnOpen,
     SignPolicy,
-    dropdown_update,
-    list_window,
-    split_panel_frame,
 )
+from ..chrome.view import ChromeScreenView
+from ..chrome.widgets import dropdown_layout, dropdown_update, list_window
 from ..high_scores_layout import (
     HS_BACK_BUTTON_X,
     HS_BACK_BUTTON_Y,
@@ -57,7 +58,6 @@ from ..panels.base import (
     FADE_TO_GAME_ACTIONS,
     PANEL_TIMELINE_END_MS,
     PANEL_TIMELINE_START_MS,
-    _ChromePanelView,
     save_dirty_config,
 )
 from .main_panel import draw_main_panel
@@ -65,23 +65,19 @@ from .records import load_records, resolve_request
 from .right_panel import draw_right_panel
 
 
-class _ScoresDropdownLayout(DropdownLayoutBase, frozen=True):
-    pass
-
-
-class HighScoresView(_ChromePanelView):
+class HighScoresView(ChromeScreenView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
             state,
             chrome_spec=ChromeSpec(
                 backdrop=BackdropPolicy(
-                    entity_alpha_mode="close_timeline_fraction",
-                    entity_alpha_duration_ms=PANEL_TIMELINE_START_MS - PANEL_TIMELINE_END_MS,
+                    entity_alpha=CloseTimelineEntityAlpha(
+                        duration_ms=PANEL_TIMELINE_START_MS - PANEL_TIMELINE_END_MS,
+                    ),
                 ),
                 sign=SignPolicy(),
-                dispatch=ActionDispatchPolicy(mode="direct_action"),
-                open_sfx="sfx_ui_panelclick",
-                open_sfx_mode="on_open",
+                dispatch=DirectActionDispatch(),
+                open_sfx=PlayOpenSfxOnOpen(),
                 close_sfx="sfx_ui_buttonclick",
                 fade_to_game_actions=FADE_TO_GAME_ACTIONS,
             ),
@@ -129,7 +125,7 @@ class HighScoresView(_ChromePanelView):
 
     def _split_frame(self):
         screen_width = float(self.state.config.screen_width)
-        chrome = self._chrome.chrome
+        chrome = self._chrome_state
         return split_panel_frame(
             chrome.timeline_ms,
             left_panel_pos=Vec2(hs_left_panel_pos_x(screen_width), HS_LEFT_PANEL_POS_Y),
@@ -143,8 +139,8 @@ class HighScoresView(_ChromePanelView):
 
     def update(self, dt: float) -> None:
         self._assert_open()
-        tick = self._chrome.update(dt)
-        if self._chrome.chrome.closing:
+        tick = self._update_chrome(dt)
+        if self._chrome_state.closing:
             return
 
         frame = self._split_frame()
@@ -234,18 +230,8 @@ class HighScoresView(_ChromePanelView):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
                 self._scroll_index = max_scroll
 
-    def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int, scale: float) -> _ScoresDropdownLayout:
-        header_h = 16.0 * scale
-        row_h = 16.0 * scale
-        full_h = (float(item_count) * 16.0 + 24.0) * scale
-        return _ScoresDropdownLayout(
-            pos=pos,
-            width=float(width),
-            header_h=header_h,
-            row_h=row_h,
-            rows_y0=pos.y + 17.0 * scale,
-            full_h=full_h,
-        )
+    def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int, scale: float):
+        return dropdown_layout(pos=pos, width=width, item_count=item_count, scale=scale)
 
     def _reload_records(self) -> None:
         request = self._request
@@ -479,7 +465,7 @@ class HighScoresView(_ChromePanelView):
     def draw(self) -> None:
         self._assert_open()
         self._draw_background()
-        self._chrome.draw_fade()
+        self._draw_fade()
 
         resources = require_runtime_resources(self.state)
         font = resources.small_font
@@ -534,9 +520,6 @@ class HighScoresView(_ChromePanelView):
         self._draw_sign()
         self._draw_cursor()
 
-    def _draw_sign(self, *, animated: bool = False) -> None:
-        self._chrome.draw_sign(resources=require_runtime_resources(self.state), animated=animated)
-
     def _visible_rows(self, font) -> int:
         row_step = float(font.cell_size)
         table_top = 188.0 + row_step
@@ -547,5 +530,4 @@ class HighScoresView(_ChromePanelView):
 
 __all__ = [
     "HighScoresView",
-    "_ScoresDropdownLayout",
 ]

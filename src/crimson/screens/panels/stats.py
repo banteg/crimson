@@ -12,18 +12,16 @@ from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..chrome import (
-    MENU_LABEL_ROW_HEIGHT,
-    MENU_LABEL_ROW_STATISTICS,
-    ActionDispatchPolicy,
+from ..chrome.geometry import MENU_LABEL_ROW_HEIGHT, MENU_LABEL_ROW_STATISTICS
+from ..chrome.runtime import (
     BackdropPolicy,
     ChromeSpec,
     MusicPolicy,
+    PendingOnceDispatch,
+    PlayOpenSfxOnOpen,
     SignPolicy,
 )
-from .base import (
-    _ChromePanelView,
-)
+from ..chrome.view import ChromeScreenView
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_4:played for # hours # minutes, timeline=300).
 STATISTICS_PANEL_POS_X = -89.0
@@ -73,7 +71,7 @@ def _format_playtime_text(game_sequence_ms: int, *, preserve_bugs: bool = False)
     return f"played for {hours} {hour_label} {minutes} {minute_label}"
 
 
-class StatisticsMenuView(_ChromePanelView):
+class StatisticsMenuView(ChromeScreenView):
     """
     Classic "Statistics" menu (state_id=4).
 
@@ -94,9 +92,8 @@ class StatisticsMenuView(_ChromePanelView):
                     stop_if_track_mismatch=True,
                 ),
                 sign=SignPolicy(),
-                dispatch=ActionDispatchPolicy(mode="pending_rearm"),
-                open_sfx="sfx_ui_panelclick",
-                open_sfx_mode="on_open",
+                dispatch=PendingOnceDispatch(),
+                open_sfx=PlayOpenSfxOnOpen(),
                 close_sfx="sfx_ui_buttonclick",
             ),
         )
@@ -106,9 +103,9 @@ class StatisticsMenuView(_ChromePanelView):
         self._btn_credits = UiButtonState("Credits", force_wide=True)
         self._btn_back = UiButtonState("Back", force_wide=False)
 
-    def reopen_from_child(self) -> None:
+    def resume_from_child(self) -> None:
         self._reset_view_state()
-        self._rearm_view(play_open_sfx=True)
+        self._restart_open_timeline(play_open_sfx=True)
 
     def _reset_view_state(self) -> None:
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
@@ -124,12 +121,12 @@ class StatisticsMenuView(_ChromePanelView):
 
     def update(self, dt: float) -> None:
         self._assert_open()
-        tick = self._chrome.update(dt)
+        tick = self._update_chrome(dt)
         self.state.stats_menu_easter_egg_roll = _stats_menu_easter_roll(
             self.state.stats_menu_easter_egg_roll,
             rng=self.state.rng,
         )
-        if self._chrome.chrome.closing:
+        if self._chrome_state.closing:
             return
 
         if not tick.interactive:
@@ -201,7 +198,7 @@ class StatisticsMenuView(_ChromePanelView):
     def draw(self) -> None:
         self._assert_open()
         self._draw_background()
-        self._chrome.draw_fade()
+        self._draw_fade()
         resources = require_runtime_resources(self.state)
         frame = self._panel_frame(
             panel_pos=Vec2(STATISTICS_PANEL_POS_X, STATISTICS_PANEL_POS_Y),

@@ -49,6 +49,7 @@ def _runtime_resources_stub(*, tex: rl.Texture | None = None) -> RuntimeResource
         ),
     )
 
+
 def test_game_over_panel_open_plays_panel_click(tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=ensure_crimson_cfg(tmp_path))
     ui.phase = 1
@@ -165,8 +166,8 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
 
     view = HighScoresView(state)
     view.open()
-    view._chrome.chrome.closing = True
-    view._chrome.chrome.timeline_ms = PANEL_TIMELINE_START_MS // 2
+    view._chrome_state.closing = True
+    view._chrome_state.timeline_ms = PANEL_TIMELINE_START_MS // 2
     view.draw()
 
     draw_pause_background_mock.assert_called()
@@ -206,7 +207,7 @@ def test_high_scores_view_draw_keeps_pause_background_opaque_while_opening(tmp_p
 
     view = HighScoresView(state)
     view.open()
-    view._chrome.chrome.timeline_ms = PANEL_TIMELINE_START_MS // 2
+    view._chrome_state.timeline_ms = PANEL_TIMELINE_START_MS // 2
     view.draw()
 
     draw_pause_background_mock.assert_called()

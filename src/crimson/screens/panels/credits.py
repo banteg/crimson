@@ -13,8 +13,8 @@ from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..chrome import ActionDispatchPolicy, BackdropPolicy, ChromeSpec, SignPolicy
-from .base import _ChromePanelView
+from ..chrome.runtime import BackdropPolicy, ChromeSpec, PendingOnceDispatch, PlayOpenSfxOnOpen, SignPolicy
+from ..chrome.view import ChromeScreenView
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_17:credits, timeline=300).
 CREDITS_PANEL_POS_X = -119.0
@@ -200,16 +200,15 @@ def _credits_unlock_secret_lines(lines: list[_CreditsLine], base_index: int) -> 
         line.text = text
 
 
-class CreditsView(_ChromePanelView):
+class CreditsView(ChromeScreenView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
             state,
             chrome_spec=ChromeSpec(
                 backdrop=BackdropPolicy(),
                 sign=SignPolicy(),
-                dispatch=ActionDispatchPolicy(mode="pending_rearm"),
-                open_sfx="sfx_ui_panelclick",
-                open_sfx_mode="on_open",
+                dispatch=PendingOnceDispatch(),
+                open_sfx=PlayOpenSfxOnOpen(),
                 close_sfx="sfx_ui_buttonclick",
             ),
         )
@@ -347,8 +346,8 @@ class CreditsView(_ChromePanelView):
 
     def update(self, dt: float) -> None:
         self._assert_open()
-        tick = self._chrome.update(dt)
-        if self._chrome.chrome.closing:
+        tick = self._update_chrome(dt)
+        if self._chrome_state.closing:
             return
 
         dt_clamped = min(float(dt), 0.1)
@@ -411,7 +410,7 @@ class CreditsView(_ChromePanelView):
     def draw(self) -> None:
         self._assert_open()
         self._draw_background()
-        self._chrome.draw_fade()
+        self._draw_fade()
         resources = require_runtime_resources(self.state)
         frame = self._panel_frame(
             panel_pos=Vec2(CREDITS_PANEL_POS_X, CREDITS_PANEL_POS_Y),

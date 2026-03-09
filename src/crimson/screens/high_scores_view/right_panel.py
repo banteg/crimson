@@ -8,6 +8,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game_modes import GameMode
+from ..chrome.widgets import dropdown_draw
 from ..high_scores_layout import (
     HS_LOCAL_CLOCK_X,
     HS_LOCAL_CLOCK_Y,
@@ -36,10 +37,6 @@ from ..high_scores_layout import (
     HS_LOCAL_WICON_Y,
     HS_RIGHT_CHECK_X,
     HS_RIGHT_CHECK_Y,
-    HS_RIGHT_GAME_MODE_DROP_X,
-    HS_RIGHT_GAME_MODE_DROP_Y,
-    HS_RIGHT_GAME_MODE_VALUE_X,
-    HS_RIGHT_GAME_MODE_VALUE_Y,
     HS_RIGHT_GAME_MODE_WIDGET_W,
     HS_RIGHT_GAME_MODE_WIDGET_X,
     HS_RIGHT_GAME_MODE_WIDGET_Y,
@@ -47,17 +44,9 @@ from ..high_scores_layout import (
     HS_RIGHT_GAME_MODE_Y,
     HS_RIGHT_NUMBER_PLAYERS_X,
     HS_RIGHT_NUMBER_PLAYERS_Y,
-    HS_RIGHT_PLAYER_COUNT_DROP_X,
-    HS_RIGHT_PLAYER_COUNT_DROP_Y,
-    HS_RIGHT_PLAYER_COUNT_VALUE_X,
-    HS_RIGHT_PLAYER_COUNT_VALUE_Y,
     HS_RIGHT_PLAYER_COUNT_WIDGET_W,
     HS_RIGHT_PLAYER_COUNT_WIDGET_X,
     HS_RIGHT_PLAYER_COUNT_WIDGET_Y,
-    HS_RIGHT_SCORE_LIST_DROP_X,
-    HS_RIGHT_SCORE_LIST_DROP_Y,
-    HS_RIGHT_SCORE_LIST_VALUE_X,
-    HS_RIGHT_SCORE_LIST_VALUE_Y,
     HS_RIGHT_SCORE_LIST_WIDGET_W,
     HS_RIGHT_SCORE_LIST_WIDGET_X,
     HS_RIGHT_SCORE_LIST_WIDGET_Y,
@@ -65,10 +54,6 @@ from ..high_scores_layout import (
     HS_RIGHT_SCORE_LIST_Y,
     HS_RIGHT_SHOW_INTERNET_X,
     HS_RIGHT_SHOW_INTERNET_Y,
-    HS_RIGHT_SHOW_SCORES_DROP_X,
-    HS_RIGHT_SHOW_SCORES_DROP_Y,
-    HS_RIGHT_SHOW_SCORES_VALUE_X,
-    HS_RIGHT_SHOW_SCORES_VALUE_Y,
     HS_RIGHT_SHOW_SCORES_WIDGET_W,
     HS_RIGHT_SHOW_SCORES_WIDGET_X,
     HS_RIGHT_SHOW_SCORES_WIDGET_Y,
@@ -77,7 +62,6 @@ from ..high_scores_layout import (
     hs_right_local_card_x_shift,
     hs_right_options_x_shift,
 )
-from ..panels.hit_test import mouse_inside_rect_with_padding
 from .shared import format_elapsed_mm_ss, format_score_date, ordinal
 
 if TYPE_CHECKING:
@@ -95,96 +79,6 @@ def _saved_score_names(view: "HighScoresView") -> list[str]:
             label = "default" if i == 0 else f"slot_{i}"
         names.append(label)
     return names
-
-
-def _draw_dropdown(
-    *,
-    resources: RuntimeResources,
-    font: SmallFontData,
-    widget_pos: Vec2,
-    widget_w: float,
-    items: list[str] | tuple[str, ...],
-    selected_index: int,
-    value_pos: Vec2,
-    arrow_pos: Vec2,
-    is_open: bool,
-    enabled: bool,
-    scale: float,
-) -> None:
-    item_count = max(0, len(items))
-    header_h = 16.0 * scale
-    row_h = 16.0 * scale
-    full_h = (float(item_count) * 16.0 + 24.0) * scale
-    rows_y0 = widget_pos.y + 17.0 * scale
-
-    mouse = rl.get_mouse_position()
-    hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
-        mouse,
-        pos=widget_pos,
-        width=widget_w,
-        height=14.0 * scale,
-    )
-
-    widget_h = full_h if is_open else header_h
-    rl.draw_rectangle(int(widget_pos.x), int(widget_pos.y), int(widget_w), int(widget_h), rl.WHITE)
-    rl.draw_rectangle(
-        int(widget_pos.x) + 1,
-        int(widget_pos.y) + 1,
-        max(0, int(widget_w) - 2),
-        max(0, int(widget_h) - 2),
-        rl.BLACK,
-    )
-
-    if (is_open or hovered_header) and enabled:
-        line_h = max(1, int(1.0 * scale))
-        rl.draw_rectangle(
-            int(widget_pos.x),
-            int(widget_pos.y + 15.0 * scale),
-            int(widget_w),
-            line_h,
-            rl.Color(255, 255, 255, 128),
-        )
-
-    arrow_tex = (
-        resources.texture(TextureId.UI_DROP_ON)
-        if ((is_open or hovered_header) and enabled)
-        else resources.texture(TextureId.UI_DROP_OFF)
-    )
-    arrow_w = float(arrow_tex.width) * scale
-    arrow_h = float(arrow_tex.height) * scale
-    rl.draw_texture_pro(
-        arrow_tex,
-        rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
-        rl.Rectangle(arrow_pos.x, arrow_pos.y, arrow_w, arrow_h),
-        rl.Vector2(0.0, 0.0),
-        0.0,
-        rl.WHITE,
-    )
-
-    if item_count <= 0:
-        return
-
-    selected_index = max(0, min(item_count - 1, int(selected_index)))
-    header_alpha = 242 if ((is_open or hovered_header) and enabled) else 191
-    draw_small_text(font, str(items[selected_index]), value_pos, rl.Color(255, 255, 255, header_alpha))
-
-    if not is_open:
-        return
-
-    for idx, label in enumerate(items):
-        item_y = rows_y0 + row_h * float(idx)
-        hovered = bool(enabled) and mouse_inside_rect_with_padding(
-            mouse,
-            pos=Vec2(widget_pos.x, item_y),
-            width=widget_w,
-            height=14.0 * scale,
-        )
-        alpha = 153
-        if hovered:
-            alpha = 242
-        if idx == selected_index:
-            alpha = max(alpha, 245)
-        draw_small_text(font, str(label), Vec2(value_pos.x, item_y), rl.Color(255, 255, 255, alpha))
 
 
 def draw_right_panel(
@@ -280,8 +174,6 @@ def _draw_right_panel_quest_options(
             float(HS_RIGHT_PLAYER_COUNT_WIDGET_W),
             list(player_items),
             player_selected,
-            Vec2(HS_RIGHT_PLAYER_COUNT_VALUE_X, HS_RIGHT_PLAYER_COUNT_VALUE_Y),
-            Vec2(HS_RIGHT_PLAYER_COUNT_DROP_X, HS_RIGHT_PLAYER_COUNT_DROP_Y),
             not (view._game_mode_open or view._show_scores_open or view._score_list_open),
         ),
         (
@@ -290,8 +182,6 @@ def _draw_right_panel_quest_options(
             float(HS_RIGHT_GAME_MODE_WIDGET_W),
             [label for label, _id in mode_items],
             mode_selected,
-            Vec2(HS_RIGHT_GAME_MODE_VALUE_X, HS_RIGHT_GAME_MODE_VALUE_Y),
-            Vec2(HS_RIGHT_GAME_MODE_DROP_X, HS_RIGHT_GAME_MODE_DROP_Y),
             not (view._player_count_open or view._show_scores_open or view._score_list_open),
         ),
         (
@@ -300,8 +190,6 @@ def _draw_right_panel_quest_options(
             float(HS_RIGHT_SHOW_SCORES_WIDGET_W),
             list(show_scores_items),
             show_scores_selected,
-            Vec2(HS_RIGHT_SHOW_SCORES_VALUE_X, HS_RIGHT_SHOW_SCORES_VALUE_Y),
-            Vec2(HS_RIGHT_SHOW_SCORES_DROP_X, HS_RIGHT_SHOW_SCORES_DROP_Y),
             not (view._player_count_open or view._game_mode_open or view._score_list_open),
         ),
         (
@@ -310,40 +198,42 @@ def _draw_right_panel_quest_options(
             float(HS_RIGHT_SCORE_LIST_WIDGET_W),
             names,
             name_selected,
-            Vec2(HS_RIGHT_SCORE_LIST_VALUE_X, HS_RIGHT_SCORE_LIST_VALUE_Y),
-            Vec2(HS_RIGHT_SCORE_LIST_DROP_X, HS_RIGHT_SCORE_LIST_DROP_Y),
             not (view._player_count_open or view._game_mode_open or view._show_scores_open),
         ),
     )
     # Active list must render last so overlapping widgets don't occlude open options.
-    for is_open, widget_offset, widget_w, items, selected_index, value_offset, arrow_offset, enabled in dropdowns:
+    for is_open, widget_offset, widget_w, items, selected_index, enabled in dropdowns:
         if is_open:
             continue
-        _draw_dropdown(
+        dropdown_draw(
             resources=resources,
             font=font,
-            widget_pos=options_top_left + widget_offset * scale,
-            widget_w=widget_w * scale,
+            layout=view._dropdown_layout(
+                pos=options_top_left + widget_offset * scale,
+                width=widget_w * scale,
+                item_count=len(items),
+                scale=scale,
+            ),
             items=items,
             selected_index=selected_index,
-            value_pos=options_top_left + value_offset * scale,
-            arrow_pos=options_top_left + arrow_offset * scale,
             is_open=is_open,
             enabled=bool(enabled),
             scale=scale,
         )
-    for is_open, widget_offset, widget_w, items, selected_index, value_offset, arrow_offset, enabled in dropdowns:
+    for is_open, widget_offset, widget_w, items, selected_index, enabled in dropdowns:
         if not is_open:
             continue
-        _draw_dropdown(
+        dropdown_draw(
             resources=resources,
             font=font,
-            widget_pos=options_top_left + widget_offset * scale,
-            widget_w=widget_w * scale,
+            layout=view._dropdown_layout(
+                pos=options_top_left + widget_offset * scale,
+                width=widget_w * scale,
+                item_count=len(items),
+                scale=scale,
+            ),
             items=items,
             selected_index=selected_index,
-            value_pos=options_top_left + value_offset * scale,
-            arrow_pos=options_top_left + arrow_offset * scale,
             is_open=is_open,
             enabled=bool(enabled),
             scale=scale,

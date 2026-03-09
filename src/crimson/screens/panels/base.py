@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from grim.assets import TextureId
-from grim.audio import play_sfx
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
@@ -10,7 +9,8 @@ from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_update, button_width
 from ...ui.shadow import UI_SHADOW_OFFSET
 from ..assets import require_runtime_resources
-from ..chrome import (
+from ..chrome.controls import MenuEntry
+from ..chrome.geometry import (
     MENU_ITEM_OFFSET_X,
     MENU_ITEM_OFFSET_Y,
     MENU_LABEL_HEIGHT,
@@ -22,27 +22,26 @@ from ..chrome import (
     MENU_PANEL_HEIGHT,
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
-    ActionDispatchPolicy,
+    label_alpha,
+    menu_item_scale,
+    ui_element_anim,
+)
+from ..chrome.runtime import (
     BackdropPolicy,
-    ChromeRuntime,
     ChromeSpec,
-    MenuEntry,
     MusicPolicy,
+    PendingOnceDispatch,
+    PlayOpenSfxOnFullyOpen,
     SignPolicy,
     draw_ui_quad,
     draw_ui_quad_shadow,
-    label_alpha,
-    menu_item_scale,
-    single_panel_frame,
-    ui_element_anim,
 )
+from ..chrome.view import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, ChromeScreenView
 
 PANEL_POS_X = -45.0
 PANEL_POS_Y = 210.0
 PANEL_BACK_POS_X = -55.0
 PANEL_BACK_POS_Y = 430.0
-PANEL_TIMELINE_START_MS = 300
-PANEL_TIMELINE_END_MS = 0
 
 FADE_TO_GAME_ACTIONS = frozenset(
     {
@@ -64,83 +63,7 @@ def save_dirty_config(state: GameState) -> bool:
     return True
 
 
-class _ChromePanelView:
-    def __init__(self, state: GameState, *, chrome_spec: ChromeSpec) -> None:
-        self.state = state
-        self._chrome = ChromeRuntime(state, spec=chrome_spec)
-
-    def open(self) -> None:
-        self._chrome.open()
-        self._reset_view_state()
-
-    def close(self) -> None:
-        self._chrome.close()
-        self._reset_closed_state()
-
-    def take_action(self) -> str | None:
-        return self._chrome.take_action()
-
-    def _assert_open(self) -> None:
-        assert self._chrome.is_open, f"{self.__class__.__name__} must be opened before use"
-
-    def _begin_close_transition(self, action: str) -> None:
-        self._chrome.begin_close_transition(action, before_close=self._before_close_transition)
-
-    def _before_close_transition(self, action: str) -> None:
-        del action
-
-    def _draw_background(self) -> None:
-        self._chrome.draw_background()
-
-    def _draw_sign(self, *, animated: bool = False) -> None:
-        self._chrome.draw_sign(resources=require_runtime_resources(self.state), animated=animated)
-
-    def _draw_cursor(self) -> None:
-        self._chrome.draw_cursor(resources=require_runtime_resources(self.state))
-
-    def _panel_frame(
-        self,
-        *,
-        panel_pos: Vec2,
-        panel_height: float,
-        panel_offset: Vec2 = Vec2(MENU_PANEL_OFFSET_X, MENU_PANEL_OFFSET_Y),
-        small_scale: float = 0.9,
-    ):
-        chrome = self._chrome.chrome
-        return single_panel_frame(
-            chrome.timeline_ms,
-            screen_width=float(chrome.screen_width),
-            widescreen_y_shift=chrome.widescreen_y_shift,
-            panel_pos=panel_pos,
-            panel_offset=panel_offset,
-            panel_height=panel_height,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            small_scale=small_scale,
-        )
-
-    def _reset_view_state(self) -> None:
-        return
-
-    def _reset_closed_state(self) -> None:
-        return
-
-    def _rearm_view(self, *, play_open_sfx: bool = False) -> None:
-        self._assert_open()
-        chrome = self._chrome.chrome
-        chrome.timeline_ms = 0
-        chrome.closing = False
-        chrome.close_action = None
-        chrome.pending_action = None
-        chrome.action = None
-        chrome.panel_open_sfx_played = False
-        if play_open_sfx and self.state.audio is not None and self._chrome.spec.open_sfx is not None:
-            if self._chrome.spec.open_sfx_mode == "on_open":
-                play_sfx(self.state.audio, self._chrome.spec.open_sfx, rng=self.state.rng)
-                chrome.panel_open_sfx_played = True
-
-
-class PanelMenuView:
+class _PanelMenuScreenView(ChromeScreenView):
     def __init__(
         self,
         state: GameState,
@@ -153,7 +76,6 @@ class PanelMenuView:
         back_pos: Vec2 = Vec2(PANEL_BACK_POS_X, PANEL_BACK_POS_Y),
         back_action: str = "back_to_menu",
     ) -> None:
-        self.state = state
         self._title = title
         self._body_lines = (body or "").splitlines()
         self._panel_pos = panel_pos
@@ -161,43 +83,39 @@ class PanelMenuView:
         self._panel_height = panel_height
         self._back_pos = back_pos
         self._back_action = back_action
-        self._chrome = ChromeRuntime(
+        super().__init__(
             state,
-            spec=ChromeSpec(
+            chrome_spec=ChromeSpec(
                 backdrop=BackdropPolicy(),
                 music=MusicPolicy(),
                 sign=SignPolicy(lock_on_fully_open=True),
-                dispatch=ActionDispatchPolicy(mode="pending_once"),
-                open_sfx="sfx_ui_panelclick",
-                open_sfx_mode="on_fully_open",
+                dispatch=PendingOnceDispatch(),
+                open_sfx=PlayOpenSfxOnFullyOpen(),
                 close_sfx="sfx_ui_buttonclick",
                 fade_to_game_actions=FADE_TO_GAME_ACTIONS,
             ),
         )
         self._entry: MenuEntry | None = None
         self._hovered = False
-        self._back_control = "menu_entry"
+        self._uses_button_back_control = False
         self._back_enter_enabled = True
         self._back_button: UiButtonState | None = None
 
     def open(self) -> None:
-        self._chrome.open()
+        super().open()
         self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos.y)
         self._hovered = False
-        if self._back_control != "menu_entry":
+        if self._uses_button_back_control:
             self._entry = None
-
-    def close(self) -> None:
-        self._chrome.close()
 
     def update(self, dt: float) -> None:
         self._assert_open()
-        tick = self._chrome.update(dt)
-        chrome = self._chrome.chrome
+        tick = self._update_chrome(dt)
+        chrome = self._chrome_state
         if chrome.closing:
             return
         back_interactive = chrome.timeline_ms >= PANEL_TIMELINE_START_MS
-        if self._back_control == "button":
+        if self._uses_button_back_control:
             self._update_button_back_control(dt_ms=tick.dt_ms, interactive=back_interactive)
         else:
             self._update_menu_entry_back_control(dt_ms=tick.dt_ms, interactive=back_interactive)
@@ -205,20 +123,14 @@ class PanelMenuView:
     def draw(self) -> None:
         self._assert_open()
         self._draw_background()
-        self._chrome.draw_fade()
+        self._draw_fade()
         self._draw_panel()
         entry = self._entry
         if entry is not None:
             self._draw_entry(entry)
         self._draw_sign()
         self._draw_contents()
-        self._chrome.draw_cursor(resources=require_runtime_resources(self.state))
-
-    def take_action(self) -> str | None:
-        return self._chrome.take_action()
-
-    def _assert_open(self) -> None:
-        assert self._chrome.is_open, f"{self.__class__.__name__} must be opened before use"
+        self._draw_cursor()
 
     def _draw_contents(self) -> None:
         self._draw_title_text()
@@ -232,27 +144,23 @@ class PanelMenuView:
             rl.draw_text(line, x, y, 18, rl.Color(190, 190, 200, 255))
             y += 22
 
-    def _begin_close_transition(self, action: str) -> None:
-        self._chrome.begin_close_transition(action, before_close=self._before_close_transition)
-
-    def _before_close_transition(self, action: str) -> None:
-        del action
-
-    def _draw_background(self) -> None:
-        self._chrome.draw_background()
-
-    def _panel_frame(self):
-        chrome = self._chrome.chrome
-        return single_panel_frame(
-            chrome.timeline_ms,
-            screen_width=float(chrome.screen_width),
-            widescreen_y_shift=chrome.widescreen_y_shift,
-            panel_pos=self._panel_pos,
-            panel_offset=self._panel_offset,
-            panel_height=self._panel_height,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            small_scale=self._small_panel_scale(),
+    def _panel_frame(
+        self,
+        *,
+        panel_pos: Vec2 | None = None,
+        panel_height: float | None = None,
+        panel_offset: Vec2 | None = None,
+        small_scale: float | None = None,
+        start_ms: int = PANEL_TIMELINE_START_MS,
+        end_ms: int = PANEL_TIMELINE_END_MS,
+    ):
+        return super()._panel_frame(
+            panel_pos=self._panel_pos if panel_pos is None else panel_pos,
+            panel_offset=self._panel_offset if panel_offset is None else panel_offset,
+            panel_height=self._panel_height if panel_height is None else panel_height,
+            small_scale=self._small_panel_scale() if small_scale is None else small_scale,
+            start_ms=start_ms,
+            end_ms=end_ms,
         )
 
     def _small_panel_scale(self) -> float:
@@ -271,7 +179,7 @@ class PanelMenuView:
         label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         item_w = float(item.width)
         item_h = float(item.height)
-        chrome = self._chrome.chrome
+        chrome = self._chrome_state
         _angle_rad, slide_x = ui_element_anim(
             chrome.timeline_ms,
             index=2,
@@ -344,11 +252,8 @@ class PanelMenuView:
             )
             rl.end_blend_mode()
 
-    def _draw_sign(self) -> None:
-        self._chrome.draw_sign(resources=require_runtime_resources(self.state), animated=False)
-
     def _entry_enabled(self, entry: MenuEntry) -> bool:
-        return self._chrome.chrome.timeline_ms >= PANEL_TIMELINE_START_MS
+        return self._chrome_state.timeline_ms >= PANEL_TIMELINE_START_MS
 
     def _hovered_entry(self, entry: MenuEntry) -> bool:
         mouse = rl.get_mouse_position()
@@ -356,7 +261,7 @@ class PanelMenuView:
         return self._menu_item_bounds(entry).contains(mouse_pos)
 
     def _menu_item_scale(self, slot: int) -> tuple[float, float]:
-        return menu_item_scale(float(self._chrome.chrome.screen_width), int(slot), small_scale=self._small_panel_scale())
+        return menu_item_scale(float(self._chrome_state.screen_width), int(slot), small_scale=self._small_panel_scale())
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         item = require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM)
@@ -372,7 +277,7 @@ class PanelMenuView:
             (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift,
         )
         size = offset_max - offset_min
-        chrome = self._chrome.chrome
+        chrome = self._chrome_state
         _angle_rad, slide_x = ui_element_anim(
             chrome.timeline_ms,
             index=2,
@@ -399,11 +304,15 @@ class PanelMenuView:
         hovered = enabled and self._hovered_entry(entry)
         self._hovered = hovered
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            self._begin_close_transition(self._back_action)
-        if self._back_enter_enabled and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and enabled:
-            self._begin_close_transition(self._back_action)
-        if enabled and hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+        trigger_close = False
+        if enabled:
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+                trigger_close = True
+            elif self._back_enter_enabled and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
+                trigger_close = True
+            elif hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+                trigger_close = True
+        if trigger_close:
             self._begin_close_transition(self._back_action)
 
         if hovered:

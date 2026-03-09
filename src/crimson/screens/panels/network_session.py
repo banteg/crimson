@@ -21,8 +21,8 @@ from ...quests.level import QuestLevel
 from ...ui.perk_menu import UiButtonState, button_draw
 from ...ui.text_input import poll_text_input
 from ..assets import require_runtime_resources
-from ..chrome import MENU_PANEL_OFFSET_Y
-from .base import PanelMenuView
+from ..chrome.geometry import MENU_PANEL_OFFSET_Y
+from .base import _PanelMenuScreenView
 
 
 class _SessionLayout(msgspec.Struct, frozen=True):
@@ -33,7 +33,7 @@ class _SessionLayout(msgspec.Struct, frozen=True):
     back_w: float
 
 
-class NetworkSessionPanelView(PanelMenuView):
+class NetworkSessionPanelView(_PanelMenuScreenView):
     _MODES: tuple[NetworkSessionMode, ...] = ("survival", "rush", "quests")
 
     def __init__(self, state: GameState) -> None:
@@ -42,9 +42,9 @@ class NetworkSessionPanelView(PanelMenuView):
             title="Network Session",
             panel_offset=Vec2(-63.0, MENU_PANEL_OFFSET_Y),
             panel_height=278.0,
-            back_action="open_play_game",
+            back_action="back_to_previous",
         )
-        self._back_control = "button"
+        self._uses_button_back_control = True
         self._back_button = UiButtonState("Back", force_wide=False)
 
         self._role: str = "host"
@@ -101,7 +101,7 @@ class NetworkSessionPanelView(PanelMenuView):
 
     def update(self, dt: float) -> None:
         super().update(dt)
-        chrome = self._chrome.chrome
+        chrome = self._chrome_state
         if chrome.closing or chrome.timeline_ms < chrome.timeline_max_ms:
             return
 

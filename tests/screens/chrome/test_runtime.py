@@ -3,54 +3,43 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import cast
 
+import pytest
+
 import crimson.screens.chrome.runtime as chrome_runtime
 from crimson.screens.chrome.runtime import (
-    ActionDispatchPolicy,
     BackdropPolicy,
     ChromeRuntime,
     ChromeSpec,
+    CloseTimelineEntityAlpha,
+    DirectActionDispatch,
+    DispatchPolicy,
+    EntityAlphaPolicy,
+    MusicPolicy,
+    NoOpenSfx,
+    OpenSfxPolicy,
+    PendingOnceDispatch,
+    PlayOpenSfxOnFullyOpen,
+    PlayOpenSfxOnOpen,
     SignPolicy,
 )
-from grim.assets import RuntimeResources
-from grim.raylib_api import rl
 
 
-def _texture_stub() -> rl.Texture:
-    return cast("rl.Texture", type("_TextureStub", (), {"width": 1, "height": 1})())
-
-
-def _resources_stub() -> RuntimeResources:
-    tex = _texture_stub()
-    return cast(
-        "RuntimeResources",
-        SimpleNamespace(
-            texture=lambda _texture_id: tex,
-            small_font=SimpleNamespace(cell_size=8, widths=[8] * 256),
-        ),
-    )
-
-
-def test_chrome_runtime_pending_rearm_restores_open_state(make_game_state) -> None:
+def test_chrome_runtime_pending_once_drains_pending_action(make_game_state) -> None:
     state = make_game_state()
     runtime = ChromeRuntime(
         state,
         spec=ChromeSpec(
             backdrop=BackdropPolicy(use_menu_ground=False),
-            dispatch=ActionDispatchPolicy(mode="pending_rearm"),
-            open_sfx=None,
+            dispatch=PendingOnceDispatch(),
+            open_sfx=NoOpenSfx(),
             close_sfx=None,
         ),
     )
     runtime.open()
-    runtime.chrome.timeline_ms = runtime.chrome.timeline_max_ms
-
-    runtime.begin_close_transition("open_credits")
-    runtime.chrome.timeline_ms = -1
     runtime._dispatch_close_action("open_credits")
 
     assert runtime.take_action() == "open_credits"
-    assert runtime.chrome.closing is False
-    assert runtime.chrome.timeline_ms == runtime.chrome.timeline_max_ms
+    assert runtime.take_action() is None
 
 
 def test_chrome_runtime_direct_action_drains_action_slot(make_game_state) -> None:
@@ -59,8 +48,8 @@ def test_chrome_runtime_direct_action_drains_action_slot(make_game_state) -> Non
         state,
         spec=ChromeSpec(
             backdrop=BackdropPolicy(use_menu_ground=False),
-            dispatch=ActionDispatchPolicy(mode="direct_action"),
-            open_sfx=None,
+            dispatch=DirectActionDispatch(),
+            open_sfx=NoOpenSfx(),
             close_sfx=None,
         ),
     )
@@ -81,8 +70,7 @@ def test_chrome_runtime_locks_sign_and_plays_open_sfx_on_full_open(make_game_sta
         spec=ChromeSpec(
             backdrop=BackdropPolicy(use_menu_ground=False),
             sign=SignPolicy(lock_on_fully_open=True),
-            open_sfx="sfx_ui_panelclick",
-            open_sfx_mode="on_fully_open",
+            open_sfx=PlayOpenSfxOnFullyOpen(),
             close_sfx=None,
         ),
     )
@@ -106,11 +94,9 @@ def test_chrome_runtime_draw_background_uses_close_fraction_for_pause_alpha(make
         state,
         spec=ChromeSpec(
             backdrop=BackdropPolicy(
-                entity_alpha_mode="close_timeline_fraction",
-                entity_alpha_duration_ms=500,
-                entity_alpha_action="back_to_menu",
+                entity_alpha=CloseTimelineEntityAlpha(duration_ms=500, action="back_to_menu"),
             ),
-            open_sfx=None,
+            open_sfx=NoOpenSfx(),
             close_sfx=None,
         ),
     )
@@ -133,10 +119,9 @@ def test_chrome_runtime_draw_background_keeps_close_fraction_opaque_while_openin
         state,
         spec=ChromeSpec(
             backdrop=BackdropPolicy(
-                entity_alpha_mode="close_timeline_fraction",
-                entity_alpha_duration_ms=500,
+                entity_alpha=CloseTimelineEntityAlpha(duration_ms=500),
             ),
-            open_sfx=None,
+            open_sfx=NoOpenSfx(),
             close_sfx=None,
         ),
     )
@@ -149,20 +134,73 @@ def test_chrome_runtime_draw_background_keeps_close_fraction_opaque_while_openin
     pause_background.draw_pause_background.assert_called_once_with(entity_alpha=1.0)
 
 
-def test_chrome_runtime_frame_uses_runtime_resources(make_game_state) -> None:
+def test_chrome_runtime_begin_close_transition_runs_hook_once(make_game_state, mocker) -> None:
     state = make_game_state()
-    state.resources = _resources_stub()
     runtime = ChromeRuntime(
         state,
         spec=ChromeSpec(
             backdrop=BackdropPolicy(use_menu_ground=False),
-            open_sfx=None,
+            open_sfx=NoOpenSfx(),
             close_sfx=None,
         ),
     )
     runtime.open()
+    before_close = mocker.Mock()
 
-    frame = runtime.frame()
+    runtime.begin_close_transition("open_credits", before_close=before_close)
+    runtime.begin_close_transition("open_options", before_close=before_close)
 
-    assert frame.timeline_ms == 0
-    assert frame.interactive is False
+    before_close.assert_called_once_with("open_credits")
+    assert runtime.chrome.closing is True
+    assert runtime.chrome.close_action == "open_credits"
+
+
+def test_backdrop_policy_rejects_raw_entity_alpha() -> None:
+    with pytest.raises(TypeError, match="BackdropPolicy.entity_alpha"):
+        BackdropPolicy(entity_alpha=cast(EntityAlphaPolicy, "close_timeline_fraction"))
+
+
+def test_close_timeline_entity_alpha_rejects_non_int_duration() -> None:
+    with pytest.raises(TypeError, match="CloseTimelineEntityAlpha.duration_ms"):
+        CloseTimelineEntityAlpha(duration_ms=cast(int, "500"))
+
+
+def test_close_timeline_entity_alpha_rejects_non_positive_duration() -> None:
+    with pytest.raises(ValueError, match="CloseTimelineEntityAlpha.duration_ms"):
+        CloseTimelineEntityAlpha(duration_ms=0)
+
+
+def test_chrome_spec_rejects_raw_dispatch_and_open_sfx() -> None:
+    with pytest.raises(TypeError, match="ChromeSpec.dispatch"):
+        ChromeSpec(dispatch=cast(DispatchPolicy, "pending_once"))
+    with pytest.raises(TypeError, match="ChromeSpec.open_sfx"):
+        ChromeSpec(open_sfx=cast(OpenSfxPolicy, "on_open"))
+
+
+def test_open_sfx_policy_rejects_non_string_sfx_id() -> None:
+    with pytest.raises(TypeError, match="PlayOpenSfxOnOpen.sfx_id"):
+        PlayOpenSfxOnOpen(sfx_id=cast(str, 123))
+
+
+def test_music_policy_rejects_non_bool_refresh_flag() -> None:
+    with pytest.raises(TypeError, match="MusicPolicy.refresh_while_open"):
+        MusicPolicy(refresh_while_open=cast(bool, "yes"))
+
+
+def test_sign_policy_rejects_non_tuple_unlock_actions() -> None:
+    with pytest.raises(TypeError, match="SignPolicy.unlock_on_actions"):
+        SignPolicy(unlock_on_actions=cast(tuple[str, ...], ("ok", 1)))
+
+
+def test_backdrop_policy_rejects_non_bool_pause_background_flag() -> None:
+    with pytest.raises(TypeError, match="BackdropPolicy.allow_pause_background"):
+        BackdropPolicy(allow_pause_background=cast(bool, "yes"))
+
+
+def test_chrome_spec_rejects_invalid_scalar_fields() -> None:
+    with pytest.raises(TypeError, match="ChromeSpec.timeline_max_ms"):
+        ChromeSpec(timeline_max_ms=cast(int, "300"))
+    with pytest.raises(TypeError, match="ChromeSpec.close_sfx"):
+        ChromeSpec(close_sfx=cast(str | None, 123))
+    with pytest.raises(TypeError, match="ChromeSpec.fade_to_game_actions"):
+        ChromeSpec(fade_to_game_actions=cast(frozenset[str], {"start_quest"}))

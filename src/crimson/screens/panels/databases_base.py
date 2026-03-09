@@ -9,15 +9,10 @@ from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..chrome import (
-    ActionDispatchPolicy,
-    BackdropPolicy,
-    ChromeSpec,
-    SignPolicy,
-    split_panel_frame,
-)
+from ..chrome.geometry import split_panel_frame
+from ..chrome.runtime import BackdropPolicy, ChromeSpec, PendingOnceDispatch, PlayOpenSfxOnOpen, SignPolicy
+from ..chrome.view import ChromeScreenView
 from ..high_scores_layout import hs_left_panel_pos_x, hs_right_panel_pos_x
-from .base import _ChromePanelView
 
 # Shared panel layout (state_14/15/16 in the oracle): tall left panel + short right panel.
 LEFT_PANEL_POS_Y = 185.0
@@ -26,16 +21,15 @@ RIGHT_PANEL_POS_Y = 200.0
 RIGHT_PANEL_HEIGHT = 254.0
 
 
-class _DatabaseBaseView(_ChromePanelView):
+class _DatabaseBaseView(ChromeScreenView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
             state,
             chrome_spec=ChromeSpec(
                 backdrop=BackdropPolicy(),
                 sign=SignPolicy(),
-                dispatch=ActionDispatchPolicy(mode="pending_rearm"),
-                open_sfx="sfx_ui_panelclick",
-                open_sfx_mode="on_open",
+                dispatch=PendingOnceDispatch(),
+                open_sfx=PlayOpenSfxOnOpen(),
                 close_sfx="sfx_ui_buttonclick",
             ),
         )
@@ -46,7 +40,7 @@ class _DatabaseBaseView(_ChromePanelView):
 
     def _split_frame(self):
         screen_width = float(self.state.config.screen_width)
-        chrome = self._chrome.chrome
+        chrome = self._chrome_state
         return split_panel_frame(
             chrome.timeline_ms,
             left_panel_pos=Vec2(hs_left_panel_pos_x(screen_width), LEFT_PANEL_POS_Y),
@@ -60,8 +54,8 @@ class _DatabaseBaseView(_ChromePanelView):
 
     def update(self, dt: float) -> None:
         self._assert_open()
-        tick = self._chrome.update(dt)
-        if self._chrome.chrome.closing:
+        tick = self._update_chrome(dt)
+        if self._chrome_state.closing:
             return
         if not tick.interactive:
             return
@@ -92,7 +86,7 @@ class _DatabaseBaseView(_ChromePanelView):
     def draw(self) -> None:
         self._assert_open()
         self._draw_background()
-        self._chrome.draw_fade()
+        self._draw_fade()
 
         frame = self._split_frame()
         fx_detail = self.state.config.fx_detail(level=0, default=False)

@@ -21,11 +21,11 @@ from ..modes.typo_mode import TypoShooterMode
 from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
 from ..screens.boot import BootView
-from ..screens.chrome import ensure_menu_ground
+from ..screens.chrome.runtime import ensure_menu_ground
+from ..screens.chrome.view import ChromeScreenView
 from ..screens.high_scores_view import HighScoresView
 from ..screens.menu import MenuView
 from ..screens.panels.alien_zookeeper import AlienZooKeeperView
-from ..screens.panels.base import PanelMenuView
 from ..screens.panels.controls import ControlsMenuView
 from ..screens.panels.credits import CreditsView
 from ..screens.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
@@ -33,6 +33,7 @@ from ..screens.panels.mods import ModsMenuView
 from ..screens.panels.network_lobby import NetworkLobbyPanelView
 from ..screens.panels.network_session import NetworkSessionPanelView
 from ..screens.panels.options import OptionsMenuView
+from ..screens.panels.other_games import OtherGamesView
 from ..screens.panels.play_game import PlayGameMenuView
 from ..screens.panels.stats import StatisticsMenuView
 from ..screens.pause_menu import PauseMenuView
@@ -198,11 +199,7 @@ class GameLoopView:
             "open_credits": CreditsView(state),
             "open_alien_zookeeper": AlienZooKeeperView(state),
             "open_mods": ModsMenuView(state),
-            "open_other_games": PanelMenuView(
-                state,
-                title="Other games",
-                body="This menu is out of scope for the rewrite.",
-            ),
+            "open_other_games": OtherGamesView(state),
         }
         self._front_active: Screen | None = None
         self._front_stack: list[Screen] = []
@@ -592,9 +589,8 @@ class GameLoopView:
                     self._front_active = self._front_stack.pop()
                     if self._gameplay_screen(self._front_active) is not None:
                         self.state.pause_background = None
-                    else:
-                        if isinstance(self._front_active, StatisticsMenuView):
-                            self._front_active.reopen_from_child()
+                    elif isinstance(self._front_active, ChromeScreenView):
+                        self._front_active.resume_from_child()
                     self._active = self._front_active
                     return
                 front_active.close()
@@ -608,25 +604,10 @@ class GameLoopView:
                 pause_view = self._front_views.get("open_pause_menu")
                 if pause_view is None:
                     return
-                if gameplay is not None:
-                    self.state.pause_background = gameplay
-                    self._front_stack.append(front_active)
-                    pause_view.open()
-                    self._front_active = pause_view
-                    self._active = pause_view
+                if gameplay is None:
                     return
-                if self.state.pause_background is None:
-                    # Options panel uses open_pause_menu as back_action; when no game is
-                    # running, treat it like back_to_menu.
-                    self._front_active.close()
-                    self._front_active = None
-                    while self._front_stack:
-                        self._front_stack.pop().close()
-                    self._menu.open()
-                    self._active = self._menu
-                    self._menu_active = True
-                    return
-                front_active.close()
+                self.state.pause_background = gameplay
+                self._front_stack.append(front_active)
                 pause_view.open()
                 self._front_active = pause_view
                 self._active = pause_view
@@ -644,12 +625,26 @@ class GameLoopView:
             if action is not None:
                 view = self._front_views.get(action)
                 if view is not None:
-                    if action in {"open_high_scores", "open_weapon_database", "open_perk_database", "open_credits"}:
+                    push_current = action in {
+                        "open_options",
+                        "open_controls",
+                        "open_lan_session",
+                        "open_lan_lobby",
+                        "open_quests",
+                        "open_high_scores",
+                        "open_weapon_database",
+                        "open_perk_database",
+                        "open_credits",
+                        "open_alien_zookeeper",
+                        "open_other_games",
+                    }
+                    if action in {"quest_results", "quest_failed"} and gameplay is not None:
+                        push_current = True
+                    if push_current:
                         if gameplay is not None and self.state.pause_background is None:
                             self.state.pause_background = gameplay
-                        self._front_stack.append(front_active)
-                    elif action in {"quest_results", "quest_failed"} and gameplay is not None:
-                        self.state.pause_background = gameplay
+                        elif action in {"quest_results", "quest_failed"} and gameplay is not None:
+                            self.state.pause_background = gameplay
                         self._front_stack.append(front_active)
                     else:
                         if action in {

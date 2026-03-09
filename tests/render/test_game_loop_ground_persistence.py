@@ -7,7 +7,7 @@ from typing import cast
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import GameState
 from crimson.persistence import save_status
-from crimson.screens.chrome import ensure_menu_ground
+from crimson.screens.chrome.runtime import ensure_menu_ground
 from grim.assets import RuntimeResources, TextureId
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console

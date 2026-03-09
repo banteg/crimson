@@ -9,7 +9,8 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
-from .base import PanelMenuView
+from ..assets import require_runtime_resources
+from .base import _PanelMenuScreenView
 
 
 class _ModsContentLayout(msgspec.Struct, frozen=True):
@@ -18,7 +19,7 @@ class _ModsContentLayout(msgspec.Struct, frozen=True):
     label_pos: Vec2
 
 
-class ModsMenuView(PanelMenuView):
+class ModsMenuView(_PanelMenuScreenView):
     def __init__(self, state: GameState) -> None:
         super().__init__(state, title="Mods")
         self._lines: list[str] = []
@@ -78,4 +79,3 @@ class ModsMenuView(PanelMenuView):
         for line in self._lines:
             draw_small_text(font, line, line_pos, text_color)
             line_pos = line_pos.offset(dy=line_step)
-from ..assets import require_runtime_resources

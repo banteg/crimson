@@ -3,19 +3,18 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from grim.assets import TextureId
-from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
-from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..chrome import draw_menu_cursor_frame, ensure_menu_ground, menu_ground_camera, menu_widescreen_y_shift
-from ..transitions import _draw_screen_fade
+from ..chrome.geometry import menu_widescreen_y_shift
+from ..chrome.runtime import CloseTimelineEntityAlpha, NoOpenSfx
+from .base import _QuestChromeViewBase
 from .shared import (
     QUEST_FAILED_BANNER_H,
     QUEST_FAILED_BANNER_W,
@@ -43,36 +42,31 @@ if TYPE_CHECKING:
     from ...persistence.highscores import HighScoreRecord
 
 
-class QuestFailedView:
+class QuestFailedView(_QuestChromeViewBase):
     def __init__(self, state: GameState) -> None:
-        self.state = state
-        self._ground: GroundRenderer | None = None
+        super().__init__(
+            state,
+            open_sfx=NoOpenSfx(),
+            pause_background_close_alpha=CloseTimelineEntityAlpha(duration_ms=int(QUEST_FAILED_PANEL_SLIDE_DURATION_MS)),
+        )
         self._outcome: QuestRunOutcome | None = None
         self._record: HighScoreRecord | None = None
         self._quest_title: str = ""
-        self._action: str | None = None
-        self._cursor_pulse_time = 0.0
-        self._intro_ms = 0.0
-        self._closing = False
-        self._close_action: str | None = None
+        self._retry_button = UiButtonState("Play Again", force_wide=True)
+        self._quest_list_button = UiButtonState("Play Another", force_wide=True)
+        self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
+
+    def _reset_view_state(self) -> None:
         self._retry_button = UiButtonState("Play Again", force_wide=True)
         self._quest_list_button = UiButtonState("Play Another", force_wide=True)
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
 
     def open(self) -> None:
-        self._action = None
-        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
-        self._intro_ms = 0.0
-        self._closing = False
-        self._close_action = None
+        super().open()
         self._outcome = self.state.quest_outcome
         self.state.quest_outcome = None
         self._quest_title = ""
         self._record = None
-        self._retry_button = UiButtonState("Play Again", force_wide=True)
-        self._quest_list_button = UiButtonState("Play Another", force_wide=True)
-        self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
         outcome = self._outcome
         if outcome is not None:
             from ...quests import quest_by_level
@@ -83,25 +77,16 @@ class QuestFailedView:
         self._build_score_preview(outcome)
 
     def close(self) -> None:
-        self._ground = None
+        super().close()
         self._outcome = None
         self._record = None
         self._quest_title = ""
+
     def update(self, dt: float) -> None:
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
-        dt_step = min(float(dt), 0.1)
-        self._cursor_pulse_time += dt_step * 1.1
-        dt_ms = dt_step * 1000.0
-        if self._closing:
-            self._intro_ms = max(0.0, float(self._intro_ms) - dt_ms)
-            if self._intro_ms <= 1e-3 and self._close_action is not None:
-                self._action = self._close_action
-                self._close_action = None
+        tick = self._tick_chrome(dt)
+        if self._chrome_state.closing:
             return
-        self._intro_ms = min(QUEST_FAILED_PANEL_SLIDE_DURATION_MS, self._intro_ms + dt_ms)
+        dt_ms = float(tick.dt_ms)
 
         outcome = self._outcome
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -173,14 +158,7 @@ class QuestFailedView:
             return
 
     def draw(self) -> None:
-        rl.clear_background(rl.BLACK)
-        pause_background = self.state.pause_background
-        if pause_background is not None:
-            pause_background.draw_pause_background(entity_alpha=self._world_entity_alpha())
-        elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
-        _draw_screen_fade(self.state)
-
+        self._draw_chrome(draw_cursor=True)
         panel_top_left = self._panel_top_left()
         resources = require_runtime_resources(self.state)
         panel_tex = resources.texture(TextureId.UI_MENU_PANEL)
@@ -247,13 +225,6 @@ class QuestFailedView:
             scale=scale,
         )
 
-        draw_menu_cursor_frame(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
-
-    def take_action(self) -> str | None:
-        action = self._action
-        self._action = None
-        return action
-
     def _panel_origin(self) -> Vec2:
         screen_w = float(rl.get_screen_width())
         widescreen_shift_y = menu_widescreen_y_shift(screen_w)
@@ -265,25 +236,13 @@ class QuestFailedView:
     def _panel_slide_x(self) -> float:
         if QUEST_FAILED_PANEL_SLIDE_DURATION_MS <= 1e-6:
             return 0.0
-        t = float(self._intro_ms) / QUEST_FAILED_PANEL_SLIDE_DURATION_MS
+        t = float(self._chrome_state.timeline_ms) / QUEST_FAILED_PANEL_SLIDE_DURATION_MS
         if t < 0.0:
             t = 0.0
         elif t > 1.0:
             t = 1.0
         eased = 1.0 - (1.0 - t) ** 3
         return -QUEST_FAILED_PANEL_W * (1.0 - eased)
-
-    def _world_entity_alpha(self) -> float:
-        if not self._closing:
-            return 1.0
-        if QUEST_FAILED_PANEL_SLIDE_DURATION_MS <= 1e-6:
-            return 0.0
-        alpha = float(self._intro_ms) / QUEST_FAILED_PANEL_SLIDE_DURATION_MS
-        if alpha < 0.0:
-            return 0.0
-        if alpha > 1.0:
-            return 1.0
-        return alpha
 
     def _panel_top_left(self) -> Vec2:
         return self._panel_origin().offset(dx=self._panel_slide_x())
@@ -343,27 +302,15 @@ class QuestFailedView:
             self.state.config.save()
         except (OSError, ValueError) as exc:
             self.state.console.log.log(f"quest failed: failed to save quest selection config: {exc}")
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-        self._begin_close("start_quest")
+        self._begin_close_transition("start_quest")
 
     def _activate_play_another(self) -> None:
         self.state.quest_fail_retry_count = 0
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-        self._begin_close("open_quests")
+        self._begin_close_transition("open_quests")
 
     def _activate_main_menu(self) -> None:
         self.state.quest_fail_retry_count = 0
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
-        self._begin_close("back_to_menu")
-
-    def _begin_close(self, action: str) -> None:
-        if self._closing:
-            return
-        self._closing = True
-        self._close_action = action
+        self._begin_close_transition("back_to_menu")
 
     def _text_width(self, text: str, scale: float) -> float:
         del scale

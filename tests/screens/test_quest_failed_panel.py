@@ -5,6 +5,7 @@ from typing import cast
 
 import pytest
 
+import crimson.screens.chrome.runtime as chrome_runtime
 import crimson.screens.quest_views.quest_failed as quest_failed_module
 from crimson.modes.quest_mode import QuestRunOutcome
 from crimson.quests.level import QuestLevel
@@ -92,10 +93,10 @@ def test_quest_failed_panel_slides_in_from_left(monkeypatch, quest_failed_state,
     mocker.patch.object(quest_failed_module.rl, "get_screen_width", side_effect=lambda: 640)
     base = view._panel_origin()
 
-    view._intro_ms = 0.0
+    view._chrome_state.timeline_ms = 0
     assert view._panel_top_left().x == base.x - QUEST_FAILED_PANEL_W
 
-    view._intro_ms = 250.0
+    view._chrome_state.timeline_ms = 250
     assert view._panel_top_left().x == base.x
 
 
@@ -116,9 +117,8 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, quest_failed_stat
     state.quest_outcome = _failed_outcome()
     state.quest_fail_retry_count = 2
 
-    play_sfx = mocker.Mock()
-    mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
+    play_sfx = mocker.patch.object(chrome_runtime, "play_sfx")
+    mocker.patch.object(chrome_runtime, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER))
 
     view = QuestFailedView(state)
@@ -143,9 +143,8 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, quest_failed_state, mocker
     state.quest_outcome = _failed_outcome()
     state.quest_fail_retry_count = 4
 
-    play_sfx = mocker.Mock()
-    mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
+    play_sfx = mocker.patch.object(chrome_runtime, "play_sfx")
+    mocker.patch.object(chrome_runtime, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_Q))
 
     view = QuestFailedView(state)
@@ -169,9 +168,8 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_fai
     state.quest_outcome = _failed_outcome()
     state.quest_fail_retry_count = 4
 
-    play_sfx = mocker.Mock()
-    mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
+    play_sfx = mocker.patch.object(chrome_runtime, "play_sfx")
+    mocker.patch.object(chrome_runtime, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE))
 
     view = QuestFailedView(state)
@@ -232,10 +230,10 @@ def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_stat
     pause_background = mocker.Mock()
     state.pause_background = pause_background
     view = QuestFailedView(state)
-    mocker.patch.object(quest_failed_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(chrome_runtime.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module.rl, "get_screen_width", side_effect=lambda: 640)
-    mocker.patch.object(quest_failed_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(quest_failed_module, "draw_menu_cursor_frame", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(chrome_runtime, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(chrome_runtime, "draw_menu_cursor_frame", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module, "draw_small_text", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
@@ -244,8 +242,8 @@ def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_stat
     mocker.patch.object(view, "_draw_score_preview", side_effect=lambda *_args, **_kwargs: None)
 
     view.open()
-    view._closing = True
-    view._intro_ms = QUEST_FAILED_PANEL_SLIDE_DURATION_MS * 0.5
+    view._chrome_state.closing = True
+    view._chrome_state.timeline_ms = int(QUEST_FAILED_PANEL_SLIDE_DURATION_MS * 0.5)
     view.draw()
 
     pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)

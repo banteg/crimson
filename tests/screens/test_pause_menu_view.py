@@ -23,6 +23,7 @@ def _resources_stub() -> RuntimeResources:
         ),
     )
 
+
 def test_pause_menu_draw_fades_pause_background_on_main_menu_close(make_game_state, mocker) -> None:
     state = make_game_state(
         config_updates={"screen_width": 640},
@@ -35,9 +36,9 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(make_game_sta
     state.resources = _resources_stub()
     view = PauseMenuView(state)
     view._chrome.is_open = True
-    view._chrome.chrome.closing = True
-    view._chrome.chrome.close_action = "back_to_menu"
-    view._chrome.chrome.timeline_ms = PAUSE_MENU_TO_MAIN_MENU_FADE_MS // 2
+    view._chrome_state.closing = True
+    view._chrome_state.close_action = "back_to_menu"
+    view._chrome_state.timeline_ms = PAUSE_MENU_TO_MAIN_MENU_FADE_MS // 2
 
     mocker.patch.object(chrome_runtime.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(chrome_runtime, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
@@ -62,9 +63,9 @@ def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(make_ga
     state.resources = _resources_stub()
     view = PauseMenuView(state)
     view._chrome.is_open = True
-    view._chrome.chrome.closing = True
-    view._chrome.chrome.close_action = "back_to_previous"
-    view._chrome.chrome.timeline_ms = 0
+    view._chrome_state.closing = True
+    view._chrome_state.close_action = "back_to_previous"
+    view._chrome_state.timeline_ms = 0
 
     mocker.patch.object(chrome_runtime.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(chrome_runtime, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)

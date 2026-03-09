@@ -8,7 +8,7 @@ from grim.raylib_api import rl
 from ...game.types import GameState
 from ...perks import PerkId
 from ...perks.availability import unlocked_perk_ids
-from ..chrome import list_window, scrollbar_update
+from ..chrome.widgets import list_window, scrollbar_update
 from ..high_scores_layout import perks_db_right_detail_x_shift
 from .databases_base import _DatabaseBaseView
 

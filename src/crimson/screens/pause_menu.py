@@ -3,18 +3,22 @@ from __future__ import annotations
 from grim.audio import play_sfx
 
 from ..game.types import GameState
-from .chrome import (
+from .chrome.controls import MenuEntry
+from .chrome.geometry import (
     MENU_LABEL_BASE_Y,
     MENU_LABEL_ROW_BACK,
     MENU_LABEL_ROW_OPTIONS,
     MENU_LABEL_ROW_QUIT,
     MENU_LABEL_STEP,
-    ActionDispatchPolicy,
+    menu_slot_start_ms,
+)
+from .chrome.runtime import (
     BackdropPolicy,
     ChromeSpec,
-    MenuEntry,
+    CloseTimelineEntityAlpha,
+    PendingOnceDispatch,
+    PlayOpenSfxOnFullyOpen,
     SignPolicy,
-    menu_slot_start_ms,
 )
 from .menu import _MenuEntriesViewBase
 
@@ -29,24 +33,24 @@ class PauseMenuView(_MenuEntriesViewBase):
                 backdrop=BackdropPolicy(
                     allow_pause_background=True,
                     use_menu_ground=False,
-                    entity_alpha_mode="close_timeline_fraction",
-                    entity_alpha_duration_ms=PAUSE_MENU_TO_MAIN_MENU_FADE_MS,
-                    entity_alpha_action="back_to_menu",
+                    entity_alpha=CloseTimelineEntityAlpha(
+                        duration_ms=PAUSE_MENU_TO_MAIN_MENU_FADE_MS,
+                        action="back_to_menu",
+                    ),
                 ),
                 sign=SignPolicy(animated=True, lock_on_fully_open=True),
-                dispatch=ActionDispatchPolicy(mode="pending_once"),
-                open_sfx="sfx_ui_panelclick",
-                open_sfx_mode="on_fully_open",
+                dispatch=PendingOnceDispatch(),
+                open_sfx=PlayOpenSfxOnFullyOpen(),
                 close_sfx=None,
             ),
         )
 
     def open(self) -> None:
         super().open()
-        self._chrome.chrome.timeline_max_ms = max(300, *(menu_slot_start_ms(entry.slot) for entry in self._menu_entries))
+        self._chrome_state.timeline_max_ms = max(300, *(menu_slot_start_ms(entry.slot) for entry in self._menu_entries))
 
     def _build_menu_entries(self) -> list[MenuEntry]:
-        widescreen_y_shift = self._chrome.chrome.widescreen_y_shift
+        widescreen_y_shift = self._chrome_state.widescreen_y_shift
         ys = [
             MENU_LABEL_BASE_Y + widescreen_y_shift,
             MENU_LABEL_BASE_Y + MENU_LABEL_STEP + widescreen_y_shift,

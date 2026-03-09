@@ -772,6 +772,8 @@ WEAPON_TABLE = [
     ),
 ]
 
+WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
+
 WEAPON_BY_ID: dict[WeaponId, Weapon] = {entry.weapon_id: entry for entry in WEAPON_TABLE}
 
 _WEAPON_FIXED_NAMES: dict[WeaponId, str] = {

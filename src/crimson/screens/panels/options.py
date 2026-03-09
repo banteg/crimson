@@ -12,12 +12,9 @@ from grim.raylib_api import rl
 from ...game.types import GameState
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..chrome import (
-    MENU_LABEL_ROW_HEIGHT,
-    MENU_LABEL_ROW_OPTIONS,
-    draw_ui_quad,
-)
-from .base import PanelMenuView, save_dirty_config
+from ..chrome.geometry import MENU_LABEL_ROW_HEIGHT, MENU_LABEL_ROW_OPTIONS
+from ..chrome.runtime import draw_ui_quad
+from .base import _PanelMenuScreenView, save_dirty_config
 from .hit_test import mouse_inside_rect_with_padding
 
 
@@ -34,7 +31,7 @@ class _OptionsContentLayout(msgspec.Struct, frozen=True):
     slider_pos: Vec2
 
 
-class OptionsMenuView(PanelMenuView):
+class OptionsMenuView(_PanelMenuScreenView):
     _LABELS = (
         "Sound volume:",
         "Music volume:",
@@ -43,7 +40,7 @@ class OptionsMenuView(PanelMenuView):
     )
 
     def __init__(self, state: GameState) -> None:
-        super().__init__(state, title="Options", back_action="open_pause_menu")
+        super().__init__(state, title="Options", back_action="back_to_previous")
         self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
         self._slider_sfx = SliderState(10, 0, 10)
         self._slider_music = SliderState(10, 0, 10)
@@ -62,7 +59,7 @@ class OptionsMenuView(PanelMenuView):
 
     def update(self, dt: float) -> None:
         super().update(dt)
-        if self._chrome.chrome.closing:
+        if self._chrome_state.closing:
             return
         entry = self._entry
         if entry is None or not self._entry_enabled(entry):

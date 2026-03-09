@@ -16,7 +16,7 @@ from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..sim.state_types import GameplayState, PlayerState
-from ..weapons import WEAPON_TABLE, WeaponId, weapon_entry_for_projectile_type_id
+from ..weapons import WEAPON_COUNT_SIZE, WeaponId, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
 from .fire_recipes import (
     MaskCenteredJitter,
@@ -36,8 +36,6 @@ from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles, trave
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
-
-WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
 _NATIVE_FIRE_MUZZLE_SPRITES: dict[int, tuple[tuple[float, float, float], ...]] = {
     WeaponId.PISTOL: ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),

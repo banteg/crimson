@@ -186,8 +186,8 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
 
     panel = NetworkLobbyPanelView(state)
     panel._chrome.is_open = True
-    panel._chrome.chrome.timeline_ms = 0
-    panel._chrome.chrome.timeline_max_ms = 0
+    panel._chrome_state.timeline_ms = 0
+    panel._chrome_state.timeline_max_ms = 0
 
     panel.update(0.0)
 
@@ -198,6 +198,32 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
     assert state.config.player_count == 4
     assert state.config.game_mode == 3
     assert state.pending_quest_level == QuestLevel(2, 4)
-    assert panel._chrome.chrome.closing is True
-    assert panel._chrome.chrome.close_action == "start_quest"
+    assert panel._chrome_state.closing is True
+    assert panel._chrome_state.close_action == "start_quest"
     assert state.screen_fade_ramp is True
+
+
+def test_network_lobby_close_hook_runs_teardown_once(make_game_state, mocker) -> None:
+    state = make_game_state()
+    state.pause_background = mocker.Mock()
+    runtime = cast("Any", SimpleNamespace(close=mocker.Mock(), error="", match_start=lambda: None))
+    state.network_runtime = runtime
+    state.network_in_lobby = True
+    state.network_waiting_for_players = True
+    state.network_expected_players = 4
+    state.network_connected_players = 3
+
+    panel = NetworkLobbyPanelView(state)
+    panel.open()
+
+    panel._begin_close_transition("back_to_previous")
+    panel._begin_close_transition("back_to_previous")
+
+    runtime.close.assert_called_once_with()
+    assert state.network_runtime is None
+    assert state.network_in_lobby is False
+    assert state.network_waiting_for_players is False
+    assert state.network_expected_players == 1
+    assert state.network_connected_players == 1
+    assert panel._chrome_state.closing is True
+    assert panel._chrome_state.close_action == "back_to_previous"

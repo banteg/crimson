@@ -11,7 +11,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...weapon_runtime.availability import unlocked_weapon_ids
 from ..assets import require_runtime_resources
-from ..chrome import list_window
+from ..chrome.widgets import list_window
 from ..high_scores_layout import weapons_db_right_detail_x_shift
 from .databases_base import _DatabaseBaseView
 

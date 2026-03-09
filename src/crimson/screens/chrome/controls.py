@@ -81,23 +81,6 @@ class MenuListController:
         return None
 
     @staticmethod
-    def update_idle_timer(list_state: MenuListState, *, dt_ms: int, mouse_pos: Vec2) -> None:
-        mouse_moved = Vec2(float(mouse_pos.x), float(mouse_pos.y)) != list_state.last_mouse_pos
-        if mouse_moved:
-            list_state.last_mouse_pos = Vec2(float(mouse_pos.x), float(mouse_pos.y))
-
-        any_key = rl.get_key_pressed() != 0
-        any_click = (
-            rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            or rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT)
-            or rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_MIDDLE)
-        )
-        if any_key or any_click or mouse_moved:
-            list_state.idle_ms = 0
-        else:
-            list_state.idle_ms += int(dt_ms)
-
-    @staticmethod
     def step(
         list_state: MenuListState,
         entries: list[MenuEntry],

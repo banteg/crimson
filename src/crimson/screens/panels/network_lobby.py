@@ -15,8 +15,8 @@ from ...net.relay_protocol import RoomState
 from ...net.rollback_runtime import RollbackRuntime
 from ...ui.perk_menu import UiButtonState, button_draw
 from ..assets import require_runtime_resources
-from ..chrome import MENU_PANEL_OFFSET_Y
-from .base import PanelMenuView
+from ..chrome.geometry import MENU_PANEL_OFFSET_Y
+from .base import _PanelMenuScreenView
 
 
 class _LobbyLayout(msgspec.Struct, frozen=True):
@@ -27,16 +27,16 @@ class _LobbyLayout(msgspec.Struct, frozen=True):
     back_w: float
 
 
-class NetworkLobbyPanelView(PanelMenuView):
+class NetworkLobbyPanelView(_PanelMenuScreenView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
             state,
             title="Network Lobby",
             panel_offset=Vec2(-63.0, MENU_PANEL_OFFSET_Y),
             panel_height=278.0,
-            back_action="open_play_game",
+            back_action="back_to_previous",
         )
-        self._back_control = "button"
+        self._uses_button_back_control = True
         self._back_button = UiButtonState("Back", force_wide=False)
         self._error: str = ""
 
@@ -46,7 +46,7 @@ class NetworkLobbyPanelView(PanelMenuView):
         self._error = ""
 
     def _before_close_transition(self, action: str) -> None:
-        if action == "open_play_game":
+        if action == "back_to_previous":
             runtime = self.state.network_runtime
             if runtime is not None:
                 runtime.close()
@@ -58,7 +58,7 @@ class NetworkLobbyPanelView(PanelMenuView):
 
     def update(self, dt: float) -> None:
         super().update(dt)
-        chrome = self._chrome.chrome
+        chrome = self._chrome_state
         if chrome.closing or chrome.timeline_ms < chrome.timeline_max_ms:
             return
 
@@ -175,7 +175,7 @@ class NetworkLobbyPanelView(PanelMenuView):
             connected = int(self.state.network_connected_players)
         connected = max(0, min(4, int(connected)))
 
-        dots = "." * int((self._chrome.chrome.cursor_pulse_time * 2.5) % 4)
+        dots = "." * int((self._chrome_state.cursor_pulse_time * 2.5) % 4)
         connected_text = f"{connected}/{expected}{dots}"
         role_label = "Host" if role == "host" else "Client"
         code_text = room_code or "-"

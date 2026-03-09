@@ -18,8 +18,10 @@ from ...movement_controls import MovementControlType
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ..assets import require_runtime_resources
-from ..chrome import MENU_PANEL_HEIGHT, draw_ui_quad, split_panel_frame
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView, save_dirty_config
+from ..chrome.geometry import MENU_PANEL_HEIGHT, split_panel_frame
+from ..chrome.runtime import draw_ui_quad
+from ..chrome.widgets import autosize_dropdown_layout, dropdown_draw, dropdown_update
+from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, _PanelMenuScreenView, save_dirty_config
 from .controls_labels import (
     PICK_PERK_BIND_SLOT,
     RELOAD_BIND_SLOT,
@@ -29,7 +31,6 @@ from .controls_labels import (
     input_configure_for_label,
     input_scheme_label,
 )
-from .hit_test import mouse_inside_rect_with_padding
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_3:Configure for:, timeline=300).
 CONTROLS_LEFT_PANEL_POS_X = -165.0
@@ -93,13 +94,6 @@ def _controls_right_panel_pos_y(screen_width: float) -> float:
     return CONTROLS_RIGHT_PANEL_POS_Y
 
 
-class _ControlsDropdownLayout(DropdownLayoutBase, frozen=True):
-    arrow_pos: Vec2
-    arrow_size: Vec2
-    text_pos: Vec2
-    text_scale: float
-
-
 class _RebindRowLayout(msgspec.Struct, frozen=True):
     label: str
     slot: int
@@ -108,12 +102,12 @@ class _RebindRowLayout(msgspec.Struct, frozen=True):
     value_rect: Rect
 
 
-class ControlsMenuView(PanelMenuView):
+class ControlsMenuView(_PanelMenuScreenView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
             state,
             title="Controls",
-            back_action="open_options",
+            back_action="back_to_previous",
             panel_pos=Vec2(CONTROLS_LEFT_PANEL_POS_X, CONTROLS_LEFT_PANEL_POS_Y),
             back_pos=Vec2(CONTROLS_BACK_POS_X, CONTROLS_BACK_POS_Y),
         )
@@ -137,7 +131,7 @@ class ControlsMenuView(PanelMenuView):
 
     def update(self, dt: float) -> None:
         super().update(dt)
-        if self._chrome.chrome.closing:
+        if self._chrome_state.closing:
             return
         entry = self._entry
         if entry is None or not self._entry_enabled(entry):
@@ -175,7 +169,7 @@ class ControlsMenuView(PanelMenuView):
 
     def _split_panel_frame(self):
         screen_width = float(self.state.config.screen_width)
-        chrome = self._chrome.chrome
+        chrome = self._chrome_state
         return split_panel_frame(
             chrome.timeline_ms,
             left_panel_pos=Vec2(_controls_left_panel_pos_x(screen_width), self._panel_pos.y),
@@ -465,67 +459,8 @@ class ControlsMenuView(PanelMenuView):
         items: tuple[str, ...],
         scale: float,
         font: SmallFontData,
-    ) -> _ControlsDropdownLayout:
-        text_scale = 1.0 * scale
-        max_label_w = 0.0
-        for label in items:
-            max_label_w = max(max_label_w, measure_small_text_width(font, label))
-        width = max_label_w + 48.0 * scale
-        header_h = 16.0 * scale
-        row_h = 16.0 * scale
-        full_h = (float(len(items)) * 16.0 + 24.0) * scale
-        arrow = 16.0 * scale
-        return _ControlsDropdownLayout(
-            pos=pos,
-            width=width,
-            header_h=header_h,
-            row_h=row_h,
-            rows_y0=pos.y + 17.0 * scale,
-            full_h=full_h,
-            arrow_pos=Vec2(pos.x + width - arrow - 1.0 * scale, pos.y),
-            arrow_size=Vec2(arrow, arrow),
-            text_pos=pos + Vec2(4.0 * scale, 1.0 * scale),
-            text_scale=text_scale,
-        )
-
-    def _update_dropdown(
-        self,
-        *,
-        layout: _ControlsDropdownLayout,
-        item_count: int,
-        is_open: bool,
-        enabled: bool,
-        scale: float,
-    ) -> tuple[bool, int | None, bool]:
-        mouse = rl.get_mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
-            mouse,
-            pos=layout.pos,
-            width=layout.width,
-            height=14.0 * scale,
-        )
-        if hovered_header and click:
-            return (not is_open), None, True
-        if not is_open:
-            return is_open, None, False
-
-        list_hovered = Rect.from_top_left(layout.pos, layout.width, layout.full_h).contains(Vec2.from_xy(mouse))
-        if click and not list_hovered:
-            return False, None, True
-
-        for idx in range(item_count):
-            item_y = layout.rows_y0 + layout.row_h * float(idx)
-            hovered = bool(enabled) and mouse_inside_rect_with_padding(
-                mouse,
-                pos=Vec2(layout.pos.x, item_y),
-                width=layout.width,
-                height=14.0 * scale,
-            )
-            if hovered and click:
-                return False, idx, True
-
-        return is_open, None, False
+    ) -> DropdownLayoutBase:
+        return autosize_dropdown_layout(pos=pos, items=items, font=font, scale=scale)
 
     def _update_method_dropdowns(self, *, left_top_left: Vec2, panel_scale: float, font: SmallFontData) -> bool:
         config = self.state.config
@@ -561,13 +496,16 @@ class ControlsMenuView(PanelMenuView):
         aim_enabled = not (self._move_method_open or self._player_profile_open or rebind_active)
         player_enabled = not (self._move_method_open or self._aim_method_open or rebind_active)
 
-        self._move_method_open, move_selected, consumed = self._update_dropdown(
+        move_result = dropdown_update(
             layout=move_layout,
             item_count=len(move_items),
             is_open=self._move_method_open,
             enabled=move_enabled,
             scale=panel_scale,
         )
+        self._move_method_open = move_result.is_open
+        move_selected = move_result.selected_index
+        consumed = move_result.consumed
         if move_selected is not None:
             selected_idx = max(0, min(int(move_selected), len(move_mode_ids) - 1))
             self._set_player_move_mode(player_index=player_idx, move_mode=move_mode_ids[selected_idx])
@@ -575,13 +513,16 @@ class ControlsMenuView(PanelMenuView):
         if consumed:
             return True
 
-        self._aim_method_open, aim_selected, consumed = self._update_dropdown(
+        aim_result = dropdown_update(
             layout=aim_layout,
             item_count=len(aim_items),
             is_open=self._aim_method_open,
             enabled=aim_enabled,
             scale=panel_scale,
         )
+        self._aim_method_open = aim_result.is_open
+        aim_selected = aim_result.selected_index
+        consumed = aim_result.consumed
         if aim_selected is not None:
             selected_idx = max(0, min(int(aim_selected), len(aim_item_ids) - 1))
             self._set_player_aim_scheme(player_index=player_idx, aim_scheme=aim_item_ids[selected_idx])
@@ -589,13 +530,16 @@ class ControlsMenuView(PanelMenuView):
         if consumed:
             return True
 
-        self._player_profile_open, player_selected, consumed = self._update_dropdown(
+        player_result = dropdown_update(
             layout=player_layout,
             item_count=len(player_items),
             is_open=self._player_profile_open,
             enabled=player_enabled,
             scale=panel_scale,
         )
+        self._player_profile_open = player_result.is_open
+        player_selected = player_result.selected_index
+        consumed = player_result.consumed
         if player_selected is not None:
             self._config_player = max(1, min(4, player_selected + 1))
         if consumed:
@@ -724,7 +668,7 @@ class ControlsMenuView(PanelMenuView):
         checkbox_alpha = 255 if checkbox_hovered else 178
         draw_small_text(font, "Show direction arrow", Vec2(left_top_left.x + 235.0 * panel_scale, left_top_left.y + 175.0 * panel_scale), rl.Color(255, 255, 255, checkbox_alpha))
 
-        dropdowns: tuple[tuple[bool, _ControlsDropdownLayout, tuple[str, ...], int, bool], ...] = (
+        dropdowns: tuple[tuple[bool, DropdownLayoutBase, tuple[str, ...], int, bool], ...] = (
             (
                 self._player_profile_open,
                 player_layout,
@@ -751,28 +695,28 @@ class ControlsMenuView(PanelMenuView):
         for is_open, layout, items, selected_index, enabled in dropdowns:
             if is_open:
                 continue
-            self._draw_dropdown(
+            dropdown_draw(
+                resources=resources,
+                font=font,
                 layout=layout,
                 items=items,
                 selected_index=selected_index,
                 is_open=is_open,
                 enabled=enabled,
                 scale=panel_scale,
-                resources=resources,
-                font=font,
             )
         for is_open, layout, items, selected_index, enabled in dropdowns:
             if not is_open:
                 continue
-            self._draw_dropdown(
+            dropdown_draw(
+                resources=resources,
+                font=font,
                 layout=layout,
                 items=items,
                 selected_index=selected_index,
                 is_open=is_open,
                 enabled=enabled,
                 scale=panel_scale,
-                resources=resources,
-                font=font,
             )
 
         # --- Right panel: configured bindings list ---
@@ -854,74 +798,3 @@ class ControlsMenuView(PanelMenuView):
                 right_top_left.y + (CONTROLS_RIGHT_PANEL_HEIGHT - 26.0) * panel_scale,
             )
             draw_small_text(font, "Esc/Right: cancel  Backspace: default  Delete: unbind", hint_pos, rl.Color(255, 226, 188, 220))
-
-    def _draw_dropdown(
-        self,
-        *,
-        layout: _ControlsDropdownLayout,
-        items: tuple[str, ...],
-        selected_index: int,
-        is_open: bool,
-        enabled: bool,
-        scale: float,
-        resources: RuntimeResources,
-        font: SmallFontData,
-    ) -> None:
-        mouse = rl.get_mouse_position()
-        hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
-            mouse,
-            pos=layout.pos,
-            width=layout.width,
-            height=14.0 * scale,
-        )
-        widget_h = layout.full_h if is_open else layout.header_h
-        rl.draw_rectangle(int(layout.pos.x), int(layout.pos.y), int(layout.width), int(widget_h), rl.WHITE)
-        inner_w = max(0, int(layout.width) - 2)
-        inner_h = max(0, int(widget_h) - 2)
-        rl.draw_rectangle(int(layout.pos.x) + 1, int(layout.pos.y) + 1, inner_w, inner_h, rl.BLACK)
-
-        if (is_open or hovered_header) and enabled:
-            line_h = max(1, int(1.0 * scale))
-            rl.draw_rectangle(
-                int(layout.pos.x),
-                int(layout.pos.y + 15.0 * scale),
-                int(layout.width),
-                line_h,
-                rl.Color(255, 255, 255, 128),
-            )
-        arrow_tex = (
-            resources.texture(TextureId.UI_DROP_ON)
-            if ((is_open or hovered_header) and enabled)
-            else resources.texture(TextureId.UI_DROP_OFF)
-        )
-        rl.draw_texture_pro(
-            arrow_tex,
-            rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
-            rl.Rectangle(layout.arrow_pos.x, layout.arrow_pos.y, layout.arrow_size.x, layout.arrow_size.y),
-            rl.Vector2(0.0, 0.0),
-            0.0,
-            rl.WHITE,
-        )
-
-        idx = max(0, min(len(items) - 1, int(selected_index))) if items else 0
-        header_alpha = 242 if ((is_open or hovered_header) and enabled) else 191
-        if items:
-            draw_small_text(font, items[idx], layout.text_pos, rl.Color(255, 255, 255, header_alpha))
-
-        if not is_open:
-            return
-
-        for idx, item in enumerate(items):
-            item_y = layout.rows_y0 + layout.row_h * float(idx)
-            hovered = bool(enabled) and mouse_inside_rect_with_padding(
-                mouse,
-                pos=Vec2(layout.pos.x, item_y),
-                width=layout.width,
-                height=14.0 * scale,
-            )
-            alpha = 153
-            if hovered:
-                alpha = 242
-            if idx == selected_index:
-                alpha = max(alpha, 245)
-            draw_small_text(font, item, Vec2(layout.text_pos.x, item_y), rl.Color(255, 255, 255, alpha))

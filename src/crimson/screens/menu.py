@@ -9,7 +9,8 @@ from grim.raylib_api import rl
 
 from ..game.types import GameState
 from .assets import require_runtime_resources
-from .chrome import (
+from .chrome.controls import MenuEntry, MenuEntryController, MenuListController, MenuListState
+from .chrome.geometry import (
     MENU_DEMO_IDLE_START_MS,
     MENU_ITEM_OFFSET_X,
     MENU_ITEM_OFFSET_Y,
@@ -27,18 +28,6 @@ from .chrome import (
     MENU_LABEL_ROW_STATISTICS,
     MENU_LABEL_STEP,
     MENU_LABEL_WIDTH,
-    ActionDispatchPolicy,
-    BackdropPolicy,
-    ChromeRuntime,
-    ChromeSpec,
-    MenuEntry,
-    MenuEntryController,
-    MenuListController,
-    MenuListState,
-    MusicPolicy,
-    SignPolicy,
-    draw_ui_quad,
-    draw_ui_quad_shadow,
     menu_item_scale,
     menu_max_timeline_ms,
     menu_slot_end_ms,
@@ -46,17 +35,27 @@ from .chrome import (
     menu_slot_start_ms,
     ui_element_anim,
 )
+from .chrome.runtime import (
+    BackdropPolicy,
+    ChromeSpec,
+    MusicPolicy,
+    PendingOnceDispatch,
+    PlayOpenSfxOnFullyOpen,
+    SignPolicy,
+    draw_ui_quad,
+    draw_ui_quad_shadow,
+)
+from .chrome.view import ChromeScreenView
 
 
-class _MenuEntriesViewBase:
+class _MenuEntriesViewBase(ChromeScreenView):
     def __init__(self, state: GameState, *, chrome_spec: ChromeSpec) -> None:
-        self.state = state
-        self._chrome = ChromeRuntime(state, spec=chrome_spec)
+        super().__init__(state, chrome_spec=chrome_spec)
         self._menu_entries: list[MenuEntry] = []
         self._list_state = MenuListState()
 
     def open(self) -> None:
-        self._chrome.open()
+        super().open()
         self._menu_entries = self._build_menu_entries()
         mouse = rl.get_mouse_position()
         MenuListController.open_state(
@@ -67,16 +66,15 @@ class _MenuEntriesViewBase:
         self._on_open()
 
     def close(self) -> None:
-        self._chrome.close()
+        super().close()
         self._menu_entries = []
 
     def update(self, dt: float) -> None:
         self._assert_open()
-        tick = self._chrome.update(dt)
+        tick = self._update_chrome(dt)
         mouse = Vec2.from_xy(rl.get_mouse_position())
-        if tick.dt_ms > 0 and self._uses_idle_timer():
-            MenuListController.update_idle_timer(self._list_state, dt_ms=tick.dt_ms, mouse_pos=mouse)
-        if self._chrome.chrome.closing:
+        self._before_menu_step(tick_dt_ms=tick.dt_ms, mouse_pos=mouse)
+        if self._chrome_state.closing:
             return
         if not self._menu_entries:
             return
@@ -98,21 +96,10 @@ class _MenuEntriesViewBase:
     def draw(self) -> None:
         self._assert_open()
         self._draw_background()
-        self._chrome.draw_fade()
-        resources = require_runtime_resources(self.state)
+        self._draw_fade()
         self._draw_menu_items()
         self._draw_menu_sign()
-        self._chrome.draw_cursor(resources=resources)
-
-    def take_action(self) -> str | None:
-        self._assert_open()
-        return self._chrome.take_action()
-
-    def _assert_open(self) -> None:
-        assert self._chrome.is_open, f"{self.__class__.__name__} must be opened before use"
-
-    def _draw_background(self) -> None:
-        self._chrome.draw_background()
+        self._draw_cursor()
 
     def _on_open(self) -> None:
         return
@@ -129,21 +116,19 @@ class _MenuEntriesViewBase:
     def _enter_enabled(self) -> bool:
         return True
 
-    def _uses_idle_timer(self) -> bool:
-        return False
+    def _before_menu_step(self, *, tick_dt_ms: int, mouse_pos: Vec2) -> None:
+        del tick_dt_ms
+        del mouse_pos
 
     def _after_menu_update(self, *, tick_dt_ms: int, interactive: bool) -> None:
         del tick_dt_ms
         del interactive
 
-    def _begin_close_transition(self, action: str) -> None:
-        self._chrome.begin_close_transition(action)
-
     def _menu_entry_enabled(self, entry: MenuEntry) -> bool:
-        return self._chrome.chrome.timeline_ms >= menu_slot_start_ms(entry.slot)
+        return self._chrome_state.timeline_ms >= menu_slot_start_ms(entry.slot)
 
     def _menu_item_scale(self, slot: int) -> tuple[float, float]:
-        return menu_item_scale(float(self._chrome.chrome.screen_width), int(slot), small_scale=0.9)
+        return menu_item_scale(float(self._chrome_state.screen_width), int(slot), small_scale=0.9)
 
     def _menu_item_bounds(self, entry: MenuEntry, resources: RuntimeResources) -> Rect:
         item = resources.texture(TextureId.UI_MENU_ITEM)
@@ -185,7 +170,7 @@ class _MenuEntriesViewBase:
             entry = self._menu_entries[idx]
             pos = Vec2(menu_slot_pos_x(entry.slot), entry.y)
             angle_rad, _slide_x = ui_element_anim(
-                self._chrome.chrome.timeline_ms,
+                self._chrome_state.timeline_ms,
                 index=entry.slot + 2,
                 start_ms=menu_slot_start_ms(entry.slot),
                 end_ms=menu_slot_end_ms(entry.slot),
@@ -259,7 +244,7 @@ class _MenuEntriesViewBase:
                 rl.end_blend_mode()
 
     def _draw_menu_sign(self) -> None:
-        self._chrome.draw_sign(resources=require_runtime_resources(self.state))
+        self._draw_sign()
 
 
 class MenuView(_MenuEntriesViewBase):
@@ -279,9 +264,8 @@ class MenuView(_MenuEntriesViewBase):
                     lock_on_fully_open=True,
                     unlock_on_actions=("quit_after_demo", "quit_app"),
                 ),
-                dispatch=ActionDispatchPolicy(mode="pending_once"),
-                open_sfx="sfx_ui_panelclick",
-                open_sfx_mode="on_fully_open",
+                dispatch=PendingOnceDispatch(),
+                open_sfx=PlayOpenSfxOnFullyOpen(),
                 close_sfx=None,
             ),
         )
@@ -290,7 +274,7 @@ class MenuView(_MenuEntriesViewBase):
     def open(self) -> None:
         self._full_version = not self.state.demo_enabled
         super().open()
-        self._chrome.chrome.timeline_max_ms = menu_max_timeline_ms(
+        self._chrome_state.timeline_max_ms = menu_max_timeline_ms(
             full_version=self._full_version,
             mods_available=self._mods_available(),
             other_games=self._other_games_enabled(),
@@ -303,14 +287,29 @@ class MenuView(_MenuEntriesViewBase):
             other_games=self._other_games_enabled(),
         )
 
-    def _uses_idle_timer(self) -> bool:
-        return True
+    def _before_menu_step(self, *, tick_dt_ms: int, mouse_pos: Vec2) -> None:
+        if tick_dt_ms <= 0:
+            return
+        mouse_moved = Vec2(float(mouse_pos.x), float(mouse_pos.y)) != self._list_state.last_mouse_pos
+        if mouse_moved:
+            self._list_state.last_mouse_pos = Vec2(float(mouse_pos.x), float(mouse_pos.y))
+
+        any_key = rl.get_key_pressed() != 0
+        any_click = (
+            rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+            or rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT)
+            or rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_MIDDLE)
+        )
+        if any_key or any_click or mouse_moved:
+            self._list_state.idle_ms = 0
+            return
+        self._list_state.idle_ms += int(tick_dt_ms)
 
     def _after_menu_update(self, *, tick_dt_ms: int, interactive: bool) -> None:
         del tick_dt_ms
         if (
-            (not self._chrome.chrome.closing)
-            and self._chrome.chrome.pending_action is None
+            (not self._chrome_state.closing)
+            and self._chrome_state.pending_action is None
             and self.state.demo_enabled
             and interactive
             and self._list_state.idle_ms >= MENU_DEMO_IDLE_START_MS
@@ -349,7 +348,7 @@ class MenuView(_MenuEntriesViewBase):
         other_games: bool,
     ) -> list[MenuEntry]:
         rows = self._menu_label_rows(full_version, other_games)
-        slot_ys = self._menu_slot_ys(other_games, self._chrome.chrome.widescreen_y_shift)
+        slot_ys = self._menu_slot_ys(other_games, self._chrome_state.widescreen_y_shift)
         active = self._menu_slot_active(full_version, mods_available, other_games)
         entries: list[MenuEntry] = []
         for slot, (row, y, enabled) in enumerate(zip(rows, slot_ys, active, strict=False)):

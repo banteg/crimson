@@ -2,36 +2,32 @@ from __future__ import annotations
 
 from crimson.quests.level import QuestLevel
 from crimson.quests.status import tracked_quest_completed_counter_index
-from grim.audio import play_sfx, update_audio
+from grim.audio import play_sfx
 from grim.raylib_api import rl
-from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState, HighScoresRequest
 from ...game_modes import GameMode
 from ...quests import quest_by_level
-from ..chrome import ensure_menu_ground, menu_ground_camera
-from ..transitions import _draw_screen_fade
+from ..chrome.runtime import NoOpenSfx
+from .base import _QuestChromeViewBase
 from .shared import _next_quest_level, _player_name_default
 
 
-class QuestResultsView:
+class QuestResultsView(_QuestChromeViewBase):
     def __init__(self, state: GameState) -> None:
-        self.state = state
-        self._ground: GroundRenderer | None = None
+        super().__init__(state, open_sfx=NoOpenSfx(), close_sfx=None)
         self._quest_level: QuestLevel | None = None
         self._quest_title: str = ""
         self._unlock_weapon_name: str = ""
         self._unlock_perk_name: str = ""
         self._ui = None
-        self._action: str | None = None
 
     def open(self) -> None:
         from ...persistence.highscores import HighScoreRecord
         from ...quests.results import compute_quest_final_time
         from ..results.quest_results import QuestResultsUi
 
-        self._action = None
-        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
+        super().open()
         self.state.quest_fail_retry_count = 0
         outcome = self.state.quest_outcome
         self.state.quest_outcome = None
@@ -150,17 +146,16 @@ class QuestResultsView:
         if self._ui is not None:
             self._ui.close()
             self._ui = None
-        self._ground = None
+        super().close()
         self._quest_level = None
         self._quest_title = ""
         self._unlock_weapon_name = ""
         self._unlock_perk_name = ""
 
     def update(self, dt: float) -> None:
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
+        self._tick_chrome(dt)
+        if self._chrome_state.closing:
+            return
         ui = self._ui
         if ui is None:
             return
@@ -176,50 +171,39 @@ class QuestResultsView:
         if action == "play_again":
             assert self._quest_level is not None
             self._set_pending_quest_level(self._quest_level)
-            self._action = "start_quest"
+            self._begin_close_transition("start_quest")
             return
         if action == "play_next":
             if self._quest_level == QuestLevel(5, 10):
-                self._action = "end_note"
+                self._begin_close_transition("end_note")
                 return
             assert self._quest_level is not None
             next_level = _next_quest_level(self._quest_level)
             if next_level is not None:
                 self._set_pending_quest_level(next_level)
-                self._action = "start_quest"
+                self._begin_close_transition("start_quest")
             else:
-                self._action = "back_to_menu"
+                self._begin_close_transition("back_to_menu")
             return
         if action == "high_scores":
             self._open_high_scores_list()
             return
         if action == "main_menu":
-            self._action = "back_to_menu"
+            self._begin_close_transition("back_to_menu")
             return
 
     def draw(self) -> None:
-        rl.clear_background(rl.BLACK)
         ui = self._ui
         bg_alpha = 1.0
         if ui is not None:
             bg_alpha = float(ui.world_entity_alpha())
-        pause_background = self.state.pause_background
-        if pause_background is not None:
-            pause_background.draw_pause_background(entity_alpha=bg_alpha)
-        elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
-        _draw_screen_fade(self.state)
+        self._draw_chrome(entity_alpha=bg_alpha)
         if ui is not None:
             ui.draw()
             return
 
         rl.draw_text("Quest results unavailable.", 32, 140, 28, rl.Color(235, 235, 235, 255))
         rl.draw_text("Press ESC to return to the menu.", 32, 180, 18, rl.Color(190, 190, 200, 255))
-
-    def take_action(self) -> str | None:
-        action = self._action
-        self._action = None
-        return action
 
     def _open_high_scores_list(self) -> None:
         highlight_rank = None
@@ -231,7 +215,7 @@ class QuestResultsView:
             quest_level=self._quest_level,
             highlight_rank=highlight_rank,
         )
-        self._action = "open_high_scores"
+        self._begin_close_transition("open_high_scores")
 
     def _set_pending_quest_level(self, level: QuestLevel) -> None:
         self.state.pending_quest_level = level
