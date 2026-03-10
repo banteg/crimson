@@ -26,6 +26,12 @@ const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
 const GAME_MODE_QUESTS = 3;
+const MOVE_MODE_UNKNOWN = 0;
+const MOVE_MODE_RELATIVE = 1;
+const MOVE_MODE_STATIC = 2;
+const MOVE_MODE_DUAL_ACTION_PAD = 3;
+const MOVE_MODE_MOUSE_POINT_CLICK = 4;
+const MOVE_MODE_COMPUTER = 5;
 const BONUS_ID_ENERGIZER = "2";
 const BONUS_ID_WEAPON_POWER_UP = "4";
 const BONUS_ID_DOUBLE_EXPERIENCE = "6";
@@ -334,6 +340,7 @@ const DATA = {
   config_game_mode: 0x00480360,
   config_player_mode_flags: 0x00480364,
   config_aim_scheme: 0x0048038c,
+  config_key_reload: 0x004807c4,
   perk_choice_ids: 0x004807e8,
   frame_dt: 0x00480840,
   frame_dt_ms: 0x00480844,
@@ -464,6 +471,7 @@ const REQUIRED_REPLAY_DATA_NAMES = [
   "config_game_mode",
   "config_player_mode_flags",
   "config_aim_scheme",
+  "config_key_reload",
   "game_state_prev",
   "game_state_id",
   "game_state_pending",
@@ -1182,13 +1190,22 @@ function asReplayF32(value) {
   return 0;
 }
 
+function requireReplayBool(value, field) {
+  if (value === true || value === false) return value;
+  failCaptureContract(field + " must be a boolean");
+}
+
+function _digitalMoveAxis(positivePressed, negativePressed) {
+  return captureNumber((positivePressed === true ? 1.0 : 0.0) - (negativePressed === true ? 1.0 : 0.0));
+}
+
 function packReplayInputFlags(inputRow) {
   const row = inputRow && typeof inputRow === "object" ? inputRow : {};
   let flags = 0;
   if (row.fire_down === true) flags |= REPLAY_FIRE_DOWN_FLAG;
   if (row.fire_pressed === true) flags |= REPLAY_FIRE_PRESSED_FLAG;
   if (row.reload_pressed === true) flags |= REPLAY_RELOAD_PRESSED_FLAG;
-  if (row.reload_active === true) flags |= REPLAY_RELOAD_DOWN_FLAG;
+  if (row.reload_down === true) flags |= REPLAY_RELOAD_DOWN_FLAG;
 
   const hasMoveKeys =
     row.move_forward_pressed != null ||
@@ -1214,18 +1231,18 @@ function packReplayInputFlags(inputRow) {
   return flags | 0;
 }
 
-function replayInputsFromTick(tickObj) {
-  const rows = requireArray(tickObj && tickObj.input_approx, "input_approx");
+function replayInputsFromIntentRows(rows, field) {
+  const replayRows = requireArray(rows, field);
   const out = [];
-  for (let i = 0; i < rows.length; i++) {
-    const row = requireObject(rows[i], "input_approx[" + i + "]");
-    requireInt(row.move_mode, "input_approx[" + i + "].move_mode");
-    requireInt(row.aim_scheme, "input_approx[" + i + "].aim_scheme");
+  for (let i = 0; i < replayRows.length; i++) {
+    const row = requireObject(replayRows[i], field + "[" + i + "]");
+    requireInt(row.move_mode, field + "[" + i + "].move_mode");
+    requireInt(row.aim_scheme, field + "[" + i + "].aim_scheme");
     out.push([
-      requireFiniteScalar(row.move_dx, "input_approx[" + i + "].move_dx"),
-      requireFiniteScalar(row.move_dy, "input_approx[" + i + "].move_dy"),
-      requireFiniteScalar(row.aim_x, "input_approx[" + i + "].aim_x"),
-      requireFiniteScalar(row.aim_y, "input_approx[" + i + "].aim_y"),
+      requireFiniteScalar(row.move_x, field + "[" + i + "].move_x"),
+      requireFiniteScalar(row.move_y, field + "[" + i + "].move_y"),
+      requireFiniteScalar(row.aim_x, field + "[" + i + "].aim_x"),
+      requireFiniteScalar(row.aim_y, field + "[" + i + "].aim_y"),
       packReplayInputFlags(row),
     ]);
   }
@@ -1241,6 +1258,109 @@ function runPlayerCountFromTick(tickObj) {
 function numberOr(value, fallback) {
   const parsed = captureNumber(value);
   return parsed == null ? fallback : parsed;
+}
+
+function replayInputIntentFromTick(tickObj) {
+  const tick = requireObject(tickObj, "tick");
+  const after = requireObject(tick.after, "after");
+  const globals = requireObject(after.globals, "after.globals");
+  const afterPlayers = requireNonEmptyArray(after.players, "after.players");
+  const keyRows = requireArray(tick.input_player_keys, "input_player_keys");
+  const moveModes = requireArray(globals.config_player_mode_flags, "after.globals.config_player_mode_flags");
+  const aimSchemes = requireArray(globals.config_aim_scheme, "after.globals.config_aim_scheme");
+  if (moveModes.length !== afterPlayers.length) {
+    failCaptureContract(
+      "after.globals.config_player_mode_flags length " +
+        moveModes.length +
+        " does not match after.players length " +
+        afterPlayers.length,
+    );
+  }
+  if (aimSchemes.length !== afterPlayers.length) {
+    failCaptureContract(
+      "after.globals.config_aim_scheme length " +
+        aimSchemes.length +
+        " does not match after.players length " +
+        afterPlayers.length,
+    );
+  }
+  if (keyRows.length !== afterPlayers.length) {
+    failCaptureContract(
+      "input_player_keys length " + keyRows.length + " does not match after.players length " + afterPlayers.length,
+    );
+  }
+
+  const out = [];
+  for (let i = 0; i < afterPlayers.length; i++) {
+    const player = requireObject(afterPlayers[i], "after.players[" + i + "]");
+    const keyRow = requireObject(keyRows[i], "input_player_keys[" + i + "]");
+    const moveMode = requireInt(moveModes[i], "after.globals.config_player_mode_flags[" + i + "]");
+    const aimScheme = requireInt(aimSchemes[i], "after.globals.config_aim_scheme[" + i + "]");
+    let moveForwardPressed = null;
+    let moveBackwardPressed = null;
+    let turnLeftPressed = null;
+    let turnRightPressed = null;
+    let moveX = null;
+    let moveY = null;
+    if (moveMode === MOVE_MODE_RELATIVE || moveMode === MOVE_MODE_STATIC) {
+      moveForwardPressed = requireReplayBool(
+        keyRow.move_forward_pressed,
+        "input_player_keys[" + i + "].move_forward_pressed",
+      );
+      moveBackwardPressed = requireReplayBool(
+        keyRow.move_backward_pressed,
+        "input_player_keys[" + i + "].move_backward_pressed",
+      );
+      turnLeftPressed = requireReplayBool(
+        keyRow.turn_left_pressed,
+        "input_player_keys[" + i + "].turn_left_pressed",
+      );
+      turnRightPressed = requireReplayBool(
+        keyRow.turn_right_pressed,
+        "input_player_keys[" + i + "].turn_right_pressed",
+      );
+      moveX = _digitalMoveAxis(turnRightPressed, turnLeftPressed);
+      moveY = _digitalMoveAxis(moveBackwardPressed, moveForwardPressed);
+    } else if (moveMode === MOVE_MODE_UNKNOWN) {
+      failCaptureContract(
+        "after.globals.config_player_mode_flags[" + i + "] must not be UNKNOWN for replay_input_intent",
+      );
+    } else if (
+      moveMode === MOVE_MODE_DUAL_ACTION_PAD ||
+      moveMode === MOVE_MODE_MOUSE_POINT_CLICK ||
+      moveMode === MOVE_MODE_COMPUTER
+    ) {
+      failCaptureContract(
+        "after.globals.config_player_mode_flags[" +
+          i +
+          "]=" +
+          moveMode +
+          " is unsupported by replay_input_intent without raw move capture",
+      );
+    } else {
+      failCaptureContract("after.globals.config_player_mode_flags[" + i + "] has unsupported value " + moveMode);
+    }
+
+    out.push({
+      player_index: i,
+      move_x: moveX,
+      move_y: moveY,
+      aim_x: requireFiniteScalar(player.aim_x, "after.players[" + i + "].aim_x"),
+      aim_y: requireFiniteScalar(player.aim_y, "after.players[" + i + "].aim_y"),
+      aim_heading: requireFiniteScalar(player.aim_heading, "after.players[" + i + "].aim_heading"),
+      move_mode: moveMode,
+      aim_scheme: aimScheme,
+      fire_down: requireReplayBool(keyRow.fire_down, "input_player_keys[" + i + "].fire_down"),
+      fire_pressed: requireReplayBool(keyRow.fire_pressed, "input_player_keys[" + i + "].fire_pressed"),
+      reload_pressed: requireReplayBool(keyRow.reload_pressed, "input_player_keys[" + i + "].reload_pressed"),
+      reload_down: requireReplayBool(keyRow.reload_down, "input_player_keys[" + i + "].reload_down"),
+      move_forward_pressed: moveForwardPressed,
+      move_backward_pressed: moveBackwardPressed,
+      turn_left_pressed: turnLeftPressed,
+      turn_right_pressed: turnRightPressed,
+    });
+  }
+  return out;
 }
 
 function validateAfterPlayers(players, expectedPlayers) {
@@ -1673,7 +1793,8 @@ function buildTraceTickRow(tickObj) {
     }
     checkpoint.elapsed_ms = elapsedMs;
     const playerCount = checkpointPlayers.length | 0;
-    const replayInputs = replayInputsFromTick(tickObj);
+    const replayInputIntent = replayInputIntentFromTick(tickObj);
+    const replayInputs = replayInputsFromIntentRows(replayInputIntent, "replay_input_intent");
     if ((replayInputs.length | 0) !== (playerCount | 0)) {
       failCaptureContract(
         "replay_inputs length " + replayInputs.length + " does not match checkpoint.players length " + playerCount
@@ -2310,6 +2431,7 @@ function readInputBindingsCompact() {
     });
   }
   return {
+    reload: readDataI32("config_key_reload"),
     players: players,
     alternate_single: {
       move_forward: readDataI32("player_alt_move_key_forward"),
@@ -3073,6 +3195,7 @@ function buildEmptyPlayerKeyState(playerIndex) {
     fire_down: null,
     fire_pressed: null,
     reload_pressed: null,
+    reload_down: null,
   };
 }
 
@@ -3106,6 +3229,8 @@ function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStat
   const bindings = tick.before && tick.before.input_bindings && tick.before.input_bindings.players;
   const altBindings =
     tick.before && tick.before.input_bindings ? tick.before.input_bindings.alternate_single : null;
+  const reloadKey =
+    tick.before && tick.before.input_bindings ? tick.before.input_bindings.reload : null;
 
   const key = keyCode | 0;
   const down = !!pressed;
@@ -3124,7 +3249,12 @@ function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStat
     return;
   }
 
-  if ((!Array.isArray(bindings) || bindings.length === 0) && (!altBindings || typeof altBindings !== "object")) {
+  const hasReloadBinding = Number.isFinite(reloadKey);
+  if (
+    (!Array.isArray(bindings) || bindings.length === 0) &&
+    (!altBindings || typeof altBindings !== "object") &&
+    !hasReloadBinding
+  ) {
     return;
   }
 
@@ -3143,8 +3273,10 @@ function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStat
           state.fire_down = downSeen(state.fire_down);
         if (queryName === "grim_was_key_pressed") state.fire_pressed = downSeen(state.fire_pressed);
       }
-      if ((binding.reload | 0) === key && queryName === "grim_was_key_pressed") {
-        state.reload_pressed = downSeen(state.reload_pressed);
+      if (hasReloadBinding && (reloadKey | 0) === key) {
+        if (queryName === "grim_is_key_active" || queryName === "grim_is_key_down")
+          state.reload_down = downSeen(state.reload_down);
+        if (queryName === "grim_was_key_pressed") state.reload_pressed = downSeen(state.reload_pressed);
       }
     }
   }
