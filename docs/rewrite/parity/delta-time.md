@@ -111,6 +111,7 @@ Integer-ms cadence consumers:
 
 - Replay records per-tick `dt` as authoritative timing input for deterministic reruns.
 - Capture may include sub-tick `timing_samples` rows to preserve phase-level timing evidence.
+- Frida replay-grade capture must include a `gpur_enter` timing sample, and JSONL tick timing must be sourced from that row rather than from fallback aliases.
 - Finalize must preserve timing evidence into trace channels (not drop/flatten away).
 - Diff/bisect must compare `timing_samples` and report first timing-phase mismatch when present.
 

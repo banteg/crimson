@@ -70,5 +70,9 @@ These traces are directly consumable by:
 
 - Legacy `dbg import-capture`, `replay convert-capture`, and postpack flow are removed.
 - JSONL capture is now treated as a strict owned wire contract. Replay-grade rows are `session_start`, `run_start`, `tick`, `run_end`, and `session_end`; contract violations are capture errors, not finalize-time cleanup work.
-- JSONL tick rows carry the finalized replay channels (`checkpoint`, `rng_marks`, `rng_stream`, `timing_samples`, `sim_state`, `entity_samples`) plus replay-grade packed inputs (`replay_inputs`) so replay sidecars can be generated losslessly.
+- JSONL tick rows carry the finalized replay channels (`checkpoint`, `rng_stream`, `timing_samples`, `sim_state`, `entity_samples`) plus replay-grade packed inputs (`replay_inputs`) so replay sidecars can be generated losslessly.
+- `replay_inputs` are derived from captured input intent, not post-simulation movement approximation. `input_approx` remains diagnostic-only.
+- `timing_samples` are replay-grade timing evidence. Each captured tick must include a `gpur_enter` row, and tick timing is derived from that row rather than from fallback diagnostics.
+- Raw capture diagnostics live in one top-level `diagnostics` bag. Replay checkpoints no longer mirror those fields under `checkpoint.debug`.
+- `rng_stream` and `checkpoint.rng_state` are the only replay-significant RNG authorities. Legacy RNG summaries are diagnostic-only.
 - Finalization normalizes entity UID/generation tracking so entity timelines are stable across runs.
