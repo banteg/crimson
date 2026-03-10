@@ -1632,18 +1632,17 @@ function entitySamplesFromTick(tickObj) {
 }
 
 function rngStreamFromTick(tickObj) {
-  const rng = requireObject(tickObj && tickObj.rng, "rng");
-  const rows = requireArray(rng.head, "rng.head");
+  const rows = requireArray(tickObj && tickObj.rng_stream, "rng_stream");
   const out = [];
   for (let i = 0; i < rows.length; i++) {
-    const row = requireObject(rows[i], "rng.head[" + i + "]");
-    const tickCallIndex = requirePositiveInt(row.tick_call_index, "rng.head[" + i + "].tick_call_index");
-    const value15 = requireInt(row.value_15, "rng.head[" + i + "].value_15");
+    const row = requireObject(rows[i], "rng_stream[" + i + "]");
+    const tickCallIndex = requirePositiveInt(row.tick_call_index, "rng_stream[" + i + "].tick_call_index");
+    const value15 = requireInt(row.value_15, "rng_stream[" + i + "].value_15");
     if (value15 < 0 || value15 > 0x7fff) {
-      failCaptureContract("rng.head[" + i + "].value_15 must be in 0..32767");
+      failCaptureContract("rng_stream[" + i + "].value_15 must be in 0..32767");
     }
-    const stateBefore = requireU32(row.state_before_u32, "rng.head[" + i + "].state_before_u32");
-    const stateAfter = requireU32(row.state_after_u32, "rng.head[" + i + "].state_after_u32");
+    const stateBefore = requireU32(row.state_before_u32, "rng_stream[" + i + "].state_before_u32");
+    const stateAfter = requireU32(row.state_after_u32, "rng_stream[" + i + "].state_after_u32");
     out.push({
       tick_call_index: tickCallIndex,
       value_15: value15,
@@ -4307,6 +4306,11 @@ function finalizeTick() {
     mode_samples: tick.mode_samples,
   };
   const rngDiagnostics = {
+    calls: tick.rng.calls,
+    last_value: tick.rng.last_value,
+    hash: toHex(tick.rng.hash_state >>> 0, 8),
+    callers: rngCallers,
+    caller_overflow: tick.rng.caller_overflow,
     seq_first: tick.rng.first_seq,
     seq_last: tick.rng.last_seq,
     seed_epoch_enter: tick.rng.seed_epoch_enter,
@@ -4422,23 +4426,7 @@ function finalizeTick() {
     input_player_keys: tick.input_player_keys,
     perk_apply_outside_before: perkApplyOutsideBefore,
     perk_apply_in_tick: buildCapturePerkApplyInTick(tick.event_heads),
-    rng: {
-      calls: tick.rng.calls,
-      last_value: tick.rng.last_value,
-      hash: toHex(tick.rng.hash_state >>> 0, 8),
-      head: tick.rng.head,
-      callers: rngCallers,
-      caller_overflow: tick.rng.caller_overflow,
-      seq_first: tick.rng.first_seq,
-      seq_last: tick.rng.last_seq,
-      seed_epoch_enter: tick.rng.seed_epoch_enter,
-      seed_epoch_last: tick.rng.seed_epoch_last,
-      outside_before_calls: tick.rng.outside_before_calls,
-      outside_before_dropped: tick.rng.outside_before_dropped,
-      outside_before_head: tick.rng.outside_before_head,
-      mirror_mismatch_total: outState.rngMirrorMismatchCount,
-      mirror_unknown_total: outState.rngMirrorUnknownCalls,
-    },
+    rng_stream: tick.rng.head,
     diagnostics: {
       sampling_phase: "post_gameplay_update_and_render",
       timing: timing,
@@ -4470,7 +4458,7 @@ function finalizeTick() {
     tick_index: out.tick_index,
     gameplay_frame: out.gameplay_frame,
     state_id: out.state_id_leave,
-    rng_calls: out.rng.calls,
+    rng_calls: tick.rng.calls,
     event_total: tick.event_total,
   });
   if (afterElapsedMs != null) outState.lastTickElapsedMs = afterElapsedMs;
