@@ -3688,16 +3688,6 @@ function buildCaptureEventHeads(eventHeadsByKind) {
   return out;
 }
 
-function buildCapturePerkApplyInTick(eventHeadsByKind) {
-  const out = [];
-  const byKind = asObject(eventHeadsByKind);
-  const entries = Array.isArray(byKind.perk_apply) ? byKind.perk_apply : [];
-  for (let i = 0; i < entries.length; i++) {
-    out.push(toPerkApplyEntry(entries[i]));
-  }
-  return out;
-}
-
 function buildCapturePhaseMarkers(markers) {
   const out = [];
   if (!Array.isArray(markers)) return out;
@@ -4339,6 +4329,22 @@ function finalizeTick() {
     CONFIG.enableRngStateMirror && outState.rngMirrorStateU32 != null
       ? outState.rngMirrorStateU32 >>> 0
       : null;
+  const diagnostics = {
+    sampling_phase: "post_gameplay_update_and_render",
+    timing: timing,
+    spawn: spawnDiagnostics,
+    rng: rngDiagnostics,
+    player_fire: playerFireDiagnostics,
+    perk_apply_outside_before: perkApplyOutsideBefore,
+    creature_lifecycle: creatureLifecycleDiagnostics,
+    before_players: checkpointPlayersFromCompact(beforePlayers),
+    before_status: {
+      quest_unlock_index:
+        beforeStatus.quest_unlock_index == null ? -1 : beforeStatus.quest_unlock_index,
+      quest_unlock_index_full:
+        beforeStatus.quest_unlock_index_full == null ? -1 : beforeStatus.quest_unlock_index_full,
+    },
+  };
 
   const checkpoint = {
     tick_index: tick.tick_index,
@@ -4366,22 +4372,6 @@ function finalizeTick() {
     deaths: checkpointDeathsFromEventHeads(tick.event_heads),
     perk: perkSnapshot,
     events: eventSummary,
-    debug: {
-      sampling_phase: "post_gameplay_update_and_render",
-      timing: timing,
-      spawn: spawnDiagnostics,
-      rng: rngDiagnostics,
-      player_fire: playerFireDiagnostics,
-      perk_apply_outside_before: perkApplyOutsideBefore,
-      creature_lifecycle: creatureLifecycleDiagnostics,
-      before_players: checkpointPlayersFromCompact(beforePlayers),
-      before_status: {
-        quest_unlock_index:
-          beforeStatus.quest_unlock_index == null ? -1 : beforeStatus.quest_unlock_index,
-        quest_unlock_index_full:
-          beforeStatus.quest_unlock_index_full == null ? -1 : beforeStatus.quest_unlock_index_full,
-      },
-    },
   };
 
   const frameDtMs =
@@ -4424,18 +4414,8 @@ function finalizeTick() {
       query_hash: toHex(tick.input_hash_state >>> 0, 8),
     },
     input_player_keys: tick.input_player_keys,
-    perk_apply_outside_before: perkApplyOutsideBefore,
-    perk_apply_in_tick: buildCapturePerkApplyInTick(tick.event_heads),
     rng_stream: tick.rng.head,
-    diagnostics: {
-      sampling_phase: "post_gameplay_update_and_render",
-      timing: timing,
-      spawn: spawnDiagnostics,
-      rng: rngDiagnostics,
-      player_fire: playerFireDiagnostics,
-      perk_apply_outside_before: perkApplyOutsideBefore,
-      creature_lifecycle: creatureLifecycleDiagnostics,
-    },
+    diagnostics: diagnostics,
     input_approx: buildInputApprox(afterPlayers, tick),
     frame_dt_ms: frameDtMs,
     frame_dt_ms_i32: frameDtMsI32,
@@ -4448,9 +4428,6 @@ function finalizeTick() {
       bonuses: readActiveBonusSample(CONFIG.bonusSampleLimit),
     },
   };
-  if (creatureLifecycleDiagnostics) {
-    out.creature_lifecycle = creatureLifecycleDiagnostics;
-  }
 
   writeCaptureTick(out);
   writeLine({
