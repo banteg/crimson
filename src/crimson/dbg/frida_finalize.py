@@ -326,6 +326,8 @@ def _validate_tick_channels(
     channels: _TickChannels,
     expected_players: int,
     elapsed_ms: int,
+    dt: float,
+    dt_ms_i32: int,
     mode_id: int,
     quest_stage_major: int,
     quest_stage_minor: int,
@@ -377,6 +379,25 @@ def _validate_tick_channels(
             raise FridaFinalizeError(f"{field}.timing_samples[{sample_index}].phase must be non-empty")
         if not str(sample.write_kind):
             raise FridaFinalizeError(f"{field}.timing_samples[{sample_index}].write_kind must be non-empty")
+    gpur_enter = next((sample for sample in timing_samples if str(sample.phase) == "gpur_enter"), None)
+    if gpur_enter is None:
+        raise FridaFinalizeError(f"{field}.timing_samples must include phase `gpur_enter`")
+    if gpur_enter.frame_dt_f32 is None or not math.isfinite(float(gpur_enter.frame_dt_f32)):
+        raise FridaFinalizeError(f"{field}.timing_samples.gpur_enter.frame_dt_f32 must be finite")
+    if gpur_enter.frame_dt_ms_i32 is None:
+        raise FridaFinalizeError(f"{field}.timing_samples.gpur_enter.frame_dt_ms_i32 must be present")
+    if int(gpur_enter.frame_dt_ms_i32) < 0:
+        raise FridaFinalizeError(f"{field}.timing_samples.gpur_enter.frame_dt_ms_i32 must be >= 0")
+    if float(gpur_enter.frame_dt_f32) != float(dt):
+        raise FridaFinalizeError(
+            f"{field}.timing_samples.gpur_enter.frame_dt_f32={float(gpur_enter.frame_dt_f32)} "
+            f"does not match tick.dt {float(dt)}",
+        )
+    if int(gpur_enter.frame_dt_ms_i32) != int(dt_ms_i32):
+        raise FridaFinalizeError(
+            f"{field}.timing_samples.gpur_enter.frame_dt_ms_i32={int(gpur_enter.frame_dt_ms_i32)} "
+            f"does not match tick.dt_ms_i32 {int(dt_ms_i32)}",
+        )
 
 
 def _replay_status_from_channels(channels: _TickChannels) -> ReplayStatusSnapshot:
@@ -715,6 +736,8 @@ def finalize_frida_jsonl_to_traces(
                             channels=tick_row.channels,
                             expected_players=int(active_run.replay_player_count),
                             elapsed_ms=int(tick_row.elapsed_ms),
+                            dt=float(tick_row.dt),
+                            dt_ms_i32=int(tick_row.dt_ms_i32),
                             mode_id=int(tick_row.mode_id),
                             quest_stage_major=int(tick_row.quest_stage_major),
                             quest_stage_minor=int(tick_row.quest_stage_minor),

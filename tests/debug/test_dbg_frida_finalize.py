@@ -270,6 +270,8 @@ def _channels_stub(
     tick_index: int,
     elapsed_ms: int,
     mode_id: int,
+    dt_ms_i32: int = 16,
+    dt: float | None = None,
     player_count: int = 1,
     quest_stage_major: int = -1,
     quest_stage_minor: int = -1,
@@ -299,7 +301,7 @@ def _channels_stub(
             secondary_projectiles=secondary_projectiles,
         ),
         "rng_stream": [],
-        "timing_samples": [_timing_sample_stub(tick_index=int(tick_index), dt_ms_i32=16)],
+        "timing_samples": [_timing_sample_stub(tick_index=int(tick_index), dt_ms_i32=int(dt_ms_i32), dt=dt)],
     }
 
 
@@ -358,6 +360,8 @@ def _tick_row(
             tick_index=int(tick_index),
             elapsed_ms=int(elapsed_ms),
             mode_id=int(mode_id),
+            dt_ms_i32=int(dt_ms_i32),
+            dt=float(dt),
             player_count=int(player_count),
             quest_stage_major=int(quest_stage_major),
             quest_stage_minor=int(quest_stage_minor),
@@ -531,7 +535,7 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
                 "mode_id": 2,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": _channels_stub(tick_index=0, elapsed_ms=33, mode_id=2),
+                "channels": _channels_stub(tick_index=0, elapsed_ms=33, mode_id=2, dt_ms_i32=33, dt=0.033),
             },
         ],
     )
@@ -613,6 +617,8 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                     tick_index=2,
                     elapsed_ms=33,
                     mode_id=1,
+                    dt_ms_i32=33,
+                    dt=0.033,
                     quest_stage_major=1,
                     quest_stage_minor=5,
                 ),
@@ -1074,6 +1080,112 @@ def test_finalize_frida_jsonl_to_traces_rejects_empty_timing_samples(tmp_path: P
     )
 
     with pytest.raises(FridaFinalizeError, match=r"channels\.timing_samples must be non-empty"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_missing_gpur_enter_timing_sample(tmp_path: Path) -> None:
+    channels = _channels_stub(
+        tick_index=0,
+        elapsed_ms=16,
+        mode_id=3,
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
+    channels["timing_samples"] = [_timing_sample_stub(tick_index=0, phase="mode_enter", dt_ms_i32=16)]
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=3, seed=107, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            _tick_row(
+                run_id=1,
+                tick_index=0,
+                elapsed_ms=16,
+                dt_ms_i32=16,
+                dt=0.016,
+                mode_id=3,
+                player_count=1,
+                quest_stage_major=1,
+                quest_stage_minor=1,
+                channels=channels,
+            ),
+        ],
+    )
+
+    with pytest.raises(
+        FridaFinalizeError,
+        match=r"channels\.timing_samples must include phase `gpur_enter`",
+    ):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_dt_mismatch_with_gpur_enter(tmp_path: Path) -> None:
+    channels = _channels_stub(
+        tick_index=0,
+        elapsed_ms=16,
+        mode_id=3,
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=3, seed=108, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            _tick_row(
+                run_id=1,
+                tick_index=0,
+                elapsed_ms=16,
+                dt_ms_i32=16,
+                dt=0.017,
+                mode_id=3,
+                player_count=1,
+                quest_stage_major=1,
+                quest_stage_minor=1,
+                channels=channels,
+            ),
+        ],
+    )
+
+    with pytest.raises(
+        FridaFinalizeError,
+        match=r"channels\.timing_samples\.gpur_enter\.frame_dt_f32=0\.016 does not match tick\.dt 0\.017",
+    ):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_dt_ms_i32_mismatch_with_gpur_enter(tmp_path: Path) -> None:
+    channels = _channels_stub(
+        tick_index=0,
+        elapsed_ms=16,
+        mode_id=3,
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=3, seed=109, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            _tick_row(
+                run_id=1,
+                tick_index=0,
+                elapsed_ms=16,
+                dt_ms_i32=17,
+                dt=0.016,
+                mode_id=3,
+                player_count=1,
+                quest_stage_major=1,
+                quest_stage_minor=1,
+                channels=channels,
+            ),
+        ],
+    )
+
+    with pytest.raises(
+        FridaFinalizeError,
+        match=r"channels\.timing_samples\.gpur_enter\.frame_dt_ms_i32=16 does not match tick\.dt_ms_i32 17",
+    ):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 

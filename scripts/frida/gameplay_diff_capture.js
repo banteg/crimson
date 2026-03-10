@@ -1716,6 +1716,16 @@ function timingSamplesFromTick(tickObj) {
   return out;
 }
 
+function requireTimingSampleByPhase(rows, phase) {
+  const samplePhase = String(phase);
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row || typeof row !== "object") continue;
+    if (String(row.phase || "") === samplePhase) return row;
+  }
+  failCaptureContract("timing_samples must include phase `" + samplePhase + "`");
+}
+
 function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
   const dt = dtMsI32 == null ? null : dtMsI32 | 0;
   if (dt == null || dt <= 0) return intOr(rawElapsedMs, -1);
@@ -1748,6 +1758,7 @@ function buildTraceTickRow(tickObj) {
     if (timingSamples.length <= 0) {
       failCaptureContract("timing_samples must be non-empty");
     }
+    const gpurEnterSample = requireTimingSampleByPhase(timingSamples, "gpur_enter");
     checkpoint.state_hash = "";
     checkpoint.command_hash = "";
     const modeId = tickModeId(tickObj);
@@ -1755,36 +1766,14 @@ function buildTraceTickRow(tickObj) {
       failCaptureContract("mode_id must be non-negative");
     }
     const dtMsI32 =
-      tickObj.frame_dt_ms_i32 != null
-        ? intOr(tickObj.frame_dt_ms_i32, null)
-        : tickObj &&
-            tickObj.diagnostics &&
-            tickObj.diagnostics.timing &&
-            tickObj.diagnostics.timing.frame_dt_ms_after_i32 != null
-          ? intOr(tickObj.diagnostics.timing.frame_dt_ms_after_i32, null)
-          : null;
+      gpurEnterSample.frame_dt_ms_i32 == null ? null : intOr(gpurEnterSample.frame_dt_ms_i32, null);
     if (dtMsI32 == null || !Number.isFinite(dtMsI32) || dtMsI32 < 0) {
-      failCaptureContract("dt_ms_i32 must be finite and >= 0");
-    }
-    let gpurEnterDt = null;
-    for (let i = 0; i < timingSamples.length; i++) {
-      const row = timingSamples[i];
-      if (!row || typeof row !== "object") continue;
-      if (String(row.phase || "") !== "gpur_enter") continue;
-      gpurEnterDt = row.frame_dt_f32 == null ? null : captureNumber(row.frame_dt_f32);
-      break;
+      failCaptureContract("timing_samples.gpur_enter.frame_dt_ms_i32 must be finite and >= 0");
     }
     const dtSeconds =
-      gpurEnterDt != null
-        ? gpurEnterDt
-        : tickObj &&
-            tickObj.diagnostics &&
-            tickObj.diagnostics.timing &&
-            tickObj.diagnostics.timing.frame_dt_before != null
-          ? captureNumber(tickObj.diagnostics.timing.frame_dt_before)
-          : captureNumber(dtMsI32 / 1000.0);
+      gpurEnterSample.frame_dt_f32 == null ? null : captureNumber(gpurEnterSample.frame_dt_f32);
     if (dtSeconds == null || !Number.isFinite(dtSeconds) || dtSeconds < 0) {
-      failCaptureContract("dt must be finite and >= 0");
+      failCaptureContract("timing_samples.gpur_enter.frame_dt_f32 must be finite and >= 0");
     }
     const elapsedRawMs = requireInt(checkpoint.elapsed_ms, "checkpoint.elapsed_ms");
     const elapsedMs = normalizeRunElapsedMs(elapsedRawMs, dtMsI32);
