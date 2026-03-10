@@ -3146,14 +3146,16 @@ function parseHexU32(value) {
 function buildEmptyPlayerKeyState(playerIndex) {
   return {
     player_index: playerIndex | 0,
-    move_forward_pressed: null,
-    move_backward_pressed: null,
-    turn_left_pressed: null,
-    turn_right_pressed: null,
-    fire_down: null,
-    fire_pressed: null,
-    reload_pressed: null,
-    reload_down: null,
+    // Replay input intent is derived from the hooked query stream. Start each tick
+    // from an explicit "not observed true" state rather than a tri-state row.
+    move_forward_pressed: false,
+    move_backward_pressed: false,
+    turn_left_pressed: false,
+    turn_right_pressed: false,
+    fire_down: false,
+    fire_pressed: false,
+    reload_pressed: false,
+    reload_down: false,
   };
 }
 
