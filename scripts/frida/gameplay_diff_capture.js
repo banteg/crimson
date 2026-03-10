@@ -307,21 +307,6 @@ const FN = {
   sfx_play: 0x0043d120,
   sfx_play_panned: 0x0043d260,
   sfx_play_exclusive: 0x0043d460,
-  outer_get_frame_dt: 0x0040c1d7,
-  outer_reflex_boosted_scale: 0x0040c4e7,
-  outer_rederive_ms: 0x0040c517,
-  outer_console_zero_dt: 0x0040c5b6,
-  gpur_after_gameplay_scale: 0x0040ab11,
-  gpur_after_gameplay_scale_ms: 0x0040ab22,
-  gpur_zero_gate_ms: 0x0040abae,
-  gpur_zero_gate_dt: 0x0040abb4,
-  gpur_time_scale_state_write_a: 0x0040ae3d,
-  gpur_time_scale_state_write_b: 0x0040ae5a,
-  gpur_bonus_reflex_timer_decrement: 0x0040ae52,
-  gpur_restore_dt: 0x0040b1fd,
-  gpur_restore_ms: 0x0040b208,
-  player_local_scale_enter: 0x00413e13,
-  player_local_scale_restore: 0x00414f5f,
 };
 
 // Ghidra (latest sync): first function after `player_update`.
@@ -446,21 +431,6 @@ const REQUIRED_REPLAY_FN_NAMES = [
   "rush_mode_update",
   "survival_update",
   "typo_gameplay_update_and_render",
-  "outer_get_frame_dt",
-  "outer_reflex_boosted_scale",
-  "outer_rederive_ms",
-  "outer_console_zero_dt",
-  "gpur_after_gameplay_scale",
-  "gpur_after_gameplay_scale_ms",
-  "gpur_zero_gate_ms",
-  "gpur_zero_gate_dt",
-  "gpur_time_scale_state_write_a",
-  "gpur_time_scale_state_write_b",
-  "gpur_bonus_reflex_timer_decrement",
-  "gpur_restore_dt",
-  "gpur_restore_ms",
-  "player_local_scale_enter",
-  "player_local_scale_restore",
 ];
 
 const REQUIRED_REPLAY_DATA_NAMES = [
@@ -660,17 +630,21 @@ function recordHookActivity(name, phase, context) {
 
 function buildProcessExceptionPayload(details) {
   const memory = details && details.memory && typeof details.memory === "object" ? details.memory : null;
+  const context = details && details.context && typeof details.context === "object" ? details.context : null;
   return {
     type: details && details.type != null ? String(details.type) : null,
     address: details ? _diagPtrToString(details.address) : null,
     memory_operation: memory && memory.operation != null ? String(memory.operation) : null,
     memory_address: memory ? _diagPtrToString(memory.address) : null,
     thread_id: details && details.threadId != null ? _diagIntOrNull(details.threadId) : null,
+    pc: context ? _diagPtrToString(context.pc) : null,
+    sp: context ? _diagPtrToString(context.sp) : null,
     tick_index_global: _diagTickIndex(),
     gameplay_frame: _diagGameplayFrame(),
     state_id: outState.currentStateId == null ? null : outState.currentStateId | 0,
     run_id: outState.runActive ? outState.currentRunId | 0 : null,
     last_hook: outState.lastHookActivity,
+    backtrace: exceptionBacktrace(context),
   };
 }
 
@@ -2179,6 +2153,17 @@ function maybeBacktrace(context) {
   try {
     return Thread.backtrace(context, Backtracer.ACCURATE)
       .slice(0, 8)
+      .map((addr) => formatCaller(addr) || addr.toString());
+  } catch (_) {
+    return null;
+  }
+}
+
+function exceptionBacktrace(context) {
+  if (!context) return null;
+  try {
+    return Thread.backtrace(context, Backtracer.ACCURATE)
+      .slice(0, 12)
       .map((addr) => formatCaller(addr) || addr.toString());
   } catch (_) {
     return null;
@@ -4651,41 +4636,6 @@ function installHooks() {
   hookModeTick("rush_mode_update");
   hookModeTick("survival_update");
   hookModeTick("typo_gameplay_update_and_render");
-
-  function hookTimingMarker(name, phase, writeKind, payloadFactory) {
-    attachHook(name, fnPtrs[name], {
-      onEnter() {
-        const payload = payloadFactory ? payloadFactory(this) : {};
-        recordTimingSample(phase, writeKind, payload || {});
-      },
-    });
-  }
-
-  hookTimingMarker("outer_get_frame_dt", "outer_get_frame_dt", "frame_dt_write");
-  hookTimingMarker("outer_reflex_boosted_scale", "outer_reflex_boosted_scale", "frame_dt_write");
-  hookTimingMarker("outer_rederive_ms", "outer_rederive_ms", "frame_dt_ms_write");
-  hookTimingMarker("outer_console_zero_dt", "outer_console_zero_dt", "frame_dt_write");
-  hookTimingMarker("gpur_after_gameplay_scale", "gpur_after_gameplay_scale", "frame_dt_write");
-  hookTimingMarker("gpur_after_gameplay_scale_ms", "gpur_after_gameplay_scale_ms", "frame_dt_ms_write");
-  hookTimingMarker("gpur_zero_gate_ms", "gpur_zero_gate_ms", "frame_dt_ms_write");
-  hookTimingMarker("gpur_zero_gate_dt", "gpur_zero_gate_dt", "frame_dt_write");
-  hookTimingMarker("player_local_scale_enter", "player_local_scale_enter", "frame_dt_write", function () {
-    return {
-      mode_fn: "player_update",
-      player_index: null,
-    };
-  });
-  hookTimingMarker("player_local_scale_restore", "player_local_scale_restore", "frame_dt_write", function () {
-    return {
-      mode_fn: "player_update",
-      player_index: null,
-    };
-  });
-  hookTimingMarker("gpur_time_scale_state_write_a", "gpur_time_scale_state_write", "snapshot");
-  hookTimingMarker("gpur_time_scale_state_write_b", "gpur_time_scale_state_write", "snapshot");
-  hookTimingMarker("gpur_bonus_reflex_timer_decrement", "gpur_bonus_reflex_timer_decrement", "snapshot");
-  hookTimingMarker("gpur_restore_dt", "gpur_restore_dt", "frame_dt_write");
-  hookTimingMarker("gpur_restore_ms", "gpur_restore_ms", "frame_dt_ms_write");
 
   if (CONFIG.enableCreatureMicroHooks) {
     attachHook("creature_update_all", fnPtrs.creature_update_all, {
