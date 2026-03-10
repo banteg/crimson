@@ -5944,8 +5944,8 @@
     },
     {
       "address": "0x004926f0",
-      "comment": "Projectile base damage/meta (projectile_pool + 0x38)",
-      "name": "projectile_base_damage",
+      "comment": "Projectile travel budget / weapon meta (projectile_pool + 0x38)",
+      "name": "projectile_travel_budget",
       "program": "crimsonland.exe"
     },
     {
@@ -8833,8 +8833,8 @@
     },
     {
       "address": "0x004d7a98",
-      "comment": "Weapon table projectile meta value (weapon_table + 0x6c, stride 0x7c)",
-      "name": "weapon_projectile_meta",
+      "comment": "Weapon table projectile travel budget (weapon_table + 0x6c, stride 0x7c)",
+      "name": "weapon_projectile_travel_budget",
       "program": "crimsonland.exe"
     },
     {

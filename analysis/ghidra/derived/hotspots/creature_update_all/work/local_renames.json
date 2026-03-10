@@ -1,5 +1,9 @@
 {
   "functions": {
+    "projectile_spawn": {
+      "base_damage": "travel_budget",
+      "projectile_meta": "travel_budget"
+    },
     "creature_update_all": {
       "local_7c": "creature_idx",
       "pfVar14": "health_ptr",

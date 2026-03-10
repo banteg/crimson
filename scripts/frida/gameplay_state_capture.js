@@ -655,7 +655,7 @@ function readWeaponEntry(weaponId) {
     reload_sfx_id: safeReadS32(base.add(0x60)),
     hud_icon_id: safeReadS32(base.add(0x64)),
     flags: safeReadU8(base.add(0x68)),
-    projectile_meta: safeReadF32(base.add(0x6c)),
+    travel_budget: safeReadF32(base.add(0x6c)),
     damage_scale: safeReadF32(base.add(0x70)),
     pellet_count: safeReadS32(base.add(0x74)),
   };
@@ -676,7 +676,7 @@ function readProjectileEntry(index) {
     speed_scale: safeReadF32(base.add(0x2c)),
     damage_pool: safeReadF32(base.add(0x30)),
     hit_radius: safeReadF32(base.add(0x34)),
-    base_damage: safeReadF32(base.add(0x38)),
+    travel_budget: safeReadF32(base.add(0x38)),
     owner_id: safeReadS32(base.add(0x3c)),
   };
 }

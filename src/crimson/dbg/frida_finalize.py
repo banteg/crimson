@@ -58,8 +58,8 @@ class _TickChannels(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     checkpoint: ReplayCheckpoint
     sim_state: SimStateSnapshot
     entity_samples: EntitySamplesSnapshot
-    rng_stream: list[RngStreamRow] = msgspec.field(default_factory=list)
-    timing_samples: list[TimingSampleRow] = msgspec.field(default_factory=list)
+    rng_stream: list[RngStreamRow]
+    timing_samples: list[TimingSampleRow]
 
 
 class _SessionFingerprintRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -304,11 +304,100 @@ def _replay_tick_inputs_from_row(
     if len(replay_inputs) != int(expected_players):
         raise FridaFinalizeError(
             f"{field} must contain {int(expected_players)} player rows, got {len(replay_inputs)}",
-        )
+    )
     out: list[list[float | int]] = []
-    for move_x, move_y, aim_x, aim_y, flags in replay_inputs:
+    for player_index, (move_x, move_y, aim_x, aim_y, flags) in enumerate(replay_inputs):
+        player_field = f"{field}[{player_index}]"
+        scalars = (
+            ("move_x", move_x),
+            ("move_y", move_y),
+            ("aim_x", aim_x),
+            ("aim_y", aim_y),
+        )
+        for scalar_name, scalar_value in scalars:
+            if not math.isfinite(float(scalar_value)):
+                raise FridaFinalizeError(f"{player_field}.{scalar_name} must be finite")
         out.append([float(move_x), float(move_y), float(aim_x), float(aim_y), int(flags)])
     return out
+
+
+def _validate_tick_channels(
+    *,
+    channels: _TickChannels,
+    expected_players: int,
+    elapsed_ms: int,
+    dt: float,
+    dt_ms_i32: int,
+    mode_id: int,
+    quest_stage_major: int,
+    quest_stage_minor: int,
+    field: str,
+) -> None:
+    checkpoint_players = list(channels.checkpoint.players)
+    if len(checkpoint_players) <= 0:
+        raise FridaFinalizeError(f"{field}.checkpoint.players must be non-empty")
+    if len(checkpoint_players) != int(expected_players):
+        raise FridaFinalizeError(
+            f"{field}.checkpoint.players length {len(checkpoint_players)} "
+            f"does not match run_start.player_count {int(expected_players)}",
+        )
+    if int(channels.checkpoint.elapsed_ms) != int(elapsed_ms):
+        raise FridaFinalizeError(
+            f"{field}.checkpoint.elapsed_ms={int(channels.checkpoint.elapsed_ms)} "
+            f"does not match tick.elapsed_ms {int(elapsed_ms)}",
+        )
+    rng_state = int(channels.checkpoint.rng_state)
+    if rng_state < 0 or rng_state > 0xFFFFFFFF:
+        raise FridaFinalizeError(f"{field}.checkpoint.rng_state must be a uint32")
+    sim_players = list(channels.sim_state.players)
+    if len(sim_players) != len(checkpoint_players):
+        raise FridaFinalizeError(
+            f"{field}.sim_state.players length {len(sim_players)} "
+            f"does not match checkpoint.players length {len(checkpoint_players)}",
+        )
+    gameplay = channels.sim_state.gameplay
+    if int(gameplay.mode_id) != int(mode_id):
+        raise FridaFinalizeError(
+            f"{field}.sim_state.gameplay.mode_id={int(gameplay.mode_id)} "
+            f"does not match tick.mode_id {int(mode_id)}",
+        )
+    if int(gameplay.quest_stage_major) != int(quest_stage_major):
+        raise FridaFinalizeError(
+            f"{field}.sim_state.gameplay.quest_stage_major={int(gameplay.quest_stage_major)} "
+            f"does not match tick.quest_stage_major {int(quest_stage_major)}",
+        )
+    if int(gameplay.quest_stage_minor) != int(quest_stage_minor):
+        raise FridaFinalizeError(
+            f"{field}.sim_state.gameplay.quest_stage_minor={int(gameplay.quest_stage_minor)} "
+            f"does not match tick.quest_stage_minor {int(quest_stage_minor)}",
+        )
+    timing_samples = list(channels.timing_samples)
+    if len(timing_samples) <= 0:
+        raise FridaFinalizeError(f"{field}.timing_samples must be non-empty")
+    for sample_index, sample in enumerate(timing_samples):
+        if not str(sample.phase):
+            raise FridaFinalizeError(f"{field}.timing_samples[{sample_index}].phase must be non-empty")
+        if not str(sample.write_kind):
+            raise FridaFinalizeError(f"{field}.timing_samples[{sample_index}].write_kind must be non-empty")
+    gpur_enter = next((sample for sample in timing_samples if str(sample.phase) == "gpur_enter"), None)
+    if gpur_enter is None:
+        raise FridaFinalizeError(f"{field}.timing_samples must include phase `gpur_enter`")
+    if gpur_enter.frame_dt_f32 is None or not math.isfinite(float(gpur_enter.frame_dt_f32)):
+        raise FridaFinalizeError(f"{field}.timing_samples.gpur_enter.frame_dt_f32 must be finite")
+    if gpur_enter.frame_dt_ms_i32 is None:
+        raise FridaFinalizeError(f"{field}.timing_samples.gpur_enter.frame_dt_ms_i32 must be present")
+    if int(gpur_enter.frame_dt_ms_i32) < 0:
+        raise FridaFinalizeError(f"{field}.timing_samples.gpur_enter.frame_dt_ms_i32 must be >= 0")
+    if float(gpur_enter.frame_dt_f32) != float(dt):
+        raise FridaFinalizeError(
+            f"{field}.timing_samples.gpur_enter.frame_dt_f32={float(gpur_enter.frame_dt_f32)} "
+            f"does not match tick.dt {float(dt)}",
+        )
+    if int(gpur_enter.frame_dt_ms_i32) != int(dt_ms_i32):
+        raise FridaFinalizeError(
+            f"{field}.timing_samples.gpur_enter.frame_dt_ms_i32={int(gpur_enter.frame_dt_ms_i32)} "
+            f"does not match tick.dt_ms_i32 {int(dt_ms_i32)}",
+        )
 
 
 def _replay_status_from_channels(channels: _TickChannels) -> ReplayStatusSnapshot:
@@ -637,8 +726,23 @@ def finalize_frida_jsonl_to_traces(
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}].dt must be finite and >= 0",
                             )
+                        if int(tick_row.elapsed_ms) < 0:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].elapsed_ms must be >= 0",
+                            )
                         if int(tick_row.dt_ms_i32) < 0:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].dt_ms_i32 must be >= 0")
+                        _validate_tick_channels(
+                            channels=tick_row.channels,
+                            expected_players=int(active_run.replay_player_count),
+                            elapsed_ms=int(tick_row.elapsed_ms),
+                            dt=float(tick_row.dt),
+                            dt_ms_i32=int(tick_row.dt_ms_i32),
+                            mode_id=int(tick_row.mode_id),
+                            quest_stage_major=int(tick_row.quest_stage_major),
+                            quest_stage_minor=int(tick_row.quest_stage_minor),
+                            field=f"{raw_path}.lines[{line_no}].channels",
+                        )
                         replay_inputs = _replay_tick_inputs_from_row(
                             tick_row.replay_inputs,
                             expected_players=int(active_run.replay_player_count),

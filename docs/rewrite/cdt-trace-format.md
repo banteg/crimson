@@ -6,7 +6,7 @@ tags:
 
 # CDT trace format (rewrite)
 
-`CDT` is the debug trace container used by `crimson dbg record|diff|bisect|focus|viz`.
+`CDT` is the debug trace container used by `crimson dbg record|diff|bisect|focus|tick|entity|query`.
 It is rewrite tooling format, not an original Crimsonland asset/container format.
 
 This spec describes the current on-disk contract implemented by `src/crimson/dbg/schema.py`
@@ -15,7 +15,7 @@ and `src/crimson/dbg/trace.py`.
 ## Versioning
 
 - `trace_format_version`: container/envelope version (`1` currently)
-- `trace_schema_version`: channel payload schema version (`3` currently)
+- `trace_schema_version`: channel payload schema version (`7` currently)
 - container and schema versions are independent
 
 ## File layout
@@ -61,25 +61,31 @@ Payload encoding:
 - `dt_ms_i32`
 - `mode_id`
 - `phase_markers`
-- `channels` (`dict[str, object]`)
+- `channels` (`ReplayTickChannels`)
 
 Tick rows are required to be non-decreasing by `tick_index`.
 
-## Channel contract (schema v3)
+## Channel contract (schema v7)
 
 Required channels in both compared traces:
 
 - `checkpoint`
 - `sim_state`
 - `entity_samples`
-- `rng_marks`
 - `rng_stream`
+- `timing_samples`
 
-Canonical typed payloads are defined in `src/crimson/dbg/canonical_channels.py`:
+Canonical typed payloads are defined in `src/crimson/replay/checkpoints.py`
+and `src/crimson/dbg/canonical_channels.py`:
 
+- `checkpoint` -> `ReplayCheckpoint`
 - `sim_state` -> `SimStateSnapshot`
 - `entity_samples` -> `EntitySamplesSnapshot`
 - `rng_stream` -> `list[RngStreamRow]`
+- `timing_samples` -> `list[TimingSampleRow]`
+
+`phase_markers` remain `list[str]` in the durable trace contract.
+Raw Frida capture may hold richer structured phase-marker payloads, but finalize flattens them to names in the trace row.
 
 ## Diff contract
 
@@ -90,6 +96,7 @@ For that tick, it reports all channel mismatches in deterministic order:
 2. `rng_stream`
 3. `sim_state`
 4. `entity_samples`
+5. `timing_samples`
 
 Mismatch payload format:
 

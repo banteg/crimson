@@ -114,6 +114,10 @@ def main(argv: list[str] | None = None) -> int:
     def on_detached(*info: object) -> None:
         reason = str(info[0]) if info else "unknown"
         print(f"[capture-host] detached reason={reason}", flush=True)
+        if len(info) > 1:
+            extra = [repr(item) for item in info[1:] if item is not None]
+            if extra:
+                print(f"[capture-host] detached extra={' | '.join(extra)}", flush=True)
         stop_event.set()
 
     session.on("detached", on_detached)
@@ -170,6 +174,12 @@ def main(argv: list[str] | None = None) -> int:
         raw_path = _default_raw_capture_path()
 
     print(f"[capture-host] finalizing raw={raw_path}", flush=True)
+    last_exception = stats.get("last_exception")
+    if isinstance(last_exception, dict) and last_exception:
+        print(f"[capture-host] last_exception={last_exception}", flush=True)
+    last_hook = stats.get("last_hook")
+    if isinstance(last_hook, dict) and last_hook:
+        print(f"[capture-host] last_hook={last_hook}", flush=True)
     try:
         result = finalize_frida_jsonl_to_traces(
             raw_path,

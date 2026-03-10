@@ -62,7 +62,7 @@ quickly by a few tough targets.
 
 ### Projectile speed
 
-The weapon table field `projectile_meta` controls how many collision
+The weapon table field `travel_budget` controls how many collision
 sub-steps a projectile takes per frame — higher values mean a faster
 projectile that covers more ground per tick. The
 [Barrel Greaser](../perks.md#34-barrel-greaser) perk doubles this
