@@ -42,7 +42,7 @@ LAB_004204d7:
   cos_component = (float10)fcos((float10)angle);
   projectile_pool[projectile_slot_idx].pos.tail.vy.owner_id = owner_id;
   projectile_pool[projectile_slot_idx].active = '\x01';
-  projectile_pool[projectile_slot_idx].pos.tail.vy.base_damage = (&weapon_table)[type_id].projectile_meta;
+  projectile_pool[projectile_slot_idx].pos.tail.vy.travel_budget = (&weapon_table)[type_id].travel_budget;
   projectile_pool[projectile_slot_idx].pos_x = *pos;
   projectile_pool[projectile_slot_idx].pos.pos_y = pos[1];
   projectile_pool[projectile_slot_idx].pos.origin_x = *pos;

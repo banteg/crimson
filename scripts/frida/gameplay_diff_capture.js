@@ -2502,7 +2502,7 @@ function readProjectileEntry(index) {
     speed_scale: captureNumber(safeReadF32(base.add(0x2c))),
     damage_pool: captureNumber(safeReadF32(base.add(0x30))),
     hit_radius: captureNumber(safeReadF32(base.add(0x34))),
-    // Spawn writes weapon_table[type_id].projectile_meta here; replay-grade traces
+    // Spawn writes weapon_table[type_id].travel_budget here; replay-grade traces
     // treat that authoritative slot value as the projectile travel budget.
     travel_budget: captureNumber(safeReadF32(base.add(0x38))),
     owner_id: safeReadS32(base.add(0x3c)),

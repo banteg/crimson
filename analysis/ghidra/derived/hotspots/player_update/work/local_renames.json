@@ -1,5 +1,9 @@
 {
   "functions": {
+    "projectile_spawn": {
+      "base_damage": "travel_budget",
+      "projectile_meta": "travel_budget"
+    },
     "player_update": {
       "iVar7": "player_idx",
       "pfVar16": "player_pos_ptr",

@@ -286,7 +286,7 @@ def main() -> None:
     lines.append("    reload_sound: str | None\n")
     lines.append("    icon_index: int | None\n")
     lines.append("    flags: int | None\n")
-    lines.append("    projectile_meta: int | None\n")
+    lines.append("    travel_budget: int | None\n")
     lines.append("    damage_scale: float | None\n")
     lines.append("    pellet_count: int | None\n")
     lines.append("\n")
@@ -309,10 +309,10 @@ def main() -> None:
         flags = value_as_int(fields.get(FLAGS_OFFSET))
         projectile_value = value_as_float(fields.get(PROJECTILE_TYPE_OFFSET))
         if projectile_value is None and idx > 0:
-            # Most weapons use the default projectile meta (0x6c) of 45.0.
+            # Most weapons use the default travel budget (0x6c) of 45.0.
             # Runtime probe (2026-01-18) confirms this for multiple entries.
             projectile_value = 45.0
-        projectile_meta = None if projectile_value is None else int(round(projectile_value))
+        travel_budget = None if projectile_value is None else int(round(projectile_value))
         damage_scale = value_as_float(fields.get(DAMAGE_MULT_OFFSET))
         if damage_scale is None and idx > 0:
             # Most weapons use the default damage scale (0x70) of 1.0.
@@ -335,7 +335,7 @@ def main() -> None:
             icon_index = idx - 1
         lines.append(f"        icon_index={icon_index!r},\n")
         lines.append(f"        flags={flags!r},\n")
-        lines.append(f"        projectile_meta={projectile_meta!r},\n")
+        lines.append(f"        travel_budget={travel_budget!r},\n")
         lines.append(f"        damage_scale={damage_scale!r},\n")
         lines.append(f"        pellet_count={pellet_count!r},\n")
         lines.append("    ),\n")

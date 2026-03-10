@@ -688,7 +688,7 @@ function readProjectile(idx) {
     speed_scale_f32: tryReadFloat(b.add(0x2c)),
     damage_pool_f32: tryReadFloat(b.add(0x30)),
     hit_radius_f32: tryReadFloat(b.add(0x34)),
-    base_damage_f32: tryReadFloat(b.add(0x38)),
+    travel_budget_f32: tryReadFloat(b.add(0x38)),
     owner_id_i32: tryReadS32(b.add(0x3c)),
   };
 }
@@ -818,7 +818,7 @@ function readWeaponEntryByPtr(entryPtr) {
     reload_sfx_i32: tryReadS32(entryPtr.add(0x60)),
     hud_icon_id_i32: tryReadS32(entryPtr.add(0x64)),
     flags_u8: tryReadU8(entryPtr.add(0x68)),
-    projectile_meta_f32: tryReadFloat(entryPtr.add(0x6c)),
+    travel_budget_f32: tryReadFloat(entryPtr.add(0x6c)),
     damage_scale_f32: tryReadFloat(entryPtr.add(0x70)),
     pellet_count_i32: tryReadS32(entryPtr.add(0x74)),
   };

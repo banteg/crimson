@@ -355,7 +355,7 @@ function weaponSnapshot(weaponTable, weaponAmmoClass, weaponId) {
   const reloadSfxId = safeReadS32(entry.add(0x60));
   const hudIconId = safeReadS32(entry.add(0x64));
   const flags = safeReadU8(entry.add(0x68));
-  const projectileMeta = safeReadF32(entry.add(0x6c));
+  const travelBudget = safeReadF32(entry.add(0x6c));
   const damageScale = safeReadF32(entry.add(0x70));
   const pelletCount = safeReadS32(entry.add(0x74));
 
@@ -388,7 +388,7 @@ function weaponSnapshot(weaponTable, weaponAmmoClass, weaponId) {
     flag_muzzle_flash: flags != null ? (flags & 0x1) !== 0 : null,
     flag_small_crosshair: flags != null ? (flags & 0x4) !== 0 : null,
     flag_hide_crosshair: flags != null ? (flags & 0x8) !== 0 : null,
-    projectile_meta: projectileMeta,
+    travel_budget: travelBudget,
     damage_scale: damageScale,
     pellet_count: pelletCount,
   };
@@ -468,7 +468,7 @@ function readProjectileSnapshot(projectileBase, index) {
     speed_scale: safeReadF32(base.add(0x2c)),
     damage_pool: safeReadF32(base.add(0x30)),
     hit_radius: safeReadF32(base.add(0x34)),
-    base_damage: safeReadF32(base.add(0x38)),
+    travel_budget: safeReadF32(base.add(0x38)),
     owner_id: safeReadS32(base.add(0x3c)),
   };
 }

@@ -1,5 +1,9 @@
 {
   "functions": {
+    "projectile_spawn": {
+      "base_damage": "travel_budget",
+      "projectile_meta": "travel_budget"
+    },
     "projectile_update": {
       "cVar3": "particle_kind",
       "local_e8": "slot_idx",

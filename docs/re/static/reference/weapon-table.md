@@ -40,7 +40,7 @@ typedef struct weapon_stats_t {
     int hud_icon_id;
     unsigned char flags;
     unsigned char _pad2[3];
-    float projectile_meta;
+    float travel_budget;
     float damage_scale;
     int pellet_count;
     unsigned char _pad3[4];
@@ -66,7 +66,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
 | `0x60` | int | Reload / equip SFX id | Played when a reload starts and when swapping to the weapon. |
 | `0x64` | int | HUD icon id | Passed into the HUD sprite selection (shifted by `<< 1`). |
 | `0x68` | byte | Flags | Bit `0x1` triggers a muzzle flash / effect burst; bits `0x4/0x8` affect crosshair rendering. |
-| `0x6c` | float | Projectile meta value | Copied into projectile entries on spawn (`weapon_projectile_meta`). |
+| `0x6c` | float | Travel budget | Copied into projectile entries on spawn (`weapon_projectile_travel_budget`). |
 | `0x70` | float | Damage scale | Used in projectile hit damage computation (`weapon_projectile_damage_scale`). |
 | `0x74` | int | Pellet count | Number of pellets spawned in the spread fire path (`weapon_projectile_pellet_count`). |
 
@@ -76,7 +76,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
   - `weapon_id=2` (Assault Rifle) resolved to entry index **2**.
   - Observed fields: `clip_size=25`, `shot_cooldown=0.117`, `reload_time=1.2`, `spread_heat=0.09`,
     `shot_sfx_base=34`, `shot_sfx_count=1`, `reload_sfx=35`, `hud_icon_id=1`, `flags=1`,
-    `projectile_meta=50`, `damage_scale=1`, `pellet_count=1`, `ammo_class=0` (from `-0x04`).
+    `travel_budget=50`, `damage_scale=1`, `pellet_count=1`, `ammo_class=0` (from `-0x04`).
 
 - UI text for weapons is pulled directly from the `weapon_table` name field (`offset 0x00`).
   Examples:
@@ -122,7 +122,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
   `player_alt_reload_timer` (`DAT_00490b9c`), `player_alt_shot_cooldown`
   (`DAT_00490ba0`), and `player_alt_reload_timer_max` (`DAT_00490ba4`).
 
-- The same stride is used by projectile metadata lookups (`weapon_projectile_meta`,
+- The same stride is used by projectile metadata lookups (`weapon_projectile_travel_budget`,
   `weapon_projectile_damage_scale`) keyed by projectile type ids in `projectile_spawn` and
   `projectile_update`.
 

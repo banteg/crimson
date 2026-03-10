@@ -37,7 +37,7 @@ LAB_004204d7:
   fVar3 = (float10)fcos((float10)angle);
   projectile_pool[iVar2].pos.tail.vy.owner_id = owner_id;
   projectile_pool[iVar2].active = '\x01';
-  projectile_pool[iVar2].pos.tail.vy.base_damage = (&weapon_table)[type_id].projectile_meta;
+  projectile_pool[iVar2].pos.tail.vy.travel_budget = (&weapon_table)[type_id].travel_budget;
   projectile_pool[iVar2].pos_x = *pos;
   projectile_pool[iVar2].pos.pos_y = pos[1];
   projectile_pool[iVar2].pos.origin_x = *pos;
