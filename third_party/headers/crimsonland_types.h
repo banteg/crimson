@@ -27,7 +27,7 @@ typedef struct weapon_stats_t {
     int hud_icon_id;
     unsigned char flags;
     unsigned char _pad2[3];
-    float projectile_meta;
+    float travel_budget;
     float damage_scale;
     int pellet_count;
     unsigned char _pad3[4];
@@ -264,7 +264,7 @@ typedef struct projectile_vel_y_block_t {
     float speed_scale;
     float damage_pool;
     float hit_radius;
-    float base_damage;
+    float travel_budget;
     int owner_id;
 } projectile_vel_y_block_t;
 
