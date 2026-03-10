@@ -1255,11 +1255,6 @@ function runPlayerCountFromTick(tickObj) {
   return checkpointPlayers.length | 0;
 }
 
-function numberOr(value, fallback) {
-  const parsed = captureNumber(value);
-  return parsed == null ? fallback : parsed;
-}
-
 function replayInputIntentFromTick(tickObj) {
   const tick = requireObject(tickObj, "tick");
   const after = requireObject(tick.after, "after");
@@ -1372,6 +1367,10 @@ function validateAfterPlayers(players, expectedPlayers) {
   }
   for (let i = 0; i < rows.length; i++) {
     const row = requireObject(rows[i], "after.players[" + i + "]");
+    const playerIndex = requireNonNegativeInt(row.index, "after.players[" + i + "].index");
+    if (playerIndex !== i) {
+      failCaptureContract("after.players[" + i + "].index=" + playerIndex + " does not match slot " + i);
+    }
     requireFiniteScalar(row.pos_x, "after.players[" + i + "].pos_x");
     requireFiniteScalar(row.pos_y, "after.players[" + i + "].pos_y");
     requireFiniteScalar(row.move_dx, "after.players[" + i + "].move_dx");
@@ -1430,86 +1429,60 @@ function validateAfterGlobals(globals) {
   return row;
 }
 
-function _bonusTimerFromCheckpoint(bonusTimers, key) {
-  if (!bonusTimers || typeof bonusTimers !== "object") return 0;
-  const value = intOr(bonusTimers[key], null);
-  if (value == null || value < 0) return 0;
-  return value | 0;
-}
-
-function simStateFromTick(tickObj, checkpoint) {
-  const checkpointObj = checkpoint && typeof checkpoint === "object" ? checkpoint : {};
-  const after = tickObj && tickObj.after && typeof tickObj.after === "object" ? tickObj.after : {};
-  const checkpointPlayers = Array.isArray(checkpointObj.players) ? checkpointObj.players : [];
-  const afterPlayers = Array.isArray(after.players) ? after.players : [];
-  const playerCount = Math.max(checkpointPlayers.length, afterPlayers.length);
+function simStateFromTick(tickObj, expectedPlayers) {
+  const tick = requireObject(tickObj, "tick");
+  const after = requireObject(tick.after, "after");
+  const globals = validateAfterGlobals(after.globals);
+  const afterPlayers = validateAfterPlayers(after.players, expectedPlayers);
+  const status = validateAfterStatus(after.status);
   const players = [];
 
-  for (let i = 0; i < playerCount; i++) {
-    const cp = checkpointPlayers[i] && typeof checkpointPlayers[i] === "object" ? checkpointPlayers[i] : {};
-    const ap = afterPlayers[i] && typeof afterPlayers[i] === "object" ? afterPlayers[i] : {};
-    const cpPos = cp.pos && typeof cp.pos === "object" ? cp.pos : {};
+  for (let i = 0; i < afterPlayers.length; i++) {
+    const player = afterPlayers[i];
     players.push({
-      index: intOr(ap.index, intOr(cp.index, i)),
+      index: requireNonNegativeInt(player.index, "after.players[" + i + "].index"),
       pos: {
-        x: numberOr(ap.pos_x, numberOr(cpPos.x, 0)),
-        y: numberOr(ap.pos_y, numberOr(cpPos.y, 0)),
+        x: requireFiniteScalar(player.pos_x, "after.players[" + i + "].pos_x"),
+        y: requireFiniteScalar(player.pos_y, "after.players[" + i + "].pos_y"),
       },
-      health: numberOr(ap.health, numberOr(cp.health, 0)),
+      health: requireFiniteScalar(player.health, "after.players[" + i + "].health"),
       weapon: {
-        weapon_id: intOr(ap.weapon_id, intOr(cp.weapon_id, 0)),
-        ammo: numberOr(ap.ammo_f32, numberOr(cp.ammo, 0)),
-        clip_size: intOr(ap.clip_size_i32, 0),
-        reload_active: intOr(ap.reload_active_i32, 0) !== 0,
-        reload_timer: numberOr(ap.reload_timer, 0),
-        reload_timer_max: numberOr(ap.reload_timer_max, 0),
-        shot_cooldown: numberOr(ap.shot_cooldown, 0),
+        weapon_id: requireInt(player.weapon_id, "after.players[" + i + "].weapon_id"),
+        ammo: requireFiniteScalar(player.ammo_f32, "after.players[" + i + "].ammo_f32"),
+        clip_size: requireInt(player.clip_size_i32, "after.players[" + i + "].clip_size_i32"),
+        reload_active: requireInt(player.reload_active_i32, "after.players[" + i + "].reload_active_i32") !== 0,
+        reload_timer: requireFiniteScalar(player.reload_timer, "after.players[" + i + "].reload_timer"),
+        reload_timer_max: requireFiniteScalar(
+          player.reload_timer_max,
+          "after.players[" + i + "].reload_timer_max",
+        ),
+        shot_cooldown: requireFiniteScalar(player.shot_cooldown, "after.players[" + i + "].shot_cooldown"),
       },
-      experience: intOr(ap.experience, intOr(cp.experience, 0)),
-      level: intOr(ap.level, intOr(cp.level, 0)),
+      experience: requireInt(player.experience, "after.players[" + i + "].experience"),
+      level: requireInt(player.level, "after.players[" + i + "].level"),
     });
   }
 
-  const checkpointStatus =
-    checkpointObj.status && typeof checkpointObj.status === "object" ? checkpointObj.status : {};
-  const checkpointBonusTimers =
-    checkpointObj.bonus_timers && typeof checkpointObj.bonus_timers === "object"
-      ? checkpointObj.bonus_timers
-      : {};
-  const usageCountsRaw = Array.isArray(checkpointStatus.weapon_usage_counts)
-    ? checkpointStatus.weapon_usage_counts
-    : [];
-  const usageCounts = [];
-  for (let i = 0; i < usageCountsRaw.length; i++) {
-    usageCounts.push(intOr(usageCountsRaw[i], 0));
-  }
-
-  const perk = checkpointObj.perk && typeof checkpointObj.perk === "object" ? checkpointObj.perk : {};
-  const perkPending = intOr(checkpointObj.perk_pending, intOr(perk.pending_count, 0));
-  const perkChoicesDirty =
-    perk.choices_dirty == null ? perkPending <= 0 : !!perk.choices_dirty;
-
   return {
     gameplay: {
-      mode_id: tickModeId(tickObj),
-      quest_stage_major: tickQuestMajor(tickObj),
-      quest_stage_minor: tickQuestMinor(tickObj),
-      perk_pending_count: perkPending | 0,
-      perk_choices_dirty: !!perkChoicesDirty,
+      mode_id: tickModeId(tick),
+      quest_stage_major: tickQuestMajor(tick),
+      quest_stage_minor: tickQuestMinor(tick),
+      perk_pending_count: requireNonNegativeInt(globals.perk_pending_count, "after.globals.perk_pending_count"),
+      perk_choices_dirty: requireInt(globals.perk_choices_dirty, "after.globals.perk_choices_dirty") !== 0,
       bonus_timers: {
-        weapon_power_up_ms: _bonusTimerFromCheckpoint(checkpointBonusTimers, BONUS_ID_WEAPON_POWER_UP),
-        reflex_boost_ms: _bonusTimerFromCheckpoint(checkpointBonusTimers, BONUS_ID_REFLEX_BOOST),
-        energizer_ms: _bonusTimerFromCheckpoint(checkpointBonusTimers, BONUS_ID_ENERGIZER),
-        double_experience_ms: _bonusTimerFromCheckpoint(
-          checkpointBonusTimers,
-          BONUS_ID_DOUBLE_EXPERIENCE,
-        ),
-        freeze_ms: _bonusTimerFromCheckpoint(checkpointBonusTimers, BONUS_ID_FREEZE),
+        weapon_power_up_ms: bonusTimerMs(globals.bonus_weapon_power_up_timer),
+        reflex_boost_ms: bonusTimerMs(globals.bonus_reflex_boost_timer),
+        energizer_ms: bonusTimerMs(globals.bonus_energizer_timer),
+        double_experience_ms: bonusTimerMs(globals.bonus_double_xp_timer),
+        freeze_ms: bonusTimerMs(globals.bonus_freeze_timer),
       },
       status: {
-        quest_unlock_index: intOr(checkpointStatus.quest_unlock_index, 0),
-        quest_unlock_index_full: intOr(checkpointStatus.quest_unlock_index_full, 0),
-        weapon_usage_counts: usageCounts,
+        quest_unlock_index: requireInt(status.quest_unlock_index, "after.status.quest_unlock_index"),
+        quest_unlock_index_full: requireInt(status.quest_unlock_index_full, "after.status.quest_unlock_index_full"),
+        weapon_usage_counts: requireArray(status.weapon_usage_counts, "after.status.weapon_usage_counts").map(
+          (value, index) => requireNonNegativeInt(value, "after.status.weapon_usage_counts[" + index + "]"),
+        ),
       },
     },
     players: players,
@@ -1789,10 +1762,7 @@ function buildTraceTickRow(tickObj) {
         "replay_inputs length " + replayInputs.length + " does not match checkpoint.players length " + playerCount
       );
     }
-    validateAfterGlobals(tickObj.after && tickObj.after.globals);
-    validateAfterPlayers(tickObj.after && tickObj.after.players, playerCount);
-    validateAfterStatus(tickObj.after && tickObj.after.status);
-    const simState = simStateFromTick(tickObj, checkpoint);
+    const simState = simStateFromTick(tickObj, playerCount);
 
     return {
       event: "tick",
@@ -4235,11 +4205,11 @@ function finalizeTick() {
   }
 
   const bonusTimers = {
-    "4": bonusTimerMs(globals.bonus_weapon_power_up_timer),
-    "9": bonusTimerMs(globals.bonus_reflex_boost_timer),
-    "2": bonusTimerMs(globals.bonus_energizer_timer),
-    "6": bonusTimerMs(globals.bonus_double_xp_timer),
-    "11": bonusTimerMs(globals.bonus_freeze_timer),
+    [BONUS_ID_WEAPON_POWER_UP]: bonusTimerMs(globals.bonus_weapon_power_up_timer),
+    [BONUS_ID_REFLEX_BOOST]: bonusTimerMs(globals.bonus_reflex_boost_timer),
+    [BONUS_ID_ENERGIZER]: bonusTimerMs(globals.bonus_energizer_timer),
+    [BONUS_ID_DOUBLE_EXPERIENCE]: bonusTimerMs(globals.bonus_double_xp_timer),
+    [BONUS_ID_FREEZE]: bonusTimerMs(globals.bonus_freeze_timer),
   };
   const checkpointPlayers = checkpointPlayersFromCompact(afterPlayers);
   const perkPendingCount = globals.perk_pending_count == null ? -1 : globals.perk_pending_count;
