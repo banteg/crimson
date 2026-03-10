@@ -330,9 +330,6 @@ const PLAYER_UPDATE_END_RVA = 0x00417640;
 const FN_GRIM_RVA = {
   grim_is_key_down: 0x00007320,
   grim_is_key_active: 0x00006fe0,
-  grim_was_key_pressed: 0x00007390,
-  grim_is_mouse_button_down: 0x00007410,
-  grim_was_mouse_button_pressed: 0x00007440,
 };
 
 const DATA = {
@@ -617,7 +614,72 @@ const outState = {
   questAttemptPendingByLevel: {},
   questAttemptStartsByLevel: {},
   entityUidStates: null,
+  lastHookActivity: null,
+  lastException: null,
 };
+
+function _diagIntOrNull(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value | 0 : null;
+}
+
+function _diagPtrToString(value) {
+  if (value == null) return null;
+  try {
+    return value.toString();
+  } catch (_) {
+    return String(value);
+  }
+}
+
+function _diagTickIndex() {
+  const tick = outState.currentTick;
+  if (tick && tick.tick_index != null) return tick.tick_index | 0;
+  if (outState.lastTickIndexGlobal != null) return outState.lastTickIndexGlobal | 0;
+  return null;
+}
+
+function _diagGameplayFrame() {
+  const tick = outState.currentTick;
+  if (tick && tick.gameplay_frame != null) return tick.gameplay_frame | 0;
+  if (outState.lastTickGameplayFrame != null) return outState.lastTickGameplayFrame | 0;
+  return null;
+}
+
+function recordHookActivity(name, phase, context) {
+  outState.lastHookActivity = {
+    name: String(name || ""),
+    phase: String(phase || ""),
+    thread_id: context && context.threadId != null ? _diagIntOrNull(context.threadId) : null,
+    return_address: context ? _diagPtrToString(context.returnAddress) : null,
+    tick_index_global: _diagTickIndex(),
+    gameplay_frame: _diagGameplayFrame(),
+    state_id: outState.currentStateId == null ? null : outState.currentStateId | 0,
+    run_id: outState.runActive ? outState.currentRunId | 0 : null,
+  };
+}
+
+function buildProcessExceptionPayload(details) {
+  const memory = details && details.memory && typeof details.memory === "object" ? details.memory : null;
+  return {
+    type: details && details.type != null ? String(details.type) : null,
+    address: details ? _diagPtrToString(details.address) : null,
+    memory_operation: memory && memory.operation != null ? String(memory.operation) : null,
+    memory_address: memory ? _diagPtrToString(memory.address) : null,
+    thread_id: details && details.threadId != null ? _diagIntOrNull(details.threadId) : null,
+    tick_index_global: _diagTickIndex(),
+    gameplay_frame: _diagGameplayFrame(),
+    state_id: outState.currentStateId == null ? null : outState.currentStateId | 0,
+    run_id: outState.runActive ? outState.currentRunId | 0 : null,
+    last_hook: outState.lastHookActivity,
+  };
+}
+
+function buildProcessExceptionReason(payload) {
+  let reason = "process_exception";
+  if (payload && payload.type) reason += ":" + payload.type;
+  if (payload && payload.address) reason += "@" + payload.address;
+  return reason;
+}
 
 function newEntityUidState() {
   return {
@@ -1907,8 +1969,20 @@ function installShutdownHooks() {
   attachExitHook("ucrtbase.dll", "_exit", "ucrt__exit", 0);
 
   try {
-    Process.setExceptionHandler(function () {
-      shutdownCapture("process_exception");
+    Process.setExceptionHandler(function (details) {
+      const payload = buildProcessExceptionPayload(details);
+      const reason = buildProcessExceptionReason(payload);
+      outState.lastException = Object.assign({ reason: reason }, payload);
+      writeLine(
+        Object.assign(
+          {
+            event: "error",
+            error: reason,
+          },
+          payload,
+        ),
+      );
+      shutdownCapture(reason);
       return false;
     });
   } catch (_) {}
@@ -3198,17 +3272,6 @@ function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStat
     return prev === true ? true : down;
   };
 
-  if (queryName === "grim_is_mouse_button_down" || queryName === "grim_was_mouse_button_pressed") {
-    if (key === 0) {
-      const state = ensurePlayerKeyState(tick, 0);
-      if (state) {
-        if (queryName === "grim_is_mouse_button_down") state.fire_down = downSeen(state.fire_down);
-        if (queryName === "grim_was_mouse_button_pressed") state.fire_pressed = downSeen(state.fire_pressed);
-      }
-    }
-    return;
-  }
-
   const hasReloadBinding = Number.isFinite(reloadKey);
   if (
     (!Array.isArray(bindings) || bindings.length === 0) &&
@@ -3231,12 +3294,10 @@ function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStat
       if ((binding.fire | 0) === key) {
         if (queryName === "grim_is_key_active" || queryName === "grim_is_key_down")
           state.fire_down = downSeen(state.fire_down);
-        if (queryName === "grim_was_key_pressed") state.fire_pressed = downSeen(state.fire_pressed);
       }
       if (hasReloadBinding && (reloadKey | 0) === key) {
         if (queryName === "grim_is_key_active" || queryName === "grim_is_key_down")
           state.reload_down = downSeen(state.reload_down);
-        if (queryName === "grim_was_key_pressed") state.reload_pressed = downSeen(state.reload_pressed);
       }
     }
   }
@@ -3253,7 +3314,6 @@ function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStat
     if ((altBindings.fire | 0) === key) {
       if (queryName === "grim_is_key_active" || queryName === "grim_is_key_down")
         state.fire_down = downSeen(state.fire_down);
-      if (queryName === "grim_was_key_pressed") state.fire_pressed = downSeen(state.fire_pressed);
     }
   }
 }
@@ -3747,21 +3807,6 @@ function popAngleApproachContext(threadId) {
   const ctx = stack.pop();
   if (stack.length === 0) delete angleApproachContextByTid[threadId];
   return ctx;
-}
-
-function isPrimaryFireKeyCode(keyCode) {
-  if (!Number.isFinite(keyCode)) return false;
-  resolvePlayerCount();
-  const playerCount = Math.max(1, outState.playerCountResolved | 0);
-  for (let i = 0; i < playerCount; i++) {
-    const fireKey = readPlayerI32("player_fire_key", i);
-    if (fireKey != null && fireKey === keyCode) return true;
-  }
-  if (playerCount === 1) {
-    const altFireKey = readDataI32("player_alt_fire_key");
-    if (altFireKey != null && altFireKey === keyCode) return true;
-  }
-  return false;
 }
 
 function registerInputQuery(kind, pressed, token, payload) {
@@ -4452,7 +4497,20 @@ function attachHook(name, ptrVal, handlers) {
     return false;
   }
   try {
-    Interceptor.attach(ptrVal, handlers);
+    const wrappedHandlers = {};
+    if (handlers && typeof handlers.onEnter === "function") {
+      wrappedHandlers.onEnter = function (args) {
+        recordHookActivity(name, "enter", this);
+        return handlers.onEnter.call(this, args);
+      };
+    }
+    if (handlers && typeof handlers.onLeave === "function") {
+      wrappedHandlers.onLeave = function (retval) {
+        recordHookActivity(name, "leave", this);
+        return handlers.onLeave.call(this, retval);
+      };
+    }
+    Interceptor.attach(ptrVal, wrappedHandlers);
     outState.hookStatusByName[name] = "attached";
     writeLine({ event: "hook_ok", name: name, addr: ptrVal.toString() });
     return true;
@@ -4801,6 +4859,9 @@ function installHooks() {
             arg0 = null;
           }
           const callerStatic = runtimeToStatic(this.returnAddress);
+          if (!isPlayerUpdateCaller(callerStatic == null ? null : toHex(callerStatic, 8))) {
+            return;
+          }
           pushInputContext(this.threadId, {
             query_key: null,
             token: null,
@@ -4821,6 +4882,7 @@ function installHooks() {
             pressed = false;
           }
           const queryKey = classifyKind(ctx.arg0);
+          updatePlayerInputKeyState(outState.currentTick, name, ctx.arg0, pressed, ctx.caller_static);
           if (!queryKey) return;
           const payload = {
             query: name,
@@ -4832,7 +4894,6 @@ function installHooks() {
             console_open: readDataU32("console_open_flag"),
             primary_latch: readDataU32("input_primary_latch"),
           };
-          updatePlayerInputKeyState(outState.currentTick, name, ctx.arg0, pressed, ctx.caller_static);
           const token = tokenPrefix + ":" + String(ctx.arg0 == null ? "na" : ctx.arg0);
           registerInputQuery(queryKey, pressed, token, payload);
           emitRawEvent(Object.assign({ event: name }, payload));
@@ -4844,8 +4905,6 @@ function installHooks() {
       "grim_is_key_down",
       grimFnPtrs.grim_is_key_down,
       function (keyCode) {
-        if (isPrimaryFireKeyCode(keyCode)) return "primary_down";
-        if (Number.isFinite(keyCode)) return "any_key";
         return null;
       },
       "gikd"
@@ -4854,42 +4913,9 @@ function installHooks() {
       "grim_is_key_active",
       grimFnPtrs.grim_is_key_active,
       function (keyCode) {
-        if (keyCode === 0x100) return "primary_down";
-        if (isPrimaryFireKeyCode(keyCode)) return "primary_down";
-        if (Number.isFinite(keyCode)) return "any_key";
         return null;
       },
       "gika"
-    );
-    addGrimInputQueryHook(
-      "grim_was_key_pressed",
-      grimFnPtrs.grim_was_key_pressed,
-      function (keyCode) {
-        if (isPrimaryFireKeyCode(keyCode)) return "primary_edge";
-        if (Number.isFinite(keyCode)) return "any_key";
-        return null;
-      },
-      "gwkp"
-    );
-    addGrimInputQueryHook(
-      "grim_is_mouse_button_down",
-      grimFnPtrs.grim_is_mouse_button_down,
-      function (button) {
-        if (button === 0) return "primary_down";
-        if (Number.isFinite(button)) return "any_key";
-        return null;
-      },
-      "gmbd"
-    );
-    addGrimInputQueryHook(
-      "grim_was_mouse_button_pressed",
-      grimFnPtrs.grim_was_mouse_button_pressed,
-      function (button) {
-        if (button === 0) return "primary_edge";
-        if (Number.isFinite(button)) return "any_key";
-        return null;
-      },
-      "gmwp"
     );
   }
 
@@ -6077,6 +6103,8 @@ function main() {
         run_id: outState.currentRunId | 0,
         ticks_written: outState.captureTickCount | 0,
         out_path: outState.currentOutPath || CONFIG.outPath,
+        last_hook: outState.lastHookActivity,
+        last_exception: outState.lastException,
       };
     },
   };
