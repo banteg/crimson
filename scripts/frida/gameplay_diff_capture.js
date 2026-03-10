@@ -46,6 +46,15 @@ const REPLAY_AIM_SCHEME_PRESENT_FLAG = 1 << 12;
 const REPLAY_AIM_SCHEME_SHIFT = 13;
 const REPLAY_AIM_SCHEME_MASK = 0x7;
 const REPLAY_RELOAD_DOWN_FLAG = 1 << 16;
+const CONFIG_PARSE_ERRORS = [];
+
+function recordConfigParseError(key, raw, reason) {
+  CONFIG_PARSE_ERRORS.push({
+    key: String(key),
+    raw: raw == null ? null : String(raw),
+    reason: String(reason || "invalid_config"),
+  });
+}
 
 function getEnv(key) {
   try {
@@ -64,6 +73,9 @@ function parseIntEnv(key, fallback) {
   const raw = getEnv(key);
   if (!raw) return fallback;
   const parsed = parseInt(String(raw).trim(), 0);
+  if (!Number.isFinite(parsed)) {
+    recordConfigParseError(key, raw, "expected integer");
+  }
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
@@ -73,6 +85,7 @@ function parseBoolEnv(key, fallback) {
   const text = String(raw).trim().toLowerCase();
   if (text === "1" || text === "true" || text === "yes" || text === "on") return true;
   if (text === "0" || text === "false" || text === "no" || text === "off") return false;
+  recordConfigParseError(key, raw, "expected boolean");
   return fallback;
 }
 
@@ -81,13 +94,16 @@ function parseLimitEnv(key, fallback, minValue) {
   const fallbackInt = Number.isFinite(fallback) ? fallback | 0 : -1;
   if (!raw) return fallbackInt;
   const parsed = parseInt(String(raw).trim(), 0);
-  if (!Number.isFinite(parsed)) return fallbackInt;
+  if (!Number.isFinite(parsed)) {
+    recordConfigParseError(key, raw, "expected integer limit");
+    return fallbackInt;
+  }
   if (parsed < 0) return -1;
   const min = Number.isFinite(minValue) ? minValue | 0 : 0;
   return Math.max(min, parsed | 0);
 }
 
-function parseStateSet(raw, fallbackCsv) {
+function parseStateSet(raw, fallbackCsv, key) {
   const csv = raw && String(raw).trim() ? String(raw) : fallbackCsv;
   const out = new Set();
   const parts = String(csv)
@@ -96,7 +112,13 @@ function parseStateSet(raw, fallbackCsv) {
     .filter((v) => v.length > 0);
   for (let i = 0; i < parts.length; i++) {
     const v = parseInt(parts[i], 0);
-    if (Number.isFinite(v)) out.add(v);
+    if (Number.isFinite(v)) {
+      out.add(v);
+      continue;
+    }
+    if (raw && key) {
+      recordConfigParseError(key, parts[i], "expected integer state id");
+    }
   }
   return out;
 }
@@ -203,7 +225,7 @@ const CONFIG = {
   includeBacktrace: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_BT", false),
   includeRawEvents: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_RAW_EVENTS", false),
   emitTicksOutsideTrackedStates: parseBoolEnv("CRIMSON_FRIDA_ALL_STATES", false),
-  trackedStates: parseStateSet(getEnv("CRIMSON_FRIDA_STATES"), DEFAULT_TRACKED_STATES),
+  trackedStates: parseStateSet(getEnv("CRIMSON_FRIDA_STATES"), DEFAULT_TRACKED_STATES, "CRIMSON_FRIDA_STATES"),
   playerCountOverride: Math.max(0, parseIntEnv("CRIMSON_FRIDA_PLAYER_COUNT", 0)),
   focusTick: parseIntEnv("CRIMSON_FRIDA_FOCUS_TICK", -1),
   focusRadius: Math.max(0, parseIntEnv("CRIMSON_FRIDA_FOCUS_RADIUS", 0)),
@@ -211,17 +233,17 @@ const CONFIG = {
   flushCaptureWrites: parseBoolEnv("CRIMSON_FRIDA_FLUSH_CAPTURE_WRITES", false),
   maxHeadPerKind: parseLimitEnv("CRIMSON_FRIDA_MAX_HEAD", -1, 0),
   maxEventsPerTick: parseLimitEnv("CRIMSON_FRIDA_MAX_EVENTS_PER_TICK", -1, 0),
-  maxRngHeadPerTick: -1,
+  maxRngHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_RNG_HEAD", -1, 0),
   maxRngCallerKinds: parseLimitEnv("CRIMSON_FRIDA_RNG_CALLERS", -1, 0),
   enableRngRollLog: parseBoolEnv("CRIMSON_FRIDA_RNG_ROLL_LOG", true),
   maxRngRollLogEvents: parseLimitEnv("CRIMSON_FRIDA_MAX_RNG_ROLL_LOG_EVENTS", -1, 0),
   maxRngOutsideTickHead: parseLimitEnv("CRIMSON_FRIDA_RNG_OUTSIDE_TICK_HEAD", 256, 0),
   enableRngStateMirror: parseBoolEnv("CRIMSON_FRIDA_RNG_STATE_MIRROR", true),
   maxCreatureDeltaIds: parseLimitEnv("CRIMSON_FRIDA_CREATURE_DELTA_IDS", 256, 1),
-  creatureSampleLimit: -1,
-  projectileSampleLimit: -1,
-  secondaryProjectileSampleLimit: -1,
-  bonusSampleLimit: -1,
+  creatureSampleLimit: parseLimitEnv("CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT", -1, 0),
+  projectileSampleLimit: parseLimitEnv("CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT", -1, 0),
+  secondaryProjectileSampleLimit: parseLimitEnv("CRIMSON_FRIDA_SECONDARY_PROJECTILE_SAMPLE_LIMIT", -1, 0),
+  bonusSampleLimit: parseLimitEnv("CRIMSON_FRIDA_BONUS_SAMPLE_LIMIT", -1, 0),
   enableInputHooks: parseBoolEnv("CRIMSON_FRIDA_INPUT_HOOKS", true),
   enableRngHooks: parseBoolEnv("CRIMSON_FRIDA_RNG_HOOKS", true),
   enableSfxHooks: parseBoolEnv("CRIMSON_FRIDA_SFX", true),
@@ -235,7 +257,7 @@ const CONFIG = {
   maxPlayerSpawnsByPlayerLimit: -1,
   enableCreatureLifecycleDigest: parseBoolEnv("CRIMSON_FRIDA_CREATURE_LIFECYCLE", true),
   enableCreatureMicroHooks: parseBoolEnv("CRIMSON_FRIDA_CREATURE_MICRO_HOOKS", true),
-  creatureMicroSlots: parseStateSet(getEnv("CRIMSON_FRIDA_CREATURE_MICRO"), ""),
+  creatureMicroSlots: parseStateSet(getEnv("CRIMSON_FRIDA_CREATURE_MICRO"), "", "CRIMSON_FRIDA_CREATURE_MICRO"),
   creatureMicroTickStart: parseIntEnv("CRIMSON_FRIDA_CREATURE_MICRO_TICK_START", -1),
   creatureMicroTickEnd: parseIntEnv("CRIMSON_FRIDA_CREATURE_MICRO_TICK_END", -1),
   creatureMicroMaxHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD_PER_TICK", -1, 0),
@@ -412,6 +434,81 @@ const DATA = {
   quest_spawn_stall_timer_ms: 0x004c3654,
 };
 
+const REQUIRED_REPLAY_FN_NAMES = [
+  "gameplay_update_and_render",
+  "game_state_set",
+  "quest_start_selected",
+  "quest_mode_update",
+  "rush_mode_update",
+  "survival_update",
+  "typo_gameplay_update_and_render",
+  "outer_get_frame_dt",
+  "outer_reflex_boosted_scale",
+  "outer_rederive_ms",
+  "outer_console_zero_dt",
+  "gpur_after_gameplay_scale",
+  "gpur_after_gameplay_scale_ms",
+  "gpur_zero_gate_ms",
+  "gpur_zero_gate_dt",
+  "gpur_time_scale_state_write_a",
+  "gpur_time_scale_state_write_b",
+  "gpur_bonus_reflex_timer_decrement",
+  "gpur_restore_dt",
+  "gpur_restore_ms",
+  "player_local_scale_enter",
+  "player_local_scale_restore",
+];
+
+const REQUIRED_REPLAY_DATA_NAMES = [
+  "config_player_count",
+  "config_game_mode",
+  "config_player_mode_flags",
+  "config_aim_scheme",
+  "game_state_prev",
+  "game_state_id",
+  "game_state_pending",
+  "frame_dt",
+  "frame_dt_ms",
+  "time_played_ms",
+  "creature_active_count",
+  "creature_kill_count",
+  "perk_pending_count",
+  "perk_choices_dirty",
+  "quest_stage_major",
+  "quest_stage_minor",
+  "bonus_reflex_boost_timer",
+  "bonus_freeze_timer",
+  "bonus_weapon_power_up_timer",
+  "bonus_energizer_timer",
+  "bonus_double_xp_timer",
+  "game_status_blob",
+  "status_weapon_usage_counts",
+  "player_pos_x",
+  "player_pos_y",
+  "player_move_dx",
+  "player_move_dy",
+  "player_health",
+  "player_aim_x",
+  "player_aim_y",
+  "player_aim_heading",
+  "player_weapon_id",
+  "player_clip_size",
+  "player_reload_active",
+  "player_ammo",
+  "player_reload_timer",
+  "player_reload_timer_max",
+  "player_shot_cooldown",
+  "player_experience",
+  "player_level",
+  "player_speed_bonus_timer",
+  "player_shield_timer",
+  "player_fire_bullets_timer",
+  "projectile_pool",
+  "secondary_projectile_pool",
+  "creature_pool",
+  "bonus_pool",
+];
+
 const STRIDES = {
   player: 0x360,
   projectile: 0x40,
@@ -487,6 +584,7 @@ const outState = {
   lastQuestCompact: null,
   sessionId: null,
   sessionFingerprint: null,
+  hookStatusByName: {},
   rngCallsTotal: 0,
   rngCallsOutsideTick: 0,
   rngHashState: fnvInit(),
@@ -707,6 +805,132 @@ function emitCaptureContractError(errorCode, tickObj) {
   return null;
 }
 
+function emitStartupContractError(errorCode, extra) {
+  const row = Object.assign(
+    {
+      event: "error",
+      error: String(errorCode || "capture_startup_error"),
+    },
+    extra || {}
+  );
+  writeLine(row);
+  return false;
+}
+
+function requiredReplayFnNames() {
+  const names = REQUIRED_REPLAY_FN_NAMES.slice();
+  if (CONFIG.enableRngHooks) {
+    names.push("crt_srand");
+    names.push("crt_rand");
+  }
+  return names;
+}
+
+function requiredReplayDataNames() {
+  return REQUIRED_REPLAY_DATA_NAMES.slice();
+}
+
+function replayConfigReadinessErrors() {
+  const errors = [];
+  if (!CONFIG.enableInputHooks) {
+    errors.push({
+      key: "CRIMSON_FRIDA_INPUT_HOOKS",
+      raw: String(CONFIG.enableInputHooks),
+      reason: "must remain enabled for replay-grade capture",
+    });
+  }
+  if (!CONFIG.enableRngHooks) {
+    errors.push({
+      key: "CRIMSON_FRIDA_RNG_HOOKS",
+      raw: String(CONFIG.enableRngHooks),
+      reason: "must remain enabled for replay-grade capture",
+    });
+  }
+  if (!CONFIG.enableRngStateMirror) {
+    errors.push({
+      key: "CRIMSON_FRIDA_RNG_STATE_MIRROR",
+      raw: String(CONFIG.enableRngStateMirror),
+      reason: "must remain enabled for replay-grade capture",
+    });
+  }
+  if (CONFIG.maxRngHeadPerTick >= 0) {
+    errors.push({
+      key: "CRIMSON_FRIDA_RNG_HEAD",
+      raw: String(CONFIG.maxRngHeadPerTick),
+      reason: "must be unlimited (-1) for replay-grade rng_stream rows",
+    });
+  }
+  if (CONFIG.creatureSampleLimit >= 0) {
+    errors.push({
+      key: "CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT",
+      raw: String(CONFIG.creatureSampleLimit),
+      reason: "must be unlimited (-1) for replay-grade entity_samples rows",
+    });
+  }
+  if (CONFIG.projectileSampleLimit >= 0) {
+    errors.push({
+      key: "CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT",
+      raw: String(CONFIG.projectileSampleLimit),
+      reason: "must be unlimited (-1) for replay-grade entity_samples rows",
+    });
+  }
+  if (CONFIG.secondaryProjectileSampleLimit >= 0) {
+    errors.push({
+      key: "CRIMSON_FRIDA_SECONDARY_PROJECTILE_SAMPLE_LIMIT",
+      raw: String(CONFIG.secondaryProjectileSampleLimit),
+      reason: "must be unlimited (-1) for replay-grade entity_samples rows",
+    });
+  }
+  if (CONFIG.bonusSampleLimit >= 0) {
+    errors.push({
+      key: "CRIMSON_FRIDA_BONUS_SAMPLE_LIMIT",
+      raw: String(CONFIG.bonusSampleLimit),
+      reason: "must be unlimited (-1) for replay-grade entity_samples rows",
+    });
+  }
+  return errors;
+}
+
+function validateStartupReadiness(ptrs) {
+  const invalidConfigDetails = CONFIG_PARSE_ERRORS.concat(replayConfigReadinessErrors());
+  if (invalidConfigDetails.length > 0) {
+    return emitStartupContractError("invalid_config", {
+      details: invalidConfigDetails,
+    });
+  }
+  const missingFns = [];
+  const fnNames = requiredReplayFnNames();
+  for (let i = 0; i < fnNames.length; i++) {
+    const name = fnNames[i];
+    if (!ptrs[name]) missingFns.push(name);
+  }
+  const missingData = [];
+  const dataNames = requiredReplayDataNames();
+  for (let i = 0; i < dataNames.length; i++) {
+    const name = dataNames[i];
+    if (!ptrs["data_" + name]) missingData.push(name);
+  }
+  if (missingFns.length <= 0 && missingData.length <= 0) return true;
+  return emitStartupContractError("missing_required_pointers", {
+    missing_functions: missingFns,
+    missing_data: missingData,
+  });
+}
+
+function validateInstalledRequiredHooks() {
+  const failures = [];
+  const names = requiredReplayFnNames();
+  for (let i = 0; i < names.length; i++) {
+    const name = names[i];
+    const status = outState.hookStatusByName[name];
+    if (status === "attached") continue;
+    failures.push(name + ":" + String(status || "not_installed"));
+  }
+  if (failures.length <= 0) return true;
+  emitCaptureContractError("required_hook_install_failed:" + failures.join(","), null);
+  return false;
+}
+
 // session_start is the authoritative contract row for the whole JSONL stream.
 // It must be emitted from the locally constructed capture meta without fallbacks.
 function emitSessionStartRow(meta, outPath) {
@@ -744,6 +968,7 @@ function startCaptureFile(meta, outPath) {
     outState.outWarned = true;
     console.log("gameplay_diff_capture: file logging unavailable; capture file not writable");
   }
+  return started;
 }
 
 function closeActiveRun(reason, tickObj) {
@@ -781,44 +1006,57 @@ function closeActiveRun(reason, tickObj) {
 }
 
 function startRunForTick(tickObj, reason) {
-  const startReason = reason || "run_start";
-  const modeId = tickModeId(tickObj);
-  const questMajor = tickQuestMajor(tickObj);
-  const questMinor = tickQuestMinor(tickObj);
-  const runKey = runKeyForTick(tickObj);
-  const runSeed = requireRunStartSeedU32(tickObj);
-  if (runSeed == null) return false;
-  outState.currentRunId = (outState.currentRunId | 0) + 1;
-  outState.currentRunTickCount = 0;
-  outState.currentRunModeId = modeId;
-  outState.currentRunQuestMajor = questMajor;
-  outState.currentRunQuestMinor = questMinor;
-  outState.currentRunKey = runKey;
-  outState.currentRunBootstrapQuestAttemptPending =
-    startReason === "first_tick" && (outState.currentRunModeId | 0) === GAME_MODE_QUESTS;
-  outState.currentRunElapsedRawStartMs = null;
-  outState.currentRunElapsedRawLastMs = null;
-  outState.currentRunElapsedNormalizedMs = null;
-  resetEntityUidStates();
-  outState.runActive = true;
-  const wrote = _captureWriteJsonLine(
-    {
-      event: "run_start",
-      run_id: outState.currentRunId | 0,
-      reason: startReason,
-      mode_id: outState.currentRunModeId | 0,
-      quest_stage_major: outState.currentRunQuestMajor | 0,
-      quest_stage_minor: outState.currentRunQuestMinor | 0,
-      seed: runSeed >>> 0,
-      seed_source: "crt_srand",
-      player_count: runPlayerCountFromTick(tickObj),
-      tick_index_global:
-        tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
-    },
-    true,
-  );
-  if (wrote) _captureForceFlush();
-  return true;
+  try {
+    const startReason = reason || "run_start";
+    const modeId = tickModeId(tickObj);
+    const questMajor = tickQuestMajor(tickObj);
+    const questMinor = tickQuestMinor(tickObj);
+    const runKey = runKeyForTick(tickObj);
+    const runSeed = requireRunStartSeedU32(tickObj);
+    if (runSeed == null) return false;
+    const playerCount = runPlayerCountFromTick(tickObj);
+    outState.currentRunId = (outState.currentRunId | 0) + 1;
+    outState.currentRunTickCount = 0;
+    outState.currentRunModeId = modeId;
+    outState.currentRunQuestMajor = questMajor;
+    outState.currentRunQuestMinor = questMinor;
+    outState.currentRunKey = runKey;
+    outState.currentRunBootstrapQuestAttemptPending =
+      startReason === "first_tick" && (outState.currentRunModeId | 0) === GAME_MODE_QUESTS;
+    outState.currentRunElapsedRawStartMs = null;
+    outState.currentRunElapsedRawLastMs = null;
+    outState.currentRunElapsedNormalizedMs = null;
+    resetEntityUidStates();
+    outState.runActive = true;
+    const wrote = _captureWriteJsonLine(
+      {
+        event: "run_start",
+        run_id: outState.currentRunId | 0,
+        reason: startReason,
+        mode_id: outState.currentRunModeId | 0,
+        quest_stage_major: outState.currentRunQuestMajor | 0,
+        quest_stage_minor: outState.currentRunQuestMinor | 0,
+        seed: runSeed >>> 0,
+        seed_source: "crt_srand",
+        player_count: playerCount,
+        tick_index_global:
+          tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
+      },
+      true,
+    );
+    if (!wrote) {
+      emitCaptureContractError("run_start_write_failed", tickObj);
+      return false;
+    }
+    _captureForceFlush();
+    return true;
+  } catch (error) {
+    if (isCaptureContractError(error)) {
+      emitCaptureContractError(error.message, tickObj);
+      return false;
+    }
+    throw error;
+  }
 }
 
 function ensureRunForTick(tickObj) {
@@ -856,6 +1094,79 @@ function phaseMarkerNames(markers) {
     out.push(String(marker));
   }
   return out;
+}
+
+function failCaptureContract(detail) {
+  const error = new Error(String(detail || "capture_contract_error"));
+  error.name = "CaptureContractError";
+  throw error;
+}
+
+function isCaptureContractError(error) {
+  return !!error && String(error.name || "") === "CaptureContractError";
+}
+
+function requireObject(value, field) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    failCaptureContract(field + " must be an object");
+  }
+  return value;
+}
+
+function requireArray(value, field) {
+  if (!Array.isArray(value)) {
+    failCaptureContract(field + " must be an array");
+  }
+  return value;
+}
+
+function requireNonEmptyArray(value, field) {
+  const rows = requireArray(value, field);
+  if (rows.length <= 0) {
+    failCaptureContract(field + " must be non-empty");
+  }
+  return rows;
+}
+
+function requireFiniteScalar(value, field) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    failCaptureContract(field + " must be finite");
+  }
+  return value;
+}
+
+function requireInt(value, field) {
+  const parsed = intOr(value, null);
+  if (parsed == null) {
+    failCaptureContract(field + " must be an integer");
+  }
+  return parsed | 0;
+}
+
+function requireNonNegativeInt(value, field) {
+  const parsed = requireInt(value, field);
+  if (parsed < 0) {
+    failCaptureContract(field + " must be >= 0");
+  }
+  return parsed | 0;
+}
+
+function requirePositiveInt(value, field) {
+  const parsed = requireInt(value, field);
+  if (parsed <= 0) {
+    failCaptureContract(field + " must be > 0");
+  }
+  return parsed | 0;
+}
+
+function requireU32(value, field) {
+  if (typeof value !== "number" || !Number.isFinite(value) || Math.floor(value) !== value) {
+    failCaptureContract(field + " must be an integer");
+  }
+  if (value < 0 || value > 0xffffffff) {
+    failCaptureContract(field + " must be a uint32");
+  }
+  return value >>> 0;
 }
 
 function intOr(value, fallback) {
@@ -904,15 +1215,17 @@ function packReplayInputFlags(inputRow) {
 }
 
 function replayInputsFromTick(tickObj) {
-  const rows = tickObj && Array.isArray(tickObj.input_approx) ? tickObj.input_approx : [];
+  const rows = requireArray(tickObj && tickObj.input_approx, "input_approx");
   const out = [];
   for (let i = 0; i < rows.length; i++) {
-    const row = rows[i] && typeof rows[i] === "object" ? rows[i] : {};
+    const row = requireObject(rows[i], "input_approx[" + i + "]");
+    requireInt(row.move_mode, "input_approx[" + i + "].move_mode");
+    requireInt(row.aim_scheme, "input_approx[" + i + "].aim_scheme");
     out.push([
-      asReplayF32(row.move_dx),
-      asReplayF32(row.move_dy),
-      asReplayF32(row.aim_x),
-      asReplayF32(row.aim_y),
+      requireFiniteScalar(row.move_dx, "input_approx[" + i + "].move_dx"),
+      requireFiniteScalar(row.move_dy, "input_approx[" + i + "].move_dy"),
+      requireFiniteScalar(row.aim_x, "input_approx[" + i + "].aim_x"),
+      requireFiniteScalar(row.aim_y, "input_approx[" + i + "].aim_y"),
       packReplayInputFlags(row),
     ]);
   }
@@ -920,19 +1233,81 @@ function replayInputsFromTick(tickObj) {
 }
 
 function runPlayerCountFromTick(tickObj) {
-  const checkpointPlayers =
-    tickObj &&
-    tickObj.checkpoint &&
-    Array.isArray(tickObj.checkpoint.players)
-      ? tickObj.checkpoint.players
-      : [];
-  if (checkpointPlayers.length > 0) return checkpointPlayers.length | 0;
-  return Math.max(1, outState.playerCountResolved | 0);
+  const checkpoint = requireObject(tickObj && tickObj.checkpoint, "checkpoint");
+  const checkpointPlayers = requireNonEmptyArray(checkpoint.players, "checkpoint.players");
+  return checkpointPlayers.length | 0;
 }
 
 function numberOr(value, fallback) {
   const parsed = captureNumber(value);
   return parsed == null ? fallback : parsed;
+}
+
+function validateAfterPlayers(players, expectedPlayers) {
+  const rows = requireNonEmptyArray(players, "after.players");
+  if (rows.length !== expectedPlayers) {
+    failCaptureContract(
+      "after.players length " + rows.length + " does not match checkpoint.players length " + expectedPlayers
+    );
+  }
+  for (let i = 0; i < rows.length; i++) {
+    const row = requireObject(rows[i], "after.players[" + i + "]");
+    requireFiniteScalar(row.pos_x, "after.players[" + i + "].pos_x");
+    requireFiniteScalar(row.pos_y, "after.players[" + i + "].pos_y");
+    requireFiniteScalar(row.move_dx, "after.players[" + i + "].move_dx");
+    requireFiniteScalar(row.move_dy, "after.players[" + i + "].move_dy");
+    requireFiniteScalar(row.health, "after.players[" + i + "].health");
+    requireFiniteScalar(row.aim_x, "after.players[" + i + "].aim_x");
+    requireFiniteScalar(row.aim_y, "after.players[" + i + "].aim_y");
+    requireFiniteScalar(row.aim_heading, "after.players[" + i + "].aim_heading");
+    requireInt(row.weapon_id, "after.players[" + i + "].weapon_id");
+    requireInt(row.clip_size_i32, "after.players[" + i + "].clip_size_i32");
+    requireFiniteScalar(row.ammo_f32, "after.players[" + i + "].ammo_f32");
+    requireInt(row.reload_active_i32, "after.players[" + i + "].reload_active_i32");
+    requireFiniteScalar(row.reload_timer, "after.players[" + i + "].reload_timer");
+    requireFiniteScalar(row.reload_timer_max, "after.players[" + i + "].reload_timer_max");
+    requireFiniteScalar(row.shot_cooldown, "after.players[" + i + "].shot_cooldown");
+    requireInt(row.experience, "after.players[" + i + "].experience");
+    requireInt(row.level, "after.players[" + i + "].level");
+    const bonusTimers = requireObject(row.bonus_timers, "after.players[" + i + "].bonus_timers");
+    requireFiniteScalar(bonusTimers.speed_bonus, "after.players[" + i + "].bonus_timers.speed_bonus");
+    requireFiniteScalar(bonusTimers.shield, "after.players[" + i + "].bonus_timers.shield");
+    requireFiniteScalar(bonusTimers.fire_bullets, "after.players[" + i + "].bonus_timers.fire_bullets");
+  }
+  return rows;
+}
+
+function validateAfterStatus(status) {
+  const row = requireObject(status, "after.status");
+  requireInt(row.quest_unlock_index, "after.status.quest_unlock_index");
+  requireInt(row.quest_unlock_index_full, "after.status.quest_unlock_index_full");
+  const weaponUsageCounts = requireArray(row.weapon_usage_counts, "after.status.weapon_usage_counts");
+  if (weaponUsageCounts.length !== STATUS_WEAPON_USAGE_COUNT) {
+    failCaptureContract(
+      "after.status.weapon_usage_counts length " +
+        weaponUsageCounts.length +
+        " does not match expected " +
+        STATUS_WEAPON_USAGE_COUNT
+    );
+  }
+  for (let i = 0; i < weaponUsageCounts.length; i++) {
+    requireNonNegativeInt(weaponUsageCounts[i], "after.status.weapon_usage_counts[" + i + "]");
+  }
+  return row;
+}
+
+function validateAfterGlobals(globals) {
+  const row = requireObject(globals, "after.globals");
+  requireNonNegativeInt(row.time_played_ms, "after.globals.time_played_ms");
+  requireNonNegativeInt(row.creature_kill_count, "after.globals.creature_kill_count");
+  requireNonNegativeInt(row.perk_pending_count, "after.globals.perk_pending_count");
+  requireInt(row.perk_choices_dirty, "after.globals.perk_choices_dirty");
+  requireFiniteScalar(row.bonus_weapon_power_up_timer, "after.globals.bonus_weapon_power_up_timer");
+  requireFiniteScalar(row.bonus_reflex_boost_timer, "after.globals.bonus_reflex_boost_timer");
+  requireFiniteScalar(row.bonus_energizer_timer, "after.globals.bonus_energizer_timer");
+  requireFiniteScalar(row.bonus_double_xp_timer, "after.globals.bonus_double_xp_timer");
+  requireFiniteScalar(row.bonus_freeze_timer, "after.globals.bonus_freeze_timer");
+  return row;
 }
 
 function _bonusTimerFromCheckpoint(bonusTimers, key) {
@@ -1022,13 +1397,11 @@ function simStateFromTick(tickObj, checkpoint) {
 }
 
 function entitySamplesFromTick(tickObj) {
-  const samples = tickObj && tickObj.samples ? tickObj.samples : {};
-  const creaturesRaw = Array.isArray(samples.creatures) ? samples.creatures : [];
-  const projectilesRaw = Array.isArray(samples.projectiles) ? samples.projectiles : [];
-  const secondaryRaw = Array.isArray(samples.secondary_projectiles)
-    ? samples.secondary_projectiles
-    : [];
-  const bonusesRaw = Array.isArray(samples.bonuses) ? samples.bonuses : [];
+  const samples = requireObject(tickObj && tickObj.samples, "samples");
+  const creaturesRaw = requireArray(samples.creatures, "samples.creatures");
+  const projectilesRaw = requireArray(samples.projectiles, "samples.projectiles");
+  const secondaryRaw = requireArray(samples.secondary_projectiles, "samples.secondary_projectiles");
+  const bonusesRaw = requireArray(samples.bonuses, "samples.bonuses");
 
   beginEntityUidTick("creature");
   beginEntityUidTick("projectile");
@@ -1037,123 +1410,118 @@ function entitySamplesFromTick(tickObj) {
 
   const creatures = [];
   for (let i = 0; i < creaturesRaw.length; i++) {
-    const row = creaturesRaw[i] && typeof creaturesRaw[i] === "object" ? creaturesRaw[i] : {};
-    const index = intOr(row.index, -1);
-    if (index < 0) continue;
+    const row = requireObject(creaturesRaw[i], "samples.creatures[" + i + "]");
+    const index = requireNonNegativeInt(row.index, "samples.creatures[" + i + "].index");
     const uidState = nextEntityUid("creature", index);
-    const pos = row.pos && typeof row.pos === "object" ? row.pos : {};
+    const pos = requireObject(row.pos, "samples.creatures[" + i + "].pos");
     creatures.push({
       uid: uidState.uid,
       generation: uidState.generation,
       pool_kind: "creature",
       index: index,
       active: true,
-      type_id: intOr(row.type_id, 0),
-      hp: numberOr(row.hp, 0),
+      type_id: requireInt(row.type_id, "samples.creatures[" + i + "].type_id"),
+      hp: requireFiniteScalar(row.hp, "samples.creatures[" + i + "].hp"),
       pos: {
-        x: numberOr(pos.x, 0),
-        y: numberOr(pos.y, 0),
+        x: requireFiniteScalar(pos.x, "samples.creatures[" + i + "].pos.x"),
+        y: requireFiniteScalar(pos.y, "samples.creatures[" + i + "].pos.y"),
       },
-      flags: intOr(row.flags, 0),
-      ai_mode: intOr(row.ai_mode, 0),
-      link_index: intOr(row.link_index, -1),
-      heading: numberOr(row.heading, 0),
-      target_heading: numberOr(row.target_heading, 0),
-      orbit_angle: numberOr(row.orbit_angle, 0),
-      orbit_radius: numberOr(row.orbit_radius, 0),
-      lifecycle_stage: numberOr(row.lifecycle_stage, 0),
+      flags: requireInt(row.flags, "samples.creatures[" + i + "].flags"),
+      ai_mode: requireInt(row.ai_mode, "samples.creatures[" + i + "].ai_mode"),
+      link_index: requireInt(row.link_index, "samples.creatures[" + i + "].link_index"),
+      heading: requireFiniteScalar(row.heading, "samples.creatures[" + i + "].heading"),
+      target_heading: requireFiniteScalar(row.target_heading, "samples.creatures[" + i + "].target_heading"),
+      orbit_angle: requireFiniteScalar(row.orbit_angle, "samples.creatures[" + i + "].orbit_angle"),
+      orbit_radius: requireFiniteScalar(row.orbit_radius, "samples.creatures[" + i + "].orbit_radius"),
+      lifecycle_stage: requireFiniteScalar(row.lifecycle_stage, "samples.creatures[" + i + "].lifecycle_stage"),
     });
   }
 
   const projectiles = [];
   for (let i = 0; i < projectilesRaw.length; i++) {
-    const row = projectilesRaw[i] && typeof projectilesRaw[i] === "object" ? projectilesRaw[i] : {};
-    const index = intOr(row.index, -1);
-    if (index < 0) continue;
+    const row = requireObject(projectilesRaw[i], "samples.projectiles[" + i + "]");
+    const index = requireNonNegativeInt(row.index, "samples.projectiles[" + i + "].index");
     const uidState = nextEntityUid("projectile", index);
-    const pos = row.pos && typeof row.pos === "object" ? row.pos : {};
-    const vel = row.vel && typeof row.vel === "object" ? row.vel : {};
+    const pos = requireObject(row.pos, "samples.projectiles[" + i + "].pos");
+    const vel = requireObject(row.vel, "samples.projectiles[" + i + "].vel");
     projectiles.push({
       uid: uidState.uid,
       generation: uidState.generation,
       pool_kind: "projectile",
       index: index,
       active: true,
-      type_id: intOr(row.type_id, 0),
-      angle: numberOr(row.angle, 0),
+      type_id: requireInt(row.type_id, "samples.projectiles[" + i + "].type_id"),
+      angle: requireFiniteScalar(row.angle, "samples.projectiles[" + i + "].angle"),
       pos: {
-        x: numberOr(pos.x, 0),
-        y: numberOr(pos.y, 0),
+        x: requireFiniteScalar(pos.x, "samples.projectiles[" + i + "].pos.x"),
+        y: requireFiniteScalar(pos.y, "samples.projectiles[" + i + "].pos.y"),
       },
       vel: {
-        x: numberOr(vel.x, 0),
-        y: numberOr(vel.y, 0),
+        x: requireFiniteScalar(vel.x, "samples.projectiles[" + i + "].vel.x"),
+        y: requireFiniteScalar(vel.y, "samples.projectiles[" + i + "].vel.y"),
       },
-      life_timer: numberOr(row.life_timer, 0),
-      speed_scale: numberOr(row.speed_scale, 0),
-      damage_pool: numberOr(row.damage_pool, 0),
-      hit_radius: numberOr(row.hit_radius, 0),
-      travel_budget: numberOr(row.travel_budget, numberOr(row.base_damage, 0)),
-      owner_id: intOr(row.owner_id, -1),
+      life_timer: requireFiniteScalar(row.life_timer, "samples.projectiles[" + i + "].life_timer"),
+      speed_scale: requireFiniteScalar(row.speed_scale, "samples.projectiles[" + i + "].speed_scale"),
+      damage_pool: requireFiniteScalar(row.damage_pool, "samples.projectiles[" + i + "].damage_pool"),
+      hit_radius: requireFiniteScalar(row.hit_radius, "samples.projectiles[" + i + "].hit_radius"),
+      travel_budget: requireFiniteScalar(row.travel_budget, "samples.projectiles[" + i + "].travel_budget"),
+      owner_id: requireInt(row.owner_id, "samples.projectiles[" + i + "].owner_id"),
     });
   }
 
   const secondary_projectiles = [];
   for (let i = 0; i < secondaryRaw.length; i++) {
-    const row = secondaryRaw[i] && typeof secondaryRaw[i] === "object" ? secondaryRaw[i] : {};
-    const index = intOr(row.index, -1);
-    if (index < 0) continue;
+    const row = requireObject(secondaryRaw[i], "samples.secondary_projectiles[" + i + "]");
+    const index = requireNonNegativeInt(row.index, "samples.secondary_projectiles[" + i + "].index");
     const uidState = nextEntityUid("secondary_projectile", index);
-    const pos = row.pos && typeof row.pos === "object" ? row.pos : {};
-    const vel = row.vel && typeof row.vel === "object" ? row.vel : {};
-    const velX = numberOr(vel.x, 0);
-    const velY = numberOr(vel.y, 0);
-    const speedAuto = numberOr(Math.sqrt(velX * velX + velY * velY), 0);
+    const pos = requireObject(row.pos, "samples.secondary_projectiles[" + i + "].pos");
+    const vel = requireObject(row.vel, "samples.secondary_projectiles[" + i + "].vel");
+    const velX = requireFiniteScalar(vel.x, "samples.secondary_projectiles[" + i + "].vel.x");
+    const velY = requireFiniteScalar(vel.y, "samples.secondary_projectiles[" + i + "].vel.y");
     secondary_projectiles.push({
       uid: uidState.uid,
       generation: uidState.generation,
       pool_kind: "secondary_projectile",
       index: index,
       active: true,
-      type_id: intOr(row.type_id, 0),
-      angle: numberOr(row.angle, 0),
+      type_id: requireInt(row.type_id, "samples.secondary_projectiles[" + i + "].type_id"),
+      angle: requireFiniteScalar(row.angle, "samples.secondary_projectiles[" + i + "].angle"),
       pos: {
-        x: numberOr(pos.x, 0),
-        y: numberOr(pos.y, 0),
+        x: requireFiniteScalar(pos.x, "samples.secondary_projectiles[" + i + "].pos.x"),
+        y: requireFiniteScalar(pos.y, "samples.secondary_projectiles[" + i + "].pos.y"),
       },
       vel: {
         x: velX,
         y: velY,
       },
-      speed: numberOr(row.speed, speedAuto),
-      trail_timer: numberOr(row.trail_timer, 0),
-      owner_id: intOr(row.owner_id, -1),
-      target_id: intOr(row.target_id, -1),
+      speed: requireFiniteScalar(row.speed, "samples.secondary_projectiles[" + i + "].speed"),
+      trail_timer: requireFiniteScalar(row.trail_timer, "samples.secondary_projectiles[" + i + "].trail_timer"),
+      owner_id: requireInt(row.owner_id, "samples.secondary_projectiles[" + i + "].owner_id"),
+      target_id: requireInt(row.target_id, "samples.secondary_projectiles[" + i + "].target_id"),
     });
   }
 
   const bonuses = [];
   for (let i = 0; i < bonusesRaw.length; i++) {
-    const row = bonusesRaw[i] && typeof bonusesRaw[i] === "object" ? bonusesRaw[i] : {};
-    const index = intOr(row.index, -1);
-    if (index < 0) continue;
+    const row = requireObject(bonusesRaw[i], "samples.bonuses[" + i + "]");
+    const index = requireNonNegativeInt(row.index, "samples.bonuses[" + i + "].index");
     const uidState = nextEntityUid("bonus", index);
-    const pos = row.pos && typeof row.pos === "object" ? row.pos : {};
+    const pos = requireObject(row.pos, "samples.bonuses[" + i + "].pos");
     bonuses.push({
       uid: uidState.uid,
       generation: uidState.generation,
       pool_kind: "bonus",
       index: index,
       active: true,
-      bonus_id: intOr(row.bonus_id, 0),
-      picked: intOr(row.state, 0) !== 0,
-      time_left: numberOr(row.time_left, 0),
-      time_max: numberOr(row.time_max, 0),
+      bonus_id: requireInt(row.bonus_id, "samples.bonuses[" + i + "].bonus_id"),
+      picked: requireInt(row.state, "samples.bonuses[" + i + "].state") !== 0,
+      time_left: requireFiniteScalar(row.time_left, "samples.bonuses[" + i + "].time_left"),
+      time_max: requireFiniteScalar(row.time_max, "samples.bonuses[" + i + "].time_max"),
       pos: {
-        x: numberOr(pos.x, 0),
-        y: numberOr(pos.y, 0),
+        x: requireFiniteScalar(pos.x, "samples.bonuses[" + i + "].pos.x"),
+        y: requireFiniteScalar(pos.y, "samples.bonuses[" + i + "].pos.y"),
       },
-      amount: intOr(row.amount_i32, intOr(row.amount_f32, 0)),
+      amount: requireInt(row.amount_i32, "samples.bonuses[" + i + "].amount_i32"),
     });
   }
 
@@ -1171,14 +1539,18 @@ function entitySamplesFromTick(tickObj) {
 }
 
 function rngStreamFromTick(tickObj) {
-  const rows = tickObj && tickObj.rng && Array.isArray(tickObj.rng.head) ? tickObj.rng.head : [];
+  const rng = requireObject(tickObj && tickObj.rng, "rng");
+  const rows = requireArray(rng.head, "rng.head");
   const out = [];
   for (let i = 0; i < rows.length; i++) {
-    const row = rows[i] && typeof rows[i] === "object" ? rows[i] : {};
-    const tickCallIndex = intOr(row.tick_call_index, i + 1);
-    const value15 = intOr(row.value_15, intOr(row.value, 0) & 0x7fff);
-    const stateBefore = intOr(row.state_before_u32, 0) >>> 0;
-    const stateAfter = intOr(row.state_after_u32, 0) >>> 0;
+    const row = requireObject(rows[i], "rng.head[" + i + "]");
+    const tickCallIndex = requirePositiveInt(row.tick_call_index, "rng.head[" + i + "].tick_call_index");
+    const value15 = requireInt(row.value_15, "rng.head[" + i + "].value_15");
+    if (value15 < 0 || value15 > 0x7fff) {
+      failCaptureContract("rng.head[" + i + "].value_15 must be in 0..32767");
+    }
+    const stateBefore = requireU32(row.state_before_u32, "rng.head[" + i + "].state_before_u32");
+    const stateAfter = requireU32(row.state_after_u32, "rng.head[" + i + "].state_after_u32");
     out.push({
       tick_call_index: tickCallIndex,
       value_15: value15,
@@ -1195,14 +1567,18 @@ function timingSamplesFromTick(tickObj) {
   const out = [];
   const tickIndex = tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : -1;
   const gameplayFrame = tickObj && tickObj.gameplay_frame != null ? tickObj.gameplay_frame | 0 : null;
-  const rawRows = tickObj && Array.isArray(tickObj.timing_samples) ? tickObj.timing_samples : [];
+  const rawRows = requireArray(tickObj && tickObj.timing_samples, "timing_samples");
   for (let i = 0; i < rawRows.length; i++) {
-    const row = rawRows[i] && typeof rawRows[i] === "object" ? rawRows[i] : {};
+    const row = requireObject(rawRows[i], "timing_samples[" + i + "]");
+    const phase = row.phase == null ? "" : String(row.phase);
+    const writeKind = row.write_kind == null ? "" : String(row.write_kind);
+    if (!phase) failCaptureContract("timing_samples[" + i + "].phase must be non-empty");
+    if (!writeKind) failCaptureContract("timing_samples[" + i + "].write_kind must be non-empty");
     out.push({
       tick_index: row.tick_index == null ? tickIndex : intOr(row.tick_index, tickIndex),
       gameplay_frame: row.gameplay_frame == null ? gameplayFrame : intOr(row.gameplay_frame, gameplayFrame),
-      phase: row.phase == null ? "" : String(row.phase),
-      write_kind: row.write_kind == null ? "snapshot" : String(row.write_kind),
+      phase: phase,
+      write_kind: writeKind,
       frame_dt_f32: row.frame_dt_f32 == null ? null : captureNumber(row.frame_dt_f32),
       frame_dt_ms_i32: row.frame_dt_ms_i32 == null ? null : intOr(row.frame_dt_ms_i32, null),
       frame_dt_ms_f32: row.frame_dt_ms_f32 == null ? null : captureNumber(row.frame_dt_ms_f32),
@@ -1217,43 +1593,6 @@ function timingSamplesFromTick(tickObj) {
       player_index: row.player_index == null ? null : intOr(row.player_index, null),
     });
   }
-  if (out.length > 0) return out;
-
-  // Fallback for pre-marker captures.
-  out.length = 0;
-  const diagnostics = tickObj && tickObj.diagnostics && typeof tickObj.diagnostics === "object" ? tickObj.diagnostics : {};
-  const timing = diagnostics && diagnostics.timing && typeof diagnostics.timing === "object" ? diagnostics.timing : {};
-  out.push({
-    tick_index: tickIndex,
-    gameplay_frame: gameplayFrame,
-    phase: "gpur_enter",
-    write_kind: "snapshot",
-    frame_dt_f32: timing.frame_dt_before == null ? null : captureNumber(timing.frame_dt_before),
-    frame_dt_ms_i32: timing.frame_dt_ms_before_i32 == null ? null : intOr(timing.frame_dt_ms_before_i32, null),
-    frame_dt_ms_f32: timing.frame_dt_ms_before_f32 == null ? null : captureNumber(timing.frame_dt_ms_before_f32),
-    time_scale_active_entry: null,
-    time_scale_active_current: null,
-    time_scale_factor: null,
-    bonus_reflex_boost_timer: null,
-    mode_fn: null,
-    player_index: null,
-  });
-  out.push({
-    tick_index: tickIndex,
-    gameplay_frame: gameplayFrame,
-    phase: "post_gameplay_update_and_render",
-    write_kind: "snapshot",
-    frame_dt_f32: timing.frame_dt_after == null ? null : captureNumber(timing.frame_dt_after),
-    frame_dt_ms_i32: timing.frame_dt_ms_after_i32 == null ? null : intOr(timing.frame_dt_ms_after_i32, null),
-    frame_dt_ms_f32: timing.frame_dt_ms_after_f32 == null ? null : captureNumber(timing.frame_dt_ms_after_f32),
-    time_scale_active_entry: null,
-    time_scale_active_current: null,
-    time_scale_factor: null,
-    bonus_reflex_boost_timer: null,
-    mode_fn: null,
-    player_index: null,
-  });
-
   return out;
 }
 
@@ -1279,94 +1618,98 @@ function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
 // tick rows are replay-grade rows. Missing required fields are contract errors,
 // not something finalize should coerce after the fact.
 function buildTraceTickRow(tickObj) {
-  if (!tickObj || typeof tickObj !== "object") {
-    return emitCaptureContractError("missing_tick_payload", tickObj);
-  }
-  const checkpoint = tickObj.checkpoint;
-  if (!checkpoint || typeof checkpoint !== "object") {
-    return emitCaptureContractError("missing_tick_checkpoint", tickObj);
-  }
-  if (!Array.isArray(checkpoint.players)) {
-    return emitCaptureContractError("invalid_tick_checkpoint_players", tickObj);
-  }
-  if (checkpoint.rng_state == null || !Number.isFinite(checkpoint.rng_state)) {
-    return emitCaptureContractError("invalid_tick_rng_state", tickObj);
-  }
-  const rngStream = rngStreamFromTick(tickObj);
-  const timingSamples = timingSamplesFromTick(tickObj);
-  checkpoint.state_hash = "";
-  checkpoint.command_hash = "";
-  const modeId = tickModeId(tickObj);
-  if (modeId < 0) {
-    return emitCaptureContractError("invalid_tick_mode_id", tickObj);
-  }
-  const dtMsI32 =
-    tickObj.frame_dt_ms_i32 != null
-      ? intOr(tickObj.frame_dt_ms_i32, null)
-      : tickObj &&
-          tickObj.diagnostics &&
-          tickObj.diagnostics.timing &&
-          tickObj.diagnostics.timing.frame_dt_ms_after_i32 != null
-        ? intOr(tickObj.diagnostics.timing.frame_dt_ms_after_i32, null)
-        : null;
-  if (dtMsI32 == null || !Number.isFinite(dtMsI32) || dtMsI32 < 0) {
-    return emitCaptureContractError("invalid_tick_dt_ms_i32", tickObj);
-  }
-  let gpurEnterDt = null;
-  for (let i = 0; i < timingSamples.length; i++) {
-    const row = timingSamples[i] && typeof timingSamples[i] === "object" ? timingSamples[i] : {};
-    if (String(row.phase || "") !== "gpur_enter") continue;
-    gpurEnterDt = row.frame_dt_f32 == null ? null : captureNumber(row.frame_dt_f32);
-    break;
-  }
-  const dtSeconds =
-    gpurEnterDt != null
-      ? gpurEnterDt
-      : tickObj &&
-          tickObj.diagnostics &&
-          tickObj.diagnostics.timing &&
-          tickObj.diagnostics.timing.frame_dt_before != null
-        ? captureNumber(tickObj.diagnostics.timing.frame_dt_before)
-        : captureNumber(dtMsI32 / 1000.0);
-  if (dtSeconds == null || !Number.isFinite(dtSeconds) || dtSeconds < 0) {
-    return emitCaptureContractError("invalid_tick_dt", tickObj);
-  }
-  const elapsedRawMs = intOr(checkpoint.elapsed_ms, -1);
-  const elapsedMs = normalizeRunElapsedMs(elapsedRawMs, dtMsI32);
-  if (!Number.isFinite(elapsedMs) || elapsedMs < 0) {
-    return emitCaptureContractError("invalid_tick_elapsed_ms", tickObj);
-  }
-  checkpoint.elapsed_ms = elapsedMs;
-  const replayInputs = replayInputsFromTick(tickObj);
-  const playerCount = runPlayerCountFromTick(tickObj);
-  if ((playerCount | 0) <= 0) {
-    return emitCaptureContractError("invalid_tick_player_count", tickObj);
-  }
-  if ((replayInputs.length | 0) !== (playerCount | 0)) {
-    return emitCaptureContractError("invalid_tick_replay_inputs", tickObj);
-  }
-  const simState = simStateFromTick(tickObj, checkpoint);
+  try {
+    requireObject(tickObj, "tick");
+    const checkpoint = requireObject(tickObj.checkpoint, "checkpoint");
+    const checkpointPlayers = requireNonEmptyArray(checkpoint.players, "checkpoint.players");
+    requireU32(checkpoint.rng_state, "checkpoint.rng_state");
+    const rngStream = rngStreamFromTick(tickObj);
+    const timingSamples = timingSamplesFromTick(tickObj);
+    if (timingSamples.length <= 0) {
+      failCaptureContract("timing_samples must be non-empty");
+    }
+    checkpoint.state_hash = "";
+    checkpoint.command_hash = "";
+    const modeId = tickModeId(tickObj);
+    if (modeId < 0) {
+      failCaptureContract("mode_id must be non-negative");
+    }
+    const dtMsI32 =
+      tickObj.frame_dt_ms_i32 != null
+        ? intOr(tickObj.frame_dt_ms_i32, null)
+        : tickObj &&
+            tickObj.diagnostics &&
+            tickObj.diagnostics.timing &&
+            tickObj.diagnostics.timing.frame_dt_ms_after_i32 != null
+          ? intOr(tickObj.diagnostics.timing.frame_dt_ms_after_i32, null)
+          : null;
+    if (dtMsI32 == null || !Number.isFinite(dtMsI32) || dtMsI32 < 0) {
+      failCaptureContract("dt_ms_i32 must be finite and >= 0");
+    }
+    let gpurEnterDt = null;
+    for (let i = 0; i < timingSamples.length; i++) {
+      const row = timingSamples[i];
+      if (!row || typeof row !== "object") continue;
+      if (String(row.phase || "") !== "gpur_enter") continue;
+      gpurEnterDt = row.frame_dt_f32 == null ? null : captureNumber(row.frame_dt_f32);
+      break;
+    }
+    const dtSeconds =
+      gpurEnterDt != null
+        ? gpurEnterDt
+        : tickObj &&
+            tickObj.diagnostics &&
+            tickObj.diagnostics.timing &&
+            tickObj.diagnostics.timing.frame_dt_before != null
+          ? captureNumber(tickObj.diagnostics.timing.frame_dt_before)
+          : captureNumber(dtMsI32 / 1000.0);
+    if (dtSeconds == null || !Number.isFinite(dtSeconds) || dtSeconds < 0) {
+      failCaptureContract("dt must be finite and >= 0");
+    }
+    const elapsedRawMs = requireInt(checkpoint.elapsed_ms, "checkpoint.elapsed_ms");
+    const elapsedMs = normalizeRunElapsedMs(elapsedRawMs, dtMsI32);
+    if (!Number.isFinite(elapsedMs) || elapsedMs < 0) {
+      failCaptureContract("elapsed_ms must be finite and >= 0");
+    }
+    checkpoint.elapsed_ms = elapsedMs;
+    const playerCount = checkpointPlayers.length | 0;
+    const replayInputs = replayInputsFromTick(tickObj);
+    if ((replayInputs.length | 0) !== (playerCount | 0)) {
+      failCaptureContract(
+        "replay_inputs length " + replayInputs.length + " does not match checkpoint.players length " + playerCount
+      );
+    }
+    validateAfterGlobals(tickObj.after && tickObj.after.globals);
+    validateAfterPlayers(tickObj.after && tickObj.after.players, playerCount);
+    validateAfterStatus(tickObj.after && tickObj.after.status);
+    const simState = simStateFromTick(tickObj, checkpoint);
 
-  return {
-    event: "tick",
-    run_id: outState.currentRunId | 0,
-    tick_index_global: tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
-    elapsed_ms: elapsedMs,
-    dt: dtSeconds,
-    dt_ms_i32: dtMsI32,
-    mode_id: modeId,
-    quest_stage_major: tickQuestMajor(tickObj),
-    quest_stage_minor: tickQuestMinor(tickObj),
-    phase_markers: phaseMarkerNames(tickObj.phase_markers),
-    replay_inputs: replayInputs,
-    channels: {
-      checkpoint: checkpoint,
-      rng_stream: rngStream,
-      timing_samples: timingSamples,
-      sim_state: simState,
-      entity_samples: entitySamplesFromTick(tickObj),
-    },
-  };
+    return {
+      event: "tick",
+      run_id: outState.currentRunId | 0,
+      tick_index_global: tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
+      elapsed_ms: elapsedMs,
+      dt: dtSeconds,
+      dt_ms_i32: dtMsI32,
+      mode_id: modeId,
+      quest_stage_major: tickQuestMajor(tickObj),
+      quest_stage_minor: tickQuestMinor(tickObj),
+      phase_markers: phaseMarkerNames(tickObj.phase_markers),
+      replay_inputs: replayInputs,
+      channels: {
+        checkpoint: checkpoint,
+        rng_stream: rngStream,
+        timing_samples: timingSamples,
+        sim_state: simState,
+        entity_samples: entitySamplesFromTick(tickObj),
+      },
+    };
+  } catch (error) {
+    if (isCaptureContractError(error)) {
+      return emitCaptureContractError(error.message, tickObj);
+    }
+    throw error;
+  }
 }
 
 function writeCaptureTick(tickObj) {
@@ -1385,10 +1728,7 @@ function writeCaptureTick(tickObj) {
     outState.lastTickIndexGlobal = tickObj.tick_index == null ? null : tickObj.tick_index | 0;
     return;
   }
-  if (!outState.outWarned) {
-    outState.outWarned = true;
-    console.log("gameplay_diff_capture: failed writing tick to capture file");
-  }
+  emitCaptureContractError("tick_write_failed", tickObj);
 }
 
 function closeCaptureFile() {
@@ -1622,7 +1962,7 @@ function readStatusSnapshotCompact() {
   if (base) {
     for (let i = 0; i < STATUS_WEAPON_USAGE_COUNT; i++) {
       const value = safeReadU32(base.add(i * 4));
-      counts.push(value == null ? 0 : value >>> 0);
+      counts.push(value == null ? null : value >>> 0);
     }
   }
   return {
@@ -3900,12 +4240,16 @@ function finalizeTick() {
       : globals.creature_active_count == null
         ? -1
         : globals.creature_active_count;
+  const rngStateForCheckpoint =
+    CONFIG.enableRngStateMirror && outState.rngMirrorStateU32 != null
+      ? outState.rngMirrorStateU32 >>> 0
+      : null;
 
   const checkpoint = {
     tick_index: tick.tick_index,
     state_hash: "",
     command_hash: "",
-    rng_state: tick.rng.last_value == null ? -1 : tick.rng.last_value,
+    rng_state: rngStateForCheckpoint == null ? -1 : rngStateForCheckpoint,
     elapsed_ms: globals.time_played_ms == null ? -1 : globals.time_played_ms,
     score_xp: scoreXp,
     kills: killCount,
@@ -4045,14 +4389,19 @@ function finalizeTick() {
 
 function attachHook(name, ptrVal, handlers) {
   if (!ptrVal) {
+    outState.hookStatusByName[name] = "missing_pointer";
     writeLine({ event: "hook_skip", name: name, reason: "missing_pointer" });
-    return;
+    return false;
   }
   try {
     Interceptor.attach(ptrVal, handlers);
+    outState.hookStatusByName[name] = "attached";
     writeLine({ event: "hook_ok", name: name, addr: ptrVal.toString() });
+    return true;
   } catch (e) {
+    outState.hookStatusByName[name] = "attach_error";
     writeLine({ event: "hook_error", name: name, addr: ptrVal.toString(), error: String(e) });
+    return false;
   }
 }
 
@@ -5551,6 +5900,9 @@ function main() {
   for (const key in fnPtrs) ptrs[key] = !!fnPtrs[key];
   for (const key in grimFnPtrs) ptrs[key] = !!grimFnPtrs[key];
   for (const key in dataPtrs) ptrs["data_" + key] = !!dataPtrs[key];
+  if (!validateStartupReadiness(ptrs)) {
+    return;
+  }
   outState.sessionFingerprint = makeSessionFingerprint(exeModule, ptrs);
   outState.sessionId = outState.sessionFingerprint.session_id;
 
@@ -5630,7 +5982,12 @@ function main() {
     pointers_resolved: ptrs,
   };
   outState.captureMetaTemplate = captureMeta;
-  startCaptureFile(captureMeta, CONFIG.outPath);
+  if (!startCaptureFile(captureMeta, CONFIG.outPath)) {
+    emitStartupContractError("capture_file_unavailable", {
+      out_path: CONFIG.outPath,
+    });
+    return;
+  }
 
   writeLine({
     event: "start",
@@ -5668,6 +6025,9 @@ function main() {
 
   installShutdownHooks();
   installHooks();
+  if (!validateInstalledRequiredHooks()) {
+    return;
+  }
   emitHeartbeat();
   startHeartbeat();
 

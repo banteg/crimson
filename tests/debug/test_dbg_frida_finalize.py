@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -95,7 +96,70 @@ def _session_start_row(*, capture_format_version: int = CAPTURE_FORMAT_VERSION) 
     }
 
 
-def _checkpoint_stub(*, tick_index: int, elapsed_ms: int) -> dict[str, object]:
+def _checkpoint_player_stub(*, index: int = 0) -> dict[str, object]:
+    return {
+        "pos": {
+            "x": float(index),
+            "y": float(index) + 1.0,
+        },
+        "health": 100.0,
+        "weapon_id": 1,
+        "ammo": 12.0,
+        "experience": 0,
+        "level": 1,
+    }
+
+
+def _sim_player_stub(*, index: int = 0) -> dict[str, object]:
+    return {
+        "index": int(index),
+        "pos": {
+            "x": float(index),
+            "y": float(index) + 1.0,
+        },
+        "health": 100.0,
+        "weapon": {
+            "weapon_id": 1,
+            "ammo": 12.0,
+            "clip_size": 12,
+            "reload_active": False,
+            "reload_timer": 0.0,
+            "reload_timer_max": 0.0,
+            "shot_cooldown": 0.0,
+        },
+        "experience": 0,
+        "level": 1,
+    }
+
+
+def _timing_sample_stub(
+    *,
+    tick_index: int,
+    gameplay_frame: int | None = None,
+    phase: str = "gpur_enter",
+    write_kind: str = "snapshot",
+    dt_ms_i32: int = 16,
+    dt: float | None = None,
+) -> dict[str, object]:
+    frame_dt = float(dt_ms_i32) / 1000.0 if dt is None else float(dt)
+    return {
+        "tick_index": int(tick_index),
+        "gameplay_frame": None if gameplay_frame is None else int(gameplay_frame),
+        "phase": str(phase),
+        "write_kind": str(write_kind),
+        "frame_dt_f32": frame_dt,
+        "frame_dt_ms_i32": int(dt_ms_i32),
+        "frame_dt_ms_f32": float(dt_ms_i32),
+        "time_scale_active_entry": None,
+        "time_scale_active_current": None,
+        "time_scale_factor": None,
+        "bonus_reflex_boost_timer": None,
+        "mode_fn": "gameplay_update_and_render",
+        "player_index": None,
+    }
+
+
+def _checkpoint_stub(*, tick_index: int, elapsed_ms: int, player_count: int = 1) -> dict[str, object]:
     return {
         "tick_index": int(tick_index),
         "rng_state": 0,
@@ -104,7 +168,7 @@ def _checkpoint_stub(*, tick_index: int, elapsed_ms: int) -> dict[str, object]:
         "kills": 0,
         "creature_count": 0,
         "perk_pending": 0,
-        "players": [],
+        "players": [_checkpoint_player_stub(index=i) for i in range(max(0, int(player_count)))],
         "bonus_timers": {},
     }
 
@@ -112,6 +176,7 @@ def _checkpoint_stub(*, tick_index: int, elapsed_ms: int) -> dict[str, object]:
 def _sim_state_stub(
     *,
     mode_id: int,
+    player_count: int = 1,
     quest_stage_major: int = -1,
     quest_stage_minor: int = -1,
 ) -> dict[str, object]:
@@ -135,7 +200,7 @@ def _sim_state_stub(
                 "weapon_usage_counts": [0] * int(WEAPON_USAGE_COUNT),
             },
         },
-        "players": [],
+        "players": [_sim_player_stub(index=i) for i in range(max(0, int(player_count)))],
     }
 
 
@@ -205,6 +270,7 @@ def _channels_stub(
     tick_index: int,
     elapsed_ms: int,
     mode_id: int,
+    player_count: int = 1,
     quest_stage_major: int = -1,
     quest_stage_minor: int = -1,
     creatures: list[dict[str, object]] | None = None,
@@ -212,13 +278,18 @@ def _channels_stub(
     secondary_projectiles: list[dict[str, object]] | None = None,
     checkpoint_overrides: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    checkpoint = _checkpoint_stub(tick_index=int(tick_index), elapsed_ms=int(elapsed_ms))
+    checkpoint = _checkpoint_stub(
+        tick_index=int(tick_index),
+        elapsed_ms=int(elapsed_ms),
+        player_count=int(player_count),
+    )
     if checkpoint_overrides:
         checkpoint.update(dict(checkpoint_overrides))
     return {
         "checkpoint": checkpoint,
         "sim_state": _sim_state_stub(
             mode_id=int(mode_id),
+            player_count=int(player_count),
             quest_stage_major=int(quest_stage_major),
             quest_stage_minor=int(quest_stage_minor),
         ),
@@ -228,12 +299,12 @@ def _channels_stub(
             secondary_projectiles=secondary_projectiles,
         ),
         "rng_stream": [],
-        "timing_samples": [],
+        "timing_samples": [_timing_sample_stub(tick_index=int(tick_index), dt_ms_i32=16)],
     }
 
 
 def _replay_inputs_stub(*, player_count: int = 1) -> list[list[float | int]]:
-    return [[0.0, 0.0, 0.0, 0.0, 0] for _ in range(max(1, int(player_count)))]
+    return [[0.0, 0.0, 0.0, 0.0, 0] for _ in range(max(0, int(player_count)))]
 
 
 def _run_start_row(
@@ -287,6 +358,7 @@ def _tick_row(
             tick_index=int(tick_index),
             elapsed_ms=int(elapsed_ms),
             mode_id=int(mode_id),
+            player_count=int(player_count),
             quest_stage_major=int(quest_stage_major),
             quest_stage_minor=int(quest_stage_minor),
         )
@@ -867,12 +939,188 @@ def test_finalize_frida_jsonl_to_traces_rejects_tick_mode_mismatch(tmp_path: Pat
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_run_end_tick_count_mismatch(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_rejects_missing_timing_samples_field(tmp_path: Path) -> None:
+    channels = _channels_stub(
+        tick_index=0,
+        elapsed_ms=16,
+        mode_id=3,
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
+    channels.pop("timing_samples", None)
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
             _run_start_row(run_id=1, mode_id=3, seed=103, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            {
+                "event": "tick",
+                "run_id": 1,
+                "elapsed_ms": 16,
+                "dt_ms_i32": 16,
+                "dt": 0.016,
+                "mode_id": 3,
+                "quest_stage_major": 1,
+                "quest_stage_minor": 1,
+                "phase_markers": [],
+                "replay_inputs": _replay_inputs_stub(player_count=1),
+                "channels": channels,
+            },
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="missing required field `timing_samples`"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_empty_checkpoint_players(tmp_path: Path) -> None:
+    channels = _channels_stub(
+        tick_index=0,
+        elapsed_ms=16,
+        mode_id=3,
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
+    checkpoint = cast(dict[str, object], channels["checkpoint"])
+    checkpoint["players"] = []
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=3, seed=104, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            {
+                "event": "tick",
+                "run_id": 1,
+                "elapsed_ms": 16,
+                "dt_ms_i32": 16,
+                "dt": 0.016,
+                "mode_id": 3,
+                "quest_stage_major": 1,
+                "quest_stage_minor": 1,
+                "phase_markers": [],
+                "replay_inputs": _replay_inputs_stub(player_count=1),
+                "channels": channels,
+            },
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match=r"channels\.checkpoint\.players must be non-empty"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_invalid_checkpoint_rng_state(tmp_path: Path) -> None:
+    channels = _channels_stub(
+        tick_index=0,
+        elapsed_ms=16,
+        mode_id=3,
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
+    checkpoint = cast(dict[str, object], channels["checkpoint"])
+    checkpoint["rng_state"] = -1
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=3, seed=105, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            {
+                "event": "tick",
+                "run_id": 1,
+                "elapsed_ms": 16,
+                "dt_ms_i32": 16,
+                "dt": 0.016,
+                "mode_id": 3,
+                "quest_stage_major": 1,
+                "quest_stage_minor": 1,
+                "phase_markers": [],
+                "replay_inputs": _replay_inputs_stub(player_count=1),
+                "channels": channels,
+            },
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match=r"channels\.checkpoint\.rng_state must be a uint32"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_empty_timing_samples(tmp_path: Path) -> None:
+    channels = _channels_stub(
+        tick_index=0,
+        elapsed_ms=16,
+        mode_id=3,
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
+    channels["timing_samples"] = []
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=3, seed=106, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            {
+                "event": "tick",
+                "run_id": 1,
+                "elapsed_ms": 16,
+                "dt_ms_i32": 16,
+                "dt": 0.016,
+                "mode_id": 3,
+                "quest_stage_major": 1,
+                "quest_stage_minor": 1,
+                "phase_markers": [],
+                "replay_inputs": _replay_inputs_stub(player_count=1),
+                "channels": channels,
+            },
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match=r"channels\.timing_samples must be non-empty"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_sim_state_player_count_mismatch(tmp_path: Path) -> None:
+    channels = _channels_stub(
+        tick_index=0,
+        elapsed_ms=16,
+        mode_id=3,
+        quest_stage_major=1,
+        quest_stage_minor=1,
+    )
+    sim_state = cast(dict[str, object], channels["sim_state"])
+    sim_state["players"] = []
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=3, seed=107, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            {
+                "event": "tick",
+                "run_id": 1,
+                "elapsed_ms": 16,
+                "dt_ms_i32": 16,
+                "dt": 0.016,
+                "mode_id": 3,
+                "quest_stage_major": 1,
+                "quest_stage_minor": 1,
+                "phase_markers": [],
+                "replay_inputs": _replay_inputs_stub(player_count=1),
+                "channels": channels,
+            },
+        ],
+    )
+
+    with pytest.raises(
+        FridaFinalizeError,
+        match=r"channels\.sim_state\.players length 0 does not match checkpoint\.players length 1",
+    ):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_run_end_tick_count_mismatch(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=3, seed=108, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             _tick_row(
                 run_id=1,
                 tick_index=0,
