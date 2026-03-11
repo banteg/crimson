@@ -402,6 +402,7 @@ class PlaybackDriver:
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
                     dictionary_words=tuple(self.replay.header.typo_dictionary_words),
+                    highscore_names=tuple(self.replay.header.typo_highscore_names),
                 )
             case GameMode.TUTORIAL:
                 return build_tutorial_session(

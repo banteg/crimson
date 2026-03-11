@@ -7,6 +7,9 @@ import msgspec
 
 from grim.rand import CrandLike
 
+from ..game_modes import GameMode
+from ..persistence.highscores import read_highscore_table
+
 NAME_MAX_CHARS = 16  # creature_name_assign_random enforces strlen < 0x10.
 
 
@@ -70,6 +73,12 @@ def _draw(rng: CrandLike) -> int:
     return rng.rand()
 
 
+def _pick_highscore_name(rng: CrandLike, highscore_names: Sequence[str]) -> str:
+    if not highscore_names:
+        return "quickbrownfox"
+    return str(highscore_names[_draw(rng) % len(highscore_names)])
+
+
 def typo_name_part(rng: CrandLike, *, allow_the: bool) -> str:
     mod = 52 if allow_the else 51
     idx = _draw(rng) % mod
@@ -82,18 +91,19 @@ def typo_build_name(
     rng: CrandLike,
     *,
     score_xp: int,
-    unique_words: Sequence[str] | None = None,
+    dictionary_words: Sequence[str] | None = None,
+    highscore_names: Sequence[str] = (),
 ) -> str:
     score_xp = int(score_xp)
-    if unique_words:
+    if dictionary_words:
         return _typo_build_custom_name(
             rng,
             score_xp=score_xp,
-            unique_words=unique_words,
+            dictionary_words=dictionary_words,
         )
     if score_xp > 120:
-        if _draw(rng) % 100 < 10 and unique_words:
-            return str(unique_words[_draw(rng) % len(unique_words)])
+        if _draw(rng) % 100 < 10:
+            return _pick_highscore_name(rng, highscore_names)
         if _draw(rng) % 100 < 80:
             return "".join(
                 [
@@ -157,26 +167,26 @@ def _typo_build_custom_name(
     rng: CrandLike,
     *,
     score_xp: int,
-    unique_words: Sequence[str],
+    dictionary_words: Sequence[str],
 ) -> str:
     score_xp = int(score_xp)
     if score_xp > 120:
         if _draw(rng) % 100 < 10:
-            return _pick_word(rng, unique_words)
+            return _pick_word(rng, dictionary_words)
         if _draw(rng) % 100 < 80:
-            return "".join(_pick_unique_words(rng, unique_words, 4))
+            return "".join(_pick_unique_words(rng, dictionary_words, 4))
 
     if (score_xp > 80 and _draw(rng) % 100 < 80) or (
         score_xp > 60 and _draw(rng) % 100 < 40
     ):
-        return "".join(_pick_unique_words(rng, unique_words, 3))
+        return "".join(_pick_unique_words(rng, dictionary_words, 3))
 
     if (score_xp > 40 and _draw(rng) % 100 < 80) or (
         score_xp > 20 and _draw(rng) % 100 < 40
     ):
-        return "".join(_pick_unique_words(rng, unique_words, 2))
+        return "".join(_pick_unique_words(rng, dictionary_words, 2))
 
-    return _pick_word(rng, unique_words)
+    return _pick_word(rng, dictionary_words)
 
 
 def load_typo_dictionary(path: Path) -> list[str]:
@@ -198,6 +208,27 @@ def load_typo_dictionary(path: Path) -> list[str]:
         words.append(text)
         seen.add(text)
     return words
+
+
+def load_typo_highscore_names(path: Path) -> list[str]:
+    try:
+        records = read_highscore_table(path, game_mode_id=GameMode.TYPO)
+    except OSError:
+        return []
+
+    names: list[str] = []
+    seen: set[str] = set()
+    for record in records:
+        name = record.name()
+        if not name:
+            continue
+        if name in seen:
+            continue
+        if not all(ch.isalpha() or ch == "." for ch in name):
+            continue
+        names.append(name)
+        seen.add(name)
+    return names
 
 
 class CreatureNameTable(msgspec.Struct):
@@ -247,7 +278,8 @@ class CreatureNameTable(msgspec.Struct):
         *,
         score_xp: int,
         active_mask: Sequence[bool],
-        unique_words: Sequence[str] | None = None,
+        dictionary_words: Sequence[str] | None = None,
+        highscore_names: Sequence[str] = (),
     ) -> str:
         idx = int(creature_idx)
         if not (0 <= idx < len(self.names)):
@@ -259,7 +291,8 @@ class CreatureNameTable(msgspec.Struct):
             name = typo_build_name(
                 rng,
                 score_xp=score_xp,
-                unique_words=unique_words,
+                dictionary_words=dictionary_words,
+                highscore_names=highscore_names,
             )
             if not self.is_unique(name, exclude_idx=idx, active_mask=active_mask):
                 attempts += 1

@@ -57,6 +57,7 @@ def _blank_typo_replay(
     seed: int = 0xBEEF,
     game_version: str | None = None,
     typo_dictionary_words: tuple[str, ...] = (),
+    typo_highscore_names: tuple[str, ...] = (),
 ) -> tuple[ReplayHeader, ReplayRecorder]:
     header = ReplayHeader(
         game_mode_id=GameMode.TYPO,
@@ -65,6 +66,7 @@ def _blank_typo_replay(
         player_count=1,
         game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
         typo_dictionary_words=tuple(typo_dictionary_words),
+        typo_highscore_names=tuple(typo_highscore_names),
     )
     rec = ReplayRecorder(header)
     for _ in range(int(ticks)):

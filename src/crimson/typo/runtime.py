@@ -114,7 +114,8 @@ def typo_mid_step(ctx: MidStepContext) -> None:
             ctx.world.state.rng,
             score_xp=int(ctx.world.players[0].experience) if ctx.world.players else 0,
             active_mask=active_mask,
-            unique_words=typo.dictionary_words,
+            dictionary_words=typo.dictionary_words,
+            highscore_names=typo.highscore_names,
         )
 
 
