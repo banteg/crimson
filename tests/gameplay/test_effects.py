@@ -7,6 +7,7 @@ from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, P
 from crimson.effects_atlas import effect_src_rect
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
+from crimson.rng_caller_static import RngCallerStatic
 from grim.color import RGBA
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close
@@ -26,6 +27,19 @@ def test_fx_queue_caps_count() -> None:
     assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
     assert not q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
     assert q.count == 3
+
+
+def test_fx_queue_add_random_tags_exact_native_callers() -> None:
+    rng = ScriptedCrand([0, 0, 0, 0])
+    q = FxQueue(capacity=4, max_count=4)
+
+    assert q.add_random(pos=Vec2(), rng=rng)
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY,
+        RngCallerStatic.FX_QUEUE_ADD_RANDOM_WIDTH,
+        RngCallerStatic.FX_QUEUE_ADD_RANDOM_ROTATION,
+        RngCallerStatic.FX_QUEUE_ADD_RANDOM_EFFECT_ID,
+    ]
 
 
 def test_fx_queue_rotated_applies_alpha_adjustment() -> None:

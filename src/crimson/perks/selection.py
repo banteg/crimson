@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
 from ..quests.level import QuestLevel
+from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WeaponId
 from .availability import perk_can_offer, perks_rebuild_available
@@ -62,7 +63,7 @@ def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: 
 
     for _ in range(1000):
         perk_id = PerkId(
-            state.rng.rand() % PERK_ID_MAX + 1,
+            state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM) % PERK_ID_MAX + 1,
         )
         if not (0 <= int(perk_id) < len(state.perk_available)):
             continue
@@ -133,7 +134,7 @@ def perk_generate_choices(
 
     def _select_random_offer() -> PerkId:
         for _ in range(1000):
-            perk_index = state.rng.rand() % PERK_ID_MAX + 1
+            perk_index = state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM) % PERK_ID_MAX + 1
             if offerable_mask[perk_index]:
                 return PerkId(perk_index)
         return PerkId.INSTANT_WINNER

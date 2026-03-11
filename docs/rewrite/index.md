@@ -113,6 +113,7 @@ Available via `uv run crimson view <name>`:
 See also:
 
 - [Module map (Grim vs Crimson)](module-map.md)
+- [RNG caller mapping workflow](rng-caller-mapping-workflow.md)
 - [Mode systems](mode-systems.md)
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
 - [Replay run start](replay-run-start.md)

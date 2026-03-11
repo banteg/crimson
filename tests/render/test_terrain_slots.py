@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from crimson.quests import all_quests
 from crimson.quests.level import QuestLevel
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.terrain_slots import (
     DEFAULT_TERRAIN_SLOTS,
     Q2_TERRAIN_SLOTS,
@@ -24,21 +25,29 @@ def test_terrain_slots_for_quest_matches_native_layout() -> None:
 
 
 def test_choose_unlock_terrain_slots_uses_sequential_unlock_rolls() -> None:
+    rng = ScriptedCrand([0, 0, 3])
     chosen = choose_unlock_terrain_slots(
         unlock_index=0x28,
-        rng=ScriptedCrand([0, 0, 3]),
+        rng=rng,
     )
 
     assert chosen == Q2_TERRAIN_SLOTS
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.UNLOCK_TERRAIN_Q4,
+        RngCallerStatic.UNLOCK_TERRAIN_Q3,
+        RngCallerStatic.UNLOCK_TERRAIN_Q2,
+    ]
 
 
 def test_choose_unlock_terrain_slots_prefers_first_matching_unlock() -> None:
+    rng = ScriptedCrand(3, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     chosen = choose_unlock_terrain_slots(
         unlock_index=0x28,
-        rng=ScriptedCrand(3, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        rng=rng,
     )
 
     assert chosen == Q4_TERRAIN_SLOTS
+    assert [record.caller for record in rng.records_since()] == [RngCallerStatic.UNLOCK_TERRAIN_Q4]
 
 
 def test_choose_unlock_terrain_slots_keeps_default_below_unlock_thresholds() -> None:
@@ -51,12 +60,17 @@ def test_choose_unlock_terrain_slots_keeps_default_below_unlock_thresholds() -> 
 
 
 def test_choose_unlock_terrain_slots_can_fall_to_mid_tiers() -> None:
+    rng = ScriptedCrand([0, 3])
     chosen = choose_unlock_terrain_slots(
         unlock_index=0x28,
-        rng=ScriptedCrand([0, 3]),
+        rng=rng,
     )
 
     assert chosen == Q3_TERRAIN_SLOTS
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.UNLOCK_TERRAIN_Q4,
+        RngCallerStatic.UNLOCK_TERRAIN_Q3,
+    ]
 
 
 def test_all_produced_terrain_slots_map_without_fallback_logic() -> None:

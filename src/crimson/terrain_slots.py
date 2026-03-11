@@ -6,6 +6,7 @@ from grim.assets import TextureId
 from grim.rand import CrandLike
 
 from .quests.level import QuestLevel
+from .rng_caller_static import RngCallerStatic
 
 TerrainSlotTriplet: TypeAlias = tuple[int, int, int]
 
@@ -50,7 +51,14 @@ def choose_unlock_terrain_slots(
 ) -> TerrainSlotTriplet:
     # Keep the thresholds descending to preserve the native chained 1/8 roll order.
     for threshold, slots in UNLOCK_TERRAIN_SLOTS.items():
-        if unlock_index >= threshold and (rng.rand() & 7) == 3:
+        caller = None
+        if threshold == 40:
+            caller = RngCallerStatic.UNLOCK_TERRAIN_Q4
+        elif threshold == 30:
+            caller = RngCallerStatic.UNLOCK_TERRAIN_Q3
+        elif threshold == 20:
+            caller = RngCallerStatic.UNLOCK_TERRAIN_Q2
+        if unlock_index >= threshold and (rng.rand(caller=caller) & 7) == 3:
             return slots
     return DEFAULT_TERRAIN_SLOTS
 

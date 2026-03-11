@@ -10,10 +10,11 @@ from crimson.perks.availability import perks_rebuild_available
 from crimson.perks.selection import PERK_ID_MAX, perk_generate_choices
 from crimson.persistence import save_status
 from crimson.quests.level import QuestLevel
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.support.helpers import assert_rng_progression
+from tests.support.helpers import ScriptedCrand, assert_rng_progression
 
 
 class _SeqRng:
@@ -78,9 +79,11 @@ def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order
     # Native force-inserts Monster Vision first for this quest, so the later
     # random Monster Vision candidate is skipped as a duplicate and the visible
     # first three remain [30, 18, 36].
-    state = GameplayState(
-        rng=_as_rng(_SeqRng([7142, 17282, 1460, 25337, 13003, 21224, 12422, 22458, 29730])),
+    rng = ScriptedCrand(
+        [7142, 17282, 1460, 25337, 13003, 21224, 12422, 22458, 29730],
+        fallback=ScriptedCrand.Fallback.REPEAT_LAST,
     )
+    state = GameplayState(rng=rng)
     status = _status_default()
     status.quest_unlock_index = 49
     status.quest_unlock_index_full = 49
@@ -103,6 +106,17 @@ def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order
         PerkId.FIRE_CAUGH,
         PerkId.BLOODY_MESS_QUICK_LEARNER,
         PerkId.BARREL_GREASER,
+    ]
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PERK_SELECT_RANDOM,
+        None,
+        RngCallerStatic.PERK_SELECT_RANDOM,
+        RngCallerStatic.PERK_SELECT_RANDOM,
+        None,
+        RngCallerStatic.PERK_SELECT_RANDOM,
+        RngCallerStatic.PERK_SELECT_RANDOM,
+        RngCallerStatic.PERK_SELECT_RANDOM,
+        RngCallerStatic.PERK_SELECT_RANDOM,
     ]
 
 

@@ -6,11 +6,13 @@ from typing import Any
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.persistence import save_status
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.weapon_runtime import (
     weapon_pick_random_available,
     weapon_refresh_available,
 )
 from crimson.weapons import WeaponId
+from tests.support.helpers import ScriptedCrand
 
 
 class _SeqRng:
@@ -83,3 +85,20 @@ def test_weapon_pick_random_available_rerolls_used_weapons() -> None:
     state.game_mode = GameMode.SURVIVAL
 
     assert weapon_pick_random_available(state) == WeaponId.ASSAULT_RIFLE
+
+
+def test_weapon_pick_random_available_tags_exact_native_callers_on_reroll() -> None:
+    status = _status_default()
+    status.increment_weapon_usage_for_weapon_id(WeaponId.PISTOL)
+
+    rng = ScriptedCrand([0, 0, 1])
+    state = GameplayState(rng=rng)
+    state.status = status
+    state.game_mode = GameMode.SURVIVAL
+
+    assert weapon_pick_random_available(state) == WeaponId.ASSAULT_RIFLE
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_PICK,
+        RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_GATE,
+        RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_PICK,
+    ]

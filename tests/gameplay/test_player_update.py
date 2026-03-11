@@ -20,6 +20,7 @@ from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import (
@@ -67,7 +68,8 @@ def test_player_update_shot_cooldown_decay_snaps_tiny_residual_to_zero() -> None
 
 
 def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker) -> None:
-    state = GameplayState()
+    rng = ScriptedCrand(0)
+    state = GameplayState(rng=rng)
     aim_heading_before = 1.25
     player = PlayerState(
         index=0,
@@ -100,6 +102,9 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker)
     assert player.low_health_timer == 1.0
     assert len(state.sfx_queue) == 1
     assert state.sfx_queue[0] in {"sfx_bloodspill_01", "sfx_bloodspill_02"}
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL,
+    ]
 
 
 def test_player_update_low_health_timer_100_sentinel_skips_bleed_fx(mocker) -> None:

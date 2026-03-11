@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
+from crimson.effects import EffectPool
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
+from crimson.projectiles.effects import _spawn_ion_hit_effects
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.factories import make_projectile_update_options
@@ -52,6 +55,7 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
     pool = ProjectilePool(size=64)
     creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
     runtime_state = GameplayState()
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     pool.spawn(
         pos=Vec2(),
@@ -68,7 +72,7 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+                rng=rng,
                 runtime_state=runtime_state,
             ),
         ),
@@ -87,6 +91,17 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
     ]
     assert len(split) == 2
     assert all(bool(p.hits_players) for p in split)
+    assert [record.caller for record in rng.records_since()[:9]] == [
+        RngCallerStatic.SPLITTER_HIT_ANGLE,
+        RngCallerStatic.SPLITTER_HIT_RADIUS,
+        RngCallerStatic.SPLITTER_HIT_AGE,
+        RngCallerStatic.SPLITTER_HIT_ANGLE,
+        RngCallerStatic.SPLITTER_HIT_RADIUS,
+        RngCallerStatic.SPLITTER_HIT_AGE,
+        RngCallerStatic.SPLITTER_HIT_ANGLE,
+        RngCallerStatic.SPLITTER_HIT_RADIUS,
+        RngCallerStatic.SPLITTER_HIT_AGE,
+    ]
 
 
 def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
@@ -122,6 +137,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
     pool = ProjectilePool(size=64)
     creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
     runtime_state = GameplayState()
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     pool.spawn(
         pos=Vec2(),
@@ -138,7 +154,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+                rng=rng,
                 runtime_state=runtime_state,
             ),
         ),
@@ -157,6 +173,57 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
     assert_float_close(float(ring.half_width), 36.0)
 
     assert_float_close(float(creature.size), 32.5)
+    assert [record.caller for record in rng.records_since()] == [
+        None,
+        RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
+        RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
+        RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
+        RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
+        RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
+        RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
+        RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
+        RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
+    ]
+
+
+def test_ion_hit_effects_tag_exact_native_callers() -> None:
+    effects = EffectPool(size=64)
+    sfx_queue: list[str] = []
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    _spawn_ion_hit_effects(
+        effects,
+        sfx_queue,
+        type_id=ProjectileTemplateId.ION_MINIGUN,
+        pos=Vec2(),
+        rng=rng,
+        detail_preset=5,
+    )
+
+    assert sfx_queue == []
+    assert len(effects.iter_active()) == 4
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.ION_HIT_SPARK_ROTATION,
+        RngCallerStatic.ION_HIT_SPARK_VEL_X,
+        RngCallerStatic.ION_HIT_SPARK_VEL_Y,
+        RngCallerStatic.ION_HIT_SPARK_SCALE_STEP,
+        RngCallerStatic.ION_HIT_SPARK_ROTATION,
+        RngCallerStatic.ION_HIT_SPARK_VEL_X,
+        RngCallerStatic.ION_HIT_SPARK_VEL_Y,
+        RngCallerStatic.ION_HIT_SPARK_SCALE_STEP,
+        RngCallerStatic.ION_HIT_SPARK_ROTATION,
+        RngCallerStatic.ION_HIT_SPARK_VEL_X,
+        RngCallerStatic.ION_HIT_SPARK_VEL_Y,
+        RngCallerStatic.ION_HIT_SPARK_SCALE_STEP,
+    ]
 
 
 def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:

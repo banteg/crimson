@@ -7,22 +7,10 @@ from crimson.bonuses.selection import bonus_pick_random_type
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.quests.level import QuestLevel
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-
-
-class _SeqRng:
-    def __init__(self, values: list[int]) -> None:
-        self._values = [int(v) for v in values] or [0]
-        self._idx = 0
-
-    def rand(self, *, caller: int | None = None) -> int:
-        _ = caller
-        if self._idx >= len(self._values):
-            return int(self._values[-1])
-        value = int(self._values[self._idx])
-        self._idx += 1
-        return value
+from tests.support.helpers import ScriptedCrand
 
 
 @pytest.mark.parametrize(
@@ -49,7 +37,7 @@ def test_bonus_pick_random_type_quest_suppression(
     quest_stage_minor: int,
     expected_bonus_id: BonusId,
 ) -> None:
-    state = GameplayState(rng=_SeqRng(rng_values))  # type: ignore[arg-type]
+    state = GameplayState(rng=ScriptedCrand(rng_values, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     state.game_mode = GameMode.QUESTS
     state.hardcore = hardcore
     state.quest_level = QuestLevel(quest_stage_major, quest_stage_minor)
@@ -57,3 +45,17 @@ def test_bonus_pick_random_type_quest_suppression(
 
     bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
     assert bonus_id == expected_bonus_id
+
+
+def test_bonus_pick_random_type_tags_exact_native_callers() -> None:
+    rng = ScriptedCrand([13, 0])
+    state = GameplayState(rng=rng)
+    players = [PlayerState(index=0, pos=Vec2())]
+
+    bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
+
+    assert bonus_id == BonusId.ENERGIZER
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.BONUS_PICK_RANDOM_TYPE_ROLL,
+        RngCallerStatic.BONUS_PICK_RANDOM_TYPE_ENERGIZER,
+    ]

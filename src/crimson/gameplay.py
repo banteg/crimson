@@ -29,6 +29,7 @@ from .projectiles.runtime import (
     SecondaryProjectilePool,
 )
 from .projectiles.types import ProjectileTemplateId
+from .rng_caller_static import RngCallerStatic
 from .sim.state_types import PERK_COUNT_SIZE
 from .sim.timing import ftol_ms_i32
 from .tutorial import TutorialOverlayState, TutorialState
@@ -603,8 +604,11 @@ def player_update(
                     rng=state.rng,
                     detail_preset=int(detail_preset),
                     gore_disabled=0,
-                )
-            state.sfx_queue.append(_LOW_HEALTH_BLOODSPILL_SFX[state.rng.rand() & 1])
+            )
+            bloodspill_sfx = _LOW_HEALTH_BLOODSPILL_SFX[
+                state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL) & 1
+            ]
+            state.sfx_queue.append(bloodspill_sfx)
             player.low_health_timer = 1.0
 
     damping_scalar = float(f32(float(state.player_spread_damping_scalar)))
