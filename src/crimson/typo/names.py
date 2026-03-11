@@ -67,7 +67,7 @@ _NAME_PARTS: tuple[str, ...] = (
 
 
 def _draw(rng: CrandLike, *, caller: CallerStatic = None) -> int:
-    return int(rng.rand(caller=caller))
+    return rng.rand(caller=caller)
 
 
 def typo_name_part(rng: CrandLike, *, allow_the: bool, caller: CallerStatic = None) -> str:

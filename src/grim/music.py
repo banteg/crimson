@@ -278,7 +278,7 @@ def trigger_game_tune(state: MusicState, *, rng: CrandLike) -> str | None:
     if not state.queue:
         return None
 
-    idx = int(rng.rand()) % len(state.queue)
+    idx = rng.rand() % len(state.queue)
     track_key = state.queue[idx]
 
     if track_key not in state.tracks:

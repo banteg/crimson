@@ -44,17 +44,17 @@ def queue_large_hit_decal_streak(
     """Queue the large decal streak used by Fire Bullets impact hits."""
     direction = Vec2.from_angle(base_angle)
     for _ in range(6):
-        dist = float(int(rng.rand()) % 100) * 0.1
+        dist = float(rng.rand() % 100) * 0.1
         if dist > 4.0:
-            dist = float(int(rng.rand()) % 90 + 10) * 0.1
+            dist = float(rng.rand() % 90 + 10) * 0.1
         if dist > 7.0:
-            dist = float(int(rng.rand()) % 80 + 20) * 0.1
+            dist = float(rng.rand() % 80 + 20) * 0.1
         # Native `projectile_update` consumes one unconditional draw per loop
         # before the freeze branch (`crt_rand` @ 0x0042184c).
         rng.rand()
         if spawn_freeze_shard is not None and freeze_origin is not None:
             freeze_pos = freeze_origin + direction * (dist * 20.0)
-            freeze_angle = float(base_angle) + float(int(rng.rand()) % 100) * 0.01
+            freeze_angle = float(base_angle) + float(rng.rand() % 100) * 0.01
             spawn_freeze_shard(freeze_pos, freeze_angle)
         fx_queue.add_random(
             pos=hit.target + direction * (dist * 20.0),

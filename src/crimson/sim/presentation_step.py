@@ -117,7 +117,7 @@ def plan_player_audio_sfx(
 def _rand_choice(rng: CrandLike, options: tuple[str, ...]) -> str | None:
     if not options:
         return None
-    idx = int(rng.rand()) % len(options)
+    idx = rng.rand() % len(options)
     return options[idx]
 
 
@@ -159,7 +159,7 @@ def plan_hit_sfx_keys(
             # playlist entry, so consume one draw here for stream parity.
             trigger_game_tune = True
             local_game_tune_started = True
-            _ = int(rng.rand())
+            _ = rng.rand()
             continue
         type_id = int(hits[idx].type_id)
         key = _hit_sfx_for_type(type_id, beam_types=beam_types, rng=rng)
@@ -255,7 +255,7 @@ def queue_projectile_decals_pre_hit(
         for _ in range(8):
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,
-                angle=float(int(rng.rand()) & 0xFF) * 0.024543693,
+                angle=float(rng.rand() & 0xFF) * 0.024543693,
                 age=0.0,
                 rng=rng,
                 detail_preset=detail_preset,
@@ -265,7 +265,7 @@ def queue_projectile_decals_pre_hit(
     # Native `projectile_update` spawns blood splatter before terrain decals.
     if bloody:
         for _ in range(8):
-            spread = float((int(rng.rand()) & 0x1F) - 0x10) * 0.0625
+            spread = float((rng.rand() & 0x1F) - 0x10) * 0.0625
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,
                 angle=base_angle + spread,
@@ -288,8 +288,8 @@ def queue_projectile_decals_pre_hit(
         while lo > -60:
             span = hi - lo
             for _ in range(2):
-                dx = float(int(rng.rand()) % span + lo)
-                dy = float(int(rng.rand()) % span + lo)
+                dx = float(rng.rand() % span + lo)
+                dy = float(rng.rand() % span + lo)
                 fx_queue.add_random(
                     pos=hit.target + Vec2(dx, dy),
                     rng=rng,
@@ -306,7 +306,7 @@ def queue_projectile_decals_pre_hit(
                 detail_preset=detail_preset,
                 gore_disabled=gore_disabled,
             )
-            if (int(rng.rand()) & 7) == 2:
+            if (rng.rand() & 7) == 2:
                 state.effects.spawn_blood_splatter(
                     pos=hit.hit,
                     angle=base_angle + math.pi,
@@ -351,7 +351,7 @@ def queue_projectile_decals_post_hit(
         return
 
     for _ in range(3):
-        spread = float(int(rng.rand()) % 20 - 10) * 0.1
+        spread = float(rng.rand() % 20 - 10) * 0.1
         angle = base_angle + spread
         direction = Vec2.from_angle(angle) * 20.0
         fx_queue.add_random(pos=hit.target, rng=rng)

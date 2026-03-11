@@ -73,7 +73,7 @@ def _damage_type1_heading_jitter(ctx: _CreatureDamageCtx) -> None:
     creature = ctx.creature
     if (creature.flags & CreatureFlags.ANIM_PING_PONG) != 0:
         return
-    jitter = float((int(ctx.rng.rand(caller=ctx.caller)) & 0x7F) - 0x40) * 0.002
+    jitter = float((ctx.rng.rand(caller=ctx.caller) & 0x7F) - 0x40) * 0.002
     size = max(1e-6, float(creature.size))
     turn = jitter / (size * 0.025)
     turn = min(math.pi / 2.0, turn)
@@ -104,12 +104,12 @@ def _damage_lethal_ranged_shock_burst(
     if (creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK) == 0:
         return
     for _ in range(5):
-        rotation = float(int(rng.rand(caller=caller)) & 0x7F) * 0.049087387
+        rotation = float(rng.rand(caller=caller) & 0x7F) * 0.049087387
         vel = Vec2(
-            float((int(rng.rand(caller=caller)) & 0x7F) - 0x40),
-            float((int(rng.rand(caller=caller)) & 0x7F) - 0x40),
+            float((rng.rand(caller=caller) & 0x7F) - 0x40),
+            float((rng.rand(caller=caller) & 0x7F) - 0x40),
         )
-        scale_step = float(int(rng.rand(caller=caller)) % 140) * 0.01 + 0.3
+        scale_step = float(rng.rand(caller=caller) % 140) * 0.01 + 0.3
         if effects is None:
             continue
         effects.spawn(

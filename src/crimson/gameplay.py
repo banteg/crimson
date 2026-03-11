@@ -604,7 +604,7 @@ def player_update(
                     detail_preset=int(detail_preset),
                     gore_disabled=0,
                 )
-            state.sfx_queue.append(_LOW_HEALTH_BLOODSPILL_SFX[int(state.rng.rand()) & 1])
+            state.sfx_queue.append(_LOW_HEALTH_BLOODSPILL_SFX[state.rng.rand() & 1])
             player.low_health_timer = 1.0
 
     damping_scalar = float(f32(float(state.player_spread_damping_scalar)))

@@ -134,7 +134,7 @@ class RecordingCrand:
 
     def rand(self, *, caller: CallerStatic = None) -> int:
         state_before = int(self._shared.base.state)
-        value = int(self._shared.base.rand(caller=caller))
+        value = self._shared.base.rand(caller=caller)
         state_after = int(self._shared.base.state)
         self._shared.records.append(
             RngDrawRecord(

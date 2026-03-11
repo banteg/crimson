@@ -69,7 +69,7 @@ _ProjectileHitPerkHook = Callable[[_ProjectileHitPerkCtx], None]
 def _projectile_hit_perk_poison_bullets(ctx: _ProjectileHitPerkCtx) -> None:
     if (
         ctx.owner_perk_active(ctx.proj.owner, int(ctx.poison_idx))
-        and (int(ctx.rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE)) & 7) == 1
+        and (ctx.rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 7) == 1
     ):
         ctx.creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 

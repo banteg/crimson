@@ -268,7 +268,7 @@ def play_sfx(
     base = _derive_sfx_base(resolved) or resolved
     variants = state.variants.get(base)
     if variants:
-        resolved = variants[int(rng.rand()) % len(variants)]
+        resolved = variants[rng.rand() % len(variants)]
     _play_resolved_sfx(state, resolved, reflex_boost_timer=float(reflex_boost_timer))
 
 

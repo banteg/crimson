@@ -410,7 +410,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     # (creature_type_table[*].sfx_bank_b[rand & 1]) before applying damage.
     options = _CREATURE_CONTACT_SFX.get(creature.type_id)
     if options is not None:
-        ctx.sfx.append(options[int(ctx.rng.rand(caller=ctx.caller)) & 1])
+        ctx.sfx.append(options[ctx.rng.rand(caller=ctx.caller) & 1])
 
     mr_melee_killed = False
     if perk_active(ctx.player, PerkId.MR_MELEE):
@@ -617,7 +617,7 @@ class CreaturePool:
         if not self._entries:
             raise ValueError("Creature pool has zero entries")
         if rng is not None:
-            return int(rng.rand(caller=caller)) % len(self._entries)
+            return rng.rand(caller=caller) % len(self._entries)
         return len(self._entries) - 1
 
     def _resolve_target_player_index(self, creature: CreatureState, players: list[PlayerState]) -> int:
@@ -876,7 +876,7 @@ class CreaturePool:
         fx_queue_rotated = options.fx_queue_rotated
 
         def rand() -> int:
-            return int(rng.rand(caller=caller))
+            return rng.rand(caller=caller)
 
         spawn_env = env
 
@@ -1314,7 +1314,7 @@ class CreaturePool:
         """Run one-shot death side effects and return the `CreatureDeath` event."""
 
         def draw() -> int:
-            return int(rng.rand(caller=caller))
+            return rng.rand(caller=caller)
 
         creature = self._entries[int(idx)]
         survival_record_recent_death(state, pos=creature.pos)
@@ -1538,7 +1538,7 @@ class CreaturePool:
         ):
 
             def draw() -> int:
-                return int(rng.rand(caller=caller))
+                return rng.rand(caller=caller)
 
             for count, age in ((8, 0.0), (6, -0.07), (5, -0.12)):
                 for _ in range(int(count)):
@@ -1583,7 +1583,7 @@ class CreaturePool:
         world_height: float,
     ) -> CreatureDeath:
         def draw() -> int:
-            return int(rng.rand(caller=caller))
+            return rng.rand(caller=caller)
 
         if creature.spawn_slot_index is not None:
             self._disable_spawn_slot(int(creature.spawn_slot_index))

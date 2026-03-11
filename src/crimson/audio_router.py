@@ -80,7 +80,7 @@ class AudioRouter(msgspec.Struct):
     def _rand_choice(rng: CrandLike, options: tuple[str, ...]) -> str | None:
         if not options:
             return None
-        idx = int(rng.rand()) % len(options)
+        idx = rng.rand() % len(options)
         return options[idx]
 
     def _reflex_boost_timer(self) -> float:

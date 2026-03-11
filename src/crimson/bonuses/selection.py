@@ -59,7 +59,7 @@ def bonus_pick_random_type(pool: BonusPool, state: GameplayState, players: list[
     has_fire_bullets_drop = any(entry.bonus_id == BonusId.FIRE_BULLETS and not entry.picked for entry in pool.entries)
 
     for _ in range(101):
-        roll = int(state.rng.rand(caller=caller)) % 162 + 1
+        roll = state.rng.rand(caller=caller) % 162 + 1
         # Mirrors `bonus_pick_random_type` (0x412470) mapping:
         # - roll = rand() % 162 + 1  (1..162)
         # - Points: roll 1..13

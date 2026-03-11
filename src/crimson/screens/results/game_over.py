@@ -296,13 +296,13 @@ class GameOverUi(msgspec.Struct):
                 ]
                 self.input_caret = min(len(self.input_text), self.input_caret + len(typed))
                 if play_sfx is not None:
-                    play_sfx("sfx_ui_typeclick_01" if (int(rng.rand()) & 1) == 0 else "sfx_ui_typeclick_02")
+                    play_sfx("sfx_ui_typeclick_01" if (rng.rand() & 1) == 0 else "sfx_ui_typeclick_02")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
                 if self.input_caret > 0:
                     self.input_text = self.input_text[: self.input_caret - 1] + self.input_text[self.input_caret :]
                     self.input_caret -= 1
                     if play_sfx is not None:
-                        play_sfx("sfx_ui_typeclick_01" if (int(rng.rand()) & 1) == 0 else "sfx_ui_typeclick_02")
+                        play_sfx("sfx_ui_typeclick_01" if (rng.rand() & 1) == 0 else "sfx_ui_typeclick_02")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
                 self.input_caret = max(0, self.input_caret - 1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):

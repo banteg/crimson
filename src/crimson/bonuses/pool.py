@@ -284,7 +284,7 @@ class BonusPool:
         caller = RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL
         # Native special-case: while any player has Pistol, 3/4 chance to force a Weapon drop.
         if players and any(player.weapon.weapon_id == WeaponId.PISTOL for player in players):
-            if (int(rng.rand(caller=caller)) & 3) < 3:
+            if (rng.rand(caller=caller) & 3) < 3:
                 entry = self.spawn_at_pos(
                     pos,
                     state=state,
@@ -315,7 +315,7 @@ class BonusPool:
                     return None
                 return entry
 
-        base_roll = int(rng.rand(caller=caller))
+        base_roll = rng.rand(caller=caller)
         if base_roll % 9 != 1:
             allow_without_magnet = False
             if players:
@@ -325,7 +325,7 @@ class BonusPool:
                 else:
                     has_pistol = any(player.weapon.weapon_id == WeaponId.PISTOL for player in players)
                 if has_pistol:
-                    allow_without_magnet = int(rng.rand(caller=caller)) % 5 == 1
+                    allow_without_magnet = rng.rand(caller=caller) % 5 == 1
 
             if not allow_without_magnet:
                 has_bonus_magnet = False
@@ -336,7 +336,7 @@ class BonusPool:
                         has_bonus_magnet = any(perk_active(player, PerkId.BONUS_MAGNET) for player in players)
                 if not has_bonus_magnet:
                     return None
-                if int(rng.rand(caller=caller)) % 10 != 2:
+                if rng.rand(caller=caller) % 10 != 2:
                     return None
 
         entry = self.spawn_at_pos(
