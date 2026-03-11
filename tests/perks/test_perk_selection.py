@@ -5,8 +5,10 @@ from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.selection import (
+    PERK_ID_MAX,
     perk_auto_pick,
     perk_generate_choices,
+    perk_select_random,
     perk_selection_open_choices,
     perk_selection_pick,
     perk_selection_prepared_choices,
@@ -15,7 +17,7 @@ from crimson.perks.state import PerkSelectionState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.rand import Crand
-from tests.support.helpers import assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_perk_selection_pick_applies_perk_and_marks_dirty() -> None:
@@ -158,6 +160,22 @@ def test_perk_selection_open_choices_generates_then_prepared_reads_without_regen
 
     assert prepared == visible
     assert generate_choices.call_count == 1
+
+
+def test_perk_select_random_tags_exact_native_caller(mocker) -> None:
+    rng = ScriptedCrand([0])
+    state = GameplayState(rng=rng)
+    state.perk_available = [False] * (PERK_ID_MAX + 1)
+    state.perk_available[1] = True
+    player = PlayerState(index=0, pos=Vec2())
+
+    mocker.patch.object(perk_selection_module, "perks_rebuild_available", return_value=None)
+    mocker.patch.object(perk_selection_module, "perk_can_offer", return_value=True)
+
+    perk_id = perk_select_random(state, player, game_mode=GameMode.SURVIVAL, player_count=1)
+
+    assert perk_id == PerkId.BLOODY_MESS_QUICK_LEARNER
+    assert [record.caller for record in rng.records_since()] == [0x0042FBDC]
 
 
 def test_perk_selection_pick_prepares_choices_when_dirty(mocker) -> None:
