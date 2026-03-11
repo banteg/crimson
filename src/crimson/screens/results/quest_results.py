@@ -10,6 +10,7 @@ from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
+from grim.rand import Crand, CrandLike
 from grim.raylib_api import rl
 
 from ...game_modes import GameMode
@@ -137,10 +138,18 @@ class QuestResultsUi(msgspec.Struct):
     _defer_name_input_until_controls_released: bool = False
 
     _ok_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("OK", force_wide=False))
-    _play_next_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("Play Next", force_wide=True))
-    _play_again_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("Play Again", force_wide=True))
-    _high_scores_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("High scores", force_wide=True))
-    _main_menu_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("Main Menu", force_wide=True))
+    _play_next_button: UiButtonState = msgspec.field(
+        default_factory=lambda: UiButtonState("Play Next", force_wide=True),
+    )
+    _play_again_button: UiButtonState = msgspec.field(
+        default_factory=lambda: UiButtonState("Play Again", force_wide=True),
+    )
+    _high_scores_button: UiButtonState = msgspec.field(
+        default_factory=lambda: UiButtonState("High scores", force_wide=True),
+    )
+    _main_menu_button: UiButtonState = msgspec.field(
+        default_factory=lambda: UiButtonState("Main Menu", force_wide=True),
+    )
 
     def open(
         self,
@@ -362,7 +371,8 @@ class QuestResultsUi(msgspec.Struct):
         layout_w = screen_w / scale if scale else screen_w
         widescreen_shift_y = menu_widescreen_y_shift(layout_w)
         panel_pos = Vec2(
-            panel_pos.x, (QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y) * scale,
+            panel_pos.x,
+            (QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y) * scale,
         )
         panel = Rect.from_top_left(panel_pos, QUEST_RESULTS_PANEL_W * scale, QUEST_RESULTS_PANEL_H * scale)
         return _QuestResultsPanelLayout(panel=panel, top_left=panel_pos)
@@ -372,7 +382,7 @@ class QuestResultsUi(msgspec.Struct):
         dt: float,
         *,
         play_sfx: Callable[[str], None] | None = None,
-        rand: Callable[[], int] | None = None,
+        rng: CrandLike | None = None,
         mouse: rl.Vector2 | None = None,
     ) -> str | None:
         dt_s = float(min(dt, 0.1))
@@ -380,10 +390,8 @@ class QuestResultsUi(msgspec.Struct):
         self._cursor_pulse_time += dt_s * 1.1
         if mouse is None:
             mouse = rl.get_mouse_position()
-        if rand is None:
-
-            def rand() -> int:
-                return 0
+        if rng is None:
+            rng = Crand(0)
 
         if self.record is None or self.breakdown is None:
             return None
@@ -460,13 +468,13 @@ class QuestResultsUi(msgspec.Struct):
                 ]
                 self.input_caret = min(len(self.input_text), self.input_caret + len(typed))
                 if play_sfx is not None:
-                    play_sfx("sfx_ui_typeclick_01" if (int(rand()) & 1) == 0 else "sfx_ui_typeclick_02")
+                    play_sfx("sfx_ui_typeclick_01" if (rng.rand() & 1) == 0 else "sfx_ui_typeclick_02")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
                 if self.input_caret > 0:
                     self.input_text = self.input_text[: self.input_caret - 1] + self.input_text[self.input_caret :]
                     self.input_caret -= 1
                     if play_sfx is not None:
-                        play_sfx("sfx_ui_typeclick_01" if (int(rand()) & 1) == 0 else "sfx_ui_typeclick_02")
+                        play_sfx("sfx_ui_typeclick_01" if (rng.rand() & 1) == 0 else "sfx_ui_typeclick_02")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
                 self.input_caret = max(0, self.input_caret - 1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
@@ -547,7 +555,10 @@ class QuestResultsUi(msgspec.Struct):
             resources = runtime_resources_for(self.assets_root)
 
             play_next_w = button_width(
-                resources, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
+                resources,
+                self._play_next_button.label,
+                scale=scale,
+                force_wide=self._play_next_button.force_wide,
             )
             if button_update(
                 self._play_next_button,
@@ -564,7 +575,10 @@ class QuestResultsUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             play_again_w = button_width(
-                resources, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
+                resources,
+                self._play_again_button.label,
+                scale=scale,
+                force_wide=self._play_again_button.force_wide,
             )
             if button_update(
                 self._play_again_button,
@@ -581,7 +595,10 @@ class QuestResultsUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             high_scores_w = button_width(
-                resources, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
+                resources,
+                self._high_scores_button.label,
+                scale=scale,
+                force_wide=self._high_scores_button.force_wide,
             )
             if button_update(
                 self._high_scores_button,
@@ -598,7 +615,10 @@ class QuestResultsUi(msgspec.Struct):
             button_pos = button_pos.offset(dy=32.0 * scale)
 
             main_menu_w = button_width(
-                resources, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
+                resources,
+                self._main_menu_button.label,
+                scale=scale,
+                force_wide=self._main_menu_button.force_wide,
             )
             if button_update(
                 self._main_menu_button,
@@ -722,7 +742,11 @@ class QuestResultsUi(msgspec.Struct):
 
             input_pos = content_pos.offset(dy=150.0 * scale)
             rl.draw_rectangle_lines(
-                int(input_pos.x), int(input_pos.y), int(INPUT_BOX_W * scale), int(INPUT_BOX_H * scale), rl.WHITE,
+                int(input_pos.x),
+                int(input_pos.y),
+                int(INPUT_BOX_W * scale),
+                int(INPUT_BOX_H * scale),
+                rl.WHITE,
             )
             rl.draw_rectangle(
                 int(input_pos.x + 1.0 * scale),
@@ -742,9 +766,15 @@ class QuestResultsUi(msgspec.Struct):
             if math.sin(float(rl.get_time()) * 4.0) > 0.0:
                 caret_alpha = 0.4
             caret_color = rl.Color(255, 255, 255, int(255 * caret_alpha))
-            caret_x = input_pos.x + 4.0 * scale + self._text_width(font, self.input_text[: self.input_caret], 1.0 * scale)
+            caret_x = (
+                input_pos.x + 4.0 * scale + self._text_width(font, self.input_text[: self.input_caret], 1.0 * scale)
+            )
             rl.draw_rectangle(
-                int(caret_x), int(input_pos.y + 2.0 * scale), int(1.0 * scale), int(14.0 * scale), caret_color,
+                int(caret_x),
+                int(input_pos.y + 2.0 * scale),
+                int(1.0 * scale),
+                int(14.0 * scale),
+                caret_color,
             )
 
             ok_pos = input_pos + Vec2(170.0 * scale, -8.0 * scale)
@@ -789,7 +819,10 @@ class QuestResultsUi(msgspec.Struct):
             if self.unlock_weapon_name:
                 self._draw_small(
                     font,
-                    "Weapon unlocked:", Vec2(score_card_pos.x, var_c_14 + 1.0 * scale), 1.0 * scale, COLOR_TEXT_SUBTLE,
+                    "Weapon unlocked:",
+                    Vec2(score_card_pos.x, var_c_14 + 1.0 * scale),
+                    1.0 * scale,
+                    COLOR_TEXT_SUBTLE,
                 )
                 self._draw_small(
                     font,
@@ -802,7 +835,10 @@ class QuestResultsUi(msgspec.Struct):
             if self.unlock_perk_name:
                 self._draw_small(
                     font,
-                    "Perk unlocked:", Vec2(score_card_pos.x, var_c_14 + 1.0 * scale), 1.0 * scale, COLOR_TEXT_SUBTLE,
+                    "Perk unlocked:",
+                    Vec2(score_card_pos.x, var_c_14 + 1.0 * scale),
+                    1.0 * scale,
+                    COLOR_TEXT_SUBTLE,
                 )
                 self._draw_small(
                     font,
@@ -816,7 +852,10 @@ class QuestResultsUi(msgspec.Struct):
             # Buttons
             button_pos = Vec2(score_card_pos.x + 20.0 * scale, var_c_14 + 6.0 * scale)
             play_next_w = button_width(
-                resources, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide,
+                resources,
+                self._play_next_button.label,
+                scale=scale,
+                force_wide=self._play_next_button.force_wide,
             )
             button_draw(
                 resources,
@@ -827,7 +866,10 @@ class QuestResultsUi(msgspec.Struct):
             )
             button_pos = button_pos.offset(dy=32.0 * scale)
             play_again_w = button_width(
-                resources, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide,
+                resources,
+                self._play_again_button.label,
+                scale=scale,
+                force_wide=self._play_again_button.force_wide,
             )
             button_draw(
                 resources,
@@ -838,7 +880,10 @@ class QuestResultsUi(msgspec.Struct):
             )
             button_pos = button_pos.offset(dy=32.0 * scale)
             high_scores_w = button_width(
-                resources, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide,
+                resources,
+                self._high_scores_button.label,
+                scale=scale,
+                force_wide=self._high_scores_button.force_wide,
             )
             button_draw(
                 resources,
@@ -849,7 +894,10 @@ class QuestResultsUi(msgspec.Struct):
             )
             button_pos = button_pos.offset(dy=32.0 * scale)
             main_menu_w = button_width(
-                resources, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
+                resources,
+                self._main_menu_button.label,
+                scale=scale,
+                force_wide=self._main_menu_button.force_wide,
             )
             button_draw(
                 resources,

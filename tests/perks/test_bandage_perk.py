@@ -5,12 +5,12 @@ from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.helpers import MockCrand
+from tests.support.helpers import ScriptedCrand
 
 
 def test_bandage_clamps_health_and_spawns_burst() -> None:
     state = GameplayState()
-    state.rng = MockCrand(49)  # (rand % 50) + 1 == 50
+    state.rng = ScriptedCrand(49, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # (rand % 50) + 1 == 50
 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=3.0)
     perk_apply(state, [player], PerkId.BANDAGE)
@@ -22,7 +22,7 @@ def test_bandage_clamps_health_and_spawns_burst() -> None:
 def test_bandage_preserve_bugs_keeps_native_multiplier_behavior() -> None:
     state = GameplayState()
     state.preserve_bugs = True
-    state.rng = MockCrand(49)  # (rand % 50) + 1 == 50
+    state.rng = ScriptedCrand(49, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # (rand % 50) + 1 == 50
 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=3.0)
     perk_apply(state, [player], PerkId.BANDAGE)

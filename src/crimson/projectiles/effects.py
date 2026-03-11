@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, MutableSequence
+from collections.abc import MutableSequence
 
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.rand import CrandLike
 
 from ..effects import EffectPool
 from ..effects_atlas import EffectId
+from ..rng_caller_static import RngCallerStatic
 from .types import ProjectileTemplateId
 
 
@@ -15,7 +17,7 @@ def _spawn_shrinkifier_hit_effects(
     effects: EffectPool | None,
     *,
     pos: Vec2,
-    rng: Callable[[], int],
+    rng: CrandLike,
     detail_preset: int,
 ) -> None:
     """Port of `effect_spawn_shrinkifier_hit` (0x0042f080)."""
@@ -46,12 +48,12 @@ def _spawn_shrinkifier_hit_effects(
     # Debris puffs (effect_id=0), detail-scaled count.
     count = 2 if detail < 3 else 4
     for _ in range(count):
-        rotation = float(int(rng()) & 0x7F) * 0.049087387
+        rotation = float(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 0x7F) * 0.049087387
         velocity = Vec2(
-            float((int(rng()) & 0x7F) - 0x40) * 1.4,
-            float((int(rng()) & 0x7F) - 0x40) * 1.4,
+            float((rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 0x7F) - 0x40) * 1.4,
+            float((rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 0x7F) - 0x40) * 1.4,
         )
-        scale_step = float(int(rng()) % 100) * 0.01 + 0.1
+        scale_step = float(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) % 100) * 0.01 + 0.1
         effects.spawn(
             effect_id=int(EffectId.BURST),
             pos=pos,
@@ -76,7 +78,7 @@ def _spawn_ion_hit_effects(
     *,
     type_id: ProjectileTemplateId,
     pos: Vec2,
-    rng: Callable[[], int],
+    rng: CrandLike,
     detail_preset: int,
 ) -> None:
     if effects is None:
@@ -133,12 +135,12 @@ def _spawn_ion_hit_effects(
         count //= 2
 
     for _ in range(max(0, count)):
-        rotation = float(int(rng()) & 0x7F) * 0.049087387
+        rotation = float(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 0x7F) * 0.049087387
         velocity = Vec2(
-            float((int(rng()) & 0x7F) - 0x40) * burst * 1.4,
-            float((int(rng()) & 0x7F) - 0x40) * burst * 1.4,
+            float((rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 0x7F) - 0x40) * burst * 1.4,
+            float((rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 0x7F) - 0x40) * burst * 1.4,
         )
-        scale_step = (float(int(rng()) % 100) * 0.01 + 0.1) * burst
+        scale_step = (float(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) % 100) * 0.01 + 0.1) * burst
         effects.spawn(
             effect_id=int(EffectId.BURST),
             pos=pos,
@@ -208,7 +210,7 @@ def _spawn_splitter_hit_effects(
     effects: EffectPool | None,
     *,
     pos: Vec2,
-    rng: Callable[[], int],
+    rng: CrandLike,
     detail_preset: int,
 ) -> None:
     """Port of `FUN_0042f3f0(pos, 26.0, 3)` from the Splitter Gun hit branch."""
@@ -218,9 +220,9 @@ def _spawn_splitter_hit_effects(
 
     detail = int(detail_preset)
     for _ in range(3):
-        angle = float(int(rng()) & 0x1FF) * (math.tau / 512.0)
-        radius = float(int(rng()) % 26)
-        jitter_age = -float(int(rng()) & 0xFF) * 0.0012
+        angle = float(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 0x1FF) * (math.tau / 512.0)
+        radius = float(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) % 26)
+        jitter_age = -float(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 0xFF) * 0.0012
         lifetime = 0.1 - jitter_age
 
         offset = Vec2.from_angle(angle) * radius

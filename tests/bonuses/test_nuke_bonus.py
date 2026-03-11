@@ -7,7 +7,7 @@ from crimson.gameplay import GameplayState
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.helpers import MockCrand, assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_nuke_damage_is_limited_to_radius() -> None:
@@ -42,7 +42,7 @@ def test_nuke_damage_is_limited_to_radius() -> None:
 
 
 def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
-    state = GameplayState(rng=MockCrand(0))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
 
     bonus_apply(state, player, BonusId.NUKE, origin=player.pos, creatures=[], players=[player], detail_preset=5)

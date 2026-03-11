@@ -91,7 +91,7 @@ def tutorial_post_step(ctx) -> None:
             state.effects.spawn_burst(
                 pos=spawned.pos,
                 count=12,
-                rand=state.rng.rand,
+                rng=state.rng,
                 detail_preset=int(ctx.detail_preset),
             )
 

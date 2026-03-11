@@ -30,7 +30,6 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
     if creatures:
         defer_corpse_fx = bool(ctx.defer_freeze_corpse_fx)
         allowed_indices = ctx.freeze_corpse_indices
-        rand = ctx.state.rng.rand
         for idx, creature in enumerate(creatures):
             if not creature.active:
                 continue
@@ -52,18 +51,18 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
                 )
             elif allow_shatter_fx:
                 for _ in range(8):
-                    angle = float(int(rand()) % 0x264) * 0.01
+                    angle = float(ctx.state.rng.rand() % 612) * 0.01
                     ctx.state.effects.spawn_freeze_shard(
                         pos=pos,
                         angle=angle,
-                        rand=rand,
+                        rng=ctx.state.rng,
                         detail_preset=int(ctx.detail_preset),
                     )
-                angle = float(int(rand()) % 0x264) * 0.01
+                angle = float(ctx.state.rng.rand() % 612) * 0.01
                 ctx.state.effects.spawn_freeze_shatter(
                     pos=pos,
                     angle=angle,
-                    rand=rand,
+                    rng=ctx.state.rng,
                     detail_preset=int(ctx.detail_preset),
                 )
             creature.active = False
@@ -76,23 +75,22 @@ def flush_deferred_freeze_corpse_fx(state: GameplayState) -> None:
     if not pending:
         return
 
-    rand = state.rng.rand
     for queued in pending:
         pos = queued.pos
         detail = int(queued.detail_preset)
         for _ in range(8):
-            angle = float(int(rand()) % 0x264) * 0.01
+            angle = float(state.rng.rand() % 612) * 0.01
             state.effects.spawn_freeze_shard(
                 pos=pos,
                 angle=angle,
-                rand=rand,
+                rng=state.rng,
                 detail_preset=detail,
             )
-        angle = float(int(rand()) % 0x264) * 0.01
+        angle = float(state.rng.rand() % 612) * 0.01
         state.effects.spawn_freeze_shatter(
             pos=pos,
             angle=angle,
-            rand=rand,
+            rng=state.rng,
             detail_preset=detail,
         )
     pending.clear()

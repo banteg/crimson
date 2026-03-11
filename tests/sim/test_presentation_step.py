@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from itertools import count
-
 from crimson.bonuses import BonusId
 from crimson.creatures.runtime import CreatureDeath
 from crimson.creatures.spawn import CreatureTypeId
@@ -21,7 +19,7 @@ from crimson.sim.presentation_step import (
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.support.helpers import MockCrand, assert_float_close, assert_rng_progression
+from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 
 def _death(
@@ -55,54 +53,42 @@ def _hits(count: int, *, type_id: ProjectileTemplateId = ProjectileTemplateId.PI
 
 
 def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
-    draws = 0
-
-    def _rand() -> int:
-        nonlocal draws
-        draws += 1
-        return 0
-
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     trigger_game_tune, keys = plan_hit_sfx_keys(
         _hits(2),
         game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
         game_tune_started=False,
-        rand=_rand,
+        rng=rng,
     )
 
     assert trigger_game_tune is True
     assert keys == ["sfx_bullet_hit_01"]
-    assert draws == 2
+    assert rng.calls == 2
 
 
 def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
-    draws = 0
-
-    def _rand() -> int:
-        nonlocal draws
-        draws += 1
-        return 0
-
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     trigger_game_tune, keys = plan_hit_sfx_keys(
         _hits(2),
         game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
         game_tune_started=True,
-        rand=_rand,
+        rng=rng,
     )
 
     assert trigger_game_tune is False
     assert keys == ["sfx_bullet_hit_01", "sfx_bullet_hit_01"]
-    assert draws == 2
+    assert rng.calls == 2
 
 
 def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
     deaths = tuple(_death(type_id=CreatureTypeId.ZOMBIE) for _ in range(5))
-    keys = plan_death_sfx_keys(deaths, rand=rng)
+    keys = plan_death_sfx_keys(deaths, rng=rng)
 
     assert len(keys) == 5
     assert_rng_progression(
@@ -115,7 +101,7 @@ def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
 
 
 def test_plan_death_sfx_skips_suppressed_deaths() -> None:
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -123,7 +109,7 @@ def test_plan_death_sfx_skips_suppressed_deaths() -> None:
         _death(type_id=CreatureTypeId.ZOMBIE, suppress_death_sfx=True),
         _death(type_id=CreatureTypeId.ZOMBIE, suppress_death_sfx=False),
     )
-    keys = plan_death_sfx_keys(deaths, rand=rng)
+    keys = plan_death_sfx_keys(deaths, rng=rng)
 
     assert len(keys) == 1
     assert_rng_progression(
@@ -163,7 +149,7 @@ def test_plan_world_presentation_step_orders_sfx() -> None:
         game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
         perk_progression_enabled=True,
-        rand=MockCrand(0),
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
         detail_preset=5,
         gore_disabled=0,
         game_tune_started=False,
@@ -185,7 +171,7 @@ def test_queue_projectile_decals_consumes_rand() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -194,7 +180,7 @@ def test_queue_projectile_decals_consumes_rand() -> None:
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1),
-        rand=rng,
+        rng=rng,
         detail_preset=5,
         gore_disabled=0,
     )
@@ -205,8 +191,8 @@ def test_queue_projectile_decals_consumes_rand() -> None:
         before_state=before_state,
         expected_draws=74,
         expected_after_state=0,
-        expected_hash="c4a960b5d558f47f",
     )
+    assert rng.values_since(before_calls) == [0] * 74
     assert fx_queue.count > 0
 
 
@@ -214,7 +200,7 @@ def test_queue_projectile_decals_native_default_draw_count() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -223,7 +209,7 @@ def test_queue_projectile_decals_native_default_draw_count() -> None:
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1),
-        rand=rng,
+        rng=rng,
         detail_preset=5,
         gore_disabled=0,
     )
@@ -238,8 +224,8 @@ def test_queue_projectile_decals_native_default_draw_count() -> None:
         before_state=before_state,
         expected_draws=74,
         expected_after_state=0,
-        expected_hash="c4a960b5d558f47f",
     )
+    assert rng.values_since(before_calls) == [0] * 74
     assert fx_queue.count == 12
 
 
@@ -254,11 +240,11 @@ def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(moc
         pos: Vec2,
         angle: float,
         age: float,
-        rand,
+        rng,
         detail_preset: int,
         gore_disabled: int,
     ) -> None:
-        _ = pos, age, rand, detail_preset, gore_disabled
+        _ = pos, age, rng, detail_preset, gore_disabled
         splatter_angles.append(float(angle))
 
     mocker.patch.object(
@@ -266,14 +252,13 @@ def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(moc
         "spawn_blood_splatter",
         side_effect=_record_blood_splatter,
     )
-    rng_values = count(0)
-
+    rng = ScriptedCrand(list(range(256)), fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     queue_projectile_decals(
         state=state,
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1, type_id=ProjectileTemplateId.BLADE_GUN),
-        rand=lambda *, caller=None: int(next(rng_values)),
+        rng=rng,
         detail_preset=5,
         gore_disabled=0,
     )
@@ -293,7 +278,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(m
         "spawn_freeze_shard",
         wraps=state.effects.spawn_freeze_shard,
     )
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -302,7 +287,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(m
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1, type_id=ProjectileTemplateId.FIRE_BULLETS),
-        rand=rng,
+        rng=rng,
         detail_preset=5,
         gore_disabled=0,
     )
@@ -314,8 +299,8 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(m
         before_state=before_state,
         expected_draws=79,
         expected_after_state=0,
-        expected_hash="56444bb167a4637e",
     )
+    assert rng.values_since(before_calls) == [0] * 79
     assert fx_queue.count == 6
 
 
@@ -329,7 +314,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_gore_disabl
         "spawn_freeze_shard",
         wraps=state.effects.spawn_freeze_shard,
     )
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -338,7 +323,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_gore_disabl
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1, type_id=ProjectileTemplateId.FIRE_BULLETS),
-        rand=rng,
+        rng=rng,
         detail_preset=5,
         gore_disabled=1,
     )
@@ -350,8 +335,8 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_gore_disabl
         before_state=before_state,
         expected_draws=79,
         expected_after_state=0,
-        expected_hash="56444bb167a4637e",
     )
+    assert rng.values_since(before_calls) == [0] * 79
     assert fx_queue.count == 6
 
 
@@ -359,7 +344,7 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -368,7 +353,7 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1),
-        rand=rng,
+        rng=rng,
         detail_preset=5,
         gore_disabled=0,
     )
@@ -379,15 +364,15 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
         before_state=before_state,
         expected_draws=74,
         expected_after_state=0,
-        expected_hash="c4a960b5d558f47f",
     )
+    assert rng.values_since(before_calls) == [0] * 74
     assert fx_queue.count == 12
 
 
 def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -404,7 +389,7 @@ def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
         game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
         perk_progression_enabled=True,
-        rand=rng,
+        rng=rng,
         detail_preset=5,
         gore_disabled=0,
         game_tune_started=False,
@@ -418,8 +403,8 @@ def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
         before_state=before_state,
         expected_draws=0,
         expected_after_state=0,
-        expected_hash="da39a3ee5e6b4b0d",
     )
+    assert rng.values_since(before_calls) == []
     assert commands.trigger_game_tune is True
     assert commands.sfx_keys == ["sfx_bullet_hit_01"]
 

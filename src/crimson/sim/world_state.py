@@ -133,6 +133,7 @@ class WorldState(msgspec.Struct):
             if rng_marks is None:
                 return
             rng_marks[str(name)] = int(self.state.rng.state)
+
         dt = float(dt)
         fx_queue.gore_disabled = int(gore_disabled)
         self.state.player_death_hook_skip_indices.clear()
@@ -155,11 +156,13 @@ class WorldState(msgspec.Struct):
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=fx_queue)
         _mark("ws_after_effects_update")
+
         def _apply_projectile_damage_to_player(player_index: int, damage: float) -> None:
             idx = int(player_index)
             if not (0 <= idx < len(self.players)):
                 return
             player_take_projectile_damage(self.state, self.players[idx], float(damage))
+
         creature_result = self.creatures.update(
             dt,
             options=CreatureUpdateOptions(
@@ -180,23 +183,30 @@ class WorldState(msgspec.Struct):
         deaths = list(creature_result.deaths)
         planned_death_sfx: list[str] = []
         planned_death_sfx_cap = 5
+
         def _plan_death_sfx_now(death: CreatureDeath) -> None:
             if not death.plan_death_sfx:
                 return
-            keys = plan_death_sfx_keys([death], rand=self.state.rng.rand)
+            keys = plan_death_sfx_keys([death], rng=self.state.rng)
             if not keys:
                 return
             remain = int(planned_death_sfx_cap) - len(planned_death_sfx)
             if remain <= 0:
                 return
             planned_death_sfx.extend(keys[:remain])
+
         for death in deaths:
             _plan_death_sfx_now(death)
         trigger_game_tune = False
         hit_sfx: list[str] = []
         hit_audio_game_tune_started = game_tune_started
+
         def _apply_projectile_damage_to_creature(
-            creature_index: int, damage: float, damage_type: int, impulse: Vec2, owner: OwnerRef,
+            creature_index: int,
+            damage: float,
+            damage_type: int,
+            impulse: Vec2,
+            owner: OwnerRef,
         ) -> None:
             idx = int(creature_index)
             if not (0 <= idx < len(self.creatures.entries)):
@@ -213,7 +223,7 @@ class WorldState(msgspec.Struct):
                 owner=owner,
                 dt=float(dt),
                 players=self.players,
-                rand=self.state.rng.rand,
+                rng=self.state.rng,
                 effects=self.state.effects,
                 detail_preset=int(detail_preset),
                 on_lethal=lambda: self._record_creature_death(
@@ -226,8 +236,10 @@ class WorldState(msgspec.Struct):
                     plan_death_sfx_now=_plan_death_sfx_now,
                     plan_death_sfx=not suppress_death_sfx,
                 ),
-        )
+            )
+
         prev_creature_damage_appliers = self._set_creature_damage_appliers(_apply_projectile_damage_to_creature)
+
         def _on_secondary_detonation_kill(creature_index: int) -> None:
             idx = int(creature_index)
             if not (0 <= idx < len(self.creatures.entries)) or float(self.creatures.entries[idx].hp) > 0.0:
@@ -253,6 +265,7 @@ class WorldState(msgspec.Struct):
                 detail_preset=int(detail_preset),
                 gore_disabled=int(gore_disabled),
             )
+
         def _on_projectile_hit_post(_hit: ProjectileHit, post_ctx: ProjectileDecalPostCtx) -> None:
             nonlocal trigger_game_tune, hit_audio_game_tune_started
             self._finalize_projectile_hit_presentation(
@@ -264,13 +277,14 @@ class WorldState(msgspec.Struct):
                 game_mode=game_mode,
                 demo_mode_active=self.state.demo_mode_active,
                 game_tune_started=hit_audio_game_tune_started,
-                rand=self.state.rng.rand,
+                rng=self.state.rng,
             )
             if hit_trigger:
                 trigger_game_tune = True
                 hit_audio_game_tune_started = True
             if keys:
                 hit_sfx.extend(keys)
+
         hits = self.state.projectiles.step(
             PrimaryStepCtx(
                 dt=float(dt),
@@ -279,7 +293,7 @@ class WorldState(msgspec.Struct):
                     world_size=float(world_size),
                     damage_scale_by_type=damage_scale_by_type,
                     detail_preset=int(detail_preset),
-                    rng=self.state.rng.rand,
+                    rng=self.state.rng,
                     runtime_state=self.state,
                     players=self.players,
                     apply_player_damage=_apply_projectile_damage_to_player,
@@ -309,6 +323,7 @@ class WorldState(msgspec.Struct):
             fx_queue=fx_queue,
             deaths=deaths,
         )
+
         def _kill_creature_no_corpse(creature_index: int, owner: OwnerRef) -> None:
             idx = int(creature_index)
             if not (0 <= idx < len(self.creatures.entries)):
@@ -329,6 +344,7 @@ class WorldState(msgspec.Struct):
                 plan_death_sfx_now=_plan_death_sfx_now,
                 keep_corpse=False,
             )
+
         self.state.particles.update(
             dt,
             creatures=self.creatures.entries,
@@ -354,7 +370,9 @@ class WorldState(msgspec.Struct):
                 self.state,
                 detail_preset=int(detail_preset),
                 world_size=float(world_size),
-                players=self.players, creatures=self.creatures.entries, spawn_slots=self.creatures.spawn_slots,
+                players=self.players,
+                creatures=self.creatures.entries,
+                spawn_slots=self.creatures.spawn_slots,
                 on_player_lethal=lambda dead_player, dt_value=float(player_dt): self._run_player_death_hooks(
                     player=dead_player,
                     dt=float(dt_value),
@@ -573,7 +591,7 @@ class WorldState(msgspec.Struct):
             players=self.players,
             fx_queue=fx_queue,
             hit=hit,
-            rand=self.state.rng.rand,
+            rng=self.state.rng,
             detail_preset=int(detail_preset),
             gore_disabled=int(gore_disabled),
         )
@@ -587,7 +605,7 @@ class WorldState(msgspec.Struct):
         queue_projectile_decals_post_hit(
             fx_queue=fx_queue,
             post_ctx=post_ctx,
-            rand=self.state.rng.rand,
+            rng=self.state.rng,
         )
 
     def _advance_creature_anim(self, dt: float) -> None:

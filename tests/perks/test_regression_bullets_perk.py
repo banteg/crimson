@@ -7,11 +7,11 @@ from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import WeaponFireCtx, fire_weapon
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.support.helpers import MockCrand, assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
-    state = GameplayState(rng=MockCrand(0))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), experience=1000)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -19,7 +19,14 @@ def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5
 
-    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state))
+    fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
+        ),
+    )
 
     assert player.experience == 760  # int(1000 - (pistol.reload_time=1.2) * 200)
     assert any(entry.active for entry in state.projectiles.entries)
@@ -27,7 +34,7 @@ def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
 
 
 def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> None:
-    state = GameplayState(rng=MockCrand(0))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), experience=1000)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -35,7 +42,14 @@ def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> 
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5
 
-    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state))
+    fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
+        ),
+    )
 
     assert player.experience == 760  # int(1000 - (pistol.reload_time=1.2) * 200)
     assert any(entry.active for entry in state.projectiles.entries)
@@ -43,7 +57,7 @@ def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> 
 
 
 def test_regression_bullets_blocks_fire_when_experience_is_zero() -> None:
-    state = GameplayState(rng=MockCrand(0))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), experience=0)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -51,13 +65,20 @@ def test_regression_bullets_blocks_fire_when_experience_is_zero() -> None:
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5
 
-    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state))
+    fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
+        ),
+    )
 
     assert not any(entry.active for entry in state.projectiles.entries)
 
 
 def test_regression_bullets_fire_weapon_fires_during_manual_reload_and_spends_ammo() -> None:
-    state = GameplayState(rng=MockCrand(0))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), experience=1000)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.FLAMETHROWER
@@ -65,7 +86,14 @@ def test_regression_bullets_fire_weapon_fires_during_manual_reload_and_spends_am
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5
 
-    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state))
+    fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
+        ),
+    )
 
     assert player.experience == 992  # int(1000 - (flamethrower.reload_time=2.0) * 4)
     assert any(entry.active for entry in state.particles.entries)

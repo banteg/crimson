@@ -6,12 +6,12 @@ from crimson.gameplay import GameplayState
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.support.helpers import MockCrand, assert_rng_progression
+from tests.support.helpers import ScriptedCrand, assert_rng_progression
 
 
 def test_pistol_safety_net_forces_weapon_drop() -> None:
     state = GameplayState()
-    state.rng = MockCrand([0, 0, 0, 1], fallback="zero")
+    state.rng = ScriptedCrand([0, 0, 0, 1], fallback=ScriptedCrand.Fallback.ZERO)
     state.bonus_pool = BonusPool()
 
     player = PlayerState(index=0, pos=Vec2(256.0, 256.0))
@@ -24,7 +24,7 @@ def test_pistol_safety_net_forces_weapon_drop() -> None:
 
 def test_pistol_extra_gate_allows_spawn_without_bonus_magnet() -> None:
     state = GameplayState()
-    state.rng = MockCrand([3, 0, 1, 0, 0], fallback="zero")
+    state.rng = ScriptedCrand([3, 0, 1, 0, 0], fallback=ScriptedCrand.Fallback.ZERO)
     state.bonus_pool = BonusPool()
 
     player = PlayerState(index=0, pos=Vec2())
@@ -35,7 +35,7 @@ def test_pistol_extra_gate_allows_spawn_without_bonus_magnet() -> None:
 
 def test_pistol_extra_gate_uses_any_player_by_default() -> None:
     state = GameplayState()
-    state.rng = MockCrand([3, 0, 1, 0], fallback="zero")
+    state.rng = ScriptedCrand([3, 0, 1, 0], fallback=ScriptedCrand.Fallback.ZERO)
     state.bonus_pool = BonusPool()
 
     player1 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
@@ -47,7 +47,7 @@ def test_pistol_extra_gate_uses_any_player_by_default() -> None:
 
 def test_pistol_extra_gate_preserve_bugs_uses_player1_only() -> None:
     state = GameplayState(preserve_bugs=True)
-    state.rng = MockCrand([3, 0, 1, 0], fallback="zero")
+    state.rng = ScriptedCrand([3, 0, 1, 0], fallback=ScriptedCrand.Fallback.ZERO)
     state.bonus_pool = BonusPool()
 
     player1 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
@@ -59,7 +59,7 @@ def test_pistol_extra_gate_preserve_bugs_uses_player1_only() -> None:
 
 def test_weapon_drop_near_player2_converts_to_points_by_default() -> None:
     state = GameplayState()
-    state.rng = MockCrand([1, 13, 1, 4], fallback="zero")
+    state.rng = ScriptedCrand([1, 13, 1, 4], fallback=ScriptedCrand.Fallback.ZERO)
     state.bonus_pool = BonusPool()
 
     player1 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
@@ -73,7 +73,7 @@ def test_weapon_drop_near_player2_converts_to_points_by_default() -> None:
 
 def test_weapon_drop_near_player2_stays_player1_only_with_preserve_bugs() -> None:
     state = GameplayState(preserve_bugs=True)
-    state.rng = MockCrand([1, 13, 1, 4], fallback="zero")
+    state.rng = ScriptedCrand([1, 13, 1, 4], fallback=ScriptedCrand.Fallback.ZERO)
     state.bonus_pool = BonusPool()
 
     player1 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
@@ -87,7 +87,7 @@ def test_weapon_drop_near_player2_stays_player1_only_with_preserve_bugs() -> Non
 
 def test_pistol_safety_net_consumes_weapon_rng_when_spawn_pos_is_blocked() -> None:
     state = GameplayState()
-    rng = MockCrand([0, 0, 2], fallback="zero")
+    rng = ScriptedCrand([0, 0, 2], fallback=ScriptedCrand.Fallback.ZERO)
     state.rng = rng
     state.bonus_pool = BonusPool()
 
@@ -109,7 +109,7 @@ def test_pistol_safety_net_consumes_weapon_rng_when_spawn_pos_is_blocked() -> No
 
 def test_spawn_gate_consumes_pick_rng_when_spacing_rejects_slot() -> None:
     state = GameplayState()
-    rng = MockCrand([1, 0, 0], fallback="zero")
+    rng = ScriptedCrand([1, 0, 0], fallback=ScriptedCrand.Fallback.ZERO)
     state.rng = rng
     state.bonus_pool = BonusPool()
 
@@ -134,7 +134,7 @@ def test_spawn_gate_consumes_pick_rng_when_spacing_rejects_slot() -> None:
 
 def test_weapon_drop_suppression_checks_all_carried_weapons_by_default() -> None:
     state = GameplayState()
-    state.rng = MockCrand([1, 13, 1, 2], fallback="zero")
+    state.rng = ScriptedCrand([1, 13, 1, 2], fallback=ScriptedCrand.Fallback.ZERO)
     state.bonus_pool = BonusPool()
 
     player1 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
@@ -146,7 +146,7 @@ def test_weapon_drop_suppression_checks_all_carried_weapons_by_default() -> None
 
 def test_weapon_drop_suppression_preserve_bugs_checks_player1_weapon_only() -> None:
     state = GameplayState(preserve_bugs=True)
-    state.rng = MockCrand([1, 13, 1, 2], fallback="zero")
+    state.rng = ScriptedCrand([1, 13, 1, 2], fallback=ScriptedCrand.Fallback.ZERO)
     state.bonus_pool = BonusPool()
 
     player1 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))

@@ -6,12 +6,13 @@ Ported from `creature_update_all` (`FUN_00426220`).
 """
 
 import math
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from typing import Protocol
 
 import msgspec
 
 from grim.geom import Vec2
+from grim.rand import CallerStatic, CrandLike
 
 from ..math_parity import NATIVE_PI, f32, f32_vec2, heading_from_delta_f32
 from .spawn import CreatureAiMode, CreatureFlags
@@ -47,7 +48,13 @@ class CreatureAIUpdate(msgspec.Struct, frozen=True):
     self_damage: float | None = None
 
 
-def creature_ai7_tick_link_timer(creature: CreatureAIStateLike, *, dt_ms: int, rand: Callable[[], int]) -> None:
+def creature_ai7_tick_link_timer(
+    creature: CreatureAIStateLike,
+    *,
+    dt_ms: int,
+    rng: CrandLike,
+    caller: CallerStatic = None,
+) -> None:
     """Update AI7's link-index timer behavior (flag 0x80).
 
     In the original, this runs regardless of the current ai_mode; when the timer
@@ -61,12 +68,12 @@ def creature_ai7_tick_link_timer(creature: CreatureAIStateLike, *, dt_ms: int, r
         creature.link_index += dt_ms
         if creature.link_index >= 0:
             creature.ai_mode = CreatureAiMode.HOLD_TIMER
-            creature.link_index = (rand() & 0x1FF) + 500
+            creature.link_index = (rng.rand(caller=caller) & 0x1FF) + 500
         return
 
     creature.link_index -= dt_ms
     if creature.link_index < 1:
-        creature.link_index = -700 - (rand() & 0x3FF)
+        creature.link_index = -700 - (rng.rand(caller=caller) & 0x3FF)
 
 
 def resolve_live_link(creatures: Sequence[CreatureAIStateLike], link_index: int) -> CreatureAIStateLike | None:

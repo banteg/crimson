@@ -1003,7 +1003,7 @@ class PlanBuilder(msgspec.Struct):
         )
 
     def rand(self) -> int:
-        return int(self.rng.rand(caller=self.caller))
+        return self.rng.rand(caller=self.caller)
 
     def ring_children(self, **kwargs) -> int:
         return spawn_ring_children(

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from pathlib import Path
 
 import msgspec
@@ -10,7 +9,7 @@ from grim.raylib_api import rl
 from . import music, sfx
 from .config import CrimsonConfig
 from .console import ConsoleState
-from .rand import Crand
+from .rand import Crand, CrandLike
 
 
 class AudioState(msgspec.Struct):
@@ -68,8 +67,8 @@ def stop_music(state: AudioState | None) -> None:
     music.stop_music(state.music)
 
 
-def trigger_game_tune(state: AudioState, *, rand: Callable[[], int]) -> str | None:
-    return music.trigger_game_tune(state.music, rand=rand)
+def trigger_game_tune(state: AudioState, *, rng: CrandLike) -> str | None:
+    return music.trigger_game_tune(state.music, rng=rng)
 
 
 def play_sfx(

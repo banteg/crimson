@@ -5,7 +5,7 @@ from collections.abc import Callable
 
 import msgspec
 
-from grim.rand import CallerStatic
+from grim.rand import CrandLike, RecordingCrand
 
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
@@ -21,7 +21,6 @@ from .world_state import WorldEvents, WorldState
 
 class PresentationRngTrace(msgspec.Struct):
     draws_total: int = 0
-    draws_by_consumer: dict[str, int] = msgspec.field(default_factory=dict)
 
 
 class DeterministicStepResult(msgspec.Struct):
@@ -100,7 +99,13 @@ def run_deterministic_step(
     trace_presentation_rng: bool = False,
 ) -> DeterministicStepResult:
     state = world.state
-    rand = state.rng.rand
+    presentation_rng: CrandLike
+    recording_rng: RecordingCrand | None = None
+    if trace_presentation_rng:
+        recording_rng = RecordingCrand(state.rng)
+        presentation_rng = recording_rng
+    else:
+        presentation_rng = state.rng
 
     def _mark(name: str) -> None:
         if rng_marks_out is None:
@@ -119,7 +124,9 @@ def run_deterministic_step(
     _mark("gw_after_perks_rebuild")
     _mark("gw_after_time_scale")
 
-    prev_audio = [(player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in world.players]
+    prev_audio = [
+        (player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in world.players
+    ]
     prev_perk_pending = int(state.perk_selection.pending_count)
 
     events = world.step(
@@ -145,19 +152,6 @@ def run_deterministic_step(
 
     trace = PresentationRngTrace()
 
-    def _rand_for(label: str):
-        if not trace_presentation_rng:
-            return rand
-
-        def _draw(*, caller: CallerStatic = None) -> int:
-            _ = caller
-            value = int(rand())
-            trace.draws_total += 1
-            trace.draws_by_consumer[str(label)] = int(trace.draws_by_consumer.get(str(label), 0)) + 1
-            return value
-
-        return _draw
-
     plan_ns_start = time.perf_counter_ns()
     presentation = plan_world_presentation_step(
         state=state,
@@ -172,8 +166,7 @@ def run_deterministic_step(
         game_mode=options.game_mode,
         demo_mode_active=bool(options.demo_mode_active),
         perk_progression_enabled=bool(options.perk_progression_enabled),
-        rand=rand,
-        rand_for=_rand_for if trace_presentation_rng else None,
+        rng=presentation_rng,
         detail_preset=int(options.detail_preset),
         gore_disabled=int(options.gore_disabled),
         game_tune_started=bool(options.game_tune_started),
@@ -183,10 +176,11 @@ def run_deterministic_step(
     )
     presentation_plan_ms = (time.perf_counter_ns() - plan_ns_start) / 1_000_000.0
 
-    if rng_marks_out is not None and trace_presentation_rng:
+    if recording_rng is not None:
+        trace.draws_total = int(recording_rng.calls)
+
+    if rng_marks_out is not None and recording_rng is not None:
         rng_marks_out["ps_draws_total"] = int(trace.draws_total)
-        for key, value in sorted(trace.draws_by_consumer.items()):
-            rng_marks_out[f"ps_draws_{key}"] = int(value)
 
     return DeterministicStepResult(
         dt_sim=float(timing.dt_sim),

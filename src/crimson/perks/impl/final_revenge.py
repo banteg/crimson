@@ -36,11 +36,10 @@ def apply_final_revenge_on_player_death(
         return
 
     player_pos = player.pos
-    rand = state.rng.rand
     state.effects.spawn_explosion_burst(
         pos=player_pos,
         scale=1.8,
-        rand=rand,
+        rng=state.rng,
         detail_preset=int(detail_preset),
     )
 
@@ -69,10 +68,11 @@ def apply_final_revenge_on_player_death(
             owner=OwnerRef.from_player(int(player.index)),
             dt=float(dt),
             players=players,
-            rand=rand,
+            rng=state.rng,
             effects=state.effects,
             detail_preset=int(detail_preset),
-            on_lethal=lambda death_creature_idx=death_creature_idx, suppress_death_sfx=suppress_death_sfx: deaths.append(
+            on_lethal=lambda death_creature_idx=death_creature_idx,
+            suppress_death_sfx=suppress_death_sfx: deaths.append(
                 creatures.handle_death(
                     int(death_creature_idx),
                     state=state,

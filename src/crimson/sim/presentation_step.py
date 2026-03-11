@@ -7,7 +7,7 @@ from typing import Protocol
 import msgspec
 
 from grim.geom import Vec2
-from grim.rand import RandDrawLike
+from grim.rand import CrandLike
 
 from ..bonuses.freeze import freeze_bonus_active
 from ..creatures.runtime import CreatureDeath
@@ -114,10 +114,10 @@ def plan_player_audio_sfx(
     return keys
 
 
-def _rand_choice(rand: Callable[[], int], options: tuple[str, ...]) -> str | None:
+def _rand_choice(rng: CrandLike, options: tuple[str, ...]) -> str | None:
     if not options:
         return None
-    idx = int(rand()) % len(options)
+    idx = rng.rand() % len(options)
     return options[idx]
 
 
@@ -125,13 +125,13 @@ def _hit_sfx_for_type(
     type_id: int,
     *,
     beam_types: frozenset[int],
-    rand: Callable[[], int],
+    rng: CrandLike,
 ) -> str | None:
     _ = beam_types
     ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).ammo_class
     if ammo_class == 4:
         return "sfx_shock_hit_01"
-    return _rand_choice(rand, _BULLET_HIT_SFX)
+    return _rand_choice(rng, _BULLET_HIT_SFX)
 
 
 def plan_hit_sfx_keys(
@@ -140,7 +140,7 @@ def plan_hit_sfx_keys(
     game_mode: GameMode,
     demo_mode_active: bool,
     game_tune_started: bool,
-    rand: Callable[[], int],
+    rng: CrandLike,
     beam_types: frozenset[int] = BEAM_TYPES,
 ) -> tuple[bool, list[str]]:
     if not hits:
@@ -159,10 +159,10 @@ def plan_hit_sfx_keys(
             # playlist entry, so consume one draw here for stream parity.
             trigger_game_tune = True
             local_game_tune_started = True
-            _ = int(rand())
+            _ = rng.rand()
             continue
         type_id = int(hits[idx].type_id)
-        key = _hit_sfx_for_type(type_id, beam_types=beam_types, rand=rand)
+        key = _hit_sfx_for_type(type_id, beam_types=beam_types, rng=rng)
         if key is not None:
             keys.append(key)
     return trigger_game_tune, keys
@@ -171,7 +171,7 @@ def plan_hit_sfx_keys(
 def plan_death_sfx_keys(
     deaths: Sequence[CreatureDeath],
     *,
-    rand: Callable[[], int],
+    rng: CrandLike,
 ) -> list[str]:
     keys: list[str] = []
     if not deaths:
@@ -181,7 +181,7 @@ def plan_death_sfx_keys(
         death = deaths[idx]
         if death.suppress_death_sfx:
             continue
-        key = _rand_choice(rand, _CREATURE_DEATH_SFX[death.type_id])
+        key = _rand_choice(rng, _CREATURE_DEATH_SFX[death.type_id])
         if key is not None:
             keys.append(key)
     return keys
@@ -201,7 +201,7 @@ def queue_projectile_decals(
     players: Sequence[PlayerState],
     fx_queue: FxQueue,
     hits: list[ProjectileHit],
-    rand: RandDrawLike,
+    rng: CrandLike,
     detail_preset: int,
     gore_disabled: int,
 ) -> None:
@@ -211,14 +211,14 @@ def queue_projectile_decals(
             players=players,
             fx_queue=fx_queue,
             hit=hit,
-            rand=rand,
+            rng=rng,
             detail_preset=detail_preset,
             gore_disabled=gore_disabled,
         )
         queue_projectile_decals_post_hit(
             fx_queue=fx_queue,
             post_ctx=post_ctx,
-            rand=rand,
+            rng=rng,
         )
 
 
@@ -228,7 +228,7 @@ def queue_projectile_decals_pre_hit(
     players: Sequence[PlayerState],
     fx_queue: FxQueue,
     hit: ProjectileHit,
-    rand: RandDrawLike,
+    rng: CrandLike,
     detail_preset: int,
     gore_disabled: int,
 ) -> ProjectileDecalPostCtx:
@@ -236,13 +236,15 @@ def queue_projectile_decals_pre_hit(
     bloody = bool(players) and perk_active(players[0], PerkId.BLOODY_MESS_QUICK_LEARNER)
     freeze_shard_spawn: Callable[[Vec2, float], None] | None = None
     if freeze_active:
+
         def _spawn_freeze_shard(pos: Vec2, angle: float) -> None:
             state.effects.spawn_freeze_shard(
                 pos=pos,
                 angle=float(angle),
-                rand=rand,
+                rng=rng,
                 detail_preset=int(detail_preset),
             )
+
         freeze_shard_spawn = _spawn_freeze_shard
 
     type_id = hit.type_id
@@ -253,9 +255,9 @@ def queue_projectile_decals_pre_hit(
         for _ in range(8):
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,
-                angle=float(int(rand()) & 0xFF) * 0.024543693,
+                angle=float(rng.rand() & 0xFF) * 0.024543693,
                 age=0.0,
-                rand=rand,
+                rng=rng,
                 detail_preset=detail_preset,
                 gore_disabled=gore_disabled,
             )
@@ -263,12 +265,12 @@ def queue_projectile_decals_pre_hit(
     # Native `projectile_update` spawns blood splatter before terrain decals.
     if bloody:
         for _ in range(8):
-            spread = float((int(rand()) & 0x1F) - 0x10) * 0.0625
+            spread = float((rng.rand() & 0x1F) - 0x10) * 0.0625
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,
                 angle=base_angle + spread,
                 age=0.0,
-                rand=rand,
+                rng=rng,
                 detail_preset=detail_preset,
                 gore_disabled=gore_disabled,
             )
@@ -276,7 +278,7 @@ def queue_projectile_decals_pre_hit(
             pos=hit.hit,
             angle=base_angle + math.pi,
             age=0.0,
-            rand=rand,
+            rng=rng,
             detail_preset=detail_preset,
             gore_disabled=gore_disabled,
         )
@@ -286,11 +288,11 @@ def queue_projectile_decals_pre_hit(
         while lo > -60:
             span = hi - lo
             for _ in range(2):
-                dx = float(int(rand()) % span + lo)
-                dy = float(int(rand()) % span + lo)
+                dx = float(rng.rand() % span + lo)
+                dy = float(rng.rand() % span + lo)
                 fx_queue.add_random(
                     pos=hit.target + Vec2(dx, dy),
-                    rand=rand,
+                    rng=rng,
                 )
             lo -= 10
             hi += 10
@@ -300,16 +302,16 @@ def queue_projectile_decals_pre_hit(
                 pos=hit.hit,
                 angle=base_angle,
                 age=0.0,
-                rand=rand,
+                rng=rng,
                 detail_preset=detail_preset,
                 gore_disabled=gore_disabled,
             )
-            if (int(rand()) & 7) == 2:
+            if (rng.rand() & 7) == 2:
                 state.effects.spawn_blood_splatter(
                     pos=hit.hit,
                     angle=base_angle + math.pi,
                     age=0.0,
-                    rand=rand,
+                    rng=rng,
                     detail_preset=detail_preset,
                     gore_disabled=gore_disabled,
                 )
@@ -327,20 +329,20 @@ def queue_projectile_decals_post_hit(
     *,
     fx_queue: FxQueue,
     post_ctx: ProjectileDecalPostCtx,
-    rand: RandDrawLike,
+    rng: CrandLike,
 ) -> None:
     hit = post_ctx.hit
     base_angle = float(post_ctx.base_angle)
 
     # Native consumes one extra `crt_rand()` per creature hit before the
     # post-hit terrain decal burst branch.
-    rand()
+    rng.rand()
 
     hook_handled = queue_projectile_large_streak_decal(
         hit=hit,
         base_angle=float(base_angle),
         fx_queue=fx_queue,
-        rand=rand,
+        rng=rng,
         freeze_origin=hit.hit if bool(post_ctx.freeze_active) else None,
         spawn_freeze_shard=post_ctx.freeze_shard_spawn,
     )
@@ -349,21 +351,21 @@ def queue_projectile_decals_post_hit(
         return
 
     for _ in range(3):
-        spread = float(int(rand()) % 0x14 - 10) * 0.1
+        spread = float(rng.rand() % 20 - 10) * 0.1
         angle = base_angle + spread
         direction = Vec2.from_angle(angle) * 20.0
-        fx_queue.add_random(pos=hit.target, rand=rand)
+        fx_queue.add_random(pos=hit.target, rng=rng)
         fx_queue.add_random(
             pos=hit.target + direction * 1.5,
-            rand=rand,
+            rng=rng,
         )
         fx_queue.add_random(
             pos=hit.target + direction * 2.0,
-            rand=rand,
+            rng=rng,
         )
         fx_queue.add_random(
             pos=hit.target + direction * 2.5,
-            rand=rand,
+            rng=rng,
         )
 
 
@@ -381,8 +383,7 @@ def plan_world_presentation_step(
     game_mode: GameMode,
     demo_mode_active: bool,
     perk_progression_enabled: bool,
-    rand: RandDrawLike,
-    rand_for: Callable[[str], RandDrawLike] | None = None,
+    rng: CrandLike,
     detail_preset: int,
     gore_disabled: int,
     game_tune_started: bool,
@@ -391,9 +392,6 @@ def plan_world_presentation_step(
     death_sfx_preplanned: bool = False,
 ) -> PresentationStepCommands:
     commands = PresentationStepCommands()
-    if rand_for is None:
-        def rand_for(_label: str) -> RandDrawLike:
-            return rand
     if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
         commands.sfx_keys.append("sfx_ui_levelup")
     if trigger_game_tune is None and hit_sfx is None:
@@ -403,7 +401,7 @@ def plan_world_presentation_step(
                 players=players,
                 fx_queue=fx_queue,
                 hits=hits,
-                rand=rand_for("projectile_decals"),
+                rng=rng,
                 detail_preset=int(detail_preset),
                 gore_disabled=int(gore_disabled),
             )
@@ -416,7 +414,7 @@ def plan_world_presentation_step(
                     game_mode=game_mode,
                     demo_mode_active=bool(demo_mode_active),
                     game_tune_started=bool(game_tune_started),
-                    rand=rand_for("hit_sfx"),
+                    rng=rng,
                 )
                 commands.sfx_keys.extend(planned_hit_sfx)
     else:
@@ -437,7 +435,7 @@ def plan_world_presentation_step(
             ),
         )
     if deaths and not death_sfx_preplanned:
-        commands.sfx_keys.extend(plan_death_sfx_keys(deaths, rand=rand_for("death_sfx")))
+        commands.sfx_keys.extend(plan_death_sfx_keys(deaths, rng=rng))
     if pickups:
         commands.sfx_keys.extend("sfx_ui_bonus" for _ in pickups)
     commands.sfx_keys.extend(str(key) for key in event_sfx[:4])

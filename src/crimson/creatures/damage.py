@@ -7,6 +7,7 @@ import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.rand import CallerStatic, CrandLike
 
 from ..effects import EffectPool
 from ..effects_atlas import EffectId
@@ -32,7 +33,8 @@ class _CreatureDamageCtx(msgspec.Struct):
     owner: OwnerRef
     dt: float
     players: list[PlayerState]
-    rand: Callable[[], int]
+    rng: CrandLike
+    caller: CallerStatic
 
 
 _CreatureDamageStep = Callable[[_CreatureDamageCtx], None]
@@ -71,7 +73,7 @@ def _damage_type1_heading_jitter(ctx: _CreatureDamageCtx) -> None:
     creature = ctx.creature
     if (creature.flags & CreatureFlags.ANIM_PING_PONG) != 0:
         return
-    jitter = float((int(ctx.rand()) & 0x7F) - 0x40) * 0.002
+    jitter = float((ctx.rng.rand(caller=ctx.caller) & 0x7F) - 0x40) * 0.002
     size = max(1e-6, float(creature.size))
     turn = jitter / (size * 0.025)
     turn = min(math.pi / 2.0, turn)
@@ -87,13 +89,14 @@ def _damage_type4_pyromaniac(ctx: _CreatureDamageCtx) -> None:
     if not _any_player_has_perk(ctx.players, PerkId.PYROMANIAC):
         return
     ctx.damage *= 1.5
-    ctx.rand()
+    ctx.rng.rand(caller=ctx.caller)
 
 
 def _damage_lethal_ranged_shock_burst(
     *,
     creature: CreatureState,
-    rand: Callable[[], int],
+    rng: CrandLike,
+    caller: CallerStatic,
     effects: EffectPool | None,
     detail_preset: int,
 ) -> None:
@@ -101,12 +104,12 @@ def _damage_lethal_ranged_shock_burst(
     if (creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK) == 0:
         return
     for _ in range(5):
-        rotation = float(int(rand()) & 0x7F) * 0.049087387
+        rotation = float(rng.rand(caller=caller) & 0x7F) * 0.049087387
         vel = Vec2(
-            float((int(rand()) & 0x7F) - 0x40),
-            float((int(rand()) & 0x7F) - 0x40),
+            float((rng.rand(caller=caller) & 0x7F) - 0x40),
+            float((rng.rand(caller=caller) & 0x7F) - 0x40),
         )
-        scale_step = float(int(rand()) % 0x8C) * 0.01 + 0.3
+        scale_step = float(rng.rand(caller=caller) % 140) * 0.01 + 0.3
         if effects is None:
             continue
         effects.spawn(
@@ -155,7 +158,8 @@ def creature_apply_damage(
     owner: OwnerRef,
     dt: float,
     players: list[PlayerState],
-    rand: Callable[[], int],
+    rng: CrandLike,
+    caller: CallerStatic = None,
     effects: EffectPool | None = None,
     detail_preset: int = 5,
 ) -> bool:
@@ -179,7 +183,8 @@ def creature_apply_damage(
         owner=owner,
         dt=float(dt),
         players=players,
-        rand=rand,
+        rng=rng,
+        caller=caller,
     )
 
     for step in _CREATURE_DAMAGE_GLOBAL_PRE_STEPS.get(ctx.damage_type, ()):
@@ -213,7 +218,8 @@ def creature_apply_damage(
         creature.vel = creature.vel - impulse * 2.0
         _damage_lethal_ranged_shock_burst(
             creature=creature,
-            rand=rand,
+            rng=rng,
+            caller=caller,
             effects=effects,
             detail_preset=int(detail_preset),
         )
@@ -231,7 +237,8 @@ def creature_apply_damage_with_lethal_followup(
     owner: OwnerRef,
     dt: float,
     players: list[PlayerState],
-    rand: Callable[[], int],
+    rng: CrandLike,
+    caller: CallerStatic = None,
     effects: EffectPool | None = None,
     detail_preset: int = 5,
     on_lethal: Callable[[], None],
@@ -251,7 +258,8 @@ def creature_apply_damage_with_lethal_followup(
         owner=owner,
         dt=float(dt),
         players=players,
-        rand=rand,
+        rng=rng,
+        caller=caller,
         effects=effects,
         detail_preset=int(detail_preset),
     )

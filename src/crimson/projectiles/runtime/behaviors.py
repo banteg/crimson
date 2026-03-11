@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from grim.geom import Vec2
+from grim.rand import CrandLike
 
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
@@ -14,6 +15,7 @@ from ...creatures.spawn import CreatureFlags
 from ...effects import EffectPool
 from ...math_parity import f32
 from ...owner_ref import OwnerRef
+from ...rng_caller_static import RngCallerStatic
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..effects import (
     _spawn_ion_hit_effects,
@@ -39,7 +41,7 @@ class _ProjectileUpdateCtx(msgspec.Struct):
     dt: float
     ion_scale: float
     detail_preset: int
-    rng: Callable[[], int]
+    rng: CrandLike
     runtime_state: GameplayState | None
     effects: EffectPool | None
     sfx_queue: MutableSequence[str] | None
@@ -56,7 +58,7 @@ class _ProjectileHitInfo(msgspec.Struct):
 class _ProjectileHitPerkCtx(msgspec.Struct):
     proj: Projectile
     creature: CreatureState
-    rng: Callable[[], int]
+    rng: CrandLike
     owner_perk_active: Callable[[OwnerRef, int], bool]
     poison_idx: int
 
@@ -65,7 +67,10 @@ _ProjectileHitPerkHook = Callable[[_ProjectileHitPerkCtx], None]
 
 
 def _projectile_hit_perk_poison_bullets(ctx: _ProjectileHitPerkCtx) -> None:
-    if ctx.owner_perk_active(ctx.proj.owner, int(ctx.poison_idx)) and (int(ctx.rng()) & 7) == 1:
+    if (
+        ctx.owner_perk_active(ctx.proj.owner, int(ctx.poison_idx))
+        and (ctx.rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 7) == 1
+    ):
         ctx.creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
 

@@ -27,7 +27,7 @@ def test_projectile_decals_consume_authoritative_rng() -> None:
         players=world.sim_world.players,
         fx_queue=world.render_resources.fx_queue,
         hits=[hit],
-        rand=world.sim_world.state.rng.rand,
+        rng=world.sim_world.state.rng,
         detail_preset=5,
         gore_disabled=0,
     )

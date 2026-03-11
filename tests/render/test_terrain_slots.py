@@ -13,6 +13,7 @@ from crimson.terrain_slots import (
     terrain_slots_to_texture_ids,
 )
 from grim.assets import TextureId
+from tests.support.helpers import ScriptedCrand
 
 
 def test_terrain_slots_for_quest_matches_native_layout() -> None:
@@ -23,11 +24,9 @@ def test_terrain_slots_for_quest_matches_native_layout() -> None:
 
 
 def test_choose_unlock_terrain_slots_uses_sequential_unlock_rolls() -> None:
-    rolls = iter((0, 0, 3))
-
     chosen = choose_unlock_terrain_slots(
         unlock_index=0x28,
-        rand=lambda: next(rolls),
+        rng=ScriptedCrand([0, 0, 3]),
     )
 
     assert chosen == Q2_TERRAIN_SLOTS
@@ -36,7 +35,7 @@ def test_choose_unlock_terrain_slots_uses_sequential_unlock_rolls() -> None:
 def test_choose_unlock_terrain_slots_prefers_first_matching_unlock() -> None:
     chosen = choose_unlock_terrain_slots(
         unlock_index=0x28,
-        rand=lambda: 3,
+        rng=ScriptedCrand(3, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
     assert chosen == Q4_TERRAIN_SLOTS
@@ -45,18 +44,16 @@ def test_choose_unlock_terrain_slots_prefers_first_matching_unlock() -> None:
 def test_choose_unlock_terrain_slots_keeps_default_below_unlock_thresholds() -> None:
     chosen = choose_unlock_terrain_slots(
         unlock_index=0x13,
-        rand=lambda: 3,
+        rng=ScriptedCrand(3, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
     assert chosen == DEFAULT_TERRAIN_SLOTS
 
 
 def test_choose_unlock_terrain_slots_can_fall_to_mid_tiers() -> None:
-    rolls = iter((0, 3))
-
     chosen = choose_unlock_terrain_slots(
         unlock_index=0x28,
-        rand=lambda: next(rolls),
+        rng=ScriptedCrand([0, 3]),
     )
 
     assert chosen == Q3_TERRAIN_SLOTS
@@ -70,7 +67,7 @@ def test_all_produced_terrain_slots_map_without_fallback_logic() -> None:
             produced_slots.add(
                 choose_unlock_terrain_slots(
                     unlock_index=unlock_index,
-                    rand=lambda r=roll: r,
+                    rng=ScriptedCrand(roll, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 ),
             )
 

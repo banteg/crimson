@@ -29,14 +29,11 @@ from crimson.projectiles.types import (
 from grim.geom import Vec2
 from tests.support.factories import make_creature_state as _creature
 from tests.support.factories import make_projectile_update_options
-from tests.support.helpers import assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
-def _fixed_rng(value: int):
-    def _rng() -> int:
-        return value
-
-    return _rng
+def _fixed_rng(value: int) -> ScriptedCrand:
+    return ScriptedCrand(value, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
 
 def _normalize_vec2(vec: Vec2) -> list[float]:
@@ -60,7 +57,12 @@ def _normalize_owner(owner: OwnerRef) -> dict[str, object]:
     }
 
 
-def _normalize_primary_pool(pool: ProjectilePool, idx: int, creatures: list[CreatureState], hits: list[ProjectileHit]) -> dict[str, object]:
+def _normalize_primary_pool(
+    pool: ProjectilePool,
+    idx: int,
+    creatures: list[CreatureState],
+    hits: list[ProjectileHit],
+) -> dict[str, object]:
     projectile = pool.entries[idx]
     return {
         "hits": [_normalize_hit(hit) for hit in hits],

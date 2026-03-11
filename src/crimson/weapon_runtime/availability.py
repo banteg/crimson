@@ -79,7 +79,7 @@ def weapon_pick_random_available(state: GameplayState) -> int:
     status = state.status
 
     for _ in range(1000):
-        base_rand = int(state.rng.rand(caller=RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE))
+        base_rand = state.rng.rand(caller=RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE)
         weapon_id = base_rand % WEAPON_DROP_ID_COUNT + 1
 
         # Bias: used weapons have a 50% chance to reroll once.
@@ -87,9 +87,9 @@ def weapon_pick_random_available(state: GameplayState) -> int:
             usage_slot = weapon_usage_slot_for_weapon_id(weapon_id)
             if usage_slot is not None and status.weapon_usage_count_slot(usage_slot) != 0:
                 if (
-                    int(state.rng.rand(caller=RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE)) & 1
+                    state.rng.rand(caller=RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE) & 1
                 ) == 0:
-                    base_rand = int(state.rng.rand(caller=RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE))
+                    base_rand = state.rng.rand(caller=RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE)
                     weapon_id = base_rand % WEAPON_DROP_ID_COUNT + 1
 
         if not (0 <= weapon_id < len(state.weapon_available)):

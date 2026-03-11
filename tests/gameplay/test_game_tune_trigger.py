@@ -11,6 +11,7 @@ from grim.geom import Vec2
 from grim.music import init_music_state
 from grim.rand import Crand
 from grim.sfx import init_sfx_state
+from tests.support.helpers import ScriptedCrand
 
 
 def _audio_state_stub() -> AudioState:
@@ -32,14 +33,12 @@ def test_game_tune_triggers_in_typo_mode(mocker) -> None:
     trigger_game_tune = mocker.patch.object(audio_router, "trigger_game_tune", return_value="gt1_ingame")
     play_sfx = mocker.patch.object(audio_router, "play_sfx")
     router = AudioRouter(audio=_audio_state_stub(), audio_rng=Crand(0xBEEF))
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
-    def rand() -> int:
-        return 0
-
-    router.play_hit_sfx(_hits(2), game_mode=GameMode.TYPO, rand=rand, beam_types=frozenset())
+    router.play_hit_sfx(_hits(2), game_mode=GameMode.TYPO, rng=rng, beam_types=frozenset())
 
     assert trigger_game_tune.call_count == 1
-    assert trigger_game_tune.call_args.kwargs["rand"] is rand
+    assert trigger_game_tune.call_args.kwargs["rng"] is rng
     assert play_sfx.call_args_list == [
         call(router.audio, "sfx_bullet_hit_01", rng=router.audio_rng, reflex_boost_timer=0.0),
     ]
@@ -50,7 +49,12 @@ def test_game_tune_not_triggered_in_rush_mode(mocker) -> None:
     play_sfx = mocker.patch.object(audio_router, "play_sfx")
     router = AudioRouter(audio=_audio_state_stub(), audio_rng=Crand(0xBEEF))
 
-    router.play_hit_sfx(_hits(2), game_mode=GameMode.RUSH, rand=lambda: 0, beam_types=frozenset())
+    router.play_hit_sfx(
+        _hits(2),
+        game_mode=GameMode.RUSH,
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        beam_types=frozenset(),
+    )
 
     trigger_game_tune.assert_not_called()
     assert play_sfx.call_args_list == [
@@ -64,7 +68,12 @@ def test_game_tune_not_triggered_in_demo(mocker) -> None:
     play_sfx = mocker.patch.object(audio_router, "play_sfx")
     router = AudioRouter(audio=_audio_state_stub(), audio_rng=Crand(0xBEEF), demo_mode_active=True)
 
-    router.play_hit_sfx(_hits(2), game_mode=GameMode.TYPO, rand=lambda: 0, beam_types=frozenset())
+    router.play_hit_sfx(
+        _hits(2),
+        game_mode=GameMode.TYPO,
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        beam_types=frozenset(),
+    )
 
     trigger_game_tune.assert_not_called()
     assert play_sfx.call_args_list == [

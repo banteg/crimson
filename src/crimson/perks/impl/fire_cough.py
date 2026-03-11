@@ -33,10 +33,10 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     aim = ctx.player.aim
     dist = (aim - origin_pos).length()
     max_offset = dist * float(ctx.player.spread_heat) * 0.5
-    dir_angle = float(int(ctx.state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE)) & 0x1FF) * (
+    dir_angle = float(ctx.state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE) & 0x1FF) * (
         math.tau / 512.0
     )
-    mag = float(int(ctx.state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE)) & 0x1FF) * (1.0 / 512.0)
+    mag = float(ctx.state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE) & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
     jitter = aim + Vec2.from_angle(dir_angle) * offset
     angle = (jitter - origin_pos).to_heading()

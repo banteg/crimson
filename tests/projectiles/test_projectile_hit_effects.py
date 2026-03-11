@@ -8,7 +8,7 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.factories import make_projectile_update_options
-from tests.support.helpers import assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
@@ -31,7 +31,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=lambda: 0,
+                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 runtime_state=runtime_state,
             ),
         ),
@@ -68,7 +68,7 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=lambda: 0,
+                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 runtime_state=runtime_state,
             ),
         ),
@@ -81,7 +81,9 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
     split = [
         p
         for p in pool.entries
-        if p.active and int(p.type_id) == int(ProjectileTemplateId.SPLITTER_GUN) and p.owner == OwnerRef.from_creature(0)
+        if p.active
+        and int(p.type_id) == int(ProjectileTemplateId.SPLITTER_GUN)
+        and p.owner == OwnerRef.from_creature(0)
     ]
     assert len(split) == 2
     assert all(bool(p.hits_players) for p in split)
@@ -107,7 +109,7 @@ def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=lambda: 0,
+                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 players=[player],
             ),
         ),
@@ -136,7 +138,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=lambda: 0,
+                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 runtime_state=runtime_state,
             ),
         ),
@@ -183,7 +185,7 @@ def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=lambda: 0,
+                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 runtime_state=runtime_state,
             ),
         ),

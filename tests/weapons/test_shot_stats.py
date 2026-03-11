@@ -48,7 +48,7 @@ def test_shots_fired_and_hit_increment() -> None:
             options=make_projectile_update_options(
                 world_size=1024.0,
                 damage_scale_by_type={},
-                rng=state.rng.rand,
+                rng=state.rng,
                 runtime_state=state,
             ),
         ),
@@ -81,7 +81,7 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
             options=make_projectile_update_options(
                 world_size=1024.0,
                 damage_scale_by_type={},
-                rng=state.rng.rand,
+                rng=state.rng,
                 runtime_state=state,
             ),
         ),

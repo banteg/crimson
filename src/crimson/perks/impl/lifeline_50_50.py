@@ -17,7 +17,7 @@ def apply_lifeline_50_50(ctx: PerkApplyCtx) -> None:
             ctx.state.effects.spawn_burst(
                 pos=creature.pos,
                 count=4,
-                rand=ctx.state.rng.rand,
+                rng=ctx.state.rng,
                 detail_preset=5,
             )
         kill_toggle = not kill_toggle

@@ -9,13 +9,13 @@ from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.helpers import MockCrand, assert_float_close, assert_rng_progression
+from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 
 def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None:
     creature = CreatureState(active=True, hp=100.0, size=50.0, flags=CreatureFlags(0), heading=0.0)
     player = PlayerState(index=0, pos=Vec2())
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -27,7 +27,7 @@ def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None
         owner=OwnerRef.from_creature(38),
         dt=0.016,
         players=[player],
-        rand=rng,
+        rng=rng,
     )
 
     assert killed is False
@@ -37,8 +37,8 @@ def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None
         before_state=before_state,
         expected_draws=1,
         expected_after_state=0,
-        expected_hash="b6589fc6ab0dc82c",
     )
+    assert rng.values_since(before_calls) == [0]
     assert_float_close(creature.heading, -0.1024)
 
 
@@ -51,7 +51,7 @@ def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
         heading=0.0,
     )
     player = PlayerState(index=0, pos=Vec2())
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -63,7 +63,7 @@ def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
         owner=OwnerRef.from_creature(38),
         dt=0.016,
         players=[player],
-        rand=rng,
+        rng=rng,
     )
 
     assert killed is False
@@ -73,8 +73,8 @@ def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
         before_state=before_state,
         expected_draws=0,
         expected_after_state=0,
-        expected_hash="da39a3ee5e6b4b0d",
     )
+    assert rng.values_since(before_calls) == []
     assert_float_close(creature.heading, 0.0)
 
 
@@ -92,7 +92,7 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
         owner=OwnerRef.from_creature(10),
         dt=0.016,
         players=[player],
-        rand=lambda: 0,
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
     assert killed is True
@@ -110,7 +110,7 @@ def test_nonlethal_damage_does_not_reset_non_alive_hitbox_size() -> None:
         owner=OwnerRef.from_creature(0),
         dt=0.016,
         players=[],
-        rand=lambda: 0,
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
     assert killed is False
@@ -127,7 +127,7 @@ def test_lethal_shock_damage_spawns_armored_debris_in_damage_path() -> None:
         flags=CreatureFlags.RANGED_ATTACK_SHOCK,
         pos=Vec2(10.0, 20.0),
     )
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
 
     killed = creature_apply_damage(
@@ -138,7 +138,7 @@ def test_lethal_shock_damage_spawns_armored_debris_in_damage_path() -> None:
         owner=OwnerRef.from_creature(0),
         dt=0.016,
         players=[],
-        rand=rng,
+        rng=rng,
         effects=state.effects,
         detail_preset=5,
     )

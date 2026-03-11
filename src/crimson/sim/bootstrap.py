@@ -5,6 +5,8 @@ import msgspec
 from grim.rand import CrandLike
 
 from ..terrain_slots import (
+    DEFAULT_TERRAIN_SLOTS,
+    UNLOCK_TERRAIN_SLOTS,
     TerrainSlotTriplet,
     choose_unlock_terrain_slots,
 )
@@ -45,6 +47,20 @@ class TerrainPreludeResult(msgspec.Struct, frozen=True):
         return int(self.selection_draws) + int(self.stamping_draws)
 
 
+def _selection_draws_for_result(*, unlock_index: int, terrain_slots: TerrainSlotTriplet) -> int:
+    draws = 0
+    chosen = tuple(int(slot) for slot in terrain_slots)
+    for threshold, slots in UNLOCK_TERRAIN_SLOTS.items():
+        if int(unlock_index) < int(threshold):
+            continue
+        draws += 1
+        if chosen == tuple(int(slot) for slot in slots):
+            break
+        if chosen == tuple(int(slot) for slot in DEFAULT_TERRAIN_SLOTS):
+            continue
+    return int(draws)
+
+
 def _advance_terrain_stamping_rng(
     rng: CrandLike,
     *,
@@ -71,14 +87,11 @@ def run_unlock_terrain_prelude(
     """
 
     seed_before = int(rng.state)
-    selection_draws = 0
-
-    def _rand() -> int:
-        nonlocal selection_draws
-        selection_draws += 1
-        return int(rng.rand())
-
-    terrain_slots = choose_unlock_terrain_slots(unlock_index=int(unlock_index), rand=_rand)
+    terrain_slots = choose_unlock_terrain_slots(unlock_index=int(unlock_index), rng=rng)
+    selection_draws = _selection_draws_for_result(
+        unlock_index=int(unlock_index),
+        terrain_slots=terrain_slots,
+    )
     terrain_seed = int(rng.state)
     stamping_draws = _advance_terrain_stamping_rng(
         rng,
@@ -94,6 +107,7 @@ def run_unlock_terrain_prelude(
         selection_draws=int(selection_draws),
         stamping_draws=int(stamping_draws),
     )
+
 
 def run_explicit_terrain_prelude(
     rng: CrandLike,

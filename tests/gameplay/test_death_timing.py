@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from typing import cast
 
 import pytest
@@ -18,7 +18,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
-from tests.support.helpers import MockCrand, assert_rng_progression
+from tests.support.helpers import ScriptedCrand, assert_rng_progression
 
 
 def test_projectile_kill_awards_xp_same_step() -> None:
@@ -136,10 +136,11 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
     def _fake_plan(
         deaths: Sequence[CreatureDeath] | tuple[object, ...],
         *,
-        rand: Callable[[], int],
+        rng: object,
     ) -> list[str]:
-        _ = rand
+        _ = rng
         return ["death"] if deaths else []
+
     plan_death_sfx = mocker.patch.object(world_state_mod, "plan_death_sfx_keys", side_effect=_fake_plan)
     events = world.step(
         0.1,
@@ -189,9 +190,9 @@ def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -
     def _fake_plan(
         deaths: Sequence[CreatureDeath] | tuple[object, ...],
         *,
-        rand: Callable[[], int],
+        rng: object,
     ) -> list[str]:
-        _ = rand
+        _ = rng
         death_planned["value"] = bool(deaths)
         return ["death"] if deaths else []
 
@@ -260,7 +261,7 @@ def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
         return CreatureUpdateResult(deaths=(death,), sfx=("plague_contact",))
 
     mocker.patch.object(world.creatures, "update", side_effect=_fake_update)
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world.state.rng = rng
     before_calls = rng.calls
     before_state = rng.state
@@ -285,8 +286,8 @@ def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
         before_state=before_state,
         expected_draws=0,
         expected_after_state=0,
-        expected_hash="da39a3ee5e6b4b0d",
     )
+    assert rng.values_since(before_calls) == []
     assert events.sfx == ["plague_contact"]
 
 
@@ -326,7 +327,7 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
         return []
 
     mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world.state.rng = rng
     before_calls = rng.calls
     before_state = rng.state
@@ -352,8 +353,8 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
         before_state=before_state,
         expected_draws=21,
         expected_after_state=0,
-        expected_hash="e6c537e095f1bfbe",
     )
+    assert rng.values_since(before_calls) == [0] * 21
 
 
 def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
@@ -383,7 +384,7 @@ def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
         return CreatureUpdateResult(deaths=deaths, sfx=())
 
     mocker.patch.object(world.creatures, "update", side_effect=_fake_update)
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world.state.rng = rng
     before_calls = rng.calls
     before_state = rng.state
@@ -408,8 +409,8 @@ def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
         before_state=before_state,
         expected_draws=7,
         expected_after_state=0,
-        expected_hash="06cb3d45c9fff74c",
     )
+    assert rng.values_since(before_calls) == [0] * 7
 
 
 def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
@@ -446,7 +447,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
         return [hit]
 
     mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world.state.rng = rng
     before_calls = rng.calls
     before_state = rng.state
@@ -470,8 +471,8 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
         before_state=before_state,
         expected_draws=2,
         expected_after_state=0,
-        expected_hash="e499ce7a21cd46c8",
     )
+    assert rng.values_since(before_calls) == [0] * 2
     assert events.hit_sfx == []
     assert events.trigger_game_tune is True
 

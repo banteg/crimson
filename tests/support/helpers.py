@@ -1,20 +1,43 @@
 from __future__ import annotations
 
-import hashlib
 from collections.abc import Sequence
-from typing import Any, Literal, Protocol
+from enum import Enum, auto
+from typing import Any, Protocol
 
 import pytest
 
-from grim.rand import CallerStatic
-
-MockCrandFallback = Literal["repeat_last", "zero", "cycle"]
+from grim.rand import CallerStatic, RngDrawRecord
 
 
-class MockCrand:
-    """Deterministic test double for `CrandLike` that can be fixed or scripted."""
+class ScriptedCrandFallback(Enum):
+    RAISE = auto()
+    REPEAT_LAST = auto()
+    ZERO = auto()
 
-    def __init__(self, values: int | Sequence[int] | None = None, *, fallback: MockCrandFallback = "repeat_last") -> None:
+
+class _ScriptedCrandState:
+    __slots__ = ("fallback", "index", "records", "state", "values")
+
+    def __init__(self, values: Sequence[int], fallback: ScriptedCrandFallback) -> None:
+        self.values = [int(value) for value in values]
+        self.fallback = fallback
+        self.index = 0
+        self.records: list[RngDrawRecord] = []
+        self.state = 0
+
+
+class ScriptedCrand:
+    """Deterministic scripted `CrandLike` for tests that need exact draw sequences."""
+
+    Fallback = ScriptedCrandFallback
+
+    def __init__(
+        self,
+        values: int | Sequence[int] | None = None,
+        *,
+        fallback: ScriptedCrandFallback = ScriptedCrandFallback.RAISE,
+        _shared: _ScriptedCrandState | None = None,
+    ) -> None:
         if values is None:
             normalized: list[int] = []
         elif isinstance(values, int):
@@ -22,58 +45,67 @@ class MockCrand:
         else:
             normalized = [int(value) for value in values]
 
-        self._values = normalized
-        self._fallback = fallback
-        self._index = 0
-        self._state = 0
-        self.calls = 0
-        self._history: list[int] = []
+        self._shared = _ScriptedCrandState(normalized, fallback) if _shared is None else _shared
 
     @property
     def state(self) -> int:
-        return int(self._state)
+        return int(self._shared.state)
+
+    @property
+    def calls(self) -> int:
+        return len(self._shared.records)
+
+    @property
+    def records(self) -> tuple[RngDrawRecord, ...]:
+        return tuple(self._shared.records)
 
     def srand(self, seed: int) -> None:
-        self._state = int(seed) & 0xFFFFFFFF
-        self._index = 0
-        self.calls = 0
-        self._history.clear()
+        self._shared.state = int(seed) & 0xFFFFFFFF
+        self._shared.index = 0
+        self._shared.records.clear()
 
     def rand(self, *, caller: CallerStatic = None) -> int:
-        _ = caller
-        value: int
-        if self._index < len(self._values):
-            value = int(self._values[self._index])
-            self._index += 1
-        elif self._fallback == "cycle" and self._values:
-            value = int(self._values[self._index % len(self._values)])
-            self._index += 1
-        elif self._fallback == "repeat_last" and self._values:
-            value = int(self._values[-1])
-        else:
-            value = 0
+        state_before = int(self._shared.state)
+        values = self._shared.values
+        index = int(self._shared.index)
+        fallback = self._shared.fallback
 
-        self.calls += 1
-        self._history.append(int(value))
-        self._state = int(value) & 0xFFFFFFFF
+        value: int
+        if index < len(values):
+            value = int(values[index])
+            self._shared.index = index + 1
+        elif fallback is ScriptedCrandFallback.REPEAT_LAST and values:
+            value = int(values[-1])
+        elif fallback is ScriptedCrandFallback.ZERO:
+            value = 0
+        else:
+            raise IndexError("scripted RNG exhausted")
+
+        state_after = int(value) & 0xFFFFFFFF
+        self._shared.state = state_after
+        self._shared.records.append(
+            RngDrawRecord(
+                state_before=state_before,
+                state_after=state_after,
+                value=int(value),
+                caller=caller,
+            ),
+        )
         return int(value)
 
-    def __call__(self, *, caller: CallerStatic = None) -> int:
-        return self.rand(caller=caller)
-
-    def draw_hash(self, *, start_call: int = 0) -> str:
+    def records_since(self, start_call: int = 0) -> list[RngDrawRecord]:
         start = max(0, int(start_call))
-        values = self._history[start:]
-        payload = ",".join(str(int(value) & 0xFFFFFFFF) for value in values)
-        return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:16]
+        return list(self._shared.records[start:])
+
+    def values_since(self, start_call: int = 0) -> list[int]:
+        return [record.value for record in self.records_since(start_call)]
 
 
 class SupportsRngProgression(Protocol):
     calls: int
 
     @property
-    def state(self) -> int:
-        ...
+    def state(self) -> int: ...
 
 
 def assert_float_close(actual: Any, expected: Any) -> None:
@@ -88,7 +120,6 @@ def assert_rng_progression(
     expected_draws: int | None = None,
     min_draws: int | None = None,
     expected_after_state: int | None = None,
-    expected_hash: str | None = None,
 ) -> None:
     assert rng.calls >= int(before_calls)
     draws = int(rng.calls) - int(before_calls)
@@ -102,7 +133,3 @@ def assert_rng_progression(
         assert after_state == int(expected_after_state)
     elif draws == 0:
         assert after_state == int(before_state)
-    if expected_hash is not None:
-        draw_hash = getattr(rng, "draw_hash", None)
-        assert callable(draw_hash), "expected_hash requires rng.draw_hash(...) support"
-        assert draw_hash(start_call=int(before_calls)) == str(expected_hash)

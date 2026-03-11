@@ -7,7 +7,7 @@ from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.helpers import assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 @pytest.mark.parametrize(
@@ -31,12 +31,12 @@ def test_player_take_damage_dodge_perks(
     expected_applied: float,
     expected_health: float,
 ) -> None:
-    state = GameplayState()
+    state = GameplayState(rng=ScriptedCrand(rand_val, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0)
     for perk_id, count in perk_counts.items():
         player.perk_counts[int(perk_id)] = count
 
-    applied = player_take_damage(state, player, 10.0, rand=lambda: rand_val)
+    applied = player_take_damage(state, player, 10.0)
 
     assert applied == expected_applied
     assert player.health == expected_health
@@ -55,10 +55,10 @@ def test_player_take_damage_low_health_timer_behavior(
     expected_health: float,
     expected_low_health_timer: float,
 ) -> None:
-    state = GameplayState()
+    state = GameplayState(rng=ScriptedCrand(3, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=start_health)
 
-    applied = player_take_damage(state, player, 10.0, rand=lambda: 3)
+    applied = player_take_damage(state, player, 10.0)
 
     assert applied == 10.0
     assert player.health == expected_health
@@ -66,10 +66,10 @@ def test_player_take_damage_low_health_timer_behavior(
 
 
 def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
-    state = GameplayState()
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=5.0, death_timer=16.0)
 
-    applied = player_take_damage(state, player, 10.0, dt=0.1, rand=lambda: 0)
+    applied = player_take_damage(state, player, 10.0, dt=0.1)
 
     assert applied == 10.0
     assert player.health == -5.0
@@ -77,11 +77,11 @@ def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
 
 
 def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None:
-    state = GameplayState(preserve_bugs=False)
+    state = GameplayState(preserve_bugs=False, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0, death_timer=16.0)
     player.perk_counts[int(PerkId.HIGHLANDER)] = 1
 
-    applied = player_take_damage(state, player, 10.0, dt=0.1, rand=lambda: 0)
+    applied = player_take_damage(state, player, 10.0, dt=0.1)
 
     assert applied == 100.0
     assert player.health == 0.0
@@ -90,11 +90,11 @@ def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None
 
 
 def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> None:
-    state = GameplayState(preserve_bugs=True)
+    state = GameplayState(preserve_bugs=True, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0, death_timer=16.0)
     player.perk_counts[int(PerkId.HIGHLANDER)] = 1
 
-    applied = player_take_damage(state, player, 10.0, dt=0.1, rand=lambda: 0)
+    applied = player_take_damage(state, player, 10.0, dt=0.1)
 
     assert applied == 100.0
     assert player.health == 0.0
@@ -103,32 +103,32 @@ def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> N
 
 
 def test_player_take_damage_thick_skinned_uses_native_damage_scale_constant() -> None:
-    state = GameplayState()
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=50.90475845336914)
     player.perk_counts[int(PerkId.THICK_SKINNED)] = 1
 
-    applied = player_take_damage(state, player, 5.238095283508301, rand=lambda: 0)
+    applied = player_take_damage(state, player, 5.238095283508301)
 
     assert_float_close(applied, 3.4885711669921875)
     assert_float_close(player.health, 47.41618728637695)
 
 
 def test_player_take_damage_sets_survival_damage_seen_even_when_shielded() -> None:
-    state = GameplayState()
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0, shield_timer=1.0)
 
-    applied = player_take_damage(state, player, 10.0, rand=lambda: 0)
+    applied = player_take_damage(state, player, 10.0)
 
     assert applied == 0.0
     assert state.survival_reward_damage_seen is True
 
 
 def test_player_take_damage_uses_target_player_alive_guard_by_default() -> None:
-    state = GameplayState(preserve_bugs=False)
+    state = GameplayState(preserve_bugs=False, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player1 = PlayerState(index=0, pos=Vec2(), health=-1.0)
     player2 = PlayerState(index=1, pos=Vec2(), health=5.0, death_timer=16.0)
 
-    applied = player_take_damage(state, player2, 10.0, dt=0.1, rand=lambda: 0, players=[player1, player2])
+    applied = player_take_damage(state, player2, 10.0, dt=0.1, players=[player1, player2])
 
     assert applied == 10.0
     assert player2.health == -5.0
@@ -137,11 +137,11 @@ def test_player_take_damage_uses_target_player_alive_guard_by_default() -> None:
 
 
 def test_player_take_damage_preserve_bugs_uses_player1_alive_guard() -> None:
-    state = GameplayState(preserve_bugs=True)
+    state = GameplayState(preserve_bugs=True, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player1 = PlayerState(index=0, pos=Vec2(), health=-1.0)
     player2 = PlayerState(index=1, pos=Vec2(), health=5.0, death_timer=16.0)
 
-    applied = player_take_damage(state, player2, 10.0, dt=0.1, rand=lambda: 0, players=[player1, player2])
+    applied = player_take_damage(state, player2, 10.0, dt=0.1, players=[player1, player2])
 
     assert applied == 10.0
     assert player2.health == -5.0

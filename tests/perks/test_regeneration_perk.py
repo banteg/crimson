@@ -7,7 +7,7 @@ from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.helpers import MockCrand, assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 @pytest.mark.parametrize(
@@ -32,7 +32,7 @@ def test_perks_update_effects_regeneration_single_player_variants(
     expected_health: float,
 ) -> None:
     state = GameplayState()
-    state.rng = MockCrand(rng_value)
+    state.rng = ScriptedCrand(rng_value)
     state.preserve_bugs = preserve_bugs
 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)
@@ -62,7 +62,7 @@ def test_perks_update_effects_regeneration_multiplayer_targeting(
     expected_player1_health: float,
 ) -> None:
     state = GameplayState()
-    state.rng = MockCrand(1)
+    state.rng = ScriptedCrand(1)
     state.preserve_bugs = preserve_bugs
 
     player0 = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)
