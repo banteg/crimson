@@ -497,7 +497,8 @@ def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> 
 
 def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     pool = ProjectilePool(size=8)
-    state = GameplayState(projectiles=pool)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_cough_timer=1.95)
     player.perk_counts[int(PerkId.FIRE_CAUGH)] = 1
 
@@ -507,11 +508,18 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     assert owners == {OwnerRef.from_local_player(0)}
     type_ids = _active_type_ids(pool)
     assert type_ids == [int(ProjectileTemplateId.FIRE_BULLETS)]
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_DIR,
+        RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_MAG,
+        RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
+        RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET,
+    ]
 
 
 def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
     pool = ProjectilePool(size=8)
-    state = GameplayState(projectiles=pool)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
@@ -536,6 +544,12 @@ def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
     expected = before_pos + Vec2.from_heading(0.0).rotated(-0.150915) * 16.0
     assert_float_close(float(entry.pos.x), float(f32(float(expected.x))))
     assert_float_close(float(entry.pos.y), float(f32(float(expected.y))))
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_DIR,
+        RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_MAG,
+        RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
+        RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET,
+    ]
 
 
 def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:

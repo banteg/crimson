@@ -6,6 +6,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 
 from ...projectiles.types import ProjectileTemplateId
+from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
@@ -32,10 +33,14 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     aim = ctx.player.aim
     dist = (aim - origin_pos).length()
     max_offset = dist * float(ctx.player.spread_heat) * 0.5
-    dir_angle = float(ctx.state.rng.rand() & 0x1FF) * (
-        math.tau / 512.0
+    dir_roll = ctx.state.rng.rand(
+        caller=RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_DIR,
     )
-    mag = float(ctx.state.rng.rand() & 0x1FF) * (1.0 / 512.0)
+    dir_angle = float(dir_roll & 0x1FF) * (math.tau / 512.0)
+    mag_roll = ctx.state.rng.rand(
+        caller=RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_MAG,
+    )
+    mag = float(mag_roll & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
     jitter = aim + Vec2.from_angle(dir_angle) * offset
     angle = (jitter - origin_pos).to_heading()
@@ -53,9 +58,10 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     ctx.state.sprite_effects.spawn(pos=muzzle, vel=vel, scale=1.0, color=RGBA(0.5, 0.5, 0.5, 0.413))
 
     ctx.player.fire_cough_timer -= ctx.state.perk_intervals.fire_cough
-    ctx.state.perk_intervals.fire_cough = (
-        float(ctx.state.rng.rand() % 4) + 2.0
+    interval_roll = ctx.state.rng.rand(
+        caller=RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET,
     )
+    ctx.state.perk_intervals.fire_cough = float(interval_roll % 4) + 2.0
 
 
 HOOKS = PerkHooks(

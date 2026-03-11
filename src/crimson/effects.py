@@ -426,14 +426,14 @@ class SpriteEffectPool:
         if idx is None:
             if not self._entries:
                 raise ValueError("Sprite effect pool has zero entries")
-            idx = self._rng.rand() % len(self._entries)
+            idx = self._rng.rand(caller=RngCallerStatic.FX_SPAWN_SPRITE_ALLOC) % len(self._entries)
 
         entry = self._entries[idx]
         entry.active = True
         entry.color = RGBA() if color is None else color
         entry.rotation = (
             float(
-                self._rng.rand() % 628,
+                self._rng.rand(caller=RngCallerStatic.FX_SPAWN_SPRITE_ROTATION) % 628,
             )
             * 0.01
         )
