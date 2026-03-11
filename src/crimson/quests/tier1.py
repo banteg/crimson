@@ -119,14 +119,14 @@ def build_1_3_target_practice(
     ctx: QuestContext,
     rng: CrandLike,
 ) -> list[SpawnEntry]:
-    caller_static_u32 = RngCallerStatic.QUEST_1_3_BUILDER
+    caller = RngCallerStatic.QUEST_1_3_BUILDER
     center = center_point(ctx.width, ctx.height)
     entries: list[SpawnEntry] = []
     trigger = 2000
     step = 2000
     while True:
-        angle = random_angle(rng, caller_static_u32=caller_static_u32)
-        radius = (int(rng.rand(caller_static_u32=caller_static_u32) % 8) + 2) * 0x20
+        angle = random_angle(rng, caller=caller)
+        radius = (int(rng.rand(caller=caller) % 8) + 2) * 0x20
         point = center + Vec2.from_angle(angle) * radius
         heading = heading_from_center(point, center)
         entries.append(
@@ -268,7 +268,7 @@ def build_1_6_the_random_factor(
     ctx: QuestContext,
     rng: CrandLike,
 ) -> list[SpawnEntry]:
-    caller_static_u32 = RngCallerStatic.QUEST_1_6_BUILDER
+    caller = RngCallerStatic.QUEST_1_6_BUILDER
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
@@ -292,7 +292,7 @@ def build_1_6_the_random_factor(
                 count=6,
             ),
         )
-        if int(rng.rand(caller_static_u32=caller_static_u32) % 5) == 3:
+        if int(rng.rand(caller=caller) % 5) == 3:
             entries.append(
                 spawn(
                     Vec2(center.x, edges.bottom.y),

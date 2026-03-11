@@ -66,13 +66,13 @@ _NAME_PARTS: tuple[str, ...] = (
 )
 
 
-def _rand(rng: CrandLike, *, caller_static_u32: CallerStatic = None) -> int:
-    return int(rng.rand(caller_static_u32=caller_static_u32))
+def _rand(rng: CrandLike, *, caller: CallerStatic = None) -> int:
+    return int(rng.rand(caller=caller))
 
 
-def typo_name_part(rng: CrandLike, *, allow_the: bool, caller_static_u32: CallerStatic = None) -> str:
+def typo_name_part(rng: CrandLike, *, allow_the: bool, caller: CallerStatic = None) -> str:
     mod = 52 if allow_the else 51
-    idx = _rand(rng, caller_static_u32=caller_static_u32) % mod
+    idx = _rand(rng, caller=caller) % mod
     if idx == 39:
         return "nerd"
     return _NAME_PARTS[idx]
@@ -83,7 +83,7 @@ def typo_build_name(
     *,
     score_xp: int,
     unique_words: Sequence[str] | None = None,
-    caller_static_u32: CallerStatic = None,
+    caller: CallerStatic = None,
 ) -> str:
     score_xp = int(score_xp)
     if unique_words:
@@ -91,47 +91,47 @@ def typo_build_name(
             rng,
             score_xp=score_xp,
             unique_words=unique_words,
-            caller_static_u32=caller_static_u32,
+            caller=caller,
         )
     if score_xp > 120:
-        if _rand(rng, caller_static_u32=caller_static_u32) % 100 < 10 and unique_words:
-            return str(unique_words[_rand(rng, caller_static_u32=caller_static_u32) % len(unique_words)])
-        if _rand(rng, caller_static_u32=caller_static_u32) % 100 < 80:
+        if _rand(rng, caller=caller) % 100 < 10 and unique_words:
+            return str(unique_words[_rand(rng, caller=caller) % len(unique_words)])
+        if _rand(rng, caller=caller) % 100 < 80:
             return "".join(
                 [
-                    typo_name_part(rng, allow_the=True, caller_static_u32=caller_static_u32),
-                    typo_name_part(rng, allow_the=False, caller_static_u32=caller_static_u32),
-                    typo_name_part(rng, allow_the=False, caller_static_u32=caller_static_u32),
-                    typo_name_part(rng, allow_the=False, caller_static_u32=caller_static_u32),
+                    typo_name_part(rng, allow_the=True, caller=caller),
+                    typo_name_part(rng, allow_the=False, caller=caller),
+                    typo_name_part(rng, allow_the=False, caller=caller),
+                    typo_name_part(rng, allow_the=False, caller=caller),
                 ],
             )
 
-    if (score_xp > 80 and _rand(rng, caller_static_u32=caller_static_u32) % 100 < 80) or (
-        score_xp > 60 and _rand(rng, caller_static_u32=caller_static_u32) % 100 < 40
+    if (score_xp > 80 and _rand(rng, caller=caller) % 100 < 80) or (
+        score_xp > 60 and _rand(rng, caller=caller) % 100 < 40
     ):
         return "".join(
             [
-                typo_name_part(rng, allow_the=True, caller_static_u32=caller_static_u32),
-                typo_name_part(rng, allow_the=False, caller_static_u32=caller_static_u32),
-                typo_name_part(rng, allow_the=False, caller_static_u32=caller_static_u32),
+                typo_name_part(rng, allow_the=True, caller=caller),
+                typo_name_part(rng, allow_the=False, caller=caller),
+                typo_name_part(rng, allow_the=False, caller=caller),
             ],
         )
 
-    if (score_xp > 40 and _rand(rng, caller_static_u32=caller_static_u32) % 100 < 80) or (
-        score_xp > 20 and _rand(rng, caller_static_u32=caller_static_u32) % 100 < 40
+    if (score_xp > 40 and _rand(rng, caller=caller) % 100 < 80) or (
+        score_xp > 20 and _rand(rng, caller=caller) % 100 < 40
     ):
         return "".join(
             [
-                typo_name_part(rng, allow_the=True, caller_static_u32=caller_static_u32),
-                typo_name_part(rng, allow_the=False, caller_static_u32=caller_static_u32),
+                typo_name_part(rng, allow_the=True, caller=caller),
+                typo_name_part(rng, allow_the=False, caller=caller),
             ],
         )
 
-    return typo_name_part(rng, allow_the=False, caller_static_u32=caller_static_u32)
+    return typo_name_part(rng, allow_the=False, caller=caller)
 
 
-def _pick_word(rng: CrandLike, words: Sequence[str], *, caller_static_u32: CallerStatic = None) -> str:
-    return str(words[_rand(rng, caller_static_u32=caller_static_u32) % len(words)])
+def _pick_word(rng: CrandLike, words: Sequence[str], *, caller: CallerStatic = None) -> str:
+    return str(words[_rand(rng, caller=caller) % len(words)])
 
 
 def _pick_unique_words(
@@ -139,17 +139,17 @@ def _pick_unique_words(
     words: Sequence[str],
     count: int,
     *,
-    caller_static_u32: CallerStatic = None,
+    caller: CallerStatic = None,
 ) -> list[str]:
     if count <= 1:
-        return [_pick_word(rng, words, caller_static_u32=caller_static_u32)]
+        return [_pick_word(rng, words, caller=caller)]
     if len(words) <= count:
-        return [_pick_word(rng, words, caller_static_u32=caller_static_u32) for _ in range(count)]
+        return [_pick_word(rng, words, caller=caller) for _ in range(count)]
 
     picked: list[str] = []
     used: set[int] = set()
     while len(picked) < count:
-        idx = _rand(rng, caller_static_u32=caller_static_u32) % len(words)
+        idx = _rand(rng, caller=caller) % len(words)
         if idx in used:
             continue
         used.add(idx)
@@ -162,26 +162,26 @@ def _typo_build_custom_name(
     *,
     score_xp: int,
     unique_words: Sequence[str],
-    caller_static_u32: CallerStatic = None,
+    caller: CallerStatic = None,
 ) -> str:
     score_xp = int(score_xp)
     if score_xp > 120:
-        if _rand(rng, caller_static_u32=caller_static_u32) % 100 < 10:
-            return _pick_word(rng, unique_words, caller_static_u32=caller_static_u32)
-        if _rand(rng, caller_static_u32=caller_static_u32) % 100 < 80:
-            return "".join(_pick_unique_words(rng, unique_words, 4, caller_static_u32=caller_static_u32))
+        if _rand(rng, caller=caller) % 100 < 10:
+            return _pick_word(rng, unique_words, caller=caller)
+        if _rand(rng, caller=caller) % 100 < 80:
+            return "".join(_pick_unique_words(rng, unique_words, 4, caller=caller))
 
-    if (score_xp > 80 and _rand(rng, caller_static_u32=caller_static_u32) % 100 < 80) or (
-        score_xp > 60 and _rand(rng, caller_static_u32=caller_static_u32) % 100 < 40
+    if (score_xp > 80 and _rand(rng, caller=caller) % 100 < 80) or (
+        score_xp > 60 and _rand(rng, caller=caller) % 100 < 40
     ):
-        return "".join(_pick_unique_words(rng, unique_words, 3, caller_static_u32=caller_static_u32))
+        return "".join(_pick_unique_words(rng, unique_words, 3, caller=caller))
 
-    if (score_xp > 40 and _rand(rng, caller_static_u32=caller_static_u32) % 100 < 80) or (
-        score_xp > 20 and _rand(rng, caller_static_u32=caller_static_u32) % 100 < 40
+    if (score_xp > 40 and _rand(rng, caller=caller) % 100 < 80) or (
+        score_xp > 20 and _rand(rng, caller=caller) % 100 < 40
     ):
-        return "".join(_pick_unique_words(rng, unique_words, 2, caller_static_u32=caller_static_u32))
+        return "".join(_pick_unique_words(rng, unique_words, 2, caller=caller))
 
-    return _pick_word(rng, unique_words, caller_static_u32=caller_static_u32)
+    return _pick_word(rng, unique_words, caller=caller)
 
 
 def load_typo_dictionary(path: Path) -> list[str]:
@@ -253,7 +253,7 @@ class CreatureNameTable(msgspec.Struct):
         score_xp: int,
         active_mask: Sequence[bool],
         unique_words: Sequence[str] | None = None,
-        caller_static_u32: CallerStatic = None,
+        caller: CallerStatic = None,
     ) -> str:
         idx = int(creature_idx)
         if not (0 <= idx < len(self.names)):
@@ -266,7 +266,7 @@ class CreatureNameTable(msgspec.Struct):
                 rng,
                 score_xp=score_xp,
                 unique_words=unique_words,
-                caller_static_u32=caller_static_u32,
+                caller=caller,
             )
             if not self.is_unique(name, exclude_idx=idx, active_mask=active_mask):
                 attempts += 1

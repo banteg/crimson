@@ -27,7 +27,7 @@ def _bonus_id_from_roll(
     roll: int,
     rng: CrandLike,
     *,
-    caller_static_u32: CallerStatic = RngCallerStatic.BONUS_PICK_RANDOM_TYPE,
+    caller: CallerStatic = RngCallerStatic.BONUS_PICK_RANDOM_TYPE,
 ) -> BonusId:
     # Mirrors `bonus_pick_random_type` (0x412470) mapping:
     # - roll = rand() % 162 + 1  (1..162)
@@ -42,7 +42,7 @@ def _bonus_id_from_roll(
         return BonusId.POINTS
 
     if roll == 14:
-        if (rng.rand(caller_static_u32=caller_static_u32) & 0x3F) == 0:
+        if (rng.rand(caller=caller) & 0x3F) == 0:
             return BonusId.ENERGIZER
         return BonusId.WEAPON
 
@@ -90,14 +90,14 @@ def _bonus_pick_suppressed(
 
 
 def bonus_pick_random_type(pool: BonusPool, state: GameplayState, players: list[PlayerState]) -> BonusId:
-    caller_static_u32 = RngCallerStatic.BONUS_PICK_RANDOM_TYPE
+    caller = RngCallerStatic.BONUS_PICK_RANDOM_TYPE
     has_fire_bullets_drop = any(
         entry.bonus_id == BonusId.FIRE_BULLETS and not entry.picked for entry in pool.entries
     )
 
     for _ in range(101):
-        roll = int(state.rng.rand(caller_static_u32=caller_static_u32)) % 162 + 1
-        bonus_id = _bonus_id_from_roll(roll, state.rng, caller_static_u32=caller_static_u32)
+        roll = int(state.rng.rand(caller=caller)) % 162 + 1
+        bonus_id = _bonus_id_from_roll(roll, state.rng, caller=caller)
         if bonus_id == BonusId.UNUSED:
             continue
         if _bonus_pick_suppressed(

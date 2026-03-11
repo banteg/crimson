@@ -10,7 +10,7 @@ from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
-_PLAYER_UPDATE_CALLER_STATIC_U32 = RngCallerStatic.PLAYER_UPDATE
+_PLAYER_UPDATE_CALLER = RngCallerStatic.PLAYER_UPDATE
 
 
 def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
@@ -41,7 +41,7 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
 
     ctx.player.hot_tempered_timer -= ctx.state.perk_intervals.hot_tempered
     ctx.state.perk_intervals.hot_tempered = (
-        float(ctx.state.rng.rand(caller_static_u32=_PLAYER_UPDATE_CALLER_STATIC_U32) % 8) + 2.0
+        float(ctx.state.rng.rand(caller=_PLAYER_UPDATE_CALLER) % 8) + 2.0
     )
 
 

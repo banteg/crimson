@@ -63,7 +63,7 @@ class RngStreamRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     value_15: int
     state_before_u32: int
     state_after_u32: int
-    caller_static_u32: int | None = None
+    caller: int | None = None
 
 
 class TimingSampleRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):

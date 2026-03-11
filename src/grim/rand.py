@@ -14,7 +14,7 @@ CRT_RAND_INC = 2531011
 RngTraceSink = Callable[[int, int, int, CallerStatic], None]
 
 
-class MissingRngCallerStaticError(ValueError):
+class MissingRngCallerError(ValueError):
     """Raised when strict RNG tracing sees an untagged gameplay draw."""
 
 
@@ -27,14 +27,14 @@ class CrandLike(Protocol):
 
     def srand(self, seed: int) -> None: ...
 
-    def rand(self, *, caller_static_u32: CallerStatic = None) -> int: ...
+    def rand(self, *, caller: CallerStatic = None) -> int: ...
 
 
 @runtime_checkable
 class RandDrawLike(Protocol):
     """Callable RNG source that accepts optional caller provenance."""
 
-    def __call__(self, *, caller_static_u32: CallerStatic = None) -> int: ...
+    def __call__(self, *, caller: CallerStatic = None) -> int: ...
 
 
 class CrtRand:
@@ -45,14 +45,14 @@ class CrtRand:
       return (seed >> 16) & 0x7fff
     """
 
-    __slots__ = ("_state", "_trace_require_caller_static", "_trace_sink")
+    __slots__ = ("_state", "_trace_require_caller", "_trace_sink")
 
     def __init__(self, seed: int | None = None) -> None:
         if seed is None:
             seed = int.from_bytes(os.urandom(4), "little")
         self._state = seed & 0xFFFFFFFF
         self._trace_sink: RngTraceSink | None = None
-        self._trace_require_caller_static = False
+        self._trace_require_caller = False
 
     @property
     def state(self) -> int:
@@ -66,29 +66,29 @@ class CrtRand:
         return self._trace_sink
 
     @property
-    def trace_require_caller_static(self) -> bool:
-        return bool(self._trace_require_caller_static)
+    def trace_require_caller(self) -> bool:
+        return bool(self._trace_require_caller)
 
     def set_trace_sink(
         self,
         sink: RngTraceSink | None,
         *,
-        require_caller_static: bool = False,
+        require_caller: bool = False,
     ) -> None:
         self._trace_sink = sink
-        self._trace_require_caller_static = bool(require_caller_static)
+        self._trace_require_caller = bool(require_caller)
 
-    def rand(self, *, caller_static_u32: CallerStatic = None) -> int:
+    def rand(self, *, caller: CallerStatic = None) -> int:
         state_before = self._state
         self._state = (self._state * CRT_RAND_MULT + CRT_RAND_INC) & 0xFFFFFFFF
         value = (self._state >> 16) & 0x7FFF
-        if caller_static_u32 is not None and not (0 <= caller_static_u32 <= 0xFFFFFFFF):
-            raise ValueError(f"caller_static_u32 must be a uint32, got {caller_static_u32}")
+        if caller is not None and not (0 <= caller <= 0xFFFFFFFF):
+            raise ValueError(f"caller must be a uint32, got {caller}")
         trace_sink = self._trace_sink
         if trace_sink is not None:
-            if self._trace_require_caller_static and caller_static_u32 is None:
-                raise MissingRngCallerStaticError("strict RNG trace requires caller_static_u32")
-            trace_sink(int(state_before), int(self._state), int(value), caller_static_u32)
+            if self._trace_require_caller and caller is None:
+                raise MissingRngCallerError("strict RNG trace requires caller")
+            trace_sink(int(state_before), int(self._state), int(value), caller)
         return value
 
 

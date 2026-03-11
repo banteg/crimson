@@ -818,9 +818,9 @@ def randf(
     scale: float,
     base: float,
     *,
-    caller_static_u32: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+    caller: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
 ) -> float:
-    return float(rng.rand(caller_static_u32=caller_static_u32) % mod) * scale + base
+    return float(rng.rand(caller=caller) % mod) * scale + base
 
 
 def apply_size_health_reward(
@@ -848,9 +848,9 @@ def apply_random_move_speed(
     scale: float,
     base: float,
     *,
-    caller_static_u32: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+    caller: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
 ) -> None:
-    c.move_speed = randf(rng, mod, scale, base, caller_static_u32=caller_static_u32)
+    c.move_speed = randf(rng, mod, scale, base, caller=caller)
 
 
 def apply_size_move_speed(c: CreatureInit, size: float, scale: float, base: float) -> None:
@@ -950,7 +950,7 @@ class PlanBuilder(msgspec.Struct):
     spawn_slots: list[SpawnSlotInit]
     effects: list[BurstEffect]
     primary: int = 0
-    caller_static_u32: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE
+    caller: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE
 
     @classmethod
     def start(
@@ -961,20 +961,20 @@ class PlanBuilder(msgspec.Struct):
         rng: CrandLike,
         env: SpawnEnv,
         *,
-        caller_static_u32: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+        caller: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
     ) -> tuple["PlanBuilder", float]:
         # creature_alloc_slot() for the base creature.
-        creatures: list[CreatureInit] = [alloc_creature(template_id, pos, rng, caller_static_u32=caller_static_u32)]
+        creatures: list[CreatureInit] = [alloc_creature(template_id, pos, rng, caller=caller)]
         spawn_slots: list[SpawnSlotInit] = []
         effects: list[BurstEffect] = []
 
         # `heading == RANDOM_HEADING_SENTINEL` uses a randomized heading.
         final_heading = heading
         if final_heading == RANDOM_HEADING_SENTINEL:
-            final_heading = float(rng.rand(caller_static_u32=caller_static_u32) % 628) * 0.01
+            final_heading = float(rng.rand(caller=caller) % 628) * 0.01
 
         # Base initialization always consumes one rand() for a transient heading value.
-        creatures[0].heading = float(rng.rand(caller_static_u32=caller_static_u32) % 314) * 0.01
+        creatures[0].heading = float(rng.rand(caller=caller) % 314) * 0.01
 
         return cls(
             template_id=template_id,
@@ -985,7 +985,7 @@ class PlanBuilder(msgspec.Struct):
             spawn_slots=spawn_slots,
             effects=effects,
             primary=0,
-            caller_static_u32=caller_static_u32,
+            caller=caller,
         ), final_heading
 
     @property
@@ -1003,7 +1003,7 @@ class PlanBuilder(msgspec.Struct):
         )
 
     def rand(self) -> int:
-        return int(self.rng.rand(caller_static_u32=self.caller_static_u32))
+        return int(self.rng.rand(caller=self.caller))
 
     def ring_children(self, **kwargs) -> int:
         return spawn_ring_children(
@@ -1094,12 +1094,12 @@ def alloc_creature(
     pos: Vec2,
     rng: CrandLike,
     *,
-    caller_static_u32: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+    caller: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
 ) -> CreatureInit:
     # creature_alloc_slot():
     # - clears flags
     # - seeds phase_seed = float(crt_rand() & 0x17f)
-    phase_seed = float(rng.rand(caller_static_u32=caller_static_u32) & 0x17F)
+    phase_seed = float(rng.rand(caller=caller) & 0x17F)
     # Native `creature_alloc_slot` does not clear heading; some template child paths
     # intentionally keep stale heading from the recycled slot.
     return CreatureInit(origin_template_id=template_id, pos=pos, heading=None, phase_seed=phase_seed)
@@ -1121,11 +1121,11 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     """
     xp = int(player_experience)
 
-    caller_static_u32 = RngCallerStatic.SURVIVAL_SPAWN_CREATURE
-    c = alloc_creature(-1, pos, rng, caller_static_u32=caller_static_u32)
+    caller = RngCallerStatic.SURVIVAL_SPAWN_CREATURE
+    c = alloc_creature(-1, pos, rng, caller=caller)
     c.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
-    r10 = rng.rand(caller_static_u32=caller_static_u32) % 10
+    r10 = rng.rand(caller=caller) % 10
 
     if xp < 12000:
         type_id = 2 if r10 < 9 else 3
@@ -1138,7 +1138,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
             type_id = 2
         else:
             # Decompiled as a sign-bit trick, but in practice this is a parity pick.
-            type_id = (rng.rand(caller_static_u32=caller_static_u32) & 1) + 3
+            type_id = (rng.rand(caller=caller) & 1) + 3
     elif xp < 50000:
         type_id = 2
     elif xp < 90000:
@@ -1155,16 +1155,16 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
             type_id = 0
 
     # Rare override: forces spider_sp1 when (rand() & 0x1f) == 2.
-    if (rng.rand(caller_static_u32=caller_static_u32) & 0x1F) == 2:
+    if (rng.rand(caller=caller) & 0x1F) == 2:
         type_id = 3
 
     c.type_id = CreatureTypeId(type_id)
 
     # size = rand() % 20 + 44
-    c.size = float(rng.rand(caller_static_u32=caller_static_u32) % 20 + 44)
+    c.size = float(rng.rand(caller=caller) % 20 + 44)
 
     # heading = (rand() % 314) * 0.01
-    c.heading = float(f32(f32(float(rng.rand(caller_static_u32=caller_static_u32) % 314)) * f32(0.01)))
+    c.heading = float(f32(f32(float(rng.rand(caller=caller) % 314)) * f32(0.01)))
 
     # Native computes in float32; preserve rounding so derived speeds match capture.
     move_speed = f32(f32(f32(float(xp // 4000)) * f32(0.045)) + f32(0.9))
@@ -1172,7 +1172,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
         c.flags |= CreatureFlags.AI7_LINK_TIMER
         move_speed = f32(f32(move_speed) * f32(1.3))
 
-    r_health = rng.rand(caller_static_u32=caller_static_u32)
+    r_health = rng.rand(caller=caller)
     health_scaled = f32(f32(float(xp)) * f32(0.00125))
     health_rand = f32(float(r_health & 0xF))
     health = f32(f32(health_scaled + health_rand) + f32(52.0))
@@ -1194,16 +1194,16 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     tint_a = 1.0
     if xp < 50_000:
         tint_r = 1.0 - 1.0 / (float(xp // 1000) + 10.0)
-        tint_g = float(rng.rand(caller_static_u32=caller_static_u32) % 10) * 0.01 + 0.9 - 1.0 / (float(xp // 10000) + 10.0)
-        tint_b = float(rng.rand(caller_static_u32=caller_static_u32) % 10) * 0.01 + 0.7
+        tint_g = float(rng.rand(caller=caller) % 10) * 0.01 + 0.9 - 1.0 / (float(xp // 10000) + 10.0)
+        tint_b = float(rng.rand(caller=caller) % 10) * 0.01 + 0.7
     elif xp < 100_000:
         tint_r = 0.9 - 1.0 / (float(xp // 1000) + 10.0)
-        tint_g = float(rng.rand(caller_static_u32=caller_static_u32) % 10) * 0.01 + 0.8 - 1.0 / (float(xp // 10000) + 10.0)
-        tint_b = float(xp - 50_000) * 6e-06 + float(rng.rand(caller_static_u32=caller_static_u32) % 10) * 0.01 + 0.7
+        tint_g = float(rng.rand(caller=caller) % 10) * 0.01 + 0.8 - 1.0 / (float(xp // 10000) + 10.0)
+        tint_b = float(xp - 50_000) * 6e-06 + float(rng.rand(caller=caller) % 10) * 0.01 + 0.7
     else:
         tint_r = 1.0 - 1.0 / (float(xp // 1000) + 10.0)
-        tint_g = float(rng.rand(caller_static_u32=caller_static_u32) % 10) * 0.01 + 0.9 - 1.0 / (float(xp // 10000) + 10.0)
-        tint_b = float(rng.rand(caller_static_u32=caller_static_u32) % 10) * 0.01 + 1.0 - float(xp - 100_000) * 3e-06
+        tint_g = float(rng.rand(caller=caller) % 10) * 0.01 + 0.9 - 1.0 / (float(xp // 10000) + 10.0)
+        tint_b = float(rng.rand(caller=caller) % 10) * 0.01 + 1.0 - float(xp - 100_000) * 3e-06
         if tint_b < 0.5:
             tint_b = 0.5
 
@@ -1217,37 +1217,37 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
         float(c.health or 0.0) * 0.4
         + float(c.contact_damage or 0.0) * 0.8
         + move_speed * 5.0
-        + float(rng.rand(caller_static_u32=caller_static_u32) % 10 + 10)
+        + float(rng.rand(caller=caller) % 10 + 10)
     )
 
     # Rare stat overrides (color-coded variants).
-    r = rng.rand(caller_static_u32=caller_static_u32)
+    r = rng.rand(caller=caller)
     if r % 180 < 2:
         apply_tint(c, (0.9, 0.4, 0.4, 1.0))
         c.health = 65.0
         c.reward_value = 320.0
     else:
-        r = rng.rand(caller_static_u32=caller_static_u32)
+        r = rng.rand(caller=caller)
         if r % 240 < 2:
             apply_tint(c, (0.4, 0.9, 0.4, 1.0))
             c.health = 85.0
             c.reward_value = 420.0
         else:
-            r = rng.rand(caller_static_u32=caller_static_u32)
+            r = rng.rand(caller=caller)
             if r % 360 < 2:
                 apply_tint(c, (0.4, 0.4, 0.9, 1.0))
                 c.health = 125.0
                 c.reward_value = 520.0
 
     # Rare health/size boosts (do not recompute contact_damage).
-    r = rng.rand(caller_static_u32=caller_static_u32)
+    r = rng.rand(caller=caller)
     if r % 1320 < 4:
         apply_tint(c, (0.84, 0.24, 0.89, 1.0))
         c.size = 80.0
         c.reward_value = 600.0
         c.health = float(c.health or 0.0) + 230.0
     else:
-        r = rng.rand(caller_static_u32=caller_static_u32)
+        r = rng.rand(caller=caller)
         if r % 1620 < 4:
             apply_tint(c, (0.94, 0.84, 0.29, 1.0))
             c.size = 85.0
@@ -1272,16 +1272,16 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
 
 
 def rand_survival_spawn_pos(rng: CrandLike, *, terrain_width: int, terrain_height: int) -> Vec2:
-    caller_static_u32 = RngCallerStatic.SURVIVAL_UPDATE
-    match rng.rand(caller_static_u32=caller_static_u32) & 3:
+    caller = RngCallerStatic.SURVIVAL_UPDATE
+    match rng.rand(caller=caller) & 3:
         case 0:
-            return Vec2(float(rng.rand(caller_static_u32=caller_static_u32) % terrain_width), -40.0)
+            return Vec2(float(rng.rand(caller=caller) % terrain_width), -40.0)
         case 1:
-            return Vec2(float(rng.rand(caller_static_u32=caller_static_u32) % terrain_width), float(terrain_height) + 40.0)
+            return Vec2(float(rng.rand(caller=caller) % terrain_width), float(terrain_height) + 40.0)
         case 2:
-            return Vec2(-40.0, float(rng.rand(caller_static_u32=caller_static_u32) % terrain_height))
+            return Vec2(-40.0, float(rng.rand(caller=caller) % terrain_height))
         case _:
-            return Vec2(float(terrain_width) + 40.0, float(rng.rand(caller_static_u32=caller_static_u32) % terrain_height))
+            return Vec2(float(terrain_width) + 40.0, float(rng.rand(caller=caller) % terrain_height))
 
 
 def tick_survival_wave_spawns(
@@ -1529,16 +1529,16 @@ def build_rush_mode_spawn_creature(
     """Pure model of `creature_spawn` (0x00428240) as used by `rush_mode_update` (0x004072b0)."""
     elapsed_ms = int(survival_elapsed_ms)
 
-    caller_static_u32 = RngCallerStatic.CREATURE_SPAWN
-    c = alloc_creature(-1, pos, rng, caller_static_u32=caller_static_u32)
+    caller = RngCallerStatic.CREATURE_SPAWN
+    c = alloc_creature(-1, pos, rng, caller=caller)
     c.type_id = CreatureTypeId(type_id)
     c.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
     elapsed_f32 = f32(float(elapsed_ms))
     c.health = float(f32(elapsed_f32 * f32(1e-4) + 10.0))
-    c.heading = float(f32(f32(float(rng.rand(caller_static_u32=caller_static_u32) % 314)) * f32(0.01)))
+    c.heading = float(f32(f32(float(rng.rand(caller=caller) % 314)) * f32(0.01)))
     c.move_speed = float(f32(elapsed_f32 * f32(1e-5) + 2.5))
-    c.reward_value = float(rng.rand(caller_static_u32=caller_static_u32) % 30 + 140)
+    c.reward_value = float(rng.rand(caller=caller) % 30 + 140)
 
     c.tint = tint_rgba
     c.contact_damage = 4.0
@@ -2291,7 +2291,7 @@ def build_spawn_plan(
         heading,
         rng,
         env,
-        caller_static_u32=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+        caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
     )
 
     if builder := TEMPLATE_BUILDERS.get(template_id):

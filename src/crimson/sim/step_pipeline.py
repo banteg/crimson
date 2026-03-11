@@ -149,8 +149,8 @@ def run_deterministic_step(
         if not trace_presentation_rng:
             return rand
 
-        def _draw(*, caller_static_u32: CallerStatic = None) -> int:
-            _ = caller_static_u32
+        def _draw(*, caller: CallerStatic = None) -> int:
+            _ = caller
             value = int(rand())
             trace.draws_total += 1
             trace.draws_by_consumer[str(label)] = int(trace.draws_by_consumer.get(str(label), 0)) + 1

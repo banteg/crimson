@@ -511,7 +511,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert ticks[0].channels.checkpoint.deaths[0].owner_id == -1
 
 
-def test_finalize_frida_jsonl_to_traces_canonicalizes_rng_caller_static_u32(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_canonicalizes_rng_caller(tmp_path: Path) -> None:
     channels = _channels_stub(tick_index=0, elapsed_ms=0, mode_id=1)
     channels["rng_stream"] = [_rng_stream_row_stub()]
     raw_path = _write_jsonl(
@@ -537,7 +537,7 @@ def test_finalize_frida_jsonl_to_traces_canonicalizes_rng_caller_static_u32(tmp_
     result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
     _meta, ticks, _footer = load_trace(result.traces[0].out_path)
-    assert ticks[0].channels.rng_stream[0].caller_static_u32 == 0x00430B88
+    assert ticks[0].channels.rng_stream[0].caller == 0x00430B88
     assert not hasattr(ticks[0].channels.rng_stream[0], "branch_id")
 
 

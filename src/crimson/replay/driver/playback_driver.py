@@ -91,29 +91,29 @@ def _tick_rng_trace(rng: object, *, enabled: bool, strict: bool = False) -> Iter
         return
 
     previous_sink = rng.trace_sink
-    previous_require_caller_static = rng.trace_require_caller_static
+    previous_require_caller = rng.trace_require_caller
 
     def _sink(
         state_before_u32: int,
         state_after_u32: int,
         value_15: int,
-        caller_static_u32: CallerStatic,
+        caller: CallerStatic,
     ) -> None:
         draws.append(
             (
                 int(state_before_u32),
                 int(value_15),
                 int(state_after_u32),
-                caller_static_u32,
+                caller,
             ),
         )
 
     trace_sink: RngTraceSink = _sink
-    rng.set_trace_sink(trace_sink, require_caller_static=bool(strict))
+    rng.set_trace_sink(trace_sink, require_caller=bool(strict))
     try:
         yield draws
     finally:
-        rng.set_trace_sink(previous_sink, require_caller_static=bool(previous_require_caller_static))
+        rng.set_trace_sink(previous_sink, require_caller=bool(previous_require_caller))
 
 
 @dataclass(slots=True, frozen=True)
@@ -286,7 +286,7 @@ class PlaybackDriver:
                 )
                 # Native `quest_start_selected()` burns one `crt_rand()` for
                 # `highscore_record_random_tag` before quest terrain and spawn setup.
-                world.state.rng.rand(caller_static_u32=RngCallerStatic.QUEST_START_SELECTED)
+                world.state.rng.rand(caller=RngCallerStatic.QUEST_START_SELECTED)
                 quest_terrain = run_explicit_terrain_prelude(
                     world.state.rng,
                     terrain_slots=quest_definition.terrain_slots,

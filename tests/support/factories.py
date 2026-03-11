@@ -99,11 +99,11 @@ def _coerce_rand_draw(rand: Callable[..., int]) -> Callable[..., int]:
     for param in params:
         if param.kind == inspect.Parameter.VAR_KEYWORD:
             return rand
-        if param.name == "caller_static_u32":
+        if param.name == "caller":
             return rand
 
-    def _draw(*, caller_static_u32: CallerStatic = None) -> int:
-        _ = caller_static_u32
+    def _draw(*, caller: CallerStatic = None) -> int:
+        _ = caller
         return int(rand())
 
     return _draw
@@ -176,7 +176,7 @@ def make_projectile_update_options(
     return ProjectileUpdateOptions(
         world_size=float(world_size),
         damage_scale_by_type={} if damage_scale_by_type is None else damage_scale_by_type,
-        rng=_coerce_rand_draw((lambda *, caller_static_u32=None: 0) if rng is None else rng),
+        rng=_coerce_rand_draw((lambda *, caller=None: 0) if rng is None else rng),
         runtime_state=state,
         players=player_seq,
         apply_player_damage=(

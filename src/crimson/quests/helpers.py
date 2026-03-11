@@ -69,8 +69,8 @@ def ring_points(
         yield center + Vec2.from_angle(angle) * radius, angle
 
 
-def random_angle(rng: CrandLike, *, caller_static_u32: CallerStatic = None) -> float:
-    return float(rng.rand(caller_static_u32=caller_static_u32) % 0x264) * 0.01
+def random_angle(rng: CrandLike, *, caller: CallerStatic = None) -> float:
+    return float(rng.rand(caller=caller) % 0x264) * 0.01
 
 
 def radial_points(

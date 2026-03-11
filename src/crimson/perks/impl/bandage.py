@@ -5,13 +5,13 @@ from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
 from ..runtime.hook_types import PerkHooks
 
-_PERK_APPLY_CALLER_STATIC_U32 = RngCallerStatic.PERK_APPLY
+_PERK_APPLY_CALLER = RngCallerStatic.PERK_APPLY
 
 
 def apply_bandage(ctx: PerkApplyCtx) -> None:
     for player in ctx.players:
         if player.health > 0.0:
-            amount = float(ctx.state.rng.rand(caller_static_u32=_PERK_APPLY_CALLER_STATIC_U32) % 50 + 1)
+            amount = float(ctx.state.rng.rand(caller=_PERK_APPLY_CALLER) % 50 + 1)
             if ctx.state.preserve_bugs:
                 # Original exe behavior (likely bug): health multiplier.
                 player.health = min(100.0, player.health * amount)

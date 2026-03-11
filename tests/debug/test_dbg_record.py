@@ -13,6 +13,7 @@ from crimson.dbg.canonical_channels import (
     SnapshotGameplay,
     SnapshotStatus,
 )
+from crimson.dbg.schema import TRACE_SCHEMA_VERSION
 from crimson.dbg.trace import load_trace
 from crimson.game_modes import GameMode
 from crimson.replay.checkpoints import ReplayCheckpoint
@@ -99,7 +100,7 @@ def test_record_replay_to_trace_dispatches_zig_impl_and_collects_warnings(monkey
     assert captured["chunk_ticks"] == 64
 
 
-def test_record_replay_to_trace_python_writes_caller_static_u32_rows(
+def test_record_replay_to_trace_python_writes_caller_rows(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
@@ -187,8 +188,8 @@ def test_record_replay_to_trace_python_writes_caller_static_u32_rows(
         chunk_ticks=1,
     )
 
-    assert summary.meta.trace_schema_version == 8
+    assert summary.meta.trace_schema_version == TRACE_SCHEMA_VERSION
     meta, ticks, footer = load_trace(tmp_path / "sample.cdt")
-    assert meta.trace_schema_version == 8
+    assert meta.trace_schema_version == TRACE_SCHEMA_VERSION
     assert footer.tick_count == 1
-    assert ticks[0].channels.rng_stream[0].caller_static_u32 == 0x00430B88
+    assert ticks[0].channels.rng_stream[0].caller == 0x00430B88

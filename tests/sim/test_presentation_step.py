@@ -273,7 +273,7 @@ def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(moc
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1, type_id=ProjectileTemplateId.BLADE_GUN),
-        rand=lambda *, caller_static_u32=None: int(next(rng_values)),
+        rand=lambda *, caller=None: int(next(rng_values)),
         detail_preset=5,
         gore_disabled=0,
     )

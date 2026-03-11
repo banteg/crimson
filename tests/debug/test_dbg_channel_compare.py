@@ -60,14 +60,14 @@ def test_compare_timing_samples_reports_first_mismatch_payload() -> None:
     assert detail["mismatches"]
 
 
-def test_compare_rng_stream_reports_caller_static_hex_on_first_mismatch() -> None:
+def test_compare_rng_stream_reports_caller_hex_on_first_mismatch() -> None:
     expected_rows = [
         RngStreamRow(
             tick_call_index=1,
             value_15=28052,
             state_before_u32=2427270273,
             state_after_u32=3985917248,
-            caller_static_u32=0x004281A2,
+            caller=0x004281A2,
         ),
     ]
     actual_rows = [
@@ -76,7 +76,7 @@ def test_compare_rng_stream_reports_caller_static_hex_on_first_mismatch() -> Non
             value_15=28052,
             state_before_u32=2427270273,
             state_after_u32=3985917248,
-            caller_static_u32=0x00430B88,
+            caller=0x00430B88,
         ),
     ]
 
@@ -88,7 +88,7 @@ def test_compare_rng_stream_reports_caller_static_hex_on_first_mismatch() -> Non
     actual_first = detail["actual_first_mismatch"]
     assert isinstance(expected_first, dict)
     assert isinstance(actual_first, dict)
-    assert expected_first["caller_static_u32"] == 0x004281A2
-    assert expected_first["caller_static_hex"] == "0x004281a2"
-    assert actual_first["caller_static_u32"] == 0x00430B88
-    assert actual_first["caller_static_hex"] == "0x00430b88"
+    assert expected_first["caller"] == 0x004281A2
+    assert expected_first["caller_hex"] == "0x004281a2"
+    assert actual_first["caller"] == 0x00430B88
+    assert actual_first["caller_hex"] == "0x00430b88"

@@ -6,7 +6,7 @@ from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
 from ..runtime.hook_types import PerkHooks
 
-_PERKS_UPDATE_EFFECTS_CALLER_STATIC_U32 = RngCallerStatic.PERKS_UPDATE_EFFECTS
+_PERKS_UPDATE_EFFECTS_CALLER = RngCallerStatic.PERKS_UPDATE_EFFECTS
 
 
 def update_regeneration(ctx: PerksUpdateEffectsCtx) -> None:
@@ -14,7 +14,7 @@ def update_regeneration(ctx: PerksUpdateEffectsCtx) -> None:
         return
     if not perk_active(ctx.players[0], PerkId.REGENERATION):
         return
-    if (ctx.state.rng.rand(caller_static_u32=_PERKS_UPDATE_EFFECTS_CALLER_STATIC_U32) & 1) == 0:
+    if (ctx.state.rng.rand(caller=_PERKS_UPDATE_EFFECTS_CALLER) & 1) == 0:
         return
 
     if ctx.state.preserve_bugs:

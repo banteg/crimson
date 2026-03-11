@@ -184,13 +184,13 @@ def build_3_3_the_killing(
     ctx: QuestContext,
     rng: CrandLike,
 ) -> list[SpawnEntry]:
-    caller_static_u32 = RngCallerStatic.QUEST_3_3_BUILDER
+    caller = RngCallerStatic.QUEST_3_3_BUILDER
     edges = edge_midpoints(ctx.width)
     entries: list[SpawnEntry] = []
     trigger = 2000
     for wave in range(10):
-        rng.rand(caller_static_u32=caller_static_u32)
-        rng.rand(caller_static_u32=caller_static_u32)
+        rng.rand(caller=caller)
+        rng.rand(caller=caller)
         spawn_cycle = wave % 3
         if spawn_cycle == 0:
             spawn_id = SpawnId.AI1_ALIEN_BLUE_TINT_1A
@@ -242,8 +242,8 @@ def build_3_3_the_killing(
             )
         else:
             for offset in (0, 1000, 2000):
-                x = int(rng.rand(caller_static_u32=caller_static_u32) % 0x300) + 0x80
-                y = int(rng.rand(caller_static_u32=caller_static_u32) % 0x300) + 0x80
+                x = int(rng.rand(caller=caller) % 0x300) + 0x80
+                y = int(rng.rand(caller=caller) % 0x300) + 0x80
                 entries.append(
                     spawn(
                         Vec2(float(x), float(y)),
@@ -499,13 +499,13 @@ def build_3_9_deja_vu(
     ctx: QuestContext,
     rng: CrandLike,
 ) -> list[SpawnEntry]:
-    caller_static_u32 = RngCallerStatic.QUEST_3_9_BUILDER
+    caller = RngCallerStatic.QUEST_3_9_BUILDER
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     trigger = 2000
     step = 2000
     while step > 560:
-        angle = random_angle(rng, caller_static_u32=caller_static_u32)
+        angle = random_angle(rng, caller=caller)
         for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
             entries.append(
                 spawn(

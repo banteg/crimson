@@ -25,7 +25,7 @@ def _require_single_player_typo(command) -> None:
 
 
 def _typeclick_sfx(world: WorldState) -> str:
-    if (int(world.state.rng.rand(caller_static_u32=RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER)) & 1) == 0:
+    if (int(world.state.rng.rand(caller=RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER)) & 1) == 0:
         return "sfx_ui_typeclick_01"
     return "sfx_ui_typeclick_02"
 
@@ -82,10 +82,10 @@ def typo_mid_step(ctx: MidStepContext) -> None:
     )
     typo.spawn_cooldown_ms = int(cooldown)
     for call in spawns:
-        caller_static_u32 = RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER
+        caller = RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER
 
-        def rand(*, caller_static_u32: CallerStatic = caller_static_u32) -> int:
-            return int(ctx.world.state.rng.rand(caller_static_u32=caller_static_u32))
+        def rand(*, caller: CallerStatic = caller) -> int:
+            return int(ctx.world.state.rng.rand(caller=caller))
 
         heading = float(int(rand()) % 314) * 0.01
         size = float(int(rand()) % 20 + 47)
@@ -122,7 +122,7 @@ def typo_mid_step(ctx: MidStepContext) -> None:
             score_xp=int(ctx.world.players[0].experience) if ctx.world.players else 0,
             active_mask=active_mask,
             unique_words=typo.dictionary_words,
-            caller_static_u32=caller_static_u32,
+            caller=caller,
         )
 
 

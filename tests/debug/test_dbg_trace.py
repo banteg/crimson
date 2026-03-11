@@ -134,7 +134,7 @@ def _channels(*, tick_index: int, elapsed_ms: int, score_xp: int) -> ReplayTickC
                 value_15=28052,
                 state_before_u32=2427270273,
                 state_after_u32=3985917248,
-                caller_static_u32=0x004281A2,
+                caller=0x004281A2,
             ),
         ],
         timing_samples=[],
@@ -169,7 +169,7 @@ def test_trace_roundtrip_random_access(tmp_path: Path) -> None:
         tick1 = reader.tick(1)
         assert tick1 is not None
         assert tick1.elapsed_ms == 16
-        assert tick1.channels.rng_stream[0].caller_static_u32 == 0x004281A2
+        assert tick1.channels.rng_stream[0].caller == 0x004281A2
         window = list(reader.iter_ticks(tick_start=1, tick_end=2))
         assert [row.tick_index for row in window] == [1, 2]
 

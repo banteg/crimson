@@ -86,14 +86,14 @@ def _fingerprint(path: Path) -> BuiltinObject:
 def _rng_stream_from_draws(draws: list[tuple[int, int, int, CallerStatic]]) -> list[RngStreamRow]:
     rows: list[RngStreamRow] = []
     for index, row in enumerate(draws):
-        state_before_u32, value_15, state_after_u32, caller_static_u32 = row
+        state_before_u32, value_15, state_after_u32, caller = row
         rows.append(
             RngStreamRow(
                 tick_call_index=int(index) + 1,
                 value_15=int(value_15),
                 state_before_u32=int(state_before_u32),
                 state_after_u32=int(state_after_u32),
-                caller_static_u32=caller_static_u32,
+                caller=caller,
             ),
         )
     return rows

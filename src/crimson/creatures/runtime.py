@@ -788,7 +788,7 @@ class CreaturePool:
 
         effect_pool = self.effects if effects is None else effects
         if effect_pool is not None and plan.effects:
-            fx_rand = rand if rand is not None else (lambda *, caller_static_u32=None: 0)
+            fx_rand = rand if rand is not None else (lambda *, caller=None: 0)
             for fx in plan.effects:
                 effect_pool.spawn_burst(
                     pos=fx.pos,

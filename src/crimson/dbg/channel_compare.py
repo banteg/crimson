@@ -13,9 +13,9 @@ def _rng_stream_row_payload(row: RngStreamRow, *, field: str) -> BuiltinObject:
             "value_15": row.value_15,
             "state_before_u32": row.state_before_u32,
             "state_after_u32": row.state_after_u32,
-            "caller_static_u32": row.caller_static_u32,
-            "caller_static_hex": (
-                None if row.caller_static_u32 is None else f"0x{row.caller_static_u32:08x}"
+            "caller": row.caller,
+            "caller_hex": (
+                None if row.caller is None else f"0x{row.caller:08x}"
             ),
         },
         field=field,
@@ -30,7 +30,7 @@ def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngS
             row.value_15,
             row.state_before_u32,
             row.state_after_u32,
-            row.caller_static_u32,
+            row.caller,
         )
         for row in expected_rows
     ]
@@ -40,7 +40,7 @@ def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngS
             row.value_15,
             row.state_before_u32,
             row.state_after_u32,
-            row.caller_static_u32,
+            row.caller,
         )
         for row in actual_rows
     ]

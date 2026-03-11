@@ -21,8 +21,8 @@ class _SeqRng:
         self._values = [int(v) for v in values] or [0]
         self._idx = 0
 
-    def rand(self, *, caller_static_u32: int | None = None) -> int:
-        _ = caller_static_u32
+    def rand(self, *, caller: int | None = None) -> int:
+        _ = caller
         value = int(self._values[self._idx % len(self._values)])
         self._idx += 1
         return value
@@ -205,8 +205,8 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
         def state(self) -> int:
             return int(self._state)
 
-        def rand(self, *, caller_static_u32: int | None = None) -> int:
-            _ = caller_static_u32
+        def rand(self, *, caller: int | None = None) -> int:
+            _ = caller
             self.calls += 1
             self._state = (1103515245 * self._state + 12345) & 0x7FFFFFFF
             return self._state
