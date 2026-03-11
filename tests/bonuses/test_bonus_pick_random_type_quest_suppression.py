@@ -7,6 +7,7 @@ from crimson.bonuses.selection import bonus_pick_random_type
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.quests.level import QuestLevel
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand
@@ -54,4 +55,7 @@ def test_bonus_pick_random_type_tags_exact_native_callers() -> None:
     bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
 
     assert bonus_id == BonusId.ENERGIZER
-    assert [record.caller for record in rng.records_since()] == [0x004124A5, 0x004124D6]
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.BONUS_PICK_RANDOM_TYPE_ROLL,
+        RngCallerStatic.BONUS_PICK_RANDOM_TYPE_ENERGIZER,
+    ]

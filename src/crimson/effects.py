@@ -17,6 +17,7 @@ from .effects_atlas import EffectId
 from .math_parity import f32
 from .owner_ref import OwnerRef
 from .projectiles.types import CreatureDamageApplier
+from .rng_caller_static import RngCallerStatic
 
 if TYPE_CHECKING:
     from .creatures.runtime import CreatureState
@@ -51,11 +52,6 @@ FX_QUEUE_MAX_COUNT = 0x7F
 
 FX_QUEUE_ROTATED_CAPACITY = 0x40
 FX_QUEUE_ROTATED_MAX_COUNT = 0x3F
-
-_FX_QUEUE_ADD_RANDOM_GRAY_CALLER = 0x00427760
-_FX_QUEUE_ADD_RANDOM_WIDTH_CALLER = 0x0042778E
-_FX_QUEUE_ADD_RANDOM_ROTATION_CALLER = 0x004277B0
-_FX_QUEUE_ADD_RANDOM_EFFECT_ID_CALLER = 0x0042780B
 
 
 class ParticleStyleId(IntEnum):
@@ -534,10 +530,10 @@ class FxQueue:
             return False
         # Native `fx_queue_add_random` always consumes RNG even when the queue
         # is full, then lets `fx_queue_add` fail silently.
-        gray = float(rng.rand(caller=_FX_QUEUE_ADD_RANDOM_GRAY_CALLER) & 0xF) * 0.01 + 0.84
-        w = float(rng.rand(caller=_FX_QUEUE_ADD_RANDOM_WIDTH_CALLER) % 24 - 12) + 30.0
-        rotation = float(rng.rand(caller=_FX_QUEUE_ADD_RANDOM_ROTATION_CALLER) % 628) * 0.01
-        effect_id = rng.rand(caller=_FX_QUEUE_ADD_RANDOM_EFFECT_ID_CALLER) % 5 + 3
+        gray = float(rng.rand(caller=RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY) & 0xF) * 0.01 + 0.84
+        w = float(rng.rand(caller=RngCallerStatic.FX_QUEUE_ADD_RANDOM_WIDTH) % 24 - 12) + 30.0
+        rotation = float(rng.rand(caller=RngCallerStatic.FX_QUEUE_ADD_RANDOM_ROTATION) % 628) * 0.01
+        effect_id = rng.rand(caller=RngCallerStatic.FX_QUEUE_ADD_RANDOM_EFFECT_ID) % 5 + 3
         return self.add(
             effect_id=effect_id,
             pos=pos,

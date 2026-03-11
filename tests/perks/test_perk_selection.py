@@ -14,6 +14,7 @@ from crimson.perks.selection import (
     perk_selection_prepared_choices,
 )
 from crimson.perks.state import PerkSelectionState
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -175,7 +176,7 @@ def test_perk_select_random_tags_exact_native_caller(mocker) -> None:
     perk_id = perk_select_random(state, player, game_mode=GameMode.SURVIVAL, player_count=1)
 
     assert perk_id == PerkId.BLOODY_MESS_QUICK_LEARNER
-    assert [record.caller for record in rng.records_since()] == [0x0042FBDC]
+    assert [record.caller for record in rng.records_since()] == [RngCallerStatic.PERK_SELECT_RANDOM]
 
 
 def test_perk_selection_pick_prepares_choices_when_dirty(mocker) -> None:

@@ -6,6 +6,7 @@ from grim.assets import TextureId
 from grim.rand import CrandLike
 
 from .quests.level import QuestLevel
+from .rng_caller_static import RngCallerStatic
 
 TerrainSlotTriplet: TypeAlias = tuple[int, int, int]
 
@@ -20,10 +21,6 @@ UNLOCK_TERRAIN_SLOTS: dict[int, TerrainSlotTriplet] = {
     30: Q3_TERRAIN_SLOTS,  # after quest 3.10 "Zombie Masters"
     20: Q2_TERRAIN_SLOTS,  # after quest 2.10 "Spideroids"
 }
-
-_UNLOCK_TERRAIN_Q4_CALLER = 0x00418229
-_UNLOCK_TERRAIN_Q3_CALLER = 0x00418254
-_UNLOCK_TERRAIN_Q2_CALLER = 0x0041827F
 
 _TEXTURE_ID_BY_TERRAIN_SLOT: dict[int, TextureId] = {
     0: TextureId.TER_Q1_BASE,
@@ -56,11 +53,11 @@ def choose_unlock_terrain_slots(
     for threshold, slots in UNLOCK_TERRAIN_SLOTS.items():
         caller = None
         if threshold == 40:
-            caller = _UNLOCK_TERRAIN_Q4_CALLER
+            caller = RngCallerStatic.UNLOCK_TERRAIN_Q4
         elif threshold == 30:
-            caller = _UNLOCK_TERRAIN_Q3_CALLER
+            caller = RngCallerStatic.UNLOCK_TERRAIN_Q3
         elif threshold == 20:
-            caller = _UNLOCK_TERRAIN_Q2_CALLER
+            caller = RngCallerStatic.UNLOCK_TERRAIN_Q2
         if unlock_index >= threshold and (rng.rand(caller=caller) & 7) == 3:
             return slots
     return DEFAULT_TERRAIN_SLOTS

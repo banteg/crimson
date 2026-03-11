@@ -10,6 +10,7 @@ from crimson.perks.availability import perks_rebuild_available
 from crimson.perks.selection import PERK_ID_MAX, perk_generate_choices
 from crimson.persistence import save_status
 from crimson.quests.level import QuestLevel
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -107,15 +108,15 @@ def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order
         PerkId.BARREL_GREASER,
     ]
     assert [record.caller for record in rng.records_since()] == [
-        0x0042FBDC,
+        RngCallerStatic.PERK_SELECT_RANDOM,
         None,
-        0x0042FBDC,
-        0x0042FBDC,
+        RngCallerStatic.PERK_SELECT_RANDOM,
+        RngCallerStatic.PERK_SELECT_RANDOM,
         None,
-        0x0042FBDC,
-        0x0042FBDC,
-        0x0042FBDC,
-        0x0042FBDC,
+        RngCallerStatic.PERK_SELECT_RANDOM,
+        RngCallerStatic.PERK_SELECT_RANDOM,
+        RngCallerStatic.PERK_SELECT_RANDOM,
+        RngCallerStatic.PERK_SELECT_RANDOM,
     ]
 
 

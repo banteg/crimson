@@ -7,6 +7,7 @@ from crimson.owner_ref import OwnerRef
 from crimson.projectiles.effects import _spawn_ion_hit_effects
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.factories import make_projectile_update_options
@@ -91,15 +92,15 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
     assert len(split) == 2
     assert all(bool(p.hits_players) for p in split)
     assert [record.caller for record in rng.records_since()[:9]] == [
-        0x0042F4A2,
-        0x0042F4C4,
-        0x0042F4F3,
-        0x0042F4A2,
-        0x0042F4C4,
-        0x0042F4F3,
-        0x0042F4A2,
-        0x0042F4C4,
-        0x0042F4F3,
+        RngCallerStatic.SPLITTER_HIT_ANGLE,
+        RngCallerStatic.SPLITTER_HIT_RADIUS,
+        RngCallerStatic.SPLITTER_HIT_AGE,
+        RngCallerStatic.SPLITTER_HIT_ANGLE,
+        RngCallerStatic.SPLITTER_HIT_RADIUS,
+        RngCallerStatic.SPLITTER_HIT_AGE,
+        RngCallerStatic.SPLITTER_HIT_ANGLE,
+        RngCallerStatic.SPLITTER_HIT_RADIUS,
+        RngCallerStatic.SPLITTER_HIT_AGE,
     ]
 
 
@@ -174,22 +175,22 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
     assert_float_close(float(creature.size), 32.5)
     assert [record.caller for record in rng.records_since()] == [
         None,
-        0x0042F1CE,
-        0x0042F1EA,
-        0x0042F209,
-        0x0042F228,
-        0x0042F1CE,
-        0x0042F1EA,
-        0x0042F209,
-        0x0042F228,
-        0x0042F1CE,
-        0x0042F1EA,
-        0x0042F209,
-        0x0042F228,
-        0x0042F1CE,
-        0x0042F1EA,
-        0x0042F209,
-        0x0042F228,
+        RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
+        RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
+        RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
+        RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
+        RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
+        RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
+        RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
+        RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
+        RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
     ]
 
 
@@ -210,18 +211,18 @@ def test_ion_hit_effects_tag_exact_native_callers() -> None:
     assert sfx_queue == []
     assert len(effects.iter_active()) == 4
     assert [record.caller for record in rng.records_since()] == [
-        0x0042F61A,
-        0x0042F636,
-        0x0042F659,
-        0x0042F67C,
-        0x0042F61A,
-        0x0042F636,
-        0x0042F659,
-        0x0042F67C,
-        0x0042F61A,
-        0x0042F636,
-        0x0042F659,
-        0x0042F67C,
+        RngCallerStatic.ION_HIT_SPARK_ROTATION,
+        RngCallerStatic.ION_HIT_SPARK_VEL_X,
+        RngCallerStatic.ION_HIT_SPARK_VEL_Y,
+        RngCallerStatic.ION_HIT_SPARK_SCALE_STEP,
+        RngCallerStatic.ION_HIT_SPARK_ROTATION,
+        RngCallerStatic.ION_HIT_SPARK_VEL_X,
+        RngCallerStatic.ION_HIT_SPARK_VEL_Y,
+        RngCallerStatic.ION_HIT_SPARK_SCALE_STEP,
+        RngCallerStatic.ION_HIT_SPARK_ROTATION,
+        RngCallerStatic.ION_HIT_SPARK_VEL_X,
+        RngCallerStatic.ION_HIT_SPARK_VEL_Y,
+        RngCallerStatic.ION_HIT_SPARK_SCALE_STEP,
     ]
 
 

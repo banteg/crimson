@@ -29,6 +29,7 @@ from .projectiles.runtime import (
     SecondaryProjectilePool,
 )
 from .projectiles.types import ProjectileTemplateId
+from .rng_caller_static import RngCallerStatic
 from .sim.state_types import PERK_COUNT_SIZE
 from .sim.timing import ftol_ms_i32
 from .tutorial import TutorialOverlayState, TutorialState
@@ -98,7 +99,6 @@ _RELATIVE_MOVE_TURN_ALIGN_SCALE = float(f32(7.957747))
 _AIM_POINT_RADIUS = 60.0
 _LOW_HEALTH_BLEED_DIR_OFFSET = 1.5707964 - 0.5
 _LOW_HEALTH_BLOODSPILL_SFX: tuple[str, str] = ("sfx_bloodspill_01", "sfx_bloodspill_02")
-_PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL_CALLER = 0x0041381C
 
 
 class GameplayState(msgspec.Struct):
@@ -604,9 +604,9 @@ def player_update(
                     rng=state.rng,
                     detail_preset=int(detail_preset),
                     gore_disabled=0,
-                )
+            )
             bloodspill_sfx = _LOW_HEALTH_BLOODSPILL_SFX[
-                state.rng.rand(caller=_PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL_CALLER) & 1
+                state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL) & 1
             ]
             state.sfx_queue.append(bloodspill_sfx)
             player.low_health_timer = 1.0

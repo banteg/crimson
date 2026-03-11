@@ -6,6 +6,7 @@ from typing import Any
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.persistence import save_status
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.weapon_runtime import (
     weapon_pick_random_available,
     weapon_refresh_available,
@@ -97,7 +98,7 @@ def test_weapon_pick_random_available_tags_exact_native_callers_on_reroll() -> N
 
     assert weapon_pick_random_available(state) == WeaponId.ASSAULT_RIFLE
     assert [record.caller for record in rng.records_since()] == [
-        0x00452CD6,
-        0x00452CF1,
-        0x00452CFA,
+        RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_PICK,
+        RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_GATE,
+        RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_PICK,
     ]

@@ -11,6 +11,7 @@ from collections.abc import Callable, Sequence
 from .math_parity import f32
 from .perks import PerkId
 from .perks.helpers import perk_active
+from .rng_caller_static import RngCallerStatic
 from .sim.state_types import GameplayState, PlayerState
 
 __all__ = ["player_take_damage", "player_take_projectile_damage"]
@@ -21,13 +22,6 @@ _PLAYER_PAIN_SFX: tuple[str, ...] = (
 )
 _PLAYER_DEATH_SFX: tuple[str, ...] = ("sfx_trooper_die_01", "sfx_trooper_die_02")
 _THICK_SKINNED_DAMAGE_SCALE_F32 = 0.6660000085830688
-_PLAYER_TAKE_DAMAGE_NINJA_CALLER = 0x00425F23
-_PLAYER_TAKE_DAMAGE_DODGER_CALLER = 0x00425F4E
-_PLAYER_TAKE_DAMAGE_HIGHLANDER_CALLER = 0x00425F79
-_PLAYER_TAKE_DAMAGE_DEATH_SFX_CALLER = 0x00426124
-_PLAYER_TAKE_DAMAGE_PAIN_SFX_CALLER = 0x00426152
-_PLAYER_TAKE_DAMAGE_HEADING_CALLER = 0x00426197
-_PLAYER_TAKE_DAMAGE_LOW_HEALTH_CALLER = 0x00426201
 
 
 def player_take_damage(
@@ -73,14 +67,14 @@ def player_take_damage(
 
     dodged = False
     if perk_active(player, PerkId.NINJA):
-        dodged = (state.rng.rand(caller=_PLAYER_TAKE_DAMAGE_NINJA_CALLER) % 3) == 0
+        dodged = (state.rng.rand(caller=RngCallerStatic.PLAYER_TAKE_DAMAGE_NINJA) % 3) == 0
     elif perk_active(player, PerkId.DODGER):
-        dodged = (state.rng.rand(caller=_PLAYER_TAKE_DAMAGE_DODGER_CALLER) % 5) == 0
+        dodged = (state.rng.rand(caller=RngCallerStatic.PLAYER_TAKE_DAMAGE_DODGER) % 5) == 0
 
     health_before = float(player.health)
     if not dodged:
         if perk_active(player, PerkId.HIGHLANDER):
-            if (state.rng.rand(caller=_PLAYER_TAKE_DAMAGE_HIGHLANDER_CALLER) % 10) == 0:
+            if (state.rng.rand(caller=RngCallerStatic.PLAYER_TAKE_DAMAGE_HIGHLANDER) % 10) == 0:
                 player.health = 0.0
         else:
             player.health = float(f32(float(player.health) - float(damage_scaled)))
@@ -96,7 +90,7 @@ def player_take_damage(
     # Native emits pain/death VO before heading jitter + low-health timer RNG work.
     if not lethal_hit:
         state.sfx_queue.append(
-            _PLAYER_PAIN_SFX[state.rng.rand(caller=_PLAYER_TAKE_DAMAGE_PAIN_SFX_CALLER) % len(_PLAYER_PAIN_SFX)],
+            _PLAYER_PAIN_SFX[state.rng.rand(caller=RngCallerStatic.PLAYER_TAKE_DAMAGE_PAIN_SFX) % len(_PLAYER_PAIN_SFX)],
         )
         if not was_alive:
             return max(0.0, health_before - float(player.health))
@@ -104,18 +98,18 @@ def player_take_damage(
         if not was_alive:
             return max(0.0, health_before - float(player.health))
         if not perk_active(player, PerkId.FINAL_REVENGE):
-            state.sfx_queue.append(_PLAYER_DEATH_SFX[state.rng.rand(caller=_PLAYER_TAKE_DAMAGE_DEATH_SFX_CALLER) & 1])
+            state.sfx_queue.append(_PLAYER_DEATH_SFX[state.rng.rand(caller=RngCallerStatic.PLAYER_TAKE_DAMAGE_DEATH_SFX) & 1])
         elif on_lethal is not None:
             on_lethal()
             state.player_death_hook_skip_indices.add(int(player.index))
 
     if not dodged:
         if not perk_active(player, PerkId.UNSTOPPABLE):
-            player.heading += float((state.rng.rand(caller=_PLAYER_TAKE_DAMAGE_HEADING_CALLER) % 100) - 50) * 0.04
+            player.heading += float((state.rng.rand(caller=RngCallerStatic.PLAYER_TAKE_DAMAGE_HEADING) % 100) - 50) * 0.04
             # Native uses post-Tough-Reloader damage (before Thick Skinned) for spread heat growth.
             player.spread_heat = min(0.48, float(player.spread_heat) + spread_heat_damage * 0.01)
 
-        if player.health <= 20.0 and (state.rng.rand(caller=_PLAYER_TAKE_DAMAGE_LOW_HEALTH_CALLER) & 7) == 3:
+        if player.health <= 20.0 and (state.rng.rand(caller=RngCallerStatic.PLAYER_TAKE_DAMAGE_LOW_HEALTH) & 7) == 3:
             player.low_health_timer = 0.0
 
     return max(0.0, health_before - float(player.health))

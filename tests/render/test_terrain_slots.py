@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from crimson.quests import all_quests
 from crimson.quests.level import QuestLevel
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.terrain_slots import (
     DEFAULT_TERRAIN_SLOTS,
     Q2_TERRAIN_SLOTS,
@@ -32,9 +33,9 @@ def test_choose_unlock_terrain_slots_uses_sequential_unlock_rolls() -> None:
 
     assert chosen == Q2_TERRAIN_SLOTS
     assert [record.caller for record in rng.records_since()] == [
-        0x00418229,
-        0x00418254,
-        0x0041827F,
+        RngCallerStatic.UNLOCK_TERRAIN_Q4,
+        RngCallerStatic.UNLOCK_TERRAIN_Q3,
+        RngCallerStatic.UNLOCK_TERRAIN_Q2,
     ]
 
 
@@ -46,7 +47,7 @@ def test_choose_unlock_terrain_slots_prefers_first_matching_unlock() -> None:
     )
 
     assert chosen == Q4_TERRAIN_SLOTS
-    assert [record.caller for record in rng.records_since()] == [0x00418229]
+    assert [record.caller for record in rng.records_since()] == [RngCallerStatic.UNLOCK_TERRAIN_Q4]
 
 
 def test_choose_unlock_terrain_slots_keeps_default_below_unlock_thresholds() -> None:
@@ -67,8 +68,8 @@ def test_choose_unlock_terrain_slots_can_fall_to_mid_tiers() -> None:
 
     assert chosen == Q3_TERRAIN_SLOTS
     assert [record.caller for record in rng.records_since()] == [
-        0x00418229,
-        0x00418254,
+        RngCallerStatic.UNLOCK_TERRAIN_Q4,
+        RngCallerStatic.UNLOCK_TERRAIN_Q3,
     ]
 
 

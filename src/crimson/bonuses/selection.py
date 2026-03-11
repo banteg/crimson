@@ -5,10 +5,8 @@ from typing import TYPE_CHECKING
 from ..game_modes import GameMode
 from ..perks import PerkId
 from ..perks.helpers import perk_active
+from ..rng_caller_static import RngCallerStatic
 from .ids import BONUS_BY_ID, BonusId
-
-_BONUS_PICK_RANDOM_TYPE_ROLL_CALLER = 0x004124A5
-_BONUS_PICK_RANDOM_TYPE_ENERGIZER_CALLER = 0x004124D6
 
 if TYPE_CHECKING:
     from ..gameplay import GameplayState
@@ -60,7 +58,7 @@ def bonus_pick_random_type(pool: BonusPool, state: GameplayState, players: list[
     has_fire_bullets_drop = any(entry.bonus_id == BonusId.FIRE_BULLETS and not entry.picked for entry in pool.entries)
 
     for _ in range(101):
-        roll = state.rng.rand(caller=_BONUS_PICK_RANDOM_TYPE_ROLL_CALLER) % 162 + 1
+        roll = state.rng.rand(caller=RngCallerStatic.BONUS_PICK_RANDOM_TYPE_ROLL) % 162 + 1
         # Mirrors `bonus_pick_random_type` (0x412470) mapping:
         # - roll = rand() % 162 + 1  (1..162)
         # - Points: roll 1..13
@@ -70,7 +68,7 @@ def bonus_pick_random_type(pool: BonusPool, state: GameplayState, players: list[
         if roll <= 13:
             bonus_id = BonusId.POINTS
         elif roll == 14:
-            if (state.rng.rand(caller=_BONUS_PICK_RANDOM_TYPE_ENERGIZER_CALLER) & 0x3F) == 0:
+            if (state.rng.rand(caller=RngCallerStatic.BONUS_PICK_RANDOM_TYPE_ENERGIZER) & 0x3F) == 0:
                 bonus_id = BonusId.ENERGIZER
             else:
                 bonus_id = BonusId.WEAPON

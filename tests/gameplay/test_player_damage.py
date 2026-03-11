@@ -5,6 +5,7 @@ import pytest
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close
@@ -51,7 +52,10 @@ def test_player_take_damage_tags_ninja_dodge_caller() -> None:
     applied = player_take_damage(state, player, 10.0)
 
     assert applied == 0.0
-    assert [record.caller for record in rng.records_since()] == [0x00425F23, 0x00426152]
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_NINJA,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_PAIN_SFX,
+    ]
 
 
 def test_player_take_damage_tags_dodger_dodge_caller() -> None:
@@ -63,7 +67,10 @@ def test_player_take_damage_tags_dodger_dodge_caller() -> None:
     applied = player_take_damage(state, player, 10.0)
 
     assert applied == 0.0
-    assert [record.caller for record in rng.records_since()] == [0x00425F4E, 0x00426152]
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_DODGER,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_PAIN_SFX,
+    ]
 
 
 @pytest.mark.parametrize(
@@ -113,10 +120,10 @@ def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None
     assert player.death_timer == 16.0 - 0.1 * 28.0
     assert state.sfx_queue == ["sfx_trooper_die_01"]
     assert [record.caller for record in rng.records_since()] == [
-        0x00425F79,
-        0x00426124,
-        0x00426197,
-        0x00426201,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_HIGHLANDER,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_DEATH_SFX,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_HEADING,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_LOW_HEALTH,
     ]
 
 
@@ -133,10 +140,10 @@ def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> N
     assert player.death_timer == 16.0
     assert state.sfx_queue == ["sfx_trooper_inpain_01"]
     assert [record.caller for record in rng.records_since()] == [
-        0x00425F79,
-        0x00426152,
-        0x00426197,
-        0x00426201,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_HIGHLANDER,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_PAIN_SFX,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_HEADING,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_LOW_HEALTH,
     ]
 
 
