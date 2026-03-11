@@ -30,7 +30,6 @@ class ScriptedCrand:
         *,
         fallback: ScriptedCrandFallback = "raise",
         _shared: _ScriptedCrandState | None = None,
-        _consumer: str | None = None,
     ) -> None:
         if values is None:
             normalized: list[int] = []
@@ -40,7 +39,6 @@ class ScriptedCrand:
             normalized = [int(value) for value in values]
 
         self._shared = _ScriptedCrandState(normalized, fallback) if _shared is None else _shared
-        self._consumer = None if _consumer is None else str(_consumer)
 
     @property
     def state(self) -> int:
@@ -84,7 +82,6 @@ class ScriptedCrand:
                 state_after=state_after,
                 value=int(value),
                 caller=caller,
-                consumer=self._consumer,
             ),
         )
         return int(value)
@@ -95,14 +92,6 @@ class ScriptedCrand:
 
     def values_since(self, start_call: int = 0) -> list[int]:
         return [record.value for record in self.records_since(start_call)]
-
-    def scope(self, consumer: str) -> ScriptedCrand:
-        return ScriptedCrand(
-            (),
-            fallback=self._shared.fallback,
-            _shared=self._shared,
-            _consumer=str(consumer),
-        )
 
 
 class SupportsRngProgression(Protocol):

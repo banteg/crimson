@@ -369,13 +369,6 @@ def queue_projectile_decals_post_hit(
         )
 
 
-def _scope_rng(rng: CrandLike, label: str) -> CrandLike:
-    scope = getattr(rng, "scope", None)
-    if callable(scope):
-        return scope(str(label))
-    return rng
-
-
 def plan_world_presentation_step(
     *,
     state: GameplayState,
@@ -399,9 +392,6 @@ def plan_world_presentation_step(
     death_sfx_preplanned: bool = False,
 ) -> PresentationStepCommands:
     commands = PresentationStepCommands()
-    projectile_rng = _scope_rng(rng, "projectile_decals")
-    hit_sfx_rng = _scope_rng(rng, "hit_sfx")
-    death_sfx_rng = _scope_rng(rng, "death_sfx")
     if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
         commands.sfx_keys.append("sfx_ui_levelup")
     if trigger_game_tune is None and hit_sfx is None:
@@ -411,7 +401,7 @@ def plan_world_presentation_step(
                 players=players,
                 fx_queue=fx_queue,
                 hits=hits,
-                rng=projectile_rng,
+                rng=rng,
                 detail_preset=int(detail_preset),
                 gore_disabled=int(gore_disabled),
             )
@@ -424,7 +414,7 @@ def plan_world_presentation_step(
                     game_mode=game_mode,
                     demo_mode_active=bool(demo_mode_active),
                     game_tune_started=bool(game_tune_started),
-                    rng=hit_sfx_rng,
+                    rng=rng,
                 )
                 commands.sfx_keys.extend(planned_hit_sfx)
     else:
@@ -445,7 +435,7 @@ def plan_world_presentation_step(
             ),
         )
     if deaths and not death_sfx_preplanned:
-        commands.sfx_keys.extend(plan_death_sfx_keys(deaths, rng=death_sfx_rng))
+        commands.sfx_keys.extend(plan_death_sfx_keys(deaths, rng=rng))
     if pickups:
         commands.sfx_keys.extend("sfx_ui_bonus" for _ in pickups)
     commands.sfx_keys.extend(str(key) for key in event_sfx[:4])

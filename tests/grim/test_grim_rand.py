@@ -36,16 +36,15 @@ def test_crt_rand_strict_trace_requires_caller() -> None:
         rng.rand()
 
 
-def test_recording_crand_records_history_and_scopes() -> None:
+def test_recording_crand_records_history() -> None:
     rng = RecordingCrand(CrtRand(0x1234))
-    hit_rng = rng.scope("hit_sfx")
 
     first = rng.rand(caller=RngCallerStatic.SURVIVAL_UPDATE)
-    second = hit_rng.rand()
+    second = rng.rand()
 
     assert rng.calls == 2
     assert rng.values_since() == [first, second]
-    assert [record.consumer for record in rng.records_since()] == [None, "hit_sfx"]
+    assert [record.caller for record in rng.records_since()] == [RngCallerStatic.SURVIVAL_UPDATE, None]
     assert rng.records_since(1)[0].value == second
 
 

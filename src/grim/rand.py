@@ -21,7 +21,6 @@ class RngDrawRecord:
     state_after: int
     value: int
     caller: CallerStatic
-    consumer: str | None = None
 
 
 class MissingRngCallerError(ValueError):
@@ -108,17 +107,14 @@ class _RecordingState:
 
 
 class RecordingCrand:
-    __slots__ = ("_consumer", "_shared")
+    __slots__ = ("_shared",)
 
     def __init__(
         self,
         base: CrandLike,
-        *,
-        consumer: str | None = None,
         _shared: _RecordingState | None = None,
     ) -> None:
         self._shared = _RecordingState(base) if _shared is None else _shared
-        self._consumer = None if consumer is None else str(consumer)
 
     @property
     def state(self) -> int:
@@ -146,7 +142,6 @@ class RecordingCrand:
                 state_after=state_after,
                 value=value,
                 caller=caller,
-                consumer=self._consumer,
             ),
         )
         return value
@@ -157,10 +152,3 @@ class RecordingCrand:
 
     def values_since(self, start_call: int = 0) -> list[int]:
         return [record.value for record in self.records_since(start_call)]
-
-    def scope(self, consumer: str) -> RecordingCrand:
-        return RecordingCrand(
-            self._shared.base,
-            consumer=str(consumer),
-            _shared=self._shared,
-        )

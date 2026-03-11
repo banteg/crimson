@@ -21,7 +21,6 @@ from .world_state import WorldEvents, WorldState
 
 class PresentationRngTrace(msgspec.Struct):
     draws_total: int = 0
-    draws_by_consumer: dict[str, int] = msgspec.field(default_factory=dict)
 
 
 class DeterministicStepResult(msgspec.Struct):
@@ -179,16 +178,9 @@ def run_deterministic_step(
 
     if recording_rng is not None:
         trace.draws_total = int(recording_rng.calls)
-        for record in recording_rng.records_since():
-            consumer = record.consumer
-            if consumer is None:
-                continue
-            trace.draws_by_consumer[consumer] = int(trace.draws_by_consumer.get(consumer, 0)) + 1
 
     if rng_marks_out is not None and recording_rng is not None:
         rng_marks_out["ps_draws_total"] = int(trace.draws_total)
-        for key, value in sorted(trace.draws_by_consumer.items()):
-            rng_marks_out[f"ps_draws_{key}"] = int(value)
 
     return DeterministicStepResult(
         dt_sim=float(timing.dt_sim),
