@@ -46,9 +46,9 @@ def queue_large_hit_decal_streak(
     for _ in range(6):
         dist = float(int(rng.rand()) % 100) * 0.1
         if dist > 4.0:
-            dist = float(int(rng.rand()) % 0x5A + 10) * 0.1
+            dist = float(int(rng.rand()) % 90 + 10) * 0.1
         if dist > 7.0:
-            dist = float(int(rng.rand()) % 0x50 + 0x14) * 0.1
+            dist = float(int(rng.rand()) % 80 + 20) * 0.1
         # Native `projectile_update` consumes one unconditional draw per loop
         # before the freeze branch (`crt_rand` @ 0x0042184c).
         rng.rand()

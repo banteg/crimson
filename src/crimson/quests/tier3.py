@@ -259,8 +259,8 @@ def build_3_3_the_killing(
             )
         else:
             for offset in (0, 1000, 2000):
-                x = int(rng.rand(caller=caller) % 0x300) + 0x80
-                y = int(rng.rand(caller=caller) % 0x300) + 0x80
+                x = int(rng.rand(caller=caller) % 768) + 128
+                y = int(rng.rand(caller=caller) % 768) + 128
                 entries.append(
                     spawn(
                         Vec2(float(x), float(y)),

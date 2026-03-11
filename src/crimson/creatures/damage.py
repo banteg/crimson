@@ -109,7 +109,7 @@ def _damage_lethal_ranged_shock_burst(
             float((int(rng.rand(caller=caller)) & 0x7F) - 0x40),
             float((int(rng.rand(caller=caller)) & 0x7F) - 0x40),
         )
-        scale_step = float(int(rng.rand(caller=caller)) % 0x8C) * 0.01 + 0.3
+        scale_step = float(int(rng.rand(caller=caller)) % 140) * 0.01 + 0.3
         if effects is None:
             continue
         effects.spawn(

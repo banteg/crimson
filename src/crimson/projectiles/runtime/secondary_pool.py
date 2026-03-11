@@ -398,7 +398,7 @@ class SecondaryProjectilePool:
                 if freeze_active:
                     if effects is not None:
                         for _ in range(4):
-                            shard_angle = float(int(rng.rand()) % 0x264) * 0.01
+                            shard_angle = float(int(rng.rand()) % 612) * 0.01
                             effects.spawn_freeze_shard(
                                 pos=entry.pos,
                                 angle=shard_angle,
@@ -408,8 +408,8 @@ class SecondaryProjectilePool:
                 elif fx_queue is not None:
                     for _ in range(3):
                         offset = Vec2(
-                            float(int(rng.rand()) % 0x14 - 10),
-                            float(int(rng.rand()) % 0x14 - 10),
+                            float(int(rng.rand()) % 20 - 10),
+                            float(int(rng.rand()) % 20 - 10),
                         )
                         fx_queue.add_random(
                             pos=creatures[hit_idx].pos + offset,
@@ -448,7 +448,7 @@ class SecondaryProjectilePool:
                         if freeze_shard_target_pos:
                             shard_pos = creatures[hit_idx].pos
                         for _ in range(8):
-                            shard_angle = float(int(rng.rand()) % 0x264) * 0.01
+                            shard_angle = float(int(rng.rand()) % 612) * 0.01
                             effects.spawn_freeze_shard(
                                 pos=shard_pos,
                                 angle=shard_angle,
@@ -459,7 +459,7 @@ class SecondaryProjectilePool:
                     if fx_queue is not None and extra_decals > 0:
                         center = creatures[hit_idx].pos
                         for _ in range(int(extra_decals)):
-                            angle = float(int(rng.rand()) % 0x274) * 0.01
+                            angle = float(int(rng.rand()) % 628) * 0.01
                             if isinstance(rule, HomingRocketRule):
                                 radius = float(int(rng.rand()) & 0x3F)
                             else:

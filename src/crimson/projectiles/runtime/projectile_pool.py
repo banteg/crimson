@@ -485,7 +485,7 @@ class ProjectilePool:
                     # large-streak loop (presentation hook parity).
                     if float(runtime_state.bonuses.freeze) > 0.0 and effects is not None and rule.emit_freeze_shard:
                         shard_angle = float(float(proj.angle) - NATIVE_HALF_PI)
-                        shard_angle += float(int(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE)) % 0x264) * 0.01
+                        shard_angle += float(int(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE)) % 612) * 0.01
                         effects.spawn_freeze_shard(
                             pos=proj.pos,
                             angle=float(shard_angle),

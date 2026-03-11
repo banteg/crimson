@@ -1369,14 +1369,14 @@ class CreaturePool:
         if float(state.bonuses.freeze) > 0.0:
             creature_pos = creature.pos
             for _ in range(8):
-                angle = float(int(draw()) % 0x264) * 0.01
+                angle = float(int(draw()) % 612) * 0.01
                 state.effects.spawn_freeze_shard(
                     pos=creature_pos,
                     angle=angle,
                     rng=rng,
                     detail_preset=int(detail_preset),
                 )
-            angle = float(int(draw()) % 0x264) * 0.01
+            angle = float(int(draw()) % 612) * 0.01
             state.effects.spawn_freeze_shatter(
                 pos=creature_pos,
                 angle=angle,
@@ -1542,7 +1542,7 @@ class CreaturePool:
 
             for count, age in ((8, 0.0), (6, -0.07), (5, -0.12)):
                 for _ in range(int(count)):
-                    angle = float(int(draw()) % 0x264) * 0.01
+                    angle = float(int(draw()) % 612) * 0.01
                     self.effects.spawn_blood_splatter(
                         pos=creature.pos,
                         angle=float(angle),

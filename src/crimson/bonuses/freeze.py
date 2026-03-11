@@ -51,14 +51,14 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
                 )
             elif allow_shatter_fx:
                 for _ in range(8):
-                    angle = float(int(ctx.state.rng.rand()) % 0x264) * 0.01
+                    angle = float(int(ctx.state.rng.rand()) % 612) * 0.01
                     ctx.state.effects.spawn_freeze_shard(
                         pos=pos,
                         angle=angle,
                         rng=ctx.state.rng,
                         detail_preset=int(ctx.detail_preset),
                     )
-                angle = float(int(ctx.state.rng.rand()) % 0x264) * 0.01
+                angle = float(int(ctx.state.rng.rand()) % 612) * 0.01
                 ctx.state.effects.spawn_freeze_shatter(
                     pos=pos,
                     angle=angle,
@@ -79,14 +79,14 @@ def flush_deferred_freeze_corpse_fx(state: GameplayState) -> None:
         pos = queued.pos
         detail = int(queued.detail_preset)
         for _ in range(8):
-            angle = float(int(state.rng.rand()) % 0x264) * 0.01
+            angle = float(int(state.rng.rand()) % 612) * 0.01
             state.effects.spawn_freeze_shard(
                 pos=pos,
                 angle=angle,
                 rng=state.rng,
                 detail_preset=detail,
             )
-        angle = float(int(state.rng.rand()) % 0x264) * 0.01
+        angle = float(int(state.rng.rand()) % 612) * 0.01
         state.effects.spawn_freeze_shatter(
             pos=pos,
             angle=angle,

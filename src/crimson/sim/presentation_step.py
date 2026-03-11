@@ -351,7 +351,7 @@ def queue_projectile_decals_post_hit(
         return
 
     for _ in range(3):
-        spread = float(int(rng.rand()) % 0x14 - 10) * 0.1
+        spread = float(int(rng.rand()) % 20 - 10) * 0.1
         angle = base_angle + spread
         direction = Vec2.from_angle(angle) * 20.0
         fx_queue.add_random(pos=hit.target, rng=rng)

@@ -21,7 +21,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
     bullet_count = int(rand()) & 3
     bullet_count += 4
     for _ in range(bullet_count):
-        angle = float(int(rand()) % 0x274) * 0.01
+        angle = float(int(rand()) % 628) * 0.01
         proj_id = projectile_spawn(
             ctx.state,
             players=ctx.players,
@@ -32,11 +32,11 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
             owner_player_index=ctx.player.index,
         )
         if proj_id != -1:
-            speed_scale = float(int(rand()) % 0x32) * 0.01 + 0.5
+            speed_scale = float(int(rand()) % 50) * 0.01 + 0.5
             ctx.state.projectiles.entries[proj_id].speed_scale *= float(speed_scale)
 
     for _ in range(2):
-        angle = float(int(rand()) % 0x274) * 0.01
+        angle = float(int(rand()) % 628) * 0.01
         projectile_spawn(
             ctx.state,
             players=ctx.players,

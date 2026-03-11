@@ -75,7 +75,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
             )
 
     ctx.state.jinxed_timer = (
-        float(int(ctx.state.rng.rand(caller=RngCallerStatic.PERKS_UPDATE_EFFECTS)) % 0x14) * 0.1
+        float(int(ctx.state.rng.rand(caller=RngCallerStatic.PERKS_UPDATE_EFFECTS)) % 20) * 0.1
         + float(ctx.state.jinxed_timer)
         + 2.0
     )

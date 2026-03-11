@@ -140,7 +140,7 @@ class ParticlePool:
         entry.age = 0.0
         entry.intensity = float(intensity)
         entry.angle = float(angle)
-        entry.spin = float(self._rng.rand(caller=RngCallerStatic.FX_SPAWN_PARTICLE) % 0x274) * 0.01
+        entry.spin = float(self._rng.rand(caller=RngCallerStatic.FX_SPAWN_PARTICLE) % 628) * 0.01
         entry.style_id = ParticleStyleId.FLAMETHROWER
         entry.target_id = -1
         entry.owner = owner
@@ -167,7 +167,7 @@ class ParticlePool:
         entry.age = 0.0
         entry.intensity = 1.0
         entry.angle = float(angle)
-        entry.spin = float(self._rng.rand(caller=RngCallerStatic.FX_SPAWN_PARTICLE_SLOW) % 0x274) * 0.01
+        entry.spin = float(self._rng.rand(caller=RngCallerStatic.FX_SPAWN_PARTICLE_SLOW) % 628) * 0.01
         entry.style_id = ParticleStyleId.BUBBLEGUN
         entry.target_id = -1
         entry.owner = owner
@@ -366,10 +366,10 @@ class ParticlePool:
                         if sprite_effects is not None and (idx % 3 == 0):
                             sprite_vel = Vec2(
                                 float(
-                                    rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) % 0x3C - 0x1E,
+                                    rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) % 60 - 30,
                                 ),
                                 float(
-                                    rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) % 0x3C - 0x1E,
+                                    rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) % 60 - 30,
                                 ),
                             )
                             sprite_effects.spawn(
@@ -433,7 +433,7 @@ class SpriteEffectPool:
         entry.color = RGBA() if color is None else color
         entry.rotation = (
             float(
-                self._rng.rand(caller=RngCallerStatic.FX_SPAWN_SPRITE) % 0x274,
+                self._rng.rand(caller=RngCallerStatic.FX_SPAWN_SPRITE) % 628,
             )
             * 0.01
         )
@@ -531,8 +531,8 @@ class FxQueue:
         # Native `fx_queue_add_random` always consumes RNG even when the queue
         # is full, then lets `fx_queue_add` fail silently.
         gray = float(rng.rand(caller=RngCallerStatic.FX_QUEUE_ADD_RANDOM) & 0xF) * 0.01 + 0.84
-        w = float(rng.rand(caller=RngCallerStatic.FX_QUEUE_ADD_RANDOM) % 0x18 - 0x0C) + 30.0
-        rotation = float(rng.rand(caller=RngCallerStatic.FX_QUEUE_ADD_RANDOM) % 0x274) * 0.01
+        w = float(rng.rand(caller=RngCallerStatic.FX_QUEUE_ADD_RANDOM) % 24 - 12) + 30.0
+        rotation = float(rng.rand(caller=RngCallerStatic.FX_QUEUE_ADD_RANDOM) % 628) * 0.01
         effect_id = rng.rand(caller=RngCallerStatic.FX_QUEUE_ADD_RANDOM) % 5 + 3
         return self.add(
             effect_id=effect_id,
@@ -786,7 +786,7 @@ class EffectPool:
         velocity = Vec2.from_angle(angle) * (speed * 100.0)
 
         rotation = float((int(rotation_draw) & 0x3F) - 0x20) * 0.1
-        rotation_step = (float(int(rotation_step_draw) % 0x14) * 0.1 - 1.0) * 14.0
+        rotation_step = (float(int(rotation_step_draw) % 20) * 0.1 - 1.0) * 14.0
 
         self.spawn(
             effect_id=int(EffectId.CASING),
@@ -945,7 +945,7 @@ class EffectPool:
 
         velocity = Vec2.from_angle(base) * 114.0
 
-        rotation_step = (float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD) % 0x14) * 0.1 - 1.0) * 4.0
+        rotation_step = (float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD) % 20) * 0.1 - 1.0) * 4.0
         scale_step = -float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD) & 0xF) * 0.1
 
         effect_id = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD) % 3 + 8
@@ -980,10 +980,8 @@ class EffectPool:
         for idx in range(4):
             rotation = float(idx) * (math.pi / 2.0) + float(angle)
             velocity = Vec2.from_angle(rotation) * 42.0
-            half = float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER) % 10 + 0x12)
-            rotation_step = (
-                float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER) % 0x14) * 0.1 - 1.0
-            ) * 1.9
+            half = float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER) % 10 + 18)
+            rotation_step = (float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER) % 20) * 0.1 - 1.0) * 1.9
 
             self.spawn(
                 effect_id=int(EffectId.FREEZE_SHATTER),
@@ -1005,7 +1003,7 @@ class EffectPool:
         for _ in range(4):
             shard_angle = (
                 float(
-                    rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER) % 0x264,
+                    rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER) % 612,
                 )
                 * 0.01
             )
@@ -1054,7 +1052,7 @@ class EffectPool:
                 lifetime = float(idx) * 0.2 + 0.6
                 rotation = (
                     float(
-                        rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST) % 0x266,
+                        rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST) % 614,
                     )
                     * 0.02
                 )
@@ -1102,7 +1100,7 @@ class EffectPool:
         for _ in range(count):
             rotation = (
                 float(
-                    rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST) % 0x13A,
+                    rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST) % 314,
                 )
                 * 0.02
             )

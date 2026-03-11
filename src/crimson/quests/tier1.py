@@ -127,7 +127,7 @@ def build_1_3_target_practice(
     step = 2000
     while True:
         angle = float(rng.rand(caller=caller) % 612) * 0.01
-        radius = (int(rng.rand(caller=caller) % 8) + 2) * 0x20
+        radius = (int(rng.rand(caller=caller) % 8) + 2) * 32
         point = center + Vec2.from_angle(angle) * radius
         heading = heading_from_center(point, center)
         entries.append(
