@@ -67,7 +67,8 @@ def test_player_update_shot_cooldown_decay_snaps_tiny_residual_to_zero() -> None
 
 
 def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker) -> None:
-    state = GameplayState()
+    rng = ScriptedCrand(0)
+    state = GameplayState(rng=rng)
     aim_heading_before = 1.25
     player = PlayerState(
         index=0,
@@ -100,6 +101,7 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker)
     assert player.low_health_timer == 1.0
     assert len(state.sfx_queue) == 1
     assert state.sfx_queue[0] in {"sfx_bloodspill_01", "sfx_bloodspill_02"}
+    assert [record.caller for record in rng.records_since()] == [0x0041381C]
 
 
 def test_player_update_low_health_timer_100_sentinel_skips_bleed_fx(mocker) -> None:
