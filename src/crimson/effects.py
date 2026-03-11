@@ -825,16 +825,16 @@ class EffectPool:
         direction = Vec2.from_angle(base)
 
         for _ in range(2):
-            r0 = rng.rand()
+            r0 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_ROTATION)
             rotation = float((r0 & 0x3F) - 0x20) * 0.1 + base
-            r1 = rng.rand()
+            r1 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_HALF)
             half = float((r1 & 7) + 1)
-            r2 = rng.rand()
+            r2 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SPEED_X)
             speed_x = float((r2 & 0x3F) + 100)
-            r3 = rng.rand()
+            r3 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SPEED_Y)
             speed_y = float((r3 & 0x3F) + 100)
             velocity = Vec2(direction.x * speed_x, direction.y * speed_y)
-            r4 = rng.rand()
+            r4 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SCALE_STEP)
             scale_step = float(r4 & 0x7F) * 0.03 + 0.1
 
             self.spawn(
@@ -869,15 +869,15 @@ class EffectPool:
 
         count = max(0, int(count))
         for _ in range(count):
-            r0 = rng.rand()
+            r0 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BURST_ROTATION)
             rotation = float(r0 & 0x7F) * 0.049087387
-            r1 = rng.rand()
+            r1 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BURST_VEL_X)
             vx = float((r1 & 0x7F) - 0x40)
-            r2 = rng.rand()
+            r2 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BURST_VEL_Y)
             vy = float((r2 & 0x7F) - 0x40)
             velocity = Vec2(vx, vy)
             if scale_step is None:
-                r3 = rng.rand()
+                r3 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BURST_SCALE_STEP)
                 step = float(r3 % 100) * 0.01 + 0.1
             else:
                 step = float(scale_step)
@@ -1056,7 +1056,7 @@ class EffectPool:
                 lifetime = float(idx) * 0.2 + 0.6
                 rotation = (
                     float(
-                        rng.rand() % 614,
+                        rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_PUFF_ROTATION) % 614,
                     )
                     * 0.02
                 )
@@ -1104,26 +1104,26 @@ class EffectPool:
         for _ in range(count):
             rotation = (
                 float(
-                    rng.rand() % 314,
+                    rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION) % 314,
                 )
                 * 0.02
             )
             velocity = Vec2(
                 float(
-                    (rng.rand() & 0x3F) * 2 - 0x40,
+                    (rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_VEL_X) & 0x3F) * 2 - 0x40,
                 ),
                 float(
-                    (rng.rand() & 0x3F) * 2 - 0x40,
+                    (rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_VEL_Y) & 0x3F) * 2 - 0x40,
                 ),
             )
             scale_step = (
                 float(
-                    (rng.rand() - 3) & 7,
+                    (rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_SCALE_STEP) - 3) & 7,
                 )
                 * scale
             )
             rotation_step = float(
-                (rng.rand() + 3) & 7,
+                (rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION_STEP) + 3) & 7,
             )
             self.spawn(
                 effect_id=int(EffectId.EXPLOSION_BURST),
