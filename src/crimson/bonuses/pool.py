@@ -10,7 +10,7 @@ from grim.geom import Vec2
 from ..game_modes import GameMode
 from ..perks.helpers import perk_active
 from ..projectiles.types import CreatureDamageApplier
-from ..rng_caller_static import RngCallerStatic
+from ..rng_owner_static import RngOwnerStatic
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
 from ..weapon_runtime.availability import weapon_pick_random_available
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
@@ -242,7 +242,7 @@ class BonusPool:
         entry.time_max = BONUS_TIME_MAX
 
         rng = state.rng
-        caller = RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL
+        caller = RngOwnerStatic.BONUS_TRY_SPAWN_ON_KILL
         if entry.bonus_id == BonusId.WEAPON:
             entry.payload = bonus_weapon_payload(weapon_pick_random_available(state))
         elif entry.bonus_id == BonusId.POINTS:
@@ -281,7 +281,7 @@ class BonusPool:
             return None
 
         rng = state.rng
-        caller = RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL
+        caller = RngOwnerStatic.BONUS_TRY_SPAWN_ON_KILL
         # Native special-case: while any player has Pistol, 3/4 chance to force a Weapon drop.
         if players and any(player.weapon.weapon_id == WeaponId.PISTOL for player in players):
             if (rng.rand(caller=caller) & 3) < 3:

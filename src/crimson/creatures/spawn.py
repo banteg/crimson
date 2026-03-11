@@ -24,7 +24,7 @@ from grim.rand import CallerStatic, CrandLike
 
 from ..bonuses import BonusId
 from ..math_parity import f32
-from ..rng_caller_static import RngCallerStatic
+from ..rng_owner_static import RngOwnerStatic
 from .spawn_ids import (
     HAS_SPAWN_SLOT_FLAG,
     RANDOM_HEADING_SENTINEL,
@@ -818,7 +818,7 @@ def randf(
     scale: float,
     base: float,
     *,
-    caller: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+    caller: CallerStatic = RngOwnerStatic.CREATURE_SPAWN_TEMPLATE,
 ) -> float:
     return float(rng.rand(caller=caller) % mod) * scale + base
 
@@ -848,7 +848,7 @@ def apply_random_move_speed(
     scale: float,
     base: float,
     *,
-    caller: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+    caller: CallerStatic = RngOwnerStatic.CREATURE_SPAWN_TEMPLATE,
 ) -> None:
     c.move_speed = randf(rng, mod, scale, base, caller=caller)
 
@@ -950,7 +950,7 @@ class PlanBuilder(msgspec.Struct):
     spawn_slots: list[SpawnSlotInit]
     effects: list[BurstEffect]
     primary: int = 0
-    caller: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE
+    caller: CallerStatic = RngOwnerStatic.CREATURE_SPAWN_TEMPLATE
 
     @classmethod
     def start(
@@ -961,7 +961,7 @@ class PlanBuilder(msgspec.Struct):
         rng: CrandLike,
         env: SpawnEnv,
         *,
-        caller: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+        caller: CallerStatic = RngOwnerStatic.CREATURE_SPAWN_TEMPLATE,
     ) -> tuple["PlanBuilder", float]:
         # creature_alloc_slot() for the base creature.
         creatures: list[CreatureInit] = [alloc_creature(template_id, pos, rng, caller=caller)]
@@ -1094,7 +1094,7 @@ def alloc_creature(
     pos: Vec2,
     rng: CrandLike,
     *,
-    caller: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+    caller: CallerStatic = RngOwnerStatic.CREATURE_SPAWN_TEMPLATE,
 ) -> CreatureInit:
     # creature_alloc_slot():
     # - clears flags
@@ -1121,7 +1121,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     """
     xp = int(player_experience)
 
-    caller = RngCallerStatic.SURVIVAL_SPAWN_CREATURE
+    caller = RngOwnerStatic.SURVIVAL_SPAWN_CREATURE
     c = alloc_creature(-1, pos, rng, caller=caller)
     c.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
@@ -1272,7 +1272,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
 
 
 def rand_survival_spawn_pos(rng: CrandLike, *, terrain_width: int, terrain_height: int) -> Vec2:
-    caller = RngCallerStatic.SURVIVAL_UPDATE
+    caller = RngOwnerStatic.SURVIVAL_UPDATE
     match rng.rand(caller=caller) & 3:
         case 0:
             return Vec2(float(rng.rand(caller=caller) % terrain_width), -40.0)
@@ -1529,7 +1529,7 @@ def build_rush_mode_spawn_creature(
     """Pure model of `creature_spawn` (0x00428240) as used by `rush_mode_update` (0x004072b0)."""
     elapsed_ms = int(survival_elapsed_ms)
 
-    caller = RngCallerStatic.CREATURE_SPAWN
+    caller = RngOwnerStatic.CREATURE_SPAWN
     c = alloc_creature(-1, pos, rng, caller=caller)
     c.type_id = CreatureTypeId(type_id)
     c.ai_mode = CreatureAiMode.ORBIT_PLAYER
@@ -2291,7 +2291,7 @@ def build_spawn_plan(
         heading,
         rng,
         env,
-        caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+        caller=RngOwnerStatic.CREATURE_SPAWN_TEMPLATE,
     )
 
     if builder := TEMPLATE_BUILDERS.get(template_id):

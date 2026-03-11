@@ -5,9 +5,9 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol, TypeAlias, runtime_checkable
 
-from crimson.rng_caller_static import RngCallerStatic
-
-CallerStatic: TypeAlias = RngCallerStatic | None
+# Exact static caller address when known. Python gameplay code may currently pass
+# coarse owner/root addresses via `RngOwnerStatic`, which are still plain ints.
+CallerStatic: TypeAlias = int | None
 
 CRT_RAND_MULT = 214013
 CRT_RAND_INC = 2531011

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from ..game_modes import GameMode
 from ..perks import PerkId
 from ..perks.helpers import perk_active
-from ..rng_caller_static import RngCallerStatic
+from ..rng_owner_static import RngOwnerStatic
 from .ids import BONUS_BY_ID, BonusId
 
 if TYPE_CHECKING:
@@ -55,7 +55,7 @@ def _bonus_pick_suppressed(
 
 
 def bonus_pick_random_type(pool: BonusPool, state: GameplayState, players: list[PlayerState]) -> BonusId:
-    caller = RngCallerStatic.BONUS_PICK_RANDOM_TYPE
+    caller = RngOwnerStatic.BONUS_PICK_RANDOM_TYPE
     has_fire_bullets_drop = any(entry.bonus_id == BonusId.FIRE_BULLETS and not entry.picked for entry in pool.entries)
 
     for _ in range(101):

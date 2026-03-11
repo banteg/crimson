@@ -25,7 +25,7 @@ from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
-from crimson.rng_caller_static import RngCallerStatic
+from crimson.rng_owner_static import RngOwnerStatic
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -116,7 +116,7 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
     pool.spawn_plan(
         plan,
         rng=rng,
-        caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+        caller=RngOwnerStatic.CREATURE_SPAWN_TEMPLATE,
         detail_preset=5,
     )
 

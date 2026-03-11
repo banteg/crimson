@@ -15,7 +15,7 @@ from ...creatures.spawn import CreatureFlags
 from ...effects import EffectPool
 from ...math_parity import f32
 from ...owner_ref import OwnerRef
-from ...rng_caller_static import RngCallerStatic
+from ...rng_owner_static import RngOwnerStatic
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..effects import (
     _spawn_ion_hit_effects,
@@ -69,7 +69,7 @@ _ProjectileHitPerkHook = Callable[[_ProjectileHitPerkCtx], None]
 def _projectile_hit_perk_poison_bullets(ctx: _ProjectileHitPerkCtx) -> None:
     if (
         ctx.owner_perk_active(ctx.proj.owner, int(ctx.poison_idx))
-        and (ctx.rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 7) == 1
+        and (ctx.rng.rand(caller=RngOwnerStatic.PROJECTILE_UPDATE) & 7) == 1
     ):
         ctx.creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 

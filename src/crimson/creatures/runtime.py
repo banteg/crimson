@@ -41,7 +41,7 @@ from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..player_damage import player_take_damage
 from ..projectiles.types import ProjectileTemplateId
-from ..rng_caller_static import RngCallerStatic
+from ..rng_owner_static import RngOwnerStatic
 from ..sim.state_types import GameplayState, PlayerState
 from ..sim.timing import ftol_ms_i32
 from ..weapons import weapon_entry_for_projectile_type_id
@@ -831,7 +831,7 @@ class CreaturePool:
         heading: float,
         rng: CrandLike,
         *,
-        caller: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+        caller: CallerStatic = RngOwnerStatic.CREATURE_SPAWN_TEMPLATE,
         env: SpawnEnv | None = None,
         detail_preset: int = 5,
         effects: EffectPool | None = None,
@@ -1288,7 +1288,7 @@ class CreaturePool:
                             mapping, _ = self.spawn_plan(
                                 plan,
                                 rng=rng,
-                                caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+                                caller=RngOwnerStatic.CREATURE_SPAWN_TEMPLATE,
                                 detail_preset=int(detail_preset),
                             )
                             spawned.extend(mapping)

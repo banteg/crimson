@@ -4,8 +4,13 @@ from enum import IntEnum, unique
 
 
 @unique
-class RngCallerStatic(IntEnum):
-    """Original executable caller addresses used for RNG draw provenance."""
+class RngOwnerStatic(IntEnum):
+    """Coarse native owner/root addresses used by the Python port for RNG attribution.
+
+    These are not the exact per-draw `caller_static` sites Frida records from the
+    original executable's return addresses. They are higher-level ownership anchors
+    that keep Python-side RNG attribution useful until exact sites are mapped.
+    """
 
     PERK_APPLY = 0x004055E0
     PERKS_UPDATE_EFFECTS = 0x00406B40

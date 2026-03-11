@@ -19,7 +19,7 @@ from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.header_settings import session_settings_from_replay_header
 from ...replay.input_codec import unpack_tick_inputs
-from ...rng_caller_static import RngCallerStatic
+from ...rng_owner_static import RngOwnerStatic
 from ...sim.bootstrap import run_explicit_terrain_prelude, run_unlock_terrain_prelude
 from ...sim.hooks import TickResult
 from ...sim.input_providers import ResolvedTick
@@ -286,7 +286,7 @@ class PlaybackDriver:
                 )
                 # Native `quest_start_selected()` burns one `crt_rand()` for
                 # `highscore_record_random_tag` before quest terrain and spawn setup.
-                world.state.rng.rand(caller=RngCallerStatic.QUEST_START_SELECTED)
+                world.state.rng.rand(caller=RngOwnerStatic.QUEST_START_SELECTED)
                 quest_terrain = run_explicit_terrain_prelude(
                     world.state.rng,
                     terrain_slots=quest_definition.terrain_slots,

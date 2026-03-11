@@ -15,7 +15,7 @@ from ...effects import EffectPool
 from ...math_parity import NATIVE_HALF_PI, f32
 from ...owner_ref import OwnerRef
 from ...perks import PerkId
-from ...rng_caller_static import RngCallerStatic
+from ...rng_owner_static import RngOwnerStatic
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..types import (
     MAIN_PROJECTILE_POOL_SIZE,
@@ -421,7 +421,7 @@ class ProjectilePool:
 
                     if proj.life_timer != 0.25 and rule.stop_on_hit:
                         proj.life_timer = 0.25
-                        jitter = rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 3
+                        jitter = rng.rand(caller=RngOwnerStatic.PROJECTILE_UPDATE) & 3
                         jitter_dx = float(f32(float(dir_x) * float(jitter)))
                         jitter_dy = float(f32(float(dir_y) * float(jitter)))
                         proj.pos = Vec2(
@@ -485,7 +485,7 @@ class ProjectilePool:
                     # large-streak loop (presentation hook parity).
                     if float(runtime_state.bonuses.freeze) > 0.0 and effects is not None and rule.emit_freeze_shard:
                         shard_angle = float(float(proj.angle) - NATIVE_HALF_PI)
-                        shard_angle += float(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) % 612) * 0.01
+                        shard_angle += float(rng.rand(caller=RngOwnerStatic.PROJECTILE_UPDATE) % 612) * 0.01
                         effects.spawn_freeze_shard(
                             pos=proj.pos,
                             angle=float(shard_angle),

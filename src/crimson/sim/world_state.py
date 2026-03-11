@@ -29,7 +29,7 @@ from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..player_damage import player_take_projectile_damage
 from ..projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
-from ..rng_caller_static import RngCallerStatic
+from ..rng_owner_static import RngOwnerStatic
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import (
@@ -57,16 +57,16 @@ _WORLD_DT_STEPS = WORLD_DT_STEPS
 _PLAYER_DEATH_HOOKS = PLAYER_DEATH_HOOKS
 
 
-def _creature_update_caller_for_mode(game_mode: GameMode) -> RngCallerStatic | None:
+def _creature_update_owner_for_mode(game_mode: GameMode) -> RngOwnerStatic | None:
     match game_mode:
         case GameMode.SURVIVAL:
-            return RngCallerStatic.SURVIVAL_UPDATE
+            return RngOwnerStatic.SURVIVAL_UPDATE
         case GameMode.RUSH:
-            return RngCallerStatic.RUSH_MODE_UPDATE
+            return RngOwnerStatic.RUSH_MODE_UPDATE
         case GameMode.QUESTS:
-            return RngCallerStatic.QUEST_MODE_UPDATE
+            return RngOwnerStatic.QUEST_MODE_UPDATE
         case GameMode.TYPO:
-            return RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER
+            return RngOwnerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER
         case _:
             return None
 
@@ -174,7 +174,7 @@ class WorldState(msgspec.Struct):
                 world_height=float(world_size),
                 fx_queue=fx_queue,
                 fx_queue_rotated=fx_queue_rotated,
-                caller=_creature_update_caller_for_mode(game_mode),
+                caller=_creature_update_owner_for_mode(game_mode),
                 detail_preset=int(detail_preset),
                 gore_disabled=int(gore_disabled),
             ),
@@ -565,7 +565,7 @@ class WorldState(msgspec.Struct):
             state=self.state,
             players=self.players,
             rng=self.state.rng,
-            caller=RngCallerStatic.PROJECTILE_UPDATE,
+            caller=RngOwnerStatic.PROJECTILE_UPDATE,
             dt=float(dt),
             detail_preset=int(detail_preset),
             world_width=float(world_size),

@@ -17,7 +17,7 @@ from ..perks.selection import (
 from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
-from ..rng_caller_static import RngCallerStatic
+from ..rng_owner_static import RngOwnerStatic
 from ..typo.runtime import apply_typo_command
 from .input import PlayerInput
 from .input_providers import (
@@ -113,7 +113,7 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
             call.pos,
             float(call.heading),
             state.rng,
-            caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+            caller=RngOwnerStatic.CREATURE_SPAWN_TEMPLATE,
         )
     ctx.rng_marks["after_stage_spawns"] = int(state.rng.state)
 
@@ -132,7 +132,7 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
     ctx.world.creatures.spawn_inits(
         wave_spawns,
         rng=state.rng,
-        caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE,
+        caller=RngOwnerStatic.SURVIVAL_SPAWN_CREATURE,
     )
     ctx.rng_marks["after_wave_spawns"] = int(state.rng.state)
 
@@ -151,7 +151,7 @@ def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
     ctx.world.creatures.spawn_inits(
         spawns,
         rng=state.rng,
-        caller=RngCallerStatic.CREATURE_SPAWN,
+        caller=RngOwnerStatic.CREATURE_SPAWN,
     )
     ctx.rng_marks["after_rush_spawns"] = int(state.rng.state)
 
@@ -183,7 +183,7 @@ def quest_post_step(ctx: PostStepContext, spawn: QuestSpawnState) -> None:
             call.pos,
             float(call.heading),
             state.rng,
-            caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+            caller=RngOwnerStatic.CREATURE_SPAWN_TEMPLATE,
         )
     ctx.rng_marks["after_quest_spawns"] = int(state.rng.state)
 

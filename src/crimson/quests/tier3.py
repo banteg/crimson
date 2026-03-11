@@ -5,7 +5,7 @@ from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
-from ..rng_caller_static import RngCallerStatic
+from ..rng_owner_static import RngOwnerStatic
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
@@ -201,7 +201,7 @@ def build_3_3_the_killing(
     rng: CrandLike,
     full_version: bool = True,
 ) -> list[SpawnEntry]:
-    caller = RngCallerStatic.QUEST_3_3_BUILDER
+    caller = RngOwnerStatic.QUEST_3_3_BUILDER
     edges = edge_midpoints(ctx.width)
     entries: list[SpawnEntry] = []
     trigger = 2000
@@ -531,7 +531,7 @@ def build_3_9_deja_vu(
     rng: CrandLike,
     full_version: bool = True,
 ) -> list[SpawnEntry]:
-    caller = RngCallerStatic.QUEST_3_9_BUILDER
+    caller = RngOwnerStatic.QUEST_3_9_BUILDER
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     trigger = 2000
