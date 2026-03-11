@@ -42,6 +42,30 @@ def test_player_take_damage_dodge_perks(
     assert player.health == expected_health
 
 
+def test_player_take_damage_tags_ninja_dodge_caller() -> None:
+    rng = ScriptedCrand([0, 0])
+    state = GameplayState(rng=rng)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
+    player.perk_counts[int(PerkId.NINJA)] = 1
+
+    applied = player_take_damage(state, player, 10.0)
+
+    assert applied == 0.0
+    assert [record.caller for record in rng.records_since()] == [0x00425F23, 0x00426152]
+
+
+def test_player_take_damage_tags_dodger_dodge_caller() -> None:
+    rng = ScriptedCrand([0, 0])
+    state = GameplayState(rng=rng)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
+    player.perk_counts[int(PerkId.DODGER)] = 1
+
+    applied = player_take_damage(state, player, 10.0)
+
+    assert applied == 0.0
+    assert [record.caller for record in rng.records_since()] == [0x00425F4E, 0x00426152]
+
+
 @pytest.mark.parametrize(
     ("start_health", "expected_health", "expected_low_health_timer"),
     [
@@ -77,7 +101,8 @@ def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
 
 
 def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None:
-    state = GameplayState(preserve_bugs=False, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(preserve_bugs=False, rng=rng)
     player = PlayerState(index=0, pos=Vec2(), health=100.0, death_timer=16.0)
     player.perk_counts[int(PerkId.HIGHLANDER)] = 1
 
@@ -87,10 +112,17 @@ def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None
     assert player.health == 0.0
     assert player.death_timer == 16.0 - 0.1 * 28.0
     assert state.sfx_queue == ["sfx_trooper_die_01"]
+    assert [record.caller for record in rng.records_since()] == [
+        0x00425F79,
+        0x00426124,
+        0x00426197,
+        0x00426201,
+    ]
 
 
 def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> None:
-    state = GameplayState(preserve_bugs=True, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(preserve_bugs=True, rng=rng)
     player = PlayerState(index=0, pos=Vec2(), health=100.0, death_timer=16.0)
     player.perk_counts[int(PerkId.HIGHLANDER)] = 1
 
@@ -100,6 +132,12 @@ def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> N
     assert player.health == 0.0
     assert player.death_timer == 16.0
     assert state.sfx_queue == ["sfx_trooper_inpain_01"]
+    assert [record.caller for record in rng.records_since()] == [
+        0x00425F79,
+        0x00426152,
+        0x00426197,
+        0x00426201,
+    ]
 
 
 def test_player_take_damage_thick_skinned_uses_native_damage_scale_constant() -> None:
