@@ -48,6 +48,7 @@ nav = [
       { "Replay run start" = "rewrite/replay-run-start.md" },
       { "Quest identifiers" = "rewrite/quest-identifiers.md" },
       { "CDT trace format" = "rewrite/cdt-trace-format.md" },
+      { "RNG caller mapping workflow" = "rewrite/rng-caller-mapping-workflow.md" },
       { "Float parity policy" = "rewrite/float-parity-policy.md" },
       { "Float expression precision map" = "rewrite/float-expression-precision-map.md" },
       { "Netplay (rollback primary)" = "rewrite/netplay-rollback.md" },

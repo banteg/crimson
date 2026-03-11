@@ -1,3 +1,10 @@
+---
+tags:
+  - rewrite
+  - binary-ninja
+  - rng
+---
+
 # RNG Caller Mapping Workflow
 
 Goal: recover exact native `caller_static` values for Python RNG draw sites.
