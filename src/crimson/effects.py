@@ -52,6 +52,11 @@ FX_QUEUE_MAX_COUNT = 0x7F
 FX_QUEUE_ROTATED_CAPACITY = 0x40
 FX_QUEUE_ROTATED_MAX_COUNT = 0x3F
 
+_FX_QUEUE_ADD_RANDOM_GRAY_CALLER = 0x00427760
+_FX_QUEUE_ADD_RANDOM_WIDTH_CALLER = 0x0042778E
+_FX_QUEUE_ADD_RANDOM_ROTATION_CALLER = 0x004277B0
+_FX_QUEUE_ADD_RANDOM_EFFECT_ID_CALLER = 0x0042780B
+
 
 class ParticleStyleId(IntEnum):
     FLAMETHROWER = 0
@@ -529,10 +534,10 @@ class FxQueue:
             return False
         # Native `fx_queue_add_random` always consumes RNG even when the queue
         # is full, then lets `fx_queue_add` fail silently.
-        gray = float(rng.rand() & 0xF) * 0.01 + 0.84
-        w = float(rng.rand() % 24 - 12) + 30.0
-        rotation = float(rng.rand() % 628) * 0.01
-        effect_id = rng.rand() % 5 + 3
+        gray = float(rng.rand(caller=_FX_QUEUE_ADD_RANDOM_GRAY_CALLER) & 0xF) * 0.01 + 0.84
+        w = float(rng.rand(caller=_FX_QUEUE_ADD_RANDOM_WIDTH_CALLER) % 24 - 12) + 30.0
+        rotation = float(rng.rand(caller=_FX_QUEUE_ADD_RANDOM_ROTATION_CALLER) % 628) * 0.01
+        effect_id = rng.rand(caller=_FX_QUEUE_ADD_RANDOM_EFFECT_ID_CALLER) % 5 + 3
         return self.add(
             effect_id=effect_id,
             pos=pos,

@@ -28,6 +28,19 @@ def test_fx_queue_caps_count() -> None:
     assert q.count == 3
 
 
+def test_fx_queue_add_random_tags_exact_native_callers() -> None:
+    rng = ScriptedCrand([0, 0, 0, 0])
+    q = FxQueue(capacity=4, max_count=4)
+
+    assert q.add_random(pos=Vec2(), rng=rng)
+    assert [record.caller for record in rng.records_since()] == [
+        0x00427760,
+        0x0042778E,
+        0x004277B0,
+        0x0042780B,
+    ]
+
+
 def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     q = FxQueueRotated(capacity=2, max_count=2)
     assert q.add(
