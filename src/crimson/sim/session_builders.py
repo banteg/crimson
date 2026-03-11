@@ -160,11 +160,13 @@ def build_typo_session(
     gore_disabled: int,
     game_tune_started: bool,
     dictionary_words: tuple[str, ...] = (),
+    highscore_names: tuple[str, ...] = (),
 ) -> DeterministicSession:
     reset_typo_state(
         world.state.typo,
         creature_capacity=len(world.creatures.entries),
         dictionary_words=dictionary_words,
+        highscore_names=highscore_names,
     )
     session = DeterministicSession(
         world=world,

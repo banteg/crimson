@@ -115,13 +115,14 @@ def test_replay_codec_roundtrip_perk_menu_open_command() -> None:
     assert decoded.ticks[1].commands == [PerkMenuOpenCommand(player_index=0)]
 
 
-def test_replay_codec_roundtrip_typo_commands_and_dictionary_words() -> None:
+def test_replay_codec_roundtrip_typo_commands_and_name_sources() -> None:
     header = ReplayHeader(
         game_mode_id=GameMode.TYPO,
         seed=0x1234,
         tick_rate=60,
         player_count=1,
         typo_dictionary_words=("amber", "onyx"),
+        typo_highscore_names=("quick", "brown"),
     )
     rec = ReplayRecorder(header)
     rec.record_tick(
@@ -137,6 +138,7 @@ def test_replay_codec_roundtrip_typo_commands_and_dictionary_words() -> None:
     decoded = load_replay(dump_replay(replay))
 
     assert decoded.header.typo_dictionary_words == ("amber", "onyx")
+    assert decoded.header.typo_highscore_names == ("quick", "brown")
     assert decoded.ticks[0].commands == [TypoCharCommand(player_index=0, ch="a")]
     assert decoded.ticks[1].commands == [
         TypoBackspaceCommand(player_index=0),

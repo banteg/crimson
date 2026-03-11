@@ -9,6 +9,7 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
+from ..persistence.highscores import scores_path_for_mode
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..sim.bootstrap import run_unlock_terrain_prelude
@@ -16,7 +17,7 @@ from ..sim.input import PlayerInput
 from ..sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.session_builders import build_typo_session
 from ..sim.sessions import DeterministicSession
-from ..typo.names import load_typo_dictionary
+from ..typo.names import load_typo_dictionary, load_typo_highscore_names
 from ..typo.player import build_typo_player_input
 from ..typo.state import typo_shot_counts
 from ..ui.cursor import draw_menu_cursor
@@ -64,6 +65,7 @@ class TypoShooterMode(BaseGameplayMode):
             gore_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             dictionary_words=self.state.typo.dictionary_words,
+            highscore_names=self.state.typo.highscore_names,
         )
 
     def open(self) -> None:
@@ -72,6 +74,7 @@ class TypoShooterMode(BaseGameplayMode):
         dictionary_words: tuple[str, ...] = ()
         if dictionary_path.is_file():
             dictionary_words = tuple(load_typo_dictionary(dictionary_path))
+        highscore_names = tuple(load_typo_highscore_names(scores_path_for_mode(self._base_dir, GameMode.TYPO)))
 
         status = self.state.status
         terrain = run_unlock_terrain_prelude(
@@ -86,6 +89,7 @@ class TypoShooterMode(BaseGameplayMode):
         )
         self.sim_world.state.rng.srand(int(terrain.seed_after))
         self.state.typo.dictionary_words = dictionary_words
+        self.state.typo.highscore_names = highscore_names
         self._sim_session = self._new_sim_session()
 
         weapon_usage_counts = normalize_weapon_usage_counts(
@@ -109,6 +113,7 @@ class TypoShooterMode(BaseGameplayMode):
                     weapon_usage_counts=weapon_usage_counts,
                 ),
                 typo_dictionary_words=tuple(dictionary_words),
+                typo_highscore_names=tuple(highscore_names),
             ),
         )
         self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
