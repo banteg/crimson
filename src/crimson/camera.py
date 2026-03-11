@@ -9,6 +9,7 @@ global state in the original game.
 from grim.geom import Vec2
 
 from .gameplay import GameplayState
+from .rng_caller_static import RngCallerStatic
 
 
 def camera_shake_start(state: GameplayState, *, pulses: int, timer: float) -> None:
@@ -61,15 +62,19 @@ def camera_shake_update(state: GameplayState, dt: float) -> None:
         state.camera_shake_pulses = 0
         return
 
-    rand = state.rng.rand
-
-    mag_x = (int(rand()) % max_amp) + (int(rand()) % 10)
-    if (int(rand()) & 1) == 0:
+    mag_x = (
+        state.rng.rand(caller=RngCallerStatic.CAMERA_UPDATE_OFFSET_X_BASE) % max_amp
+        + state.rng.rand(caller=RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SPREAD) % 10
+    )
+    if (state.rng.rand(caller=RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SIGN) & 1) == 0:
         mag_x = -mag_x
     offset_x = float(mag_x)
 
-    mag_y = (int(rand()) % max_amp) + (int(rand()) % 10)
-    if (int(rand()) & 1) == 0:
+    mag_y = (
+        state.rng.rand(caller=RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_BASE) % max_amp
+        + state.rng.rand(caller=RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SPREAD) % 10
+    )
+    if (state.rng.rand(caller=RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SIGN) & 1) == 0:
         mag_y = -mag_y
     offset_y = float(mag_y)
     state.camera_shake_offset = Vec2(offset_x, offset_y)

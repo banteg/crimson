@@ -8,6 +8,7 @@ from crimson.camera import camera_shake_update
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.replay.driver.setup import build_damage_scale_by_type, build_empty_fx_queues, reset_players
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import (
     DeterministicSession,
@@ -20,6 +21,7 @@ from crimson.sim.sessions import (
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from grim.rand import Crand, RecordingCrand
 from tests.support.factories import make_creature_state as _creature
 from tests.support.helpers import assert_float_close
 from tests.support.world_runtime import WorldRuntimeHost
@@ -49,8 +51,8 @@ def test_camera_shake_update_decays_timer_without_pulse() -> None:
 
 
 def test_camera_shake_update_matches_decompile_first_pulse() -> None:
-    state = GameplayState()
-    state.rng.srand(0xBEEF)
+    rng = RecordingCrand(Crand(0xBEEF))
+    state = GameplayState(rng=rng)
     state.camera_shake_pulses = 0x14
     state.camera_shake_timer = 0.2
 
@@ -59,10 +61,19 @@ def test_camera_shake_update_matches_decompile_first_pulse() -> None:
     assert state.camera_shake_pulses == 0x13
     assert_float_close(state.camera_shake_timer, 0.1)
     assert state.camera_shake_offset == Vec2(28.0, -32.0)
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.CAMERA_UPDATE_OFFSET_X_BASE,
+        RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SPREAD,
+        RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SIGN,
+        RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_BASE,
+        RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SPREAD,
+        RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SIGN,
+    ]
 
 
 def test_camera_shake_update_reflex_boost_uses_shorter_interval() -> None:
-    state = GameplayState()
+    rng = RecordingCrand(Crand(0xBEEF))
+    state = GameplayState(rng=rng)
     state.bonuses.reflex_boost = 1.0
     state.camera_shake_pulses = 5
     state.camera_shake_timer = 0.01
@@ -71,6 +82,14 @@ def test_camera_shake_update_reflex_boost_uses_shorter_interval() -> None:
 
     assert state.camera_shake_pulses == 4
     assert_float_close(state.camera_shake_timer, 0.06)
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.CAMERA_UPDATE_OFFSET_X_BASE,
+        RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SPREAD,
+        RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SIGN,
+        RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_BASE,
+        RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SPREAD,
+        RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SIGN,
+    ]
 
 
 def test_camera_shake_update_clears_offsets_one_frame_after_last_pulse() -> None:
