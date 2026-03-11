@@ -24,21 +24,29 @@ def test_terrain_slots_for_quest_matches_native_layout() -> None:
 
 
 def test_choose_unlock_terrain_slots_uses_sequential_unlock_rolls() -> None:
+    rng = ScriptedCrand([0, 0, 3])
     chosen = choose_unlock_terrain_slots(
         unlock_index=0x28,
-        rng=ScriptedCrand([0, 0, 3]),
+        rng=rng,
     )
 
     assert chosen == Q2_TERRAIN_SLOTS
+    assert [record.caller for record in rng.records_since()] == [
+        0x00418229,
+        0x00418254,
+        0x0041827F,
+    ]
 
 
 def test_choose_unlock_terrain_slots_prefers_first_matching_unlock() -> None:
+    rng = ScriptedCrand(3, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     chosen = choose_unlock_terrain_slots(
         unlock_index=0x28,
-        rng=ScriptedCrand(3, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        rng=rng,
     )
 
     assert chosen == Q4_TERRAIN_SLOTS
+    assert [record.caller for record in rng.records_since()] == [0x00418229]
 
 
 def test_choose_unlock_terrain_slots_keeps_default_below_unlock_thresholds() -> None:
@@ -51,12 +59,17 @@ def test_choose_unlock_terrain_slots_keeps_default_below_unlock_thresholds() -> 
 
 
 def test_choose_unlock_terrain_slots_can_fall_to_mid_tiers() -> None:
+    rng = ScriptedCrand([0, 3])
     chosen = choose_unlock_terrain_slots(
         unlock_index=0x28,
-        rng=ScriptedCrand([0, 3]),
+        rng=rng,
     )
 
     assert chosen == Q3_TERRAIN_SLOTS
+    assert [record.caller for record in rng.records_since()] == [
+        0x00418229,
+        0x00418254,
+    ]
 
 
 def test_all_produced_terrain_slots_map_without_fallback_logic() -> None:
