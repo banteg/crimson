@@ -15,6 +15,7 @@ from ..math_parity import f32
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.helpers import perk_active
+from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PlayerState
 from .damage_types import CreatureDamageType
 from .runtime import CREATURE_LIFECYCLE_ALIVE, CreatureState
@@ -72,7 +73,7 @@ def _damage_type1_heading_jitter(ctx: _CreatureDamageCtx) -> None:
     creature = ctx.creature
     if (creature.flags & CreatureFlags.ANIM_PING_PONG) != 0:
         return
-    jitter = float((ctx.rng.rand() & 0x7F) - 0x40) * 0.002
+    jitter = float((ctx.rng.rand(caller=RngCallerStatic.CREATURE_APPLY_DAMAGE_HEADING_JITTER) & 0x7F) - 0x40) * 0.002
     size = max(1e-6, float(creature.size))
     turn = jitter / (size * 0.025)
     turn = min(math.pi / 2.0, turn)
@@ -88,7 +89,7 @@ def _damage_type4_pyromaniac(ctx: _CreatureDamageCtx) -> None:
     if not _any_player_has_perk(ctx.players, PerkId.PYROMANIAC):
         return
     ctx.damage *= 1.5
-    ctx.rng.rand()
+    ctx.rng.rand(caller=RngCallerStatic.CREATURE_APPLY_DAMAGE_PYROMANIAC)
 
 
 def _damage_lethal_ranged_shock_burst(
@@ -102,12 +103,12 @@ def _damage_lethal_ranged_shock_burst(
     if (creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK) == 0:
         return
     for _ in range(5):
-        rotation = float(rng.rand() & 0x7F) * 0.049087387
+        rotation = float(rng.rand(caller=RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_ROTATION) & 0x7F) * 0.049087387
         vel = Vec2(
-            float((rng.rand() & 0x7F) - 0x40),
-            float((rng.rand() & 0x7F) - 0x40),
+            float((rng.rand(caller=RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_X) & 0x7F) - 0x40),
+            float((rng.rand(caller=RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_Y) & 0x7F) - 0x40),
         )
-        scale_step = float(rng.rand() % 140) * 0.01 + 0.3
+        scale_step = float(rng.rand(caller=RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_SCALE_STEP) % 140) * 0.01 + 0.3
         if effects is None:
             continue
         effects.spawn(
