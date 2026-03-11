@@ -109,6 +109,24 @@ def _coerce_rand_draw(rand: Callable[..., int]) -> Callable[..., int]:
     return _draw
 
 
+class _CallbackCrand:
+    def __init__(self, rand: Callable[..., int]) -> None:
+        self._rand = rand
+        self._state = 0
+
+    @property
+    def state(self) -> int:
+        return int(self._state)
+
+    def srand(self, seed: int) -> None:
+        self._state = int(seed) & 0xFFFFFFFF
+
+    def rand(self, *, caller: CallerStatic = None) -> int:
+        value = int(self._rand(caller=caller))
+        self._state = int(value) & 0xFFFFFFFF
+        return int(value)
+
+
 def make_creature_update_options(
     *,
     state: GameplayState,
@@ -135,7 +153,7 @@ def make_creature_update_options(
     return CreatureUpdateOptions(
         state=state,
         players=players,
-        rand=_coerce_rand_draw(state.rng.rand if rand is None else rand),
+        rng=(state.rng if rand is None else _CallbackCrand(_coerce_rand_draw(rand))),
         env=default_env if env is None else env,
         world_width=width,
         world_height=height,

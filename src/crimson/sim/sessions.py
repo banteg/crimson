@@ -17,6 +17,7 @@ from ..perks.selection import (
 from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
+from ..rng_caller_static import RngCallerStatic
 from ..typo.runtime import apply_typo_command
 from .input import PlayerInput
 from .input_providers import (
@@ -112,7 +113,7 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
             call.pos,
             float(call.heading),
             state.rng,
-            rand=state.rng.rand,
+            caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
         )
     ctx.rng_marks["after_stage_spawns"] = int(state.rng.state)
 
@@ -128,7 +129,11 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
         terrain_height=int(ctx.world_size),
     )
     spawn.spawn_cooldown_ms = cooldown
-    ctx.world.creatures.spawn_inits(wave_spawns)
+    ctx.world.creatures.spawn_inits(
+        wave_spawns,
+        rng=state.rng,
+        caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE,
+    )
     ctx.rng_marks["after_wave_spawns"] = int(state.rng.state)
 
 def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
@@ -143,7 +148,11 @@ def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
         terrain_height=float(ctx.world_size),
     )
     spawn.spawn_cooldown_ms = cooldown
-    ctx.world.creatures.spawn_inits(spawns)
+    ctx.world.creatures.spawn_inits(
+        spawns,
+        rng=state.rng,
+        caller=RngCallerStatic.CREATURE_SPAWN,
+    )
     ctx.rng_marks["after_rush_spawns"] = int(state.rng.state)
 
 def quest_post_step(ctx: PostStepContext, spawn: QuestSpawnState) -> None:
@@ -174,7 +183,7 @@ def quest_post_step(ctx: PostStepContext, spawn: QuestSpawnState) -> None:
             call.pos,
             float(call.heading),
             state.rng,
-            rand=state.rng.rand,
+            caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
         )
     ctx.rng_marks["after_quest_spawns"] = int(state.rng.state)
 

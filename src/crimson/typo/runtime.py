@@ -113,7 +113,8 @@ def typo_mid_step(ctx: MidStepContext) -> None:
                 contact_damage=100.0,
                 tint=call.tint_rgba.to_tuple(),
             ),
-            rand=rand,
+            rng=ctx.world.state.rng,
+            caller=caller,
         )
         active_mask = [bool(entry.active) for entry in ctx.world.creatures.entries]
         typo.names.assign_random(

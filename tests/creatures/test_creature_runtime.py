@@ -25,6 +25,7 @@ from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -112,7 +113,12 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
     pool = CreaturePool(env=env, effects=state.effects)
 
     plan = build_spawn_plan(SpawnId.SPIDER_SP2_SPLITTER_01, Vec2(100.0, 200.0), 0.0, rng, env)
-    pool.spawn_plan(plan, rand=rng.rand, detail_preset=5)
+    pool.spawn_plan(
+        plan,
+        rng=rng,
+        caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
+        detail_preset=5,
+    )
 
     active = state.effects.iter_active()
     assert len(active) == 8
@@ -744,7 +750,7 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
         0,
         state=state,
         players=[player],
-        rand=state.rng.rand,
+        rng=state.rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=None,
@@ -797,7 +803,7 @@ def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result(m
         0,
         state=state,
         players=[player],
-        rand=state.rng.rand,
+        rng=state.rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=None,
@@ -839,7 +845,7 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(moc
         0,
         state=state,
         players=[player],
-        rand=state.rng.rand,
+        rng=state.rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=None,
@@ -865,7 +871,7 @@ def test_handle_death_shock_flag_suppresses_death_sfx_without_spawning_debris() 
         0,
         state=state,
         players=[],
-        rand=state.rng.rand,
+        rng=state.rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=None,
@@ -894,7 +900,7 @@ def test_death_award_uses_float32_sum_before_truncation() -> None:
         0,
         state=state,
         players=[player],
-        rand=state.rng.rand,
+        rng=state.rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=None,
@@ -920,7 +926,7 @@ def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random(mocker) -> None
         0,
         state=state,
         players=[player],
-        rand=state.rng.rand,
+        rng=state.rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=fx_queue,
@@ -947,7 +953,7 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
         0,
         state=state,
         players=[player],
-        rand=state.rng.rand,
+        rng=state.rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=fx_queue,
@@ -975,7 +981,7 @@ def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> Non
         0,
         state=state,
         players=[player],
-        rand=state.rng.rand,
+        rng=state.rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=fx_queue,
@@ -1014,7 +1020,7 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_is_one_shot_by_defaul
         0,
         state=state,
         players=[],
-        rand=state.rng.rand,
+        rng=state.rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=None,
@@ -1023,7 +1029,7 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_is_one_shot_by_defaul
         0,
         state=state,
         players=[],
-        rand=state.rng.rand,
+        rng=state.rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=None,
@@ -1062,7 +1068,7 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_repeats_with_preserve
         0,
         state=state,
         players=[],
-        rand=state.rng.rand,
+        rng=state.rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=None,
@@ -1071,7 +1077,7 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_repeats_with_preserve
         0,
         state=state,
         players=[],
-        rand=state.rng.rand,
+        rng=state.rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=None,
@@ -1236,7 +1242,7 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
         world_width=1024.0,
         world_height=1024.0,
         fx_queue_rotated=None,
-        rand=rng,
+        rng=rng,
         detail_preset=5,
         gore_disabled=0,
     )

@@ -29,7 +29,7 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
         0,
         state=state,
         players=[],
-        rand=rng.rand,
+        rng=rng,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=None,
