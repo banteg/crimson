@@ -8,6 +8,7 @@ from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.presentation_step import (
     PresentationStepCommands,
     apply_presentation_plan,
@@ -302,6 +303,52 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(m
     )
     assert rng.values_since(before_calls) == [0] * 79
     assert fx_queue.count == 6
+
+
+def test_queue_projectile_decals_fire_bullets_freeze_tags_exact_streak_callers(mocker) -> None:
+    state = GameplayState()
+    state.bonuses.freeze = 1.0
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    fx_queue = FxQueue()
+    spawn_freeze_shard = mocker.patch.object(
+        state.effects,
+        "spawn_freeze_shard",
+        wraps=state.effects.spawn_freeze_shard,
+    )
+    per_loop = [50, 70, 0, 0, 0] + [0] * 10
+    rng = ScriptedCrand([0] + per_loop * 6, fallback=ScriptedCrand.Fallback.RAISE)
+
+    queue_projectile_decals(
+        state=state,
+        players=[player],
+        fx_queue=fx_queue,
+        hits=_hits(1, type_id=ProjectileTemplateId.FIRE_BULLETS),
+        rng=rng,
+        detail_preset=5,
+        gore_disabled=0,
+    )
+
+    assert spawn_freeze_shard.call_count == 6
+    streak_callers = [
+        record.caller
+        for record in rng.records_since()
+        if record.caller
+        in {
+            RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN,
+            RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_DIST,
+            RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_DIST_GT4,
+            RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_DIST_GT7,
+            RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_BURN,
+            RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_FREEZE_ANGLE,
+        }
+    ]
+    assert streak_callers == [RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN] + [
+        RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_DIST,
+        RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_DIST_GT4,
+        RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_DIST_GT7,
+        RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_BURN,
+        RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_FREEZE_ANGLE,
+    ] * 6
 
 
 def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_gore_disabled_set(mocker) -> None:

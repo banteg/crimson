@@ -18,6 +18,7 @@ from ..game_modes import GameMode
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..projectiles.types import ProjectileHit, ProjectileTemplateId
+from ..rng_caller_static import RngCallerStatic
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_entry_for_projectile_type_id
 from .state_types import BonusPickupEvent, GameplayState, PlayerState
 from .world_defs import BEAM_TYPES
@@ -336,7 +337,7 @@ def queue_projectile_decals_post_hit(
 
     # Native consumes one extra `crt_rand()` per creature hit before the
     # post-hit terrain decal burst branch.
-    rng.rand()
+    rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN)
 
     hook_handled = queue_projectile_large_streak_decal(
         hit=hit,
