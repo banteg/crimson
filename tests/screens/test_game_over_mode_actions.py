@@ -4,30 +4,29 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode
+from crimson.game_modes import GameMode
 from crimson.modes.rush_mode import RushMode
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from crimson.sim.sessions import DeterministicSession
 from grim.audio import AudioState
-from grim.config import CrimsonConfig
 from grim.music import init_music_state
 from grim.rand import Crand
 from grim.sfx import init_sfx_state
 from grim.view import ViewContext
 
 
-def _make_mode() -> RushMode:
+def _make_mode(*, config) -> RushMode:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
-    config = CrimsonConfig(path=repo_root / "crimson.cfg", data={"game_mode": 2})
     mode = RushMode(ctx, config=config, audio_rng=Crand(0xBEEF))
     mode._game_over_active = True
     mode._game_over_record = HighScoreRecord.blank()
     return mode
 
 
-def test_update_game_over_ui_routes_high_scores(mocker) -> None:
-    mode = _make_mode()
+def test_update_game_over_ui_routes_high_scores(mocker, make_mode_config) -> None:
+    mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
 
     def _update(*_args, **_kwargs):
         return "high_scores"
@@ -40,8 +39,8 @@ def test_update_game_over_ui_routes_high_scores(mocker) -> None:
     assert mode.close_requested is False
 
 
-def test_update_game_over_ui_routes_main_menu(mocker) -> None:
-    mode = _make_mode()
+def test_update_game_over_ui_routes_main_menu(mocker, make_mode_config) -> None:
+    mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
 
     def _update(*_args, **_kwargs):
         return "main_menu"
@@ -54,8 +53,8 @@ def test_update_game_over_ui_routes_main_menu(mocker) -> None:
     assert mode.close_requested is True
 
 
-def test_update_game_over_ui_calls_open_on_play_again(mocker) -> None:
-    mode = _make_mode()
+def test_update_game_over_ui_calls_open_on_play_again(mocker, make_mode_config) -> None:
+    mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
     open_mode = mocker.patch.object(mode, "open")
 
     def _update(*_args, **_kwargs):
@@ -69,8 +68,8 @@ def test_update_game_over_ui_calls_open_on_play_again(mocker) -> None:
     assert mode.take_action() is None
 
 
-def test_open_stops_music_before_run_restart(mocker) -> None:
-    mode = _make_mode()
+def test_open_stops_music_before_run_restart(mocker, make_mode_config) -> None:
+    mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
     mode.audio = AudioState(
         ready=False,
         music=init_music_state(ready=False, enabled=True, volume=1.0),
@@ -92,8 +91,8 @@ def test_open_stops_music_before_run_restart(mocker) -> None:
     stop_music.assert_called_once_with(mode.audio)
 
 
-def test_draw_pause_background_fades_entities_during_game_over_close(mocker) -> None:
-    mode = _make_mode()
+def test_draw_pause_background_fades_entities_during_game_over_close(mocker, make_mode_config) -> None:
+    mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
     mode._game_over_ui._closing = True
     mode._game_over_ui._intro_ms = PANEL_SLIDE_DURATION_MS * 0.5
 
@@ -106,10 +105,10 @@ def test_draw_pause_background_fades_entities_during_game_over_close(mocker) -> 
     assert world_draw.call_args.kwargs["entity_alpha"] == 0.5
 
 
-def test_rush_elapsed_helpers_use_authoritative_session_timer(mocker) -> None:
+def test_rush_elapsed_helpers_use_authoritative_session_timer(mocker, make_mode_config) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
-    config = CrimsonConfig(path=repo_root / "crimson.cfg", data={"game_mode": 2})
+    config = make_mode_config(game_mode=GameMode.RUSH)
     mode = RushMode(ctx, config=config, audio_rng=Crand(0xBEEF))
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)

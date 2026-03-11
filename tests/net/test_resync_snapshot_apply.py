@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 from crimson.creatures.spawn import SpawnId
+from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
@@ -34,6 +35,18 @@ def _assets_dir() -> Path:
     return Path(__file__).resolve().parent.parent / "assets"
 
 
+def _survival_mode(*, config) -> SurvivalMode:
+    return SurvivalMode(ViewContext(assets_dir=_assets_dir()), config=config, audio_rng=Crand(0xBEEF))
+
+
+def _rush_mode(*, config) -> RushMode:
+    return RushMode(ViewContext(assets_dir=_assets_dir()), config=config, audio_rng=Crand(0xBEEF))
+
+
+def _quest_mode(*, config) -> QuestMode:
+    return QuestMode(ViewContext(assets_dir=_assets_dir()), config=config, audio_rng=Crand(0xBEEF))
+
+
 class _RollbackRuntimeStub:
     def __init__(self, *, tick_index: int, payload: bytes) -> None:
         self._pending = (int(tick_index), payload)
@@ -52,8 +65,8 @@ class _RollbackRuntimeStub:
         self.marked_resync_ticks.append(int(tick_index))
 
 
-def test_survival_apply_resync_snapshot_restores_mode_state() -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
+def test_survival_apply_resync_snapshot_restores_mode_state(make_mode_config) -> None:
+    mode = _survival_mode(config=make_mode_config(game_mode=GameMode.SURVIVAL))
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     session.elapsed_ms = 0.0
@@ -76,8 +89,8 @@ def test_survival_apply_resync_snapshot_restores_mode_state() -> None:
     assert mode._spawn_state.spawn_cooldown_ms == 1200.0
 
 
-def test_rush_apply_resync_snapshot_restores_mode_state() -> None:
-    mode = RushMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
+def test_rush_apply_resync_snapshot_restores_mode_state(make_mode_config) -> None:
+    mode = _rush_mode(config=make_mode_config(game_mode=GameMode.RUSH))
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     session.elapsed_ms = 0.0
@@ -99,8 +112,8 @@ def test_rush_apply_resync_snapshot_restores_mode_state() -> None:
     assert mode.creatures.kill_count == 42
 
 
-def test_quest_apply_resync_snapshot_restores_authoritative_runtime() -> None:
-    mode = QuestMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
+def test_quest_apply_resync_snapshot_restores_authoritative_runtime(make_mode_config) -> None:
+    mode = _quest_mode(config=make_mode_config(game_mode=GameMode.QUESTS))
     mode.apply_terrain_setup = lambda **_kwargs: None  # type: ignore[method-assign]
     mode.start_run(QuestLevel(1, 1), status=None)
     session = mode._sim_session
@@ -141,8 +154,8 @@ def test_quest_apply_resync_snapshot_restores_authoritative_runtime() -> None:
     assert session.elapsed_ms == 7000.0
 
 
-def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner() -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
+def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner(make_mode_config) -> None:
+    mode = _survival_mode(config=make_mode_config(game_mode=GameMode.SURVIVAL))
 
     snapshot = SurvivalStateSnapshotV2(
         tick_index=8,
@@ -189,8 +202,8 @@ def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner() -> No
     assert mode._tick_runner_local_clock is None
 
 
-def test_quest_consume_net_runtime_recovery_restores_authoritative_runtime() -> None:
-    mode = QuestMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
+def test_quest_consume_net_runtime_recovery_restores_authoritative_runtime(make_mode_config) -> None:
+    mode = _quest_mode(config=make_mode_config(game_mode=GameMode.QUESTS))
     mode.apply_terrain_setup = lambda **_kwargs: None  # type: ignore[method-assign]
     mode.start_run(QuestLevel(1, 1), status=None)
     mode._quest_spawn_state.spawn_entries = ()

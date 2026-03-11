@@ -8,7 +8,6 @@ import msgspec
 
 class ViewContext(msgspec.Struct, frozen=True):
     assets_dir: Path = Path("artifacts") / "assets"
-    base_dir: Path | None = None
     preserve_bugs: bool = False
 
 

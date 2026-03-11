@@ -88,7 +88,7 @@ def _mode_view_context(state: GameState) -> ViewContext:
     if bool(state.network_in_lobby):
         # Network multiplayer must keep simulation rules deterministic across peers.
         preserve_bugs = False
-    return ViewContext(assets_dir=state.assets_dir, base_dir=state.base_dir, preserve_bugs=preserve_bugs)
+    return ViewContext(assets_dir=state.assets_dir, preserve_bugs=preserve_bugs)
 
 
 def _get_gamma_ramp_shader() -> tuple[rl.Shader | None, int]:

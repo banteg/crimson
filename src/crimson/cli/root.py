@@ -256,7 +256,7 @@ def cmd_view(
             typer.echo("--autotune-shadow-defaults is only supported for view 'lighting-debug'", err=True)
             raise typer.Exit(code=1)
         os.environ["CRIMSON_LIGHTING_DEBUG_AUTO_TUNE"] = str(int(autotune_shadow_frames))
-    ctx = ViewContext(assets_dir=assets_dir, base_dir=base_dir, preserve_bugs=bool(preserve_bugs))
+    ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=bool(preserve_bugs))
     params = inspect.signature(view_def.factory).parameters
     if "ctx" in params:
         view = view_def.factory(ctx=ctx)

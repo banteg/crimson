@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from crimson.game_modes import GameMode
 from crimson.gameplay import survival_level_threshold
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.input import PlayerInput
@@ -13,8 +14,9 @@ def _assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
 
 
-def test_survival_mode_session_has_progression_enabled_and_levels_up() -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
+def test_survival_mode_session_has_progression_enabled_and_levels_up(make_mode_config) -> None:
+    config = make_mode_config(game_mode=GameMode.SURVIVAL)
+    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), config=config, audio_rng=Crand(0xBEEF))
     try:
         session = mode._sim_session
         assert session is not None

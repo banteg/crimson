@@ -91,7 +91,7 @@ class QuestMode(BaseGameplayMode):
         ctx: ViewContext,
         *,
         demo_mode_active: bool = False,
-        config: CrimsonConfig | None = None,
+        config: CrimsonConfig,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: Crand,

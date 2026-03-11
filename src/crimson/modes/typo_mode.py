@@ -34,7 +34,7 @@ class TypoShooterMode(BaseGameplayMode):
         self,
         ctx: ViewContext,
         *,
-        config: CrimsonConfig | None = None,
+        config: CrimsonConfig,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: Crand,

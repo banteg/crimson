@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Literal, TypeAlias
 import msgspec
 
 from grim.audio import AudioState, stop_music, update_audio
-from grim.config import CrimsonConfig, default_crimson_cfg_data
+from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
@@ -35,7 +35,6 @@ from ..net.rollback_resync_v5 import (
     encode_mode_snapshot,
 )
 from ..net.rollback_runtime import RollbackRuntime
-from ..paths import default_runtime_dir
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
@@ -237,7 +236,7 @@ class BaseGameplayMode:
         demo_mode_active: bool = False,
         quest_fail_retry_count: int = 0,
         hardcore: bool = False,
-        config: CrimsonConfig | None = None,
+        config: CrimsonConfig,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: Crand,
@@ -247,17 +246,9 @@ class BaseGameplayMode:
         self._hud_state = HudState()
         self.default_game_mode_id = default_game_mode_id
 
-        mode_id = int(default_game_mode_id)
-        if config is None:
-            base_dir = ctx.base_dir if ctx.base_dir is not None else default_runtime_dir()
-            resolved_config = CrimsonConfig(path=base_dir / "crimson.cfg", data=default_crimson_cfg_data())
-            resolved_config.game_mode = mode_id
-        else:
-            resolved_config = config
-            base_dir = resolved_config.path.parent
-        self.config: CrimsonConfig = resolved_config
+        self.config: CrimsonConfig = config
         self._console = console
-        self._base_dir = base_dir
+        self._base_dir = self.config.path.parent
 
         self.close_requested = False
         self._action: str | None = None

@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import importlib
-import os
-import shutil
 import sys
-import tempfile
 import time
 from collections.abc import Callable, Mapping
 from pathlib import Path
@@ -17,16 +14,15 @@ from pytest_mock import MockerFixture
 from grim.rand import Crand
 
 TESTS_ROOT = Path(__file__).resolve().parent
-_TEST_RUNTIME_DIR: Path | None = None
-_PREV_CRIMSON_RUNTIME_DIR: str | None = None
-_PREV_CRIMSON_BASE_DIR: str | None = None
 
 if TYPE_CHECKING:
     import crimson.modes.replay_playback_mode as replay_playback_mode
     from crimson.game.types import GameState
+    from crimson.game_modes import GameMode
     from crimson.persistence.save_status import GameStatus
     from crimson.sim.world_state import WorldState
     from grim.audio import AudioState
+    from grim.config import CrimsonConfig
     from grim.console import ConsoleState
     from grim.raylib_api import rl
 
@@ -47,13 +43,6 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    global _PREV_CRIMSON_RUNTIME_DIR, _PREV_CRIMSON_BASE_DIR, _TEST_RUNTIME_DIR
-
-    _PREV_CRIMSON_RUNTIME_DIR = os.environ.get("CRIMSON_RUNTIME_DIR")
-    _PREV_CRIMSON_BASE_DIR = os.environ.get("CRIMSON_BASE_DIR")
-    _TEST_RUNTIME_DIR = Path(tempfile.mkdtemp(prefix="crimson-runtime-tests-")).resolve()
-    os.environ["CRIMSON_RUNTIME_DIR"] = str(_TEST_RUNTIME_DIR)
-
     # Ensure the local `src/` tree wins over any other editable install that may exist
     # (e.g. a different git worktree pointing at the same project).
     src_dir = Path(__file__).resolve().parents[1] / "src"
@@ -68,28 +57,6 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "original_capture: tests for original-capture conversion/replay/parity")
     config.addinivalue_line("markers", "network: network/lan/relay integration tests")
     config.addinivalue_line("markers", "replay_fixture: replay fixture integration tests (slow, opt-in)")
-
-
-def pytest_unconfigure(config: pytest.Config) -> None:
-    _ = config
-    global _PREV_CRIMSON_RUNTIME_DIR, _PREV_CRIMSON_BASE_DIR, _TEST_RUNTIME_DIR
-
-    if _PREV_CRIMSON_RUNTIME_DIR is None:
-        os.environ.pop("CRIMSON_RUNTIME_DIR", None)
-    else:
-        os.environ["CRIMSON_RUNTIME_DIR"] = _PREV_CRIMSON_RUNTIME_DIR
-
-    if _PREV_CRIMSON_BASE_DIR is None:
-        os.environ.pop("CRIMSON_BASE_DIR", None)
-    else:
-        os.environ["CRIMSON_BASE_DIR"] = _PREV_CRIMSON_BASE_DIR
-
-    if _TEST_RUNTIME_DIR is not None:
-        shutil.rmtree(_TEST_RUNTIME_DIR, ignore_errors=True)
-
-    _PREV_CRIMSON_RUNTIME_DIR = None
-    _PREV_CRIMSON_BASE_DIR = None
-    _TEST_RUNTIME_DIR = None
 
 
 def _test_relative_path(item: pytest.Item) -> Path:
@@ -134,16 +101,16 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 
 @pytest.fixture
-def replay_playback_view() -> tuple["replay_playback_mode.ReplayPlaybackMode", "ConsoleState"]:
+def replay_playback_view(tmp_path: Path, assets_dir: Path) -> tuple["replay_playback_mode.ReplayPlaybackMode", "ConsoleState"]:
     import crimson.modes.replay_playback_mode as replay_playback_mode
-    from grim.config import CrimsonConfig
-    from grim.console import ConsoleLog, ConsoleState
+    from grim.config import ensure_crimson_cfg
+    from grim.console import create_console
     from grim.view import ViewContext
 
-    cfg = CrimsonConfig(path=Path("crimson.cfg"), data={})
-    console = ConsoleState(base_dir=Path("."), log=ConsoleLog(base_dir=Path(".")))
+    cfg = ensure_crimson_cfg(tmp_path)
+    console = create_console(tmp_path, assets_dir=assets_dir)
     view = replay_playback_mode.ReplayPlaybackMode(
-        ViewContext(assets_dir=Path("."), preserve_bugs=False),
+        ViewContext(assets_dir=assets_dir, preserve_bugs=False),
         replay_path=Path("dummy.crd"),
         config=cfg,
         console=console,
@@ -154,6 +121,26 @@ def replay_playback_view() -> tuple["replay_playback_mode.ReplayPlaybackMode", "
 @pytest.fixture
 def assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
+
+
+@pytest.fixture
+def make_mode_config(tmp_path: Path) -> Callable[..., "CrimsonConfig"]:
+    from grim.config import ensure_crimson_cfg
+
+    def _make(
+        *,
+        game_mode: "GameMode | int",
+        base_dir: Path | None = None,
+        updates: Mapping[str, object] | None = None,
+    ):
+        resolved_base_dir = base_dir if base_dir is not None else tmp_path
+        cfg = ensure_crimson_cfg(resolved_base_dir)
+        cfg.game_mode = int(game_mode)
+        if updates:
+            cfg.data.update(dict(updates))
+        return cfg
+
+    return _make
 
 
 @pytest.fixture

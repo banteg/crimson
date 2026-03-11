@@ -6,6 +6,7 @@ from typing import cast
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.quest_mode as quest_mode_module
+from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
@@ -28,12 +29,12 @@ def _register_runtime_resources_stub(assets_dir: Path) -> None:
     )
 
 
-def _make_quest_mode(mocker) -> QuestMode:
+def _make_quest_mode(mocker, *, config) -> QuestMode:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
     _register_runtime_resources_stub(assets_dir)
     ctx = ViewContext(assets_dir=assets_dir)
-    mode = QuestMode(ctx, audio_rng=Crand(0xBEEF))
+    mode = QuestMode(ctx, config=config, audio_rng=Crand(0xBEEF))
     mocker.patch.object(quest_mode_module, "load_grim_mono_font", return_value=SimpleNamespace())
     mode.open()
     mocker.patch.object(mode, "_sync_audio_and_ground", return_value=None)
@@ -43,8 +44,8 @@ def _make_quest_mode(mocker) -> QuestMode:
     return mode
 
 
-def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_transition(mocker) -> None:
-    mode = _make_quest_mode(mocker)
+def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_transition(mocker, make_mode_config) -> None:
+    mode = _make_quest_mode(mocker, config=make_mode_config(game_mode=GameMode.QUESTS))
 
     # Simulate picking Grim Deal while the perk menu is visible and in transition.
     # The perk kills the player immediately, but QuestMode must still close the run

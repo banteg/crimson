@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from crimson.game_modes import GameMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.screens.results.game_over import GameOverUi
 from crimson.sim.sessions import DeterministicSession
-from grim.config import CrimsonConfig
 from grim.rand import Crand
 from grim.view import ViewContext
 
 
-def test_survival_high_score_record_uses_player0_stats_in_multiplayer(mocker) -> None:
+def test_survival_high_score_record_uses_player0_stats_in_multiplayer(mocker, make_mode_config) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
-    config = CrimsonConfig(path=repo_root / "crimson.cfg", data={"player_count": 2, "game_mode": 1})
+    config = make_mode_config(game_mode=GameMode.SURVIVAL, updates={"player_count": 2})
 
     mode = SurvivalMode(ctx, config=config, audio_rng=Crand(0xBEEF))
     mocker.patch.object(GameOverUi, "open", return_value=None)
@@ -40,10 +40,10 @@ def test_survival_high_score_record_uses_player0_stats_in_multiplayer(mocker) ->
     assert record.most_used_weapon_id == 1
 
 
-def test_survival_elapsed_helpers_use_authoritative_session_timer(mocker) -> None:
+def test_survival_elapsed_helpers_use_authoritative_session_timer(mocker, make_mode_config) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
-    mode = SurvivalMode(ctx, audio_rng=Crand(0xBEEF))
+    mode = SurvivalMode(ctx, config=make_mode_config(game_mode=GameMode.SURVIVAL), audio_rng=Crand(0xBEEF))
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     session.elapsed_ms = 4321.0
