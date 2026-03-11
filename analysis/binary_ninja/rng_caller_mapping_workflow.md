@@ -28,24 +28,32 @@ Avoid large ownership-mixed functions first:
 
 ## BN Workflow
 
+Use the stable target name from `bn target list`:
+
+```bash
+TARGET="crimsonland.exe.bndb"
+```
+
+Do not copy the numeric selector from a live session into docs; it changes between sessions.
+
 1. Find the native function.
 
 ```bash
-bn function search --target 69598:2:1696946008943053416 bonus_pick_random_type
-bn function info --target 69598:2:1696946008943053416 bonus_pick_random_type
+bn function search --target "$TARGET" bonus_pick_random_type
+bn function info --target "$TARGET" bonus_pick_random_type
 ```
 
 2. Confirm semantics in decompile/disassembly.
 
 ```bash
-bn decompile --target 69598:2:1696946008943053416 bonus_pick_random_type
-bn disasm --target 69598:2:1696946008943053416 bonus_pick_random_type
+bn decompile --target "$TARGET" bonus_pick_random_type
+bn disasm --target "$TARGET" bonus_pick_random_type
 ```
 
 3. Enumerate `crt_rand` callsites with LLIL and compute exact `caller_static`.
 
 ```bash
-bn py exec --target 69598:2:1696946008943053416 --stdin <<'PY'
+bn py exec --target "$TARGET" --stdin <<'PY'
 from binaryninja import LowLevelILOperation
 
 CRT_RAND = 0x461746
