@@ -5,12 +5,12 @@ from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from crimson.math_parity import NATIVE_HALF_PI
 from grim.geom import Vec2
-from tests.support.helpers import MockCrand, assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_split_on_death_spawns_two_smaller_children() -> None:
     state = GameplayState()
-    rng = MockCrand([0x123, 0x456], fallback="zero")
+    rng = ScriptedCrand([0x123, 0x456], fallback="zero")
 
     pool = CreaturePool()
     parent = pool.entries[0]

@@ -19,7 +19,7 @@ def apply_bandage(ctx: PerkApplyCtx) -> None:
             ctx.state.effects.spawn_burst(
                 pos=player.pos,
                 count=8,
-                rand=ctx.state.rng.rand,
+                rng=ctx.state.rng,
                 detail_preset=5,
             )
 

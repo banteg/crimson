@@ -7,7 +7,7 @@ from crimson.perks.runtime.effects import perks_update_effects
 from crimson.player_damage import player_take_damage, player_take_projectile_damage
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.helpers import assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_death_clock_clears_regeneration_and_restores_health() -> None:
@@ -32,11 +32,11 @@ def test_death_clock_clears_regeneration_and_restores_health() -> None:
 
 
 def test_death_clock_blocks_damage() -> None:
-    state = GameplayState()
+    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
     player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
 
-    applied = player_take_damage(state, player, 10.0, dt=0.1, rand=lambda: 0)
+    applied = player_take_damage(state, player, 10.0, dt=0.1)
 
     assert applied == 0.0
     assert player.health == 100.0

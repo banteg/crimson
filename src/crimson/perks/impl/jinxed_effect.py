@@ -67,11 +67,11 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         if ctx.fx_queue is not None:
             ctx.fx_queue.add_random(
                 pos=player.pos,
-                rand=ctx.state.rng.rand,
+                rng=ctx.state.rng,
             )
             ctx.fx_queue.add_random(
                 pos=player.pos,
-                rand=ctx.state.rng.rand,
+                rng=ctx.state.rng,
             )
 
     ctx.state.jinxed_timer = (

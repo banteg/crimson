@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import TypeAlias
 
 from grim.assets import TextureId
+from grim.rand import CrandLike
 
 from .quests.level import QuestLevel
 
@@ -32,6 +32,7 @@ _TEXTURE_ID_BY_TERRAIN_SLOT: dict[int, TextureId] = {
     7: TextureId.TER_Q4_OVERLAY,
 }
 
+
 def terrain_slots_for_quest(level: QuestLevel) -> TerrainSlotTriplet:
     if level.major <= 4:
         base = (level.major - 1) * 2
@@ -45,11 +46,11 @@ def terrain_slots_for_quest(level: QuestLevel) -> TerrainSlotTriplet:
 def choose_unlock_terrain_slots(
     *,
     unlock_index: int,
-    rand: Callable[[], int],
+    rng: CrandLike,
 ) -> TerrainSlotTriplet:
     # Keep the thresholds descending to preserve the native chained 1/8 roll order.
     for threshold, slots in UNLOCK_TERRAIN_SLOTS.items():
-        if unlock_index >= threshold and (rand() & 7) == 3:
+        if unlock_index >= threshold and (rng.rand() & 7) == 3:
             return slots
     return DEFAULT_TERRAIN_SLOTS
 

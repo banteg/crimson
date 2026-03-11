@@ -9,7 +9,7 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.factories import make_projectile_update_options
-from tests.support.helpers import assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_ion_gun_master_increases_ion_damage() -> None:
@@ -25,7 +25,7 @@ def test_ion_gun_master_increases_ion_damage() -> None:
         owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player],
-        rand=lambda: 0,
+        rng=ScriptedCrand(0, fallback="repeat_last"),
     )
 
     assert killed is False
@@ -55,7 +55,7 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
                 creatures=[creature],
                 options=make_projectile_update_options(
                     world_size=10000.0,
-                    rng=lambda: 0,
+                    rng=ScriptedCrand(0, fallback="repeat_last"),
                     players=players,
                 ),
             ),

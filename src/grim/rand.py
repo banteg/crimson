@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Protocol, TypeAlias, runtime_checkable
 
 from crimson.rng_caller_static import RngCallerStatic
@@ -12,6 +13,15 @@ CRT_RAND_MULT = 214013
 CRT_RAND_INC = 2531011
 
 RngTraceSink = Callable[[int, int, int, CallerStatic], None]
+
+
+@dataclass(frozen=True, slots=True)
+class RngDrawRecord:
+    state_before: int
+    state_after: int
+    value: int
+    caller: CallerStatic
+    consumer: str | None = None
 
 
 class MissingRngCallerError(ValueError):
@@ -28,13 +38,6 @@ class CrandLike(Protocol):
     def srand(self, seed: int) -> None: ...
 
     def rand(self, *, caller: CallerStatic = None) -> int: ...
-
-
-@runtime_checkable
-class RandDrawLike(Protocol):
-    """Callable RNG source that accepts optional caller provenance."""
-
-    def __call__(self, *, caller: CallerStatic = None) -> int: ...
 
 
 class CrtRand:
@@ -94,3 +97,70 @@ class CrtRand:
 
 class Crand(CrtRand):
     """MSVCRT-compatible `rand()` LCG."""
+
+
+class _RecordingState:
+    __slots__ = ("base", "records")
+
+    def __init__(self, base: CrandLike) -> None:
+        self.base = base
+        self.records: list[RngDrawRecord] = []
+
+
+class RecordingCrand:
+    __slots__ = ("_consumer", "_shared")
+
+    def __init__(
+        self,
+        base: CrandLike,
+        *,
+        consumer: str | None = None,
+        _shared: _RecordingState | None = None,
+    ) -> None:
+        self._shared = _RecordingState(base) if _shared is None else _shared
+        self._consumer = None if consumer is None else str(consumer)
+
+    @property
+    def state(self) -> int:
+        return int(self._shared.base.state)
+
+    @property
+    def calls(self) -> int:
+        return len(self._shared.records)
+
+    @property
+    def records(self) -> tuple[RngDrawRecord, ...]:
+        return tuple(self._shared.records)
+
+    def srand(self, seed: int) -> None:
+        self._shared.base.srand(int(seed))
+        self._shared.records.clear()
+
+    def rand(self, *, caller: CallerStatic = None) -> int:
+        state_before = int(self._shared.base.state)
+        value = int(self._shared.base.rand(caller=caller))
+        state_after = int(self._shared.base.state)
+        self._shared.records.append(
+            RngDrawRecord(
+                state_before=state_before,
+                state_after=state_after,
+                value=value,
+                caller=caller,
+                consumer=self._consumer,
+            ),
+        )
+        return value
+
+    def records_since(self, start_call: int = 0) -> list[RngDrawRecord]:
+        start = max(0, int(start_call))
+        return list(self._shared.records[start:])
+
+    def values_since(self, start_call: int = 0) -> list[int]:
+        return [record.value for record in self.records_since(start_call)]
+
+    def scope(self, consumer: str) -> RecordingCrand:
+        return RecordingCrand(
+            self._shared.base,
+            consumer=str(consumer),
+            _shared=self._shared,
+        )

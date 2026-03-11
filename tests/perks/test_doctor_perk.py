@@ -6,7 +6,7 @@ from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.helpers import assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_doctor_increases_bullet_damage_by_20_percent() -> None:
@@ -22,7 +22,7 @@ def test_doctor_increases_bullet_damage_by_20_percent() -> None:
         owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player],
-        rand=lambda: 0,
+        rng=ScriptedCrand(0, fallback="repeat_last"),
     )
 
     assert killed is False

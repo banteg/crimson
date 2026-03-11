@@ -20,7 +20,7 @@ def _apply_default_pickup_burst(*, state: GameplayState, pickup: BonusPickupEven
     state.effects.spawn_burst(
         pos=pickup.pos,
         count=12,
-        rand=state.rng.rand,
+        rng=state.rng,
         detail_preset=int(detail_preset),
         lifetime=0.4,
         scale_step=0.1,

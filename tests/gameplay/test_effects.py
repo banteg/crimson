@@ -9,7 +9,7 @@ from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from grim.color import RGBA
 from grim.geom import Vec2
-from tests.support.helpers import MockCrand, assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_effect_src_rect_uses_grid_and_frame() -> None:
@@ -55,7 +55,7 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
 
 
 def test_sprite_effect_pool_updates_and_expires() -> None:
-    pool = SpriteEffectPool(size=1, rand=MockCrand(0))
+    pool = SpriteEffectPool(size=1, rng=ScriptedCrand(0, fallback="repeat_last"))
     idx = pool.spawn(pos=Vec2(10.0, 20.0), vel=Vec2(2.0, -3.0), scale=1.0)
     fx = pool.entries[idx]
     assert fx.active
@@ -74,7 +74,7 @@ def test_sprite_effect_pool_updates_and_expires() -> None:
 
 
 def test_particle_pool_style_decay_rules_match_thresholds() -> None:
-    pool = ParticlePool(size=2, rand=MockCrand(0))
+    pool = ParticlePool(size=2, rng=ScriptedCrand(0, fallback="repeat_last"))
 
     # Style 0 persists until intensity <= 0.0.
     idx0 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
@@ -108,10 +108,10 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     # - hit: speed_scale
     # - hit: sprite_vel_x, sprite_vel_y
     # - fx_queue.add_random: gray, w, rotation, effect_id
-    rng = MockCrand([0, 50, 7, 0, 0, 0, 0, 0, 0], fallback="repeat_last")
-    pool = ParticlePool(size=1, rand=rng.rand)
+    rng = ScriptedCrand([0, 50, 7, 0, 0, 0, 0, 0, 0], fallback="repeat_last")
+    pool = ParticlePool(size=1, rng=rng)
     fx_queue = FxQueue(capacity=1, max_count=1)
-    sprite_effects = SpriteEffectPool(size=1, rand=MockCrand(0))
+    sprite_effects = SpriteEffectPool(size=1, rng=ScriptedCrand(0, fallback="repeat_last"))
 
     particle_id = pool.spawn_particle(
         pos=Vec2(),
@@ -170,7 +170,7 @@ def test_particle_update_uses_argument_or_pool_damage_applier() -> None:
         return creature
 
     # No kwarg: fall back to pool-level damage applier.
-    pool = ParticlePool(size=1, rand=MockCrand(0))
+    pool = ParticlePool(size=1, rng=ScriptedCrand(0, fallback="repeat_last"))
     creature = _new_creature()
     pool_calls: list[tuple[int, float, int, Vec2, OwnerRef]] = []
 
@@ -193,7 +193,7 @@ def test_particle_update_uses_argument_or_pool_damage_applier() -> None:
     assert_float_close(creature.hp, 100.0)
 
     # With kwarg: prefer provided applier over pool-level fallback.
-    pool2 = ParticlePool(size=1, rand=MockCrand(0))
+    pool2 = ParticlePool(size=1, rng=ScriptedCrand(0, fallback="repeat_last"))
     creature2 = _new_creature()
     pool2_calls: list[tuple[int, float, int, Vec2, OwnerRef]] = []
     arg_calls: list[tuple[int, float, int, Vec2, OwnerRef]] = []
@@ -235,7 +235,7 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
         pos=Vec2(10.0, 20.0),
         angle=0.0,
         age=0.0,
-        rand=MockCrand(0),
+        rng=ScriptedCrand(0, fallback="repeat_last"),
         detail_preset=5,
         gore_disabled=0,
     )
@@ -295,7 +295,7 @@ def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
     pool.spawn_burst(
         pos=Vec2(10.0, 20.0),
         count=3,
-        rand=MockCrand(0),
+        rng=ScriptedCrand(0, fallback="repeat_last"),
         detail_preset=5,
     )
 

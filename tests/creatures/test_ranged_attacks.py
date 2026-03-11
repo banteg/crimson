@@ -11,7 +11,7 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.factories import make_creature_update_options, make_projectile_update_options
-from tests.support.helpers import assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def _wrap_angle(angle: float) -> float:
@@ -83,7 +83,12 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     creature.orbit_angle = 0.4
     creature.contact_damage = 0.0
 
-    result = pool.update(0.001, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0))
+    result = pool.update(
+        0.001,
+        options=make_creature_update_options(
+            state=state, players=[player], rng=ScriptedCrand(0, fallback="repeat_last"),
+        ),
+    )
 
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert len(spawned) == 1
@@ -132,7 +137,7 @@ def test_ranged_projectile_can_damage_player() -> None:
             creatures=[],
             options=make_projectile_update_options(
                 world_size=1024.0,
-                rng=state.rng.rand,
+                rng=state.rng,
                 runtime_state=state,
                 players=[player],
                 apply_player_damage=_apply_player_damage,
@@ -181,7 +186,7 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
             creatures=pool.entries[:2],
             options=make_projectile_update_options(
                 world_size=1024.0,
-                rng=state.rng.rand,
+                rng=state.rng,
                 runtime_state=state,
                 players=[player],
                 apply_player_damage=_apply_player_damage,

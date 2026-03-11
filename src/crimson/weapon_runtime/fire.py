@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
-from functools import partial
 from typing import TYPE_CHECKING
 
 import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.rand import CrandLike
 
 from ..math_parity import NATIVE_TAU, f32, heading_from_delta_f32
 from ..perks import PerkId
@@ -112,7 +112,7 @@ def _native_shot_angle_with_jitter(
     aim: Vec2,
     player_pos: Vec2,
     spread_heat: float,
-    rand: Callable[[], int],
+    rng: CrandLike,
 ) -> float:
     # `player_fire_weapon` computes jitter in float locals before `to_heading`.
     aim_dx = float(f32(float(aim.x) - float(player_pos.x)))
@@ -121,8 +121,10 @@ def _native_shot_angle_with_jitter(
     dist = float(f32(math.sqrt(float(dist_sq))))
     max_offset = float(f32(float(f32(float(dist) * float(spread_heat))) * 0.5))
 
-    dir_angle = float(f32(float(int(rand()) & 0x1FF) * (float(NATIVE_TAU) / 512.0)))
-    mag = float(f32(float(int(rand()) & 0x1FF) * (1.0 / 512.0)))
+    dir_angle = float(
+        f32(float(int(rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON)) & 0x1FF) * (float(NATIVE_TAU) / 512.0)),
+    )
+    mag = float(f32(float(int(rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON)) & 0x1FF) * (1.0 / 512.0)))
     offset = float(f32(float(max_offset) * float(mag)))
 
     dir_x = float(f32(math.cos(float(dir_angle))))
@@ -138,16 +140,20 @@ def _native_shot_angle_with_jitter(
 def _apply_pellet_jitter(
     *,
     shot_angle: float,
-    rand: Callable[[], int],
+    rng: CrandLike,
     jitter_rule: NoJitter | ModuloCenteredJitter | MaskCenteredJitter,
 ) -> float:
     match jitter_rule:
         case NoJitter():
             return float(shot_angle)
         case ModuloCenteredJitter(modulo=modulo, center=center, step=step):
-            return float(shot_angle) + float(int(rand()) % int(modulo) - int(center)) * float(step)
+            return float(shot_angle) + float(
+                int(rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON)) % int(modulo) - int(center),
+            ) * float(step)
         case MaskCenteredJitter(mask=mask, center=center, step=step):
-            return float(shot_angle) + float((int(rand()) & int(mask)) - int(center)) * float(step)
+            return float(shot_angle) + float(
+                (int(rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON)) & int(mask)) - int(center),
+            ) * float(step)
 
 
 def _apply_speed_scale_rule(
@@ -208,7 +214,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 player,
                 cost,
                 dt=dt,
-                rand=partial(state.rng.rand, caller=RngCallerStatic.PLAYER_FIRE_WEAPON),
+                caller=RngCallerStatic.PLAYER_FIRE_WEAPON,
                 players=players,
                 on_lethal=(lambda: on_player_lethal(player)) if on_player_lethal is not None else None,
             )
@@ -260,7 +266,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         aim=aim,
         player_pos=player.pos,
         spread_heat=float(player.spread_heat),
-        rand=partial(state.rng.rand, caller=RngCallerStatic.PLAYER_FIRE_WEAPON),
+        rng=state.rng,
     )
     particle_angle = Vec2.from_heading(shot_angle).to_angle()
     if weapon_id in (WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER):
@@ -301,7 +307,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             for _ in range(pellets):
                 angle = _apply_pellet_jitter(
                     shot_angle=float(shot_angle),
-                    rand=partial(state.rng.rand, caller=RngCallerStatic.PLAYER_FIRE_WEAPON),
+                    rng=state.rng,
                     jitter_rule=jitter_rule,
                 )
                 proj_id = state.projectiles.spawn(

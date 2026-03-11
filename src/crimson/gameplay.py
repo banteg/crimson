@@ -153,13 +153,14 @@ class GameplayState(msgspec.Struct):
     shots_hit: list[int] = msgspec.field(default_factory=lambda: [0] * 4)
     player_spread_damping_scalar: float = 1.0
     player_spread_damping_gate: float = 0.0
-    weapon_shots_fired: list[list[int]] = msgspec.field(default_factory=lambda: [[0] * WEAPON_COUNT_SIZE for _ in range(4)])
+    weapon_shots_fired: list[list[int]] = msgspec.field(
+        default_factory=lambda: [[0] * WEAPON_COUNT_SIZE for _ in range(4)],
+    )
     debug_god_mode: bool = False
 
     def __post_init__(self) -> None:
-        rand = self.rng.rand
-        self.particles = ParticlePool(rand=rand)
-        self.sprite_effects = SpriteEffectPool(rand=rand)
+        self.particles = ParticlePool(rng=self.rng)
+        self.sprite_effects = SpriteEffectPool(rng=self.rng)
 
 
 def build_gameplay_state() -> GameplayState:
@@ -326,8 +327,12 @@ def survival_update_weapon_handouts(
 
     if int(state.survival_recent_death_count) == 3 and (not bool(state.survival_reward_fire_seen)):
         pos0, pos1, pos2 = state.survival_recent_death_pos
-        centroid_x = f32(float(f32(float(pos0.x) + float(pos1.x) + float(pos2.x))) * _SURVIVAL_RECENT_DEATH_CENTROID_SCALE)
-        centroid_y = f32(float(f32(float(pos0.y) + float(pos1.y) + float(pos2.y))) * _SURVIVAL_RECENT_DEATH_CENTROID_SCALE)
+        centroid_x = f32(
+            float(f32(float(pos0.x) + float(pos1.x) + float(pos2.x))) * _SURVIVAL_RECENT_DEATH_CENTROID_SCALE,
+        )
+        centroid_y = f32(
+            float(f32(float(pos0.y) + float(pos1.y) + float(pos2.y))) * _SURVIVAL_RECENT_DEATH_CENTROID_SCALE,
+        )
         dx = float(player.pos.x) - float(centroid_x)
         dy = float(player.pos.y) - float(centroid_y)
         if math.sqrt(dx * dx + dy * dy) < 16.0 and float(player.health) < 15.0:
@@ -399,7 +404,9 @@ def _player_apply_move_with_spawn_avoidance(
                 # X-only move.
                 pos_x = x_candidate
                 pos_y = old_y
-                if _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(pos_x), float(pos_y)) <= float(radius):
+                if _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(pos_x), float(pos_y)) <= float(
+                    radius,
+                ):
                     # Y-only move.
                     pos_x = float(f32(float(x_candidate) - float(dx)))
                     pos_y = y_candidate
@@ -521,15 +528,23 @@ def _player_update_aim_by_scheme(
         if aim_scheme == AimScheme.KEYBOARD:
             if movement_mode in (MovementControlType.RELATIVE, MovementControlType.STATIC):
                 if bool(input_state.turn_right_pressed):
-                    player.aim_heading = float(f32(float(player.aim_heading) + float(f32(float(dt) * _AIM_KEYBOARD_TURN_RATE))))
+                    player.aim_heading = float(
+                        f32(float(player.aim_heading) + float(f32(float(dt) * _AIM_KEYBOARD_TURN_RATE))),
+                    )
                 if bool(input_state.turn_left_pressed):
-                    player.aim_heading = float(f32(float(player.aim_heading) - float(f32(float(dt) * _AIM_KEYBOARD_TURN_RATE))))
+                    player.aim_heading = float(
+                        f32(float(player.aim_heading) - float(f32(float(dt) * _AIM_KEYBOARD_TURN_RATE))),
+                    )
                 target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
         elif aim_scheme == AimScheme.JOYSTICK:
             if bool(input_state.turn_right_pressed):
-                player.aim_heading = float(f32(float(player.aim_heading) + float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))))
+                player.aim_heading = float(
+                    f32(float(player.aim_heading) + float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))),
+                )
             if bool(input_state.turn_left_pressed):
-                player.aim_heading = float(f32(float(player.aim_heading) - float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))))
+                player.aim_heading = float(
+                    f32(float(player.aim_heading) - float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))),
+                )
             target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
         elif aim_scheme == AimScheme.UNKNOWN:
             target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
@@ -580,17 +595,16 @@ def player_update(
                 f32(math.sin(bleed_dir_angle) * -6.0 + float(player.pos.y)),
             )
             aim_heading = float(player.aim_heading)
-            rand = state.rng.rand
             for _ in range(3):
                 state.effects.spawn_blood_splatter(
                     pos=bleed_pos,
                     angle=aim_heading,
                     age=0.0,
-                    rand=rand,
+                    rng=state.rng,
                     detail_preset=int(detail_preset),
                     gore_disabled=0,
                 )
-            state.sfx_queue.append(_LOW_HEALTH_BLOODSPILL_SFX[int(rand()) & 1])
+            state.sfx_queue.append(_LOW_HEALTH_BLOODSPILL_SFX[int(state.rng.rand()) & 1])
             player.low_health_timer = 1.0
 
     damping_scalar = float(f32(float(state.player_spread_damping_scalar)))
@@ -655,9 +669,7 @@ def player_update(
     speed = 0.0
     move_delta_override: Vec2 | None = None
     player_controlled_movement = (
-        (not state.demo_mode_active)
-        and move_mode != MovementControlType.COMPUTER
-        and aim_scheme != AimScheme.COMPUTER
+        (not state.demo_mode_active) and move_mode != MovementControlType.COMPUTER and aim_scheme != AimScheme.COMPUTER
     )
     if player_controlled_movement:
         if move_mode == MovementControlType.RELATIVE:
@@ -785,11 +797,7 @@ def player_update(
                 f32(float(movement_dt) * float(move_dy)),
             )
         else:
-            moving_input = raw_mag > (
-                0.0
-                if move_mode == MovementControlType.MOUSE_POINT_CLICK
-                else 0.2
-            )
+            moving_input = raw_mag > (0.0 if move_mode == MovementControlType.MOUSE_POINT_CLICK else 0.2)
             turn_alignment_scale = 1.0
             if moving_input:
                 inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0

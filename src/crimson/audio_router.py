@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from grim.audio import AudioState, play_sfx, play_sfx_resolved, trigger_game_tune
-from grim.rand import Crand
+from grim.rand import Crand, CrandLike
 
 from .creatures.spawn import CreatureTypeId
 from .game_modes import GameMode
@@ -77,10 +77,10 @@ class AudioRouter(msgspec.Struct):
     reflex_boost_timer_source: Callable[[], float] | None = None
 
     @staticmethod
-    def _rand_choice(rand: Callable[[], int], options: tuple[str, ...]) -> str | None:
+    def _rand_choice(rng: CrandLike, options: tuple[str, ...]) -> str | None:
         if not options:
             return None
-        idx = int(rand()) % len(options)
+        idx = int(rng.rand()) % len(options)
         return options[idx]
 
     def _reflex_boost_timer(self) -> float:
@@ -111,7 +111,7 @@ class AudioRouter(msgspec.Struct):
     def trigger_game_tune(self) -> str | None:
         if self.audio is None:
             return None
-        return trigger_game_tune(self.audio, rand=self.audio_rng.rand)
+        return trigger_game_tune(self.audio, rng=self.audio_rng)
 
     def handle_player_audio(
         self,
@@ -147,19 +147,19 @@ class AudioRouter(msgspec.Struct):
         type_id: int,
         *,
         beam_types: frozenset[int],
-        rand: Callable[[], int],
+        rng: CrandLike,
     ) -> str | None:
         ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).ammo_class
         if ammo_class == 4:
             return "sfx_shock_hit_01"
-        return self._rand_choice(rand, _BULLET_HIT_SFX)
+        return self._rand_choice(rng, _BULLET_HIT_SFX)
 
     def play_hit_sfx(
         self,
         hits: list[ProjectileHit],
         *,
         game_mode: GameMode,
-        rand: Callable[[], int],
+        rng: CrandLike,
         beam_types: frozenset[int],
     ) -> None:
         if self.audio is None or not hits:
@@ -169,15 +169,15 @@ class AudioRouter(msgspec.Struct):
         game_tune_started = bool(self.audio.music.game_tune_started)
         for idx in range(0, end):
             if (not self.demo_mode_active) and game_mode != GameMode.RUSH and (not game_tune_started):
-                trigger_game_tune(self.audio, rand=rand)
+                trigger_game_tune(self.audio, rng=rng)
                 game_tune_started = True
                 continue
             type_id = int(hits[idx].type_id)
-            self.play_sfx(self._hit_sfx_for_type(type_id, beam_types=beam_types, rand=rand))
+            self.play_sfx(self._hit_sfx_for_type(type_id, beam_types=beam_types, rng=rng))
 
-    def play_death_sfx(self, deaths: Sequence[CreatureDeath], *, rand: Callable[[], int]) -> None:
+    def play_death_sfx(self, deaths: Sequence[CreatureDeath], *, rng: CrandLike) -> None:
         if self.audio is None or not deaths:
             return
         for idx in range(min(len(deaths), _MAX_DEATH_SFX_PER_FRAME)):
             death = deaths[idx]
-            self.play_sfx(self._rand_choice(rand, _CREATURE_DEATH_SFX[death.type_id]))
+            self.play_sfx(self._rand_choice(rng, _CREATURE_DEATH_SFX[death.type_id]))

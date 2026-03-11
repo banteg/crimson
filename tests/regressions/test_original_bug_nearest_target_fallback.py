@@ -16,6 +16,7 @@ from crimson.projectiles.types import SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.factories import make_creature_state, make_projectile_update_options
+from tests.support.helpers import ScriptedCrand
 
 
 @pytest.mark.parametrize(
@@ -76,7 +77,7 @@ def test_shock_chain_retarget_miss_handling(preserve_bugs: bool, expect_new_segm
                 creatures=creatures,
                 options=make_projectile_update_options(
                     world_size=1024.0,
-                    rng=lambda: 0,
+                    rng=ScriptedCrand(0, fallback="repeat_last"),
                     runtime_state=state,
                 ),
             ),

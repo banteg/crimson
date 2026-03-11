@@ -50,7 +50,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
     ctx.state.effects.spawn_explosion_burst(
         pos=origin,
         scale=1.0,
-        rand=rand,
+        rng=ctx.state.rng,
         detail_preset=int(ctx.detail_preset),
     )
 

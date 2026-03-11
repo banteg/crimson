@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from grim.geom import Vec2
-from grim.rand import RandDrawLike
+from grim.rand import CrandLike
 
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
@@ -15,6 +15,7 @@ from ...effects import EffectPool
 from ...math_parity import NATIVE_HALF_PI, f32
 from ...owner_ref import OwnerRef
 from ...perks import PerkId
+from ...rng_caller_static import RngCallerStatic
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..types import (
     MAIN_PROJECTILE_POOL_SIZE,
@@ -43,7 +44,7 @@ if TYPE_CHECKING:
 class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     world_size: float
     damage_scale_by_type: dict[int, float]
-    rng: RandDrawLike
+    rng: CrandLike
     runtime_state: GameplayState
     players: Sequence[PlayerState]
     apply_player_damage: Callable[[int, float], None]
@@ -303,9 +304,7 @@ class ProjectilePool:
                         f32(
                             float(acc.x)
                             + float(
-                                f32(float(dir_x) * float(dt) * 20.0)
-                                * float(proj.speed_scale)
-                                * 3.0,
+                                f32(float(dir_x) * float(dt) * 20.0) * float(proj.speed_scale) * 3.0,
                             ),
                         ),
                     ),
@@ -313,9 +312,7 @@ class ProjectilePool:
                         f32(
                             float(acc.y)
                             + float(
-                                f32(float(dir_y) * float(dt) * 20.0)
-                                * float(proj.speed_scale)
-                                * 3.0,
+                                f32(float(dir_y) * float(dt) * 20.0) * float(proj.speed_scale) * 3.0,
                             ),
                         ),
                     ),
@@ -344,7 +341,9 @@ class ProjectilePool:
                             hit_idx = idx
                             break
 
-                    owner_collision = hit_idx is not None and owner_creature_idx is not None and int(hit_idx) == owner_creature_idx
+                    owner_collision = (
+                        hit_idx is not None and owner_creature_idx is not None and int(hit_idx) == owner_creature_idx
+                    )
                     if owner_collision:
                         # Native `creature_find_in_radius` does not skip owner id during
                         # search; owner hits are discarded after the first match instead of
@@ -422,7 +421,7 @@ class ProjectilePool:
 
                     if proj.life_timer != 0.25 and rule.stop_on_hit:
                         proj.life_timer = 0.25
-                        jitter = rng() & 3
+                        jitter = rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE) & 3
                         jitter_dx = float(f32(float(dir_x) * float(jitter)))
                         jitter_dy = float(f32(float(dir_y) * float(jitter)))
                         proj.pos = Vec2(
@@ -484,17 +483,13 @@ class ProjectilePool:
                     # handling. Non-Gauss/non-Fire-Bullets impacts emit a single shard
                     # here; Gauss/Fire-Bullets emits shards inside the six-iteration
                     # large-streak loop (presentation hook parity).
-                    if (
-                        float(runtime_state.bonuses.freeze) > 0.0
-                        and effects is not None
-                        and rule.emit_freeze_shard
-                    ):
+                    if float(runtime_state.bonuses.freeze) > 0.0 and effects is not None and rule.emit_freeze_shard:
                         shard_angle = float(float(proj.angle) - NATIVE_HALF_PI)
-                        shard_angle += float(int(rng()) % 0x264) * 0.01
+                        shard_angle += float(int(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE)) % 0x264) * 0.01
                         effects.spawn_freeze_shard(
                             pos=proj.pos,
                             angle=float(shard_angle),
-                            rand=rng,
+                            rng=rng,
                             detail_preset=int(detail_preset),
                         )
 

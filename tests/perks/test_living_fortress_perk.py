@@ -6,7 +6,7 @@ from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.helpers import assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_living_fortress_scales_bullet_damage_by_stationary_timers() -> None:
@@ -27,7 +27,7 @@ def test_living_fortress_scales_bullet_damage_by_stationary_timers() -> None:
         owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player0, player1],
-        rand=lambda: 0,
+        rng=ScriptedCrand(0, fallback="repeat_last"),
     )
 
     assert killed is False

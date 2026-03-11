@@ -17,7 +17,7 @@ import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
-from grim.rand import CallerStatic, CrandLike
+from grim.rand import CallerStatic, Crand, CrandLike
 
 from ..bonuses import BonusId
 from ..effects import EffectPool, FxQueue, FxQueueRotated
@@ -269,6 +269,7 @@ class CreatureState(msgspec.Struct):
     bonus_id: BonusId | None = None
     bonus_duration_override: int | None = None
 
+
 class CreatureDeath(msgspec.Struct, frozen=True):
     index: int
     pos: Vec2
@@ -312,7 +313,6 @@ class _CreatureInteractionCtx(msgspec.Struct):
     dt: float
     rng: CrandLike
     caller: CallerStatic
-    draw: Callable[[], int]
     detail_preset: int
     gore_disabled: int
     world_width: float
@@ -363,7 +363,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     ctx.state.effects.spawn_burst(
         pos=creature.pos,
         count=6,
-        rand=ctx.rng.rand,
+        rng=ctx.rng,
         detail_preset=int(ctx.detail_preset),
     )
     ctx.sfx.append("sfx_ui_bonus")
@@ -410,7 +410,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     # (creature_type_table[*].sfx_bank_b[rand & 1]) before applying damage.
     options = _CREATURE_CONTACT_SFX.get(creature.type_id)
     if options is not None:
-        ctx.sfx.append(options[int(ctx.draw()) & 1])
+        ctx.sfx.append(options[int(ctx.rng.rand(caller=ctx.caller)) & 1])
 
     mr_melee_killed = False
     if perk_active(ctx.player, PerkId.MR_MELEE):
@@ -454,7 +454,8 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             owner=OwnerRef.from_player(int(ctx.player.index)),
             dt=ctx.dt,
             players=ctx.players,
-            rand=ctx.draw,
+            rng=ctx.rng,
+            caller=ctx.caller,
             effects=ctx.state.effects,
             detail_preset=int(ctx.detail_preset),
             on_lethal=_on_mr_melee_lethal,
@@ -486,7 +487,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         ctx.player,
         float(creature.contact_damage),
         dt=ctx.dt,
-        rand=ctx.draw,
+        caller=ctx.caller,
         players=ctx.players,
         on_lethal=_on_player_lethal_final_revenge,
     )
@@ -495,7 +496,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         push_dir = (ctx.player.pos - creature.pos).normalized()
         ctx.fx_queue.add_random(
             pos=ctx.player.pos + push_dir * 3.0,
-            rand=ctx.rng.rand,
+            rng=ctx.rng,
         )
 
     creature.attack_cooldown = float(creature.attack_cooldown) + 1.0
@@ -813,12 +814,12 @@ class CreaturePool:
 
         effect_pool = self.effects if effects is None else effects
         if effect_pool is not None and plan.effects:
-            fx_rand = (lambda *, caller=None: 0) if rng is None else rng.rand
+            fx_rng = Crand(0) if rng is None else rng
             for fx in plan.effects:
                 effect_pool.spawn_burst(
                     pos=fx.pos,
                     count=int(fx.count),
-                    rand=fx_rand,
+                    rng=fx_rng,
                     detail_preset=int(detail_preset),
                 )
         return mapping, primary_pool
@@ -940,7 +941,8 @@ class CreaturePool:
                 owner=creature.last_hit_owner,
                 dt=dt,
                 players=players,
-                rand=rand,
+                rng=rng,
+                caller=caller,
                 effects=state.effects,
                 detail_preset=int(detail_preset),
                 on_lethal=lambda suppress_death_sfx=suppress_death_sfx: deaths.append(
@@ -981,7 +983,7 @@ class CreaturePool:
                     and float(state.bonuses.freeze) <= 0.0
                     and (int(creature.flags) & _FLAG_AI7_LINK_TIMER) != 0
                 ):
-                    creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
+                    creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rng=rng, caller=caller)
                 if creature_lifecycle_is_alive(creature.lifecycle_stage):
                     creature.lifecycle_stage = f32(float(creature.lifecycle_stage) - float(dt))
                 if dt > 0.0:
@@ -1004,7 +1006,7 @@ class CreaturePool:
             poison_killed = _apply_self_damage_tick(idx, creature)
             # Native order runs AI7 link timer update after periodic self-damage
             # and before any live-branch kill handling/retargeting.
-            creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
+            creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rng=rng, caller=caller)
             if poison_killed:
                 if creature.active:
                     self._tick_dead(
@@ -1051,7 +1053,7 @@ class CreaturePool:
                         plague_killed = True
 
                     if fx_queue is not None:
-                        fx_queue.add_random(pos=creature.pos, rand=rng.rand)
+                        fx_queue.add_random(pos=creature.pos, rng=rng)
                     if plague_killed:
                         # Native keeps executing the current live-branch body after
                         # `creature_handle_death` in this timer-wrap kill path.
@@ -1184,7 +1186,7 @@ class CreaturePool:
                         creature.collision_timer = CONTACT_DAMAGE_PERIOD
                         creature.hp -= (100.0 - dist) * 0.3
                         if fx_queue is not None:
-                            fx_queue.add_random(pos=creature.pos, rand=rng.rand)
+                            fx_queue.add_random(pos=creature.pos, rng=rng)
 
                         if creature.hp < 0.0:
                             if creature.type_id == CreatureTypeId.LIZARD:
@@ -1245,7 +1247,6 @@ class CreaturePool:
                 dt=dt,
                 rng=rng,
                 caller=caller,
-                draw=rand,
                 detail_preset=int(detail_preset),
                 gore_disabled=int(gore_disabled),
                 world_width=float(world_width),
@@ -1321,7 +1322,9 @@ class CreaturePool:
             state.bonus_pool.spawn_at(
                 pos=creature.pos,
                 bonus_id=creature.bonus_id,
-                duration_override=int(creature.bonus_duration_override) if creature.bonus_duration_override is not None else -1,
+                duration_override=int(creature.bonus_duration_override)
+                if creature.bonus_duration_override is not None
+                else -1,
                 state=state,
                 world_width=world_width,
                 world_height=world_height,
@@ -1370,18 +1373,18 @@ class CreaturePool:
                 state.effects.spawn_freeze_shard(
                     pos=creature_pos,
                     angle=angle,
-                    rand=rng.rand,
+                    rng=rng,
                     detail_preset=int(detail_preset),
                 )
             angle = float(int(draw()) % 0x264) * 0.01
             state.effects.spawn_freeze_shatter(
                 pos=creature_pos,
                 angle=angle,
-                rand=rng.rand,
+                rng=rng,
                 detail_preset=int(detail_preset),
             )
             if fx_queue is not None:
-                fx_queue.add_random(pos=creature_pos, rand=rng.rand)
+                fx_queue.add_random(pos=creature_pos, rng=rng)
             self.kill_count += 1
             creature.active = False
 
@@ -1533,6 +1536,7 @@ class CreaturePool:
             and rng is not None
             and self.effects is not None
         ):
+
             def draw() -> int:
                 return int(rng.rand(caller=caller))
 
@@ -1543,7 +1547,7 @@ class CreaturePool:
                         pos=creature.pos,
                         angle=float(angle),
                         age=float(age),
-                        rand=rng.rand,
+                        rng=rng,
                         detail_preset=int(detail_preset),
                         gore_disabled=int(gore_disabled),
                     )
@@ -1603,7 +1607,7 @@ class CreaturePool:
             state.effects.spawn_burst(
                 pos=creature.pos,
                 count=8,
-                rand=rng.rand,
+                rng=rng,
                 detail_preset=int(detail_preset),
             )
 
@@ -1633,7 +1637,7 @@ class CreaturePool:
                 state.effects.spawn_burst(
                     pos=spawned_bonus.pos,
                     count=16,
-                    rand=rng.rand,
+                    rng=rng,
                     detail_preset=int(detail_preset),
                 )
 

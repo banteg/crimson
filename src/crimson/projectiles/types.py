@@ -7,7 +7,6 @@ from typing import TypeAlias
 import msgspec
 
 from grim.geom import Vec2
-from grim.rand import CallerStatic
 
 from ..owner_ref import OwnerRef
 
@@ -45,11 +44,6 @@ class SecondaryProjectileTypeId(IntEnum):
     HOMING_ROCKET = 2
     DETONATION = 3
     ROCKET_MINIGUN = 4
-
-
-def _rng_zero(*, caller: CallerStatic = None) -> int:
-    _ = caller
-    return 0
 
 
 CreatureDamageApplier: TypeAlias = Callable[[int, float, int, Vec2, OwnerRef], None]
@@ -113,5 +107,4 @@ __all__ = [
     "SECONDARY_PROJECTILE_POOL_SIZE",
     "SecondaryProjectile",
     "SecondaryProjectileTypeId",
-    "_rng_zero",
 ]

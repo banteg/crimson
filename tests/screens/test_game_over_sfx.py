@@ -48,6 +48,7 @@ def _runtime_resources_stub(*, tex: rl.Texture | None = None) -> RuntimeResource
         ),
     )
 
+
 def test_game_over_panel_open_plays_panel_click(tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=ensure_crimson_cfg(tmp_path))
     ui.phase = 1
@@ -70,7 +71,7 @@ def test_game_over_panel_open_plays_panel_click(tmp_path: Path, mocker) -> None:
         record=HighScoreRecord.blank(),
         player_name_default="",
         play_sfx=play_sfx,
-        rand=lambda: 0,
+        rng=Crand(0),
         mouse=rl.Vector2(0.0, 0.0),
     )
 

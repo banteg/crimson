@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from pathlib import Path
 from typing import cast
 
@@ -10,6 +9,7 @@ from grim.raylib_api import rl
 
 from . import paq
 from .console import ConsoleState
+from .rand import CrandLike
 
 MUSIC_PAK_NAME = "music.paq"
 MUSIC_TRACKS: dict[str, tuple[str, ...]] = {
@@ -266,7 +266,7 @@ def stop_music(state: MusicState) -> None:
     state.game_tune_track = None
 
 
-def trigger_game_tune(state: MusicState, *, rand: Callable[[], int]) -> str | None:
+def trigger_game_tune(state: MusicState, *, rng: CrandLike) -> str | None:
     """Start a random queued game tune, if it hasn't been triggered yet.
 
     Returns the track key if playback started, otherwise None.
@@ -278,7 +278,7 @@ def trigger_game_tune(state: MusicState, *, rand: Callable[[], int]) -> str | No
     if not state.queue:
         return None
 
-    idx = int(rand()) % len(state.queue)
+    idx = int(rng.rand()) % len(state.queue)
     track_key = state.queue[idx]
 
     if track_key not in state.tracks:

@@ -508,9 +508,7 @@ class BaseGameplayMode:
             return
 
         target_indices: list[int] = []
-        target_players = (
-            self.sim_world.players[:1] if self.state.preserve_bugs else self.sim_world.players
-        )
+        target_players = self.sim_world.players[:1] if self.state.preserve_bugs else self.sim_world.players
         for target_player in target_players:
             if not self.state.preserve_bugs and float(target_player.health) <= 0.0:
                 continue
@@ -1300,7 +1298,7 @@ class BaseGameplayMode:
             record=record,
             player_name_default=self._player_name_default(),
             play_sfx=self.audio_bridge.router.play_sfx,
-            rand=None,
+            rng=None,
             mouse=self._ui_mouse_pos(),
         )
         if action == "play_again":
@@ -1474,10 +1472,7 @@ class BaseGameplayMode:
             and provider is not None
             and self._tick_runner_session is session
             and bool(self._tick_runner_is_networked) == bool(is_networked)
-            and (
-                (not bool(is_networked))
-                or str(self._tick_runner_network_role) == str(role)
-            )
+            and ((not bool(is_networked)) or str(self._tick_runner_network_role) == str(role))
         ):
             if bool(is_networked):
                 if not isinstance(provider, _LanRuntimeInputProvider):
@@ -1517,9 +1512,7 @@ class BaseGameplayMode:
         self._tick_runner_frame_index = 0
         self._tick_runner_next_tick_index = 0
         self._tick_runner_local_clock = (
-            None
-            if bool(is_networked)
-            else FixedStepClock(tick_rate=int(self._gameplay_tick_rate()))
+            None if bool(is_networked) else FixedStepClock(tick_rate=int(self._gameplay_tick_rate()))
         )
         return (runner, provider)
 
@@ -1745,6 +1738,7 @@ class BaseGameplayMode:
                 role=str(role),
                 provider=provider,
             )
+
             def _on_tick_applied(applied: _AppliedBatchTick) -> LanStepAction:
                 frame_tick_index = applied.frame_tick_index
                 if frame_tick_index is None:
@@ -1798,8 +1792,7 @@ class BaseGameplayMode:
         if post_apply_reactions and len(post_apply_reactions) != len(outputs):
             raise RuntimeError("post-apply reactions must align with presentation outputs")
         reaction_by_tick = {
-            int(output.tick_index): reaction
-            for output, reaction in zip(outputs, post_apply_reactions, strict=False)
+            int(output.tick_index): reaction for output, reaction in zip(outputs, post_apply_reactions, strict=False)
         }
         apply_presentation_outputs(
             outputs=outputs,
@@ -1864,14 +1857,18 @@ class BaseGameplayMode:
             if tick_result.lan_sync is not None:
                 applied.frame_tick_index = int(tick_result.lan_sync.frame_tick_index)
 
-            presentation_outputs.append(apply_sim_metadata_tick_result(
-                sim_world=self.sim_world,
-                tick_result=tick_result,
-                game_tune_started=bool(session.game_tune_started),
-            ))
-            post_apply_reactions.append(self._build_tick_post_apply_reaction(
-                tick_result=tick_result,
-            ))
+            presentation_outputs.append(
+                apply_sim_metadata_tick_result(
+                    sim_world=self.sim_world,
+                    tick_result=tick_result,
+                    game_tune_started=bool(session.game_tune_started),
+                ),
+            )
+            post_apply_reactions.append(
+                self._build_tick_post_apply_reaction(
+                    tick_result=tick_result,
+                ),
+            )
             self._ticks_advanced_per_frame += 1
             ticks_applied += 1
 
@@ -1967,9 +1964,7 @@ class BaseGameplayMode:
             session=session,
             recorder=recorder,
             on_tick_applied=lambda applied: (
-                "stop_after_finalize"
-                if on_tick(applied.tick, applied.replay_tick_index)
-                else "continue"
+                "stop_after_finalize" if on_tick(applied.tick, applied.replay_tick_index) else "continue"
             ),
             on_checkpoint=on_checkpoint,
         )

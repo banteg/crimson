@@ -22,7 +22,7 @@ from crimson.sim.presentation_step import plan_world_presentation_step, queue_pr
 from crimson.sim.state_types import BonusPickupEvent
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
-from tests.support.helpers import MockCrand, assert_rng_progression
+from tests.support.helpers import ScriptedCrand, assert_rng_progression
 
 
 def test_perk_hook_registries_are_explicit_and_ordered() -> None:
@@ -34,14 +34,10 @@ def test_perk_manifest_has_single_runtime_owner_per_perk() -> None:
     perk_ids = [hooks.perk_id for hooks in PERK_HOOKS_IN_ORDER]
     assert len(perk_ids) == len(set(perk_ids))
 
-    expected_apply_ids = {
-        hooks.perk_id for hooks in PERK_HOOKS_IN_ORDER if hooks.apply_handler is not None
-    }
+    expected_apply_ids = {hooks.perk_id for hooks in PERK_HOOKS_IN_ORDER if hooks.apply_handler is not None}
     assert set(PERK_APPLY_HANDLERS) == expected_apply_ids
 
-    expected_player_tick_steps = tuple(
-        step for hooks in PERK_HOOKS_IN_ORDER for step in hooks.player_tick_steps
-    )
+    expected_player_tick_steps = tuple(step for hooks in PERK_HOOKS_IN_ORDER for step in hooks.player_tick_steps)
     assert PLAYER_PERK_TICK_STEPS == expected_player_tick_steps
 
     expected_effect_steps = (update_player_bonus_timers,) + tuple(
@@ -89,7 +85,7 @@ def test_bonus_pickup_feature_hooks_emit_expected_fx() -> None:
 def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
     state = GameplayState()
     fx_queue = FxQueue()
-    rng = MockCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback="repeat_last")
     before_calls = rng.calls
     before_state = rng.state
 
@@ -105,7 +101,7 @@ def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
                 target=Vec2(1.0, 1.0),
             ),
         ],
-        rand=rng,
+        rng=rng,
         detail_preset=5,
         gore_disabled=0,
     )
@@ -116,8 +112,8 @@ def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
         before_state=before_state,
         expected_draws=59,
         expected_after_state=0,
-        expected_hash="68646aeb6b9170bc",
     )
+    assert rng.values_since(before_calls) == [0] * 59
     assert fx_queue.count > 0
 
 
@@ -158,7 +154,7 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
         game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
         perk_progression_enabled=True,
-        rand=world.state.rng.rand,
+        rng=world.state.rng,
         detail_preset=5,
         gore_disabled=0,
         game_tune_started=False,

@@ -13,11 +13,11 @@ from crimson.weapon_runtime import (
 )
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.support.helpers import MockCrand, assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
-    state = GameplayState(rng=MockCrand(0))
+    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
@@ -25,7 +25,11 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     weapon_assign_player(player, WeaponId.MINI_ROCKET_SWARMERS, state=state)
     assert player.weapon.ammo == player.weapon.clip_size
 
-    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state))
+    fire_weapon(
+        WeaponFireCtx(
+            player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state,
+        ),
+    )
 
     spawned = [entry for entry in state.secondary_projectiles.entries if entry.active]
     assert len(spawned) == player.weapon.clip_size
