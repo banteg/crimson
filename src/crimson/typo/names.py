@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 import msgspec
@@ -8,6 +8,7 @@ import msgspec
 from grim.rand import CallerStatic, CrandLike
 
 NAME_MAX_CHARS = 16  # creature_name_assign_random enforces strlen < 0x10.
+Draw = Callable[[], int]
 
 
 _NAME_PARTS: tuple[str, ...] = (
@@ -64,92 +65,82 @@ _NAME_PARTS: tuple[str, ...] = (
     "boom",
     "the",
 )
-
-
-def _rand(rng: CrandLike, *, caller: CallerStatic = None) -> int:
-    return int(rng.rand(caller=caller))
-
-
-def typo_name_part(rng: CrandLike, *, allow_the: bool, caller: CallerStatic = None) -> str:
+def typo_name_part(draw: Draw, *, allow_the: bool) -> str:
     mod = 52 if allow_the else 51
-    idx = _rand(rng, caller=caller) % mod
+    idx = int(draw()) % mod
     if idx == 39:
         return "nerd"
     return _NAME_PARTS[idx]
 
 
 def typo_build_name(
-    rng: CrandLike,
+    draw: Draw,
     *,
     score_xp: int,
     unique_words: Sequence[str] | None = None,
-    caller: CallerStatic = None,
 ) -> str:
     score_xp = int(score_xp)
     if unique_words:
         return _typo_build_custom_name(
-            rng,
+            draw,
             score_xp=score_xp,
             unique_words=unique_words,
-            caller=caller,
         )
     if score_xp > 120:
-        if _rand(rng, caller=caller) % 100 < 10 and unique_words:
-            return str(unique_words[_rand(rng, caller=caller) % len(unique_words)])
-        if _rand(rng, caller=caller) % 100 < 80:
+        if int(draw()) % 100 < 10 and unique_words:
+            return str(unique_words[int(draw()) % len(unique_words)])
+        if int(draw()) % 100 < 80:
             return "".join(
                 [
-                    typo_name_part(rng, allow_the=True, caller=caller),
-                    typo_name_part(rng, allow_the=False, caller=caller),
-                    typo_name_part(rng, allow_the=False, caller=caller),
-                    typo_name_part(rng, allow_the=False, caller=caller),
+                    typo_name_part(draw, allow_the=True),
+                    typo_name_part(draw, allow_the=False),
+                    typo_name_part(draw, allow_the=False),
+                    typo_name_part(draw, allow_the=False),
                 ],
             )
 
-    if (score_xp > 80 and _rand(rng, caller=caller) % 100 < 80) or (
-        score_xp > 60 and _rand(rng, caller=caller) % 100 < 40
+    if (score_xp > 80 and int(draw()) % 100 < 80) or (
+        score_xp > 60 and int(draw()) % 100 < 40
     ):
         return "".join(
             [
-                typo_name_part(rng, allow_the=True, caller=caller),
-                typo_name_part(rng, allow_the=False, caller=caller),
-                typo_name_part(rng, allow_the=False, caller=caller),
+                typo_name_part(draw, allow_the=True),
+                typo_name_part(draw, allow_the=False),
+                typo_name_part(draw, allow_the=False),
             ],
         )
 
-    if (score_xp > 40 and _rand(rng, caller=caller) % 100 < 80) or (
-        score_xp > 20 and _rand(rng, caller=caller) % 100 < 40
+    if (score_xp > 40 and int(draw()) % 100 < 80) or (
+        score_xp > 20 and int(draw()) % 100 < 40
     ):
         return "".join(
             [
-                typo_name_part(rng, allow_the=True, caller=caller),
-                typo_name_part(rng, allow_the=False, caller=caller),
+                typo_name_part(draw, allow_the=True),
+                typo_name_part(draw, allow_the=False),
             ],
         )
 
-    return typo_name_part(rng, allow_the=False, caller=caller)
+    return typo_name_part(draw, allow_the=False)
 
 
-def _pick_word(rng: CrandLike, words: Sequence[str], *, caller: CallerStatic = None) -> str:
-    return str(words[_rand(rng, caller=caller) % len(words)])
+def _pick_word(draw: Draw, words: Sequence[str]) -> str:
+    return str(words[int(draw()) % len(words)])
 
 
 def _pick_unique_words(
-    rng: CrandLike,
+    draw: Draw,
     words: Sequence[str],
     count: int,
-    *,
-    caller: CallerStatic = None,
 ) -> list[str]:
     if count <= 1:
-        return [_pick_word(rng, words, caller=caller)]
+        return [_pick_word(draw, words)]
     if len(words) <= count:
-        return [_pick_word(rng, words, caller=caller) for _ in range(count)]
+        return [_pick_word(draw, words) for _ in range(count)]
 
     picked: list[str] = []
     used: set[int] = set()
     while len(picked) < count:
-        idx = _rand(rng, caller=caller) % len(words)
+        idx = int(draw()) % len(words)
         if idx in used:
             continue
         used.add(idx)
@@ -158,30 +149,29 @@ def _pick_unique_words(
 
 
 def _typo_build_custom_name(
-    rng: CrandLike,
+    draw: Draw,
     *,
     score_xp: int,
     unique_words: Sequence[str],
-    caller: CallerStatic = None,
 ) -> str:
     score_xp = int(score_xp)
     if score_xp > 120:
-        if _rand(rng, caller=caller) % 100 < 10:
-            return _pick_word(rng, unique_words, caller=caller)
-        if _rand(rng, caller=caller) % 100 < 80:
-            return "".join(_pick_unique_words(rng, unique_words, 4, caller=caller))
+        if int(draw()) % 100 < 10:
+            return _pick_word(draw, unique_words)
+        if int(draw()) % 100 < 80:
+            return "".join(_pick_unique_words(draw, unique_words, 4))
 
-    if (score_xp > 80 and _rand(rng, caller=caller) % 100 < 80) or (
-        score_xp > 60 and _rand(rng, caller=caller) % 100 < 40
+    if (score_xp > 80 and int(draw()) % 100 < 80) or (
+        score_xp > 60 and int(draw()) % 100 < 40
     ):
-        return "".join(_pick_unique_words(rng, unique_words, 3, caller=caller))
+        return "".join(_pick_unique_words(draw, unique_words, 3))
 
-    if (score_xp > 40 and _rand(rng, caller=caller) % 100 < 80) or (
-        score_xp > 20 and _rand(rng, caller=caller) % 100 < 40
+    if (score_xp > 40 and int(draw()) % 100 < 80) or (
+        score_xp > 20 and int(draw()) % 100 < 40
     ):
-        return "".join(_pick_unique_words(rng, unique_words, 2, caller=caller))
+        return "".join(_pick_unique_words(draw, unique_words, 2))
 
-    return _pick_word(rng, unique_words, caller=caller)
+    return _pick_word(draw, unique_words)
 
 
 def load_typo_dictionary(path: Path) -> list[str]:
@@ -259,14 +249,16 @@ class CreatureNameTable(msgspec.Struct):
         if not (0 <= idx < len(self.names)):
             raise IndexError(f"creature_idx out of range: {idx}")
 
+        def draw() -> int:
+            return int(rng.rand(caller=caller))
+
         too_long_attempts = 0
         attempts = 0
         while True:
             name = typo_build_name(
-                rng,
+                draw,
                 score_xp=score_xp,
                 unique_words=unique_words,
-                caller=caller,
             )
             if not self.is_unique(name, exclude_idx=idx, active_mask=active_mask):
                 attempts += 1

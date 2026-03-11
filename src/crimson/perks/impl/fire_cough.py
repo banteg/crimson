@@ -12,8 +12,6 @@ from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
-_PLAYER_UPDATE_CALLER = RngCallerStatic.PLAYER_UPDATE
-
 
 def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     if not perk_active(ctx.player, PerkId.FIRE_CAUGH):
@@ -35,10 +33,10 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     aim = ctx.player.aim
     dist = (aim - origin_pos).length()
     max_offset = dist * float(ctx.player.spread_heat) * 0.5
-    dir_angle = float(int(ctx.state.rng.rand(caller=_PLAYER_UPDATE_CALLER)) & 0x1FF) * (
+    dir_angle = float(int(ctx.state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE)) & 0x1FF) * (
         math.tau / 512.0
     )
-    mag = float(int(ctx.state.rng.rand(caller=_PLAYER_UPDATE_CALLER)) & 0x1FF) * (1.0 / 512.0)
+    mag = float(int(ctx.state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE)) & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
     jitter = aim + Vec2.from_angle(dir_angle) * offset
     angle = (jitter - origin_pos).to_heading()
@@ -57,7 +55,7 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
 
     ctx.player.fire_cough_timer -= ctx.state.perk_intervals.fire_cough
     ctx.state.perk_intervals.fire_cough = (
-        float(ctx.state.rng.rand(caller=_PLAYER_UPDATE_CALLER) % 4) + 2.0
+        float(ctx.state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE) % 4) + 2.0
     )
 
 

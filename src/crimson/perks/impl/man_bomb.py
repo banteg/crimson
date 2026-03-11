@@ -9,8 +9,6 @@ from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
-_PLAYER_UPDATE_CALLER = RngCallerStatic.PLAYER_UPDATE
-
 
 def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
     if not perk_active(ctx.player, PerkId.MAN_BOMB):
@@ -23,7 +21,7 @@ def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
         for idx in range(8):
             type_id = ProjectileTemplateId.ION_MINIGUN if ((idx & 1) == 0) else ProjectileTemplateId.ION_RIFLE
             angle = (
-                (float(ctx.state.rng.rand(caller=_PLAYER_UPDATE_CALLER) % 50) * 0.01)
+                (float(ctx.state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE) % 50) * 0.01)
                 + float(idx) * (math.pi / 4.0)
                 - 0.25
             )

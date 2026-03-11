@@ -8,8 +8,6 @@ from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
 from ..runtime.hook_types import PerkHooks
 
-_PERKS_UPDATE_EFFECTS_CALLER = RngCallerStatic.PERKS_UPDATE_EFFECTS
-
 
 def _award_experience_once_from_reward(*, player: PlayerState, reward_value: float) -> int:
     reward_f32 = f32(float(reward_value))
@@ -46,7 +44,7 @@ def _select_jinxed_accident_target(ctx: PerksUpdateEffectsCtx) -> PlayerState:
     if len(alive_indices) == 1:
         return ctx.players[alive_indices[0]]
 
-    pick = int(ctx.state.rng.rand(caller=_PERKS_UPDATE_EFFECTS_CALLER)) % len(alive_indices)
+    pick = int(ctx.state.rng.rand(caller=RngCallerStatic.PERKS_UPDATE_EFFECTS)) % len(alive_indices)
     return ctx.players[alive_indices[pick]]
 
 
@@ -63,7 +61,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
     if not perk_active(ctx.players[0], PerkId.JINXED):
         return
 
-    if int(ctx.state.rng.rand(caller=_PERKS_UPDATE_EFFECTS_CALLER)) % 10 == 3:
+    if int(ctx.state.rng.rand(caller=RngCallerStatic.PERKS_UPDATE_EFFECTS)) % 10 == 3:
         player = _select_jinxed_accident_target(ctx)
         player.health = float(player.health) - 5.0
         if ctx.fx_queue is not None:
@@ -77,7 +75,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
             )
 
     ctx.state.jinxed_timer = (
-        float(int(ctx.state.rng.rand(caller=_PERKS_UPDATE_EFFECTS_CALLER)) % 0x14) * 0.1
+        float(int(ctx.state.rng.rand(caller=RngCallerStatic.PERKS_UPDATE_EFFECTS)) % 0x14) * 0.1
         + float(ctx.state.jinxed_timer)
         + 2.0
     )
@@ -88,10 +86,10 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         if pool_mod <= 0:
             return
 
-        idx = int(ctx.state.rng.rand(caller=_PERKS_UPDATE_EFFECTS_CALLER)) % pool_mod
+        idx = int(ctx.state.rng.rand(caller=RngCallerStatic.PERKS_UPDATE_EFFECTS)) % pool_mod
         attempts = 0
         while attempts < 10 and not ctx.creatures[idx].active:
-            idx = int(ctx.state.rng.rand(caller=_PERKS_UPDATE_EFFECTS_CALLER)) % pool_mod
+            idx = int(ctx.state.rng.rand(caller=RngCallerStatic.PERKS_UPDATE_EFFECTS)) % pool_mod
             attempts += 1
         if not ctx.creatures[idx].active:
             return

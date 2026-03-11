@@ -5,11 +5,9 @@ from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
 from ..runtime.hook_types import PerkHooks
 
-_PERK_APPLY_CALLER = RngCallerStatic.PERK_APPLY
-
 
 def apply_fatal_lottery(ctx: PerkApplyCtx) -> None:
-    if ctx.state.rng.rand(caller=_PERK_APPLY_CALLER) & 1:
+    if ctx.state.rng.rand(caller=RngCallerStatic.PERK_APPLY) & 1:
         ctx.owner.health = -1.0
     else:
         ctx.owner.experience += 10000

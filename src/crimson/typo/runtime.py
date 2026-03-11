@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from grim.geom import Vec2
-from grim.rand import CallerStatic
 
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
 from ..rng_caller_static import RngCallerStatic
@@ -84,11 +83,8 @@ def typo_mid_step(ctx: MidStepContext) -> None:
     for call in spawns:
         caller = RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER
 
-        def rand(*, caller: CallerStatic = caller) -> int:
-            return int(ctx.world.state.rng.rand(caller=caller))
-
-        heading = float(int(rand()) % 314) * 0.01
-        size = float(int(rand()) % 20 + 47)
+        heading = float(int(ctx.world.state.rng.rand(caller=caller)) % 314) * 0.01
+        size = float(int(ctx.world.state.rng.rand(caller=caller)) % 20 + 47)
         flags = CreatureFlags(0)
         move_speed = 1.7
         if int(call.type_id) in (int(CreatureTypeId.SPIDER_SP1), int(CreatureTypeId.SPIDER_SP2)):
