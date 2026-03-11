@@ -189,6 +189,60 @@ With those semantics:
 - `branch_id` is only used when one semantic site has multiple branches or
   loops worth distinguishing
 
+### 4.1) The Original RNG Surface Is Concentrated In A Small Number Of Large Functions
+
+This matters for the next tagging wave because it means we do not need to solve
+hundreds of equally-important RNG sites at once.
+
+A static pass over
+`analysis/ghidra/raw/crimsonland.exe_decompiled.c` counted:
+
+- `380` static `crt_rand()` call sites
+- `64` unique functions containing at least one `crt_rand()` call
+
+The distribution is concentrated:
+
+- top 3 functions account for about `38.7%` of all static RNG call sites
+- top 5 functions account for about `47.4%`
+- top 10 functions account for about `59.7%`
+- `31` functions have `<= 2` RNG call sites
+- `19` functions have exactly `1`
+- only `8` functions have `>= 10`
+
+The heaviest original functions are:
+
+- `78` in
+  `analysis/ghidra/derived/hotspots/creature_spawn_template/functions/00430af0_creature_spawn_template.c`
+- `42` in
+  `analysis/ghidra/derived/hotspots/projectile_update/functions/00420b90_projectile_update.c`
+- `27` in
+  `analysis/ghidra/derived/hotspots/player_update/functions/004136b0_player_update.c`
+- `18` in `survival_spawn_creature`
+- `15` in `terrain_generate_random`
+- `10` each in `perks_update_effects`, `survival_update`, and `bonus_apply`
+
+The top three are also very large decompile bodies:
+
+- `creature_spawn_template`: about `1779` lines
+- `player_update`: about `1809` lines
+- `projectile_update`: about `1056` lines
+
+So the intuition is mostly right:
+
+- a handful of large gameplay functions dominate the RNG surface
+- but there is still a real long tail of smaller functions
+
+For trace design, that means a first semantic-tagging pass over:
+
+- `creature_spawn_template`
+- `projectile_update`
+- `player_update`
+- `creature_update_all`
+- `survival_update`
+- `bonus_apply`
+
+would cover a large fraction of the important gameplay RNG behavior early.
+
 ### 5) The Frida Boundary Is Still Too Wide
 
 The current docs say JSONL tick rows already carry the finalized replay
