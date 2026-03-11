@@ -81,18 +81,17 @@ def _fingerprint(path: Path) -> BuiltinObject:
     }
 
 
-def _rng_stream_from_draws(draws: list[tuple[int, int, int]]) -> list[RngStreamRow]:
+def _rng_stream_from_draws(draws: list[tuple[int, int, int, int | None]]) -> list[RngStreamRow]:
     rows: list[RngStreamRow] = []
     for index, row in enumerate(draws):
-        state_before_u32, value_15, state_after_u32 = row
+        state_before_u32, value_15, state_after_u32, caller_static_u32 = row
         rows.append(
             RngStreamRow(
                 tick_call_index=int(index) + 1,
                 value_15=int(value_15),
                 state_before_u32=int(state_before_u32),
                 state_after_u32=int(state_after_u32),
-                caller_static=None,
-                branch_id=None,
+                caller_static_u32=(None if caller_static_u32 is None else int(caller_static_u32)),
             ),
         )
     return rows
@@ -351,13 +350,14 @@ def _record_replay_to_trace_python(
         )
         sim_state_by_tick[tick_index] = _sim_state_from_world(world, replay=replay)
 
-    def _tick_rng_trace_observer(tick_index: int, draws: list[tuple[int, int, int]]) -> None:
+    def _tick_rng_trace_observer(tick_index: int, draws: list[tuple[int, int, int, int | None]]) -> None:
         rng_stream_by_tick[int(tick_index)] = _rng_stream_from_draws(draws)
 
     driver = build_verify_playback_driver(
         replay,
         max_ticks=None,
         trace_rng=True,
+        strict_rng_trace=True,
     )
 
     def _after_tick(tick_result, world: WorldState) -> None:
@@ -366,7 +366,7 @@ def _record_replay_to_trace_python(
             checkpoints.append(driver.build_checkpoint(tick_result=tick_result))
         _tick_observer(tick_index, world)
 
-    def _on_rng_trace(tick_result, draws: tuple[tuple[int, int, int], ...]) -> None:
+    def _on_rng_trace(tick_result, draws: tuple[tuple[int, int, int, int | None], ...]) -> None:
         _tick_rng_trace_observer(
             int(tick_result.source_tick.tick_index),
             list(draws),

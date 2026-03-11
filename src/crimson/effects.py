@@ -9,6 +9,7 @@ import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.rand import rand_draw
 from grim.math import clamp
 
 from .creatures.lifecycle import creature_lifecycle_is_collidable
@@ -50,6 +51,17 @@ FX_QUEUE_MAX_COUNT = 0x7F
 
 FX_QUEUE_ROTATED_CAPACITY = 0x40
 FX_QUEUE_ROTATED_MAX_COUNT = 0x3F
+
+_PROJECTILE_UPDATE_CALLER_STATIC_U32 = 0x00420B90
+_FX_SPAWN_PARTICLE_CALLER_STATIC_U32 = 0x00420130
+_FX_SPAWN_PARTICLE_SLOW_CALLER_STATIC_U32 = 0x00420240
+_FX_SPAWN_SPRITE_CALLER_STATIC_U32 = 0x0041FBB0
+_FX_QUEUE_ADD_RANDOM_CALLER_STATIC_U32 = 0x00427700
+_EFFECT_SPAWN_BLOOD_SPLATTER_CALLER_STATIC_U32 = 0x0042EB10
+_EFFECT_SPAWN_BURST_CALLER_STATIC_U32 = 0x0042EF60
+_EFFECT_SPAWN_FREEZE_SHARD_CALLER_STATIC_U32 = 0x0042EC80
+_EFFECT_SPAWN_FREEZE_SHATTER_CALLER_STATIC_U32 = 0x0042EE00
+_EFFECT_SPAWN_EXPLOSION_BURST_CALLER_STATIC_U32 = 0x0042F6C0
 
 
 def _default_rand() -> int:
@@ -118,7 +130,7 @@ class ParticlePool:
         if not self._entries:
             raise ValueError("Particle pool has zero entries")
         # Native: `crt_rand() & 0x7f` (pool size is 0x80).
-        return int(self._rand()) % len(self._entries)
+        return rand_draw(self._rand, caller_static_u32=_FX_SPAWN_PARTICLE_CALLER_STATIC_U32) % len(self._entries)
 
     def spawn_particle(
         self,
@@ -142,7 +154,7 @@ class ParticlePool:
         entry.age = 0.0
         entry.intensity = float(intensity)
         entry.angle = float(angle)
-        entry.spin = float(int(self._rand()) % 0x274) * 0.01
+        entry.spin = float(rand_draw(self._rand, caller_static_u32=_FX_SPAWN_PARTICLE_CALLER_STATIC_U32) % 0x274) * 0.01
         entry.style_id = ParticleStyleId.FLAMETHROWER
         entry.target_id = -1
         entry.owner = owner
@@ -169,7 +181,9 @@ class ParticlePool:
         entry.age = 0.0
         entry.intensity = 1.0
         entry.angle = float(angle)
-        entry.spin = float(int(self._rand()) % 0x274) * 0.01
+        entry.spin = float(
+            rand_draw(self._rand, caller_static_u32=_FX_SPAWN_PARTICLE_SLOW_CALLER_STATIC_U32) % 0x274
+        ) * 0.01
         entry.style_id = ParticleStyleId.BUBBLEGUN
         entry.target_id = -1
         entry.owner = owner
@@ -276,7 +290,14 @@ class ParticlePool:
 
             if entry.render_flag:
                 # Random walk drift (native adjusts angle based on `crt_rand`).
-                jitter = f32(float(int(rand()) % 100 - 50) * 0.06 * max(float(entry.intensity), 0.0) * float(dt))
+                jitter = f32(
+                    float(
+                        rand_draw(rand, caller_static_u32=_PROJECTILE_UPDATE_CALLER_STATIC_U32) % 100 - 50
+                    )
+                    * 0.06
+                    * max(float(entry.intensity), 0.0)
+                    * float(dt)
+                )
                 if style == int(ParticleStyleId.FLAMETHROWER):
                     jitter = f32(float(jitter) * 1.96)
                     speed = 82.0
@@ -333,7 +354,9 @@ class ParticlePool:
                             entry.angle = f32(float(entry.angle) - deflect_step)
 
                         bounce_velocity = Vec2.from_angle(float(entry.angle)) * 82.0
-                        speed_scale = f32(float(int(rand()) % 10) * 0.1)
+                        speed_scale = f32(
+                            float(rand_draw(rand, caller_static_u32=_PROJECTILE_UPDATE_CALLER_STATIC_U32) % 10) * 0.1
+                        )
                         entry.vel = Vec2(
                             f32(float(bounce_velocity.x) * float(speed_scale)),
                             f32(float(bounce_velocity.y) * float(speed_scale)),
@@ -360,8 +383,8 @@ class ParticlePool:
 
                         if sprite_effects is not None and (idx % 3 == 0):
                             sprite_vel = Vec2(
-                                float(int(rand()) % 0x3C - 0x1E),
-                                float(int(rand()) % 0x3C - 0x1E),
+                                float(rand_draw(rand, caller_static_u32=_PROJECTILE_UPDATE_CALLER_STATIC_U32) % 0x3C - 0x1E),
+                                float(rand_draw(rand, caller_static_u32=_PROJECTILE_UPDATE_CALLER_STATIC_U32) % 0x3C - 0x1E),
                             )
                             sprite_effects.spawn(
                                 pos=creature.pos,
@@ -417,12 +440,14 @@ class SpriteEffectPool:
         if idx is None:
             if not self._entries:
                 raise ValueError("Sprite effect pool has zero entries")
-            idx = int(self._rand()) % len(self._entries)
+            idx = rand_draw(self._rand, caller_static_u32=_FX_SPAWN_SPRITE_CALLER_STATIC_U32) % len(self._entries)
 
         entry = self._entries[idx]
         entry.active = True
         entry.color = RGBA() if color is None else color
-        entry.rotation = float(int(self._rand()) % 0x274) * 0.01
+        entry.rotation = float(
+            rand_draw(self._rand, caller_static_u32=_FX_SPAWN_SPRITE_CALLER_STATIC_U32) % 0x274
+        ) * 0.01
         entry.pos = pos
         entry.vel = vel
         entry.scale = float(scale)
@@ -516,10 +541,10 @@ class FxQueue:
             return False
         # Native `fx_queue_add_random` always consumes RNG even when the queue
         # is full, then lets `fx_queue_add` fail silently.
-        gray = float(int(rand()) & 0xF) * 0.01 + 0.84
-        w = float(int(rand()) % 0x18 - 0x0C) + 30.0
-        rotation = float(int(rand()) % 0x274) * 0.01
-        effect_id = int(rand()) % 5 + 3
+        gray = float(rand_draw(rand, caller_static_u32=_FX_QUEUE_ADD_RANDOM_CALLER_STATIC_U32) & 0xF) * 0.01 + 0.84
+        w = float(rand_draw(rand, caller_static_u32=_FX_QUEUE_ADD_RANDOM_CALLER_STATIC_U32) % 0x18 - 0x0C) + 30.0
+        rotation = float(rand_draw(rand, caller_static_u32=_FX_QUEUE_ADD_RANDOM_CALLER_STATIC_U32) % 0x274) * 0.01
+        effect_id = rand_draw(rand, caller_static_u32=_FX_QUEUE_ADD_RANDOM_CALLER_STATIC_U32) % 5 + 3
         return self.add(
             effect_id=effect_id,
             pos=pos,
@@ -762,12 +787,12 @@ class EffectPool:
         if (int(weapon_flags) & 0x1) == 0:
             return
 
-        angle = float(aim_heading) + float(int(rand()) & 0x3F) * 0.01
-        speed = float(int(rand()) & 0x3F) * 0.022727273 + 1.0
+        angle = float(aim_heading) + float(rand_draw(rand) & 0x3F) * 0.01
+        speed = float(rand_draw(rand) & 0x3F) * 0.022727273 + 1.0
         velocity = Vec2.from_angle(angle) * (speed * 100.0)
 
-        rotation = float((int(rand()) & 0x3F) - 0x20) * 0.1
-        rotation_step = (float(int(rand()) % 0x14) * 0.1 - 1.0) * 14.0
+        rotation = float((rand_draw(rand) & 0x3F) - 0x20) * 0.1
+        rotation_step = (float(rand_draw(rand) % 0x14) * 0.1 - 1.0) * 14.0
 
         self.spawn(
             effect_id=int(EffectId.CASING),
@@ -806,16 +831,16 @@ class EffectPool:
         direction = Vec2.from_angle(base)
 
         for _ in range(2):
-            r0 = int(rand())
+            r0 = rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_BLOOD_SPLATTER_CALLER_STATIC_U32)
             rotation = float((r0 & 0x3F) - 0x20) * 0.1 + base
-            r1 = int(rand())
+            r1 = rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_BLOOD_SPLATTER_CALLER_STATIC_U32)
             half = float((r1 & 7) + 1)
-            r2 = int(rand())
+            r2 = rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_BLOOD_SPLATTER_CALLER_STATIC_U32)
             speed_x = float((r2 & 0x3F) + 100)
-            r3 = int(rand())
+            r3 = rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_BLOOD_SPLATTER_CALLER_STATIC_U32)
             speed_y = float((r3 & 0x3F) + 100)
             velocity = Vec2(direction.x * speed_x, direction.y * speed_y)
-            r4 = int(rand())
+            r4 = rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_BLOOD_SPLATTER_CALLER_STATIC_U32)
             scale_step = float(r4 & 0x7F) * 0.03 + 0.1
 
             self.spawn(
@@ -850,15 +875,15 @@ class EffectPool:
 
         count = max(0, int(count))
         for _ in range(count):
-            r0 = int(rand())
+            r0 = rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_BURST_CALLER_STATIC_U32)
             rotation = float(r0 & 0x7F) * 0.049087387
-            r1 = int(rand())
+            r1 = rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_BURST_CALLER_STATIC_U32)
             vx = float((r1 & 0x7F) - 0x40)
-            r2 = int(rand())
+            r2 = rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_BURST_CALLER_STATIC_U32)
             vy = float((r2 & 0x7F) - 0x40)
             velocity = Vec2(vx, vy)
             if scale_step is None:
-                r3 = int(rand())
+                r3 = rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_BURST_CALLER_STATIC_U32)
                 step = float(r3 % 100) * 0.01 + 0.1
             else:
                 step = float(scale_step)
@@ -918,18 +943,20 @@ class EffectPool:
     ) -> None:
         """Port of `effect_spawn_freeze_shard` (0x0042ec80)."""
 
-        lifetime = float(int(rand()) & 0xF) * 0.01 + 0.2
+        lifetime = float(rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_FREEZE_SHARD_CALLER_STATIC_U32) & 0xF) * 0.01 + 0.2
         base = float(angle) + math.pi
 
-        rotation = float(int(rand()) % 100) * 0.01 + base
-        half = float(int(rand()) % 5 + 7)
+        rotation = float(rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_FREEZE_SHARD_CALLER_STATIC_U32) % 100) * 0.01 + base
+        half = float(rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_FREEZE_SHARD_CALLER_STATIC_U32) % 5 + 7)
 
         velocity = Vec2.from_angle(base) * 114.0
 
-        rotation_step = (float(int(rand()) % 0x14) * 0.1 - 1.0) * 4.0
-        scale_step = -float(int(rand()) & 0xF) * 0.1
+        rotation_step = (
+            float(rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_FREEZE_SHARD_CALLER_STATIC_U32) % 0x14) * 0.1 - 1.0
+        ) * 4.0
+        scale_step = -float(rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_FREEZE_SHARD_CALLER_STATIC_U32) & 0xF) * 0.1
 
-        effect_id = int(rand()) % 3 + 8
+        effect_id = rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_FREEZE_SHARD_CALLER_STATIC_U32) % 3 + 8
         self.spawn(
             effect_id=int(effect_id),
             pos=pos,
@@ -961,8 +988,11 @@ class EffectPool:
         for idx in range(4):
             rotation = float(idx) * (math.pi / 2.0) + float(angle)
             velocity = Vec2.from_angle(rotation) * 42.0
-            half = float(int(rand()) % 10 + 0x12)
-            rotation_step = (float(int(rand()) % 0x14) * 0.1 - 1.0) * 1.9
+            half = float(rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_FREEZE_SHATTER_CALLER_STATIC_U32) % 10 + 0x12)
+            rotation_step = (
+                float(rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_FREEZE_SHATTER_CALLER_STATIC_U32) % 0x14) * 0.1
+                - 1.0
+            ) * 1.9
 
             self.spawn(
                 effect_id=int(EffectId.FREEZE_SHATTER),
@@ -982,7 +1012,9 @@ class EffectPool:
             )
 
         for _ in range(4):
-            shard_angle = float(int(rand()) % 0x264) * 0.01
+            shard_angle = float(
+                rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_FREEZE_SHATTER_CALLER_STATIC_U32) % 0x264
+            ) * 0.01
             self.spawn_freeze_shard(
                 pos=pos,
                 angle=float(shard_angle),
@@ -1026,7 +1058,9 @@ class EffectPool:
             for idx in range(2):
                 age = float(idx) * 0.2 - 0.5
                 lifetime = float(idx) * 0.2 + 0.6
-                rotation = float(int(rand()) % 0x266) * 0.02
+                rotation = float(
+                    rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_EXPLOSION_BURST_CALLER_STATIC_U32) % 0x266
+                ) * 0.02
                 self.spawn(
                     effect_id=int(EffectId.EXPLOSION_PUFF),
                     pos=pos,
@@ -1069,13 +1103,19 @@ class EffectPool:
 
         # Extra shockwave particles.
         for _ in range(count):
-            rotation = float(int(rand()) % 0x13A) * 0.02
+            rotation = float(
+                rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_EXPLOSION_BURST_CALLER_STATIC_U32) % 0x13A
+            ) * 0.02
             velocity = Vec2(
-                float((int(rand()) & 0x3F) * 2 - 0x40),
-                float((int(rand()) & 0x3F) * 2 - 0x40),
+                float((rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_EXPLOSION_BURST_CALLER_STATIC_U32) & 0x3F) * 2 - 0x40),
+                float((rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_EXPLOSION_BURST_CALLER_STATIC_U32) & 0x3F) * 2 - 0x40),
             )
-            scale_step = float((int(rand()) - 3) & 7) * scale
-            rotation_step = float((int(rand()) + 3) & 7)
+            scale_step = float(
+                (rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_EXPLOSION_BURST_CALLER_STATIC_U32) - 3) & 7
+            ) * scale
+            rotation_step = float(
+                (rand_draw(rand, caller_static_u32=_EFFECT_SPAWN_EXPLOSION_BURST_CALLER_STATIC_U32) + 3) & 7
+            )
             self.spawn(
                 effect_id=int(EffectId.EXPLOSION_BURST),
                 pos=pos,

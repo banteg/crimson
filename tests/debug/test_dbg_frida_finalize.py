@@ -218,6 +218,24 @@ def _entity_samples_stub(
     }
 
 
+def _rng_stream_row_stub(
+    *,
+    tick_call_index: int = 1,
+    value_15: int = 28052,
+    state_before_u32: int = 2427270273,
+    state_after_u32: int = 3985917248,
+    caller_static: str | None = "0x00430b88",
+) -> dict[str, object]:
+    return {
+        "tick_call_index": int(tick_call_index),
+        "value_15": int(value_15),
+        "state_before_u32": int(state_before_u32),
+        "state_after_u32": int(state_after_u32),
+        "caller_static": caller_static,
+        "branch_id": caller_static,
+    }
+
+
 def _creature_sample(
     *,
     uid: int,
@@ -491,6 +509,36 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert creatures1[0].generation == 1
     assert ticks[0].channels.entity_samples.projectiles[0].owner_id == -100
     assert ticks[0].channels.checkpoint.deaths[0].owner_id == -1
+
+
+def test_finalize_frida_jsonl_to_traces_canonicalizes_rng_caller_static_u32(tmp_path: Path) -> None:
+    channels = _channels_stub(tick_index=0, elapsed_ms=0, mode_id=1)
+    channels["rng_stream"] = [_rng_stream_row_stub()]
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=1, seed=777, player_count=1),
+            _tick_row(
+                run_id=1,
+                tick_index=0,
+                elapsed_ms=0,
+                dt_ms_i32=16,
+                dt=0.016,
+                mode_id=1,
+                player_count=1,
+                channels=channels,
+            ),
+            _run_end_row(run_id=1, mode_id=1, ticks_written=1),
+            _session_end_row(ticks_written=1),
+        ],
+    )
+
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+    _meta, ticks, _footer = load_trace(result.traces[0].out_path)
+    assert ticks[0].channels.rng_stream[0].caller_static_u32 == 0x00430B88
+    assert not hasattr(ticks[0].channels.rng_stream[0], "branch_id")
 
 
 def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_closed(tmp_path: Path) -> None:

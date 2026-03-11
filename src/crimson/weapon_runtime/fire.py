@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
+from functools import partial
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -38,6 +39,7 @@ if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
 
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
+_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32 = 0x00444980
 
 _NATIVE_FIRE_MUZZLE_SPRITES: dict[int, tuple[tuple[float, float, float], ...]] = {
     WeaponId.PISTOL: ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
@@ -158,7 +160,9 @@ def _apply_speed_scale_rule(
         case NoSpeedScale():
             return
         case ModuloSpeedScale(base=base, modulo=modulo, step=step):
-            state.projectiles.entries[int(proj_id)].speed_scale = float(base) + float(int(state.rng.rand()) % int(modulo)) * float(step)
+            state.projectiles.entries[int(proj_id)].speed_scale = float(base) + float(
+                int(state.rng.rand(caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32)) % int(modulo)
+            ) * float(step)
 
 
 def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
@@ -204,7 +208,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 player,
                 cost,
                 dt=dt,
-                rand=state.rng.rand,
+                rand=partial(state.rng.rand, caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32),
                 players=players,
                 on_lethal=(lambda: on_player_lethal(player)) if on_player_lethal is not None else None,
             )
@@ -239,7 +243,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         pos=muzzle,
         aim_heading=aim_heading,
         weapon_flags=int(weapon.flags or 0),
-        rand=state.rng.rand,
+        rand=partial(state.rng.rand, caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32),
         detail_preset=detail_preset,
     )
 
@@ -247,7 +251,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         aim=aim,
         player_pos=player.pos,
         spread_heat=float(player.spread_heat),
-        rand=state.rng.rand,
+        rand=partial(state.rng.rand, caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32),
     )
     particle_angle = Vec2.from_heading(shot_angle).to_angle()
     if weapon_id in (WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER):
@@ -256,7 +260,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     # Native `player_fire_weapon` consumes one RNG draw for shot SFX variant
     # selection on every non-Fire-Bullets shot.
     if not is_fire_bullets:
-        state.rng.rand()
+        state.rng.rand(caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32)
 
     owner = owner_ref_for_player(player.index)
     projectile_owner = owner_ref_for_player_projectiles(state, player.index)
@@ -288,7 +292,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             for _ in range(pellets):
                 angle = _apply_pellet_jitter(
                     shot_angle=float(shot_angle),
-                    rand=state.rng.rand,
+                    rand=partial(state.rng.rand, caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32),
                     jitter_rule=jitter_rule,
                 )
                 proj_id = state.projectiles.spawn(

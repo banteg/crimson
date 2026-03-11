@@ -134,7 +134,7 @@ def _run_verify_playback(
     tick_progress_callback: Callable[[int], None] | None = None,
     tick_observer: Callable[[int, WorldState], None] | None = None,
     tick_trace_observer: Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None] | None = None,
-    tick_rng_trace_observer: Callable[[int, list[tuple[int, int, int]]], None] | None = None,
+    tick_rng_trace_observer: Callable[[int, list[tuple[int, int, int, int | None]]], None] | None = None,
 ) -> RunResult:
     driver = build_verify_playback_driver(
         replay,

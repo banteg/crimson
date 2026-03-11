@@ -9,6 +9,8 @@ from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
+_PLAYER_UPDATE_CALLER_STATIC_U32 = 0x004136B0
+
 
 def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
     if not perk_active(ctx.player, PerkId.HOT_TEMPERED):
@@ -39,7 +41,9 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
     ctx.state.sfx_queue.append("sfx_explosion_small")
 
     ctx.player.hot_tempered_timer -= ctx.state.perk_intervals.hot_tempered
-    ctx.state.perk_intervals.hot_tempered = float(ctx.state.rng.rand() % 8) + 2.0
+    ctx.state.perk_intervals.hot_tempered = (
+        float(ctx.state.rng.rand(caller_static_u32=_PLAYER_UPDATE_CALLER_STATIC_U32) % 8) + 2.0
+    )
 
 
 HOOKS = PerkHooks(

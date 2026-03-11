@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
 
 PERK_ID_MAX = max(int(perk_id) for perk_id in PERK_BY_ID)
+_PERK_SELECT_RANDOM_CALLER_STATIC_U32 = 0x0042FBD0
 
 _DEATH_CLOCK_BLOCKED: frozenset[PerkId] = frozenset(
     (
@@ -61,7 +62,9 @@ def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: 
     perks_rebuild_available(state)
 
     for _ in range(1000):
-        perk_id = PerkId(int(state.rng.rand()) % PERK_ID_MAX + 1)
+        perk_id = PerkId(
+            int(state.rng.rand(caller_static_u32=_PERK_SELECT_RANDOM_CALLER_STATIC_U32)) % PERK_ID_MAX + 1
+        )
         if not (0 <= int(perk_id) < len(state.perk_available)):
             continue
         if not state.perk_available[int(perk_id)]:
@@ -131,7 +134,7 @@ def perk_generate_choices(
 
     def _select_random_offer() -> PerkId:
         for _ in range(1000):
-            perk_index = int(state.rng.rand()) % PERK_ID_MAX + 1
+            perk_index = int(state.rng.rand(caller_static_u32=_PERK_SELECT_RANDOM_CALLER_STATIC_U32)) % PERK_ID_MAX + 1
             if offerable_mask[perk_index]:
                 return PerkId(perk_index)
         return PerkId.INSTANT_WINNER
@@ -166,7 +169,10 @@ def perk_generate_choices(
                 continue
 
             # Global rarity gate: certain perks have a 25% chance to be rejected.
-            if perk_id in _PERK_RARITY_GATE and (int(state.rng.rand()) & 3) == 1:
+            if (
+                perk_id in _PERK_RARITY_GATE
+                and (int(state.rng.rand(caller_static_u32=_PERK_SELECT_RANDOM_CALLER_STATIC_U32)) & 3) == 1
+            ):
                 continue
 
             meta = PERK_BY_ID.get(perk_id)
@@ -233,7 +239,7 @@ def perk_auto_pick(
         visible_choices = perk_state.choices[:visible_count]
         if not visible_choices:
             break
-        idx = int(state.rng.rand() % len(visible_choices))
+        idx = int(state.rng.rand(caller_static_u32=_PERK_SELECT_RANDOM_CALLER_STATIC_U32) % len(visible_choices))
         perk_id = visible_choices[idx]
         perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
         picks.append(perk_id)

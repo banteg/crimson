@@ -8,6 +8,8 @@ from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
+_PLAYER_UPDATE_CALLER_STATIC_U32 = 0x004136B0
+
 
 def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
     if not perk_active(ctx.player, PerkId.MAN_BOMB):
@@ -19,7 +21,9 @@ def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
         owner = ctx.owner_ref_for_player_projectiles(ctx.state, ctx.player.index)
         for idx in range(8):
             type_id = ProjectileTemplateId.ION_MINIGUN if ((idx & 1) == 0) else ProjectileTemplateId.ION_RIFLE
-            angle = (float(ctx.state.rng.rand() % 50) * 0.01) + float(idx) * (math.pi / 4.0) - 0.25
+            angle = (
+                float(ctx.state.rng.rand(caller_static_u32=_PLAYER_UPDATE_CALLER_STATIC_U32) % 50) * 0.01
+            ) + float(idx) * (math.pi / 4.0) - 0.25
             ctx.projectile_spawn(
                 ctx.state,
                 players=ctx.players,
