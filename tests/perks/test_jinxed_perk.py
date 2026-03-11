@@ -5,9 +5,17 @@ from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
+
+_FX_QUEUE_CALLERS = [
+    RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY,
+    RngCallerStatic.FX_QUEUE_ADD_RANDOM_WIDTH,
+    RngCallerStatic.FX_QUEUE_ADD_RANDOM_ROTATION,
+    RngCallerStatic.FX_QUEUE_ADD_RANDOM_EFFECT_ID,
+]
 
 
 def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> None:
@@ -38,6 +46,11 @@ def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> 
     assert_float_close(creatures[2].lifecycle_stage, 16.0 - dt * 20.0)
     assert player.experience == 112
     assert state.sfx_queue == ["sfx_trooper_inpain_01"]
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_PICK,
+    ]
 
 
 def test_perks_update_effects_jinxed_award_uses_float32_sum_before_truncation() -> None:
@@ -64,6 +77,11 @@ def test_perks_update_effects_jinxed_award_uses_float32_sum_before_truncation() 
     perks_update_effects(state, [player], dt, creatures=creatures)
 
     assert player.experience == 139_549
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_PICK,
+    ]
 
 
 def test_perks_update_effects_jinxed_accident_damages_player_and_spawns_fx() -> None:
@@ -90,6 +108,12 @@ def test_perks_update_effects_jinxed_accident_damages_player_and_spawns_fx() -> 
     assert_float_close(player.health, 45.0)
     assert fx_queue.count == 2
     assert state.sfx_queue == []
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
+        *_FX_QUEUE_CALLERS,
+        *_FX_QUEUE_CALLERS,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
+    ]
 
 
 def test_perks_update_effects_jinxed_default_accident_can_hit_other_alive_players() -> None:
@@ -118,6 +142,13 @@ def test_perks_update_effects_jinxed_default_accident_can_hit_other_alive_player
     assert_float_close(player0.health, 50.0)
     assert_float_close(player1.health, 65.0)
     assert fx_queue.count == 2
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
+        None,
+        *_FX_QUEUE_CALLERS,
+        *_FX_QUEUE_CALLERS,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
+    ]
 
 
 def test_perks_update_effects_jinxed_preserve_bugs_keeps_accident_on_player0() -> None:
@@ -145,6 +176,12 @@ def test_perks_update_effects_jinxed_preserve_bugs_keeps_accident_on_player0() -
     assert_float_close(player0.health, 45.0)
     assert_float_close(player1.health, 70.0)
     assert fx_queue.count == 2
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
+        *_FX_QUEUE_CALLERS,
+        *_FX_QUEUE_CALLERS,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
+    ]
 
 
 def test_perks_update_effects_jinxed_default_uses_full_384_slot_pool() -> None:
@@ -173,6 +210,11 @@ def test_perks_update_effects_jinxed_default_uses_full_384_slot_pool() -> None:
     assert creatures[0x17F].hp == -1.0
     assert player.experience == 112
     assert state.sfx_queue == ["sfx_trooper_inpain_01"]
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_PICK,
+    ]
 
 
 def test_perks_update_effects_jinxed_preserve_bugs_keeps_383_slot_rolls() -> None:
@@ -201,6 +243,46 @@ def test_perks_update_effects_jinxed_preserve_bugs_keeps_383_slot_rolls() -> Non
     assert creatures[0x17F].hp == 100.0
     assert player.experience == 100
     assert state.sfx_queue == []
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_PICK,
+        *([RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_RETRY] * 10),
+    ]
+
+
+def test_perks_update_effects_jinxed_retries_inactive_creature_pick() -> None:
+    dt = 0.2
+    creatures = [CreatureState() for _ in range(0x17F)]
+    creatures[2].active = True
+    creatures[2].hp = 100.0
+    creatures[2].lifecycle_stage = 16.0
+    creatures[2].reward_value = 12.7
+
+    state = GameplayState()
+    state.rng = ScriptedCrand(
+        [
+            0,  # accident roll: rand%10 != 3
+            0,  # timer roll: (rand%0x14)*0.1
+            1,  # first creature index: inactive
+            2,  # retry creature index: active
+        ],
+        fallback=ScriptedCrand.Fallback.REPEAT_LAST,
+    )
+
+    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), experience=100, health=50.0)
+    player.perk_counts[int(PerkId.JINXED)] = 1
+
+    perks_update_effects(state, [player], dt, creatures=creatures)
+
+    assert creatures[2].hp == -1.0
+    assert player.experience == 112
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_PICK,
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_RETRY,
+    ]
 
 
 def test_perks_update_effects_jinxed_timer_uses_f32_underflow_threshold() -> None:
