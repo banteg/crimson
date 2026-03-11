@@ -937,18 +937,20 @@ class EffectPool:
     ) -> None:
         """Port of `effect_spawn_freeze_shard` (0x0042ec80)."""
 
-        lifetime = float(rng.rand() & 0xF) * 0.01 + 0.2
+        lifetime = float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_LIFETIME) & 0xF) * 0.01 + 0.2
         base = float(angle) + math.pi
 
-        rotation = float(rng.rand() % 100) * 0.01 + base
-        half = float(rng.rand() % 5 + 7)
+        rotation = float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION) % 100) * 0.01 + base
+        half = float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_HALF) % 5 + 7)
 
         velocity = Vec2.from_angle(base) * 114.0
 
-        rotation_step = (float(rng.rand() % 20) * 0.1 - 1.0) * 4.0
-        scale_step = -float(rng.rand() & 0xF) * 0.1
+        rotation_step = (
+            float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION_STEP) % 20) * 0.1 - 1.0
+        ) * 4.0
+        scale_step = -float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_SCALE_STEP) & 0xF) * 0.1
 
-        effect_id = rng.rand() % 3 + 8
+        effect_id = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID) % 3 + 8
         self.spawn(
             effect_id=int(effect_id),
             pos=pos,
@@ -980,8 +982,10 @@ class EffectPool:
         for idx in range(4):
             rotation = float(idx) * (math.pi / 2.0) + float(angle)
             velocity = Vec2.from_angle(rotation) * 42.0
-            half = float(rng.rand() % 10 + 18)
-            rotation_step = (float(rng.rand() % 20) * 0.1 - 1.0) * 1.9
+            half = float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_HALF) % 10 + 18)
+            rotation_step = (
+                float(rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_ROTATION_STEP) % 20) * 0.1 - 1.0
+            ) * 1.9
 
             self.spawn(
                 effect_id=int(EffectId.FREEZE_SHATTER),
@@ -1003,7 +1007,7 @@ class EffectPool:
         for _ in range(4):
             shard_angle = (
                 float(
-                    rng.rand() % 612,
+                    rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_SHARD_ANGLE) % 612,
                 )
                 * 0.01
             )

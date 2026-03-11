@@ -46,7 +46,15 @@ def test_freeze_pickup_shatters_existing_corpses() -> None:
         if int(entry.effect_id) in (0x08, 0x09, 0x0A, 0x0E)
     ]
     assert len(freeze_effects) == 16
-    tagged_callers = [record.caller for record in state.rng.records_since() if record.caller is not None]
+    tagged_callers = [
+        record.caller
+        for record in state.rng.records_since()
+        if record.caller
+        in {
+            RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE,
+            RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE,
+        }
+    ]
     assert tagged_callers == [
         RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE,
     ] * 8 + [

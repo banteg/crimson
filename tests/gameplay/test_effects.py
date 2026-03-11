@@ -68,6 +68,57 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     assert_float_close(entry.color.a, 0.8)
 
 
+def test_spawn_freeze_shard_tags_exact_native_callers() -> None:
+    pool = EffectPool(size=8)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    pool.spawn_freeze_shard(
+        pos=Vec2(),
+        angle=0.0,
+        rng=rng,
+        detail_preset=5,
+    )
+
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_LIFETIME,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_HALF,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION_STEP,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_SCALE_STEP,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID,
+    ]
+
+
+def test_spawn_freeze_shatter_tags_exact_native_callers() -> None:
+    pool = EffectPool(size=32)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    pool.spawn_freeze_shatter(
+        pos=Vec2(),
+        angle=0.0,
+        rng=rng,
+        detail_preset=5,
+    )
+
+    expected = [
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_HALF,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_ROTATION_STEP,
+    ] * 4
+    expected.extend(
+        [
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_SHARD_ANGLE,
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_LIFETIME,
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION,
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_HALF,
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION_STEP,
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_SCALE_STEP,
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID,
+        ]
+        * 4,
+    )
+    assert [record.caller for record in rng.records_since()] == expected
+
+
 def test_sprite_effect_pool_updates_and_expires() -> None:
     pool = SpriteEffectPool(size=1, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     idx = pool.spawn(pos=Vec2(10.0, 20.0), vel=Vec2(2.0, -3.0), scale=1.0)
