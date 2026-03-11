@@ -168,7 +168,7 @@ def perk_generate_choices(
             # Global rarity gate: certain perks have a 25% chance to be rejected.
             if (
                 perk_id in _PERK_RARITY_GATE
-                and (state.rng.rand() & 3) == 1
+                and (state.rng.rand(caller=RngCallerStatic.PERKS_GENERATE_CHOICES_RARITY_GATE) & 3) == 1
             ):
                 continue
 

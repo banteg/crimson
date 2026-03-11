@@ -109,10 +109,10 @@ def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order
     ]
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PERK_SELECT_RANDOM,
-        None,
+        RngCallerStatic.PERKS_GENERATE_CHOICES_RARITY_GATE,
         RngCallerStatic.PERK_SELECT_RANDOM,
         RngCallerStatic.PERK_SELECT_RANDOM,
-        None,
+        RngCallerStatic.PERKS_GENERATE_CHOICES_RARITY_GATE,
         RngCallerStatic.PERK_SELECT_RANDOM,
         RngCallerStatic.PERK_SELECT_RANDOM,
         RngCallerStatic.PERK_SELECT_RANDOM,
@@ -199,7 +199,8 @@ def test_perk_generate_choices_blocks_perks_when_death_clock_active() -> None:
 
 def test_perk_generate_choices_applies_rarity_gate() -> None:
     # Anxious Loader is in the global rarity gate; when (rand & 3) == 1 it is rejected.
-    state = GameplayState(rng=_as_rng(_SeqRng([17, 1, 1, 2, 3, 4, 5, 6, 7])))
+    rng = ScriptedCrand([17, 1, 1, 2, 3, 4, 5, 6, 7], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(rng=rng)
     state._perk_available_unlock_index = 0
     for perk_id in (PerkId.ANXIOUS_LOADER, PerkId.SHARPSHOOTER, PerkId.FASTLOADER, PerkId.LEAN_MEAN_EXP_MACHINE, PerkId.LONG_DISTANCE_RUNNER, PerkId.PYROKINETIC, PerkId.INSTANT_WINNER, PerkId.GRIM_DEAL):
         state.perk_available[int(perk_id)] = True
@@ -207,6 +208,11 @@ def test_perk_generate_choices_applies_rarity_gate() -> None:
     player = PlayerState(index=0, pos=Vec2())
     choices = perk_generate_choices(state, player, game_mode=GameMode.SURVIVAL, player_count=1)
     assert PerkId.ANXIOUS_LOADER not in choices
+    assert [
+        record.caller
+        for record in rng.records_since()
+        if record.caller == RngCallerStatic.PERKS_GENERATE_CHOICES_RARITY_GATE
+    ] == [RngCallerStatic.PERKS_GENERATE_CHOICES_RARITY_GATE]
 
 
 def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -> None:
