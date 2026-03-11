@@ -132,7 +132,7 @@ def _hit_sfx_for_type(
     ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).ammo_class
     if ammo_class == 4:
         return "sfx_shock_hit_01"
-    return _rand_choice(rng, _BULLET_HIT_SFX)
+    return _BULLET_HIT_SFX[rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX) % len(_BULLET_HIT_SFX)]
 
 
 def plan_hit_sfx_keys(
@@ -352,7 +352,7 @@ def queue_projectile_decals_post_hit(
         return
 
     for _ in range(3):
-        spread = float(rng.rand() % 20 - 10) * 0.1
+        spread = float(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_DECAL_SPREAD) % 20 - 10) * 0.1
         angle = base_angle + spread
         direction = Vec2.from_angle(angle) * 20.0
         fx_queue.add_random(pos=hit.target, rng=rng)

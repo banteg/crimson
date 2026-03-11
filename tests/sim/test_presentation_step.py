@@ -81,6 +81,10 @@ def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
     assert trigger_game_tune is False
     assert keys == ["sfx_bullet_hit_01", "sfx_bullet_hit_01"]
     assert rng.calls == 2
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
+        RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
+    ]
 
 
 def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
@@ -227,6 +231,20 @@ def test_queue_projectile_decals_native_default_draw_count() -> None:
         expected_after_state=0,
     )
     assert rng.values_since(before_calls) == [0] * 74
+    assert [
+        record.caller
+        for record in rng.records_since(before_calls)
+        if record.caller
+        in {
+            RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN,
+            RngCallerStatic.PROJECTILE_UPDATE_DECAL_SPREAD,
+        }
+    ] == [
+        RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN,
+        RngCallerStatic.PROJECTILE_UPDATE_DECAL_SPREAD,
+        RngCallerStatic.PROJECTILE_UPDATE_DECAL_SPREAD,
+        RngCallerStatic.PROJECTILE_UPDATE_DECAL_SPREAD,
+    ]
     assert fx_queue.count == 12
 
 
