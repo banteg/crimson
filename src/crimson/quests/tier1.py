@@ -27,7 +27,7 @@ from .types import QuestContext, SpawnEntry
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ASSAULT_RIFLE,
 )
-def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_1_land_hostile(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width, ctx.height)
     top_left, top_right, bottom_left, _bottom_right = corner_points(ctx.width, ctx.height)
     return [
@@ -45,7 +45,7 @@ def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.SHOTGUN,
 )
-def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_2_minor_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
     entries = [
@@ -117,7 +117,9 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_1_3_target_practice(
     ctx: QuestContext,
+    *,
     rng: CrandLike,
+    full_version: bool = True,
 ) -> list[SpawnEntry]:
     caller = RngCallerStatic.QUEST_1_3_BUILDER
     center = center_point(ctx.width, ctx.height)
@@ -152,7 +154,7 @@ def build_1_3_target_practice(
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.FLAMETHROWER,
 )
-def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width, ctx.height)
     top_left, top_right, _bottom_left, _bottom_right = corner_points(ctx.width, ctx.height)
@@ -225,13 +227,21 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.DOCTOR,
 )
-def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_5_alien_dens(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     return [
         spawn(
-            Vec2(256.0, 256.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1,
+            Vec2(256.0, 256.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
+            trigger_ms=1500,
+            count=1,
         ),
         spawn(
-            Vec2(768.0, 768.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1,
+            Vec2(768.0, 768.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
+            trigger_ms=1500,
+            count=1,
         ),
         spawn(
             Vec2(512.0, 512.0),
@@ -266,7 +276,9 @@ def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_1_6_the_random_factor(
     ctx: QuestContext,
+    *,
     rng: CrandLike,
+    full_version: bool = True,
 ) -> list[SpawnEntry]:
     caller = RngCallerStatic.QUEST_1_6_BUILDER
     entries: list[SpawnEntry] = []
@@ -313,7 +325,7 @@ def build_1_6_the_random_factor(
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.MONSTER_VISION,
 )
-def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_7_spider_wave_syndrome(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width, ctx.height)
     trigger = 1500
@@ -338,7 +350,7 @@ def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.GAUSS_GUN,
 )
-def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_8_alien_squads(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries = [
         spawn(
             Vec2(-256.0, 256.0),
@@ -428,7 +440,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.HOT_TEMPERED,
 )
-def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_9_nesting_grounds(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
     entries = [
@@ -527,7 +539,7 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ROCKET_LAUNCHER,
 )
-def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_10_8_legged_terror(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries = [
         spawn(
             Vec2(float(ctx.width - 256), float(ctx.width // 2)),

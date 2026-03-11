@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import inspect
-
 import msgspec
 
 from grim.rand import Crand, CrandLike
@@ -14,22 +12,6 @@ QUEST_COMPLETION_HIT_SFX_END_MS = float(0x353)
 QUEST_COMPLETION_MUSIC_START_MS = 2000.0
 QUEST_COMPLETION_MUSIC_END_MS = float(0x803)
 QUEST_COMPLETION_TRANSITION_MS = float(0x9C4)
-
-
-def _call_builder(
-    builder,
-    ctx: QuestContext,
-    *,
-    rng: CrandLike,
-    full_version: bool,
-) -> list[SpawnEntry]:
-    params = inspect.signature(builder).parameters
-    kwargs: dict[str, object] = {}
-    if "rng" in params:
-        kwargs["rng"] = rng
-    if "full_version" in params:
-        kwargs["full_version"] = bool(full_version)
-    return builder(ctx, **kwargs)
 
 
 def apply_hardcore_spawn_table_adjustment(entries: list[SpawnEntry]) -> list[SpawnEntry]:
@@ -63,8 +45,7 @@ def build_quest_spawn_table(
     """Build the quest spawn script from the active startup RNG state."""
 
     builder_rng = rng if rng is not None else Crand()
-    entries = _call_builder(
-        quest.builder,
+    entries = quest.builder(
         ctx,
         rng=builder_rng,
         full_version=full_version,

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import TypeAlias
+from typing import Protocol
 
 import msgspec
 
 from crimson.quests.level import QuestLevel
 from grim.geom import Vec2
+from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..terrain_slots import TerrainSlotTriplet
@@ -27,7 +27,14 @@ class SpawnEntry(msgspec.Struct, frozen=True, kw_only=True):
     count: int
 
 
-QuestBuilder: TypeAlias = Callable[..., list[SpawnEntry]]
+class QuestBuilder(Protocol):
+    def __call__(
+        self,
+        ctx: QuestContext,
+        *,
+        rng: CrandLike,
+        full_version: bool = True,
+    ) -> list[SpawnEntry]: ...
 
 
 class QuestDefinition(msgspec.Struct, frozen=True, kw_only=True):

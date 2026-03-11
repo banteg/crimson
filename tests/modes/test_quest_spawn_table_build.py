@@ -48,7 +48,7 @@ def test_apply_hardcore_spawn_table_adjustment() -> None:
 
 
 def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
-    def builder(ctx: QuestContext, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+    def builder(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
         del ctx
         trigger = int(rng.rand() % 10_000)
         count = 1 if full_version else 2
