@@ -5,7 +5,6 @@ from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
-from ..rng_caller_static import RngCallerStatic
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
@@ -317,13 +316,12 @@ def build_2_5_sweep_stakes(
     rng: CrandLike,
     full_version: bool = True,
 ) -> list[SpawnEntry]:
-    caller = RngCallerStatic.QUEST_2_5_BUILDER
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     trigger = 2000
     step = 2000
     while step > 720:
-        angle = float(rng.rand(caller=caller) % 612) * 0.01
+        angle = float(rng.rand() % 612) * 0.01
         for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
             heading = heading_from_center(pos, center)
             entries.append(

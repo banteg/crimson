@@ -3,7 +3,6 @@ from __future__ import annotations
 from ..creatures.runtime import CreatureFlags
 from ..creatures.spawn import SpawnId
 from ..gameplay import survival_check_level_up
-from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.world_state import WorldState
 from .state import TutorialOverlayState
@@ -101,7 +100,6 @@ def tutorial_post_step(ctx) -> None:
             call.pos,
             float(call.heading),
             state.rng,
-            caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
         )
         _ = mapping
         if primary is None or actions.stage5_bonus_carrier_drop is None:

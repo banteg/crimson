@@ -10,7 +10,6 @@ from grim.geom import Vec2
 from ..game_modes import GameMode
 from ..perks.helpers import perk_active
 from ..projectiles.types import CreatureDamageApplier
-from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
 from ..weapon_runtime.availability import weapon_pick_random_available
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
@@ -242,12 +241,11 @@ class BonusPool:
         entry.time_max = BONUS_TIME_MAX
 
         rng = state.rng
-        caller = RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL
         if entry.bonus_id == BonusId.WEAPON:
             entry.payload = bonus_weapon_payload(weapon_pick_random_available(state))
         elif entry.bonus_id == BonusId.POINTS:
             entry.payload = bonus_points_payload(
-                1000 if (rng.rand(caller=caller) & 7) < 3 else 500,
+                1000 if (rng.rand() & 7) < 3 else 500,
             )
         else:
             meta = BONUS_BY_ID.get(entry.bonus_id)
@@ -281,10 +279,9 @@ class BonusPool:
             return None
 
         rng = state.rng
-        caller = RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL
         # Native special-case: while any player has Pistol, 3/4 chance to force a Weapon drop.
         if players and any(player.weapon.weapon_id == WeaponId.PISTOL for player in players):
-            if (rng.rand(caller=caller) & 3) < 3:
+            if (rng.rand() & 3) < 3:
                 entry = self.spawn_at_pos(
                     pos,
                     state=state,
@@ -315,7 +312,7 @@ class BonusPool:
                     return None
                 return entry
 
-        base_roll = rng.rand(caller=caller)
+        base_roll = rng.rand()
         if base_roll % 9 != 1:
             allow_without_magnet = False
             if players:
@@ -325,7 +322,7 @@ class BonusPool:
                 else:
                     has_pistol = any(player.weapon.weapon_id == WeaponId.PISTOL for player in players)
                 if has_pistol:
-                    allow_without_magnet = rng.rand(caller=caller) % 5 == 1
+                    allow_without_magnet = rng.rand() % 5 == 1
 
             if not allow_without_magnet:
                 has_bonus_magnet = False
@@ -336,7 +333,7 @@ class BonusPool:
                         has_bonus_magnet = any(perk_active(player, PerkId.BONUS_MAGNET) for player in players)
                 if not has_bonus_magnet:
                     return None
-                if rng.rand(caller=caller) % 10 != 2:
+                if rng.rand() % 10 != 2:
                     return None
 
         entry = self.spawn_at_pos(

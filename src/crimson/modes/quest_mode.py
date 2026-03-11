@@ -32,7 +32,6 @@ from ..quests.status import tracked_quest_games_counter_index
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
-from ..rng_caller_static import RngCallerStatic
 from ..sim.bootstrap import run_explicit_terrain_prelude, run_unlock_terrain_prelude
 from ..sim.hooks import TickResult
 from ..sim.presentation_reactions import (
@@ -405,7 +404,7 @@ class QuestMode(BaseGameplayMode):
         )
         # Native `quest_start_selected()` burns one `crt_rand()` for
         # `highscore_record_random_tag` before quest terrain and spawn setup.
-        self.state.rng.rand(caller=RngCallerStatic.QUEST_START_SELECTED)
+        self.state.rng.rand()
         quest_terrain = run_explicit_terrain_prelude(
             self.state.rng,
             terrain_slots=quest.terrain_slots,

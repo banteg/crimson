@@ -15,7 +15,6 @@ from ..bonuses import BONUS_TABLE, BonusId
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..projectiles.types import ProjectileTemplateId
-from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext
 from ..tooling.audio_bootstrap import init_view_audio
@@ -196,7 +195,6 @@ class ArsenalDebugView:
                 spawn_pos,
                 heading,
                 self._runtime.sim_world.state.rng,
-                caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
             )
 
     def _spawn_all_bonuses(self) -> None:

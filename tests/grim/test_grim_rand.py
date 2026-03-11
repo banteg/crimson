@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.rng_caller_static import RngCallerStatic
 from grim.rand import CRT_RAND_INC, CRT_RAND_MULT, CallerStatic, CrtRand, MissingRngCallerError, RecordingCrand
 from tests.support.helpers import ScriptedCrand
 
@@ -10,7 +9,7 @@ from tests.support.helpers import ScriptedCrand
 def test_crt_rand_trace_sink_receives_caller() -> None:
     rows: list[tuple[int, int, int, CallerStatic]] = []
     rng = CrtRand(0x1234)
-    caller = RngCallerStatic.SURVIVAL_UPDATE
+    caller = 0x0040ABCD
 
     def _sink(
         state_before_u32: int,
@@ -38,13 +37,14 @@ def test_crt_rand_strict_trace_requires_caller() -> None:
 
 def test_recording_crand_records_history() -> None:
     rng = RecordingCrand(CrtRand(0x1234))
+    caller = 0x0040ABCD
 
-    first = rng.rand(caller=RngCallerStatic.SURVIVAL_UPDATE)
+    first = rng.rand(caller=caller)
     second = rng.rand()
 
     assert rng.calls == 2
     assert rng.values_since() == [first, second]
-    assert [record.caller for record in rng.records_since()] == [RngCallerStatic.SURVIVAL_UPDATE, None]
+    assert [record.caller for record in rng.records_since()] == [caller, None]
     assert rng.records_since(1)[0].value == second
 
 

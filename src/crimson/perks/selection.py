@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
 from ..quests.level import QuestLevel
-from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WeaponId
 from .availability import perk_can_offer, perks_rebuild_available
@@ -63,7 +62,7 @@ def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: 
 
     for _ in range(1000):
         perk_id = PerkId(
-            state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM) % PERK_ID_MAX + 1,
+            state.rng.rand() % PERK_ID_MAX + 1,
         )
         if not (0 <= int(perk_id) < len(state.perk_available)):
             continue
@@ -134,7 +133,7 @@ def perk_generate_choices(
 
     def _select_random_offer() -> PerkId:
         for _ in range(1000):
-            perk_index = state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM) % PERK_ID_MAX + 1
+            perk_index = state.rng.rand() % PERK_ID_MAX + 1
             if offerable_mask[perk_index]:
                 return PerkId(perk_index)
         return PerkId.INSTANT_WINNER
@@ -168,7 +167,7 @@ def perk_generate_choices(
             # Global rarity gate: certain perks have a 25% chance to be rejected.
             if (
                 perk_id in _PERK_RARITY_GATE
-                and (state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM) & 3) == 1
+                and (state.rng.rand() & 3) == 1
             ):
                 continue
 
@@ -236,7 +235,7 @@ def perk_auto_pick(
         visible_choices = perk_state.choices[:visible_count]
         if not visible_choices:
             break
-        idx = int(state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM) % len(visible_choices))
+        idx = int(state.rng.rand() % len(visible_choices))
         perk_id = visible_choices[idx]
         perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
         picks.append(perk_id)

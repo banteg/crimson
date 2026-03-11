@@ -5,7 +5,6 @@ from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
-from ..rng_caller_static import RngCallerStatic
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
@@ -120,14 +119,13 @@ def build_1_3_target_practice(
     rng: CrandLike,
     full_version: bool = True,
 ) -> list[SpawnEntry]:
-    caller = RngCallerStatic.QUEST_1_3_BUILDER
     center = center_point(ctx.width, ctx.height)
     entries: list[SpawnEntry] = []
     trigger = 2000
     step = 2000
     while True:
-        angle = float(rng.rand(caller=caller) % 612) * 0.01
-        radius = (int(rng.rand(caller=caller) % 8) + 2) * 32
+        angle = float(rng.rand() % 612) * 0.01
+        radius = (int(rng.rand() % 8) + 2) * 32
         point = center + Vec2.from_angle(angle) * radius
         heading = heading_from_center(point, center)
         entries.append(
@@ -279,7 +277,6 @@ def build_1_6_the_random_factor(
     rng: CrandLike,
     full_version: bool = True,
 ) -> list[SpawnEntry]:
-    caller = RngCallerStatic.QUEST_1_6_BUILDER
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
@@ -303,7 +300,7 @@ def build_1_6_the_random_factor(
                 count=6,
             ),
         )
-        if int(rng.rand(caller=caller) % 5) == 3:
+        if int(rng.rand() % 5) == 3:
             entries.append(
                 spawn(
                     Vec2(center.x, edges.bottom.y),

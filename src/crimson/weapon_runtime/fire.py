@@ -15,7 +15,6 @@ from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
-from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, weapon_entry_for_projectile_type_id
@@ -122,9 +121,9 @@ def _native_shot_angle_with_jitter(
     max_offset = float(f32(float(f32(float(dist) * float(spread_heat))) * 0.5))
 
     dir_angle = float(
-        f32(float(rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON) & 0x1FF) * (float(NATIVE_TAU) / 512.0)),
+        f32(float(rng.rand() & 0x1FF) * (float(NATIVE_TAU) / 512.0)),
     )
-    mag = float(f32(float(rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON) & 0x1FF) * (1.0 / 512.0)))
+    mag = float(f32(float(rng.rand() & 0x1FF) * (1.0 / 512.0)))
     offset = float(f32(float(max_offset) * float(mag)))
 
     dir_x = float(f32(math.cos(float(dir_angle))))
@@ -148,11 +147,11 @@ def _apply_pellet_jitter(
             return float(shot_angle)
         case ModuloCenteredJitter(modulo=modulo, center=center, step=step):
             return float(shot_angle) + float(
-                rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON) % int(modulo) - int(center),
+                rng.rand() % int(modulo) - int(center),
             ) * float(step)
         case MaskCenteredJitter(mask=mask, center=center, step=step):
             return float(shot_angle) + float(
-                (rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON) & int(mask)) - int(center),
+                (rng.rand() & int(mask)) - int(center),
             ) * float(step)
 
 
@@ -167,7 +166,7 @@ def _apply_speed_scale_rule(
             return
         case ModuloSpeedScale(base=base, modulo=modulo, step=step):
             state.projectiles.entries[int(proj_id)].speed_scale = float(base) + float(
-                state.rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON) % int(modulo),
+                state.rng.rand() % int(modulo),
             ) * float(step)
 
 
@@ -214,7 +213,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 player,
                 cost,
                 dt=dt,
-                caller=RngCallerStatic.PLAYER_FIRE_WEAPON,
                 players=players,
                 on_lethal=(lambda: on_player_lethal(player)) if on_player_lethal is not None else None,
             )
@@ -249,10 +247,10 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     shell_casing_draws = (0, 0, 0, 0)
     if weapon_flags & 0x1:
         shell_casing_draws = (
-            state.rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON),
-            state.rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON),
-            state.rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON),
-            state.rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON),
+            state.rng.rand(),
+            state.rng.rand(),
+            state.rng.rand(),
+            state.rng.rand(),
         )
     state.effects.spawn_shell_casing(
         pos=muzzle,
@@ -275,7 +273,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     # Native `player_fire_weapon` consumes one RNG draw for shot SFX variant
     # selection on every non-Fire-Bullets shot.
     if not is_fire_bullets:
-        state.rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON)
+        state.rng.rand()
 
     owner = owner_ref_for_player(player.index)
     projectile_owner = owner_ref_for_player_projectiles(state, player.index)

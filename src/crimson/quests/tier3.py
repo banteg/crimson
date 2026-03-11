@@ -5,7 +5,6 @@ from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
-from ..rng_caller_static import RngCallerStatic
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
@@ -201,13 +200,12 @@ def build_3_3_the_killing(
     rng: CrandLike,
     full_version: bool = True,
 ) -> list[SpawnEntry]:
-    caller = RngCallerStatic.QUEST_3_3_BUILDER
     edges = edge_midpoints(ctx.width)
     entries: list[SpawnEntry] = []
     trigger = 2000
     for wave in range(10):
-        rng.rand(caller=caller)
-        rng.rand(caller=caller)
+        rng.rand()
+        rng.rand()
         spawn_cycle = wave % 3
         if spawn_cycle == 0:
             spawn_id = SpawnId.AI1_ALIEN_BLUE_TINT_1A
@@ -259,8 +257,8 @@ def build_3_3_the_killing(
             )
         else:
             for offset in (0, 1000, 2000):
-                x = int(rng.rand(caller=caller) % 768) + 128
-                y = int(rng.rand(caller=caller) % 768) + 128
+                x = int(rng.rand() % 768) + 128
+                y = int(rng.rand() % 768) + 128
                 entries.append(
                     spawn(
                         Vec2(float(x), float(y)),
@@ -531,13 +529,12 @@ def build_3_9_deja_vu(
     rng: CrandLike,
     full_version: bool = True,
 ) -> list[SpawnEntry]:
-    caller = RngCallerStatic.QUEST_3_9_BUILDER
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     trigger = 2000
     step = 2000
     while step > 560:
-        angle = float(rng.rand(caller=caller) % 612) * 0.01
+        angle = float(rng.rand() % 612) * 0.01
         for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
             entries.append(
                 spawn(

@@ -5,9 +5,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol, TypeAlias, runtime_checkable
 
-from crimson.rng_caller_static import RngCallerStatic
-
-CallerStatic: TypeAlias = RngCallerStatic | None
+# Exact static caller address when known.
+CallerStatic: TypeAlias = int | None
 
 CRT_RAND_MULT = 214013
 CRT_RAND_INC = 2531011
@@ -134,7 +133,7 @@ class RecordingCrand:
 
     def rand(self, *, caller: CallerStatic = None) -> int:
         state_before = int(self._shared.base.state)
-        value = self._shared.base.rand(caller=caller)
+        value = self._shared.base.rand()
         state_after = int(self._shared.base.state)
         self._shared.records.append(
             RngDrawRecord(

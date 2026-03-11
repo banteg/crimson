@@ -100,7 +100,7 @@ def test_record_replay_to_trace_dispatches_zig_impl_and_collects_warnings(monkey
     assert captured["chunk_ticks"] == 64
 
 
-def test_record_replay_to_trace_python_writes_caller_rows(
+def test_record_replay_to_trace_python_writes_unattributed_rows(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
@@ -136,11 +136,11 @@ def test_record_replay_to_trace_python_writes_caller_rows(
             tick_result = SimpleNamespace(source_tick=SimpleNamespace(tick_index=0))
             if hooks.after_tick is not None:
                 hooks.after_tick(tick_result, SimpleNamespace())
-            if hooks.on_rng_trace is not None:
-                hooks.on_rng_trace(
-                    tick_result,
-                    ((0x90ABCDEF, 28052, 0xED9D2340, 0x00430B88),),
-                )
+                if hooks.on_rng_trace is not None:
+                    hooks.on_rng_trace(
+                        tick_result,
+                        ((0x90ABCDEF, 28052, 0xED9D2340, None),),
+                    )
             return SimpleNamespace()
 
     monkeypatch.setattr(dbg_record, "load_replay_file", lambda _path: replay)
@@ -192,4 +192,4 @@ def test_record_replay_to_trace_python_writes_caller_rows(
     meta, ticks, footer = load_trace(tmp_path / "sample.cdt")
     assert meta.trace_schema_version == TRACE_SCHEMA_VERSION
     assert footer.tick_count == 1
-    assert ticks[0].channels.rng_stream[0].caller == 0x00430B88
+    assert ticks[0].channels.rng_stream[0].caller is None

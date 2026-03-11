@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
@@ -26,7 +25,7 @@ def update_pyrokinetic(ctx: PerksUpdateEffectsCtx) -> None:
         if creature.collision_timer < 0.0:
             creature.collision_timer = 0.5
             for intensity in (0.8, 0.6, 0.4, 0.3, 0.2):
-                angle = float(ctx.state.rng.rand(caller=RngCallerStatic.PERKS_UPDATE_EFFECTS) % 628) * 0.01
+                angle = float(ctx.state.rng.rand() % 628) * 0.01
                 ctx.state.particles.spawn_particle(pos=creature.pos, angle=angle, intensity=float(intensity))
             if ctx.fx_queue is not None:
                 ctx.fx_queue.add_random(
