@@ -7,6 +7,7 @@ from typing import Protocol
 import msgspec
 
 from grim.geom import Vec2
+from grim.rand import RandDrawLike
 
 from ..bonuses.freeze import freeze_bonus_active
 from ..creatures.runtime import CreatureDeath
@@ -200,7 +201,7 @@ def queue_projectile_decals(
     players: Sequence[PlayerState],
     fx_queue: FxQueue,
     hits: list[ProjectileHit],
-    rand: Callable[[], int],
+    rand: RandDrawLike,
     detail_preset: int,
     gore_disabled: int,
 ) -> None:
@@ -227,7 +228,7 @@ def queue_projectile_decals_pre_hit(
     players: Sequence[PlayerState],
     fx_queue: FxQueue,
     hit: ProjectileHit,
-    rand: Callable[[], int],
+    rand: RandDrawLike,
     detail_preset: int,
     gore_disabled: int,
 ) -> ProjectileDecalPostCtx:
@@ -326,7 +327,7 @@ def queue_projectile_decals_post_hit(
     *,
     fx_queue: FxQueue,
     post_ctx: ProjectileDecalPostCtx,
-    rand: Callable[[], int],
+    rand: RandDrawLike,
 ) -> None:
     hit = post_ctx.hit
     base_angle = float(post_ctx.base_angle)
@@ -380,8 +381,8 @@ def plan_world_presentation_step(
     game_mode: GameMode,
     demo_mode_active: bool,
     perk_progression_enabled: bool,
-    rand: Callable[[], int],
-    rand_for: Callable[[str], Callable[[], int]] | None = None,
+    rand: RandDrawLike,
+    rand_for: Callable[[str], RandDrawLike] | None = None,
     detail_preset: int,
     gore_disabled: int,
     game_tune_started: bool,
@@ -391,7 +392,7 @@ def plan_world_presentation_step(
 ) -> PresentationStepCommands:
     commands = PresentationStepCommands()
     if rand_for is None:
-        def rand_for(_label: str) -> Callable[[], int]:
+        def rand_for(_label: str) -> RandDrawLike:
             return rand
     if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
         commands.sfx_keys.append("sfx_ui_levelup")

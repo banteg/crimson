@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from collections.abc import Callable, Sequence
 from typing import cast
 
@@ -11,6 +12,7 @@ from crimson.projectiles.runtime import ProjectileUpdateOptions
 from crimson.projectiles.types import ProjectileHit
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.rand import CallerStatic
 
 
 def make_creature_state(
@@ -56,7 +58,7 @@ class _NoopFxQueue(FxQueue):
         del effect_id, pos, width, height, rotation, rgba
         return False
 
-    def add_random(self, *, pos: Vec2, rand: Callable[[], int]) -> bool:
+    def add_random(self, *, pos: Vec2, rand: Callable[..., int]) -> bool:
         del pos, rand
         return False
 
@@ -88,11 +90,48 @@ class _NoopFxQueueRotated(FxQueueRotated):
         return False
 
 
+def _coerce_rand_draw(rand: Callable[..., int]) -> Callable[..., int]:
+    try:
+        params = inspect.signature(rand).parameters.values()
+    except (TypeError, ValueError):
+        params = ()
+
+    for param in params:
+        if param.kind == inspect.Parameter.VAR_KEYWORD:
+            return rand
+        if param.name == "caller":
+            return rand
+
+    def _draw(*, caller: CallerStatic = None) -> int:
+        _ = caller
+        return int(rand())
+
+    return _draw
+
+
+class _CallbackCrand:
+    def __init__(self, rand: Callable[..., int]) -> None:
+        self._rand = rand
+        self._state = 0
+
+    @property
+    def state(self) -> int:
+        return int(self._state)
+
+    def srand(self, seed: int) -> None:
+        self._state = int(seed) & 0xFFFFFFFF
+
+    def rand(self, *, caller: CallerStatic = None) -> int:
+        value = int(self._rand(caller=caller))
+        self._state = int(value) & 0xFFFFFFFF
+        return int(value)
+
+
 def make_creature_update_options(
     *,
     state: GameplayState,
     players: list[PlayerState],
-    rand: Callable[[], int] | None = None,
+    rand: Callable[..., int] | None = None,
     detail_preset: int = 5,
     gore_disabled: int = 0,
     env: SpawnEnv | None = None,
@@ -114,7 +153,7 @@ def make_creature_update_options(
     return CreatureUpdateOptions(
         state=state,
         players=players,
-        rand=state.rng.rand if rand is None else rand,
+        rng=(state.rng if rand is None else _CallbackCrand(_coerce_rand_draw(rand))),
         env=default_env if env is None else env,
         world_width=width,
         world_height=height,
@@ -143,7 +182,7 @@ def make_projectile_update_options(
     damage_scale_by_type: dict[int, float] | None = None,
     ion_aoe_scale: float = 1.0,
     detail_preset: int = 5,
-    rng: Callable[[], int] | None = None,
+    rng: Callable[..., int] | None = None,
     runtime_state: GameplayState | None = None,
     players: Sequence[PlayerState] | None = None,
     apply_player_damage: Callable[[int, float], None] | None = None,
@@ -155,7 +194,7 @@ def make_projectile_update_options(
     return ProjectileUpdateOptions(
         world_size=float(world_size),
         damage_scale_by_type={} if damage_scale_by_type is None else damage_scale_by_type,
-        rng=(lambda: 0) if rng is None else rng,
+        rng=_coerce_rand_draw((lambda *, caller=None: 0) if rng is None else rng),
         runtime_state=state,
         players=player_seq,
         apply_player_damage=(

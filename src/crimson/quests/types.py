@@ -6,6 +6,7 @@ import msgspec
 
 from crimson.quests.level import QuestLevel
 from grim.geom import Vec2
+from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..terrain_slots import TerrainSlotTriplet
@@ -27,10 +28,13 @@ class SpawnEntry(msgspec.Struct, frozen=True, kw_only=True):
 
 
 class QuestBuilder(Protocol):
-    __name__: str
-
-    def __call__(self, ctx: QuestContext) -> list[SpawnEntry]:
-        ...
+    def __call__(
+        self,
+        ctx: QuestContext,
+        *,
+        rng: CrandLike,
+        full_version: bool = True,
+    ) -> list[SpawnEntry]: ...
 
 
 class QuestDefinition(msgspec.Struct, frozen=True, kw_only=True):
@@ -42,7 +46,6 @@ class QuestDefinition(msgspec.Struct, frozen=True, kw_only=True):
     terrain_slots: TerrainSlotTriplet
     unlock_perk_id: int | None = None
     unlock_weapon_id: WeaponId | None = None
-    builder_address: int | None = None
 
     @property
     def major(self) -> int:

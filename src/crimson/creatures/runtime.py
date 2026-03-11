@@ -17,7 +17,7 @@ import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
-from grim.rand import CrandLike
+from grim.rand import CallerStatic, CrandLike
 
 from ..bonuses import BonusId
 from ..effects import EffectPool, FxQueue, FxQueueRotated
@@ -41,6 +41,7 @@ from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..player_damage import player_take_damage
 from ..projectiles.types import ProjectileTemplateId
+from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import GameplayState, PlayerState
 from ..sim.timing import ftol_ms_i32
 from ..weapons import weapon_entry_for_projectile_type_id
@@ -290,12 +291,13 @@ class CreatureUpdateResult(msgspec.Struct, frozen=True):
 class CreatureUpdateOptions(msgspec.Struct, frozen=True):
     state: GameplayState
     players: list[PlayerState]
-    rand: Callable[[], int]
+    rng: CrandLike
     env: SpawnEnv
     world_width: float
     world_height: float
     fx_queue: FxQueue
     fx_queue_rotated: FxQueueRotated
+    caller: CallerStatic = None
     detail_preset: int = 5
     gore_disabled: int = 0
 
@@ -308,7 +310,9 @@ class _CreatureInteractionCtx(msgspec.Struct):
     players: list[PlayerState]
     player: PlayerState
     dt: float
-    rand: Callable[[], int]
+    rng: CrandLike
+    caller: CallerStatic
+    draw: Callable[[], int]
     detail_preset: int
     gore_disabled: int
     world_width: float
@@ -359,7 +363,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     ctx.state.effects.spawn_burst(
         pos=creature.pos,
         count=6,
-        rand=ctx.rand,
+        rand=ctx.rng.rand,
         detail_preset=int(ctx.detail_preset),
     )
     ctx.sfx.append("sfx_ui_bonus")
@@ -372,7 +376,8 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
             ctx.creature_index,
             state=ctx.state,
             players=ctx.players,
-            rand=ctx.rand,
+            rng=ctx.rng,
+            caller=ctx.caller,
             dt=float(ctx.dt),
             detail_preset=int(ctx.detail_preset),
             world_width=float(ctx.world_width),
@@ -405,7 +410,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     # (creature_type_table[*].sfx_bank_b[rand & 1]) before applying damage.
     options = _CREATURE_CONTACT_SFX.get(creature.type_id)
     if options is not None:
-        ctx.sfx.append(options[int(ctx.rand()) & 1])
+        ctx.sfx.append(options[int(ctx.draw()) & 1])
 
     mr_melee_killed = False
     if perk_active(ctx.player, PerkId.MR_MELEE):
@@ -418,7 +423,8 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
                     ctx.creature_index,
                     state=ctx.state,
                     players=ctx.players,
-                    rand=ctx.rand,
+                    rng=ctx.rng,
+                    caller=ctx.caller,
                     dt=float(ctx.dt),
                     detail_preset=int(ctx.detail_preset),
                     world_width=float(ctx.world_width),
@@ -434,7 +440,8 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
                     world_width=float(ctx.world_width),
                     world_height=float(ctx.world_height),
                     fx_queue_rotated=ctx.fx_queue_rotated,
-                    rand=ctx.rand,
+                    rng=ctx.rng,
+                    caller=ctx.caller,
                     detail_preset=int(ctx.detail_preset),
                     gore_disabled=int(ctx.gore_disabled),
                 )
@@ -447,7 +454,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             owner=OwnerRef.from_player(int(ctx.player.index)),
             dt=ctx.dt,
             players=ctx.players,
-            rand=ctx.rand,
+            rand=ctx.draw,
             effects=ctx.state.effects,
             detail_preset=int(ctx.detail_preset),
             on_lethal=_on_mr_melee_lethal,
@@ -479,7 +486,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         ctx.player,
         float(creature.contact_damage),
         dt=ctx.dt,
-        rand=ctx.rand,
+        rand=ctx.draw,
         players=ctx.players,
         on_lethal=_on_player_lethal_final_revenge,
     )
@@ -488,7 +495,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         push_dir = (ctx.player.pos - creature.pos).normalized()
         ctx.fx_queue.add_random(
             pos=ctx.player.pos + push_dir * 3.0,
-            rand=ctx.rand,
+            rand=ctx.rng.rand,
         )
 
     creature.attack_cooldown = float(creature.attack_cooldown) + 1.0
@@ -597,14 +604,19 @@ class CreaturePool:
                     creature.plague_infected = True
                 return
 
-    def _alloc_slot(self, *, rand: Callable[[], int] | None = None) -> int:
+    def _alloc_slot(
+        self,
+        *,
+        rng: CrandLike | None = None,
+        caller: CallerStatic = None,
+    ) -> int:
         for i, entry in enumerate(self._entries):
             if not entry.active:
                 return i
         if not self._entries:
             raise ValueError("Creature pool has zero entries")
-        if rand is not None:
-            return int(rand()) % len(self._entries)
+        if rng is not None:
+            return int(rng.rand(caller=caller)) % len(self._entries)
         return len(self._entries) - 1
 
     def _resolve_target_player_index(self, creature: CreatureState, players: list[PlayerState]) -> int:
@@ -686,10 +698,16 @@ class CreaturePool:
         if float(dist_new) < float(dist_current):
             player.auto_target = int(creature_index)
 
-    def spawn_init(self, init: CreatureInit, *, rand: Callable[[], int] | None = None) -> int:
+    def spawn_init(
+        self,
+        init: CreatureInit,
+        *,
+        rng: CrandLike | None = None,
+        caller: CallerStatic = None,
+    ) -> int:
         """Materialize a single `CreatureInit` into the runtime pool."""
 
-        idx = self._alloc_slot(rand=rand)
+        idx = self._alloc_slot(rng=rng, caller=caller)
         # Reuse the allocated slot so fields that native spawn paths do not touch
         # (e.g. link_index for survival AI7 spiders) retain stale values.
         entry = self._entries[idx]
@@ -709,14 +727,21 @@ class CreaturePool:
         self.spawned_count += 1
         return idx
 
-    def spawn_inits(self, inits: Sequence[CreatureInit], *, rand: Callable[[], int] | None = None) -> list[int]:
-        return [self.spawn_init(init, rand=rand) for init in inits]
+    def spawn_inits(
+        self,
+        inits: Sequence[CreatureInit],
+        *,
+        rng: CrandLike | None = None,
+        caller: CallerStatic = None,
+    ) -> list[int]:
+        return [self.spawn_init(init, rng=rng, caller=caller) for init in inits]
 
     def spawn_plan(
         self,
         plan: SpawnPlan,
         *,
-        rand: Callable[[], int] | None = None,
+        rng: CrandLike | None = None,
+        caller: CallerStatic = None,
         detail_preset: int = 5,
         effects: EffectPool | None = None,
     ) -> tuple[list[int], int | None]:
@@ -733,7 +758,7 @@ class CreaturePool:
 
         # 1) Allocate pool slots for every creature.
         for init in plan.creatures:
-            pool_idx = self._alloc_slot(rand=rand)
+            pool_idx = self._alloc_slot(rng=rng, caller=caller)
             # Reuse the allocated slot so untouched fields keep native-like stale state.
             entry = self._entries[pool_idx]
             self._apply_init(entry, init)
@@ -788,7 +813,7 @@ class CreaturePool:
 
         effect_pool = self.effects if effects is None else effects
         if effect_pool is not None and plan.effects:
-            fx_rand = rand if rand is not None else (lambda: 0)
+            fx_rand = (lambda *, caller=None: 0) if rng is None else rng.rand
             for fx in plan.effects:
                 effect_pool.spawn_burst(
                     pos=fx.pos,
@@ -805,7 +830,7 @@ class CreaturePool:
         heading: float,
         rng: CrandLike,
         *,
-        rand: Callable[[], int] | None = None,
+        caller: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
         env: SpawnEnv | None = None,
         detail_preset: int = 5,
         effects: EffectPool | None = None,
@@ -818,7 +843,8 @@ class CreaturePool:
         plan = build_spawn_plan(template_id, pos, heading, rng, spawn_env)
         return self.spawn_plan(
             plan,
-            rand=rng.rand if rand is None else rand,
+            rng=rng,
+            caller=caller,
             detail_preset=int(detail_preset),
             effects=effects,
         )
@@ -838,7 +864,8 @@ class CreaturePool:
         dt = float(f32(float(dt)))
         state = options.state
         players = options.players
-        rand = options.rand
+        rng = options.rng
+        caller = options.caller
         detail_preset = int(options.detail_preset)
         gore_disabled = int(options.gore_disabled)
         env = options.env
@@ -846,6 +873,9 @@ class CreaturePool:
         world_height = float(options.world_height)
         fx_queue = options.fx_queue
         fx_queue_rotated = options.fx_queue_rotated
+
+        def rand() -> int:
+            return int(rng.rand(caller=caller))
 
         spawn_env = env
 
@@ -918,7 +948,8 @@ class CreaturePool:
                         int(creature_index),
                         state=state,
                         players=players,
-                        rand=rand,
+                        rng=rng,
+                        caller=caller,
                         dt=float(dt),
                         detail_preset=int(detail_preset),
                         world_width=world_width,
@@ -960,7 +991,8 @@ class CreaturePool:
                         world_width=world_width,
                         world_height=world_height,
                         fx_queue_rotated=fx_queue_rotated,
-                        rand=rand,
+                        rng=rng,
+                        caller=caller,
                         detail_preset=int(detail_preset),
                         gore_disabled=int(gore_disabled),
                     )
@@ -981,7 +1013,8 @@ class CreaturePool:
                         world_width=world_width,
                         world_height=world_height,
                         fx_queue_rotated=fx_queue_rotated,
-                        rand=rand,
+                        rng=rng,
+                        caller=caller,
                         detail_preset=int(detail_preset),
                         gore_disabled=int(gore_disabled),
                     )
@@ -1000,7 +1033,8 @@ class CreaturePool:
                                 idx,
                                 state=state,
                                 players=players,
-                                rand=rand,
+                                rng=rng,
+                                caller=caller,
                                 dt=float(dt),
                                 detail_preset=int(detail_preset),
                                 world_width=world_width,
@@ -1017,7 +1051,7 @@ class CreaturePool:
                         plague_killed = True
 
                     if fx_queue is not None:
-                        fx_queue.add_random(pos=creature.pos, rand=rand)
+                        fx_queue.add_random(pos=creature.pos, rand=rng.rand)
                     if plague_killed:
                         # Native keeps executing the current live-branch body after
                         # `creature_handle_death` in this timer-wrap kill path.
@@ -1064,7 +1098,8 @@ class CreaturePool:
                             idx,
                             state=state,
                             players=players,
-                            rand=rand,
+                            rng=rng,
+                            caller=caller,
                             dt=float(dt),
                             world_width=world_width,
                             world_height=world_height,
@@ -1078,7 +1113,8 @@ class CreaturePool:
                             world_width=world_width,
                             world_height=world_height,
                             fx_queue_rotated=fx_queue_rotated,
-                            rand=rand,
+                            rng=rng,
+                            caller=caller,
                             detail_preset=int(detail_preset),
                             gore_disabled=int(gore_disabled),
                         )
@@ -1148,7 +1184,7 @@ class CreaturePool:
                         creature.collision_timer = CONTACT_DAMAGE_PERIOD
                         creature.hp -= (100.0 - dist) * 0.3
                         if fx_queue is not None:
-                            fx_queue.add_random(pos=creature.pos, rand=rand)
+                            fx_queue.add_random(pos=creature.pos, rand=rng.rand)
 
                         if creature.hp < 0.0:
                             if creature.type_id == CreatureTypeId.LIZARD:
@@ -1207,7 +1243,9 @@ class CreaturePool:
                 players=players,
                 player=player,
                 dt=dt,
-                rand=rand,
+                rng=rng,
+                caller=caller,
+                draw=rand,
                 detail_preset=int(detail_preset),
                 gore_disabled=int(gore_disabled),
                 world_width=float(world_width),
@@ -1243,12 +1281,13 @@ class CreaturePool:
                                 child_template_id,
                                 creature.pos,
                                 float(RANDOM_HEADING_SENTINEL),
-                                state.rng,
+                                rng,
                                 spawn_env,
                             )
                             mapping, _ = self.spawn_plan(
                                 plan,
-                                rand=rand,
+                                rng=rng,
+                                caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
                                 detail_preset=int(detail_preset),
                             )
                             spawned.extend(mapping)
@@ -1261,7 +1300,8 @@ class CreaturePool:
         *,
         state: GameplayState,
         players: list[PlayerState],
-        rand: Callable[[], int],
+        rng: CrandLike,
+        caller: CallerStatic = None,
         dt: float = 0.0,
         detail_preset: int = 5,
         world_width: float,
@@ -1271,6 +1311,9 @@ class CreaturePool:
         plan_death_sfx: bool = True,
     ) -> CreatureDeath:
         """Run one-shot death side effects and return the `CreatureDeath` event."""
+
+        def draw() -> int:
+            return int(rng.rand(caller=caller))
 
         creature = self._entries[int(idx)]
         survival_record_recent_death(state, pos=creature.pos)
@@ -1306,7 +1349,8 @@ class CreaturePool:
             creature,
             state=state,
             players=players,
-            rand=rand,
+            rng=rng,
+            caller=caller,
             detail_preset=int(detail_preset),
             world_width=world_width,
             world_height=world_height,
@@ -1322,22 +1366,22 @@ class CreaturePool:
         if float(state.bonuses.freeze) > 0.0:
             creature_pos = creature.pos
             for _ in range(8):
-                angle = float(int(rand()) % 0x264) * 0.01
+                angle = float(int(draw()) % 0x264) * 0.01
                 state.effects.spawn_freeze_shard(
                     pos=creature_pos,
                     angle=angle,
-                    rand=rand,
+                    rand=rng.rand,
                     detail_preset=int(detail_preset),
                 )
-            angle = float(int(rand()) % 0x264) * 0.01
+            angle = float(int(draw()) % 0x264) * 0.01
             state.effects.spawn_freeze_shatter(
                 pos=creature_pos,
                 angle=angle,
-                rand=rand,
+                rand=rng.rand,
                 detail_preset=int(detail_preset),
             )
             if fx_queue is not None:
-                fx_queue.add_random(pos=creature_pos, rand=rand)
+                fx_queue.add_random(pos=creature_pos, rand=rng.rand)
             self.kill_count += 1
             creature.active = False
 
@@ -1418,7 +1462,8 @@ class CreaturePool:
         world_width: float,
         world_height: float,
         fx_queue_rotated: FxQueueRotated | None,
-        rand: Callable[[], int] | None = None,
+        rng: CrandLike | None = None,
+        caller: CallerStatic = None,
         detail_preset: int = 5,
         gore_disabled: int = 0,
     ) -> None:
@@ -1485,17 +1530,20 @@ class CreaturePool:
         if (
             int(gore_disabled) == 0
             and (creature.flags & CreatureFlags.ANIM_PING_PONG) != 0
-            and rand is not None
+            and rng is not None
             and self.effects is not None
         ):
+            def draw() -> int:
+                return int(rng.rand(caller=caller))
+
             for count, age in ((8, 0.0), (6, -0.07), (5, -0.12)):
                 for _ in range(int(count)):
-                    angle = float(int(rand()) % 0x264) * 0.01
+                    angle = float(int(draw()) % 0x264) * 0.01
                     self.effects.spawn_blood_splatter(
                         pos=creature.pos,
                         angle=float(angle),
                         age=float(age),
-                        rand=rand,
+                        rand=rng.rand,
                         detail_preset=int(detail_preset),
                         gore_disabled=int(gore_disabled),
                     )
@@ -1524,19 +1572,23 @@ class CreaturePool:
         *,
         state: GameplayState,
         players: list[PlayerState],
-        rand: Callable[[], int],
+        rng: CrandLike,
+        caller: CallerStatic = None,
         detail_preset: int = 5,
         world_width: float,
         world_height: float,
     ) -> CreatureDeath:
+        def draw() -> int:
+            return int(rng.rand(caller=caller))
+
         if creature.spawn_slot_index is not None:
             self._disable_spawn_slot(int(creature.spawn_slot_index))
 
         if (creature.flags & CreatureFlags.SPLIT_ON_DEATH) and float(creature.size) > 35.0:
             for heading_offset in (-math.pi / 2.0, math.pi / 2.0):
-                child_idx = self._alloc_slot(rand=rand)
+                child_idx = self._alloc_slot(rng=rng, caller=caller)
                 child = msgspec.structs.replace(creature)
-                child.phase_seed = float(int(rand()) & 0xFF)
+                child.phase_seed = float(int(draw()) & 0xFF)
                 child.heading = _wrap_angle(float(creature.heading) + float(heading_offset))
                 child.target_heading = float(child.heading)
                 child.hp = float(creature.max_hp) * 0.25
@@ -1551,7 +1603,7 @@ class CreaturePool:
             state.effects.spawn_burst(
                 pos=creature.pos,
                 count=8,
-                rand=rand,
+                rand=rng.rand,
                 detail_preset=int(detail_preset),
             )
 
@@ -1581,7 +1633,7 @@ class CreaturePool:
                 state.effects.spawn_burst(
                     pos=spawned_bonus.pos,
                     count=16,
-                    rand=rand,
+                    rand=rng.rand,
                     detail_preset=int(detail_preset),
                 )
 

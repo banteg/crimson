@@ -13,7 +13,7 @@ from PIL import Image
 
 from grim import jaz, paq
 from grim.geom import Vec2
-from grim.rand import Crand, CrandLike
+from grim.rand import Crand
 
 from ..creatures.spawn import SpawnEnv, SpawnId, build_spawn_plan, spawn_id_label
 from ..paths import default_runtime_dir
@@ -103,13 +103,6 @@ def cmd_extract(game_dir: Path, assets_dir: Path) -> None:
     typer.echo(f"extracted {total} files")
 
 
-def _call_builder(builder, ctx: QuestContext, rng: CrandLike | None) -> list[SpawnEntry]:
-    params = inspect.signature(builder).parameters
-    if "rng" in params:
-        return builder(ctx, rng=rng)
-    return builder(ctx)
-
-
 def _format_entry(idx: int, entry: SpawnEntry, *, plan_info: tuple[int, int] | None) -> str:
     creature = spawn_id_label(entry.spawn_id)
     plan_text = ""
@@ -139,14 +132,12 @@ def _format_id_list(values: tuple[int, ...] | None) -> str:
 
 
 def _format_meta(quest: QuestDefinition) -> list[str]:
-    builder_addr = f"0x{quest.builder_address:08x}" if quest.builder_address is not None else "unknown"
     terrain_slots = _format_id_list(quest.terrain_slots)
     return [
         f"time_limit_ms={quest.time_limit_ms}",
         f"start_weapon_id={quest.start_weapon_id}",
         f"unlock_perk_id={_format_id(quest.unlock_perk_id)}",
         f"unlock_weapon_id={_format_id(quest.unlock_weapon_id)}",
-        f"builder_address={builder_addr}",
         f"terrain_slots={terrain_slots}",
     ]
 
@@ -171,7 +162,7 @@ def cmd_quests(
     title = quest.title
     ctx = QuestContext(width=width, height=height, player_count=player_count)
     rng = Crand(seed) if seed is not None else Crand()
-    entries = _call_builder(builder, ctx, rng)
+    entries = builder(ctx, rng=rng, full_version=True)
     if sort:
         entries = sorted(entries, key=lambda e: (e.trigger_ms, e.spawn_id, e.x, e.y))
     typer.echo(f"Quest {level} {title} ({len(entries)} entries)")
@@ -275,6 +266,7 @@ def cmd_view(
         fps=fps,
         hooks=hooks,
     )
+
 
 @app.callback(invoke_without_command=True)
 def cmd_game(
@@ -448,7 +440,9 @@ def cmd_spawn_plan(
         f"quest_fail_retry_count={quest_fail_retry_count} "
         f"terrain={terrain_w:.0f}x{terrain_h:.0f}",
     )
-    typer.echo(f"primary={plan.primary} creatures={len(plan.creatures)} slots={len(plan.spawn_slots)} effects={len(plan.effects)}")
+    typer.echo(
+        f"primary={plan.primary} creatures={len(plan.creatures)} slots={len(plan.spawn_slots)} effects={len(plan.effects)}",
+    )
     typer.echo("")
     typer.echo("creatures:")
     for idx, c in enumerate(plan.creatures):

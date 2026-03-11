@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 from grim.geom import Vec2
+from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
@@ -22,9 +23,8 @@ from .types import QuestContext, SpawnEntry
     time_limit_ms=480000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ION_SHOTGUN,
-    builder_address=0x00435610,
 )
-def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
+def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         spawn(Vec2(256.0, 256.0), heading=0.0, spawn_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, trigger_ms=500, count=1),
         spawn(
@@ -115,9 +115,13 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.DEATH_CLOCK,
-    builder_address=0x004358A0,
 )
-def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
+def build_5_2_the_spanking_of_the_dead(
+    ctx: QuestContext,
+    *,
+    rng: CrandLike,
+    full_version: bool = True,
+) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         spawn(Vec2(256.0, 512.0), heading=0.0, spawn_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, trigger_ms=500, count=1),
         spawn(Vec2(768.0, 512.0), heading=0.0, spawn_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, trigger_ms=500, count=1),
@@ -169,9 +173,8 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.MY_FAVOURITE_WEAPON,
-    builder_address=0x004352D0,
 )
-def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
+def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         spawn(
             Vec2(-50.0, float(ctx.height // 2)),
@@ -228,9 +231,8 @@ def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.GAUSS_SHOTGUN,
-    builder_address=0x00435120,
 )
-def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
+def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         spawn(
             Vec2(-150.0, float(ctx.height // 2)),
@@ -302,9 +304,13 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.BANDAGE,
-    builder_address=0x00434F00,
 )
-def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
+def build_5_5_knee_deep_in_the_dead(
+    ctx: QuestContext,
+    *,
+    rng: CrandLike,
+    full_version: bool = True,
+) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         spawn(
             Vec2(-50.0, float(ctx.height * 0.5)),
@@ -390,9 +396,8 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.ANGRY_RELOADER,
-    builder_address=0x00435480,
 )
-def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
+def build_5_6_cross_fire(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     return [
         spawn(
             Vec2(1074.0, float(ctx.height * 0.5)),
@@ -451,9 +456,8 @@ def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
     title="Army of Three",
     time_limit_ms=480000,
     start_weapon_id=WeaponId.PISTOL,
-    builder_address=0x00434CA0,
 )
-def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
+def build_5_7_army_of_three(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     return [
         spawn(Vec2(-64.0, 256.0), heading=0.0, spawn_id=SpawnId.FORMATION_GRID_ALIEN_WHITE_15, trigger_ms=500, count=1),
         spawn(
@@ -535,9 +539,8 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.ION_GUN_MASTER,
-    builder_address=0x00434860,
 )
-def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
+def build_5_8_monster_blues(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         spawn(
             Vec2(-50.0, float(ctx.height * 0.5)),
@@ -597,9 +600,8 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.STATIONARY_RELOADER,
-    builder_address=0x00434480,
 )
-def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
+def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
 
     center = center_point(ctx.width, ctx.height)
@@ -725,9 +727,8 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.PLASMA_CANNON,
-    builder_address=0x004349C0,
 )
-def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
+def build_5_10_the_gathering(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     return [
         spawn(Vec2(256.0, 512.0), heading=0.0, spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01, trigger_ms=500, count=1),
         spawn(Vec2(768.0, 512.0), heading=0.0, spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01, trigger_ms=9500, count=2),

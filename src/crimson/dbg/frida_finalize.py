@@ -54,11 +54,20 @@ class FridaFinalizeError(ValueError):
     pass
 
 
+class _CaptureRngStreamRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    tick_call_index: int
+    value_15: int
+    state_before_u32: int
+    state_after_u32: int
+    caller_static: str | None = None
+    branch_id: str | None = None
+
+
 class _TickChannels(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     checkpoint: ReplayCheckpoint
     sim_state: SimStateSnapshot
     entity_samples: EntitySamplesSnapshot
-    rng_stream: list[RngStreamRow]
+    rng_stream: list[_CaptureRngStreamRow]
     timing_samples: list[TimingSampleRow]
 
 
@@ -279,6 +288,23 @@ def _canonical_channels_payload(
     field: str,
 ) -> tuple[ReplayCheckpoint, ReplayTickChannels]:
     checkpoint = msgspec.structs.replace(channels.checkpoint, tick_index=int(local_tick))
+    rng_stream = [
+        RngStreamRow(
+            tick_call_index=int(row.tick_call_index),
+            value_15=int(row.value_15),
+            state_before_u32=int(row.state_before_u32),
+            state_after_u32=int(row.state_after_u32),
+            caller=(
+                None
+                if row.caller_static is None
+                else _caller_from_capture(
+                    row.caller_static,
+                    field=f"{field}.rng_stream[{idx}].caller_static",
+                )
+            ),
+        )
+        for idx, row in enumerate(channels.rng_stream)
+    ]
     normalized = _TickChannels(
         checkpoint=checkpoint,
         sim_state=channels.sim_state,
@@ -290,9 +316,22 @@ def _canonical_channels_payload(
         checkpoint=normalized.checkpoint,
         sim_state=normalized.sim_state,
         entity_samples=normalized.entity_samples,
-        rng_stream=list(normalized.rng_stream),
+        rng_stream=rng_stream,
         timing_samples=list(normalized.timing_samples),
     )
+
+
+def _caller_from_capture(value: str, *, field: str) -> int:
+    text = value
+    if not text.lower().startswith("0x"):
+        raise FridaFinalizeError(f"{field} must be a 0x-prefixed hex string")
+    try:
+        caller = int(text, 16)
+    except ValueError as exc:
+        raise FridaFinalizeError(f"{field} invalid hex value: {text!r}") from exc
+    if not (0 <= caller <= 0xFFFFFFFF):
+        raise FridaFinalizeError(f"{field} must decode to a uint32")
+    return caller
 
 
 def _replay_tick_inputs_from_row(

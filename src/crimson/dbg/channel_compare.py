@@ -6,22 +6,41 @@ from .payloads import BuiltinObject, BuiltinRows, to_builtin_object, to_builtin_
 from .strict_compare import strict_mismatch_payload
 
 
+def _rng_stream_row_payload(row: RngStreamRow, *, field: str) -> BuiltinObject:
+    payload = to_builtin_object(
+        {
+            "tick_call_index": row.tick_call_index,
+            "value_15": row.value_15,
+            "state_before_u32": row.state_before_u32,
+            "state_after_u32": row.state_after_u32,
+            "caller": row.caller,
+            "caller_hex": (
+                None if row.caller is None else f"0x{row.caller:08x}"
+            ),
+        },
+        field=field,
+    )
+    return payload
+
+
 def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngStreamRow]) -> tuple[bool, BuiltinObject | None]:
     exp_keys = [
         (
-            int(row.tick_call_index),
-            int(row.value_15),
-            int(row.state_before_u32),
-            int(row.state_after_u32),
+            row.tick_call_index,
+            row.value_15,
+            row.state_before_u32,
+            row.state_after_u32,
+            row.caller,
         )
         for row in expected_rows
     ]
     act_keys = [
         (
-            int(row.tick_call_index),
-            int(row.value_15),
-            int(row.state_before_u32),
-            int(row.state_after_u32),
+            row.tick_call_index,
+            row.value_15,
+            row.state_before_u32,
+            row.state_after_u32,
+            row.caller,
         )
         for row in actual_rows
     ]
@@ -33,18 +52,24 @@ def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngS
         return True, None
     detail = to_builtin_object(
         {
-        "prefix_match_len": prefix,
-        "expected_calls": len(exp_keys),
-        "actual_calls": len(act_keys),
-        "missing_tail": max(0, len(exp_keys) - len(act_keys)),
-        "extra_tail": max(0, len(act_keys) - len(exp_keys)),
+            "prefix_match_len": prefix,
+            "expected_calls": len(exp_keys),
+            "actual_calls": len(act_keys),
+            "missing_tail": max(0, len(exp_keys) - len(act_keys)),
+            "extra_tail": max(0, len(act_keys) - len(exp_keys)),
         },
         field="rng_stream.diff",
     )
     if prefix < len(expected_rows):
-        detail["expected_first_mismatch"] = to_builtin_object(expected_rows[prefix], field="rng_stream.expected")
+        detail["expected_first_mismatch"] = _rng_stream_row_payload(
+            expected_rows[prefix],
+            field="rng_stream.expected",
+        )
     if prefix < len(actual_rows):
-        detail["actual_first_mismatch"] = to_builtin_object(actual_rows[prefix], field="rng_stream.actual")
+        detail["actual_first_mismatch"] = _rng_stream_row_payload(
+            actual_rows[prefix],
+            field="rng_stream.actual",
+        )
     return False, detail
 
 

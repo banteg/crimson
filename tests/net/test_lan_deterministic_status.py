@@ -21,7 +21,8 @@ class _SeqRng(Crand):
         self._seq = list(seq)
         self.calls = 0
 
-    def rand(self) -> int:
+    def rand(self, *, caller: int | None = None) -> int:
+        _ = caller
         self.calls += 1
         if not self._seq:
             raise AssertionError("rng exhausted")

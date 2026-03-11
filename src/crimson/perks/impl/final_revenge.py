@@ -77,7 +77,7 @@ def apply_final_revenge_on_player_death(
                     int(death_creature_idx),
                     state=state,
                     players=players,
-                    rand=rand,
+                    rng=state.rng,
                     dt=float(dt),
                     detail_preset=int(detail_preset),
                     world_width=float(world_size),

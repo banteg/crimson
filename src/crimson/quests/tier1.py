@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 from grim.geom import Vec2
-from grim.rand import Crand, CrandLike
+from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
+from ..rng_caller_static import RngCallerStatic
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
     corner_points,
     edge_midpoints,
     heading_from_center,
-    random_angle,
     spawn,
     spawn_at,
 )
@@ -25,9 +25,8 @@ from .types import QuestContext, SpawnEntry
     time_limit_ms=120000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ASSAULT_RIFLE,
-    builder_address=0x00435BD0,
 )
-def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_1_land_hostile(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width, ctx.height)
     top_left, top_right, bottom_left, _bottom_right = corner_points(ctx.width, ctx.height)
     return [
@@ -44,9 +43,8 @@ def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=120000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.SHOTGUN,
-    builder_address=0x00435CC0,
 )
-def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_2_minor_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
     entries = [
@@ -115,17 +113,21 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=65000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.URANIUM_FILLED_BULLETS,
-    builder_address=0x00437A00,
 )
-def build_1_3_target_practice(ctx: QuestContext, rng: CrandLike | None = None) -> list[SpawnEntry]:
-    rng = rng or Crand()
+def build_1_3_target_practice(
+    ctx: QuestContext,
+    *,
+    rng: CrandLike,
+    full_version: bool = True,
+) -> list[SpawnEntry]:
+    caller = RngCallerStatic.QUEST_1_3_BUILDER
     center = center_point(ctx.width, ctx.height)
     entries: list[SpawnEntry] = []
     trigger = 2000
     step = 2000
     while True:
-        angle = random_angle(rng)
-        radius = (int(rng.rand() % 8) + 2) * 0x20
+        angle = float(rng.rand(caller=caller) % 612) * 0.01
+        radius = (int(rng.rand(caller=caller) % 8) + 2) * 0x20
         point = center + Vec2.from_angle(angle) * radius
         heading = heading_from_center(point, center)
         entries.append(
@@ -150,9 +152,8 @@ def build_1_3_target_practice(ctx: QuestContext, rng: CrandLike | None = None) -
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.FLAMETHROWER,
-    builder_address=0x00437E10,
 )
-def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width, ctx.height)
     top_left, top_right, _bottom_left, _bottom_right = corner_points(ctx.width, ctx.height)
@@ -224,15 +225,22 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=180000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.DOCTOR,
-    builder_address=0x00436720,
 )
-def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_5_alien_dens(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     return [
         spawn(
-            Vec2(256.0, 256.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1,
+            Vec2(256.0, 256.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
+            trigger_ms=1500,
+            count=1,
         ),
         spawn(
-            Vec2(768.0, 768.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1,
+            Vec2(768.0, 768.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
+            trigger_ms=1500,
+            count=1,
         ),
         spawn(
             Vec2(512.0, 512.0),
@@ -264,10 +272,14 @@ def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.SUBMACHINE_GUN,
-    builder_address=0x00436350,
 )
-def build_1_6_the_random_factor(ctx: QuestContext, rng: CrandLike | None = None) -> list[SpawnEntry]:
-    rng = rng or Crand()
+def build_1_6_the_random_factor(
+    ctx: QuestContext,
+    *,
+    rng: CrandLike,
+    full_version: bool = True,
+) -> list[SpawnEntry]:
+    caller = RngCallerStatic.QUEST_1_6_BUILDER
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
@@ -291,7 +303,7 @@ def build_1_6_the_random_factor(ctx: QuestContext, rng: CrandLike | None = None)
                 count=6,
             ),
         )
-        if int(rng.rand() % 5) == 3:
+        if int(rng.rand(caller=caller) % 5) == 3:
             entries.append(
                 spawn(
                     Vec2(center.x, edges.bottom.y),
@@ -311,9 +323,8 @@ def build_1_6_the_random_factor(ctx: QuestContext, rng: CrandLike | None = None)
     time_limit_ms=240000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.MONSTER_VISION,
-    builder_address=0x00436440,
 )
-def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_7_spider_wave_syndrome(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width, ctx.height)
     trigger = 1500
@@ -337,9 +348,8 @@ def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=180000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.GAUSS_GUN,
-    builder_address=0x00435EA0,
 )
-def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_8_alien_squads(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries = [
         spawn(
             Vec2(-256.0, 256.0),
@@ -428,9 +438,8 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=240000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.HOT_TEMPERED,
-    builder_address=0x004364A0,
 )
-def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_9_nesting_grounds(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
     entries = [
@@ -528,9 +537,8 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=240000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ROCKET_LAUNCHER,
-    builder_address=0x00436120,
 )
-def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
+def build_1_10_8_legged_terror(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries = [
         spawn(
             Vec2(float(ctx.width - 256), float(ctx.width // 2)),

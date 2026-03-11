@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from grim.geom import Vec2
+from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
@@ -22,9 +23,8 @@ from .types import QuestContext, SpawnEntry
     time_limit_ms=300000,
     start_weapon_id=WeaponId.ROCKET_MINIGUN,
     unlock_perk_id=PerkId.JINXED,
-    builder_address=0x00437AF0,
 )
-def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
+def build_4_1_major_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width)
     trigger = 4000
@@ -59,9 +59,8 @@ def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.PULSE_GUN,
-    builder_address=0x00437D70,
 )
-def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
+def build_4_2_zombie_time(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width)
     trigger = 1500
@@ -94,9 +93,8 @@ def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.PERK_MASTER,
-    builder_address=0x00438700,
 )
-def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
+def build_4_3_lizard_zombie_pact(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width)
     trigger = 1500
@@ -151,9 +149,8 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=360000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.PLASMA_SHOTGUN,
-    builder_address=0x00437F30,
 )
-def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
+def build_4_4_the_collaboration(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width)
     trigger = 1500
@@ -207,9 +204,8 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.REFLEX_BOOSTED,
-    builder_address=0x004383E0,
 )
-def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
+def build_4_5_the_massacre(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width)
     edges_wide = edge_midpoints(ctx.width, offset=128.0)
@@ -246,9 +242,8 @@ def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=600000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.MINI_ROCKET_SWARMERS,
-    builder_address=0x00438A40,
 )
-def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
+def build_4_6_the_unblitzkrieg(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     def spawn_id_for(toggle: bool) -> SpawnId:
         return SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D if toggle else SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07
 
@@ -407,9 +402,8 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.GREATER_REGENERATION,
-    builder_address=0x004369A0,
 )
-def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     player_count = ctx.player_count + (4 if full_version else 0)
     center = center_point(ctx.width, ctx.height)
@@ -494,9 +488,8 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ION_MINIGUN,
-    builder_address=0x00436C10,
 )
-def build_4_8_syntax_terror(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_8_syntax_terror(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     player_count = ctx.player_count + (4 if full_version else 0)
     outer_seed = 0x14C9
@@ -532,9 +525,8 @@ def build_4_8_syntax_terror(ctx: QuestContext, full_version: bool = True) -> lis
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.BREATHING_ROOM,
-    builder_address=0x004382C0,
 )
-def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
+def build_4_9_the_annihilation(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     half_w = ctx.width // 2
     entries.append(
@@ -553,7 +545,13 @@ def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
         y = float(i_var5 // 12 + 0x80)
         x = 832.0 if idx % 2 == 0 else 896.0
         entries.append(
-            spawn(Vec2(x, y), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1),
+            spawn(
+                Vec2(x, y),
+                heading=0.0,
+                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                trigger_ms=trigger,
+                count=1,
+            ),
         )
         trigger += 500
         i_var5 += 0x300
@@ -565,7 +563,13 @@ def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
         y = float(i_var5 // 12 + 0x80)
         x = 832.0 if toggle else 896.0
         entries.append(
-            spawn(Vec2(x, y), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1),
+            spawn(
+                Vec2(x, y),
+                heading=0.0,
+                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                trigger_ms=trigger,
+                count=1,
+            ),
         )
         trigger += 300
         toggle = not toggle
@@ -579,9 +583,8 @@ def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ION_CANNON,
-    builder_address=0x00438E10,
 )
-def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         spawn(
             Vec2(128.0, 128.0),

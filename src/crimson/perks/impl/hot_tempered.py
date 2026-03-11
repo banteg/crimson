@@ -4,6 +4,7 @@ import math
 
 from ...owner_ref import OwnerRef
 from ...projectiles.types import ProjectileTemplateId
+from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
@@ -20,9 +21,7 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
         return
 
     owner = (
-        ctx.owner_ref_for_player(ctx.player.index)
-        if ctx.state.friendly_fire_enabled
-        else OwnerRef.from_local_player(0)
+        ctx.owner_ref_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else OwnerRef.from_local_player(0)
     )
     for idx in range(8):
         type_id = ProjectileTemplateId.PLASMA_MINIGUN if ((idx & 1) == 0) else ProjectileTemplateId.PLASMA_RIFLE
@@ -39,7 +38,9 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
     ctx.state.sfx_queue.append("sfx_explosion_small")
 
     ctx.player.hot_tempered_timer -= ctx.state.perk_intervals.hot_tempered
-    ctx.state.perk_intervals.hot_tempered = float(ctx.state.rng.rand() % 8) + 2.0
+    ctx.state.perk_intervals.hot_tempered = (
+        float(ctx.state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE) % 8) + 2.0
+    )
 
 
 HOOKS = PerkHooks(

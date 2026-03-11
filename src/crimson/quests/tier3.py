@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 from grim.geom import Vec2
-from grim.rand import Crand, CrandLike
+from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
+from ..rng_caller_static import RngCallerStatic
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
     edge_midpoints,
     line_points,
     radial_points,
-    random_angle,
     ring_points,
     spawn,
     spawn_at,
@@ -26,9 +26,8 @@ from .types import QuestContext, SpawnEntry
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.TOXIC_AVENGER,
-    builder_address=0x00438050,
 )
-def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
+def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width)
     edges_wide = edge_midpoints(ctx.width, offset=128.0)
     entries = [
@@ -41,16 +40,32 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
         ),
         spawn_at(edges_wide.left, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B, trigger_ms=1500, count=2),
         spawn(
-            Vec2(896.0, 128.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1,
+            Vec2(896.0, 128.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            trigger_ms=2000,
+            count=1,
         ),
         spawn(
-            Vec2(128.0, 128.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1,
+            Vec2(128.0, 128.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            trigger_ms=2000,
+            count=1,
         ),
         spawn(
-            Vec2(128.0, 896.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1,
+            Vec2(128.0, 896.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            trigger_ms=2000,
+            count=1,
         ),
         spawn(
-            Vec2(896.0, 896.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1,
+            Vec2(896.0, 896.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            trigger_ms=2000,
+            count=1,
         ),
     ]
 
@@ -132,9 +147,8 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=180000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.MULTI_PLASMA,
-    builder_address=0x00437710,
 )
-def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
+def build_3_2_lizard_kings(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     center = center_point(ctx.width, ctx.height)
     entries = [
         spawn(
@@ -180,16 +194,20 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.REGENERATION,
-    builder_address=0x004384A0,
 )
-def build_3_3_the_killing(ctx: QuestContext, rng: CrandLike | None = None) -> list[SpawnEntry]:
-    rng = rng or Crand()
+def build_3_3_the_killing(
+    ctx: QuestContext,
+    *,
+    rng: CrandLike,
+    full_version: bool = True,
+) -> list[SpawnEntry]:
+    caller = RngCallerStatic.QUEST_3_3_BUILDER
     edges = edge_midpoints(ctx.width)
     entries: list[SpawnEntry] = []
     trigger = 2000
     for wave in range(10):
-        rng.rand()
-        rng.rand()
+        rng.rand(caller=caller)
+        rng.rand(caller=caller)
         spawn_cycle = wave % 3
         if spawn_cycle == 0:
             spawn_id = SpawnId.AI1_ALIEN_BLUE_TINT_1A
@@ -241,8 +259,8 @@ def build_3_3_the_killing(ctx: QuestContext, rng: CrandLike | None = None) -> li
             )
         else:
             for offset in (0, 1000, 2000):
-                x = int(rng.rand() % 0x300) + 0x80
-                y = int(rng.rand() % 0x300) + 0x80
+                x = int(rng.rand(caller=caller) % 0x300) + 0x80
+                y = int(rng.rand(caller=caller) % 0x300) + 0x80
                 entries.append(
                     spawn(
                         Vec2(float(x), float(y)),
@@ -263,18 +281,25 @@ def build_3_3_the_killing(ctx: QuestContext, rng: CrandLike | None = None) -> li
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.SEEKER_ROCKETS,
-    builder_address=0x00435A30,
 )
-def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
+def build_3_4_hidden_evil(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width, ctx.height)
     return [
         spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PURPLE_GHOST_21, trigger_ms=500, count=50),
         spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_22, trigger_ms=15000, count=30),
         spawn_at(
-            edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23, trigger_ms=25000, count=20,
+            edges.bottom,
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23,
+            trigger_ms=25000,
+            count=20,
         ),
         spawn_at(
-            edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23, trigger_ms=30000, count=30,
+            edges.bottom,
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23,
+            trigger_ms=30000,
+            count=30,
         ),
         spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_22, trigger_ms=35000, count=30),
     ]
@@ -286,9 +311,13 @@ def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.PYROMANIAC,
-    builder_address=0x00438940,
 )
-def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
+def build_3_5_surrounded_by_reptiles(
+    ctx: QuestContext,
+    *,
+    rng: CrandLike,
+    full_version: bool = True,
+) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 1000
     for pos in line_points(Vec2(256.0, 256.0), Vec2(0.0, 102.4), 5):
@@ -342,9 +371,8 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.BLOW_TORCH,
-    builder_address=0x00437C70,
 )
-def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
+def build_3_6_the_lizquidation(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width)
     trigger = 1500
@@ -388,9 +416,8 @@ def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PLASMA_MINIGUN,
     unlock_perk_id=PerkId.NINJA,
-    builder_address=0x004390D0,
 )
-def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
+def build_3_7_spiders_inc(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width)
     center = center_point(ctx.width, ctx.height)
     entries = [
@@ -438,9 +465,8 @@ def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ROCKET_MINIGUN,
-    builder_address=0x00438840,
 )
-def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
+def build_3_8_lizard_raze(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width)
     trigger = 1500
@@ -498,16 +524,20 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=120000,
     start_weapon_id=WeaponId.GAUSS_GUN,
     unlock_perk_id=PerkId.HIGHLANDER,
-    builder_address=0x00437920,
 )
-def build_3_9_deja_vu(ctx: QuestContext, rng: CrandLike | None = None) -> list[SpawnEntry]:
-    rng = rng or Crand()
+def build_3_9_deja_vu(
+    ctx: QuestContext,
+    *,
+    rng: CrandLike,
+    full_version: bool = True,
+) -> list[SpawnEntry]:
+    caller = RngCallerStatic.QUEST_3_9_BUILDER
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     trigger = 2000
     step = 2000
     while step > 560:
-        angle = random_angle(rng)
+        angle = float(rng.rand(caller=caller) % 612) * 0.01
         for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
             entries.append(
                 spawn(
@@ -529,9 +559,8 @@ def build_3_9_deja_vu(ctx: QuestContext, rng: CrandLike | None = None) -> list[S
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.JACKHAMMER,
-    builder_address=0x004360A0,
 )
-def build_3_10_zombie_masters(ctx: QuestContext) -> list[SpawnEntry]:
+def build_3_10_zombie_masters(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     return [
         spawn(
             Vec2(256.0, 256.0),

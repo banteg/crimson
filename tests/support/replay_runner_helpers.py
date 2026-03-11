@@ -16,7 +16,7 @@ from crimson.replay.types import current_replay_game_version
 from crimson.sim.input import PlayerInput
 from crimson.sim.world_state import WorldEvents, WorldState
 from grim.geom import Vec2
-from grim.rand import Crand
+from grim.rand import CallerStatic, Crand
 
 
 def _blank_survival_replay(
@@ -134,7 +134,7 @@ def _run_verify_playback(
     tick_progress_callback: Callable[[int], None] | None = None,
     tick_observer: Callable[[int, WorldState], None] | None = None,
     tick_trace_observer: Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None] | None = None,
-    tick_rng_trace_observer: Callable[[int, list[tuple[int, int, int]]], None] | None = None,
+    tick_rng_trace_observer: Callable[[int, list[tuple[int, int, int, CallerStatic]]], None] | None = None,
 ) -> RunResult:
     driver = build_verify_playback_driver(
         replay,

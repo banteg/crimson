@@ -115,7 +115,6 @@ def test_runner_path_projectile_hits_enqueue_decals() -> None:
         target,
         3.14,
         world.sim_world.state.rng,
-        rand=world.sim_world.state.rng.rand,
     )
 
     session, runner = _build_runner(

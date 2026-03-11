@@ -7,6 +7,7 @@ import msgspec
 from grim.geom import Vec2
 
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
+from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.world_state import WorldState
@@ -23,7 +24,7 @@ def _require_single_player_typo(command) -> None:
 
 
 def _typeclick_sfx(world: WorldState) -> str:
-    if (int(world.state.rng.rand()) & 1) == 0:
+    if (int(world.state.rng.rand(caller=RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER)) & 1) == 0:
         return "sfx_ui_typeclick_01"
     return "sfx_ui_typeclick_02"
 
@@ -80,9 +81,10 @@ def typo_mid_step(ctx: MidStepContext) -> None:
     )
     typo.spawn_cooldown_ms = int(cooldown)
     for call in spawns:
-        rand = ctx.world.state.rng.rand
-        heading = float(int(rand()) % 314) * 0.01
-        size = float(int(rand()) % 20 + 47)
+        caller = RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER
+
+        heading = float(int(ctx.world.state.rng.rand(caller=caller)) % 314) * 0.01
+        size = float(int(ctx.world.state.rng.rand(caller=caller)) % 20 + 47)
         flags = CreatureFlags(0)
         move_speed = 1.7
         if int(call.type_id) in (int(CreatureTypeId.SPIDER_SP1), int(CreatureTypeId.SPIDER_SP2)):
@@ -107,7 +109,8 @@ def typo_mid_step(ctx: MidStepContext) -> None:
                 contact_damage=100.0,
                 tint=call.tint_rgba.to_tuple(),
             ),
-            rand=rand,
+            rng=ctx.world.state.rng,
+            caller=caller,
         )
         active_mask = [bool(entry.active) for entry in ctx.world.creatures.entries]
         typo.names.assign_random(
@@ -116,6 +119,7 @@ def typo_mid_step(ctx: MidStepContext) -> None:
             score_xp=int(ctx.world.players[0].experience) if ctx.world.players else 0,
             active_mask=active_mask,
             unique_words=typo.dictionary_words,
+            caller=caller,
         )
 
 

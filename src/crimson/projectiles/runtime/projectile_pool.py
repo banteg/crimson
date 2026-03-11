@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from grim.geom import Vec2
+from grim.rand import RandDrawLike
 
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
@@ -42,7 +43,7 @@ if TYPE_CHECKING:
 class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     world_size: float
     damage_scale_by_type: dict[int, float]
-    rng: Callable[[], int]
+    rng: RandDrawLike
     runtime_state: GameplayState
     players: Sequence[PlayerState]
     apply_player_damage: Callable[[int, float], None]

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TypeAlias
 
 from crimson.quests.level import QuestLevel
-from grim.rand import CrtRand, RngTraceSink
+from grim.rand import CallerStatic, CrtRand, RngTraceSink
 
 from ...effects import FxQueue, FxQueueRotated
 from ...game_modes import GameMode
@@ -19,6 +19,7 @@ from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.header_settings import session_settings_from_replay_header
 from ...replay.input_codec import unpack_tick_inputs
+from ...rng_caller_static import RngCallerStatic
 from ...sim.bootstrap import run_explicit_terrain_prelude, run_unlock_terrain_prelude
 from ...sim.hooks import TickResult
 from ...sim.input_providers import ResolvedTick
@@ -49,7 +50,7 @@ from .setup import (
     player0_shots,
 )
 
-RngTraceDraw: TypeAlias = tuple[int, int, int]
+RngTraceDraw: TypeAlias = tuple[int, int, int, CallerStatic]
 TickRngTraceObserver: TypeAlias = Callable[[TickResult, tuple[RngTraceDraw, ...]], None]
 TickProgressCallback: TypeAlias = Callable[[int], None]
 TickBeginObserver: TypeAlias = Callable[
@@ -83,23 +84,36 @@ def resolve_replay_quest_definition(
     return quest
 
 @contextmanager
-def _tick_rng_trace(rng: object, *, enabled: bool) -> Iterator[list[RngTraceDraw]]:
+def _tick_rng_trace(rng: object, *, enabled: bool, strict: bool = False) -> Iterator[list[RngTraceDraw]]:
     draws: list[RngTraceDraw] = []
     if not enabled or not isinstance(rng, CrtRand):
         yield draws
         return
 
     previous_sink = rng.trace_sink
+    previous_require_caller = rng.trace_require_caller
 
-    def _sink(state_before_u32: int, state_after_u32: int, value_15: int) -> None:
-        draws.append((int(state_before_u32), int(value_15), int(state_after_u32)))
+    def _sink(
+        state_before_u32: int,
+        state_after_u32: int,
+        value_15: int,
+        caller: CallerStatic,
+    ) -> None:
+        draws.append(
+            (
+                int(state_before_u32),
+                int(value_15),
+                int(state_after_u32),
+                caller,
+            ),
+        )
 
     trace_sink: RngTraceSink = _sink
-    rng.set_trace_sink(trace_sink)
+    rng.set_trace_sink(trace_sink, require_caller=bool(strict))
     try:
         yield draws
     finally:
-        rng.set_trace_sink(previous_sink)
+        rng.set_trace_sink(previous_sink, require_caller=bool(previous_require_caller))
 
 
 @dataclass(slots=True, frozen=True)
@@ -126,6 +140,7 @@ class PlaybackDriver:
         *,
         max_ticks: int | None = None,
         trace_rng: bool = False,
+        strict_rng_trace: bool = False,
         version_mismatch_action: str | None = "verification",
         world_size: float | None = None,
         fx_queue: FxQueue | None = None,
@@ -138,6 +153,7 @@ class PlaybackDriver:
         self.replay = replay
         self.max_ticks = max_ticks
         self.trace_rng = bool(trace_rng)
+        self.strict_rng_trace = bool(strict_rng_trace)
         self.inter_tick_rand_draws = max(0, int(inter_tick_rand_draws))
         self.inter_tick_rand_draws_by_tick = inter_tick_rand_draws_by_tick
         self._provided_world_size = float(world_size) if world_size is not None else None
@@ -270,7 +286,7 @@ class PlaybackDriver:
                 )
                 # Native `quest_start_selected()` burns one `crt_rand()` for
                 # `highscore_record_random_tag` before quest terrain and spawn setup.
-                world.state.rng.rand()
+                world.state.rng.rand(caller=RngCallerStatic.QUEST_START_SELECTED)
                 quest_terrain = run_explicit_terrain_prelude(
                     world.state.rng,
                     terrain_slots=quest_definition.terrain_slots,
@@ -445,7 +461,11 @@ class PlaybackDriver:
         dt_tick = float(replay_tick.dt)
         inputs = unpack_tick_inputs(replay_tick.inputs)
         commands = list(replay_tick.commands)
-        with _tick_rng_trace(self.world.state.rng, enabled=bool(self.trace_rng)) as tick_rng_rows:
+        with _tick_rng_trace(
+            self.world.state.rng,
+            enabled=bool(self.trace_rng),
+            strict=bool(self.strict_rng_trace),
+        ) as tick_rng_rows:
             source_tick = ResolvedTick(
                 tick_index=int(tick_index),
                 dt_seconds=float(dt_tick),
@@ -580,6 +600,7 @@ def build_verify_playback_driver(
     max_ticks: int | None = None,
     warn_on_version_mismatch: bool = True,
     trace_rng: bool = False,
+    strict_rng_trace: bool = False,
     inter_tick_rand_draws: int = 0,
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     spawn_entries: tuple[SpawnEntry, ...] | None = None,
@@ -591,6 +612,7 @@ def build_verify_playback_driver(
         replay,
         max_ticks=max_ticks,
         trace_rng=bool(trace_rng),
+        strict_rng_trace=bool(strict_rng_trace),
         version_mismatch_action=("verification" if bool(warn_on_version_mismatch) else None),
         inter_tick_rand_draws=int(inter_tick_rand_draws),
         inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,

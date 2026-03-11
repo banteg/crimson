@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
 from ..quests.level import QuestLevel
+from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WeaponId
 from .availability import perk_can_offer, perks_rebuild_available
@@ -61,7 +62,9 @@ def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: 
     perks_rebuild_available(state)
 
     for _ in range(1000):
-        perk_id = PerkId(int(state.rng.rand()) % PERK_ID_MAX + 1)
+        perk_id = PerkId(
+            int(state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM)) % PERK_ID_MAX + 1,
+        )
         if not (0 <= int(perk_id) < len(state.perk_available)):
             continue
         if not state.perk_available[int(perk_id)]:
@@ -131,7 +134,7 @@ def perk_generate_choices(
 
     def _select_random_offer() -> PerkId:
         for _ in range(1000):
-            perk_index = int(state.rng.rand()) % PERK_ID_MAX + 1
+            perk_index = int(state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM)) % PERK_ID_MAX + 1
             if offerable_mask[perk_index]:
                 return PerkId(perk_index)
         return PerkId.INSTANT_WINNER
@@ -144,10 +147,7 @@ def perk_generate_choices(
 
     # Native `quest_monster_vision_meta` points to quest 3-4 (Hidden Evil):
     # force Monster Vision as the first choice if not owned.
-    if (
-        state.quest_level == QuestLevel(3, 4)
-        and int(player_perk_counts[int(PerkId.MONSTER_VISION)]) == 0
-    ):
+    if state.quest_level == QuestLevel(3, 4) and int(player_perk_counts[int(PerkId.MONSTER_VISION)]) == 0:
         choices[0] = PerkId.MONSTER_VISION
         choice_index = 1
 
@@ -166,7 +166,10 @@ def perk_generate_choices(
                 continue
 
             # Global rarity gate: certain perks have a 25% chance to be rejected.
-            if perk_id in _PERK_RARITY_GATE and (int(state.rng.rand()) & 3) == 1:
+            if (
+                perk_id in _PERK_RARITY_GATE
+                and (int(state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM)) & 3) == 1
+            ):
                 continue
 
             meta = PERK_BY_ID.get(perk_id)
@@ -233,7 +236,7 @@ def perk_auto_pick(
         visible_choices = perk_state.choices[:visible_count]
         if not visible_choices:
             break
-        idx = int(state.rng.rand() % len(visible_choices))
+        idx = int(state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM) % len(visible_choices))
         perk_id = visible_choices[idx]
         perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
         picks.append(perk_id)

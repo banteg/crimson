@@ -21,6 +21,7 @@ from ..game_modes import GameMode
 from ..owner_ref import OwnerRef
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
+from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext
 from ..tooling.audio_bootstrap import init_view_audio
@@ -2202,7 +2203,7 @@ class LightingDebugView:
                 pos,
                 heading,
                 self._runtime.sim_world.state.rng,
-                rand=self._runtime.sim_world.state.rng.rand,
+                caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
             )
 
     def _clear_spawned_enemies(self) -> None:
