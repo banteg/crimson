@@ -7,6 +7,7 @@ from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
@@ -57,6 +58,11 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
     )
     assert events.hits
     assert creature.flags & CreatureFlags.SELF_DAMAGE_TICK
+    assert [
+        record.caller
+        for record in world.state.rng.records_since()
+        if record.caller == RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE
+    ] == [RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE]
 
 
 def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
@@ -102,6 +108,11 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
     )
     assert events.hits
     assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)
+    assert [
+        record.caller
+        for record in world.state.rng.records_since()
+        if record.caller == RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE
+    ] == [RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE]
 
 
 def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:

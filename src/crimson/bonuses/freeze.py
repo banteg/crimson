@@ -9,6 +9,7 @@ from grim.geom import Vec2
 
 from ..creatures.lifecycle import CREATURE_CORPSE_DESPAWN_LIFECYCLE
 from ..math_parity import f32
+from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import BonusPickupEvent, GameplayState
 from .apply_context import BonusApplyCtx
 
@@ -51,14 +52,14 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
                 )
             elif allow_shatter_fx:
                 for _ in range(8):
-                    angle = float(ctx.state.rng.rand() % 612) * 0.01
+                    angle = float(ctx.state.rng.rand(caller=RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612) * 0.01
                     ctx.state.effects.spawn_freeze_shard(
                         pos=pos,
                         angle=angle,
                         rng=ctx.state.rng,
                         detail_preset=int(ctx.detail_preset),
                     )
-                angle = float(ctx.state.rng.rand() % 612) * 0.01
+                angle = float(ctx.state.rng.rand(caller=RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612) * 0.01
                 ctx.state.effects.spawn_freeze_shatter(
                     pos=pos,
                     angle=angle,

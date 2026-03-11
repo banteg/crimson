@@ -68,6 +68,57 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     assert_float_close(entry.color.a, 0.8)
 
 
+def test_spawn_freeze_shard_tags_exact_native_callers() -> None:
+    pool = EffectPool(size=8)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    pool.spawn_freeze_shard(
+        pos=Vec2(),
+        angle=0.0,
+        rng=rng,
+        detail_preset=5,
+    )
+
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_LIFETIME,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_HALF,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION_STEP,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_SCALE_STEP,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID,
+    ]
+
+
+def test_spawn_freeze_shatter_tags_exact_native_callers() -> None:
+    pool = EffectPool(size=32)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    pool.spawn_freeze_shatter(
+        pos=Vec2(),
+        angle=0.0,
+        rng=rng,
+        detail_preset=5,
+    )
+
+    expected = [
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_HALF,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_ROTATION_STEP,
+    ] * 4
+    expected.extend(
+        [
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_SHARD_ANGLE,
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_LIFETIME,
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION,
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_HALF,
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION_STEP,
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_SCALE_STEP,
+            RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID,
+        ]
+        * 4,
+    )
+    assert [record.caller for record in rng.records_since()] == expected
+
+
 def test_sprite_effect_pool_updates_and_expires() -> None:
     pool = SpriteEffectPool(size=1, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     idx = pool.spawn(pos=Vec2(10.0, 20.0), vel=Vec2(2.0, -3.0), scale=1.0)
@@ -275,6 +326,28 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
     assert_float_close(first.color.a, 0.8)
 
 
+def test_spawn_blood_splatter_tags_exact_native_callers() -> None:
+    pool = EffectPool(size=8)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    pool.spawn_blood_splatter(
+        pos=Vec2(),
+        angle=0.0,
+        age=0.0,
+        rng=rng,
+        detail_preset=5,
+        gore_disabled=0,
+    )
+
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_ROTATION,
+        RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_HALF,
+        RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SPEED_X,
+        RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SPEED_Y,
+        RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SCALE_STEP,
+    ] * 2
+
+
 def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
     q = FxQueue(capacity=4, max_count=4)
     pool = EffectPool(size=4)
@@ -322,6 +395,48 @@ def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
         assert entry.flags == 0x1D
         assert_float_close(entry.lifetime, 0.5)
         assert_float_close(entry.scale_step, 0.1)
+
+
+def test_spawn_burst_tags_exact_native_callers() -> None:
+    pool = EffectPool(size=8)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    pool.spawn_burst(
+        pos=Vec2(),
+        count=2,
+        rng=rng,
+        detail_preset=5,
+    )
+
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.EFFECT_SPAWN_BURST_ROTATION,
+        RngCallerStatic.EFFECT_SPAWN_BURST_VEL_X,
+        RngCallerStatic.EFFECT_SPAWN_BURST_VEL_Y,
+        RngCallerStatic.EFFECT_SPAWN_BURST_SCALE_STEP,
+    ] * 2
+
+
+def test_spawn_explosion_burst_tags_exact_native_callers() -> None:
+    pool = EffectPool(size=32)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    pool.spawn_explosion_burst(
+        pos=Vec2(),
+        scale=1.0,
+        rng=rng,
+        detail_preset=5,
+    )
+
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_PUFF_ROTATION,
+        RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_PUFF_ROTATION,
+    ] + [
+        RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION,
+        RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_VEL_X,
+        RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_VEL_Y,
+        RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_SCALE_STEP,
+        RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION_STEP,
+    ] * 4
 
 
 def test_effect_pool_spawn_ring_spawns_effect_1() -> None:

@@ -7,6 +7,7 @@ from crimson.effects_atlas import EffectId
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
@@ -39,6 +40,9 @@ def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None
         expected_after_state=0,
     )
     assert rng.values_since(before_calls) == [0]
+    assert [record.caller for record in rng.records_since(before_calls)] == [
+        RngCallerStatic.CREATURE_APPLY_DAMAGE_HEADING_JITTER,
+    ]
     assert_float_close(creature.heading, -0.1024)
 
 
@@ -148,3 +152,9 @@ def test_lethal_shock_damage_spawns_armored_debris_in_damage_path() -> None:
     assert len(active) == 5
     assert all(int(entry.effect_id) == int(EffectId.BURST) for entry in active)
     assert rng.calls - before_calls == 20
+    assert [record.caller for record in rng.records_since(before_calls)] == [
+        RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_ROTATION,
+        RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_X,
+        RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_Y,
+        RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_SCALE_STEP,
+    ] * 5
