@@ -12,7 +12,6 @@ from .helpers import (
     edge_midpoints,
     line_points,
     radial_points,
-    random_angle,
     ring_points,
     spawn,
     spawn_at,
@@ -538,7 +537,7 @@ def build_3_9_deja_vu(
     trigger = 2000
     step = 2000
     while step > 560:
-        angle = random_angle(rng, caller=caller)
+        angle = float(rng.rand(caller=caller) % 612) * 0.01
         for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
             entries.append(
                 spawn(

@@ -6,7 +6,6 @@ from collections.abc import Iterator
 import msgspec
 
 from grim.geom import Vec2
-from grim.rand import CallerStatic, CrandLike
 
 from ..creatures.spawn import SpawnId
 from .types import SpawnEntry
@@ -67,10 +66,6 @@ def ring_points(
 ) -> Iterator[tuple[Vec2, float]]:
     for angle in iter_angles(count, step=step, start=start):
         yield center + Vec2.from_angle(angle) * radius, angle
-
-
-def random_angle(rng: CrandLike, *, caller: CallerStatic = None) -> float:
-    return float(rng.rand(caller=caller) % 0x264) * 0.01
 
 
 def radial_points(

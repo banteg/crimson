@@ -13,7 +13,6 @@ from .helpers import (
     heading_from_center,
     line_points,
     radial_points,
-    random_angle,
     spawn,
     spawn_at,
 )
@@ -324,7 +323,7 @@ def build_2_5_sweep_stakes(
     trigger = 2000
     step = 2000
     while step > 720:
-        angle = random_angle(rng, caller=caller)
+        angle = float(rng.rand(caller=caller) % 612) * 0.01
         for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
             heading = heading_from_center(pos, center)
             entries.append(

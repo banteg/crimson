@@ -9,8 +9,6 @@ from ..rng_caller_static import RngCallerStatic
 from .ids import BONUS_BY_ID, BonusId
 
 if TYPE_CHECKING:
-    from grim.rand import CallerStatic, CrandLike
-
     from ..gameplay import GameplayState
     from ..sim.state_types import PlayerState
     from .pool import BonusPool
@@ -21,39 +19,6 @@ def _bonus_enabled(bonus_id: BonusId) -> bool:
     if meta is None:
         return False
     return meta.bonus_id != BonusId.UNUSED
-
-
-def _bonus_id_from_roll(
-    roll: int,
-    rng: CrandLike,
-    *,
-    caller: CallerStatic = RngCallerStatic.BONUS_PICK_RANDOM_TYPE,
-) -> BonusId:
-    # Mirrors `bonus_pick_random_type` (0x412470) mapping:
-    # - roll = rand() % 162 + 1  (1..162)
-    # - Points: roll 1..13
-    # - Energizer: roll 14 with (rand & 0x3F) == 0, else Weapon
-    # - Bucketed ids 3..14 via a 10-step loop; if it would exceed 14, returns 0
-    #   to force a reroll (matching the `goto LABEL_18` path leaving `v3 == 0`).
-    if roll < 1 or roll > 162:
-        return BonusId.UNUSED
-
-    if roll <= 13:
-        return BonusId.POINTS
-
-    if roll == 14:
-        if (rng.rand(caller=caller) & 0x3F) == 0:
-            return BonusId.ENERGIZER
-        return BonusId.WEAPON
-
-    v5 = roll - 14
-    v6 = int(BonusId.WEAPON)
-    while v5 > 10:
-        v5 -= 10
-        v6 += 1
-        if v6 >= 15:
-            return BonusId.UNUSED
-    return BonusId(v6)
 
 
 def _bonus_pick_suppressed(
@@ -91,13 +56,33 @@ def _bonus_pick_suppressed(
 
 def bonus_pick_random_type(pool: BonusPool, state: GameplayState, players: list[PlayerState]) -> BonusId:
     caller = RngCallerStatic.BONUS_PICK_RANDOM_TYPE
-    has_fire_bullets_drop = any(
-        entry.bonus_id == BonusId.FIRE_BULLETS and not entry.picked for entry in pool.entries
-    )
+    has_fire_bullets_drop = any(entry.bonus_id == BonusId.FIRE_BULLETS and not entry.picked for entry in pool.entries)
 
     for _ in range(101):
         roll = int(state.rng.rand(caller=caller)) % 162 + 1
-        bonus_id = _bonus_id_from_roll(roll, state.rng, caller=caller)
+        # Mirrors `bonus_pick_random_type` (0x412470) mapping:
+        # - roll = rand() % 162 + 1  (1..162)
+        # - Points: roll 1..13
+        # - Energizer: roll 14 with (rand & 0x3F) == 0, else Weapon
+        # - Bucketed ids 3..14 via a 10-step loop; if it would exceed 14, returns 0
+        #   to force a reroll (matching the `goto LABEL_18` path leaving `v3 == 0`).
+        if roll <= 13:
+            bonus_id = BonusId.POINTS
+        elif roll == 14:
+            if (state.rng.rand(caller=caller) & 0x3F) == 0:
+                bonus_id = BonusId.ENERGIZER
+            else:
+                bonus_id = BonusId.WEAPON
+        else:
+            bucket_offset = roll - 14
+            bonus_value = int(BonusId.WEAPON)
+            while bucket_offset > 10:
+                bucket_offset -= 10
+                bonus_value += 1
+                if bonus_value >= 15:
+                    bonus_value = int(BonusId.UNUSED)
+                    break
+            bonus_id = BonusId(bonus_value)
         if bonus_id == BonusId.UNUSED:
             continue
         if _bonus_pick_suppressed(

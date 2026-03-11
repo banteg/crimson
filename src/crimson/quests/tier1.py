@@ -12,7 +12,6 @@ from .helpers import (
     corner_points,
     edge_midpoints,
     heading_from_center,
-    random_angle,
     spawn,
     spawn_at,
 )
@@ -127,7 +126,7 @@ def build_1_3_target_practice(
     trigger = 2000
     step = 2000
     while True:
-        angle = random_angle(rng, caller=caller)
+        angle = float(rng.rand(caller=caller) % 612) * 0.01
         radius = (int(rng.rand(caller=caller) % 8) + 2) * 0x20
         point = center + Vec2.from_angle(angle) * radius
         heading = heading_from_center(point, center)
