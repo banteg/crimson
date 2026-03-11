@@ -7,6 +7,7 @@ from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
+from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.presentation_step import (
@@ -285,6 +286,73 @@ def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(moc
     assert len(splatter_angles) >= 8
     for idx in range(8):
         assert_float_close(splatter_angles[idx], float(idx) * 0.024543693)
+    assert [
+        record.caller
+        for record in rng.records_since()
+        if record.caller == RngCallerStatic.PROJECTILE_UPDATE_BLADE_GUN_SPLATTER_ANGLE
+    ] == [RngCallerStatic.PROJECTILE_UPDATE_BLADE_GUN_SPLATTER_ANGLE] * 8
+
+
+def test_queue_projectile_decals_bloody_mess_tags_exact_pre_hit_callers() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    player.perk_counts[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
+    fx_queue = FxQueue()
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    queue_projectile_decals(
+        state=state,
+        players=[player],
+        fx_queue=fx_queue,
+        hits=_hits(1),
+        rng=rng,
+        detail_preset=5,
+        gore_disabled=0,
+    )
+
+    assert [
+        record.caller
+        for record in rng.records_since()
+        if record.caller
+        in {
+            RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_SPREAD,
+            RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_DECAL_DX_1,
+            RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_DECAL_DY_1,
+            RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_DECAL_DX_2,
+            RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_DECAL_DY_2,
+        }
+    ] == [RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_SPREAD] * 8 + [
+        RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_DECAL_DX_1,
+        RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_DECAL_DY_1,
+        RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_DECAL_DX_2,
+        RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_DECAL_DY_2,
+    ] * 3
+
+
+def test_queue_projectile_decals_default_tags_exact_reverse_splatter_gate() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    fx_queue = FxQueue()
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    queue_projectile_decals(
+        state=state,
+        players=[player],
+        fx_queue=fx_queue,
+        hits=_hits(1),
+        rng=rng,
+        detail_preset=5,
+        gore_disabled=0,
+    )
+
+    assert [
+        record.caller
+        for record in rng.records_since()
+        if record.caller == RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_REVERSE_SPLATTER_GATE
+    ] == [
+        RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_REVERSE_SPLATTER_GATE,
+        RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_REVERSE_SPLATTER_GATE,
+    ]
 
 
 def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(mocker) -> None:
