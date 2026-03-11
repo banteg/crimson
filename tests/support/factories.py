@@ -12,6 +12,7 @@ from crimson.projectiles.runtime import ProjectileUpdateOptions
 from crimson.projectiles.types import ProjectileHit
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.rand import CallerStatic
 
 
 def make_creature_state(
@@ -101,7 +102,7 @@ def _coerce_rand_draw(rand: Callable[..., int]) -> Callable[..., int]:
         if param.name == "caller_static_u32":
             return rand
 
-    def _draw(*, caller_static_u32: int | None = None) -> int:
+    def _draw(*, caller_static_u32: CallerStatic = None) -> int:
         _ = caller_static_u32
         return int(rand())
 

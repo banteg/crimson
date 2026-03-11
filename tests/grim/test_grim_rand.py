@@ -2,22 +2,29 @@ from __future__ import annotations
 
 import pytest
 
-from grim.rand import CRT_RAND_INC, CRT_RAND_MULT, CrtRand, MissingRngCallerStaticError
+from crimson.rng_caller_static import RngCallerStatic
+from grim.rand import CRT_RAND_INC, CRT_RAND_MULT, CallerStatic, CrtRand, MissingRngCallerStaticError
 
 
 def test_crt_rand_trace_sink_receives_caller_static_u32() -> None:
-    rows: list[tuple[int, int, int, int | None]] = []
+    rows: list[tuple[int, int, int, CallerStatic]] = []
     rng = CrtRand(0x1234)
+    caller_static = RngCallerStatic.SURVIVAL_UPDATE
 
-    def _sink(state_before_u32: int, state_after_u32: int, value_15: int, caller_static_u32: int | None) -> None:
+    def _sink(
+        state_before_u32: int,
+        state_after_u32: int,
+        value_15: int,
+        caller_static_u32: CallerStatic,
+    ) -> None:
         rows.append((state_before_u32, state_after_u32, value_15, caller_static_u32))
 
     rng.set_trace_sink(_sink)
-    value = rng.rand(caller_static_u32=0x00430B88)
+    value = rng.rand(caller_static_u32=caller_static)
 
     expected_after = (0x1234 * CRT_RAND_MULT + CRT_RAND_INC) & 0xFFFFFFFF
     assert value == ((expected_after >> 16) & 0x7FFF)
-    assert rows == [(0x1234, expected_after, value, 0x00430B88)]
+    assert rows == [(0x1234, expected_after, value, caller_static)]
 
 
 def test_crt_rand_strict_trace_requires_caller_static_u32() -> None:

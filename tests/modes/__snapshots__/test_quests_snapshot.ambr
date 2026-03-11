@@ -1,7 +1,6 @@
 # serializer version: 1
 # name: test_quest_builders_snapshot[quest_1.10]
   dict({
-    'builder_address': 4415776,
     'entries': list([
       dict({
         'count': 1,
@@ -475,7 +474,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_1.1]
   dict({
-    'builder_address': 4414416,
     'entries': list([
       dict({
         'count': 1,
@@ -525,7 +523,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_1.2]
   dict({
-    'builder_address': 4414656,
     'entries': list([
       dict({
         'count': 2,
@@ -839,7 +836,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_1.3]
   dict({
-    'builder_address': 4422144,
     'entries': list([
       dict({
         'count': 1,
@@ -1097,7 +1093,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_1.4]
   dict({
-    'builder_address': 4423184,
     'entries': list([
       dict({
         'count': 1,
@@ -1515,7 +1510,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_1.5]
   dict({
-    'builder_address': 4417312,
     'entries': list([
       dict({
         'count': 1,
@@ -1573,7 +1567,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_1.6]
   dict({
-    'builder_address': 4416336,
     'entries': list([
       dict({
         'count': 6,
@@ -1767,7 +1760,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_1.7]
   dict({
-    'builder_address': 4416576,
     'entries': list([
       dict({
         'count': 8,
@@ -1929,7 +1921,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_1.8]
   dict({
-    'builder_address': 4415136,
     'entries': list([
       dict({
         'count': 1,
@@ -2427,7 +2418,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_1.9]
   dict({
-    'builder_address': 4416672,
     'entries': list([
       dict({
         'count': 8,
@@ -2541,7 +2531,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_2.10]
   dict({
-    'builder_address': 4420544,
     'entries': list([
       dict({
         'count': 1,
@@ -2607,7 +2596,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_2.1]
   dict({
-    'builder_address': 4421024,
     'entries': list([
       dict({
         'count': 1,
@@ -2897,7 +2885,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_2.2]
   dict({
-    'builder_address': 4418928,
     'entries': list([
       dict({
         'count': 1,
@@ -3003,7 +2990,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_2.3]
   dict({
-    'builder_address': 4417568,
     'entries': list([
       dict({
         'count': 1,
@@ -3165,7 +3151,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_2.4]
   dict({
-    'builder_address': 4419296,
     'entries': list([
       dict({
         'count': 1,
@@ -3871,7 +3856,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_2.5]
   dict({
-    'builder_address': 4421648,
     'entries': list([
       dict({
         'count': 1,
@@ -4401,7 +4385,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_2.6]
   dict({
-    'builder_address': 4420768,
     'entries': list([
       dict({
         'count': 4,
@@ -4739,7 +4722,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_2.7]
   dict({
-    'builder_address': 4419680,
     'entries': list([
       dict({
         'count': 1,
@@ -4965,7 +4947,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_2.8]
   dict({
-    'builder_address': 4422560,
     'entries': list([
       dict({
         'count': 1,
@@ -5015,7 +4996,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_2.9]
   dict({
-    'builder_address': 4416000,
     'entries': list([
       dict({
         'count': 2,
@@ -5153,7 +5133,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_3.10]
   dict({
-    'builder_address': 4415648,
     'entries': list([
       dict({
         'count': 1,
@@ -5203,7 +5182,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_3.1]
   dict({
-    'builder_address': 4423760,
     'entries': list([
       dict({
         'count': 2,
@@ -5357,7 +5335,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_3.2]
   dict({
-    'builder_address': 4421392,
     'entries': list([
       dict({
         'count': 1,
@@ -5623,7 +5600,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_3.3]
   dict({
-    'builder_address': 4424864,
     'entries': list([
       dict({
         'count': 12,
@@ -5753,7 +5729,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_3.4]
   dict({
-    'builder_address': 4414000,
     'entries': list([
       dict({
         'count': 50,
@@ -5811,7 +5786,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_3.5]
   dict({
-    'builder_address': 4426048,
     'entries': list([
       dict({
         'count': 1,
@@ -5989,7 +5963,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_3.6]
   dict({
-    'builder_address': 4422768,
     'entries': list([
       dict({
         'count': 6,
@@ -6175,7 +6148,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_3.7]
   dict({
-    'builder_address': 4427984,
     'entries': list([
       dict({
         'count': 1,
@@ -6457,7 +6429,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_3.8]
   dict({
-    'builder_address': 4425792,
     'entries': list([
       dict({
         'count': 6,
@@ -6739,7 +6710,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_3.9]
   dict({
-    'builder_address': 4421920,
     'entries': list([
       dict({
         'count': 1,
@@ -7333,7 +7303,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_4.10]
   dict({
-    'builder_address': 4427280,
     'entries': list([
       dict({
         'count': 1,
@@ -7647,7 +7616,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_4.1]
   dict({
-    'builder_address': 4422384,
     'entries': list([
       dict({
         'count': 2,
@@ -9265,7 +9233,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_4.2]
   dict({
-    'builder_address': 4423024,
     'entries': list([
       dict({
         'count': 8,
@@ -9475,7 +9442,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_4.3]
   dict({
-    'builder_address': 4425472,
     'entries': list([
       dict({
         'count': 6,
@@ -9813,7 +9779,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_4.4]
   dict({
-    'builder_address': 4423472,
     'entries': list([
       dict({
         'count': 7,
@@ -10343,7 +10308,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_4.5]
   dict({
-    'builder_address': 4424672,
     'entries': list([
       dict({
         'count': 3,
@@ -10577,7 +10541,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_4.6]
   dict({
-    'builder_address': 4426304,
     'entries': list([
       dict({
         'count': 1,
@@ -11243,7 +11206,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_4.7]
   dict({
-    'builder_address': 4417952,
     'entries': list([
       dict({
         'count': 1,
@@ -11997,7 +11959,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_4.8]
   dict({
-    'builder_address': 4418576,
     'entries': list([
       dict({
         'count': 1,
@@ -12463,7 +12424,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_4.9]
   dict({
-    'builder_address': 4424384,
     'entries': list([
       dict({
         'count': 2,
@@ -12681,7 +12641,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_5.10]
   dict({
-    'builder_address': 4409792,
     'entries': list([
       dict({
         'count': 1,
@@ -12803,7 +12762,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_5.1]
   dict({
-    'builder_address': 4412944,
     'entries': list([
       dict({
         'count': 1,
@@ -13069,7 +13027,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_5.2]
   dict({
-    'builder_address': 4413600,
     'entries': list([
       dict({
         'count': 1,
@@ -14143,7 +14100,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_5.3]
   dict({
-    'builder_address': 4412112,
     'entries': list([
       dict({
         'count': 6,
@@ -14497,7 +14453,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_5.4]
   dict({
-    'builder_address': 4411680,
     'entries': list([
       dict({
         'count': 1,
@@ -14707,7 +14662,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_5.5]
   dict({
-    'builder_address': 4411136,
     'entries': list([
       dict({
         'count': 1,
@@ -16685,7 +16639,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_5.6]
   dict({
-    'builder_address': 4412544,
     'entries': list([
       dict({
         'count': 6,
@@ -16759,7 +16712,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_5.7]
   dict({
-    'builder_address': 4410528,
     'entries': list([
       dict({
         'count': 1,
@@ -16865,7 +16817,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_5.8]
   dict({
-    'builder_address': 4409440,
     'entries': list([
       dict({
         'count': 10,
@@ -17427,7 +17378,6 @@
 # ---
 # name: test_quest_builders_snapshot[quest_5.9]
   dict({
-    'builder_address': 4408448,
     'entries': list([
       dict({
         'count': 1,

@@ -22,7 +22,6 @@ from .types import QuestContext, SpawnEntry
     time_limit_ms=300000,
     start_weapon_id=WeaponId.ROCKET_MINIGUN,
     unlock_perk_id=PerkId.JINXED,
-    builder_address=0x00437AF0,
 )
 def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -59,7 +58,6 @@ def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.PULSE_GUN,
-    builder_address=0x00437D70,
 )
 def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -94,7 +92,6 @@ def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.PERK_MASTER,
-    builder_address=0x00438700,
 )
 def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -151,7 +148,6 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=360000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.PLASMA_SHOTGUN,
-    builder_address=0x00437F30,
 )
 def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -207,7 +203,6 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.REFLEX_BOOSTED,
-    builder_address=0x004383E0,
 )
 def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -246,7 +241,6 @@ def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=600000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.MINI_ROCKET_SWARMERS,
-    builder_address=0x00438A40,
 )
 def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
     def spawn_id_for(toggle: bool) -> SpawnId:
@@ -407,7 +401,6 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.GREATER_REGENERATION,
-    builder_address=0x004369A0,
 )
 def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -494,7 +487,6 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ION_MINIGUN,
-    builder_address=0x00436C10,
 )
 def build_4_8_syntax_terror(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -532,7 +524,6 @@ def build_4_8_syntax_terror(ctx: QuestContext, full_version: bool = True) -> lis
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.BREATHING_ROOM,
-    builder_address=0x004382C0,
 )
 def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -579,7 +570,6 @@ def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ION_CANNON,
-    builder_address=0x00438E10,
 )
 def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [

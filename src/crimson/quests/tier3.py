@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from grim.geom import Vec2
-from grim.rand import Crand, CrandLike
+from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
+from ..rng_caller_static import RngCallerStatic
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
@@ -26,7 +27,6 @@ from .types import QuestContext, SpawnEntry
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.TOXIC_AVENGER,
-    builder_address=0x00438050,
 )
 def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width)
@@ -132,7 +132,6 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=180000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.MULTI_PLASMA,
-    builder_address=0x00437710,
 )
 def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
     center = center_point(ctx.width, ctx.height)
@@ -180,15 +179,12 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.REGENERATION,
-    builder_address=0x004384A0,
 )
 def build_3_3_the_killing(
     ctx: QuestContext,
-    rng: CrandLike | None = None,
-    *,
-    caller_static_u32: int | None = None,
+    rng: CrandLike,
 ) -> list[SpawnEntry]:
-    rng = rng or Crand()
+    caller_static_u32 = RngCallerStatic.QUEST_3_3_BUILDER
     edges = edge_midpoints(ctx.width)
     entries: list[SpawnEntry] = []
     trigger = 2000
@@ -268,7 +264,6 @@ def build_3_3_the_killing(
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.SEEKER_ROCKETS,
-    builder_address=0x00435A30,
 )
 def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width, ctx.height)
@@ -291,7 +286,6 @@ def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.PYROMANIAC,
-    builder_address=0x00438940,
 )
 def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -347,7 +341,6 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.BLOW_TORCH,
-    builder_address=0x00437C70,
 )
 def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -393,7 +386,6 @@ def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PLASMA_MINIGUN,
     unlock_perk_id=PerkId.NINJA,
-    builder_address=0x004390D0,
 )
 def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width)
@@ -443,7 +435,6 @@ def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ROCKET_MINIGUN,
-    builder_address=0x00438840,
 )
 def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -503,15 +494,12 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=120000,
     start_weapon_id=WeaponId.GAUSS_GUN,
     unlock_perk_id=PerkId.HIGHLANDER,
-    builder_address=0x00437920,
 )
 def build_3_9_deja_vu(
     ctx: QuestContext,
-    rng: CrandLike | None = None,
-    *,
-    caller_static_u32: int | None = None,
+    rng: CrandLike,
 ) -> list[SpawnEntry]:
-    rng = rng or Crand()
+    caller_static_u32 = RngCallerStatic.QUEST_3_9_BUILDER
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     trigger = 2000
@@ -539,7 +527,6 @@ def build_3_9_deja_vu(
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.JACKHAMMER,
-    builder_address=0x004360A0,
 )
 def build_3_10_zombie_masters(ctx: QuestContext) -> list[SpawnEntry]:
     return [

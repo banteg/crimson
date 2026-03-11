@@ -20,9 +20,8 @@ def _call_builder(
     builder,
     ctx: QuestContext,
     *,
-    rng: CrandLike | None,
+    rng: CrandLike,
     full_version: bool,
-    caller_static_u32: int | None = None,
 ) -> list[SpawnEntry]:
     params = inspect.signature(builder).parameters
     kwargs: dict[str, object] = {}
@@ -30,8 +29,6 @@ def _call_builder(
         kwargs["rng"] = rng
     if "full_version" in params:
         kwargs["full_version"] = bool(full_version)
-    if "caller_static_u32" in params:
-        kwargs["caller_static_u32"] = caller_static_u32
     return builder(ctx, **kwargs)
 
 
@@ -54,6 +51,7 @@ def apply_hardcore_spawn_table_adjustment(entries: list[SpawnEntry]) -> list[Spa
         adjusted.append(entry if count == entry.count else msgspec.structs.replace(entry, count=count))
     return adjusted
 
+
 def build_quest_spawn_table(
     quest: QuestDefinition,
     ctx: QuestContext,
@@ -70,7 +68,6 @@ def build_quest_spawn_table(
         ctx,
         rng=builder_rng,
         full_version=full_version,
-        caller_static_u32=quest.builder_address,
     )
     if hardcore:
         entries = apply_hardcore_spawn_table_adjustment(list(entries))

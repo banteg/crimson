@@ -20,7 +20,7 @@ from collections.abc import Callable
 import msgspec
 
 from grim.geom import Vec2
-from grim.rand import CrandLike
+from grim.rand import CallerStatic, CrandLike
 
 from ..bonuses import BonusId
 from ..math_parity import f32
@@ -818,7 +818,7 @@ def randf(
     scale: float,
     base: float,
     *,
-    caller_static_u32: int | None = int(RngCallerStatic.CREATURE_SPAWN_TEMPLATE),
+    caller_static_u32: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
 ) -> float:
     return float(rng.rand(caller_static_u32=caller_static_u32) % mod) * scale + base
 
@@ -848,7 +848,7 @@ def apply_random_move_speed(
     scale: float,
     base: float,
     *,
-    caller_static_u32: int | None = int(RngCallerStatic.CREATURE_SPAWN_TEMPLATE),
+    caller_static_u32: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
 ) -> None:
     c.move_speed = randf(rng, mod, scale, base, caller_static_u32=caller_static_u32)
 
@@ -950,7 +950,7 @@ class PlanBuilder(msgspec.Struct):
     spawn_slots: list[SpawnSlotInit]
     effects: list[BurstEffect]
     primary: int = 0
-    caller_static_u32: int = int(RngCallerStatic.CREATURE_SPAWN_TEMPLATE)
+    caller_static_u32: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE
 
     @classmethod
     def start(
@@ -961,7 +961,7 @@ class PlanBuilder(msgspec.Struct):
         rng: CrandLike,
         env: SpawnEnv,
         *,
-        caller_static_u32: int = int(RngCallerStatic.CREATURE_SPAWN_TEMPLATE),
+        caller_static_u32: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
     ) -> tuple["PlanBuilder", float]:
         # creature_alloc_slot() for the base creature.
         creatures: list[CreatureInit] = [alloc_creature(template_id, pos, rng, caller_static_u32=caller_static_u32)]
@@ -1094,7 +1094,7 @@ def alloc_creature(
     pos: Vec2,
     rng: CrandLike,
     *,
-    caller_static_u32: int | None = int(RngCallerStatic.CREATURE_SPAWN_TEMPLATE),
+    caller_static_u32: CallerStatic = RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
 ) -> CreatureInit:
     # creature_alloc_slot():
     # - clears flags
@@ -2291,7 +2291,7 @@ def build_spawn_plan(
         heading,
         rng,
         env,
-        caller_static_u32=int(RngCallerStatic.CREATURE_SPAWN_TEMPLATE),
+        caller_static_u32=RngCallerStatic.CREATURE_SPAWN_TEMPLATE,
     )
 
     if builder := TEMPLATE_BUILDERS.get(template_id):

@@ -7,6 +7,7 @@ from typing import TypeAlias
 import msgspec
 
 from grim.geom import Vec2
+from grim.rand import CallerStatic
 
 from ..owner_ref import OwnerRef
 
@@ -46,7 +47,7 @@ class SecondaryProjectileTypeId(IntEnum):
     ROCKET_MINIGUN = 4
 
 
-def _rng_zero(*, caller_static_u32: int | None = None) -> int:
+def _rng_zero(*, caller_static_u32: CallerStatic = None) -> int:
     _ = caller_static_u32
     return 0
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.rand import CrandLike
+from grim.rand import CallerStatic, CrandLike
 
 NAME_MAX_CHARS = 16  # creature_name_assign_random enforces strlen < 0x10.
 
@@ -66,11 +66,11 @@ _NAME_PARTS: tuple[str, ...] = (
 )
 
 
-def _rand(rng: CrandLike, *, caller_static_u32: int | None = None) -> int:
+def _rand(rng: CrandLike, *, caller_static_u32: CallerStatic = None) -> int:
     return int(rng.rand(caller_static_u32=caller_static_u32))
 
 
-def typo_name_part(rng: CrandLike, *, allow_the: bool, caller_static_u32: int | None = None) -> str:
+def typo_name_part(rng: CrandLike, *, allow_the: bool, caller_static_u32: CallerStatic = None) -> str:
     mod = 52 if allow_the else 51
     idx = _rand(rng, caller_static_u32=caller_static_u32) % mod
     if idx == 39:
@@ -83,7 +83,7 @@ def typo_build_name(
     *,
     score_xp: int,
     unique_words: Sequence[str] | None = None,
-    caller_static_u32: int | None = None,
+    caller_static_u32: CallerStatic = None,
 ) -> str:
     score_xp = int(score_xp)
     if unique_words:
@@ -130,7 +130,7 @@ def typo_build_name(
     return typo_name_part(rng, allow_the=False, caller_static_u32=caller_static_u32)
 
 
-def _pick_word(rng: CrandLike, words: Sequence[str], *, caller_static_u32: int | None = None) -> str:
+def _pick_word(rng: CrandLike, words: Sequence[str], *, caller_static_u32: CallerStatic = None) -> str:
     return str(words[_rand(rng, caller_static_u32=caller_static_u32) % len(words)])
 
 
@@ -139,7 +139,7 @@ def _pick_unique_words(
     words: Sequence[str],
     count: int,
     *,
-    caller_static_u32: int | None = None,
+    caller_static_u32: CallerStatic = None,
 ) -> list[str]:
     if count <= 1:
         return [_pick_word(rng, words, caller_static_u32=caller_static_u32)]
@@ -162,7 +162,7 @@ def _typo_build_custom_name(
     *,
     score_xp: int,
     unique_words: Sequence[str],
-    caller_static_u32: int | None = None,
+    caller_static_u32: CallerStatic = None,
 ) -> str:
     score_xp = int(score_xp)
     if score_xp > 120:
@@ -253,7 +253,7 @@ class CreatureNameTable(msgspec.Struct):
         score_xp: int,
         active_mask: Sequence[bool],
         unique_words: Sequence[str] | None = None,
-        caller_static_u32: int | None = None,
+        caller_static_u32: CallerStatic = None,
     ) -> str:
         idx = int(creature_idx)
         if not (0 <= idx < len(self.names)):

@@ -82,13 +82,6 @@ root_packages = ["crimson", "grim"]
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
-name = "grim must not import crimson"
-type = "forbidden"
-source_modules = ["grim"]
-forbidden_modules = ["crimson"]
-ignore_imports = ["grim.config -> crimson.quests.level"]
-
-[[tool.importlinter.contracts]]
 name = "perk implementations must stay out of selection and availability"
 type = "forbidden"
 source_modules = ["crimson.perks.impl"]

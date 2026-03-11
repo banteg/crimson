@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Protocol
+from collections.abc import Callable
+from typing import TypeAlias
 
 import msgspec
 
@@ -26,11 +27,7 @@ class SpawnEntry(msgspec.Struct, frozen=True, kw_only=True):
     count: int
 
 
-class QuestBuilder(Protocol):
-    __name__: str
-
-    def __call__(self, ctx: QuestContext) -> list[SpawnEntry]:
-        ...
+QuestBuilder: TypeAlias = Callable[..., list[SpawnEntry]]
 
 
 class QuestDefinition(msgspec.Struct, frozen=True, kw_only=True):
@@ -42,7 +39,6 @@ class QuestDefinition(msgspec.Struct, frozen=True, kw_only=True):
     terrain_slots: TerrainSlotTriplet
     unlock_perk_id: int | None = None
     unlock_weapon_id: WeaponId | None = None
-    builder_address: int | None = None
 
     @property
     def major(self) -> int:

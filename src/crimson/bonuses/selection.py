@@ -9,7 +9,7 @@ from ..rng_caller_static import RngCallerStatic
 from .ids import BONUS_BY_ID, BonusId
 
 if TYPE_CHECKING:
-    from grim.rand import CrandLike
+    from grim.rand import CallerStatic, CrandLike
 
     from ..gameplay import GameplayState
     from ..sim.state_types import PlayerState
@@ -27,7 +27,7 @@ def _bonus_id_from_roll(
     roll: int,
     rng: CrandLike,
     *,
-    caller_static_u32: int = int(RngCallerStatic.BONUS_PICK_RANDOM_TYPE),
+    caller_static_u32: CallerStatic = RngCallerStatic.BONUS_PICK_RANDOM_TYPE,
 ) -> BonusId:
     # Mirrors `bonus_pick_random_type` (0x412470) mapping:
     # - roll = rand() % 162 + 1  (1..162)
@@ -90,7 +90,7 @@ def _bonus_pick_suppressed(
 
 
 def bonus_pick_random_type(pool: BonusPool, state: GameplayState, players: list[PlayerState]) -> BonusId:
-    caller_static_u32 = int(RngCallerStatic.BONUS_PICK_RANDOM_TYPE)
+    caller_static_u32 = RngCallerStatic.BONUS_PICK_RANDOM_TYPE
     has_fire_bullets_drop = any(
         entry.bonus_id == BonusId.FIRE_BULLETS and not entry.picked for entry in pool.entries
     )

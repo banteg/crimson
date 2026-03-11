@@ -242,7 +242,7 @@ class BonusPool:
         entry.time_max = BONUS_TIME_MAX
 
         rng = state.rng
-        caller_static_u32 = int(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL)
+        caller_static_u32 = RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL
         if entry.bonus_id == BonusId.WEAPON:
             entry.payload = bonus_weapon_payload(weapon_pick_random_available(state))
         elif entry.bonus_id == BonusId.POINTS:
@@ -281,7 +281,7 @@ class BonusPool:
             return None
 
         rng = state.rng
-        caller_static_u32 = int(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL)
+        caller_static_u32 = RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL
         # Native special-case: while any player has Pistol, 3/4 chance to force a Weapon drop.
         if players and any(player.weapon.weapon_id == WeaponId.PISTOL for player in players):
             if (int(rng.rand(caller_static_u32=caller_static_u32)) & 3) < 3:

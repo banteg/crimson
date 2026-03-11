@@ -6,6 +6,8 @@ from typing import Any, Literal, Protocol
 
 import pytest
 
+from grim.rand import CallerStatic
+
 MockCrandFallback = Literal["repeat_last", "zero", "cycle"]
 
 
@@ -37,7 +39,7 @@ class MockCrand:
         self.calls = 0
         self._history.clear()
 
-    def rand(self, *, caller_static_u32: int | None = None) -> int:
+    def rand(self, *, caller_static_u32: CallerStatic = None) -> int:
         _ = caller_static_u32
         value: int
         if self._index < len(self._values):
@@ -56,7 +58,7 @@ class MockCrand:
         self._state = int(value) & 0xFFFFFFFF
         return int(value)
 
-    def __call__(self, *, caller_static_u32: int | None = None) -> int:
+    def __call__(self, *, caller_static_u32: CallerStatic = None) -> int:
         return self.rand(caller_static_u32=caller_static_u32)
 
     def draw_hash(self, *, start_call: int = 0) -> str:

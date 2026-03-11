@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import os
 from collections.abc import Callable
-from typing import Protocol, runtime_checkable
+from typing import Protocol, TypeAlias, runtime_checkable
+
+from crimson.rng_caller_static import RngCallerStatic
+
+CallerStatic: TypeAlias = RngCallerStatic | None
 
 CRT_RAND_MULT = 214013
 CRT_RAND_INC = 2531011
 
-RngTraceSink = Callable[[int, int, int, int | None], None]
+RngTraceSink = Callable[[int, int, int, CallerStatic], None]
 
 
 class MissingRngCallerStaticError(ValueError):
@@ -23,14 +27,14 @@ class CrandLike(Protocol):
 
     def srand(self, seed: int) -> None: ...
 
-    def rand(self, *, caller_static_u32: int | None = None) -> int: ...
+    def rand(self, *, caller_static_u32: CallerStatic = None) -> int: ...
 
 
 @runtime_checkable
 class RandDrawLike(Protocol):
     """Callable RNG source that accepts optional caller provenance."""
 
-    def __call__(self, *, caller_static_u32: int | None = None) -> int: ...
+    def __call__(self, *, caller_static_u32: CallerStatic = None) -> int: ...
 
 
 class CrtRand:
@@ -74,18 +78,17 @@ class CrtRand:
         self._trace_sink = sink
         self._trace_require_caller_static = bool(require_caller_static)
 
-    def rand(self, *, caller_static_u32: int | None = None) -> int:
+    def rand(self, *, caller_static_u32: CallerStatic = None) -> int:
         state_before = self._state
         self._state = (self._state * CRT_RAND_MULT + CRT_RAND_INC) & 0xFFFFFFFF
         value = (self._state >> 16) & 0x7FFF
-        caller_static_norm = None if caller_static_u32 is None else int(caller_static_u32)
-        if caller_static_norm is not None and not (0 <= caller_static_norm <= 0xFFFFFFFF):
-            raise ValueError(f"caller_static_u32 must be a uint32, got {caller_static_norm}")
+        if caller_static_u32 is not None and not (0 <= caller_static_u32 <= 0xFFFFFFFF):
+            raise ValueError(f"caller_static_u32 must be a uint32, got {caller_static_u32}")
         trace_sink = self._trace_sink
         if trace_sink is not None:
-            if self._trace_require_caller_static and caller_static_norm is None:
+            if self._trace_require_caller_static and caller_static_u32 is None:
                 raise MissingRngCallerStaticError("strict RNG trace requires caller_static_u32")
-            trace_sink(int(state_before), int(self._state), int(value), caller_static_norm)
+            trace_sink(int(state_before), int(self._state), int(value), caller_static_u32)
         return value
 
 

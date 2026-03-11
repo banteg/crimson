@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TypeAlias
 
 from crimson.quests.level import QuestLevel
-from grim.rand import CrtRand, RngTraceSink
+from grim.rand import CallerStatic, CrtRand, RngTraceSink
 
 from ...effects import FxQueue, FxQueueRotated
 from ...game_modes import GameMode
@@ -50,7 +50,7 @@ from .setup import (
     player0_shots,
 )
 
-RngTraceDraw: TypeAlias = tuple[int, int, int, int | None]
+RngTraceDraw: TypeAlias = tuple[int, int, int, CallerStatic]
 TickRngTraceObserver: TypeAlias = Callable[[TickResult, tuple[RngTraceDraw, ...]], None]
 TickProgressCallback: TypeAlias = Callable[[int], None]
 TickBeginObserver: TypeAlias = Callable[
@@ -97,14 +97,14 @@ def _tick_rng_trace(rng: object, *, enabled: bool, strict: bool = False) -> Iter
         state_before_u32: int,
         state_after_u32: int,
         value_15: int,
-        caller_static_u32: int | None,
+        caller_static_u32: CallerStatic,
     ) -> None:
         draws.append(
             (
                 int(state_before_u32),
                 int(value_15),
                 int(state_after_u32),
-                None if caller_static_u32 is None else int(caller_static_u32),
+                caller_static_u32,
             ),
         )
 
@@ -286,7 +286,7 @@ class PlaybackDriver:
                 )
                 # Native `quest_start_selected()` burns one `crt_rand()` for
                 # `highscore_record_random_tag` before quest terrain and spawn setup.
-                world.state.rng.rand(caller_static_u32=int(RngCallerStatic.QUEST_START_SELECTED))
+                world.state.rng.rand(caller_static_u32=RngCallerStatic.QUEST_START_SELECTED)
                 quest_terrain = run_explicit_terrain_prelude(
                     world.state.rng,
                     terrain_slots=quest_definition.terrain_slots,

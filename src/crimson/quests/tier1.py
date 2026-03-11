@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from grim.geom import Vec2
-from grim.rand import Crand, CrandLike
+from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
+from ..rng_caller_static import RngCallerStatic
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
@@ -25,7 +26,6 @@ from .types import QuestContext, SpawnEntry
     time_limit_ms=120000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ASSAULT_RIFLE,
-    builder_address=0x00435BD0,
 )
 def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width, ctx.height)
@@ -44,7 +44,6 @@ def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=120000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.SHOTGUN,
-    builder_address=0x00435CC0,
 )
 def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     center = center_point(ctx.width, ctx.height)
@@ -115,15 +114,12 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=65000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.URANIUM_FILLED_BULLETS,
-    builder_address=0x00437A00,
 )
 def build_1_3_target_practice(
     ctx: QuestContext,
-    rng: CrandLike | None = None,
-    *,
-    caller_static_u32: int | None = None,
+    rng: CrandLike,
 ) -> list[SpawnEntry]:
-    rng = rng or Crand()
+    caller_static_u32 = RngCallerStatic.QUEST_1_3_BUILDER
     center = center_point(ctx.width, ctx.height)
     entries: list[SpawnEntry] = []
     trigger = 2000
@@ -155,7 +151,6 @@ def build_1_3_target_practice(
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.FLAMETHROWER,
-    builder_address=0x00437E10,
 )
 def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -229,7 +224,6 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=180000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.DOCTOR,
-    builder_address=0x00436720,
 )
 def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
     return [
@@ -269,15 +263,12 @@ def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.SUBMACHINE_GUN,
-    builder_address=0x00436350,
 )
 def build_1_6_the_random_factor(
     ctx: QuestContext,
-    rng: CrandLike | None = None,
-    *,
-    caller_static_u32: int | None = None,
+    rng: CrandLike,
 ) -> list[SpawnEntry]:
-    rng = rng or Crand()
+    caller_static_u32 = RngCallerStatic.QUEST_1_6_BUILDER
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
@@ -321,7 +312,6 @@ def build_1_6_the_random_factor(
     time_limit_ms=240000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.MONSTER_VISION,
-    builder_address=0x00436440,
 )
 def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -347,7 +337,6 @@ def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=180000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.GAUSS_GUN,
-    builder_address=0x00435EA0,
 )
 def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     entries = [
@@ -438,7 +427,6 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=240000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.HOT_TEMPERED,
-    builder_address=0x004364A0,
 )
 def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
     center = center_point(ctx.width, ctx.height)
@@ -538,7 +526,6 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=240000,
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ROCKET_LAUNCHER,
-    builder_address=0x00436120,
 )
 def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
     entries = [

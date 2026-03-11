@@ -19,10 +19,9 @@ def register_quest(
     unlock_perk_id: int | None = None,
     unlock_weapon_id: WeaponId | None = None,
     terrain_slots: TerrainSlotTriplet | None = None,
-    builder_address: int | None = None,
 ) -> Callable[[QuestBuilder], QuestBuilder]:
     def _builder_name(builder_fn: QuestBuilder) -> str:
-        return str(builder_fn.__name__)
+        return str(getattr(builder_fn, "__name__", repr(builder_fn)))
 
     def decorator(builder: QuestBuilder) -> QuestBuilder:
         quest_level = QuestLevel.parse(level)
@@ -39,7 +38,6 @@ def register_quest(
             unlock_perk_id=unlock_perk_id,
             unlock_weapon_id=normalized_unlock_weapon_id,
             terrain_slots=resolved_terrain_slots,
-            builder_address=builder_address,
         )
         existing = _QUESTS.get(quest.level)
         if existing is not None:

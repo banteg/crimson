@@ -49,7 +49,6 @@ def test_quest_builders_snapshot(snapshot: SnapshotAssertion) -> None:
             "unlock_perk_id": quest.unlock_perk_id,
             "unlock_weapon_id": quest.unlock_weapon_id,
             "terrain_slots": quest.terrain_slots,
-            "builder_address": quest.builder_address,
             "entries": _build_entries(quest.builder, ctx, seed=1337),
         }
         snapshot(name=f"quest_{quest.level.text}", matcher=matcher).assert_match(

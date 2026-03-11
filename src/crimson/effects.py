@@ -10,7 +10,7 @@ import msgspec
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.rand import RandDrawLike
+from grim.rand import CallerStatic, RandDrawLike
 
 from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
@@ -54,7 +54,7 @@ FX_QUEUE_ROTATED_CAPACITY = 0x40
 FX_QUEUE_ROTATED_MAX_COUNT = 0x3F
 
 
-def _default_rand(*, caller_static_u32: int | None = None) -> int:
+def _default_rand(*, caller_static_u32: CallerStatic = None) -> int:
     _ = caller_static_u32
     return 0
 

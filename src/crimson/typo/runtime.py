@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from grim.geom import Vec2
+from grim.rand import CallerStatic
 
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
 from ..rng_caller_static import RngCallerStatic
@@ -24,7 +25,7 @@ def _require_single_player_typo(command) -> None:
 
 
 def _typeclick_sfx(world: WorldState) -> str:
-    if (int(world.state.rng.rand(caller_static_u32=int(RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER))) & 1) == 0:
+    if (int(world.state.rng.rand(caller_static_u32=RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER)) & 1) == 0:
         return "sfx_ui_typeclick_01"
     return "sfx_ui_typeclick_02"
 
@@ -81,9 +82,9 @@ def typo_mid_step(ctx: MidStepContext) -> None:
     )
     typo.spawn_cooldown_ms = int(cooldown)
     for call in spawns:
-        caller_static_u32 = int(RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER)
+        caller_static_u32 = RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER
 
-        def rand(*, caller_static_u32: int | None = caller_static_u32) -> int:
+        def rand(*, caller_static_u32: CallerStatic = caller_static_u32) -> int:
             return int(ctx.world.state.rng.rand(caller_static_u32=caller_static_u32))
 
         heading = float(int(rand()) % 314) * 0.01

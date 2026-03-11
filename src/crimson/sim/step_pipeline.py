@@ -5,6 +5,8 @@ from collections.abc import Callable
 
 import msgspec
 
+from grim.rand import CallerStatic
+
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..math_parity import f32
@@ -147,7 +149,7 @@ def run_deterministic_step(
         if not trace_presentation_rng:
             return rand
 
-        def _draw(*, caller_static_u32: int | None = None) -> int:
+        def _draw(*, caller_static_u32: CallerStatic = None) -> int:
             _ = caller_static_u32
             value = int(rand())
             trace.draws_total += 1
