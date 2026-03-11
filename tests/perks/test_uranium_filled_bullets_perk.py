@@ -22,7 +22,7 @@ def test_uranium_filled_bullets_doubles_bullet_damage() -> None:
         owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player],
-        rng=ScriptedCrand(0, fallback="repeat_last"),
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
     assert killed is False

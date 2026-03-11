@@ -24,7 +24,7 @@ def _active_projectiles(state: GameplayState) -> list[object]:
 
 
 def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
@@ -32,7 +32,10 @@ def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
     weapon_assign_player(player, WeaponId.MULTI_PLASMA, state=state)
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
+            dt=0.016,
+            state=state,
         ),
     )
 
@@ -58,7 +61,7 @@ def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
 def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     # Use a value where (rand & 0xff) and (rand % 200 - 100) differ in sign, so we
     # catch the decompile-accurate mask behavior.
-    state = GameplayState(rng=ScriptedCrand(255, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(255, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
@@ -66,7 +69,10 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN, state=state)
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
+            dt=0.016,
+            state=state,
         ),
     )
 
@@ -84,7 +90,7 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
 
 
 def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
@@ -94,7 +100,10 @@ def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
 
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
+            dt=0.016,
+            state=state,
         ),
     )
     assert_float_close(float(player.weapon.ammo), start_ammo - 1.0)
@@ -116,7 +125,7 @@ def test_shotgun_family_fires_expected_pellets(
     jitter_scale: float,
     expected_speed_scale: float,
 ) -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
@@ -124,7 +133,10 @@ def test_shotgun_family_fires_expected_pellets(
     weapon_assign_player(player, WeaponId(weapon_id), state=state)
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
+            dt=0.016,
+            state=state,
         ),
     )
 

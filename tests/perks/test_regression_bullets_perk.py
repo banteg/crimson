@@ -11,7 +11,7 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), experience=1000)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -21,7 +21,10 @@ def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
 
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
         ),
     )
 
@@ -31,7 +34,7 @@ def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
 
 
 def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), experience=1000)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -41,7 +44,10 @@ def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> 
 
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
         ),
     )
 
@@ -51,7 +57,7 @@ def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> 
 
 
 def test_regression_bullets_blocks_fire_when_experience_is_zero() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), experience=0)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -61,7 +67,10 @@ def test_regression_bullets_blocks_fire_when_experience_is_zero() -> None:
 
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
         ),
     )
 
@@ -69,7 +78,7 @@ def test_regression_bullets_blocks_fire_when_experience_is_zero() -> None:
 
 
 def test_regression_bullets_fire_weapon_fires_during_manual_reload_and_spends_ammo() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), experience=1000)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.FLAMETHROWER
@@ -79,7 +88,10 @@ def test_regression_bullets_fire_weapon_fires_during_manual_reload_and_spends_am
 
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
         ),
     )
 

@@ -22,7 +22,7 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
         hardcore=False,
         quest_fail_retry_count=0,
     )
-    world.state.rng = ScriptedCrand(1, fallback="repeat_last")  # rand & 7 == 1
+    world.state.rng = ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # rand & 7 == 1
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.POISON_BULLETS)] = 1
@@ -67,7 +67,7 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
         hardcore=False,
         quest_fail_retry_count=0,
     )
-    world.state.rng = ScriptedCrand(0, fallback="repeat_last")  # rand & 7 != 1
+    world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # rand & 7 != 1
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.POISON_BULLETS)] = 1
@@ -112,7 +112,7 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
         hardcore=False,
         quest_fail_retry_count=0,
     )
-    world.state.rng = ScriptedCrand(1, fallback="repeat_last")  # rand & 7 == 1
+    world.state.rng = ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # rand & 7 == 1
 
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     player.perk_counts[int(PerkId.POISON_BULLETS)] = 1
@@ -150,7 +150,7 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
         hardcore=False,
         quest_fail_retry_count=0,
     )
-    world.state.rng = ScriptedCrand(1, fallback="repeat_last")  # rand & 7 == 1
+    world.state.rng = ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # rand & 7 == 1
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.POISON_BULLETS)] = 1

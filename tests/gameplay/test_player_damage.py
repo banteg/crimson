@@ -31,7 +31,7 @@ def test_player_take_damage_dodge_perks(
     expected_applied: float,
     expected_health: float,
 ) -> None:
-    state = GameplayState(rng=ScriptedCrand(rand_val, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(rand_val, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0)
     for perk_id, count in perk_counts.items():
         player.perk_counts[int(perk_id)] = count
@@ -55,7 +55,7 @@ def test_player_take_damage_low_health_timer_behavior(
     expected_health: float,
     expected_low_health_timer: float,
 ) -> None:
-    state = GameplayState(rng=ScriptedCrand(3, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(3, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=start_health)
 
     applied = player_take_damage(state, player, 10.0)
@@ -66,7 +66,7 @@ def test_player_take_damage_low_health_timer_behavior(
 
 
 def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=5.0, death_timer=16.0)
 
     applied = player_take_damage(state, player, 10.0, dt=0.1)
@@ -77,7 +77,7 @@ def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
 
 
 def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None:
-    state = GameplayState(preserve_bugs=False, rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(preserve_bugs=False, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0, death_timer=16.0)
     player.perk_counts[int(PerkId.HIGHLANDER)] = 1
 
@@ -90,7 +90,7 @@ def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None
 
 
 def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> None:
-    state = GameplayState(preserve_bugs=True, rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(preserve_bugs=True, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0, death_timer=16.0)
     player.perk_counts[int(PerkId.HIGHLANDER)] = 1
 
@@ -103,7 +103,7 @@ def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> N
 
 
 def test_player_take_damage_thick_skinned_uses_native_damage_scale_constant() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=50.90475845336914)
     player.perk_counts[int(PerkId.THICK_SKINNED)] = 1
 
@@ -114,7 +114,7 @@ def test_player_take_damage_thick_skinned_uses_native_damage_scale_constant() ->
 
 
 def test_player_take_damage_sets_survival_damage_seen_even_when_shielded() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0, shield_timer=1.0)
 
     applied = player_take_damage(state, player, 10.0)
@@ -124,7 +124,7 @@ def test_player_take_damage_sets_survival_damage_seen_even_when_shielded() -> No
 
 
 def test_player_take_damage_uses_target_player_alive_guard_by_default() -> None:
-    state = GameplayState(preserve_bugs=False, rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(preserve_bugs=False, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player1 = PlayerState(index=0, pos=Vec2(), health=-1.0)
     player2 = PlayerState(index=1, pos=Vec2(), health=5.0, death_timer=16.0)
 
@@ -137,7 +137,7 @@ def test_player_take_damage_uses_target_player_alive_guard_by_default() -> None:
 
 
 def test_player_take_damage_preserve_bugs_uses_player1_alive_guard() -> None:
-    state = GameplayState(preserve_bugs=True, rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(preserve_bugs=True, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player1 = PlayerState(index=0, pos=Vec2(), health=-1.0)
     player2 = PlayerState(index=1, pos=Vec2(), health=5.0, death_timer=16.0)
 

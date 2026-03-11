@@ -17,7 +17,7 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
@@ -27,7 +27,10 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
 
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
+            dt=0.016,
+            state=state,
         ),
     )
 

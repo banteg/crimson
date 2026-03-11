@@ -34,14 +34,14 @@ def test_ai7_tick_link_timer_negative_to_positive_forces_hold() -> None:
         link_index=-10,
         ai_mode=CreatureAiMode.ORBIT_PLAYER,
     )
-    creature_ai7_tick_link_timer(c, dt_ms=10, rng=ScriptedCrand(0, fallback="repeat_last"))
+    creature_ai7_tick_link_timer(c, dt_ms=10, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     assert c.ai_mode == CreatureAiMode.HOLD_TIMER
     assert c.link_index == 500
 
 
 def test_ai7_tick_link_timer_positive_rolls_back_negative() -> None:
     c = StubCreature(pos=Vec2(), flags=CreatureFlags.AI7_LINK_TIMER, link_index=1, ai_mode=CreatureAiMode.HOLD_TIMER)
-    creature_ai7_tick_link_timer(c, dt_ms=1, rng=ScriptedCrand(0, fallback="repeat_last"))
+    creature_ai7_tick_link_timer(c, dt_ms=1, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     assert c.link_index == -700
 
 

@@ -261,7 +261,7 @@ def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
         return CreatureUpdateResult(deaths=(death,), sfx=("plague_contact",))
 
     mocker.patch.object(world.creatures, "update", side_effect=_fake_update)
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world.state.rng = rng
     before_calls = rng.calls
     before_state = rng.state
@@ -327,7 +327,7 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
         return []
 
     mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world.state.rng = rng
     before_calls = rng.calls
     before_state = rng.state
@@ -384,7 +384,7 @@ def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
         return CreatureUpdateResult(deaths=deaths, sfx=())
 
     mocker.patch.object(world.creatures, "update", side_effect=_fake_update)
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world.state.rng = rng
     before_calls = rng.calls
     before_state = rng.state
@@ -447,7 +447,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
         return [hit]
 
     mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world.state.rng = rng
     before_calls = rng.calls
     before_state = rng.state

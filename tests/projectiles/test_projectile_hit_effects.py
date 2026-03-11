@@ -31,7 +31,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=ScriptedCrand(0, fallback="repeat_last"),
+                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 runtime_state=runtime_state,
             ),
         ),
@@ -68,7 +68,7 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=ScriptedCrand(0, fallback="repeat_last"),
+                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 runtime_state=runtime_state,
             ),
         ),
@@ -109,7 +109,7 @@ def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=ScriptedCrand(0, fallback="repeat_last"),
+                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 players=[player],
             ),
         ),
@@ -138,7 +138,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=ScriptedCrand(0, fallback="repeat_last"),
+                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 runtime_state=runtime_state,
             ),
         ),
@@ -185,7 +185,7 @@ def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=ScriptedCrand(0, fallback="repeat_last"),
+                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 runtime_state=runtime_state,
             ),
         ),

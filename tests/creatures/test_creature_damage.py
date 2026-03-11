@@ -15,7 +15,7 @@ from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_
 def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None:
     creature = CreatureState(active=True, hp=100.0, size=50.0, flags=CreatureFlags(0), heading=0.0)
     player = PlayerState(index=0, pos=Vec2())
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -51,7 +51,7 @@ def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
         heading=0.0,
     )
     player = PlayerState(index=0, pos=Vec2())
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -92,7 +92,7 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
         owner=OwnerRef.from_creature(10),
         dt=0.016,
         players=[player],
-        rng=ScriptedCrand(0, fallback="repeat_last"),
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
     assert killed is True
@@ -110,7 +110,7 @@ def test_nonlethal_damage_does_not_reset_non_alive_hitbox_size() -> None:
         owner=OwnerRef.from_creature(0),
         dt=0.016,
         players=[],
-        rng=ScriptedCrand(0, fallback="repeat_last"),
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
     assert killed is False
@@ -127,7 +127,7 @@ def test_lethal_shock_damage_spawns_armored_debris_in_damage_path() -> None:
         flags=CreatureFlags.RANGED_ATTACK_SHOCK,
         pos=Vec2(10.0, 20.0),
     )
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
 
     killed = creature_apply_damage(

@@ -28,7 +28,7 @@ def test_barrel_greaser_increases_bullet_damage() -> None:
         owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player],
-        rng=ScriptedCrand(0, fallback="repeat_last"),
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
     assert killed is False
@@ -56,7 +56,7 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
             creatures=[],
             options=make_projectile_update_options(
                 world_size=10000.0,
-                rng=ScriptedCrand(0, fallback="repeat_last"),
+                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 players=players,
             ),
         ),

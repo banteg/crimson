@@ -15,7 +15,7 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_player_take_damage_applies_heading_jitter_and_spread_heat_without_unstoppable() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0, heading=1.0, spread_heat=0.1)
 
     applied = player_take_damage(state, player, 10.0)
@@ -27,7 +27,7 @@ def test_player_take_damage_applies_heading_jitter_and_spread_heat_without_unsto
 
 
 def test_player_take_damage_suppresses_heading_jitter_and_spread_heat_with_unstoppable() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0, heading=1.0, spread_heat=0.1)
     player.perk_counts[int(PerkId.UNSTOPPABLE)] = 1
 
@@ -40,7 +40,7 @@ def test_player_take_damage_suppresses_heading_jitter_and_spread_heat_with_unsto
 
 
 def test_player_take_damage_heading_jitter_is_not_snapped_by_player_update() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, heading=1.0, move_speed=2.0)
 
     player_take_damage(state, player, 10.0)

@@ -33,7 +33,7 @@ def test_game_tune_triggers_in_typo_mode(mocker) -> None:
     trigger_game_tune = mocker.patch.object(audio_router, "trigger_game_tune", return_value="gt1_ingame")
     play_sfx = mocker.patch.object(audio_router, "play_sfx")
     router = AudioRouter(audio=_audio_state_stub(), audio_rng=Crand(0xBEEF))
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     router.play_hit_sfx(_hits(2), game_mode=GameMode.TYPO, rng=rng, beam_types=frozenset())
 
@@ -52,7 +52,7 @@ def test_game_tune_not_triggered_in_rush_mode(mocker) -> None:
     router.play_hit_sfx(
         _hits(2),
         game_mode=GameMode.RUSH,
-        rng=ScriptedCrand(0, fallback="repeat_last"),
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
         beam_types=frozenset(),
     )
 
@@ -71,7 +71,7 @@ def test_game_tune_not_triggered_in_demo(mocker) -> None:
     router.play_hit_sfx(
         _hits(2),
         game_mode=GameMode.TYPO,
-        rng=ScriptedCrand(0, fallback="repeat_last"),
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
         beam_types=frozenset(),
     )
 

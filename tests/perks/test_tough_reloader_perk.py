@@ -9,7 +9,7 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_tough_reloader_halves_damage_while_reloading() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.weapon.reload_active = True
     player.perk_counts[int(PerkId.TOUGH_RELOADER)] = 1
@@ -21,7 +21,7 @@ def test_tough_reloader_halves_damage_while_reloading() -> None:
 
 
 def test_tough_reloader_sets_spread_heat_from_post_reload_damage_before_thick_skinned() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0, spread_heat=0.1)
     player.weapon.reload_active = True
     player.perk_counts[int(PerkId.TOUGH_RELOADER)] = 1

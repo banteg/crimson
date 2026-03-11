@@ -10,7 +10,7 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 def test_split_on_death_spawns_two_smaller_children() -> None:
     state = GameplayState()
-    rng = ScriptedCrand([0x123, 0x456], fallback="zero")
+    rng = ScriptedCrand([0x123, 0x456], fallback=ScriptedCrand.Fallback.ZERO)
 
     pool = CreaturePool()
     parent = pool.entries[0]

@@ -33,7 +33,7 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def _fixed_rng(value: int) -> ScriptedCrand:
-    return ScriptedCrand(value, fallback="repeat_last")
+    return ScriptedCrand(value, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
 
 def _normalize_vec2(vec: Vec2) -> list[float]:
@@ -58,7 +58,10 @@ def _normalize_owner(owner: OwnerRef) -> dict[str, object]:
 
 
 def _normalize_primary_pool(
-    pool: ProjectilePool, idx: int, creatures: list[CreatureState], hits: list[ProjectileHit],
+    pool: ProjectilePool,
+    idx: int,
+    creatures: list[CreatureState],
+    hits: list[ProjectileHit],
 ) -> dict[str, object]:
     projectile = pool.entries[idx]
     return {

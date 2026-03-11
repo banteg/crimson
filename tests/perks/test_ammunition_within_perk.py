@@ -12,7 +12,7 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_ammunition_within_fires_during_reload_and_costs_health() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=10.0, experience=1)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -22,7 +22,10 @@ def test_ammunition_within_fires_during_reload_and_costs_health() -> None:
 
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
         ),
     )
 
@@ -33,7 +36,7 @@ def test_ammunition_within_fires_during_reload_and_costs_health() -> None:
 
 
 def test_ammunition_within_fires_during_manual_reload_when_ammo_remaining() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=10.0, experience=1)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -43,7 +46,10 @@ def test_ammunition_within_fires_during_manual_reload_when_ammo_remaining() -> N
 
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
         ),
     )
 
@@ -54,7 +60,7 @@ def test_ammunition_within_fires_during_manual_reload_when_ammo_remaining() -> N
 
 
 def test_ammunition_within_blocks_fire_when_experience_is_zero() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=10.0, experience=0)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -64,7 +70,10 @@ def test_ammunition_within_blocks_fire_when_experience_is_zero() -> None:
 
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
         ),
     )
 
@@ -73,7 +82,7 @@ def test_ammunition_within_blocks_fire_when_experience_is_zero() -> None:
 
 
 def test_ammunition_within_fire_ammo_class_costs_less_health() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=10.0, experience=1)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
     player.weapon.weapon_id = WeaponId.FLAMETHROWER
@@ -83,7 +92,10 @@ def test_ammunition_within_fire_ammo_class_costs_less_health() -> None:
 
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
         ),
     )
 
@@ -92,7 +104,7 @@ def test_ammunition_within_fire_ammo_class_costs_less_health() -> None:
 
 
 def test_ammunition_within_fire_weapon_fires_during_manual_reload_and_spends_ammo() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=10.0, experience=1)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
     player.weapon.weapon_id = WeaponId.FLAMETHROWER
@@ -102,7 +114,10 @@ def test_ammunition_within_fire_weapon_fires_during_manual_reload_and_spends_amm
 
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True),
+            dt=0.016,
+            state=state,
         ),
     )
 

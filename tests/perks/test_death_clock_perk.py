@@ -32,7 +32,7 @@ def test_death_clock_clears_regeneration_and_restores_health() -> None:
 
 
 def test_death_clock_blocks_damage() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
 

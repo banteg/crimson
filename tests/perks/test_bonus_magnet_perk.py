@@ -11,7 +11,7 @@ from tests.support.helpers import ScriptedCrand
 
 def test_bonus_magnet_allows_bonus_spawn_on_secondary_roll() -> None:
     base_state = GameplayState()
-    base_state.rng = ScriptedCrand([0], fallback="zero")
+    base_state.rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.ZERO)
     base_state.bonus_pool = BonusPool()
     base_player = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
 
@@ -20,7 +20,7 @@ def test_bonus_magnet_allows_bonus_spawn_on_secondary_roll() -> None:
     )
 
     perk_state = GameplayState()
-    perk_state.rng = ScriptedCrand([0, 2, 0, 0], fallback="zero")
+    perk_state.rng = ScriptedCrand([0, 2, 0, 0], fallback=ScriptedCrand.Fallback.ZERO)
     perk_state.bonus_pool = BonusPool()
     perk_player = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     perk_player.perk_counts[int(PerkId.BONUS_MAGNET)] = 1

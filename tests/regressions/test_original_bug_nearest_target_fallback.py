@@ -77,7 +77,7 @@ def test_shock_chain_retarget_miss_handling(preserve_bugs: bool, expect_new_segm
                 creatures=creatures,
                 options=make_projectile_update_options(
                     world_size=1024.0,
-                    rng=ScriptedCrand(0, fallback="repeat_last"),
+                    rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                     runtime_state=state,
                 ),
             ),

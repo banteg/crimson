@@ -27,7 +27,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
     )
 
     for weapon_id, expected_style, ammo_cost in cases:
-        state = GameplayState(rng=ScriptedCrand(1, fallback="repeat_last"))
+        state = GameplayState(rng=ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
         player = PlayerState(index=0, pos=Vec2())
         player.aim_dir = Vec2(1.0, 0.0)
         player.spread_heat = 0.0
@@ -37,7 +37,10 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
 
         fire_weapon(
             WeaponFireCtx(
-                player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state,
+                player=player,
+                input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
+                dt=0.016,
+                state=state,
             ),
         )
 
@@ -56,7 +59,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
 
 
 def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(0.0, 1.0)
     player.spread_heat = 0.0
@@ -67,7 +70,10 @@ def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
     aim_y = 0.0
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)),
+            dt=0.016,
+            state=state,
         ),
     )
 
@@ -90,7 +96,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
 
     # Ensure the jittered aim point is significantly off-axis: dir_angle -> pi/2, mag -> near 1.0.
     # The third value is consumed by `spawn_particle` (spin).
-    state = GameplayState(rng=ScriptedCrand([128, 511, 0], fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand([128, 511, 0], fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.48
@@ -98,7 +104,10 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
     weapon_assign_player(player, WeaponId.FLAMETHROWER, state=state)
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)),
+            dt=0.016,
+            state=state,
         ),
     )
 
@@ -125,7 +134,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
 
 
 def test_particle_hits_damage_creatures() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
@@ -133,7 +142,10 @@ def test_particle_hits_damage_creatures() -> None:
     weapon_assign_player(player, WeaponId.FLAMETHROWER, state=state)
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
+            dt=0.016,
+            state=state,
         ),
     )
 
@@ -153,7 +165,7 @@ def test_particle_hits_damage_creatures() -> None:
 
 
 def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
@@ -161,7 +173,10 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     weapon_assign_player(player, WeaponId.BUBBLEGUN, state=state)
     fire_weapon(
         WeaponFireCtx(
-            player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state,
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
+            dt=0.016,
+            state=state,
         ),
     )
 

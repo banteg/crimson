@@ -85,7 +85,7 @@ def test_bonus_pickup_feature_hooks_emit_expected_fx() -> None:
 def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
     state = GameplayState()
     fx_queue = FxQueue()
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 

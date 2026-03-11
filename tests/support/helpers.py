@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any, Literal, Protocol
+from enum import Enum, auto
+from typing import Any, Protocol
 
 import pytest
 
 from grim.rand import CallerStatic, RngDrawRecord
 
-ScriptedCrandFallback = Literal["raise", "repeat_last", "zero"]
+
+class ScriptedCrandFallback(Enum):
+    RAISE = auto()
+    REPEAT_LAST = auto()
+    ZERO = auto()
 
 
 class _ScriptedCrandState:
@@ -24,11 +29,13 @@ class _ScriptedCrandState:
 class ScriptedCrand:
     """Deterministic scripted `CrandLike` for tests that need exact draw sequences."""
 
+    Fallback = ScriptedCrandFallback
+
     def __init__(
         self,
         values: int | Sequence[int] | None = None,
         *,
-        fallback: ScriptedCrandFallback = "raise",
+        fallback: ScriptedCrandFallback = ScriptedCrandFallback.RAISE,
         _shared: _ScriptedCrandState | None = None,
     ) -> None:
         if values is None:
@@ -67,9 +74,9 @@ class ScriptedCrand:
         if index < len(values):
             value = int(values[index])
             self._shared.index = index + 1
-        elif fallback == "repeat_last" and values:
+        elif fallback is ScriptedCrandFallback.REPEAT_LAST and values:
             value = int(values[-1])
-        elif fallback == "zero":
+        elif fallback is ScriptedCrandFallback.ZERO:
             value = 0
         else:
             raise IndexError("scripted RNG exhausted")

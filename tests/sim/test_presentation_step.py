@@ -53,7 +53,7 @@ def _hits(count: int, *, type_id: ProjectileTemplateId = ProjectileTemplateId.PI
 
 
 def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     trigger_game_tune, keys = plan_hit_sfx_keys(
         _hits(2),
         game_mode=GameMode.SURVIVAL,
@@ -68,7 +68,7 @@ def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
 
 
 def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     trigger_game_tune, keys = plan_hit_sfx_keys(
         _hits(2),
         game_mode=GameMode.SURVIVAL,
@@ -83,7 +83,7 @@ def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
 
 
 def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -101,7 +101,7 @@ def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
 
 
 def test_plan_death_sfx_skips_suppressed_deaths() -> None:
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -149,7 +149,7 @@ def test_plan_world_presentation_step_orders_sfx() -> None:
         game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
         perk_progression_enabled=True,
-        rng=ScriptedCrand(0, fallback="repeat_last"),
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
         detail_preset=5,
         gore_disabled=0,
         game_tune_started=False,
@@ -171,7 +171,7 @@ def test_queue_projectile_decals_consumes_rand() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -200,7 +200,7 @@ def test_queue_projectile_decals_native_default_draw_count() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -252,7 +252,7 @@ def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(moc
         "spawn_blood_splatter",
         side_effect=_record_blood_splatter,
     )
-    rng = ScriptedCrand(list(range(256)), fallback="repeat_last")
+    rng = ScriptedCrand(list(range(256)), fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     queue_projectile_decals(
         state=state,
         players=[player],
@@ -278,7 +278,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(m
         "spawn_freeze_shard",
         wraps=state.effects.spawn_freeze_shard,
     )
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -314,7 +314,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_gore_disabl
         "spawn_freeze_shard",
         wraps=state.effects.spawn_freeze_shard,
     )
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -344,7 +344,7 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     fx_queue = FxQueue()
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -372,7 +372,7 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
 def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
-    rng = ScriptedCrand(0, fallback="repeat_last")
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
 

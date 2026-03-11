@@ -35,7 +35,7 @@ def test_radioactive_tick_deals_damage_and_spawns_fx() -> None:
         options=make_creature_update_options(
             state=state,
             players=[player],
-            rng=ScriptedCrand(0, fallback="repeat_last"),
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
             fx_queue=fx_queue,
         ),
     )
@@ -73,7 +73,7 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
         options=make_creature_update_options(
             state=state,
             players=[player],
-            rng=ScriptedCrand(0, fallback="repeat_last"),
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
             fx_queue=fx_queue,
         ),
     )
@@ -109,7 +109,7 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
         options=make_creature_update_options(
             state=state,
             players=[player],
-            rng=ScriptedCrand(0, fallback="repeat_last"),
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
             fx_queue=fx_queue,
         ),
     )

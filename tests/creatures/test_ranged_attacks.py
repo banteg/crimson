@@ -86,7 +86,9 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     result = pool.update(
         0.001,
         options=make_creature_update_options(
-            state=state, players=[player], rng=ScriptedCrand(0, fallback="repeat_last"),
+            state=state,
+            players=[player],
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
         ),
     )
 

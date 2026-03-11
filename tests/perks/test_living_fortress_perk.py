@@ -27,7 +27,7 @@ def test_living_fortress_scales_bullet_damage_by_stationary_timers() -> None:
         owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player0, player1],
-        rng=ScriptedCrand(0, fallback="repeat_last"),
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
     assert killed is False

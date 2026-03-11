@@ -11,7 +11,7 @@ from tests.support.helpers import ScriptedCrand
 
 
 def test_perk_apply_lifeline_50_50_deactivates_every_other_eligible_creature_slot() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback="repeat_last"))
+    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
 
     creatures: list[CreatureState] = [CreatureState() for _ in range(8)]

@@ -25,7 +25,7 @@ def test_ion_gun_master_increases_ion_damage() -> None:
         owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player],
-        rng=ScriptedCrand(0, fallback="repeat_last"),
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
     assert killed is False
@@ -55,7 +55,7 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
                 creatures=[creature],
                 options=make_projectile_update_options(
                     world_size=10000.0,
-                    rng=ScriptedCrand(0, fallback="repeat_last"),
+                    rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                     players=players,
                 ),
             ),

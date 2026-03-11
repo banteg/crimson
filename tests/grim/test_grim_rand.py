@@ -57,7 +57,7 @@ def test_scripted_crand_raises_on_exhaustion_by_default() -> None:
 
 
 def test_scripted_crand_repeat_last_is_explicit() -> None:
-    rng = ScriptedCrand([3, 5], fallback="repeat_last")
+    rng = ScriptedCrand([3, 5], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     assert rng.rand() == 3
     assert rng.rand() == 5
