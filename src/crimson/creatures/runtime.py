@@ -17,7 +17,7 @@ import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
-from grim.rand import CrandLike
+from grim.rand import CrandLike, RandDrawLike
 
 from ..bonuses import BonusId
 from ..effects import EffectPool, FxQueue, FxQueueRotated
@@ -290,7 +290,7 @@ class CreatureUpdateResult(msgspec.Struct, frozen=True):
 class CreatureUpdateOptions(msgspec.Struct, frozen=True):
     state: GameplayState
     players: list[PlayerState]
-    rand: Callable[[], int]
+    rand: RandDrawLike
     env: SpawnEnv
     world_width: float
     world_height: float
@@ -308,7 +308,7 @@ class _CreatureInteractionCtx(msgspec.Struct):
     players: list[PlayerState]
     player: PlayerState
     dt: float
-    rand: Callable[[], int]
+    rand: RandDrawLike
     detail_preset: int
     gore_disabled: int
     world_width: float
@@ -597,7 +597,7 @@ class CreaturePool:
                     creature.plague_infected = True
                 return
 
-    def _alloc_slot(self, *, rand: Callable[[], int] | None = None) -> int:
+    def _alloc_slot(self, *, rand: RandDrawLike | None = None) -> int:
         for i, entry in enumerate(self._entries):
             if not entry.active:
                 return i
@@ -686,7 +686,7 @@ class CreaturePool:
         if float(dist_new) < float(dist_current):
             player.auto_target = int(creature_index)
 
-    def spawn_init(self, init: CreatureInit, *, rand: Callable[[], int] | None = None) -> int:
+    def spawn_init(self, init: CreatureInit, *, rand: RandDrawLike | None = None) -> int:
         """Materialize a single `CreatureInit` into the runtime pool."""
 
         idx = self._alloc_slot(rand=rand)
@@ -709,14 +709,14 @@ class CreaturePool:
         self.spawned_count += 1
         return idx
 
-    def spawn_inits(self, inits: Sequence[CreatureInit], *, rand: Callable[[], int] | None = None) -> list[int]:
+    def spawn_inits(self, inits: Sequence[CreatureInit], *, rand: RandDrawLike | None = None) -> list[int]:
         return [self.spawn_init(init, rand=rand) for init in inits]
 
     def spawn_plan(
         self,
         plan: SpawnPlan,
         *,
-        rand: Callable[[], int] | None = None,
+        rand: RandDrawLike | None = None,
         detail_preset: int = 5,
         effects: EffectPool | None = None,
     ) -> tuple[list[int], int | None]:
@@ -788,7 +788,7 @@ class CreaturePool:
 
         effect_pool = self.effects if effects is None else effects
         if effect_pool is not None and plan.effects:
-            fx_rand = rand if rand is not None else (lambda: 0)
+            fx_rand = rand if rand is not None else (lambda *, caller_static_u32=None: 0)
             for fx in plan.effects:
                 effect_pool.spawn_burst(
                     pos=fx.pos,
@@ -805,7 +805,7 @@ class CreaturePool:
         heading: float,
         rng: CrandLike,
         *,
-        rand: Callable[[], int] | None = None,
+        rand: RandDrawLike | None = None,
         env: SpawnEnv | None = None,
         detail_preset: int = 5,
         effects: EffectPool | None = None,
@@ -1261,7 +1261,7 @@ class CreaturePool:
         *,
         state: GameplayState,
         players: list[PlayerState],
-        rand: Callable[[], int],
+        rand: RandDrawLike,
         dt: float = 0.0,
         detail_preset: int = 5,
         world_width: float,
@@ -1418,7 +1418,7 @@ class CreaturePool:
         world_width: float,
         world_height: float,
         fx_queue_rotated: FxQueueRotated | None,
-        rand: Callable[[], int] | None = None,
+        rand: RandDrawLike | None = None,
         detail_preset: int = 5,
         gore_disabled: int = 0,
     ) -> None:
@@ -1524,7 +1524,7 @@ class CreaturePool:
         *,
         state: GameplayState,
         players: list[PlayerState],
-        rand: Callable[[], int],
+        rand: RandDrawLike,
         detail_preset: int = 5,
         world_width: float,
         world_height: float,

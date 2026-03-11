@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from functools import partial
-
 from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
@@ -9,7 +7,6 @@ from ..runtime.effects_context import PerksUpdateEffectsCtx
 from ..runtime.hook_types import PerkHooks
 
 _PERKS_UPDATE_EFFECTS_CALLER_STATIC_U32 = RngCallerStatic.PERKS_UPDATE_EFFECTS
-_FX_QUEUE_ADD_RANDOM_CALLER_STATIC_U32 = RngCallerStatic.FX_QUEUE_ADD_RANDOM
 
 
 def update_pyrokinetic(ctx: PerksUpdateEffectsCtx) -> None:
@@ -36,7 +33,7 @@ def update_pyrokinetic(ctx: PerksUpdateEffectsCtx) -> None:
             if ctx.fx_queue is not None:
                 ctx.fx_queue.add_random(
                     pos=creature.pos,
-                    rand=partial(ctx.state.rng.rand, caller_static_u32=_FX_QUEUE_ADD_RANDOM_CALLER_STATIC_U32),
+                    rand=ctx.state.rng.rand,
                 )
 
 

@@ -163,7 +163,7 @@ def test_plan_world_presentation_step_orders_sfx() -> None:
         game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
         perk_progression_enabled=True,
-        rand=lambda: 0,
+        rand=MockCrand(0),
         detail_preset=5,
         gore_disabled=0,
         game_tune_started=False,
@@ -273,7 +273,7 @@ def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(moc
         players=[player],
         fx_queue=fx_queue,
         hits=_hits(1, type_id=ProjectileTemplateId.BLADE_GUN),
-        rand=lambda: int(next(rng_values)),
+        rand=lambda *, caller_static_u32=None: int(next(rng_values)),
         detail_preset=5,
         gore_disabled=0,
     )

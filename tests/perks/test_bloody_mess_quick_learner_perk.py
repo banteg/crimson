@@ -27,7 +27,7 @@ def test_creature_handle_death_awards_bloody_mess_quick_learner_xp() -> None:
         0,
         state=state,
         players=[player],
-        rand=lambda: 0,
+        rand=lambda *, caller_static_u32=None: 0,
         world_width=1024.0,
         world_height=1024.0,
         fx_queue=None,

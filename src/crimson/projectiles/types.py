@@ -46,7 +46,8 @@ class SecondaryProjectileTypeId(IntEnum):
     ROCKET_MINIGUN = 4
 
 
-def _rng_zero() -> int:
+def _rng_zero(*, caller_static_u32: int | None = None) -> int:
+    _ = caller_static_u32
     return 0
 
 

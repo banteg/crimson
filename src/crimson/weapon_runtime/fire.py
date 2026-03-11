@@ -240,11 +240,20 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     aim_heading = float(heading_from_delta_f32(dx=float(aim_delta.x), dy=float(aim_delta.y)))
 
     muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
+    weapon_flags = int(weapon.flags or 0)
+    shell_casing_draws = (0, 0, 0, 0)
+    if weapon_flags & 0x1:
+        shell_casing_draws = (
+            state.rng.rand(caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32),
+            state.rng.rand(caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32),
+            state.rng.rand(caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32),
+            state.rng.rand(caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32),
+        )
     state.effects.spawn_shell_casing(
         pos=muzzle,
         aim_heading=aim_heading,
-        weapon_flags=int(weapon.flags or 0),
-        rand=partial(state.rng.rand, caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32),
+        weapon_flags=weapon_flags,
+        draws=shell_casing_draws,
         detail_preset=detail_preset,
     )
 

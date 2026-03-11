@@ -83,7 +83,7 @@ def typo_mid_step(ctx: MidStepContext) -> None:
     for call in spawns:
         caller_static_u32 = int(RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER)
 
-        def rand(caller_static_u32: int = caller_static_u32) -> int:
+        def rand(*, caller_static_u32: int | None = caller_static_u32) -> int:
             return int(ctx.world.state.rng.rand(caller_static_u32=caller_static_u32))
 
         heading = float(int(rand()) % 314) * 0.01

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from collections.abc import Callable, Sequence
 from typing import cast
 
@@ -56,7 +57,7 @@ class _NoopFxQueue(FxQueue):
         del effect_id, pos, width, height, rotation, rgba
         return False
 
-    def add_random(self, *, pos: Vec2, rand: Callable[[], int]) -> bool:
+    def add_random(self, *, pos: Vec2, rand: Callable[..., int]) -> bool:
         del pos, rand
         return False
 
@@ -88,11 +89,30 @@ class _NoopFxQueueRotated(FxQueueRotated):
         return False
 
 
+def _coerce_rand_draw(rand: Callable[..., int]) -> Callable[..., int]:
+    try:
+        params = inspect.signature(rand).parameters.values()
+    except (TypeError, ValueError):
+        params = ()
+
+    for param in params:
+        if param.kind == inspect.Parameter.VAR_KEYWORD:
+            return rand
+        if param.name == "caller_static_u32":
+            return rand
+
+    def _draw(*, caller_static_u32: int | None = None) -> int:
+        _ = caller_static_u32
+        return int(rand())
+
+    return _draw
+
+
 def make_creature_update_options(
     *,
     state: GameplayState,
     players: list[PlayerState],
-    rand: Callable[[], int] | None = None,
+    rand: Callable[..., int] | None = None,
     detail_preset: int = 5,
     gore_disabled: int = 0,
     env: SpawnEnv | None = None,
@@ -114,7 +134,7 @@ def make_creature_update_options(
     return CreatureUpdateOptions(
         state=state,
         players=players,
-        rand=state.rng.rand if rand is None else rand,
+        rand=_coerce_rand_draw(state.rng.rand if rand is None else rand),
         env=default_env if env is None else env,
         world_width=width,
         world_height=height,
@@ -143,7 +163,7 @@ def make_projectile_update_options(
     damage_scale_by_type: dict[int, float] | None = None,
     ion_aoe_scale: float = 1.0,
     detail_preset: int = 5,
-    rng: Callable[[], int] | None = None,
+    rng: Callable[..., int] | None = None,
     runtime_state: GameplayState | None = None,
     players: Sequence[PlayerState] | None = None,
     apply_player_damage: Callable[[int, float], None] | None = None,
@@ -155,7 +175,7 @@ def make_projectile_update_options(
     return ProjectileUpdateOptions(
         world_size=float(world_size),
         damage_scale_by_type={} if damage_scale_by_type is None else damage_scale_by_type,
-        rng=(lambda: 0) if rng is None else rng,
+        rng=_coerce_rand_draw((lambda *, caller_static_u32=None: 0) if rng is None else rng),
         runtime_state=state,
         players=player_seq,
         apply_player_damage=(

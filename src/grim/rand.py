@@ -26,6 +26,13 @@ class CrandLike(Protocol):
     def rand(self, *, caller_static_u32: int | None = None) -> int: ...
 
 
+@runtime_checkable
+class RandDrawLike(Protocol):
+    """Callable RNG source that accepts optional caller provenance."""
+
+    def __call__(self, *, caller_static_u32: int | None = None) -> int: ...
+
+
 class CrtRand:
     """MSVCRT-compatible `rand()` LCG used by the original game.
 
@@ -84,21 +91,3 @@ class CrtRand:
 
 class Crand(CrtRand):
     """MSVCRT-compatible `rand()` LCG."""
-
-
-def rand_draw(rand: Callable[..., int], *, caller_static_u32: int | None = None) -> int:
-    """Call an RNG callback with optional provenance tagging.
-
-    Gameplay code can pass `caller_static_u32` through to `CrtRand.rand()` while
-    still remaining compatible with existing zero-arg test doubles.
-    """
-
-    if caller_static_u32 is None:
-        return int(rand())
-    try:
-        return int(rand(caller_static_u32=caller_static_u32))
-    except TypeError as exc:
-        error_text = str(exc)
-        if "caller_static_u32" not in error_text and "keyword" not in error_text:
-            raise
-        return int(rand())

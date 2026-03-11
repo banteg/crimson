@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from grim.geom import Vec2
+from grim.rand import RandDrawLike
 
 from ..effects import FxQueue
 from ..math_parity import f32
@@ -36,7 +37,7 @@ def queue_large_hit_decal_streak(
     hit: ProjectileHit,
     base_angle: float,
     fx_queue: FxQueue,
-    rand: Callable[[], int],
+    rand: RandDrawLike,
     freeze_origin: Vec2 | None = None,
     spawn_freeze_shard: Callable[[Vec2, float], None] | None = None,
 ) -> None:

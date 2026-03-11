@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from functools import partial
-
 from ...math_parity import f32
 from ...rng_caller_static import RngCallerStatic
 from ...sim.state_types import PlayerState
@@ -11,7 +9,6 @@ from ..runtime.effects_context import PerksUpdateEffectsCtx
 from ..runtime.hook_types import PerkHooks
 
 _PERKS_UPDATE_EFFECTS_CALLER_STATIC_U32 = RngCallerStatic.PERKS_UPDATE_EFFECTS
-_FX_QUEUE_ADD_RANDOM_CALLER_STATIC_U32 = RngCallerStatic.FX_QUEUE_ADD_RANDOM
 
 
 def _award_experience_once_from_reward(*, player: PlayerState, reward_value: float) -> int:
@@ -72,11 +69,11 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         if ctx.fx_queue is not None:
             ctx.fx_queue.add_random(
                 pos=player.pos,
-                rand=partial(ctx.state.rng.rand, caller_static_u32=_FX_QUEUE_ADD_RANDOM_CALLER_STATIC_U32),
+                rand=ctx.state.rng.rand,
             )
             ctx.fx_queue.add_random(
                 pos=player.pos,
-                rand=partial(ctx.state.rng.rand, caller_static_u32=_FX_QUEUE_ADD_RANDOM_CALLER_STATIC_U32),
+                rand=ctx.state.rng.rand,
             )
 
     ctx.state.jinxed_timer = (
