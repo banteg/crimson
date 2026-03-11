@@ -184,7 +184,7 @@ def run_replay_render_video(
 
     console = create_console(runtime_base_dir, assets_dir=runtime_assets_dir)
     download_missing_paqs(runtime_assets_dir, console)
-    ctx = ViewContext(assets_dir=runtime_assets_dir, preserve_bugs=False)
+    ctx = ViewContext(assets_dir=runtime_assets_dir, base_dir=runtime_base_dir, preserve_bugs=False)
 
     frame_count = 0
     mode: ReplayPlaybackMode | None = None

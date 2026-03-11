@@ -197,7 +197,7 @@ def run_replay_render_benchmark(
 
     console = create_console(runtime_base_dir, assets_dir=runtime_assets_dir)
     download_missing_paqs(runtime_assets_dir, console)
-    ctx = ViewContext(assets_dir=runtime_assets_dir, preserve_bugs=False)
+    ctx = ViewContext(assets_dir=runtime_assets_dir, base_dir=runtime_base_dir, preserve_bugs=False)
 
     config_flags = rl.ConfigFlags.FLAG_WINDOW_HIDDEN
     if int(config_flags) != 0:

@@ -14,10 +14,18 @@ from grim.view import ViewContext
 
 def test_modes_construct_without_window() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
+    runtime_dir = repo_root / ".tmp-test-runtime"
+    ctx = ViewContext(
+        assets_dir=repo_root / "artifacts" / "assets",
+        base_dir=runtime_dir,
+    )
 
-    assert isinstance(SurvivalMode(ctx, audio_rng=Crand(0xBEEF)), BaseGameplayMode)
-    assert isinstance(RushMode(ctx, audio_rng=Crand(0xBEEF)), BaseGameplayMode)
-    assert isinstance(QuestMode(ctx, audio_rng=Crand(0xBEEF)), BaseGameplayMode)
-    assert isinstance(TutorialMode(ctx, audio_rng=Crand(0xBEEF)), BaseGameplayMode)
-    assert isinstance(TypoShooterMode(ctx, audio_rng=Crand(0xBEEF)), BaseGameplayMode)
+    for mode in (
+        SurvivalMode(ctx, audio_rng=Crand(0xBEEF)),
+        RushMode(ctx, audio_rng=Crand(0xBEEF)),
+        QuestMode(ctx, audio_rng=Crand(0xBEEF)),
+        TutorialMode(ctx, audio_rng=Crand(0xBEEF)),
+        TypoShooterMode(ctx, audio_rng=Crand(0xBEEF)),
+    ):
+        assert isinstance(mode, BaseGameplayMode)
+        assert mode._base_dir == runtime_dir

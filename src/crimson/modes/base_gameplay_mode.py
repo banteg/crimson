@@ -4,7 +4,6 @@ import datetime as dt
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import msgspec
@@ -36,6 +35,7 @@ from ..net.rollback_resync_v5 import (
     encode_mode_snapshot,
 )
 from ..net.rollback_runtime import RollbackRuntime
+from ..paths import default_runtime_dir
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
@@ -249,7 +249,7 @@ class BaseGameplayMode:
 
         mode_id = int(default_game_mode_id)
         if config is None:
-            base_dir = Path.cwd()
+            base_dir = ctx.base_dir if ctx.base_dir is not None else default_runtime_dir()
             resolved_config = CrimsonConfig(path=base_dir / "crimson.cfg", data=default_crimson_cfg_data())
             resolved_config.game_mode = mode_id
         else:

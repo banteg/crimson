@@ -196,6 +196,12 @@ def cmd_view(
     width: int = typer.Option(1024, help="window width"),
     height: int = typer.Option(768, help="window height"),
     fps: int = typer.Option(60, help="target fps"),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files used by gameplay-mode views",
+    ),
     dump_shader_debug_views: bool = typer.Option(
         False,
         "--dump-shader-debug-views",
@@ -250,7 +256,7 @@ def cmd_view(
             typer.echo("--autotune-shadow-defaults is only supported for view 'lighting-debug'", err=True)
             raise typer.Exit(code=1)
         os.environ["CRIMSON_LIGHTING_DEBUG_AUTO_TUNE"] = str(int(autotune_shadow_frames))
-    ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=bool(preserve_bugs))
+    ctx = ViewContext(assets_dir=assets_dir, base_dir=base_dir, preserve_bugs=bool(preserve_bugs))
     params = inspect.signature(view_def.factory).parameters
     if "ctx" in params:
         view = view_def.factory(ctx=ctx)
