@@ -5,8 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol, TypeAlias, runtime_checkable
 
-# Exact static caller address when known. Python gameplay code may currently pass
-# coarse owner/root addresses via `RngOwnerStatic`, which are still plain ints.
+# Exact static caller address when known.
 CallerStatic: TypeAlias = int | None
 
 CRT_RAND_MULT = 214013
@@ -134,7 +133,7 @@ class RecordingCrand:
 
     def rand(self, *, caller: CallerStatic = None) -> int:
         state_before = int(self._shared.base.state)
-        value = self._shared.base.rand(caller=caller)
+        value = self._shared.base.rand()
         state_after = int(self._shared.base.state)
         self._shared.records.append(
             RngDrawRecord(

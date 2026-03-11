@@ -16,7 +16,6 @@ from .game.types import GameState
 from .game_modes import GameMode
 from .quests import quest_by_level
 from .quests.level import QuestLevel
-from .rng_owner_static import RngOwnerStatic
 from .screens.assets import require_runtime_resources
 from .sim.bootstrap import run_explicit_terrain_prelude
 from .sim.input import PlayerInput
@@ -475,7 +474,6 @@ class DemoView:
             pos,
             float(heading),
             rng,
-            caller=RngOwnerStatic.CREATURE_SPAWN_TEMPLATE,
         )
 
     def _setup_variant_0(self) -> None:

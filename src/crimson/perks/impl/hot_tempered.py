@@ -4,7 +4,6 @@ import math
 
 from ...owner_ref import OwnerRef
 from ...projectiles.types import ProjectileTemplateId
-from ...rng_owner_static import RngOwnerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
@@ -39,7 +38,7 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
 
     ctx.player.hot_tempered_timer -= ctx.state.perk_intervals.hot_tempered
     ctx.state.perk_intervals.hot_tempered = (
-        float(ctx.state.rng.rand(caller=RngOwnerStatic.PLAYER_UPDATE) % 8) + 2.0
+        float(ctx.state.rng.rand() % 8) + 2.0
     )
 
 

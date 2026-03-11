@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from ...rng_owner_static import RngOwnerStatic
 from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
 from ..runtime.hook_types import PerkHooks
@@ -9,7 +8,7 @@ from ..runtime.hook_types import PerkHooks
 def apply_bandage(ctx: PerkApplyCtx) -> None:
     for player in ctx.players:
         if player.health > 0.0:
-            amount = float(ctx.state.rng.rand(caller=RngOwnerStatic.PERK_APPLY) % 50 + 1)
+            amount = float(ctx.state.rng.rand() % 50 + 1)
             if ctx.state.preserve_bugs:
                 # Original exe behavior (likely bug): health multiplier.
                 player.health = min(100.0, player.health * amount)

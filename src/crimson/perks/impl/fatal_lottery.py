@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from ...rng_owner_static import RngOwnerStatic
 from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
 from ..runtime.hook_types import PerkHooks
 
 
 def apply_fatal_lottery(ctx: PerkApplyCtx) -> None:
-    if ctx.state.rng.rand(caller=RngOwnerStatic.PERK_APPLY) & 1:
+    if ctx.state.rng.rand() & 1:
         ctx.owner.health = -1.0
     else:
         ctx.owner.experience += 10000
