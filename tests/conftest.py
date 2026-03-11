@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import importlib
+import os
+import shutil
 import sys
+import tempfile
 import time
 from collections.abc import Callable, Mapping
 from pathlib import Path
@@ -14,6 +17,9 @@ from pytest_mock import MockerFixture
 from grim.rand import Crand
 
 TESTS_ROOT = Path(__file__).resolve().parent
+_TEST_RUNTIME_DIR: Path | None = None
+_PREV_CRIMSON_RUNTIME_DIR: str | None = None
+_PREV_CRIMSON_BASE_DIR: str | None = None
 
 if TYPE_CHECKING:
     import crimson.modes.replay_playback_mode as replay_playback_mode
@@ -41,6 +47,13 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_configure(config: pytest.Config) -> None:
+    global _PREV_CRIMSON_RUNTIME_DIR, _PREV_CRIMSON_BASE_DIR, _TEST_RUNTIME_DIR
+
+    _PREV_CRIMSON_RUNTIME_DIR = os.environ.get("CRIMSON_RUNTIME_DIR")
+    _PREV_CRIMSON_BASE_DIR = os.environ.get("CRIMSON_BASE_DIR")
+    _TEST_RUNTIME_DIR = Path(tempfile.mkdtemp(prefix="crimson-runtime-tests-")).resolve()
+    os.environ["CRIMSON_RUNTIME_DIR"] = str(_TEST_RUNTIME_DIR)
+
     # Ensure the local `src/` tree wins over any other editable install that may exist
     # (e.g. a different git worktree pointing at the same project).
     src_dir = Path(__file__).resolve().parents[1] / "src"
@@ -55,6 +68,28 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "original_capture: tests for original-capture conversion/replay/parity")
     config.addinivalue_line("markers", "network: network/lan/relay integration tests")
     config.addinivalue_line("markers", "replay_fixture: replay fixture integration tests (slow, opt-in)")
+
+
+def pytest_unconfigure(config: pytest.Config) -> None:
+    _ = config
+    global _PREV_CRIMSON_RUNTIME_DIR, _PREV_CRIMSON_BASE_DIR, _TEST_RUNTIME_DIR
+
+    if _PREV_CRIMSON_RUNTIME_DIR is None:
+        os.environ.pop("CRIMSON_RUNTIME_DIR", None)
+    else:
+        os.environ["CRIMSON_RUNTIME_DIR"] = _PREV_CRIMSON_RUNTIME_DIR
+
+    if _PREV_CRIMSON_BASE_DIR is None:
+        os.environ.pop("CRIMSON_BASE_DIR", None)
+    else:
+        os.environ["CRIMSON_BASE_DIR"] = _PREV_CRIMSON_BASE_DIR
+
+    if _TEST_RUNTIME_DIR is not None:
+        shutil.rmtree(_TEST_RUNTIME_DIR, ignore_errors=True)
+
+    _PREV_CRIMSON_RUNTIME_DIR = None
+    _PREV_CRIMSON_BASE_DIR = None
+    _TEST_RUNTIME_DIR = None
 
 
 def _test_relative_path(item: pytest.Item) -> Path:
