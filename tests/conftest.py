@@ -18,9 +18,11 @@ TESTS_ROOT = Path(__file__).resolve().parent
 if TYPE_CHECKING:
     import crimson.modes.replay_playback_mode as replay_playback_mode
     from crimson.game.types import GameState
+    from crimson.game_modes import GameMode
     from crimson.persistence.save_status import GameStatus
     from crimson.sim.world_state import WorldState
     from grim.audio import AudioState
+    from grim.config import CrimsonConfig
     from grim.console import ConsoleState
     from grim.raylib_api import rl
 
@@ -99,16 +101,16 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 
 @pytest.fixture
-def replay_playback_view() -> tuple["replay_playback_mode.ReplayPlaybackMode", "ConsoleState"]:
+def replay_playback_view(tmp_path: Path, assets_dir: Path) -> tuple["replay_playback_mode.ReplayPlaybackMode", "ConsoleState"]:
     import crimson.modes.replay_playback_mode as replay_playback_mode
-    from grim.config import CrimsonConfig
-    from grim.console import ConsoleLog, ConsoleState
+    from grim.config import ensure_crimson_cfg
+    from grim.console import create_console
     from grim.view import ViewContext
 
-    cfg = CrimsonConfig(path=Path("crimson.cfg"), data={})
-    console = ConsoleState(base_dir=Path("."), log=ConsoleLog(base_dir=Path(".")))
+    cfg = ensure_crimson_cfg(tmp_path)
+    console = create_console(tmp_path, assets_dir=assets_dir)
     view = replay_playback_mode.ReplayPlaybackMode(
-        ViewContext(assets_dir=Path("."), preserve_bugs=False),
+        ViewContext(assets_dir=assets_dir, preserve_bugs=False),
         replay_path=Path("dummy.crd"),
         config=cfg,
         console=console,
@@ -119,6 +121,26 @@ def replay_playback_view() -> tuple["replay_playback_mode.ReplayPlaybackMode", "
 @pytest.fixture
 def assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
+
+
+@pytest.fixture
+def make_mode_config(tmp_path: Path) -> Callable[..., "CrimsonConfig"]:
+    from grim.config import ensure_crimson_cfg
+
+    def _make(
+        *,
+        game_mode: "GameMode | int",
+        base_dir: Path | None = None,
+        updates: Mapping[str, object] | None = None,
+    ):
+        resolved_base_dir = base_dir if base_dir is not None else tmp_path
+        cfg = ensure_crimson_cfg(resolved_base_dir)
+        cfg.game_mode = int(game_mode)
+        if updates:
+            cfg.data.update(dict(updates))
+        return cfg
+
+    return _make
 
 
 @pytest.fixture

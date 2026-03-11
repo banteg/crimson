@@ -9,6 +9,7 @@ import pytest
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.quest_mode as quest_mode_module
 import crimson.modes.survival_mode as survival_mode_module
+from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
@@ -44,11 +45,16 @@ def _is_dead(mode: SurvivalMode | QuestMode) -> bool:
 
 
 @pytest.mark.parametrize("mode_cls", [SurvivalMode, QuestMode])
-def test_grim_deal_kills_player_during_perk_menu_transition(mocker, mode_cls: type[SurvivalMode] | type[QuestMode]) -> None:
+def test_grim_deal_kills_player_during_perk_menu_transition(
+    mocker,
+    make_mode_config,
+    mode_cls: type[SurvivalMode] | type[QuestMode],
+) -> None:
     assets_dir = _assets_dir()
     _register_runtime_resources_stub(assets_dir)
     ctx = ViewContext(assets_dir=assets_dir)
-    mode = mode_cls(ctx, audio_rng=Crand(0xBEEF))
+    game_mode = GameMode.SURVIVAL if mode_cls is SurvivalMode else GameMode.QUESTS
+    mode = mode_cls(ctx, config=make_mode_config(game_mode=game_mode), audio_rng=Crand(0xBEEF))
     if isinstance(mode, QuestMode):
         mocker.patch.object(quest_mode_module, "load_grim_mono_font", return_value=SimpleNamespace())
         mode.open()

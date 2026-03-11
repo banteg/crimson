@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from pathlib import Path
 from types import SimpleNamespace
 from typing import Protocol
 from unittest.mock import call
@@ -110,7 +109,7 @@ def test_replay_playback_registers_snd_add_game_tune_command(mocker, replay_play
     assert handler is not None
     handler(["gt1_ingame.ogg"])
 
-    load_music_track.assert_called_once_with(music_state, Path("."), "music/gt1_ingame.ogg", console=console)
+    load_music_track.assert_called_once_with(music_state, view._ctx.assets_dir, "music/gt1_ingame.ogg", console=console)
     queue_track.assert_called_once_with(music_state, "gt1_ingame")
 
 

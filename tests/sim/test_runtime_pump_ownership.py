@@ -13,6 +13,7 @@ from pathlib import Path
 import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, NetworkSessionConfig, PendingNetworkSession
+from crimson.game_modes import GameMode
 from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
@@ -62,6 +63,10 @@ def _mode_rng() -> Crand:
     return Crand(0xBEEF)
 
 
+def _survival_mode(*, config) -> SurvivalMode:
+    return SurvivalMode(ViewContext(assets_dir=_assets_dir()), config=config, audio_rng=_mode_rng())
+
+
 def test_interactive_frame_driver_pumps_runtime_once(make_game_state) -> None:
     state = make_game_state()
     state.pending_network_session = _pending_session()
@@ -89,8 +94,8 @@ def test_interactive_headless_no_runtime_pumps_zero(make_game_state) -> None:
     assert state.runtime_updates_per_frame == 0
 
 
-def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=_mode_rng())
+def test_lan_tick_consumption_drives_runner_until_stall(mocker, make_mode_config) -> None:
+    mode = _survival_mode(config=make_mode_config(game_mode=GameMode.SURVIVAL))
     tick_payload = make_tick_payload()
     runner = FakeRunner(results=
         [
@@ -141,8 +146,8 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
     assert mode._input_stall_count == 0
 
 
-def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=_mode_rng())
+def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker, make_mode_config) -> None:
+    mode = _survival_mode(config=make_mode_config(game_mode=GameMode.SURVIVAL))
     provider = _LanRuntimeInputProvider(
         player_count=1,
         tick_rate=60,
@@ -172,8 +177,8 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
     assert int(mode._input_stall_count) == before_stall_count
 
 
-def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker) -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=_mode_rng())
+def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker, make_mode_config) -> None:
+    mode = _survival_mode(config=make_mode_config(game_mode=GameMode.SURVIVAL))
     ticks = [
         TickResult(
             source_tick=ResolvedTick(
@@ -252,8 +257,8 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
     assert 1 in sync_samples
 
 
-def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker) -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=_mode_rng())
+def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker, make_mode_config) -> None:
+    mode = _survival_mode(config=make_mode_config(game_mode=GameMode.SURVIVAL))
     command = PerkPickCommand(player_index=0, choice_index=2)
     tick = TickResult(
         source_tick=ResolvedTick(

@@ -196,6 +196,12 @@ def cmd_view(
     width: int = typer.Option(1024, help="window width"),
     height: int = typer.Option(768, help="window height"),
     fps: int = typer.Option(60, help="target fps"),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files used by gameplay-mode views",
+    ),
     dump_shader_debug_views: bool = typer.Option(
         False,
         "--dump-shader-debug-views",
