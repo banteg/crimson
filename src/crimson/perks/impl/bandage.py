@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from ...rng_caller_static import RngCallerStatic
 from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
 from ..runtime.hook_types import PerkHooks
 
-_PERK_APPLY_CALLER_STATIC_U32 = 0x004055E0
+_PERK_APPLY_CALLER_STATIC_U32 = RngCallerStatic.PERK_APPLY
 
 
 def apply_bandage(ctx: PerkApplyCtx) -> None:

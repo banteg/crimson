@@ -15,7 +15,8 @@ class _SeqRng(Crand):
         self._values = [int(v) for v in values] or [0]
         self._idx = 0
 
-    def rand(self) -> int:
+    def rand(self, *, caller_static_u32: int | None = None) -> int:
+        _ = caller_static_u32
         if self._idx >= len(self._values):
             return int(self._values[-1])
         value = int(self._values[self._idx])

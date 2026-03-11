@@ -82,7 +82,7 @@ def test_prompt_open_request_from_pick_key(mocker) -> None:
 
     assert prompt.poll_open_request(
         ctx=_ctx(),
-        config=_config(),  # type: ignore[arg-type]
+        config=_config(),
         pending_count=1,
         player_count=1,
         any_alive=True,
@@ -118,7 +118,7 @@ def test_prompt_open_request_from_hover_click(mocker) -> None:
 
     assert prompt.poll_open_request(
         ctx=_ctx(),
-        config=_config(),  # type: ignore[arg-type]
+        config=_config(),
         pending_count=1,
         player_count=1,
         any_alive=True,
@@ -151,7 +151,7 @@ def test_prompt_open_request_returns_false_while_menu_active(mocker) -> None:
 
     assert not prompt.poll_open_request(
         ctx=_ctx(),
-        config=_config(),  # type: ignore[arg-type]
+        config=_config(),
         pending_count=1,
         player_count=1,
         any_alive=True,

@@ -294,9 +294,13 @@ def _canonical_channels_payload(
             value_15=int(row.value_15),
             state_before_u32=int(row.state_before_u32),
             state_after_u32=int(row.state_after_u32),
-            caller_static_u32=_caller_static_u32_from_capture(
-                row.caller_static,
-                field=f"{field}.rng_stream[{idx}].caller_static",
+            caller_static_u32=(
+                None
+                if row.caller_static is None
+                else _caller_static_u32_from_capture(
+                    row.caller_static,
+                    field=f"{field}.rng_stream[{idx}].caller_static",
+                )
             ),
         )
         for idx, row in enumerate(channels.rng_stream)
@@ -317,12 +321,8 @@ def _canonical_channels_payload(
     )
 
 
-def _caller_static_u32_from_capture(value: str | None, *, field: str) -> int | None:
-    if value is None:
-        return None
-    text = str(value).strip()
-    if not text:
-        return None
+def _caller_static_u32_from_capture(value: str, *, field: str) -> int:
+    text = value
     if not text.lower().startswith("0x"):
         raise FridaFinalizeError(f"{field} must be a 0x-prefixed hex string")
     try:
@@ -331,7 +331,7 @@ def _caller_static_u32_from_capture(value: str | None, *, field: str) -> int | N
         raise FridaFinalizeError(f"{field} invalid hex value: {text!r}") from exc
     if not (0 <= caller_static_u32 <= 0xFFFFFFFF):
         raise FridaFinalizeError(f"{field} must decode to a uint32")
-    return int(caller_static_u32)
+    return caller_static_u32
 
 
 def _replay_tick_inputs_from_row(

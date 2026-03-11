@@ -6,12 +6,13 @@ from grim.color import RGBA
 from grim.geom import Vec2
 
 from ...projectiles.types import ProjectileTemplateId
+from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
-_PLAYER_UPDATE_CALLER_STATIC_U32 = 0x004136B0
+_PLAYER_UPDATE_CALLER_STATIC_U32 = RngCallerStatic.PLAYER_UPDATE
 
 
 def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
@@ -37,9 +38,7 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     dir_angle = float(int(ctx.state.rng.rand(caller_static_u32=_PLAYER_UPDATE_CALLER_STATIC_U32)) & 0x1FF) * (
         math.tau / 512.0
     )
-    mag = float(int(ctx.state.rng.rand(caller_static_u32=_PLAYER_UPDATE_CALLER_STATIC_U32)) & 0x1FF) * (
-        1.0 / 512.0
-    )
+    mag = float(int(ctx.state.rng.rand(caller_static_u32=_PLAYER_UPDATE_CALLER_STATIC_U32)) & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
     jitter = aim + Vec2.from_angle(dir_angle) * offset
     angle = (jitter - origin_pos).to_heading()

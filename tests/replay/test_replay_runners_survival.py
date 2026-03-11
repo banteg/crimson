@@ -4,6 +4,7 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import run_unlock_terrain_prelude
 from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 from grim.rand import Crand
@@ -155,12 +156,15 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
     )
 
     assert sorted(rows_by_tick.keys()) == [0, 1, 2]
+    seen_callers: set[int] = set()
     for draws in rows_by_tick.values():
         for state_before_u32, value_15, state_after_u32, caller_static_u32 in draws:
             expected_after = (int(state_before_u32) * 214013 + 2531011) & 0xFFFFFFFF
             assert int(state_after_u32) == int(expected_after)
             assert int(value_15) == ((int(state_after_u32) >> 16) & 0x7FFF)
-            assert caller_static_u32 is None
+            if caller_static_u32 is not None:
+                seen_callers.add(int(caller_static_u32))
+    assert int(RngCallerStatic.SURVIVAL_UPDATE) in seen_callers
 
 
 def test_playback_driver_run_matches_verify_driver_factory() -> None:

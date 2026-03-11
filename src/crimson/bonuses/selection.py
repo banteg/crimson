@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from ..game_modes import GameMode
 from ..perks import PerkId
 from ..perks.helpers import perk_active
+from ..rng_caller_static import RngCallerStatic
 from .ids import BONUS_BY_ID, BonusId
 
 if TYPE_CHECKING:
@@ -22,7 +23,12 @@ def _bonus_enabled(bonus_id: BonusId) -> bool:
     return meta.bonus_id != BonusId.UNUSED
 
 
-def _bonus_id_from_roll(roll: int, rng: CrandLike) -> BonusId:
+def _bonus_id_from_roll(
+    roll: int,
+    rng: CrandLike,
+    *,
+    caller_static_u32: int = int(RngCallerStatic.BONUS_PICK_RANDOM_TYPE),
+) -> BonusId:
     # Mirrors `bonus_pick_random_type` (0x412470) mapping:
     # - roll = rand() % 162 + 1  (1..162)
     # - Points: roll 1..13
@@ -36,7 +42,7 @@ def _bonus_id_from_roll(roll: int, rng: CrandLike) -> BonusId:
         return BonusId.POINTS
 
     if roll == 14:
-        if (rng.rand() & 0x3F) == 0:
+        if (rng.rand(caller_static_u32=caller_static_u32) & 0x3F) == 0:
             return BonusId.ENERGIZER
         return BonusId.WEAPON
 
@@ -84,13 +90,14 @@ def _bonus_pick_suppressed(
 
 
 def bonus_pick_random_type(pool: BonusPool, state: GameplayState, players: list[PlayerState]) -> BonusId:
+    caller_static_u32 = int(RngCallerStatic.BONUS_PICK_RANDOM_TYPE)
     has_fire_bullets_drop = any(
         entry.bonus_id == BonusId.FIRE_BULLETS and not entry.picked for entry in pool.entries
     )
 
     for _ in range(101):
-        roll = int(state.rng.rand()) % 162 + 1
-        bonus_id = _bonus_id_from_roll(roll, state.rng)
+        roll = int(state.rng.rand(caller_static_u32=caller_static_u32)) % 162 + 1
+        bonus_id = _bonus_id_from_roll(roll, state.rng, caller_static_u32=caller_static_u32)
         if bonus_id == BonusId.UNUSED:
             continue
         if _bonus_pick_suppressed(

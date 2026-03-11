@@ -713,7 +713,8 @@ class _StubRand:
     def __post_init__(self) -> None:
         self._idx = 0
 
-    def rand(self) -> int:
+    def rand(self, *, caller_static_u32: int | None = None) -> int:
+        _ = caller_static_u32
         if self._idx >= len(self.values):
             value = 0
         else:

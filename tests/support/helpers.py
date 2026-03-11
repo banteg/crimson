@@ -37,7 +37,8 @@ class MockCrand:
         self.calls = 0
         self._history.clear()
 
-    def rand(self) -> int:
+    def rand(self, *, caller_static_u32: int | None = None) -> int:
+        _ = caller_static_u32
         value: int
         if self._index < len(self._values):
             value = int(self._values[self._index])
@@ -55,8 +56,8 @@ class MockCrand:
         self._state = int(value) & 0xFFFFFFFF
         return int(value)
 
-    def __call__(self) -> int:
-        return self.rand()
+    def __call__(self, *, caller_static_u32: int | None = None) -> int:
+        return self.rand(caller_static_u32=caller_static_u32)
 
     def draw_hash(self, *, start_call: int = 0) -> str:
         start = max(0, int(start_call))

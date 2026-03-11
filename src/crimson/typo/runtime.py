@@ -7,6 +7,7 @@ import msgspec
 from grim.geom import Vec2
 
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
+from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.world_state import WorldState
@@ -23,7 +24,7 @@ def _require_single_player_typo(command) -> None:
 
 
 def _typeclick_sfx(world: WorldState) -> str:
-    if (int(world.state.rng.rand()) & 1) == 0:
+    if (int(world.state.rng.rand(caller_static_u32=int(RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER))) & 1) == 0:
         return "sfx_ui_typeclick_01"
     return "sfx_ui_typeclick_02"
 
@@ -80,7 +81,11 @@ def typo_mid_step(ctx: MidStepContext) -> None:
     )
     typo.spawn_cooldown_ms = int(cooldown)
     for call in spawns:
-        rand = ctx.world.state.rng.rand
+        caller_static_u32 = int(RngCallerStatic.TYPO_GAMEPLAY_UPDATE_AND_RENDER)
+
+        def rand(caller_static_u32: int = caller_static_u32) -> int:
+            return int(ctx.world.state.rng.rand(caller_static_u32=caller_static_u32))
+
         heading = float(int(rand()) % 314) * 0.01
         size = float(int(rand()) % 20 + 47)
         flags = CreatureFlags(0)
@@ -116,6 +121,7 @@ def typo_mid_step(ctx: MidStepContext) -> None:
             score_xp=int(ctx.world.players[0].experience) if ctx.world.players else 0,
             active_mask=active_mask,
             unique_words=typo.dictionary_words,
+            caller_static_u32=caller_static_u32,
         )
 
 

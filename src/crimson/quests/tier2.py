@@ -316,14 +316,19 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
     unlock_perk_id=PerkId.BARREL_GREASER,
     builder_address=0x00437810,
 )
-def build_2_5_sweep_stakes(ctx: QuestContext, rng: CrandLike | None = None) -> list[SpawnEntry]:
+def build_2_5_sweep_stakes(
+    ctx: QuestContext,
+    rng: CrandLike | None = None,
+    *,
+    caller_static_u32: int | None = None,
+) -> list[SpawnEntry]:
     rng = rng or Crand()
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     trigger = 2000
     step = 2000
     while step > 720:
-        angle = random_angle(rng)
+        angle = random_angle(rng, caller_static_u32=caller_static_u32)
         for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
             heading = heading_from_center(pos, center)
             entries.append(

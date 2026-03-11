@@ -260,7 +260,8 @@ def test_perk_auto_pick_uses_visible_choices_only() -> None:
         def __init__(self) -> None:
             super().__init__(0)
 
-        def rand(self) -> int:
+        def rand(self, *, caller_static_u32: int | None = None) -> int:
+            _ = caller_static_u32
             return 6
 
     state.rng = _FixedRand()

@@ -86,6 +86,8 @@ def test_compare_rng_stream_reports_caller_static_hex_on_first_mismatch() -> Non
     assert detail is not None
     expected_first = detail["expected_first_mismatch"]
     actual_first = detail["actual_first_mismatch"]
+    assert isinstance(expected_first, dict)
+    assert isinstance(actual_first, dict)
     assert expected_first["caller_static_u32"] == 0x004281A2
     assert expected_first["caller_static_hex"] == "0x004281a2"
     assert actual_first["caller_static_u32"] == 0x00430B88

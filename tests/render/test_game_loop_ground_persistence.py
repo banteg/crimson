@@ -40,7 +40,8 @@ class _RngStub(Crand):
         super().__init__(0)
         self._values = list(values)
 
-    def rand(self) -> int:
+    def rand(self, *, caller_static_u32: int | None = None) -> int:
+        _ = caller_static_u32
         if not self._values:
             return 0
         return int(self._values.pop(0))

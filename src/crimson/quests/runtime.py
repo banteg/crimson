@@ -22,6 +22,7 @@ def _call_builder(
     *,
     rng: CrandLike | None,
     full_version: bool,
+    caller_static_u32: int | None = None,
 ) -> list[SpawnEntry]:
     params = inspect.signature(builder).parameters
     kwargs: dict[str, object] = {}
@@ -29,6 +30,8 @@ def _call_builder(
         kwargs["rng"] = rng
     if "full_version" in params:
         kwargs["full_version"] = bool(full_version)
+    if "caller_static_u32" in params:
+        kwargs["caller_static_u32"] = caller_static_u32
     return builder(ctx, **kwargs)
 
 
@@ -62,7 +65,13 @@ def build_quest_spawn_table(
     """Build the quest spawn script from the active startup RNG state."""
 
     builder_rng = rng if rng is not None else Crand()
-    entries = _call_builder(quest.builder, ctx, rng=builder_rng, full_version=full_version)
+    entries = _call_builder(
+        quest.builder,
+        ctx,
+        rng=builder_rng,
+        full_version=full_version,
+        caller_static_u32=quest.builder_address,
+    )
     if hardcore:
         entries = apply_hardcore_spawn_table_adjustment(list(entries))
     return tuple(entries)

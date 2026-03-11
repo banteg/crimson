@@ -3,12 +3,13 @@ from __future__ import annotations
 from ..game_modes import GameMode
 from ..quests import all_quests
 from ..quests.level import QuestLevel
+from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import GameplayState
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
 from ..weapons import WeaponId
 
 WEAPON_DROP_ID_COUNT = 0x21  # weapon ids 1..33
-_WEAPON_PICK_RANDOM_AVAILABLE_CALLER_STATIC_U32 = 0x00452CD0
+_WEAPON_PICK_RANDOM_AVAILABLE_CALLER_STATIC_U32 = RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE
 
 
 def weapon_refresh_available(state: GameplayState) -> None:

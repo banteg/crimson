@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
 from ..runtime.hook_types import PerkHooks
 
-_PERKS_UPDATE_EFFECTS_CALLER_STATIC_U32 = 0x00406B40
+_PERKS_UPDATE_EFFECTS_CALLER_STATIC_U32 = RngCallerStatic.PERKS_UPDATE_EFFECTS
 
 
 def update_regeneration(ctx: PerksUpdateEffectsCtx) -> None:

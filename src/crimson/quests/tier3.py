@@ -182,14 +182,19 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
     unlock_perk_id=PerkId.REGENERATION,
     builder_address=0x004384A0,
 )
-def build_3_3_the_killing(ctx: QuestContext, rng: CrandLike | None = None) -> list[SpawnEntry]:
+def build_3_3_the_killing(
+    ctx: QuestContext,
+    rng: CrandLike | None = None,
+    *,
+    caller_static_u32: int | None = None,
+) -> list[SpawnEntry]:
     rng = rng or Crand()
     edges = edge_midpoints(ctx.width)
     entries: list[SpawnEntry] = []
     trigger = 2000
     for wave in range(10):
-        rng.rand()
-        rng.rand()
+        rng.rand(caller_static_u32=caller_static_u32)
+        rng.rand(caller_static_u32=caller_static_u32)
         spawn_cycle = wave % 3
         if spawn_cycle == 0:
             spawn_id = SpawnId.AI1_ALIEN_BLUE_TINT_1A
@@ -241,8 +246,8 @@ def build_3_3_the_killing(ctx: QuestContext, rng: CrandLike | None = None) -> li
             )
         else:
             for offset in (0, 1000, 2000):
-                x = int(rng.rand() % 0x300) + 0x80
-                y = int(rng.rand() % 0x300) + 0x80
+                x = int(rng.rand(caller_static_u32=caller_static_u32) % 0x300) + 0x80
+                y = int(rng.rand(caller_static_u32=caller_static_u32) % 0x300) + 0x80
                 entries.append(
                     spawn(
                         Vec2(float(x), float(y)),
@@ -500,14 +505,19 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
     unlock_perk_id=PerkId.HIGHLANDER,
     builder_address=0x00437920,
 )
-def build_3_9_deja_vu(ctx: QuestContext, rng: CrandLike | None = None) -> list[SpawnEntry]:
+def build_3_9_deja_vu(
+    ctx: QuestContext,
+    rng: CrandLike | None = None,
+    *,
+    caller_static_u32: int | None = None,
+) -> list[SpawnEntry]:
     rng = rng or Crand()
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     trigger = 2000
     step = 2000
     while step > 560:
-        angle = random_angle(rng)
+        angle = random_angle(rng, caller_static_u32=caller_static_u32)
         for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
             entries.append(
                 spawn(

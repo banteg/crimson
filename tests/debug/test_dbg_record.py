@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -16,7 +16,7 @@ from crimson.dbg.canonical_channels import (
 from crimson.dbg.trace import load_trace
 from crimson.game_modes import GameMode
 from crimson.replay.checkpoints import ReplayCheckpoint
-from crimson.replay.types import Replay, ReplayHeader, ReplayTick, ReplayStatusSnapshot, WEAPON_USAGE_COUNT
+from crimson.replay.types import WEAPON_USAGE_COUNT, Replay, ReplayHeader, ReplayStatusSnapshot, ReplayTick
 
 
 def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Path) -> None:

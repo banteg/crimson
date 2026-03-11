@@ -15,6 +15,7 @@ from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
+from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, weapon_entry_for_projectile_type_id
@@ -39,7 +40,7 @@ if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
 
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
-_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32 = 0x00444980
+_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32 = RngCallerStatic.PLAYER_FIRE_WEAPON
 
 _NATIVE_FIRE_MUZZLE_SPRITES: dict[int, tuple[tuple[float, float, float], ...]] = {
     WeaponId.PISTOL: ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
@@ -161,7 +162,7 @@ def _apply_speed_scale_rule(
             return
         case ModuloSpeedScale(base=base, modulo=modulo, step=step):
             state.projectiles.entries[int(proj_id)].speed_scale = float(base) + float(
-                int(state.rng.rand(caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32)) % int(modulo)
+                int(state.rng.rand(caller_static_u32=_PLAYER_FIRE_WEAPON_CALLER_STATIC_U32)) % int(modulo),
             ) * float(step)
 
 

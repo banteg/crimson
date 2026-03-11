@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
 from ..quests.level import QuestLevel
+from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WeaponId
 from .availability import perk_can_offer, perks_rebuild_available
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
 
 PERK_ID_MAX = max(int(perk_id) for perk_id in PERK_BY_ID)
-_PERK_SELECT_RANDOM_CALLER_STATIC_U32 = 0x0042FBD0
+_PERK_SELECT_RANDOM_CALLER_STATIC_U32 = RngCallerStatic.PERK_SELECT_RANDOM
 
 _DEATH_CLOCK_BLOCKED: frozenset[PerkId] = frozenset(
     (
@@ -63,7 +64,7 @@ def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: 
 
     for _ in range(1000):
         perk_id = PerkId(
-            int(state.rng.rand(caller_static_u32=_PERK_SELECT_RANDOM_CALLER_STATIC_U32)) % PERK_ID_MAX + 1
+            int(state.rng.rand(caller_static_u32=_PERK_SELECT_RANDOM_CALLER_STATIC_U32)) % PERK_ID_MAX + 1,
         )
         if not (0 <= int(perk_id) < len(state.perk_available)):
             continue
@@ -147,10 +148,7 @@ def perk_generate_choices(
 
     # Native `quest_monster_vision_meta` points to quest 3-4 (Hidden Evil):
     # force Monster Vision as the first choice if not owned.
-    if (
-        state.quest_level == QuestLevel(3, 4)
-        and int(player_perk_counts[int(PerkId.MONSTER_VISION)]) == 0
-    ):
+    if state.quest_level == QuestLevel(3, 4) and int(player_perk_counts[int(PerkId.MONSTER_VISION)]) == 0:
         choices[0] = PerkId.MONSTER_VISION
         choice_index = 1
 
