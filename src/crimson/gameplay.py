@@ -23,7 +23,6 @@ from .movement_controls import MovementControlType
 from .perks import PerkId
 from .perks.helpers import perk_active
 from .perks.runtime.player_ticks import apply_player_perk_ticks
-from .perks.selection import perk_auto_pick
 from .perks.state import PerkEffectIntervals, PerkSelectionState
 from .projectiles.runtime import (
     ProjectilePool,
@@ -252,31 +251,12 @@ def survival_check_level_up(player: PlayerState, perk_state: PerkSelectionState)
 def survival_progression_update(
     state: GameplayState,
     players: list[PlayerState],
-    *,
-    game_mode: GameMode,
-    player_count: int | None = None,
-    auto_pick: bool = True,
-    dt: float | None = None,
-    creatures: Sequence[CreatureState] | None = None,
-) -> list[PerkId]:
-    """Advance survival level/perk progression and optionally auto-pick perks."""
+) -> None:
+    """Advance survival level/perk progression."""
 
     if not players:
-        return []
-    if player_count is None:
-        player_count = len(players)
+        return
     survival_check_level_up(players[0], state.perk_selection)
-    if auto_pick:
-        return perk_auto_pick(
-            state,
-            players,
-            state.perk_selection,
-            game_mode=game_mode,
-            player_count=player_count,
-            dt=dt,
-            creatures=creatures,
-        )
-    return []
 
 
 _SURVIVAL_RECENT_DEATH_CENTROID_SCALE = 0.33333334

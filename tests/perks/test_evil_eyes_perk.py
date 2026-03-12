@@ -46,7 +46,6 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        auto_pick_perks=False,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )

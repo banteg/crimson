@@ -39,7 +39,6 @@ class StepPipelineOptions(msgspec.Struct, frozen=True):
     damage_scale_by_type: dict[int, float]
     detail_preset: int
     gore_disabled: int
-    auto_pick_perks: bool
     game_mode: GameMode
     demo_mode_active: bool
     perk_progression_enabled: bool
@@ -144,7 +143,6 @@ def run_deterministic_step(
         gore_disabled=int(options.gore_disabled),
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
-        auto_pick_perks=bool(options.auto_pick_perks),
         game_mode=options.game_mode,
         perk_progression_enabled=bool(options.perk_progression_enabled),
         game_tune_started=bool(options.game_tune_started),

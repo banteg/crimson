@@ -6,7 +6,6 @@ from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.selection import (
     PERK_ID_MAX,
-    perk_auto_pick,
     perk_generate_choices,
     perk_select_random,
     perk_selection_open_choices,
@@ -255,37 +254,3 @@ def test_perk_selection_pick_syncs_perk_counts_across_players() -> None:
     assert p2.perk_counts[int(PerkId.THICK_SKINNED)] == 1
     assert_float_close(p1.health, 60.0)
     assert_float_close(p2.health, 40.0)
-
-
-def test_perk_auto_pick_uses_visible_choices_only() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2())
-    perk_state = PerkSelectionState(
-        pending_count=1,
-        choices=[
-            PerkId.INSTANT_WINNER,
-            PerkId.FASTSHOT,
-            PerkId.AMMO_MANIAC,
-            PerkId.LONG_DISTANCE_RUNNER,
-            PerkId.SHARPSHOOTER,
-            PerkId.TOUGH_RELOADER,
-            PerkId.PERK_MASTER,
-        ],
-        choices_dirty=False,
-    )
-    state.rng = ScriptedCrand(6, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-
-    picks = perk_auto_pick(
-        state,
-        [player],
-        perk_state,
-        game_mode=GameMode.SURVIVAL,
-        player_count=1,
-    )
-
-    assert picks == [PerkId.FASTSHOT]
-    assert player.perk_counts[int(PerkId.FASTSHOT)] == 1
-    assert player.perk_counts[int(PerkId.PERK_MASTER)] == 0
-    assert [record.caller for record in state.rng.records_since()] == [
-        RngCallerStatic.REWRITE_PERK_AUTO_PICK_VISIBLE_CHOICE,
-    ]

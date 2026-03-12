@@ -60,7 +60,6 @@ def test_world_step_applies_per_player_inputs_by_index() -> None:
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        auto_pick_perks=False,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )

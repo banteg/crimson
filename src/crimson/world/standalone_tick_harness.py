@@ -84,7 +84,6 @@ class StandaloneTickHarness:
             gore_disabled=int(gore_disabled),
             game_tune_started=bool(runtime.sim_world.game_tune_started),
             demo_mode_active=bool(runtime.demo_mode_active),
-            auto_pick_perks=False,
             perk_progression_enabled=False,
             apply_world_dt_steps=True,
             clear_fx_queues_each_tick=False,

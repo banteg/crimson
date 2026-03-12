@@ -106,7 +106,6 @@ class WorldState(msgspec.Struct):
         gore_disabled: int = 0,
         fx_queue: FxQueue,
         fx_queue_rotated: FxQueueRotated,
-        auto_pick_perks: bool,
         game_mode: GameMode,
         perk_progression_enabled: bool,
         game_tune_started: bool = False,
@@ -374,10 +373,6 @@ class WorldState(msgspec.Struct):
             survival_progression_update(
                 self.state,
                 self.players,
-                game_mode=game_mode,
-                auto_pick=auto_pick_perks,
-                dt=dt,
-                creatures=self.creatures.entries,
             )
         _mark("ws_after_progression")
         # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.

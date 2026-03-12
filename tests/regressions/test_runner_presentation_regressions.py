@@ -32,7 +32,6 @@ def _build_runner(
         gore_disabled=0,
         game_tune_started=bool(world.sim_world.game_tune_started),
         demo_mode_active=False,
-        auto_pick_perks=False,
         perk_progression_enabled=False,
         apply_world_dt_steps=True,
         clear_fx_queues_each_tick=False,

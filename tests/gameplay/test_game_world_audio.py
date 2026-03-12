@@ -126,7 +126,6 @@ def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
     world.step_survival_frame(
         0.05,
         inputs=[PlayerInput()],
-        auto_pick_perks=False,
         perk_progression_enabled=True,
     )
 

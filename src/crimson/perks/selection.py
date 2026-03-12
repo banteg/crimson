@@ -202,49 +202,6 @@ def perk_generate_choices(
     return choices[:count]
 
 
-def perk_auto_pick(
-    state: GameplayState,
-    players: list[PlayerState],
-    perk_state: PerkSelectionState,
-    *,
-    game_mode: GameMode,
-    player_count: int | None = None,
-    dt: float | None = None,
-    creatures: Sequence[CreatureState] | None = None,
-) -> list[PerkId]:
-    """Resolve pending perks by auto-selecting from generated choices."""
-
-    if not players:
-        return []
-    if player_count is None:
-        player_count = len(players)
-    picks: list[PerkId] = []
-    while perk_state.pending_count > 0:
-        if perk_state.choices_dirty or not perk_state.choices:
-            perk_state.choices = perk_generate_choices(
-                state,
-                players[0],
-                players=players,
-                game_mode=game_mode,
-                player_count=player_count,
-                count=7,
-            )
-            perk_state.choices_dirty = False
-        if not perk_state.choices:
-            break
-        visible_count = max(1, int(perk_choice_count(players[0])))
-        visible_choices = perk_state.choices[:visible_count]
-        if not visible_choices:
-            break
-        idx = int(state.rng.rand(caller=RngCallerStatic.REWRITE_PERK_AUTO_PICK_VISIBLE_CHOICE) % len(visible_choices))
-        perk_id = visible_choices[idx]
-        perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
-        picks.append(perk_id)
-        perk_state.pending_count -= 1
-        perk_state.choices_dirty = True
-    return picks
-
-
 def _perk_selection_prepare_if_needed(
     state: GameplayState,
     players: list[PlayerState],

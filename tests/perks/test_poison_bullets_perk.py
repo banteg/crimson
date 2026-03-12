@@ -52,7 +52,6 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        auto_pick_perks=False,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
@@ -102,7 +101,6 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        auto_pick_perks=False,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
@@ -146,7 +144,6 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        auto_pick_perks=False,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
@@ -191,7 +188,6 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        auto_pick_perks=False,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
