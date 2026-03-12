@@ -146,7 +146,6 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
         players=world.players,
         fx_queue=fx_queue,
         hits=list(events.hits),
-        deaths=tuple(events.deaths),
         pickups=list(events.pickups),
         event_sfx=list(events.sfx),
         prev_audio=[],
@@ -160,7 +159,6 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
         game_tune_started=False,
         trigger_game_tune=False,
         hit_sfx=[],
-        death_sfx_preplanned=True,
     )
 
     assert isinstance(events.hits, list)

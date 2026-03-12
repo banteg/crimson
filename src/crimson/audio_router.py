@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -8,17 +8,14 @@ import msgspec
 from grim.audio import AudioState, play_sfx, play_sfx_resolved, trigger_game_tune
 from grim.rand import Crand, CrandLike
 
-from .creatures.spawn import CreatureTypeId
 from .game_modes import GameMode
 from .projectiles.types import ProjectileHit, ProjectileTemplateId
 from .weapons import WEAPON_BY_ID, WeaponId, weapon_entry_for_projectile_type_id
 
 if TYPE_CHECKING:
-    from .creatures.runtime import CreatureDeath
     from .sim.state_types import PlayerState
 
 _MAX_HIT_SFX_PER_FRAME = 4
-_MAX_DEATH_SFX_PER_FRAME = 3
 
 _BULLET_HIT_SFX = (
     "sfx_bullet_hit_01",
@@ -28,45 +25,6 @@ _BULLET_HIT_SFX = (
     "sfx_bullet_hit_05",
     "sfx_bullet_hit_06",
 )
-
-_CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[str, ...]] = {
-    CreatureTypeId.ZOMBIE: (
-        "sfx_zombie_die_01",
-        "sfx_zombie_die_02",
-        "sfx_zombie_die_03",
-        "sfx_zombie_die_04",
-    ),
-    CreatureTypeId.LIZARD: (
-        "sfx_lizard_die_01",
-        "sfx_lizard_die_02",
-        "sfx_lizard_die_03",
-        "sfx_lizard_die_04",
-    ),
-    CreatureTypeId.ALIEN: (
-        "sfx_alien_die_01",
-        "sfx_alien_die_02",
-        "sfx_alien_die_03",
-        "sfx_alien_die_04",
-    ),
-    CreatureTypeId.SPIDER_SP1: (
-        "sfx_spider_die_01",
-        "sfx_spider_die_02",
-        "sfx_spider_die_03",
-        "sfx_spider_die_04",
-    ),
-    CreatureTypeId.SPIDER_SP2: (
-        "sfx_spider_die_01",
-        "sfx_spider_die_02",
-        "sfx_spider_die_03",
-        "sfx_spider_die_04",
-    ),
-    CreatureTypeId.TROOPER: (
-        "sfx_trooper_die_01",
-        "sfx_trooper_die_02",
-        "sfx_trooper_die_03",
-        "sfx_trooper_die_04",
-    ),
-}
 
 
 class AudioRouter(msgspec.Struct):
@@ -174,10 +132,3 @@ class AudioRouter(msgspec.Struct):
                 continue
             type_id = int(hits[idx].type_id)
             self.play_sfx(self._hit_sfx_for_type(type_id, beam_types=beam_types, rng=rng))
-
-    def play_death_sfx(self, deaths: Sequence[CreatureDeath], *, rng: CrandLike) -> None:
-        if self.audio is None or not deaths:
-            return
-        for idx in range(min(len(deaths), _MAX_DEATH_SFX_PER_FRAME)):
-            death = deaths[idx]
-            self.play_sfx(self._rand_choice(rng, _CREATURE_DEATH_SFX[death.type_id]))

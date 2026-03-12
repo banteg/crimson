@@ -158,7 +158,6 @@ def run_deterministic_step(
         players=world.players,
         fx_queue=fx_queue,
         hits=events.hits,
-        deaths=events.deaths,
         pickups=events.pickups,
         event_sfx=events.sfx,
         prev_audio=prev_audio,
@@ -172,7 +171,6 @@ def run_deterministic_step(
         game_tune_started=bool(options.game_tune_started),
         trigger_game_tune=events.trigger_game_tune,
         hit_sfx=events.hit_sfx,
-        death_sfx_preplanned=events.death_sfx_preplanned,
     )
     presentation_plan_ms = (time.perf_counter_ns() - plan_ns_start) / 1_000_000.0
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import cast
 
 import pytest
@@ -102,7 +101,7 @@ def test_world_step_invalid_creature_type_id_fails_fast() -> None:
         )
 
 
-def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
+def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
     world_size = 1024.0
     world = WorldState.build(
         world_size=world_size,
@@ -133,15 +132,6 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
         ),
     )
 
-    def _fake_plan(
-        deaths: Sequence[CreatureDeath] | tuple[object, ...],
-        *,
-        rng: object,
-    ) -> list[str]:
-        _ = rng
-        return ["death"] if deaths else []
-
-    plan_death_sfx = mocker.patch.object(world_state_mod, "plan_death_sfx_keys", side_effect=_fake_plan)
     events = world.step(
         0.1,
         inputs=None,
@@ -158,13 +148,10 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
     # Native detonation follow-up re-enters creature death handling for side effects,
     # but does not perform a second death-SFX random pick.
     assert len(events.deaths) == 2
-    plan_death_sfx.assert_called_once()
-    called_deaths = cast("Sequence[CreatureDeath]", plan_death_sfx.call_args.args[0])
-    assert [death.index for death in called_deaths] == [0]
-    assert events.sfx == ["death"]
+    assert sum(str(key).startswith("sfx_alien_die_") for key in events.sfx) == 1
 
 
-def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -> None:
+def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> None:
     world_size = 1024.0
     world = WorldState.build(
         world_size=world_size,
@@ -185,18 +172,12 @@ def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -
     creature.reward_value = 0.0
     creature.lifecycle_stage = 16.0
 
-    death_planned = {"value": False}
-
-    def _fake_plan(
-        deaths: Sequence[CreatureDeath] | tuple[object, ...],
-        *,
-        rng: object,
-    ) -> list[str]:
-        _ = rng
-        death_planned["value"] = bool(deaths)
-        return ["death"] if deaths else []
-
-    plan_death_sfx = mocker.patch.object(world_state_mod, "plan_death_sfx_keys", side_effect=_fake_plan)
+    record_death = mocker.patch.object(
+        world_state_mod.WorldState,
+        "_record_creature_death",
+        wraps=world_state_mod.WorldState._record_creature_death,
+        autospec=True,
+    )
 
     def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
         ctx = cast("PrimaryStepCtx", _args[0])
@@ -207,7 +188,7 @@ def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -
         return []
 
     def _fake_particles_update(*_args: object, **_kwargs: object) -> None:
-        assert death_planned["value"] is True
+        assert record_death.call_count == 1
 
     mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)
     mocker.patch.object(world.state.particles, "update", side_effect=_fake_particles_update)
@@ -224,13 +205,11 @@ def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -
         perk_progression_enabled=False,
     )
 
-    assert plan_death_sfx.call_count == 1
-    called_deaths = cast("Sequence[CreatureDeath]", plan_death_sfx.call_args.args[0])
-    assert [death.index for death in called_deaths] == [0]
-    assert events.sfx == ["death"]
+    assert record_death.call_count == 1
+    assert any(str(key).startswith("sfx_alien_die_") for key in events.sfx)
 
 
-def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
+def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
     world_size = 1024.0
     world = WorldState.build(
         world_size=world_size,
@@ -247,13 +226,6 @@ def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
         reward_value=0.0,
         xp_awarded=0,
         owner=OwnerRef.from_player(0),
-        plan_death_sfx=False,
-    )
-
-    plan_death_sfx = mocker.patch.object(
-        world_state_mod,
-        "plan_death_sfx_keys",
-        wraps=world_state_mod.plan_death_sfx_keys,
     )
 
     def _fake_update(*args: object, **kwargs: object) -> CreatureUpdateResult:
@@ -279,7 +251,7 @@ def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
     )
 
     assert len(events.deaths) == 1
-    assert plan_death_sfx.call_count == 0
+    assert events.deaths[0].death_sfx_key is None
     assert_rng_progression(
         rng,
         before_calls=before_calls,
@@ -291,7 +263,7 @@ def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
     assert events.sfx == ["plague_contact"]
 
 
-def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
+def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
     world_size = 1024.0
     world = WorldState.build(
         world_size=world_size,
@@ -310,12 +282,6 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
     creature.max_hp = 25.0
     creature.lifecycle_stage = 16.0
     creature.reward_value = 0.0
-
-    plan_death_sfx = mocker.patch.object(
-        world_state_mod,
-        "plan_death_sfx_keys",
-        wraps=world_state_mod.plan_death_sfx_keys,
-    )
 
     def _fake_projectile_step(*args: object, **kwargs: object) -> list[ProjectileHit]:
         _ = kwargs
@@ -345,8 +311,8 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
     )
 
     assert len(events.deaths) == 1
-    assert events.deaths[0].plan_death_sfx is False
-    assert plan_death_sfx.call_count == 0
+    assert events.deaths[0].death_sfx_key is None
+    assert all(not str(key).startswith("sfx_alien_die_") for key in events.sfx)
     assert_rng_progression(
         rng,
         before_calls=before_calls,
@@ -357,7 +323,7 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
     assert rng.values_since(before_calls) == [0] * 21
 
 
-def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
+def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
     world_size = 1024.0
     world = WorldState.build(
         world_size=world_size,
@@ -375,6 +341,7 @@ def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
             reward_value=0.0,
             xp_awarded=0,
             owner=OwnerRef.from_player(0),
+            death_sfx_key=f"sfx_death_{idx}",
         )
         for idx in range(7)
     )
@@ -402,15 +369,15 @@ def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
     )
 
     assert len(events.deaths) == 7
-    assert len(events.sfx) == 5
+    assert events.sfx[:7] == [f"sfx_death_{idx}" for idx in range(7)]
     assert_rng_progression(
         rng,
         before_calls=before_calls,
         before_state=before_state,
-        expected_draws=7,
+        expected_draws=0,
         expected_after_state=0,
     )
-    assert rng.values_since(before_calls) == [0] * 7
+    assert rng.values_since(before_calls) == []
 
 
 def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:

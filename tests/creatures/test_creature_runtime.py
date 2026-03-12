@@ -1061,7 +1061,7 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(moc
     assert state.effects.iter_active() == []
 
 
-def test_handle_death_shock_flag_suppresses_death_sfx_without_spawning_debris() -> None:
+def test_handle_death_shock_flag_has_no_resolved_death_sfx_without_spawning_debris() -> None:
     state = GameplayState()
     state.rng = _StubRand([0] * 20)
     pool = CreaturePool()
@@ -1082,7 +1082,7 @@ def test_handle_death_shock_flag_suppresses_death_sfx_without_spawning_debris() 
         fx_queue=None,
     )
 
-    assert death.suppress_death_sfx is True
+    assert death.death_sfx_key is None
     assert state.effects.iter_active() == []
     assert state.rng._idx == 0
 

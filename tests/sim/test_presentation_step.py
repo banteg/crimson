@@ -1,19 +1,15 @@
 from __future__ import annotations
 
 from crimson.bonuses import BonusId
-from crimson.creatures.runtime import CreatureDeath
-from crimson.creatures.spawn import CreatureTypeId
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
-from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.presentation_step import (
     PresentationStepCommands,
     apply_presentation_plan,
-    plan_death_sfx_keys,
     plan_hit_sfx_keys,
     plan_world_presentation_step,
     queue_projectile_decals,
@@ -22,22 +18,6 @@ from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
-
-
-def _death(
-    *,
-    type_id: CreatureTypeId,
-    suppress_death_sfx: bool = False,
-) -> CreatureDeath:
-    return CreatureDeath(
-        index=0,
-        pos=Vec2(),
-        type_id=type_id,
-        reward_value=0.0,
-        xp_awarded=0,
-        owner=OwnerRef.from_player(0),
-        suppress_death_sfx=bool(suppress_death_sfx),
-    )
 
 
 def _hits(count: int, *, type_id: ProjectileTemplateId = ProjectileTemplateId.PISTOL) -> list[ProjectileHit]:
@@ -92,45 +72,6 @@ def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
     ]
 
 
-def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    before_calls = rng.calls
-    before_state = rng.state
-
-    deaths = tuple(_death(type_id=CreatureTypeId.ZOMBIE) for _ in range(5))
-    keys = plan_death_sfx_keys(deaths, rng=rng)
-
-    assert len(keys) == 5
-    assert_rng_progression(
-        rng,
-        before_calls=before_calls,
-        before_state=before_state,
-        expected_draws=5,
-        expected_after_state=0,
-    )
-
-
-def test_plan_death_sfx_skips_suppressed_deaths() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    before_calls = rng.calls
-    before_state = rng.state
-
-    deaths = (
-        _death(type_id=CreatureTypeId.ZOMBIE, suppress_death_sfx=True),
-        _death(type_id=CreatureTypeId.ZOMBIE, suppress_death_sfx=False),
-    )
-    keys = plan_death_sfx_keys(deaths, rng=rng)
-
-    assert len(keys) == 1
-    assert_rng_progression(
-        rng,
-        before_calls=before_calls,
-        before_state=before_state,
-        expected_draws=1,
-        expected_after_state=0,
-    )
-
-
 def test_plan_world_presentation_step_orders_sfx() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
@@ -144,7 +85,6 @@ def test_plan_world_presentation_step_orders_sfx() -> None:
         players=[player],
         fx_queue=FxQueue(),
         hits=[],
-        deaths=(),
         pickups=[
             BonusPickupEvent(
                 player_index=0,
@@ -518,7 +458,6 @@ def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
         players=[player],
         fx_queue=FxQueue(),
         hits=_hits(1),
-        deaths=(),
         pickups=[],
         event_sfx=[],
         prev_audio=[(0, False, 0.0)],
