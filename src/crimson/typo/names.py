@@ -9,6 +9,7 @@ from grim.rand import CrandLike
 
 from ..game_modes import GameMode
 from ..persistence.highscores import read_highscore_table
+from ..rng_caller_static import RngCallerStatic
 
 NAME_MAX_CHARS = 16  # creature_name_assign_random enforces strlen < 0x10.
 
@@ -69,19 +70,23 @@ _NAME_PARTS: tuple[str, ...] = (
 )
 
 
-def _draw(rng: CrandLike) -> int:
-    return rng.rand()
+def _draw(rng: CrandLike, *, caller: int | None = None) -> int:
+    return rng.rand(caller=caller)
 
 
 def _pick_highscore_name(rng: CrandLike, highscore_names: Sequence[str]) -> str:
     if not highscore_names:
         return "quickbrownfox"
-    return str(highscore_names[_draw(rng) % len(highscore_names)])
+    return str(
+        highscore_names[
+            _draw(rng, caller=RngCallerStatic.TYPO_WORD_PICK_HIGHSCORE_NAME) % len(highscore_names)
+        ],
+    )
 
 
 def typo_name_part(rng: CrandLike, *, allow_the: bool) -> str:
     mod = 52 if allow_the else 51
-    idx = _draw(rng) % mod
+    idx = _draw(rng, caller=RngCallerStatic.TYPO_WORD_PICK_FRAGMENT) % mod
     if idx == 39:
         return "nerd"
     return _NAME_PARTS[idx]
@@ -102,9 +107,9 @@ def typo_build_name(
             dictionary_words=dictionary_words,
         )
     if score_xp > 120:
-        if _draw(rng) % 100 < 10:
+        if _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_HIGHSCORE_GATE) % 100 < 10:
             return _pick_highscore_name(rng, highscore_names)
-        if _draw(rng) % 100 < 80:
+        if _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_FOUR_WORD_GATE) % 100 < 80:
             return "".join(
                 [
                     typo_name_part(rng, allow_the=True),
@@ -114,8 +119,9 @@ def typo_build_name(
                 ],
             )
 
-    if (score_xp > 80 and _draw(rng) % 100 < 80) or (
-        score_xp > 60 and _draw(rng) % 100 < 40
+    if (score_xp > 80 and _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_THREE_WORD_GATE_GT80) % 100 < 80) or (
+        score_xp > 60
+        and _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_THREE_WORD_GATE_GT60) % 100 < 40
     ):
         return "".join(
             [
@@ -125,8 +131,9 @@ def typo_build_name(
             ],
         )
 
-    if (score_xp > 40 and _draw(rng) % 100 < 80) or (
-        score_xp > 20 and _draw(rng) % 100 < 40
+    if (score_xp > 40 and _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT40) % 100 < 80) or (
+        score_xp > 20
+        and _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT20) % 100 < 40
     ):
         return "".join(
             [

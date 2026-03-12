@@ -42,6 +42,37 @@ def test_fx_queue_add_random_tags_exact_native_callers() -> None:
     ]
 
 
+def test_particle_pool_tags_exact_native_callers() -> None:
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    pool = ParticlePool(size=1, rng=rng)
+
+    pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
+    pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
+    pool.spawn_particle_slow(pos=Vec2(), angle=0.0)
+
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
+        RngCallerStatic.FX_SPAWN_PARTICLE_ALLOC,
+        RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
+        RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_ALLOC,
+        RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_SPIN,
+    ]
+
+
+def test_sprite_effect_pool_tags_exact_native_callers() -> None:
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    pool = SpriteEffectPool(size=1, rng=rng)
+
+    pool.spawn(pos=Vec2(), vel=Vec2(), scale=1.0)
+    pool.spawn(pos=Vec2(), vel=Vec2(), scale=1.0)
+
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
+        RngCallerStatic.FX_SPAWN_SPRITE_ALLOC,
+        RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
+    ]
+
+
 def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     q = FxQueueRotated(capacity=2, max_count=2)
     assert q.add(

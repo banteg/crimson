@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ...math_parity import f32
+from ...rng_caller_static import RngCallerStatic
 from ...sim.state_types import PlayerState
 from ..helpers import perk_active
 from ..ids import PerkId
@@ -60,7 +61,13 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
     if not perk_active(ctx.players[0], PerkId.JINXED):
         return
 
-    if ctx.state.rng.rand() % 10 == 3:
+    if (
+        ctx.state.rng.rand(
+            caller=RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
+        )
+        % 10
+        == 3
+    ):
         player = _select_jinxed_accident_target(ctx)
         player.health = float(player.health) - 5.0
         if ctx.fx_queue is not None:
@@ -74,7 +81,13 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
             )
 
     ctx.state.jinxed_timer = (
-        float(ctx.state.rng.rand() % 20) * 0.1
+        float(
+            ctx.state.rng.rand(
+                caller=RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
+            )
+            % 20,
+        )
+        * 0.1
         + float(ctx.state.jinxed_timer)
         + 2.0
     )
@@ -85,10 +98,20 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         if pool_mod <= 0:
             return
 
-        idx = ctx.state.rng.rand() % pool_mod
+        idx = (
+            ctx.state.rng.rand(
+                caller=RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_PICK,
+            )
+            % pool_mod
+        )
         attempts = 0
         while attempts < 10 and not ctx.creatures[idx].active:
-            idx = ctx.state.rng.rand() % pool_mod
+            idx = (
+                ctx.state.rng.rand(
+                    caller=RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_RETRY,
+                )
+                % pool_mod
+            )
             attempts += 1
         if not ctx.creatures[idx].active:
             return

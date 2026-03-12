@@ -3,6 +3,7 @@ from __future__ import annotations
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand
@@ -21,6 +22,9 @@ def test_fatal_lottery_grants_xp_when_rng_even() -> None:
     assert owner.health == 100.0
     assert other.experience == 456
     assert other.health == 100.0
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERK_APPLY_FATAL_LOTTERY,
+    ]
 
 
 def test_fatal_lottery_kills_only_owner_when_rng_odd() -> None:
@@ -34,3 +38,6 @@ def test_fatal_lottery_kills_only_owner_when_rng_odd() -> None:
 
     assert owner.health < 0.0
     assert other.health == 100.0
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERK_APPLY_FATAL_LOTTERY,
+    ]

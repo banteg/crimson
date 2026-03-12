@@ -5,6 +5,7 @@ import pytest
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close
@@ -43,6 +44,9 @@ def test_perks_update_effects_regeneration_single_player_variants(
     perks_update_effects(state, [player], 0.2)
 
     assert_float_close(player.health, expected_health)
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_REGENERATION_GATE,
+    ]
 
 
 @pytest.mark.parametrize(
@@ -73,3 +77,6 @@ def test_perks_update_effects_regeneration_multiplayer_targeting(
 
     assert_float_close(player0.health, expected_player0_health)
     assert_float_close(player1.health, expected_player1_health)
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERKS_UPDATE_EFFECTS_REGENERATION_GATE,
+    ]

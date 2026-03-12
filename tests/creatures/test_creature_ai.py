@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from crimson.creatures.ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from crimson.creatures.spawn import CreatureAiMode, CreatureFlags
 from crimson.math_parity import f32
+from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
@@ -34,15 +35,23 @@ def test_ai7_tick_link_timer_negative_to_positive_forces_hold() -> None:
         link_index=-10,
         ai_mode=CreatureAiMode.ORBIT_PLAYER,
     )
-    creature_ai7_tick_link_timer(c, dt_ms=10, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    creature_ai7_tick_link_timer(c, dt_ms=10, rng=rng)
     assert c.ai_mode == CreatureAiMode.HOLD_TIMER
     assert c.link_index == 500
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.CREATURE_UPDATE_ALL_AI7_LINK_TIMER_HOLD,
+    ]
 
 
 def test_ai7_tick_link_timer_positive_rolls_back_negative() -> None:
     c = StubCreature(pos=Vec2(), flags=CreatureFlags.AI7_LINK_TIMER, link_index=1, ai_mode=CreatureAiMode.HOLD_TIMER)
-    creature_ai7_tick_link_timer(c, dt_ms=1, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    creature_ai7_tick_link_timer(c, dt_ms=1, rng=rng)
     assert c.link_index == -700
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.CREATURE_UPDATE_ALL_AI7_LINK_TIMER_RESET,
+    ]
 
 
 def test_ai_mode_0_orbits_when_close() -> None:

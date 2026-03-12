@@ -5,14 +5,35 @@ from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
+_PYROKINETIC_BURST_CALLERS = [
+    RngCallerStatic.PERKS_UPDATE_EFFECTS_PYROKINETIC_ANGLE_0P8,
+    RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
+    RngCallerStatic.PERKS_UPDATE_EFFECTS_PYROKINETIC_ANGLE_0P6,
+    RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
+    RngCallerStatic.PERKS_UPDATE_EFFECTS_PYROKINETIC_ANGLE_0P4,
+    RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
+    RngCallerStatic.PERKS_UPDATE_EFFECTS_PYROKINETIC_ANGLE_0P3,
+    RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
+    RngCallerStatic.PERKS_UPDATE_EFFECTS_PYROKINETIC_ANGLE_0P2,
+    RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
+]
+_FX_QUEUE_CALLERS = [
+    RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY,
+    RngCallerStatic.FX_QUEUE_ADD_RANDOM_WIDTH,
+    RngCallerStatic.FX_QUEUE_ADD_RANDOM_ROTATION,
+    RngCallerStatic.FX_QUEUE_ADD_RANDOM_EFFECT_ID,
+]
+
 
 def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps() -> None:
     dt = 0.2
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(rng=rng)
 
     player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.PYROKINETIC)] = 1
@@ -36,12 +57,17 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
     intensities = [entry.intensity for entry in particles]
     for actual, expected in zip(intensities, (0.8, 0.6, 0.4, 0.3, 0.2)):
         assert_float_close(actual, expected)
+    assert [record.caller for record in rng.records_since()] == [
+        *_PYROKINETIC_BURST_CALLERS,
+        *_FX_QUEUE_CALLERS,
+    ]
 
 
 def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrapping() -> None:
     # Captured survival run (ticks 4055/4056) sits exactly on the timer boundary;
     # float32 math must avoid wrapping one tick early.
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(rng=rng)
 
     player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.PYROKINETIC)] = 1
@@ -65,6 +91,7 @@ def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrappi
     assert 0.0 < creature.collision_timer < 1e-6
     assert fx_queue.count == 0
     assert all(not entry.active for entry in state.particles.entries)
+    assert [record.caller for record in rng.records_since()] == []
 
     perks_update_effects(
         state,
@@ -77,10 +104,15 @@ def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrappi
     assert fx_queue.count == 1
     particles = [entry for entry in state.particles.entries if entry.active]
     assert len(particles) == 5
+    assert [record.caller for record in rng.records_since()] == [
+        *_PYROKINETIC_BURST_CALLERS,
+        *_FX_QUEUE_CALLERS,
+    ]
 
 
 def test_perks_update_effects_pyrokinetic_defaults_to_first_alive_player_aim() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST), preserve_bugs=False)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(rng=rng, preserve_bugs=False)
 
     player0 = PlayerState(index=0, pos=Vec2(), health=0.0)
     player1 = PlayerState(index=1, pos=Vec2())
@@ -99,10 +131,15 @@ def test_perks_update_effects_pyrokinetic_defaults_to_first_alive_player_aim() -
 
     assert_float_close(creature.collision_timer, 0.5)
     assert fx_queue.count == 1
+    assert [record.caller for record in rng.records_since()] == [
+        *_PYROKINETIC_BURST_CALLERS,
+        *_FX_QUEUE_CALLERS,
+    ]
 
 
 def test_perks_update_effects_pyrokinetic_preserve_bugs_keeps_player0_only_targeting() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST), preserve_bugs=True)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(rng=rng, preserve_bugs=True)
 
     player0 = PlayerState(index=0, pos=Vec2(), health=0.0)
     player1 = PlayerState(index=1, pos=Vec2())
@@ -121,11 +158,13 @@ def test_perks_update_effects_pyrokinetic_preserve_bugs_keeps_player0_only_targe
 
     assert_float_close(creature.collision_timer, 0.1)
     assert fx_queue.count == 0
+    assert [record.caller for record in rng.records_since()] == []
 
 
 def test_perks_update_effects_pyrokinetic_default_targets_all_alive_players() -> None:
     dt = 0.2
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST), preserve_bugs=False)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(rng=rng, preserve_bugs=False)
 
     player0 = PlayerState(index=0, pos=Vec2())
     player1 = PlayerState(index=1, pos=Vec2())
@@ -153,3 +192,9 @@ def test_perks_update_effects_pyrokinetic_default_targets_all_alive_players() ->
     assert_float_close(creature0.collision_timer, 0.5)
     assert_float_close(creature1.collision_timer, 0.5)
     assert fx_queue.count == 2
+    assert [record.caller for record in rng.records_since()] == [
+        *_PYROKINETIC_BURST_CALLERS,
+        *_FX_QUEUE_CALLERS,
+        *_PYROKINETIC_BURST_CALLERS,
+        *_FX_QUEUE_CALLERS,
+    ]

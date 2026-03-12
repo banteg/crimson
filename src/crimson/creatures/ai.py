@@ -15,6 +15,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ..math_parity import NATIVE_PI, f32, f32_vec2, heading_from_delta_f32
+from ..rng_caller_static import RngCallerStatic
 from .spawn import CreatureAiMode, CreatureFlags
 
 __all__ = [
@@ -67,12 +68,18 @@ def creature_ai7_tick_link_timer(
         creature.link_index += dt_ms
         if creature.link_index >= 0:
             creature.ai_mode = CreatureAiMode.HOLD_TIMER
-            creature.link_index = (rng.rand() & 0x1FF) + 500
+            creature.link_index = (
+                rng.rand(caller=RngCallerStatic.CREATURE_UPDATE_ALL_AI7_LINK_TIMER_HOLD)
+                & 0x1FF
+            ) + 500
         return
 
     creature.link_index -= dt_ms
     if creature.link_index < 1:
-        creature.link_index = -700 - (rng.rand() & 0x3FF)
+        creature.link_index = -700 - (
+            rng.rand(caller=RngCallerStatic.CREATURE_UPDATE_ALL_AI7_LINK_TIMER_RESET)
+            & 0x3FF
+        )
 
 
 def resolve_live_link(creatures: Sequence[CreatureAIStateLike], link_index: int) -> CreatureAIStateLike | None:

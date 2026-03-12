@@ -464,7 +464,8 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
 
 def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     pool = ProjectilePool(size=32)
-    state = GameplayState(projectiles=pool)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(projectiles=pool, rng=rng)
     state.bonus_spawn_guard = True
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=3.9)
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
@@ -478,11 +479,22 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     assert len(type_ids) == 8
     assert type_ids.count(int(ProjectileTemplateId.ION_MINIGUN)) == 4
     assert type_ids.count(int(ProjectileTemplateId.ION_RIFLE)) == 4
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+    ]
 
 
 def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> None:
     pool = ProjectilePool(size=32)
-    state = GameplayState(projectiles=pool)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=0.0)
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
 
@@ -493,11 +505,22 @@ def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> 
     assert type_ids.count(int(ProjectileTemplateId.ION_MINIGUN)) == 4
     assert type_ids.count(int(ProjectileTemplateId.ION_RIFLE)) == 4
     assert player.man_bomb_timer == 0.0
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+    ]
 
 
 def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     pool = ProjectilePool(size=8)
-    state = GameplayState(projectiles=pool)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_cough_timer=1.95)
     player.perk_counts[int(PerkId.FIRE_CAUGH)] = 1
 
@@ -507,11 +530,18 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     assert owners == {OwnerRef.from_local_player(0)}
     type_ids = _active_type_ids(pool)
     assert type_ids == [int(ProjectileTemplateId.FIRE_BULLETS)]
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_DIR,
+        RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_MAG,
+        RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
+        RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET,
+    ]
 
 
 def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
     pool = ProjectilePool(size=8)
-    state = GameplayState(projectiles=pool)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
@@ -536,6 +566,12 @@ def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
     expected = before_pos + Vec2.from_heading(0.0).rotated(-0.150915) * 16.0
     assert_float_close(float(entry.pos.x), float(f32(float(expected.x))))
     assert_float_close(float(entry.pos.y), float(f32(float(expected.y))))
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_DIR,
+        RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_MAG,
+        RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
+        RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET,
+    ]
 
 
 def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
@@ -1054,7 +1090,8 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
 
 def test_player_update_hot_tempered_spawns_ring() -> None:
     pool = ProjectilePool(size=16)
-    state = GameplayState(projectiles=pool)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95)
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
 
@@ -1066,11 +1103,15 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
     assert len(type_ids) == 8
     assert type_ids.count(int(ProjectileTemplateId.PLASMA_MINIGUN)) == 4
     assert type_ids.count(int(ProjectileTemplateId.PLASMA_RIFLE)) == 4
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET,
+    ]
 
 
 def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
     pool = ProjectilePool(size=16)
-    state = GameplayState(projectiles=pool)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95)
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
 
@@ -1090,11 +1131,15 @@ def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
     assert abs(player.pos.y - 100.0) > 1e-6
     origins = {(entry.origin.x, entry.origin.y) for entry in pool.entries if entry.active}
     assert origins == {(100.0, 100.0)}
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET,
+    ]
 
 
 def test_player_update_hot_tempered_converts_to_fire_bullets_when_active() -> None:
     pool = ProjectilePool(size=16)
-    state = GameplayState(projectiles=pool)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95, fire_bullets_timer=1.0)
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
 
@@ -1105,6 +1150,9 @@ def test_player_update_hot_tempered_converts_to_fire_bullets_when_active() -> No
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
     assert set(type_ids) == {int(ProjectileTemplateId.FIRE_BULLETS)}
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET,
+    ]
 
 
 def test_bonus_apply_registers_hud_slot_and_expires() -> None:

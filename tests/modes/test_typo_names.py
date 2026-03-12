@@ -8,6 +8,7 @@ import crimson.world.render_resources as render_resources_module
 from crimson.game_modes import GameMode
 from crimson.modes.typo_mode import TypoShooterMode
 from crimson.persistence.highscores import HighScoreRecord, scores_path_for_mode, write_highscore_records
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.typo.names import NAME_MAX_CHARS, CreatureNameTable, load_typo_highscore_names, typo_build_name
 from grim.rand import Crand
 from grim.view import ViewContext
@@ -59,6 +60,10 @@ def test_typo_build_name_uses_highscore_names_when_highscore_branch_hits() -> No
     )
 
     assert name == "beta"
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_HIGHSCORE_GATE,
+        RngCallerStatic.TYPO_WORD_PICK_HIGHSCORE_NAME,
+    ]
 
 
 def test_typo_build_name_falls_back_to_quickbrownfox_without_highscore_names() -> None:
@@ -71,6 +76,79 @@ def test_typo_build_name_falls_back_to_quickbrownfox_without_highscore_names() -
     )
 
     assert name == "quickbrownfox"
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_HIGHSCORE_GATE,
+    ]
+
+
+def test_typo_build_name_tags_exact_four_word_branch_callers() -> None:
+    rng = ScriptedCrand([10, 79, 0, 1, 2, 39], fallback=ScriptedCrand.Fallback.RAISE)
+
+    name = typo_build_name(rng, score_xp=130)
+
+    assert name == "lambgunheadnerd"
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_HIGHSCORE_GATE,
+        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_FOUR_WORD_GATE,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+    ]
+
+
+def test_typo_build_name_tags_exact_three_word_gt80_branch_callers() -> None:
+    rng = ScriptedCrand([79, 0, 1, 2], fallback=ScriptedCrand.Fallback.RAISE)
+
+    name = typo_build_name(rng, score_xp=81)
+
+    assert name == "lambgunhead"
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_THREE_WORD_GATE_GT80,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+    ]
+
+
+def test_typo_build_name_tags_exact_three_word_gt60_branch_callers() -> None:
+    rng = ScriptedCrand([39, 0, 1, 2], fallback=ScriptedCrand.Fallback.RAISE)
+
+    name = typo_build_name(rng, score_xp=61)
+
+    assert name == "lambgunhead"
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_THREE_WORD_GATE_GT60,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+    ]
+
+
+def test_typo_build_name_tags_exact_two_word_gt40_branch_callers() -> None:
+    rng = ScriptedCrand([79, 0, 1], fallback=ScriptedCrand.Fallback.RAISE)
+
+    name = typo_build_name(rng, score_xp=41)
+
+    assert name == "lambgun"
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT40,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+    ]
+
+
+def test_typo_build_name_tags_exact_two_word_gt20_branch_callers() -> None:
+    rng = ScriptedCrand([39, 0, 1], fallback=ScriptedCrand.Fallback.RAISE)
+
+    name = typo_build_name(rng, score_xp=21)
+
+    assert name == "lambgun"
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT20,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+    ]
 
 
 def test_load_typo_highscore_names_filters_and_deduplicates(tmp_path: Path) -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
@@ -11,7 +12,12 @@ def update_regeneration(ctx: PerksUpdateEffectsCtx) -> None:
         return
     if not perk_active(ctx.players[0], PerkId.REGENERATION):
         return
-    if (ctx.state.rng.rand() & 1) == 0:
+    if (
+        ctx.state.rng.rand(
+            caller=RngCallerStatic.PERKS_UPDATE_EFFECTS_REGENERATION_GATE,
+        )
+        & 1
+    ) == 0:
         return
 
     if ctx.state.preserve_bugs:

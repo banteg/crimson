@@ -10,7 +10,7 @@ import msgspec
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.rand import Crand, CrandLike
+from grim.rand import CallerStatic, Crand, CrandLike
 
 from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
@@ -109,14 +109,14 @@ class ParticlePool:
         for entry in self._entries:
             entry.active = False
 
-    def _alloc_slot(self) -> int:
+    def _alloc_slot(self, *, caller: CallerStatic = None) -> int:
         for i, entry in enumerate(self._entries):
             if not entry.active:
                 return i
         if not self._entries:
             raise ValueError("Particle pool has zero entries")
         # Native: `crt_rand() & 0x7f` (pool size is 0x80).
-        return self._rng.rand() % len(self._entries)
+        return self._rng.rand(caller=caller) % len(self._entries)
 
     def spawn_particle(
         self,
@@ -128,7 +128,7 @@ class ParticlePool:
     ) -> int:
         """Port of `fx_spawn_particle` (0x00420130)."""
 
-        idx = self._alloc_slot()
+        idx = self._alloc_slot(caller=RngCallerStatic.FX_SPAWN_PARTICLE_ALLOC)
         entry = self._entries[idx]
         entry.active = True
         entry.render_flag = True
@@ -140,7 +140,7 @@ class ParticlePool:
         entry.age = 0.0
         entry.intensity = float(intensity)
         entry.angle = float(angle)
-        entry.spin = float(self._rng.rand() % 628) * 0.01
+        entry.spin = float(self._rng.rand(caller=RngCallerStatic.FX_SPAWN_PARTICLE_SPIN) % 628) * 0.01
         entry.style_id = ParticleStyleId.FLAMETHROWER
         entry.target_id = -1
         entry.owner = owner
@@ -155,7 +155,7 @@ class ParticlePool:
     ) -> int:
         """Port of `fx_spawn_particle_slow` (0x00420240)."""
 
-        idx = self._alloc_slot()
+        idx = self._alloc_slot(caller=RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_ALLOC)
         entry = self._entries[idx]
         entry.active = True
         entry.render_flag = True
@@ -167,7 +167,7 @@ class ParticlePool:
         entry.age = 0.0
         entry.intensity = 1.0
         entry.angle = float(angle)
-        entry.spin = float(self._rng.rand() % 628) * 0.01
+        entry.spin = float(self._rng.rand(caller=RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_SPIN) % 628) * 0.01
         entry.style_id = ParticleStyleId.BUBBLEGUN
         entry.target_id = -1
         entry.owner = owner
@@ -426,14 +426,14 @@ class SpriteEffectPool:
         if idx is None:
             if not self._entries:
                 raise ValueError("Sprite effect pool has zero entries")
-            idx = self._rng.rand() % len(self._entries)
+            idx = self._rng.rand(caller=RngCallerStatic.FX_SPAWN_SPRITE_ALLOC) % len(self._entries)
 
         entry = self._entries[idx]
         entry.active = True
         entry.color = RGBA() if color is None else color
         entry.rotation = (
             float(
-                self._rng.rand() % 628,
+                self._rng.rand(caller=RngCallerStatic.FX_SPAWN_SPRITE_ROTATION) % 628,
             )
             * 0.01
         )
