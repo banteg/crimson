@@ -1,16 +1,19 @@
 from __future__ import annotations
 
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TypeAlias
 
 import msgspec
 
+from grim.rand import CrandLike, RecordingCrand
 from grim.sfx_map import SfxId
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from ..game_modes import GameMode
 from ..gameplay import survival_update_weapon_handouts
+from ..perks.availability import perks_rebuild_available
 from ..perks.selection import (
     perk_selection_open_choices,
     perk_selection_pick,
@@ -19,7 +22,9 @@ from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
 from ..typo.runtime import apply_typo_command
+from ..weapon_runtime import weapon_refresh_available
 from .input import PlayerInput
+from .input_frame import normalize_input_frame
 from .input_providers import (
     GameCommand,
     PerkMenuOpenCommand,
@@ -28,10 +33,10 @@ from .input_providers import (
     TypoCharCommand,
     TypoSubmitCommand,
 )
+from .presentation_step import plan_world_presentation_step
 from .step_pipeline import (
     DeterministicStepResult,
-    StepPipelineOptions,
-    run_deterministic_step,
+    PresentationRngTrace,
     time_scale_reflex_boost_factor,
 )
 from .terrain_fx import TerrainFxScratch
@@ -258,11 +263,12 @@ class DeterministicSession(msgspec.Struct):
     def step_tick(
         self,
         *,
-        timing: FrameTiming,
+        dt: float,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
         commands: list[GameCommand] | None = None,
     ) -> DeterministicSessionTick:
+        timing = self.timing_for_dt(dt)
         if self.before_step_hook is not None:
             self.before_step_hook()
 
@@ -277,7 +283,7 @@ class DeterministicSession(msgspec.Struct):
                         ci,
                         game_mode=self.game_mode,
                         player_count=len(self.world.players),
-                        dt=float(timing.dt_sim),
+                        dt=timing.dt_sim,
                         creatures=self.world.creatures.entries,
                         refresh_choices=True,
                     )
@@ -325,26 +331,90 @@ class DeterministicSession(msgspec.Struct):
             _mid = self.mid_step_hook
             hook = lambda: _mid(ctx)  # noqa: E731
 
-        step = run_deterministic_step(
-            world=self.world,
-            timing=timing,
-            options=StepPipelineOptions(
-                world_size=self.world_size,
-                damage_scale_by_type=self.damage_scale_by_type,
-                detail_preset=self.detail_preset,
-                gore_disabled=self.gore_disabled,
-                game_mode=self.game_mode,
-                demo_mode_active=self.demo_mode_active,
-                perk_progression_enabled=self.perk_progression_enabled,
-                game_tune_started=self.game_tune_started,
-            ),
+        fx_queue = self.terrain_fx.decals
+        fx_queue_rotated = self.terrain_fx.corpses
+        presentation_rng: CrandLike
+        recording_rng: RecordingCrand | None = None
+        if trace_rng:
+            recording_rng = RecordingCrand(state.rng)
+            presentation_rng = recording_rng
+        else:
+            presentation_rng = state.rng
+
+        def _mark(name: str) -> None:
+            rng_marks[str(name)] = int(state.rng.state)
+
+        normalized_inputs = normalize_input_frame(tick_inputs, player_count=len(self.world.players)).as_list()
+
+        _mark("gw_begin")
+        state.game_mode = self.game_mode
+        state.demo_mode_active = self.demo_mode_active
+
+        weapon_refresh_available(state)
+        _mark("gw_after_weapon_refresh")
+        perks_rebuild_available(state)
+        _mark("gw_after_perks_rebuild")
+        _mark("gw_after_time_scale")
+
+        prev_audio = [
+            (player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in self.world.players
+        ]
+        prev_perk_pending = state.perk_selection.pending_count
+
+        events = self.world.step(
+            timing.dt_sim,
             apply_world_dt_steps=self.apply_world_dt_steps,
-            inputs=tick_inputs,
-            terrain_fx=self.terrain_fx,
+            dt_player_local=timing.dt_player_local,
             defer_camera_shake_update=self.defer_camera_shake_update,
+            defer_freeze_corpse_fx=False,
             mid_step_hook=hook,
-            rng_marks_out=rng_marks,
-            trace_presentation_rng=trace_rng,
+            inputs=normalized_inputs,
+            world_size=self.world_size,
+            damage_scale_by_type=self.damage_scale_by_type,
+            detail_preset=self.detail_preset,
+            gore_disabled=self.gore_disabled,
+            fx_queue=fx_queue,
+            fx_queue_rotated=fx_queue_rotated,
+            game_mode=self.game_mode,
+            perk_progression_enabled=self.perk_progression_enabled,
+            game_tune_started=self.game_tune_started,
+            rng_marks=rng_marks,
+        )
+
+        presentation_trace = PresentationRngTrace()
+        plan_ns_start = time.perf_counter_ns()
+        presentation = plan_world_presentation_step(
+            state=state,
+            players=self.world.players,
+            fx_queue=fx_queue,
+            hits=events.hits,
+            pickups=events.pickups,
+            event_sfx=events.sfx,
+            prev_audio=prev_audio,
+            prev_perk_pending=prev_perk_pending,
+            game_mode=self.game_mode,
+            demo_mode_active=self.demo_mode_active,
+            perk_progression_enabled=self.perk_progression_enabled,
+            rng=presentation_rng,
+            detail_preset=self.detail_preset,
+            gore_disabled=self.gore_disabled,
+            game_tune_started=self.game_tune_started,
+            trigger_game_tune=events.trigger_game_tune,
+            hit_sfx=events.hit_sfx,
+        )
+        presentation_plan_ms = (time.perf_counter_ns() - plan_ns_start) / 1_000_000.0
+        if recording_rng is not None:
+            presentation_trace.draws_total = int(recording_rng.calls)
+            rng_marks["ps_draws_total"] = presentation_trace.draws_total
+
+        step = DeterministicStepResult(
+            dt_sim=timing.dt_sim,
+            timing=timing,
+            events=events,
+            presentation=presentation,
+            presentation_plan_ms=presentation_plan_ms,
+            presentation_rng_trace=presentation_trace,
+            terrain_fx=self.terrain_fx.take_batch(),
         )
         if post_apply_sfx:
             step = msgspec.structs.replace(
@@ -360,9 +430,9 @@ class DeterministicSession(msgspec.Struct):
                     world=self.world,
                     rng_marks=rng_marks,
                     step_result=step,
-                    dt_sim_ms=float(dt_sim_ms),
-                    world_size=float(self.world_size),
-                    detail_preset=int(self.detail_preset),
+                    dt_sim_ms=dt_sim_ms,
+                    world_size=self.world_size,
+                    detail_preset=self.detail_preset,
                 ),
             )
 

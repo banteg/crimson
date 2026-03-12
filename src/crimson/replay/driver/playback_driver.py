@@ -306,12 +306,12 @@ class PlaybackDriver:
             case GameMode.SURVIVAL:
                 session, _ = build_survival_session(
                     world=self.world,
-                    world_size=float(self.world_size),
+                    world_size=self.world_size,
                     damage_scale_by_type=damage_scale_by_type,
-                    detail_preset=int(self.replay.header.detail_preset),
-                    gore_disabled=int(self.replay.header.gore_disabled),
+                    detail_preset=self.replay.header.detail_preset,
+                    gore_disabled=self.replay.header.gore_disabled,
                     game_tune_started=False,
-                    apply_world_dt_steps=bool(apply_world_dt_steps),
+                    apply_world_dt_steps=apply_world_dt_steps,
                     finalize_post_render_lifecycle=True,
                 )
                 return session
@@ -319,10 +319,10 @@ class PlaybackDriver:
                 enforce_rush_loadout(self.world)
                 session, _ = build_rush_session(
                     world=self.world,
-                    world_size=float(self.world_size),
+                    world_size=self.world_size,
                     damage_scale_by_type=damage_scale_by_type,
-                    detail_preset=int(self.replay.header.detail_preset),
-                    gore_disabled=int(self.replay.header.gore_disabled),
+                    detail_preset=self.replay.header.detail_preset,
+                    gore_disabled=self.replay.header.gore_disabled,
                     game_tune_started=False,
                     finalize_post_render_lifecycle=True,
                 )
@@ -336,15 +336,15 @@ class PlaybackDriver:
                 start_weapon_id = self._quest_start_weapon_resolved
                 session, quest_state = build_quest_session(
                     world=self.world,
-                    world_size=float(self.world_size),
+                    world_size=self.world_size,
                     damage_scale_by_type=damage_scale_by_type,
-                    detail_preset=int(self.replay.header.detail_preset),
-                    gore_disabled=int(self.replay.header.gore_disabled),
+                    detail_preset=self.replay.header.detail_preset,
+                    gore_disabled=self.replay.header.gore_disabled,
                     game_tune_started=False,
-                    demo_mode_active=bool(self.world.state.demo_mode_active),
-                    apply_world_dt_steps=bool(apply_world_dt_steps),
+                    demo_mode_active=self.world.state.demo_mode_active,
+                    apply_world_dt_steps=apply_world_dt_steps,
                     finalize_post_render_lifecycle=True,
-                    spawn_entries=tuple(spawn_entries),
+                    spawn_entries=spawn_entries,
                     quest_level=quest_level,
                     start_weapon_id=start_weapon_id,
                 )
@@ -353,21 +353,21 @@ class PlaybackDriver:
             case GameMode.TYPO:
                 return build_typo_session(
                     world=self.world,
-                    world_size=float(self.world_size),
+                    world_size=self.world_size,
                     damage_scale_by_type=damage_scale_by_type,
-                    detail_preset=int(self.replay.header.detail_preset),
-                    gore_disabled=int(self.replay.header.gore_disabled),
+                    detail_preset=self.replay.header.detail_preset,
+                    gore_disabled=self.replay.header.gore_disabled,
                     game_tune_started=False,
-                    dictionary_words=tuple(self.replay.header.typo_dictionary_words),
-                    highscore_names=tuple(self.replay.header.typo_highscore_names),
+                    dictionary_words=self.replay.header.typo_dictionary_words,
+                    highscore_names=self.replay.header.typo_highscore_names,
                 )
             case GameMode.TUTORIAL:
                 return build_tutorial_session(
                     world=self.world,
-                    world_size=float(self.world_size),
+                    world_size=self.world_size,
                     damage_scale_by_type=damage_scale_by_type,
-                    detail_preset=int(self.replay.header.detail_preset),
-                    gore_disabled=int(self.replay.header.gore_disabled),
+                    detail_preset=self.replay.header.detail_preset,
+                    gore_disabled=self.replay.header.gore_disabled,
                     game_tune_started=False,
                     demo_mode_active=False,
                 )
@@ -428,9 +428,8 @@ class PlaybackDriver:
                 commands=list(commands),
             )
 
-            timing = self.session.timing_for_dt(dt_tick)
             session_tick = self.session.step_tick(
-                timing=timing,
+                dt=dt_tick,
                 inputs=inputs,
                 trace_rng=self.trace_rng,
                 commands=commands,

@@ -16,7 +16,7 @@ def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() 
     sim_world.state.perk_selection.pending_count = 1
 
     tick = session.step_tick(
-        timing=session.timing_for_dt(1.0 / 60.0),
+        dt=1.0 / 60.0,
         inputs=[PlayerInput()],
         commands=[PerkPickCommand(player_index=0, choice_index=0)],
     )
@@ -28,7 +28,7 @@ def test_session_step_tick_skips_bonus_post_apply_sfx_for_stale_perk_pick() -> N
     session, _sim_world = make_session()
 
     tick = session.step_tick(
-        timing=session.timing_for_dt(1.0 / 60.0),
+        dt=1.0 / 60.0,
         inputs=[PlayerInput()],
         commands=[PerkPickCommand(player_index=0, choice_index=0)],
     )

@@ -81,7 +81,7 @@ def test_typo_commands_apply_before_input_transform(make_world_state) -> None:
 
     with pytest.raises(_StopAfterTransform):
         session.step_tick(
-            timing=session.timing_for_dt(1.0 / 60.0),
+            dt=1.0 / 60.0,
             inputs=[PlayerInput()],
             commands=[TypoCharCommand(player_index=0, ch="a")],
         )
