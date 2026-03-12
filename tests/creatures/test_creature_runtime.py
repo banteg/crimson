@@ -921,11 +921,12 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert death.xp_awarded == 10
     assert player.experience == 10
     assert any(entry.bonus_id != BonusId.UNUSED for entry in state.bonus_pool.entries)
+    assert len(state.effects.iter_active()) == 16
     # Successful spawn-on-kill emits a 16-particle burst (4 RNG draws each).
     assert state.rng._idx == 67
 
 
-def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result(mocker) -> None:
+def test_bonus_on_death_does_not_synthesize_burst_from_mocked_try_spawn_result(mocker) -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
@@ -938,7 +939,6 @@ def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result(m
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 0.0
 
-    organic_pos = Vec2(200.0, 200.0)
     spawn_at = mocker.patch.object(
         state.bonus_pool,
         "spawn_at",
@@ -955,7 +955,7 @@ def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result(m
         "try_spawn_on_kill",
         return_value=BonusEntry(
             bonus_id=BonusId.ENERGIZER,
-            pos=organic_pos,
+            pos=Vec2(200.0, 200.0),
             time_left=10.0,
             time_max=10.0,
             amount=1,
@@ -974,9 +974,7 @@ def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result(m
 
     spawn_at.assert_called_once()
     try_spawn_on_kill.assert_called_once()
-    active = state.effects.iter_active()
-    assert len(active) == 16
-    assert all(entry.pos == organic_pos for entry in active)
+    assert state.effects.iter_active() == []
 
 
 def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(mocker) -> None:

@@ -10,6 +10,7 @@ from grim.geom import Vec2
 from ..game_modes import GameMode
 from ..perks.helpers import perk_active
 from ..projectiles.types import CreatureDamageApplier
+from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
 from ..weapon_runtime.availability import weapon_pick_random_available
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
@@ -261,6 +262,7 @@ class BonusPool:
         *,
         state: GameplayState,
         players: list[PlayerState],
+        detail_preset: int = 5,
         world_width: float = 1024.0,
         world_height: float = 1024.0,
     ) -> BonusEntry | None:
@@ -281,7 +283,7 @@ class BonusPool:
         rng = state.rng
         # Native special-case: while any player has Pistol, 3/4 chance to force a Weapon drop.
         if players and any(player.weapon.weapon_id == WeaponId.PISTOL for player in players):
-            if (rng.rand() & 3) < 3:
+            if (rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_PISTOL_FORCE_WEAPON) & 3) < 3:
                 entry = self.spawn_at_pos(
                     pos,
                     state=state,
@@ -310,9 +312,10 @@ class BonusPool:
 
                 if self._is_sentinel_entry(entry):
                     return None
+                self._spawn_on_kill_burst(entry=entry, state=state, detail_preset=detail_preset)
                 return entry
 
-        base_roll = rng.rand()
+        base_roll = rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BASE_GATE)
         if base_roll % 9 != 1:
             allow_without_magnet = False
             if players:
@@ -322,7 +325,11 @@ class BonusPool:
                 else:
                     has_pistol = any(player.weapon.weapon_id == WeaponId.PISTOL for player in players)
                 if has_pistol:
-                    allow_without_magnet = rng.rand() % 5 == 1
+                    allow_without_magnet = (
+                        rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_PISTOL_ALLOW_WITHOUT_MAGNET)
+                        % 5
+                        == 1
+                    )
 
             if not allow_without_magnet:
                 has_bonus_magnet = False
@@ -333,7 +340,7 @@ class BonusPool:
                         has_bonus_magnet = any(perk_active(player, PerkId.BONUS_MAGNET) for player in players)
                 if not has_bonus_magnet:
                     return None
-                if rng.rand() % 10 != 2:
+                if rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BONUS_MAGNET) % 10 != 2:
                     return None
 
         entry = self.spawn_at_pos(
@@ -381,7 +388,20 @@ class BonusPool:
 
         if self._is_sentinel_entry(entry):
             return None
+        self._spawn_on_kill_burst(entry=entry, state=state, detail_preset=detail_preset)
         return entry
+
+    def _spawn_on_kill_burst(self, *, entry: BonusEntry, state: GameplayState, detail_preset: int) -> None:
+        rng = state.rng
+        for _ in range(16):
+            state.effects.spawn_burst_particle(
+                pos=entry.pos,
+                rotation_draw=rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_ROTATION),
+                vel_x_draw=rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_VEL_X),
+                vel_y_draw=rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_VEL_Y),
+                scale_step_draw=rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_SCALE_STEP),
+                detail_preset=detail_preset,
+            )
 
     def update(
         self,

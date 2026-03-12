@@ -3,6 +3,7 @@ from __future__ import annotations
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusPool
 from crimson.gameplay import GameplayState
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -156,3 +157,30 @@ def test_weapon_drop_suppression_preserve_bugs_checks_player1_weapon_only() -> N
     assert entry is not None
     assert entry.bonus_id == BonusId.WEAPON
     assert entry.amount == WeaponId.SHOTGUN
+
+
+def test_try_spawn_on_kill_owns_success_burst_rng() -> None:
+    rng = ScriptedCrand([1, 0, 0] + [0] * 64, fallback=ScriptedCrand.Fallback.RAISE)
+    state = GameplayState(rng=rng)
+    state.bonus_pool = BonusPool()
+    player = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+
+    before_calls = rng.calls
+    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
+
+    assert entry is not None
+    assert len(state.effects.iter_active()) == 16
+    assert all(effect.pos == entry.pos for effect in state.effects.iter_active())
+    assert [record.caller for record in rng.records_since(before_calls) if record.caller is not None] == [
+        RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BASE_GATE,
+        RngCallerStatic.BONUS_PICK_RANDOM_TYPE_ROLL,
+        *(
+            [
+                RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_ROTATION,
+                RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_VEL_X,
+                RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_VEL_Y,
+                RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_SCALE_STEP,
+            ]
+            * 16
+        ),
+    ]
