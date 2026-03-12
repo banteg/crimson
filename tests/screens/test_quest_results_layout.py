@@ -5,8 +5,10 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import crimson.screens.results.quest_results as quest_results_module
+import crimson.ui.text_input as text_input_module
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.quests.results import QuestFinalTime
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.screens.results.quest_results import (
     PANEL_SLIDE_END_MS,
     PANEL_SLIDE_START_MS,
@@ -16,6 +18,7 @@ from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.raylib_api import rl
+from tests.support.helpers import ScriptedCrand
 
 
 def _test_config(**updates: object) -> CrimsonConfig:
@@ -214,7 +217,7 @@ def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path) 
 def test_quest_results_name_entry_waits_for_controls_release(tmp_path: Path, mocker) -> None:
     ui = _build_ui(tmp_path, phase=1)
     ui._defer_name_input_until_controls_released = True
-    poll_text = mocker.patch.object(quest_results_module, "poll_text_input", return_value="ww")
+    poll_text = mocker.patch.object(text_input_module, "poll_text_input", return_value="ww")
     mocker.patch.object(quest_results_module, "gameplay_controls_held", side_effect=[True, False])
 
     ui.update(0.0, mouse=rl.Vector2(0.0, 0.0))
@@ -225,3 +228,21 @@ def test_quest_results_name_entry_waits_for_controls_release(tmp_path: Path, moc
     assert ui.input_text == "banteg"
     assert ui._defer_name_input_until_controls_released is False
     assert poll_text.call_count == 0
+
+
+def test_quest_results_name_entry_uses_shared_ui_text_input_typeclick_caller(tmp_path: Path, mocker) -> None:
+    ui = _build_ui(tmp_path, phase=1)
+    ui._panel_open_sfx_played = True
+    _patch_draw_environment(mocker)
+    poll_text = mocker.patch.object(text_input_module, "poll_text_input", return_value="ww")
+    mocker.patch.object(quest_results_module.rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
+    mocker.patch.object(quest_results_module.rl, "is_key_pressed", side_effect=lambda _key: False)
+    play_sfx = mocker.Mock()
+    rng = ScriptedCrand([0])
+
+    ui.update(0.0, play_sfx=play_sfx, rng=rng, mouse=rl.Vector2(0.0, 0.0))
+
+    assert ui.input_text == "bantegww"
+    assert poll_text.call_count == 1
+    assert [call.args[0] for call in play_sfx.call_args_list] == ["sfx_ui_typeclick_01"]
+    assert [record.caller for record in rng.records_since()] == [RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK]

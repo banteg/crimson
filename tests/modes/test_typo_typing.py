@@ -4,13 +4,16 @@ import pytest
 
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import TypoCharCommand, TypoSubmitCommand
-from crimson.sim.sessions import DeterministicSession
-from crimson.typo.runtime import apply_typo_command, typo_input_transform
+from crimson.sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
+from crimson.sim.sessions import DeterministicSession, MidStepContext
+from crimson.sim.state_types import PlayerState
+from crimson.typo.runtime import apply_typo_command, typo_input_transform, typo_mid_step
 from crimson.typo.state import reset_typo_state
 from crimson.typo.typing import TYPING_MAX_CHARS, TypingBuffer
 from grim.geom import Vec2
+from tests.support.helpers import ScriptedCrand
 
 
 def test_typing_buffer_backspace_and_max_len() -> None:
@@ -112,3 +115,72 @@ def test_typo_submit_match_overrides_only_one_tick(make_world_state) -> None:
     assert transformed1[0].aim == Vec2(10.0, 20.0)
     assert transformed1[0].fire_down is False
     assert transformed1[0].fire_pressed is False
+
+
+def test_typo_char_command_tags_exact_typeclick_caller(make_world_state) -> None:
+    world = make_world_state()
+    reset_typo_state(world.state.typo, creature_capacity=len(world.creatures.entries))
+    world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    apply_typo_command(world, TypoCharCommand(player_index=0, ch="a"))
+
+    assert world.state.sfx_queue == ["sfx_ui_typeclick_01"]
+    assert [record.caller for record in world.state.rng.records_since()] == [
+        RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_CHAR,
+    ]
+
+
+def test_typo_backspace_command_tags_exact_typeclick_caller(make_world_state) -> None:
+    world = make_world_state()
+    reset_typo_state(world.state.typo, creature_capacity=len(world.creatures.entries))
+    world.state.typo.typing.text = "ab"
+    world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    apply_typo_command(world, TypoBackspaceCommand(player_index=0))
+
+    assert world.state.sfx_queue == ["sfx_ui_typeclick_01"]
+    assert world.state.typo.typing.text == "a"
+    assert [record.caller for record in world.state.rng.records_since()] == [
+        RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_BACKSPACE,
+    ]
+
+
+def test_typo_spawn_step_tags_exact_spawn_tinted_callers() -> None:
+    from crimson.sim.world_state import WorldState
+
+    world = WorldState.build(
+        world_size=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
+    reset_typo_state(world.state.typo, creature_capacity=len(world.creatures.entries))
+    world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    typo_mid_step(
+        MidStepContext(
+            world=world,
+            rng_marks={},
+            elapsed_before_ms=0.0,
+            dt_sim_ms=1.0,
+            dt_raw_ms=1.0,
+            world_size=1024.0,
+        ),
+    )
+
+    callers = [
+        record.caller
+        for record in world.state.rng.records_since()
+        if record.caller
+        in {
+            RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING,
+            RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE,
+        }
+    ]
+    assert callers == [
+        RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING,
+        RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE,
+        RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING,
+        RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE,
+    ]

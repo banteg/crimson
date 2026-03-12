@@ -7,6 +7,7 @@ import msgspec
 from grim.geom import Vec2
 
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
+from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.world_state import WorldState
@@ -22,8 +23,8 @@ def _require_single_player_typo(command) -> None:
         raise RuntimeError("Typ-o Shooter commands are single-player only")
 
 
-def _typeclick_sfx(world: WorldState) -> str:
-    if (world.state.rng.rand() & 1) == 0:
+def _typeclick_sfx(world: WorldState, *, caller: RngCallerStatic) -> str:
+    if (world.state.rng.rand(caller=caller) & 1) == 0:
         return "sfx_ui_typeclick_01"
     return "sfx_ui_typeclick_02"
 
@@ -37,10 +38,14 @@ def apply_typo_command(world: WorldState, command: TypoCharCommand | TypoBackspa
         case TypoCharCommand(ch=ch):
             if ch:
                 typing.push_char(str(ch))
-                world.state.sfx_queue.append(_typeclick_sfx(world))
+                world.state.sfx_queue.append(
+                    _typeclick_sfx(world, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_CHAR),
+                )
         case TypoBackspaceCommand():
             typing.backspace()
-            world.state.sfx_queue.append(_typeclick_sfx(world))
+            world.state.sfx_queue.append(
+                _typeclick_sfx(world, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_BACKSPACE),
+            )
         case TypoSubmitCommand():
             if not typing.text:
                 return
@@ -80,8 +85,8 @@ def typo_mid_step(ctx: MidStepContext) -> None:
     )
     typo.spawn_cooldown_ms = int(cooldown)
     for call in spawns:
-        heading = float(ctx.world.state.rng.rand() % 314) * 0.01
-        size = float(ctx.world.state.rng.rand() % 20 + 47)
+        heading = float(ctx.world.state.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING) % 314) * 0.01
+        size = float(ctx.world.state.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE) % 20 + 47)
         flags = CreatureFlags(0)
         move_speed = 1.7
         if int(call.type_id) in (int(CreatureTypeId.SPIDER_SP1), int(CreatureTypeId.SPIDER_SP2)):

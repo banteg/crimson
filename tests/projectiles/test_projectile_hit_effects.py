@@ -245,6 +245,8 @@ def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:
         travel_budget=10.0,
     )
 
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
     pool.step(
         PrimaryStepCtx(
             dt=0.016,
@@ -252,10 +254,20 @@ def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:
             options=make_projectile_update_options(
                 world_size=4096.0,
                 detail_preset=5,
-                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+                rng=rng,
                 runtime_state=runtime_state,
             ),
         ),
     )
 
     assert spawn_freeze_shard.call_count == 1
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER,
+        RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_LIFETIME,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_HALF,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION_STEP,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_SCALE_STEP,
+        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID,
+    ]
