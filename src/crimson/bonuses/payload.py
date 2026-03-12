@@ -25,8 +25,8 @@ def bonus_duration_payload(seconds: int) -> BonusDurationPayload:
     return BonusDurationPayload(seconds=int(seconds))
 
 
-def bonus_weapon_payload(weapon_id: WeaponId | int) -> BonusWeaponPayload:
-    return BonusWeaponPayload(weapon_id=WeaponId(weapon_id))
+def bonus_weapon_payload(weapon_id: WeaponId) -> BonusWeaponPayload:
+    return BonusWeaponPayload(weapon_id=weapon_id)
 
 
 def bonus_points_payload(points: int) -> BonusPointsPayload:
@@ -36,7 +36,7 @@ def bonus_points_payload(points: int) -> BonusPointsPayload:
 def bonus_payload_from_bonus(*, bonus_id: BonusId, amount: int) -> BonusPayload:
     amount = int(amount)
     if bonus_id == BonusId.WEAPON:
-        return bonus_weapon_payload(amount)
+        return bonus_weapon_payload(WeaponId(amount))
     if bonus_id == BonusId.POINTS:
         return bonus_points_payload(amount)
     return bonus_duration_payload(amount)
