@@ -244,7 +244,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
 
     muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
     weapon_flags = int(weapon.flags or 0)
-    shell_casing_draws = (0, 0, 0, 0)
     if weapon_flags & 0x1:
         # Native gameplay fire uses four exact `player_update` RNG sites for
         # the casing effect before the later shot-angle jitter work.
@@ -254,13 +253,12 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION),
             state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION_STEP),
         )
-    state.effects.spawn_shell_casing(
-        pos=muzzle,
-        aim_heading=aim_heading,
-        weapon_flags=weapon_flags,
-        draws=shell_casing_draws,
-        detail_preset=int(ctx.detail_preset),
-    )
+        state.effects.spawn_shell_casing(
+            pos=muzzle,
+            aim_heading=aim_heading,
+            draws=shell_casing_draws,
+            detail_preset=int(ctx.detail_preset),
+        )
 
     shot_angle = _native_shot_angle_with_jitter(
         aim=aim,
