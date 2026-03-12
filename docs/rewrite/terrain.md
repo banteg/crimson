@@ -15,8 +15,8 @@ terrain pipeline (see also: `docs/crimsonland-exe/terrain.md`).
 
 Implementation: `src/grim/terrain_render.py`
 
-- `GroundRenderer.create_render_target()` creates/resizes the RT (`1024/texture_scale`).
-- `GroundRenderer.schedule_generate(seed=...)` queues terrain generation, and `GroundRenderer.process_pending()` performs the scheduled RT creation/warmup/generation work.
+- `GroundRenderer` maintains an internal RT sized from `1024/texture_scale`.
+- `GroundRenderer.schedule_generate(seed=...)` queues terrain generation, and `GroundRenderer.process_pending()` performs the scheduled RT creation/generation work.
 - `GroundRenderer.draw(camera_x, camera_y)` draws the RT to the screen using UV scrolling.
 
 Intentional rewrite deviations:

@@ -198,7 +198,7 @@ def test_runtime_build_render_frame_requires_bound_resources() -> None:
         world.build_render_frame()
 
 
-def test_ground_draw_uses_explicit_output_dimensions(mocker) -> None:
+def test_ground_draw_view_uses_explicit_output_dimensions_without_refitting(mocker) -> None:
     texture = _TextureStub()
     ground = _ground(texture=texture)
     ground.render_target = _as_render_texture(_RenderTextureStub())
@@ -211,13 +211,25 @@ def test_ground_draw_uses_explicit_output_dimensions(mocker) -> None:
     mocker.patch.object(terrain_render.rl, "get_screen_width", return_value=1024)
     mocker.patch.object(terrain_render.rl, "get_screen_height", return_value=768)
     mocker.patch.object(terrain_render, "_blend_custom", side_effect=_noop_blend)
+    fit_view_window = mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_fit_view_window",
+        autospec=True,
+        side_effect=AssertionError("unused"),
+    )
+    clamp_camera = mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_clamp_camera",
+        autospec=True,
+        side_effect=AssertionError("unused"),
+    )
     draw_texture_pro = mocker.patch.object(
         terrain_render.rl,
         "draw_texture_pro",
         autospec=True,
     )
 
-    ground.draw(
+    ground.draw_view(
         Vec2(-1.0, -1.0),
         screen_w=1024.0,
         screen_h=576.0,
@@ -227,6 +239,8 @@ def test_ground_draw_uses_explicit_output_dimensions(mocker) -> None:
 
     calls = [(float(call.args[2].width), float(call.args[2].height)) for call in draw_texture_pro.call_args_list]
     assert calls == [(1280.0, 720.0)]
+    fit_view_window.assert_not_called()
+    clamp_camera.assert_not_called()
 
 
 def test_ground_draw_uses_runtime_dimensions_when_screen_size_is_omitted(mocker) -> None:
@@ -268,7 +282,7 @@ def test_scheduled_generation_uses_overlay_detail_for_third_pass(mocker) -> None
         "_scatter_texture",
         autospec=True,
     )
-    mocker.patch.object(terrain_render.GroundRenderer, "create_render_target", autospec=True, side_effect=lambda _self: None)
+    mocker.patch.object(terrain_render.GroundRenderer, "_ensure_render_target", autospec=True, side_effect=lambda _self: None)
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
@@ -323,6 +337,71 @@ def test_alpha_test_shader_failure_raises(mocker) -> None:
             pass
 
 
+def test_create_render_target_recovers_after_previous_failure(mocker) -> None:
+    ground = _ground()
+    attempts = iter([False, False, True])
+
+    mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_render_target_size_for",
+        autospec=True,
+        return_value=(1024, 1024),
+    )
+
+    def _ensure(self: GroundRenderer, _render_w: int, _render_h: int) -> bool:
+        ok = next(attempts)
+        if ok:
+            self.render_target = _as_render_texture(_RenderTextureStub())
+        return ok
+
+    mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_load_render_target",
+        autospec=True,
+        side_effect=_ensure,
+    )
+
+    ground._ensure_render_target()
+    assert ground.texture_failed is True
+
+    ground._ensure_render_target()
+    assert ground.texture_failed is False
+    assert ground.render_target is not None
+
+
+def test_load_render_target_rejects_incomplete_framebuffer(mocker) -> None:
+    ground = _ground()
+    candidate = _as_render_texture(_RenderTextureStub())
+    unload_render_texture = mocker.patch.object(terrain_render.rl, "unload_render_texture", autospec=True)
+    mocker.patch.object(terrain_render.rl, "load_render_texture", autospec=True, return_value=candidate)
+    mocker.patch.object(terrain_render.rl, "rl_framebuffer_complete", autospec=True, return_value=False)
+
+    assert ground._load_render_target(1024, 1024) is False
+    unload_render_texture.assert_called_once_with(candidate)
+
+
+def test_process_pending_clears_failed_schedule_after_terminal_rt_failure(mocker) -> None:
+    ground = _ground()
+    mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_render_target_size_for",
+        autospec=True,
+        return_value=(1024, 1024),
+    )
+    mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_load_render_target",
+        autospec=True,
+        return_value=False,
+    )
+
+    ground.schedule_generate(seed=1337)
+    ground.process_pending()
+
+    assert ground.texture_failed is True
+    assert ground.generation_pending() is False
+
+
 def test_ground_renderer_requires_all_three_textures() -> None:
     ground_renderer_ctor = cast(Any, GroundRenderer)
     with pytest.raises(TypeError):
@@ -342,8 +421,6 @@ def test_bake_decals_returns_false_without_render_target(mocker) -> None:
         height=16.0,
     )
 
-    mocker.patch.object(terrain_render.GroundRenderer, "create_render_target", autospec=True, side_effect=lambda _self: None)
-
     assert ground.bake_decals((decal,)) is False
 
 
@@ -351,6 +428,7 @@ def test_bake_decals_keep_default_filter(mocker) -> None:
     decal_texture = _as_texture(_TextureStub(id=2))
     ground = _ground(texture=_TextureStub(id=1))
     ground.render_target = _as_render_texture(_RenderTextureStub())
+    ground._render_target_ready = True
     decal = GroundDecal(
         texture=decal_texture,
         src=terrain_render.rl.Rectangle(0.0, 0.0, 16.0, 16.0),
@@ -359,7 +437,6 @@ def test_bake_decals_keep_default_filter(mocker) -> None:
         height=16.0,
     )
 
-    mocker.patch.object(terrain_render.GroundRenderer, "create_render_target", autospec=True, side_effect=lambda _self: None)
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
@@ -382,6 +459,7 @@ def test_bake_corpse_decals_keeps_default_filter(mocker) -> None:
     bodyset_texture = _as_texture(_TextureStub(id=9, width=64, height=64))
     ground = _ground(texture=_TextureStub(id=1))
     ground.render_target = _as_render_texture(_RenderTextureStub())
+    ground._render_target_ready = True
     decal = GroundCorpseDecal(
         bodyset_frame=3,
         top_left=Vec2(20.0, 30.0),
@@ -389,7 +467,6 @@ def test_bake_corpse_decals_keeps_default_filter(mocker) -> None:
         rotation_rad=0.5,
     )
 
-    mocker.patch.object(terrain_render.GroundRenderer, "create_render_target", autospec=True, side_effect=lambda _self: None)
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     set_texture_filter = mocker.patch.object(terrain_render.rl, "set_texture_filter", autospec=True)
@@ -424,7 +501,7 @@ def test_ground_draw_without_render_target_clears_background(mocker) -> None:
     draw_rectangle = mocker.patch.object(terrain_render.rl, "draw_rectangle", autospec=True)
     draw_texture_pro = mocker.patch.object(terrain_render.rl, "draw_texture_pro", autospec=True)
 
-    ground.draw(
+    ground.draw_view(
         Vec2(-1.0, -1.0),
         screen_w=1024.0,
         screen_h=576.0,

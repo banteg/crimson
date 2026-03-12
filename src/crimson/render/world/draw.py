@@ -131,7 +131,7 @@ def draw_background(
     ground = render_ctx.frame.ground
     assert ground is not None, "ground renderer must be initialized before live world draw"
     rl.clear_background(clear_color)
-    ground.draw(
+    ground.draw_view(
         camera,
         screen_w=screen_size.x,
         screen_h=screen_size.y,

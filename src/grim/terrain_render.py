@@ -63,13 +63,13 @@ uniform vec4 colDiffuse;
 
 out vec4 finalColor;
 
-void main() {{
+void main() {
     // Emulate DX8 fixed-function alpha test after stage-0 modulation:
     // stage output = texture * diffuse, then discard when alpha <= 4/255.
     vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
     if (texel.a <= 0.0156862745) discard;
     finalColor = texel;
-}}
+}
 """
 
 
@@ -152,84 +152,56 @@ class GroundRenderer(msgspec.Struct):
     texture_failed: bool = False
     render_target: rl.RenderTexture | None = None
     _render_target_ready: bool = False
-    _pending_generate: bool = False
-    _pending_generate_seed: int | None = None
-    _render_target_warmup_passes: int = 0
+    _scheduled_seed: int | None = None
 
     def generation_pending(self) -> bool:
         """True while a scheduled terrain generate is still pending."""
-        return self._pending_generate
+        return self._scheduled_seed is not None
 
     def render_target_ready(self) -> bool:
         """True when the terrain render target exists and is ready for drawing."""
         return self.render_target is not None and self._render_target_ready
 
     def process_pending(self) -> None:
-        # Bound the amount of work per tick. Typical warmup sequence:
-        #   1) create RT
-        #   2) first fill (may be black/uninitialized on some platforms)
-        #   3) warmup retry fill
-        steps = 0
-        while self._pending_generate and steps < 4:
-            steps += 1
-            if self.render_target is None:
-                self.create_render_target()
-                continue
+        seed = self._scheduled_seed
+        if seed is None:
+            return
+        self._scheduled_seed = None
+        self._generate_texture(seed=seed)
 
-            seed = self._pending_generate_seed
-            assert seed is not None, "pending terrain generation requires a seed"
-            self._pending_generate = False
-            self._generate_texture(seed=seed)
-            if self.render_target is None and not self.texture_failed:
-                self._pending_generate = True
-                continue
+    def _ensure_render_target(self) -> None:
+        requested_scale = self.texture_scale
+        if requested_scale < 0.5:
+            requested_scale = 0.5
+        elif requested_scale > 4.0:
+            requested_scale = 4.0
+        self.texture_scale = requested_scale
 
-            if self._render_target_warmup_passes > 0:
-                self._render_target_warmup_passes -= 1
-                # On some platforms/drivers the first draw into a new RT can come out as
-                # black/uninitialized (all-zero). Retry once before marking it ready.
-                self._render_target_ready = False
-                self._pending_generate = True
-                continue
-
-    def create_render_target(self) -> None:
-        if self.texture_failed:
-            if self.render_target is not None:
-                rl.unload_render_texture(self.render_target)
-                self.render_target = None
-            self._render_target_ready = False
+        render_w, render_h = self._render_target_size_for(requested_scale)
+        if self._load_render_target(render_w, render_h):
+            self.texture_failed = False
             return
 
-        scale = self.texture_scale
-        if scale < 0.5:
-            scale = 0.5
-        elif scale > 4.0:
-            scale = 4.0
-        self.texture_scale = scale
-
-        render_w, render_h = self._render_target_size_for(scale)
-        if self._ensure_render_target(render_w, render_h):
-            return
-
-        old_scale = scale
-        self.texture_scale = scale + scale
-        render_w, render_h = self._render_target_size_for(self.texture_scale)
-        if self._ensure_render_target(render_w, render_h):
-            return
+        fallback_scale = min(4.0, requested_scale + requested_scale)
+        if fallback_scale != requested_scale:
+            self.texture_scale = fallback_scale
+            render_w, render_h = self._render_target_size_for(fallback_scale)
+            if self._load_render_target(render_w, render_h):
+                self.texture_failed = False
+                return
 
         self.texture_failed = True
-        self.texture_scale = old_scale
+        self.texture_scale = requested_scale
         if self.render_target is not None:
             rl.unload_render_texture(self.render_target)
             self.render_target = None
         self._render_target_ready = False
 
     def schedule_generate(self, seed: int) -> None:
-        self._pending_generate_seed = seed
-        self._pending_generate = True
+        self._scheduled_seed = seed
 
     def _generate_texture(self, seed: int) -> None:
-        self.create_render_target()
+        self._ensure_render_target()
         if self.render_target is None:
             return
         rng = CrtRand(seed)
@@ -256,8 +228,7 @@ class GroundRenderer(msgspec.Struct):
         if not decals:
             return False
 
-        self.create_render_target()
-        if self.render_target is None:
+        if self.render_target is None or not self._render_target_ready:
             return False
 
         inv_scale = 1.0 / self._normalized_texture_scale()
@@ -294,8 +265,7 @@ class GroundRenderer(msgspec.Struct):
         if not decals:
             return False
 
-        self.create_render_target()
-        if self.render_target is None:
+        if self.render_target is None or not self._render_target_ready:
             return False
 
         scale = self._normalized_texture_scale()
@@ -313,49 +283,46 @@ class GroundRenderer(msgspec.Struct):
         self._render_target_ready = True
         return True
 
-    def draw(
+    def draw(self, camera: Vec2) -> None:
+        out_w = max(1.0, float(rl.get_screen_width()))
+        out_h = max(1.0, float(rl.get_screen_height()))
+        screen_w, screen_h = self._fit_view_window(out_w, out_h)
+        cam = self._clamp_camera(camera, screen_w, screen_h)
+        self._draw_view(cam, screen_w=screen_w, screen_h=screen_h, out_w=out_w, out_h=out_h)
+
+    def draw_view(
         self,
         camera: Vec2,
         *,
-        screen_w: float | None = None,
-        screen_h: float | None = None,
-        out_w: float | None = None,
-        out_h: float | None = None,
+        screen_w: float,
+        screen_h: float,
+        out_w: float,
+        out_h: float,
     ) -> None:
-        if out_w is None:
-            out_w = float(rl.get_screen_width())
-        else:
-            out_w = float(out_w)
-        if out_h is None:
-            out_h = float(rl.get_screen_height())
-        else:
-            out_h = float(out_h)
-        if out_w <= 0.0:
-            out_w = float(rl.get_screen_width())
-        if out_h <= 0.0:
-            out_h = float(rl.get_screen_height())
-        if screen_w is None:
-            screen_w = out_w
-        else:
-            screen_w = float(screen_w)
-        if screen_h is None:
-            screen_h = out_h
-        else:
-            screen_h = float(screen_h)
-        if screen_w <= 0.0:
-            screen_w = max(1.0, out_w)
-        if screen_h <= 0.0:
-            screen_h = max(1.0, out_h)
-        screen_w, screen_h = self._fit_view_window(screen_w, screen_h)
-        cam = self._clamp_camera(camera, screen_w, screen_h)
+        self._draw_view(
+            camera,
+            screen_w=max(1.0, float(screen_w)),
+            screen_h=max(1.0, float(screen_h)),
+            out_w=max(1.0, float(out_w)),
+            out_h=max(1.0, float(out_h)),
+        )
 
+    def _draw_view(
+        self,
+        camera: Vec2,
+        *,
+        screen_w: float,
+        screen_h: float,
+        out_w: float,
+        out_h: float,
+    ) -> None:
         if self.render_target is None or not self._render_target_ready:
             rl.draw_rectangle(0, 0, int(out_w + 0.5), int(out_h + 0.5), TERRAIN_CLEAR_COLOR)
             return
 
         target = self.render_target
-        u0 = -cam.x / float(self.width)
-        v0 = -cam.y / float(self.height)
+        u0 = -camera.x / float(self.width)
+        v0 = -camera.y / float(self.height)
         u1 = u0 + screen_w / float(self.width)
         v1 = v0 + screen_h / float(self.height)
         src_x = u0 * float(target.texture.width)
@@ -436,7 +403,7 @@ class GroundRenderer(msgspec.Struct):
             cam_y = min_y
         return Vec2(cam_x, cam_y)
 
-    def _ensure_render_target(self, render_w: int, render_h: int) -> bool:
+    def _load_render_target(self, render_w: int, render_h: int) -> bool:
         if self.render_target is not None:
             if self.render_target.texture.width == render_w and self.render_target.texture.height == render_h:
                 return True
@@ -444,37 +411,33 @@ class GroundRenderer(msgspec.Struct):
             self.render_target = None
             self._render_target_ready = False
 
-        try:
-            candidate = rl.load_render_texture(render_w, render_h)
-        except (RuntimeError, OSError, ValueError):
+        candidate = rl.load_render_texture(render_w, render_h)
+        if candidate.id <= 0 or candidate.texture.width <= 0 or candidate.texture.height <= 0:
+            rl.unload_render_texture(candidate)
             return False
-
-        if candidate.id == 0 or not rl.is_render_texture_valid(candidate):
-            if candidate.id:
-                rl.unload_render_texture(candidate)
-            return False
-        if (
-            candidate.texture.width <= 0
-            or candidate.texture.height <= 0
-        ):
+        # raylib's IsRenderTextureValid() only checks ids and dimensions; use the
+        # rlgl completeness check so incomplete FBO attachments fail immediately.
+        if not rl.rl_framebuffer_complete(candidate.id):
             rl.unload_render_texture(candidate)
             return False
 
         self.render_target = candidate
         self._render_target_ready = False
-        self._render_target_warmup_passes = 1
         rl.set_texture_filter(self.render_target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         rl.set_texture_wrap(self.render_target.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
         return True
 
-    def _render_target_size_for(self, scale: float) -> tuple[int, int]:
-        pixel_scale = 1.0
+    def _render_pixel_ratio(self) -> float:
         screen_w = int(rl.get_screen_width())
         screen_h = int(rl.get_screen_height())
         render_w = int(rl.get_render_width())
         render_h = int(rl.get_render_height())
         if render_w == screen_w * 2 and render_h == screen_h * 2:
-            pixel_scale = 2.0
+            return 2.0
+        return 1.0
+
+    def _render_target_size_for(self, scale: float) -> tuple[int, int]:
+        pixel_scale = self._render_pixel_ratio()
         render_w = max(1, int((self.width * pixel_scale) / scale))
         render_h = max(1, int((self.height * pixel_scale) / scale))
         return render_w, render_h
@@ -483,11 +446,7 @@ class GroundRenderer(msgspec.Struct):
         scale = self.texture_scale
         if scale < 0.5:
             scale = 0.5
-        screen_w = int(rl.get_screen_width())
-        screen_h = int(rl.get_screen_height())
-        render_w = int(rl.get_render_width())
-        render_h = int(rl.get_render_height())
-        if render_w == screen_w * 2 and render_h == screen_h * 2:
+        if self._render_pixel_ratio() == 2.0:
             scale *= 0.5
         return scale
 

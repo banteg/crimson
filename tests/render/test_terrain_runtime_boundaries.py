@@ -31,7 +31,7 @@ def test_apply_terrain_setup_keeps_sim_rng_state(assets_dir: Path, monkeypatch) 
     assert int(world.sim_world.state.rng.state) == before_rng_state
     assert world.render_resources.ground is not None
     assert bool(world.render_resources.ground.generation_pending())
-    assert int(world.render_resources.ground._pending_generate_seed or -1) == 1337
+    assert int(world.render_resources.ground._scheduled_seed or -1) == 1337
 
 
 def test_apply_terrain_setup_updates_render_cache_without_touching_sim_rng(assets_dir: Path, monkeypatch) -> None:
@@ -58,7 +58,7 @@ def test_apply_terrain_setup_updates_render_cache_without_touching_sim_rng(asset
     assert int(world.sim_world.state.rng.state) == before_rng_state
     assert world.render_resources.ground is not None
     assert bool(world.render_resources.ground.generation_pending())
-    assert int(world.render_resources.ground._pending_generate_seed or -1) == before_rng_state
+    assert int(world.render_resources.ground._scheduled_seed or -1) == before_rng_state
     assert world.render_resources.ground.texture is base
     assert world.render_resources.ground.overlay is overlay
     assert world.render_resources.ground.overlay_detail is detail
@@ -74,7 +74,7 @@ def test_reset_schedules_terrain_from_sim_seed_without_advancing_rng(assets_dir:
     assert int(world.sim_world.state.rng.state) == 4242
     assert world.render_resources.ground is not None
     assert bool(world.render_resources.ground.generation_pending())
-    assert int(world.render_resources.ground._pending_generate_seed or -1) == 4242
+    assert int(world.render_resources.ground._scheduled_seed or -1) == 4242
 
 
 def test_reset_syncs_world_size_across_sim_and_render_ownership(assets_dir: Path) -> None:
