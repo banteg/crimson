@@ -337,6 +337,38 @@ def test_alpha_test_shader_failure_raises(mocker) -> None:
             pass
 
 
+def test_create_render_target_recovers_after_previous_failure(mocker) -> None:
+    ground = _ground()
+    attempts = iter([False, False, True])
+
+    mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_render_target_size_for",
+        autospec=True,
+        return_value=(1024, 1024),
+    )
+
+    def _ensure(self: GroundRenderer, _render_w: int, _render_h: int) -> bool:
+        ok = next(attempts)
+        if ok:
+            self.render_target = _as_render_texture(_RenderTextureStub())
+        return ok
+
+    mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_ensure_render_target",
+        autospec=True,
+        side_effect=_ensure,
+    )
+
+    ground.create_render_target()
+    assert ground.texture_failed is True
+
+    ground.create_render_target()
+    assert ground.texture_failed is False
+    assert ground.render_target is not None
+
+
 def test_ground_renderer_requires_all_three_textures() -> None:
     ground_renderer_ctor = cast(Any, GroundRenderer)
     with pytest.raises(TypeError):

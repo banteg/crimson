@@ -193,13 +193,6 @@ class GroundRenderer(msgspec.Struct):
                 continue
 
     def create_render_target(self) -> None:
-        if self.texture_failed:
-            if self.render_target is not None:
-                rl.unload_render_texture(self.render_target)
-                self.render_target = None
-            self._render_target_ready = False
-            return
-
         scale = self.texture_scale
         if scale < 0.5:
             scale = 0.5
@@ -209,12 +202,14 @@ class GroundRenderer(msgspec.Struct):
 
         render_w, render_h = self._render_target_size_for(scale)
         if self._ensure_render_target(render_w, render_h):
+            self.texture_failed = False
             return
 
         old_scale = scale
         self.texture_scale = scale + scale
         render_w, render_h = self._render_target_size_for(self.texture_scale)
         if self._ensure_render_target(render_w, render_h):
+            self.texture_failed = False
             return
 
         self.texture_failed = True
