@@ -15,6 +15,7 @@ from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
+from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, weapon_entry_for_projectile_type_id
@@ -175,7 +176,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     input_state = ctx.input_state
     dt = float(ctx.dt)
     state = ctx.state
-    detail_preset = int(ctx.detail_preset)
     creatures = ctx.creatures
     players = ctx.players
     force_pre_swap_fire_gate = bool(ctx.force_pre_swap_fire_gate)
@@ -242,23 +242,13 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     aim_delta = aim - player.pos
     aim_heading = float(heading_from_delta_f32(dx=float(aim_delta.x), dy=float(aim_delta.y)))
 
-    muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
     weapon_flags = int(weapon.flags or 0)
-    shell_casing_draws = (0, 0, 0, 0)
     if weapon_flags & 0x1:
-        shell_casing_draws = (
-            state.rng.rand(),
-            state.rng.rand(),
-            state.rng.rand(),
-            state.rng.rand(),
-        )
-    state.effects.spawn_shell_casing(
-        pos=muzzle,
-        aim_heading=aim_heading,
-        weapon_flags=weapon_flags,
-        draws=shell_casing_draws,
-        detail_preset=detail_preset,
-    )
+        # Native `player_fire_weapon` burns two RNG values for `flags & 1`
+        # weapons at 0x444b96/0x444b9b, but the return values are not
+        # consumed in the local firing path.
+        state.rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON_FLAGGED_BURN_1)
+        state.rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON_FLAGGED_BURN_2)
 
     shot_angle = _native_shot_angle_with_jitter(
         aim=aim,
@@ -279,6 +269,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     projectile_owner = owner_ref_for_player_projectiles(state, player.index)
     shot_count = 1
     spawn_muzzle_after_projectile = bool(is_fire_bullets) or int(weapon_id) in _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE
+    muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
     if not spawn_muzzle_after_projectile:
         _spawn_native_fire_muzzle_sprites(
             state=state,
