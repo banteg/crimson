@@ -2099,72 +2099,94 @@ def template_1a_1b_1c_ai1_blue_tint(ctx: PlanBuilder) -> None:
 def template_1d_alien_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
-    size = randf(ctx.rng, 20, 1.0, 35.0)
+    size = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_SIZE) % 20) + 35.0
     apply_size_health(c, size, health_scale=8.0 / 7.0, health_add=10.0)
-    apply_random_move_speed(c, ctx.rng, 15, 0.1, 1.1)
-    c.reward_value = randf(ctx.rng, 100, 1.0, 50.0)
+    c.move_speed = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_MOVE_SPEED) % 15) * 0.1 + 1.1
+    c.reward_value = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_REWARD) % 100) + 50.0
     apply_tint(
         c,
         (
-            randf(ctx.rng, 50, 0.001, 0.6),
-            randf(ctx.rng, 50, 0.01, 0.5),
-            randf(ctx.rng, 50, 0.001, 0.6),
+            float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_TINT_R) % 50) * 0.001
+            + 0.6,
+            float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_TINT_G) % 50) * 0.01
+            + 0.5,
+            float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_TINT_B) % 50) * 0.001
+            + 0.6,
             1.0,
         ),
     )
-    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    c.contact_damage = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_CONTACT_DAMAGE) % 10,
+    ) + 4.0
 
 
 @register_template(SpawnId.ALIEN_RANDOM_1E)
 def template_1e_alien_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
-    size = randf(ctx.rng, 30, 1.0, 35.0)
+    size = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_SIZE) % 30) + 35.0
     apply_size_health(c, size, health_scale=16.0 / 7.0, health_add=10.0)
-    apply_random_move_speed(c, ctx.rng, 17, 0.1, 1.5)
-    c.reward_value = randf(ctx.rng, 200, 1.0, 50.0)
+    c.move_speed = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_MOVE_SPEED) % 17) * 0.1 + 1.5
+    c.reward_value = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_REWARD) % 200) + 50.0
     apply_tint(
         c,
         (
-            randf(ctx.rng, 50, 0.001, 0.6),
-            randf(ctx.rng, 50, 0.001, 0.6),
-            randf(ctx.rng, 50, 0.01, 0.5),
+            float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_TINT_R) % 50) * 0.001
+            + 0.6,
+            float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_TINT_G) % 50) * 0.001
+            + 0.6,
+            float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_TINT_B) % 50) * 0.01
+            + 0.5,
             1.0,
         ),
     )
-    c.contact_damage = randf(ctx.rng, 30, 1.0, 4.0)
+    c.contact_damage = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_CONTACT_DAMAGE) % 30,
+    ) + 4.0
 
 
 @register_template(SpawnId.ALIEN_RANDOM_1F)
 def template_1f_alien_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
-    size = randf(ctx.rng, 30, 1.0, 45.0)
+    size = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_SIZE) % 30) + 45.0
     apply_size_health(c, size, health_scale=26.0 / 7.0, health_add=30.0)
-    apply_random_move_speed(c, ctx.rng, 21, 0.1, 1.6)
-    c.reward_value = randf(ctx.rng, 200, 1.0, 80.0)
+    c.move_speed = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_MOVE_SPEED) % 21) * 0.1 + 1.6
+    c.reward_value = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_REWARD) % 200) + 80.0
     apply_tint(
         c,
         (
-            randf(ctx.rng, 50, 0.01, 0.5),
-            randf(ctx.rng, 50, 0.001, 0.6),
-            randf(ctx.rng, 50, 0.001, 0.6),
+            float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_TINT_R) % 50) * 0.01
+            + 0.5,
+            float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_TINT_G) % 50) * 0.001
+            + 0.6,
+            float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_TINT_B) % 50) * 0.001
+            + 0.6,
             1.0,
         ),
     )
-    c.contact_damage = randf(ctx.rng, 35, 1.0, 8.0)
+    c.contact_damage = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_CONTACT_DAMAGE) % 35,
+    ) + 8.0
 
 
 @register_template(SpawnId.ALIEN_RANDOM_GREEN_20)
 def template_20_alien_random_green(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
-    size = randf(ctx.rng, 30, 1.0, 40.0)
+    size = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_SIZE) % 30) + 40.0
     apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
-    tint_g = randf(ctx.rng, 40, 0.01, 0.6)
+    c.move_speed = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_MOVE_SPEED) % 18,
+    ) * 0.1 + 1.1
+    tint_g = (
+        float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_TINT_G) % 40) * 0.01
+        + 0.6
+    )
     apply_tint(c, (0.3, tint_g, 0.3, 1.0))
-    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    c.contact_damage = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_CONTACT_DAMAGE) % 10,
+    ) + 4.0
 
 
 @register_template(SpawnId.LIZARD_RANDOM_2E)
@@ -2190,10 +2212,10 @@ def template_2e_lizard_random(ctx: PlanBuilder) -> None:
 def template_31_lizard_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.LIZARD
-    size = randf(ctx.rng, 30, 1.0, 40.0)
+    size = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_31_SIZE) % 30) + 40.0
     apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=10.0)
-    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
-    tint = randf(ctx.rng, 30, 0.01, 0.6)
+    c.move_speed = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_31_MOVE_SPEED) % 18) * 0.1 + 1.1
+    tint = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_31_TINT) % 30) * 0.01 + 0.6
     apply_tint(c, (tint, tint, 0.38, 1.0))
     c.contact_damage = size * 0.14 + 4.0
 
@@ -2202,10 +2224,12 @@ def template_31_lizard_random(ctx: PlanBuilder) -> None:
 def template_32_spider_sp1_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
-    size = randf(ctx.rng, 25, 1.0, 40.0)
+    size = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_32_SIZE) % 25) + 40.0
     apply_size_health_reward(c, size, health_scale=1.0, health_add=10.0)
-    apply_random_move_speed(c, ctx.rng, 17, 0.1, 1.1)
-    tint = randf(ctx.rng, 40, 0.01, 0.6)
+    c.move_speed = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_32_MOVE_SPEED) % 17,
+    ) * 0.1 + 1.1
+    tint = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_32_TINT) % 40) * 0.01 + 0.6
     apply_tint(c, (tint, tint, tint, 1.0))
     c.contact_damage = size * 0.14 + 4.0
 
@@ -2214,33 +2238,74 @@ def template_32_spider_sp1_random(ctx: PlanBuilder) -> None:
 def template_33_spider_sp1_random_red(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
-    size = randf(ctx.rng, 15, 1.0, 45.0)
+    size = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_RED_33_SIZE) % 15) + 45.0
     apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
-    apply_tint(c, (randf(ctx.rng, 40, 0.01, 0.6), 0.5, 0.5, 1.0))
-    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    c.move_speed = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_RED_33_MOVE_SPEED) % 18,
+    ) * 0.1 + 1.1
+    apply_tint(
+        c,
+        (
+            float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_RED_33_TINT_R) % 40)
+            * 0.01
+            + 0.6,
+            0.5,
+            0.5,
+            1.0,
+        ),
+    )
+    c.contact_damage = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_RED_33_CONTACT_DAMAGE) % 10,
+    ) + 4.0
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_GREEN_34)
 def template_34_spider_sp1_random_green(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
-    size = randf(ctx.rng, 20, 1.0, 40.0)
+    size = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_GREEN_34_SIZE) % 20) + 40.0
     apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
-    apply_tint(c, (0.5, randf(ctx.rng, 40, 0.01, 0.6), 0.5, 1.0))
-    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    c.move_speed = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_GREEN_34_MOVE_SPEED) % 18,
+    ) * 0.1 + 1.1
+    apply_tint(
+        c,
+        (
+            0.5,
+            float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_GREEN_34_TINT_G) % 40)
+            * 0.01
+            + 0.6,
+            0.5,
+            1.0,
+        ),
+    )
+    c.contact_damage = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_GREEN_34_CONTACT_DAMAGE) % 10,
+    ) + 4.0
 
 
 @register_template(SpawnId.SPIDER_SP2_RANDOM_35)
 def template_35_spider_sp2_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP2
-    size = randf(ctx.rng, 10, 1.0, 30.0)
+    size = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_35_SIZE) % 10) + 30.0
     apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
-    apply_tint(c, (0.8, randf(ctx.rng, 20, 0.01, 0.8), 0.8, 1.0))
-    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    c.move_speed = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_35_MOVE_SPEED) % 18,
+    ) * 0.1 + 1.1
+    apply_tint(
+        c,
+        (
+            0.8,
+            float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_35_TINT_G) % 20) * 0.01
+            + 0.8,
+            0.8,
+            1.0,
+        ),
+    )
+    c.contact_damage = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_35_CONTACT_DAMAGE) % 10,
+    ) + 4.0
 
 
 @register_template(SpawnId.ALIEN_AI7_ORBITER_36)
@@ -2317,12 +2382,14 @@ def template_3d_spider_sp1_random(ctx: PlanBuilder) -> None:
 def template_41_zombie_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ZOMBIE
-    size = randf(ctx.rng, 30, 1.0, 40.0)
+    size = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ZOMBIE_RANDOM_41_SIZE) % 30) + 40.0
     apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=10.0)
     apply_size_move_speed(c, size, 0.0025, 0.9)
-    tint = randf(ctx.rng, 40, 0.01, 0.6)
+    tint = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ZOMBIE_RANDOM_41_TINT) % 40) * 0.01 + 0.6
     apply_tint(c, (tint, tint, tint, 1.0))
-    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    c.contact_damage = float(
+        ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ZOMBIE_RANDOM_41_CONTACT_DAMAGE) % 10,
+    ) + 4.0
 
 
 def build_spawn_plan(
