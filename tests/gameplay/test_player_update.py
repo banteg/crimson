@@ -1086,11 +1086,16 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     assert len(projectiles) == 1
     assert_float_close(projectiles[0].angle, expected_angle)
     assert len(state.effects.iter_active()) == 1
-    assert [record.caller for record in rng.records_since()[:4]] == [
+    assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_UPDATE_CASING_ANGLE,
         RngCallerStatic.PLAYER_UPDATE_CASING_SPEED,
         RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION,
         RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION_STEP,
+        RngCallerStatic.PLAYER_UPDATE_SHOT_JITTER_DIR,
+        RngCallerStatic.PLAYER_UPDATE_SHOT_JITTER_MAG,
+        RngCallerStatic.PLAYER_UPDATE_SHOT_SFX,
+        RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
+        RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
     ]
 
 
