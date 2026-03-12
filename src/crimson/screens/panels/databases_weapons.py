@@ -174,18 +174,18 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
                 game_mode: int
                 demo_mode_active: bool
                 weapon_available: list[bool]
-                _weapon_available_game_mode: int
-                _weapon_available_unlock_index: int
-                _weapon_available_unlock_index_full: int
+                _weapon_available_game_mode: int | None
+                _weapon_available_unlock_index: int | None
+                _weapon_available_unlock_index_full: int | None
 
             stub = _Stub()
             stub.status = self.state.status
             stub.game_mode = self.state.config.game_mode
             stub.demo_mode_active = self.state.demo_enabled
             stub.weapon_available = [False] * int(WEAPON_COUNT_SIZE)
-            stub._weapon_available_game_mode = -1
-            stub._weapon_available_unlock_index = -1
-            stub._weapon_available_unlock_index_full = -1
+            stub._weapon_available_game_mode = None
+            stub._weapon_available_unlock_index = None
+            stub._weapon_available_unlock_index_full = None
             try:
                 weapon_refresh_available(stub)
                 available = stub.weapon_available

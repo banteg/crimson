@@ -12,6 +12,7 @@ from crimson.persistence.save_status import (
     GameStatus,
 )
 from crimson.weapon_runtime.availability import weapon_pick_random_available
+from crimson.weapons import WeaponId
 from grim.rand import Crand
 
 
@@ -71,8 +72,8 @@ def test_lan_deterministic_status_uses_host_save_snapshot() -> None:
     picked_a = weapon_pick_random_available(state_a)
     picked_b = weapon_pick_random_available(state_b)
 
-    assert picked_a == 2
-    assert picked_b == 1
+    assert picked_a == WeaponId.ASSAULT_RIFLE
+    assert picked_b == WeaponId.PISTOL
     assert rng_a.calls == 3
     assert rng_b.calls == 1
 
@@ -87,7 +88,7 @@ def test_lan_deterministic_status_uses_host_save_snapshot() -> None:
     state_c = _make_state(status=lan_status_a, rng=rng_c)
     state_d = _make_state(status=lan_status_b, rng=rng_d)
 
-    assert weapon_pick_random_available(state_c) == 2
-    assert weapon_pick_random_available(state_d) == 2
+    assert weapon_pick_random_available(state_c) == WeaponId.ASSAULT_RIFLE
+    assert weapon_pick_random_available(state_d) == WeaponId.ASSAULT_RIFLE
     assert rng_c.calls == 3
     assert rng_d.calls == 3

@@ -26,9 +26,9 @@ def weapon_refresh_available(state: GameplayState) -> None:
 
     game_mode = state.game_mode
     if (
-        int(state._weapon_available_game_mode) == int(game_mode)
-        and int(state._weapon_available_unlock_index) == unlock_index
-        and int(state._weapon_available_unlock_index_full) == unlock_index_full
+        state._weapon_available_game_mode == game_mode
+        and state._weapon_available_unlock_index == unlock_index
+        and state._weapon_available_unlock_index_full == unlock_index_full
     ):
         return
 
@@ -64,13 +64,13 @@ def weapon_refresh_available(state: GameplayState) -> None:
         if 0 <= splitter_id < len(available):
             available[splitter_id] = True
 
-    state._weapon_available_game_mode = int(game_mode)
+    state._weapon_available_game_mode = game_mode
     state._weapon_available_unlock_index = unlock_index
     state._weapon_available_unlock_index_full = unlock_index_full
 
 
-def weapon_pick_random_available(state: GameplayState) -> int:
-    """Select a random available weapon id (1..33).
+def weapon_pick_random_available(state: GameplayState) -> WeaponId:
+    """Select a random available weapon id.
 
     Port of `weapon_pick_random_available` (0x00452cd0).
     """
@@ -80,7 +80,7 @@ def weapon_pick_random_available(state: GameplayState) -> int:
 
     for _ in range(1000):
         base_rand = state.rng.rand(caller=RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_PICK)
-        weapon_id = base_rand % WEAPON_DROP_ID_COUNT + 1
+        weapon_id = WeaponId(base_rand % WEAPON_DROP_ID_COUNT + 1)
 
         # Bias: used weapons have a 50% chance to reroll once.
         if status is not None:
@@ -90,9 +90,9 @@ def weapon_pick_random_available(state: GameplayState) -> int:
                     state.rng.rand(caller=RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_GATE) & 1
                 ) == 0:
                     base_rand = state.rng.rand(caller=RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_PICK)
-                    weapon_id = base_rand % WEAPON_DROP_ID_COUNT + 1
+                    weapon_id = WeaponId(base_rand % WEAPON_DROP_ID_COUNT + 1)
 
-        if not (0 <= weapon_id < len(state.weapon_available)):
+        if not (0 <= int(weapon_id) < len(state.weapon_available)):
             continue
         if not state.weapon_available[weapon_id]:
             continue

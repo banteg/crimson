@@ -315,12 +315,12 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         class _Stub:
             status: object | None
             perk_available: list[bool]
-            _perk_available_unlock_index: int
+            _perk_available_unlock_index: int | None
 
         stub = _Stub()
         stub.status = self.state.status
         stub.perk_available = [False] * int(PERK_COUNT_SIZE)
-        stub._perk_available_unlock_index = -1
+        stub._perk_available_unlock_index = None
         perks_rebuild_available(cast(GameplayState, stub))
 
         perk_ids = [PerkId(idx) for idx, available in enumerate(stub.perk_available) if available and idx > 0]

@@ -63,6 +63,7 @@ def test_weapon_refresh_available_unlocks_quest_weapon_ids() -> None:
     assert state.weapon_available[WeaponId.PISTOL]
     assert state.weapon_available[WeaponId.ASSAULT_RIFLE]
     assert not state.weapon_available[WeaponId.SHOTGUN]
+    assert state._weapon_available_game_mode == GameMode.QUESTS
 
 
 def test_weapon_pick_random_available_enforces_unlocked() -> None:
@@ -73,7 +74,10 @@ def test_weapon_pick_random_available_enforces_unlocked() -> None:
     state.status = status
     state.game_mode = GameMode.QUESTS
 
-    assert weapon_pick_random_available(state) == WeaponId.PISTOL
+    picked = weapon_pick_random_available(state)
+
+    assert picked == WeaponId.PISTOL
+    assert isinstance(picked, WeaponId)
 
 
 def test_weapon_pick_random_available_rerolls_used_weapons() -> None:

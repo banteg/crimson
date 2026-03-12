@@ -11,7 +11,7 @@ from grim.raylib_api import rl
 from ...bonuses import BONUS_BY_ID, BonusId
 from ...bonuses.payload import BonusPointsPayload, BonusWeaponPayload
 from ...bonuses.pool import bonus_find_aim_hover_entry, bonus_label_for_entry
-from ...weapons import WEAPON_BY_ID, WeaponId
+from ...weapons import WEAPON_BY_ID
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
 
@@ -85,7 +85,7 @@ def draw_bonus_pickups(
             payload = bonus.payload
             if not isinstance(payload, BonusWeaponPayload):
                 continue
-            icon_index = int(WEAPON_BY_ID[WeaponId(int(payload.weapon_id))].icon_index)
+            icon_index = int(WEAPON_BY_ID[payload.weapon_id].icon_index)
             if not (0 <= icon_index <= 31):
                 continue
 

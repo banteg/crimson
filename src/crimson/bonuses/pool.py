@@ -96,7 +96,7 @@ def _weapon_id_from_native_payload_value(payload: BonusPayload) -> WeaponId | No
 def _weapon_id_from_weapon_payload(payload: BonusPayload) -> WeaponId | None:
     if not isinstance(payload, BonusWeaponPayload):
         return None
-    return WeaponId(int(payload.weapon_id))
+    return payload.weapon_id
 
 
 def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[WeaponId]:
@@ -293,11 +293,11 @@ class BonusPool:
                 )
 
                 entry.bonus_id = BonusId.WEAPON
-                weapon_id = WeaponId(weapon_pick_random_available(state))
-                entry.payload = bonus_weapon_payload(int(weapon_id))
+                weapon_id = weapon_pick_random_available(state)
+                entry.payload = bonus_weapon_payload(weapon_id)
                 if weapon_id == WeaponId.PISTOL:
-                    weapon_id = WeaponId(weapon_pick_random_available(state))
-                    entry.payload = bonus_weapon_payload(int(weapon_id))
+                    weapon_id = weapon_pick_random_available(state)
+                    entry.payload = bonus_weapon_payload(weapon_id)
 
                 matches = sum(1 for bonus in self._entries if bonus.bonus_id == entry.bonus_id)
                 if matches > 1:
@@ -494,7 +494,7 @@ def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> 
     if bonus_id == BonusId.WEAPON:
         if not isinstance(payload, BonusWeaponPayload):
             return "Weapon"
-        return weapon_display_name(WeaponId(int(payload.weapon_id)), preserve_bugs=bool(preserve_bugs))
+        return weapon_display_name(payload.weapon_id, preserve_bugs=bool(preserve_bugs))
     if bonus_id == BonusId.POINTS:
         points = int(payload.points) if isinstance(payload, BonusPointsPayload) else int(entry.amount)
         points_label = bonus_display_name(BonusId.POINTS, preserve_bugs=bool(preserve_bugs))

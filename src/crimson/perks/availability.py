@@ -26,7 +26,7 @@ def perks_rebuild_available(state: GameplayState) -> None:
     if state.status is not None:
         unlock_index = int(state.status.quest_unlock_index)
 
-    if int(state._perk_available_unlock_index) == unlock_index:
+    if state._perk_available_unlock_index == unlock_index:
         return
 
     available = state.perk_available
