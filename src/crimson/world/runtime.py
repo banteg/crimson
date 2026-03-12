@@ -133,12 +133,12 @@ class WorldRuntime:
             camera=self.camera,
         )
         if self.render_resources.ground is not None:
-            terrain_seed = int(self.sim_world.state.rng.state)
+            terrain_seed = self.sim_world.state.rng.state
             self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed)
 
     def open_runtime(self) -> None:
         self.render_resources.config = self.config
-        self.render_resources.open(terrain_seed=int(self.sim_world.state.rng.state))
+        self.render_resources.open(terrain_seed=self.sim_world.state.rng.state)
 
     def close_runtime(self) -> None:
         self.render_resources.close()

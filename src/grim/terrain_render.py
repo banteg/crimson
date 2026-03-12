@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 
 import msgspec
@@ -147,36 +147,6 @@ def _maybe_alpha_test(enabled: bool) -> Iterator[None]:
     finally:
         rl.end_shader_mode()
 
-
-def _unique_valid_textures(textures: Iterable[rl.Texture | None]) -> tuple[rl.Texture, ...]:
-    unique: list[rl.Texture] = []
-    seen: set[int] = set()
-    for texture in textures:
-        if texture is None or texture.id <= 0:
-            continue
-        texture_id = int(texture.id)
-        if texture_id in seen:
-            continue
-        seen.add(texture_id)
-        unique.append(texture)
-    return tuple(unique)
-
-
-@contextmanager
-def _temporary_point_filters(textures: Iterable[rl.Texture | None]) -> Iterator[None]:
-    unique = _unique_valid_textures(textures)
-    if not unique:
-        yield
-        return
-    for texture in unique:
-        rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
-    try:
-        yield
-    finally:
-        for texture in unique:
-            rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
-
-
 class GroundDecal(msgspec.Struct):
     texture: rl.Texture
     src: rl.Rectangle
@@ -204,23 +174,15 @@ class GroundRenderer(msgspec.Struct):
     height: int = TERRAIN_TEXTURE_SIZE
     texture_scale: float = 1.0
     alpha_test: bool = True
-    debug_log_stamps: bool = False
     texture_failed: bool = False
     screen_width: float | None = None
     screen_height: float | None = None
     terrain_filter: float = 1.0
     render_target: rl.RenderTexture | None = None
-    _debug_stamp_log: list[dict[str, object]] = msgspec.field(default_factory=list)
     _render_target_ready: bool = False
     _pending_generate: bool = False
     _pending_generate_seed: int | None = None
     _render_target_warmup_passes: int = 0
-
-    def debug_clear_stamp_log(self) -> None:
-        self._debug_stamp_log.clear()
-
-    def debug_stamp_log(self) -> tuple[dict[str, object], ...]:
-        return tuple(self._debug_stamp_log)
 
     def generation_pending(self) -> bool:
         """True while a scheduled terrain generate is still pending."""
@@ -229,13 +191,6 @@ class GroundRenderer(msgspec.Struct):
     def render_target_ready(self) -> bool:
         """True when the terrain render target exists and is ready for drawing."""
         return self.render_target is not None and self._render_target_ready
-
-    def _debug_stamp(self, kind: str, **payload: object) -> None:
-        if not self.debug_log_stamps:
-            return
-        self._debug_stamp_log.append({"kind": kind, **payload})
-        if len(self._debug_stamp_log) > 96:
-            del self._debug_stamp_log[:32]
 
     def process_pending(self) -> None:
         # Bound the amount of work per tick. Typical warmup sequence:
@@ -303,7 +258,7 @@ class GroundRenderer(msgspec.Struct):
         self._generate_texture(seed=seed)
 
     def schedule_generate(self, seed: int) -> None:
-        self._pending_generate_seed = int(seed)
+        self._pending_generate_seed = seed
         self._pending_generate = True
 
     def _generate_texture(self, seed: int) -> None:
@@ -311,9 +266,11 @@ class GroundRenderer(msgspec.Struct):
         if self.render_target is None:
             return
         rng = CrtRand(seed)
-        self._set_stamp_filters(point=True)
         rl.begin_texture_mode(self.render_target)
         rl.clear_background(TERRAIN_CLEAR_COLOR)
+        # Intentional rewrite deviation: the classic game appears to point-sample
+        # terrain stamps while rotating them into the RT, but bilinear sampling
+        # reads better in the port and still stays within current fixture tolerances.
         # Keep the ground RT alpha at 1.0 like the original exe (which typically uses
         # an XRGB render target). We still alpha-blend RGB, but preserve destination A.
         with _maybe_alpha_test(self.alpha_test):
@@ -329,7 +286,6 @@ class GroundRenderer(msgspec.Struct):
                 self._scatter_texture(self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY)
                 self._scatter_texture(self.overlay_detail, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL)
         rl.end_texture_mode()
-        self._set_stamp_filters(point=False)
         self._render_target_ready = True
 
     def bake_decals(self, decals: Sequence[GroundDecal]) -> bool:
@@ -340,50 +296,40 @@ class GroundRenderer(msgspec.Struct):
         if self.render_target is None:
             return False
 
-        if self.debug_log_stamps:
-            head = decals[0]
-            self._debug_stamp(
-                "bake_decals",
-                count=len(decals),
-                pos0=head.pos.to_dict(),
-                rot0=float(head.rotation_rad),
-            )
-
         inv_scale = 1.0 / self._normalized_texture_scale()
         rl.begin_texture_mode(self.render_target)
-        with _temporary_point_filters(decal.texture for decal in decals):
-            with _maybe_alpha_test(self.alpha_test):
-                with _blend_custom_separate(
-                    rd.RL_SRC_ALPHA,
-                    rd.RL_ONE_MINUS_SRC_ALPHA,
-                    rd.RL_ZERO,
-                    rd.RL_ONE,
-                    rd.RL_FUNC_ADD,
-                    rd.RL_FUNC_ADD,
-                ):
-                    for decal in decals:
-                        w = decal.width
-                        h = decal.height
-                        if decal.centered:
-                            pivot_x = decal.pos.x
-                            pivot_y = decal.pos.y
-                        else:
-                            pivot_x = decal.pos.x + w * 0.5
-                            pivot_y = decal.pos.y + h * 0.5
-                        pivot_x *= inv_scale
-                        pivot_y *= inv_scale
-                        w *= inv_scale
-                        h *= inv_scale
-                        dst = rl.Rectangle(pivot_x, pivot_y, w, h)
-                        origin = rl.Vector2(w * 0.5, h * 0.5)
-                        rl.draw_texture_pro(
-                            decal.texture,
-                            decal.src,
-                            dst,
-                            origin,
-                            math.degrees(decal.rotation_rad),
-                            decal.tint,
-                        )
+        with _maybe_alpha_test(self.alpha_test):
+            with _blend_custom_separate(
+                rd.RL_SRC_ALPHA,
+                rd.RL_ONE_MINUS_SRC_ALPHA,
+                rd.RL_ZERO,
+                rd.RL_ONE,
+                rd.RL_FUNC_ADD,
+                rd.RL_FUNC_ADD,
+            ):
+                for decal in decals:
+                    w = decal.width
+                    h = decal.height
+                    if decal.centered:
+                        pivot_x = decal.pos.x
+                        pivot_y = decal.pos.y
+                    else:
+                        pivot_x = decal.pos.x + w * 0.5
+                        pivot_y = decal.pos.y + h * 0.5
+                    pivot_x *= inv_scale
+                    pivot_y *= inv_scale
+                    w *= inv_scale
+                    h *= inv_scale
+                    dst = rl.Rectangle(pivot_x, pivot_y, w, h)
+                    origin = rl.Vector2(w * 0.5, h * 0.5)
+                    rl.draw_texture_pro(
+                        decal.texture,
+                        decal.src,
+                        dst,
+                        origin,
+                        math.degrees(decal.rotation_rad),
+                        decal.tint,
+                    )
         rl.end_texture_mode()
 
         self._render_target_ready = True
@@ -403,31 +349,17 @@ class GroundRenderer(msgspec.Struct):
         if self.render_target is None:
             return False
 
-        if self.debug_log_stamps:
-            head = decals[0]
-            self._debug_stamp(
-                "bake_corpse_decals",
-                shadow=shadow,
-                count=len(decals),
-                frame0=int(head.bodyset_frame),
-                top_left0=head.top_left.to_dict(),
-                size0=float(head.size),
-                rot0=float(head.rotation_rad),
-            )
-
         scale = self._normalized_texture_scale()
         inv_scale = 1.0 / scale
         offset = 2.0 * scale / float(self.width)
         rl.begin_texture_mode(self.render_target)
-        with _temporary_point_filters((bodyset_texture,)):
-            with _maybe_alpha_test(self.alpha_test):
-                if shadow:
-                    if self.debug_log_stamps:
-                        self._debug_stamp("corpse_shadow_pass", draws=len(decals))
-                    self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
-                if self.debug_log_stamps:
-                    self._debug_stamp("corpse_color_pass", draws=len(decals))
-                self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
+        # Intentional rewrite deviation: the classic game appears to point-sample
+        # corpse atlas frames while baking, but bilinear sampling reads better in
+        # the port at modern output scales.
+        with _maybe_alpha_test(self.alpha_test):
+            if shadow:
+                self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
+            self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
         rl.end_texture_mode()
 
         self._render_target_ready = True
@@ -618,20 +550,6 @@ class GroundRenderer(msgspec.Struct):
         if render_w == screen_w * 2 and render_h == screen_h * 2:
             scale *= 0.5
         return scale
-
-    def _set_stamp_filters(self, *, point: bool) -> None:
-        self._set_texture_filters(
-            (self.texture, self.overlay, self.overlay_detail),
-            point=point,
-        )
-
-    @staticmethod
-    def _set_texture_filters(textures: Iterable[rl.Texture], *, point: bool) -> None:
-        mode = rl.TextureFilter.TEXTURE_FILTER_POINT if point else rl.TextureFilter.TEXTURE_FILTER_BILINEAR
-        for texture in textures:
-            if texture.id <= 0:
-                continue
-            rl.set_texture_filter(texture, mode)
 
     def _corpse_src(self, bodyset_texture: rl.Texture, frame: int) -> rl.Rectangle:
         frame = int(frame) & 0xF

@@ -126,7 +126,7 @@ class DemoView:
         )
         self._runtime.terrain_runtime.apply_terrain_setup(
             terrain_slots=terrain.terrain_slots,
-            seed=int(terrain.terrain_seed),
+            seed=terrain.terrain_seed,
         )
         self._sync_audio_rng_from_runtime()
 

@@ -19,6 +19,11 @@ Implementation: `src/grim/terrain_render.py`
 - `GroundRenderer.generate(seed=...)` stamps the 3 procedural layers into the RT.
 - `GroundRenderer.draw(camera_x, camera_y)` draws the RT to the screen using UV scrolling.
 
+Intentional rewrite deviations:
+
+- Procedural terrain stamps keep bilinear sampling while rotating into the RT. The original engine appears to point-sample those stamps, but bilinear reads better in the port and still stays within current fixture tolerances.
+- Corpse atlas frames keep bilinear sampling while baking for the same reason.
+
 ## Ground dump fixtures (parity test)
 
 We captured **ground render-target dumps** via Frida and use the PNGs as
@@ -48,15 +53,15 @@ The rewrite exposes the same mechanism via two helpers:
 
 - `GroundRenderer.bake_decals([...])` for generic textured decals (blood, scorch, etc).
   - Applies `inv_scale = 1/texture_scale` to positions/sizes so baked pixels match the exe’s scaled RT.
-  - Temporarily forces point sampling while stamping, matching the exe’s bake-time `filter=1` state.
   - Runs through the terrain alpha-test shim, so low-alpha fringe texels are discarded before blending.
+  - Intentional rewrite deviation: generic decal sprites keep bilinear sampling while baking. The original engine appears to point-sample them, but bilinear reads better in the port.
 
 - `GroundRenderer.bake_corpse_decals(bodyset_texture, [...])` for corpse sprites (bodyset 4×4 atlas frames).
   - Implements the two-pass corpse baking:
     - a “shadow/darken” pass using `ZERO / ONE_MINUS_SRC_ALPHA`
     - a normal alpha blend color pass
-  - Temporarily forces point sampling during both corpse passes, like the original engine.
   - Applies the exe’s small alignment tweaks (`-0.5` shift and `offset = terrain_scale/512`) and rotation offset (`rotation - pi/2`).
+  - Intentional rewrite deviation: corpse atlas frames keep bilinear sampling while baking. The original engine appears to point-sample them, but that looks worse in the port at modern output scales.
 
 ## Terrain filter ("terrainFilter")
 

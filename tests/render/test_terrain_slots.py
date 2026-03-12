@@ -10,6 +10,7 @@ from crimson.terrain_slots import (
     Q4_TERRAIN_SLOTS,
     TerrainSlotTriplet,
     choose_unlock_terrain_slots,
+    resolve_terrain_slots,
     terrain_slots_for_quest,
     terrain_slots_to_texture_ids,
 )
@@ -89,3 +90,16 @@ def test_all_produced_terrain_slots_map_without_fallback_logic() -> None:
         texture_ids = terrain_slots_to_texture_ids(slots)
         assert len(texture_ids) == 3
         assert all(isinstance(texture_id, TextureId) for texture_id in texture_ids)
+
+
+def test_resolve_terrain_slots_uses_lookup_order() -> None:
+    values = resolve_terrain_slots(
+        (0, 1, 3),
+        lambda texture_id: texture_id.name,
+    )
+
+    assert values == (
+        TextureId.TER_Q1_BASE.name,
+        TextureId.TER_Q1_OVERLAY.name,
+        TextureId.TER_Q2_OVERLAY.name,
+    )
