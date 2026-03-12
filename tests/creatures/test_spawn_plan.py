@@ -273,6 +273,49 @@ def test_build_spawn_plan_direct_template_rand_sites_use_exact_native_callers(
     ("template_id", "callers"),
     [
         (
+            SpawnId.SPIDER_SP1_RANDOM_03,
+            [
+                RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_BASE_HEADING,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_03_SIZE,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_03_MOVE_SPEED,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_03_TINT_B,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_03_CONTACT_DAMAGE,
+            ],
+        ),
+        (
+            SpawnId.LIZARD_RANDOM_04,
+            [
+                RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_BASE_HEADING,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_04_SIZE,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_04_MOVE_SPEED,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_04_CONTACT_DAMAGE,
+            ],
+        ),
+        (
+            SpawnId.SPIDER_SP2_RANDOM_05,
+            [
+                RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_BASE_HEADING,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_05_SIZE,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_05_MOVE_SPEED,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_05_TINT_B,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_05_CONTACT_DAMAGE,
+            ],
+        ),
+        (
+            SpawnId.ALIEN_RANDOM_06,
+            [
+                RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_BASE_HEADING,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_06_SIZE,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_06_MOVE_SPEED,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_06_TINT_B,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_06_CONTACT_DAMAGE,
+            ],
+        ),
+        (
             SpawnId.ALIEN_RANDOM_1D,
             [
                 RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
@@ -323,6 +366,19 @@ def test_build_spawn_plan_direct_template_rand_sites_use_exact_native_callers(
                 RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_MOVE_SPEED,
                 RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_TINT_G,
                 RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_CONTACT_DAMAGE,
+            ],
+        ),
+        (
+            SpawnId.LIZARD_RANDOM_2E,
+            [
+                RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_BASE_HEADING,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_SIZE,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_MOVE_SPEED,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_TINT_R,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_TINT_G,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_TINT_B,
+                RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_CONTACT_DAMAGE,
             ],
         ),
         (
