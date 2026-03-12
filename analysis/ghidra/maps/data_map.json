@@ -4550,7 +4550,7 @@
       "comment": "on_activate callback slot for ui_perk_prompt_element (set to ui_callback_noop in ui_menu_layout_init).",
       "name": "ui_perk_prompt_on_activate",
       "program": "crimsonland.exe",
-      "type": "_func_1 *"
+      "type": "ui_element_callback_t"
     },
     {
       "address": "0x0048f248",
