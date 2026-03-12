@@ -12,7 +12,7 @@ from crimson.render.world import renderer as world_renderer
 from crimson.world import runtime as world_runtime
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
-from grim.terrain_render import GroundCorpseDecal, GroundDecal, GroundRenderer
+from grim.terrain_render import GroundCorpseDecal, GroundDecal, GroundRenderer, TerrainRtAlphaMode
 from tests.support.helpers import assert_float_close
 from tests.support.world_runtime import WorldRuntimeHost
 
@@ -281,13 +281,106 @@ def test_generate_partial_uses_overlay_detail_for_third_pass(mocker) -> None:
     def _noop_blend(*_args, **_kwargs):
         yield
 
-    mocker.patch.object(terrain_render, "_blend_custom_separate", side_effect=_noop_blend)
+    mocker.patch.object(terrain_render, "_terrain_rt_blend", side_effect=_noop_blend)
     alpha_test = mocker.patch.object(terrain_render, "_maybe_alpha_test", side_effect=_noop_blend)
 
     ground.generate(seed=1337)
 
     assert [call.args[1] for call in rt_scatter.call_args_list] == [base, overlay, detail]
     alpha_test.assert_called_once_with(True)
+
+
+def test_terrain_rt_blend_mask_alpha_writes_uses_color_mask(mocker) -> None:
+    events: list[str] = []
+
+    @contextmanager
+    def _record(name: str):
+        events.append(f"{name}:enter")
+        yield
+        events.append(f"{name}:exit")
+
+    blend_custom = mocker.patch.object(
+        terrain_render,
+        "_blend_custom",
+        side_effect=lambda *_args, **_kwargs: _record("blend"),
+    )
+    blend_separate = mocker.patch.object(
+        terrain_render,
+        "_blend_custom_separate",
+        side_effect=lambda *_args, **_kwargs: _record("separate"),
+    )
+    color_mask = mocker.patch.object(terrain_render.rl, "rl_color_mask", autospec=True)
+
+    with terrain_render._terrain_rt_blend(1, 2, 3, alpha_mode=TerrainRtAlphaMode.MASK_ALPHA_WRITES):
+        events.append("body")
+
+    assert events == ["blend:enter", "body", "blend:exit"]
+    blend_custom.assert_called_once_with(1, 2, 3)
+    blend_separate.assert_not_called()
+    assert [call.args for call in color_mask.call_args_list] == [
+        (True, True, True, False),
+        (True, True, True, True),
+    ]
+
+
+def test_terrain_rt_blend_preserve_dest_alpha_uses_separate_blend(mocker) -> None:
+    events: list[str] = []
+
+    @contextmanager
+    def _record(name: str):
+        events.append(f"{name}:enter")
+        yield
+        events.append(f"{name}:exit")
+
+    blend_custom = mocker.patch.object(
+        terrain_render,
+        "_blend_custom",
+        side_effect=lambda *_args, **_kwargs: _record("blend"),
+    )
+    blend_separate = mocker.patch.object(
+        terrain_render,
+        "_blend_custom_separate",
+        side_effect=lambda *_args, **_kwargs: _record("separate"),
+    )
+    color_mask = mocker.patch.object(terrain_render.rl, "rl_color_mask", autospec=True)
+
+    with terrain_render._terrain_rt_blend(1, 2, 3, alpha_mode=TerrainRtAlphaMode.PRESERVE_DEST_ALPHA):
+        events.append("body")
+
+    assert events == ["separate:enter", "body", "separate:exit"]
+    blend_custom.assert_not_called()
+    blend_separate.assert_called_once_with(1, 2, terrain_render.rd.RL_ZERO, terrain_render.rd.RL_ONE, 3, terrain_render.rd.RL_FUNC_ADD)
+    color_mask.assert_not_called()
+
+
+def test_terrain_rt_blend_plain_alpha_uses_regular_blend(mocker) -> None:
+    events: list[str] = []
+
+    @contextmanager
+    def _record(name: str):
+        events.append(f"{name}:enter")
+        yield
+        events.append(f"{name}:exit")
+
+    blend_custom = mocker.patch.object(
+        terrain_render,
+        "_blend_custom",
+        side_effect=lambda *_args, **_kwargs: _record("blend"),
+    )
+    blend_separate = mocker.patch.object(
+        terrain_render,
+        "_blend_custom_separate",
+        side_effect=lambda *_args, **_kwargs: _record("separate"),
+    )
+    color_mask = mocker.patch.object(terrain_render.rl, "rl_color_mask", autospec=True)
+
+    with terrain_render._terrain_rt_blend(1, 2, 3, alpha_mode=TerrainRtAlphaMode.BLEND_ALPHA):
+        events.append("body")
+
+    assert events == ["blend:enter", "body", "blend:exit"]
+    blend_custom.assert_called_once_with(1, 2, 3)
+    blend_separate.assert_not_called()
+    color_mask.assert_not_called()
 
 
 def test_ground_renderer_requires_all_three_textures() -> None:
@@ -337,7 +430,7 @@ def test_bake_decals_keep_default_filter(mocker) -> None:
         yield
 
     alpha_test = mocker.patch.object(terrain_render, "_maybe_alpha_test", side_effect=_noop_blend)
-    mocker.patch.object(terrain_render, "_blend_custom_separate", side_effect=_noop_blend)
+    mocker.patch.object(terrain_render, "_terrain_rt_blend", side_effect=_noop_blend)
 
     assert ground.bake_decals((decal,)) is True
 

@@ -18,6 +18,7 @@ Implementation: `src/grim/terrain_render.py`
 - `GroundRenderer.create_render_target()` creates/resizes the RT (`1024/texture_scale`).
 - `GroundRenderer.generate(seed=...)` stamps the 3 procedural layers into the RT.
 - `GroundRenderer.draw(camera_x, camera_y)` draws the RT to the screen using UV scrolling.
+- `scripts/benchmark_terrain_render.py` benchmarks terrain generation plus heavy decal/corpse baking across RT alpha strategies.
 
 Intentional rewrite deviations:
 
@@ -31,12 +32,12 @@ fixtures to ensure the rewrite produces identical output for the same seed and
 terrain texture indices.
 
 - Fixtures: `tests/fixtures/ground/ground_dump_*.png` + `tests/fixtures/ground/ground_dump_cases.json`
-- Test: `tests/test_ground_dump_fixtures.py`
+- Test: `tests/render/test_ground_dump_fixtures.py`
 
 Run the test:
 
 ```bash
-uv run pytest tests/test_ground_dump_fixtures.py
+uv run pytest tests/render/test_ground_dump_fixtures.py
 ```
 
 Notes:
@@ -84,24 +85,18 @@ result_alpha = src_alpha * src_alpha + dst_alpha * (1 - src_alpha)
 
 In the original exe, the `"ground"` render target is typically created in an
 XRGB format (no alpha), so this drift never matters. In the rewrite, the RT is
-RGBA, so we ensure the ground RT alpha stays at 1.0 by **preserving destination
-alpha** while stamping:
+RGBA, so we emulate XRGB more directly by **masking out alpha writes** while
+stamping into the terrain RT:
 
 ```python
-rl.rl_set_blend_factors_separate(
-    rl.RL_SRC_ALPHA, rl.RL_ONE_MINUS_SRC_ALPHA,  # RGB
-    rl.RL_ZERO, rl.RL_ONE,                       # A (keep dst alpha)
-    rl.RL_FUNC_ADD, rl.RL_FUNC_ADD,
-)
-rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
+rl.rl_color_mask(True, True, True, False)
+rl.rl_set_blend_factors(rl.RL_SRC_ALPHA, rl.RL_ONE_MINUS_SRC_ALPHA, rl.RL_FUNC_ADD)
+rl.begin_blend_mode(rl.BLEND_CUSTOM)
 # On some backends, re-apply factors after switching the mode.
-rl.rl_set_blend_factors_separate(
-    rl.RL_SRC_ALPHA, rl.RL_ONE_MINUS_SRC_ALPHA,  # RGB
-    rl.RL_ZERO, rl.RL_ONE,                       # A (keep dst alpha)
-    rl.RL_FUNC_ADD, rl.RL_FUNC_ADD,
-)
+rl.rl_set_blend_factors(rl.RL_SRC_ALPHA, rl.RL_ONE_MINUS_SRC_ALPHA, rl.RL_FUNC_ADD)
 # ... stamp decals/strokes into the RT ...
 rl.end_blend_mode()
+rl.rl_color_mask(True, True, True, True)
 ```
 
 Additionally, when drawing the terrain RT to the screen, we use a custom blend
@@ -117,6 +112,17 @@ rl.end_blend_mode()
 ```
 
 This ensures terrain is always drawn opaque, matching the original game's behavior.
+
+Why this mode:
+
+- It keeps the terrain RT alpha pinned to `255` through generation and baking, which matches the XRGB mental model better than relying on separate alpha blending.
+- On the current raylib/OpenGL backend, `mask-alpha-writes` benchmarked slightly faster than the previous `BLEND_CUSTOM_SEPARATE` path while producing identical RGB output for the benchmark cases.
+
+Benchmark it directly:
+
+```bash
+uv run python scripts/benchmark_terrain_render.py --assets-dir /path/to/game_bins/crimsonland/1.9.93-gog
+```
 
 ## Current status
 
