@@ -16,6 +16,7 @@ from .game.types import GameState
 from .game_modes import GameMode
 from .quests import quest_by_level
 from .quests.level import QuestLevel
+from .rng_caller_static import RngCallerStatic
 from .screens.assets import require_runtime_resources
 from .sim.bootstrap import run_explicit_terrain_prelude
 from .sim.input import PlayerInput
@@ -510,11 +511,46 @@ class DemoView:
         self._apply_terrain_setup(terrain_slots=Q2_TERRAIN_SLOTS)
         self._runtime.sim_world.state.bonuses.weapon_power_up = 15.0
         for idx in range(20):
-            x = float(int(rng.rand() % 200) + 32)
-            y = float(int(rng.rand() % 899) + 64)
+            x = float(
+                int(
+                    rng.rand(
+                        caller=RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP1_X,
+                    )
+                    % 200,
+                )
+                + 32,
+            )
+            y = float(
+                int(
+                    rng.rand(
+                        caller=RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP1_Y,
+                    )
+                    % 899,
+                )
+                + 64,
+            )
             self._spawn(SpawnId.SPIDER_SP1_RANDOM_GREEN_34, Vec2(x, y), heading=RANDOM_HEADING_SENTINEL)
             if idx % 3 != 0:
-                spawn_pos = Vec2(float(int(rng.rand() % 30) + 32), float(int(rng.rand() % 899) + 64))
+                spawn_pos = Vec2(
+                    float(
+                        int(
+                            rng.rand(
+                                caller=RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP2_X,
+                            )
+                            % 30,
+                        )
+                        + 32,
+                    ),
+                    float(
+                        int(
+                            rng.rand(
+                                caller=RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP2_Y,
+                            )
+                            % 899,
+                        )
+                        + 64,
+                    ),
+                )
                 self._spawn(SpawnId.SPIDER_SP2_RANDOM_35, spawn_pos, heading=RANDOM_HEADING_SENTINEL)
 
     def _setup_variant_2(self) -> None:
@@ -545,11 +581,46 @@ class DemoView:
         # base of the quest metadata array in this build, so it resolves to quest 1.1.
         self._apply_terrain_setup(terrain_slots=quest.terrain_slots)
         for idx in range(20):
-            x = float(int(rng.rand() % 200) + 32)
-            y = float(int(rng.rand() % 899) + 64)
+            x = float(
+                int(
+                    rng.rand(
+                        caller=RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_BIG_X,
+                    )
+                    % 200,
+                )
+                + 32,
+            )
+            y = float(
+                int(
+                    rng.rand(
+                        caller=RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_BIG_Y,
+                    )
+                    % 899,
+                )
+                + 64,
+            )
             self._spawn(SpawnId.ALIEN_CONST_GREEN_24, Vec2(x, y), heading=0.0)
             if idx % 3 != 0:
-                spawn_pos = Vec2(float(int(rng.rand() % 30) + 32), float(int(rng.rand() % 899) + 64))
+                spawn_pos = Vec2(
+                    float(
+                        int(
+                            rng.rand(
+                                caller=RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_SMALL_X,
+                            )
+                            % 30,
+                        )
+                        + 32,
+                    ),
+                    float(
+                        int(
+                            rng.rand(
+                                caller=RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_SMALL_Y,
+                            )
+                            % 899,
+                        )
+                        + 64,
+                    ),
+                )
                 self._spawn(SpawnId.ALIEN_CONST_GREEN_SMALL_25, spawn_pos, heading=0.0)
 
     def _draw_overlay(self) -> None:
