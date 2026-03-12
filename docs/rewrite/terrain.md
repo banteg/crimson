@@ -18,7 +18,6 @@ Implementation: `src/grim/terrain_render.py`
 - `GroundRenderer.create_render_target()` creates/resizes the RT (`1024/texture_scale`).
 - `GroundRenderer.generate(seed=...)` stamps the 3 procedural layers into the RT.
 - `GroundRenderer.draw(camera_x, camera_y)` draws the RT to the screen using UV scrolling.
-- `scripts/benchmark_terrain_render.py` benchmarks terrain generation plus heavy decal/corpse baking across RT alpha strategies.
 
 Intentional rewrite deviations:
 
@@ -115,14 +114,8 @@ This ensures terrain is always drawn opaque, matching the original game's behavi
 
 Why this mode:
 
-- It keeps the terrain RT alpha pinned to `255` through generation and baking, which matches the XRGB mental model better than relying on separate alpha blending.
-- On the current raylib/OpenGL backend, `mask-alpha-writes` benchmarked slightly faster than the previous `BLEND_CUSTOM_SEPARATE` path while producing identical RGB output for the benchmark cases.
-
-Benchmark it directly:
-
-```bash
-uv run python scripts/benchmark_terrain_render.py --assets-dir /path/to/game_bins/crimsonland/1.9.93-gog
-```
+- It keeps the terrain RT alpha pinned to `255` through generation and baking, which matches the XRGB mental model directly.
+- It is simpler than carrying separate blend-factor branches for alternate alpha behaviors that we do not intend to ship.
 
 ## Current status
 

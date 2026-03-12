@@ -3,7 +3,6 @@ from __future__ import annotations
 import math
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from enum import Enum
 
 import msgspec
 
@@ -24,13 +23,6 @@ TERRAIN_DENSITY_OVERLAY = 0x23
 TERRAIN_DENSITY_DETAIL = 0x0F
 TERRAIN_DENSITY_SHIFT = 19
 TERRAIN_ROTATION_MAX = 0x13A
-
-
-class TerrainRtAlphaMode(str, Enum):
-    PRESERVE_DEST_ALPHA = "preserve-dest-alpha"
-    MASK_ALPHA_WRITES = "mask-alpha-writes"
-    BLEND_ALPHA = "blend-alpha"
-
 
 _ALPHA_TEST_REF_U8 = 4
 _ALPHA_TEST_REF_F32 = float(_ALPHA_TEST_REF_U8) / 255.0
@@ -119,27 +111,6 @@ def _blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Iter
 
 
 @contextmanager
-def _blend_custom_separate(
-    src_rgb: int,
-    dst_rgb: int,
-    src_alpha: int,
-    dst_alpha: int,
-    eq_rgb: int,
-    eq_alpha: int,
-) -> Iterator[None]:
-    # NOTE: raylib/rlgl tracks custom blend factors as state; some backends only
-    # apply them when switching the blend mode. Set factors both before and
-    # after BeginBlendMode() to ensure the current draw uses the intended values.
-    rl.rl_set_blend_factors_separate(src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha)
-    rl.begin_blend_mode(rl.BlendMode.BLEND_CUSTOM_SEPARATE)
-    rl.rl_set_blend_factors_separate(src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha)
-    try:
-        yield
-    finally:
-        rl.end_blend_mode()
-
-
-@contextmanager
 def _color_mask(*, write_alpha: bool) -> Iterator[None]:
     rl.rl_color_mask(True, True, True, bool(write_alpha))
     try:
@@ -153,29 +124,10 @@ def _terrain_rt_blend(
     src_factor: int,
     dst_factor: int,
     blend_equation: int,
-    *,
-    alpha_mode: TerrainRtAlphaMode,
 ) -> Iterator[None]:
-    if alpha_mode is TerrainRtAlphaMode.PRESERVE_DEST_ALPHA:
-        with _blend_custom_separate(
-            src_factor,
-            dst_factor,
-            rd.RL_ZERO,
-            rd.RL_ONE,
-            blend_equation,
-            rd.RL_FUNC_ADD,
-        ):
+    with _color_mask(write_alpha=False):
+        with _blend_custom(src_factor, dst_factor, blend_equation):
             yield
-        return
-
-    if alpha_mode is TerrainRtAlphaMode.MASK_ALPHA_WRITES:
-        with _color_mask(write_alpha=False):
-            with _blend_custom(src_factor, dst_factor, blend_equation):
-                yield
-        return
-
-    with _blend_custom(src_factor, dst_factor, blend_equation):
-        yield
 
 
 @contextmanager
@@ -216,7 +168,6 @@ class GroundRenderer(msgspec.Struct):
     texture: rl.Texture
     overlay: rl.Texture
     overlay_detail: rl.Texture
-    rt_alpha_mode: TerrainRtAlphaMode = TerrainRtAlphaMode.MASK_ALPHA_WRITES
     width: int = TERRAIN_TEXTURE_SIZE
     height: int = TERRAIN_TEXTURE_SIZE
     texture_scale: float = 1.0
@@ -325,7 +276,6 @@ class GroundRenderer(msgspec.Struct):
                 rd.RL_SRC_ALPHA,
                 rd.RL_ONE_MINUS_SRC_ALPHA,
                 rd.RL_FUNC_ADD,
-                alpha_mode=self.rt_alpha_mode,
             ):
                 self._scatter_texture(self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE)
                 self._scatter_texture(self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY)
@@ -348,7 +298,6 @@ class GroundRenderer(msgspec.Struct):
                 rd.RL_SRC_ALPHA,
                 rd.RL_ONE_MINUS_SRC_ALPHA,
                 rd.RL_FUNC_ADD,
-                alpha_mode=self.rt_alpha_mode,
             ):
                 for decal in decals:
                     w = decal.width
@@ -613,7 +562,6 @@ class GroundRenderer(msgspec.Struct):
             rd.RL_ZERO,
             rd.RL_ONE_MINUS_SRC_ALPHA,
             rd.RL_FUNC_ADD,
-            alpha_mode=self.rt_alpha_mode,
         ):
             for decal in decals:
                 src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
@@ -648,7 +596,6 @@ class GroundRenderer(msgspec.Struct):
             rd.RL_SRC_ALPHA,
             rd.RL_ONE_MINUS_SRC_ALPHA,
             rd.RL_FUNC_ADD,
-            alpha_mode=self.rt_alpha_mode,
         ):
             for decal in decals:
                 src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
