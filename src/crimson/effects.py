@@ -870,34 +870,66 @@ class EffectPool:
         count = max(0, int(count))
         for _ in range(count):
             r0 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BURST_ROTATION)
-            rotation = float(r0 & 0x7F) * 0.049087387
             r1 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BURST_VEL_X)
-            vx = float((r1 & 0x7F) - 0x40)
             r2 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BURST_VEL_Y)
-            vy = float((r2 & 0x7F) - 0x40)
-            velocity = Vec2(vx, vy)
             if scale_step is None:
                 r3 = rng.rand(caller=RngCallerStatic.EFFECT_SPAWN_BURST_SCALE_STEP)
-                step = float(r3 % 100) * 0.01 + 0.1
+                sampled_scale_step: int | None = r3
             else:
-                step = float(scale_step)
+                sampled_scale_step = None
 
-            self.spawn(
-                effect_id=int(EffectId.BURST),
+            self.spawn_burst_particle(
                 pos=pos,
-                vel=velocity,
-                rotation=rotation,
-                scale=1.0,
-                half_width=32.0,
-                half_height=32.0,
-                age=0.0,
-                lifetime=float(lifetime),
-                flags=0x1D,
+                rotation_draw=r0,
+                vel_x_draw=r1,
+                vel_y_draw=r2,
+                scale_step_draw=sampled_scale_step,
+                scale_step=scale_step,
+                lifetime=lifetime,
                 color=color,
-                rotation_step=0.0,
-                scale_step=step,
-                detail_preset=int(detail_preset),
+                detail_preset=detail_preset,
             )
+
+    def spawn_burst_particle(
+        self,
+        *,
+        pos: Vec2,
+        rotation_draw: int,
+        vel_x_draw: int,
+        vel_y_draw: int,
+        scale_step_draw: int | None = None,
+        scale_step: float | None = None,
+        lifetime: float = 0.5,
+        color: RGBA = RGBA(0.4, 0.5, 1.0, 0.5),
+        detail_preset: int,
+    ) -> None:
+        rotation = float(int(rotation_draw) & 0x7F) * 0.049087387
+        velocity = Vec2(
+            float((int(vel_x_draw) & 0x7F) - 0x40),
+            float((int(vel_y_draw) & 0x7F) - 0x40),
+        )
+        if scale_step is None:
+            assert scale_step_draw is not None
+            step = float(int(scale_step_draw) % 100) * 0.01 + 0.1
+        else:
+            step = float(scale_step)
+
+        self.spawn(
+            effect_id=int(EffectId.BURST),
+            pos=pos,
+            vel=velocity,
+            rotation=rotation,
+            scale=1.0,
+            half_width=32.0,
+            half_height=32.0,
+            age=0.0,
+            lifetime=float(lifetime),
+            flags=0x1D,
+            color=color,
+            rotation_step=0.0,
+            scale_step=step,
+            detail_preset=int(detail_preset),
+        )
 
     def spawn_ring(
         self,

@@ -1598,20 +1598,14 @@ class CreaturePool:
                 xp_awarded = award_experience_from_reward(state, killer, float(creature.reward_value))
 
         if players:
-            spawned_bonus = state.bonus_pool.try_spawn_on_kill(
+            state.bonus_pool.try_spawn_on_kill(
                 pos=creature.pos,
                 state=state,
                 players=players,
+                detail_preset=detail_preset,
                 world_width=world_width,
                 world_height=world_height,
             )
-            if spawned_bonus is not None:
-                state.effects.spawn_burst(
-                    pos=spawned_bonus.pos,
-                    count=16,
-                    rng=rng,
-                    detail_preset=int(detail_preset),
-                )
 
         armored_death = bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK)
 

@@ -5,6 +5,7 @@ from crimson.bonuses.apply import bonus_apply
 from crimson.creatures.runtime import CreaturePool
 from crimson.gameplay import GameplayState
 from crimson.projectiles.types import ProjectileTemplateId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close
@@ -42,7 +43,8 @@ def test_nuke_damage_is_limited_to_radius() -> None:
 
 
 def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(rng=rng)
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
 
     bonus_apply(state, player, BonusId.NUKE, origin=player.pos, creatures=[], players=[player], detail_preset=5)
@@ -60,3 +62,10 @@ def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
     for entry in gauss:
         assert_float_close(entry.travel_budget, 215.0)
         assert_float_close(entry.speed_scale, 1.0)
+
+    assert [record.caller for record in rng.records_since()[:11]] == [
+        RngCallerStatic.BONUS_APPLY_NUKE_BULLET_COUNT,
+        *([RngCallerStatic.BONUS_APPLY_NUKE_PISTOL_ANGLE, RngCallerStatic.BONUS_APPLY_NUKE_PISTOL_SPEED_SCALE] * 4),
+        RngCallerStatic.BONUS_APPLY_NUKE_GAUSS_ANGLE_1,
+        RngCallerStatic.BONUS_APPLY_NUKE_GAUSS_ANGLE_2,
+    ]
