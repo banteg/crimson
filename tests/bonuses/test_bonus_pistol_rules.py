@@ -174,6 +174,7 @@ def test_try_spawn_on_kill_owns_success_burst_rng() -> None:
     assert [record.caller for record in rng.records_since(before_calls) if record.caller is not None] == [
         RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BASE_GATE,
         RngCallerStatic.BONUS_PICK_RANDOM_TYPE_ROLL,
+        RngCallerStatic.BONUS_SPAWN_AT_POS_POINTS_AMOUNT,
         *(
             [
                 RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_ROTATION,

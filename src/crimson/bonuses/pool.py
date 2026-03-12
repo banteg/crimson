@@ -246,7 +246,7 @@ class BonusPool:
             entry.payload = bonus_weapon_payload(weapon_pick_random_available(state))
         elif entry.bonus_id == BonusId.POINTS:
             entry.payload = bonus_points_payload(
-                1000 if (rng.rand() & 7) < 3 else 500,
+                1000 if (rng.rand(caller=RngCallerStatic.BONUS_SPAWN_AT_POS_POINTS_AMOUNT) & 7) < 3 else 500,
             )
         else:
             meta = BONUS_BY_ID.get(entry.bonus_id)
