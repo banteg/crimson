@@ -567,6 +567,37 @@ def _resolve_data_type(bv, type_text: str):
     return _parse_type_string(bv, _rewrite_type_tokens(type_text, bv))
 
 
+def _deref_type(bv, type_obj):
+    current = type_obj
+    while current is not None and current.type_class == bn.TypeClass.NamedTypeReferenceClass:
+        current = current.deref_named_type_reference(bv)
+    return current
+
+
+def _is_aggregate_type(bv, type_obj) -> bool:
+    current = _deref_type(bv, type_obj)
+    if current is None:
+        return False
+    if current.type_class == bn.TypeClass.StructureTypeClass:
+        return True
+    if current.type_class != bn.TypeClass.ArrayTypeClass:
+        return False
+    element_type = getattr(current, "element_type", None)
+    if element_type is None:
+        return False
+    return _is_aggregate_type(bv, element_type)
+
+
+def _find_enclosing_aggregate_range(
+    aggregate_ranges: list[tuple[int, int, str]],
+    addr: int,
+) -> tuple[int, int, str] | None:
+    for start, end, label in reversed(aggregate_ranges):
+        if start < addr < end:
+            return start, end, label
+    return None
+
+
 def _apply_function_signature(bv, func, signature: str) -> None:
     _seed_common_types(bv)
 
@@ -746,6 +777,7 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
         "missing": 0,
         "skipped": 0,
     }
+    aggregate_ranges: list[tuple[int, int, str]] = []
 
     for row in rows:
         if not isinstance(row, dict):
@@ -797,12 +829,18 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
                 data_type = _resolve_data_type(bv, type_text)
             except Exception as exc:
                 raise RuntimeError(f"type resolution failed for {_entry_label(row, addr)} ({type_text})") from exc
-            try:
-                bv.define_user_data_var(addr, data_type)
-                stats["types"] += 1
-                changed = True
-            except Exception as exc:
-                raise RuntimeError(f"type apply failed for {_entry_label(row, addr)} ({type_text})") from exc
+            enclosing = _find_enclosing_aggregate_range(aggregate_ranges, addr)
+            if enclosing is None:
+                try:
+                    bv.define_user_data_var(addr, data_type)
+                    stats["types"] += 1
+                    changed = True
+                except Exception as exc:
+                    raise RuntimeError(f"type apply failed for {_entry_label(row, addr)} ({type_text})") from exc
+                if data_type.width > 1 and _is_aggregate_type(bv, data_type):
+                    aggregate_ranges.append((addr, addr + data_type.width, _entry_label(row, addr)))
+            elif not changed:
+                stats["skipped"] += 1
 
         if changed:
             stats["applied"] += 1
