@@ -83,9 +83,8 @@ class TickRunner:
             tick_inputs = list(source_tick.inputs)
             commands = list(source_tick.commands)
 
-            timing = self._session.timing_for_dt(float(source_tick.dt_seconds))
             tick = self._session.step_tick(
-                timing=timing,
+                dt=float(source_tick.dt_seconds),
                 inputs=tick_inputs,
                 trace_rng=self._config.trace_rng,
                 commands=commands,

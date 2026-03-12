@@ -90,9 +90,9 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     step_tick_calls: list[list[PlayerInput]] = []
     original_step_tick = DeterministicSession.step_tick
 
-    def _capture_step_tick(self, *, timing, inputs, trace_rng=False, commands=None):
+    def _capture_step_tick(self, *, dt, inputs, trace_rng=False, commands=None):
         step_tick_calls.append(list(inputs))
-        return original_step_tick(self, timing=timing, inputs=inputs, trace_rng=trace_rng, commands=commands)
+        return original_step_tick(self, dt=dt, inputs=inputs, trace_rng=trace_rng, commands=commands)
 
     mocker.patch.object(DeterministicSession, "step_tick", _capture_step_tick)
 

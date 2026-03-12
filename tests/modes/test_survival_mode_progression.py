@@ -26,8 +26,7 @@ def test_survival_mode_session_has_progression_enabled_and_levels_up(make_mode_c
         mode.player.experience = survival_level_threshold(1) + 1
         mode.state.perk_selection.pending_count = 0
 
-        timing = session.timing_for_dt(1.0 / 60.0)
-        session.step_tick(timing=timing, inputs=[PlayerInput()])
+        session.step_tick(dt=1.0 / 60.0, inputs=[PlayerInput()])
 
         assert int(mode.player.level) == 2
         assert int(mode.state.perk_selection.pending_count) == 1

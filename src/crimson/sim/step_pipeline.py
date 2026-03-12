@@ -1,23 +1,14 @@
 from __future__ import annotations
 
-import time
-from collections.abc import Callable
-
 import msgspec
 
-from grim.rand import CrandLike, RecordingCrand
 from grim.sfx_map import SfxId
 
-from ..game_modes import GameMode
 from ..math_parity import f32
-from ..perks.availability import perks_rebuild_available
-from ..weapon_runtime import weapon_refresh_available
-from .input import PlayerInput
-from .input_frame import normalize_input_frame
-from .presentation_step import PresentationStepCommands, plan_world_presentation_step
-from .terrain_fx import TerrainFxBatch, TerrainFxScratch
+from .presentation_step import PresentationStepCommands
+from .terrain_fx import TerrainFxBatch
 from .timing import FrameTiming
-from .world_state import WorldEvents, WorldState
+from .world_state import WorldEvents
 
 
 class PresentationRngTrace(msgspec.Struct):
@@ -33,17 +24,6 @@ class DeterministicStepResult(msgspec.Struct):
     presentation_rng_trace: PresentationRngTrace
     terrain_fx: TerrainFxBatch = TerrainFxBatch()
     post_apply_sfx: tuple[SfxId, ...] = ()
-
-
-class StepPipelineOptions(msgspec.Struct, frozen=True):
-    world_size: float
-    damage_scale_by_type: dict[int, float]
-    detail_preset: int
-    gore_disabled: int
-    game_mode: GameMode
-    demo_mode_active: bool
-    perk_progression_enabled: bool
-    game_tune_started: bool
 
 
 def time_scale_reflex_boost_bonus(
@@ -82,111 +62,3 @@ def time_scale_reflex_boost_factor(
     if float(reflex_f32) < 1.0:
         time_scale_factor = f32((1.0 - float(reflex_f32)) * 0.7 + 0.3)
     return float(time_scale_factor)
-
-
-def run_deterministic_step(
-    *,
-    world: WorldState,
-    timing: FrameTiming,
-    options: StepPipelineOptions,
-    apply_world_dt_steps: bool = True,
-    inputs: list[PlayerInput] | None,
-    terrain_fx: TerrainFxScratch,
-    defer_camera_shake_update: bool = False,
-    defer_freeze_corpse_fx: bool = False,
-    mid_step_hook: Callable[[], None] | None = None,
-    rng_marks_out: dict[str, int] | None = None,
-    trace_presentation_rng: bool = False,
-) -> DeterministicStepResult:
-    state = world.state
-    fx_queue = terrain_fx.decals
-    fx_queue_rotated = terrain_fx.corpses
-    presentation_rng: CrandLike
-    recording_rng: RecordingCrand | None = None
-    if trace_presentation_rng:
-        recording_rng = RecordingCrand(state.rng)
-        presentation_rng = recording_rng
-    else:
-        presentation_rng = state.rng
-
-    def _mark(name: str) -> None:
-        if rng_marks_out is None:
-            return
-        rng_marks_out[str(name)] = int(state.rng.state)
-
-    inputs = normalize_input_frame(inputs, player_count=len(world.players)).as_list()
-
-    _mark("gw_begin")
-    state.game_mode = options.game_mode
-    state.demo_mode_active = bool(options.demo_mode_active)
-
-    weapon_refresh_available(state)
-    _mark("gw_after_weapon_refresh")
-    perks_rebuild_available(state)
-    _mark("gw_after_perks_rebuild")
-    _mark("gw_after_time_scale")
-
-    prev_audio = [
-        (player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in world.players
-    ]
-    prev_perk_pending = int(state.perk_selection.pending_count)
-
-    events = world.step(
-        float(timing.dt_sim),
-        apply_world_dt_steps=apply_world_dt_steps,
-        dt_player_local=float(timing.dt_player_local),
-        defer_camera_shake_update=defer_camera_shake_update,
-        defer_freeze_corpse_fx=defer_freeze_corpse_fx,
-        mid_step_hook=mid_step_hook,
-        inputs=inputs,
-        world_size=float(options.world_size),
-        damage_scale_by_type=options.damage_scale_by_type,
-        detail_preset=int(options.detail_preset),
-        gore_disabled=int(options.gore_disabled),
-        fx_queue=fx_queue,
-        fx_queue_rotated=fx_queue_rotated,
-        game_mode=options.game_mode,
-        perk_progression_enabled=bool(options.perk_progression_enabled),
-        game_tune_started=bool(options.game_tune_started),
-        rng_marks=rng_marks_out,
-    )
-
-    trace = PresentationRngTrace()
-
-    plan_ns_start = time.perf_counter_ns()
-    presentation = plan_world_presentation_step(
-        state=state,
-        players=world.players,
-        fx_queue=fx_queue,
-        hits=events.hits,
-        pickups=events.pickups,
-        event_sfx=events.sfx,
-        prev_audio=prev_audio,
-        prev_perk_pending=int(prev_perk_pending),
-        game_mode=options.game_mode,
-        demo_mode_active=bool(options.demo_mode_active),
-        perk_progression_enabled=bool(options.perk_progression_enabled),
-        rng=presentation_rng,
-        detail_preset=int(options.detail_preset),
-        gore_disabled=int(options.gore_disabled),
-        game_tune_started=bool(options.game_tune_started),
-        trigger_game_tune=events.trigger_game_tune,
-        hit_sfx=events.hit_sfx,
-    )
-    presentation_plan_ms = (time.perf_counter_ns() - plan_ns_start) / 1_000_000.0
-
-    if recording_rng is not None:
-        trace.draws_total = int(recording_rng.calls)
-
-    if rng_marks_out is not None and recording_rng is not None:
-        rng_marks_out["ps_draws_total"] = int(trace.draws_total)
-
-    return DeterministicStepResult(
-        dt_sim=float(timing.dt_sim),
-        timing=timing,
-        events=events,
-        presentation=presentation,
-        presentation_plan_ms=float(presentation_plan_ms),
-        presentation_rng_trace=trace,
-        terrain_fx=terrain_fx.take_batch(),
-    )

@@ -288,7 +288,7 @@ class WorldRuntimeHost:
 
         tick_inputs = None if inputs is None else list(inputs)
         tick = session.step_tick(
-            timing=session.timing_for_dt(float(dt)),
+            dt=float(dt),
             inputs=tick_inputs,
             trace_rng=False,
         )

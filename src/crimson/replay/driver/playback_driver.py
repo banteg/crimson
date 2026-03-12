@@ -428,9 +428,8 @@ class PlaybackDriver:
                 commands=list(commands),
             )
 
-            timing = self.session.timing_for_dt(dt_tick)
             session_tick = self.session.step_tick(
-                timing=timing,
+                dt=dt_tick,
                 inputs=inputs,
                 trace_rng=self.trace_rng,
                 commands=commands,
