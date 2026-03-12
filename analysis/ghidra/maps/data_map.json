@@ -30,55 +30,55 @@
     {
       "address": "0x004711f8",
       "comment": "Console command string: \"exec\".",
-      "name": "console_cmd_exec",
+      "name": "console_cmd_exec_str",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00471200",
       "comment": "Console command string: \"minimizeconsole\".",
-      "name": "console_cmd_minimize",
+      "name": "console_cmd_minimize_str",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00471210",
       "comment": "Console command string: \"extendconsole\".",
-      "name": "console_cmd_extend",
+      "name": "console_cmd_extend_str",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00471220",
       "comment": "Console command string: \"clear\".",
-      "name": "console_cmd_clear",
+      "name": "console_cmd_clear_str",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00471228",
       "comment": "Console command string: \"quit\".",
-      "name": "console_cmd_quit",
+      "name": "console_cmd_quit_str",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00471230",
       "comment": "Console command string: \"set\".",
-      "name": "console_cmd_set",
+      "name": "console_cmd_set_str",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00471234",
       "comment": "Console command string: \"echo\".",
-      "name": "console_cmd_echo",
+      "name": "console_cmd_echo_str",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x0047123c",
       "comment": "Console command string: \"vars\".",
-      "name": "console_cmd_vars",
+      "name": "console_cmd_vars_str",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00471244",
       "comment": "Console command string: \"cmdlist\".",
-      "name": "console_cmd_cmdlist",
+      "name": "console_cmd_cmdlist_str",
       "program": "crimsonland.exe"
     },
     {
@@ -6043,7 +6043,8 @@
       "address": "0x00495ac8",
       "comment": "SYSTEMTIME scratch written by GetLocalTime; year/month used for high score stamps and seasonal checks.",
       "name": "local_system_time",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "SYSTEMTIME"
     },
     {
       "address": "0x00495ace",

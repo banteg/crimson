@@ -3676,28 +3676,28 @@
     "program": "crimsonland.exe",
     "address": "0x004600c0",
     "name": "math_atan2_packed",
-    "signature": "ulonglong math_atan2_packed(void)",
+    "signature": "unsigned __int64 math_atan2_packed(void)",
     "comment": "packed atan2 approximation; inputs in MM0/MM1"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004601c0",
     "name": "math_acos_packed",
-    "signature": "ulonglong math_acos_packed(void)",
+    "signature": "unsigned __int64 math_acos_packed(void)",
     "comment": "packed acos approximation; input in MM0"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004607a0",
     "name": "math_sincos_packed",
-    "signature": "ulonglong math_sincos_packed(void)",
+    "signature": "unsigned __int64 math_sincos_packed(void)",
     "comment": "packed sin/cos approximation for the angle in MM0"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004608c0",
     "name": "math_sin_packed",
-    "signature": "ulonglong math_sin_packed(void)",
+    "signature": "unsigned __int64 math_sin_packed(void)",
     "comment": "packed sin approximation; input in MM0"
   },
   {
