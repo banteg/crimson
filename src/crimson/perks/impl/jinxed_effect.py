@@ -31,23 +31,6 @@ def _award_experience_from_reward(ctx: PerksUpdateEffectsCtx, *, reward_value: f
     if float(ctx.state.bonuses.double_experience) > 0.0:
         gained += _award_experience_once_from_reward(player=player, reward_value=float(reward_value))
     return int(gained)
-
-
-def _select_jinxed_accident_target(ctx: PerksUpdateEffectsCtx) -> PlayerState:
-    player0 = ctx.players[0]
-    if ctx.state.preserve_bugs:
-        return player0
-
-    alive_indices = [idx for idx, player in enumerate(ctx.players) if float(player.health) > 0.0]
-    if not alive_indices:
-        return player0
-    if len(alive_indices) == 1:
-        return ctx.players[alive_indices[0]]
-
-    pick = ctx.state.rng.rand() % len(alive_indices)
-    return ctx.players[alive_indices[pick]]
-
-
 def update_jinxed_timer(ctx: PerksUpdateEffectsCtx) -> None:
     if ctx.state.jinxed_timer >= 0.0:
         ctx.state.jinxed_timer -= ctx.dt
@@ -68,7 +51,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         % 10
         == 3
     ):
-        player = _select_jinxed_accident_target(ctx)
+        player = ctx.players[0]
         player.health = float(player.health) - 5.0
         if ctx.fx_queue is not None:
             ctx.fx_queue.add_random(
