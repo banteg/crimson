@@ -3,9 +3,17 @@ from __future__ import annotations
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand
+
+_BURST_CALLERS = [
+    RngCallerStatic.EFFECT_SPAWN_BURST_ROTATION,
+    RngCallerStatic.EFFECT_SPAWN_BURST_VEL_X,
+    RngCallerStatic.EFFECT_SPAWN_BURST_VEL_Y,
+    RngCallerStatic.EFFECT_SPAWN_BURST_SCALE_STEP,
+]
 
 
 def test_bandage_clamps_health_and_spawns_burst() -> None:
@@ -17,6 +25,10 @@ def test_bandage_clamps_health_and_spawns_burst() -> None:
 
     assert player.health == 53.0
     assert len(state.effects.iter_active()) == 8
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERK_APPLY_BANDAGE_HEAL,
+        *(_BURST_CALLERS * 8),
+    ]
 
 
 def test_bandage_preserve_bugs_keeps_native_multiplier_behavior() -> None:
@@ -29,3 +41,7 @@ def test_bandage_preserve_bugs_keeps_native_multiplier_behavior() -> None:
 
     assert player.health == 100.0
     assert len(state.effects.iter_active()) == 8
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PERK_APPLY_BANDAGE_HEAL,
+        *(_BURST_CALLERS * 8),
+    ]
