@@ -54,24 +54,24 @@ _TYPE_REPLACEMENTS = {
 
 
 def _log_info(message: str) -> None:
-    if bn and hasattr(bn, "log_info"):
+    if bn is not None:
         bn.log_info(message)
     else:
         print(message)
 
 
-def _log_warn(message: str) -> None:
-    if bn and hasattr(bn, "log_warn"):
-        bn.log_warn(message)
-    else:
-        print(f"warning: {message}")
-
-
 def _log_error(message: str) -> None:
-    if bn and hasattr(bn, "log_error"):
+    if bn is not None:
         bn.log_error(message)
     else:
         print(f"error: {message}")
+
+
+def _require_platform(bv):
+    platform = bv.platform
+    if platform is None:
+        raise RuntimeError("BinaryView has no platform")
+    return platform
 
 
 def _candidate_roots(bv=None) -> list[Path]:
@@ -84,12 +84,11 @@ def _candidate_roots(bv=None) -> list[Path]:
                 roots.append(script_path.parents[1])
         except Exception:
             pass
-    if bv is not None and hasattr(bv, "file"):
-        for attr in ("original_filename", "filename", "file_name", "path"):
-            value = getattr(bv.file, attr, None)
+    if bv is not None:
+        for value in (bv.file.original_filename, bv.file.filename):
             if value:
                 try:
-                    roots.append(Path(str(value)).resolve().parent)
+                    roots.append(Path(value).resolve().parent)
                 except Exception:
                     pass
     try:
@@ -176,24 +175,13 @@ def _load_entries(path: Path) -> list[dict]:
 
 def _program_candidates(bv) -> set[str]:
     candidates: set[str] = set()
-    if not hasattr(bv, "file"):
-        return candidates
-    file_obj = bv.file
-    for attr in ("original_filename", "filename", "file_name", "path"):
-        value = getattr(file_obj, attr, None)
-        if not value:
-            continue
-        for item in (str(value), os.path.basename(str(value))):
-            lowered = item.lower()
-            candidates.add(lowered)
-            if lowered.endswith(".bndb"):
-                candidates.add(lowered[:-5])
-    basename = getattr(file_obj, "basename", None)
-    if basename:
-        lowered = str(basename).lower()
-        candidates.add(lowered)
-        if lowered.endswith(".bndb"):
-            candidates.add(lowered[:-5])
+    for value in (bv.file.original_filename, bv.file.filename):
+        if value:
+            for item in (str(value), os.path.basename(str(value))):
+                lowered = item.lower()
+                candidates.add(lowered)
+                if lowered.endswith(".bndb"):
+                    candidates.add(lowered[:-5])
     return candidates
 
 
@@ -204,53 +192,30 @@ def _program_matches(entry_program: str | None, candidates: set[str]) -> bool:
 
 
 def _parse_type_string(bv, type_text: str):
-    try:
-        return bv.parse_type_string(type_text)
-    except Exception:
-        pass
-    if bn and hasattr(bn, "parse_type_string"):
-        try:
-            return bn.parse_type_string(type_text)
-        except Exception:
-            pass
-    return None
+    parsed_type, _ = bv.parse_type_string(type_text)
+    return parsed_type
 
 
 def _get_type_by_name(bv, name: str):
-    if hasattr(bv, "get_type_by_name"):
-        try:
-            return bv.get_type_by_name(name)
-        except Exception:
-            return None
-    types = getattr(bv, "types", None)
-    if isinstance(types, dict):
-        return types.get(name)
-    return None
+    return bv.get_type_by_name(name)
 
 
 def _define_user_type(bv, name: str, type_obj) -> bool:
-    if not bn or type_obj is None:
+    if bn is None or type_obj is None:
         return False
-    if hasattr(bv, "define_user_type"):
-        try:
-            bv.define_user_type(name, type_obj)
-            return True
-        except Exception:
-            return False
-    return False
+    try:
+        bv.define_user_type(name, type_obj)
+        return True
+    except Exception:
+        return False
 
 
 def _undefine_user_type(bv, name) -> bool:
-    for attr in ("undefine_user_type", "undefine_type", "remove_user_type"):
-        fn = getattr(bv, attr, None)
-        if not callable(fn):
-            continue
-        try:
-            fn(name)
-            return True
-        except Exception:
-            continue
-    return False
+    try:
+        bv.undefine_user_type(name)
+        return True
+    except Exception:
+        return False
 
 
 def _define_or_replace_user_type(bv, name, type_obj) -> bool:
@@ -261,110 +226,50 @@ def _define_or_replace_user_type(bv, name, type_obj) -> bool:
     return False
 
 
-def _bn_void_ptr_type(bv):
-    if not bn:
-        return None
-    try:
-        if hasattr(bn.Type, "void") and hasattr(bn.Type, "pointer"):
-            return bn.Type.pointer(bv.arch, bn.Type.void())
-    except Exception:
-        pass
-    return None
-
-
 def _define_alias_type(bv, name: str, type_obj) -> bool:
     if _get_type_by_name(bv, name) is not None:
         return True
     return _define_user_type(bv, name, type_obj)
 
 
-def _structure_builder_create():
-    if not bn:
-        return None
-    for candidate in ("StructureBuilder", "structure"):
-        builder = getattr(bn, candidate, None)
-        if builder is None:
-            continue
-        create = getattr(builder, "create", None)
-        if callable(create):
-            try:
-                return create()
-            except Exception:
-                continue
-    types_mod = getattr(bn, "types", None)
-    if types_mod is not None:
-        builder = getattr(types_mod, "StructureBuilder", None)
-        if builder is not None and callable(getattr(builder, "create", None)):
-            try:
-                return builder.create()
-            except Exception:
-                return None
-    return None
-
-
-def _type_structure(struct_builder):
-    if not bn or struct_builder is None:
-        return None
-    for attr in ("structure_type", "structure"):
-        ctor = getattr(bn.Type, attr, None)
-        if callable(ctor):
-            try:
-                return ctor(struct_builder)
-            except Exception:
-                continue
-    return None
-
-
-def _type_u8():
-    if not bn:
-        return None
-    try:
-        return bn.Type.int(1, False)
-    except Exception:
-        return None
-
-
 def _type_uint(bits: int):
-    if not bn:
+    if bn is None:
         return None
-    try:
-        return bn.Type.int(bits // 8, False)
-    except Exception:
-        return None
+    return bn.Type.int(bits // 8, False)
 
 
 def _type_sint(bits: int):
-    if not bn:
+    if bn is None:
         return None
-    try:
-        return bn.Type.int(bits // 8, True)
-    except Exception:
-        return None
-
-
-def _type_array(element_type, count: int):
-    if not bn:
-        return None
-    ctor = getattr(bn.Type, "array", None)
-    if callable(ctor):
-        try:
-            return ctor(element_type, count)
-        except Exception:
-            return None
-    return None
+    return bn.Type.int(bits // 8, True)
 
 
 def _type_width(type_obj) -> int | None:
     if type_obj is None:
         return None
-    for attr in ("width", "size"):
-        try:
-            value = getattr(type_obj, attr, None)
-        except Exception:
-            continue
-        if isinstance(value, int):
-            return value
-    return None
+    return type_obj.width
+
+
+def _type_member_count(type_obj) -> int | None:
+    if type_obj is None:
+        return None
+    if type_obj.type_class != bn.TypeClass.StructureTypeClass:
+        return None
+    return len(type_obj.members)
+
+
+def _should_replace_incomplete_type(existing, replacement) -> bool:
+    existing_members = _type_member_count(existing)
+    replacement_members = _type_member_count(replacement)
+    if replacement_members in (None, 0) or existing_members not in (0, None):
+        return False
+    existing_width = _type_width(existing)
+    replacement_width = _type_width(replacement)
+    return (
+        existing_width is None
+        or replacement_width is None
+        or existing_width == replacement_width
+    )
 
 
 def _define_opaque_struct_type(bv, name: str, size: int | None = None) -> bool:
@@ -373,109 +278,63 @@ def _define_opaque_struct_type(bv, name: str, size: int | None = None) -> bool:
         width = _type_width(existing)
         if width is None or width > 0:
             return True
-    if not bn:
+    if bn is None:
         return False
 
     if size is None:
         # Clang treats empty structs as 1 byte; Binja's 0-byte structs cause noisy conversion warnings.
         size = 1
 
-    sb = _structure_builder_create()
-    if sb is None:
-        return False
-
-    if size is not None:
-        width_set = False
-        try:
-            if hasattr(sb, "width"):
-                sb.width = int(size)
-                width_set = True
-        except Exception:
-            pass
-        if not width_set:
-            # Older APIs may not expose StructureBuilder.width; fall back to a dummy field so
-            # the resulting type has a stable non-zero size.
-            try:
-                u8 = _type_u8()
-                arr = _type_array(u8, int(size)) if u8 is not None else None
-                append = getattr(sb, "append", None)
-                if callable(append) and arr is not None:
-                    append(arr, "_opaque")
-            except Exception:
-                pass
-
-    struct_type = _type_structure(sb)
-    if struct_type is None:
-        return False
+    sb = bn.StructureBuilder.create(width=int(size))
+    struct_type = bn.Type.structure_type(sb)
     if existing is not None:
         return _define_or_replace_user_type(bv, name, struct_type)
     return _define_user_type(bv, name, struct_type)
 
 
 def _parse_types_from_source(bv, source: str, *, filename: str | None = None, include_dirs: list[str] | None = None):
-    if not bn:
-        return None
+    if not filename:
+        raise ValueError("filename is required for type source parsing")
 
-    platform = getattr(bv, "platform", None)
-
-    candidates = []
-    if hasattr(bv, "parse_types_from_source"):
-        candidates.append(("bv.parse_types_from_source", bv.parse_types_from_source))
-    if hasattr(bn, "parse_types_from_source"):
-        candidates.append(("bn.parse_types_from_source", bn.parse_types_from_source))
-
-    last_exc: Exception | None = None
-    for _, fn in candidates:
-        call_variants: list[tuple[tuple, dict]] = [
-            ((source,), {}),
-            ((source,), {"filename": filename} if filename else {}),
-            ((source,), {"platform": platform} if platform else {}),
-            ((source,), {k: v for k, v in (("filename", filename), ("platform", platform)) if v is not None}),
-        ]
-        if include_dirs:
-            call_variants.extend(
-                [
-                    ((source,), {"include_dirs": include_dirs}),
-                    ((source,), {"filename": filename, "include_dirs": include_dirs} if filename else {"include_dirs": include_dirs}),
-                    (
-                        (source,),
-                        {k: v for k, v in (("filename", filename), ("platform", platform), ("include_dirs", include_dirs)) if v is not None},
-                    ),
-                ],
-            )
-        if filename:
-            call_variants.append(((source, filename), {}))
-        if platform and filename:
-            call_variants.append(((source, filename, platform), {}))
-
-        for args, kwargs in call_variants:
-            try:
-                return fn(*args, **kwargs)
-            except Exception as exc:
-                last_exc = exc
-                continue
-
-    if last_exc is not None:
-        _log_warn(f"type header parse failed: {last_exc}")
-    return None
+    return bv.platform.parse_types_from_source(
+        source,
+        filename=filename,
+        include_dirs=include_dirs or [],
+        auto_type_source="user",
+    )
 
 
 def _extract_parsed_types(parsed) -> dict:
     if parsed is None:
-        return {}
-    if isinstance(parsed, tuple) and parsed and isinstance(parsed[0], dict):
-        return parsed[0]
-    types = getattr(parsed, "types", None)
-    if isinstance(types, dict):
-        return types
-    return {}
+        raise RuntimeError("type parser returned no result")
+    types = parsed.types
+    if not isinstance(types, dict):
+        raise TypeError(f"unexpected parsed type container: {type(parsed)!r}")
+    return types
 
 
 def _sanitize_header_source(source: str) -> str:
     if not source:
         return source
-    lines = [line for line in source.splitlines() if not line.lstrip().startswith("#")]
-    return _rewrite_type_tokens("\n".join(lines))
+    return "\n".join(line for line in source.splitlines() if not line.lstrip().startswith("#"))
+
+
+def _header_parse_prelude(source: str) -> str:
+    import re
+
+    if not source:
+        return ""
+
+    prelude: list[str] = []
+    for name, replacement in sorted(_TYPE_REPLACEMENTS.items()):
+        typedef_def = rf"\btypedef\b[^;\n{{}}]*\b{re.escape(name)}\b\s*(?:;|\[|\()"
+        tag_def = rf"\b(?:struct|union|enum)\s+{re.escape(name)}\b\s*(?:;|\{{)"
+        if re.search(typedef_def, source) or re.search(tag_def, source):
+            continue
+        prelude.append(f"typedef {replacement} {name};")
+    if not prelude:
+        return ""
+    return "\n".join(prelude) + "\n"
 
 
 def _seed_repo_headers(bv) -> None:
@@ -514,30 +373,27 @@ def _seed_repo_headers(bv) -> None:
     seeded_total = 0
     for header_path in header_paths:
         if not header_path.exists():
-            continue
-        try:
-            source = header_path.read_text(encoding="utf-8", errors="replace")
-        except Exception as exc:
-            _log_warn(f"failed to read header {header_path}: {exc}")
-            continue
+            raise FileNotFoundError(f"type header not found: {header_path}")
+        source = header_path.read_text(encoding="utf-8", errors="replace")
 
         source = _sanitize_header_source(source)
-        parsed = _parse_types_from_source(bv, source, filename=str(header_path), include_dirs=include_dirs)
+        parsed_source = _header_parse_prelude(source) + source
+        parsed = _parse_types_from_source(bv, parsed_source, filename=str(header_path), include_dirs=include_dirs)
         types = _extract_parsed_types(parsed)
         if not types:
-            continue
+            raise RuntimeError(f"type header parsed zero types: {header_path}")
 
         for name, type_obj in types.items():
             name_str = str(name)
             if not name_str:
-                continue
+                raise RuntimeError(f"type header produced unnamed type in {header_path}")
             existing = _get_type_by_name(bv, name_str)
             if existing is not None:
-                existing_width = _type_width(existing)
-                if existing_width is None or existing_width > 0:
+                if not _should_replace_incomplete_type(existing, type_obj):
                     continue
-            if _define_or_replace_user_type(bv, name, type_obj):
-                seeded_total += 1
+            if not _define_or_replace_user_type(bv, name, type_obj):
+                raise RuntimeError(f"failed to define type {name_str} from {header_path}")
+            seeded_total += 1
 
     if seeded_total:
         _log_info(f"Seeded {seeded_total} typedef(s)/struct(s) from repo headers")
@@ -547,35 +403,43 @@ def _seed_repo_headers(bv) -> None:
 
 def _seed_common_types(bv) -> None:
     global _SEEDED_TYPES
-    if _SEEDED_TYPES or not bn:
+    if _SEEDED_TYPES or bn is None:
         return
 
     _seed_repo_headers(bv)
 
     # Numeric typedefs that commonly appear in Ghidra-derived signatures.
-    _define_alias_type(bv, "uint", _type_uint(32))
-    _define_alias_type(bv, "ushort", _type_uint(16))
-    _define_alias_type(bv, "uchar", _type_uint(8))
-    _define_alias_type(bv, "uInt", _type_uint(32))
-    _define_alias_type(bv, "uLong", _type_uint(32))
-    _define_alias_type(bv, "ulonglong", _type_uint(64))
-    _define_alias_type(bv, "byte", _type_uint(8))
-
-    _define_alias_type(bv, "undefined1", _type_uint(8))
-    _define_alias_type(bv, "undefined2", _type_uint(16))
-    _define_alias_type(bv, "undefined4", _type_uint(32))
-    _define_alias_type(bv, "undefined8", _type_uint(64))
+    for name, type_obj in (
+        ("uint", _type_uint(32)),
+        ("ushort", _type_uint(16)),
+        ("uchar", _type_uint(8)),
+        ("uInt", _type_uint(32)),
+        ("uLong", _type_uint(32)),
+        ("ulonglong", _type_uint(64)),
+        ("byte", _type_uint(8)),
+        ("undefined1", _type_uint(8)),
+        ("undefined2", _type_uint(16)),
+        ("undefined4", _type_uint(32)),
+        ("undefined8", _type_uint(64)),
+    ):
+        if not _define_alias_type(bv, name, type_obj):
+            raise RuntimeError(f"failed to define common alias type {name}")
 
     # Common size types.
-    addr_bytes = getattr(getattr(bv, "arch", None), "address_size", None)
-    if isinstance(addr_bytes, int) and addr_bytes in (4, 8):
-        _define_alias_type(bv, "size_t", _type_uint(addr_bytes * 8))
-        _define_alias_type(bv, "ssize_t", _type_sint(addr_bytes * 8))
-        _define_alias_type(bv, "uintptr_t", _type_uint(addr_bytes * 8))
-        _define_alias_type(bv, "intptr_t", _type_sint(addr_bytes * 8))
+    addr_bytes = bv.arch.address_size
+    if addr_bytes in (4, 8):
+        for name, type_obj in (
+            ("size_t", _type_uint(addr_bytes * 8)),
+            ("ssize_t", _type_sint(addr_bytes * 8)),
+            ("uintptr_t", _type_uint(addr_bytes * 8)),
+            ("intptr_t", _type_sint(addr_bytes * 8)),
+        ):
+            if not _define_alias_type(bv, name, type_obj):
+                raise RuntimeError(f"failed to define common alias type {name}")
 
     # Opaque structs frequently used in signatures as pointer bases.
-    _define_opaque_struct_type(bv, "FILE")
+    if not _define_opaque_struct_type(bv, "FILE"):
+        raise RuntimeError("failed to define FILE opaque struct")
 
     _SEEDED_TYPES = True
 
@@ -622,7 +486,7 @@ def _type_keywords() -> set[str]:
     }
 
 
-def _rewrite_type_tokens(text: str) -> str:
+def _rewrite_type_tokens(text: str, bv=None) -> str:
     import re
 
     if not text:
@@ -630,44 +494,21 @@ def _rewrite_type_tokens(text: str) -> str:
     parts = re.split(r"([A-Za-z_][A-Za-z0-9_]*)", text)
     for idx in range(1, len(parts), 2):
         token = parts[idx]
+        if bv is not None and _get_type_by_name(bv, token) is not None:
+            continue
         replacement = _TYPE_REPLACEMENTS.get(token)
         if replacement:
             parts[idx] = replacement
     return "".join(parts)
 
 
-def _rewrite_unknown_type_tokens(text: str) -> str:
-    import re
-
-    if not text:
-        return text
-    keywords = _type_keywords()
-    parts = re.split(r"([A-Za-z_][A-Za-z0-9_]*)", text)
-    for idx in range(1, len(parts), 2):
-        token = parts[idx]
-        if token in keywords:
-            continue
-        if token.startswith("_func_"):
-            parts[idx] = "void"
-            continue
-        if token.endswith("_vtbl"):
-            parts[idx] = "void *"
-            continue
-        if token.endswith("_t"):
-            parts[idx] = "int"
-    return "".join(parts)
-
-
-def _sanitize_signature(signature: str) -> str:
+def _sanitize_signature(signature: str, bv=None) -> str:
     # Ghidra-derived signatures sometimes use C++ keywords for parameter names (e.g. `this`).
     # Binja's parser may treat these as reserved depending on the language mode.
-    try:
-        import re
+    import re
 
-        signature = re.sub(r"\bthis\b", "self", signature)
-        return _rewrite_type_tokens(signature)
-    except Exception:
-        return signature
+    signature = re.sub(r"\bthis\b", "self", signature)
+    return _rewrite_type_tokens(signature, bv)
 
 
 def _split_params(param_text: str) -> list[str]:
@@ -689,236 +530,163 @@ def _split_params(param_text: str) -> list[str]:
 
 
 def _strip_param_names(signature: str) -> str:
-    try:
-        import re
+    import re
 
-        prefix, sep, rest = signature.partition("(")
-        if not sep:
-            return signature
-        params, sep2, suffix = rest.rpartition(")")
-        if not sep2:
-            return signature
-
-        keywords = _type_keywords()
-        new_params: list[str] = []
-        for param in _split_params(params):
-            p = param.strip()
-            if not p or p in {"void", "..."}:
-                new_params.append(p)
-                continue
-
-            # Remove names from function pointer params: `void (*cmd)(void)` -> `void (*)(void)`
-            p = re.sub(r"\(\s*\*\s*[A-Za-z_][A-Za-z0-9_]*\s*\)", "(*)", p)
-
-            ids = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", p)
-            if len(ids) >= 2 and ids[-1] not in keywords:
-                if not (len(ids) == 2 and ids[0] in {"struct", "union", "enum"}):
-                    p = re.sub(rf"\b{re.escape(ids[-1])}\b\s*$", "", p).rstrip()
-
-            new_params.append(p)
-
-        return f"{prefix}({', '.join(new_params)}){suffix}"
-    except Exception:
+    prefix, sep, rest = signature.partition("(")
+    if not sep:
+        return signature
+    params, sep2, suffix = rest.rpartition(")")
+    if not sep2:
         return signature
 
-
-def _parse_hex_size_hint(comment: str) -> int | None:
-    import re
-
-    if not comment:
-        return None
-    patterns = [
-        r"\b0x([0-9a-fA-F]+)\s*-?\s*byte\b",
-        r"\b0x([0-9a-fA-F]+)\s+bytes?\b",
-        r"\bstride\s+0x([0-9a-fA-F]+)\b",
-    ]
-    for pat in patterns:
-        m = re.search(pat, comment)
-        if not m:
-            continue
-        try:
-            value = int(m.group(1), 16)
-        except Exception:
-            continue
-        if 0 < value <= 0x100000:
-            return value
-    return None
-
-
-def _ensure_types_for_decl(bv, decl: str) -> None:
-    import re
-
-    if not bn or not decl:
-        return
-
     keywords = _type_keywords()
-
-    decl = decl.strip().rstrip(";")
-
-    ptr_base = set(re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\b\s*\*", decl))
-    candidates: set[str] = set()
-
-    prefix, sep, suffix = decl.partition("(")
-    if sep:
-        # Remove function name from the return-type prefix (last identifier before '(').
-        m = re.search(r"\b([A-Za-z_][A-Za-z0-9_]*)\b\s*$", prefix.strip())
-        return_part = prefix[: m.start()] if m else prefix
-        candidates.update(re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\b", return_part))
-
-        params = suffix.rsplit(")", 1)[0] if ")" in suffix else suffix
-        for param in [p.strip() for p in params.split(",") if p.strip()]:
-            if param == "void":
-                continue
-            ids = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", param)
-            if not ids:
-                continue
-            idx = 0
-            while idx < len(ids) and ids[idx] in ("const", "volatile", "signed", "unsigned"):
-                idx += 1
-            if idx < len(ids) and ids[idx] in ("struct", "union", "enum"):
-                idx += 1
-            if idx < len(ids):
-                candidates.add(ids[idx])
-    else:
-        candidates.update(re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\b", decl))
-
-    void_ptr = _bn_void_ptr_type(bv)
-
-    for name in sorted(candidates):
-        if name in keywords:
-            continue
-        if _get_type_by_name(bv, name) is not None:
+    new_params: list[str] = []
+    for param in _split_params(params):
+        p = param.strip()
+        if not p or p in {"void", "..."}:
+            new_params.append(p)
             continue
 
-        # Prefer opaque structs when used as pointer bases (e.g. FILE *).
-        if name in ptr_base:
-            _define_opaque_struct_type(bv, name)
-            continue
+        # Remove names from function pointer params: `void (*cmd)(void)` -> `void (*)(void)`
+        p = re.sub(r"\(\s*\*\s*[A-Za-z_][A-Za-z0-9_]*\s*\)", "(*)", p)
 
-        # Heuristic: many library typedefs are pointer-ish (png_structp, z_streamp, etc.).
-        if name.endswith("p") and void_ptr is not None:
-            _define_alias_type(bv, name, void_ptr)
-            continue
+        ids = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", p)
+        if len(ids) >= 2 and ids[-1] not in keywords:
+            if not (len(ids) == 2 and ids[0] in {"struct", "union", "enum"}):
+                p = re.sub(rf"\b{re.escape(ids[-1])}\b\s*$", "", p).rstrip()
 
-        # Fallback: define unknown type names as void* aliases so signature parsing can proceed.
-        if void_ptr is not None:
-            _define_alias_type(bv, name, void_ptr)
+        new_params.append(p)
+
+    return f"{prefix}({', '.join(new_params)}){suffix}"
+
+
 
 
 def _resolve_data_type(bv, type_text: str):
     _seed_common_types(bv)
+    return _parse_type_string(bv, _rewrite_type_tokens(type_text, bv))
 
-    type_text = _rewrite_type_tokens(type_text)
-    parsed = _parse_type_string(bv, type_text)
-    if parsed is None:
-        rewritten = _rewrite_unknown_type_tokens(type_text)
-        if rewritten != type_text:
-            parsed = _parse_type_string(bv, rewritten)
-            if parsed is not None:
-                type_text = rewritten
-    if parsed is not None:
-        if isinstance(parsed, tuple):
-            return parsed[0]
-        return parsed
-    if hasattr(bv, "get_type_by_name"):
-        try:
-            return bv.get_type_by_name(type_text)
-        except Exception:
-            return None
-    types = getattr(bv, "types", None)
-    if isinstance(types, dict):
-        return types.get(type_text)
+
+def _deref_type(bv, type_obj):
+    current = type_obj
+    while current is not None and current.type_class == bn.TypeClass.NamedTypeReferenceClass:
+        current = current.deref_named_type_reference(bv)
+    return current
+
+
+def _is_aggregate_type(bv, type_obj) -> bool:
+    current = _deref_type(bv, type_obj)
+    if current is None:
+        return False
+    if current.type_class == bn.TypeClass.StructureTypeClass:
+        return True
+    if current.type_class != bn.TypeClass.ArrayTypeClass:
+        return False
+    element_type = getattr(current, "element_type", None)
+    if element_type is None:
+        return False
+    return _is_aggregate_type(bv, element_type)
+
+
+def _find_enclosing_aggregate_range(
+    aggregate_ranges: list[tuple[int, int, str]],
+    addr: int,
+) -> tuple[int, int, str] | None:
+    for start, end, label in reversed(aggregate_ranges):
+        if start < addr < end:
+            return start, end, label
     return None
 
 
-def _apply_function_signature(bv, func, signature: str) -> bool:
+def _apply_function_signature(bv, func, signature: str) -> None:
     _seed_common_types(bv)
 
-    signature = _sanitize_signature(signature)
-    parsed = _parse_type_string(bv, signature)
-    if parsed is None:
-        _ensure_types_for_decl(bv, signature)
-        parsed = _parse_type_string(bv, signature)
-        if parsed is None:
-            stripped = _strip_param_names(signature)
-            if stripped != signature:
-                _ensure_types_for_decl(bv, stripped)
-                parsed = _parse_type_string(bv, stripped)
-                if parsed is None:
-                    rewritten = _rewrite_unknown_type_tokens(stripped)
-                    if rewritten != stripped:
-                        _ensure_types_for_decl(bv, rewritten)
-                        parsed = _parse_type_string(bv, rewritten)
-            elif parsed is None:
-                rewritten = _rewrite_unknown_type_tokens(signature)
-                if rewritten != signature:
-                    _ensure_types_for_decl(bv, rewritten)
-                    parsed = _parse_type_string(bv, rewritten)
-        if parsed is None:
-            return False
-    func_type = parsed[0] if isinstance(parsed, tuple) else parsed
+    signature = _sanitize_signature(signature, bv)
     try:
-        if hasattr(func, "set_user_type"):
-            func.set_user_type(func_type)
-        elif hasattr(func, "function_type"):
-            func.function_type = func_type
-        elif hasattr(func, "type"):
-            func.type = func_type
-        else:
-            return False
-        return True
-    except Exception:
-        return False
+        func_type = _parse_type_string(bv, signature)
+    except Exception as first_exc:
+        stripped = _strip_param_names(signature)
+        if stripped == signature:
+            raise RuntimeError(f"failed to parse function signature {signature!r}") from first_exc
+        try:
+            func_type = _parse_type_string(bv, stripped)
+        except Exception as second_exc:
+            raise RuntimeError(
+                f"failed to parse function signature {signature!r} even after stripping parameter names",
+            ) from second_exc
+
+    func.set_user_type(func_type)
 
 
-def _set_function_comment(func, comment: str) -> bool:
-    try:
-        if hasattr(func, "comment"):
-            func.comment = comment
-            return True
-        if hasattr(func, "set_comment"):
-            func.set_comment(comment)
-            return True
-        if hasattr(func, "set_comment_at"):
-            func.set_comment_at(func.start, comment)
-            return True
-    except Exception:
-        return False
-    return False
+def _set_function_comment(func, comment: str) -> None:
+    func.comment = comment
 
 
-def _set_data_comment(bv, addr: int, comment: str) -> bool:
-    try:
-        if hasattr(bv, "set_comment_at"):
-            bv.set_comment_at(addr, comment)
-            return True
-    except Exception:
-        return False
-    return False
+def _set_data_comment(bv, addr: int, comment: str) -> None:
+    bv.set_comment_at(addr, comment)
 
 
 def _ensure_address_valid(bv, addr: int) -> bool:
-    if hasattr(bv, "is_valid_address"):
-        return bool(bv.is_valid_address(addr))
-    if hasattr(bv, "is_valid_offset"):
-        return bool(bv.is_valid_offset(addr))
-    if hasattr(bv, "get_segment_at"):
-        return bv.get_segment_at(addr) is not None
-    return True
+    return bv.is_valid_offset(addr)
+
+
+def _entry_label(row: dict, addr: int | None = None) -> str:
+    name = row.get("name") or "<unnamed>"
+    if addr is None:
+        addr = _parse_address(row.get("address"))
+    addr_text = f"0x{addr:x}" if addr is not None else str(row.get("address"))
+    return f"{name} @ {addr_text}"
+
+
+def _update_analysis(bv) -> None:
+    bv.update_analysis_and_wait()
+
+
+def _read_instruction_info(bv, func):
+    data = bv.read(func.start, func.arch.max_instr_length)
+    return func.arch.get_instruction_info(data, func.start)
+
+
+def _is_direct_jump_wrapper(bv, func, addr: int) -> bool:
+    info = _read_instruction_info(bv, func)
+    if len(info.branches) != 1:
+        return False
+    branch = info.branches[0]
+    if branch.type != bn.BranchType.UnconditionalBranch or branch.target != addr:
+        return False
+    entry_block = next((block for block in func.basic_blocks if block.start == func.start), None)
+    if entry_block is None or entry_block.end != func.start + info.length:
+        return False
+    return any(block.start == addr for block in func.basic_blocks)
+
+
+def _resolve_function_for_name_row(bv, row: dict, addr: int):
+    func = bv.get_function_at(addr)
+    if func is not None or not row.get("create"):
+        return func, False
+
+    containing = list(bv.get_functions_containing(addr))
+    if not containing:
+        bv.create_user_function(addr)
+        return bv.get_function_at(addr), True
+
+    if len(containing) != 1:
+        raise RuntimeError(f"refusing to create {_entry_label(row, addr)} inside multiple existing functions")
+
+    func = containing[0]
+    if _is_direct_jump_wrapper(bv, func, addr):
+        return func, False
+
+    raise RuntimeError(f"refusing to create {_entry_label(row, addr)} inside an existing function")
 
 
 def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
     if map_path is None:
         map_path = _default_map_path("CRIMSON_NAME_MAP", "analysis/ghidra/maps/name_map.json", bv)
     if map_path is None or not map_path.exists():
-        _log_error("name map not found; set CRIMSON_NAME_MAP or pass a path")
-        return {}
+        raise FileNotFoundError("name map not found; set CRIMSON_NAME_MAP or pass a path")
 
-    try:
-        rows = _load_entries(map_path)
-    except Exception as exc:
-        _log_error(f"failed to read name map: {exc}")
-        return {}
+    rows = _load_entries(map_path)
 
     candidates = _program_candidates(bv)
     stats = {
@@ -933,59 +701,53 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
 
     for row in rows:
         if not isinstance(row, dict):
-            continue
+            raise TypeError(f"unsupported name map row: {row!r}")
         program = row.get("program") or ""
         if program and not _program_matches(program, candidates):
             stats["skipped"] += 1
             continue
         addr = _parse_address(row.get("address"))
         if addr is None:
-            continue
-        func = bv.get_function_at(addr)
-        if func is None and row.get("create"):
-            containing = []
-            if hasattr(bv, "get_functions_containing"):
-                containing = list(bv.get_functions_containing(addr))
-            if containing:
-                stats["missing"] += 1
-                continue
-            try:
-                bv.create_user_function(addr)
-                func = bv.get_function_at(addr)
-                if func:
-                    stats["created"] += 1
-            except Exception:
-                func = bv.get_function_at(addr)
+            raise ValueError(f"invalid function address in name map row: {row!r}")
+        func, created = _resolve_function_for_name_row(bv, row, addr)
+        if created:
+            stats["created"] += 1
         if func is None:
-            stats["missing"] += 1
-            continue
+            raise LookupError(f"function not found for {_entry_label(row, addr)}")
 
         changed = False
         name = row.get("name") or ""
-        if name and getattr(func, "name", None) != name:
+        if name and func.name != name:
             try:
                 func.name = name
                 stats["renamed"] += 1
                 changed = True
-            except Exception:
-                _log_warn(f"rename failed for {name} at 0x{addr:x}")
+            except Exception as exc:
+                raise RuntimeError(f"rename failed for {_entry_label(row, addr)}") from exc
 
         signature = row.get("signature") or ""
         if signature:
-            if _apply_function_signature(bv, func, signature):
-                stats["signatures"] += 1
-                changed = True
-            else:
-                _log_warn(f"signature parse/apply failed for {name or '0x%08x' % addr}")
+            try:
+                _apply_function_signature(bv, func, signature)
+            except Exception as exc:
+                raise RuntimeError(f"signature parse/apply failed for {_entry_label(row, addr)}") from exc
+            stats["signatures"] += 1
+            changed = True
 
         comment = row.get("comment") or ""
         if comment:
-            if _set_function_comment(func, comment):
-                stats["comments"] += 1
-                changed = True
+            try:
+                _set_function_comment(func, comment)
+            except Exception as exc:
+                raise RuntimeError(f"comment apply failed for {_entry_label(row, addr)}") from exc
+            stats["comments"] += 1
+            changed = True
 
         if changed:
             stats["applied"] += 1
+
+    if stats["applied"]:
+        _update_analysis(bv)
 
     _log_info(f"Applied name map: {map_path}")
     _log_info(
@@ -1001,14 +763,9 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
     if map_path is None:
         map_path = _default_map_path("CRIMSON_DATA_MAP", "analysis/ghidra/maps/data_map.json", bv)
     if map_path is None or not map_path.exists():
-        _log_error("data map not found; set CRIMSON_DATA_MAP or pass a path")
-        return {}
+        raise FileNotFoundError("data map not found; set CRIMSON_DATA_MAP or pass a path")
 
-    try:
-        rows = _load_entries(map_path)
-    except Exception as exc:
-        _log_error(f"failed to read data map: {exc}")
-        return {}
+    rows = _load_entries(map_path)
 
     candidates = _program_candidates(bv)
     stats = {
@@ -1020,30 +777,25 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
         "missing": 0,
         "skipped": 0,
     }
+    aggregate_ranges: list[tuple[int, int, str]] = []
 
     for row in rows:
         if not isinstance(row, dict):
-            continue
+            raise TypeError(f"unsupported data map row: {row!r}")
         program = row.get("program") or ""
         if program and not _program_matches(program, candidates):
             stats["skipped"] += 1
             continue
         addr = _parse_address(row.get("address"))
         if addr is None:
-            continue
+            raise ValueError(f"invalid data address in data map row: {row!r}")
         if not _ensure_address_valid(bv, addr):
-            stats["missing"] += 1
-            continue
+            raise LookupError(f"invalid data address for {_entry_label(row, addr)}")
 
         changed = False
         name = row.get("name") or ""
         if name:
-            existing = None
-            if hasattr(bv, "get_symbol_at"):
-                existing = bv.get_symbol_at(addr)
-            if existing is None and hasattr(bv, "get_symbols_at"):
-                symbols = list(bv.get_symbols_at(addr))
-                existing = symbols[0] if symbols else None
+            existing = bv.get_symbol_at(addr)
 
             if existing is None:
                 try:
@@ -1051,58 +803,50 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
                     bv.define_user_symbol(symbol)
                     stats["created"] += 1
                     changed = True
-                except Exception:
-                    _log_warn(f"create label failed for {name} at 0x{addr:x}")
-            elif getattr(existing, "name", None) != name:
+                except Exception as exc:
+                    raise RuntimeError(f"create label failed for {_entry_label(row, addr)}") from exc
+            elif existing.name != name:
                 try:
                     symbol = bn.Symbol(bn.SymbolType.DataSymbol, addr, name)
                     bv.define_user_symbol(symbol)
                     stats["renamed"] += 1
                     changed = True
-                except Exception:
-                    _log_warn(f"rename label failed for {name} at 0x{addr:x}")
+                except Exception as exc:
+                    raise RuntimeError(f"rename label failed for {_entry_label(row, addr)}") from exc
 
         comment = row.get("comment") or ""
         if comment:
-            if _set_data_comment(bv, addr, comment):
-                stats["comments"] += 1
-                changed = True
+            try:
+                _set_data_comment(bv, addr, comment)
+            except Exception as exc:
+                raise RuntimeError(f"comment apply failed for {_entry_label(row, addr)}") from exc
+            stats["comments"] += 1
+            changed = True
 
         type_text = row.get("type") or ""
         if type_text:
-            data_type = _resolve_data_type(bv, type_text)
-            if data_type is None:
-                # Try to synthesize opaque types to reduce noisy warnings:
-                # - pointers: create opaque struct for the base
-                # - by-value: if comment includes a size hint, create an opaque struct of that size
-                base = type_text.replace("const ", "").strip()
-                if base.endswith("*"):
-                    base_name = base.rstrip("*").strip()
-                    if base_name and _get_type_by_name(bv, base_name) is None:
-                        _define_opaque_struct_type(bv, base_name)
-                        data_type = _resolve_data_type(bv, type_text)
-                else:
-                    size_hint = _parse_hex_size_hint(comment)
-                    if size_hint is not None and _get_type_by_name(bv, base) is None:
-                        _define_opaque_struct_type(bv, base, size=size_hint)
-                        data_type = _resolve_data_type(bv, type_text)
-            if data_type is not None:
+            try:
+                data_type = _resolve_data_type(bv, type_text)
+            except Exception as exc:
+                raise RuntimeError(f"type resolution failed for {_entry_label(row, addr)} ({type_text})") from exc
+            enclosing = _find_enclosing_aggregate_range(aggregate_ranges, addr)
+            if enclosing is None:
                 try:
-                    if hasattr(bv, "define_user_data_var"):
-                        bv.define_user_data_var(addr, data_type)
-                    elif hasattr(bv, "define_data_var"):
-                        bv.define_data_var(addr, data_type)
+                    bv.define_user_data_var(addr, data_type)
                     stats["types"] += 1
                     changed = True
-                except Exception:
-                    _log_warn(f"type apply failed for {name or '0x%08x' % addr} ({type_text})")
-            else:
-                _log_warn(
-                    f"type not found for {name or '0x%08x' % addr}: {type_text} (no typedef/size hint available)",
-                )
+                except Exception as exc:
+                    raise RuntimeError(f"type apply failed for {_entry_label(row, addr)} ({type_text})") from exc
+                if data_type.width > 1 and _is_aggregate_type(bv, data_type):
+                    aggregate_ranges.append((addr, addr + data_type.width, _entry_label(row, addr)))
+            elif not changed:
+                stats["skipped"] += 1
 
         if changed:
             stats["applied"] += 1
+
+    if stats["applied"]:
+        _update_analysis(bv)
 
     _log_info(f"Applied data map: {map_path}")
     _log_info(

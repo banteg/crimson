@@ -4550,7 +4550,7 @@
       "comment": "on_activate callback slot for ui_perk_prompt_element (set to ui_callback_noop in ui_menu_layout_init).",
       "name": "ui_perk_prompt_on_activate",
       "program": "crimsonland.exe",
-      "type": "_func_1 *"
+      "type": "ui_element_callback_t"
     },
     {
       "address": "0x0048f248",
@@ -5247,10 +5247,10 @@
     },
     {
       "address": "0x004908c0",
-      "comment": "Per-player state table base (stride 0x360 bytes / 0xd8 dwords).",
+      "comment": "Per-player state table base (2 entries, stride 0x360 bytes / 0xd8 dwords).",
       "name": "player_state_table",
       "program": "crimsonland.exe",
-      "type": "player_state_t"
+      "type": "player_state_t[2]"
     },
     {
       "address": "0x004908c4",
@@ -6294,7 +6294,7 @@
       "address": "0x0049bf38",
       "comment": "Creature pool base (0x180 entries, stride 0x98)",
       "name": "creature_pool",
-      "type": "creature_t",
+      "type": "creature_t[384]",
       "program": "crimsonland.exe"
     },
     {
