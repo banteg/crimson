@@ -34,7 +34,7 @@ from ...ui.perk_menu import (
     button_width,
     draw_ui_text,
 )
-from ...ui.text_input import flush_text_input_events, gameplay_controls_held, poll_text_input
+from ...ui.text_input import flush_text_input_events, gameplay_controls_held, update_name_entry_text
 from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
 GAME_OVER_PANEL_X = -45.0
@@ -289,28 +289,13 @@ class GameOverUi(msgspec.Struct):
                     self._defer_name_input_until_controls_released = False
                 return None
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            typed = poll_text_input(NAME_MAX_EDIT - len(self.input_text), allow_space=True)
-            if typed:
-                self.input_text = (self.input_text[: self.input_caret] + typed + self.input_text[self.input_caret :])[
-                    :NAME_MAX_EDIT
-                ]
-                self.input_caret = min(len(self.input_text), self.input_caret + len(typed))
-                if play_sfx is not None:
-                    play_sfx("sfx_ui_typeclick_01" if (rng.rand() & 1) == 0 else "sfx_ui_typeclick_02")
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
-                if self.input_caret > 0:
-                    self.input_text = self.input_text[: self.input_caret - 1] + self.input_text[self.input_caret :]
-                    self.input_caret -= 1
-                    if play_sfx is not None:
-                        play_sfx("sfx_ui_typeclick_01" if (rng.rand() & 1) == 0 else "sfx_ui_typeclick_02")
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
-                self.input_caret = max(0, self.input_caret - 1)
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
-                self.input_caret = min(len(self.input_text), self.input_caret + 1)
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_HOME):
-                self.input_caret = 0
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
-                self.input_caret = len(self.input_text)
+            self.input_text, self.input_caret = update_name_entry_text(
+                self.input_text,
+                self.input_caret,
+                max_len=NAME_MAX_EDIT,
+                rng=rng,
+                play_sfx=play_sfx,
+            )
 
             screen_w = float(rl.get_screen_width())
             screen_h = float(rl.get_screen_height())

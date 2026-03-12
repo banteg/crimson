@@ -6,14 +6,17 @@ from types import SimpleNamespace
 import pytest
 
 import crimson.screens.results.game_over as game_over_module
+import crimson.ui.text_input as text_input_module
 from crimson.game_modes import GameMode
 from crimson.persistence.highscores import HighScoreRecord
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from tests.support.helpers import ScriptedCrand
 
 
 def _test_config(**updates: object) -> CrimsonConfig:
@@ -145,7 +148,7 @@ def test_game_over_name_entry_waits_for_controls_release(patch_raylib_module, tm
     patch_raylib_module("crimson.screens.results.game_over")
     mocker.patch.object(game_over_module, "button_update", return_value=False)
     mocker.patch.object(game_over_module, "gameplay_controls_held", side_effect=[True, False, False])
-    poll_text = mocker.patch.object(game_over_module, "poll_text_input", return_value="ww")
+    poll_text = mocker.patch.object(text_input_module, "poll_text_input", return_value="ww")
 
     record = HighScoreRecord.blank()
     record.game_mode_id = GameMode.SURVIVAL
@@ -161,6 +164,44 @@ def test_game_over_name_entry_waits_for_controls_release(patch_raylib_module, tm
     ui.update(0.0, record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
     assert ui.input_text == "userww"
     assert poll_text.call_count == 1
+
+
+def test_game_over_name_entry_uses_shared_ui_text_input_typeclick_caller(
+    patch_raylib_module,
+    tmp_path: Path,
+    mocker,
+) -> None:
+    ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config(game_mode=1))
+    ui.phase = 0
+    ui.rank = 0
+    ui._intro_ms = PANEL_SLIDE_DURATION_MS
+    ui._panel_open_sfx_played = True
+    ui.input_text = "user"
+    ui.input_caret = len(ui.input_text)
+    mocker.patch.object(game_over_module, "runtime_resources_for", return_value=_resources_for_score_card())
+
+    patch_raylib_module("crimson.screens.results.game_over")
+    mocker.patch.object(game_over_module, "button_update", return_value=False)
+    poll_text = mocker.patch.object(text_input_module, "poll_text_input", return_value="ww")
+    play_sfx = mocker.Mock()
+    rng = ScriptedCrand([0])
+
+    record = HighScoreRecord.blank()
+    record.game_mode_id = GameMode.SURVIVAL
+
+    ui.update(
+        0.0,
+        record=record,
+        player_name_default="user",
+        play_sfx=play_sfx,
+        rng=rng,
+        mouse=rl.Vector2(0.0, 0.0),
+    )
+
+    assert ui.input_text == "userww"
+    assert poll_text.call_count == 1
+    assert [call.args[0] for call in play_sfx.call_args_list] == ["sfx_ui_typeclick_01"]
+    assert [record.caller for record in rng.records_since()] == [RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK]
 
 
 def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module, tmp_path: Path, mocker) -> None:
