@@ -148,6 +148,35 @@ def _maybe_alpha_test(enabled: bool) -> Iterator[None]:
         rl.end_shader_mode()
 
 
+def _unique_valid_textures(textures: Iterable[rl.Texture | None]) -> tuple[rl.Texture, ...]:
+    unique: list[rl.Texture] = []
+    seen: set[int] = set()
+    for texture in textures:
+        if texture is None or texture.id <= 0:
+            continue
+        texture_id = int(texture.id)
+        if texture_id in seen:
+            continue
+        seen.add(texture_id)
+        unique.append(texture)
+    return tuple(unique)
+
+
+@contextmanager
+def _temporary_point_filters(textures: Iterable[rl.Texture | None]) -> Iterator[None]:
+    unique = _unique_valid_textures(textures)
+    if not unique:
+        yield
+        return
+    for texture in unique:
+        rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
+    try:
+        yield
+    finally:
+        for texture in unique:
+            rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+
+
 class GroundDecal(msgspec.Struct):
     texture: rl.Texture
     src: rl.Rectangle
@@ -169,6 +198,8 @@ class GroundCorpseDecal(msgspec.Struct):
 
 class GroundRenderer(msgspec.Struct):
     texture: rl.Texture
+    overlay: rl.Texture
+    overlay_detail: rl.Texture
     width: int = TERRAIN_TEXTURE_SIZE
     height: int = TERRAIN_TEXTURE_SIZE
     texture_scale: float = 1.0
@@ -177,23 +208,13 @@ class GroundRenderer(msgspec.Struct):
     texture_failed: bool = False
     screen_width: float | None = None
     screen_height: float | None = None
-    overlay: rl.Texture | None = None
-    overlay_detail: rl.Texture | None = None
     terrain_filter: float = 1.0
     render_target: rl.RenderTexture | None = None
     _debug_stamp_log: list[dict[str, object]] = msgspec.field(default_factory=list)
     _render_target_ready: bool = False
     _pending_generate: bool = False
     _pending_generate_seed: int | None = None
-    _pending_generate_layers: int = 3
     _render_target_warmup_passes: int = 0
-    _fallback_seed: int | None = None
-    _fallback_layers: int = 0
-    _fallback_patches: list[GroundDecal] = msgspec.field(default_factory=list)
-    _fallback_decals: list[GroundDecal] = msgspec.field(default_factory=list)
-    _fallback_corpse_decals: list[GroundCorpseDecal] = msgspec.field(default_factory=list)
-    _fallback_bodyset_texture: rl.Texture | None = None
-    _fallback_corpse_shadow: bool = True
 
     def debug_clear_stamp_log(self) -> None:
         self._debug_stamp_log.clear()
@@ -229,9 +250,9 @@ class GroundRenderer(msgspec.Struct):
                 continue
 
             seed = self._pending_generate_seed
-            layers = self._pending_generate_layers
+            assert seed is not None, "pending terrain generation requires a seed"
             self._pending_generate = False
-            self.generate_partial(seed=seed, layers=layers)
+            self._generate_texture(seed=seed)
             if self.render_target is None and not self.texture_failed:
                 self._pending_generate = True
                 continue
@@ -276,37 +297,16 @@ class GroundRenderer(msgspec.Struct):
             self.render_target = None
         self._render_target_ready = False
 
-    def generate(self, seed: int | None = None) -> None:
-        self.generate_partial(seed=seed, layers=3)
+    def generate(self, seed: int) -> None:
+        self._pending_generate = False
+        self._pending_generate_seed = None
+        self._generate_texture(seed=seed)
 
-    def schedule_generate(self, seed: int | None = None, *, layers: int = 3) -> None:
-        self._pending_generate_seed = seed
-        self._pending_generate_layers = max(0, min(layers, 3))
+    def schedule_generate(self, seed: int) -> None:
+        self._pending_generate_seed = int(seed)
         self._pending_generate = True
 
-    def generate_partial(self, seed: int | None = None, *, layers: int) -> None:
-        layers = max(0, min(layers, 3))
-        # Always keep a deterministic fallback representation of the terrain.
-        # When the render target is unavailable (or not ready yet), we can render
-        # patches + baked decals directly to the screen, matching the exe's
-        # `terrain_texture_failed` path.
-        self._fallback_seed = seed
-        self._fallback_layers = layers
-        self._fallback_patches.clear()
-        self._fallback_decals.clear()
-        self._fallback_corpse_decals.clear()
-        self._fallback_bodyset_texture = None
-        self._fallback_corpse_shadow = True
-
-        rng_fallback = CrtRand(seed)
-        if layers >= 1:
-            self._scatter_texture_fallback(self.texture, TERRAIN_BASE_TINT, rng_fallback, TERRAIN_DENSITY_BASE)
-        if layers >= 2 and self.overlay is not None:
-            self._scatter_texture_fallback(self.overlay, TERRAIN_OVERLAY_TINT, rng_fallback, TERRAIN_DENSITY_OVERLAY)
-        if layers >= 3:
-            # Original uses base texture for detail pass, not overlay.
-            self._scatter_texture_fallback(self.texture, TERRAIN_DETAIL_TINT, rng_fallback, TERRAIN_DENSITY_DETAIL)
-
+    def _generate_texture(self, seed: int) -> None:
         self.create_render_target()
         if self.render_target is None:
             return
@@ -316,21 +316,18 @@ class GroundRenderer(msgspec.Struct):
         rl.clear_background(TERRAIN_CLEAR_COLOR)
         # Keep the ground RT alpha at 1.0 like the original exe (which typically uses
         # an XRGB render target). We still alpha-blend RGB, but preserve destination A.
-        with _blend_custom_separate(
-            rd.RL_SRC_ALPHA,
-            rd.RL_ONE_MINUS_SRC_ALPHA,
-            rd.RL_ZERO,
-            rd.RL_ONE,
-            rd.RL_FUNC_ADD,
-            rd.RL_FUNC_ADD,
-        ):
-            if layers >= 1:
+        with _maybe_alpha_test(self.alpha_test):
+            with _blend_custom_separate(
+                rd.RL_SRC_ALPHA,
+                rd.RL_ONE_MINUS_SRC_ALPHA,
+                rd.RL_ZERO,
+                rd.RL_ONE,
+                rd.RL_FUNC_ADD,
+                rd.RL_FUNC_ADD,
+            ):
                 self._scatter_texture(self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE)
-            if layers >= 2 and self.overlay is not None:
                 self._scatter_texture(self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY)
-            if layers >= 3:
-                # Original uses base texture for detail pass, not overlay
-                self._scatter_texture(self.texture, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL)
+                self._scatter_texture(self.overlay_detail, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL)
         rl.end_texture_mode()
         self._set_stamp_filters(point=False)
         self._render_target_ready = True
@@ -341,8 +338,7 @@ class GroundRenderer(msgspec.Struct):
 
         self.create_render_target()
         if self.render_target is None:
-            self._fallback_decals.extend(decals)
-            return True
+            return False
 
         if self.debug_log_stamps:
             head = decals[0]
@@ -355,37 +351,39 @@ class GroundRenderer(msgspec.Struct):
 
         inv_scale = 1.0 / self._normalized_texture_scale()
         rl.begin_texture_mode(self.render_target)
-        with _blend_custom_separate(
-            rd.RL_SRC_ALPHA,
-            rd.RL_ONE_MINUS_SRC_ALPHA,
-            rd.RL_ZERO,
-            rd.RL_ONE,
-            rd.RL_FUNC_ADD,
-            rd.RL_FUNC_ADD,
-        ):
-            for decal in decals:
-                w = decal.width
-                h = decal.height
-                if decal.centered:
-                    pivot_x = decal.pos.x
-                    pivot_y = decal.pos.y
-                else:
-                    pivot_x = decal.pos.x + w * 0.5
-                    pivot_y = decal.pos.y + h * 0.5
-                pivot_x *= inv_scale
-                pivot_y *= inv_scale
-                w *= inv_scale
-                h *= inv_scale
-                dst = rl.Rectangle(pivot_x, pivot_y, w, h)
-                origin = rl.Vector2(w * 0.5, h * 0.5)
-                rl.draw_texture_pro(
-                    decal.texture,
-                    decal.src,
-                    dst,
-                    origin,
-                    math.degrees(decal.rotation_rad),
-                    decal.tint,
-                )
+        with _temporary_point_filters(decal.texture for decal in decals):
+            with _maybe_alpha_test(self.alpha_test):
+                with _blend_custom_separate(
+                    rd.RL_SRC_ALPHA,
+                    rd.RL_ONE_MINUS_SRC_ALPHA,
+                    rd.RL_ZERO,
+                    rd.RL_ONE,
+                    rd.RL_FUNC_ADD,
+                    rd.RL_FUNC_ADD,
+                ):
+                    for decal in decals:
+                        w = decal.width
+                        h = decal.height
+                        if decal.centered:
+                            pivot_x = decal.pos.x
+                            pivot_y = decal.pos.y
+                        else:
+                            pivot_x = decal.pos.x + w * 0.5
+                            pivot_y = decal.pos.y + h * 0.5
+                        pivot_x *= inv_scale
+                        pivot_y *= inv_scale
+                        w *= inv_scale
+                        h *= inv_scale
+                        dst = rl.Rectangle(pivot_x, pivot_y, w, h)
+                        origin = rl.Vector2(w * 0.5, h * 0.5)
+                        rl.draw_texture_pro(
+                            decal.texture,
+                            decal.src,
+                            dst,
+                            origin,
+                            math.degrees(decal.rotation_rad),
+                            decal.tint,
+                        )
         rl.end_texture_mode()
 
         self._render_target_ready = True
@@ -403,10 +401,7 @@ class GroundRenderer(msgspec.Struct):
 
         self.create_render_target()
         if self.render_target is None:
-            self._fallback_bodyset_texture = bodyset_texture
-            self._fallback_corpse_shadow = shadow
-            self._fallback_corpse_decals.extend(decals)
-            return True
+            return False
 
         if self.debug_log_stamps:
             head = decals[0]
@@ -424,134 +419,19 @@ class GroundRenderer(msgspec.Struct):
         inv_scale = 1.0 / scale
         offset = 2.0 * scale / float(self.width)
         rl.begin_texture_mode(self.render_target)
-        with _maybe_alpha_test(self.alpha_test):
-            if shadow:
+        with _temporary_point_filters((bodyset_texture,)):
+            with _maybe_alpha_test(self.alpha_test):
+                if shadow:
+                    if self.debug_log_stamps:
+                        self._debug_stamp("corpse_shadow_pass", draws=len(decals))
+                    self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
                 if self.debug_log_stamps:
-                    self._debug_stamp("corpse_shadow_pass", draws=len(decals))
-                self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
-            if self.debug_log_stamps:
-                self._debug_stamp("corpse_color_pass", draws=len(decals))
-            self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
+                    self._debug_stamp("corpse_color_pass", draws=len(decals))
+                self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
         rl.end_texture_mode()
 
         self._render_target_ready = True
         return True
-
-    def _draw_fallback(
-        self,
-        camera: Vec2,
-        *,
-        out_w: float,
-        out_h: float,
-        screen_w: float,
-        screen_h: float,
-    ) -> None:
-        rl.draw_rectangle(0, 0, int(out_w + 0.5), int(out_h + 0.5), TERRAIN_CLEAR_COLOR)
-        if screen_w <= 0.0 or screen_h <= 0.0:
-            return
-
-        view_scale = Vec2(out_w / screen_w, out_h / screen_h)
-
-        view_x0 = -camera.x
-        view_y0 = -camera.y
-        view_x1 = view_x0 + screen_w
-        view_y1 = view_y0 + screen_h
-
-        def draw_decal(decal: GroundDecal) -> None:
-            texture = decal.texture
-            if texture.id <= 0:
-                return
-            w = float(decal.width)
-            h = float(decal.height)
-            if w <= 0.0 or h <= 0.0:
-                return
-
-            pivot = decal.pos
-            if not decal.centered:
-                pivot += Vec2(w * 0.5, h * 0.5)
-
-            if pivot.x + w * 0.5 < view_x0 or pivot.x - w * 0.5 > view_x1:
-                return
-            if pivot.y + h * 0.5 < view_y0 or pivot.y - h * 0.5 > view_y1:
-                return
-
-            screen_pivot = (pivot + camera).mul_components(view_scale)
-            scaled_size = Vec2(w, h).mul_components(view_scale)
-            sw = scaled_size.x
-            sh = scaled_size.y
-            dst = rl.Rectangle(screen_pivot.x, screen_pivot.y, float(sw), float(sh))
-            origin = rl.Vector2(float(sw) * 0.5, float(sh) * 0.5)
-            rl.draw_texture_pro(
-                texture,
-                decal.src,
-                dst,
-                origin,
-                math.degrees(float(decal.rotation_rad)),
-                decal.tint,
-            )
-
-        with _blend_custom_separate(
-            rd.RL_SRC_ALPHA,
-            rd.RL_ONE_MINUS_SRC_ALPHA,
-            rd.RL_ZERO,
-            rd.RL_ONE,
-            rd.RL_FUNC_ADD,
-            rd.RL_FUNC_ADD,
-        ):
-            for patch in self._fallback_patches:
-                draw_decal(patch)
-            for decal in self._fallback_decals:
-                draw_decal(decal)
-
-        bodyset_texture = self._fallback_bodyset_texture
-        if bodyset_texture is None or not self._fallback_corpse_decals:
-            return
-
-        def draw_corpse(size: float, pivot: Vec2, rotation_deg: float, tint: rl.Color, src: rl.Rectangle) -> None:
-            if pivot.x + size * 0.5 < view_x0 or pivot.x - size * 0.5 > view_x1:
-                return
-            if pivot.y + size * 0.5 < view_y0 or pivot.y - size * 0.5 > view_y1:
-                return
-            screen_pivot = (pivot + camera).mul_components(view_scale)
-            scaled_size = Vec2(size, size).mul_components(view_scale)
-            sw = scaled_size.x
-            sh = scaled_size.y
-            dst = rl.Rectangle(screen_pivot.x, screen_pivot.y, float(sw), float(sh))
-            origin = rl.Vector2(float(sw) * 0.5, float(sh) * 0.5)
-            rl.draw_texture_pro(bodyset_texture, src, dst, origin, rotation_deg, tint)
-
-        with _maybe_alpha_test(self.alpha_test):
-            if self._fallback_corpse_shadow:
-                with _blend_custom_separate(
-                    rd.RL_ZERO,
-                    rd.RL_ONE_MINUS_SRC_ALPHA,
-                    rd.RL_ZERO,
-                    rd.RL_ONE,
-                    rd.RL_FUNC_ADD,
-                    rd.RL_FUNC_ADD,
-                ):
-                    for decal in self._fallback_corpse_decals:
-                        src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
-                        size = float(decal.size) * 1.064
-                        pivot = decal.top_left + Vec2(size * 0.5 - 0.5, size * 0.5 - 0.5)
-                        tint = rl.Color(decal.tint.r, decal.tint.g, decal.tint.b, int(decal.tint.a * 0.5))
-                        rotation_deg = math.degrees(float(decal.rotation_rad) - (math.pi * 0.5))
-                        draw_corpse(size, pivot, rotation_deg, tint, src)
-
-            with _blend_custom_separate(
-                rd.RL_SRC_ALPHA,
-                rd.RL_ONE_MINUS_SRC_ALPHA,
-                rd.RL_ZERO,
-                rd.RL_ONE,
-                rd.RL_FUNC_ADD,
-                rd.RL_FUNC_ADD,
-            ):
-                for decal in self._fallback_corpse_decals:
-                    src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
-                    size = float(decal.size)
-                    pivot = decal.top_left + Vec2(size * 0.5, size * 0.5)
-                    rotation_deg = math.degrees(float(decal.rotation_rad) - (math.pi * 0.5))
-                    draw_corpse(size, pivot, rotation_deg, decal.tint, src)
 
     def draw(
         self,
@@ -594,7 +474,7 @@ class GroundRenderer(msgspec.Struct):
         cam = self._clamp_camera(camera, screen_w, screen_h)
 
         if self.render_target is None or not self._render_target_ready:
-            self._draw_fallback(cam, out_w=out_w, out_h=out_h, screen_w=float(screen_w), screen_h=float(screen_h))
+            rl.draw_rectangle(0, 0, int(out_w + 0.5), int(out_h + 0.5), TERRAIN_CLEAR_COLOR)
             return
 
         target = self.render_target
@@ -668,44 +548,6 @@ class GroundRenderer(msgspec.Struct):
             # while the original engine uses x/y as the quad top-left.
             dst = rl.Rectangle(float(x + size * 0.5), float(y + size * 0.5), size, size)
             rl.draw_texture_pro(texture, src, dst, origin, math.degrees(angle), tint)
-
-    def _scatter_texture_fallback(
-        self,
-        texture: rl.Texture,
-        tint: rl.Color,
-        rng: CrtRand,
-        density: int,
-    ) -> None:
-        """Record terrain patch draws for the render-target fallback path."""
-        area = self.width * self.height
-        count = (area * density) >> TERRAIN_DENSITY_SHIFT
-        if count <= 0:
-            return
-
-        size = float(TERRAIN_PATCH_SIZE)
-        src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
-        span_w = self.width + int(TERRAIN_PATCH_OVERSCAN * 2)
-        # The original exe uses `terrain_texture_width` for both axes. Terrain is
-        # square (1024x1024) so this is equivalent, but keep it for parity.
-        span_h = span_w
-
-        for _ in range(count):
-            angle = ((rng.rand() % TERRAIN_ROTATION_MAX) * 0.01) % math.tau
-            # IMPORTANT: The exe consumes RNG as rotation, then Y, then X.
-            y = float((rng.rand() % span_h) - TERRAIN_PATCH_OVERSCAN)
-            x = float((rng.rand() % span_w) - TERRAIN_PATCH_OVERSCAN)
-            self._fallback_patches.append(
-                GroundDecal(
-                    texture=texture,
-                    src=src,
-                    pos=Vec2(float(x + size * 0.5), float(y + size * 0.5)),
-                    width=size,
-                    height=size,
-                    rotation_rad=float(angle),
-                    tint=tint,
-                    centered=True,
-                ),
-            )
 
     def _clamp_camera(self, camera: Vec2, screen_w: float, screen_h: float) -> Vec2:
         cam_x = camera.x
@@ -784,11 +626,9 @@ class GroundRenderer(msgspec.Struct):
         )
 
     @staticmethod
-    def _set_texture_filters(textures: Iterable[rl.Texture | None], *, point: bool) -> None:
+    def _set_texture_filters(textures: Iterable[rl.Texture], *, point: bool) -> None:
         mode = rl.TextureFilter.TEXTURE_FILTER_POINT if point else rl.TextureFilter.TEXTURE_FILTER_BILINEAR
         for texture in textures:
-            if texture is None:
-                continue
             if texture.id <= 0:
                 continue
             rl.set_texture_filter(texture, mode)

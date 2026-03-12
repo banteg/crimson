@@ -17,6 +17,8 @@ def _renderer() -> GroundRenderer:
     texture = cast("rl.Texture", SimpleNamespace(id=1, width=16, height=16))
     return GroundRenderer(
         texture=texture,
+        overlay=texture,
+        overlay_detail=texture,
         width=1024,
         height=1024,
         texture_scale=1.0,

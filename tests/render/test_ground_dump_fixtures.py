@@ -196,7 +196,7 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) ->
             height=case.height,
             texture_scale=1.0,
         )
-        renderer.schedule_generate(seed=case.seed, layers=3)
+        renderer.schedule_generate(seed=case.seed)
         for _ in range(6):
             renderer.process_pending()
             if not renderer._pending_generate:
