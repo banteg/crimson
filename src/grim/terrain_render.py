@@ -32,9 +32,12 @@ _ALPHA_TEST_REF_F32 = float(_ALPHA_TEST_REF_U8) / 255.0
 # See: analysis/ghidra/raw/grim.dll_decompiled.c (FUN_10004520).
 #
 # raylib does not expose fixed-function alpha test, so we emulate it with a tiny
-# discard shader for stamping into the terrain render target.
+# discard shader for stamping into the terrain render target. This shim is
+# required for parity; if it fails to compile, rendering should stop rather than
+# silently drift away from the native cutoff behavior.
 _ALPHA_TEST_SHADER: rl.Shader | None = None
 _ALPHA_TEST_SHADER_TRIED = False
+_ALPHA_TEST_SHADER_ERROR: str | None = None
 
 _ALPHA_TEST_VS_330 = r"""
 #version 330
@@ -67,6 +70,8 @@ uniform vec4 colDiffuse;
 out vec4 finalColor;
 
 void main() {{
+    // Emulate DX8 fixed-function alpha test after stage-0 modulation:
+    // stage output = texture * diffuse, then discard when alpha <= 4/255.
     vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
     if (texel.a <= {_ALPHA_TEST_REF_F32:.10f}) discard;
     finalColor = texel;
@@ -74,25 +79,28 @@ void main() {{
 """
 
 
-def _get_alpha_test_shader() -> rl.Shader | None:
-    global _ALPHA_TEST_SHADER, _ALPHA_TEST_SHADER_TRIED
+def _get_alpha_test_shader() -> rl.Shader:
+    global _ALPHA_TEST_SHADER, _ALPHA_TEST_SHADER_TRIED, _ALPHA_TEST_SHADER_ERROR
     if _ALPHA_TEST_SHADER_TRIED:
         if _ALPHA_TEST_SHADER is not None and _ALPHA_TEST_SHADER.id > 0:
             return _ALPHA_TEST_SHADER
-        return None
+        raise RuntimeError(_ALPHA_TEST_SHADER_ERROR or "terrain alpha-test shader is unavailable")
 
     _ALPHA_TEST_SHADER_TRIED = True
     try:
         shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, _ALPHA_TEST_FS_330)
-    except (RuntimeError, OSError, ValueError):
+    except (RuntimeError, OSError, ValueError) as exc:
         _ALPHA_TEST_SHADER = None
-        return None
+        _ALPHA_TEST_SHADER_ERROR = f"failed to compile terrain alpha-test shader: {exc}"
+        raise RuntimeError(_ALPHA_TEST_SHADER_ERROR) from exc
 
     if shader.id <= 0:
         _ALPHA_TEST_SHADER = None
-        return None
+        _ALPHA_TEST_SHADER_ERROR = "failed to compile terrain alpha-test shader: raylib returned an invalid shader id"
+        raise RuntimeError(_ALPHA_TEST_SHADER_ERROR)
 
     _ALPHA_TEST_SHADER = shader
+    _ALPHA_TEST_SHADER_ERROR = None
     return _ALPHA_TEST_SHADER
 
 
@@ -133,9 +141,6 @@ def _terrain_rt_blend(
 @contextmanager
 def _maybe_alpha_test() -> Iterator[None]:
     shader = _get_alpha_test_shader()
-    if shader is None:
-        yield
-        return
     rl.begin_shader_mode(shader)
     try:
         yield
