@@ -14,12 +14,14 @@ from tqdm import tqdm
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
 from ..quests.level import QuestLevel
+from ..weapons import WeaponId
 
 if TYPE_CHECKING:
     from ..dbg.checkpoint_diff import ReplayDiffResult
     from ..replay import Replay
     from ..replay.driver.replay_benchmark import (
         BenchmarkAggregate,
+        ReplayRenderTelemetryArtifacts,
         ReplayRenderTelemetryFrame,
         ReplayRenderTelemetryTopTick,
     )
@@ -197,7 +199,7 @@ class _RunResultPayload(msgspec.Struct, forbid_unknown_fields=True):
     elapsed_ms: int
     score_xp: int
     creature_kill_count: int
-    most_used_weapon_id: int
+    most_used_weapon_id: WeaponId
     shots_fired: int
     shots_hit: int
     rng_state: int
@@ -216,7 +218,7 @@ class _ReplayVerifyClaimedStatsPayload(msgspec.Struct, forbid_unknown_fields=Tru
     elapsed_ms: int
     score_xp: int
     kills: int
-    most_used_weapon_id: int
+    most_used_weapon_id: WeaponId
     shots_fired: int
     shots_hit: int
 
@@ -377,55 +379,72 @@ class _ReplayBenchmarkPayload(msgspec.Struct, forbid_unknown_fields=True):
 
 
 def _run_result_payload(run_result: RunResult) -> _RunResultPayload:
-    result = run_result
     return _RunResultPayload(
-        game_mode_id=GameMode(int(result.game_mode_id)),
-        tick_rate=int(result.tick_rate),
-        ticks=int(result.ticks),
-        elapsed_ms=int(result.elapsed_ms),
-        score_xp=int(result.score_xp),
-        creature_kill_count=int(result.creature_kill_count),
-        most_used_weapon_id=result.most_used_weapon_id,
-        shots_fired=int(result.shots_fired),
-        shots_hit=int(result.shots_hit),
-        rng_state=int(result.rng_state),
+        game_mode_id=run_result.game_mode_id,
+        tick_rate=run_result.tick_rate,
+        ticks=run_result.ticks,
+        elapsed_ms=run_result.elapsed_ms,
+        score_xp=run_result.score_xp,
+        creature_kill_count=run_result.creature_kill_count,
+        most_used_weapon_id=run_result.most_used_weapon_id,
+        shots_fired=run_result.shots_fired,
+        shots_hit=run_result.shots_hit,
+        rng_state=run_result.rng_state,
     )
 
 
 def _benchmark_aggregate_payload(aggregate: BenchmarkAggregate) -> _BenchmarkAggregatePayload:
-    entry = aggregate
     return _BenchmarkAggregatePayload(
-        min=float(entry.min),
-        p50=float(entry.p50),
-        mean=float(entry.mean),
-        p95=float(entry.p95),
-        max=float(entry.max),
-        stdev=float(entry.stdev),
+        min=aggregate.min,
+        p50=aggregate.p50,
+        mean=aggregate.mean,
+        p95=aggregate.p95,
+        max=aggregate.max,
+        stdev=aggregate.stdev,
     )
 
 
 def _render_telemetry_top_tick_payload(entry: ReplayRenderTelemetryTopTick) -> _ReplayRenderTelemetryTopTickPayload:
-    item = entry
     return _ReplayRenderTelemetryTopTickPayload(
-        tick_index=int(item.tick_index),
-        frame_index=int(item.frame_index),
-        value=float(item.value),
+        tick_index=entry.tick_index,
+        frame_index=entry.frame_index,
+        value=entry.value,
     )
 
 
 def _render_telemetry_frame_payload(entry: ReplayRenderTelemetryFrame) -> _ReplayRenderTelemetryFramePayload:
-    item = entry
     return _ReplayRenderTelemetryFramePayload(
-        frame_index=int(item.frame_index),
-        tick_index_before_update=int(item.tick_index_before_update),
-        tick_index_after_update=int(item.tick_index_after_update),
-        update_ms=float(item.update_ms),
-        draw_ms=float(item.draw_ms),
-        frame_ms=float(item.frame_ms),
-        draw_calls_total=int(item.draw_calls_total),
-        draw_calls_by_api={str(key): int(value) for key, value in dict(item.draw_calls_by_api).items()},
-        draw_calls_by_pass={str(key): int(value) for key, value in dict(item.draw_calls_by_pass).items()},
-        pass_ms={str(key): float(value) for key, value in dict(item.pass_ms).items()},
+        frame_index=entry.frame_index,
+        tick_index_before_update=entry.tick_index_before_update,
+        tick_index_after_update=entry.tick_index_after_update,
+        update_ms=entry.update_ms,
+        draw_ms=entry.draw_ms,
+        frame_ms=entry.frame_ms,
+        draw_calls_total=entry.draw_calls_total,
+        draw_calls_by_api=dict(entry.draw_calls_by_api),
+        draw_calls_by_pass=dict(entry.draw_calls_by_pass),
+        pass_ms=dict(entry.pass_ms),
+    )
+
+
+def _path_text(path: Path | None) -> str | None:
+    if path is None:
+        return None
+    return str(path)
+
+
+def _render_telemetry_artifacts_payload(
+    artifacts: ReplayRenderTelemetryArtifacts | None,
+) -> _ReplayRenderTelemetryArtifactsPayload | None:
+    if artifacts is None:
+        return None
+    return _ReplayRenderTelemetryArtifactsPayload(
+        telemetry_json_path=_path_text(artifacts.telemetry_json_path),
+        charts_dir=_path_text(artifacts.charts_dir),
+        frame_timing_svg=_path_text(artifacts.frame_timing_svg),
+        draw_calls_svg=_path_text(artifacts.draw_calls_svg),
+        pass_timing_stacked_svg=_path_text(artifacts.pass_timing_stacked_svg),
+        report_md=_path_text(artifacts.report_md),
     )
 
 
@@ -1218,19 +1237,6 @@ def cmd_replay_benchmark(
     render_telemetry_payload: _ReplayRenderTelemetryPayload | None = None
     if benchmark.render_telemetry is not None:
         telemetry_summary = benchmark.render_telemetry.summary
-        artifacts_payload: _ReplayRenderTelemetryArtifactsPayload | None = None
-        if benchmark.render_telemetry.artifacts is not None:
-            artifacts = benchmark.render_telemetry.artifacts
-            artifacts_payload = _ReplayRenderTelemetryArtifactsPayload(
-                telemetry_json_path=(str(artifacts.telemetry_json_path) if artifacts.telemetry_json_path else None),
-                charts_dir=(str(artifacts.charts_dir) if artifacts.charts_dir else None),
-                frame_timing_svg=(str(artifacts.frame_timing_svg) if artifacts.frame_timing_svg else None),
-                draw_calls_svg=(str(artifacts.draw_calls_svg) if artifacts.draw_calls_svg else None),
-                pass_timing_stacked_svg=(
-                    str(artifacts.pass_timing_stacked_svg) if artifacts.pass_timing_stacked_svg else None
-                ),
-                report_md=(str(artifacts.report_md) if artifacts.report_md else None),
-            )
         render_telemetry_payload = _ReplayRenderTelemetryPayload(
             summary=_ReplayRenderTelemetrySummaryPayload(
                 frame_ms=_benchmark_aggregate_payload(telemetry_summary.frame_ms),
@@ -1249,7 +1255,7 @@ def cmd_replay_benchmark(
             ),
             frames=[_render_telemetry_frame_payload(entry) for entry in benchmark.render_telemetry.frames],
             preview=[_render_telemetry_frame_payload(entry) for entry in benchmark.render_telemetry.preview],
-            artifacts=artifacts_payload,
+            artifacts=_render_telemetry_artifacts_payload(benchmark.render_telemetry.artifacts),
         )
 
     payload = _ReplayBenchmarkPayload(

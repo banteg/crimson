@@ -462,12 +462,12 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
         top_draw_calls_ticks=(ReplayRenderTelemetryTopTick(tick_index=1, frame_index=0, value=12.0),),
     )
     telemetry_artifacts = ReplayRenderTelemetryArtifacts(
-        telemetry_json_path=str(tmp_path / "telemetry.json"),
-        charts_dir=str(tmp_path / "charts"),
-        frame_timing_svg=str(tmp_path / "charts" / "frame_timing.svg"),
-        draw_calls_svg=str(tmp_path / "charts" / "draw_calls.svg"),
-        pass_timing_stacked_svg=str(tmp_path / "charts" / "pass_timing_stacked.svg"),
-        report_md=str(tmp_path / "charts" / "report.md"),
+        telemetry_json_path=tmp_path / "telemetry.json",
+        charts_dir=tmp_path / "charts",
+        frame_timing_svg=tmp_path / "charts" / "frame_timing.svg",
+        draw_calls_svg=tmp_path / "charts" / "draw_calls.svg",
+        pass_timing_stacked_svg=tmp_path / "charts" / "pass_timing_stacked.svg",
+        report_md=tmp_path / "charts" / "report.md",
     )
     run_replay_render_benchmark = mocker.patch.object(
         replay_benchmark_mod,
