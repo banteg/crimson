@@ -464,7 +464,8 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
 
 def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     pool = ProjectilePool(size=32)
-    state = GameplayState(projectiles=pool)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(projectiles=pool, rng=rng)
     state.bonus_spawn_guard = True
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=3.9)
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
@@ -478,11 +479,22 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     assert len(type_ids) == 8
     assert type_ids.count(int(ProjectileTemplateId.ION_MINIGUN)) == 4
     assert type_ids.count(int(ProjectileTemplateId.ION_RIFLE)) == 4
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+    ]
 
 
 def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> None:
     pool = ProjectilePool(size=32)
-    state = GameplayState(projectiles=pool)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=0.0)
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
 
@@ -493,6 +505,16 @@ def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> 
     assert type_ids.count(int(ProjectileTemplateId.ION_MINIGUN)) == 4
     assert type_ids.count(int(ProjectileTemplateId.ION_RIFLE)) == 4
     assert player.man_bomb_timer == 0.0
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE,
+    ]
 
 
 def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
