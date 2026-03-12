@@ -460,14 +460,17 @@ class GroundRenderer(msgspec.Struct):
         rl.set_texture_wrap(self.render_target.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
         return True
 
-    def _render_target_size_for(self, scale: float) -> tuple[int, int]:
-        pixel_scale = 1.0
+    def _render_pixel_ratio(self) -> float:
         screen_w = int(rl.get_screen_width())
         screen_h = int(rl.get_screen_height())
         render_w = int(rl.get_render_width())
         render_h = int(rl.get_render_height())
         if render_w == screen_w * 2 and render_h == screen_h * 2:
-            pixel_scale = 2.0
+            return 2.0
+        return 1.0
+
+    def _render_target_size_for(self, scale: float) -> tuple[int, int]:
+        pixel_scale = self._render_pixel_ratio()
         render_w = max(1, int((self.width * pixel_scale) / scale))
         render_h = max(1, int((self.height * pixel_scale) / scale))
         return render_w, render_h
@@ -476,11 +479,7 @@ class GroundRenderer(msgspec.Struct):
         scale = self.texture_scale
         if scale < 0.5:
             scale = 0.5
-        screen_w = int(rl.get_screen_width())
-        screen_h = int(rl.get_screen_height())
-        render_w = int(rl.get_render_width())
-        render_h = int(rl.get_render_height())
-        if render_w == screen_w * 2 and render_h == screen_h * 2:
+        if self._render_pixel_ratio() == 2.0:
             scale *= 0.5
         return scale
 
