@@ -170,11 +170,7 @@ class GroundRenderer(msgspec.Struct):
         self._generate_texture(seed=seed)
 
     def _ensure_render_target(self) -> None:
-        scale = self.texture_scale
-        if scale < 0.5:
-            scale = 0.5
-        elif scale > 4.0:
-            scale = 4.0
+        scale = min(max(self.texture_scale, 0.5), 4.0)
         self.texture_scale = scale
 
         render_w, render_h = self._render_target_size_for(scale)
@@ -380,19 +376,12 @@ class GroundRenderer(msgspec.Struct):
             rl.draw_texture_pro(texture, src, dst, origin, math.degrees(angle), tint)
 
     def _clamp_camera(self, camera: Vec2, screen_w: float, screen_h: float) -> Vec2:
-        cam_x = camera.x
-        cam_y = camera.y
-        if cam_x > -1.0:
-            cam_x = -1.0
-        if cam_y > -1.0:
-            cam_y = -1.0
         min_x = screen_w - float(self.width)
         min_y = screen_h - float(self.height)
-        if cam_x < min_x:
-            cam_x = min_x
-        if cam_y < min_y:
-            cam_y = min_y
-        return Vec2(cam_x, cam_y)
+        return Vec2(
+            max(min(camera.x, -1.0), min_x),
+            max(min(camera.y, -1.0), min_y),
+        )
 
     def _load_render_target(self, render_w: int, render_h: int) -> bool:
         if self.render_target is not None:
