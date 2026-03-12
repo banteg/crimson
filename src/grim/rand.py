@@ -37,6 +37,8 @@ class CrandLike(Protocol):
 
     def rand(self, *, caller: CallerStatic = None) -> int: ...
 
+    def advance(self, draws: int) -> None: ...
+
 
 class CrtRand:
     """MSVCRT-compatible `rand()` LCG used by the original game.
@@ -61,6 +63,15 @@ class CrtRand:
 
     def srand(self, seed: int) -> None:
         self._state = seed & 0xFFFFFFFF
+
+    def advance(self, draws: int) -> None:
+        steps = int(draws)
+        if steps < 0:
+            raise ValueError(f"draws must be >= 0, got {draws}")
+        state = self._state
+        for _ in range(steps):
+            state = (state * CRT_RAND_MULT + CRT_RAND_INC) & 0xFFFFFFFF
+        self._state = state
 
     @property
     def trace_sink(self) -> RngTraceSink | None:
@@ -144,6 +155,12 @@ class RecordingCrand:
             ),
         )
         return value
+
+    def advance(self, draws: int) -> None:
+        steps = int(draws)
+        if steps < 0:
+            raise ValueError(f"draws must be >= 0, got {draws}")
+        self._shared.base.advance(steps)
 
     def records_since(self, start_call: int = 0) -> list[RngDrawRecord]:
         start = max(0, int(start_call))

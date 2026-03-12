@@ -8,6 +8,7 @@ from crimson.game.loop_view import GameLoopView
 from crimson.game.types import GameState
 from crimson.persistence import save_status
 from crimson.screens.menu import ensure_menu_ground
+from crimson.sim.bootstrap import advance_unlock_terrain
 from grim.assets import RuntimeResources, TextureId
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
@@ -189,6 +190,26 @@ def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(tmp_path: Path)
     assert ground.texture is resources.texture(TextureId.TER_Q4_BASE)
     assert ground.overlay is resources.texture(TextureId.TER_Q4_OVERLAY)
     assert ground.overlay_detail is resources.texture(TextureId.TER_Q4_BASE)
+
+
+def test_regenerate_menu_ground_uses_mutated_app_rng_and_schedules_terrain_seed(tmp_path: Path) -> None:
+    state = _build_state(tmp_path)
+    state.resources = cast(RuntimeResources, _ResourcesStub())
+    state.status.quest_unlock_index = 0x28
+    state.rng.srand(0x1234)
+    expected_rng = Crand(int(state.rng.state))
+    expected_terrain = advance_unlock_terrain(
+        expected_rng,
+        unlock_index=int(state.status.quest_unlock_index),
+        width=1024,
+        height=1024,
+    )
+
+    ground = ensure_menu_ground(state, regenerate=True)
+
+    assert ground is not None
+    assert int(ground._scheduled_seed or -1) == int(expected_terrain.terrain_seed)
+    assert int(state.rng.state) == int(expected_rng.state)
 
 
 def test_existing_menu_ground_ignores_runtime_texture_scale_changes(tmp_path: Path) -> None:

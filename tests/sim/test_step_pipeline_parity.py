@@ -17,7 +17,7 @@ from crimson.replay import (
     unpack_packed_player_input,
 )
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
-from crimson.replay.driver.playback_driver import build_runtime_playback_driver
+from crimson.replay.driver.playback_driver import build_runtime_playback_driver, build_verify_playback_driver
 from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -167,6 +167,24 @@ def test_rush_live_vs_headless_tick_pipeline() -> None:
 
     assert [_checkpoint_state_projection(ck) for ck in live] == [_checkpoint_state_projection(ck) for ck in headless]
     assert [ck.rng_state for ck in live] == [ck.rng_state for ck in headless]
+
+
+def test_runtime_playback_driver_keeps_live_fx_queues_for_ground_baking() -> None:
+    replay = _build_replay(mode=int(GameMode.SURVIVAL), ticks=1, seed=0x1234)
+    world = WorldRuntimeHost(assets_dir=Path(__file__).resolve().parents[1] / "artifacts" / "assets")
+
+    runtime_driver = build_runtime_playback_driver(
+        replay,
+        max_ticks=None,
+        trace_rng=False,
+        world_size=float(replay.header.world_size),
+        fx_queue=world.render_resources.fx_queue,
+        fx_queue_rotated=world.render_resources.fx_queue_rotated,
+    )
+    verify_driver = build_verify_playback_driver(replay)
+
+    assert runtime_driver.session.clear_fx_queues_each_tick is False
+    assert verify_driver.session.clear_fx_queues_each_tick is True
 
 
 def test_quest_live_vs_headless_tick_pipeline() -> None:

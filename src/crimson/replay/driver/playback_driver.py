@@ -20,7 +20,7 @@ from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.header_settings import session_settings_from_replay_header
 from ...replay.input_codec import unpack_tick_inputs
 from ...rng_caller_static import RngCallerStatic
-from ...sim.bootstrap import run_explicit_terrain_prelude, run_unlock_terrain_prelude
+from ...sim.bootstrap import TerrainSetup, advance_explicit_terrain, advance_unlock_terrain
 from ...sim.hooks import TickResult
 from ...sim.input_providers import ResolvedTick
 from ...sim.session_builders import (
@@ -37,7 +37,6 @@ from ...sim.sessions import (
 )
 from ...sim.world_state import WorldState
 from ...status_snapshot import game_status_from_replay_status
-from ...terrain_slots import TerrainSlotTriplet
 from ...typo.state import typo_shot_counts
 from ...weapons import WeaponId
 from ...world.sim_world_state import reset_world_players
@@ -59,12 +58,6 @@ TickBeginObserver: TypeAlias = Callable[
     None,
 ]
 TickEndObserver: TypeAlias = Callable[[TickResult, WorldState], None]
-
-
-@dataclass(slots=True, frozen=True)
-class ReplayTerrainSetup:
-    terrain_slots: TerrainSlotTriplet
-    terrain_seed: int
 
 
 def require_quest_level_from_replay(replay: Replay) -> QuestLevel:
@@ -165,7 +158,7 @@ class PlaybackDriver:
         self._quest_spawn_state: QuestSpawnState | None = None
         self._quest_definition: QuestDefinition | None = None
         self._quest_total_spawn_count = 0
-        self._terrain_setup: ReplayTerrainSetup | None = None
+        self._terrain_setup: TerrainSetup | None = None
         self._quest_spawn_entries_resolved: tuple[SpawnEntry, ...] = ()
         self._quest_start_weapon_resolved: WeaponId | None = None
 
@@ -234,38 +227,29 @@ class PlaybackDriver:
 
         match self.mode_id:
             case GameMode.SURVIVAL | GameMode.RUSH:
-                terrain = run_unlock_terrain_prelude(
+                terrain = advance_unlock_terrain(
                     world.state.rng,
                     unlock_index=int(self.replay.header.status.quest_unlock_index),
                     width=int(self.world_size),
                     height=int(self.world_size),
                 )
-                self._terrain_setup = ReplayTerrainSetup(
-                    terrain_slots=terrain.terrain_slots,
-                    terrain_seed=terrain.terrain_seed,
-                )
+                self._terrain_setup = terrain
             case GameMode.TYPO:
-                terrain = run_unlock_terrain_prelude(
+                terrain = advance_unlock_terrain(
                     world.state.rng,
                     unlock_index=int(self.replay.header.status.quest_unlock_index),
                     width=int(self.world_size),
                     height=int(self.world_size),
                 )
-                self._terrain_setup = ReplayTerrainSetup(
-                    terrain_slots=terrain.terrain_slots,
-                    terrain_seed=terrain.terrain_seed,
-                )
+                self._terrain_setup = terrain
             case GameMode.TUTORIAL:
-                terrain = run_unlock_terrain_prelude(
+                terrain = advance_unlock_terrain(
                     world.state.rng,
                     unlock_index=int(self.replay.header.status.quest_unlock_index),
                     width=int(self.world_size),
                     height=int(self.world_size),
                 )
-                self._terrain_setup = ReplayTerrainSetup(
-                    terrain_slots=terrain.terrain_slots,
-                    terrain_seed=terrain.terrain_seed,
-                )
+                self._terrain_setup = terrain
             case GameMode.QUESTS:
                 quest_definition = resolve_replay_quest_definition(self.replay)
                 quest_level = quest_definition.level
@@ -279,7 +263,7 @@ class PlaybackDriver:
                     height=int(self.world_size),
                     player_count=int(self.session_settings.player_count),
                 )
-                _generic_terrain = run_unlock_terrain_prelude(
+                advance_unlock_terrain(
                     world.state.rng,
                     unlock_index=int(self.replay.header.status.quest_unlock_index),
                     width=int(self.world_size),
@@ -288,7 +272,7 @@ class PlaybackDriver:
                 # Native `quest_start_selected()` burns one `crt_rand()` for
                 # `highscore_record_random_tag` before quest terrain and spawn setup.
                 world.state.rng.rand(caller=RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
-                quest_terrain = run_explicit_terrain_prelude(
+                quest_terrain = advance_explicit_terrain(
                     world.state.rng,
                     terrain_slots=quest_definition.terrain_slots,
                     width=int(self.world_size),
@@ -313,18 +297,12 @@ class PlaybackDriver:
                 self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
                 self._quest_spawn_entries_resolved = spawn_entries
                 self._quest_start_weapon_resolved = start_weapon_id
-                self._terrain_setup = ReplayTerrainSetup(
+                self._terrain_setup = TerrainSetup(
                     terrain_slots=quest_definition.terrain_slots,
                     terrain_seed=quest_terrain.terrain_seed,
                 )
             case _:
                 pass
-
-        if self._terrain_setup is not None:
-            self._terrain_setup = ReplayTerrainSetup(
-                terrain_slots=self._terrain_setup.terrain_slots,
-                terrain_seed=self._terrain_setup.terrain_seed,
-            )
 
         return world
 
@@ -333,9 +311,18 @@ class PlaybackDriver:
             return self._provided_fx_queue, self._provided_fx_queue_rotated
         return build_empty_fx_queues()
 
+    def _clear_fx_queues_each_tick(self) -> bool:
+        # Runtime replay playback shares live FX queues with WorldRuntime so the
+        # renderer can bake ground decals after presentation outputs are applied.
+        # Headless verification keeps the old clear-per-tick behavior.
+        return not (
+            self._provided_fx_queue is not None and self._provided_fx_queue_rotated is not None
+        )
+
     def _build_session(self, *, apply_world_dt_steps: bool) -> DeterministicSession:
         damage_scale_by_type = build_damage_scale_by_type()
         self._quest_spawn_state = None
+        clear_fx_queues_each_tick = self._clear_fx_queues_each_tick()
         match self.mode_id:
             case GameMode.SURVIVAL:
                 session, _ = build_survival_session(
@@ -348,7 +335,7 @@ class PlaybackDriver:
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
                     apply_world_dt_steps=bool(apply_world_dt_steps),
-                    clear_fx_queues_each_tick=True,
+                    clear_fx_queues_each_tick=bool(clear_fx_queues_each_tick),
                     finalize_post_render_lifecycle=True,
                 )
                 return session
@@ -363,7 +350,7 @@ class PlaybackDriver:
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
-                    clear_fx_queues_each_tick=True,
+                    clear_fx_queues_each_tick=bool(clear_fx_queues_each_tick),
                     finalize_post_render_lifecycle=True,
                 )
                 return session
@@ -385,7 +372,7 @@ class PlaybackDriver:
                     game_tune_started=False,
                     demo_mode_active=bool(self.world.state.demo_mode_active),
                     apply_world_dt_steps=bool(apply_world_dt_steps),
-                    clear_fx_queues_each_tick=True,
+                    clear_fx_queues_each_tick=bool(clear_fx_queues_each_tick),
                     finalize_post_render_lifecycle=True,
                     spawn_entries=tuple(spawn_entries),
                     quest_level=quest_level,
@@ -592,7 +579,7 @@ class PlaybackDriver:
         return int(self._quest_total_spawn_count)
 
     @property
-    def terrain_setup(self) -> ReplayTerrainSetup | None:
+    def terrain_setup(self) -> TerrainSetup | None:
         return self._terrain_setup
 
 

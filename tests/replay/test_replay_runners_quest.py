@@ -9,7 +9,7 @@ from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.bootstrap import run_explicit_terrain_prelude, run_unlock_terrain_prelude
+from crimson.sim.bootstrap import advance_explicit_terrain, advance_unlock_terrain
 from crimson.sim.input_providers import PerkPickCommand
 from crimson.weapons import WEAPON_BY_ID
 from grim.rand import Crand
@@ -81,7 +81,7 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
         player_count=int(replay.header.player_count),
     )
     rng = Crand(int(replay.header.seed))
-    _ = run_unlock_terrain_prelude(
+    advance_unlock_terrain(
         rng,
         unlock_index=int(replay.header.status.quest_unlock_index),
         width=int(replay.header.world_size),
@@ -89,7 +89,7 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
     )
     # Native `quest_start_selected()` burns one `crt_rand()` before quest terrain.
     rng.rand(caller=RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
-    _ = run_explicit_terrain_prelude(
+    quest_terrain = advance_explicit_terrain(
         rng,
         terrain_slots=quest.terrain_slots,
         width=int(replay.header.world_size),
@@ -109,6 +109,10 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
     baseline_driver = build_verify_playback_driver(replay)
     injected_driver = build_verify_playback_driver(replay, spawn_entries=spawn_entries)
 
+    terrain_setup = baseline_driver.terrain_setup
+    assert terrain_setup is not None
+    assert terrain_setup.terrain_slots == quest.terrain_slots
+    assert terrain_setup.terrain_seed == int(quest_terrain.terrain_seed)
     assert int(baseline_driver.world.state.rng.state) == expected_rng_state
     assert int(injected_driver.world.state.rng.state) == expected_rng_state
 

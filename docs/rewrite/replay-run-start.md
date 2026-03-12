@@ -20,6 +20,10 @@ So the clean end shape in our code is:
 - `ReplayHeader.seed` always means the true reset seed for the run
 - replay calls the same mode-start path that live gameplay uses
 - replay schema carries no separate bootstrap fields
+- replay reconstructs only `TerrainSetup(terrain_slots, terrain_seed)` at the
+  render boundary
+- post-startup RNG state is read directly from the mutated authoritative RNG,
+  not from a duplicated snapshot field
 - old replay files and old Frida raw traces are intentionally rejected
 
 ## Native picture

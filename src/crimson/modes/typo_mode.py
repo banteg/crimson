@@ -12,7 +12,7 @@ from ..game_modes import GameMode
 from ..persistence.highscores import scores_path_for_mode
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
-from ..sim.bootstrap import run_unlock_terrain_prelude
+from ..sim.bootstrap import advance_unlock_terrain
 from ..sim.input import PlayerInput
 from ..sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.session_builders import build_typo_session
@@ -77,7 +77,7 @@ class TypoShooterMode(BaseGameplayMode):
         highscore_names = tuple(load_typo_highscore_names(scores_path_for_mode(self._base_dir, GameMode.TYPO)))
 
         status = self.state.status
-        terrain = run_unlock_terrain_prelude(
+        terrain = advance_unlock_terrain(
             self.state.rng,
             unlock_index=int(status.quest_unlock_index) if status is not None else 0,
             width=int(self.world_size),
@@ -87,7 +87,7 @@ class TypoShooterMode(BaseGameplayMode):
             terrain_slots=terrain.terrain_slots,
             seed=int(terrain.terrain_seed),
         )
-        self.sim_world.state.rng.srand(int(terrain.seed_after))
+        self.sim_world.state.rng.srand(int(self.state.rng.state))
         self.state.typo.dictionary_words = dictionary_words
         self.state.typo.highscore_names = highscore_names
         self._sim_session = self._new_sim_session()

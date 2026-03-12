@@ -21,7 +21,7 @@ from ..net.rollback_resync_v5 import (
 )
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
-from ..sim.bootstrap import run_unlock_terrain_prelude
+from ..sim.bootstrap import advance_unlock_terrain
 from ..sim.session_builders import build_rush_session, enforce_rush_loadout
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, RushSpawnState
 from ..ui.cursor import draw_menu_cursor
@@ -99,7 +99,7 @@ class RushMode(BaseGameplayMode):
             else int(sim_unlock_index_full)
         )
         quest_unlock_index = int(sim_unlock_index)
-        terrain = run_unlock_terrain_prelude(
+        terrain = advance_unlock_terrain(
             self.state.rng,
             unlock_index=int(quest_unlock_index),
             width=int(self.world_size),
@@ -115,10 +115,6 @@ class RushMode(BaseGameplayMode):
             sim_quest_unlock_index=int(sim_unlock_index),
             sim_quest_unlock_index_full=int(sim_unlock_index_full),
             quest_unlock_index=int(quest_unlock_index),
-            seed_before=int(terrain.seed_before),
-            seed_after=int(terrain.seed_after),
-            selection_draws=int(terrain.selection_draws),
-            stamping_draws=int(terrain.stamping_draws),
             terrain_slots=terrain.terrain_slots,
             terrain_seed=terrain.terrain_seed,
         )
@@ -126,7 +122,7 @@ class RushMode(BaseGameplayMode):
             terrain_slots=terrain.terrain_slots,
             seed=terrain.terrain_seed,
         )
-        self.sim_world.state.rng.srand(int(terrain.seed_after))
+        self.sim_world.state.rng.srand(int(self.state.rng.state))
         self._sim_session = self._new_sim_session()
         enforce_rush_loadout(self.sim_world.world_state)
         weapon_usage_counts = normalize_weapon_usage_counts(
