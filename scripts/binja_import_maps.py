@@ -609,6 +609,44 @@ def _update_analysis(bv) -> None:
     bv.update_analysis_and_wait()
 
 
+def _read_instruction_info(bv, func):
+    data = bv.read(func.start, func.arch.max_instr_length)
+    return func.arch.get_instruction_info(data, func.start)
+
+
+def _is_direct_jump_wrapper(bv, func, addr: int) -> bool:
+    info = _read_instruction_info(bv, func)
+    if len(info.branches) != 1:
+        return False
+    branch = info.branches[0]
+    if branch.type != bn.BranchType.UnconditionalBranch or branch.target != addr:
+        return False
+    entry_block = next((block for block in func.basic_blocks if block.start == func.start), None)
+    if entry_block is None or entry_block.end != func.start + info.length:
+        return False
+    return any(block.start == addr for block in func.basic_blocks)
+
+
+def _resolve_function_for_name_row(bv, row: dict, addr: int):
+    func = bv.get_function_at(addr)
+    if func is not None or not row.get("create"):
+        return func, False
+
+    containing = list(bv.get_functions_containing(addr))
+    if not containing:
+        bv.create_user_function(addr)
+        return bv.get_function_at(addr), True
+
+    if len(containing) != 1:
+        raise RuntimeError(f"refusing to create {_entry_label(row, addr)} inside multiple existing functions")
+
+    func = containing[0]
+    if _is_direct_jump_wrapper(bv, func, addr):
+        return func, False
+
+    raise RuntimeError(f"refusing to create {_entry_label(row, addr)} inside an existing function")
+
+
 def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
     if map_path is None:
         map_path = _default_map_path("CRIMSON_NAME_MAP", "analysis/ghidra/maps/name_map.json", bv)
@@ -638,15 +676,9 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
         addr = _parse_address(row.get("address"))
         if addr is None:
             raise ValueError(f"invalid function address in name map row: {row!r}")
-        func = bv.get_function_at(addr)
-        if func is None and row.get("create"):
-            containing = list(bv.get_functions_containing(addr))
-            if containing:
-                raise RuntimeError(f"refusing to create {_entry_label(row, addr)} inside an existing function")
-            bv.create_user_function(addr)
-            func = bv.get_function_at(addr)
-            if func:
-                stats["created"] += 1
+        func, created = _resolve_function_for_name_row(bv, row, addr)
+        if created:
+            stats["created"] += 1
         if func is None:
             raise LookupError(f"function not found for {_entry_label(row, addr)}")
 
