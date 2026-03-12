@@ -46,6 +46,7 @@ nav = [
       { "Overview" = "rewrite/contracts/index.md" },
       { "Deterministic step pipeline" = "rewrite/deterministic-step-pipeline.md" },
       { "Replay run start" = "rewrite/replay-run-start.md" },
+      { "Terrain seed / prelude architecture" = "rewrite/terrain-seed-architecture.md" },
       { "Quest identifiers" = "rewrite/quest-identifiers.md" },
       { "CDT trace format" = "rewrite/cdt-trace-format.md" },
       { "RNG caller mapping workflow" = "rewrite/rng-caller-mapping-workflow.md" },
