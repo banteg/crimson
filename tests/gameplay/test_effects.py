@@ -227,6 +227,18 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     dt = 0.016
     pool.update(dt, creatures=[creature], fx_queue=fx_queue, sprite_effects=sprite_effects)
 
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
+        RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_FLAMETHROWER,
+        RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BOUNCE_SPEED_SCALE,
+        RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_X,
+        RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_Y,
+        RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY,
+        RngCallerStatic.FX_QUEUE_ADD_RANDOM_WIDTH,
+        RngCallerStatic.FX_QUEUE_ADD_RANDOM_ROTATION,
+        RngCallerStatic.FX_QUEUE_ADD_RANDOM_EFFECT_ID,
+    ]
+
     assert particle.render_flag is False
     assert fx_queue.count == 1
     assert sprite_effects.entries[0].active
@@ -245,6 +257,32 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     dt_f32 = f32(dt)
     assert_float_close(float(creature.pos.x), f32(float(expected_vel_x) * float(dt_f32)))
     assert_float_close(float(creature.pos.y), f32(float(expected_vel_y) * float(dt_f32)))
+
+
+def test_particle_pool_tags_style_specific_jitter_callers() -> None:
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    pool = ParticlePool(size=3, rng=rng)
+
+    flame_idx = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
+    alt_idx = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
+    bubble_idx = pool.spawn_particle_slow(pos=Vec2(), angle=0.0)
+
+    flame = pool.entries[flame_idx]
+    alt = pool.entries[alt_idx]
+    bubble = pool.entries[bubble_idx]
+    alt.style_id = ParticleStyleId.BLOW_TORCH
+
+    before = rng.calls
+    pool.update(0.016)
+
+    assert flame.render_flag
+    assert alt.render_flag
+    assert bubble.render_flag
+    assert [record.caller for record in rng.records_since(before)] == [
+        RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_FLAMETHROWER,
+        RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_ALT,
+        RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_BUBBLEGUN,
+    ]
 
 
 def test_particle_update_uses_argument_or_pool_damage_applier() -> None:

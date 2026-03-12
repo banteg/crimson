@@ -274,8 +274,13 @@ class ParticlePool:
 
             if entry.render_flag:
                 # Random walk drift (native adjusts angle based on `crt_rand`).
+                jitter_caller = RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_ALT
+                if style == int(ParticleStyleId.FLAMETHROWER):
+                    jitter_caller = RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_FLAMETHROWER
+                elif style == int(ParticleStyleId.BUBBLEGUN):
+                    jitter_caller = RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_BUBBLEGUN
                 jitter = f32(
-                    float(rng.rand() % 100 - 50)
+                    float(rng.rand(caller=jitter_caller) % 100 - 50)
                     * 0.06
                     * max(float(entry.intensity), 0.0)
                     * float(dt),
@@ -337,7 +342,13 @@ class ParticlePool:
 
                         bounce_velocity = Vec2.from_angle(float(entry.angle)) * 82.0
                         speed_scale = f32(
-                            float(rng.rand() % 10) * 0.1,
+                            float(
+                                rng.rand(
+                                    caller=RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BOUNCE_SPEED_SCALE,
+                                )
+                                % 10,
+                            )
+                            * 0.1,
                         )
                         entry.vel = Vec2(
                             f32(float(bounce_velocity.x) * float(speed_scale)),
@@ -366,10 +377,14 @@ class ParticlePool:
                         if sprite_effects is not None and (idx % 3 == 0):
                             sprite_vel = Vec2(
                                 float(
-                                    rng.rand() % 60 - 30,
+                                    rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_X)
+                                    % 60
+                                    - 30,
                                 ),
                                 float(
-                                    rng.rand() % 60 - 30,
+                                    rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_Y)
+                                    % 60
+                                    - 30,
                                 ),
                             )
                             sprite_effects.spawn(
