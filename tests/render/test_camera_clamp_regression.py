@@ -316,7 +316,7 @@ def test_terrain_rt_blend_mask_alpha_writes_uses_color_mask(mocker) -> None:
 
 def test_alpha_test_shader_failure_raises(mocker) -> None:
     mocker.patch.object(terrain_render.rl, "load_shader_from_memory", side_effect=RuntimeError("compile failed"))
-    mocker.patch.object(terrain_render, "_ALPHA_TEST_SHADER", None)
+    terrain_render._get_alpha_test_shader.cache_clear()
 
     with pytest.raises(RuntimeError, match="compile failed"):
         with terrain_render._maybe_alpha_test():

@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
+from functools import cache
 
 import msgspec
 
@@ -35,8 +36,6 @@ _ALPHA_TEST_REF_F32 = float(_ALPHA_TEST_REF_U8) / 255.0
 # discard shader for stamping into the terrain render target. This shim is
 # required for parity; if it fails to compile, rendering should stop rather than
 # silently drift away from the native cutoff behavior.
-_ALPHA_TEST_SHADER: rl.Shader | None = None
-
 _ALPHA_TEST_VS_330 = r"""
 #version 330
 
@@ -77,17 +76,12 @@ void main() {{
 """
 
 
+@cache
 def _get_alpha_test_shader() -> rl.Shader:
-    global _ALPHA_TEST_SHADER
-    if _ALPHA_TEST_SHADER is not None and _ALPHA_TEST_SHADER.id > 0:
-        return _ALPHA_TEST_SHADER
-
     shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, _ALPHA_TEST_FS_330)
     if shader.id <= 0:
         raise RuntimeError("terrain alpha-test shader compilation returned an invalid shader id")
-
-    _ALPHA_TEST_SHADER = shader
-    return _ALPHA_TEST_SHADER
+    return shader
 
 
 @contextmanager
