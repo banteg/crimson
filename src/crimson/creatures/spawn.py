@@ -812,15 +812,6 @@ def apply_child_spec(child: CreatureInit, spec: FormationChildSpec) -> None:
         child.orbit_radius = spec.orbit_radius
 
 
-def randf(
-    rng: CrandLike,
-    mod: int,
-    scale: float,
-    base: float,
-) -> float:
-    return float(rng.rand() % mod) * scale + base
-
-
 def apply_size_health_reward(
     c: CreatureInit,
     size: float,
@@ -837,16 +828,6 @@ def apply_size_health_reward(
 def apply_size_health(c: CreatureInit, size: float, *, health_scale: float, health_add: float) -> None:
     c.size = size
     c.health = size * health_scale + health_add
-
-
-def apply_random_move_speed(
-    c: CreatureInit,
-    rng: CrandLike,
-    mod: int,
-    scale: float,
-    base: float,
-) -> None:
-    c.move_speed = randf(rng, mod, scale, base)
 
 
 def apply_size_move_speed(c: CreatureInit, size: float, scale: float, base: float) -> None:
@@ -993,9 +974,6 @@ class PlanBuilder(msgspec.Struct):
             interval=interval,
             child_template_id=child,
         )
-
-    def rand(self) -> int:
-        return self.rng.rand()
 
     def ring_children(self, **kwargs) -> int:
         return spawn_ring_children(

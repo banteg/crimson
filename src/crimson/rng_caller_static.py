@@ -357,6 +357,7 @@ class RngCallerStatic(IntEnum):
     # Rewrite-only caller ids reserve the high range so they cannot be
     # mistaken for native return addresses from the main executable.
     REWRITE_JINXED_ACCIDENT_TARGET_PICK = 0xF1000001
+    REWRITE_PERK_AUTO_PICK_VISIBLE_CHOICE = 0xF1000002
 
 
 __all__ = ["RngCallerStatic"]

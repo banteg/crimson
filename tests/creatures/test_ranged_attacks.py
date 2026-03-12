@@ -119,6 +119,7 @@ def test_spawn_init_packs_ranged_projectile_type_into_orbit_radius() -> None:
         ranged_projectile_type=26,
     )
     idx = pool.spawn_init(init)
+    assert idx is not None
     assert pool.entries[idx].orbit_radius == 26.0
 
 

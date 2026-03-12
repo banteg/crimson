@@ -11,6 +11,7 @@ from grim.sfx_map import SfxId
 
 from .game_modes import GameMode
 from .projectiles.types import ProjectileHit, ProjectileTemplateId
+from .rng_caller_static import RngCallerStatic
 from .weapons import WEAPON_BY_ID, WeaponId, weapon_entry_for_projectile_type_id
 
 if TYPE_CHECKING:
@@ -34,12 +35,6 @@ class AudioRouter(msgspec.Struct):
     demo_mode_active: bool = False
     sfx_enabled: bool = True
     reflex_boost_timer_source: Callable[[], float] | None = None
-
-    @staticmethod
-    def _rand_choice(rng: CrandLike, options: tuple[SfxId, ...]) -> SfxId:
-        idx = rng.rand() % len(options)
-        return options[idx]
-
     def _reflex_boost_timer(self) -> float:
         source = self.reflex_boost_timer_source
         if source is None:
@@ -99,7 +94,7 @@ class AudioRouter(msgspec.Struct):
         ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).ammo_class
         if ammo_class == 4:
             return SfxId.SHOCK_HIT_01
-        return self._rand_choice(rng, _BULLET_HIT_SFX)
+        return _BULLET_HIT_SFX[rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX) % len(_BULLET_HIT_SFX)]
 
     def play_hit_sfx(
         self,

@@ -17,7 +17,6 @@ from crimson.perks.state import PerkSelectionState
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from grim.rand import Crand
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -274,16 +273,7 @@ def test_perk_auto_pick_uses_visible_choices_only() -> None:
         ],
         choices_dirty=False,
     )
-
-    class _FixedRand(Crand):
-        def __init__(self) -> None:
-            super().__init__(0)
-
-        def rand(self, *, caller: int | None = None) -> int:
-            _ = caller
-            return 6
-
-    state.rng = _FixedRand()
+    state.rng = ScriptedCrand(6, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     picks = perk_auto_pick(
         state,
@@ -296,3 +286,6 @@ def test_perk_auto_pick_uses_visible_choices_only() -> None:
     assert picks == [PerkId.FASTSHOT]
     assert player.perk_counts[int(PerkId.FASTSHOT)] == 1
     assert player.perk_counts[int(PerkId.PERK_MASTER)] == 0
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.REWRITE_PERK_AUTO_PICK_VISIBLE_CHOICE,
+    ]

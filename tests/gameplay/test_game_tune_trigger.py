@@ -6,6 +6,7 @@ import crimson.audio_router as audio_router
 from crimson.audio_router import AudioRouter
 from crimson.game_modes import GameMode
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
+from crimson.rng_caller_static import RngCallerStatic
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state
@@ -43,17 +44,21 @@ def test_game_tune_triggers_in_typo_mode(mocker) -> None:
     assert play_sfx.call_args_list == [
         call(router.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
     ]
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
+    ]
 
 
 def test_game_tune_not_triggered_in_rush_mode(mocker) -> None:
     trigger_game_tune = mocker.patch.object(audio_router, "trigger_game_tune", return_value="gt1_ingame")
     play_sfx = mocker.patch.object(audio_router, "play_sfx")
     router = AudioRouter(audio=_audio_state_stub(), audio_rng=Crand(0xBEEF))
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     router.play_hit_sfx(
         _hits(2),
         game_mode=GameMode.RUSH,
-        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        rng=rng,
         beam_types=frozenset(),
     )
 
@@ -62,17 +67,22 @@ def test_game_tune_not_triggered_in_rush_mode(mocker) -> None:
         call(router.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
         call(router.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
     ]
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
+        RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
+    ]
 
 
 def test_game_tune_not_triggered_in_demo(mocker) -> None:
     trigger_game_tune = mocker.patch.object(audio_router, "trigger_game_tune", return_value="gt1_ingame")
     play_sfx = mocker.patch.object(audio_router, "play_sfx")
     router = AudioRouter(audio=_audio_state_stub(), audio_rng=Crand(0xBEEF), demo_mode_active=True)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     router.play_hit_sfx(
         _hits(2),
         game_mode=GameMode.TYPO,
-        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        rng=rng,
         beam_types=frozenset(),
     )
 
@@ -80,4 +90,8 @@ def test_game_tune_not_triggered_in_demo(mocker) -> None:
     assert play_sfx.call_args_list == [
         call(router.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
         call(router.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
+    ]
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
+        RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
     ]
