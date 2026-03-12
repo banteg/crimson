@@ -67,6 +67,10 @@ def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
     assert trigger_game_tune is True
     assert keys == ["sfx_bullet_hit_01"]
     assert rng.calls == 2
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK,
+        RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
+    ]
 
 
 def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
