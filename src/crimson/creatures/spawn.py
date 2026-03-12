@@ -24,6 +24,7 @@ from grim.rand import CrandLike
 
 from ..bonuses import BonusId
 from ..math_parity import f32
+from ..rng_caller_static import RngCallerStatic
 from .spawn_ids import (
     HAS_SPAWN_SLOT_FLAG,
     RANDOM_HEADING_SENTINEL,
@@ -1088,7 +1089,7 @@ def alloc_creature(
     # creature_alloc_slot():
     # - clears flags
     # - seeds phase_seed = float(crt_rand() & 0x17f)
-    phase_seed = float(rng.rand() & 0x17F)
+    phase_seed = float(rng.rand(caller=RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED) & 0x17F)
     # Native `creature_alloc_slot` does not clear heading; some template child paths
     # intentionally keep stale heading from the recycled slot.
     return CreatureInit(origin_template_id=template_id, pos=pos, heading=None, phase_seed=phase_seed)
@@ -1113,7 +1114,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     c = alloc_creature(-1, pos, rng)
     c.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
-    r10 = rng.rand() % 10
+    r10 = rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_TYPE_ROLL) % 10
 
     if xp < 12000:
         type_id = 2 if r10 < 9 else 3
@@ -1126,7 +1127,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
             type_id = 2
         else:
             # Decompiled as a sign-bit trick, but in practice this is a parity pick.
-            type_id = (rng.rand() & 1) + 3
+            type_id = (rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_PARITY_PICK) & 1) + 3
     elif xp < 50000:
         type_id = 2
     elif xp < 90000:
@@ -1143,16 +1144,16 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
             type_id = 0
 
     # Rare override: forces spider_sp1 when (rand() & 0x1f) == 2.
-    if (rng.rand() & 0x1F) == 2:
+    if (rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_OVERRIDE) & 0x1F) == 2:
         type_id = 3
 
     c.type_id = CreatureTypeId(type_id)
 
     # size = rand() % 20 + 44
-    c.size = float(rng.rand() % 20 + 44)
+    c.size = float(rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_SIZE) % 20 + 44)
 
     # heading = (rand() % 314) * 0.01
-    c.heading = float(f32(f32(float(rng.rand() % 314)) * f32(0.01)))
+    c.heading = float(f32(f32(float(rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEADING) % 314)) * f32(0.01)))
 
     # Native computes in float32; preserve rounding so derived speeds match capture.
     move_speed = f32(f32(f32(float(xp // 4000)) * f32(0.045)) + f32(0.9))
@@ -1160,7 +1161,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
         c.flags |= CreatureFlags.AI7_LINK_TIMER
         move_speed = f32(f32(move_speed) * f32(1.3))
 
-    r_health = rng.rand()
+    r_health = rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEALTH)
     health_scaled = f32(f32(float(xp)) * f32(0.00125))
     health_rand = f32(float(r_health & 0xF))
     health = f32(f32(health_scaled + health_rand) + f32(52.0))
@@ -1182,16 +1183,36 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     tint_a = 1.0
     if xp < 50_000:
         tint_r = 1.0 - 1.0 / (float(xp // 1000) + 10.0)
-        tint_g = float(rng.rand() % 10) * 0.01 + 0.9 - 1.0 / (float(xp // 10000) + 10.0)
-        tint_b = float(rng.rand() % 10) * 0.01 + 0.7
+        tint_g = (
+            float(rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_LOW_TINT_G) % 10) * 0.01
+            + 0.9
+            - 1.0 / (float(xp // 10000) + 10.0)
+        )
+        tint_b = float(rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_LOW_TINT_B) % 10) * 0.01 + 0.7
     elif xp < 100_000:
         tint_r = 0.9 - 1.0 / (float(xp // 1000) + 10.0)
-        tint_g = float(rng.rand() % 10) * 0.01 + 0.8 - 1.0 / (float(xp // 10000) + 10.0)
-        tint_b = float(xp - 50_000) * 6e-06 + float(rng.rand() % 10) * 0.01 + 0.7
+        tint_g = (
+            float(rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_MID_TINT_G) % 10) * 0.01
+            + 0.8
+            - 1.0 / (float(xp // 10000) + 10.0)
+        )
+        tint_b = (
+            float(xp - 50_000) * 6e-06
+            + float(rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_MID_TINT_B) % 10) * 0.01
+            + 0.7
+        )
     else:
         tint_r = 1.0 - 1.0 / (float(xp // 1000) + 10.0)
-        tint_g = float(rng.rand() % 10) * 0.01 + 0.9 - 1.0 / (float(xp // 10000) + 10.0)
-        tint_b = float(rng.rand() % 10) * 0.01 + 1.0 - float(xp - 100_000) * 3e-06
+        tint_g = (
+            float(rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HIGH_TINT_G) % 10) * 0.01
+            + 0.9
+            - 1.0 / (float(xp // 10000) + 10.0)
+        )
+        tint_b = (
+            float(rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HIGH_TINT_B) % 10) * 0.01
+            + 1.0
+            - float(xp - 100_000) * 3e-06
+        )
         if tint_b < 0.5:
             tint_b = 0.5
 
@@ -1205,37 +1226,37 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
         float(c.health or 0.0) * 0.4
         + float(c.contact_damage or 0.0) * 0.8
         + move_speed * 5.0
-        + float(rng.rand() % 10 + 10)
+        + float(rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_REWARD_BONUS) % 10 + 10)
     )
 
     # Rare stat overrides (color-coded variants).
-    r = rng.rand()
+    r = rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_RED)
     if r % 180 < 2:
         apply_tint(c, (0.9, 0.4, 0.4, 1.0))
         c.health = 65.0
         c.reward_value = 320.0
     else:
-        r = rng.rand()
+        r = rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_GREEN)
         if r % 240 < 2:
             apply_tint(c, (0.4, 0.9, 0.4, 1.0))
             c.health = 85.0
             c.reward_value = 420.0
         else:
-            r = rng.rand()
+            r = rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_BLUE)
             if r % 360 < 2:
                 apply_tint(c, (0.4, 0.4, 0.9, 1.0))
                 c.health = 125.0
                 c.reward_value = 520.0
 
     # Rare health/size boosts (do not recompute contact_damage).
-    r = rng.rand()
+    r = rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_PURPLE)
     if r % 1320 < 4:
         apply_tint(c, (0.84, 0.24, 0.89, 1.0))
         c.size = 80.0
         c.reward_value = 600.0
         c.health = float(c.health or 0.0) + 230.0
     else:
-        r = rng.rand()
+        r = rng.rand(caller=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_YELLOW)
         if r % 1620 < 4:
             apply_tint(c, (0.94, 0.84, 0.29, 1.0))
             c.size = 85.0

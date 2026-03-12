@@ -4,9 +4,10 @@ import pytest
 
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, build_survival_spawn_creature
 from crimson.math_parity import f32
+from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
 from grim.rand import Crand
-from tests.support.helpers import assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
@@ -60,6 +61,113 @@ def test_survival_spawn_creature_applies_zombie_speed_floor_and_health_scale() -
     assert_float_close(c.health, 264.75)
     assert_float_close(c.max_health, 264.75)
     assert rng.state == 0xC1BBB05F
+
+
+def _survival_spawn_exact_values(*, type_roll: int, include_parity: bool) -> list[int]:
+    values = [0, type_roll]
+    if include_parity:
+        values.append(1)
+    values.extend(
+        [
+            0,  # rare override
+            0,  # size
+            0,  # heading
+            0,  # health
+            0,  # tint_g
+            0,  # tint_b
+            0,  # reward bonus
+            2,  # rare red
+            2,  # rare green
+            2,  # rare blue
+            4,  # rare purple
+            4,  # rare yellow
+        ],
+    )
+    return values
+
+
+def _expected_survival_spawn_callers(
+    *,
+    tint_g: RngCallerStatic,
+    tint_b: RngCallerStatic,
+    include_parity: bool,
+) -> list[RngCallerStatic]:
+    callers = [
+        RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
+        RngCallerStatic.SURVIVAL_SPAWN_CREATURE_TYPE_ROLL,
+    ]
+    if include_parity:
+        callers.append(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_PARITY_PICK)
+    callers.extend(
+        [
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_OVERRIDE,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_SIZE,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEADING,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEALTH,
+            tint_g,
+            tint_b,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_REWARD_BONUS,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_RED,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_GREEN,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_BLUE,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_PURPLE,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_YELLOW,
+        ],
+    )
+    return callers
+
+
+@pytest.mark.parametrize(
+    ("xp", "values", "expected_callers"),
+    [
+        (
+            0,
+            _survival_spawn_exact_values(type_roll=0, include_parity=False),
+            _expected_survival_spawn_callers(
+                tint_g=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_LOW_TINT_G,
+                tint_b=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_LOW_TINT_B,
+                include_parity=False,
+            ),
+        ),
+        (
+            25_000,
+            _survival_spawn_exact_values(type_roll=5, include_parity=True),
+            _expected_survival_spawn_callers(
+                tint_g=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_LOW_TINT_G,
+                tint_b=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_LOW_TINT_B,
+                include_parity=True,
+            ),
+        ),
+        (
+            50_000,
+            _survival_spawn_exact_values(type_roll=0, include_parity=False),
+            _expected_survival_spawn_callers(
+                tint_g=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_MID_TINT_G,
+                tint_b=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_MID_TINT_B,
+                include_parity=False,
+            ),
+        ),
+        (
+            100_000,
+            _survival_spawn_exact_values(type_roll=0, include_parity=False),
+            _expected_survival_spawn_callers(
+                tint_g=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HIGH_TINT_G,
+                tint_b=RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HIGH_TINT_B,
+                include_parity=False,
+            ),
+        ),
+    ],
+)
+def test_survival_spawn_creature_uses_exact_native_callers(
+    xp: int,
+    values: list[int],
+    expected_callers: list[RngCallerStatic],
+) -> None:
+    rng = ScriptedCrand(values)
+
+    build_survival_spawn_creature(Vec2(1.0, 2.0), rng, player_experience=xp)
+
+    assert [record.caller for record in rng.records_since()] == expected_callers
 
 
 @pytest.mark.parametrize(
