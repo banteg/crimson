@@ -199,7 +199,7 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) ->
         renderer.schedule_generate(seed=case.seed)
         for _ in range(6):
             renderer.process_pending()
-            if not renderer._pending_generate:
+            if not renderer.generation_pending():
                 break
         assert renderer.render_target is not None
 

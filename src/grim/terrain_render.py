@@ -152,13 +152,12 @@ class GroundRenderer(msgspec.Struct):
     texture_failed: bool = False
     render_target: rl.RenderTexture | None = None
     _render_target_ready: bool = False
-    _pending_generate: bool = False
-    _pending_generate_seed: int | None = None
-    _render_target_warmup_passes: int = 0
+    _scheduled_seed: int | None = None
+    _warmup_retry_pending: bool = False
 
     def generation_pending(self) -> bool:
         """True while a scheduled terrain generate is still pending."""
-        return self._pending_generate
+        return self._scheduled_seed is not None
 
     def render_target_ready(self) -> bool:
         """True when the terrain render target exists and is ready for drawing."""
@@ -170,26 +169,28 @@ class GroundRenderer(msgspec.Struct):
         #   2) first fill (may be black/uninitialized on some platforms)
         #   3) warmup retry fill
         steps = 0
-        while self._pending_generate and steps < 4:
+        while self._scheduled_seed is not None and steps < 4:
             steps += 1
             if self.render_target is None:
                 self.create_render_target()
+                if self.render_target is None and self.texture_failed:
+                    self._scheduled_seed = None
                 continue
 
-            seed = self._pending_generate_seed
+            seed = self._scheduled_seed
             assert seed is not None, "pending terrain generation requires a seed"
-            self._pending_generate = False
+            self._scheduled_seed = None
             self._generate_texture(seed=seed)
             if self.render_target is None and not self.texture_failed:
-                self._pending_generate = True
+                self._scheduled_seed = seed
                 continue
 
-            if self._render_target_warmup_passes > 0:
-                self._render_target_warmup_passes -= 1
+            if self._warmup_retry_pending:
+                self._warmup_retry_pending = False
                 # On some platforms/drivers the first draw into a new RT can come out as
                 # black/uninitialized (all-zero). Retry once before marking it ready.
                 self._render_target_ready = False
-                self._pending_generate = True
+                self._scheduled_seed = seed
                 continue
 
     def create_render_target(self) -> None:
@@ -218,10 +219,10 @@ class GroundRenderer(msgspec.Struct):
             rl.unload_render_texture(self.render_target)
             self.render_target = None
         self._render_target_ready = False
+        self._warmup_retry_pending = False
 
     def schedule_generate(self, seed: int) -> None:
-        self._pending_generate_seed = seed
-        self._pending_generate = True
+        self._scheduled_seed = seed
 
     def _generate_texture(self, seed: int) -> None:
         self.create_render_target()
@@ -454,7 +455,7 @@ class GroundRenderer(msgspec.Struct):
 
         self.render_target = candidate
         self._render_target_ready = False
-        self._render_target_warmup_passes = 1
+        self._warmup_retry_pending = True
         rl.set_texture_filter(self.render_target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         rl.set_texture_wrap(self.render_target.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
         return True

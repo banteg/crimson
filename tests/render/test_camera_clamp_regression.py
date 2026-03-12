@@ -369,6 +369,28 @@ def test_create_render_target_recovers_after_previous_failure(mocker) -> None:
     assert ground.render_target is not None
 
 
+def test_process_pending_clears_failed_schedule_after_terminal_rt_failure(mocker) -> None:
+    ground = _ground()
+    mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_render_target_size_for",
+        autospec=True,
+        return_value=(1024, 1024),
+    )
+    mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_ensure_render_target",
+        autospec=True,
+        return_value=False,
+    )
+
+    ground.schedule_generate(seed=1337)
+    ground.process_pending()
+
+    assert ground.texture_failed is True
+    assert ground.generation_pending() is False
+
+
 def test_ground_renderer_requires_all_three_textures() -> None:
     ground_renderer_ctor = cast(Any, GroundRenderer)
     with pytest.raises(TypeError):
