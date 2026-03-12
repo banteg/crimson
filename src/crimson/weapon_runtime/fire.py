@@ -64,6 +64,24 @@ _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE: frozenset[int] = frozenset(
     },
 )
 
+_PELLET_JITTER_CALLER_BY_WEAPON: dict[WeaponId, int] = {
+    WeaponId.SHOTGUN: RngCallerStatic.PLAYER_UPDATE_SHOTGUN_PELLET_JITTER,
+    WeaponId.SAWED_OFF_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_SAWED_OFF_SHOTGUN_PELLET_JITTER,
+    WeaponId.JACKHAMMER: RngCallerStatic.PLAYER_UPDATE_JACKHAMMER_PELLET_JITTER,
+    WeaponId.ION_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_ION_SHOTGUN_PELLET_JITTER,
+    WeaponId.GAUSS_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_GAUSS_SHOTGUN_PELLET_JITTER,
+    WeaponId.PLASMA_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_PLASMA_SHOTGUN_PELLET_JITTER,
+}
+
+_PELLET_SPEED_SCALE_CALLER_BY_WEAPON: dict[WeaponId, int] = {
+    WeaponId.SHOTGUN: RngCallerStatic.PLAYER_UPDATE_SHOTGUN_PELLET_SPEED_SCALE,
+    WeaponId.SAWED_OFF_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_SAWED_OFF_SHOTGUN_PELLET_SPEED_SCALE,
+    WeaponId.JACKHAMMER: RngCallerStatic.PLAYER_UPDATE_JACKHAMMER_PELLET_SPEED_SCALE,
+    WeaponId.ION_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_ION_SHOTGUN_PELLET_SPEED_SCALE,
+    WeaponId.GAUSS_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_GAUSS_SHOTGUN_PELLET_SPEED_SCALE,
+    WeaponId.PLASMA_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_PLASMA_SHOTGUN_PELLET_SPEED_SCALE,
+}
+
 
 class WeaponFireCtx(msgspec.Struct):
     player: PlayerState
@@ -151,17 +169,18 @@ def _apply_pellet_jitter(
     shot_angle: float,
     rng: CrandLike,
     jitter_rule: NoJitter | ModuloCenteredJitter | MaskCenteredJitter,
+    caller: int | None = None,
 ) -> float:
     match jitter_rule:
         case NoJitter():
             return float(shot_angle)
         case ModuloCenteredJitter(modulo=modulo, center=center, step=step):
             return float(shot_angle) + float(
-                rng.rand() % int(modulo) - int(center),
+                rng.rand(caller=caller) % int(modulo) - int(center),
             ) * float(step)
         case MaskCenteredJitter(mask=mask, center=center, step=step):
             return float(shot_angle) + float(
-                (rng.rand() & int(mask)) - int(center),
+                (rng.rand(caller=caller) & int(mask)) - int(center),
             ) * float(step)
 
 
@@ -170,13 +189,14 @@ def _apply_speed_scale_rule(
     state: GameplayState,
     proj_id: int,
     speed_rule: NoSpeedScale | ModuloSpeedScale,
+    caller: int | None = None,
 ) -> None:
     match speed_rule:
         case NoSpeedScale():
             return
         case ModuloSpeedScale(base=base, modulo=modulo, step=step):
             state.projectiles.entries[int(proj_id)].speed_scale = float(base) + float(
-                state.rng.rand() % int(modulo),
+                state.rng.rand(caller=caller) % int(modulo),
             ) * float(step)
 
 
@@ -311,11 +331,14 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             pellets = max(0, int(count if count is not None else 0))
             shot_count = pellets
             meta = travel_budget_for_type_id(type_id)
+            pellet_jitter_caller = None if is_fire_bullets else _PELLET_JITTER_CALLER_BY_WEAPON.get(WeaponId(weapon_id))
+            pellet_speed_caller = None if is_fire_bullets else _PELLET_SPEED_SCALE_CALLER_BY_WEAPON.get(WeaponId(weapon_id))
             for _ in range(pellets):
                 angle = _apply_pellet_jitter(
                     shot_angle=float(shot_angle),
                     rng=state.rng,
                     jitter_rule=jitter_rule,
+                    caller=pellet_jitter_caller,
                 )
                 proj_id = state.projectiles.spawn(
                     pos=muzzle,
@@ -328,6 +351,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     state=state,
                     proj_id=int(proj_id),
                     speed_rule=speed_rule,
+                    caller=pellet_speed_caller,
                 )
         case SecondaryShotMode(type_id=type_id, targeting=targeting):
             target_hint = None
