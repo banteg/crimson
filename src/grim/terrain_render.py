@@ -204,23 +204,15 @@ class GroundRenderer(msgspec.Struct):
     height: int = TERRAIN_TEXTURE_SIZE
     texture_scale: float = 1.0
     alpha_test: bool = True
-    debug_log_stamps: bool = False
     texture_failed: bool = False
     screen_width: float | None = None
     screen_height: float | None = None
     terrain_filter: float = 1.0
     render_target: rl.RenderTexture | None = None
-    _debug_stamp_log: list[dict[str, object]] = msgspec.field(default_factory=list)
     _render_target_ready: bool = False
     _pending_generate: bool = False
     _pending_generate_seed: int | None = None
     _render_target_warmup_passes: int = 0
-
-    def debug_clear_stamp_log(self) -> None:
-        self._debug_stamp_log.clear()
-
-    def debug_stamp_log(self) -> tuple[dict[str, object], ...]:
-        return tuple(self._debug_stamp_log)
 
     def generation_pending(self) -> bool:
         """True while a scheduled terrain generate is still pending."""
@@ -229,13 +221,6 @@ class GroundRenderer(msgspec.Struct):
     def render_target_ready(self) -> bool:
         """True when the terrain render target exists and is ready for drawing."""
         return self.render_target is not None and self._render_target_ready
-
-    def _debug_stamp(self, kind: str, **payload: object) -> None:
-        if not self.debug_log_stamps:
-            return
-        self._debug_stamp_log.append({"kind": kind, **payload})
-        if len(self._debug_stamp_log) > 96:
-            del self._debug_stamp_log[:32]
 
     def process_pending(self) -> None:
         # Bound the amount of work per tick. Typical warmup sequence:
@@ -340,15 +325,6 @@ class GroundRenderer(msgspec.Struct):
         if self.render_target is None:
             return False
 
-        if self.debug_log_stamps:
-            head = decals[0]
-            self._debug_stamp(
-                "bake_decals",
-                count=len(decals),
-                pos0=head.pos.to_dict(),
-                rot0=float(head.rotation_rad),
-            )
-
         inv_scale = 1.0 / self._normalized_texture_scale()
         rl.begin_texture_mode(self.render_target)
         with _temporary_point_filters(decal.texture for decal in decals):
@@ -403,18 +379,6 @@ class GroundRenderer(msgspec.Struct):
         if self.render_target is None:
             return False
 
-        if self.debug_log_stamps:
-            head = decals[0]
-            self._debug_stamp(
-                "bake_corpse_decals",
-                shadow=shadow,
-                count=len(decals),
-                frame0=int(head.bodyset_frame),
-                top_left0=head.top_left.to_dict(),
-                size0=float(head.size),
-                rot0=float(head.rotation_rad),
-            )
-
         scale = self._normalized_texture_scale()
         inv_scale = 1.0 / scale
         offset = 2.0 * scale / float(self.width)
@@ -422,11 +386,7 @@ class GroundRenderer(msgspec.Struct):
         with _temporary_point_filters((bodyset_texture,)):
             with _maybe_alpha_test(self.alpha_test):
                 if shadow:
-                    if self.debug_log_stamps:
-                        self._debug_stamp("corpse_shadow_pass", draws=len(decals))
                     self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
-                if self.debug_log_stamps:
-                    self._debug_stamp("corpse_color_pass", draws=len(decals))
                 self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
         rl.end_texture_mode()
 
