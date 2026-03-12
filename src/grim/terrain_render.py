@@ -170,28 +170,19 @@ class GroundRenderer(msgspec.Struct):
         self._generate_texture(seed=seed)
 
     def _ensure_render_target(self) -> None:
-        requested_scale = self.texture_scale
-        if requested_scale < 0.5:
-            requested_scale = 0.5
-        elif requested_scale > 4.0:
-            requested_scale = 4.0
-        self.texture_scale = requested_scale
+        scale = self.texture_scale
+        if scale < 0.5:
+            scale = 0.5
+        elif scale > 4.0:
+            scale = 4.0
+        self.texture_scale = scale
 
-        render_w, render_h = self._render_target_size_for(requested_scale)
+        render_w, render_h = self._render_target_size_for(scale)
         if self._load_render_target(render_w, render_h):
             self.texture_failed = False
             return
 
-        fallback_scale = min(4.0, requested_scale + requested_scale)
-        if fallback_scale != requested_scale:
-            self.texture_scale = fallback_scale
-            render_w, render_h = self._render_target_size_for(fallback_scale)
-            if self._load_render_target(render_w, render_h):
-                self.texture_failed = False
-                return
-
         self.texture_failed = True
-        self.texture_scale = requested_scale
         if self.render_target is not None:
             rl.unload_render_texture(self.render_target)
             self.render_target = None
