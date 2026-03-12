@@ -12,7 +12,7 @@ def apply_random_weapon(ctx: PerkApplyCtx) -> None:
     current = ctx.owner.weapon.weapon_id
     weapon_id = current
     for _ in range(100):
-        candidate = WeaponId(weapon_pick_random_available(ctx.state))
+        candidate = weapon_pick_random_available(ctx.state)
         weapon_id = candidate
         if candidate != WeaponId.PISTOL and candidate != current:
             break

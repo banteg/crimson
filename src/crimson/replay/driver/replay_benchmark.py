@@ -107,12 +107,12 @@ class ReplayRenderTelemetrySummary(msgspec.Struct, frozen=True):
 
 
 class ReplayRenderTelemetryArtifacts(msgspec.Struct, frozen=True):
-    telemetry_json_path: str | None = None
-    charts_dir: str | None = None
-    frame_timing_svg: str | None = None
-    draw_calls_svg: str | None = None
-    pass_timing_stacked_svg: str | None = None
-    report_md: str | None = None
+    telemetry_json_path: Path | None = None
+    charts_dir: Path | None = None
+    frame_timing_svg: Path | None = None
+    draw_calls_svg: Path | None = None
+    pass_timing_stacked_svg: Path | None = None
+    report_md: Path | None = None
 
 
 class ReplayRenderTelemetryResult(msgspec.Struct, frozen=True):
@@ -389,16 +389,12 @@ def run_replay_render_benchmark(
                 )
 
             artifacts = ReplayRenderTelemetryArtifacts(
-                telemetry_json_path=(str(telemetry_json_path) if telemetry_json_path is not None else None),
-                charts_dir=(str(Path(render_charts_out_dir)) if render_charts_out_dir is not None else None),
-                frame_timing_svg=(str(chart_paths.get("frame_timing_svg")) if chart_paths.get("frame_timing_svg") else None),
-                draw_calls_svg=(str(chart_paths.get("draw_calls_svg")) if chart_paths.get("draw_calls_svg") else None),
-                pass_timing_stacked_svg=(
-                    str(chart_paths.get("pass_timing_stacked_svg"))
-                    if chart_paths.get("pass_timing_stacked_svg")
-                    else None
-                ),
-                report_md=(str(chart_paths.get("report_md")) if chart_paths.get("report_md") else None),
+                telemetry_json_path=telemetry_json_path,
+                charts_dir=(Path(render_charts_out_dir) if render_charts_out_dir is not None else None),
+                frame_timing_svg=chart_paths.get("frame_timing_svg"),
+                draw_calls_svg=chart_paths.get("draw_calls_svg"),
+                pass_timing_stacked_svg=chart_paths.get("pass_timing_stacked_svg"),
+                report_md=chart_paths.get("report_md"),
             )
             telemetry_result = ReplayRenderTelemetryResult(
                 frames=frames,

@@ -22,8 +22,6 @@ from .payload import (
     BonusWeaponPayload,
     bonus_payload_from_bonus,
     bonus_payload_value,
-    bonus_points_payload,
-    bonus_weapon_payload,
 )
 from .selection import bonus_pick_random_type
 
@@ -96,7 +94,7 @@ def _weapon_id_from_native_payload_value(payload: BonusPayload) -> WeaponId | No
 def _weapon_id_from_weapon_payload(payload: BonusPayload) -> WeaponId | None:
     if not isinstance(payload, BonusWeaponPayload):
         return None
-    return WeaponId(int(payload.weapon_id))
+    return payload.weapon_id
 
 
 def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[WeaponId]:
@@ -243,10 +241,10 @@ class BonusPool:
 
         rng = state.rng
         if entry.bonus_id == BonusId.WEAPON:
-            entry.payload = bonus_weapon_payload(weapon_pick_random_available(state))
+            entry.payload = BonusWeaponPayload(weapon_id=weapon_pick_random_available(state))
         elif entry.bonus_id == BonusId.POINTS:
-            entry.payload = bonus_points_payload(
-                1000 if (rng.rand(caller=RngCallerStatic.BONUS_SPAWN_AT_POS_POINTS_AMOUNT) & 7) < 3 else 500,
+            entry.payload = BonusPointsPayload(
+                points=1000 if (rng.rand(caller=RngCallerStatic.BONUS_SPAWN_AT_POS_POINTS_AMOUNT) & 7) < 3 else 500,
             )
         else:
             meta = BONUS_BY_ID.get(entry.bonus_id)
@@ -293,11 +291,11 @@ class BonusPool:
                 )
 
                 entry.bonus_id = BonusId.WEAPON
-                weapon_id = WeaponId(weapon_pick_random_available(state))
-                entry.payload = bonus_weapon_payload(int(weapon_id))
+                weapon_id = weapon_pick_random_available(state)
+                entry.payload = BonusWeaponPayload(weapon_id=weapon_id)
                 if weapon_id == WeaponId.PISTOL:
-                    weapon_id = WeaponId(weapon_pick_random_available(state))
-                    entry.payload = bonus_weapon_payload(int(weapon_id))
+                    weapon_id = weapon_pick_random_available(state)
+                    entry.payload = BonusWeaponPayload(weapon_id=weapon_id)
 
                 matches = sum(1 for bonus in self._entries if bonus.bonus_id == entry.bonus_id)
                 if matches > 1:
@@ -362,7 +360,7 @@ class BonusPool:
                     near_player = any(Vec2.distance_sq(pos, player.pos) < near_sq for player in players)
             if near_player:
                 entry.bonus_id = BonusId.POINTS
-                entry.payload = bonus_points_payload(100)
+                entry.payload = BonusPointsPayload(points=100)
 
         if entry.bonus_id != BonusId.POINTS:
             matches = sum(1 for bonus in self._entries if bonus.bonus_id == entry.bonus_id)
@@ -494,7 +492,7 @@ def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> 
     if bonus_id == BonusId.WEAPON:
         if not isinstance(payload, BonusWeaponPayload):
             return "Weapon"
-        return weapon_display_name(WeaponId(int(payload.weapon_id)), preserve_bugs=bool(preserve_bugs))
+        return weapon_display_name(payload.weapon_id, preserve_bugs=bool(preserve_bugs))
     if bonus_id == BonusId.POINTS:
         points = int(payload.points) if isinstance(payload, BonusPointsPayload) else int(entry.amount)
         points_label = bonus_display_name(BonusId.POINTS, preserve_bugs=bool(preserve_bugs))

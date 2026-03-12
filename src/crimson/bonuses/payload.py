@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from ..weapons import WeaponId
 from .ids import BonusId
 
 
@@ -10,7 +11,7 @@ class BonusDurationPayload(msgspec.Struct, frozen=True):
 
 
 class BonusWeaponPayload(msgspec.Struct, frozen=True):
-    weapon_id: int
+    weapon_id: WeaponId
 
 
 class BonusPointsPayload(msgspec.Struct, frozen=True):
@@ -20,25 +21,13 @@ class BonusPointsPayload(msgspec.Struct, frozen=True):
 BonusPayload = BonusDurationPayload | BonusWeaponPayload | BonusPointsPayload
 
 
-def bonus_duration_payload(seconds: int) -> BonusDurationPayload:
-    return BonusDurationPayload(seconds=int(seconds))
-
-
-def bonus_weapon_payload(weapon_id: int) -> BonusWeaponPayload:
-    return BonusWeaponPayload(weapon_id=int(weapon_id))
-
-
-def bonus_points_payload(points: int) -> BonusPointsPayload:
-    return BonusPointsPayload(points=int(points))
-
-
 def bonus_payload_from_bonus(*, bonus_id: BonusId, amount: int) -> BonusPayload:
     amount = int(amount)
     if bonus_id == BonusId.WEAPON:
-        return bonus_weapon_payload(amount)
+        return BonusWeaponPayload(weapon_id=WeaponId(amount))
     if bonus_id == BonusId.POINTS:
-        return bonus_points_payload(amount)
-    return bonus_duration_payload(amount)
+        return BonusPointsPayload(points=amount)
+    return BonusDurationPayload(seconds=amount)
 
 
 def bonus_payload_value(payload: BonusPayload) -> int:
@@ -54,9 +43,6 @@ __all__ = [
     "BonusPayload",
     "BonusPointsPayload",
     "BonusWeaponPayload",
-    "bonus_duration_payload",
     "bonus_payload_from_bonus",
     "bonus_payload_value",
-    "bonus_points_payload",
-    "bonus_weapon_payload",
 ]
