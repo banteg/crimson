@@ -605,6 +605,10 @@ def _entry_label(row: dict, addr: int | None = None) -> str:
     return f"{name} @ {addr_text}"
 
 
+def _update_analysis(bv) -> None:
+    bv.update_analysis_and_wait()
+
+
 def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
     if map_path is None:
         map_path = _default_map_path("CRIMSON_NAME_MAP", "analysis/ghidra/maps/name_map.json", bv)
@@ -676,6 +680,9 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
 
         if changed:
             stats["applied"] += 1
+
+    if stats["applied"]:
+        _update_analysis(bv)
 
     _log_info(f"Applied name map: {map_path}")
     _log_info(
@@ -765,6 +772,9 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
 
         if changed:
             stats["applied"] += 1
+
+    if stats["applied"]:
+        _update_analysis(bv)
 
     _log_info(f"Applied data map: {map_path}")
     _log_info(
