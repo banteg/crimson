@@ -8,7 +8,6 @@ import msgspec
 from grim.rand import CrandLike, RecordingCrand
 from grim.sfx_map import SfxId
 
-from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..perks.availability import perks_rebuild_available
@@ -16,6 +15,7 @@ from ..weapon_runtime import weapon_refresh_available
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import PresentationStepCommands, plan_world_presentation_step
+from .terrain_fx import TerrainFxBatch, TerrainFxScratch
 from .timing import FrameTiming
 from .world_state import WorldEvents, WorldState
 
@@ -31,6 +31,7 @@ class DeterministicStepResult(msgspec.Struct):
     presentation: PresentationStepCommands
     presentation_plan_ms: float
     presentation_rng_trace: PresentationRngTrace
+    terrain_fx: TerrainFxBatch = TerrainFxBatch()
     post_apply_sfx: tuple[SfxId, ...] = ()
 
 
@@ -90,8 +91,7 @@ def run_deterministic_step(
     options: StepPipelineOptions,
     apply_world_dt_steps: bool = True,
     inputs: list[PlayerInput] | None,
-    fx_queue: FxQueue,
-    fx_queue_rotated: FxQueueRotated,
+    terrain_fx: TerrainFxScratch,
     defer_camera_shake_update: bool = False,
     defer_freeze_corpse_fx: bool = False,
     mid_step_hook: Callable[[], None] | None = None,
@@ -99,6 +99,8 @@ def run_deterministic_step(
     trace_presentation_rng: bool = False,
 ) -> DeterministicStepResult:
     state = world.state
+    fx_queue = terrain_fx.decals
+    fx_queue_rotated = terrain_fx.corpses
     presentation_rng: CrandLike
     recording_rng: RecordingCrand | None = None
     if trace_presentation_rng:
@@ -186,4 +188,5 @@ def run_deterministic_step(
         presentation=presentation,
         presentation_plan_ms=float(presentation_plan_ms),
         presentation_rng_trace=trace,
+        terrain_fx=terrain_fx.take_batch(),
     )

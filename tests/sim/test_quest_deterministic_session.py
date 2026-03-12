@@ -34,8 +34,6 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> tuple[Deterministi
         world=world.sim_world.world_state,
         world_size=float(world.world_size),
         damage_scale_by_type=world.sim_world.damage_scale_by_type,
-        fx_queue=world.render_resources.fx_queue,
-        fx_queue_rotated=world.render_resources.fx_queue_rotated,
         game_mode=GameMode.QUESTS,
         perk_progression_enabled=True,
         post_step_hook=lambda ctx: quest_post_step(ctx, spawn_state),

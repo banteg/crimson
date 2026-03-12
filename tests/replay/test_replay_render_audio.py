@@ -45,31 +45,16 @@ def test_infer_effective_capture_sample_rate_rejects_out_of_range() -> None:
         _infer_effective_capture_sample_rate(captured_frames=10_000_000, captured_ticks=1, replay_tick_rate=60)
 
 
-def test_capture_audio_track_clears_fx_queues_and_reports_progress(mocker, tmp_path: Path) -> None:
+def test_capture_audio_track_reports_progress_without_manual_fx_queue_clears(mocker, tmp_path: Path) -> None:
     import crimson.modes.replay_playback_mode as replay_playback_mode_mod
     import crimson.replay.driver.replay_render as replay_render_mod
-
-    class _Queue:
-        def __init__(self) -> None:
-            self.clear_calls = 0
-
-        def clear(self) -> None:
-            self.clear_calls += 1
-
-    fx_queue = _Queue()
-    fx_queue_rotated = _Queue()
 
     class _FakeMode:
         def __init__(self, *_args, **_kwargs) -> None:
             self.finished = False
             self.close_requested = False
             self.tick_index = 0
-            self._runtime = SimpleNamespace(
-                render_resources=SimpleNamespace(
-                    fx_queue=fx_queue,
-                    fx_queue_rotated=fx_queue_rotated,
-                ),
-            )
+            self._runtime = SimpleNamespace(render_resources=SimpleNamespace())
 
         def open(self) -> None:
             return
@@ -142,8 +127,6 @@ def test_capture_audio_track_clears_fx_queues_and_reports_progress(mocker, tmp_p
     assert captured.channels == 2
     assert captured.captured_frames == 2400
     assert captured.captured_ticks == 3
-    assert fx_queue.clear_calls == 3
-    assert fx_queue_rotated.clear_calls == 3
     assert progress.call_args_list == [
         call("audio", 0, 1, 120),
         call("audio", 0, 2, 120),

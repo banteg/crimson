@@ -347,16 +347,12 @@ class ReplayPlaybackMode:
         runtime.open_runtime()
 
         sim_world = runtime.sim_world
-        render_resources = runtime.render_resources
-
         try:
             self._driver = build_runtime_playback_driver(
                 replay,
                 max_ticks=self._max_ticks,
                 trace_rng=bool(self._trace_rng),
                 world_size=float(world_size),
-                fx_queue=render_resources.fx_queue,
-                fx_queue_rotated=render_resources.fx_queue_rotated,
             )
             driver = self._driver
             sim_world.load_world_state(driver.world)
@@ -467,7 +463,6 @@ class ReplayPlaybackMode:
         *,
         dt_seconds: float,
         max_ticks: int | None = None,
-        bake_fx_per_tick: bool = False,
     ) -> None:
         replay = self._replay
         runtime = self._runtime
@@ -475,7 +470,6 @@ class ReplayPlaybackMode:
         if replay is None or runtime is None or driver is None:
             self._finished = True
             return
-        render_resources = runtime.render_resources
         tick_limit = int(self._tick_limit())
         if int(self._tick_index) >= tick_limit:
             self._mark_finished_if_complete()
@@ -498,13 +492,6 @@ class ReplayPlaybackMode:
 
         def _on_output_applied(output: PresentationTickOutput) -> None:
             self._apply_post_apply_reaction(reaction_by_tick[int(output.tick_index)])
-            if not bake_fx_per_tick:
-                return
-            if render_resources.ground is not None and render_resources.fx_textures is not None:
-                render_resources.bake_fx_queues()
-            else:
-                render_resources.fx_queue.clear()
-                render_resources.fx_queue_rotated.clear()
 
         reaction_by_tick = {
             int(tick_result.source_tick.tick_index): self._build_post_apply_reaction(tick_result=tick_result)
@@ -518,6 +505,7 @@ class ReplayPlaybackMode:
                     plan=plan,
                     apply_audio=bool(should_apply_audio),
                 ),
+                apply_terrain_fx=runtime.render_resources.consume_terrain_fx_batch,
                 update_camera=runtime.update_camera,
                 on_output_applied=_on_output_applied,
                 apply_audio=True,
@@ -556,7 +544,6 @@ class ReplayPlaybackMode:
                 self._advance_runner(
                     dt_seconds=float(ticks_to_advance) * float(self._dt),
                     max_ticks=int(ticks_to_advance),
-                    bake_fx_per_tick=True,
                 )
         finally:
             if prev_sfx_enabled is not None and audio_bridge is not None and audio_bridge.router is not None:

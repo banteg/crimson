@@ -59,8 +59,6 @@ class TypoShooterMode(BaseGameplayMode):
             world=self.sim_world.world_state,
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
-            fx_queue=self.render_resources.fx_queue,
-            fx_queue_rotated=self.render_resources.fx_queue_rotated,
             detail_preset=5,
             gore_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),

@@ -9,7 +9,6 @@ from typing import TypeAlias
 from crimson.quests.level import QuestLevel
 from grim.rand import CallerStatic, CrtRand, RngTraceSink
 
-from ...effects import FxQueue, FxQueueRotated
 from ...game_modes import GameMode
 from ...quests import quest_by_level
 from ...quests.runtime import build_quest_spawn_table
@@ -45,7 +44,6 @@ from .setup import (
     ReplayRunnerError,
     RunResult,
     build_damage_scale_by_type,
-    build_empty_fx_queues,
     player0_most_used_weapon_id,
     player0_shots,
 )
@@ -137,8 +135,6 @@ class PlaybackDriver:
         strict_rng_trace: bool = False,
         version_mismatch_action: str | None = "verification",
         world_size: float | None = None,
-        fx_queue: FxQueue | None = None,
-        fx_queue_rotated: FxQueueRotated | None = None,
         inter_tick_rand_draws: int = 0,
         inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
         spawn_entries: tuple[SpawnEntry, ...] | None = None,
@@ -151,8 +147,6 @@ class PlaybackDriver:
         self.inter_tick_rand_draws = max(0, int(inter_tick_rand_draws))
         self.inter_tick_rand_draws_by_tick = inter_tick_rand_draws_by_tick
         self._provided_world_size = float(world_size) if world_size is not None else None
-        self._provided_fx_queue = fx_queue
-        self._provided_fx_queue_rotated = fx_queue_rotated
         self._quest_spawn_entries = tuple(spawn_entries) if spawn_entries is not None else None
         self._quest_start_weapon_id = start_weapon_id
         self._quest_spawn_state: QuestSpawnState | None = None
@@ -181,7 +175,6 @@ class PlaybackDriver:
 
         self.world_size = self._resolve_world_size()
         self.world = self._prepare_world()
-        self.fx_queue, self.fx_queue_rotated = self._resolve_fx_queues()
 
         apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
             original_capture_replay=False,
@@ -306,36 +299,19 @@ class PlaybackDriver:
 
         return world
 
-    def _resolve_fx_queues(self) -> tuple[FxQueue, FxQueueRotated]:
-        if self._provided_fx_queue is not None and self._provided_fx_queue_rotated is not None:
-            return self._provided_fx_queue, self._provided_fx_queue_rotated
-        return build_empty_fx_queues()
-
-    def _clear_fx_queues_each_tick(self) -> bool:
-        # Runtime replay playback shares live FX queues with WorldRuntime so the
-        # renderer can bake ground decals after presentation outputs are applied.
-        # Headless verification keeps the old clear-per-tick behavior.
-        return not (
-            self._provided_fx_queue is not None and self._provided_fx_queue_rotated is not None
-        )
-
     def _build_session(self, *, apply_world_dt_steps: bool) -> DeterministicSession:
         damage_scale_by_type = build_damage_scale_by_type()
         self._quest_spawn_state = None
-        clear_fx_queues_each_tick = self._clear_fx_queues_each_tick()
         match self.mode_id:
             case GameMode.SURVIVAL:
                 session, _ = build_survival_session(
                     world=self.world,
                     world_size=float(self.world_size),
                     damage_scale_by_type=damage_scale_by_type,
-                    fx_queue=self.fx_queue,
-                    fx_queue_rotated=self.fx_queue_rotated,
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
                     apply_world_dt_steps=bool(apply_world_dt_steps),
-                    clear_fx_queues_each_tick=bool(clear_fx_queues_each_tick),
                     finalize_post_render_lifecycle=True,
                 )
                 return session
@@ -345,12 +321,9 @@ class PlaybackDriver:
                     world=self.world,
                     world_size=float(self.world_size),
                     damage_scale_by_type=damage_scale_by_type,
-                    fx_queue=self.fx_queue,
-                    fx_queue_rotated=self.fx_queue_rotated,
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
-                    clear_fx_queues_each_tick=bool(clear_fx_queues_each_tick),
                     finalize_post_render_lifecycle=True,
                 )
                 return session
@@ -365,14 +338,11 @@ class PlaybackDriver:
                     world=self.world,
                     world_size=float(self.world_size),
                     damage_scale_by_type=damage_scale_by_type,
-                    fx_queue=self.fx_queue,
-                    fx_queue_rotated=self.fx_queue_rotated,
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
                     demo_mode_active=bool(self.world.state.demo_mode_active),
                     apply_world_dt_steps=bool(apply_world_dt_steps),
-                    clear_fx_queues_each_tick=bool(clear_fx_queues_each_tick),
                     finalize_post_render_lifecycle=True,
                     spawn_entries=tuple(spawn_entries),
                     quest_level=quest_level,
@@ -385,8 +355,6 @@ class PlaybackDriver:
                     world=self.world,
                     world_size=float(self.world_size),
                     damage_scale_by_type=damage_scale_by_type,
-                    fx_queue=self.fx_queue,
-                    fx_queue_rotated=self.fx_queue_rotated,
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
@@ -398,8 +366,6 @@ class PlaybackDriver:
                     world=self.world,
                     world_size=float(self.world_size),
                     damage_scale_by_type=damage_scale_by_type,
-                    fx_queue=self.fx_queue,
-                    fx_queue_rotated=self.fx_queue_rotated,
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
@@ -616,8 +582,6 @@ def build_runtime_playback_driver(
     max_ticks: int | None,
     trace_rng: bool,
     world_size: float,
-    fx_queue: FxQueue,
-    fx_queue_rotated: FxQueueRotated,
     spawn_entries: tuple[SpawnEntry, ...] | None = None,
     start_weapon_id: WeaponId | None = None,
 ) -> PlaybackDriver:
@@ -629,8 +593,6 @@ def build_runtime_playback_driver(
         trace_rng=bool(trace_rng),
         version_mismatch_action=None,
         world_size=float(world_size),
-        fx_queue=fx_queue,
-        fx_queue_rotated=fx_queue_rotated,
         spawn_entries=spawn_entries,
         start_weapon_id=start_weapon_id,
     )

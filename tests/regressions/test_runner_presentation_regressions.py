@@ -25,8 +25,6 @@ def _build_runner(
         world=world.sim_world.world_state,
         world_size=float(world.world_size),
         damage_scale_by_type=world.sim_world.damage_scale_by_type,
-        fx_queue=world.render_resources.fx_queue,
-        fx_queue_rotated=world.render_resources.fx_queue_rotated,
         game_mode=GameMode.SURVIVAL,
         detail_preset=5,
         gore_disabled=0,
@@ -34,7 +32,6 @@ def _build_runner(
         demo_mode_active=False,
         perk_progression_enabled=False,
         apply_world_dt_steps=True,
-        clear_fx_queues_each_tick=False,
     )
     provider = LocalInputProvider(
         player_count=len(world.sim_world.players),
@@ -69,6 +66,7 @@ def _apply_batch(
             apply_audio=True,
         )
         world.update_camera(float(step.dt_sim))
+        world.render_resources.consume_terrain_fx_batch(step.terrain_fx)
         applied_ticks.append(int(result.source_tick.tick_index))
     return applied_ticks
 
@@ -138,11 +136,11 @@ def test_runner_path_projectile_hits_enqueue_decals() -> None:
             frame_index=frame_index,
             dt_seconds=1.0 / 60.0,
         )
-        _apply_batch(world, session=session, batch=batch)
-        if int(world.render_resources.fx_queue.count) > 0:
+        if any(not result.payload.step.terrain_fx.is_empty() for result in batch.completed_results):
             break
+        _apply_batch(world, session=session, batch=batch)
 
-    assert int(world.render_resources.fx_queue.count) > 0
+    assert any(not result.payload.step.terrain_fx.is_empty() for result in batch.completed_results)
 
 
 def test_runner_multi_tick_batch_apply_order_is_deterministic() -> None:

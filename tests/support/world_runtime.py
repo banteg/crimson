@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.creatures.anim import creature_corpse_frame_for_type
 from crimson.game_modes import GameMode
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
@@ -241,13 +240,8 @@ class WorldRuntimeHost:
             seed=int(seed),
         )
 
-    def _bake_fx_queues(self) -> None:
-        self._runtime.render_resources.bake_fx_queues(corpse_frame_for_type=creature_corpse_frame_for_type)
-
     def draw(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        self._bake_fx_queues()
-        self._runtime.renderer.draw(
-            render_frame=self._runtime.build_render_frame(),
+        self._runtime.draw(
             draw_aim_indicators=draw_aim_indicators,
             entity_alpha=entity_alpha,
         )
@@ -281,8 +275,6 @@ class WorldRuntimeHost:
             world=self.sim_world.world_state,
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
-            fx_queue=self.render_resources.fx_queue,
-            fx_queue_rotated=self.render_resources.fx_queue_rotated,
             game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=bool(perk_progression_enabled),
             detail_preset=int(detail_preset),
@@ -316,6 +308,7 @@ class WorldRuntimeHost:
             apply_audio=bool(apply_audio),
         )
         self.update_camera(float(tick.step.dt_sim))
+        self.render_resources.consume_terrain_fx_batch(tick.step.terrain_fx)
         apply_post_apply_reaction(
             reaction=build_post_apply_reaction(
                 tick_result=TickResult(

@@ -7,6 +7,7 @@ from typing import Protocol
 from .hooks import TickResult
 from .presentation_step import PresentationStepCommands
 from .step_pipeline import DeterministicStepResult
+from .terrain_fx import TerrainFxBatch
 from .world_state import WorldEvents
 
 
@@ -26,6 +27,7 @@ class PresentationTickOutput:
     tick_index: int
     dt_sim: float
     presentation: PresentationStepCommands | None
+    terrain_fx: TerrainFxBatch = TerrainFxBatch()
 
 
 def apply_sim_metadata_tick_result(
@@ -45,6 +47,7 @@ def apply_sim_metadata_tick_result(
         tick_index=int(tick_result.source_tick.tick_index),
         dt_sim=float(step.dt_sim),
         presentation=step.presentation,
+        terrain_fx=step.terrain_fx,
     )
 
 
@@ -83,6 +86,7 @@ def apply_presentation_outputs(
     outputs: Sequence[PresentationTickOutput],
     sync_audio_bridge_state: Callable[[], None],
     apply_audio_plan: Callable[[PresentationStepCommands, bool], None],
+    apply_terrain_fx: Callable[[TerrainFxBatch], None] | None,
     update_camera: Callable[[float], None] | None,
     on_output_applied: Callable[[PresentationTickOutput], None] | None = None,
     apply_audio: bool,
@@ -92,12 +96,11 @@ def apply_presentation_outputs(
 
     sync_audio_bridge_state()
     for output in outputs:
-        if output.presentation is None:
-            if on_output_applied is not None:
-                on_output_applied(output)
-            continue
-        apply_audio_plan(output.presentation, bool(apply_audio))
-        if update_camera is not None:
-            update_camera(float(output.dt_sim))
+        if output.presentation is not None:
+            apply_audio_plan(output.presentation, bool(apply_audio))
+            if update_camera is not None:
+                update_camera(float(output.dt_sim))
+        if apply_terrain_fx is not None and not output.terrain_fx.is_empty():
+            apply_terrain_fx(output.terrain_fx)
         if on_output_applied is not None:
             on_output_applied(output)

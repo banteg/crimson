@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
@@ -75,8 +74,6 @@ def test_typo_commands_apply_before_input_transform(make_world_state) -> None:
         world=world,
         world_size=1024.0,
         damage_scale_by_type={},
-        fx_queue=FxQueue(),
-        fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.TYPO,
         perk_progression_enabled=False,
         input_transform=_transform,

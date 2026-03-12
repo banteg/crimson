@@ -3,8 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import crimson.world.render_resources as render_resources_mod
+from crimson.sim.terrain_fx import TerrainDecalFx, TerrainFxBatch
 from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS
 from grim.assets import TextureId
+from grim.color import RGBA
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 from tests.support.world_runtime import WorldRuntimeHost
@@ -115,3 +118,67 @@ def test_reset_syncs_world_size_across_sim_and_render_ownership(assets_dir: Path
     assert world.render_resources.ground is not None
     assert int(world.render_resources.ground.width) == 2048
     assert int(world.render_resources.ground.height) == 2048
+
+
+def test_consume_terrain_fx_batch_bakes_immediately_when_ground_ready(assets_dir: Path, mocker) -> None:
+    world = _build_world(assets_dir)
+    texture = rl.Texture()
+    ground = GroundRenderer(texture=texture, overlay=texture, overlay_detail=texture)
+    ground.render_target = rl.RenderTexture()
+    ground._render_target_ready = True
+    world.render_resources.ground = ground
+    world.render_resources.fx_textures = render_resources_mod.FxQueueTextures(particles=texture, bodyset=texture)
+    batch = TerrainFxBatch(
+        decals=(
+            TerrainDecalFx(
+                effect_id=3,
+                rotation=0.0,
+                pos=world.sim_world.players[0].pos,
+                width=20.0,
+                height=20.0,
+                color=RGBA(1.0, 1.0, 1.0, 1.0),
+            ),
+        ),
+    )
+    bake_terrain_fx_batch = mocker.patch.object(render_resources_mod, "bake_terrain_fx_batch")
+
+    world.render_resources.consume_terrain_fx_batch(batch)
+
+    bake_terrain_fx_batch.assert_called_once()
+    assert bake_terrain_fx_batch.call_args.kwargs["batch"] == batch
+    assert world.render_resources._pending_terrain_fx_batches == []
+
+
+def test_process_ground_pending_flushes_buffered_terrain_fx_batches(assets_dir: Path, mocker) -> None:
+    world = _build_world(assets_dir)
+    texture = rl.Texture()
+    ground = GroundRenderer(texture=texture, overlay=texture, overlay_detail=texture)
+    world.render_resources.ground = ground
+    world.render_resources.fx_textures = render_resources_mod.FxQueueTextures(particles=texture, bodyset=texture)
+    batch = TerrainFxBatch(
+        decals=(
+            TerrainDecalFx(
+                effect_id=4,
+                rotation=0.1,
+                pos=world.sim_world.players[0].pos,
+                width=18.0,
+                height=18.0,
+                color=RGBA(0.9, 0.9, 0.9, 1.0),
+            ),
+        ),
+    )
+    bake_terrain_fx_batch = mocker.patch.object(render_resources_mod, "bake_terrain_fx_batch")
+
+    world.render_resources.consume_terrain_fx_batch(batch)
+
+    bake_terrain_fx_batch.assert_not_called()
+    assert world.render_resources._pending_terrain_fx_batches == [batch]
+
+    ground.render_target = rl.RenderTexture()
+    ground._render_target_ready = True
+
+    world.render_resources.process_ground_pending()
+
+    bake_terrain_fx_batch.assert_called_once()
+    assert bake_terrain_fx_batch.call_args.kwargs["batch"] == batch
+    assert world.render_resources._pending_terrain_fx_batches == []
