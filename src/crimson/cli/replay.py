@@ -21,10 +21,13 @@ if TYPE_CHECKING:
     from ..replay import Replay
     from ..replay.driver.replay_benchmark import (
         BenchmarkAggregate,
+        BenchmarkSample,
+        ReplayProfileResult,
         ReplayRenderTelemetryArtifacts,
         ReplayRenderTelemetryFrame,
         ReplayRenderTelemetryTopTick,
     )
+    from ..replay.driver.replay_info import ReplayInfoResult, ReplayInfoTimelineEvent
     from ..replay.driver.replay_render import ReplayRenderPhase
     from ..replay.driver.setup import RunResult
 
@@ -393,6 +396,35 @@ def _run_result_payload(run_result: RunResult) -> _RunResultPayload:
     )
 
 
+def _replay_info_event_payload(event: ReplayInfoTimelineEvent) -> _ReplayInfoEventPayload:
+    return _ReplayInfoEventPayload(
+        tick_index=event.tick_index,
+        elapsed_ms=event.elapsed_ms,
+        elapsed_s=event.elapsed_ms / 1000.0,
+        kind=str(event.kind),
+        player_index=event.player_index,
+        detail=event.detail,
+        data=event.data,
+    )
+
+
+def _replay_info_summary_payload(
+    result: ReplayInfoResult,
+    *,
+    event_count: int,
+    event_counts_by_kind: dict[str, int],
+) -> _ReplayInfoSummaryPayload:
+    return _ReplayInfoSummaryPayload(
+        game_mode_id=result.game_mode_id,
+        tick_rate=result.tick_rate,
+        ticks_simulated=result.ticks_simulated,
+        elapsed_ms=result.elapsed_ms,
+        player_count=result.player_count,
+        event_count=event_count,
+        event_counts_by_kind=event_counts_by_kind,
+    )
+
+
 def _benchmark_aggregate_payload(aggregate: BenchmarkAggregate) -> _BenchmarkAggregatePayload:
     return _BenchmarkAggregatePayload(
         min=aggregate.min,
@@ -431,6 +463,67 @@ def _path_text(path: Path | None) -> str | None:
     if path is None:
         return None
     return str(path)
+
+
+def _replay_benchmark_profile_payload(profile: ReplayProfileResult | None) -> _ReplayBenchmarkProfilePayload | None:
+    if profile is None:
+        return None
+    return _ReplayBenchmarkProfilePayload(
+        sort=str(profile.sort),
+        top=profile.top,
+        source=str(profile.source),
+        hotspots=[
+            _ReplayBenchmarkProfileHotspotPayload(
+                file=row.file,
+                line=row.line,
+                function=row.function,
+                primitive_calls=row.primitive_calls,
+                total_calls=row.total_calls,
+                tottime=row.tottime,
+                cumtime=row.cumtime,
+            )
+            for row in profile.hotspots
+        ],
+    )
+
+
+def _replay_benchmark_settings_payload(
+    *,
+    mode: Literal["headless", "render"],
+    runs: int,
+    warmup_runs: int,
+    max_ticks: int | None,
+    trace_rng: bool,
+    profile: bool,
+    profile_sort: Literal["cumtime", "tottime"],
+    top: int,
+    profile_out: Path | None,
+    render_telemetry: bool,
+    render_telemetry_out: Path | None,
+    render_charts_out_dir: Path | None,
+) -> _ReplayBenchmarkSettingsPayload:
+    return _ReplayBenchmarkSettingsPayload(
+        mode=mode,
+        runs=runs,
+        warmup_runs=warmup_runs,
+        max_ticks=max_ticks,
+        trace_rng=trace_rng,
+        profile=profile,
+        profile_sort=profile_sort,
+        top=top,
+        profile_out=_path_text(profile_out),
+        render_telemetry=render_telemetry,
+        render_telemetry_out=_path_text(render_telemetry_out),
+        render_charts_out_dir=_path_text(render_charts_out_dir),
+    )
+
+
+def _replay_benchmark_sample_payload(sample: BenchmarkSample) -> _ReplayBenchmarkSamplePayload:
+    return _ReplayBenchmarkSamplePayload(
+        wall_ms=sample.wall_ms,
+        ticks_per_second=sample.ticks_per_second,
+        realtime_x=sample.realtime_x,
+    )
 
 
 def _render_telemetry_artifacts_payload(
@@ -1004,29 +1097,14 @@ def cmd_replay_info(
         typer.echo(f"replay info failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    timeline_payload = [
-        _ReplayInfoEventPayload(
-            tick_index=int(event.tick_index),
-            elapsed_ms=int(event.elapsed_ms),
-            elapsed_s=float(event.elapsed_ms) / 1000.0,
-            kind=str(event.kind),
-            player_index=(None if event.player_index is None else int(event.player_index)),
-            detail=str(event.detail),
-            data=dict(event.data),
-        )
-        for event in result.timeline
-    ]
-    summary_payload = _ReplayInfoSummaryPayload(
-        game_mode_id=GameMode(int(result.game_mode_id)),
-        tick_rate=int(result.tick_rate),
-        ticks_simulated=int(result.ticks_simulated),
-        elapsed_ms=int(result.elapsed_ms),
-        player_count=int(result.player_count),
+    timeline_payload = [_replay_info_event_payload(event) for event in result.timeline]
+    summary_payload = _replay_info_summary_payload(
+        result,
         event_count=len(timeline_payload),
         event_counts_by_kind=event_counts_by_kind(result.timeline),
     )
     payload = _ReplayInfoPayload(
-        schema_version=int(_REPLAY_INFO_SCHEMA_VERSION),
+        schema_version=_REPLAY_INFO_SCHEMA_VERSION,
         status="ok",
         replay=str(replay_path),
         summary=summary_payload,
@@ -1038,7 +1116,7 @@ def cmd_replay_info(
         json_out.parent.mkdir(parents=True, exist_ok=True)
         json_out.write_bytes(payload_json)
 
-    if str(output_format) == "json":
+    if output_format == "json":
         typer.echo(payload_json.decode("utf-8"))
         return
 
@@ -1046,17 +1124,17 @@ def cmd_replay_info(
         "ok: "
         f"replay={replay_path} "
         f"mode={_replay_mode_label(summary_payload.game_mode_id)} "
-        f"ticks={int(summary_payload.ticks_simulated)} "
-        f"elapsed_ms={int(summary_payload.elapsed_ms)} "
-        f"events={int(summary_payload.event_count)}",
+        f"ticks={summary_payload.ticks_simulated} "
+        f"elapsed_ms={summary_payload.elapsed_ms} "
+        f"events={summary_payload.event_count}",
     )
     for event in timeline_payload:
-        player_tag = f" [p{int(event.player_index)}]" if event.player_index is not None else ""
+        player_tag = f" [p{event.player_index}]" if event.player_index is not None else ""
         typer.echo(
-            f"t={float(event.elapsed_s):.3f} tick={int(event.tick_index)}{player_tag} {event.kind} {event.detail}",
+            f"t={event.elapsed_s:.3f} tick={event.tick_index}{player_tag} {event.kind} {event.detail}",
         )
 
-    tail = f"events={int(summary_payload.event_count)}"
+    tail = f"events={summary_payload.event_count}"
     if json_out is not None:
         tail += f" json_report={json_out}"
     typer.echo(tail)
@@ -1158,13 +1236,13 @@ def cmd_replay_benchmark(
         raise typer.Exit(code=1)
 
     replay_bytes = Path(replay_path).read_bytes()
-    resolved_runs = int(runs) if runs is not None else (1 if str(mode) == "render" else 5)
-    resolved_warmup_runs = int(warmup_runs) if warmup_runs is not None else (0 if str(mode) == "render" else 1)
-    if str(mode) != "render":
-        if bool(rtx):
+    resolved_runs = runs if runs is not None else (1 if mode == "render" else 5)
+    resolved_warmup_runs = warmup_runs if warmup_runs is not None else (0 if mode == "render" else 1)
+    if mode != "render":
+        if rtx:
             typer.echo("replay benchmark failed: --rtx is supported only with --mode render", err=True)
             raise typer.Exit(code=1)
-        if bool(render_telemetry):
+        if render_telemetry:
             typer.echo("replay benchmark failed: --render-telemetry is supported only with --mode render", err=True)
             raise typer.Exit(code=1)
         if render_telemetry_out is not None:
@@ -1178,61 +1256,43 @@ def cmd_replay_benchmark(
 
     try:
         replay = load_replay(replay_bytes)
-        if str(mode) == "render":
+        if mode == "render":
             benchmark = run_replay_render_benchmark(
                 replay,
                 replay_path=Path(replay_path),
                 base_dir=Path(base_dir),
-                runs=int(resolved_runs),
-                warmup_runs=int(resolved_warmup_runs),
+                runs=resolved_runs,
+                warmup_runs=resolved_warmup_runs,
                 max_ticks=max_ticks,
-                trace_rng=bool(trace_rng),
-                profile=bool(profile),
+                trace_rng=trace_rng,
+                profile=profile,
                 profile_sort=profile_sort,
-                top=int(top),
+                top=top,
                 profile_out=profile_out,
-                render_telemetry=bool(render_telemetry),
+                render_telemetry=render_telemetry,
                 render_telemetry_out=render_telemetry_out,
                 render_charts_out_dir=render_charts_out_dir,
-                rtx=bool(rtx),
-                show_progress=(str(output_format) == "human"),
+                rtx=rtx,
+                show_progress=(output_format == "human"),
             )
         else:
             benchmark = run_replay_benchmark(
                 replay,
-                runs=int(resolved_runs),
-                warmup_runs=int(resolved_warmup_runs),
+                runs=resolved_runs,
+                warmup_runs=resolved_warmup_runs,
                 max_ticks=max_ticks,
-                trace_rng=bool(trace_rng),
-                profile=bool(profile),
+                trace_rng=trace_rng,
+                profile=profile,
                 profile_sort=profile_sort,
-                top=int(top),
+                top=top,
                 profile_out=profile_out,
-                show_progress=(str(output_format) == "human"),
+                show_progress=(output_format == "human"),
             )
     except (ReplayCodecError, ReplayGameVersionError, ReplayBenchmarkError, ReplayRunnerError) as exc:
         typer.echo(f"replay benchmark failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    profile_payload: _ReplayBenchmarkProfilePayload | None = None
-    if benchmark.profile is not None:
-        profile_payload = _ReplayBenchmarkProfilePayload(
-            sort=str(benchmark.profile.sort),
-            top=int(benchmark.profile.top),
-            source=str(benchmark.profile.source),
-            hotspots=[
-                _ReplayBenchmarkProfileHotspotPayload(
-                    file=str(row.file),
-                    line=int(row.line),
-                    function=str(row.function),
-                    primitive_calls=int(row.primitive_calls),
-                    total_calls=int(row.total_calls),
-                    tottime=float(row.tottime),
-                    cumtime=float(row.cumtime),
-                )
-                for row in benchmark.profile.hotspots
-            ],
-        )
+    profile_payload = _replay_benchmark_profile_payload(benchmark.profile)
 
     render_telemetry_payload: _ReplayRenderTelemetryPayload | None = None
     if benchmark.render_telemetry is not None:
@@ -1259,34 +1319,27 @@ def cmd_replay_benchmark(
         )
 
     payload = _ReplayBenchmarkPayload(
-        schema_version=int(_REPLAY_BENCHMARK_SCHEMA_VERSION),
+        schema_version=_REPLAY_BENCHMARK_SCHEMA_VERSION,
         status="ok",
         replay=str(replay_path),
-        settings=_ReplayBenchmarkSettingsPayload(
-            mode=str(mode),
-            runs=int(resolved_runs),
-            warmup_runs=int(resolved_warmup_runs),
-            max_ticks=(int(max_ticks) if max_ticks is not None else None),
-            trace_rng=bool(trace_rng),
-            profile=bool(profile),
-            profile_sort=str(profile_sort),
-            top=int(top),
-            profile_out=(str(profile_out) if profile_out is not None else None),
-            render_telemetry=bool(render_telemetry),
-            render_telemetry_out=(str(render_telemetry_out) if render_telemetry_out is not None else None),
-            render_charts_out_dir=(str(render_charts_out_dir) if render_charts_out_dir is not None else None),
+        settings=_replay_benchmark_settings_payload(
+            mode=mode,
+            runs=resolved_runs,
+            warmup_runs=resolved_warmup_runs,
+            max_ticks=max_ticks,
+            trace_rng=trace_rng,
+            profile=profile,
+            profile_sort=profile_sort,
+            top=top,
+            profile_out=profile_out,
+            render_telemetry=render_telemetry,
+            render_telemetry_out=render_telemetry_out,
+            render_charts_out_dir=render_charts_out_dir,
         ),
         run_result=_run_result_payload(benchmark.run_result),
         benchmark=_ReplayBenchmarkSummaryPayload(
             sample_count=len(benchmark.samples),
-            samples=[
-                _ReplayBenchmarkSamplePayload(
-                    wall_ms=float(sample.wall_ms),
-                    ticks_per_second=float(sample.ticks_per_second),
-                    realtime_x=float(sample.realtime_x),
-                )
-                for sample in benchmark.samples
-            ],
+            samples=[_replay_benchmark_sample_payload(sample) for sample in benchmark.samples],
             wall_ms=_benchmark_aggregate_payload(benchmark.wall_ms),
             ticks_per_second=_benchmark_aggregate_payload(benchmark.ticks_per_second),
             realtime_x=_benchmark_aggregate_payload(benchmark.realtime_x),
@@ -1299,21 +1352,21 @@ def cmd_replay_benchmark(
     if json_out is not None:
         json_out.parent.mkdir(parents=True, exist_ok=True)
         json_out.write_bytes(payload_json)
-        if str(output_format) == "human":
+    if output_format == "human":
             typer.echo(f"json_report={json_out}")
 
-    if str(output_format) == "json":
+    if output_format == "json":
         typer.echo(payload_json.decode("utf-8"))
         return
 
     typer.echo(
         "ok: "
         f"mode={mode} "
-        f"runs={len(benchmark.samples)} warmup_runs={int(resolved_warmup_runs)} "
-        f"ticks={int(benchmark.run_result.ticks)} "
-        f"wall_ms_p50={float(benchmark.wall_ms.p50):.3f} "
-        f"tps_p50={float(benchmark.ticks_per_second.p50):.2f} "
-        f"realtime_x_p50={float(benchmark.realtime_x.p50):.2f}",
+        f"runs={len(benchmark.samples)} warmup_runs={resolved_warmup_runs} "
+        f"ticks={benchmark.run_result.ticks} "
+        f"wall_ms_p50={benchmark.wall_ms.p50:.3f} "
+        f"tps_p50={benchmark.ticks_per_second.p50:.2f} "
+        f"realtime_x_p50={benchmark.realtime_x.p50:.2f}",
     )
     typer.echo(_fmt_metric_agg("wall_ms", benchmark.wall_ms, digits=3))
     typer.echo(
