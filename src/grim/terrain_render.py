@@ -308,7 +308,9 @@ class GroundRenderer(msgspec.Struct):
 
     def generate_partial(self, seed: int | None = None, *, layers: int) -> None:
         layers = max(0, min(layers, 3))
-        detail_texture = self.overlay_detail or self.texture
+        detail_texture = self.overlay_detail
+        if layers >= 3:
+            assert detail_texture is not None, "overlay_detail must be set for terrain layer 3"
         self.create_render_target()
         if self.render_target is None:
             return
@@ -332,6 +334,7 @@ class GroundRenderer(msgspec.Struct):
                 if layers >= 2 and self.overlay is not None:
                     self._scatter_texture(self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY)
                 if layers >= 3:
+                    assert detail_texture is not None
                     self._scatter_texture(detail_texture, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL)
         rl.end_texture_mode()
         self._set_stamp_filters(point=False)

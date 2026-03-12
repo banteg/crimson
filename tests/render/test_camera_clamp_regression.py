@@ -277,6 +277,18 @@ def test_generate_partial_uses_overlay_detail_for_third_pass(mocker) -> None:
     alpha_test.assert_called_once_with(True)
 
 
+def test_generate_partial_requires_overlay_detail_for_third_pass() -> None:
+    ground = GroundRenderer(
+        texture=_as_texture(_TextureStub(id=1)),
+        overlay=_as_texture(_TextureStub(id=2)),
+        width=1024,
+        height=1024,
+    )
+
+    with pytest.raises(AssertionError, match="overlay_detail must be set for terrain layer 3"):
+        ground.generate_partial(seed=1337, layers=3)
+
+
 def test_bake_decals_returns_false_without_render_target(mocker) -> None:
     ground = GroundRenderer(texture=_as_texture(_TextureStub()), width=1024, height=1024)
     decal = GroundDecal(
