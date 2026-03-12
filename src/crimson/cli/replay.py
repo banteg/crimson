@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from ..replay.driver.replay_info import ReplayInfoResult, ReplayInfoTimelineEvent
     from ..replay.driver.replay_render import ReplayRenderPhase
     from ..replay.driver.setup import RunResult
+    from ..replay.types import ReplayClaimedStatsSnapshot
 
 _REPLAY_VERIFY_SCHEMA_VERSION = 2
 _REPLAY_INFO_SCHEMA_VERSION = 2
@@ -406,6 +407,60 @@ def _replay_info_event_payload(event: ReplayInfoTimelineEvent) -> _ReplayInfoEve
         detail=event.detail,
         data=event.data,
     )
+
+
+def _replay_verify_claimed_stats_payload(
+    claimed_stats: ReplayClaimedStatsSnapshot,
+) -> _ReplayVerifyClaimedStatsPayload:
+    return _ReplayVerifyClaimedStatsPayload(
+        complete=claimed_stats.complete,
+        ticks=claimed_stats.ticks,
+        elapsed_ms=claimed_stats.elapsed_ms,
+        score_xp=claimed_stats.score_xp,
+        kills=claimed_stats.kills,
+        most_used_weapon_id=claimed_stats.most_used_weapon_id,
+        shots_fired=claimed_stats.shots_fired,
+        shots_hit=claimed_stats.shots_hit,
+    )
+
+
+def _replay_verify_run_result_claim_payload(
+    run_result: RunResult,
+    *,
+    complete: bool,
+) -> _ReplayVerifyClaimedStatsPayload:
+    return _ReplayVerifyClaimedStatsPayload(
+        complete=complete,
+        ticks=run_result.ticks,
+        elapsed_ms=run_result.elapsed_ms,
+        score_xp=run_result.score_xp,
+        kills=run_result.creature_kill_count,
+        most_used_weapon_id=run_result.most_used_weapon_id,
+        shots_fired=run_result.shots_fired,
+        shots_hit=run_result.shots_hit,
+    )
+
+
+def _replay_verify_mismatched_fields(
+    expected_claim: _ReplayVerifyClaimedStatsPayload,
+    simulated_claim: _ReplayVerifyClaimedStatsPayload,
+) -> list[str]:
+    mismatched_fields: list[str] = []
+    if expected_claim.ticks != simulated_claim.ticks:
+        mismatched_fields.append("ticks")
+    if expected_claim.elapsed_ms != simulated_claim.elapsed_ms:
+        mismatched_fields.append("elapsed_ms")
+    if expected_claim.score_xp != simulated_claim.score_xp:
+        mismatched_fields.append("score_xp")
+    if expected_claim.kills != simulated_claim.kills:
+        mismatched_fields.append("kills")
+    if expected_claim.most_used_weapon_id != simulated_claim.most_used_weapon_id:
+        mismatched_fields.append("most_used_weapon_id")
+    if expected_claim.shots_fired != simulated_claim.shots_fired:
+        mismatched_fields.append("shots_fired")
+    if expected_claim.shots_hit != simulated_claim.shots_hit:
+        mismatched_fields.append("shots_hit")
+    return mismatched_fields
 
 
 def _replay_info_summary_payload(
@@ -934,67 +989,33 @@ def cmd_replay_verify(
         result = build_verify_playback_driver(
             replay,
             max_ticks=max_ticks,
-            trace_rng=bool(trace_rng),
+            trace_rng=trace_rng,
         ).run()
     except (ReplayCodecError, ReplayGameVersionError, ReplayRunnerError) as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    full_replay_simulated = max_ticks is None or int(max_ticks) >= len(replay.ticks)
+    full_replay_simulated = max_ticks is None or max_ticks >= len(replay.ticks)
     header_claim_payload: _ReplayVerifyHeaderClaimPayload | None = None
     header_claim_matches = True
     claimed_stats = replay.header.claimed_stats
-    if bool(full_replay_simulated):
-        expected_claim = _ReplayVerifyClaimedStatsPayload(
-            complete=bool(claimed_stats.complete),
-            ticks=int(claimed_stats.ticks),
-            elapsed_ms=int(claimed_stats.elapsed_ms),
-            score_xp=int(claimed_stats.score_xp),
-            kills=int(claimed_stats.kills),
-            most_used_weapon_id=claimed_stats.most_used_weapon_id,
-            shots_fired=int(claimed_stats.shots_fired),
-            shots_hit=int(claimed_stats.shots_hit),
-        )
-        simulated_claim = _ReplayVerifyClaimedStatsPayload(
-            complete=bool(claimed_stats.complete),
-            ticks=int(result.ticks),
-            elapsed_ms=int(result.elapsed_ms),
-            score_xp=int(result.score_xp),
-            kills=int(result.creature_kill_count),
-            most_used_weapon_id=result.most_used_weapon_id,
-            shots_fired=int(result.shots_fired),
-            shots_hit=int(result.shots_hit),
-        )
-        mismatched_fields: list[str] = []
-        if int(expected_claim.ticks) != int(simulated_claim.ticks):
-            mismatched_fields.append("ticks")
-        if int(expected_claim.elapsed_ms) != int(simulated_claim.elapsed_ms):
-            mismatched_fields.append("elapsed_ms")
-        if int(expected_claim.score_xp) != int(simulated_claim.score_xp):
-            mismatched_fields.append("score_xp")
-        if int(expected_claim.kills) != int(simulated_claim.kills):
-            mismatched_fields.append("kills")
-        if expected_claim.most_used_weapon_id != simulated_claim.most_used_weapon_id:
-            mismatched_fields.append("most_used_weapon_id")
-        if int(expected_claim.shots_fired) != int(simulated_claim.shots_fired):
-            mismatched_fields.append("shots_fired")
-        if int(expected_claim.shots_hit) != int(simulated_claim.shots_hit):
-            mismatched_fields.append("shots_hit")
+    if full_replay_simulated:
+        expected_claim = _replay_verify_claimed_stats_payload(claimed_stats)
+        simulated_claim = _replay_verify_run_result_claim_payload(result, complete=claimed_stats.complete)
+        mismatched_fields = _replay_verify_mismatched_fields(expected_claim, simulated_claim)
         header_claim_matches = not mismatched_fields
         header_claim_payload = _ReplayVerifyHeaderClaimPayload(
             expected=expected_claim,
             simulated=simulated_claim,
-            match=bool(header_claim_matches),
-            mismatched_fields=list(mismatched_fields),
+            match=header_claim_matches,
+            mismatched_fields=mismatched_fields,
         )
 
-    status = "ok"
-    if not bool(header_claim_matches):
-        status = "header_stats_mismatch"
+    status = "ok" if header_claim_matches else "header_stats_mismatch"
 
     payload = _ReplayVerifyPayload(
-        schema_version=int(_REPLAY_VERIFY_SCHEMA_VERSION),
-        status=str(status),
+        schema_version=_REPLAY_VERIFY_SCHEMA_VERSION,
+        status=status,
         replay=str(replay_path),
         run_result=_run_result_payload(result),
         header_claim=header_claim_payload,
@@ -1005,10 +1026,10 @@ def cmd_replay_verify(
     if json_out is not None:
         json_out.parent.mkdir(parents=True, exist_ok=True)
         json_out.write_bytes(payload_json)
-        if str(output_format) == "human":
+        if output_format == "human":
             typer.echo(f"json_report={json_out}")
 
-    if str(output_format) == "json":
+    if output_format == "json":
         typer.echo(payload_json.decode("utf-8"))
     else:
         message = (
@@ -1025,11 +1046,11 @@ def cmd_replay_verify(
                 f"; header_claim complete={header_claim_payload.expected.complete} "
                 f"match={header_claim_payload.match} "
                 f"mismatches={mismatch_fields}"
-            )
+        )
         typer.echo(message)
 
-    if not bool(header_claim_matches):
-        raise typer.Exit(code=int(_REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE))
+    if not header_claim_matches:
+        raise typer.Exit(code=_REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE)
 
 
 @replay_app.command("info")
