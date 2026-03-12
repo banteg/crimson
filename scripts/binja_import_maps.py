@@ -486,7 +486,7 @@ def _type_keywords() -> set[str]:
     }
 
 
-def _rewrite_type_tokens(text: str) -> str:
+def _rewrite_type_tokens(text: str, bv=None) -> str:
     import re
 
     if not text:
@@ -494,19 +494,21 @@ def _rewrite_type_tokens(text: str) -> str:
     parts = re.split(r"([A-Za-z_][A-Za-z0-9_]*)", text)
     for idx in range(1, len(parts), 2):
         token = parts[idx]
+        if bv is not None and _get_type_by_name(bv, token) is not None:
+            continue
         replacement = _TYPE_REPLACEMENTS.get(token)
         if replacement:
             parts[idx] = replacement
     return "".join(parts)
 
 
-def _sanitize_signature(signature: str) -> str:
+def _sanitize_signature(signature: str, bv=None) -> str:
     # Ghidra-derived signatures sometimes use C++ keywords for parameter names (e.g. `this`).
     # Binja's parser may treat these as reserved depending on the language mode.
     import re
 
     signature = re.sub(r"\bthis\b", "self", signature)
-    return _rewrite_type_tokens(signature)
+    return _rewrite_type_tokens(signature, bv)
 
 
 def _split_params(param_text: str) -> list[str]:
@@ -562,13 +564,13 @@ def _strip_param_names(signature: str) -> str:
 
 def _resolve_data_type(bv, type_text: str):
     _seed_common_types(bv)
-    return _parse_type_string(bv, _rewrite_type_tokens(type_text))
+    return _parse_type_string(bv, _rewrite_type_tokens(type_text, bv))
 
 
 def _apply_function_signature(bv, func, signature: str) -> None:
     _seed_common_types(bv)
 
-    signature = _sanitize_signature(signature)
+    signature = _sanitize_signature(signature, bv)
     try:
         func_type = _parse_type_string(bv, signature)
     except Exception as first_exc:
