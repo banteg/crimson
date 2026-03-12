@@ -198,7 +198,7 @@ def test_runtime_build_render_frame_requires_bound_resources() -> None:
         world.build_render_frame()
 
 
-def test_ground_draw_uses_explicit_output_dimensions(mocker) -> None:
+def test_ground_draw_view_uses_explicit_output_dimensions_without_refitting(mocker) -> None:
     texture = _TextureStub()
     ground = _ground(texture=texture)
     ground.render_target = _as_render_texture(_RenderTextureStub())
@@ -211,13 +211,25 @@ def test_ground_draw_uses_explicit_output_dimensions(mocker) -> None:
     mocker.patch.object(terrain_render.rl, "get_screen_width", return_value=1024)
     mocker.patch.object(terrain_render.rl, "get_screen_height", return_value=768)
     mocker.patch.object(terrain_render, "_blend_custom", side_effect=_noop_blend)
+    fit_view_window = mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_fit_view_window",
+        autospec=True,
+        side_effect=AssertionError("unused"),
+    )
+    clamp_camera = mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_clamp_camera",
+        autospec=True,
+        side_effect=AssertionError("unused"),
+    )
     draw_texture_pro = mocker.patch.object(
         terrain_render.rl,
         "draw_texture_pro",
         autospec=True,
     )
 
-    ground.draw(
+    ground.draw_view(
         Vec2(-1.0, -1.0),
         screen_w=1024.0,
         screen_h=576.0,
@@ -227,6 +239,8 @@ def test_ground_draw_uses_explicit_output_dimensions(mocker) -> None:
 
     calls = [(float(call.args[2].width), float(call.args[2].height)) for call in draw_texture_pro.call_args_list]
     assert calls == [(1280.0, 720.0)]
+    fit_view_window.assert_not_called()
+    clamp_camera.assert_not_called()
 
 
 def test_ground_draw_uses_runtime_dimensions_when_screen_size_is_omitted(mocker) -> None:
@@ -424,7 +438,7 @@ def test_ground_draw_without_render_target_clears_background(mocker) -> None:
     draw_rectangle = mocker.patch.object(terrain_render.rl, "draw_rectangle", autospec=True)
     draw_texture_pro = mocker.patch.object(terrain_render.rl, "draw_texture_pro", autospec=True)
 
-    ground.draw(
+    ground.draw_view(
         Vec2(-1.0, -1.0),
         screen_w=1024.0,
         screen_h=576.0,

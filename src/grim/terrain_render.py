@@ -313,49 +313,46 @@ class GroundRenderer(msgspec.Struct):
         self._render_target_ready = True
         return True
 
-    def draw(
+    def draw(self, camera: Vec2) -> None:
+        out_w = max(1.0, float(rl.get_screen_width()))
+        out_h = max(1.0, float(rl.get_screen_height()))
+        screen_w, screen_h = self._fit_view_window(out_w, out_h)
+        cam = self._clamp_camera(camera, screen_w, screen_h)
+        self._draw_view(cam, screen_w=screen_w, screen_h=screen_h, out_w=out_w, out_h=out_h)
+
+    def draw_view(
         self,
         camera: Vec2,
         *,
-        screen_w: float | None = None,
-        screen_h: float | None = None,
-        out_w: float | None = None,
-        out_h: float | None = None,
+        screen_w: float,
+        screen_h: float,
+        out_w: float,
+        out_h: float,
     ) -> None:
-        if out_w is None:
-            out_w = float(rl.get_screen_width())
-        else:
-            out_w = float(out_w)
-        if out_h is None:
-            out_h = float(rl.get_screen_height())
-        else:
-            out_h = float(out_h)
-        if out_w <= 0.0:
-            out_w = float(rl.get_screen_width())
-        if out_h <= 0.0:
-            out_h = float(rl.get_screen_height())
-        if screen_w is None:
-            screen_w = out_w
-        else:
-            screen_w = float(screen_w)
-        if screen_h is None:
-            screen_h = out_h
-        else:
-            screen_h = float(screen_h)
-        if screen_w <= 0.0:
-            screen_w = max(1.0, out_w)
-        if screen_h <= 0.0:
-            screen_h = max(1.0, out_h)
-        screen_w, screen_h = self._fit_view_window(screen_w, screen_h)
-        cam = self._clamp_camera(camera, screen_w, screen_h)
+        self._draw_view(
+            camera,
+            screen_w=max(1.0, float(screen_w)),
+            screen_h=max(1.0, float(screen_h)),
+            out_w=max(1.0, float(out_w)),
+            out_h=max(1.0, float(out_h)),
+        )
 
+    def _draw_view(
+        self,
+        camera: Vec2,
+        *,
+        screen_w: float,
+        screen_h: float,
+        out_w: float,
+        out_h: float,
+    ) -> None:
         if self.render_target is None or not self._render_target_ready:
             rl.draw_rectangle(0, 0, int(out_w + 0.5), int(out_h + 0.5), TERRAIN_CLEAR_COLOR)
             return
 
         target = self.render_target
-        u0 = -cam.x / float(self.width)
-        v0 = -cam.y / float(self.height)
+        u0 = -camera.x / float(self.width)
+        v0 = -camera.y / float(self.height)
         u1 = u0 + screen_w / float(self.width)
         v1 = v0 + screen_h / float(self.height)
         src_x = u0 * float(target.texture.width)
