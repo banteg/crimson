@@ -282,7 +282,7 @@ def test_scheduled_generation_uses_overlay_detail_for_third_pass(mocker) -> None
         "_scatter_texture",
         autospec=True,
     )
-    mocker.patch.object(terrain_render.GroundRenderer, "create_render_target", autospec=True, side_effect=lambda _self: None)
+    mocker.patch.object(terrain_render.GroundRenderer, "_ensure_render_target", autospec=True, side_effect=lambda _self: None)
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
@@ -356,15 +356,15 @@ def test_create_render_target_recovers_after_previous_failure(mocker) -> None:
 
     mocker.patch.object(
         terrain_render.GroundRenderer,
-        "_ensure_render_target",
+        "_load_render_target",
         autospec=True,
         side_effect=_ensure,
     )
 
-    ground.create_render_target()
+    ground._ensure_render_target()
     assert ground.texture_failed is True
 
-    ground.create_render_target()
+    ground._ensure_render_target()
     assert ground.texture_failed is False
     assert ground.render_target is not None
 
@@ -379,7 +379,7 @@ def test_process_pending_clears_failed_schedule_after_terminal_rt_failure(mocker
     )
     mocker.patch.object(
         terrain_render.GroundRenderer,
-        "_ensure_render_target",
+        "_load_render_target",
         autospec=True,
         return_value=False,
     )
@@ -410,7 +410,7 @@ def test_bake_decals_returns_false_without_render_target(mocker) -> None:
         height=16.0,
     )
 
-    mocker.patch.object(terrain_render.GroundRenderer, "create_render_target", autospec=True, side_effect=lambda _self: None)
+    mocker.patch.object(terrain_render.GroundRenderer, "_ensure_render_target", autospec=True, side_effect=lambda _self: None)
 
     assert ground.bake_decals((decal,)) is False
 
@@ -427,7 +427,7 @@ def test_bake_decals_keep_default_filter(mocker) -> None:
         height=16.0,
     )
 
-    mocker.patch.object(terrain_render.GroundRenderer, "create_render_target", autospec=True, side_effect=lambda _self: None)
+    mocker.patch.object(terrain_render.GroundRenderer, "_ensure_render_target", autospec=True, side_effect=lambda _self: None)
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
@@ -457,7 +457,7 @@ def test_bake_corpse_decals_keeps_default_filter(mocker) -> None:
         rotation_rad=0.5,
     )
 
-    mocker.patch.object(terrain_render.GroundRenderer, "create_render_target", autospec=True, side_effect=lambda _self: None)
+    mocker.patch.object(terrain_render.GroundRenderer, "_ensure_render_target", autospec=True, side_effect=lambda _self: None)
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     set_texture_filter = mocker.patch.object(terrain_render.rl, "set_texture_filter", autospec=True)

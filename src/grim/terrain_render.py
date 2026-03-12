@@ -172,7 +172,7 @@ class GroundRenderer(msgspec.Struct):
         while self._scheduled_seed is not None and steps < 4:
             steps += 1
             if self.render_target is None:
-                self.create_render_target()
+                self._ensure_render_target()
                 if self.render_target is None and self.texture_failed:
                     self._scheduled_seed = None
                 continue
@@ -193,7 +193,7 @@ class GroundRenderer(msgspec.Struct):
                 self._scheduled_seed = seed
                 continue
 
-    def create_render_target(self) -> None:
+    def _ensure_render_target(self) -> None:
         scale = self.texture_scale
         if scale < 0.5:
             scale = 0.5
@@ -202,14 +202,14 @@ class GroundRenderer(msgspec.Struct):
         self.texture_scale = scale
 
         render_w, render_h = self._render_target_size_for(scale)
-        if self._ensure_render_target(render_w, render_h):
+        if self._load_render_target(render_w, render_h):
             self.texture_failed = False
             return
 
         old_scale = scale
         self.texture_scale = scale + scale
         render_w, render_h = self._render_target_size_for(self.texture_scale)
-        if self._ensure_render_target(render_w, render_h):
+        if self._load_render_target(render_w, render_h):
             self.texture_failed = False
             return
 
@@ -225,7 +225,7 @@ class GroundRenderer(msgspec.Struct):
         self._scheduled_seed = seed
 
     def _generate_texture(self, seed: int) -> None:
-        self.create_render_target()
+        self._ensure_render_target()
         if self.render_target is None:
             return
         rng = CrtRand(seed)
@@ -252,7 +252,7 @@ class GroundRenderer(msgspec.Struct):
         if not decals:
             return False
 
-        self.create_render_target()
+        self._ensure_render_target()
         if self.render_target is None:
             return False
 
@@ -290,7 +290,7 @@ class GroundRenderer(msgspec.Struct):
         if not decals:
             return False
 
-        self.create_render_target()
+        self._ensure_render_target()
         if self.render_target is None:
             return False
 
@@ -429,7 +429,7 @@ class GroundRenderer(msgspec.Struct):
             cam_y = min_y
         return Vec2(cam_x, cam_y)
 
-    def _ensure_render_target(self, render_w: int, render_h: int) -> bool:
+    def _load_render_target(self, render_w: int, render_h: int) -> bool:
         if self.render_target is not None:
             if self.render_target.texture.width == render_w and self.render_target.texture.height == render_h:
                 return True
