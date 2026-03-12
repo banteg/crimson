@@ -12,7 +12,7 @@ from crimson.render.world import renderer as world_renderer
 from crimson.world import runtime as world_runtime
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
-from grim.terrain_render import GroundRenderer
+from grim.terrain_render import GroundDecal, GroundRenderer
 from tests.support.helpers import assert_float_close
 from tests.support.world_runtime import WorldRuntimeHost
 
@@ -253,11 +253,6 @@ def test_generate_partial_uses_overlay_detail_for_third_pass(mocker) -> None:
     )
     ground.render_target = _as_render_texture(_RenderTextureStub())
 
-    fallback_scatter = mocker.patch.object(
-        terrain_render.GroundRenderer,
-        "_scatter_texture_fallback",
-        autospec=True,
-    )
     rt_scatter = mocker.patch.object(
         terrain_render.GroundRenderer,
         "_scatter_texture",
@@ -277,5 +272,36 @@ def test_generate_partial_uses_overlay_detail_for_third_pass(mocker) -> None:
 
     ground.generate_partial(seed=1337, layers=3)
 
-    assert [call.args[1] for call in fallback_scatter.call_args_list] == [base, overlay, detail]
     assert [call.args[1] for call in rt_scatter.call_args_list] == [base, overlay, detail]
+
+
+def test_bake_decals_returns_false_without_render_target(mocker) -> None:
+    ground = GroundRenderer(texture=_as_texture(_TextureStub()), width=1024, height=1024)
+    decal = GroundDecal(
+        texture=_as_texture(_TextureStub(id=2)),
+        src=terrain_render.rl.Rectangle(0.0, 0.0, 16.0, 16.0),
+        pos=Vec2(10.0, 10.0),
+        width=16.0,
+        height=16.0,
+    )
+
+    mocker.patch.object(terrain_render.GroundRenderer, "create_render_target", autospec=True, side_effect=lambda _self: None)
+
+    assert ground.bake_decals((decal,)) is False
+
+
+def test_ground_draw_without_render_target_clears_background(mocker) -> None:
+    ground = GroundRenderer(texture=_as_texture(_TextureStub()), width=1024, height=1024)
+    draw_rectangle = mocker.patch.object(terrain_render.rl, "draw_rectangle", autospec=True)
+    draw_texture_pro = mocker.patch.object(terrain_render.rl, "draw_texture_pro", autospec=True)
+
+    ground.draw(
+        Vec2(-1.0, -1.0),
+        screen_w=1024.0,
+        screen_h=576.0,
+        out_w=1280.0,
+        out_h=720.0,
+    )
+
+    draw_rectangle.assert_called_once()
+    draw_texture_pro.assert_not_called()
