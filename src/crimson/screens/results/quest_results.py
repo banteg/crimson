@@ -36,7 +36,6 @@ from ...ui.perk_menu import (
     button_width,
     draw_ui_text,
 )
-from ...ui.sfx import typeclick_sfx
 from ...ui.text_input import flush_text_input_events, gameplay_controls_held, poll_text_input
 from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
@@ -469,13 +468,13 @@ class QuestResultsUi(msgspec.Struct):
                 ]
                 self.input_caret = min(len(self.input_text), self.input_caret + len(typed))
                 if play_sfx is not None:
-                    play_sfx(typeclick_sfx(rng))
+                    play_sfx("sfx_ui_typeclick_01" if (rng.rand() & 1) == 0 else "sfx_ui_typeclick_02")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
                 if self.input_caret > 0:
                     self.input_text = self.input_text[: self.input_caret - 1] + self.input_text[self.input_caret :]
                     self.input_caret -= 1
                     if play_sfx is not None:
-                        play_sfx(typeclick_sfx(rng))
+                        play_sfx("sfx_ui_typeclick_01" if (rng.rand() & 1) == 0 else "sfx_ui_typeclick_02")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
                 self.input_caret = max(0, self.input_caret - 1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
