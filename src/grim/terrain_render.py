@@ -63,13 +63,13 @@ uniform vec4 colDiffuse;
 
 out vec4 finalColor;
 
-void main() {{
+void main() {
     // Emulate DX8 fixed-function alpha test after stage-0 modulation:
     // stage output = texture * diffuse, then discard when alpha <= 4/255.
     vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
     if (texel.a <= 0.0156862745) discard;
     finalColor = texel;
-}}
+}
 """
 
 
