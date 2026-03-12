@@ -263,7 +263,6 @@ class WorldRuntimeHost:
         dt: float,
         *,
         inputs: list[PlayerInput] | None = None,
-        auto_pick_perks: bool = False,
         perk_progression_enabled: bool = False,
         defer_camera_shake_update: bool = False,
         rng_marks_out: dict[str, int] | None = None,
@@ -290,7 +289,6 @@ class WorldRuntimeHost:
             gore_disabled=int(gore_disabled),
             game_tune_started=bool(self.sim_world.game_tune_started),
             demo_mode_active=bool(self.demo_mode_active),
-            auto_pick_perks=bool(auto_pick_perks),
             defer_camera_shake_update=bool(defer_camera_shake_update),
             mid_step_hook=lambda ctx: survival_mid_step(ctx, self._survival_test_spawn_state),
         )

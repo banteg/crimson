@@ -212,7 +212,6 @@ def build_tutorial_session(
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
         game_mode=GameMode.TUTORIAL,
-        auto_pick_perks=False,
         perk_progression_enabled=True,
         detail_preset=int(detail_preset),
         gore_disabled=int(gore_disabled),

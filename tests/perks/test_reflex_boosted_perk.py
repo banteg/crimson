@@ -36,7 +36,6 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        auto_pick_perks=False,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
@@ -77,7 +76,6 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        auto_pick_perks=False,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )

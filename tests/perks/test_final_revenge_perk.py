@@ -46,7 +46,6 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        auto_pick_perks=False,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
@@ -85,7 +84,6 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        auto_pick_perks=False,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )

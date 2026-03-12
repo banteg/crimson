@@ -136,7 +136,6 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
         gore_disabled=0,
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
-        auto_pick_perks=False,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=True,
     )

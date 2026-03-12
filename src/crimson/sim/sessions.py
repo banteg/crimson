@@ -239,7 +239,6 @@ class DeterministicSession(msgspec.Struct):
     gore_disabled: int = 0
     game_tune_started: bool = False
     demo_mode_active: bool = False
-    auto_pick_perks: bool = False
     apply_world_dt_steps: bool = True
     defer_camera_shake_update: bool = False
     clear_fx_queues_each_tick: bool = False
@@ -336,7 +335,6 @@ class DeterministicSession(msgspec.Struct):
                 damage_scale_by_type=self.damage_scale_by_type,
                 detail_preset=self.detail_preset,
                 gore_disabled=self.gore_disabled,
-                auto_pick_perks=self.auto_pick_perks,
                 game_mode=self.game_mode,
                 demo_mode_active=self.demo_mode_active,
                 perk_progression_enabled=self.perk_progression_enabled,
