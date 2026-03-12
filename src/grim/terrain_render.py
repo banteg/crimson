@@ -36,8 +36,6 @@ _ALPHA_TEST_REF_F32 = float(_ALPHA_TEST_REF_U8) / 255.0
 # required for parity; if it fails to compile, rendering should stop rather than
 # silently drift away from the native cutoff behavior.
 _ALPHA_TEST_SHADER: rl.Shader | None = None
-_ALPHA_TEST_SHADER_TRIED = False
-_ALPHA_TEST_SHADER_ERROR: str | None = None
 
 _ALPHA_TEST_VS_330 = r"""
 #version 330
@@ -80,27 +78,15 @@ void main() {{
 
 
 def _get_alpha_test_shader() -> rl.Shader:
-    global _ALPHA_TEST_SHADER, _ALPHA_TEST_SHADER_TRIED, _ALPHA_TEST_SHADER_ERROR
-    if _ALPHA_TEST_SHADER_TRIED:
-        if _ALPHA_TEST_SHADER is not None and _ALPHA_TEST_SHADER.id > 0:
-            return _ALPHA_TEST_SHADER
-        raise RuntimeError(_ALPHA_TEST_SHADER_ERROR or "terrain alpha-test shader is unavailable")
+    global _ALPHA_TEST_SHADER
+    if _ALPHA_TEST_SHADER is not None and _ALPHA_TEST_SHADER.id > 0:
+        return _ALPHA_TEST_SHADER
 
-    _ALPHA_TEST_SHADER_TRIED = True
-    try:
-        shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, _ALPHA_TEST_FS_330)
-    except (RuntimeError, OSError, ValueError) as exc:
-        _ALPHA_TEST_SHADER = None
-        _ALPHA_TEST_SHADER_ERROR = f"failed to compile terrain alpha-test shader: {exc}"
-        raise RuntimeError(_ALPHA_TEST_SHADER_ERROR) from exc
-
+    shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, _ALPHA_TEST_FS_330)
     if shader.id <= 0:
-        _ALPHA_TEST_SHADER = None
-        _ALPHA_TEST_SHADER_ERROR = "failed to compile terrain alpha-test shader: raylib returned an invalid shader id"
-        raise RuntimeError(_ALPHA_TEST_SHADER_ERROR)
+        raise RuntimeError("terrain alpha-test shader compilation returned an invalid shader id")
 
     _ALPHA_TEST_SHADER = shader
-    _ALPHA_TEST_SHADER_ERROR = None
     return _ALPHA_TEST_SHADER
 
 
