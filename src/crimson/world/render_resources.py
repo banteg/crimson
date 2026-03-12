@@ -86,7 +86,6 @@ class RenderResources(msgspec.Struct):
     def process_ground_pending(self) -> None:
         if self.ground is None:
             return
-        self.sync_ground_settings()
         self.ground.process_pending()
 
     def open(self, *, terrain_seed: int) -> None:

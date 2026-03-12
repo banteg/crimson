@@ -404,8 +404,6 @@ class ArsenalDebugView:
         rl.clear_background(BG)
 
         if self._runtime.render_resources.ground is not None:
-            self._runtime.render_resources.config = self._runtime.config
-            self._runtime.render_resources.sync_ground_settings()
             self._runtime.render_resources.ground.process_pending()
 
         self._draw_world(draw_aim_indicators=True)

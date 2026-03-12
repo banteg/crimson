@@ -398,10 +398,6 @@ class BaseGameplayMode:
         runtime.audio_rng = self.audio_rng
         runtime.rtx_mode = self.rtx_mode
 
-    def sync_ground_settings(self) -> None:
-        self.render_resources.config = self.config
-        self.render_resources.sync_ground_settings()
-
     def apply_terrain_setup(
         self,
         *,
@@ -1329,7 +1325,6 @@ class BaseGameplayMode:
             rl.unload_render_texture(current.render_target)
             current.render_target = None
         self.render_resources.ground = ground
-        self.sync_ground_settings()
 
     def menu_ground_camera(self) -> Vec2:
         return self.camera
@@ -1770,7 +1765,6 @@ class BaseGameplayMode:
     def _sync_audio_and_ground(self) -> None:
         self._world_runtime.sync_audio_bridge_state()
         if self.render_resources.ground is not None:
-            self.sync_ground_settings()
             self.render_resources.ground.process_pending()
 
     def _apply_batch_presentation_outputs(
