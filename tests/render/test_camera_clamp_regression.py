@@ -369,6 +369,17 @@ def test_create_render_target_recovers_after_previous_failure(mocker) -> None:
     assert ground.render_target is not None
 
 
+def test_load_render_target_rejects_incomplete_framebuffer(mocker) -> None:
+    ground = _ground()
+    candidate = _as_render_texture(_RenderTextureStub())
+    unload_render_texture = mocker.patch.object(terrain_render.rl, "unload_render_texture", autospec=True)
+    mocker.patch.object(terrain_render.rl, "load_render_texture", autospec=True, return_value=candidate)
+    mocker.patch.object(terrain_render.rl, "rl_framebuffer_complete", autospec=True, return_value=False)
+
+    assert ground._load_render_target(1024, 1024) is False
+    unload_render_texture.assert_called_once_with(candidate)
+
+
 def test_process_pending_clears_failed_schedule_after_terminal_rt_failure(mocker) -> None:
     ground = _ground()
     mocker.patch.object(
@@ -410,8 +421,6 @@ def test_bake_decals_returns_false_without_render_target(mocker) -> None:
         height=16.0,
     )
 
-    mocker.patch.object(terrain_render.GroundRenderer, "_ensure_render_target", autospec=True, side_effect=lambda _self: None)
-
     assert ground.bake_decals((decal,)) is False
 
 
@@ -419,6 +428,7 @@ def test_bake_decals_keep_default_filter(mocker) -> None:
     decal_texture = _as_texture(_TextureStub(id=2))
     ground = _ground(texture=_TextureStub(id=1))
     ground.render_target = _as_render_texture(_RenderTextureStub())
+    ground._render_target_ready = True
     decal = GroundDecal(
         texture=decal_texture,
         src=terrain_render.rl.Rectangle(0.0, 0.0, 16.0, 16.0),
@@ -427,7 +437,6 @@ def test_bake_decals_keep_default_filter(mocker) -> None:
         height=16.0,
     )
 
-    mocker.patch.object(terrain_render.GroundRenderer, "_ensure_render_target", autospec=True, side_effect=lambda _self: None)
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
@@ -450,6 +459,7 @@ def test_bake_corpse_decals_keeps_default_filter(mocker) -> None:
     bodyset_texture = _as_texture(_TextureStub(id=9, width=64, height=64))
     ground = _ground(texture=_TextureStub(id=1))
     ground.render_target = _as_render_texture(_RenderTextureStub())
+    ground._render_target_ready = True
     decal = GroundCorpseDecal(
         bodyset_frame=3,
         top_left=Vec2(20.0, 30.0),
@@ -457,7 +467,6 @@ def test_bake_corpse_decals_keeps_default_filter(mocker) -> None:
         rotation_rad=0.5,
     )
 
-    mocker.patch.object(terrain_render.GroundRenderer, "_ensure_render_target", autospec=True, side_effect=lambda _self: None)
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     set_texture_filter = mocker.patch.object(terrain_render.rl, "set_texture_filter", autospec=True)

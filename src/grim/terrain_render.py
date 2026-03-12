@@ -153,7 +153,6 @@ class GroundRenderer(msgspec.Struct):
     render_target: rl.RenderTexture | None = None
     _render_target_ready: bool = False
     _scheduled_seed: int | None = None
-    _warmup_retry_pending: bool = False
 
     def generation_pending(self) -> bool:
         """True while a scheduled terrain generate is still pending."""
@@ -164,62 +163,39 @@ class GroundRenderer(msgspec.Struct):
         return self.render_target is not None and self._render_target_ready
 
     def process_pending(self) -> None:
-        # Bound the amount of work per tick. Typical warmup sequence:
-        #   1) create RT
-        #   2) first fill (may be black/uninitialized on some platforms)
-        #   3) warmup retry fill
-        steps = 0
-        while self._scheduled_seed is not None and steps < 4:
-            steps += 1
-            if self.render_target is None:
-                self._ensure_render_target()
-                if self.render_target is None and self.texture_failed:
-                    self._scheduled_seed = None
-                continue
-
-            seed = self._scheduled_seed
-            assert seed is not None, "pending terrain generation requires a seed"
-            self._scheduled_seed = None
-            self._generate_texture(seed=seed)
-            if self.render_target is None and not self.texture_failed:
-                self._scheduled_seed = seed
-                continue
-
-            if self._warmup_retry_pending:
-                self._warmup_retry_pending = False
-                # On some platforms/drivers the first draw into a new RT can come out as
-                # black/uninitialized (all-zero). Retry once before marking it ready.
-                self._render_target_ready = False
-                self._scheduled_seed = seed
-                continue
+        seed = self._scheduled_seed
+        if seed is None:
+            return
+        self._scheduled_seed = None
+        self._generate_texture(seed=seed)
 
     def _ensure_render_target(self) -> None:
-        scale = self.texture_scale
-        if scale < 0.5:
-            scale = 0.5
-        elif scale > 4.0:
-            scale = 4.0
-        self.texture_scale = scale
+        requested_scale = self.texture_scale
+        if requested_scale < 0.5:
+            requested_scale = 0.5
+        elif requested_scale > 4.0:
+            requested_scale = 4.0
+        self.texture_scale = requested_scale
 
-        render_w, render_h = self._render_target_size_for(scale)
+        render_w, render_h = self._render_target_size_for(requested_scale)
         if self._load_render_target(render_w, render_h):
             self.texture_failed = False
             return
 
-        old_scale = scale
-        self.texture_scale = scale + scale
-        render_w, render_h = self._render_target_size_for(self.texture_scale)
-        if self._load_render_target(render_w, render_h):
-            self.texture_failed = False
-            return
+        fallback_scale = min(4.0, requested_scale + requested_scale)
+        if fallback_scale != requested_scale:
+            self.texture_scale = fallback_scale
+            render_w, render_h = self._render_target_size_for(fallback_scale)
+            if self._load_render_target(render_w, render_h):
+                self.texture_failed = False
+                return
 
         self.texture_failed = True
-        self.texture_scale = old_scale
+        self.texture_scale = requested_scale
         if self.render_target is not None:
             rl.unload_render_texture(self.render_target)
             self.render_target = None
         self._render_target_ready = False
-        self._warmup_retry_pending = False
 
     def schedule_generate(self, seed: int) -> None:
         self._scheduled_seed = seed
@@ -252,8 +228,7 @@ class GroundRenderer(msgspec.Struct):
         if not decals:
             return False
 
-        self._ensure_render_target()
-        if self.render_target is None:
+        if self.render_target is None or not self._render_target_ready:
             return False
 
         inv_scale = 1.0 / self._normalized_texture_scale()
@@ -290,8 +265,7 @@ class GroundRenderer(msgspec.Struct):
         if not decals:
             return False
 
-        self._ensure_render_target()
-        if self.render_target is None:
+        if self.render_target is None or not self._render_target_ready:
             return False
 
         scale = self._normalized_texture_scale()
@@ -437,25 +411,18 @@ class GroundRenderer(msgspec.Struct):
             self.render_target = None
             self._render_target_ready = False
 
-        try:
-            candidate = rl.load_render_texture(render_w, render_h)
-        except (RuntimeError, OSError, ValueError):
+        candidate = rl.load_render_texture(render_w, render_h)
+        if candidate.id <= 0 or candidate.texture.width <= 0 or candidate.texture.height <= 0:
+            rl.unload_render_texture(candidate)
             return False
-
-        if candidate.id == 0 or not rl.is_render_texture_valid(candidate):
-            if candidate.id:
-                rl.unload_render_texture(candidate)
-            return False
-        if (
-            candidate.texture.width <= 0
-            or candidate.texture.height <= 0
-        ):
+        # raylib's IsRenderTextureValid() only checks ids and dimensions; use the
+        # rlgl completeness check so incomplete FBO attachments fail immediately.
+        if not rl.rl_framebuffer_complete(candidate.id):
             rl.unload_render_texture(candidate)
             return False
 
         self.render_target = candidate
         self._render_target_ready = False
-        self._warmup_retry_pending = True
         rl.set_texture_filter(self.render_target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         rl.set_texture_wrap(self.render_target.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
         return True
