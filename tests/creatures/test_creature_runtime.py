@@ -25,6 +25,7 @@ from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -408,6 +409,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
 def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     state = GameplayState()
     pool = CreaturePool()
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     player0 = PlayerState(
         index=0,
@@ -439,13 +441,55 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
         options=make_creature_update_options(
             state=state,
             players=[player0, player1],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+            rng=rng,
         ),
     )
 
     assert creature.target_player == 1
     assert_float_close(player0.health, 0.0)
     assert_float_close(player1.health, 90.0)
+    assert [record.caller for record in rng.records_since() if record.caller is not None][:1] == [
+        RngCallerStatic.CREATURE_UPDATE_ALL_CONTACT_SFX,
+    ]
+
+
+def test_plague_kill_uses_exact_native_attack_sfx_caller() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.type_id = CreatureTypeId.ZOMBIE
+    creature.hp = 10.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.flags = CreatureFlags(0)
+    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.move_speed = 0.0
+    creature.size = 45.0
+    creature.contact_damage = 0.0
+    creature.plague_infected = True
+    creature.collision_timer = 0.0
+    creature.pos = Vec2(400.0, 400.0)
+
+    result = pool.update(
+        1.0 / 60.0,
+        options=make_creature_update_options(
+            state=state,
+            players=[player],
+            rng=rng,
+        ),
+    )
+
+    assert result.sfx == ("sfx_zombie_attack_01",)
+    assert [record.caller for record in rng.records_since() if record.caller is not None] == [
+        RngCallerStatic.CREATURE_UPDATE_ALL_PLAGUE_KILL_SFX,
+        RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY,
+        RngCallerStatic.FX_QUEUE_ADD_RANDOM_WIDTH,
+        RngCallerStatic.FX_QUEUE_ADD_RANDOM_ROTATION,
+        RngCallerStatic.FX_QUEUE_ADD_RANDOM_EFFECT_ID,
+    ]
 
 
 def test_single_player_dead_player_uses_dead_target_position() -> None:
@@ -1100,6 +1144,7 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
     state = GameplayState()
     state.game_mode = GameMode.RUSH
     state.bonuses.freeze = 1.0
+    state.rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
     creature = pool.entries[0]
@@ -1121,6 +1166,20 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
     )
 
     add_random.assert_called_once()
+    tagged_callers = [
+        record.caller
+        for record in state.rng.records_since()
+        if record.caller
+        in {
+            RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE,
+            RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE,
+        }
+    ]
+    assert tagged_callers == [
+        RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE,
+    ] * 8 + [
+        RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE,
+    ]
 
 
 def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> None:
@@ -1418,6 +1477,22 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
         expected_after_state=0,
     )
     assert rng.values_since(before_calls) == [0] * 209
+    assert [
+        record.caller
+        for record in rng.records_since(before_calls)
+        if record.caller
+        in {
+            RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_8_ANGLE,
+            RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_6_ANGLE,
+            RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_5_ANGLE,
+        }
+    ] == [
+        RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_8_ANGLE,
+    ] * 8 + [
+        RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_6_ANGLE,
+    ] * 6 + [
+        RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_5_ANGLE,
+    ] * 5
     assert len(state.effects.iter_active()) == 38
 
 

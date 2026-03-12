@@ -4,6 +4,7 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import run_unlock_terrain_prelude
 from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 from grim.rand import CallerStatic, Crand
@@ -155,12 +156,39 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
     )
 
     assert sorted(rows_by_tick.keys()) == [0, 1, 2]
-    for draws in rows_by_tick.values():
+    tagged_by_tick: dict[int, list[CallerStatic]] = {}
+    for tick_index, draws in sorted(rows_by_tick.items()):
+        tagged_callers: list[CallerStatic] = []
         for state_before_u32, value_15, state_after_u32, caller in draws:
             expected_after = (int(state_before_u32) * 214013 + 2531011) & 0xFFFFFFFF
             assert int(state_after_u32) == int(expected_after)
             assert int(value_15) == ((int(state_after_u32) >> 16) & 0x7FFF)
-            assert caller is None
+            if caller is not None:
+                tagged_callers.append(caller)
+        tagged_by_tick[int(tick_index)] = tagged_callers
+
+    assert tagged_by_tick == {
+        0: [
+            RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
+            RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_BOTTOM_X,
+            RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_TYPE_ROLL,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_OVERRIDE,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_SIZE,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEADING,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEALTH,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_LOW_TINT_G,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_LOW_TINT_B,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_REWARD_BONUS,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_RED,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_GREEN,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_BLUE,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_PURPLE,
+            RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_YELLOW,
+        ],
+        1: [],
+        2: [],
+    }
 
 
 def test_playback_driver_run_matches_verify_driver_factory() -> None:

@@ -8,6 +8,7 @@ from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.factories import make_creature_update_options, make_projectile_update_options
@@ -70,6 +71,7 @@ def test_ranged_creature_does_not_fire_when_too_close() -> None:
 def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 200.0))
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     pool = CreaturePool()
     creature = pool.entries[0]
@@ -88,7 +90,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
         options=make_creature_update_options(
             state=state,
             players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+            rng=rng,
         ),
     )
 
@@ -99,6 +101,9 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     assert int(proj.type_id) == 26
     assert_float_close(creature.attack_cooldown, 0.4)
     assert result.sfx == ("sfx_plasmaminigun_fire",)
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN,
+    ]
 
 
 def test_spawn_init_packs_ranged_projectile_type_into_orbit_radius() -> None:

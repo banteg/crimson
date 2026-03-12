@@ -160,7 +160,7 @@ def plan_hit_sfx_keys(
             # playlist entry, so consume one draw here for stream parity.
             trigger_game_tune = True
             local_game_tune_started = True
-            _ = rng.rand()
+            _ = rng.rand(caller=RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
             continue
         type_id = int(hits[idx].type_id)
         key = _hit_sfx_for_type(type_id, beam_types=beam_types, rng=rng)

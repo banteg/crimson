@@ -5,6 +5,7 @@ from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
+from ..rng_caller_static import RngCallerStatic
 from ..weapons import WeaponId
 from .helpers import (
     center_point,
@@ -187,6 +188,24 @@ def build_3_2_lizard_kings(ctx: QuestContext, *, rng: CrandLike, full_version: b
     return entries
 
 
+def _the_killing_random_spawner(
+    *,
+    rng: CrandLike,
+    trigger_ms: int,
+    y_caller: int,
+    x_caller: int,
+) -> SpawnEntry:
+    y = float(rng.rand(caller=y_caller) % 768) + 128.0
+    x = float(rng.rand(caller=x_caller) % 768) + 128.0
+    return spawn(
+        Vec2(x, y),
+        heading=0.0,
+        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+        trigger_ms=trigger_ms,
+        count=3,
+    )
+
+
 @register_quest(
     level="3.3",
     title="The Killing",
@@ -203,10 +222,13 @@ def build_3_3_the_killing(
     edges = edge_midpoints(ctx.width)
     entries: list[SpawnEntry] = []
     trigger = 2000
-    for wave in range(10):
-        rng.rand()
-        rng.rand()
-        spawn_cycle = wave % 3
+    for _wave in range(10):
+        spawn_cycle = (
+            rng.rand(
+                caller=RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK,
+            )
+            % 3
+        )
         if spawn_cycle == 0:
             spawn_id = SpawnId.AI1_ALIEN_BLUE_TINT_1A
         elif spawn_cycle == 1:
@@ -214,7 +236,12 @@ def build_3_3_the_killing(
         else:
             spawn_id = SpawnId.AI1_LIZARD_BLUE_TINT_1C
 
-        edge = wave % 5
+        edge = (
+            rng.rand(
+                caller=RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK,
+            )
+            % 5
+        )
         if edge == 0:
             entries.append(
                 spawn_at(
@@ -256,18 +283,30 @@ def build_3_3_the_killing(
                 ),
             )
         else:
-            for offset in (0, 1000, 2000):
-                x = int(rng.rand() % 768) + 128
-                y = int(rng.rand() % 768) + 128
-                entries.append(
-                    spawn(
-                        Vec2(float(x), float(y)),
-                        heading=0.0,
-                        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
-                        trigger_ms=trigger + offset,
-                        count=3,
-                    ),
-                )
+            entries.append(
+                _the_killing_random_spawner(
+                    rng=rng,
+                    trigger_ms=trigger,
+                    y_caller=RngCallerStatic.QUEST_BUILD_THE_KILLING_SPAWNER_1_Y,
+                    x_caller=RngCallerStatic.QUEST_BUILD_THE_KILLING_SPAWNER_1_X,
+                ),
+            )
+            entries.append(
+                _the_killing_random_spawner(
+                    rng=rng,
+                    trigger_ms=trigger + 1000,
+                    y_caller=RngCallerStatic.QUEST_BUILD_THE_KILLING_SPAWNER_2_Y,
+                    x_caller=RngCallerStatic.QUEST_BUILD_THE_KILLING_SPAWNER_2_X,
+                ),
+            )
+            entries.append(
+                _the_killing_random_spawner(
+                    rng=rng,
+                    trigger_ms=trigger + 2000,
+                    y_caller=RngCallerStatic.QUEST_BUILD_THE_KILLING_SPAWNER_3_Y,
+                    x_caller=RngCallerStatic.QUEST_BUILD_THE_KILLING_SPAWNER_3_X,
+                ),
+            )
 
         trigger += 6000
     return entries
@@ -534,7 +573,15 @@ def build_3_9_deja_vu(
     trigger = 2000
     step = 2000
     while step > 560:
-        angle = float(rng.rand() % 612) * 0.01
+        angle = (
+            float(
+                rng.rand(
+                    caller=RngCallerStatic.QUEST_BUILD_DEJA_VU_ANGLE,
+                )
+                % 612,
+            )
+            * 0.01
+        )
         for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
             entries.append(
                 spawn(

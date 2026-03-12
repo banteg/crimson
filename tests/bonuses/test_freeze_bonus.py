@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
+from crimson.bonuses.freeze import flush_deferred_freeze_corpse_fx
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureAiMode
 from crimson.effects import FxQueue, FxQueueRotated
@@ -97,6 +98,52 @@ def test_freeze_pickup_can_limit_shatter_to_tick_start_corpses() -> None:
         if int(entry.effect_id) in (0x08, 0x09, 0x0A, 0x0E)
     ]
     assert len(freeze_effects) == 16
+
+
+def test_deferred_freeze_corpse_fx_preserves_bonus_apply_callers() -> None:
+    state = GameplayState()
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
+
+    pool = CreaturePool()
+    corpse = pool.entries[0]
+    corpse.active = True
+    corpse.hp = 0.0
+    corpse.pos = Vec2(100.0, 200.0)
+
+    bonus_apply(
+        state,
+        player,
+        BonusId.FREEZE,
+        amount=1,
+        origin=player.pos,
+        creatures=pool.entries,
+        players=[player],
+        detail_preset=5,
+        defer_freeze_corpse_fx=True,
+        freeze_corpse_indices={0},
+    )
+
+    assert state.effects.iter_active() == []
+    assert len(state.deferred_freeze_corpse_fx) == 1
+
+    before_calls = state.rng.calls
+    flush_deferred_freeze_corpse_fx(state)
+
+    tagged_callers = [
+        record.caller
+        for record in state.rng.records_since(before_calls)
+        if record.caller
+        in {
+            RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE,
+            RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE,
+        }
+    ]
+    assert tagged_callers == [
+        RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE,
+    ] * 8 + [
+        RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE,
+    ]
 
 
 def test_freeze_stops_creature_movement_and_animation() -> None:

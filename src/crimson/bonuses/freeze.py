@@ -80,14 +80,18 @@ def flush_deferred_freeze_corpse_fx(state: GameplayState) -> None:
         pos = queued.pos
         detail = int(queued.detail_preset)
         for _ in range(8):
-            angle = float(state.rng.rand() % 612) * 0.01
+            angle = float(
+                state.rng.rand(caller=RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612,
+            ) * 0.01
             state.effects.spawn_freeze_shard(
                 pos=pos,
                 angle=angle,
                 rng=state.rng,
                 detail_preset=detail,
             )
-        angle = float(state.rng.rand() % 612) * 0.01
+        angle = float(
+            state.rng.rand(caller=RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612,
+        ) * 0.01
         state.effects.spawn_freeze_shatter(
             pos=pos,
             angle=angle,
