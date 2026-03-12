@@ -53,12 +53,8 @@ class RenderResources(msgspec.Struct):
             return
         if self.config is None:
             self.ground.texture_scale = 1.0
-            self.ground.screen_width = None
-            self.ground.screen_height = None
             return
         self.ground.texture_scale = self.config.texture_scale
-        self.ground.screen_width = float(self.config.screen_width)
-        self.ground.screen_height = float(self.config.screen_height)
 
     def set_ground_textures(
         self,
@@ -75,8 +71,6 @@ class RenderResources(msgspec.Struct):
                 width=int(self.world_size),
                 height=int(self.world_size),
                 texture_scale=1.0,
-                screen_width=None,
-                screen_height=None,
             )
         else:
             self.ground.texture = base

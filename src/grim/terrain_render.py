@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
+from functools import cache
 
 import msgspec
 
@@ -24,19 +25,14 @@ TERRAIN_DENSITY_DETAIL = 0x0F
 TERRAIN_DENSITY_SHIFT = 19
 TERRAIN_ROTATION_MAX = 0x13A
 
-
-_ALPHA_TEST_REF_U8 = 4
-_ALPHA_TEST_REF_F32 = float(_ALPHA_TEST_REF_U8) / 255.0
-
 # Grim2D enables alpha test globally with:
 #   ALPHATESTENABLE=1, ALPHAFUNC=GREATER, ALPHAREF=4
 # See: analysis/ghidra/raw/grim.dll_decompiled.c (FUN_10004520).
 #
 # raylib does not expose fixed-function alpha test, so we emulate it with a tiny
-# discard shader for stamping into the terrain render target.
-_ALPHA_TEST_SHADER: rl.Shader | None = None
-_ALPHA_TEST_SHADER_TRIED = False
-
+# discard shader for stamping into the terrain render target. This shim is
+# required for parity; if it fails to compile, rendering should stop rather than
+# silently drift away from the native cutoff behavior.
 _ALPHA_TEST_VS_330 = r"""
 #version 330
 
@@ -56,7 +52,7 @@ void main() {
 }
 """
 
-_ALPHA_TEST_FS_330 = rf"""
+_ALPHA_TEST_FS_330 = r"""
 #version 330
 
 in vec2 fragTexCoord;
@@ -68,33 +64,21 @@ uniform vec4 colDiffuse;
 out vec4 finalColor;
 
 void main() {{
+    // Emulate DX8 fixed-function alpha test after stage-0 modulation:
+    // stage output = texture * diffuse, then discard when alpha <= 4/255.
     vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
-    if (texel.a <= {_ALPHA_TEST_REF_F32:.10f}) discard;
+    if (texel.a <= 0.0156862745) discard;
     finalColor = texel;
 }}
 """
 
 
-def _get_alpha_test_shader() -> rl.Shader | None:
-    global _ALPHA_TEST_SHADER, _ALPHA_TEST_SHADER_TRIED
-    if _ALPHA_TEST_SHADER_TRIED:
-        if _ALPHA_TEST_SHADER is not None and _ALPHA_TEST_SHADER.id > 0:
-            return _ALPHA_TEST_SHADER
-        return None
-
-    _ALPHA_TEST_SHADER_TRIED = True
-    try:
-        shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, _ALPHA_TEST_FS_330)
-    except (RuntimeError, OSError, ValueError):
-        _ALPHA_TEST_SHADER = None
-        return None
-
+@cache
+def _get_alpha_test_shader() -> rl.Shader:
+    shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, _ALPHA_TEST_FS_330)
     if shader.id <= 0:
-        _ALPHA_TEST_SHADER = None
-        return None
-
-    _ALPHA_TEST_SHADER = shader
-    return _ALPHA_TEST_SHADER
+        raise RuntimeError("terrain alpha-test shader compilation returned an invalid shader id")
+    return shader
 
 
 @contextmanager
@@ -112,35 +96,28 @@ def _blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Iter
 
 
 @contextmanager
-def _blend_custom_separate(
-    src_rgb: int,
-    dst_rgb: int,
-    src_alpha: int,
-    dst_alpha: int,
-    eq_rgb: int,
-    eq_alpha: int,
-) -> Iterator[None]:
-    # NOTE: raylib/rlgl tracks custom blend factors as state; some backends only
-    # apply them when switching the blend mode. Set factors both before and
-    # after BeginBlendMode() to ensure the current draw uses the intended values.
-    rl.rl_set_blend_factors_separate(src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha)
-    rl.begin_blend_mode(rl.BlendMode.BLEND_CUSTOM_SEPARATE)
-    rl.rl_set_blend_factors_separate(src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha)
+def _color_mask(*, write_alpha: bool) -> Iterator[None]:
+    rl.rl_color_mask(True, True, True, bool(write_alpha))
     try:
         yield
     finally:
-        rl.end_blend_mode()
+        rl.rl_color_mask(True, True, True, True)
 
 
 @contextmanager
-def _maybe_alpha_test(enabled: bool) -> Iterator[None]:
-    if not enabled:
-        yield
-        return
+def _terrain_rt_blend(
+    src_factor: int,
+    dst_factor: int,
+    blend_equation: int,
+) -> Iterator[None]:
+    with _color_mask(write_alpha=False):
+        with _blend_custom(src_factor, dst_factor, blend_equation):
+            yield
+
+
+@contextmanager
+def _maybe_alpha_test() -> Iterator[None]:
     shader = _get_alpha_test_shader()
-    if shader is None:
-        yield
-        return
     rl.begin_shader_mode(shader)
     try:
         yield
@@ -155,7 +132,6 @@ class GroundDecal(msgspec.Struct):
     height: float
     rotation_rad: float = 0.0
     tint: rl.Color = rl.WHITE
-    centered: bool = True
 
 
 class GroundCorpseDecal(msgspec.Struct):
@@ -173,11 +149,7 @@ class GroundRenderer(msgspec.Struct):
     width: int = TERRAIN_TEXTURE_SIZE
     height: int = TERRAIN_TEXTURE_SIZE
     texture_scale: float = 1.0
-    alpha_test: bool = True
     texture_failed: bool = False
-    screen_width: float | None = None
-    screen_height: float | None = None
-    terrain_filter: float = 1.0
     render_target: rl.RenderTexture | None = None
     _render_target_ready: bool = False
     _pending_generate: bool = False
@@ -252,11 +224,6 @@ class GroundRenderer(msgspec.Struct):
             self.render_target = None
         self._render_target_ready = False
 
-    def generate(self, seed: int) -> None:
-        self._pending_generate = False
-        self._pending_generate_seed = None
-        self._generate_texture(seed=seed)
-
     def schedule_generate(self, seed: int) -> None:
         self._pending_generate_seed = seed
         self._pending_generate = True
@@ -271,15 +238,12 @@ class GroundRenderer(msgspec.Struct):
         # Intentional rewrite deviation: the classic game appears to point-sample
         # terrain stamps while rotating them into the RT, but bilinear sampling
         # reads better in the port and still stays within current fixture tolerances.
-        # Keep the ground RT alpha at 1.0 like the original exe (which typically uses
-        # an XRGB render target). We still alpha-blend RGB, but preserve destination A.
-        with _maybe_alpha_test(self.alpha_test):
-            with _blend_custom_separate(
+        # Keep the ground RT alpha opaque like the original exe's XRGB-style RT.
+        # The port does that by masking out alpha writes while stamping.
+        with _maybe_alpha_test():
+            with _terrain_rt_blend(
                 rd.RL_SRC_ALPHA,
                 rd.RL_ONE_MINUS_SRC_ALPHA,
-                rd.RL_ZERO,
-                rd.RL_ONE,
-                rd.RL_FUNC_ADD,
                 rd.RL_FUNC_ADD,
             ):
                 self._scatter_texture(self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE)
@@ -298,29 +262,16 @@ class GroundRenderer(msgspec.Struct):
 
         inv_scale = 1.0 / self._normalized_texture_scale()
         rl.begin_texture_mode(self.render_target)
-        with _maybe_alpha_test(self.alpha_test):
-            with _blend_custom_separate(
+        with _maybe_alpha_test():
+            with _terrain_rt_blend(
                 rd.RL_SRC_ALPHA,
                 rd.RL_ONE_MINUS_SRC_ALPHA,
-                rd.RL_ZERO,
-                rd.RL_ONE,
-                rd.RL_FUNC_ADD,
                 rd.RL_FUNC_ADD,
             ):
                 for decal in decals:
-                    w = decal.width
-                    h = decal.height
-                    if decal.centered:
-                        pivot_x = decal.pos.x
-                        pivot_y = decal.pos.y
-                    else:
-                        pivot_x = decal.pos.x + w * 0.5
-                        pivot_y = decal.pos.y + h * 0.5
-                    pivot_x *= inv_scale
-                    pivot_y *= inv_scale
-                    w *= inv_scale
-                    h *= inv_scale
-                    dst = rl.Rectangle(pivot_x, pivot_y, w, h)
+                    w = decal.width * inv_scale
+                    h = decal.height * inv_scale
+                    dst = rl.Rectangle(decal.pos.x * inv_scale, decal.pos.y * inv_scale, w, h)
                     origin = rl.Vector2(w * 0.5, h * 0.5)
                     rl.draw_texture_pro(
                         decal.texture,
@@ -339,8 +290,6 @@ class GroundRenderer(msgspec.Struct):
         self,
         bodyset_texture: rl.Texture,
         decals: Sequence[GroundCorpseDecal],
-        *,
-        shadow: bool = True,
     ) -> bool:
         if not decals:
             return False
@@ -356,9 +305,8 @@ class GroundRenderer(msgspec.Struct):
         # Intentional rewrite deviation: the classic game appears to point-sample
         # corpse atlas frames while baking, but bilinear sampling reads better in
         # the port at modern output scales.
-        with _maybe_alpha_test(self.alpha_test):
-            if shadow:
-                self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
+        with _maybe_alpha_test():
+            self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
             self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
         rl.end_texture_mode()
 
@@ -387,21 +335,17 @@ class GroundRenderer(msgspec.Struct):
         if out_h <= 0.0:
             out_h = float(rl.get_screen_height())
         if screen_w is None:
-            # Prefer live output dimensions by default. Cached config-sized
-            # values can lag during gameplay/menu handoffs.
-            if out_w > 0.0:
-                screen_w = out_w
-            else:
-                screen_w = float(self.screen_width or out_w)
+            screen_w = out_w
+        else:
+            screen_w = float(screen_w)
         if screen_h is None:
-            if out_h > 0.0:
-                screen_h = out_h
-            else:
-                screen_h = float(self.screen_height or out_h)
+            screen_h = out_h
+        else:
+            screen_h = float(screen_h)
         if screen_w <= 0.0:
-            screen_w = out_w if out_w > 0.0 else float(self.screen_width or 1.0)
+            screen_w = max(1.0, out_w)
         if screen_h <= 0.0:
-            screen_h = out_h if out_h > 0.0 else float(self.screen_height or 1.0)
+            screen_h = max(1.0, out_h)
         screen_w, screen_h = self._fit_view_window(screen_w, screen_h)
         cam = self._clamp_camera(camera, screen_w, screen_h)
 
@@ -422,14 +366,10 @@ class GroundRenderer(msgspec.Struct):
         src_h = (v1 - v0) * float(target.texture.height)
         src = rl.Rectangle(src_x, src_y, src_w, -src_h)
         dst = rl.Rectangle(0.0, 0.0, out_w, out_h)
-        if self.terrain_filter == 2.0:
-            rl.set_texture_filter(target.texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
         # Disable alpha blending when drawing terrain to screen - the render target's
         # alpha channel may be < 1.0 after stamp blending, but terrain should be opaque.
         with _blend_custom(rd.RL_ONE, rd.RL_ZERO, rd.RL_FUNC_ADD):
             rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-        if self.terrain_filter == 2.0:
-            rl.set_texture_filter(target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
 
     def _fit_view_window(self, screen_w: float, screen_h: float) -> tuple[float, float]:
         """
@@ -566,12 +506,9 @@ class GroundRenderer(msgspec.Struct):
         inv_scale: float,
         offset: float,
     ) -> None:
-        with _blend_custom_separate(
+        with _terrain_rt_blend(
             rd.RL_ZERO,
             rd.RL_ONE_MINUS_SRC_ALPHA,
-            rd.RL_ZERO,
-            rd.RL_ONE,
-            rd.RL_FUNC_ADD,
             rd.RL_FUNC_ADD,
         ):
             for decal in decals:
@@ -603,12 +540,9 @@ class GroundRenderer(msgspec.Struct):
         inv_scale: float,
         offset: float,
     ) -> None:
-        with _blend_custom_separate(
+        with _terrain_rt_blend(
             rd.RL_SRC_ALPHA,
             rd.RL_ONE_MINUS_SRC_ALPHA,
-            rd.RL_ZERO,
-            rd.RL_ONE,
-            rd.RL_FUNC_ADD,
             rd.RL_FUNC_ADD,
         ):
             for decal in decals:

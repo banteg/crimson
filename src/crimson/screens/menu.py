@@ -82,8 +82,6 @@ def menu_ground_camera(state: GameState) -> Vec2:
 def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer:
     resources = require_runtime_resources(state)
     ground = state.menu_ground
-    screen_width = float(state.config.screen_width)
-    screen_height = float(state.config.screen_height)
     texture_scale = state.config.texture_scale
     explicit_regenerate = bool(regenerate)
     generated_new_terrain = ground is None or explicit_regenerate
@@ -113,8 +111,6 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
             width=1024,
             height=1024,
             texture_scale=texture_scale,
-            screen_width=screen_width,
-            screen_height=screen_height,
         )
         state.menu_ground = ground
         regenerate = True
@@ -123,8 +119,6 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         ground.overlay = overlay
         ground.overlay_detail = detail
         ground.texture_scale = texture_scale
-        ground.screen_width = screen_width
-        ground.screen_height = screen_height
         if scale_changed:
             regenerate = True
     if regenerate:
