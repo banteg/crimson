@@ -964,10 +964,10 @@ class PlanBuilder(msgspec.Struct):
         # `heading == RANDOM_HEADING_SENTINEL` uses a randomized heading.
         final_heading = heading
         if final_heading == RANDOM_HEADING_SENTINEL:
-            final_heading = float(rng.rand() % 628) * 0.01
+            final_heading = float(rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_RANDOM_HEADING) % 628) * 0.01
 
         # Base initialization always consumes one rand() for a transient heading value.
-        creatures[0].heading = float(rng.rand() % 314) * 0.01
+        creatures[0].heading = float(rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_BASE_HEADING) % 314) * 0.01
 
         return cls(
             template_id=template_id,
@@ -2073,6 +2073,12 @@ AI1_BLUE_TINT_TEMPLATES: dict[SpawnId, tuple[CreatureTypeId, float]] = {
     SpawnId.AI1_LIZARD_BLUE_TINT_1C: (CreatureTypeId.LIZARD, 50.0),
 }
 
+AI1_BLUE_TINT_CALLERS: dict[SpawnId, RngCallerStatic] = {
+    SpawnId.AI1_ALIEN_BLUE_TINT_1A: RngCallerStatic.CREATURE_SPAWN_TEMPLATE_AI1_BLUE_TINT_1A,
+    SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B: RngCallerStatic.CREATURE_SPAWN_TEMPLATE_AI1_BLUE_TINT_1B,
+    SpawnId.AI1_LIZARD_BLUE_TINT_1C: RngCallerStatic.CREATURE_SPAWN_TEMPLATE_AI1_BLUE_TINT_1C,
+}
+
 
 @register_template(SpawnId.AI1_ALIEN_BLUE_TINT_1A, SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B, SpawnId.AI1_LIZARD_BLUE_TINT_1C)
 def template_1a_1b_1c_ai1_blue_tint(ctx: PlanBuilder) -> None:
@@ -2084,7 +2090,7 @@ def template_1a_1b_1c_ai1_blue_tint(ctx: PlanBuilder) -> None:
 
     c.type_id, c.health = AI1_BLUE_TINT_TEMPLATES[ctx.template_id]
 
-    tint = float(ctx.rand() % 40) * 0.01 + 0.5
+    tint = float(ctx.rng.rand(caller=AI1_BLUE_TINT_CALLERS[ctx.template_id]) % 40) * 0.01 + 0.5
     apply_tint(c, (tint, tint, 1.0, 1.0))
     c.contact_damage = 5.0
 
@@ -2247,7 +2253,7 @@ def template_36_alien_ai7_orbiter(ctx: PlanBuilder) -> None:
     c.health = 10.0
     c.move_speed = 1.8
     c.reward_value = 150.0
-    tint_g = float(ctx.rand() % 5) * 0.01 + 0.65
+    tint_g = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_AI7_ORBITER_TINT_G) % 5) * 0.01 + 0.65
     apply_tint(c, (0.65, tint_g, 0.95, 1.0))
     c.contact_damage = 40.0
 
@@ -2261,7 +2267,7 @@ def template_37_spider_sp2_ranged_variant(ctx: PlanBuilder) -> None:
     c.move_speed = 3.2
     c.reward_value = 433.0
     apply_tint(c, (1.0, 0.75, 0.1, 1.0))
-    c.size = float((ctx.rand() & 3) + 41)
+    c.size = float((ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANGED_VARIANT_37_SIZE) & 3) + 41)
     c.contact_damage = 10.0
 
 
@@ -2275,7 +2281,7 @@ def template_38_spider_sp1_ai7_timer(ctx: PlanBuilder) -> None:
     c.move_speed = 4.8
     c.reward_value = 433.0
     apply_tint(c, (1.0, 0.75, 0.1, 1.0))
-    c.size = float((ctx.rand() & 3) + 41)
+    c.size = float((ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_AI7_TIMER_38_SIZE) & 3) + 41)
     c.contact_damage = 10.0
 
 
@@ -2289,7 +2295,7 @@ def template_39_spider_sp1_ai7_timer_weak(ctx: PlanBuilder) -> None:
     c.move_speed = 4.8
     c.reward_value = 50.0
     apply_tint(c, (0.8, 0.65, 0.1, 1.0))
-    c.size = float(ctx.rand() % 4 + 26)
+    c.size = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_AI7_TIMER_WEAK_39_SIZE) % 4 + 26)
     c.contact_damage = 10.0
 
 
@@ -2300,9 +2306,9 @@ def template_3d_spider_sp1_random(ctx: PlanBuilder) -> None:
     c.health = 70.0
     c.move_speed = 2.6
     c.reward_value = 120.0
-    tint = float(ctx.rand() % 20) * 0.01 + 0.8
+    tint = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_3D_TINT) % 20) * 0.01 + 0.8
     apply_tint(c, (tint, tint, tint, 1.0))
-    size = float(ctx.rand() % 7 + 45)
+    size = float(ctx.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_3D_SIZE) % 7 + 45)
     c.size = size
     c.contact_damage = size * 0.22
 
