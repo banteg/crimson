@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 import struct
 
+import pytest
+
 from crimson.aim_schemes import AimScheme
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
@@ -1086,11 +1088,87 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     assert len(projectiles) == 1
     assert_float_close(projectiles[0].angle, expected_angle)
     assert len(state.effects.iter_active()) == 1
-    assert [record.caller for record in rng.records_since()[:4]] == [
+    assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_UPDATE_CASING_ANGLE,
         RngCallerStatic.PLAYER_UPDATE_CASING_SPEED,
         RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION,
         RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION_STEP,
+        RngCallerStatic.PLAYER_UPDATE_SHOT_JITTER_DIR,
+        RngCallerStatic.PLAYER_UPDATE_SHOT_JITTER_MAG,
+        RngCallerStatic.PLAYER_UPDATE_SHOT_SFX,
+        RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
+        RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
+    ]
+
+
+@pytest.mark.parametrize(
+    ("weapon_id", "pellet_count", "jitter_caller", "speed_caller"),
+    [
+        (
+            WeaponId.SHOTGUN,
+            12,
+            RngCallerStatic.PLAYER_UPDATE_SHOTGUN_PELLET_JITTER,
+            RngCallerStatic.PLAYER_UPDATE_SHOTGUN_PELLET_SPEED_SCALE,
+        ),
+        (
+            WeaponId.SAWED_OFF_SHOTGUN,
+            12,
+            RngCallerStatic.PLAYER_UPDATE_SAWED_OFF_SHOTGUN_PELLET_JITTER,
+            RngCallerStatic.PLAYER_UPDATE_SAWED_OFF_SHOTGUN_PELLET_SPEED_SCALE,
+        ),
+        (
+            WeaponId.JACKHAMMER,
+            4,
+            RngCallerStatic.PLAYER_UPDATE_JACKHAMMER_PELLET_JITTER,
+            RngCallerStatic.PLAYER_UPDATE_JACKHAMMER_PELLET_SPEED_SCALE,
+        ),
+        (
+            WeaponId.GAUSS_SHOTGUN,
+            6,
+            RngCallerStatic.PLAYER_UPDATE_GAUSS_SHOTGUN_PELLET_JITTER,
+            RngCallerStatic.PLAYER_UPDATE_GAUSS_SHOTGUN_PELLET_SPEED_SCALE,
+        ),
+        (
+            WeaponId.ION_SHOTGUN,
+            8,
+            RngCallerStatic.PLAYER_UPDATE_ION_SHOTGUN_PELLET_JITTER,
+            RngCallerStatic.PLAYER_UPDATE_ION_SHOTGUN_PELLET_SPEED_SCALE,
+        ),
+        (
+            WeaponId.PLASMA_SHOTGUN,
+            14,
+            RngCallerStatic.PLAYER_UPDATE_PLASMA_SHOTGUN_PELLET_JITTER,
+            RngCallerStatic.PLAYER_UPDATE_PLASMA_SHOTGUN_PELLET_SPEED_SCALE,
+        ),
+    ],
+)
+def test_player_fire_weapon_tags_exact_pellet_loop_callers(
+    weapon_id: WeaponId,
+    pellet_count: int,
+    jitter_caller: RngCallerStatic,
+    speed_caller: RngCallerStatic,
+) -> None:
+    pool = ProjectilePool(size=64)
+    rng = RecordingCrand(Crand(0xBEEF))
+    state = GameplayState(projectiles=pool, rng=rng)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon=WeaponSlot(weapon_id=weapon_id, clip_size=99, ammo=99),
+    )
+
+    fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)),
+            dt=0.0,
+            state=state,
+        ),
+    )
+
+    assert len(pool.iter_active()) == pellet_count
+    assert [record.caller for record in rng.records_since()[-(pellet_count * 2) :]] == [
+        caller for _ in range(pellet_count) for caller in (jitter_caller, speed_caller)
     ]
 
 
