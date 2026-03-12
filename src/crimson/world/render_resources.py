@@ -99,7 +99,7 @@ class RenderResources(msgspec.Struct):
 
         base = resources.texture(TextureId.TER_Q1_BASE)
         overlay = resources.texture(TextureId.TER_Q1_OVERLAY)
-        self.set_ground_textures(base=base, overlay=overlay, detail=overlay)
+        self.set_ground_textures(base=base, overlay=overlay, detail=base)
         self.schedule_ground_generation(seed=int(terrain_seed))
         self.fx_textures = FxQueueTextures(
             particles=resources.texture(TextureId.PARTICLES),

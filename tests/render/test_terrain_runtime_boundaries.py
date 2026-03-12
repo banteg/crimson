@@ -66,7 +66,8 @@ def test_apply_terrain_setup_updates_render_cache_without_touching_sim_rng(asset
 
 def test_reset_schedules_terrain_from_sim_seed_without_advancing_rng(assets_dir: Path) -> None:
     world = _build_world(assets_dir)
-    world.render_resources.ground = GroundRenderer(texture=rl.Texture())
+    texture = rl.Texture()
+    world.render_resources.ground = GroundRenderer(texture=texture, overlay=texture, overlay_detail=texture)
 
     world.reset(seed=4242, player_count=1)
 
@@ -78,7 +79,14 @@ def test_reset_schedules_terrain_from_sim_seed_without_advancing_rng(assets_dir:
 
 def test_reset_syncs_world_size_across_sim_and_render_ownership(assets_dir: Path) -> None:
     world = _build_world(assets_dir)
-    world.render_resources.ground = GroundRenderer(texture=rl.Texture(), width=1024, height=1024)
+    texture = rl.Texture()
+    world.render_resources.ground = GroundRenderer(
+        texture=texture,
+        overlay=texture,
+        overlay_detail=texture,
+        width=1024,
+        height=1024,
+    )
     world.world_size = 2048.0
 
     world.reset(seed=4242, player_count=1)

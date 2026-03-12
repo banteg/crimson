@@ -198,6 +198,8 @@ class GroundCorpseDecal(msgspec.Struct):
 
 class GroundRenderer(msgspec.Struct):
     texture: rl.Texture
+    overlay: rl.Texture
+    overlay_detail: rl.Texture
     width: int = TERRAIN_TEXTURE_SIZE
     height: int = TERRAIN_TEXTURE_SIZE
     texture_scale: float = 1.0
@@ -206,15 +208,12 @@ class GroundRenderer(msgspec.Struct):
     texture_failed: bool = False
     screen_width: float | None = None
     screen_height: float | None = None
-    overlay: rl.Texture | None = None
-    overlay_detail: rl.Texture | None = None
     terrain_filter: float = 1.0
     render_target: rl.RenderTexture | None = None
     _debug_stamp_log: list[dict[str, object]] = msgspec.field(default_factory=list)
     _render_target_ready: bool = False
     _pending_generate: bool = False
     _pending_generate_seed: int | None = None
-    _pending_generate_layers: int = 3
     _render_target_warmup_passes: int = 0
 
     def debug_clear_stamp_log(self) -> None:
@@ -251,9 +250,9 @@ class GroundRenderer(msgspec.Struct):
                 continue
 
             seed = self._pending_generate_seed
-            layers = self._pending_generate_layers
+            assert seed is not None, "pending terrain generation requires a seed"
             self._pending_generate = False
-            self.generate_partial(seed=seed, layers=layers)
+            self._generate_texture(seed=seed)
             if self.render_target is None and not self.texture_failed:
                 self._pending_generate = True
                 continue
@@ -298,19 +297,16 @@ class GroundRenderer(msgspec.Struct):
             self.render_target = None
         self._render_target_ready = False
 
-    def generate(self, seed: int | None = None) -> None:
-        self.generate_partial(seed=seed, layers=3)
+    def generate(self, seed: int) -> None:
+        self._pending_generate = False
+        self._pending_generate_seed = None
+        self._generate_texture(seed=seed)
 
-    def schedule_generate(self, seed: int | None = None, *, layers: int = 3) -> None:
-        self._pending_generate_seed = seed
-        self._pending_generate_layers = max(0, min(layers, 3))
+    def schedule_generate(self, seed: int) -> None:
+        self._pending_generate_seed = int(seed)
         self._pending_generate = True
 
-    def generate_partial(self, seed: int | None = None, *, layers: int) -> None:
-        layers = max(0, min(layers, 3))
-        detail_texture = self.overlay_detail
-        if layers >= 3:
-            assert detail_texture is not None, "overlay_detail must be set for terrain layer 3"
+    def _generate_texture(self, seed: int) -> None:
         self.create_render_target()
         if self.render_target is None:
             return
@@ -329,13 +325,9 @@ class GroundRenderer(msgspec.Struct):
                 rd.RL_FUNC_ADD,
                 rd.RL_FUNC_ADD,
             ):
-                if layers >= 1:
-                    self._scatter_texture(self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE)
-                if layers >= 2 and self.overlay is not None:
-                    self._scatter_texture(self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY)
-                if layers >= 3:
-                    assert detail_texture is not None
-                    self._scatter_texture(detail_texture, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL)
+                self._scatter_texture(self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE)
+                self._scatter_texture(self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY)
+                self._scatter_texture(self.overlay_detail, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL)
         rl.end_texture_mode()
         self._set_stamp_filters(point=False)
         self._render_target_ready = True
@@ -634,11 +626,9 @@ class GroundRenderer(msgspec.Struct):
         )
 
     @staticmethod
-    def _set_texture_filters(textures: Iterable[rl.Texture | None], *, point: bool) -> None:
+    def _set_texture_filters(textures: Iterable[rl.Texture], *, point: bool) -> None:
         mode = rl.TextureFilter.TEXTURE_FILTER_POINT if point else rl.TextureFilter.TEXTURE_FILTER_BILINEAR
         for texture in textures:
-            if texture is None:
-                continue
             if texture.id <= 0:
                 continue
             rl.set_texture_filter(texture, mode)

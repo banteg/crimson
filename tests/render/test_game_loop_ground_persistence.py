@@ -112,8 +112,14 @@ def test_capture_gameplay_ground_from_active_view(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
     loop = GameLoopView(state)
 
-    menu_ground = GroundRenderer(texture=rl.Texture())
-    gameplay_ground = GroundRenderer(texture=rl.Texture())
+    menu_texture = rl.Texture()
+    gameplay_texture = rl.Texture()
+    menu_ground = GroundRenderer(texture=menu_texture, overlay=menu_texture, overlay_detail=menu_texture)
+    gameplay_ground = GroundRenderer(
+        texture=gameplay_texture,
+        overlay=gameplay_texture,
+        overlay_detail=gameplay_texture,
+    )
     gameplay_camera = Vec2(-321.25, -456.5)
     gameplay_view = GameplayScreenStub(ground=gameplay_ground, camera=gameplay_camera)
 
@@ -133,8 +139,14 @@ def test_capture_gameplay_ground_from_stacked_view(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
     loop = GameLoopView(state)
 
-    menu_ground = GroundRenderer(texture=rl.Texture())
-    gameplay_ground = GroundRenderer(texture=rl.Texture())
+    menu_texture = rl.Texture()
+    gameplay_texture = rl.Texture()
+    menu_ground = GroundRenderer(texture=menu_texture, overlay=menu_texture, overlay_detail=menu_texture)
+    gameplay_ground = GroundRenderer(
+        texture=gameplay_texture,
+        overlay=gameplay_texture,
+        overlay_detail=gameplay_texture,
+    )
     gameplay_camera = Vec2(-611.0, -322.0)
     gameplay_view = GameplayScreenStub(ground=gameplay_ground, camera=gameplay_camera)
     overlay_view = _OverlayView()
@@ -182,7 +194,8 @@ def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(tmp_path: Path)
 def test_start_survival_does_not_adopt_existing_menu_ground(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
     loop = GameLoopView(state)
-    menu_ground = GroundRenderer(texture=rl.Texture())
+    texture = rl.Texture()
+    menu_ground = GroundRenderer(texture=texture, overlay=texture, overlay_detail=texture)
     adopter = _AdoptMenuGroundView()
     state.menu_ground = menu_ground
 
