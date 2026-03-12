@@ -1359,6 +1359,7 @@ def test_spawn_init_preserves_stale_link_index_for_implicit_ai7_timer() -> None:
         ),
     )
 
+    assert idx is not None
     assert idx == 0
     assert pool.entries[idx].link_index == -1
 
@@ -1385,6 +1386,7 @@ def test_spawn_init_preserves_stale_target_heading_from_recycled_slot() -> None:
         ),
     )
 
+    assert idx is not None
     assert idx == 0
     assert_float_close(pool.entries[idx].heading, float(f32(0.53)))
     assert_float_close(pool.entries[idx].target_heading, 2.5632283687591553)
@@ -1413,6 +1415,7 @@ def test_spawn_init_ai_timer_still_overrides_link_index() -> None:
         ),
     )
 
+    assert idx is not None
     assert idx == 0
     assert pool.entries[idx].link_index == 0
 
@@ -1564,7 +1567,56 @@ def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> 
             contact_damage=4.0,
         ),
     )
+    assert spawned_idx is not None
     assert spawned_idx == 22
+
+
+def test_spawn_init_returns_none_when_pool_is_full() -> None:
+    pool = CreaturePool(size=1)
+    pool.entries[0].active = True
+    pool.entries[0].hp = 1.0
+
+    spawned_idx = pool.spawn_init(
+        CreatureInit(
+            origin_template_id=0,
+            pos=Vec2(12.0, 34.0),
+            heading=0.0,
+            phase_seed=0.0,
+            type_id=CreatureTypeId.ZOMBIE,
+            health=10.0,
+            max_health=10.0,
+            move_speed=1.0,
+            reward_value=1.0,
+            size=10.0,
+            contact_damage=1.0,
+        ),
+    )
+
+    assert spawned_idx is None
+    assert pool.entries[0].active is True
+    assert pool.spawned_count == 0
+
+
+def test_spawn_plan_returns_empty_when_pool_cannot_fit_plan() -> None:
+    rng = Crand(0)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+    pool = CreaturePool(size=1, env=env)
+    pool.entries[0].active = True
+    pool.entries[0].hp = 1.0
+
+    plan = build_spawn_plan(SpawnId.ALIEN_RANDOM_1D, Vec2(100.0, 200.0), 0.0, rng, env)
+
+    mapping, primary = pool.spawn_plan(plan)
+
+    assert mapping == []
+    assert primary is None
+    assert pool.spawned_count == 0
 
 
 def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None:

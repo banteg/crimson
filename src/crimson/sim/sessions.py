@@ -129,10 +129,7 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
         terrain_height=int(ctx.world_size),
     )
     spawn.spawn_cooldown_ms = cooldown
-    ctx.world.creatures.spawn_inits(
-        wave_spawns,
-        rng=state.rng,
-    )
+    ctx.world.creatures.spawn_inits(wave_spawns)
     ctx.rng_marks["after_wave_spawns"] = int(state.rng.state)
 
 def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
@@ -147,10 +144,7 @@ def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
         terrain_height=float(ctx.world_size),
     )
     spawn.spawn_cooldown_ms = cooldown
-    ctx.world.creatures.spawn_inits(
-        spawns,
-        rng=state.rng,
-    )
+    ctx.world.creatures.spawn_inits(spawns)
     ctx.rng_marks["after_rush_spawns"] = int(state.rng.state)
 
 def quest_post_step(ctx: PostStepContext, spawn: QuestSpawnState) -> None:

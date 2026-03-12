@@ -236,7 +236,7 @@ def perk_auto_pick(
         visible_choices = perk_state.choices[:visible_count]
         if not visible_choices:
             break
-        idx = int(state.rng.rand() % len(visible_choices))
+        idx = int(state.rng.rand(caller=RngCallerStatic.REWRITE_PERK_AUTO_PICK_VISIBLE_CHOICE) % len(visible_choices))
         perk_id = visible_choices[idx]
         perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
         picks.append(perk_id)

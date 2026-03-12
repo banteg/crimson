@@ -595,19 +595,14 @@ class CreaturePool:
                     creature.plague_infected = True
                 return
 
-    def _alloc_slot(
-        self,
-        *,
-        rng: CrandLike | None = None,
-    ) -> int:
+    def _alloc_slot(self) -> int | None:
         for i, entry in enumerate(self._entries):
             if not entry.active:
                 return i
-        if not self._entries:
-            raise ValueError("Creature pool has zero entries")
-        if rng is not None:
-            return rng.rand() % len(self._entries)
-        return len(self._entries) - 1
+        return None
+
+    def _free_slot_count(self) -> int:
+        return sum(1 for entry in self._entries if not entry.active)
 
     def _resolve_target_player_index(self, creature: CreatureState, players: list[PlayerState]) -> int:
         player_count = len(players)
@@ -691,12 +686,12 @@ class CreaturePool:
     def spawn_init(
         self,
         init: CreatureInit,
-        *,
-        rng: CrandLike | None = None,
-    ) -> int:
+    ) -> int | None:
         """Materialize a single `CreatureInit` into the runtime pool."""
 
-        idx = self._alloc_slot(rng=rng)
+        idx = self._alloc_slot()
+        if idx is None:
+            return None
         # Reuse the allocated slot so fields that native spawn paths do not touch
         # (e.g. link_index for survival AI7 spiders) retain stale values.
         entry = self._entries[idx]
@@ -719,10 +714,13 @@ class CreaturePool:
     def spawn_inits(
         self,
         inits: Sequence[CreatureInit],
-        *,
-        rng: CrandLike | None = None,
     ) -> list[int]:
-        return [self.spawn_init(init, rng=rng) for init in inits]
+        mapping: list[int] = []
+        for init in inits:
+            idx = self.spawn_init(init)
+            if idx is not None:
+                mapping.append(idx)
+        return mapping
 
     def spawn_plan(
         self,
@@ -738,6 +736,9 @@ class CreaturePool:
           (plan_index_to_pool_index, primary_pool_index_or_none)
         """
 
+        if self._free_slot_count() < len(plan.creatures):
+            return [], None
+
         mapping: list[int] = []
         pending_ai_links: list[int | None] = []
         pending_ai_timers: list[int | None] = []
@@ -745,7 +746,9 @@ class CreaturePool:
 
         # 1) Allocate pool slots for every creature.
         for init in plan.creatures:
-            pool_idx = self._alloc_slot(rng=rng)
+            pool_idx = self._alloc_slot()
+            if pool_idx is None:
+                return [], None
             # Reuse the allocated slot so untouched fields keep native-like stale state.
             entry = self._entries[pool_idx]
             self._apply_init(entry, init)
@@ -857,9 +860,6 @@ class CreaturePool:
         world_height = float(options.world_height)
         fx_queue = options.fx_queue
         fx_queue_rotated = options.fx_queue_rotated
-
-        def rand() -> int:
-            return rng.rand()
 
         spawn_env = env
 
@@ -1561,7 +1561,9 @@ class CreaturePool:
                 (-math.pi / 2.0, RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_1_PHASE_SEED),
                 (math.pi / 2.0, RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_2_PHASE_SEED),
             ):
-                child_idx = self._alloc_slot(rng=rng)
+                child_idx = self._alloc_slot()
+                if child_idx is None:
+                    continue
                 child = msgspec.structs.replace(creature)
                 child.phase_seed = float(int(rng.rand(caller=phase_seed_caller)) & 0xFF)
                 child.heading = _wrap_angle(float(creature.heading) + float(heading_offset))

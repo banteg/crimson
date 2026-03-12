@@ -19,6 +19,7 @@ from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.header_settings import session_settings_from_replay_header
 from ...replay.input_codec import unpack_tick_inputs
+from ...rng_caller_static import RngCallerStatic
 from ...sim.bootstrap import run_explicit_terrain_prelude, run_unlock_terrain_prelude
 from ...sim.hooks import TickResult
 from ...sim.input_providers import ResolvedTick
@@ -286,7 +287,7 @@ class PlaybackDriver:
                 )
                 # Native `quest_start_selected()` burns one `crt_rand()` for
                 # `highscore_record_random_tag` before quest terrain and spawn setup.
-                world.state.rng.rand()
+                world.state.rng.rand(caller=RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
                 quest_terrain = run_explicit_terrain_prelude(
                     world.state.rng,
                     terrain_slots=quest_definition.terrain_slots,
@@ -433,7 +434,7 @@ class PlaybackDriver:
             if draws is None:
                 draws = int(self.inter_tick_rand_draws)
             for _ in range(max(0, int(draws))):
-                state.rng.rand()
+                state.rng.rand(caller=RngCallerStatic.REPLAY_DRIVER_INTER_TICK_DRAW_BY_TICK)
 
     def build_checkpoint(
         self,
@@ -490,7 +491,7 @@ class PlaybackDriver:
         if self.inter_tick_rand_draws_by_tick is None:
             draws = max(0, int(self.inter_tick_rand_draws))
             for _ in range(draws):
-                self.world.state.rng.rand()
+                self.world.state.rng.rand(caller=RngCallerStatic.REPLAY_DRIVER_INTER_TICK_DRAW)
         self._last_tick_rng_rows = tuple(tick_rng_rows)
         return tick_result
 

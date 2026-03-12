@@ -2,22 +2,25 @@ from __future__ import annotations
 
 import datetime as dt
 
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.screens.panels.stats import (
     _is_orbes_volantes_day,
     _stats_menu_easter_roll,
 )
-from grim.rand import Crand
+from grim.rand import Crand, RecordingCrand
 
 
 def test_stats_menu_easter_roll_keeps_existing_value() -> None:
-    rng = Crand(123)
+    rng = RecordingCrand(Crand(123))
     assert _stats_menu_easter_roll(7, rng=rng) == 7
+    assert rng.records_since() == []
 
 
 def test_stats_menu_easter_roll_generates_0_to_31_when_unset() -> None:
-    rng = Crand(123)
+    rng = RecordingCrand(Crand(123))
     roll = _stats_menu_easter_roll(-1, rng=rng)
     assert 0 <= roll < 32
+    assert [record.caller for record in rng.records_since()] == [RngCallerStatic.REWRITE_STATS_MENU_EASTER_ROLL]
 
 
 def test_is_orbes_volantes_day_requires_march_third() -> None:
