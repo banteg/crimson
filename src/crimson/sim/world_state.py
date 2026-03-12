@@ -373,7 +373,6 @@ class WorldState(msgspec.Struct):
             survival_progression_update(
                 self.state,
                 self.players,
-                game_mode=game_mode,
             )
         _mark("ws_after_progression")
         # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.

@@ -251,18 +251,11 @@ def survival_check_level_up(player: PlayerState, perk_state: PerkSelectionState)
 def survival_progression_update(
     state: GameplayState,
     players: list[PlayerState],
-    *,
-    game_mode: GameMode,
-    player_count: int | None = None,
 ) -> None:
     """Advance survival level/perk progression."""
 
     if not players:
         return
-    if player_count is None:
-        player_count = len(players)
-    _ = game_mode
-    _ = player_count
     survival_check_level_up(players[0], state.perk_selection)
 
 
