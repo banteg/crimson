@@ -16,6 +16,7 @@ from ...effects import EffectPool, FxQueue, SpriteEffectPool
 from ...effects_atlas import EffectId
 from ...math_parity import f32
 from ...owner_ref import OwnerRef
+from ...rng_caller_static import RngCallerStatic
 from ..types import (
     SECONDARY_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
@@ -36,6 +37,22 @@ from .spatial_hash import CreatureSpatialHash
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
     from ...gameplay import GameplayState
+
+
+_SECONDARY_PRE_HIT_DECAL_CALLERS = (
+    (
+        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_1,
+        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_1,
+    ),
+    (
+        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_2,
+        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_2,
+    ),
+    (
+        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_3,
+        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_3,
+    ),
+)
 
 
 class SecondarySpawnSpec(msgspec.Struct, frozen=True):
@@ -398,7 +415,10 @@ class SecondaryProjectilePool:
                 if freeze_active:
                     if effects is not None:
                         for _ in range(4):
-                            shard_angle = float(rng.rand() % 612) * 0.01
+                            shard_angle = float(
+                                rng.rand(caller=RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE)
+                                % 612,
+                            ) * 0.01
                             effects.spawn_freeze_shard(
                                 pos=entry.pos,
                                 angle=shard_angle,
@@ -406,10 +426,10 @@ class SecondaryProjectilePool:
                                 detail_preset=int(detail_preset),
                             )
                 elif fx_queue is not None:
-                    for _ in range(3):
+                    for dx_caller, dy_caller in _SECONDARY_PRE_HIT_DECAL_CALLERS:
                         offset = Vec2(
-                            float(rng.rand() % 20 - 10),
-                            float(rng.rand() % 20 - 10),
+                            float(rng.rand(caller=dx_caller) % 20 - 10),
+                            float(rng.rand(caller=dy_caller) % 20 - 10),
                         )
                         fx_queue.add_random(
                             pos=creatures[hit_idx].pos + offset,
@@ -445,10 +465,19 @@ class SecondaryProjectilePool:
                 if freeze_active:
                     if effects is not None:
                         shard_pos = entry.pos
+                        freeze_angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_FREEZE_SHARD_ANGLE
+                        if isinstance(rule, HomingRocketRule):
+                            freeze_angle_caller = (
+                                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_FREEZE_SHARD_ANGLE
+                            )
+                        elif isinstance(rule, RocketMinigunRule):
+                            freeze_angle_caller = (
+                                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_FREEZE_SHARD_ANGLE
+                            )
                         if freeze_shard_target_pos:
                             shard_pos = creatures[hit_idx].pos
                         for _ in range(8):
-                            shard_angle = float(rng.rand() % 612) * 0.01
+                            shard_angle = float(rng.rand(caller=freeze_angle_caller) % 612) * 0.01
                             effects.spawn_freeze_shard(
                                 pos=shard_pos,
                                 angle=shard_angle,
@@ -458,12 +487,20 @@ class SecondaryProjectilePool:
                 else:
                     if fx_queue is not None and extra_decals > 0:
                         center = creatures[hit_idx].pos
+                        angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_ANGLE
+                        radius_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_RADIUS
+                        if isinstance(rule, HomingRocketRule):
+                            angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_ANGLE
+                            radius_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_RADIUS
+                        elif isinstance(rule, RocketMinigunRule):
+                            angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_ANGLE
+                            radius_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_RADIUS
                         for _ in range(int(extra_decals)):
-                            angle = float(rng.rand() % 628) * 0.01
+                            angle = float(rng.rand(caller=angle_caller) % 628) * 0.01
                             if isinstance(rule, HomingRocketRule):
-                                radius = float(rng.rand() & 0x3F)
+                                radius = float(rng.rand(caller=radius_caller) & 0x3F)
                             else:
-                                radius = float(rng.rand() % max(1, int(extra_radius)))
+                                radius = float(rng.rand(caller=radius_caller) % max(1, int(extra_radius)))
                             fx_queue.add_random(
                                 pos=center + Vec2.from_angle(angle) * radius,
                                 rng=rng,
@@ -472,7 +509,9 @@ class SecondaryProjectilePool:
                 if sprite_effects is not None:
                     step = math.tau / 10.0
                     for idx in range(10):
-                        mag = float(rng.rand() % 800) * 0.1
+                        mag = float(
+                            rng.rand(caller=RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG) % 800,
+                        ) * 0.1
                         ang = float(idx) * step
                         velocity = Vec2.from_angle(ang) * mag
                         sprite_effects.spawn(
