@@ -55,8 +55,8 @@ The rewrite exposes the same mechanism via two helpers:
   - Implements the two-pass corpse baking:
     - a “shadow/darken” pass using `ZERO / ONE_MINUS_SRC_ALPHA`
     - a normal alpha blend color pass
-  - Temporarily forces point sampling during both corpse passes, like the original engine.
   - Applies the exe’s small alignment tweaks (`-0.5` shift and `offset = terrain_scale/512`) and rotation offset (`rotation - pi/2`).
+  - Intentional rewrite deviation: corpse atlas frames keep bilinear sampling while baking. The original engine appears to point-sample them, but that looks worse in the port at modern output scales.
 
 ## Terrain filter ("terrainFilter")
 

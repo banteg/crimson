@@ -383,11 +383,13 @@ class GroundRenderer(msgspec.Struct):
         inv_scale = 1.0 / scale
         offset = 2.0 * scale / float(self.width)
         rl.begin_texture_mode(self.render_target)
-        with _temporary_point_filters((bodyset_texture,)):
-            with _maybe_alpha_test(self.alpha_test):
-                if shadow:
-                    self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
-                self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
+        # Intentional rewrite deviation: the classic game appears to point-sample
+        # corpse atlas frames while baking, but bilinear sampling reads better in
+        # the port at modern output scales.
+        with _maybe_alpha_test(self.alpha_test):
+            if shadow:
+                self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
+            self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
         rl.end_texture_mode()
 
         self._render_target_ready = True
