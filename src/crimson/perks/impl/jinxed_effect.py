@@ -38,14 +38,19 @@ def _select_jinxed_accident_target(ctx: PerksUpdateEffectsCtx) -> PlayerState:
     if ctx.state.preserve_bugs:
         return player0
 
-    alive_indices = [idx for idx, player in enumerate(ctx.players) if float(player.health) > 0.0]
-    if not alive_indices:
+    alive_players = [player for player in ctx.players if float(player.health) > 0.0]
+    if not alive_players:
         return player0
-    if len(alive_indices) == 1:
-        return ctx.players[alive_indices[0]]
+    if len(alive_players) == 1:
+        return alive_players[0]
 
-    pick = ctx.state.rng.rand() % len(alive_indices)
-    return ctx.players[alive_indices[pick]]
+    pick = (
+        ctx.state.rng.rand(
+            caller=RngCallerStatic.REWRITE_JINXED_ACCIDENT_TARGET_PICK,
+        )
+        % len(alive_players)
+    )
+    return alive_players[pick]
 
 
 def update_jinxed_timer(ctx: PerksUpdateEffectsCtx) -> None:
