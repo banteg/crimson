@@ -386,7 +386,6 @@ def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
     pool.spawn_shell_casing(
         pos=Vec2(10.0, 20.0),
         aim_heading=0.0,
-        weapon_flags=1,
         draws=(0, 0, 0, 0),
         detail_preset=5,
     )

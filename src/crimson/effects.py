@@ -770,14 +770,10 @@ class EffectPool:
         *,
         pos: Vec2,
         aim_heading: float,
-        weapon_flags: int,
         draws: tuple[int, int, int, int],
         detail_preset: int,
     ) -> None:
-        """Port of the casing spawn in `player_update` (effect_id 0x12)."""
-
-        if (int(weapon_flags) & 0x1) == 0:
-            return
+        """Port of the casing spawn in native gameplay fire (`effect_id 0x12`)."""
 
         angle_draw, speed_draw, rotation_draw, rotation_step_draw = draws
 

@@ -15,6 +15,7 @@ from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
+from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, weapon_entry_for_projectile_type_id
@@ -175,7 +176,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     input_state = ctx.input_state
     dt = float(ctx.dt)
     state = ctx.state
-    detail_preset = int(ctx.detail_preset)
     creatures = ctx.creatures
     players = ctx.players
     force_pre_swap_fire_gate = bool(ctx.force_pre_swap_fire_gate)
@@ -244,21 +244,21 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
 
     muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
     weapon_flags = int(weapon.flags or 0)
-    shell_casing_draws = (0, 0, 0, 0)
     if weapon_flags & 0x1:
+        # Native gameplay fire uses four exact `player_update` RNG sites for
+        # the casing effect before the later shot-angle jitter work.
         shell_casing_draws = (
-            state.rng.rand(),
-            state.rng.rand(),
-            state.rng.rand(),
-            state.rng.rand(),
+            state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_CASING_ANGLE),
+            state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_CASING_SPEED),
+            state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION),
+            state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION_STEP),
         )
-    state.effects.spawn_shell_casing(
-        pos=muzzle,
-        aim_heading=aim_heading,
-        weapon_flags=weapon_flags,
-        draws=shell_casing_draws,
-        detail_preset=detail_preset,
-    )
+        state.effects.spawn_shell_casing(
+            pos=muzzle,
+            aim_heading=aim_heading,
+            draws=shell_casing_draws,
+            detail_preset=int(ctx.detail_preset),
+        )
 
     shot_angle = _native_shot_angle_with_jitter(
         aim=aim,

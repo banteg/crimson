@@ -30,7 +30,7 @@ from crimson.weapon_runtime import (
 )
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from grim.rand import Crand
+from grim.rand import Crand, RecordingCrand
 from tests.support.factories import make_creature_state as _creature
 from tests.support.factories import make_projectile_update_options
 from tests.support.helpers import ScriptedCrand, assert_float_close
@@ -1035,10 +1035,9 @@ def test_player_heading_approach_target_spills_scaled_product_to_float32() -> No
 
 def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     pool = ProjectilePool(size=8)
-    state = GameplayState(projectiles=pool)
-
     seed = 0xBEEF
-    state.rng.srand(seed)
+    rng = RecordingCrand(Crand(seed))
+    state = GameplayState(projectiles=pool, rng=rng)
 
     player = PlayerState(
         index=0,
@@ -1051,8 +1050,8 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     aim_y = 100.0
 
     expected_rng = Crand(seed)
-    # Weapons with `flags & 0x1` spawn the casing effect before aim jitter, which
-    # consumes 4 CRT rand() calls in the native firing path.
+    # Native gameplay fire uses four exact `player_update` casing draws before
+    # the later shot-angle jitter work.
     for _ in range(4):
         expected_rng.rand()
     rand_dir = expected_rng.rand()
@@ -1086,6 +1085,13 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     projectiles = pool.iter_active()
     assert len(projectiles) == 1
     assert_float_close(projectiles[0].angle, expected_angle)
+    assert len(state.effects.iter_active()) == 1
+    assert [record.caller for record in rng.records_since()[:4]] == [
+        RngCallerStatic.PLAYER_UPDATE_CASING_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_CASING_SPEED,
+        RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION,
+        RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION_STEP,
+    ]
 
 
 def test_player_update_hot_tempered_spawns_ring() -> None:
