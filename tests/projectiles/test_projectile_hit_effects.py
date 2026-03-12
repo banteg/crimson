@@ -10,6 +10,7 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.factories import make_projectile_update_options
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
@@ -40,7 +41,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
         ),
     )
 
-    assert runtime_state.sfx_queue == ["sfx_explosion_medium", "sfx_shockwave"]
+    assert runtime_state.sfx_queue == [SfxId.EXPLOSION_MEDIUM, SfxId.SHOCKWAVE]
 
     rings = [entry for entry in runtime_state.effects.iter_active() if int(entry.effect_id) == 1]
     assert len(rings) == 2
@@ -196,7 +197,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
 
 def test_ion_hit_effects_tag_exact_native_callers() -> None:
     effects = EffectPool(size=64)
-    sfx_queue: list[str] = []
+    sfx_queue: list[SfxId] = []
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     _spawn_ion_hit_effects(

@@ -4,6 +4,7 @@ import math
 
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 
 from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
@@ -23,8 +24,8 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
         return
 
     owner = ctx.owner_ref_for_player_projectiles(ctx.state, ctx.player.index)
-    ctx.state.sfx_queue.append("sfx_autorifle_fire")
-    ctx.state.sfx_queue.append("sfx_plasmaminigun_fire")
+    ctx.state.sfx_queue.append(SfxId.AUTORIFLE_FIRE)
+    ctx.state.sfx_queue.append(SfxId.PLASMAMINIGUN_FIRE)
 
     aim_heading = float(ctx.player.aim_heading)
     origin_pos = ctx.player_pos_before_move

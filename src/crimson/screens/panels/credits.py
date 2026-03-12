@@ -7,6 +7,7 @@ from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...debug import debug_enabled
@@ -268,7 +269,7 @@ class CreditsView:
         self._secret_button = UiButtonState("Secret", force_wide=False)
 
         if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
+            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
         self._is_open = True
 
     def close(self) -> None:
@@ -420,11 +421,11 @@ class CreditsView:
 
             if "o" in line.text:
                 if (line.flags & _FLAG_CLICKED) == 0 and self.state.audio is not None:
-                    play_sfx(self.state.audio, "sfx_ui_bonus", rng=self.state.rng)
+                    play_sfx(self.state.audio, SfxId.UI_BONUS)
                 line.flags |= _FLAG_CLICKED
             else:
                 if _credits_line_clear_flag(self._lines, index) and self.state.audio is not None:
-                    play_sfx(self.state.audio, "sfx_trooper_inpain_01", rng=self.state.rng)
+                    play_sfx(self.state.audio, SfxId.TROOPER_INPAIN_01)
             return
 
     def _update_secret_unlock(self) -> None:
@@ -464,7 +465,7 @@ class CreditsView:
         interactive = self._timeline_ms >= self._timeline_max_ms
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("back_to_previous")
             return
 
@@ -499,7 +500,7 @@ class CreditsView:
             click=click,
         ):
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("back_to_previous")
             return
 
@@ -519,7 +520,7 @@ class CreditsView:
                 click=click,
             ):
                 if self.state.audio is not None:
-                    play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                    play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
                 self._begin_close_transition("open_alien_zookeeper")
                 return
 

@@ -33,6 +33,7 @@ from crimson.weapon_runtime import (
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
+from grim.sfx_map import SfxId
 from tests.support.factories import make_creature_state as _creature
 from tests.support.factories import make_projectile_update_options
 from tests.support.helpers import ScriptedCrand, assert_float_close
@@ -103,7 +104,7 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker)
 
     assert player.low_health_timer == 1.0
     assert len(state.sfx_queue) == 1
-    assert state.sfx_queue[0] in {"sfx_bloodspill_01", "sfx_bloodspill_02"}
+    assert state.sfx_queue[0] in {SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02}
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL,
     ]

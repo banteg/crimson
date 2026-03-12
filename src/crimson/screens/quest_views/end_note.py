@@ -5,6 +5,7 @@ from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
@@ -288,7 +289,7 @@ class EndNoteView:
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
         self._closing = True
         self._close_action = action
 

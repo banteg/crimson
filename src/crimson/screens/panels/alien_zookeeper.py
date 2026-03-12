@@ -11,6 +11,7 @@ from grim.fonts.small import (
 )
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
@@ -279,7 +280,7 @@ class AlienZooKeeperView:
                 continue
 
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_clink_01", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_CLINK_01)
 
             if self._selected_index == -1:
                 self._selected_index = index
@@ -308,7 +309,7 @@ class AlienZooKeeperView:
             self._score += 1
             self._timer_ms += _MATCH_TIMER_BONUS_MS
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_bonus", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BONUS)
             return
 
     def update(self, dt: float) -> None:
@@ -338,7 +339,7 @@ class AlienZooKeeperView:
                 if self._timer_ms <= 0:
                     self._timer_ms = 0
                     if self.state.audio is not None:
-                        play_sfx(self.state.audio, "sfx_trooper_die_01", rng=self.state.rng)
+                        play_sfx(self.state.audio, SfxId.TROOPER_DIE_01)
             elif self._timer_ms < 0:
                 self._timer_ms = 0
 
@@ -347,7 +348,7 @@ class AlienZooKeeperView:
         interactive = self._timeline_ms >= self._timeline_max_ms
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("open_statistics")
             return
         if not interactive:
@@ -373,7 +374,7 @@ class AlienZooKeeperView:
             click=click,
         ):
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._reset_state()
             return
 
@@ -387,7 +388,7 @@ class AlienZooKeeperView:
             click=click,
         ):
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("open_statistics")
             return
 

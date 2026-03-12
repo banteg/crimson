@@ -16,6 +16,7 @@ from grim.assets import RuntimeResources
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 
 
 class _PauseBackgroundStub:
@@ -127,7 +128,7 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, quest_failed_stat
 
     assert state.quest_fail_retry_count == 3
     assert state.pending_quest_level == QuestLevel(5, 10)
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == [SfxId.UI_BUTTONCLICK]
     assert view.take_action() is None
     action = None
     for _ in range(120):
@@ -153,7 +154,7 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, quest_failed_state, mocker
     view.update(0.016)
 
     assert state.quest_fail_retry_count == 0
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == [SfxId.UI_BUTTONCLICK]
     assert view.take_action() is None
     action = None
     for _ in range(120):
@@ -179,7 +180,7 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_fai
     view.update(0.016)
 
     assert state.quest_fail_retry_count == 0
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == [SfxId.UI_BUTTONCLICK]
     assert view.take_action() is None
     action = None
     for _ in range(120):

@@ -8,6 +8,7 @@ from crimson.player_damage import player_take_damage
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -118,7 +119,7 @@ def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None
     assert applied == 100.0
     assert player.health == 0.0
     assert player.death_timer == 16.0 - 0.1 * 28.0
-    assert state.sfx_queue == ["sfx_trooper_die_01"]
+    assert state.sfx_queue == [SfxId.TROOPER_DIE_01]
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_TAKE_DAMAGE_HIGHLANDER,
         RngCallerStatic.PLAYER_TAKE_DAMAGE_DEATH_SFX,
@@ -138,7 +139,7 @@ def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> N
     assert applied == 100.0
     assert player.health == 0.0
     assert player.death_timer == 16.0
-    assert state.sfx_queue == ["sfx_trooper_inpain_01"]
+    assert state.sfx_queue == [SfxId.TROOPER_INPAIN_01]
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_TAKE_DAMAGE_HIGHLANDER,
         RngCallerStatic.PLAYER_TAKE_DAMAGE_PAIN_SFX,
@@ -178,7 +179,7 @@ def test_player_take_damage_uses_target_player_alive_guard_by_default() -> None:
     assert applied == 10.0
     assert player2.health == -5.0
     assert player2.death_timer == 16.0 - 0.1 * 28.0
-    assert state.sfx_queue == ["sfx_trooper_die_01"]
+    assert state.sfx_queue == [SfxId.TROOPER_DIE_01]
 
 
 def test_player_take_damage_preserve_bugs_uses_player1_alive_guard() -> None:

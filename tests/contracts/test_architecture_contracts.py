@@ -384,8 +384,8 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
 
     # SFX only materialize when the presentation plan is explicitly applied
     audio_bridge.apply_plan(plan=plan, apply_audio=True)
-    sfx_played = [str(call.args[1]) for call in play_sfx.call_args_list]
-    assert sfx_played == list(plan.sfx_keys)
+    sfx_played = [call.args[1] for call in play_sfx.call_args_list]
+    assert sfx_played == list(plan.sfx)
 
 
 def test_contract_6_shared_batch_apply_separates_deterministic_and_output_phases() -> None:
@@ -447,9 +447,9 @@ def test_contract_9_post_apply_reactions_are_shared() -> None:
     replay_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._apply_post_apply_reaction)
     world_source = inspect.getsource(standalone_tick_harness_module.StandaloneTickHarness._apply_tick_batch)
 
-    assert 'play_sfx("sfx_questhit")' in helper_source
+    assert 'play_sfx(SfxId.QUESTHIT)' in helper_source
     assert "PerkPickCommand" not in gameplay_source
-    assert 'play_sfx("sfx_ui_bonus")' not in gameplay_source
+    assert 'play_sfx(SfxId.UI_BONUS)' not in gameplay_source
     assert "apply_post_apply_reaction(" in replay_source
     assert "apply_post_apply_reaction(" in world_source
 

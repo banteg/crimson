@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.sfx_map import SfxId
+
 from ...math_parity import f32
 from ...rng_caller_static import RngCallerStatic
 from ...sim.state_types import PlayerState
@@ -125,7 +127,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         creature.hp = -1.0
         creature.lifecycle_stage = float(creature.lifecycle_stage) - ctx.dt * 20.0
         _award_experience_from_reward(ctx, reward_value=float(creature.reward_value))
-        ctx.state.sfx_queue.append("sfx_trooper_inpain_01")
+        ctx.state.sfx_queue.append(SfxId.TROOPER_INPAIN_01)
 
 
 HOOKS = PerkHooks(

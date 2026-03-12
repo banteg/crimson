@@ -6,6 +6,7 @@ from grim.audio import play_sfx
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 
 from ...game.types import GameState
 from ...perks import PerkId
@@ -276,7 +277,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
         ):
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("back_to_previous")
 
     def _hovered_perk_id(self) -> PerkId | None:

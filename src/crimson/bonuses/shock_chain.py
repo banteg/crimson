@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 
 from ..creatures.lifecycle import creature_lifecycle_is_alive
 from ..owner_ref import OwnerRef
@@ -52,4 +53,4 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
         owner_player_index=ctx.player.index,
     )
     ctx.state.bonus_spawn_guard = False
-    ctx.state.sfx_queue.append("sfx_shock_hit_01")
+    ctx.state.sfx_queue.append(SfxId.SHOCK_HIT_01)

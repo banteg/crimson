@@ -8,6 +8,7 @@ import msgspec
 
 from grim.geom import Vec2
 from grim.rand import CrandLike
+from grim.sfx_map import SfxId
 
 from ..bonuses.freeze import freeze_bonus_active
 from ..effects import FxQueue
@@ -23,24 +24,24 @@ from .world_defs import BEAM_TYPES
 
 _MAX_HIT_SFX_PER_FRAME = 4
 _BULLET_HIT_SFX = (
-    "sfx_bullet_hit_01",
-    "sfx_bullet_hit_02",
-    "sfx_bullet_hit_03",
-    "sfx_bullet_hit_04",
-    "sfx_bullet_hit_05",
-    "sfx_bullet_hit_06",
+    SfxId.BULLET_HIT_01,
+    SfxId.BULLET_HIT_02,
+    SfxId.BULLET_HIT_03,
+    SfxId.BULLET_HIT_04,
+    SfxId.BULLET_HIT_05,
+    SfxId.BULLET_HIT_06,
 )
 
 
 class PresentationStepCommands(msgspec.Struct):
     trigger_game_tune: bool = False
-    sfx_keys: list[str] = msgspec.field(default_factory=list)
+    sfx: list[SfxId] = msgspec.field(default_factory=list)
 
 
 class PresentationAudioSink(Protocol):
     def trigger_game_tune(self) -> str | None: ...
 
-    def play_sfx_resolved(self, key: str | None) -> None: ...
+    def play_sfx(self, sfx: SfxId) -> None: ...
 
 
 def plan_player_audio_sfx(
@@ -49,8 +50,8 @@ def plan_player_audio_sfx(
     prev_shot_seq: int,
     prev_reload_active: bool,
     prev_reload_timer: float,
-) -> list[str]:
-    keys: list[str] = []
+) -> list[SfxId]:
+    sfx: list[SfxId] = []
 
     weapon = WEAPON_BY_ID[player.weapon.weapon_id]
 
@@ -58,25 +59,18 @@ def plan_player_audio_sfx(
         if float(player.fire_bullets_timer) > 0.0:
             fire_bullets = WEAPON_BY_ID[WeaponId.FIRE_BULLETS]
             plasma_minigun = WEAPON_BY_ID[WeaponId.PLASMA_MINIGUN]
-            keys.append(fire_bullets.fire_sound)
-            keys.append(plasma_minigun.fire_sound)
+            sfx.append(fire_bullets.fire_sound)
+            sfx.append(plasma_minigun.fire_sound)
         else:
-            keys.append(weapon.fire_sound)
+            sfx.append(weapon.fire_sound)
 
     reload_active = player.weapon.reload_active
     reload_timer = float(player.weapon.reload_timer)
     reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
     if reload_started:
-        keys.append(weapon.reload_sound)
+        sfx.append(weapon.reload_sound)
 
-    return keys
-
-
-def _rand_choice(rng: CrandLike, options: tuple[str, ...]) -> str | None:
-    if not options:
-        return None
-    idx = rng.rand() % len(options)
-    return options[idx]
+    return sfx
 
 
 def _hit_sfx_for_type(
@@ -84,15 +78,15 @@ def _hit_sfx_for_type(
     *,
     beam_types: frozenset[int],
     rng: CrandLike,
-) -> str | None:
+) -> SfxId:
     _ = beam_types
     ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).ammo_class
     if ammo_class == 4:
-        return "sfx_shock_hit_01"
+        return SfxId.SHOCK_HIT_01
     return _BULLET_HIT_SFX[rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX) % len(_BULLET_HIT_SFX)]
 
 
-def plan_hit_sfx_keys(
+def plan_hit_sfx(
     hits: list[ProjectileHit],
     *,
     game_mode: GameMode,
@@ -100,14 +94,14 @@ def plan_hit_sfx_keys(
     game_tune_started: bool,
     rng: CrandLike,
     beam_types: frozenset[int] = BEAM_TYPES,
-) -> tuple[bool, list[str]]:
+) -> tuple[bool, list[SfxId]]:
     if not hits:
         return False, []
 
     trigger_game_tune = False
     local_game_tune_started = bool(game_tune_started)
     end = min(len(hits), _MAX_HIT_SFX_PER_FRAME)
-    keys: list[str] = []
+    sfx: list[SfxId] = []
     for idx in range(0, end):
         if (not demo_mode_active) and game_mode != GameMode.RUSH and (not local_game_tune_started):
             # Mirrors `projectile_update`: first eligible hit calls
@@ -120,10 +114,8 @@ def plan_hit_sfx_keys(
             _ = rng.rand(caller=RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
             continue
         type_id = int(hits[idx].type_id)
-        key = _hit_sfx_for_type(type_id, beam_types=beam_types, rng=rng)
-        if key is not None:
-            keys.append(key)
-    return trigger_game_tune, keys
+        sfx.append(_hit_sfx_for_type(type_id, beam_types=beam_types, rng=rng))
+    return trigger_game_tune, sfx
 
 
 class ProjectileDecalPostCtx(msgspec.Struct, frozen=True):
@@ -327,7 +319,7 @@ def plan_world_presentation_step(
     fx_queue: FxQueue,
     hits: list[ProjectileHit],
     pickups: list[BonusPickupEvent],
-    event_sfx: list[str],
+    event_sfx: list[SfxId],
     prev_audio: Sequence[tuple[int, bool, float]],
     prev_perk_pending: int,
     game_mode: GameMode,
@@ -338,11 +330,11 @@ def plan_world_presentation_step(
     gore_disabled: int,
     game_tune_started: bool,
     trigger_game_tune: bool | None = None,
-    hit_sfx: Sequence[str] | None = None,
+    hit_sfx: Sequence[SfxId] | None = None,
 ) -> PresentationStepCommands:
     commands = PresentationStepCommands()
     if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
-        commands.sfx_keys.append("sfx_ui_levelup")
+        commands.sfx.append(SfxId.UI_LEVELUP)
     if trigger_game_tune is None and hit_sfx is None:
         if hits:
             queue_projectile_decals(
@@ -358,24 +350,24 @@ def plan_world_presentation_step(
                 if (not bool(demo_mode_active)) and game_mode != GameMode.RUSH and (not bool(game_tune_started)):
                     commands.trigger_game_tune = True
             else:
-                commands.trigger_game_tune, planned_hit_sfx = plan_hit_sfx_keys(
+                commands.trigger_game_tune, planned_hit_sfx = plan_hit_sfx(
                     hits,
                     game_mode=game_mode,
                     demo_mode_active=bool(demo_mode_active),
                     game_tune_started=bool(game_tune_started),
                     rng=rng,
                 )
-                commands.sfx_keys.extend(planned_hit_sfx)
+                commands.sfx.extend(planned_hit_sfx)
     else:
         if trigger_game_tune is not None:
             commands.trigger_game_tune = bool(trigger_game_tune)
         if hit_sfx is not None:
-            commands.sfx_keys.extend(str(key) for key in hit_sfx)
+            commands.sfx.extend(hit_sfx)
     for idx, player in enumerate(players):
         if idx >= len(prev_audio):
             continue
         prev_shot_seq, prev_reload_active, prev_reload_timer = prev_audio[idx]
-        commands.sfx_keys.extend(
+        commands.sfx.extend(
             plan_player_audio_sfx(
                 player,
                 prev_shot_seq=int(prev_shot_seq),
@@ -384,8 +376,8 @@ def plan_world_presentation_step(
             ),
         )
     if pickups:
-        commands.sfx_keys.extend("sfx_ui_bonus" for _ in pickups)
-    commands.sfx_keys.extend(str(key) for key in event_sfx[:4])
+        commands.sfx.extend(SfxId.UI_BONUS for _ in pickups)
+    commands.sfx.extend(event_sfx[:4])
     return commands
 
 
@@ -399,5 +391,5 @@ def apply_presentation_plan(
         return
     if bool(plan.trigger_game_tune):
         audio_sink.trigger_game_tune()
-    for key in plan.sfx_keys:
-        audio_sink.play_sfx_resolved(str(key))
+    for sfx in plan.sfx:
+        audio_sink.play_sfx(sfx)

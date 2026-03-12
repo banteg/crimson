@@ -8,6 +8,7 @@ from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
@@ -138,7 +139,7 @@ class StatisticsMenuView:
             if self.state.audio.music.active_track != "shortie_monk":
                 stop_music(self.state.audio)
             play_music(self.state.audio, "shortie_monk")
-            play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
+            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
         self._is_open = True
 
     def close(self) -> None:
@@ -162,7 +163,7 @@ class StatisticsMenuView:
         self._btn_credits = UiButtonState("Credits", force_wide=True)
         self._btn_back = UiButtonState("Back", force_wide=False)
         if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
+            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
     def take_action(self) -> str | None:
         self._assert_open()
@@ -221,7 +222,7 @@ class StatisticsMenuView:
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("back_to_menu")
             return
 
@@ -252,28 +253,28 @@ class StatisticsMenuView:
         button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
         if _update_button(self._btn_high_scores, pos=button_base.offset(dy=_BUTTON_STEP_Y * 0.0 * scale)):
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("open_high_scores")
             return
         if _update_button(self._btn_weapons, pos=button_base.offset(dy=_BUTTON_STEP_Y * 1.0 * scale)):
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("open_weapon_database")
             return
         if _update_button(self._btn_perks, pos=button_base.offset(dy=_BUTTON_STEP_Y * 2.0 * scale)):
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("open_perk_database")
             return
         if _update_button(self._btn_credits, pos=button_base.offset(dy=_BUTTON_STEP_Y * 3.0 * scale)):
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("open_credits")
             return
 
         if _update_button(self._btn_back, pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale)):
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("back_to_menu")
             return
 

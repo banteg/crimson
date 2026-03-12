@@ -218,7 +218,7 @@ def build_checkpoint(
         hit_count=len(hits),
         pickup_count=len(pickups),
         sfx_count=len(sfx),
-        sfx_head=[str(key) for key in sfx[:4]],
+        sfx_head=[key.value for key in sfx[:4]],
     )
 
     typo_snapshot: ReplayTypoSnapshot | None = None

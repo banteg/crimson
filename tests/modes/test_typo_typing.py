@@ -13,6 +13,7 @@ from crimson.typo.runtime import apply_typo_command, typo_input_transform, typo_
 from crimson.typo.state import reset_typo_state
 from crimson.typo.typing import TYPING_MAX_CHARS, TypingBuffer
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand
 
 
@@ -124,7 +125,7 @@ def test_typo_char_command_tags_exact_typeclick_caller(make_world_state) -> None
 
     apply_typo_command(world, TypoCharCommand(player_index=0, ch="a"))
 
-    assert world.state.sfx_queue == ["sfx_ui_typeclick_01"]
+    assert world.state.sfx_queue == [SfxId.UI_TYPECLICK_01]
     assert [record.caller for record in world.state.rng.records_since()] == [
         RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_CHAR,
     ]
@@ -138,7 +139,7 @@ def test_typo_backspace_command_tags_exact_typeclick_caller(make_world_state) ->
 
     apply_typo_command(world, TypoBackspaceCommand(player_index=0))
 
-    assert world.state.sfx_queue == ["sfx_ui_typeclick_01"]
+    assert world.state.sfx_queue == [SfxId.UI_TYPECLICK_01]
     assert world.state.typo.typing.text == "a"
     assert [record.caller for record in world.state.rng.records_since()] == [
         RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_BACKSPACE,

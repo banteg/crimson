@@ -9,6 +9,7 @@ from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...debug import debug_enabled
@@ -151,7 +152,7 @@ class QuestsMenuView:
             if self._timeline_ms >= self._timeline_max_ms:
                 self.state.menu_sign_locked = True
                 if (not self._panel_open_sfx_played) and (self.state.audio is not None):
-                    play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
+                    play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
                     self._panel_open_sfx_played = True
 
         config = self.state.config
@@ -647,7 +648,7 @@ class QuestsMenuView:
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
         self._closing = True
         self._close_action = action
 

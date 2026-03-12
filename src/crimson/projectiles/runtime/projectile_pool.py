@@ -8,6 +8,7 @@ import msgspec
 
 from grim.geom import Vec2
 from grim.rand import CrandLike
+from grim.sfx_map import SfxId
 
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
@@ -203,7 +204,7 @@ class ProjectilePool:
             return 0 <= perk_idx < len(perk_counts) and int(perk_counts[perk_idx]) > 0
 
         effects: EffectPool | None = runtime_state.effects
-        sfx_queue: MutableSequence[str] | None = runtime_state.sfx_queue
+        sfx_queue: MutableSequence[SfxId] | None = runtime_state.sfx_queue
 
         hits: list[ProjectileHit] = []
         margin = 64.0

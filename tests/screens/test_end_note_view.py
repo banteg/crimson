@@ -7,6 +7,7 @@ from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
 from crimson.screens.quest_views import EndNoteView
 from grim.assets import RuntimeResources
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 
 
 def _texture_stub() -> rl.Texture:
@@ -43,7 +44,7 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
     mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE))
     view.update(0.1)
 
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == [SfxId.UI_BUTTONCLICK]
     assert view.take_action() is None
 
     mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda _key: False)

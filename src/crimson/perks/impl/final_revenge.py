@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 
 from ...creatures.damage_types import CreatureDamageType
 from ...effects import FxQueue
@@ -67,27 +68,30 @@ def apply_final_revenge_on_player_death(
             dt=float(dt),
             players=players,
             rng=state.rng,
+            preserve_bugs=bool(state.preserve_bugs),
             effects=state.effects,
             detail_preset=int(detail_preset),
-            on_lethal=lambda death_sfx_key, death_creature_idx=death_creature_idx: deaths.append(
-                creatures.handle_death(
-                    int(death_creature_idx),
-                    state=state,
-                    players=players,
-                    rng=state.rng,
-                    dt=float(dt),
-                    detail_preset=int(detail_preset),
-                    world_width=float(world_size),
-                    world_height=float(world_size),
-                    fx_queue=fx_queue,
-                    death_sfx_key=death_sfx_key,
+            on_lethal=lambda death_sfx, death_creature_idx=death_creature_idx: (
+                deaths.append(
+                    creatures.handle_death(
+                        int(death_creature_idx),
+                        state=state,
+                        players=players,
+                        rng=state.rng,
+                        dt=float(dt),
+                        detail_preset=int(detail_preset),
+                        world_width=float(world_size),
+                        world_height=float(world_size),
+                        fx_queue=fx_queue,
+                    ),
                 ),
+                state.sfx_queue.extend(death_sfx),
             ),
         )
 
     state.bonus_spawn_guard = prev_guard
-    state.sfx_queue.append("sfx_explosion_large")
-    state.sfx_queue.append("sfx_shockwave")
+    state.sfx_queue.append(SfxId.EXPLOSION_LARGE)
+    state.sfx_queue.append(SfxId.SHOCKWAVE)
 
 
 HOOKS = PerkHooks(

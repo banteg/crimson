@@ -9,6 +9,7 @@ import msgspec
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand
+from grim.sfx_map import SfxId
 
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
@@ -193,7 +194,7 @@ class SecondaryProjectilePool:
         freeze_active = False
         effects: EffectPool | None = None
         sprite_effects: SpriteEffectPool | None = None
-        sfx_queue: MutableSequence[str] | None = None
+        sfx_queue: MutableSequence[SfxId] | None = None
         if runtime_state is not None:
             rng = runtime_state.rng
             freeze_active = float(runtime_state.bonuses.freeze) > 0.0
@@ -354,7 +355,7 @@ class SecondaryProjectilePool:
                         shots_hit[owner_player_index] += 1
 
                 if sfx_queue is not None:
-                    sfx_queue.append("sfx_explosion_medium")
+                    sfx_queue.append(SfxId.EXPLOSION_MEDIUM)
 
                 det_scale = 0.5
                 damage_speed_mul = 0.0

@@ -17,6 +17,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand, assert_rng_progression
 
 
@@ -63,6 +64,74 @@ def test_projectile_kill_awards_xp_same_step() -> None:
     assert len(events.deaths) == 1
     assert isinstance(events.deaths[0], CreatureDeath)
     assert events.deaths[0].xp_awarded == 10
+
+
+@pytest.mark.parametrize(
+    ("preserve_bugs", "expected_sfx"),
+    (
+        (False, SfxId.TROOPER_DIE_01),
+        (True, SfxId.TROOPER_INPAIN_01),
+    ),
+)
+def test_world_step_trooper_death_sfx_respects_preserve_bugs(
+    mocker,
+    preserve_bugs: bool,
+    expected_sfx: SfxId,
+) -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+        preserve_bugs=preserve_bugs,
+    )
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
+
+    creature = world.creatures.entries[0]
+    creature.active = True
+    creature.type_id = CreatureTypeId.TROOPER
+    creature.pos = Vec2(256.0, 256.0)
+    creature.flags = CreatureFlags(0)
+    creature.hp = 25.0
+    creature.max_hp = 25.0
+    creature.size = 50.0
+    creature.reward_value = 0.0
+    creature.lifecycle_stage = 16.0
+
+    rng = ScriptedCrand(3, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    world.state.rng = rng
+    before_calls = rng.calls
+    before_state = rng.state
+
+    def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
+        apply_creature_damage = world.state.projectiles.creature_damage_applier
+        assert apply_creature_damage is not None
+        apply_creature_damage(0, 1000.0, CreatureDamageType.BULLET, Vec2(), OwnerRef.from_player(0))
+        return []
+
+    mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)
+    events = world.step(
+        0.1,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        auto_pick_perks=False,
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+
+    assert events.sfx == [expected_sfx]
+    assert_rng_progression(
+        rng,
+        before_calls=before_calls,
+        before_state=before_state,
+        expected_draws=2,
+        expected_after_state=3,
+    )
 
 
 def test_world_step_invalid_creature_type_id_fails_fast() -> None:
@@ -148,7 +217,10 @@ def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
     # Native detonation follow-up re-enters creature death handling for side effects,
     # but does not perform a second death-SFX random pick.
     assert len(events.deaths) == 2
-    assert sum(str(key).startswith("sfx_alien_die_") for key in events.sfx) == 1
+    assert sum(
+        key in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04}
+        for key in events.sfx
+    ) == 1
 
 
 def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> None:
@@ -206,7 +278,10 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
     )
 
     assert record_death.call_count == 1
-    assert any(str(key).startswith("sfx_alien_die_") for key in events.sfx)
+    assert any(
+        key in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04}
+        for key in events.sfx
+    )
 
 
 def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
@@ -230,7 +305,7 @@ def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
 
     def _fake_update(*args: object, **kwargs: object) -> CreatureUpdateResult:
         _ = args, kwargs
-        return CreatureUpdateResult(deaths=(death,), sfx=("plague_contact",))
+        return CreatureUpdateResult(deaths=(death,), sfx=(SfxId.UI_PANELCLICK,))
 
     mocker.patch.object(world.creatures, "update", side_effect=_fake_update)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
@@ -251,7 +326,6 @@ def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
     )
 
     assert len(events.deaths) == 1
-    assert events.deaths[0].death_sfx_key is None
     assert_rng_progression(
         rng,
         before_calls=before_calls,
@@ -260,7 +334,7 @@ def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
         expected_after_state=0,
     )
     assert rng.values_since(before_calls) == []
-    assert events.sfx == ["plague_contact"]
+    assert events.sfx == [SfxId.UI_PANELCLICK]
 
 
 def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
@@ -311,8 +385,10 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
     )
 
     assert len(events.deaths) == 1
-    assert events.deaths[0].death_sfx_key is None
-    assert all(not str(key).startswith("sfx_alien_die_") for key in events.sfx)
+    assert all(
+        key not in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04}
+        for key in events.sfx
+    )
     assert_rng_progression(
         rng,
         before_calls=before_calls,
@@ -341,14 +417,22 @@ def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
             reward_value=0.0,
             xp_awarded=0,
             owner=OwnerRef.from_player(0),
-            death_sfx_key=f"sfx_death_{idx}",
         )
         for idx in range(7)
+    )
+    death_sfx = (
+        SfxId.ALIEN_DIE_01,
+        SfxId.ALIEN_DIE_02,
+        SfxId.ALIEN_DIE_03,
+        SfxId.ALIEN_DIE_04,
+        SfxId.ZOMBIE_DIE_01,
+        SfxId.ZOMBIE_DIE_02,
+        SfxId.ZOMBIE_DIE_03,
     )
 
     def _fake_update(*args: object, **kwargs: object) -> CreatureUpdateResult:
         _ = args, kwargs
-        return CreatureUpdateResult(deaths=deaths, sfx=())
+        return CreatureUpdateResult(deaths=deaths, sfx=death_sfx)
 
     mocker.patch.object(world.creatures, "update", side_effect=_fake_update)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
@@ -369,7 +453,7 @@ def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
     )
 
     assert len(events.deaths) == 7
-    assert events.sfx[:7] == [f"sfx_death_{idx}" for idx in range(7)]
+    assert events.sfx[:7] == list(death_sfx)
     assert_rng_progression(
         rng,
         before_calls=before_calls,
@@ -393,8 +477,8 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
 
     plan_hit_sfx = mocker.patch.object(
         world_state_mod,
-        "plan_hit_sfx_keys",
-        wraps=world_state_mod.plan_hit_sfx_keys,
+        "plan_hit_sfx",
+        wraps=world_state_mod.plan_hit_sfx,
     )
 
     def _fake_projectile_step(*args: object, **_kwargs: object) -> list[ProjectileHit]:

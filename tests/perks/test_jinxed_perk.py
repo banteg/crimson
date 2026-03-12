@@ -8,6 +8,7 @@ from crimson.perks.runtime.effects import perks_update_effects
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 _FX_QUEUE_CALLERS = [
@@ -45,7 +46,7 @@ def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> 
     assert creatures[2].hp == -1.0
     assert_float_close(creatures[2].lifecycle_stage, 16.0 - dt * 20.0)
     assert player.experience == 112
-    assert state.sfx_queue == ["sfx_trooper_inpain_01"]
+    assert state.sfx_queue == [SfxId.TROOPER_INPAIN_01]
     assert [record.caller for record in state.rng.records_since()] == [
         RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
         RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
@@ -242,7 +243,7 @@ def test_perks_update_effects_jinxed_default_uses_full_384_slot_pool() -> None:
 
     assert creatures[0x17F].hp == -1.0
     assert player.experience == 112
-    assert state.sfx_queue == ["sfx_trooper_inpain_01"]
+    assert state.sfx_queue == [SfxId.TROOPER_INPAIN_01]
     assert [record.caller for record in state.rng.records_since()] == [
         RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
         RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,

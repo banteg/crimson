@@ -23,6 +23,7 @@ from grim.music import init_music_state
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx import init_sfx_state
+from grim.sfx_map import SfxId
 
 
 def _audio_state_stub() -> AudioState:
@@ -75,7 +76,7 @@ def test_game_over_panel_open_plays_panel_click(tmp_path: Path, mocker) -> None:
         mouse=rl.Vector2(0.0, 0.0),
     )
 
-    play_sfx.assert_called_once_with("sfx_ui_panelclick")
+    play_sfx.assert_called_once_with(SfxId.UI_PANELCLICK)
 
 
 def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(tmp_path: Path, mocker) -> None:
@@ -108,7 +109,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
     view = HighScoresView(state)
     view.open()
 
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_panelclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == [SfxId.UI_PANELCLICK]
 
     def _is_key_pressed(key: int) -> bool:
         return int(key) == int(rl.KeyboardKey.KEY_ESCAPE)
@@ -121,7 +122,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
 
     view.update(0.1)
 
-    assert [call.args[1] for call in play_sfx.call_args_list] == ["sfx_ui_panelclick", "sfx_ui_buttonclick"]
+    assert [call.args[1] for call in play_sfx.call_args_list] == [SfxId.UI_PANELCLICK, SfxId.UI_BUTTONCLICK]
     assert view.take_action() is None
     action = None
     for _ in range(30):

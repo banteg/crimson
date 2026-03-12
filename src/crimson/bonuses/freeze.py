@@ -6,6 +6,7 @@ import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 
 from ..creatures.lifecycle import CREATURE_CORPSE_DESPAWN_LIFECYCLE
 from ..math_parity import f32
@@ -68,7 +69,7 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
                 )
             creature.active = False
 
-    ctx.state.sfx_queue.append("sfx_shockwave")
+    ctx.state.sfx_queue.append(SfxId.SHOCKWAVE)
 
 
 def flush_deferred_freeze_corpse_fx(state: GameplayState) -> None:

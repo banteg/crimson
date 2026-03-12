@@ -5,6 +5,7 @@ from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
@@ -72,7 +73,7 @@ class _DatabaseBaseView:
         self._back_button = UiButtonState("Back", force_wide=False)
 
         if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
+            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
         self._is_open = True
 
     def close(self) -> None:
@@ -166,7 +167,7 @@ class _DatabaseBaseView:
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("back_to_previous")
             return
 
@@ -194,7 +195,7 @@ class _DatabaseBaseView:
             click=click,
         ):
             if self.state.audio is not None:
-                play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition("back_to_previous")
 
     def draw(self) -> None:

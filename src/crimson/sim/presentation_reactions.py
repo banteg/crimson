@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from grim.sfx_map import SfxId
+
 from .hooks import TickResult
 from .sessions import QuestSpawnState
 
@@ -15,7 +17,7 @@ class QuestPresentationReaction:
 
 @dataclass(frozen=True, slots=True)
 class PostApplyReaction:
-    sfx_keys: tuple[str, ...] = ()
+    sfx: tuple[SfxId, ...] = ()
     quest: QuestPresentationReaction | None = None
 
 
@@ -26,10 +28,10 @@ def build_post_apply_reaction(
 ) -> PostApplyReaction:
     if quest_state is None:
         return PostApplyReaction(
-            sfx_keys=tuple(str(key) for key in tick_result.payload.step.post_apply_sfx_keys),
+            sfx=tuple(tick_result.payload.step.post_apply_sfx),
         )
     return PostApplyReaction(
-        sfx_keys=tuple(str(key) for key in tick_result.payload.step.post_apply_sfx_keys),
+        sfx=tuple(tick_result.payload.step.post_apply_sfx),
         quest=QuestPresentationReaction(
             play_hit_sfx=bool(quest_state.play_hit_sfx),
             play_completion_music=bool(quest_state.play_completion_music),
@@ -40,15 +42,15 @@ def build_post_apply_reaction(
 def apply_post_apply_reaction(
     *,
     reaction: PostApplyReaction,
-    play_sfx: Callable[[str], None] | None,
+    play_sfx: Callable[[SfxId], None] | None,
     play_completion_music: Callable[[], None] | None = None,
 ) -> None:
     quest = reaction.quest
     if play_sfx is not None:
-        for key in reaction.sfx_keys:
-            play_sfx(str(key))
+        for sfx in reaction.sfx:
+            play_sfx(sfx)
         if quest is not None and bool(quest.play_hit_sfx):
-            play_sfx("sfx_questhit")
+            play_sfx(SfxId.QUESTHIT)
 
     if quest is not None and bool(quest.play_completion_music) and play_completion_music is not None:
         play_completion_music()

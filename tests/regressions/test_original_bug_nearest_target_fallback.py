@@ -15,6 +15,7 @@ from crimson.projectiles.runtime import (
 from crimson.projectiles.types import SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.factories import make_creature_state, make_projectile_update_options
 from tests.support.helpers import ScriptedCrand
 
@@ -23,7 +24,7 @@ from tests.support.helpers import ScriptedCrand
     ("preserve_bugs", "expected_projectile_count", "expected_links_left", "expected_sfx"),
     [
         (False, 0, 0, []),
-        (True, 1, 0x20, ["sfx_shock_hit_01"]),
+        (True, 1, 0x20, [SfxId.SHOCK_HIT_01]),
     ],
     ids=["default-noops-without-target", "preserve-bugs-falls-back-to-slot0"],
 )

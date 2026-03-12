@@ -30,6 +30,7 @@ from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
+from grim.sfx_map import SfxId
 from tests.support.factories import make_creature_update_options
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
@@ -482,7 +483,7 @@ def test_plague_kill_uses_exact_native_attack_sfx_caller() -> None:
         ),
     )
 
-    assert result.sfx == ("sfx_zombie_attack_01",)
+    assert result.sfx == (SfxId.ZOMBIE_ATTACK_01,)
     assert [record.caller for record in rng.records_since() if record.caller is not None] == [
         RngCallerStatic.CREATURE_UPDATE_ALL_PLAGUE_KILL_SFX,
         RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY,
@@ -1072,7 +1073,7 @@ def test_handle_death_shock_flag_has_no_resolved_death_sfx_without_spawning_debr
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 0.0
 
-    death = pool.handle_death(
+    pool.handle_death(
         0,
         state=state,
         players=[],
@@ -1082,7 +1083,6 @@ def test_handle_death_shock_flag_has_no_resolved_death_sfx_without_spawning_debr
         fx_queue=None,
     )
 
-    assert death.death_sfx_key is None
     assert state.effects.iter_active() == []
     assert state.rng._idx == 0
 

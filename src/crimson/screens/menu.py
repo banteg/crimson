@@ -10,6 +10,7 @@ from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ..game.types import GameState
@@ -264,7 +265,7 @@ class MenuView:
             if self._timeline_ms >= self._timeline_max_ms:
                 self.state.menu_sign_locked = True
                 if (not self._panel_open_sfx_played) and (self.state.audio is not None):
-                    play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
+                    play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
                     self._panel_open_sfx_played = True
         if not self._menu_entries:
             return
@@ -331,7 +332,7 @@ class MenuView:
             return
         entry = self._menu_entries[index]
         if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
         self.state.console.log.log(f"menu select: {index} (row {entry.row})")
         self.state.console.log.flush()
         if entry.row == MENU_LABEL_ROW_QUIT:

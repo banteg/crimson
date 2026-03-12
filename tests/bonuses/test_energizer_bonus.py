@@ -8,6 +8,7 @@ from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.factories import make_creature_update_options
 
 
@@ -62,5 +63,5 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
     assert not creature.active
     assert player.experience == 10
     assert player.health == 100.0
-    assert "sfx_ui_bonus" in result.sfx
+    assert SfxId.UI_BONUS in result.sfx
     assert not any(entry.bonus_id != BonusId.UNUSED for entry in state.bonus_pool.entries)

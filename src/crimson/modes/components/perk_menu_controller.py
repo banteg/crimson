@@ -8,6 +8,7 @@ from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 
 from ...perks import PerkId, perk_display_description, perk_display_name
 from ...sim.state_types import PlayerState
@@ -27,7 +28,7 @@ from ...ui.perk_menu import (
     perk_menu_panel_slide_x,
 )
 
-PlaySfxFn = Callable[[str], None]
+PlaySfxFn = Callable[[SfxId], None]
 OnCloseFn = Callable[[], None]
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -165,7 +166,7 @@ class PerkMenuController:
         if self._open:
             return
         if play_sfx is not None:
-            play_sfx("sfx_ui_panelclick")
+            play_sfx(SfxId.UI_PANELCLICK)
         self._open = True
         self._selected_index = 0
 
@@ -228,7 +229,7 @@ class PerkMenuController:
                 self._selected_index = idx
                 if click:
                     if ctx.play_sfx is not None:
-                        ctx.play_sfx("sfx_ui_buttonclick")
+                        ctx.play_sfx(SfxId.UI_BUTTONCLICK)
                     self.close()
                     return int(idx)
                 break
@@ -248,13 +249,13 @@ class PerkMenuController:
             click=click,
         ):
             if ctx.play_sfx is not None:
-                ctx.play_sfx("sfx_ui_buttonclick")
+                ctx.play_sfx(SfxId.UI_BUTTONCLICK)
             self.close()
             return None
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
             if ctx.play_sfx is not None:
-                ctx.play_sfx("sfx_ui_buttonclick")
+                ctx.play_sfx(SfxId.UI_BUTTONCLICK)
             self.close()
             return int(self._selected_index)
         return None

@@ -11,6 +11,7 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.factories import make_creature_update_options, make_projectile_update_options
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
@@ -44,7 +45,7 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
 
     direct_aim = math.atan2(player.pos.y - creature.pos.y, player.pos.x - creature.pos.x) + math.pi / 2.0
     assert abs(_wrap_angle(proj.angle - direct_aim)) > 0.1
-    assert result.sfx == ("sfx_shock_fire",)
+    assert result.sfx == (SfxId.SHOCK_FIRE,)
 
 
 def test_ranged_creature_does_not_fire_when_too_close() -> None:
@@ -100,7 +101,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     assert proj.hits_players is True
     assert int(proj.type_id) == 26
     assert_float_close(creature.attack_cooldown, 0.4)
-    assert result.sfx == ("sfx_plasmaminigun_fire",)
+    assert result.sfx == (SfxId.PLASMAMINIGUN_FIRE,)
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN,
     ]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 
 from ..owner_ref import OwnerRef
 from ..projectiles.types import ProjectileTemplateId
@@ -95,5 +96,5 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
                     creature.hp -= float(damage)
         ctx.state.bonus_spawn_guard = prev_guard
 
-    ctx.state.sfx_queue.append("sfx_explosion_large")
-    ctx.state.sfx_queue.append("sfx_shockwave")
+    ctx.state.sfx_queue.append(SfxId.EXPLOSION_LARGE)
+    ctx.state.sfx_queue.append(SfxId.SHOCKWAVE)
