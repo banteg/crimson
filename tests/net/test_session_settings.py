@@ -42,7 +42,7 @@ def test_lockstep_session_settings_build_hello() -> None:
     hello = hello_from_session_settings(settings, protocol_version=7, build_id="dev+g1234", host=False)
     assert hello.protocol_version == 7
     assert hello.build_id == "dev+g1234"
-    assert hello.mode_id == 3
+    assert hello.mode_id == GameMode.QUESTS
     assert hello.player_count == 4
     assert hello.quest_level == QuestLevel(2, 3)
     assert hello.preserve_bugs is True
@@ -76,7 +76,7 @@ def test_lockstep_session_settings_roundtrip_with_welcome_and_match_start() -> N
         started=False,
     )
     assert isinstance(welcome, Welcome)
-    assert welcome.mode_id == 2
+    assert welcome.mode_id == GameMode.RUSH
     assert welcome.player_count == 2
     assert session_settings_from_welcome(welcome) == settings
 
@@ -88,7 +88,7 @@ def test_lockstep_session_settings_roundtrip_with_welcome_and_match_start() -> N
         status_snapshot=LockstepStatusSnapshot(quest_unlock_index=4, quest_unlock_index_full=9),
     )
     assert isinstance(start, MatchStart)
-    assert start.mode_id == 2
+    assert start.mode_id == GameMode.RUSH
     assert start.player_count == 2
     assert start.quest_level == QuestLevel(2, 2)
     assert start.preserve_bugs is True
@@ -142,7 +142,7 @@ def test_relay_session_settings_build_room_state_and_start() -> None:
         all_ready=False,
         started=False,
     )
-    assert state.mode_id == 1
+    assert state.mode_id == GameMode.SURVIVAL
     assert state.player_count == 2
     assert state.quest_level == QuestLevel(1, 1)
     assert state.netcode_mode == "lockstep"
@@ -160,7 +160,7 @@ def test_relay_session_settings_build_room_state_and_start() -> None:
         reconnect_token="token123",
         status_snapshot=RelayStatusSnapshot(),
     )
-    assert start.mode_id == 1
+    assert start.mode_id == GameMode.SURVIVAL
     assert start.player_count == 2
     assert start.slot_index == 1
     assert start.host_slot_index == 0

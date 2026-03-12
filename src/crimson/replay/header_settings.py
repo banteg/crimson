@@ -13,11 +13,11 @@ def session_settings_from_replay_header(
 ) -> LockstepSessionSettings:
     return session_settings_for_lockstep(
         mode_id=header.game_mode_id,
-        player_count=int(header.player_count),
+        player_count=header.player_count,
         quest_level=header.quest_level,
-        preserve_bugs=bool(header.preserve_bugs),
-        tick_rate=int(header.tick_rate),
-        input_delay_ticks=int(input_delay_ticks),
+        preserve_bugs=header.preserve_bugs,
+        tick_rate=header.tick_rate,
+        input_delay_ticks=input_delay_ticks,
     )
 
 
@@ -40,20 +40,20 @@ def replay_header_from_session_settings(
     quest_level = settings.quest_level
     if game_mode_id == GameMode.QUESTS and quest_level is None:
         raise ValueError("quest replays require quest_level")
-    if game_mode_id == GameMode.TUTORIAL and int(settings.player_count) != 1:
+    if game_mode_id == GameMode.TUTORIAL and settings.player_count != 1:
         raise ValueError("tutorial replays require player_count == 1")
 
     return ReplayHeader(
         game_mode_id=game_mode_id,
-        seed=int(seed),
+        seed=seed,
         quest_level=quest_level,
-        tick_rate=int(settings.tick_rate),
-        quest_fail_retry_count=int(quest_fail_retry_count),
-        hardcore=bool(hardcore),
-        preserve_bugs=bool(settings.preserve_bugs),
-        detail_preset=int(detail_preset),
-        gore_disabled=int(gore_disabled),
-        world_size=float(world_size),
-        player_count=int(settings.player_count),
+        tick_rate=settings.tick_rate,
+        quest_fail_retry_count=quest_fail_retry_count,
+        hardcore=hardcore,
+        preserve_bugs=settings.preserve_bugs,
+        detail_preset=detail_preset,
+        gore_disabled=gore_disabled,
+        world_size=world_size,
+        player_count=settings.player_count,
         status=ReplayStatusSnapshot() if status is None else status,
     )

@@ -78,7 +78,7 @@ def test_session_settings_from_replay_header_uses_lockstep_defaults() -> None:
         player_count=2,
     )
     settings = session_settings_from_replay_header(header)
-    assert settings.mode_id == int(GameMode.QUESTS)
+    assert settings.mode_id == GameMode.QUESTS
     assert settings.player_count == 2
     assert settings.quest_level == QuestLevel(2, 3)
     assert settings.preserve_bugs is False
