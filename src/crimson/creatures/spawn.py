@@ -1584,9 +1584,9 @@ def build_rush_mode_spawn_creature(
 
     elapsed_f32 = f32(float(elapsed_ms))
     c.health = float(f32(elapsed_f32 * f32(1e-4) + 10.0))
-    c.heading = float(f32(f32(float(rng.rand() % 314)) * f32(0.01)))
+    c.heading = float(f32(f32(float(rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_HEADING) % 314)) * f32(0.01)))
     c.move_speed = float(f32(elapsed_f32 * f32(1e-5) + 2.5))
-    c.reward_value = float(rng.rand() % 30 + 140)
+    c.reward_value = float(rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_REWARD) % 30 + 140)
 
     c.tint = tint_rgba
     c.contact_damage = 4.0

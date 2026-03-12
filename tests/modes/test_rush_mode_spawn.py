@@ -4,8 +4,9 @@ import math
 
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, tick_rush_mode_spawns
 from crimson.math_parity import f32
+from crimson.rng_caller_static import RngCallerStatic
 from grim.rand import Crand
-from tests.support.helpers import assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def test_tick_rush_mode_spawns_no_trigger() -> None:
@@ -78,6 +79,29 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     assert_float_close(spider.tint[3], 1.0)
 
     assert rng.state == 0x3D6C1037
+
+
+def test_tick_rush_mode_spawns_uses_exact_native_callers() -> None:
+    rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    tick_rush_mode_spawns(
+        -1.0,
+        0.0,
+        rng,
+        player_count=1,
+        survival_elapsed_ms=0,
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+    )
+
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
+        RngCallerStatic.CREATURE_SPAWN_HEADING,
+        RngCallerStatic.CREATURE_SPAWN_REWARD,
+        RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
+        RngCallerStatic.CREATURE_SPAWN_HEADING,
+        RngCallerStatic.CREATURE_SPAWN_REWARD,
+    ]
 
 
 def test_tick_rush_mode_spawns_loops_when_cooldown_is_very_negative() -> None:
