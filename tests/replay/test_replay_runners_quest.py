@@ -8,6 +8,7 @@ from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import run_explicit_terrain_prelude, run_unlock_terrain_prelude
 from crimson.sim.input_providers import PerkPickCommand
 from crimson.weapons import WEAPON_BY_ID
@@ -87,7 +88,7 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
         height=int(replay.header.world_size),
     )
     # Native `quest_start_selected()` burns one `crt_rand()` before quest terrain.
-    rng.rand()
+    rng.rand(caller=RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
     _ = run_explicit_terrain_prelude(
         rng,
         terrain_slots=quest.terrain_slots,
