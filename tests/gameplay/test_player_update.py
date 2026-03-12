@@ -1050,9 +1050,9 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     aim_y = 100.0
 
     expected_rng = Crand(seed)
-    # Native `player_fire_weapon` burns two RNG values for `flags & 0x1`
-    # weapons before the later shot-angle jitter work.
-    for _ in range(2):
+    # Native gameplay fire uses four exact `player_update` casing draws before
+    # the later shot-angle jitter work.
+    for _ in range(4):
         expected_rng.rand()
     rand_dir = expected_rng.rand()
     rand_mag = expected_rng.rand()
@@ -1085,10 +1085,12 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     projectiles = pool.iter_active()
     assert len(projectiles) == 1
     assert_float_close(projectiles[0].angle, expected_angle)
-    assert state.effects.iter_active() == []
-    assert [record.caller for record in rng.records_since()[:2]] == [
-        RngCallerStatic.PLAYER_FIRE_WEAPON_FLAGGED_BURN_1,
-        RngCallerStatic.PLAYER_FIRE_WEAPON_FLAGGED_BURN_2,
+    assert len(state.effects.iter_active()) == 1
+    assert [record.caller for record in rng.records_since()[:4]] == [
+        RngCallerStatic.PLAYER_UPDATE_CASING_ANGLE,
+        RngCallerStatic.PLAYER_UPDATE_CASING_SPEED,
+        RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION,
+        RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION_STEP,
     ]
 
 

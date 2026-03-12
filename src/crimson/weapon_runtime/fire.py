@@ -242,13 +242,25 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     aim_delta = aim - player.pos
     aim_heading = float(heading_from_delta_f32(dx=float(aim_delta.x), dy=float(aim_delta.y)))
 
+    muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
     weapon_flags = int(weapon.flags or 0)
+    shell_casing_draws = (0, 0, 0, 0)
     if weapon_flags & 0x1:
-        # Native `player_fire_weapon` burns two RNG values for `flags & 1`
-        # weapons at 0x444b96/0x444b9b, but the return values are not
-        # consumed in the local firing path.
-        state.rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON_FLAGGED_BURN_1)
-        state.rng.rand(caller=RngCallerStatic.PLAYER_FIRE_WEAPON_FLAGGED_BURN_2)
+        # Native gameplay fire uses four exact `player_update` RNG sites for
+        # the casing effect before the later shot-angle jitter work.
+        shell_casing_draws = (
+            state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_CASING_ANGLE),
+            state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_CASING_SPEED),
+            state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION),
+            state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION_STEP),
+        )
+    state.effects.spawn_shell_casing(
+        pos=muzzle,
+        aim_heading=aim_heading,
+        weapon_flags=weapon_flags,
+        draws=shell_casing_draws,
+        detail_preset=int(ctx.detail_preset),
+    )
 
     shot_angle = _native_shot_angle_with_jitter(
         aim=aim,
@@ -269,7 +281,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     projectile_owner = owner_ref_for_player_projectiles(state, player.index)
     shot_count = 1
     spawn_muzzle_after_projectile = bool(is_fire_bullets) or int(weapon_id) in _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE
-    muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
     if not spawn_muzzle_after_projectile:
         _spawn_native_fire_muzzle_sprites(
             state=state,

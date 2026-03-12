@@ -379,6 +379,34 @@ def test_spawn_blood_splatter_tags_exact_native_callers() -> None:
     ] * 2
 
 
+def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
+    q = FxQueue(capacity=4, max_count=4)
+    pool = EffectPool(size=4)
+
+    pool.spawn_shell_casing(
+        pos=Vec2(10.0, 20.0),
+        aim_heading=0.0,
+        weapon_flags=1,
+        draws=(0, 0, 0, 0),
+        detail_preset=5,
+    )
+
+    active = pool.iter_active()
+    assert len(active) == 1
+    assert active[0].effect_id == 0x12
+    assert active[0].flags == 0x1C5
+    assert_float_close(active[0].lifetime, 0.15)
+
+    pool.update(0.2, fx_queue=q)
+    assert q.count == 1
+
+    entry = q.iter_active()[0]
+    assert entry.effect_id == 0x12
+    assert_float_close(entry.width, 4.0)
+    assert_float_close(entry.height, 4.0)
+    assert_float_close(entry.color.a, 0.35)
+
+
 def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
     pool = EffectPool(size=8)
 
