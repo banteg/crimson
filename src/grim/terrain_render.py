@@ -25,9 +25,6 @@ TERRAIN_DENSITY_DETAIL = 0x0F
 TERRAIN_DENSITY_SHIFT = 19
 TERRAIN_ROTATION_MAX = 0x13A
 
-_ALPHA_TEST_REF_U8 = 4
-_ALPHA_TEST_REF_F32 = float(_ALPHA_TEST_REF_U8) / 255.0
-
 # Grim2D enables alpha test globally with:
 #   ALPHATESTENABLE=1, ALPHAFUNC=GREATER, ALPHAREF=4
 # See: analysis/ghidra/raw/grim.dll_decompiled.c (FUN_10004520).
@@ -55,7 +52,7 @@ void main() {
 }
 """
 
-_ALPHA_TEST_FS_330 = rf"""
+_ALPHA_TEST_FS_330 = r"""
 #version 330
 
 in vec2 fragTexCoord;
@@ -70,7 +67,7 @@ void main() {{
     // Emulate DX8 fixed-function alpha test after stage-0 modulation:
     // stage output = texture * diffuse, then discard when alpha <= 4/255.
     vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
-    if (texel.a <= {_ALPHA_TEST_REF_F32:.10f}) discard;
+    if (texel.a <= 0.0156862745) discard;
     finalColor = texel;
 }}
 """
