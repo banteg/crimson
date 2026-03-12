@@ -252,7 +252,7 @@ class AlienZooKeeperView:
                 )
 
     def _reroll_board_no_initial_match(self) -> None:
-        for _ in range(4096):
+        while True:
             for i in range(_BOARD_CELLS):
                 self._board[i] = int(
                     self.state.rng.rand(caller=RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_REROLL_FILL) % 5,
@@ -260,11 +260,6 @@ class AlienZooKeeperView:
             has_match, _out_idx, _out_dir = _credits_secret_match3_find(self._board)
             if not has_match:
                 return
-        # Fallback to avoid a hard loop even though this should never happen in practice.
-        for i in range(_BOARD_CELLS):
-            self._board[i] = int(
-                self.state.rng.rand(caller=RngCallerStatic.REWRITE_ALIEN_ZOOKEEPER_REROLL_FALLBACK) % 5,
-            )
 
     def _reset_state(self) -> None:
         self._reroll_board_no_initial_match()
