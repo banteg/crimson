@@ -407,7 +407,7 @@ class BaseGameplayMode:
         terrain_slots: TerrainSlotTriplet,
         seed: int,
     ) -> None:
-        self.terrain_runtime.apply_terrain_setup(terrain_slots=terrain_slots, seed=int(seed))
+        self.terrain_runtime.apply_terrain_setup(terrain_slots=terrain_slots, seed=seed)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self._world_runtime.draw(

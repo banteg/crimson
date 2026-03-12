@@ -15,7 +15,7 @@ from grim.terrain_render import GroundRenderer
 from ..game.types import GameState
 from ..sim.bootstrap import run_unlock_terrain_prelude, terrain_stamping_draws
 from ..terrain_slots import (
-    terrain_slots_to_texture_ids,
+    resolve_terrain_slots,
 )
 from ..ui.cursor import draw_menu_cursor
 from ..ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
@@ -96,10 +96,7 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
             width=1024,
             height=1024,
         )
-        base_id, overlay_id, detail_id = terrain_slots_to_texture_ids(terrain.terrain_slots)
-        base = resources.texture(base_id)
-        overlay = resources.texture(overlay_id)
-        detail = resources.texture(detail_id)
+        base, overlay, detail = resolve_terrain_slots(terrain.terrain_slots, resources.texture)
     else:
         assert ground is not None
         base = ground.texture
@@ -131,10 +128,10 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
     if regenerate:
         assert ground is not None
         if generated_new_terrain:
-            ground.schedule_generate(seed=int(terrain.terrain_seed))
+            ground.schedule_generate(seed=terrain.terrain_seed)
         else:
-            ground.schedule_generate(seed=int(state.rng.state))
-            for _ in range(terrain_stamping_draws(width=int(ground.width), height=int(ground.height))):
+            ground.schedule_generate(seed=state.rng.state)
+            for _ in range(terrain_stamping_draws(width=ground.width, height=ground.height)):
                 state.rng.rand()
         state.menu_ground_camera = None
     return ground

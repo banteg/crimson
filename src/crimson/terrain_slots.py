@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TypeAlias
+from collections.abc import Callable
+from typing import TypeAlias, TypeVar
 
 from grim.assets import TextureId
 from grim.rand import CrandLike
@@ -9,6 +10,7 @@ from .quests.level import QuestLevel
 from .rng_caller_static import RngCallerStatic
 
 TerrainSlotTriplet: TypeAlias = tuple[int, int, int]
+_T = TypeVar("_T")
 
 Q1_TERRAIN_SLOTS: TerrainSlotTriplet = (0, 1, 0)
 Q2_TERRAIN_SLOTS: TerrainSlotTriplet = (2, 3, 2)
@@ -73,6 +75,14 @@ def terrain_slots_to_texture_ids(
     )
 
 
+def resolve_terrain_slots(
+    slots: TerrainSlotTriplet,
+    lookup: Callable[[TextureId], _T],
+) -> tuple[_T, _T, _T]:
+    base_id, overlay_id, detail_id = terrain_slots_to_texture_ids(slots)
+    return lookup(base_id), lookup(overlay_id), lookup(detail_id)
+
+
 __all__ = [
     "DEFAULT_TERRAIN_SLOTS",
     "UNLOCK_TERRAIN_SLOTS",
@@ -82,6 +92,7 @@ __all__ = [
     "Q4_TERRAIN_SLOTS",
     "TerrainSlotTriplet",
     "choose_unlock_terrain_slots",
+    "resolve_terrain_slots",
     "terrain_slots_for_quest",
     "terrain_slots_to_texture_ids",
 ]

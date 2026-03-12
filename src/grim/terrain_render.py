@@ -303,7 +303,7 @@ class GroundRenderer(msgspec.Struct):
         self._generate_texture(seed=seed)
 
     def schedule_generate(self, seed: int) -> None:
-        self._pending_generate_seed = int(seed)
+        self._pending_generate_seed = seed
         self._pending_generate = True
 
     def _generate_texture(self, seed: int) -> None:

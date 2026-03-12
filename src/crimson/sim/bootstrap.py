@@ -22,16 +22,16 @@ TERRAIN_RAND_DRAWS_PER_STAMP = 3  # rotation, then position draws (see terrain r
 def terrain_stamping_draws(*, width: int, height: int) -> int:
     """Return the number of `rand()` draws consumed by the procedural terrain stamps."""
 
-    w = max(0, int(width))
-    h = max(0, int(height))
-    area = int(w * h)
+    w = max(0, width)
+    h = max(0, height)
+    area = w * h
     stamps = (
-        int((area * TERRAIN_DENSITY_BASE) >> TERRAIN_DENSITY_SHIFT)
-        + int((area * TERRAIN_DENSITY_OVERLAY) >> TERRAIN_DENSITY_SHIFT)
-        + int((area * TERRAIN_DENSITY_DETAIL) >> TERRAIN_DENSITY_SHIFT)
+        ((area * TERRAIN_DENSITY_BASE) >> TERRAIN_DENSITY_SHIFT)
+        + ((area * TERRAIN_DENSITY_OVERLAY) >> TERRAIN_DENSITY_SHIFT)
+        + ((area * TERRAIN_DENSITY_DETAIL) >> TERRAIN_DENSITY_SHIFT)
     )
 
-    return int(stamps * TERRAIN_RAND_DRAWS_PER_STAMP)
+    return stamps * TERRAIN_RAND_DRAWS_PER_STAMP
 
 
 class TerrainPreludeResult(msgspec.Struct, frozen=True):
@@ -44,21 +44,20 @@ class TerrainPreludeResult(msgspec.Struct, frozen=True):
 
     @property
     def total_draws(self) -> int:
-        return int(self.selection_draws) + int(self.stamping_draws)
+        return self.selection_draws + self.stamping_draws
 
 
 def _selection_draws_for_result(*, unlock_index: int, terrain_slots: TerrainSlotTriplet) -> int:
     draws = 0
-    chosen = tuple(int(slot) for slot in terrain_slots)
     for threshold, slots in UNLOCK_TERRAIN_SLOTS.items():
-        if int(unlock_index) < int(threshold):
+        if unlock_index < threshold:
             continue
         draws += 1
-        if chosen == tuple(int(slot) for slot in slots):
+        if terrain_slots == slots:
             break
-        if chosen == tuple(int(slot) for slot in DEFAULT_TERRAIN_SLOTS):
+        if terrain_slots == DEFAULT_TERRAIN_SLOTS:
             continue
-    return int(draws)
+    return draws
 
 
 def _advance_terrain_stamping_rng(
@@ -67,10 +66,10 @@ def _advance_terrain_stamping_rng(
     width: int,
     height: int,
 ) -> int:
-    stamping_draws = terrain_stamping_draws(width=int(width), height=int(height))
-    for _ in range(int(stamping_draws)):
+    stamping_draws = terrain_stamping_draws(width=width, height=height)
+    for _ in range(stamping_draws):
         rng.rand()
-    return int(stamping_draws)
+    return stamping_draws
 
 
 def run_unlock_terrain_prelude(
@@ -86,26 +85,26 @@ def run_unlock_terrain_prelude(
     window while also returning the terrain descriptor + seed needed for rendering.
     """
 
-    seed_before = int(rng.state)
-    terrain_slots = choose_unlock_terrain_slots(unlock_index=int(unlock_index), rng=rng)
+    seed_before = rng.state
+    terrain_slots = choose_unlock_terrain_slots(unlock_index=unlock_index, rng=rng)
     selection_draws = _selection_draws_for_result(
-        unlock_index=int(unlock_index),
+        unlock_index=unlock_index,
         terrain_slots=terrain_slots,
     )
-    terrain_seed = int(rng.state)
+    terrain_seed = rng.state
     stamping_draws = _advance_terrain_stamping_rng(
         rng,
-        width=int(width),
-        height=int(height),
+        width=width,
+        height=height,
     )
-    seed_after = int(rng.state)
+    seed_after = rng.state
     return TerrainPreludeResult(
-        seed_before=int(seed_before),
-        seed_after=int(seed_after),
+        seed_before=seed_before,
+        seed_after=seed_after,
         terrain_slots=terrain_slots,
-        terrain_seed=int(terrain_seed),
-        selection_draws=int(selection_draws),
-        stamping_draws=int(stamping_draws),
+        terrain_seed=terrain_seed,
+        selection_draws=selection_draws,
+        stamping_draws=stamping_draws,
     )
 
 
@@ -118,19 +117,19 @@ def run_explicit_terrain_prelude(
 ) -> TerrainPreludeResult:
     """Consume RNG draws for terrain generation when slots are fixed up front."""
 
-    seed_before = int(rng.state)
-    terrain_seed = int(rng.state)
+    seed_before = rng.state
+    terrain_seed = rng.state
     stamping_draws = _advance_terrain_stamping_rng(
         rng,
-        width=int(width),
-        height=int(height),
+        width=width,
+        height=height,
     )
-    seed_after = int(rng.state)
+    seed_after = rng.state
     return TerrainPreludeResult(
-        seed_before=int(seed_before),
-        seed_after=int(seed_after),
+        seed_before=seed_before,
+        seed_after=seed_after,
         terrain_slots=terrain_slots,
-        terrain_seed=int(terrain_seed),
+        terrain_seed=terrain_seed,
         selection_draws=0,
-        stamping_draws=int(stamping_draws),
+        stamping_draws=stamping_draws,
     )

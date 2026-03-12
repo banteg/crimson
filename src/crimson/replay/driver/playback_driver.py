@@ -36,6 +36,7 @@ from ...sim.sessions import (
 )
 from ...sim.world_state import WorldState
 from ...status_snapshot import game_status_from_replay_status
+from ...terrain_slots import TerrainSlotTriplet
 from ...typo.state import typo_shot_counts
 from ...weapons import WeaponId
 from ...world.sim_world_state import reset_world_players
@@ -61,7 +62,7 @@ TickEndObserver: TypeAlias = Callable[[TickResult, WorldState], None]
 
 @dataclass(slots=True, frozen=True)
 class ReplayTerrainSetup:
-    terrain_slots: tuple[int, int, int]
+    terrain_slots: TerrainSlotTriplet
     terrain_seed: int
 
 
@@ -240,7 +241,7 @@ class PlaybackDriver:
                 )
                 self._terrain_setup = ReplayTerrainSetup(
                     terrain_slots=terrain.terrain_slots,
-                    terrain_seed=int(terrain.terrain_seed),
+                    terrain_seed=terrain.terrain_seed,
                 )
             case GameMode.TYPO:
                 terrain = run_unlock_terrain_prelude(
@@ -251,7 +252,7 @@ class PlaybackDriver:
                 )
                 self._terrain_setup = ReplayTerrainSetup(
                     terrain_slots=terrain.terrain_slots,
-                    terrain_seed=int(terrain.terrain_seed),
+                    terrain_seed=terrain.terrain_seed,
                 )
             case GameMode.TUTORIAL:
                 terrain = run_unlock_terrain_prelude(
@@ -262,7 +263,7 @@ class PlaybackDriver:
                 )
                 self._terrain_setup = ReplayTerrainSetup(
                     terrain_slots=terrain.terrain_slots,
-                    terrain_seed=int(terrain.terrain_seed),
+                    terrain_seed=terrain.terrain_seed,
                 )
             case GameMode.QUESTS:
                 quest_definition = resolve_replay_quest_definition(self.replay)
@@ -313,15 +314,15 @@ class PlaybackDriver:
                 self._quest_start_weapon_resolved = start_weapon_id
                 self._terrain_setup = ReplayTerrainSetup(
                     terrain_slots=quest_definition.terrain_slots,
-                    terrain_seed=int(quest_terrain.terrain_seed),
+                    terrain_seed=quest_terrain.terrain_seed,
                 )
             case _:
                 pass
 
         if self._terrain_setup is not None:
             self._terrain_setup = ReplayTerrainSetup(
-                terrain_slots=tuple(self._terrain_setup.terrain_slots),
-                terrain_seed=int(self._terrain_setup.terrain_seed),
+                terrain_slots=self._terrain_setup.terrain_slots,
+                terrain_seed=self._terrain_setup.terrain_seed,
             )
 
         return world

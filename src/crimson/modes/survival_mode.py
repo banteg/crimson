@@ -231,7 +231,7 @@ class SurvivalMode(BaseGameplayMode):
             selection_draws=int(terrain.selection_draws),
             stamping_draws=int(terrain.stamping_draws),
             terrain_slots=terrain.terrain_slots,
-            terrain_seed=int(terrain.terrain_seed),
+            terrain_seed=terrain.terrain_seed,
         )
         self.apply_terrain_setup(terrain_slots=terrain.terrain_slots, seed=terrain.terrain_seed)
         self.sim_world.state.rng.srand(int(terrain.seed_after))
