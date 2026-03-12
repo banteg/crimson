@@ -41,6 +41,7 @@ from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..player_damage import player_take_damage
 from ..projectiles.types import ProjectileTemplateId
+from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import GameplayState, PlayerState
 from ..sim.timing import ftol_ms_i32
 from ..weapons import weapon_entry_for_projectile_type_id
@@ -1288,9 +1289,6 @@ class CreaturePool:
     ) -> CreatureDeath:
         """Run one-shot death side effects and return the `CreatureDeath` event."""
 
-        def draw() -> int:
-            return rng.rand()
-
         creature = self._entries[int(idx)]
         survival_record_recent_death(state, pos=creature.pos)
         if (creature.flags & CreatureFlags.BONUS_ON_DEATH) and creature.bonus_id is not None:
@@ -1343,14 +1341,18 @@ class CreaturePool:
         if float(state.bonuses.freeze) > 0.0:
             creature_pos = creature.pos
             for _ in range(8):
-                angle = float(int(draw()) % 612) * 0.01
+                angle = (
+                    float(int(rng.rand(caller=RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE)) % 612) * 0.01
+                )
                 state.effects.spawn_freeze_shard(
                     pos=creature_pos,
                     angle=angle,
                     rng=rng,
                     detail_preset=int(detail_preset),
                 )
-            angle = float(int(draw()) % 612) * 0.01
+            angle = (
+                float(int(rng.rand(caller=RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE)) % 612) * 0.01
+            )
             state.effects.spawn_freeze_shatter(
                 pos=creature_pos,
                 angle=angle,
@@ -1554,17 +1556,17 @@ class CreaturePool:
         world_width: float,
         world_height: float,
     ) -> CreatureDeath:
-        def draw() -> int:
-            return rng.rand()
-
         if creature.spawn_slot_index is not None:
             self._disable_spawn_slot(int(creature.spawn_slot_index))
 
         if (creature.flags & CreatureFlags.SPLIT_ON_DEATH) and float(creature.size) > 35.0:
-            for heading_offset in (-math.pi / 2.0, math.pi / 2.0):
+            for heading_offset, phase_seed_caller in (
+                (-math.pi / 2.0, RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_1_PHASE_SEED),
+                (math.pi / 2.0, RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_2_PHASE_SEED),
+            ):
                 child_idx = self._alloc_slot(rng=rng)
                 child = msgspec.structs.replace(creature)
-                child.phase_seed = float(int(draw()) & 0xFF)
+                child.phase_seed = float(int(rng.rand(caller=phase_seed_caller)) & 0xFF)
                 child.heading = _wrap_angle(float(creature.heading) + float(heading_offset))
                 child.target_heading = float(child.heading)
                 child.hp = float(creature.max_hp) * 0.25

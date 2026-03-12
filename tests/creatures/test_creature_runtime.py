@@ -25,6 +25,7 @@ from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -1100,6 +1101,7 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
     state = GameplayState()
     state.game_mode = GameMode.RUSH
     state.bonuses.freeze = 1.0
+    state.rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
     creature = pool.entries[0]
@@ -1121,6 +1123,20 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
     )
 
     add_random.assert_called_once()
+    tagged_callers = [
+        record.caller
+        for record in state.rng.records_since()
+        if record.caller
+        in {
+            RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE,
+            RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE,
+        }
+    ]
+    assert tagged_callers == [
+        RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE,
+    ] * 8 + [
+        RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE,
+    ]
 
 
 def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> None:

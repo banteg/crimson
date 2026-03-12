@@ -4,6 +4,7 @@ from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from crimson.math_parity import NATIVE_HALF_PI
+from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
@@ -52,5 +53,9 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
     assert_float_close(child2.move_speed, parent.move_speed + 0.1)
     assert_float_close(child1.contact_damage, parent.contact_damage * 0.7)
     assert_float_close(child2.contact_damage, parent.contact_damage * 0.7)
+    assert [record.caller for record in rng.records_since()[:2]] == [
+        RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_1_PHASE_SEED,
+        RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_2_PHASE_SEED,
+    ]
     assert_float_close(child1.reward_value, parent.reward_value * (2.0 / 3.0))
     assert_float_close(child2.reward_value, parent.reward_value * (2.0 / 3.0))
