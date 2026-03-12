@@ -191,6 +191,26 @@ def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(tmp_path: Path)
     assert ground.overlay_detail is resources.texture(TextureId.TER_Q4_BASE)
 
 
+def test_existing_menu_ground_ignores_runtime_texture_scale_changes(tmp_path: Path) -> None:
+    state = _build_state(tmp_path)
+    state.resources = cast(RuntimeResources, _ResourcesStub())
+
+    ground = ensure_menu_ground(state, regenerate=True)
+    state.menu_ground_camera = Vec2(-100.0, -200.0)
+    before_rng_state = int(state.rng.state)
+    before_seed = int(ground._scheduled_seed or -1)
+
+    state.config.texture_scale = 0.5
+
+    same_ground = ensure_menu_ground(state)
+
+    assert same_ground is ground
+    assert float(same_ground.texture_scale) == 1.0
+    assert int(same_ground._scheduled_seed or -1) == before_seed
+    assert int(state.rng.state) == before_rng_state
+    assert state.menu_ground_camera == Vec2(-100.0, -200.0)
+
+
 def test_start_survival_does_not_adopt_existing_menu_ground(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
     loop = GameLoopView(state)

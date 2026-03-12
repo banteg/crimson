@@ -339,7 +339,7 @@ def test_alpha_test_shader_failure_raises(mocker) -> None:
 
 def test_create_render_target_recovers_after_previous_failure(mocker) -> None:
     ground = _ground()
-    attempts = iter([False, False, True])
+    attempts = iter([False, True])
 
     mocker.patch.object(
         terrain_render.GroundRenderer,

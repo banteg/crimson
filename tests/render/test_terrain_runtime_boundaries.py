@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS
 from grim.assets import TextureId
@@ -75,6 +76,23 @@ def test_reset_schedules_terrain_from_sim_seed_without_advancing_rng(assets_dir:
     assert world.render_resources.ground is not None
     assert bool(world.render_resources.ground.generation_pending())
     assert int(world.render_resources.ground._scheduled_seed or -1) == 4242
+
+
+def test_process_ground_pending_does_not_live_sync_texture_scale_from_config(assets_dir: Path) -> None:
+    world = _build_world(assets_dir)
+    texture = rl.Texture()
+    ground = GroundRenderer(
+        texture=texture,
+        overlay=texture,
+        overlay_detail=texture,
+        texture_scale=1.0,
+    )
+    world.render_resources.ground = ground
+    world.render_resources.config = SimpleNamespace(texture_scale=0.5)
+
+    world.render_resources.process_ground_pending()
+
+    assert float(ground.texture_scale) == 1.0
 
 
 def test_reset_syncs_world_size_across_sim_and_render_ownership(assets_dir: Path) -> None:

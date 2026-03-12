@@ -14,8 +14,7 @@ from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ..game.types import GameState
-from ..rng_caller_static import RngCallerStatic
-from ..sim.bootstrap import run_unlock_terrain_prelude, terrain_stamping_draws
+from ..sim.bootstrap import run_unlock_terrain_prelude
 from ..terrain_slots import (
     resolve_terrain_slots,
 )
@@ -82,12 +81,7 @@ def menu_ground_camera(state: GameState) -> Vec2:
 def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer:
     resources = require_runtime_resources(state)
     ground = state.menu_ground
-    texture_scale = state.config.texture_scale
-    explicit_regenerate = bool(regenerate)
-    generated_new_terrain = ground is None or explicit_regenerate
-    scale_changed = False
-    if ground is not None:
-        scale_changed = abs(float(ground.texture_scale) - texture_scale) > 1e-6
+    generated_new_terrain = ground is None or bool(regenerate)
 
     if generated_new_terrain:
         terrain = run_unlock_terrain_prelude(
@@ -110,25 +104,16 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
             overlay_detail=detail,
             width=1024,
             height=1024,
-            texture_scale=texture_scale,
+            texture_scale=state.config.texture_scale,
         )
         state.menu_ground = ground
-        regenerate = True
     else:
         ground.texture = base
         ground.overlay = overlay
         ground.overlay_detail = detail
-        ground.texture_scale = texture_scale
-        if scale_changed:
-            regenerate = True
-    if regenerate:
+    if generated_new_terrain:
         assert ground is not None
-        if generated_new_terrain:
-            ground.schedule_generate(seed=terrain.terrain_seed)
-        else:
-            ground.schedule_generate(seed=state.rng.state)
-            for _ in range(terrain_stamping_draws(width=ground.width, height=ground.height)):
-                state.rng.rand(caller=RngCallerStatic.REWRITE_MENU_GROUND_TERRAIN_STAMPING_BURN)
+        ground.schedule_generate(seed=terrain.terrain_seed)
         state.menu_ground_camera = None
     return ground
 

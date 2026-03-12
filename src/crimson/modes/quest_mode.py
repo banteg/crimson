@@ -603,7 +603,6 @@ class QuestMode(BaseGameplayMode):
 
         self._world_runtime.sync_audio_bridge_state()
         if self.render_resources.ground is not None:
-            self.sync_ground_settings()
             self.render_resources.ground.process_pending()
 
         tick_dt = float(self._gameplay_tick_dt(session=session))
