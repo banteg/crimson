@@ -48,6 +48,55 @@ def test_recording_crand_records_history() -> None:
     assert rng.records_since(1)[0].value == second
 
 
+@pytest.mark.parametrize("seed", [0, 1, 0x1234, 0xDEADBEEF])
+@pytest.mark.parametrize("draws", [0, 1, 2, 5, 37])
+def test_crt_rand_advance_matches_repeated_rand(seed: int, draws: int) -> None:
+    advanced = CrtRand(seed)
+    stepped = CrtRand(seed)
+
+    advanced.advance(draws)
+    for _ in range(draws):
+        stepped.rand()
+
+    assert int(advanced.state) == int(stepped.state)
+
+
+def test_crt_rand_advance_is_silent_for_trace_sink() -> None:
+    rows: list[tuple[int, int, int, CallerStatic]] = []
+    rng = CrtRand(0x1234)
+    rng.set_trace_sink(lambda before, after, value, caller: rows.append((before, after, value, caller)))
+
+    rng.advance(5)
+
+    assert rows == []
+
+
+def test_recording_crand_advance_is_silent() -> None:
+    rng = RecordingCrand(CrtRand(0x1234))
+
+    rng.advance(5)
+
+    assert rng.calls == 0
+    assert rng.records_since() == []
+
+
+def test_scripted_crand_advance_is_silent() -> None:
+    rng = ScriptedCrand([3, 5], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    rng.advance(3)
+
+    assert rng.calls == 0
+    assert rng.records_since() == []
+    assert int(rng.state) == 5
+
+
+def test_crt_rand_advance_rejects_negative_draws() -> None:
+    rng = CrtRand(0x1234)
+
+    with pytest.raises(ValueError, match="draws must be >= 0"):
+        rng.advance(-1)
+
+
 def test_scripted_crand_raises_on_exhaustion_by_default() -> None:
     rng = ScriptedCrand([7])
 

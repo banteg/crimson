@@ -4,15 +4,13 @@ import msgspec
 
 from grim.rand import CrandLike
 
-from ..rng_caller_static import RngCallerStatic
 from ..terrain_slots import (
-    DEFAULT_TERRAIN_SLOTS,
-    UNLOCK_TERRAIN_SLOTS,
     TerrainSlotTriplet,
     choose_unlock_terrain_slots,
 )
 
 # Terrain stamping RNG consumption mirrors `grim/terrain_render.py` + `docs/crimsonland-exe/terrain.md`.
+TERRAIN_RANDOM_PRELUDE_DRAWS = 3
 TERRAIN_DENSITY_BASE = 800
 TERRAIN_DENSITY_OVERLAY = 0x23
 TERRAIN_DENSITY_DETAIL = 0x0F
@@ -35,30 +33,16 @@ def terrain_stamping_draws(*, width: int, height: int) -> int:
     return stamps * TERRAIN_RAND_DRAWS_PER_STAMP
 
 
-class TerrainPreludeResult(msgspec.Struct, frozen=True):
-    seed_before: int
-    seed_after: int
+class TerrainSetup(msgspec.Struct, frozen=True):
     terrain_slots: TerrainSlotTriplet
     terrain_seed: int
-    selection_draws: int
-    stamping_draws: int
-
-    @property
-    def total_draws(self) -> int:
-        return self.selection_draws + self.stamping_draws
 
 
-def _selection_draws_for_result(*, unlock_index: int, terrain_slots: TerrainSlotTriplet) -> int:
-    draws = 0
-    for threshold, slots in UNLOCK_TERRAIN_SLOTS.items():
-        if unlock_index < threshold:
-            continue
-        draws += 1
-        if terrain_slots == slots:
-            break
-        if terrain_slots == DEFAULT_TERRAIN_SLOTS:
-            continue
-    return draws
+def _advance_random_terrain_prelude_rng(rng: CrandLike) -> None:
+    # Native `terrain_generate_random()` consumes three CRT draws before the
+    # unlock-gated variant rolls. The values are not used by the rewrite, but
+    # the state advance is required for parity.
+    rng.advance(TERRAIN_RANDOM_PRELUDE_DRAWS)
 
 
 def _advance_terrain_stamping_rng(
@@ -66,71 +50,54 @@ def _advance_terrain_stamping_rng(
     *,
     width: int,
     height: int,
-) -> int:
-    stamping_draws = terrain_stamping_draws(width=width, height=height)
-    for _ in range(stamping_draws):
-        rng.rand(caller=RngCallerStatic.REWRITE_TERRAIN_PRELUDE_STAMPING_BURN)
-    return stamping_draws
+) -> None:
+    rng.advance(terrain_stamping_draws(width=width, height=height))
 
 
-def run_unlock_terrain_prelude(
+def advance_unlock_terrain(
     rng: CrandLike,
     *,
     unlock_index: int,
     width: int,
     height: int,
-) -> TerrainPreludeResult:
-    """Consume RNG draws for the shared unlock-driven terrain prelude.
+) -> TerrainSetup:
+    """Advance RNG through the shared unlock-driven terrain startup window.
 
-    This advances the authoritative run RNG to match the classic terrain-generation
-    window while also returning the terrain descriptor + seed needed for rendering.
+    Mutates the authoritative RNG to match native `terrain_generate_random()`
+    and returns the minimal render boundary data needed by the detached terrain
+    renderer.
     """
 
-    seed_before = rng.state
+    _advance_random_terrain_prelude_rng(rng)
     terrain_slots = choose_unlock_terrain_slots(unlock_index=unlock_index, rng=rng)
-    selection_draws = _selection_draws_for_result(
-        unlock_index=unlock_index,
-        terrain_slots=terrain_slots,
-    )
     terrain_seed = rng.state
-    stamping_draws = _advance_terrain_stamping_rng(
+    _advance_terrain_stamping_rng(
         rng,
         width=width,
         height=height,
     )
-    seed_after = rng.state
-    return TerrainPreludeResult(
-        seed_before=seed_before,
-        seed_after=seed_after,
+    return TerrainSetup(
         terrain_slots=terrain_slots,
         terrain_seed=terrain_seed,
-        selection_draws=selection_draws,
-        stamping_draws=stamping_draws,
     )
 
 
-def run_explicit_terrain_prelude(
+def advance_explicit_terrain(
     rng: CrandLike,
     *,
     terrain_slots: TerrainSlotTriplet,
     width: int,
     height: int,
-) -> TerrainPreludeResult:
-    """Consume RNG draws for terrain generation when slots are fixed up front."""
+) -> TerrainSetup:
+    """Advance RNG through explicit terrain generation when slots are fixed."""
 
-    seed_before = rng.state
     terrain_seed = rng.state
-    stamping_draws = _advance_terrain_stamping_rng(
+    _advance_terrain_stamping_rng(
         rng,
         width=width,
         height=height,
     )
-    seed_after = rng.state
-    return TerrainPreludeResult(
-        seed_before=seed_before,
-        seed_after=seed_after,
+    return TerrainSetup(
         terrain_slots=terrain_slots,
         terrain_seed=terrain_seed,
-        selection_draws=0,
-        stamping_draws=stamping_draws,
     )

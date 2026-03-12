@@ -14,7 +14,7 @@ from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ..game.types import GameState
-from ..sim.bootstrap import run_unlock_terrain_prelude
+from ..sim.bootstrap import advance_unlock_terrain
 from ..terrain_slots import (
     resolve_terrain_slots,
 )
@@ -84,7 +84,7 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
     generated_new_terrain = ground is None or bool(regenerate)
 
     if generated_new_terrain:
-        terrain = run_unlock_terrain_prelude(
+        terrain = advance_unlock_terrain(
             state.rng,
             unlock_index=int(state.status.quest_unlock_index),
             width=1024,

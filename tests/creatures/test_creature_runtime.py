@@ -936,6 +936,13 @@ class _StubRand:
         self._state = int(value) & 0xFFFFFFFF
         return value
 
+    def advance(self, draws: int) -> None:
+        steps = int(draws)
+        if steps < 0:
+            raise ValueError(f"draws must be >= 0, got {draws}")
+        for _ in range(steps):
+            self.rand()
+
 
 def test_death_awards_xp_and_can_spawn_bonus() -> None:
     state = GameplayState()
@@ -943,7 +950,8 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     # - try_spawn_on_kill gate: (rand % 9) == 1
     # - bonus_pick_random_type roll: roll=1 => points
     # - points amount: (rand & 7) < 3 => 1000
-    state.rng = _StubRand([1, 0, 0])
+    stub_rand = _StubRand([1, 0, 0])
+    state.rng = stub_rand
 
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
@@ -968,7 +976,7 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert any(entry.bonus_id != BonusId.UNUSED for entry in state.bonus_pool.entries)
     assert len(state.effects.iter_active()) == 16
     # Successful spawn-on-kill emits a 16-particle burst (4 RNG draws each).
-    assert state.rng._idx == 67
+    assert stub_rand._idx == 67
 
 
 def test_bonus_on_death_does_not_synthesize_burst_from_mocked_try_spawn_result(mocker) -> None:
@@ -1064,7 +1072,8 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(moc
 
 def test_handle_death_shock_flag_has_no_resolved_death_sfx_without_spawning_debris() -> None:
     state = GameplayState()
-    state.rng = _StubRand([0] * 20)
+    stub_rand = _StubRand([0] * 20)
+    state.rng = stub_rand
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -1084,7 +1093,7 @@ def test_handle_death_shock_flag_has_no_resolved_death_sfx_without_spawning_debr
     )
 
     assert state.effects.iter_active() == []
-    assert state.rng._idx == 0
+    assert stub_rand._idx == 0
 
 
 def test_death_award_uses_float32_sum_before_truncation() -> None:

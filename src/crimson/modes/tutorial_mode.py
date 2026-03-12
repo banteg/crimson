@@ -15,7 +15,7 @@ from ..input_codes import input_code_is_down, input_code_is_pressed, player_move
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
-from ..sim.bootstrap import run_unlock_terrain_prelude
+from ..sim.bootstrap import advance_unlock_terrain
 from ..sim.input import PlayerInput
 from ..sim.session_builders import build_tutorial_session
 from ..sim.sessions import DeterministicSession
@@ -106,7 +106,7 @@ class TutorialMode(BaseGameplayMode):
         self.state.perk_selection.choices_dirty = True
 
         status = self.state.status
-        terrain = run_unlock_terrain_prelude(
+        terrain = advance_unlock_terrain(
             self.state.rng,
             unlock_index=(0 if status is None else int(status.quest_unlock_index)),
             width=int(self.world_size),
@@ -116,7 +116,7 @@ class TutorialMode(BaseGameplayMode):
             terrain_slots=terrain.terrain_slots,
             seed=int(terrain.terrain_seed),
         )
-        self.sim_world.state.rng.srand(int(terrain.seed_after))
+        self.sim_world.state.rng.srand(int(self.state.rng.state))
 
         self.player.pos = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5)
         weapon_assign_player(self.player, WeaponId.PISTOL, state=self.state)

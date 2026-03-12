@@ -190,8 +190,9 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    Reset["world reset seed / current seed"] --> UnlockPrelude["run_unlock_terrain_prelude(...)"]
-    UnlockPrelude --> Apply["apply terrain slots + terrain seed"]
+    Reset["world reset seed / current seed"] --> UnlockPrelude["advance_unlock_terrain(...)"]
+    UnlockPrelude --> Setup["TerrainSetup(terrain_slots, terrain_seed)"]
+    Setup --> Apply["apply terrain slots + terrain seed"]
 
     Menu["MenuView.ensure_menu_ground()"] --> UnlockPrelude
     Survival["SurvivalMode.open()"] --> UnlockPrelude
@@ -200,7 +201,7 @@ flowchart TD
     Quest["QuestMode.prepare_new_run()"] --> UnlockPrelude
 
     Quest --> QuestStage2["quest-only second stage"]
-    QuestStage2 --> ExplicitQuest["run_explicit_terrain_prelude(...)"]
+    QuestStage2 --> ExplicitQuest["advance_explicit_terrain(...)"]
 
     Demo["DemoView"] --> ExplicitDemo["variant-specific explicit terrain setup"]
 ```

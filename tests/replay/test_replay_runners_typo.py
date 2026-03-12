@@ -3,7 +3,7 @@ from __future__ import annotations
 from crimson.game_modes import GameMode
 from crimson.replay import Replay
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
-from crimson.sim.bootstrap import run_unlock_terrain_prelude
+from crimson.sim.bootstrap import advance_unlock_terrain
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import TypoCharCommand, TypoSubmitCommand
 from grim.geom import Vec2
@@ -50,7 +50,7 @@ def test_typo_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
     driver = build_verify_playback_driver(replay)
 
     rng = Crand(int(replay.header.seed))
-    terrain = run_unlock_terrain_prelude(
+    terrain = advance_unlock_terrain(
         rng,
         unlock_index=int(replay.header.status.quest_unlock_index),
         width=int(replay.header.world_size),
@@ -61,7 +61,7 @@ def test_typo_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
     assert terrain_setup is not None
     assert terrain_setup.terrain_slots == terrain.terrain_slots
     assert terrain_setup.terrain_seed == int(terrain.terrain_seed)
-    assert int(driver.world.state.rng.state) == int(terrain.seed_after)
+    assert int(driver.world.state.rng.state) == int(rng.state)
 
 
 def test_typo_runner_uses_header_dictionary_words() -> None:

@@ -34,7 +34,7 @@ from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..rng_caller_static import RngCallerStatic
-from ..sim.bootstrap import run_explicit_terrain_prelude, run_unlock_terrain_prelude
+from ..sim.bootstrap import advance_explicit_terrain, advance_unlock_terrain
 from ..sim.hooks import TickResult
 from ..sim.presentation_reactions import (
     PostApplyReaction,
@@ -398,7 +398,7 @@ class QuestMode(BaseGameplayMode):
         self.bind_status(status)
         bound_status = self.state.status
         generic_unlock_index = int(bound_status.quest_unlock_index) if bound_status is not None else 0
-        _generic_terrain = run_unlock_terrain_prelude(
+        advance_unlock_terrain(
             self.state.rng,
             unlock_index=int(generic_unlock_index),
             width=int(self.world_size),
@@ -407,7 +407,7 @@ class QuestMode(BaseGameplayMode):
         # Native `quest_start_selected()` burns one `crt_rand()` for
         # `highscore_record_random_tag` before quest terrain and spawn setup.
         self.state.rng.rand(caller=RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
-        quest_terrain = run_explicit_terrain_prelude(
+        quest_terrain = advance_explicit_terrain(
             self.state.rng,
             terrain_slots=quest.terrain_slots,
             width=int(self.world_size),

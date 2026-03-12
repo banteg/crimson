@@ -93,6 +93,25 @@ class ScriptedCrand:
         )
         return int(value)
 
+    def advance(self, draws: int) -> None:
+        steps = int(draws)
+        if steps < 0:
+            raise ValueError(f"draws must be >= 0, got {draws}")
+        values = self._shared.values
+        for _ in range(steps):
+            index = int(self._shared.index)
+            fallback = self._shared.fallback
+            if index < len(values):
+                value = int(values[index])
+                self._shared.index = index + 1
+            elif fallback is ScriptedCrandFallback.REPEAT_LAST and values:
+                value = int(values[-1])
+            elif fallback is ScriptedCrandFallback.ZERO:
+                value = 0
+            else:
+                raise IndexError("scripted RNG exhausted")
+            self._shared.state = int(value) & 0xFFFFFFFF
+
     def records_since(self, start_call: int = 0) -> list[RngDrawRecord]:
         start = max(0, int(start_call))
         return list(self._shared.records[start:])

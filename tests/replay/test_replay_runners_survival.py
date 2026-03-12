@@ -5,7 +5,7 @@ import msgspec
 from crimson.game_modes import GameMode
 from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.bootstrap import run_unlock_terrain_prelude
+from crimson.sim.bootstrap import advance_unlock_terrain
 from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 from grim.rand import CallerStatic, Crand
 from tests.support.replay_runner_helpers import _blank_survival_replay, _run_verify_playback
@@ -58,7 +58,7 @@ def test_survival_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
     driver = build_verify_playback_driver(replay)
 
     rng = Crand(int(replay.header.seed))
-    terrain = run_unlock_terrain_prelude(
+    terrain = advance_unlock_terrain(
         rng,
         unlock_index=int(replay.header.status.quest_unlock_index),
         width=int(replay.header.world_size),
@@ -69,7 +69,7 @@ def test_survival_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
     assert terrain_setup is not None
     assert terrain_setup.terrain_slots == terrain.terrain_slots
     assert terrain_setup.terrain_seed == int(terrain.terrain_seed)
-    assert int(driver.world.state.rng.state) == int(terrain.seed_after)
+    assert int(driver.world.state.rng.state) == int(rng.state)
 
 
 def test_survival_runner_ignores_stale_perk_pick_command() -> None:
@@ -170,7 +170,7 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
     assert tagged_by_tick == {
         0: [
             RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
-            RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_BOTTOM_X,
+            RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_TOP_X,
             RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
             RngCallerStatic.SURVIVAL_SPAWN_CREATURE_TYPE_ROLL,
             RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_OVERRIDE,

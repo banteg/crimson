@@ -18,7 +18,7 @@ from .quests import quest_by_level
 from .quests.level import QuestLevel
 from .rng_caller_static import RngCallerStatic
 from .screens.assets import require_runtime_resources
-from .sim.bootstrap import run_explicit_terrain_prelude
+from .sim.bootstrap import advance_explicit_terrain
 from .sim.input import PlayerInput
 from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
@@ -118,7 +118,7 @@ class DemoView:
         *,
         terrain_slots: TerrainSlotTriplet,
     ) -> None:
-        terrain = run_explicit_terrain_prelude(
+        terrain = advance_explicit_terrain(
             self._runtime.sim_world.state.rng,
             terrain_slots=terrain_slots,
             width=int(WORLD_SIZE),
