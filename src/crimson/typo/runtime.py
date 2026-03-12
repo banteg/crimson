@@ -11,6 +11,7 @@ from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.world_state import WorldState
+from ..ui.sfx import typeclick_sfx
 from .player import enforce_typo_player_frame
 from .spawns import tick_typo_spawns
 
@@ -23,12 +24,6 @@ def _require_single_player_typo(command) -> None:
         raise RuntimeError("Typ-o Shooter commands are single-player only")
 
 
-def _typeclick_sfx(world: WorldState, *, caller: RngCallerStatic) -> str:
-    if (world.state.rng.rand(caller=caller) & 1) == 0:
-        return "sfx_ui_typeclick_01"
-    return "sfx_ui_typeclick_02"
-
-
 def apply_typo_command(world: WorldState, command: TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand) -> None:
     _require_single_player_typo(command)
     typo = world.state.typo
@@ -39,12 +34,12 @@ def apply_typo_command(world: WorldState, command: TypoCharCommand | TypoBackspa
             if ch:
                 typing.push_char(str(ch))
                 world.state.sfx_queue.append(
-                    _typeclick_sfx(world, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_CHAR),
+                    typeclick_sfx(world.state.rng, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_CHAR),
                 )
         case TypoBackspaceCommand():
             typing.backspace()
             world.state.sfx_queue.append(
-                _typeclick_sfx(world, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_BACKSPACE),
+                typeclick_sfx(world.state.rng, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_BACKSPACE),
             )
         case TypoSubmitCommand():
             if not typing.text:
