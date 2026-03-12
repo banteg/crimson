@@ -407,7 +407,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     # (creature_type_table[*].sfx_bank_b[rand & 1]) before applying damage.
     options = _CREATURE_CONTACT_SFX.get(creature.type_id)
     if options is not None:
-        ctx.sfx.append(options[ctx.rng.rand() & 1])
+        ctx.sfx.append(options[ctx.rng.rand(caller=RngCallerStatic.CREATURE_UPDATE_ALL_CONTACT_SFX) & 1])
 
     mr_melee_killed = False
     if perk_active(ctx.player, PerkId.MR_MELEE):
@@ -1030,7 +1030,8 @@ class CreaturePool:
                         # creature attack SFX bank-b selection after death side effects.
                         contact_sfx_options = _CREATURE_CONTACT_SFX.get(creature.type_id)
                         if contact_sfx_options is not None:
-                            sfx.append(contact_sfx_options[int(rand()) & 1])
+                            sfx_index = int(rng.rand(caller=RngCallerStatic.CREATURE_UPDATE_ALL_PLAGUE_KILL_SFX)) & 1
+                            sfx.append(contact_sfx_options[sfx_index])
                         plague_killed = True
 
                     if fx_queue is not None:
@@ -1213,7 +1214,10 @@ class CreaturePool:
                         )
                         sfx.append("sfx_plasmaminigun_fire")
                         creature.attack_cooldown = (
-                            float(rand() & 3) * 0.1 + float(creature.orbit_angle) + float(creature.attack_cooldown)
+                            float(rng.rand(caller=RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN) & 3)
+                            * 0.1
+                            + float(creature.orbit_angle)
+                            + float(creature.attack_cooldown)
                         )
 
             interaction_ctx = _CreatureInteractionCtx(
@@ -1511,13 +1515,13 @@ class CreaturePool:
             and rng is not None
             and self.effects is not None
         ):
-
-            def draw() -> int:
-                return rng.rand()
-
-            for count, age in ((8, 0.0), (6, -0.07), (5, -0.12)):
+            for count, age, angle_caller in (
+                (8, 0.0, RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_8_ANGLE),
+                (6, -0.07, RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_6_ANGLE),
+                (5, -0.12, RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_5_ANGLE),
+            ):
                 for _ in range(int(count)):
-                    angle = float(int(draw()) % 612) * 0.01
+                    angle = float(int(rng.rand(caller=angle_caller)) % 612) * 0.01
                     self.effects.spawn_blood_splatter(
                         pos=creature.pos,
                         angle=float(angle),
