@@ -259,7 +259,6 @@ class WorldRuntimeHost:
         inputs: list[PlayerInput] | None = None,
         perk_progression_enabled: bool = False,
         defer_camera_shake_update: bool = False,
-        rng_marks_out: dict[str, int] | None = None,
         apply_audio: bool = True,
     ) -> DeterministicSessionTick:
         self.sync_audio_bridge_state()
@@ -293,8 +292,6 @@ class WorldRuntimeHost:
             trace_rng=False,
         )
         self._survival_test_elapsed_ms = float(session.elapsed_ms)
-        if rng_marks_out is not None:
-            rng_marks_out.update(tick.rng_marks)
 
         self.sim_world.apply_step_metadata(
             events=tick.step.events,

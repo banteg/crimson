@@ -14,7 +14,7 @@ from crimson.replay.driver.replay_info import ReplayInfoResult, collect_replay_i
 from crimson.replay.driver.setup import RunResult
 from crimson.replay.types import current_replay_game_version
 from crimson.sim.input import PlayerInput
-from crimson.sim.world_state import WorldEvents, WorldState
+from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import CallerStatic, Crand
 
@@ -135,7 +135,6 @@ def _run_verify_playback(
     start_weapon_id=None,
     tick_progress_callback: Callable[[int], None] | None = None,
     tick_observer: Callable[[int, WorldState], None] | None = None,
-    tick_trace_observer: Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None] | None = None,
     tick_rng_trace_observer: Callable[[int, list[tuple[int, int, int, CallerStatic]]], None] | None = None,
 ) -> RunResult:
     driver = build_verify_playback_driver(
@@ -150,7 +149,7 @@ def _run_verify_playback(
     )
 
     after_tick = None
-    if checkpoints_out is not None or tick_trace_observer is not None or tick_observer is not None:
+    if checkpoints_out is not None or tick_observer is not None:
         def _after_tick(tick_result, world) -> None:
             if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_result.source_tick.tick_index) in checkpoint_ticks:
                 checkpoints_out.append(
@@ -158,15 +157,6 @@ def _run_verify_playback(
                         tick_result=tick_result,
                         use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
                     ),
-                )
-            if tick_trace_observer is not None:
-                tick = tick_result.payload
-                tick_trace_observer(
-                    int(tick_result.source_tick.tick_index),
-                    world,
-                    float(tick.elapsed_ms),
-                    tick.step.events,
-                    dict(tick.rng_marks),
                 )
             if tick_observer is not None:
                 tick_observer(int(tick_result.source_tick.tick_index), world)

@@ -50,7 +50,6 @@ from .world_state import WorldState
 class DeterministicSessionTick(msgspec.Struct):
     step: DeterministicStepResult
     elapsed_ms: float
-    rng_marks: dict[str, int]
     creature_count_world_step: int
 
 
@@ -63,7 +62,6 @@ class MidStepContext(msgspec.Struct, frozen=True):
     """Context passed to mid-step spawn hooks during deterministic stepping."""
 
     world: WorldState
-    rng_marks: dict[str, int]
     elapsed_before_ms: float
     dt_sim_ms: float
     dt_raw_ms: float
@@ -75,7 +73,6 @@ class PostStepContext(msgspec.Struct, frozen=True):
     """Context passed to post-step hooks during deterministic stepping."""
 
     world: WorldState
-    rng_marks: dict[str, int]
     step_result: DeterministicStepResult
     dt_sim_ms: float
     world_size: float
@@ -120,7 +117,6 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
             float(call.heading),
             state.rng,
         )
-    ctx.rng_marks["after_stage_spawns"] = int(state.rng.state)
 
     player_xp = ctx.world.players[0].experience if ctx.world.players else 0
     cooldown, wave_spawns = tick_survival_wave_spawns(
@@ -135,7 +131,6 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
     )
     spawn.spawn_cooldown_ms = cooldown
     ctx.world.creatures.spawn_inits(wave_spawns)
-    ctx.rng_marks["after_wave_spawns"] = int(state.rng.state)
 
 def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
     state = ctx.world.state
@@ -150,7 +145,6 @@ def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
     )
     spawn.spawn_cooldown_ms = cooldown
     ctx.world.creatures.spawn_inits(spawns)
-    ctx.rng_marks["after_rush_spawns"] = int(state.rng.state)
 
 def quest_post_step(ctx: PostStepContext, spawn: QuestSpawnState) -> None:
     state = ctx.world.state
@@ -181,7 +175,6 @@ def quest_post_step(ctx: PostStepContext, spawn: QuestSpawnState) -> None:
             float(call.heading),
             state.rng,
         )
-    ctx.rng_marks["after_quest_spawns"] = int(state.rng.state)
 
     any_alive_after = any(player.health > 0.0 for player in ctx.world.players)
     if any_alive_after:
@@ -313,16 +306,10 @@ class DeterministicSession(msgspec.Struct):
         dt_raw_ms = float(timing.dt_ms_i32)
         elapsed_before_ms = self.elapsed_ms
 
-        rng_marks: dict[str, int] = {}
-        if commands:
-            rng_marks["after_commands"] = int(state.rng.state)
-        rng_marks["before_world_step"] = int(state.rng.state)
-
         hook: Callable[[], None] | None = None
         if self.mid_step_hook is not None:
             ctx = MidStepContext(
                 world=self.world,
-                rng_marks=rng_marks,
                 elapsed_before_ms=elapsed_before_ms,
                 dt_sim_ms=dt_sim_ms,
                 dt_raw_ms=dt_raw_ms,
@@ -341,20 +328,12 @@ class DeterministicSession(msgspec.Struct):
         else:
             presentation_rng = state.rng
 
-        def _mark(name: str) -> None:
-            rng_marks[str(name)] = int(state.rng.state)
-
         normalized_inputs = normalize_input_frame(tick_inputs, player_count=len(self.world.players)).as_list()
-
-        _mark("gw_begin")
         state.game_mode = self.game_mode
         state.demo_mode_active = self.demo_mode_active
 
         weapon_refresh_available(state)
-        _mark("gw_after_weapon_refresh")
         perks_rebuild_available(state)
-        _mark("gw_after_perks_rebuild")
-        _mark("gw_after_time_scale")
 
         prev_audio = [
             (player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in self.world.players
@@ -378,7 +357,6 @@ class DeterministicSession(msgspec.Struct):
             game_mode=self.game_mode,
             perk_progression_enabled=self.perk_progression_enabled,
             game_tune_started=self.game_tune_started,
-            rng_marks=rng_marks,
         )
 
         presentation_trace = PresentationRngTrace()
@@ -405,7 +383,6 @@ class DeterministicSession(msgspec.Struct):
         presentation_plan_ms = (time.perf_counter_ns() - plan_ns_start) / 1_000_000.0
         if recording_rng is not None:
             presentation_trace.draws_total = int(recording_rng.calls)
-            rng_marks["ps_draws_total"] = presentation_trace.draws_total
 
         step = DeterministicStepResult(
             dt_sim=timing.dt_sim,
@@ -428,7 +405,6 @@ class DeterministicSession(msgspec.Struct):
             self.post_step_hook(
                 PostStepContext(
                     world=self.world,
-                    rng_marks=rng_marks,
                     step_result=step,
                     dt_sim_ms=dt_sim_ms,
                     world_size=self.world_size,
@@ -437,8 +413,6 @@ class DeterministicSession(msgspec.Struct):
             )
 
         creature_count_world_step = sum(1 for c in self.world.creatures.entries if c.active)
-        rng_marks["after_world_step"] = int(state.rng.state)
-        rng_marks["after_camera_update"] = int(rng_marks.get("ws_after_camera_update", state.rng.state))
 
         if self.finalize_post_render_lifecycle:
             self.world.creatures.finalize_post_render_lifecycle()
@@ -449,6 +423,5 @@ class DeterministicSession(msgspec.Struct):
         return DeterministicSessionTick(
             step=step,
             elapsed_ms=self.elapsed_ms,
-            rng_marks=rng_marks,
             creature_count_world_step=creature_count_world_step,
         )

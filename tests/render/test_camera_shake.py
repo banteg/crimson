@@ -179,7 +179,7 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         finalize_post_render_lifecycle=True,
     )
 
-    tick = session.step_tick(
+    _tick = session.step_tick(
         dt=1.0 / 60.0,
         inputs=[PlayerInput(aim=Vec2(player.pos.x, player.pos.y))],
     )
@@ -187,7 +187,6 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     assert bool(getattr(entry, "picked", False))
     assert world.state.camera_shake_pulses == 0x14
     assert_float_close(world.state.camera_shake_timer, 0.2)
-    assert tick.rng_marks["after_camera_update"] == tick.rng_marks["after_wave_spawns"]
 
 
 def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
@@ -207,7 +206,7 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         finalize_post_render_lifecycle=True,
     )
 
-    tick = session.step_tick(
+    _tick = session.step_tick(
         dt=1.0 / 60.0,
         inputs=[PlayerInput(aim=Vec2(player.pos.x, player.pos.y))],
     )
@@ -215,4 +214,3 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     assert bool(getattr(entry, "picked", False))
     assert world.state.camera_shake_pulses == 0x14
     assert_float_close(world.state.camera_shake_timer, 0.2)
-    assert tick.rng_marks["after_camera_update"] == tick.rng_marks["after_rush_spawns"]
