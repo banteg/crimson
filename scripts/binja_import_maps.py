@@ -205,12 +205,38 @@ def _program_matches(entry_program: str | None, candidates: set[str]) -> bool:
 
 def _parse_type_string(bv, type_text: str):
     try:
-        return bv.parse_type_string(type_text)
+        parsed = bv.parse_type_string(type_text)
+        if isinstance(parsed, tuple):
+            first = parsed[0]
+            if isinstance(first, tuple) and len(first) == 2:
+                return first[1]
+            return first
+        return parsed
     except Exception:
         pass
     if bn and hasattr(bn, "parse_type_string"):
         try:
-            return bn.parse_type_string(type_text)
+            parsed = bn.parse_type_string(type_text)
+            if isinstance(parsed, tuple):
+                first = parsed[0]
+                if isinstance(first, tuple) and len(first) == 2:
+                    return first[1]
+                return first
+            return parsed
+        except Exception:
+            pass
+    platform = getattr(bv, "platform", None)
+    type_parser = getattr(getattr(bn, "TypeParser", None), "default", None) if bn else None
+    parse = getattr(type_parser, "parse_type_string", None)
+    if callable(parse) and platform is not None:
+        try:
+            parsed = parse(type_text, platform)
+            if isinstance(parsed, tuple):
+                first = parsed[0]
+                if isinstance(first, tuple) and len(first) == 2:
+                    return first[1]
+                return first
+            return parsed
         except Exception:
             pass
     return None
@@ -367,6 +393,39 @@ def _type_width(type_obj) -> int | None:
     return None
 
 
+def _type_member_count(type_obj) -> int | None:
+    if type_obj is None:
+        return None
+    target = getattr(type_obj, "target", None) or type_obj
+    try:
+        members = getattr(target, "members", None)
+    except Exception:
+        return None
+    if members is None:
+        return None
+    try:
+        return len(members)
+    except Exception:
+        try:
+            return len(list(members))
+        except Exception:
+            return None
+
+
+def _should_replace_incomplete_type(existing, replacement) -> bool:
+    existing_members = _type_member_count(existing)
+    replacement_members = _type_member_count(replacement)
+    if replacement_members in (None, 0) or existing_members not in (0, None):
+        return False
+    existing_width = _type_width(existing)
+    replacement_width = _type_width(replacement)
+    return (
+        existing_width is None
+        or replacement_width is None
+        or existing_width == replacement_width
+    )
+
+
 def _define_opaque_struct_type(bv, name: str, size: int | None = None) -> bool:
     existing = _get_type_by_name(bv, name)
     if existing is not None:
@@ -423,9 +482,15 @@ def _parse_types_from_source(bv, source: str, *, filename: str | None = None, in
         candidates.append(("bv.parse_types_from_source", bv.parse_types_from_source))
     if hasattr(bn, "parse_types_from_source"):
         candidates.append(("bn.parse_types_from_source", bn.parse_types_from_source))
+    if platform is not None and hasattr(platform, "parse_types_from_source"):
+        candidates.append(("platform.parse_types_from_source", platform.parse_types_from_source))
+    type_parser = getattr(getattr(bn, "TypeParser", None), "default", None)
+    parse_from_source = getattr(type_parser, "parse_types_from_source", None)
+    if callable(parse_from_source) and platform is not None:
+        candidates.append(("TypeParser.default.parse_types_from_source", parse_from_source))
 
     last_exc: Exception | None = None
-    for _, fn in candidates:
+    for label, fn in candidates:
         call_variants: list[tuple[tuple, dict]] = [
             ((source,), {}),
             ((source,), {"filename": filename} if filename else {}),
@@ -447,10 +512,21 @@ def _parse_types_from_source(bv, source: str, *, filename: str | None = None, in
             call_variants.append(((source, filename), {}))
         if platform and filename:
             call_variants.append(((source, filename, platform), {}))
+        if label == "TypeParser.default.parse_types_from_source" and filename and platform:
+            call_variants = [
+                (
+                    (source, filename, platform),
+                    {k: v for k, v in (("include_dirs", include_dirs),) if v is not None},
+                ),
+                ((source, filename, platform), {}),
+            ]
 
         for args, kwargs in call_variants:
             try:
-                return fn(*args, **kwargs)
+                parsed = fn(*args, **kwargs)
+                if isinstance(parsed, tuple) and parsed:
+                    return parsed[0]
+                return parsed
             except Exception as exc:
                 last_exc = exc
                 continue
@@ -463,8 +539,13 @@ def _parse_types_from_source(bv, source: str, *, filename: str | None = None, in
 def _extract_parsed_types(parsed) -> dict:
     if parsed is None:
         return {}
-    if isinstance(parsed, tuple) and parsed and isinstance(parsed[0], dict):
-        return parsed[0]
+    if isinstance(parsed, tuple) and parsed:
+        first = parsed[0]
+        if isinstance(first, dict):
+            return first
+        types = getattr(first, "types", None)
+        if isinstance(types, dict):
+            return types
     types = getattr(parsed, "types", None)
     if isinstance(types, dict):
         return types
@@ -474,8 +555,25 @@ def _extract_parsed_types(parsed) -> dict:
 def _sanitize_header_source(source: str) -> str:
     if not source:
         return source
-    lines = [line for line in source.splitlines() if not line.lstrip().startswith("#")]
-    return _rewrite_type_tokens("\n".join(lines))
+    return "\n".join(line for line in source.splitlines() if not line.lstrip().startswith("#"))
+
+
+def _header_parse_prelude(source: str) -> str:
+    import re
+
+    if not source:
+        return ""
+
+    prelude: list[str] = []
+    for name, replacement in sorted(_TYPE_REPLACEMENTS.items()):
+        typedef_def = rf"\btypedef\b[^;\n{{}}]*\b{re.escape(name)}\b\s*(?:;|\[|\()"
+        tag_def = rf"\b(?:struct|union|enum)\s+{re.escape(name)}\b\s*(?:;|\{{)"
+        if re.search(typedef_def, source) or re.search(tag_def, source):
+            continue
+        prelude.append(f"typedef {replacement} {name};")
+    if not prelude:
+        return ""
+    return "\n".join(prelude) + "\n"
 
 
 def _seed_repo_headers(bv) -> None:
@@ -522,7 +620,8 @@ def _seed_repo_headers(bv) -> None:
             continue
 
         source = _sanitize_header_source(source)
-        parsed = _parse_types_from_source(bv, source, filename=str(header_path), include_dirs=include_dirs)
+        parsed_source = _header_parse_prelude(source) + source
+        parsed = _parse_types_from_source(bv, parsed_source, filename=str(header_path), include_dirs=include_dirs)
         types = _extract_parsed_types(parsed)
         if not types:
             continue
@@ -533,8 +632,7 @@ def _seed_repo_headers(bv) -> None:
                 continue
             existing = _get_type_by_name(bv, name_str)
             if existing is not None:
-                existing_width = _type_width(existing)
-                if existing_width is None or existing_width > 0:
+                if not _should_replace_incomplete_type(existing, type_obj):
                     continue
             if _define_or_replace_user_type(bv, name, type_obj):
                 seeded_total += 1
@@ -817,8 +915,6 @@ def _resolve_data_type(bv, type_text: str):
             if parsed is not None:
                 type_text = rewritten
     if parsed is not None:
-        if isinstance(parsed, tuple):
-            return parsed[0]
         return parsed
     if hasattr(bv, "get_type_by_name"):
         try:
@@ -856,7 +952,7 @@ def _apply_function_signature(bv, func, signature: str) -> bool:
                     parsed = _parse_type_string(bv, rewritten)
         if parsed is None:
             return False
-    func_type = parsed[0] if isinstance(parsed, tuple) else parsed
+    func_type = parsed
     try:
         if hasattr(func, "set_user_type"):
             func.set_user_type(func_type)
