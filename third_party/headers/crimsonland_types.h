@@ -414,7 +414,9 @@ typedef void (*ui_element_callback_t)(void);
 typedef struct ui_element_t {
     unsigned char active;
     unsigned char enabled;
-    unsigned char _pad0[0x16];
+    unsigned char _pad0[0xe];
+    int timeline_end_ms;
+    int timeline_start_ms;
     float pos_x;
     float pos_y;
     unsigned char _pad1[0x14];
