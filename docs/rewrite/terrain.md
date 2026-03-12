@@ -53,8 +53,8 @@ The rewrite exposes the same mechanism via two helpers:
 
 - `GroundRenderer.bake_decals([...])` for generic textured decals (blood, scorch, etc).
   - Applies `inv_scale = 1/texture_scale` to positions/sizes so baked pixels match the exe’s scaled RT.
-  - Temporarily forces point sampling while stamping, matching the exe’s bake-time `filter=1` state.
   - Runs through the terrain alpha-test shim, so low-alpha fringe texels are discarded before blending.
+  - Intentional rewrite deviation: generic decal sprites keep bilinear sampling while baking. The original engine appears to point-sample them, but bilinear reads better in the port.
 
 - `GroundRenderer.bake_corpse_decals(bodyset_texture, [...])` for corpse sprites (bodyset 4×4 atlas frames).
   - Implements the two-pass corpse baking:

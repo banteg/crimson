@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 
 import msgspec
@@ -146,36 +146,6 @@ def _maybe_alpha_test(enabled: bool) -> Iterator[None]:
         yield
     finally:
         rl.end_shader_mode()
-
-
-def _unique_valid_textures(textures: Iterable[rl.Texture | None]) -> tuple[rl.Texture, ...]:
-    unique: list[rl.Texture] = []
-    seen: set[int] = set()
-    for texture in textures:
-        if texture is None or texture.id <= 0:
-            continue
-        texture_id = int(texture.id)
-        if texture_id in seen:
-            continue
-        seen.add(texture_id)
-        unique.append(texture)
-    return tuple(unique)
-
-
-@contextmanager
-def _temporary_point_filters(textures: Iterable[rl.Texture | None]) -> Iterator[None]:
-    unique = _unique_valid_textures(textures)
-    if not unique:
-        yield
-        return
-    for texture in unique:
-        rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
-    try:
-        yield
-    finally:
-        for texture in unique:
-            rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
-
 
 class GroundDecal(msgspec.Struct):
     texture: rl.Texture
@@ -328,39 +298,38 @@ class GroundRenderer(msgspec.Struct):
 
         inv_scale = 1.0 / self._normalized_texture_scale()
         rl.begin_texture_mode(self.render_target)
-        with _temporary_point_filters(decal.texture for decal in decals):
-            with _maybe_alpha_test(self.alpha_test):
-                with _blend_custom_separate(
-                    rd.RL_SRC_ALPHA,
-                    rd.RL_ONE_MINUS_SRC_ALPHA,
-                    rd.RL_ZERO,
-                    rd.RL_ONE,
-                    rd.RL_FUNC_ADD,
-                    rd.RL_FUNC_ADD,
-                ):
-                    for decal in decals:
-                        w = decal.width
-                        h = decal.height
-                        if decal.centered:
-                            pivot_x = decal.pos.x
-                            pivot_y = decal.pos.y
-                        else:
-                            pivot_x = decal.pos.x + w * 0.5
-                            pivot_y = decal.pos.y + h * 0.5
-                        pivot_x *= inv_scale
-                        pivot_y *= inv_scale
-                        w *= inv_scale
-                        h *= inv_scale
-                        dst = rl.Rectangle(pivot_x, pivot_y, w, h)
-                        origin = rl.Vector2(w * 0.5, h * 0.5)
-                        rl.draw_texture_pro(
-                            decal.texture,
-                            decal.src,
-                            dst,
-                            origin,
-                            math.degrees(decal.rotation_rad),
-                            decal.tint,
-                        )
+        with _maybe_alpha_test(self.alpha_test):
+            with _blend_custom_separate(
+                rd.RL_SRC_ALPHA,
+                rd.RL_ONE_MINUS_SRC_ALPHA,
+                rd.RL_ZERO,
+                rd.RL_ONE,
+                rd.RL_FUNC_ADD,
+                rd.RL_FUNC_ADD,
+            ):
+                for decal in decals:
+                    w = decal.width
+                    h = decal.height
+                    if decal.centered:
+                        pivot_x = decal.pos.x
+                        pivot_y = decal.pos.y
+                    else:
+                        pivot_x = decal.pos.x + w * 0.5
+                        pivot_y = decal.pos.y + h * 0.5
+                    pivot_x *= inv_scale
+                    pivot_y *= inv_scale
+                    w *= inv_scale
+                    h *= inv_scale
+                    dst = rl.Rectangle(pivot_x, pivot_y, w, h)
+                    origin = rl.Vector2(w * 0.5, h * 0.5)
+                    rl.draw_texture_pro(
+                        decal.texture,
+                        decal.src,
+                        dst,
+                        origin,
+                        math.degrees(decal.rotation_rad),
+                        decal.tint,
+                    )
         rl.end_texture_mode()
 
         self._render_target_ready = True

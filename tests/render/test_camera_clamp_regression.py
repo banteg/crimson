@@ -314,7 +314,7 @@ def test_bake_decals_returns_false_without_render_target(mocker) -> None:
     assert ground.bake_decals((decal,)) is False
 
 
-def test_bake_decals_uses_alpha_test_and_point_filter(mocker) -> None:
+def test_bake_decals_keep_default_filter(mocker) -> None:
     decal_texture = _as_texture(_TextureStub(id=2))
     ground = _ground(texture=_TextureStub(id=1))
     ground.render_target = _as_render_texture(_RenderTextureStub())
@@ -342,11 +342,7 @@ def test_bake_decals_uses_alpha_test_and_point_filter(mocker) -> None:
     assert ground.bake_decals((decal,)) is True
 
     alpha_test.assert_called_once_with(True)
-    filter_modes = [call.args[1] for call in set_texture_filter.call_args_list]
-    assert filter_modes == [
-        terrain_render.rl.TextureFilter.TEXTURE_FILTER_POINT,
-        terrain_render.rl.TextureFilter.TEXTURE_FILTER_BILINEAR,
-    ]
+    set_texture_filter.assert_not_called()
 
 
 def test_bake_corpse_decals_keeps_default_filter(mocker) -> None:
