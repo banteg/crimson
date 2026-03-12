@@ -175,7 +175,6 @@ class GroundRenderer(msgspec.Struct):
     texture_failed: bool = False
     screen_width: float | None = None
     screen_height: float | None = None
-    terrain_filter: float = 1.0
     render_target: rl.RenderTexture | None = None
     _render_target_ready: bool = False
     _pending_generate: bool = False
@@ -414,14 +413,10 @@ class GroundRenderer(msgspec.Struct):
         src_h = (v1 - v0) * float(target.texture.height)
         src = rl.Rectangle(src_x, src_y, src_w, -src_h)
         dst = rl.Rectangle(0.0, 0.0, out_w, out_h)
-        if self.terrain_filter == 2.0:
-            rl.set_texture_filter(target.texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
         # Disable alpha blending when drawing terrain to screen - the render target's
         # alpha channel may be < 1.0 after stamp blending, but terrain should be opaque.
         with _blend_custom(rd.RL_ONE, rd.RL_ZERO, rd.RL_FUNC_ADD):
             rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-        if self.terrain_filter == 2.0:
-            rl.set_texture_filter(target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
 
     def _fit_view_window(self, screen_w: float, screen_h: float) -> tuple[float, float]:
         """

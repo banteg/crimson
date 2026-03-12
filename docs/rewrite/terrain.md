@@ -63,15 +63,6 @@ The rewrite exposes the same mechanism via two helpers:
   - Applies the exe’s small alignment tweaks (`-0.5` shift and `offset = terrain_scale/512`) and rotation offset (`rotation - pi/2`).
   - Intentional rewrite deviation: corpse atlas frames keep bilinear sampling while baking. The original engine appears to point-sample them, but that looks worse in the port at modern output scales.
 
-## Terrain filter ("terrainFilter")
-
-The exe optionally forces point sampling when blitting terrain to the screen if
-`terrainFilter == 2.0`.
-
-The rewrite mirrors this via `GroundRenderer.terrain_filter`:
-
-- `terrain_filter == 2.0` → temporary point sampling for the terrain blit only.
-
 ## Blend mode when drawing to screen
 
 During terrain generation, stamps are drawn with alpha blending enabled
