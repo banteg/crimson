@@ -1103,6 +1103,31 @@ def clamp01(value: float) -> float:
     return value
 
 
+class SurvivalSpawnPosCallers(msgspec.Struct, frozen=True):
+    edge: RngCallerStatic
+    top_x: RngCallerStatic
+    bottom_x: RngCallerStatic
+    left_y: RngCallerStatic
+    right_y: RngCallerStatic
+
+
+SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS = SurvivalSpawnPosCallers(
+    edge=RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_EDGE,
+    top_x=RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_TOP_X,
+    bottom_x=RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_BOTTOM_X,
+    left_y=RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_LEFT_Y,
+    right_y=RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_RIGHT_Y,
+)
+
+SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS = SurvivalSpawnPosCallers(
+    edge=RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
+    top_x=RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_TOP_X,
+    bottom_x=RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_BOTTOM_X,
+    left_y=RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_LEFT_Y,
+    right_y=RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_RIGHT_Y,
+)
+
+
 def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experience: int) -> CreatureInit:
     """Pure model of `survival_spawn_creature` (crimsonland.exe 0x00407510).
 
@@ -1280,16 +1305,22 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     return c
 
 
-def rand_survival_spawn_pos(rng: CrandLike, *, terrain_width: int, terrain_height: int) -> Vec2:
-    match rng.rand() & 3:
+def rand_survival_spawn_pos(
+    rng: CrandLike,
+    *,
+    terrain_width: int,
+    terrain_height: int,
+    callers: SurvivalSpawnPosCallers,
+) -> Vec2:
+    match rng.rand(caller=callers.edge) & 3:
         case 0:
-            return Vec2(float(rng.rand() % terrain_width), -40.0)
+            return Vec2(float(rng.rand(caller=callers.top_x) % terrain_width), -40.0)
         case 1:
-            return Vec2(float(rng.rand() % terrain_width), float(terrain_height) + 40.0)
+            return Vec2(float(rng.rand(caller=callers.bottom_x) % terrain_width), float(terrain_height) + 40.0)
         case 2:
-            return Vec2(-40.0, float(rng.rand() % terrain_height))
+            return Vec2(-40.0, float(rng.rand(caller=callers.left_y) % terrain_height))
         case _:
-            return Vec2(float(terrain_width) + 40.0, float(rng.rand() % terrain_height))
+            return Vec2(float(terrain_width) + 40.0, float(rng.rand(caller=callers.right_y) % terrain_height))
 
 
 def tick_survival_wave_spawns(
@@ -1328,14 +1359,24 @@ def tick_survival_wave_spawns(
             extra = (1 - interval_ms) >> 1
             interval_ms += int(extra) * 2
             for _ in range(int(extra)):
-                pos = rand_survival_spawn_pos(rng, terrain_width=terrain_width, terrain_height=terrain_height)
+                pos = rand_survival_spawn_pos(
+                    rng,
+                    terrain_width=terrain_width,
+                    terrain_height=terrain_height,
+                    callers=SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS,
+                )
                 spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
 
         if interval_ms < 1:
             interval_ms = 1
         cooldown = f32(cooldown + f32(float(interval_ms)))
 
-        pos = rand_survival_spawn_pos(rng, terrain_width=terrain_width, terrain_height=terrain_height)
+        pos = rand_survival_spawn_pos(
+            rng,
+            terrain_width=terrain_width,
+            terrain_height=terrain_height,
+            callers=SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS,
+        )
         spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
 
     return float(cooldown), tuple(spawns)

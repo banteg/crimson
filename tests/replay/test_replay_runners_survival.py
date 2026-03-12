@@ -169,6 +169,8 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
 
     assert tagged_by_tick == {
         0: [
+            RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
+            RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_BOTTOM_X,
             RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
             RngCallerStatic.SURVIVAL_SPAWN_CREATURE_TYPE_ROLL,
             RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_OVERRIDE,
