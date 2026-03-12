@@ -15,6 +15,7 @@ from ...effects import EffectPool
 from ...math_parity import NATIVE_HALF_PI, f32
 from ...owner_ref import OwnerRef
 from ...perks import PerkId
+from ...rng_caller_static import RngCallerStatic
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..types import (
     MAIN_PROJECTILE_POOL_SIZE,
@@ -420,7 +421,7 @@ class ProjectilePool:
 
                     if proj.life_timer != 0.25 and rule.stop_on_hit:
                         proj.life_timer = 0.25
-                        jitter = rng.rand() & 3
+                        jitter = rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER) & 3
                         jitter_dx = float(f32(float(dir_x) * float(jitter)))
                         jitter_dy = float(f32(float(dir_y) * float(jitter)))
                         proj.pos = Vec2(

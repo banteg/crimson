@@ -174,7 +174,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
 
     assert_float_close(float(creature.size), 32.5)
     assert [record.caller for record in rng.records_since()] == [
-        None,
+        RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER,
         RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
         RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
         RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
