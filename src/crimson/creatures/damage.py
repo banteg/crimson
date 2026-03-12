@@ -19,7 +19,7 @@ from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PlayerState
 from .damage_types import CreatureDamageType
 from .runtime import CREATURE_LIFECYCLE_ALIVE, CreatureState
-from .spawn import CreatureFlags
+from .spawn import CreatureFlags, CreatureTypeId
 
 
 def _any_player_has_perk(players: list[PlayerState], perk_id: PerkId) -> bool:
@@ -38,6 +38,46 @@ class _CreatureDamageCtx(msgspec.Struct):
 
 
 _CreatureDamageStep = Callable[[_CreatureDamageCtx], None]
+
+
+_CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[str, ...]] = {
+    CreatureTypeId.ZOMBIE: (
+        "sfx_zombie_die_01",
+        "sfx_zombie_die_02",
+        "sfx_zombie_die_03",
+        "sfx_zombie_die_04",
+    ),
+    CreatureTypeId.LIZARD: (
+        "sfx_lizard_die_01",
+        "sfx_lizard_die_02",
+        "sfx_lizard_die_03",
+        "sfx_lizard_die_04",
+    ),
+    CreatureTypeId.ALIEN: (
+        "sfx_alien_die_01",
+        "sfx_alien_die_02",
+        "sfx_alien_die_03",
+        "sfx_alien_die_04",
+    ),
+    CreatureTypeId.SPIDER_SP1: (
+        "sfx_spider_die_01",
+        "sfx_spider_die_02",
+        "sfx_spider_die_03",
+        "sfx_spider_die_04",
+    ),
+    CreatureTypeId.SPIDER_SP2: (
+        "sfx_spider_die_01",
+        "sfx_spider_die_02",
+        "sfx_spider_die_03",
+        "sfx_spider_die_04",
+    ),
+    CreatureTypeId.TROOPER: (
+        "sfx_trooper_die_01",
+        "sfx_trooper_die_02",
+        "sfx_trooper_die_03",
+        "sfx_trooper_die_04",
+    ),
+}
 
 
 def _damage_type1_uranium_filled_bullets(ctx: _CreatureDamageCtx) -> None:
@@ -127,6 +167,16 @@ def _damage_lethal_ranged_shock_burst(
             scale_step=scale_step,
             detail_preset=int(detail_preset),
         )
+
+
+def resolve_native_death_sfx_key(creature: CreatureState, *, rng: CrandLike) -> str | None:
+    """Resolve the native `creature_apply_damage` death sound, if this path owns one."""
+    if (creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK) != 0:
+        return None
+    options = _CREATURE_DEATH_SFX.get(creature.type_id)
+    if options is None:
+        return None
+    return options[rng.rand(caller=RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX) & 3]
 
 
 _CREATURE_DAMAGE_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
@@ -236,7 +286,7 @@ def creature_apply_damage_with_lethal_followup(
     rng: CrandLike,
     effects: EffectPool | None = None,
     detail_preset: int = 5,
-    on_lethal: Callable[[], None],
+    on_lethal: Callable[[str | None], None],
 ) -> bool:
     """Apply damage and run a required lethal follow-up exactly on death transition.
 
@@ -258,6 +308,6 @@ def creature_apply_damage_with_lethal_followup(
         detail_preset=int(detail_preset),
     )
     if killed and death_start_needed:
-        on_lethal()
+        on_lethal(resolve_native_death_sfx_key(creature, rng=rng))
         return True
     return False

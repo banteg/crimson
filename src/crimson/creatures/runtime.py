@@ -277,10 +277,7 @@ class CreatureDeath(msgspec.Struct, frozen=True):
     reward_value: float
     xp_awarded: int
     owner: OwnerRef
-    suppress_death_sfx: bool = False
-    # Some native death paths already consume/use their own SFX randomness
-    # (for example plague timer kills). Skip world-level death-SFX planning there.
-    plan_death_sfx: bool = True
+    death_sfx_key: str | None = None
 
 
 class CreatureUpdateResult(msgspec.Struct, frozen=True):
@@ -413,8 +410,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     if perk_active(ctx.player, PerkId.MR_MELEE):
         from .damage import creature_apply_damage_with_lethal_followup
 
-        def _on_mr_melee_lethal() -> None:
-            suppress_death_sfx = bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK)
+        def _on_mr_melee_lethal(death_sfx_key: str | None) -> None:
             ctx.deaths.append(
                 ctx.pool.handle_death(
                     ctx.creature_index,
@@ -426,7 +422,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
                     world_width=float(ctx.world_width),
                     world_height=float(ctx.world_height),
                     fx_queue=ctx.fx_queue,
-                    plan_death_sfx=not bool(suppress_death_sfx),
+                    death_sfx_key=death_sfx_key,
                 ),
             )
             if creature.active:
@@ -918,7 +914,6 @@ class CreaturePool:
 
             from .damage import creature_apply_damage_with_lethal_followup
 
-            suppress_death_sfx = bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK)
             return creature_apply_damage_with_lethal_followup(
                 creature,
                 damage_amount=float(damage_amount),
@@ -930,7 +925,7 @@ class CreaturePool:
                 rng=rng,
                 effects=state.effects,
                 detail_preset=int(detail_preset),
-                on_lethal=lambda suppress_death_sfx=suppress_death_sfx: deaths.append(
+                on_lethal=lambda death_sfx_key: deaths.append(
                     self.handle_death(
                         int(creature_index),
                         state=state,
@@ -941,7 +936,7 @@ class CreaturePool:
                         world_width=world_width,
                         world_height=world_height,
                         fx_queue=fx_queue,
-                        plan_death_sfx=not bool(suppress_death_sfx),
+                        death_sfx_key=death_sfx_key,
                     ),
                 ),
             )
@@ -1023,7 +1018,6 @@ class CreaturePool:
                                 world_width=world_width,
                                 world_height=world_height,
                                 fx_queue=fx_queue,
-                                plan_death_sfx=False,
                             ),
                         )
                         # Native plague-kill path consumes one rand draw for
@@ -1289,7 +1283,7 @@ class CreaturePool:
         world_height: float,
         fx_queue: FxQueue | None,
         keep_corpse: bool = True,
-        plan_death_sfx: bool = True,
+        death_sfx_key: str | None = None,
     ) -> CreatureDeath:
         """Run one-shot death side effects and return the `CreatureDeath` event."""
 
@@ -1321,8 +1315,7 @@ class CreaturePool:
                 reward_value=float(creature.reward_value),
                 xp_awarded=0,
                 owner=creature.last_hit_owner,
-                suppress_death_sfx=bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK),
-                plan_death_sfx=bool(plan_death_sfx),
+                death_sfx_key=death_sfx_key,
             )
         death = self._start_death(
             int(idx),
@@ -1368,8 +1361,8 @@ class CreaturePool:
             self.kill_count += 1
             creature.active = False
 
-        if not bool(plan_death_sfx):
-            death = msgspec.structs.replace(death, plan_death_sfx=False)
+        if death_sfx_key is not None:
+            death = msgspec.structs.replace(death, death_sfx_key=str(death_sfx_key))
 
         return death
 
@@ -1613,8 +1606,6 @@ class CreaturePool:
                 world_height=world_height,
             )
 
-        armored_death = bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK)
-
         return CreatureDeath(
             index=int(idx),
             pos=creature.pos,
@@ -1622,5 +1613,4 @@ class CreaturePool:
             reward_value=float(creature.reward_value),
             xp_awarded=int(xp_awarded),
             owner=creature.last_hit_owner,
-            suppress_death_sfx=bool(armored_death),
         )

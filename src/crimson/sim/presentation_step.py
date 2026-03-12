@@ -10,8 +10,6 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ..bonuses.freeze import freeze_bonus_active
-from ..creatures.runtime import CreatureDeath
-from ..creatures.spawn import CreatureTypeId
 from ..effects import FxQueue
 from ..features.presentation import queue_projectile_large_streak_decal
 from ..game_modes import GameMode
@@ -24,8 +22,6 @@ from .state_types import BonusPickupEvent, GameplayState, PlayerState
 from .world_defs import BEAM_TYPES
 
 _MAX_HIT_SFX_PER_FRAME = 4
-_MAX_DEATH_SFX_PER_FRAME = 5
-
 _BULLET_HIT_SFX = (
     "sfx_bullet_hit_01",
     "sfx_bullet_hit_02",
@@ -34,45 +30,6 @@ _BULLET_HIT_SFX = (
     "sfx_bullet_hit_05",
     "sfx_bullet_hit_06",
 )
-
-_CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[str, ...]] = {
-    CreatureTypeId.ZOMBIE: (
-        "sfx_zombie_die_01",
-        "sfx_zombie_die_02",
-        "sfx_zombie_die_03",
-        "sfx_zombie_die_04",
-    ),
-    CreatureTypeId.LIZARD: (
-        "sfx_lizard_die_01",
-        "sfx_lizard_die_02",
-        "sfx_lizard_die_03",
-        "sfx_lizard_die_04",
-    ),
-    CreatureTypeId.ALIEN: (
-        "sfx_alien_die_01",
-        "sfx_alien_die_02",
-        "sfx_alien_die_03",
-        "sfx_alien_die_04",
-    ),
-    CreatureTypeId.SPIDER_SP1: (
-        "sfx_spider_die_01",
-        "sfx_spider_die_02",
-        "sfx_spider_die_03",
-        "sfx_spider_die_04",
-    ),
-    CreatureTypeId.SPIDER_SP2: (
-        "sfx_spider_die_01",
-        "sfx_spider_die_02",
-        "sfx_spider_die_03",
-        "sfx_spider_die_04",
-    ),
-    CreatureTypeId.TROOPER: (
-        "sfx_trooper_die_01",
-        "sfx_trooper_die_02",
-        "sfx_trooper_die_03",
-        "sfx_trooper_die_04",
-    ),
-}
 
 
 class PresentationStepCommands(msgspec.Struct):
@@ -167,25 +124,6 @@ def plan_hit_sfx_keys(
         if key is not None:
             keys.append(key)
     return trigger_game_tune, keys
-
-
-def plan_death_sfx_keys(
-    deaths: Sequence[CreatureDeath],
-    *,
-    rng: CrandLike,
-) -> list[str]:
-    keys: list[str] = []
-    if not deaths:
-        return keys
-
-    for idx in range(min(len(deaths), _MAX_DEATH_SFX_PER_FRAME)):
-        death = deaths[idx]
-        if death.suppress_death_sfx:
-            continue
-        key = _rand_choice(rng, _CREATURE_DEATH_SFX[death.type_id])
-        if key is not None:
-            keys.append(key)
-    return keys
 
 
 class ProjectileDecalPostCtx(msgspec.Struct, frozen=True):
@@ -388,7 +326,6 @@ def plan_world_presentation_step(
     players: Sequence[PlayerState],
     fx_queue: FxQueue,
     hits: list[ProjectileHit],
-    deaths: tuple[CreatureDeath, ...],
     pickups: list[BonusPickupEvent],
     event_sfx: list[str],
     prev_audio: Sequence[tuple[int, bool, float]],
@@ -402,7 +339,6 @@ def plan_world_presentation_step(
     game_tune_started: bool,
     trigger_game_tune: bool | None = None,
     hit_sfx: Sequence[str] | None = None,
-    death_sfx_preplanned: bool = False,
 ) -> PresentationStepCommands:
     commands = PresentationStepCommands()
     if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
@@ -447,8 +383,6 @@ def plan_world_presentation_step(
                 prev_reload_timer=float(prev_reload_timer),
             ),
         )
-    if deaths and not death_sfx_preplanned:
-        commands.sfx_keys.extend(plan_death_sfx_keys(deaths, rng=rng))
     if pickups:
         commands.sfx_keys.extend("sfx_ui_bonus" for _ in pickups)
     commands.sfx_keys.extend(str(key) for key in event_sfx[:4])
