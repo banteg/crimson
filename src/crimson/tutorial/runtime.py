@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.sfx_map import SfxId
+
 from ..creatures.runtime import CreatureFlags
 from ..creatures.spawn import SpawnId
 from ..gameplay import survival_check_level_up
@@ -75,7 +77,7 @@ def tutorial_post_step(ctx) -> None:
             survival_check_level_up(players[0], state.perk_selection)
 
     if actions.play_levelup_sfx:
-        state.sfx_queue.append("sfx_ui_levelup")
+        state.sfx_queue.append(SfxId.UI_LEVELUP)
 
     for call in actions.spawn_bonuses:
         spawned = state.bonus_pool.spawn_at(

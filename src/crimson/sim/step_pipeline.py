@@ -6,6 +6,7 @@ from collections.abc import Callable
 import msgspec
 
 from grim.rand import CrandLike, RecordingCrand
+from grim.sfx_map import SfxId
 
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
@@ -30,7 +31,7 @@ class DeterministicStepResult(msgspec.Struct):
     presentation: PresentationStepCommands
     presentation_plan_ms: float
     presentation_rng_trace: PresentationRngTrace
-    post_apply_sfx_keys: tuple[str, ...] = ()
+    post_apply_sfx: tuple[SfxId, ...] = ()
 
 
 class StepPipelineOptions(msgspec.Struct, frozen=True):

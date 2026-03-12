@@ -163,5 +163,5 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
 
     assert isinstance(events.hits, list)
     assert isinstance(events.pickups, list)
-    assert isinstance(plan.sfx_keys, list)
+    assert isinstance(plan.sfx, list)
     assert plan.trigger_game_tune is False

@@ -5,6 +5,7 @@ from crimson.sim.sessions import DeterministicSessionTick
 from crimson.sim.step_pipeline import DeterministicStepResult, PresentationRngTrace
 from crimson.sim.timing import FrameTiming
 from crimson.sim.world_state import WorldEvents
+from grim.sfx_map import SfxId
 
 
 def make_tick_payload(
@@ -13,7 +14,7 @@ def make_tick_payload(
     elapsed_ms: float = 16.67,
     creature_count: int = 0,
     presentation_plan_ms: float = 0.0,
-    post_apply_sfx_keys: tuple[str, ...] = (),
+    post_apply_sfx: tuple[SfxId, ...] = (),
 ) -> DeterministicSessionTick:
     timing = FrameTiming(
         dt=dt_sim,
@@ -29,7 +30,7 @@ def make_tick_payload(
         presentation=PresentationStepCommands(),
         presentation_plan_ms=float(presentation_plan_ms),
         presentation_rng_trace=PresentationRngTrace(),
-        post_apply_sfx_keys=tuple(str(key) for key in post_apply_sfx_keys),
+        post_apply_sfx=tuple(post_apply_sfx),
     )
     return DeterministicSessionTick(
         step=step,

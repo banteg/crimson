@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import math
 
+from grim.sfx_map import SfxId
+
 from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
@@ -39,7 +41,7 @@ def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
                 owner=owner,
                 owner_player_index=ctx.player.index,
             )
-        ctx.state.sfx_queue.append("sfx_explosion_small")
+        ctx.state.sfx_queue.append(SfxId.EXPLOSION_SMALL)
 
         ctx.player.man_bomb_timer -= ctx.state.perk_intervals.man_bomb
         ctx.state.perk_intervals.man_bomb = 4.0

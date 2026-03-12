@@ -5,6 +5,7 @@ from collections.abc import Callable
 from grim.config import CrimsonConfig
 from grim.rand import CrandLike
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 
 from ..input_codes import INPUT_CODE_UNBOUND, config_keybinds_for_player, input_code_is_down_for_player
 from ..rng_caller_static import RngCallerStatic
@@ -43,7 +44,7 @@ def update_name_entry_text(
     *,
     max_len: int,
     rng: CrandLike,
-    play_sfx: Callable[[str], None] | None = None,
+    play_sfx: Callable[[SfxId], None] | None = None,
 ) -> tuple[str, int]:
     typed = poll_text_input(max_len - len(text), allow_space=True)
     if typed:
@@ -51,18 +52,18 @@ def update_name_entry_text(
         caret = min(len(text), caret + len(typed))
         if play_sfx is not None:
             play_sfx(
-                "sfx_ui_typeclick_01"
+                SfxId.UI_TYPECLICK_01
                 if (rng.rand(caller=RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK) & 1) == 0
-                else "sfx_ui_typeclick_02",
+                else SfxId.UI_TYPECLICK_02,
             )
     if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE) and caret > 0:
         text = text[: caret - 1] + text[caret:]
         caret -= 1
         if play_sfx is not None:
             play_sfx(
-                "sfx_ui_typeclick_01"
+                SfxId.UI_TYPECLICK_01
                 if (rng.rand(caller=RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK) & 1) == 0
-                else "sfx_ui_typeclick_02",
+                else SfxId.UI_TYPECLICK_02,
             )
     if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
         caret = max(0, caret - 1)

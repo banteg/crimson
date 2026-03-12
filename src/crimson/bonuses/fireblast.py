@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.sfx_map import SfxId
+
 from ..owner_ref import OwnerRef
 from ..projectiles.types import ProjectileTemplateId
 from ..weapon_runtime.spawn import owner_ref_for_player, spawn_projectile_ring
@@ -23,4 +25,4 @@ def apply_fireblast(ctx: BonusApplyCtx) -> None:
         players=ctx.players,
     )
     ctx.state.bonus_spawn_guard = False
-    ctx.state.sfx_queue.append("sfx_explosion_medium")
+    ctx.state.sfx_queue.append(SfxId.EXPLOSION_MEDIUM)

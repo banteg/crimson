@@ -6,6 +6,7 @@ from typing import cast
 import msgspec
 
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 
 from ..bonuses.pickup_fx import emit_bonus_pickup_effects
 from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
@@ -33,7 +34,7 @@ from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import (
     ProjectileDecalPostCtx,
-    plan_hit_sfx_keys,
+    plan_hit_sfx,
     queue_projectile_decals_post_hit,
     queue_projectile_decals_pre_hit,
 )
@@ -45,9 +46,9 @@ class WorldEvents(msgspec.Struct):
     hits: list[ProjectileHit]
     deaths: tuple[CreatureDeath, ...]
     pickups: list[BonusPickupEvent]
-    sfx: list[str]
+    sfx: list[SfxId]
     trigger_game_tune: bool = False
-    hit_sfx: list[str] = msgspec.field(default_factory=list)
+    hit_sfx: list[SfxId] = msgspec.field(default_factory=list)
 
 
 _WORLD_DT_STEPS = WORLD_DT_STEPS
@@ -162,9 +163,9 @@ class WorldState(msgspec.Struct):
         )
         _mark("ws_after_creatures")
         deaths = list(creature_result.deaths)
-        death_sfx_keys = [str(death.death_sfx_key) for death in deaths if death.death_sfx_key is not None]
+        sfx = list(creature_result.sfx)
         trigger_game_tune = False
-        hit_sfx: list[str] = []
+        hit_sfx: list[SfxId] = []
         hit_audio_game_tune_started = game_tune_started
 
         def _apply_projectile_damage_to_creature(
@@ -189,17 +190,18 @@ class WorldState(msgspec.Struct):
                 dt=float(dt),
                 players=self.players,
                 rng=self.state.rng,
+                preserve_bugs=bool(self.state.preserve_bugs),
                 effects=self.state.effects,
                 detail_preset=int(detail_preset),
-                on_lethal=lambda death_sfx_key: self._record_creature_death(
+                on_lethal=lambda death_sfx: self._record_creature_death(
                     creature_index=idx,
                     dt=float(dt),
                     detail_preset=int(detail_preset),
                     world_size=float(world_size),
                     fx_queue=fx_queue,
                     deaths=deaths,
-                    death_sfx_keys=death_sfx_keys,
-                    death_sfx_key=death_sfx_key,
+                    sfx=sfx,
+                    death_sfx=death_sfx,
                 ),
             )
 
@@ -219,7 +221,7 @@ class WorldState(msgspec.Struct):
                 world_size=float(world_size),
                 fx_queue=fx_queue,
                 deaths=deaths,
-                death_sfx_keys=death_sfx_keys,
+                sfx=sfx,
             )
 
         def _on_projectile_hit_pre(hit: ProjectileHit) -> ProjectileDecalPostCtx:
@@ -236,7 +238,7 @@ class WorldState(msgspec.Struct):
                 post_ctx=post_ctx,
                 fx_queue=fx_queue,
             )
-            hit_trigger, keys = plan_hit_sfx_keys(
+            hit_trigger, keys = plan_hit_sfx(
                 [_hit],
                 game_mode=game_mode,
                 demo_mode_active=self.state.demo_mode_active,
@@ -305,7 +307,7 @@ class WorldState(msgspec.Struct):
                 world_size=float(world_size),
                 fx_queue=fx_queue,
                 deaths=deaths,
-                death_sfx_keys=death_sfx_keys,
+                sfx=sfx,
                 keep_corpse=False,
             )
 
@@ -399,8 +401,6 @@ class WorldState(msgspec.Struct):
             )
         survival_enforce_reward_weapon_guard(self.state, self.players)
         _mark("ws_after_bonus_update")
-        sfx = list(death_sfx_keys)
-        sfx.extend(creature_result.sfx)
         if self.state.sfx_queue:
             sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()
@@ -520,8 +520,8 @@ class WorldState(msgspec.Struct):
         fx_queue: FxQueue,
         deaths: list[CreatureDeath],
         keep_corpse: bool = True,
-        death_sfx_keys: list[str],
-        death_sfx_key: str | None = None,
+        sfx: list[SfxId],
+        death_sfx: tuple[SfxId, ...] = (),
     ) -> None:
         death = self.creatures.handle_death(
             int(creature_index),
@@ -534,11 +534,9 @@ class WorldState(msgspec.Struct):
             world_height=float(world_size),
             fx_queue=fx_queue,
             keep_corpse=bool(keep_corpse),
-            death_sfx_key=death_sfx_key,
         )
         deaths.append(death)
-        if death.death_sfx_key is not None:
-            death_sfx_keys.append(str(death.death_sfx_key))
+        sfx.extend(death_sfx)
 
     def _prepare_projectile_hit_presentation(
         self,

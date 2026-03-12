@@ -12,6 +12,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_
 from grim.geom import Rect, Vec2
 from grim.rand import Crand, CrandLike
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 
 from ...game_modes import GameMode
 from ...persistence.highscores import (
@@ -218,7 +219,7 @@ class GameOverUi(msgspec.Struct):
         *,
         record: HighScoreRecord,
         player_name_default: str,
-        play_sfx: Callable[[str], None] | None = None,
+        play_sfx: Callable[[SfxId], None] | None = None,
         rng: CrandLike | None = None,
         mouse: rl.Vector2 | None = None,
     ) -> str | None:
@@ -247,7 +248,7 @@ class GameOverUi(msgspec.Struct):
             and play_sfx is not None
             and self._intro_ms >= PANEL_SLIDE_DURATION_MS - 1e-3
         ):
-            play_sfx("sfx_ui_panelclick")
+            play_sfx(SfxId.UI_PANELCLICK)
             self._panel_open_sfx_played = True
         if self._consume_enter:
             self._consume_enter = False
@@ -310,7 +311,7 @@ class GameOverUi(msgspec.Struct):
             if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
                 if self.input_text.strip():
                     if play_sfx is not None:
-                        play_sfx("sfx_ui_typeenter")
+                        play_sfx(SfxId.UI_TYPEENTER)
                     candidate = (self._candidate_record or record).copy()
                     candidate.set_name(self.input_text)
                     self.config.set_player_name(self.input_text)
@@ -322,7 +323,7 @@ class GameOverUi(msgspec.Struct):
                     self.phase = 1
                     return None
                 if play_sfx is not None:
-                    play_sfx("sfx_shock_hit_01")
+                    play_sfx(SfxId.SHOCK_HIT_01)
         else:
             # Buttons phase: let the caller handle navigation; we just report actions.
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -347,7 +348,7 @@ class GameOverUi(msgspec.Struct):
                 click=click,
             ):
                 if play_sfx is not None:
-                    play_sfx("sfx_ui_buttonclick")
+                    play_sfx(SfxId.UI_BUTTONCLICK)
                 self._begin_close_transition("play_again")
                 return None
             button_pos = button_pos.offset(dy=32.0 * scale)
@@ -367,7 +368,7 @@ class GameOverUi(msgspec.Struct):
                 click=click,
             ):
                 if play_sfx is not None:
-                    play_sfx("sfx_ui_buttonclick")
+                    play_sfx(SfxId.UI_BUTTONCLICK)
                 self._begin_close_transition("high_scores")
                 return None
             button_pos = button_pos.offset(dy=32.0 * scale)
@@ -387,7 +388,7 @@ class GameOverUi(msgspec.Struct):
                 click=click,
             ):
                 if play_sfx is not None:
-                    play_sfx("sfx_ui_buttonclick")
+                    play_sfx(SfxId.UI_BUTTONCLICK)
                 self._begin_close_transition("main_menu")
                 return None
         return None

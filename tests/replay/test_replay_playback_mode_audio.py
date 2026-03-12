@@ -16,6 +16,7 @@ from crimson.world.sim_world_state import SimWorldState
 from grim.console import ConsoleState
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from tests.support.builders import FakePlaybackDriver
 
 
@@ -470,7 +471,7 @@ def test_post_apply_reaction_reads_quest_runtime_from_driver(mocker, replay_play
     assert reaction.quest is not None
     assert reaction.quest.play_hit_sfx is True
     assert reaction.quest.play_completion_music is True
-    play_sfx.assert_called_once_with("sfx_questhit")
+    play_sfx.assert_called_once_with(SfxId.QUESTHIT)
     play_music.assert_called_once()
 
 
@@ -495,9 +496,9 @@ def test_post_apply_reaction_plays_recorded_bonus_sfx(mocker, replay_playback_vi
     reaction = view._build_post_apply_reaction(
         tick_result=FakePlaybackDriver(
             tick_limit=1,
-            post_apply_sfx_keys=("sfx_ui_bonus",),
+            post_apply_sfx=(SfxId.UI_BONUS,),
         ).step_tick(0),
     )
     view._apply_post_apply_reaction(reaction)
 
-    play_sfx.assert_called_once_with("sfx_ui_bonus")
+    play_sfx.assert_called_once_with(SfxId.UI_BONUS)

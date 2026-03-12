@@ -9,7 +9,8 @@ from grim.raylib_api import rl
 from . import music, sfx
 from .config import CrimsonConfig
 from .console import ConsoleState
-from .rand import Crand, CrandLike
+from .rand import CrandLike
+from .sfx_map import SfxId
 
 
 class AudioState(msgspec.Struct):
@@ -73,29 +74,13 @@ def trigger_game_tune(state: AudioState, *, rng: CrandLike) -> str | None:
 
 def play_sfx(
     state: AudioState | None,
-    key: str | None,
-    *,
-    rng: Crand,
-    reflex_boost_timer: float = 0.0,
-) -> None:
-    if state is None:
-        return
-    sfx.play_sfx(state.sfx, key, rng=rng, reflex_boost_timer=float(reflex_boost_timer))
-
-
-def play_sfx_resolved(
-    state: AudioState | None,
-    key: str | None,
+    sfx_id: SfxId,
     *,
     reflex_boost_timer: float = 0.0,
 ) -> None:
     if state is None:
         return
-    sfx.play_sfx_resolved(
-        state.sfx,
-        key,
-        reflex_boost_timer=float(reflex_boost_timer),
-    )
+    sfx.play_sfx(state.sfx, sfx_id, reflex_boost_timer=float(reflex_boost_timer))
 
 
 def set_sfx_volume(state: AudioState | None, volume: float) -> None:

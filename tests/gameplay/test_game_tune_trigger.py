@@ -11,6 +11,7 @@ from grim.geom import Vec2
 from grim.music import init_music_state
 from grim.rand import Crand
 from grim.sfx import init_sfx_state
+from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand
 
 
@@ -40,7 +41,7 @@ def test_game_tune_triggers_in_typo_mode(mocker) -> None:
     assert trigger_game_tune.call_count == 1
     assert trigger_game_tune.call_args.kwargs["rng"] is rng
     assert play_sfx.call_args_list == [
-        call(router.audio, "sfx_bullet_hit_01", rng=router.audio_rng, reflex_boost_timer=0.0),
+        call(router.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
     ]
 
 
@@ -58,8 +59,8 @@ def test_game_tune_not_triggered_in_rush_mode(mocker) -> None:
 
     trigger_game_tune.assert_not_called()
     assert play_sfx.call_args_list == [
-        call(router.audio, "sfx_bullet_hit_01", rng=router.audio_rng, reflex_boost_timer=0.0),
-        call(router.audio, "sfx_bullet_hit_01", rng=router.audio_rng, reflex_boost_timer=0.0),
+        call(router.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
+        call(router.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
     ]
 
 
@@ -77,6 +78,6 @@ def test_game_tune_not_triggered_in_demo(mocker) -> None:
 
     trigger_game_tune.assert_not_called()
     assert play_sfx.call_args_list == [
-        call(router.audio, "sfx_bullet_hit_01", rng=router.audio_rng, reflex_boost_timer=0.0),
-        call(router.audio, "sfx_bullet_hit_01", rng=router.audio_rng, reflex_boost_timer=0.0),
+        call(router.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
+        call(router.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
     ]

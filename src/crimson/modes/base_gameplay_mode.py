@@ -15,6 +15,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
@@ -600,7 +601,7 @@ class BaseGameplayMode:
         assert font is not None, "small font must be loaded before ui text draw"
         draw_small_text(font, text, pos, color)
 
-    def _perk_menu_play_sfx(self) -> Callable[[str], None] | None:
+    def _perk_menu_play_sfx(self) -> Callable[[SfxId], None] | None:
         return self.audio_bridge.router.play_sfx
 
     def _perk_menu_ui_context(self) -> PerkMenuUiContext:

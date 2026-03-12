@@ -18,6 +18,7 @@ from grim.geom import Vec2
 from grim.music import init_music_state
 from grim.rand import Crand
 from grim.sfx import init_sfx_state
+from grim.sfx_map import SfxId
 from tests.support.builders.session import make_session
 from tests.support.builders.tick_payload import make_tick_payload
 from tests.support.helpers import assert_float_close
@@ -69,7 +70,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
     )
 
     play_sfx.assert_called_once()
-    assert play_sfx.call_args.args[1] == "sfx_pistol_fire"
+    assert play_sfx.call_args.args[1] == SfxId.PISTOL_FIRE
 
 
 def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
@@ -109,13 +110,13 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
     )
 
     assert play_sfx.call_count == 2
-    assert {call.args[1] for call in play_sfx.call_args_list} == {"sfx_autorifle_fire", "sfx_plasmaminigun_fire"}
+    assert {call.args[1] for call in play_sfx.call_args_list} == {SfxId.AUTORIFLE_FIRE, SfxId.PLASMAMINIGUN_FIRE}
 
 
 def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    play_sfx = mocker.patch.object(audio_router_module, "play_sfx_resolved")
+    play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = Crand(0)
 
@@ -130,13 +131,13 @@ def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
     )
 
     play_sfx.assert_called_once()
-    assert play_sfx.call_args.args[1] == "sfx_ui_levelup"
+    assert play_sfx.call_args.args[1] == SfxId.UI_LEVELUP
 
 
 def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    play_sfx = mocker.patch.object(audio_router_module, "play_sfx_resolved")
+    play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = Crand(0)
 
@@ -152,13 +153,13 @@ def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
 
     assert entry.picked
     play_sfx.assert_called_once()
-    assert play_sfx.call_args.args[1] == "sfx_ui_bonus"
+    assert play_sfx.call_args.args[1] == SfxId.UI_BONUS
 
 
 def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    play_sfx = mocker.patch.object(audio_router_module, "play_sfx_resolved")
+    play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = Crand(0)
 
@@ -174,7 +175,7 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
 
     assert entry.picked
     assert play_sfx.call_count == 2
-    assert {call.args[1] for call in play_sfx.call_args_list} == {"sfx_ui_bonus", "sfx_explosion_medium"}
+    assert {call.args[1] for call in play_sfx.call_args_list} == {SfxId.UI_BONUS, SfxId.EXPLOSION_MEDIUM}
 
 
 def test_world_runtime_apply_tick_batch_applies_post_apply_bonus_sfx(mocker) -> None:
@@ -196,7 +197,7 @@ def test_world_runtime_apply_tick_batch_applies_post_apply_bonus_sfx(mocker) -> 
                     inputs=[],
                     commands=[],
                 ),
-                payload=make_tick_payload(post_apply_sfx_keys=("sfx_ui_bonus",)),
+                payload=make_tick_payload(post_apply_sfx=(SfxId.UI_BONUS,)),
             ),
         ],
     )
@@ -211,13 +212,13 @@ def test_world_runtime_apply_tick_batch_applies_post_apply_bonus_sfx(mocker) -> 
     )
 
     play_sfx.assert_called_once()
-    assert play_sfx.call_args.args[1] == "sfx_ui_bonus"
+    assert play_sfx.call_args.args[1] == SfxId.UI_BONUS
 
 
 def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    play_sfx = mocker.patch.object(audio_router_module, "play_sfx_resolved")
+    play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = Crand(0)
 
@@ -229,7 +230,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.man_bomb_timer = 3.9
     world.step_survival_frame(0.2, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
-    assert play_sfx.call_args.args[1] == "sfx_explosion_small"
+    assert play_sfx.call_args.args[1] == SfxId.EXPLOSION_SMALL
 
     play_sfx.reset_mock()
     player.perk_counts[int(PerkId.MAN_BOMB)] = 0
@@ -238,7 +239,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.hot_tempered_timer = 1.95
     world.step_survival_frame(0.1, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
-    assert play_sfx.call_args.args[1] == "sfx_explosion_small"
+    assert play_sfx.call_args.args[1] == SfxId.EXPLOSION_SMALL
 
     play_sfx.reset_mock()
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 0
@@ -251,7 +252,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.weapon.ammo = 0
     world.step_survival_frame(0.2, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
-    assert play_sfx.call_args.args[1] == "sfx_explosion_small"
+    assert play_sfx.call_args.args[1] == SfxId.EXPLOSION_SMALL
 
 
 def test_audio_router_forwards_live_reflex_timer(mocker) -> None:
@@ -263,8 +264,8 @@ def test_audio_router_forwards_live_reflex_timer(mocker) -> None:
     world.sync_audio_bridge_state()
 
     world.sim_world.state.bonuses.reflex_boost = 0.75
-    world.audio_bridge.router.play_sfx("sfx_pistol_fire")
+    world.audio_bridge.router.play_sfx(SfxId.PISTOL_FIRE)
 
     play_sfx.assert_called_once()
-    assert play_sfx.call_args.args[1] == "sfx_pistol_fire"
+    assert play_sfx.call_args.args[1] == SfxId.PISTOL_FIRE
     assert_float_close(float(play_sfx.call_args.kwargs["reflex_boost_timer"]), 0.75)

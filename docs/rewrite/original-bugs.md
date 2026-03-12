@@ -475,3 +475,31 @@ Rewrite behavior:
   Chain and seeker rockets stop retargeting instead of reusing slot 0.
 - With `--preserve-bugs`: keep native slot-0 fallback behavior on target-search
   misses.
+
+## 21) Trooper death SFX bank leaves slot 3 uninitialized
+
+Native behavior:
+
+- `audio_init_sfx` (`0x0043caa0`) loads only `trooper_die_01..03`; it does not
+  load `trooper_die_04.ogg`.
+- `gameplay_reset_state` (`0x00412dc0`) assigns trooper
+  `creature_type_table[5].sfx_bank_a[0..2]` only.
+- `creature_apply_damage` (`0x004207c0`) still resolves trooper death audio with
+  `sfx_bank_a[rand & 3]`.
+- Because the fourth slot is never written and the table lives in zero-initialized
+  global storage, the native cold-start value is SFX id `0`
+  (`sfx_trooper_inpain_01`).
+
+Why it’s likely a bug:
+
+- Every other shipped creature death bank is fully initialized with death sounds.
+- `trooper_die_04.ogg` exists in `sfx.paq`, which strongly suggests the intended
+  behavior was a fourth trooper death variant, not a 25% chance to play a pain
+  grunt on death.
+
+Rewrite behavior:
+
+- Default: trooper deaths choose uniformly from the three loaded trooper death
+  sounds.
+- With `--preserve-bugs`: keep the native fourth-slot bug, so a trooper death
+  roll of `3` resolves to `sfx_trooper_inpain_01`.

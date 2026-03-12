@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
 from ..rng_caller_static import RngCallerStatic
@@ -23,10 +24,10 @@ def _require_single_player_typo(command) -> None:
         raise RuntimeError("Typ-o Shooter commands are single-player only")
 
 
-def _typeclick_sfx(world: WorldState, *, caller: RngCallerStatic) -> str:
+def _typeclick_sfx(world: WorldState, *, caller: RngCallerStatic) -> SfxId:
     if (world.state.rng.rand(caller=caller) & 1) == 0:
-        return "sfx_ui_typeclick_01"
-    return "sfx_ui_typeclick_02"
+        return SfxId.UI_TYPECLICK_01
+    return SfxId.UI_TYPECLICK_02
 
 
 def apply_typo_command(world: WorldState, command: TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand) -> None:
@@ -49,7 +50,7 @@ def apply_typo_command(world: WorldState, command: TypoCharCommand | TypoBackspa
         case TypoSubmitCommand():
             if not typing.text:
                 return
-            world.state.sfx_queue.append("sfx_ui_typeenter")
+            world.state.sfx_queue.append(SfxId.UI_TYPEENTER)
             active_mask = [bool(entry.active) for entry in world.creatures.entries]
             target_idx = typo.names.find_by_name(typing.text, active_mask=active_mask)
             entered = typing.submit(matched=target_idx is not None)

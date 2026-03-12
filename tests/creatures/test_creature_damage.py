@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from crimson.creatures.damage import creature_apply_damage
+from crimson.creatures.damage import creature_apply_damage, resolve_native_death_sfx
 from crimson.creatures.runtime import CreatureState
-from crimson.creatures.spawn import CreatureFlags
+from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects_atlas import EffectId
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
@@ -10,6 +10,7 @@ from crimson.perks import PerkId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 
@@ -158,3 +159,32 @@ def test_lethal_shock_damage_spawns_armored_debris_in_damage_path() -> None:
         RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_Y,
         RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_SCALE_STEP,
     ] * 5
+
+
+def test_resolve_native_death_sfx_default_fixes_trooper_uninitialized_fourth_slot() -> None:
+    creature = CreatureState(type_id=CreatureTypeId.TROOPER, flags=CreatureFlags(0))
+    rng = ScriptedCrand([0, 1, 2, 3])
+
+    resolved = [resolve_native_death_sfx(creature, rng=rng, preserve_bugs=False)[0] for _ in range(4)]
+
+    assert resolved == [
+        SfxId.TROOPER_DIE_01,
+        SfxId.TROOPER_DIE_02,
+        SfxId.TROOPER_DIE_03,
+        SfxId.TROOPER_DIE_01,
+    ]
+    assert [record.caller for record in rng.records] == [
+        RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX,
+    ] * 4
+
+
+def test_resolve_native_death_sfx_preserve_bugs_keeps_trooper_pain_grunt_slot() -> None:
+    creature = CreatureState(type_id=CreatureTypeId.TROOPER, flags=CreatureFlags(0))
+    rng = ScriptedCrand(3, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    resolved = resolve_native_death_sfx(creature, rng=rng, preserve_bugs=True)
+
+    assert resolved == (SfxId.TROOPER_INPAIN_01,)
+    assert [record.caller for record in rng.records] == [
+        RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX,
+    ]

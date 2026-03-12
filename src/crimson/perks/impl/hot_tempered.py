@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import math
 
+from grim.sfx_map import SfxId
+
 from ...owner_ref import OwnerRef
 from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
@@ -35,7 +37,7 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
             owner=owner,
             owner_player_index=ctx.player.index,
         )
-    ctx.state.sfx_queue.append("sfx_explosion_small")
+    ctx.state.sfx_queue.append(SfxId.EXPLOSION_SMALL)
 
     ctx.player.hot_tempered_timer -= ctx.state.perk_intervals.hot_tempered
     interval_roll = ctx.state.rng.rand(

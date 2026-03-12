@@ -7,6 +7,7 @@ from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
@@ -344,19 +345,19 @@ class QuestFailedView:
         except (OSError, ValueError) as exc:
             self.state.console.log.log(f"quest failed: failed to save quest selection config: {exc}")
         if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
         self._begin_close("start_quest")
 
     def _activate_play_another(self) -> None:
         self.state.quest_fail_retry_count = 0
         if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
         self._begin_close("open_quests")
 
     def _activate_main_menu(self) -> None:
         self.state.quest_fail_retry_count = 0
         if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
         self._begin_close("back_to_menu")
 
     def _begin_close(self, action: str) -> None:

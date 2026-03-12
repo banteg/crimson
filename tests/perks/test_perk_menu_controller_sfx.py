@@ -12,6 +12,7 @@ from grim.assets import RuntimeResources
 from grim.fonts.small import SmallFontData
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 
 
 def _texture() -> rl.Texture:
@@ -82,7 +83,7 @@ def test_open_perk_menu_plays_panel_click(mocker) -> None:
     assert menu.open is False
     menu.open_menu(play_sfx=play_sfx)
     assert menu.open is True
-    play_sfx.assert_called_once_with("sfx_ui_panelclick")
+    play_sfx.assert_called_once_with(SfxId.UI_PANELCLICK)
 
 
 def test_perk_menu_pick_returns_selected_index_and_plays_button_click(mocker) -> None:
@@ -103,7 +104,7 @@ def test_perk_menu_pick_returns_selected_index_and_plays_button_click(mocker) ->
     )
 
     assert choice_index == 0
-    assert [call.args[0] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
+    assert [call.args[0] for call in play_sfx.call_args_list] == [SfxId.UI_BUTTONCLICK]
     assert menu.open is False
 
 
@@ -122,7 +123,7 @@ def test_perk_menu_cancel_plays_button_click_and_returns_none(mocker) -> None:
     )
 
     assert choice_index is None
-    play_sfx.assert_called_once_with("sfx_ui_buttonclick")
+    play_sfx.assert_called_once_with(SfxId.UI_BUTTONCLICK)
     assert menu.open is False
 
 

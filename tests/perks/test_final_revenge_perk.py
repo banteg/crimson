@@ -11,6 +11,7 @@ from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.helpers import assert_float_close
 
 
@@ -52,10 +53,10 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
 
     assert player.health < 0.0
     assert_float_close(creature.hp, 7440.0)  # 10000 - (512 - 0) * 5
-    assert events.sfx.count("sfx_explosion_large") == 1
-    assert events.sfx.count("sfx_shockwave") == 1
-    assert "sfx_explosion_large" in events.sfx
-    assert "sfx_shockwave" in events.sfx
+    assert events.sfx.count(SfxId.EXPLOSION_LARGE) == 1
+    assert events.sfx.count(SfxId.SHOCKWAVE) == 1
+    assert SfxId.EXPLOSION_LARGE in events.sfx
+    assert SfxId.SHOCKWAVE in events.sfx
 
 
 def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
@@ -90,8 +91,8 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
     )
 
     assert player.health < 0.0
-    assert events.sfx.count("sfx_explosion_large") == 1
-    assert events.sfx.count("sfx_shockwave") == 1
+    assert events.sfx.count(SfxId.EXPLOSION_LARGE) == 1
+    assert events.sfx.count(SfxId.SHOCKWAVE) == 1
 
 
 def test_final_revenge_aoe_includes_active_non_positive_hp_entries(mocker) -> None:

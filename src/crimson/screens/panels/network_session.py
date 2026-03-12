@@ -6,6 +6,7 @@ from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 
 from ...game.types import (
     GameState,
@@ -121,7 +122,7 @@ class NetworkSessionPanelView(PanelMenuView):
             if self._timeline_ms >= self._timeline_max_ms:
                 self.state.menu_sign_locked = True
                 if (not self._panel_open_sfx_played) and (self.state.audio is not None):
-                    play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
+                    play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
                     self._panel_open_sfx_played = True
 
         enabled = self._timeline_ms >= PANEL_TIMELINE_START_MS

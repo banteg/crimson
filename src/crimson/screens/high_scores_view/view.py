@@ -6,6 +6,7 @@ from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState, HighScoresRequest
@@ -127,7 +128,7 @@ class HighScoresView:
         self._request = request
         self._records = load_records(self.state, request)
         if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_panelclick", rng=self.state.rng)
+            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
         self._is_open = True
 
     def close(self) -> None:
@@ -234,7 +235,7 @@ class HighScoresView:
             ):
                 # Reload scores from disk (no view transition).
                 if self.state.audio is not None:
-                    play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+                    play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
                 self.open()
                 return
             w = button_width(resources, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
@@ -295,7 +296,7 @@ class HighScoresView:
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
-            play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
+            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
         self._closing = True
         self._close_action = action
 

@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 from crimson.sim.hooks import TickResult
 from crimson.sim.sessions import QuestSpawnState
+from grim.sfx_map import SfxId
 from tests.support.builders.tick_payload import make_tick_payload
 from tests.support.builders.tick_result import make_tick_result
 
@@ -19,7 +20,7 @@ class FakePlaybackDriver:
     tick_limit: int = 0
     on_step: object | None = None
     quest_spawn_state: QuestSpawnState | None = None
-    post_apply_sfx_keys: tuple[str, ...] = ()
+    post_apply_sfx: tuple[SfxId, ...] = ()
     game_tune_started: bool = False
     elapsed_ms: float = 0.0
 
@@ -35,6 +36,6 @@ class FakePlaybackDriver:
             dt_sim=1.0 / 60.0,
             payload=make_tick_payload(
                 dt_sim=1.0 / 60.0,
-                post_apply_sfx_keys=tuple(self.post_apply_sfx_keys),
+                post_apply_sfx=tuple(self.post_apply_sfx),
             ),
         )

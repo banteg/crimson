@@ -6,6 +6,8 @@ from typing import TypeAlias
 
 import msgspec
 
+from grim.sfx_map import SfxId
+
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
@@ -273,7 +275,7 @@ class DeterministicSession(msgspec.Struct):
         if self.before_step_hook is not None:
             self.before_step_hook()
 
-        post_apply_sfx_keys: list[str] = []
+        post_apply_sfx: list[SfxId] = []
         for cmd in (commands or ()):
             match cmd:
                 case PerkPickCommand(choice_index=ci):
@@ -289,7 +291,7 @@ class DeterministicSession(msgspec.Struct):
                         refresh_choices=True,
                     )
                     if picked is not None:
-                        post_apply_sfx_keys.append("sfx_ui_bonus")
+                        post_apply_sfx.append(SfxId.UI_BONUS)
                 case PerkMenuOpenCommand():
                     perk_selection_open_choices(
                         self.world.state,
@@ -355,10 +357,10 @@ class DeterministicSession(msgspec.Struct):
             rng_marks_out=rng_marks,
             trace_presentation_rng=trace_rng,
         )
-        if post_apply_sfx_keys:
+        if post_apply_sfx:
             step = msgspec.structs.replace(
                 step,
-                post_apply_sfx_keys=tuple(str(key) for key in post_apply_sfx_keys),
+                post_apply_sfx=tuple(post_apply_sfx),
             )
         if step.presentation.trigger_game_tune:
             self.game_tune_started = True

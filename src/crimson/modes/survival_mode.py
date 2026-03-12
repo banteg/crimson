@@ -12,6 +12,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.rand import Crand
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
@@ -286,7 +287,7 @@ class SurvivalMode(BaseGameplayMode):
         if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             if bool(self._lan_enabled) and str(self._lan_role) == "join":
                 return
-            self.audio_bridge.router.play_sfx("sfx_ui_buttonclick")
+            self.audio_bridge.router.play_sfx(SfxId.UI_BUTTONCLICK)
             self._perk_menu.close()
             return
 
@@ -296,11 +297,11 @@ class SurvivalMode(BaseGameplayMode):
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
                 self.state.debug_god_mode = not bool(self.state.debug_god_mode)
-                self.audio_bridge.router.play_sfx("sfx_ui_buttonclick")
+                self.audio_bridge.router.play_sfx(SfxId.UI_BUTTONCLICK)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
                 self.state.perk_selection.pending_count += 1
                 self.state.perk_selection.choices_dirty = True
-                self.audio_bridge.router.play_sfx("sfx_ui_levelup")
+                self.audio_bridge.router.play_sfx(SfxId.UI_LEVELUP)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
                 self._debug_cycle_weapon(-1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):

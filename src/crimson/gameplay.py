@@ -9,6 +9,7 @@ import msgspec
 from crimson.quests.level import QuestLevel
 from grim.geom import Vec2
 from grim.rand import Crand, CrandLike
+from grim.sfx_map import SfxId
 
 from .aim_constants import _AIM_JOYSTICK_TURN_RATE, _AIM_KEYBOARD_TURN_RATE
 from .aim_schemes import AimScheme
@@ -98,7 +99,7 @@ _RELATIVE_MOVE_HEADING_FORWARD_LEFT = float(f32(5.4977875))
 _RELATIVE_MOVE_TURN_ALIGN_SCALE = float(f32(7.957747))
 _AIM_POINT_RADIUS = 60.0
 _LOW_HEALTH_BLEED_DIR_OFFSET = 1.5707964 - 0.5
-_LOW_HEALTH_BLOODSPILL_SFX: tuple[str, str] = ("sfx_bloodspill_01", "sfx_bloodspill_02")
+_LOW_HEALTH_BLOODSPILL_SFX: tuple[SfxId, SfxId] = (SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02)
 
 
 class GameplayState(msgspec.Struct):
@@ -115,7 +116,7 @@ class GameplayState(msgspec.Struct):
     jinxed_timer: float = 0.0
     plaguebearer_infection_count: int = 0
     perk_selection: PerkSelectionState = msgspec.field(default_factory=PerkSelectionState)
-    sfx_queue: list[str] = msgspec.field(default_factory=list)
+    sfx_queue: list[SfxId] = msgspec.field(default_factory=list)
     game_mode: GameMode = GameMode.SURVIVAL
     demo_mode_active: bool = False
     hardcore: bool = False
@@ -927,7 +928,7 @@ def player_update(
                     players=players,
                 )
                 state.bonus_spawn_guard = False
-                state.sfx_queue.append("sfx_explosion_small")
+                state.sfx_queue.append(SfxId.EXPLOSION_SMALL)
         else:
             player.weapon.reload_timer = float(f32(float(player.weapon.reload_timer) - float(reload_scale) * float(dt)))
 

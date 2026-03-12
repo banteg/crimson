@@ -132,7 +132,7 @@ def test_quest_runner_replays_start_weapon_reload_sfx_at_tick_zero() -> None:
     assert quest is not None
     weapon = WEAPON_BY_ID[quest.start_weapon_id]
     expected_reload_sfx = weapon.reload_sound
-    assert tick0.events.sfx_head == [expected_reload_sfx]
+    assert tick0.events.sfx_head == [expected_reload_sfx.value]
 
 
 def test_quest_runner_ignores_stale_perk_pick_command() -> None:

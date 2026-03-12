@@ -8,6 +8,7 @@ import msgspec
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
+from grim.sfx_map import SfxId
 
 from ..effects import EffectPool
 from ..effects_atlas import EffectId
@@ -40,44 +41,53 @@ class _CreatureDamageCtx(msgspec.Struct):
 _CreatureDamageStep = Callable[[_CreatureDamageCtx], None]
 
 
-_CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[str, ...]] = {
+_CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[SfxId, ...]] = {
     CreatureTypeId.ZOMBIE: (
-        "sfx_zombie_die_01",
-        "sfx_zombie_die_02",
-        "sfx_zombie_die_03",
-        "sfx_zombie_die_04",
+        SfxId.ZOMBIE_DIE_01,
+        SfxId.ZOMBIE_DIE_02,
+        SfxId.ZOMBIE_DIE_03,
+        SfxId.ZOMBIE_DIE_04,
     ),
     CreatureTypeId.LIZARD: (
-        "sfx_lizard_die_01",
-        "sfx_lizard_die_02",
-        "sfx_lizard_die_03",
-        "sfx_lizard_die_04",
+        SfxId.LIZARD_DIE_01,
+        SfxId.LIZARD_DIE_02,
+        SfxId.LIZARD_DIE_03,
+        SfxId.LIZARD_DIE_04,
     ),
     CreatureTypeId.ALIEN: (
-        "sfx_alien_die_01",
-        "sfx_alien_die_02",
-        "sfx_alien_die_03",
-        "sfx_alien_die_04",
+        SfxId.ALIEN_DIE_01,
+        SfxId.ALIEN_DIE_02,
+        SfxId.ALIEN_DIE_03,
+        SfxId.ALIEN_DIE_04,
     ),
     CreatureTypeId.SPIDER_SP1: (
-        "sfx_spider_die_01",
-        "sfx_spider_die_02",
-        "sfx_spider_die_03",
-        "sfx_spider_die_04",
+        SfxId.SPIDER_DIE_01,
+        SfxId.SPIDER_DIE_02,
+        SfxId.SPIDER_DIE_03,
+        SfxId.SPIDER_DIE_04,
     ),
     CreatureTypeId.SPIDER_SP2: (
-        "sfx_spider_die_01",
-        "sfx_spider_die_02",
-        "sfx_spider_die_03",
-        "sfx_spider_die_04",
-    ),
-    CreatureTypeId.TROOPER: (
-        "sfx_trooper_die_01",
-        "sfx_trooper_die_02",
-        "sfx_trooper_die_03",
-        "sfx_trooper_die_04",
+        SfxId.SPIDER_DIE_01,
+        SfxId.SPIDER_DIE_02,
+        SfxId.SPIDER_DIE_03,
+        SfxId.SPIDER_DIE_04,
     ),
 }
+
+_TROOPER_DEATH_SFX: tuple[SfxId, ...] = (
+    SfxId.TROOPER_DIE_01,
+    SfxId.TROOPER_DIE_02,
+    SfxId.TROOPER_DIE_03,
+)
+
+# Native `gameplay_reset_state` writes trooper death-bank slots 0..2 only, but
+# `creature_apply_damage` still indexes the bank with `rand & 3`. The unwritten
+# slot remains BSS-zeroed and resolves to native SFX id 0:
+# `sfx_trooper_inpain_01`.
+_TROOPER_DEATH_SFX_PRESERVE_BUGS: tuple[SfxId, ...] = (
+    *_TROOPER_DEATH_SFX,
+    SfxId.TROOPER_INPAIN_01,
+)
 
 
 def _damage_type1_uranium_filled_bullets(ctx: _CreatureDamageCtx) -> None:
@@ -169,14 +179,24 @@ def _damage_lethal_ranged_shock_burst(
         )
 
 
-def resolve_native_death_sfx_key(creature: CreatureState, *, rng: CrandLike) -> str | None:
+def resolve_native_death_sfx(
+    creature: CreatureState,
+    *,
+    rng: CrandLike,
+    preserve_bugs: bool = False,
+) -> tuple[SfxId, ...]:
     """Resolve the native `creature_apply_damage` death sound, if this path owns one."""
     if (creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK) != 0:
-        return None
+        return ()
+    roll = rng.rand(caller=RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX)
+    if creature.type_id == CreatureTypeId.TROOPER:
+        if preserve_bugs:
+            return (_TROOPER_DEATH_SFX_PRESERVE_BUGS[roll & 3],)
+        return (_TROOPER_DEATH_SFX[roll % len(_TROOPER_DEATH_SFX)],)
     options = _CREATURE_DEATH_SFX.get(creature.type_id)
     if options is None:
-        return None
-    return options[rng.rand(caller=RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX) & 3]
+        return ()
+    return (options[roll & 3],)
 
 
 _CREATURE_DAMAGE_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
@@ -284,9 +304,10 @@ def creature_apply_damage_with_lethal_followup(
     dt: float,
     players: list[PlayerState],
     rng: CrandLike,
+    preserve_bugs: bool = False,
     effects: EffectPool | None = None,
     detail_preset: int = 5,
-    on_lethal: Callable[[str | None], None],
+    on_lethal: Callable[[tuple[SfxId, ...]], None],
 ) -> bool:
     """Apply damage and run a required lethal follow-up exactly on death transition.
 
@@ -308,6 +329,6 @@ def creature_apply_damage_with_lethal_followup(
         detail_preset=int(detail_preset),
     )
     if killed and death_start_needed:
-        on_lethal(resolve_native_death_sfx_key(creature, rng=rng))
+        on_lethal(resolve_native_death_sfx(creature, rng=rng, preserve_bugs=preserve_bugs))
         return True
     return False

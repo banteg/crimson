@@ -5,8 +5,9 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
-from grim.audio import AudioState, play_sfx, play_sfx_resolved, trigger_game_tune
+from grim.audio import AudioState, play_sfx, trigger_game_tune
 from grim.rand import Crand, CrandLike
+from grim.sfx_map import SfxId
 
 from .game_modes import GameMode
 from .projectiles.types import ProjectileHit, ProjectileTemplateId
@@ -18,12 +19,12 @@ if TYPE_CHECKING:
 _MAX_HIT_SFX_PER_FRAME = 4
 
 _BULLET_HIT_SFX = (
-    "sfx_bullet_hit_01",
-    "sfx_bullet_hit_02",
-    "sfx_bullet_hit_03",
-    "sfx_bullet_hit_04",
-    "sfx_bullet_hit_05",
-    "sfx_bullet_hit_06",
+    SfxId.BULLET_HIT_01,
+    SfxId.BULLET_HIT_02,
+    SfxId.BULLET_HIT_03,
+    SfxId.BULLET_HIT_04,
+    SfxId.BULLET_HIT_05,
+    SfxId.BULLET_HIT_06,
 )
 
 
@@ -35,9 +36,7 @@ class AudioRouter(msgspec.Struct):
     reflex_boost_timer_source: Callable[[], float] | None = None
 
     @staticmethod
-    def _rand_choice(rng: CrandLike, options: tuple[str, ...]) -> str | None:
-        if not options:
-            return None
+    def _rand_choice(rng: CrandLike, options: tuple[SfxId, ...]) -> SfxId:
         idx = rng.rand() % len(options)
         return options[idx]
 
@@ -47,22 +46,12 @@ class AudioRouter(msgspec.Struct):
             return 0.0
         return float(source())
 
-    def play_sfx(self, key: str | None) -> None:
+    def play_sfx(self, sfx: SfxId) -> None:
         if self.audio is None or (not self.sfx_enabled):
             return
         play_sfx(
             self.audio,
-            key,
-            rng=self.audio_rng,
-            reflex_boost_timer=self._reflex_boost_timer(),
-        )
-
-    def play_sfx_resolved(self, key: str | None) -> None:
-        if self.audio is None or (not self.sfx_enabled):
-            return
-        play_sfx_resolved(
-            self.audio,
-            key,
+            sfx,
             reflex_boost_timer=self._reflex_boost_timer(),
         )
 
@@ -106,10 +95,10 @@ class AudioRouter(msgspec.Struct):
         *,
         beam_types: frozenset[int],
         rng: CrandLike,
-    ) -> str | None:
+    ) -> SfxId:
         ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).ammo_class
         if ammo_class == 4:
-            return "sfx_shock_hit_01"
+            return SfxId.SHOCK_HIT_01
         return self._rand_choice(rng, _BULLET_HIT_SFX)
 
     def play_hit_sfx(

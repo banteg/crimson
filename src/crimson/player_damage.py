@@ -8,6 +8,8 @@ See: `docs/crimsonland-exe/player-damage.md`.
 
 from collections.abc import Callable, Sequence
 
+from grim.sfx_map import SfxId
+
 from .math_parity import f32
 from .perks import PerkId
 from .perks.helpers import perk_active
@@ -15,12 +17,12 @@ from .rng_caller_static import RngCallerStatic
 from .sim.state_types import GameplayState, PlayerState
 
 __all__ = ["player_take_damage", "player_take_projectile_damage"]
-_PLAYER_PAIN_SFX: tuple[str, ...] = (
-    "sfx_trooper_inpain_01",
-    "sfx_trooper_inpain_02",
-    "sfx_trooper_inpain_03",
+_PLAYER_PAIN_SFX: tuple[SfxId, ...] = (
+    SfxId.TROOPER_INPAIN_01,
+    SfxId.TROOPER_INPAIN_02,
+    SfxId.TROOPER_INPAIN_03,
 )
-_PLAYER_DEATH_SFX: tuple[str, ...] = ("sfx_trooper_die_01", "sfx_trooper_die_02")
+_PLAYER_DEATH_SFX: tuple[SfxId, ...] = (SfxId.TROOPER_DIE_01, SfxId.TROOPER_DIE_02)
 _THICK_SKINNED_DAMAGE_SCALE_F32 = 0.6660000085830688
 
 

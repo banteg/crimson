@@ -10,13 +10,14 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.presentation_step import (
     PresentationStepCommands,
     apply_presentation_plan,
-    plan_hit_sfx_keys,
+    plan_hit_sfx,
     plan_world_presentation_step,
     queue_projectile_decals,
 )
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 
@@ -36,7 +37,7 @@ def _hits(count: int, *, type_id: ProjectileTemplateId = ProjectileTemplateId.PI
 
 def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    trigger_game_tune, keys = plan_hit_sfx_keys(
+    trigger_game_tune, keys = plan_hit_sfx(
         _hits(2),
         game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
@@ -45,7 +46,7 @@ def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
     )
 
     assert trigger_game_tune is True
-    assert keys == ["sfx_bullet_hit_01"]
+    assert keys == [SfxId.BULLET_HIT_01]
     assert rng.calls == 2
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK,
@@ -55,7 +56,7 @@ def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
 
 def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    trigger_game_tune, keys = plan_hit_sfx_keys(
+    trigger_game_tune, keys = plan_hit_sfx(
         _hits(2),
         game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
@@ -64,7 +65,7 @@ def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
     )
 
     assert trigger_game_tune is False
-    assert keys == ["sfx_bullet_hit_01", "sfx_bullet_hit_01"]
+    assert keys == [SfxId.BULLET_HIT_01, SfxId.BULLET_HIT_01]
     assert rng.calls == 2
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
@@ -93,7 +94,13 @@ def test_plan_world_presentation_step_orders_sfx() -> None:
                 pos=Vec2(),
             ),
         ],
-        event_sfx=["sfx_custom_1", "sfx_custom_2", "sfx_custom_3", "sfx_custom_4", "sfx_custom_5"],
+        event_sfx=[
+            SfxId.UI_PANELCLICK,
+            SfxId.UI_BUTTONCLICK,
+            SfxId.UI_CLINK_01,
+            SfxId.SHOCK_HIT_01,
+            SfxId.EXPLOSION_SMALL,
+        ],
         prev_audio=[(0, False, 0.0)],
         prev_perk_pending=0,
         game_mode=GameMode.SURVIVAL,
@@ -106,14 +113,14 @@ def test_plan_world_presentation_step_orders_sfx() -> None:
     )
 
     assert commands.trigger_game_tune is False
-    assert commands.sfx_keys == [
-        "sfx_ui_levelup",
-        "sfx_pistol_fire",
-        "sfx_ui_bonus",
-        "sfx_custom_1",
-        "sfx_custom_2",
-        "sfx_custom_3",
-        "sfx_custom_4",
+    assert commands.sfx == [
+        SfxId.UI_LEVELUP,
+        SfxId.PISTOL_FIRE,
+        SfxId.UI_BONUS,
+        SfxId.UI_PANELCLICK,
+        SfxId.UI_BUTTONCLICK,
+        SfxId.UI_CLINK_01,
+        SfxId.SHOCK_HIT_01,
     ]
 
 
@@ -470,7 +477,7 @@ def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
         gore_disabled=0,
         game_tune_started=False,
         trigger_game_tune=True,
-        hit_sfx=["sfx_bullet_hit_01"],
+        hit_sfx=[SfxId.BULLET_HIT_01],
     )
 
     assert_rng_progression(
@@ -482,7 +489,7 @@ def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
     )
     assert rng.values_since(before_calls) == []
     assert commands.trigger_game_tune is True
-    assert commands.sfx_keys == ["sfx_bullet_hit_01"]
+    assert commands.sfx == [SfxId.BULLET_HIT_01]
 
 
 def test_apply_presentation_plan_dispatches_audio_in_order() -> None:
@@ -494,17 +501,17 @@ def test_apply_presentation_plan_dispatches_audio_in_order() -> None:
             self.events.append("tune")
             return None
 
-        def play_sfx_resolved(self, key: str | None) -> None:
-            self.events.append(str(key))
+        def play_sfx(self, sfx: SfxId) -> None:
+            self.events.append(sfx.value)
 
     sink = _Sink()
     apply_presentation_plan(
-        plan=PresentationStepCommands(trigger_game_tune=True, sfx_keys=["a", "b"]),
+        plan=PresentationStepCommands(trigger_game_tune=True, sfx=[SfxId.UI_BONUS, SfxId.UI_LEVELUP]),
         audio_sink=sink,
         apply_audio=True,
     )
 
-    assert sink.events == ["tune", "a", "b"]
+    assert sink.events == ["tune", SfxId.UI_BONUS.value, SfxId.UI_LEVELUP.value]
 
 
 def test_apply_presentation_plan_skips_when_audio_disabled() -> None:
@@ -516,13 +523,13 @@ def test_apply_presentation_plan_skips_when_audio_disabled() -> None:
             self.called = True
             return None
 
-        def play_sfx_resolved(self, key: str | None) -> None:
-            _ = key
+        def play_sfx(self, sfx: SfxId) -> None:
+            _ = sfx
             self.called = True
 
     sink = _Sink()
     apply_presentation_plan(
-        plan=PresentationStepCommands(trigger_game_tune=True, sfx_keys=["x"]),
+        plan=PresentationStepCommands(trigger_game_tune=True, sfx=[SfxId.UI_BONUS]),
         audio_sink=sink,
         apply_audio=False,
     )

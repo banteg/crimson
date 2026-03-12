@@ -18,6 +18,7 @@ from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand
 
 
@@ -244,5 +245,5 @@ def test_quest_results_name_entry_uses_shared_ui_text_input_typeclick_caller(tmp
 
     assert ui.input_text == "bantegww"
     assert poll_text.call_count == 1
-    assert [call.args[0] for call in play_sfx.call_args_list] == ["sfx_ui_typeclick_01"]
+    assert [call.args[0] for call in play_sfx.call_args_list] == [SfxId.UI_TYPECLICK_01]
     assert [record.caller for record in rng.records_since()] == [RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK]

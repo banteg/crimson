@@ -4,6 +4,7 @@ from crimson.quests.level import QuestLevel
 from crimson.quests.status import tracked_quest_completed_counter_index
 from grim.audio import play_sfx, update_audio
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState, HighScoresRequest
@@ -165,14 +166,12 @@ class QuestResultsView:
         if ui is None:
             return
         audio = self.state.audio
-        rng = self.state.rng
-
-        def _play(name: str) -> None:
+        def _play(name: SfxId) -> None:
             if audio is None:
                 return
-            play_sfx(audio, name, rng=rng)
+            play_sfx(audio, name)
 
-        action = ui.update(dt, play_sfx=_play if audio is not None else None, rng=rng)
+        action = ui.update(dt, play_sfx=_play if audio is not None else None)
         if action == "play_again":
             assert self._quest_level is not None
             self._set_pending_quest_level(self._quest_level)

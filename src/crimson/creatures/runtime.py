@@ -18,6 +18,7 @@ import msgspec
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand, CrandLike
+from grim.sfx_map import SfxId
 
 from ..bonuses import BonusId
 from ..effects import EffectPool, FxQueue, FxQueueRotated
@@ -103,12 +104,12 @@ _FLAG_SELF_DAMAGE_TICK = int(CreatureFlags.SELF_DAMAGE_TICK)
 _FLAG_SELF_DAMAGE_TICK_STRONG = int(CreatureFlags.SELF_DAMAGE_TICK_STRONG)
 _FLAG_AI7_LINK_TIMER = int(CreatureFlags.AI7_LINK_TIMER)
 
-_CREATURE_CONTACT_SFX: dict[CreatureTypeId, tuple[str, str]] = {
-    CreatureTypeId.ZOMBIE: ("sfx_zombie_attack_01", "sfx_zombie_attack_02"),
-    CreatureTypeId.LIZARD: ("sfx_lizard_attack_01", "sfx_lizard_attack_02"),
-    CreatureTypeId.ALIEN: ("sfx_alien_attack_01", "sfx_alien_attack_02"),
-    CreatureTypeId.SPIDER_SP1: ("sfx_spider_attack_01", "sfx_spider_attack_02"),
-    CreatureTypeId.SPIDER_SP2: ("sfx_spider_attack_01", "sfx_spider_attack_02"),
+_CREATURE_CONTACT_SFX: dict[CreatureTypeId, tuple[SfxId, SfxId]] = {
+    CreatureTypeId.ZOMBIE: (SfxId.ZOMBIE_ATTACK_01, SfxId.ZOMBIE_ATTACK_02),
+    CreatureTypeId.LIZARD: (SfxId.LIZARD_ATTACK_01, SfxId.LIZARD_ATTACK_02),
+    CreatureTypeId.ALIEN: (SfxId.ALIEN_ATTACK_01, SfxId.ALIEN_ATTACK_02),
+    CreatureTypeId.SPIDER_SP1: (SfxId.SPIDER_ATTACK_01, SfxId.SPIDER_ATTACK_02),
+    CreatureTypeId.SPIDER_SP2: (SfxId.SPIDER_ATTACK_01, SfxId.SPIDER_ATTACK_02),
 }
 
 
@@ -277,13 +278,12 @@ class CreatureDeath(msgspec.Struct, frozen=True):
     reward_value: float
     xp_awarded: int
     owner: OwnerRef
-    death_sfx_key: str | None = None
 
 
 class CreatureUpdateResult(msgspec.Struct, frozen=True):
     deaths: tuple[CreatureDeath, ...] = ()
     spawned: tuple[int, ...] = ()
-    sfx: tuple[str, ...] = ()
+    sfx: tuple[SfxId, ...] = ()
 
 
 class CreatureUpdateOptions(msgspec.Struct, frozen=True):
@@ -315,7 +315,7 @@ class _CreatureInteractionCtx(msgspec.Struct):
     fx_queue: FxQueue | None
     fx_queue_rotated: FxQueueRotated | None
     deaths: list[CreatureDeath]
-    sfx: list[str]
+    sfx: list[SfxId]
     skip_creature: bool = False
     contact_dist_sq: float = 0.0
 
@@ -361,7 +361,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
         rng=ctx.rng,
         detail_preset=int(ctx.detail_preset),
     )
-    ctx.sfx.append("sfx_ui_bonus")
+    ctx.sfx.append(SfxId.UI_BONUS)
 
     prev_guard = bool(ctx.state.bonus_spawn_guard)
     ctx.state.bonus_spawn_guard = True
@@ -410,7 +410,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     if perk_active(ctx.player, PerkId.MR_MELEE):
         from .damage import creature_apply_damage_with_lethal_followup
 
-        def _on_mr_melee_lethal(death_sfx_key: str | None) -> None:
+        def _on_mr_melee_lethal(death_sfx: tuple[SfxId, ...]) -> None:
             ctx.deaths.append(
                 ctx.pool.handle_death(
                     ctx.creature_index,
@@ -422,9 +422,9 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
                     world_width=float(ctx.world_width),
                     world_height=float(ctx.world_height),
                     fx_queue=ctx.fx_queue,
-                    death_sfx_key=death_sfx_key,
                 ),
             )
+            ctx.sfx.extend(death_sfx)
             if creature.active:
                 ctx.pool._tick_dead(
                     creature,
@@ -446,6 +446,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             dt=ctx.dt,
             players=ctx.players,
             rng=ctx.rng,
+            preserve_bugs=bool(ctx.state.preserve_bugs),
             effects=ctx.state.effects,
             detail_preset=int(ctx.detail_preset),
             on_lethal=_on_mr_melee_lethal,
@@ -864,7 +865,7 @@ class CreaturePool:
 
         deaths: list[CreatureDeath] = []
         spawned: list[int] = []
-        sfx: list[str] = []
+        sfx: list[SfxId] = []
         self._update_tick = int(self._update_tick) + 1
         single_player_dead_target_pos: Vec2 | None = None
         if len(players) == 1:
@@ -914,18 +915,8 @@ class CreaturePool:
 
             from .damage import creature_apply_damage_with_lethal_followup
 
-            return creature_apply_damage_with_lethal_followup(
-                creature,
-                damage_amount=float(damage_amount),
-                damage_type=CreatureDamageType.SELF_TICK,
-                impulse=Vec2(),
-                owner=creature.last_hit_owner,
-                dt=dt,
-                players=players,
-                rng=rng,
-                effects=state.effects,
-                detail_preset=int(detail_preset),
-                on_lethal=lambda death_sfx_key: deaths.append(
+            def _on_lethal(death_sfx: tuple[SfxId, ...]) -> None:
+                deaths.append(
                     self.handle_death(
                         int(creature_index),
                         state=state,
@@ -936,9 +927,23 @@ class CreaturePool:
                         world_width=world_width,
                         world_height=world_height,
                         fx_queue=fx_queue,
-                        death_sfx_key=death_sfx_key,
                     ),
-                ),
+                )
+                sfx.extend(death_sfx)
+
+            return creature_apply_damage_with_lethal_followup(
+                creature,
+                damage_amount=float(damage_amount),
+                damage_type=CreatureDamageType.SELF_TICK,
+                impulse=Vec2(),
+                owner=creature.last_hit_owner,
+                dt=dt,
+                players=players,
+                rng=rng,
+                preserve_bugs=bool(state.preserve_bugs),
+                effects=state.effects,
+                detail_preset=int(detail_preset),
+                on_lethal=_on_lethal,
             )
 
         for idx, creature in enumerate(self._entries):
@@ -1193,7 +1198,7 @@ class CreaturePool:
                             travel_budget=_travel_budget_for_type_id(type_id),
                             hits_players=True,
                         )
-                        sfx.append("sfx_shock_fire")
+                        sfx.append(SfxId.SHOCK_FIRE)
                         creature.attack_cooldown += 1.0
 
                     if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
@@ -1206,7 +1211,7 @@ class CreaturePool:
                             travel_budget=_travel_budget_for_type_id(projectile_type),
                             hits_players=True,
                         )
-                        sfx.append("sfx_plasmaminigun_fire")
+                        sfx.append(SfxId.PLASMAMINIGUN_FIRE)
                         creature.attack_cooldown = (
                             float(rng.rand(caller=RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN) & 3)
                             * 0.1
@@ -1283,7 +1288,6 @@ class CreaturePool:
         world_height: float,
         fx_queue: FxQueue | None,
         keep_corpse: bool = True,
-        death_sfx_key: str | None = None,
     ) -> CreatureDeath:
         """Run one-shot death side effects and return the `CreatureDeath` event."""
 
@@ -1315,7 +1319,6 @@ class CreaturePool:
                 reward_value=float(creature.reward_value),
                 xp_awarded=0,
                 owner=creature.last_hit_owner,
-                death_sfx_key=death_sfx_key,
             )
         death = self._start_death(
             int(idx),
@@ -1360,9 +1363,6 @@ class CreaturePool:
                 fx_queue.add_random(pos=creature_pos, rng=rng)
             self.kill_count += 1
             creature.active = False
-
-        if death_sfx_key is not None:
-            death = msgspec.structs.replace(death, death_sfx_key=str(death_sfx_key))
 
         return death
 
