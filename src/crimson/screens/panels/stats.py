@@ -6,12 +6,13 @@ from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
-from grim.rand import Crand
+from grim.rand import CrandLike
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
+from ...rng_caller_static import RngCallerStatic
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
@@ -65,10 +66,10 @@ _STATS_EASTER_TEXT = "Orbes Volantes Exstare"
 _STATS_EASTER_TEXT_Y = 5.0
 
 
-def _stats_menu_easter_roll(current_roll: int, *, rng: Crand) -> int:
+def _stats_menu_easter_roll(current_roll: int, *, rng: CrandLike) -> int:
     if int(current_roll) != _STATS_EASTER_ROLL_UNSET:
         return int(current_roll)
-    return int(rng.rand() % 32)
+    return int(rng.rand(caller=RngCallerStatic.REWRITE_STATS_MENU_EASTER_ROLL) % 32)
 
 
 def _is_orbes_volantes_day(today: dt.date) -> bool:
@@ -334,7 +335,7 @@ class StatisticsMenuView:
 
         if _is_orbes_volantes_day(dt.date.today()) and int(self.state.stats_menu_easter_egg_roll) == _STATS_EASTER_TRIGGER_ROLL:
             self.state.stats_menu_easter_egg_roll = _STATS_EASTER_ROLL_UNSET
-            x = float(self.state.rng.rand() % 64 + 16)
+            x = float(self.state.rng.rand(caller=RngCallerStatic.REWRITE_STATS_MENU_EASTER_TEXT_X) % 64 + 16)
             draw_small_text(font, _STATS_EASTER_TEXT, Vec2(x, _STATS_EASTER_TEXT_Y), rl.Color(51, 255, 153, 128))
 
         # Buttons.

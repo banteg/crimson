@@ -14,6 +14,7 @@ from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ..game.types import GameState
+from ..rng_caller_static import RngCallerStatic
 from ..sim.bootstrap import run_unlock_terrain_prelude, terrain_stamping_draws
 from ..terrain_slots import (
     resolve_terrain_slots,
@@ -133,7 +134,7 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         else:
             ground.schedule_generate(seed=state.rng.state)
             for _ in range(terrain_stamping_draws(width=ground.width, height=ground.height)):
-                state.rng.rand()
+                state.rng.rand(caller=RngCallerStatic.REWRITE_MENU_GROUND_TERRAIN_STAMPING_BURN)
         state.menu_ground_camera = None
     return ground
 

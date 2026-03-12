@@ -15,6 +15,7 @@ from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
+from ...rng_caller_static import RngCallerStatic
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
@@ -246,18 +247,24 @@ class AlienZooKeeperView:
     def _fill_empty_cells(self) -> None:
         for i, value in enumerate(self._board):
             if value == -1:
-                self._board[i] = int(self.state.rng.rand() % 5)
+                self._board[i] = int(
+                    self.state.rng.rand(caller=RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_FILL_EMPTY) % 5,
+                )
 
     def _reroll_board_no_initial_match(self) -> None:
         for _ in range(4096):
             for i in range(_BOARD_CELLS):
-                self._board[i] = int(self.state.rng.rand() % 5)
+                self._board[i] = int(
+                    self.state.rng.rand(caller=RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_REROLL_FILL) % 5,
+                )
             has_match, _out_idx, _out_dir = _credits_secret_match3_find(self._board)
             if not has_match:
                 return
         # Fallback to avoid a hard loop even though this should never happen in practice.
         for i in range(_BOARD_CELLS):
-            self._board[i] = int(self.state.rng.rand() % 5)
+            self._board[i] = int(
+                self.state.rng.rand(caller=RngCallerStatic.REWRITE_ALIEN_ZOOKEEPER_REROLL_FALLBACK) % 5,
+            )
 
     def _reset_state(self) -> None:
         self._reroll_board_no_initial_match()

@@ -4,6 +4,7 @@ import msgspec
 
 from grim.rand import CrandLike
 
+from ..rng_caller_static import RngCallerStatic
 from ..terrain_slots import (
     DEFAULT_TERRAIN_SLOTS,
     UNLOCK_TERRAIN_SLOTS,
@@ -68,7 +69,7 @@ def _advance_terrain_stamping_rng(
 ) -> int:
     stamping_draws = terrain_stamping_draws(width=width, height=height)
     for _ in range(stamping_draws):
-        rng.rand()
+        rng.rand(caller=RngCallerStatic.REWRITE_TERRAIN_PRELUDE_STAMPING_BURN)
     return stamping_draws
 
 
