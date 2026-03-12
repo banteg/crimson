@@ -273,15 +273,15 @@ class WorldRuntimeHost:
 
         session = DeterministicSession(
             world=self.sim_world.world_state,
-            world_size=float(self.world_size),
+            world_size=self.world_size,
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             game_mode=GameMode.SURVIVAL,
-            perk_progression_enabled=bool(perk_progression_enabled),
-            detail_preset=int(detail_preset),
-            gore_disabled=int(gore_disabled),
-            game_tune_started=bool(self.sim_world.game_tune_started),
-            demo_mode_active=bool(self.demo_mode_active),
-            defer_camera_shake_update=bool(defer_camera_shake_update),
+            perk_progression_enabled=perk_progression_enabled,
+            detail_preset=detail_preset,
+            gore_disabled=gore_disabled,
+            game_tune_started=self.sim_world.game_tune_started,
+            demo_mode_active=self.demo_mode_active,
+            defer_camera_shake_update=defer_camera_shake_update,
             mid_step_hook=lambda ctx: survival_mid_step(ctx, self._survival_test_spawn_state),
         )
         session.elapsed_ms = float(self._survival_test_elapsed_ms)
@@ -300,7 +300,7 @@ class WorldRuntimeHost:
             events=tick.step.events,
             presentation=tick.step.presentation,
             dt_sim=float(tick.step.dt_sim),
-            game_tune_started=bool(session.game_tune_started),
+            game_tune_started=session.game_tune_started,
         )
         self.sync_audio_bridge_state()
         self.audio_bridge.apply_plan(

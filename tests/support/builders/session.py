@@ -17,7 +17,7 @@ def make_session(
     sim_world.reset(seed=seed, player_count=player_count)
     session = DeterministicSession(
         world=sim_world.world_state,
-        world_size=float(sim_world.world_size),
+        world_size=sim_world.world_size,
         damage_scale_by_type=sim_world.damage_scale_by_type,
         game_mode=game_mode,
         perk_progression_enabled=perk_progression_enabled,
