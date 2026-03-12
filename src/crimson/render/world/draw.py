@@ -83,7 +83,7 @@ def draw_world(
     if entity_alpha <= 1e-3:
         return
 
-    with _maybe_alpha_test(bool(alpha_test_enabled(render_ctx))):
+    with _maybe_alpha_test():
         draw_ctx = build_draw_context(
             render_ctx,
             camera=camera,
@@ -138,14 +138,6 @@ def draw_background(
         out_w=out_size.x,
         out_h=out_size.y,
     )
-
-
-def alpha_test_enabled(render_ctx: WorldRenderCtx) -> bool:
-    ground = render_ctx.frame.ground
-    assert ground is not None, "ground renderer must be initialized before live world draw"
-    return ground.alpha_test
-
-
 def effect_src_rect(texture: rl.Texture, effect_id: EffectId) -> rl.Rectangle | None:
     atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(effect_id))
     if atlas is None:

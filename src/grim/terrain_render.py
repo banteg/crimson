@@ -131,10 +131,7 @@ def _terrain_rt_blend(
 
 
 @contextmanager
-def _maybe_alpha_test(enabled: bool) -> Iterator[None]:
-    if not enabled:
-        yield
-        return
+def _maybe_alpha_test() -> Iterator[None]:
     shader = _get_alpha_test_shader()
     if shader is None:
         yield
@@ -153,7 +150,6 @@ class GroundDecal(msgspec.Struct):
     height: float
     rotation_rad: float = 0.0
     tint: rl.Color = rl.WHITE
-    centered: bool = True
 
 
 class GroundCorpseDecal(msgspec.Struct):
@@ -171,10 +167,7 @@ class GroundRenderer(msgspec.Struct):
     width: int = TERRAIN_TEXTURE_SIZE
     height: int = TERRAIN_TEXTURE_SIZE
     texture_scale: float = 1.0
-    alpha_test: bool = True
     texture_failed: bool = False
-    screen_width: float | None = None
-    screen_height: float | None = None
     render_target: rl.RenderTexture | None = None
     _render_target_ready: bool = False
     _pending_generate: bool = False
@@ -249,11 +242,6 @@ class GroundRenderer(msgspec.Struct):
             self.render_target = None
         self._render_target_ready = False
 
-    def generate(self, seed: int) -> None:
-        self._pending_generate = False
-        self._pending_generate_seed = None
-        self._generate_texture(seed=seed)
-
     def schedule_generate(self, seed: int) -> None:
         self._pending_generate_seed = seed
         self._pending_generate = True
@@ -270,7 +258,7 @@ class GroundRenderer(msgspec.Struct):
         # reads better in the port and still stays within current fixture tolerances.
         # Keep the ground RT alpha opaque like the original exe's XRGB-style RT.
         # The port does that by masking out alpha writes while stamping.
-        with _maybe_alpha_test(self.alpha_test):
+        with _maybe_alpha_test():
             with _terrain_rt_blend(
                 rd.RL_SRC_ALPHA,
                 rd.RL_ONE_MINUS_SRC_ALPHA,
@@ -292,26 +280,16 @@ class GroundRenderer(msgspec.Struct):
 
         inv_scale = 1.0 / self._normalized_texture_scale()
         rl.begin_texture_mode(self.render_target)
-        with _maybe_alpha_test(self.alpha_test):
+        with _maybe_alpha_test():
             with _terrain_rt_blend(
                 rd.RL_SRC_ALPHA,
                 rd.RL_ONE_MINUS_SRC_ALPHA,
                 rd.RL_FUNC_ADD,
             ):
                 for decal in decals:
-                    w = decal.width
-                    h = decal.height
-                    if decal.centered:
-                        pivot_x = decal.pos.x
-                        pivot_y = decal.pos.y
-                    else:
-                        pivot_x = decal.pos.x + w * 0.5
-                        pivot_y = decal.pos.y + h * 0.5
-                    pivot_x *= inv_scale
-                    pivot_y *= inv_scale
-                    w *= inv_scale
-                    h *= inv_scale
-                    dst = rl.Rectangle(pivot_x, pivot_y, w, h)
+                    w = decal.width * inv_scale
+                    h = decal.height * inv_scale
+                    dst = rl.Rectangle(decal.pos.x * inv_scale, decal.pos.y * inv_scale, w, h)
                     origin = rl.Vector2(w * 0.5, h * 0.5)
                     rl.draw_texture_pro(
                         decal.texture,
@@ -330,8 +308,6 @@ class GroundRenderer(msgspec.Struct):
         self,
         bodyset_texture: rl.Texture,
         decals: Sequence[GroundCorpseDecal],
-        *,
-        shadow: bool = True,
     ) -> bool:
         if not decals:
             return False
@@ -347,9 +323,8 @@ class GroundRenderer(msgspec.Struct):
         # Intentional rewrite deviation: the classic game appears to point-sample
         # corpse atlas frames while baking, but bilinear sampling reads better in
         # the port at modern output scales.
-        with _maybe_alpha_test(self.alpha_test):
-            if shadow:
-                self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
+        with _maybe_alpha_test():
+            self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
             self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
         rl.end_texture_mode()
 
@@ -378,21 +353,17 @@ class GroundRenderer(msgspec.Struct):
         if out_h <= 0.0:
             out_h = float(rl.get_screen_height())
         if screen_w is None:
-            # Prefer live output dimensions by default. Cached config-sized
-            # values can lag during gameplay/menu handoffs.
-            if out_w > 0.0:
-                screen_w = out_w
-            else:
-                screen_w = float(self.screen_width or out_w)
+            screen_w = out_w
+        else:
+            screen_w = float(screen_w)
         if screen_h is None:
-            if out_h > 0.0:
-                screen_h = out_h
-            else:
-                screen_h = float(self.screen_height or out_h)
+            screen_h = out_h
+        else:
+            screen_h = float(screen_h)
         if screen_w <= 0.0:
-            screen_w = out_w if out_w > 0.0 else float(self.screen_width or 1.0)
+            screen_w = max(1.0, out_w)
         if screen_h <= 0.0:
-            screen_h = out_h if out_h > 0.0 else float(self.screen_height or 1.0)
+            screen_h = max(1.0, out_h)
         screen_w, screen_h = self._fit_view_window(screen_w, screen_h)
         cam = self._clamp_camera(camera, screen_w, screen_h)
 

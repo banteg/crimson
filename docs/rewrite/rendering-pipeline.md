@@ -150,8 +150,9 @@ longer a supported fallback mode in `draw_world()`.
 
 ### Entity passes
 
-The world entity passes run under `_maybe_alpha_test(...)`, so terrain alpha-test
-behavior stays aligned with the current ground configuration.
+The world entity passes run under `_maybe_alpha_test(...)`, so terrain/entity
+cutout behavior stays aligned with the classic fixed-function alpha-test path
+whenever the shader shim is available.
 
 The order is deliberate:
 

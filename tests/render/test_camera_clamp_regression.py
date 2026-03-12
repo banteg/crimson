@@ -60,8 +60,6 @@ def _ground(
     width: int = 1024,
     height: int = 1024,
     texture_scale: float = 1.0,
-    screen_width: float | None = None,
-    screen_height: float | None = None,
 ) -> GroundRenderer:
     base = _TextureStub() if texture is None else texture
     overlay_tex = base if overlay is None else overlay
@@ -73,8 +71,6 @@ def _ground(
         width=width,
         height=height,
         texture_scale=texture_scale,
-        screen_width=screen_width,
-        screen_height=screen_height,
     )
 
 
@@ -233,9 +229,9 @@ def test_ground_draw_uses_explicit_output_dimensions(mocker) -> None:
     assert calls == [(1280.0, 720.0)]
 
 
-def test_ground_draw_prefers_runtime_dimensions_over_stale_cached_size(mocker) -> None:
+def test_ground_draw_uses_runtime_dimensions_when_screen_size_is_omitted(mocker) -> None:
     texture = _TextureStub()
-    ground = _ground(texture=texture, screen_width=1024.0, screen_height=768.0)
+    ground = _ground(texture=texture)
     ground.render_target = _as_render_texture(_RenderTextureStub())
     ground._render_target_ready = True
 
@@ -260,7 +256,7 @@ def test_ground_draw_prefers_runtime_dimensions_over_stale_cached_size(mocker) -
     assert fit_inputs == [(1280.0, 720.0)]
 
 
-def test_generate_partial_uses_overlay_detail_for_third_pass(mocker) -> None:
+def test_scheduled_generation_uses_overlay_detail_for_third_pass(mocker) -> None:
     base = _TextureStub(id=1)
     overlay = _TextureStub(id=2)
     detail = _TextureStub(id=3)
@@ -284,10 +280,11 @@ def test_generate_partial_uses_overlay_detail_for_third_pass(mocker) -> None:
     mocker.patch.object(terrain_render, "_terrain_rt_blend", side_effect=_noop_blend)
     alpha_test = mocker.patch.object(terrain_render, "_maybe_alpha_test", side_effect=_noop_blend)
 
-    ground.generate(seed=1337)
+    ground.schedule_generate(seed=1337)
+    ground.process_pending()
 
     assert [call.args[1] for call in rt_scatter.call_args_list] == [base, overlay, detail]
-    alpha_test.assert_called_once_with(True)
+    alpha_test.assert_called_once_with()
 
 
 def test_terrain_rt_blend_mask_alpha_writes_uses_color_mask(mocker) -> None:
@@ -368,7 +365,7 @@ def test_bake_decals_keep_default_filter(mocker) -> None:
 
     assert ground.bake_decals((decal,)) is True
 
-    alpha_test.assert_called_once_with(True)
+    alpha_test.assert_called_once_with()
     set_texture_filter.assert_not_called()
 
 
@@ -387,8 +384,18 @@ def test_bake_corpse_decals_keeps_default_filter(mocker) -> None:
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     set_texture_filter = mocker.patch.object(terrain_render.rl, "set_texture_filter", autospec=True)
-    mocker.patch.object(terrain_render.GroundRenderer, "_draw_corpse_shadow_pass", autospec=True, side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(terrain_render.GroundRenderer, "_draw_corpse_color_pass", autospec=True, side_effect=lambda *_args, **_kwargs: None)
+    draw_shadow_pass = mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_draw_corpse_shadow_pass",
+        autospec=True,
+        side_effect=lambda *_args, **_kwargs: None,
+    )
+    draw_color_pass = mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_draw_corpse_color_pass",
+        autospec=True,
+        side_effect=lambda *_args, **_kwargs: None,
+    )
 
     @contextmanager
     def _noop_alpha(*_args, **_kwargs):
@@ -399,6 +406,8 @@ def test_bake_corpse_decals_keeps_default_filter(mocker) -> None:
     assert ground.bake_corpse_decals(bodyset_texture, (decal,)) is True
 
     set_texture_filter.assert_not_called()
+    draw_shadow_pass.assert_called_once()
+    draw_color_pass.assert_called_once()
 
 
 def test_ground_draw_without_render_target_clears_background(mocker) -> None:

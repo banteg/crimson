@@ -22,8 +22,6 @@ def _renderer() -> GroundRenderer:
         width=1024,
         height=1024,
         texture_scale=1.0,
-        screen_width=1024.0,
-        screen_height=768.0,
     )
 
 
