@@ -573,7 +573,15 @@ def build_3_9_deja_vu(
     trigger = 2000
     step = 2000
     while step > 560:
-        angle = float(rng.rand() % 612) * 0.01
+        angle = (
+            float(
+                rng.rand(
+                    caller=RngCallerStatic.QUEST_BUILD_DEJA_VU_ANGLE,
+                )
+                % 612,
+            )
+            * 0.01
+        )
         for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
             entries.append(
                 spawn(
