@@ -489,12 +489,6 @@ def _capture_replay_audio_track(
             mode.update(tick_dt)
             if mode.close_requested:
                 raise ReplayRenderError("audio capture aborted: replay playback requested close")
-            # Gameplay clears decal queues during draw(); audio-only rendering has no draw pass,
-            # so clear here to avoid queue saturation changing deterministic outcomes.
-            render_resources = mode._runtime.render_resources if mode._runtime is not None else None
-            if render_resources is not None:
-                render_resources.fx_queue.clear()
-                render_resources.fx_queue_rotated.clear()
             capture.flush_pending()
             if progress is not None and total_ticks > 0:
                 progress("audio", 0, mode.tick_index, total_ticks)

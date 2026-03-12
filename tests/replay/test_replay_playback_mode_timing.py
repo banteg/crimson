@@ -140,6 +140,7 @@ def test_replay_runner_preserves_tick_complete_order_for_mixed_payload_batches(m
             fx_textures=None,
             fx_queue=[],
             fx_queue_rotated=[],
+            consume_terrain_fx_batch=lambda _batch: None,
         ),
     )
     view._max_ticks = None

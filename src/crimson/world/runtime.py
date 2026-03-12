@@ -124,8 +124,7 @@ class WorldRuntime:
             player_count=int(player_count),
             spawn_pos=spawn_pos,
         )
-        self.render_resources.fx_queue.clear()
-        self.render_resources.fx_queue_rotated.clear()
+        self.render_resources.clear_pending_terrain_fx()
         self.camera = Vec2(-1.0, -1.0)
         self.renderer.sync_viewport(
             world_size=self.world_size,
@@ -191,7 +190,6 @@ class WorldRuntime:
         draw_aim_indicators: bool = True,
         entity_alpha: float = 1.0,
     ) -> None:
-        self.render_resources.bake_fx_queues()
         self.renderer.draw(
             render_frame=self.build_render_frame(),
             draw_aim_indicators=draw_aim_indicators,

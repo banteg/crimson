@@ -12,7 +12,9 @@ import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.quests.level import QuestLevel
 from crimson.replay import Replay, ReplayHeader, ReplayTick
 from crimson.sim.sessions import QuestSpawnState
+from crimson.sim.terrain_fx import TerrainDecalFx, TerrainFxBatch
 from crimson.world.sim_world_state import SimWorldState
+from grim.color import RGBA
 from grim.console import ConsoleState
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -62,15 +64,12 @@ class _RenderResourcesStub:
     fx_textures: object | None = None
     fx_queue: _Clearable = field(default_factory=list)
     fx_queue_rotated: _Clearable = field(default_factory=list)
-    bake_fx_queues_hook: Callable[[], None] | None = None
+    consume_terrain_fx_hook: Callable[[TerrainFxBatch], None] | None = None
 
-    def bake_fx_queues(self) -> None:
-        hook = self.bake_fx_queues_hook
+    def consume_terrain_fx_batch(self, batch: TerrainFxBatch) -> None:
+        hook = self.consume_terrain_fx_hook
         if hook is not None:
-            hook()
-            return
-        self.fx_queue.clear()
-        self.fx_queue_rotated.clear()
+            hook(batch)
 
 
 @dataclass
@@ -92,6 +91,21 @@ class _CountingQueue:
 
     def clear(self) -> None:
         self.clear_calls += 1
+
+
+def _terrain_batch() -> TerrainFxBatch:
+    return TerrainFxBatch(
+        decals=(
+            TerrainDecalFx(
+                effect_id=3,
+                rotation=0.0,
+                pos=Vec2(32.0, 48.0),
+                width=24.0,
+                height=24.0,
+                color=RGBA(1.0, 1.0, 1.0, 1.0),
+            ),
+        ),
+    )
 
 
 def test_replay_playback_registers_snd_add_game_tune_command(mocker, replay_playback_view) -> None:
@@ -240,26 +254,20 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
     assert bool(audio_bridge.router.sfx_enabled)
 
 
-def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playback_view) -> None:
+def test_skip_forward_consumes_terrain_fx_each_tick_when_render_ready(replay_playback_view) -> None:
     view, _console = replay_playback_view
     replay_inputs = [0, 0, 0, 0]
 
-    fx_queue = _CountingQueue()
-    fx_queue_rotated = _CountingQueue()
-    bake_calls = 0
+    consume_calls = 0
 
-    def _bake_fx_queues() -> None:
-        nonlocal bake_calls
-        bake_calls += 1
-        fx_queue.clear()
-        fx_queue_rotated.clear()
+    def _consume_terrain_fx(_batch: TerrainFxBatch) -> None:
+        nonlocal consume_calls
+        consume_calls += 1
 
     render_resources = _RenderResourcesStub(
         ground=object(),
         fx_textures=object(),
-        fx_queue=fx_queue,
-        fx_queue_rotated=fx_queue_rotated,
-        bake_fx_queues_hook=_bake_fx_queues,
+        consume_terrain_fx_hook=_consume_terrain_fx,
     )
     _set_private(view, "_replay", _replay_with_ticks(len(replay_inputs)))
     _set_private(
@@ -274,22 +282,24 @@ def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playbac
     view._tick_index = 0
     view._finished = False
     view._dt = 1.0 / 60.0
-    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=len(replay_inputs)))
+    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=len(replay_inputs), terrain_fx=_terrain_batch()))
     view._max_ticks = None
 
     view._skip_forward_seconds(3.0 / 60.0)
 
-    assert bake_calls == 3
-    assert fx_queue.clear_calls == 3
-    assert fx_queue_rotated.clear_calls == 3
+    assert consume_calls == 3
 
 
-def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_playback_view) -> None:
+def test_skip_forward_consumes_terrain_fx_each_tick_when_render_not_ready(replay_playback_view) -> None:
     view, _console = replay_playback_view
     replay_inputs = [0, 0, 0, 0]
 
-    fx_queue = _CountingQueue()
-    fx_queue_rotated = _CountingQueue()
+    consume_calls = 0
+
+    def _consume_terrain_fx(_batch: TerrainFxBatch) -> None:
+        nonlocal consume_calls
+        consume_calls += 1
+
     _set_private(view, "_replay", _replay_with_ticks(len(replay_inputs)))
     _set_private(
         view,
@@ -299,8 +309,7 @@ def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_pl
             render_resources=_RenderResourcesStub(
                 ground=None,
                 fx_textures=None,
-                fx_queue=fx_queue,
-                fx_queue_rotated=fx_queue_rotated,
+                consume_terrain_fx_hook=_consume_terrain_fx,
             ),
         ),
     )
@@ -308,13 +317,12 @@ def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_pl
     view._tick_index = 0
     view._finished = False
     view._dt = 1.0 / 60.0
-    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=len(replay_inputs)))
+    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=len(replay_inputs), terrain_fx=_terrain_batch()))
     view._max_ticks = None
 
     view._skip_forward_seconds(3.0 / 60.0)
 
-    assert fx_queue.clear_calls == 3
-    assert fx_queue_rotated.clear_calls == 3
+    assert consume_calls == 3
 
 
 def test_draw_quest_title_uses_shared_overlay_helper(mocker, replay_playback_view) -> None:

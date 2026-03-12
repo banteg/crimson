@@ -87,8 +87,6 @@ def _live_runtime_checkpoints(
         max_ticks=None,
         trace_rng=False,
         world_size=float(replay.header.world_size),
-        fx_queue=world.render_resources.fx_queue,
-        fx_queue_rotated=world.render_resources.fx_queue_rotated,
         spawn_entries=spawn_entries,
         start_weapon_id=start_weapon_id,
     )
@@ -106,6 +104,7 @@ def _live_runtime_checkpoints(
         )
         world.sync_audio_bridge_state()
         world.audio_bridge.apply_plan(plan=step.presentation, apply_audio=False)
+        world.render_resources.consume_terrain_fx_batch(step.terrain_fx)
 
         checkpoints.append(
             build_checkpoint(
@@ -169,22 +168,20 @@ def test_rush_live_vs_headless_tick_pipeline() -> None:
     assert [ck.rng_state for ck in live] == [ck.rng_state for ck in headless]
 
 
-def test_runtime_playback_driver_keeps_live_fx_queues_for_ground_baking() -> None:
+def test_runtime_playback_driver_matches_verify_terrain_fx_output() -> None:
     replay = _build_replay(mode=int(GameMode.SURVIVAL), ticks=1, seed=0x1234)
-    world = WorldRuntimeHost(assets_dir=Path(__file__).resolve().parents[1] / "artifacts" / "assets")
-
     runtime_driver = build_runtime_playback_driver(
         replay,
         max_ticks=None,
         trace_rng=False,
         world_size=float(replay.header.world_size),
-        fx_queue=world.render_resources.fx_queue,
-        fx_queue_rotated=world.render_resources.fx_queue_rotated,
     )
     verify_driver = build_verify_playback_driver(replay)
 
-    assert runtime_driver.session.clear_fx_queues_each_tick is False
-    assert verify_driver.session.clear_fx_queues_each_tick is True
+    runtime_tick = runtime_driver.step_tick(0)
+    verify_tick = verify_driver.step_tick(0)
+
+    assert runtime_tick.payload.step.terrain_fx == verify_tick.payload.step.terrain_fx
 
 
 def test_quest_live_vs_headless_tick_pipeline() -> None:

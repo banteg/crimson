@@ -77,8 +77,6 @@ class StandaloneTickHarness:
             world=world_state,
             world_size=float(runtime.world_size),
             damage_scale_by_type=runtime.sim_world.damage_scale_by_type,
-            fx_queue=runtime.render_resources.fx_queue,
-            fx_queue_rotated=runtime.render_resources.fx_queue_rotated,
             game_mode=self.game_mode,
             detail_preset=int(detail_preset),
             gore_disabled=int(gore_disabled),
@@ -86,7 +84,6 @@ class StandaloneTickHarness:
             demo_mode_active=bool(runtime.demo_mode_active),
             perk_progression_enabled=False,
             apply_world_dt_steps=True,
-            clear_fx_queues_each_tick=False,
         )
         provider = LocalInputProvider(
             player_count=int(player_count),
@@ -129,6 +126,7 @@ class StandaloneTickHarness:
                 plan=plan,
                 apply_audio=bool(should_apply_audio),
             ),
+            apply_terrain_fx=runtime.render_resources.consume_terrain_fx_batch,
             update_camera=runtime.update_camera,
             on_output_applied=lambda output: apply_post_apply_reaction(
                 reaction=reactions.get(int(output.tick_index), PostApplyReaction()),

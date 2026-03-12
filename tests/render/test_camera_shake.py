@@ -7,7 +7,7 @@ from crimson.bonuses.apply import bonus_apply
 from crimson.camera import camera_shake_update
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
-from crimson.replay.driver.setup import build_damage_scale_by_type, build_empty_fx_queues, reset_players
+from crimson.replay.driver.setup import build_damage_scale_by_type, reset_players
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import (
@@ -168,14 +168,11 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     world = _build_session_world(seed=0x1234)
     entry = _spawn_nuke_pickup_on_player(world)
     player = world.players[0]
-    fx_queue, fx_queue_rotated = build_empty_fx_queues()
     spawn = SurvivalSpawnState()
     session = DeterministicSession(
         world=world,
         world_size=1024.0,
         damage_scale_by_type=build_damage_scale_by_type(),
-        fx_queue=fx_queue,
-        fx_queue_rotated=fx_queue_rotated,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=True,
         mid_step_hook=lambda ctx: survival_mid_step(ctx, spawn),
@@ -198,14 +195,11 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     world = _build_session_world(seed=0x5678)
     entry = _spawn_nuke_pickup_on_player(world)
     player = world.players[0]
-    fx_queue, fx_queue_rotated = build_empty_fx_queues()
     spawn = RushSpawnState()
     session = DeterministicSession(
         world=world,
         world_size=1024.0,
         damage_scale_by_type=build_damage_scale_by_type(),
-        fx_queue=fx_queue,
-        fx_queue_rotated=fx_queue_rotated,
         game_mode=GameMode.RUSH,
         perk_progression_enabled=False,
         mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),

@@ -1296,7 +1296,6 @@ class LightingDebugView:
         return self._runtime.render_resources.resources.texture(texture_id)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        self._runtime.render_resources.bake_fx_queues()
         self._runtime.renderer.draw(
             render_frame=self._runtime.build_render_frame(),
             draw_aim_indicators=draw_aim_indicators,
@@ -1817,8 +1816,7 @@ class LightingDebugView:
         self._runtime.sim_world.state.sprite_effects.reset()
         self._runtime.sim_world.state.effects.reset()
         self._runtime.sim_world.state.bonus_pool.reset()
-        self._runtime.render_resources.fx_queue.clear()
-        self._runtime.render_resources.fx_queue_rotated.clear()
+        self._runtime.render_resources.clear_pending_terrain_fx()
         self._transient_lights.clear()
         self._invalidate_shadow_history()
 

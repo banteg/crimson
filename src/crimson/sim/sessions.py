@@ -9,7 +9,6 @@ import msgspec
 from grim.sfx_map import SfxId
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
-from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..gameplay import survival_update_weapon_handouts
 from ..perks.selection import (
@@ -35,6 +34,7 @@ from .step_pipeline import (
     run_deterministic_step,
     time_scale_reflex_boost_factor,
 )
+from .terrain_fx import TerrainFxScratch
 from .timing import FrameTiming
 from .world_state import WorldState
 
@@ -227,8 +227,6 @@ class DeterministicSession(msgspec.Struct):
     world: WorldState
     world_size: float
     damage_scale_by_type: dict[int, float]
-    fx_queue: FxQueue
-    fx_queue_rotated: FxQueueRotated
 
     # Mode identity
     game_mode: GameMode
@@ -241,12 +239,12 @@ class DeterministicSession(msgspec.Struct):
     demo_mode_active: bool = False
     apply_world_dt_steps: bool = True
     defer_camera_shake_update: bool = False
-    clear_fx_queues_each_tick: bool = False
     finalize_post_render_lifecycle: bool = False
     elapsed_uses_raw_dt: bool = False
 
     # Mutable timing
     elapsed_ms: float = 0.0
+    terrain_fx: TerrainFxScratch = msgspec.field(default_factory=TerrainFxScratch)
 
     # Optional hooks (provided by modes / callers)
     mid_step_hook: MidStepHook | None = None
@@ -342,8 +340,7 @@ class DeterministicSession(msgspec.Struct):
             ),
             apply_world_dt_steps=self.apply_world_dt_steps,
             inputs=tick_inputs,
-            fx_queue=self.fx_queue,
-            fx_queue_rotated=self.fx_queue_rotated,
+            terrain_fx=self.terrain_fx,
             defer_camera_shake_update=self.defer_camera_shake_update,
             mid_step_hook=hook,
             rng_marks_out=rng_marks,
@@ -368,10 +365,6 @@ class DeterministicSession(msgspec.Struct):
                     detail_preset=int(self.detail_preset),
                 ),
             )
-
-        if self.clear_fx_queues_each_tick:
-            self.fx_queue.clear()
-            self.fx_queue_rotated.clear()
 
         creature_count_world_step = sum(1 for c in self.world.creatures.entries if c.active)
         rng_marks["after_world_step"] = int(state.rng.state)

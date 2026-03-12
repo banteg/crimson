@@ -1787,6 +1787,7 @@ class BaseGameplayMode:
                 plan=plan,
                 apply_audio=bool(should_apply_audio),
             ),
+            apply_terrain_fx=self.render_resources.consume_terrain_fx_batch,
             update_camera=self._world_runtime.update_camera if bool(update_camera) else None,
             on_output_applied=lambda output: self._apply_tick_post_apply_reaction(
                 reaction_by_tick.get(int(output.tick_index), PostApplyReaction()),
