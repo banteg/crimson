@@ -48,15 +48,14 @@ The rewrite exposes the same mechanism via two helpers:
 
 - `GroundRenderer.bake_decals([...])` for generic textured decals (blood, scorch, etc).
   - Applies `inv_scale = 1/texture_scale` to positions/sizes so baked pixels match the exe’s scaled RT.
-  - Uses the texture's current filter while stamping (no temporary point-filter override).
-  - Note: this intentionally diverges from the original exe, which forces `filter=1` (point) during baking.
+  - Temporarily forces point sampling while stamping, matching the exe’s bake-time `filter=1` state.
+  - Runs through the terrain alpha-test shim, so low-alpha fringe texels are discarded before blending.
 
 - `GroundRenderer.bake_corpse_decals(bodyset_texture, [...])` for corpse sprites (bodyset 4×4 atlas frames).
   - Implements the two-pass corpse baking:
     - a “shadow/darken” pass using `ZERO / ONE_MINUS_SRC_ALPHA`
     - a normal alpha blend color pass
-  - Corpse baking also keeps the texture's current filter (no bake-time override).
-
+  - Temporarily forces point sampling during both corpse passes, like the original engine.
   - Applies the exe’s small alignment tweaks (`-0.5` shift and `offset = terrain_scale/512`) and rotation offset (`rotation - pi/2`).
 
 ## Terrain filter ("terrainFilter")
