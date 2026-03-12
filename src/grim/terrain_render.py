@@ -286,6 +286,7 @@ class GroundRenderer(msgspec.Struct):
 
     def generate_partial(self, seed: int | None = None, *, layers: int) -> None:
         layers = max(0, min(layers, 3))
+        detail_texture = self.overlay_detail or self.texture
         # Always keep a deterministic fallback representation of the terrain.
         # When the render target is unavailable (or not ready yet), we can render
         # patches + baked decals directly to the screen, matching the exe's
@@ -304,8 +305,7 @@ class GroundRenderer(msgspec.Struct):
         if layers >= 2 and self.overlay is not None:
             self._scatter_texture_fallback(self.overlay, TERRAIN_OVERLAY_TINT, rng_fallback, TERRAIN_DENSITY_OVERLAY)
         if layers >= 3:
-            # Original uses base texture for detail pass, not overlay.
-            self._scatter_texture_fallback(self.texture, TERRAIN_DETAIL_TINT, rng_fallback, TERRAIN_DENSITY_DETAIL)
+            self._scatter_texture_fallback(detail_texture, TERRAIN_DETAIL_TINT, rng_fallback, TERRAIN_DENSITY_DETAIL)
 
         self.create_render_target()
         if self.render_target is None:
@@ -329,8 +329,7 @@ class GroundRenderer(msgspec.Struct):
             if layers >= 2 and self.overlay is not None:
                 self._scatter_texture(self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY)
             if layers >= 3:
-                # Original uses base texture for detail pass, not overlay
-                self._scatter_texture(self.texture, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL)
+                self._scatter_texture(detail_texture, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL)
         rl.end_texture_mode()
         self._set_stamp_filters(point=False)
         self._render_target_ready = True

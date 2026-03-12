@@ -238,3 +238,44 @@ def test_ground_draw_prefers_runtime_dimensions_over_stale_cached_size(mocker) -
 
     fit_inputs = [(float(call.args[1]), float(call.args[2])) for call in fit_view_window.call_args_list]
     assert fit_inputs == [(1280.0, 720.0)]
+
+
+def test_generate_partial_uses_overlay_detail_for_third_pass(mocker) -> None:
+    base = _TextureStub(id=1)
+    overlay = _TextureStub(id=2)
+    detail = _TextureStub(id=3)
+    ground = GroundRenderer(
+        texture=_as_texture(base),
+        overlay=_as_texture(overlay),
+        overlay_detail=_as_texture(detail),
+        width=1024,
+        height=1024,
+    )
+    ground.render_target = _as_render_texture(_RenderTextureStub())
+
+    fallback_scatter = mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_scatter_texture_fallback",
+        autospec=True,
+    )
+    rt_scatter = mocker.patch.object(
+        terrain_render.GroundRenderer,
+        "_scatter_texture",
+        autospec=True,
+    )
+    mocker.patch.object(terrain_render.GroundRenderer, "create_render_target", autospec=True, side_effect=lambda _self: None)
+    mocker.patch.object(terrain_render.GroundRenderer, "_set_stamp_filters", autospec=True, side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(terrain_render.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
+
+    @contextmanager
+    def _noop_blend(*_args, **_kwargs):
+        yield
+
+    mocker.patch.object(terrain_render, "_blend_custom_separate", side_effect=_noop_blend)
+
+    ground.generate_partial(seed=1337, layers=3)
+
+    assert [call.args[1] for call in fallback_scatter.call_args_list] == [base, overlay, detail]
+    assert [call.args[1] for call in rt_scatter.call_args_list] == [base, overlay, detail]
