@@ -311,9 +311,18 @@ class PlaybackDriver:
             return self._provided_fx_queue, self._provided_fx_queue_rotated
         return build_empty_fx_queues()
 
+    def _clear_fx_queues_each_tick(self) -> bool:
+        # Runtime replay playback shares live FX queues with WorldRuntime so the
+        # renderer can bake ground decals after presentation outputs are applied.
+        # Headless verification keeps the old clear-per-tick behavior.
+        return not (
+            self._provided_fx_queue is not None and self._provided_fx_queue_rotated is not None
+        )
+
     def _build_session(self, *, apply_world_dt_steps: bool) -> DeterministicSession:
         damage_scale_by_type = build_damage_scale_by_type()
         self._quest_spawn_state = None
+        clear_fx_queues_each_tick = self._clear_fx_queues_each_tick()
         match self.mode_id:
             case GameMode.SURVIVAL:
                 session, _ = build_survival_session(
@@ -326,7 +335,7 @@ class PlaybackDriver:
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
                     apply_world_dt_steps=bool(apply_world_dt_steps),
-                    clear_fx_queues_each_tick=True,
+                    clear_fx_queues_each_tick=bool(clear_fx_queues_each_tick),
                     finalize_post_render_lifecycle=True,
                 )
                 return session
@@ -341,7 +350,7 @@ class PlaybackDriver:
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=False,
-                    clear_fx_queues_each_tick=True,
+                    clear_fx_queues_each_tick=bool(clear_fx_queues_each_tick),
                     finalize_post_render_lifecycle=True,
                 )
                 return session
@@ -363,7 +372,7 @@ class PlaybackDriver:
                     game_tune_started=False,
                     demo_mode_active=bool(self.world.state.demo_mode_active),
                     apply_world_dt_steps=bool(apply_world_dt_steps),
-                    clear_fx_queues_each_tick=True,
+                    clear_fx_queues_each_tick=bool(clear_fx_queues_each_tick),
                     finalize_post_render_lifecycle=True,
                     spawn_entries=tuple(spawn_entries),
                     quest_level=quest_level,
