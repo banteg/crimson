@@ -19,6 +19,11 @@ Implementation: `src/grim/terrain_render.py`
 - `GroundRenderer.generate(seed=...)` stamps the 3 procedural layers into the RT.
 - `GroundRenderer.draw(camera_x, camera_y)` draws the RT to the screen using UV scrolling.
 
+Intentional rewrite deviations:
+
+- Procedural terrain stamps keep bilinear sampling while rotating into the RT. The original engine appears to point-sample those stamps, but bilinear reads better in the port and still stays within current fixture tolerances.
+- Corpse atlas frames keep bilinear sampling while baking for the same reason.
+
 ## Ground dump fixtures (parity test)
 
 We captured **ground render-target dumps** via Frida and use the PNGs as

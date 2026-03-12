@@ -273,7 +273,6 @@ def test_generate_partial_uses_overlay_detail_for_third_pass(mocker) -> None:
         autospec=True,
     )
     mocker.patch.object(terrain_render.GroundRenderer, "create_render_target", autospec=True, side_effect=lambda _self: None)
-    mocker.patch.object(terrain_render.GroundRenderer, "_set_stamp_filters", autospec=True, side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)

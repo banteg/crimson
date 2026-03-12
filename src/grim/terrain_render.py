@@ -296,9 +296,11 @@ class GroundRenderer(msgspec.Struct):
         if self.render_target is None:
             return
         rng = CrtRand(seed)
-        self._set_stamp_filters(point=True)
         rl.begin_texture_mode(self.render_target)
         rl.clear_background(TERRAIN_CLEAR_COLOR)
+        # Intentional rewrite deviation: the classic game appears to point-sample
+        # terrain stamps while rotating them into the RT, but bilinear sampling
+        # reads better in the port and still stays within current fixture tolerances.
         # Keep the ground RT alpha at 1.0 like the original exe (which typically uses
         # an XRGB render target). We still alpha-blend RGB, but preserve destination A.
         with _maybe_alpha_test(self.alpha_test):
@@ -314,7 +316,6 @@ class GroundRenderer(msgspec.Struct):
                 self._scatter_texture(self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY)
                 self._scatter_texture(self.overlay_detail, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL)
         rl.end_texture_mode()
-        self._set_stamp_filters(point=False)
         self._render_target_ready = True
 
     def bake_decals(self, decals: Sequence[GroundDecal]) -> bool:
@@ -580,20 +581,6 @@ class GroundRenderer(msgspec.Struct):
         if render_w == screen_w * 2 and render_h == screen_h * 2:
             scale *= 0.5
         return scale
-
-    def _set_stamp_filters(self, *, point: bool) -> None:
-        self._set_texture_filters(
-            (self.texture, self.overlay, self.overlay_detail),
-            point=point,
-        )
-
-    @staticmethod
-    def _set_texture_filters(textures: Iterable[rl.Texture], *, point: bool) -> None:
-        mode = rl.TextureFilter.TEXTURE_FILTER_POINT if point else rl.TextureFilter.TEXTURE_FILTER_BILINEAR
-        for texture in textures:
-            if texture.id <= 0:
-                continue
-            rl.set_texture_filter(texture, mode)
 
     def _corpse_src(self, bodyset_texture: rl.Texture, frame: int) -> rl.Rectangle:
         frame = int(frame) & 0xF
