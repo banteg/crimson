@@ -127,7 +127,7 @@ def _load_player_bind_block(config: CrimsonConfig | None, *, player_index: int) 
 
 
 def _config_player_count(config: CrimsonConfig | None) -> int:
-    value = config.player_count if config is not None else 1
+    value = config.gameplay.player_count if config is not None else 1
     return max(1, value)
 
 
@@ -271,13 +271,13 @@ class LocalInputInterpreter:
     def _reload_key(config: CrimsonConfig | None) -> int:
         if config is None:
             return 0x102
-        return config.keybind_reload
+        return config.controls.reload_key
 
     @staticmethod
     def _safe_controls_modes(config: CrimsonConfig | None, *, player_index: int) -> tuple[AimScheme, MovementControlType]:
         if config is None:
             return AimScheme.MOUSE, MovementControlType.STATIC
-        aim_scheme, move_mode = controls_method_values(config.data, player_index=int(player_index))
+        aim_scheme, move_mode = controls_method_values(config.controls, player_index=int(player_index))
         return aim_scheme, move_mode
 
     def build_player_input(

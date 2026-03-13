@@ -10,7 +10,7 @@ import pytest
 import grim.terrain_render as terrain_render
 from crimson.render.world import renderer as world_renderer
 from crimson.world import runtime as world_runtime
-from grim.config import CrimsonConfig, default_crimson_cfg_data
+from grim.config import CrimsonConfig, default_crimson_cfg
 from grim.geom import Vec2
 from grim.terrain_render import GroundCorpseDecal, GroundDecal, GroundRenderer
 from tests.support.helpers import assert_float_close
@@ -83,9 +83,9 @@ def _runtime_world(
     repo_root = Path(__file__).resolve().parents[1]
     cfg: CrimsonConfig | None = None
     if screen_width is not None and screen_height is not None:
-        cfg = CrimsonConfig(path=repo_root / "artifacts" / "tmp_crimson.cfg", data=default_crimson_cfg_data())
-        cfg.screen_width = int(screen_width)
-        cfg.screen_height = int(screen_height)
+        cfg = default_crimson_cfg(repo_root / "artifacts" / "tmp_crimson.cfg")
+        cfg.display.width = int(screen_width)
+        cfg.display.height = int(screen_height)
     return WorldRuntimeHost(
         assets_dir=repo_root / "artifacts" / "assets",
         world_size=float(world_size),

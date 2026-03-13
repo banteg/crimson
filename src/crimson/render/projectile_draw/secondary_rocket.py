@@ -91,7 +91,7 @@ def _draw_secondary_rocket_glow(ctx: SecondaryProjectileDrawCtx, *, style: Secon
     renderer = ctx.renderer
     render_frame = renderer.frame
     fx_detail_1 = (
-        render_frame.config.fx_detail(level=1, default=True) if render_frame.config is not None else True
+        render_frame.config.display.fx_detail_enabled(level=1, default=True) if render_frame.config is not None else True
     )
     particles_texture = render_frame.resources.texture(TextureId.PARTICLES)
     if not fx_detail_1 or particles_texture is None:

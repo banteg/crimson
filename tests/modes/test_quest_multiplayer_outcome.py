@@ -16,7 +16,7 @@ def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, 
     assets_dir = repo_root / "artifacts" / "assets"
 
     cfg = ensure_crimson_cfg(tmp_path)
-    cfg.data["player_count"] = 4
+    cfg.gameplay.player_count = 4
     ctx = ViewContext(assets_dir=assets_dir)
 
     mocker.patch.object(QuestMode, "apply_terrain_setup", return_value=None)
@@ -38,7 +38,7 @@ def test_start_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) -> Non
     assets_dir = repo_root / "artifacts" / "assets"
 
     cfg = ensure_crimson_cfg(tmp_path)
-    cfg.data["player_count"] = 2
+    cfg.gameplay.player_count = 2
     ctx = ViewContext(assets_dir=assets_dir)
 
     mocker.patch.object(QuestMode, "apply_terrain_setup", return_value=None)

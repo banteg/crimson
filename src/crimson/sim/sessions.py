@@ -232,7 +232,7 @@ class DeterministicSession(msgspec.Struct):
 
     # Sim config
     detail_preset: int = 5
-    gore_disabled: int = 0
+    violence_disabled: int = 0
     game_tune_started: bool = False
     demo_mode_active: bool = False
     apply_world_dt_steps: bool = True
@@ -355,7 +355,7 @@ class DeterministicSession(msgspec.Struct):
             world_size=self.world_size,
             damage_scale_by_type=self.damage_scale_by_type,
             detail_preset=self.detail_preset,
-            gore_disabled=self.gore_disabled,
+            violence_disabled=self.violence_disabled,
             fx_queue=fx_queue,
             fx_queue_rotated=fx_queue_rotated,
             game_mode=self.game_mode,
@@ -379,7 +379,7 @@ class DeterministicSession(msgspec.Struct):
             perk_progression_enabled=self.perk_progression_enabled,
             rng=presentation_rng,
             detail_preset=self.detail_preset,
-            gore_disabled=self.gore_disabled,
+            violence_disabled=self.violence_disabled,
             game_tune_started=self.game_tune_started,
             trigger_game_tune=events.trigger_game_tune,
             hit_sfx=events.hit_sfx,

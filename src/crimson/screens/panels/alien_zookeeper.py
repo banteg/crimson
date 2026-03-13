@@ -151,7 +151,7 @@ class AlienZooKeeperView:
         self._back_button = UiButtonState(_BACK_LABEL, force_wide=False)
 
     def open(self) -> None:
-        layout_w = float(self.state.config.screen_width)
+        layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._cursor_pulse_time = 0.0
@@ -212,7 +212,7 @@ class AlienZooKeeperView:
         return float(slide_x)
 
     def _layout(self, *, scale: float) -> _AzkLayout:
-        layout_offset_x = _LAYOUT_OFFSET_X_SMALL if float(self.state.config.screen_width) < 641.0 else _LAYOUT_OFFSET_X
+        layout_offset_x = _LAYOUT_OFFSET_X_SMALL if float(self.state.config.display.width) < 641.0 else _LAYOUT_OFFSET_X
         slide_x = self._panel_slide_x(scale=scale)
         anchor_x = _LAYOUT_POS_X + layout_offset_x + _BOARD_X_OFFSET + slide_x
         title_base_y = _LAYOUT_BASE_Y + _LAYOUT_POS_Y + _TITLE_BASE_Y_OFFSET + self._widescreen_y_shift
@@ -356,7 +356,7 @@ class AlienZooKeeperView:
         if not interactive:
             return
 
-        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
+        scale = 0.9 if float(self.state.config.display.width) < 641.0 else 1.0
         layout = self._layout(scale=scale)
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -406,7 +406,7 @@ class AlienZooKeeperView:
 
         resources = require_runtime_resources(self.state)
         font = resources.small_font
-        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
+        scale = 0.9 if float(self.state.config.display.width) < 641.0 else 1.0
         layout = self._layout(scale=scale)
 
         dst = rl.Rectangle(
@@ -415,7 +415,7 @@ class AlienZooKeeperView:
             MENU_PANEL_WIDTH * scale,
             378.0 * scale,
         )
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
         draw_small_text(font, _TITLE, Vec2(layout.title_x, layout.title_y), rl.WHITE)
@@ -515,7 +515,7 @@ class AlienZooKeeperView:
 
     def _draw_sign(self) -> None:
         sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        screen_w = float(self.state.config.screen_width)
+        screen_w = float(self.state.config.display.width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -526,7 +526,7 @@ class AlienZooKeeperView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

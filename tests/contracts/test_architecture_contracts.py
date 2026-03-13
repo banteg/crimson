@@ -224,7 +224,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
         player_count=1,
         world_size=1024.0,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
     recorder = ReplayRecorder(header)
 

@@ -103,7 +103,7 @@ def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
         ],
         rng=rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     assert_rng_progression(
@@ -133,7 +133,7 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
         world_size=1024.0,
         damage_scale_by_type={},
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
         game_mode=GameMode.SURVIVAL,
@@ -154,7 +154,7 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
         perk_progression_enabled=True,
         rng=world.state.rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
         game_tune_started=False,
         trigger_game_tune=False,
         hit_sfx=[],

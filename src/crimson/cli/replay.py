@@ -831,9 +831,9 @@ def cmd_replay_play(
         raise typer.Exit(code=1)
     cfg = ensure_crimson_cfg(base_dir)
     if width is None:
-        width = cfg.screen_width
+        width = cfg.display.width
     if height is None:
-        height = cfg.screen_height
+        height = cfg.display.height
     console = create_console(base_dir, assets_dir=assets_dir)
     download_missing_paqs(assets_dir, console)
 

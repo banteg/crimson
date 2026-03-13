@@ -50,7 +50,7 @@ def test_rollback_runtime_is_selected_for_all_network_modes(
     resolved = loop._resolve_lan_action(action)
 
     assert resolved == "open_lan_lobby"
-    assert state.config.game_mode == mode_id
+    assert state.config.gameplay.mode == mode_id
     assert state.network_in_lobby is True
     assert isinstance(state.network_runtime, RollbackRuntime)
     assert state.network_runtime.cfg.mode_id == mode_id

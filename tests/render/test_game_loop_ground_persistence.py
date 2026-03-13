@@ -221,7 +221,7 @@ def test_existing_menu_ground_ignores_runtime_texture_scale_changes(tmp_path: Pa
     before_rng_state = int(state.rng.state)
     before_seed = int(ground._scheduled_seed or -1)
 
-    state.config.texture_scale = 0.5
+    state.config.display.texture_scale = 0.5
 
     same_ground = ensure_menu_ground(state)
 

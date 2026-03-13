@@ -103,7 +103,7 @@ class WorldState(msgspec.Struct):
         world_size: float,
         damage_scale_by_type: dict[int, float],
         detail_preset: int,
-        gore_disabled: int = 0,
+        violence_disabled: int = 0,
         fx_queue: FxQueue,
         fx_queue_rotated: FxQueueRotated,
         game_mode: GameMode,
@@ -111,7 +111,7 @@ class WorldState(msgspec.Struct):
         game_tune_started: bool = False,
     ) -> WorldEvents:
         dt = float(dt)
-        fx_queue.gore_disabled = int(gore_disabled)
+        fx_queue.violence_disabled = int(violence_disabled)
         self.state.player_death_hook_skip_indices.clear()
         if apply_world_dt_steps:
             for step in _WORLD_DT_STEPS:
@@ -148,7 +148,7 @@ class WorldState(msgspec.Struct):
                 fx_queue=fx_queue,
                 fx_queue_rotated=fx_queue_rotated,
                 detail_preset=int(detail_preset),
-                gore_disabled=int(gore_disabled),
+                violence_disabled=int(violence_disabled),
             ),
         )
         deaths = list(creature_result.deaths)
@@ -218,7 +218,7 @@ class WorldState(msgspec.Struct):
                 hit=hit,
                 fx_queue=fx_queue,
                 detail_preset=int(detail_preset),
-                gore_disabled=int(gore_disabled),
+                violence_disabled=int(violence_disabled),
             )
 
         def _on_projectile_hit_post(_hit: ProjectileHit, post_ctx: ProjectileDecalPostCtx) -> None:
@@ -513,7 +513,7 @@ class WorldState(msgspec.Struct):
         *,
         fx_queue: FxQueue,
         detail_preset: int,
-        gore_disabled: int,
+        violence_disabled: int,
     ) -> ProjectileDecalPostCtx:
         return queue_projectile_decals_pre_hit(
             state=self.state,
@@ -522,7 +522,7 @@ class WorldState(msgspec.Struct):
             hit=hit,
             rng=self.state.rng,
             detail_preset=int(detail_preset),
-            gore_disabled=int(gore_disabled),
+            violence_disabled=int(violence_disabled),
         )
 
     def _finalize_projectile_hit_presentation(

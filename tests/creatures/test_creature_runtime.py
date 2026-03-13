@@ -1476,7 +1476,7 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
         fx_queue_rotated=None,
         rng=rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     # Native branch: 19 angle draws + 19 calls to effect_spawn_blood_splatter

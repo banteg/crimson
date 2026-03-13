@@ -191,7 +191,7 @@ class QuestFailedView:
             float(QUEST_FAILED_PANEL_W),
             float(QUEST_FAILED_PANEL_H),
         )
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
         reaper_tex = resources.texture(TextureId.UI_TEXT_REAPER)
@@ -338,8 +338,8 @@ class QuestFailedView:
         self.state.quest_fail_retry_count = int(self.state.quest_fail_retry_count) + 1
         level = outcome.level
         self.state.pending_quest_level = level
-        self.state.config.game_mode = int(GameMode.QUESTS)
-        self.state.config.quest_level_value = level
+        self.state.config.gameplay.mode = GameMode.QUESTS
+        self.state.config.gameplay.quest_level = level
         try:
             self.state.config.save()
         except (OSError, ValueError) as exc:

@@ -101,8 +101,8 @@ def test_capture_audio_track_reports_progress_without_manual_fx_queue_clears(moc
             self._master = float(value)
 
     class _FakeConfig:
-        def set_bool_value(self, _key: str, _value: bool) -> None:
-            return
+        def __init__(self) -> None:
+            self.audio = SimpleNamespace(sound_disabled=False, music_disabled=False)
 
     from unittest.mock import Mock
 

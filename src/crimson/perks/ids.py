@@ -520,8 +520,8 @@ _PERK_FIXED_DESCRIPTIONS = {
 }
 
 
-def perk_display_name(perk_id: PerkId, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
-    if perk_id == PerkId.BLOODY_MESS_QUICK_LEARNER and int(gore_disabled) != 0:
+def perk_display_name(perk_id: PerkId, *, violence_disabled: int = 0, preserve_bugs: bool = False) -> str:
+    if perk_id == PerkId.BLOODY_MESS_QUICK_LEARNER and int(violence_disabled) != 0:
         return QUICK_LEARNER_NAME
     entry = PERK_BY_ID[perk_id]
     if not preserve_bugs:
@@ -531,8 +531,8 @@ def perk_display_name(perk_id: PerkId, *, gore_disabled: int = 0, preserve_bugs:
     return entry.name
 
 
-def perk_display_description(perk_id: PerkId, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
-    if perk_id == PerkId.BLOODY_MESS_QUICK_LEARNER and int(gore_disabled) != 0:
+def perk_display_description(perk_id: PerkId, *, violence_disabled: int = 0, preserve_bugs: bool = False) -> str:
+    if perk_id == PerkId.BLOODY_MESS_QUICK_LEARNER and int(violence_disabled) != 0:
         return QUICK_LEARNER_DESCRIPTION
     entry = PERK_BY_ID[perk_id]
     if not preserve_bugs:
@@ -542,5 +542,5 @@ def perk_display_description(perk_id: PerkId, *, gore_disabled: int = 0, preserv
     return entry.description
 
 
-def perk_label(perk_id: PerkId, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
-    return perk_display_name(perk_id, gore_disabled=gore_disabled, preserve_bugs=preserve_bugs)
+def perk_label(perk_id: PerkId, *, violence_disabled: int = 0, preserve_bugs: bool = False) -> str:
+    return perk_display_name(perk_id, violence_disabled=violence_disabled, preserve_bugs=preserve_bugs)

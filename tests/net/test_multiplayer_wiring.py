@@ -42,7 +42,7 @@ def test_game_world_init_honors_config_player_count(tmp_path: Path) -> None:
     assets_dir = repo_root / "artifacts" / "assets"
 
     cfg = ensure_crimson_cfg(tmp_path)
-    cfg.data["player_count"] = 2
+    cfg.gameplay.player_count = 2
 
     world = WorldRuntimeHost(assets_dir=assets_dir, config=cfg)
     assert [player.index for player in world.sim_world.players] == [0, 1]
@@ -64,7 +64,7 @@ def test_survival_mode_uses_config_player_count(tmp_path: Path) -> None:
     assets_dir = repo_root / "artifacts" / "assets"
 
     cfg = ensure_crimson_cfg(tmp_path)
-    cfg.data["player_count"] = 2
+    cfg.gameplay.player_count = 2
     ctx = ViewContext(assets_dir=assets_dir)
 
     mode = SurvivalMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
@@ -77,7 +77,7 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     _register_runtime_resources_stub(assets_dir)
 
     cfg = ensure_crimson_cfg(tmp_path)
-    cfg.data["player_count"] = 3
+    cfg.gameplay.player_count = 3
     ctx = ViewContext(assets_dir=assets_dir)
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     mocker.patch.object(quest_mode_module, "load_grim_mono_font", return_value=SimpleNamespace())

@@ -20,10 +20,10 @@ class AudioState(msgspec.Struct):
 
 
 def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleState) -> AudioState:
-    music_disabled = config.music_disabled
-    sound_disabled = config.sound_disabled
-    music_volume = config.music_volume
-    sfx_volume = config.sfx_volume
+    music_disabled = config.audio.music_disabled
+    sound_disabled = config.audio.sound_disabled
+    music_volume = config.audio.music_volume
+    sfx_volume = config.audio.sfx_volume
 
     music_enabled = not music_disabled
     sfx_enabled = not sound_disabled

@@ -111,7 +111,7 @@ class QuestMode(BaseGameplayMode):
             audio_rng=audio_rng,
         )
         self._quest_def: QuestDefinition | None = None
-        self._quest_level: QuestLevel | None = self.config.quest_level_value or QuestLevel(1, 1)
+        self._quest_level: QuestLevel | None = self.config.gameplay.quest_level or QuestLevel(1, 1)
         self._quest_total_spawn_count: int = 0
         self._outcome: QuestRunOutcome | None = None
         self._grim_mono: GrimMonoFont | None = None
@@ -124,7 +124,7 @@ class QuestMode(BaseGameplayMode):
     def open(self) -> None:
         super().open()
         self._quest_def = None
-        self._quest_level = self.config.quest_level_value or QuestLevel(1, 1)
+        self._quest_level = self.config.gameplay.quest_level or QuestLevel(1, 1)
         self._quest_total_spawn_count = 0
         self._outcome = None
         self._grim_mono = load_grim_mono_font(self._assets_root)
@@ -150,7 +150,7 @@ class QuestMode(BaseGameplayMode):
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             detail_preset=5,
-            gore_disabled=0,
+            violence_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             demo_mode_active=bool(self.demo_mode_active),
             apply_world_dt_steps=False,
@@ -253,7 +253,7 @@ class QuestMode(BaseGameplayMode):
     ) -> bool:
         _ = role, dt_ui_ms, dt_tick
         session.detail_preset = int(self._deterministic_detail_preset())
-        session.gore_disabled = int(self._deterministic_gore_disabled())
+        session.violence_disabled = int(self._deterministic_violence_disabled())
         return True
 
     def _lan_on_tick_applied(
@@ -379,7 +379,7 @@ class QuestMode(BaseGameplayMode):
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
 
-        hardcore_flag = self.config.hardcore
+        hardcore_flag = self.config.gameplay.hardcore
 
         self.hardcore = hardcore_flag
         # Native quest start does not reseed RNG per level; carry the current
@@ -387,7 +387,7 @@ class QuestMode(BaseGameplayMode):
         seed = int(self.state.rng.state) & 0xFFFFFFFF
         self._run_reset_seed = int(seed)
 
-        player_count = self.config.player_count
+        player_count = self.config.gameplay.player_count
         self._sync_world_runtime_config()
         self.world_runtime.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
@@ -456,8 +456,8 @@ class QuestMode(BaseGameplayMode):
                     quest_fail_retry_count=int(self.quest_fail_retry_count),
                     hardcore=bool(self.hardcore),
                     preserve_bugs=bool(self.state.preserve_bugs),
-                    detail_preset=self.config.detail_preset,
-                    gore_disabled=self.config.gore_disabled,
+                    detail_preset=self.config.display.detail_preset,
+                    violence_disabled=self.config.display.violence_disabled,
                     world_size=float(self.world_size),
                     player_count=len(self.sim_world.players),
                     status=status_snapshot,
@@ -596,7 +596,7 @@ class QuestMode(BaseGameplayMode):
             return
 
         session.detail_preset = int(self._deterministic_detail_preset())
-        session.gore_disabled = int(self._deterministic_gore_disabled())
+        session.violence_disabled = int(self._deterministic_violence_disabled())
 
         self._world_runtime.sync_audio_bridge_state()
         if self.render_resources.ground is not None:

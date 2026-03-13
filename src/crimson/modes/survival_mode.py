@@ -93,7 +93,7 @@ class SurvivalMode(BaseGameplayMode):
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             detail_preset=5,
-            gore_disabled=0,
+            violence_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             finalize_post_render_lifecycle=True,
         )
@@ -254,7 +254,7 @@ class SurvivalMode(BaseGameplayMode):
                     hardcore=bool(self.hardcore),
                     preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=int(self._deterministic_detail_preset()),
-                    gore_disabled=int(self._deterministic_gore_disabled()),
+                    violence_disabled=int(self._deterministic_violence_disabled()),
                     world_size=float(self.world_size),
                     player_count=len(self.sim_world.players),
                     status=status_snapshot,
@@ -332,7 +332,7 @@ class SurvivalMode(BaseGameplayMode):
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
-        game_mode_id = GameMode(self.config.game_mode)
+        game_mode_id = GameMode(self.config.gameplay.mode)
         record = build_highscore_record_for_game_over(
             state=self.state,
             player=self.player,
@@ -365,7 +365,7 @@ class SurvivalMode(BaseGameplayMode):
         dt_tick: float,
     ) -> bool:
         session.detail_preset = int(self._deterministic_detail_preset())
-        session.gore_disabled = int(self._deterministic_gore_disabled())
+        session.violence_disabled = int(self._deterministic_violence_disabled())
         self._update_perk_ui(
             dt_ui_ms=float(dt_ui_ms),
             allow_input=(role == "host"),

@@ -224,7 +224,7 @@ class _LanRuntimeInputProvider:
 # These knobs currently affect deterministic simulation (not just rendering), so
 # we force stable values while in a LAN match.
 LAN_SIM_DETAIL_PRESET = 5
-LAN_SIM_GORE_DISABLED = 0
+LAN_SIM_VIOLENCE_DISABLED = 0
 
 
 class BaseGameplayMode:
@@ -486,7 +486,7 @@ class BaseGameplayMode:
 
     def _config_game_mode_id(self) -> GameMode:
         try:
-            return GameMode(self.config.game_mode)
+            return GameMode(self.config.gameplay.mode)
         except ValueError:
             return GameMode.DEMO
 
@@ -603,9 +603,9 @@ class BaseGameplayMode:
     def _perk_menu_ui_context(self) -> PerkMenuUiContext:
         return PerkMenuUiContext(
             player=self.player,
-            gore_disabled=self.config.gore_disabled,
+            violence_disabled=self.config.display.violence_disabled,
             preserve_bugs=bool(self.state.preserve_bugs),
-            fx_detail=self.config.fx_detail(level=0, default=False),
+            fx_detail=self.config.display.fx_detail_enabled(level=0, default=False),
             resources=self.render_resources.resources,
             mouse=self._ui_mouse_pos(),
             play_sfx=self._perk_menu_play_sfx(),
@@ -1155,20 +1155,20 @@ class BaseGameplayMode:
         raise NotImplementedError(f"{self.__class__.__name__}._apply_resync_snapshot() must be implemented")
 
     def _player_name_default(self) -> str:
-        return str(self.config.player_name or "")
+        return str(self.config.profile.player_name or "")
 
     def _runtime_player_count(self) -> int:
-        return self.config.player_count
+        return self.config.gameplay.player_count
 
     def _deterministic_detail_preset(self) -> int:
         if self._lan_enabled:
             return int(LAN_SIM_DETAIL_PRESET)
-        return self.config.detail_preset
+        return self.config.display.detail_preset
 
-    def _deterministic_gore_disabled(self) -> int:
+    def _deterministic_violence_disabled(self) -> int:
         if self._lan_enabled:
-            return int(LAN_SIM_GORE_DISABLED)
-        return self.config.gore_disabled
+            return int(LAN_SIM_VIOLENCE_DISABLED)
+        return self.config.display.violence_disabled
 
     def update(self, dt: float) -> None:
         raise NotImplementedError(f"{self.__class__.__name__}.update() must be implemented by gameplay mode")
@@ -1232,10 +1232,10 @@ class BaseGameplayMode:
             sim_status_quest_unlock_index_full=int(self._status_sim.quest_unlock_index_full)
             if self._status_sim is not None
             else 0,
-            detail_preset=self.config.detail_preset,
-            gore_disabled=self.config.gore_disabled,
+            detail_preset=self.config.display.detail_preset,
+            violence_disabled=self.config.display.violence_disabled,
             sim_detail_preset=int(self._deterministic_detail_preset()),
-            sim_gore_disabled=int(self._deterministic_gore_disabled()),
+            sim_violence_disabled=int(self._deterministic_violence_disabled()),
             screen_w=int(rl.get_screen_width()),
             screen_h=int(rl.get_screen_height()),
             render_w=int(rl.get_render_width()),
@@ -1911,7 +1911,7 @@ class BaseGameplayMode:
             return
         self._sync_audio_and_ground()
         session.detail_preset = int(self._deterministic_detail_preset())
-        session.gore_disabled = int(self._deterministic_gore_disabled())
+        session.violence_disabled = int(self._deterministic_violence_disabled())
         runner, provider = self._ensure_tick_runner(
             session=session,
             is_networked=False,

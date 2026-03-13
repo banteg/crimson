@@ -69,7 +69,7 @@ def draw_main_panel(
         rl.Color(255, 255, 255, int(255 * 0.7)),
     )
     if mode_id == GameMode.QUESTS:
-        hardcore = view.state.config.hardcore
+        hardcore = view.state.config.gameplay.hardcore
         if hardcore:
             quest_color = rl.Color(250, 70, 60, int(255 * 0.7))
         else:
@@ -82,7 +82,7 @@ def draw_main_panel(
         global_index = int(quest_level.global_index)
         unlock = (
             int(view.state.status.quest_unlock_index_full)
-            if view.state.config.hardcore
+            if view.state.config.gameplay.hardcore
             else int(view.state.status.quest_unlock_index)
         )
         max_index = max(0, min(49, unlock))

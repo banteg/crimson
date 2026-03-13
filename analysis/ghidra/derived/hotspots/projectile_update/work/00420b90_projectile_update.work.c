@@ -196,7 +196,7 @@ LAB_004219f8:
                   _effect_template_age = 0;
                   _effect_template_half_width = 0x40800000;
                   _effect_template_half_height = 0x40800000;
-                  if (config_fx_toggle == '\0') {
+                  if (config_violence_disabled == '\0') {
                     iVar12 = perk_count_get(perk_id_bloody_mess_quick_learner);
                     if (iVar12 == 0) {
                       if (bonus_freeze_timer <= 0.0) {

@@ -68,7 +68,7 @@ def _patch_perk_menu_raylib(
 def _ctx(*, play_sfx=None) -> PerkMenuUiContext:
     return PerkMenuUiContext(
         player=_dummy_player(),
-        gore_disabled=0,
+        violence_disabled=0,
         preserve_bugs=False,
         resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),

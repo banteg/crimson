@@ -37,7 +37,7 @@ UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 class PerkMenuUiContext(msgspec.Struct, frozen=True):
     player: PlayerState
-    gore_disabled: int
+    violence_disabled: int
     preserve_bugs: bool
     resources: RuntimeResources
     mouse: rl.Vector2
@@ -102,16 +102,16 @@ class PerkMenuController:
         perk_id: PerkId,
         font: SmallFontData,
         *,
-        gore_disabled: int,
+        violence_disabled: int,
         preserve_bugs: bool,
     ) -> str:
-        key = (int(perk_id), int(gore_disabled), int(bool(preserve_bugs)))
+        key = (int(perk_id), int(violence_disabled), int(bool(preserve_bugs)))
         cached = self._wrapped_desc_cache.get(key)
         if cached is not None:
             return cached
         desc = perk_display_description(
             perk_id,
-            gore_disabled=int(gore_disabled),
+            violence_disabled=int(violence_disabled),
             preserve_bugs=bool(preserve_bugs),
         )
         wrapped = self._wrap_small_text_native(
@@ -220,7 +220,7 @@ class PerkMenuController:
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
                 perk_id,
-                gore_disabled=int(ctx.gore_disabled),
+                violence_disabled=int(ctx.violence_disabled),
                 preserve_bugs=preserve_bugs,
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
@@ -315,7 +315,7 @@ class PerkMenuController:
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
                 perk_id,
-                gore_disabled=int(ctx.gore_disabled),
+                violence_disabled=int(ctx.violence_disabled),
                 preserve_bugs=preserve_bugs,
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
@@ -326,13 +326,13 @@ class PerkMenuController:
         selected = choices[self._selected_index]
         desc = perk_display_description(
             selected,
-            gore_disabled=int(ctx.gore_disabled),
+            violence_disabled=int(ctx.violence_disabled),
             preserve_bugs=preserve_bugs,
         )
         desc = self._prewrapped_perk_desc(
             selected,
             ctx.resources.small_font,
-            gore_disabled=int(ctx.gore_disabled),
+            violence_disabled=int(ctx.violence_disabled),
             preserve_bugs=preserve_bugs,
         )
         draw_ui_text(

@@ -580,7 +580,7 @@ def player_update(
                     age=0.0,
                     rng=state.rng,
                     detail_preset=int(detail_preset),
-                    gore_disabled=0,
+                    violence_disabled=0,
             )
             bloodspill_sfx = _LOW_HEALTH_BLOODSPILL_SFX[
                 state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL) & 1

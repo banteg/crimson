@@ -1,62 +1,80 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from grim import config as grim_config
 
 
 def test_crimson_cfg_roundtrip_default() -> None:
-    data = grim_config.default_crimson_cfg_data()
-    assert int(data.get("keybind_pick_perk", 0)) == 0x101
-    assert int(data.get("keybind_reload", 0)) == 0x102
-    blob = grim_config.CRIMSON_CFG_STRUCT.build(data)
+    cfg = grim_config.default_crimson_cfg()
+    blob = grim_config.encode_crimson_cfg(cfg)
     assert len(blob) == grim_config.CRIMSON_CFG_SIZE
     parsed = grim_config.CRIMSON_CFG_STRUCT.parse(blob)
+    assert int(parsed["unknown_08"]) == 0
+    assert int(parsed["unknown_450"]) == 1
+    assert int(parsed["sound_freq_adjustment_enabled"]) == 1
+    assert int(parsed["ui_info_texts"]) == 1
+    assert int(parsed["keybind_pick_perk"]) == 0x101
+    assert int(parsed["keybind_reload"]) == 0x102
+    assert float(parsed["mouse_sensitivity"]) == 0.5
+    assert list(parsed["saved_name_order"]) == list(range(grim_config.SAVED_NAME_SLOT_COUNT))
     rebuilt = grim_config.CRIMSON_CFG_STRUCT.build(parsed)
     assert rebuilt == blob
 
 
-def test_crimson_cfg_save_load(tmp_path) -> None:
+def test_crimson_cfg_save_load(tmp_path: Path) -> None:
     cfg = grim_config.ensure_crimson_cfg(tmp_path)
     raw = cfg.path.read_bytes()
     loaded = grim_config.load_crimson_cfg(cfg.path)
-    rebuilt = grim_config.CRIMSON_CFG_STRUCT.build(loaded.data)
+    rebuilt = grim_config.encode_crimson_cfg(loaded)
     assert rebuilt == raw
 
 
-def test_crimson_cfg_backfills_zero_keybinds(tmp_path) -> None:
-    data = grim_config.default_crimson_cfg_data()
-    data["keybinds"] = b"\x00" * 0x80
+def test_crimson_cfg_backfills_zero_keybinds(tmp_path: Path) -> None:
+    cfg = grim_config.default_crimson_cfg()
+    data = grim_config.CRIMSON_CFG_STRUCT.parse(grim_config.encode_crimson_cfg(cfg))
+    data["keybinds_p1_p2"] = [
+        [0] * grim_config.PLAYER_BIND_BLOCK_DWORDS,
+        [0] * grim_config.PLAYER_BIND_BLOCK_DWORDS,
+    ]
     path = tmp_path / grim_config.CRIMSON_CFG_NAME
     path.write_bytes(grim_config.CRIMSON_CFG_STRUCT.build(data))
 
-    cfg = grim_config.ensure_crimson_cfg(tmp_path)
-    assert cfg.data["keybinds"] == grim_config.default_crimson_cfg_data()["keybinds"]
+    loaded = grim_config.ensure_crimson_cfg(tmp_path)
+    assert loaded.controls.player(0).keybinds == grim_config.default_player_keybind_block(0)
+    assert loaded.controls.player(1).keybinds == grim_config.default_player_keybind_block(1)
 
 
-def test_player_keybind_block_roundtrip_for_extended_players_preserves_reserved_gap() -> None:
-    data = grim_config.default_crimson_cfg_data()
-    reserved = bytearray(data["extended_reserved_gap"])
-    reserved[:] = b"\xA5" * len(reserved)
-    data["extended_reserved_gap"] = bytes(reserved)
+def test_player_keybind_roundtrip_for_extended_players_uses_reserved_gap_extension() -> None:
+    cfg = grim_config.default_crimson_cfg(Path("<memory>"))
+    cfg.controls.player(2).set_keybind(4, 0x120)
+    cfg.controls.player(3).set_keybind(0, 0x11F)
 
-    grim_config.set_player_keybind_value(data, player_index=2, slot_index=4, value=0x120)
-    grim_config.set_player_keybind_value(data, player_index=3, slot_index=0, value=0x11F)
+    blob = grim_config.encode_crimson_cfg(cfg)
+    parsed = grim_config.CRIMSON_CFG_STRUCT.parse(blob)
+    assert list(parsed["extended_keybinds_p3_p4"][0])[4] == 0x120
+    assert list(parsed["extended_keybinds_p3_p4"][1])[0] == 0x11F
+    assert parsed["extended_reserved_gap"] == b"\x00" * len(parsed["extended_reserved_gap"])
 
-    player3_block = grim_config.player_keybind_block(data, player_index=2)
-    player4_block = grim_config.player_keybind_block(data, player_index=3)
-    assert int(player3_block[4]) == 0x120
-    assert int(player4_block[0]) == 0x11F
-
-    reserved_after = bytes(data["extended_reserved_gap"])
-    assert reserved_after == bytes([0xA5]) * len(reserved)
+    loaded = grim_config.decode_crimson_cfg(Path("<memory>"), blob)
+    assert loaded.controls.player(2).keybind(4) == 0x120
+    assert loaded.controls.player(3).keybind(0) == 0x11F
 
 
 def test_direction_arrow_extension_roundtrip_for_players_three_and_four() -> None:
-    data = grim_config.default_crimson_cfg_data()
-    assert grim_config.direction_arrow_enabled_for_player(data, player_index=2)
-    assert grim_config.direction_arrow_enabled_for_player(data, player_index=3)
+    cfg = grim_config.default_crimson_cfg(Path("<memory>"))
+    assert cfg.controls.player(2).show_direction_arrow
+    assert cfg.controls.player(3).show_direction_arrow
 
-    grim_config.set_direction_arrow_enabled_for_player(data, player_index=2, enabled=False)
-    grim_config.set_direction_arrow_enabled_for_player(data, player_index=3, enabled=True)
+    cfg.controls.player(2).show_direction_arrow = False
+    cfg.controls.player(3).show_direction_arrow = True
+    blob = grim_config.encode_crimson_cfg(cfg)
+    parsed = grim_config.CRIMSON_CFG_STRUCT.parse(blob)
+    assert list(parsed["extended_direction_arrow_flags"]) == [
+        grim_config.EXT_DIRECTION_ARROW_OFF,
+        grim_config.EXT_DIRECTION_ARROW_ON,
+    ]
 
-    assert not grim_config.direction_arrow_enabled_for_player(data, player_index=2)
-    assert grim_config.direction_arrow_enabled_for_player(data, player_index=3)
+    loaded = grim_config.decode_crimson_cfg(Path("<memory>"), blob)
+    assert not loaded.controls.player(2).show_direction_arrow
+    assert loaded.controls.player(3).show_direction_arrow

@@ -195,8 +195,8 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
     assert state.network_waiting_for_players is False
     assert state.network_expected_players == 4
     assert state.network_connected_players == 4
-    assert state.config.player_count == 4
-    assert state.config.game_mode == 3
+    assert state.config.gameplay.player_count == 4
+    assert state.config.gameplay.mode == 3
     assert state.pending_quest_level == QuestLevel(2, 4)
     assert panel._closing is True
     assert panel._close_action == "start_quest"

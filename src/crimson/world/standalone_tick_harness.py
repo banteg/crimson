@@ -67,11 +67,11 @@ class StandaloneTickHarness:
             return runner, session
 
         detail_preset = 5
-        gore_disabled = 0
+        violence_disabled = 0
         config = runtime.config
         if config is not None:
-            detail_preset = config.detail_preset
-            gore_disabled = config.gore_disabled
+            detail_preset = config.display.detail_preset
+            violence_disabled = config.display.violence_disabled
 
         session = DeterministicSession(
             world=world_state,
@@ -79,7 +79,7 @@ class StandaloneTickHarness:
             damage_scale_by_type=runtime.sim_world.damage_scale_by_type,
             game_mode=self.game_mode,
             detail_preset=int(detail_preset),
-            gore_disabled=int(gore_disabled),
+            violence_disabled=int(violence_disabled),
             game_tune_started=bool(runtime.sim_world.game_tune_started),
             demo_mode_active=bool(runtime.demo_mode_active),
             perk_progression_enabled=False,

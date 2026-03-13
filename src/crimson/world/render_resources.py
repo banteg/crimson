@@ -53,7 +53,7 @@ class RenderResources(msgspec.Struct):
         if self.config is None:
             self.ground.texture_scale = 1.0
             return
-        self.ground.texture_scale = self.config.texture_scale
+        self.ground.texture_scale = self.config.display.texture_scale
 
     def set_ground_textures(
         self,

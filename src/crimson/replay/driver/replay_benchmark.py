@@ -185,11 +185,11 @@ def run_replay_render_benchmark(
     runtime_base_dir.mkdir(parents=True, exist_ok=True)
     cfg = ensure_crimson_cfg(runtime_base_dir)
     if bool(mute_audio):
-        cfg.set_bool_value("sound_disable", True)
-        cfg.set_bool_value("music_disable", True)
+        cfg.audio.sound_disabled = True
+        cfg.audio.music_disabled = True
 
-    render_width = int(width) if width is not None else cfg.screen_width
-    render_height = int(height) if height is not None else cfg.screen_height
+    render_width = int(width) if width is not None else cfg.display.width
+    render_height = int(height) if height is not None else cfg.display.height
     if int(render_width) <= 0 or int(render_height) <= 0:
         raise ReplayBenchmarkError(
             f"invalid render resolution: {render_width}x{render_height}; width/height must be > 0",

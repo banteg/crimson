@@ -9,7 +9,7 @@ from grim.fonts.small import SmallFontData
 
 
 def test_selected_perk_id_uses_selected_row_index(make_game_state) -> None:
-    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"gore_disabled": 0}))
+    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"violence_disabled": 0}))
     view._perk_ids = [
         PerkId.BLOODY_MESS_QUICK_LEARNER,
         PerkId.SHARPSHOOTER,
@@ -21,7 +21,7 @@ def test_selected_perk_id_uses_selected_row_index(make_game_state) -> None:
 
 
 def test_selected_perk_id_returns_none_for_out_of_range_row(make_game_state) -> None:
-    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"gore_disabled": 0}))
+    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"violence_disabled": 0}))
     view._perk_ids = [
         PerkId.BLOODY_MESS_QUICK_LEARNER,
         PerkId.SHARPSHOOTER,
@@ -33,7 +33,7 @@ def test_selected_perk_id_returns_none_for_out_of_range_row(make_game_state) -> 
 
 
 def test_hovered_perk_id_uses_hovered_row_index(make_game_state) -> None:
-    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"gore_disabled": 0}))
+    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"violence_disabled": 0}))
     view._perk_ids = [
         PerkId.BLOODY_MESS_QUICK_LEARNER,
         PerkId.SHARPSHOOTER,
@@ -45,7 +45,7 @@ def test_hovered_perk_id_uses_hovered_row_index(make_game_state) -> None:
 
 
 def test_hovered_perk_id_returns_none_when_not_hovered(make_game_state) -> None:
-    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"gore_disabled": 0}))
+    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"violence_disabled": 0}))
     view._perk_ids = [
         PerkId.BLOODY_MESS_QUICK_LEARNER,
         PerkId.SHARPSHOOTER,
@@ -70,13 +70,13 @@ def test_prewrapped_perk_desc_uses_cache(mocker, make_game_state) -> None:
         side_effect=lambda _font, text: float(len(text)),
     )
 
-    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"gore_disabled": 0}))
+    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"violence_disabled": 0}))
     fake_font = cast(SmallFontData, object())
-    first = view._prewrapped_perk_desc(PerkId.LONG_DISTANCE_RUNNER, fake_font, gore_disabled=0)
+    first = view._prewrapped_perk_desc(PerkId.LONG_DISTANCE_RUNNER, fake_font, violence_disabled=0)
     count_after_first = measure_mock.call_count
     cache_key = (int(PerkId.LONG_DISTANCE_RUNNER), 0, 0)
     assert cache_key in view._wrapped_desc_cache
-    second = view._prewrapped_perk_desc(PerkId.LONG_DISTANCE_RUNNER, fake_font, gore_disabled=0)
+    second = view._prewrapped_perk_desc(PerkId.LONG_DISTANCE_RUNNER, fake_font, violence_disabled=0)
 
     assert first == second
     assert measure_mock.call_count == count_after_first

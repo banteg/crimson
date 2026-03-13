@@ -116,8 +116,8 @@ class NetworkLobbyPanelView(PanelMenuView):
         self.state.network_waiting_for_players = False
         self.state.network_expected_players = max(1, min(4, player_count))
         self.state.network_connected_players = int(self.state.network_expected_players)
-        self.state.config.player_count = int(self.state.network_expected_players)
-        self.state.config.game_mode = int(mode_id)
+        self.state.config.gameplay.player_count = int(self.state.network_expected_players)
+        self.state.config.gameplay.mode = mode_id
         match mode_id:
             case GameMode.QUESTS:
                 self.state.pending_quest_level = quest_level

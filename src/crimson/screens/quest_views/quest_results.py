@@ -67,10 +67,10 @@ class QuestResultsView:
                 perk_id = PerkId(perk_id_native)
                 perk_entry = PERK_BY_ID.get(perk_id)
                 if perk_entry is not None and perk_entry.name:
-                    gore_disabled = self.state.config.gore_disabled
+                    violence_disabled = self.state.config.display.violence_disabled
                     self._unlock_perk_name = perk_display_name(
                         perk_id,
-                        gore_disabled=gore_disabled,
+                        violence_disabled=violence_disabled,
                         preserve_bugs=bool(self.state.preserve_bugs),
                     )
                 else:
@@ -115,7 +115,7 @@ class QuestResultsView:
         # Advance quest unlock progression when completing the currently-unlocked quest.
         if global_index >= 0:
             next_unlock = int(global_index + 1)
-            hardcore = self.state.config.hardcore
+            hardcore = self.state.config.gameplay.hardcore
             try:
                 if hardcore:
                     if next_unlock > int(self.state.status.quest_unlock_index_full):
@@ -234,8 +234,8 @@ class QuestResultsView:
 
     def _set_pending_quest_level(self, level: QuestLevel) -> None:
         self.state.pending_quest_level = level
-        self.state.config.game_mode = int(GameMode.QUESTS)
-        self.state.config.quest_level_value = level
+        self.state.config.gameplay.mode = GameMode.QUESTS
+        self.state.config.gameplay.quest_level = level
         try:
             self.state.config.save()
         except (OSError, ValueError) as exc:

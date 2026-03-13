@@ -25,8 +25,8 @@ def camera_screen_size(
         screen_w = runtime_w
         screen_h = runtime_h
     elif config is not None:
-        screen_w = float(config.screen_width)
-        screen_h = float(config.screen_height)
+        screen_w = float(config.display.width)
+        screen_h = float(config.display.height)
     else:
         screen_w = max(1.0, runtime_w)
         screen_h = max(1.0, runtime_h)

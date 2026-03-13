@@ -3,6 +3,7 @@ from __future__ import annotations
 from crimson.quests.level import QuestLevel
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_sfx, update_audio
+from grim.config import HighScoreDateMode
 from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -104,7 +105,7 @@ class HighScoresView:
         self._score_list_open = False
 
     def open(self) -> None:
-        layout_w = float(self.state.config.screen_width)
+        layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         self._action = None
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
@@ -175,7 +176,7 @@ class HighScoresView:
             self._begin_close_transition("back_to_previous")
             return
 
-        screen_width = float(self.state.config.screen_width)
+        screen_width = float(self.state.config.display.width)
         scale = 1.0
         resources = require_runtime_resources(self.state)
         font = resources.small_font
@@ -375,14 +376,14 @@ class HighScoresView:
         # Widgets are only shown in the "options" right panel (not the local-score detail panel).
         # We don't explicitly track which right panel is active; hit tests are enough.
         dropdown_blocked = self._player_count_open or self._game_mode_open or self._show_scores_open or self._score_list_open
-        small_width_shift_x = hs_right_options_x_shift(float(self.state.config.screen_width))
+        small_width_shift_x = hs_right_options_x_shift(float(self.state.config.display.width))
         shifted_right_top_left = right_top_left + Vec2(small_width_shift_x * scale, 0.0)
 
         # Checkbox: "Show internet scores" (config.score_load_gate).
         if not dropdown_blocked:
             check_tex = (
                 resources.texture(TextureId.UI_CHECK_ON)
-                if self.state.config.score_load_gate
+                if self.state.config.profile.show_internet_scores
                 else resources.texture(TextureId.UI_CHECK_OFF)
             )
             label = "Show internet scores"
@@ -394,7 +395,7 @@ class HighScoresView:
             mouse_pos = Vec2.from_xy(rl.get_mouse_position())
             if Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos):
                 if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-                    self.state.config.score_load_gate = not self.state.config.score_load_gate
+                    self.state.config.profile.show_internet_scores = not self.state.config.profile.show_internet_scores
                     self._dirty = True
                     self._reload_records()
                     return True
@@ -417,7 +418,7 @@ class HighScoresView:
             scale=scale,
         )
         if show_scores_selected is not None:
-            self.state.config.highscore_date_mode = int(show_scores_selected)
+            self.state.config.profile.score_date_mode = HighScoreDateMode(int(show_scores_selected))
             self._dirty = True
             self._reload_records()
         if consumed:
@@ -447,8 +448,8 @@ class HighScoresView:
         )
         if player_selected is not None:
             new_count = int(player_selected) + 1
-            if self.state.config.player_count != new_count:
-                self.state.config.player_count = new_count
+            if self.state.config.gameplay.player_count != new_count:
+                self.state.config.gameplay.player_count = new_count
                 self._dirty = True
                 self._reload_records()
         if consumed:
@@ -484,16 +485,16 @@ class HighScoresView:
         )
         if game_mode_selected is not None:
             _label, mode_id = mode_items[max(0, min(int(game_mode_selected), len(mode_items) - 1))]
-            self.state.config.game_mode = int(mode_id)
+            self.state.config.gameplay.mode = mode_id
             request.game_mode_id = mode_id
             match mode_id:
                 case GameMode.TYPO:
                     # Native forces Typ-o shooter scores to 1 player.
-                    self.state.config.player_count = 1
+                    self.state.config.gameplay.player_count = 1
                 case GameMode.QUESTS:
                     # Ensure quest selection exists when switching into quests.
                     if request.quest_level is None:
-                        request.quest_level = self.state.config.quest_level_value or QuestLevel(1, 1)
+                        request.quest_level = self.state.config.gameplay.quest_level or QuestLevel(1, 1)
                 case _:
                     pass
             self._dirty = True
@@ -508,13 +509,7 @@ class HighScoresView:
         # Dropdown: selected score list (profile slots). We currently expose the selection
         # but do not emulate the full native add/delete flow.
         score_list_enabled = not (self._player_count_open or self._game_mode_open or self._show_scores_open)
-        slot_count = max(1, min(8, int(self.state.config.int_value("saved_name_index", 1))))
-        names_blob = self.state.config.blob_value("saved_names", size=0x1B * 8, default=b"")  # 8 entries
-        names: list[str] = []
-        for i in range(slot_count):
-            entry = names_blob[i * 0x1B : (i + 1) * 0x1B]
-            label = entry.split(b"\x00", 1)[0].decode("latin-1", errors="ignore").strip() or f"slot_{i}"
-            names.append(label)
+        names = list(self.state.config.profile.saved_name_labels())
         score_list_pos = shifted_right_top_left + Vec2(HS_RIGHT_SCORE_LIST_WIDGET_X * scale, HS_RIGHT_SCORE_LIST_WIDGET_Y * scale)
         score_list_layout = self._dropdown_layout(
             pos=score_list_pos,
@@ -530,7 +525,7 @@ class HighScoresView:
             scale=scale,
         )
         if score_list_selected is not None:
-            self.state.config.set_int_value("selected_name_slot", int(score_list_selected))
+            self.state.config.profile.selected_saved_name_slot = int(score_list_selected)
             self._dirty = True
             self._reload_records()
         if consumed:
@@ -562,7 +557,7 @@ class HighScoresView:
         # Clamp to a sane range.
         global_index = int(level.global_index)
 
-        unlock = int(self.state.status.quest_unlock_index_full) if self.state.config.hardcore else int(self.state.status.quest_unlock_index)
+        unlock = int(self.state.status.quest_unlock_index_full) if self.state.config.gameplay.hardcore else int(self.state.status.quest_unlock_index)
         max_index = max(0, min(49, unlock))
         arrow = resources.texture(TextureId.UI_ARROW)
 
@@ -581,7 +576,7 @@ class HighScoresView:
             index = max(0, min(max_index, int(index)))
             level = QuestLevel.from_global_index(index)
             request.quest_level = level
-            self.state.config.quest_level_value = level
+            self.state.config.gameplay.quest_level = level
             self._dirty = True
             self._reload_records()
 
@@ -610,15 +605,15 @@ class HighScoresView:
             mode_id = request.game_mode_id
         else:
             try:
-                mode_id = GameMode(self.state.config.game_mode)
+                mode_id = GameMode(self.state.config.gameplay.mode)
             except ValueError:
                 mode_id = GameMode.DEMO
         quest_major = int(request.quest_level.major) if request is not None and request.quest_level is not None else 0
         quest_minor = int(request.quest_level.minor) if request is not None and request.quest_level is not None else 0
 
-        screen_width = float(self.state.config.screen_width)
+        screen_width = float(self.state.config.display.width)
         scale = 1.0
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, left_slide_x = MenuView._ui_element_anim(
             self,
@@ -683,7 +678,7 @@ class HighScoresView:
 
     def _draw_sign(self, *, resources: RuntimeResources) -> None:
         sign = resources.texture(TextureId.UI_SIGN_CRIMSON)
-        screen_w = float(self.state.config.screen_width)
+        screen_w = float(self.state.config.display.width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -694,7 +689,7 @@ class HighScoresView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

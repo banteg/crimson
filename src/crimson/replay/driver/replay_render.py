@@ -172,11 +172,11 @@ def run_replay_render_video(
     cfg = ensure_crimson_cfg(runtime_base_dir)
     capture_audio = not mute_audio
     # Always mute during the video pass: it is faster and prevents local playback.
-    cfg.set_bool_value("sound_disable", True)
-    cfg.set_bool_value("music_disable", True)
+    cfg.audio.sound_disabled = True
+    cfg.audio.music_disabled = True
 
-    render_width = width if width is not None else cfg.screen_width
-    render_height = height if height is not None else cfg.screen_height
+    render_width = width if width is not None else cfg.display.width
+    render_height = height if height is not None else cfg.display.height
     if render_width <= 0 or render_height <= 0:
         raise ReplayRenderError(
             f"invalid render resolution: {render_width}x{render_height}; width/height must be > 0",
@@ -454,8 +454,8 @@ def _capture_replay_audio_track(
     from ...modes.replay_playback_mode import ReplayPlaybackMode
 
     cfg = config
-    cfg.set_bool_value("sound_disable", False)
-    cfg.set_bool_value("music_disable", False)
+    cfg.audio.sound_disabled = False
+    cfg.audio.music_disabled = False
 
     mode: ReplayPlaybackMode | None = None
     capture = _MixedAudioCapture(

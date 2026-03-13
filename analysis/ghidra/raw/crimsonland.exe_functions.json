@@ -4706,7 +4706,7 @@
   {
     "name": "math_sin_packed",
     "address": "004608c0",
-    "signature": "ulonglong math_sin_packed(void)",
+    "signature": "undefined math_sin_packed(void)",
     "external": false,
     "calls_total": 0,
     "calls": []

@@ -5,7 +5,7 @@ import sys
 import time
 from collections.abc import Callable, Mapping
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 import msgspec
 import pytest
@@ -14,6 +14,81 @@ from pytest_mock import MockerFixture
 from grim.rand import Crand
 
 TESTS_ROOT = Path(__file__).resolve().parent
+
+
+def _as_int(value: object) -> int:
+    return int(cast(Any, value))
+
+
+def _as_float(value: object) -> float:
+    return float(cast(Any, value))
+
+
+def _apply_config_updates(cfg: "CrimsonConfig", updates: Mapping[str, object]) -> None:
+    from crimson.game_modes import GameMode
+    from crimson.quests.level import QuestLevel
+    from grim.config import HighScoreDateMode
+
+    quest_major = int(cfg.gameplay.quest_level.major) if cfg.gameplay.quest_level is not None else 0
+    quest_minor = int(cfg.gameplay.quest_level.minor) if cfg.gameplay.quest_level is not None else 0
+
+    for key, value in updates.items():
+        match str(key):
+            case "game_mode":
+                cfg.gameplay.mode = GameMode(_as_int(value))
+            case "player_count":
+                cfg.gameplay.player_count = _as_int(value)
+            case "hardcore" | "hardcore_flag":
+                cfg.gameplay.hardcore = bool(value)
+            case "ui_info_texts":
+                cfg.gameplay.show_info_texts = bool(value)
+            case "screen_width":
+                cfg.display.width = _as_int(value)
+            case "screen_height":
+                cfg.display.height = _as_int(value)
+            case "screen_bpp":
+                cfg.display.bpp = _as_int(value)
+            case "texture_scale":
+                cfg.display.texture_scale = _as_float(value)
+            case "detail_preset":
+                cfg.display.detail_preset = _as_int(value)
+            case "violence_disabled":
+                cfg.display.violence_disabled = _as_int(value)
+            case "mouse_sensitivity":
+                cfg.display.mouse_sensitivity = _as_float(value)
+            case "sound_disable":
+                cfg.audio.sound_disabled = bool(value)
+            case "music_disable":
+                cfg.audio.music_disabled = bool(value)
+            case "sfx_volume":
+                cfg.audio.sfx_volume = _as_float(value)
+            case "music_volume":
+                cfg.audio.music_volume = _as_float(value)
+            case "keybind_pick_perk":
+                cfg.controls.pick_perk_key = _as_int(value)
+            case "keybind_reload":
+                cfg.controls.reload_key = _as_int(value)
+            case "player_name":
+                cfg.profile.set_player_name_input(str(value))
+            case "selected_saved_name_slot":
+                cfg.profile.selected_saved_name_slot = _as_int(value)
+            case "saved_name_count":
+                cfg.profile.saved_name_count = _as_int(value)
+            case "score_load_gate":
+                cfg.profile.show_internet_scores = bool(value)
+            case "highscore_date_mode":
+                cfg.profile.score_date_mode = HighScoreDateMode(_as_int(value))
+            case "quest_stage_major":
+                quest_major = _as_int(value)
+            case "quest_stage_minor":
+                quest_minor = _as_int(value)
+            case _:
+                raise KeyError(f"unsupported config override: {key}")
+
+    if quest_major <= 0 or quest_minor <= 0:
+        cfg.gameplay.quest_level = None
+    else:
+        cfg.gameplay.quest_level = QuestLevel(major=quest_major, minor=quest_minor)
 
 if TYPE_CHECKING:
     import crimson.modes.replay_playback_mode as replay_playback_mode
@@ -135,9 +210,11 @@ def make_mode_config(tmp_path: Path) -> Callable[..., "CrimsonConfig"]:
     ):
         resolved_base_dir = base_dir if base_dir is not None else tmp_path
         cfg = ensure_crimson_cfg(resolved_base_dir)
-        cfg.game_mode = int(game_mode)
+        from crimson.game_modes import GameMode
+
+        cfg.gameplay.mode = GameMode(int(game_mode))
         if updates:
-            cfg.data.update(dict(updates))
+            _apply_config_updates(cfg, updates)
         return cfg
 
     return _make
@@ -168,7 +245,7 @@ def make_game_state(tmp_path: Path, assets_dir: Path) -> Callable[..., "GameStat
 
         cfg = ensure_crimson_cfg(resolved_base_dir)
         if config_updates:
-            cfg.data.update(dict(config_updates))
+            _apply_config_updates(cfg, config_updates)
 
         game_status = status if status is not None else save_status.ensure_game_status(resolved_base_dir)
         state = GameState(

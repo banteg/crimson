@@ -15,12 +15,12 @@ def resolve_request(state: GameState) -> HighScoresRequest:
     request = state.pending_high_scores
     state.pending_high_scores = None
     if request is None:
-        request = HighScoresRequest(game_mode_id=GameMode(state.config.game_mode))
+        request = HighScoresRequest(game_mode_id=GameMode(state.config.gameplay.mode))
 
     if request.game_mode_id == GameMode.QUESTS and request.quest_level is None:
         level = state.pending_quest_level
         if level is None:
-            level = state.config.quest_level_value
+            level = state.config.gameplay.quest_level
         # Native screen always has a valid quest stage selected (defaults to 1.1).
         request.quest_level = level if level is not None else QuestLevel(1, 1)
 
@@ -63,16 +63,16 @@ def load_records(state: GameState, request: HighScoresRequest) -> list[HighScore
     path = scores_path_for_mode(
         state.base_dir,
         request.game_mode_id,
-        hardcore=state.config.hardcore,
+        hardcore=state.config.gameplay.hardcore,
         quest_stage_major=(0 if request.quest_level is None else int(request.quest_level.major)),
         quest_stage_minor=(0 if request.quest_level is None else int(request.quest_level.minor)),
-        player_count=state.config.player_count,
+        player_count=state.config.gameplay.player_count,
     )
     try:
         records = read_highscore_table(path, game_mode_id=request.game_mode_id)
     except (OSError, ValueError):
         return []
-    date_mode = int(state.config.highscore_date_mode)
+    date_mode = int(state.config.profile.score_date_mode)
     if date_mode > 0:
         now = dt.date.today()
         records = [entry for entry in records if _passes_date_filter(entry, date_mode=date_mode, now=now)]

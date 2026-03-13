@@ -90,7 +90,7 @@ QUEST_FAILED_PANEL_SLIDE_DURATION_MS = 250.0
 
 
 def _player_name_default(config: CrimsonConfig) -> str:
-    return config.player_name
+    return config.profile.player_name
 
 
 def _next_quest_level(level: QuestLevel) -> QuestLevel | None:

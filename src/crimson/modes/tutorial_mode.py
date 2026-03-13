@@ -80,7 +80,7 @@ class TutorialMode(BaseGameplayMode):
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             detail_preset=int(self._deterministic_detail_preset()),
-            gore_disabled=int(self._deterministic_gore_disabled()),
+            violence_disabled=int(self._deterministic_violence_disabled()),
             game_tune_started=bool(self.sim_world.game_tune_started),
             demo_mode_active=bool(self.demo_mode_active),
         )
@@ -131,7 +131,7 @@ class TutorialMode(BaseGameplayMode):
                 hardcore=bool(self.hardcore),
                 preserve_bugs=bool(self.state.preserve_bugs),
                 detail_preset=int(self._deterministic_detail_preset()),
-                gore_disabled=int(self._deterministic_gore_disabled()),
+                violence_disabled=int(self._deterministic_violence_disabled()),
                 world_size=float(self.world_size),
                 player_count=1,
                 status=ReplayStatusSnapshot(
@@ -200,7 +200,7 @@ class TutorialMode(BaseGameplayMode):
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
-        reload_key = self.config.keybind_reload
+        reload_key = self.config.controls.reload_key
         reload_pressed = input_code_is_pressed(reload_key)
 
         return PlayerInput(
@@ -321,7 +321,7 @@ class TutorialMode(BaseGameplayMode):
             if session is not None:
                 elapsed_before_ms = float(session.elapsed_ms)
                 session.detail_preset = int(self._deterministic_detail_preset())
-                session.gore_disabled = int(self._deterministic_gore_disabled())
+                session.violence_disabled = int(self._deterministic_violence_disabled())
                 self._frame_input_state = input_state
                 try:
                     self._run_deterministic_session_ticks(

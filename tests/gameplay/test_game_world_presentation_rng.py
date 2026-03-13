@@ -31,7 +31,7 @@ def test_projectile_decals_consume_authoritative_rng() -> None:
         hits=[hit],
         rng=world.sim_world.state.rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     assert int(world.sim_world.state.rng.state) != sim_before

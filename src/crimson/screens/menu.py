@@ -104,7 +104,7 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
             overlay_detail=detail,
             width=1024,
             height=1024,
-            texture_scale=state.config.texture_scale,
+            texture_scale=state.config.display.texture_scale,
         )
         state.menu_ground = ground
     else:
@@ -157,7 +157,7 @@ class MenuView:
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
-        layout_w = float(self.state.config.screen_width)
+        layout_w = float(self.state.config.display.width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = self._menu_widescreen_y_shift(layout_w)
         # Shareware gating is controlled by the --demo flag (see GameState.demo_enabled),
@@ -396,7 +396,7 @@ class MenuView:
         label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         item_w = float(item.width)
         item_h = float(item.height)
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         # Matches ui_elements_update_and_render reverse table iteration:
         # later entries draw first, earlier entries draw last (on top).
         for idx in range(len(self._menu_entries) - 1, -1, -1):
@@ -638,7 +638,7 @@ class MenuView:
         draw_ui_quad_shadow(texture=texture, src=src, dst=dst, origin=origin, rotation_deg=rotation_deg)
 
     def _draw_menu_sign(self, resources: RuntimeResources) -> None:
-        screen_w = float(self.state.config.screen_width)
+        screen_w = float(self.state.config.display.width)
         scale, shift_x = self._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -659,7 +659,7 @@ class MenuView:
             _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
             rotation_deg = math.degrees(angle_rad)
         sign = resources.texture(TextureId.UI_SIGN_CRIMSON)
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         if fx_detail:
             self._draw_ui_quad_shadow(
                 texture=sign,

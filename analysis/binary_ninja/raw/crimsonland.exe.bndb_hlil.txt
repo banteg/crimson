@@ -2473,11 +2473,11 @@ Sections:
 004029dd  edi_7, esi_4 = __builtin_memcpy(dest: &config_player_name, src: edi_5 - ecx_7, 
 004029dd      count: ecx_7 u>> 2 << 2)
 004029e9  __builtin_memcpy(dest: edi_7, src: esi_4, count: ecx_7 & 3)
-004029f5  config_name_slot_count = 1
-004029fa  config_name_slot_selected = 0
+004029f5  config_saved_name_count = 1
+004029fa  config_selected_saved_name_slot = 0
 00402a00  config_blob = 0
 00402a06  config_music_disabled = 0
-00402a0c  config_fx_toggle = 0
+00402a0c  config_violence_disabled = 0
 00402a12  data_4807a8 = 1
 00402a17  data_4804f0 = 0
 00402a1d  data_4804f4 = 0
@@ -2507,7 +2507,7 @@ Sections:
 00402adb  "00\x7e\x01\x00\x00\xd3\x00\x00\x00\xd1\x00\x00\x00\x3f\x01\x00\x00\x40\x01\x00\x00\x41\x"
 00402adb  "01\x00\x00\x53\x01\x00\x00\x7e\x01\x00\x00\x7e\x01\x00\x00\x7e\x01\x00\x00", 
 00402adb      count: 0x80)
-00402bc2  config_hud_indicator_toggle = 0x101
+00402bc2  config_direction_arrow_flags = 0x101
 00402bcd  return 0x17e
 
 00402bce                                            90 90                                                                ..
@@ -8596,7 +8596,7 @@ Sections:
 0040a812              | (x87_r7_17 == temp3_1 ? 1 : 0) << 0xe
 0040a812          
 0040a817          if ((eax_18:1.b & 0x41) == 0)
-0040a81d              eax_18.b = *(render_overlay_player_index_2 + &config_hud_indicator_toggle)
+0040a81d              eax_18.b = *(render_overlay_player_index_2 + &config_direction_arrow_flags)
 0040a81d              
 0040a825              if (eax_18.b != 0)
 0040a83a                  (*(*grim_interface_ptr + 0xfc))((&player_state_table)[
@@ -22263,7 +22263,7 @@ Sections:
 00419166  
 004193e5  (*(*grim_interface_ptr + 0xf0))()
 004193e5  
-004193f2  if (config_fx_toggle == 0)
+004193f2  if (config_violence_disabled == 0)
 004193f2      return 
 004193f2  
 0041940d  (*(*grim_interface_ptr + 0x20))(0x14, 2, var_58, perk_id_monster_vision_6, 
@@ -26873,7 +26873,7 @@ Sections:
 0041f0af                      break
 0041f0af              
 0041f0b8              int32_t ecx_23 = not.d(i_3)
-0041f0bc              config_fx_toggle = var_14_1
+0041f0bc              config_violence_disabled = var_14_1
 0041f0ce              int32_t esi_7
 0041f0ce              int32_t edi_12
 0041f0ce              edi_12, esi_7 = __builtin_memcpy(dest: &config_player_name_buf, 
@@ -26904,7 +26904,7 @@ Sections:
 0041f151      crt_fclose(fp)
 0041f15a      return 
 0041f15a  
-0041f165  config_fx_toggle = 1
+0041f165  config_violence_disabled = 1
 0041f16c  game_build_path(filename: "crimson.cfg")
 0041f175  struct FILE* fp_1 = crt_fopen(path: &game_path_buf, mode: "wb")
 0041f175  
@@ -27010,7 +27010,7 @@ Sections:
 0041f40b  __builtin_memcpy(dest: edi_2, src: esi_2, count: ecx_14 & 3)
 0041f414  player_name_length = config_player_name_length
 0041f41a  config_highscore_date_mode = 0
-0041f421  config_name_slot_selected = 0
+0041f421  config_selected_saved_name_slot = 0
 0041f42c  return eax_4
 
 0041f42d                                         90 90 90                                                               ...
@@ -28571,7 +28571,7 @@ Sections:
 00420f13                                  
 00420f54                                  int32_t ecx_8 = 0x3f800000
 00420f5b                                  int32_t var_5c_1 = 0x3f800000
-00420f7d                                  bool cond:8_1 = config_fx_toggle != 0
+00420f7d                                  bool cond:8_1 = config_violence_disabled != 0
 00420f8b                                  __builtin_memcpy(dest: &effect_template_lifetime, 
 00420f8b                                      src: "\x33\x33\xb3\x3e\x59\x00\x00\x00\x00\x00\x80\x3f\x00"
 00420f8b                                  "00\x80\x3f\x00\x00\x80\x3f\x00\x00\x80\x3f", 
@@ -34338,11 +34338,11 @@ Sections:
 00427668                              *((esi << 3) + &creature_pool.__offset(0x1c)) = 0
 0042766f                              *((esi << 3) + &creature_pool.__offset(0x20)) = 0
 00427489                      else
-0042748f                          eax_17.b = config_fx_toggle
+0042748f                          eax_17.b = config_violence_disabled
 0042748f                          
 00427496                          if (eax_17.b != 0)
 00427575                          label_427575:
-00427575                              eax_17.b = config_fx_toggle
+00427575                              eax_17.b = config_violence_disabled
 0042757a                              ecx = creature_kill_count + 1
 0042757d                              creature_kill_count = ecx
 0042757d                              
@@ -35883,7 +35883,7 @@ Sections:
 00427700  
 00427700    void fx_queue_add_random(float* pos)
 
-0042770a  if (config_fx_toggle != 0)
+0042770a  if (config_violence_disabled != 0)
 0042770a      return 
 0042770a  
 00427710  char fx_queue_random_init_flags_1 = fx_queue_random_init_flags.b
@@ -40408,7 +40408,7 @@ Sections:
 0042d1f9  *(eax + 2) = 0xf3
 0042d1fd  *(eax + 3) = 0x85
 0042d1fd  
-0042d207  if (config_name_slot_selected != 0)
+0042d207  if (config_selected_saved_name_slot != 0)
 0042d20f      *(eax + 4) = 1
 0042d207  else
 0042d209      *(eax + 4) = 0
@@ -40429,7 +40429,7 @@ Sections:
 0042d249  *(eax + 8) = quest_stage_minor.b
 0042d251  *(eax + 9) = config_player_count.b
 0042d259  int32_t i_1 = 0xffffffff
-0042d262  void* edi_2 = config_name_slot_selected * 0x1b + &config_saved_name_0
+0042d262  void* edi_2 = config_selected_saved_name_slot * 0x1b + &config_saved_name_0
 0042d262  
 0042d26b  while (i_1 != 0)
 0042d26b      bool cond:1_1 = 0 != *edi_2
@@ -41586,7 +41586,7 @@ Sections:
 0042eb10  // spawns blood splatter particles (effect id 7)
 0042eb10    void effect_spawn_blood_splatter(float* pos, float angle, float age)
 
-0042eb1a  if (config_fx_toggle != 0)
+0042eb1a  if (config_violence_disabled != 0)
 0042eb1a      return 
 0042eb1a  
 0042eb4e  effect_template_lifetime = fconvert.s(fconvert.t(0.25f) - fconvert.t(age))
@@ -42268,7 +42268,7 @@ Sections:
 0042fe11      text: "You learn things faster than a regular Joe from now on gaining 30% more experience "
 0042fe11  "points from everything you do.", 
 0042fe11      max_width_px: 0x100)
-0042fe1f  bool cond:0 = config_fx_toggle == 0
+0042fe1f  bool cond:0 = config_violence_disabled == 0
 0042fe21  data_4c364c = eax_5
 0042fe21  
 0042fe26  if (cond:0)
@@ -49435,7 +49435,7 @@ Sections:
 0043b2f7  
 0043b30b  crt_qsort(base: &highscore_table, num: 0x64, size: 0x48, cmp)
 0043b30b  
-0043b31a  if (config_name_slot_selected != 0)
+0043b31a  if (config_selected_saved_name_slot != 0)
 0043b426      int32_t highscore_table_count_1 = highscore_table_count
 0043b426      
 0043b42d      if (highscore_table_count_1 s> 0)
@@ -49683,7 +49683,7 @@ Sections:
 0043b677      crt_sprintf(dst: 0x4c36dc, fmt: "%s\scores5\survival.hi", &data_4c375c)
 0043b5f5  else if (config_game_mode_1 != 3)
 0043b677      crt_sprintf(dst: 0x4c36dc, fmt: "scores5\unknown.hi", 
-0043b677          config_name_slot_selected * 0x1b + &config_saved_name_0)
+0043b677          config_selected_saved_name_slot * 0x1b + &config_saved_name_0)
 0043b606  else
 0043b608      config_game_mode_1.b = config_hardcore
 0043b608      
@@ -49713,7 +49713,7 @@ Sections:
 0043b6bb      *(not.d(i) + 0x4c36dc) = 0x69
 0043b6c2      *(not.d(i) + 0x4c36dd) = 0
 0043b6c2  
-0043b6c8  int32_t config_name_slot_selected_1 = config_name_slot_selected
+0043b6c8  int32_t config_name_slot_selected_1 = config_selected_saved_name_slot
 0043b6c8  
 0043b6cf  if (config_name_slot_selected_1 != 0)
 0043b6eb      crt_sprintf(dst: 0x4c365c, fmt: "%s%s", 0x4c36dc, 
@@ -56233,7 +56233,7 @@ Sections:
 00444405      profile_name_input_state_width_px = 0x60
 0044440f      crt_atexit(func: sub_444800)
 0044440f  
-00444417  int32_t config_name_slot_count_2 = config_name_slot_count
+00444417  int32_t config_name_slot_count_2 = config_saved_name_count
 0044441d  int32_t config_name_slot_count_3 = 0
 0044441d  
 00444423  if (config_name_slot_count_2 s> 0)
@@ -56317,12 +56317,12 @@ Sections:
 004445c6          int32_t esi_2
 004445c6          int32_t edi_4
 004445c6          edi_4, esi_2 = __builtin_memcpy(
-004445c6              dest: config_name_slot_count * 0x1b + &config_saved_name_0, 
+004445c6              dest: config_saved_name_count * 0x1b + &config_saved_name_0, 
 004445c6              src: edi_1 - ecx_3, count: ecx_3 u>> 2 << 2)
 004445cd          __builtin_memcpy(dest: edi_4, src: esi_2, count: ecx_3 & 3)
-004445cf          int32_t config_name_slot_count_1 = config_name_slot_count
-004445d4          config_name_slot_selected = config_name_slot_count_1
-004445dd          config_name_slot_count = config_name_slot_count_1 + 1
+004445cf          int32_t config_name_slot_count_1 = config_saved_name_count
+004445d4          config_selected_saved_name_slot = config_name_slot_count_1
+004445dd          config_saved_name_count = config_name_slot_count_1 + 1
 004445dd          
 004445e2          if (config_name_slot_count_1 + 1 s>= 8)
 004445e4              char* edi_5 = &data_4ccb18
@@ -56342,20 +56342,20 @@ Sections:
 00444600              edi_7, esi_4 = __builtin_memcpy(dest: 0x48040b, src: edi_5 - ecx_7, 
 00444600                  count: ecx_7 u>> 2 << 2)
 00444607              __builtin_memcpy(dest: edi_7, src: esi_4, count: ecx_7 & 3)
-00444609              config_name_slot_count -= 1
+00444609              config_saved_name_count -= 1
 00444609          
 0044460f          data_4ccb18 = 0
 00444615          profile_name_input_state_cursor = 0
 0044461b          data_4d1220 = 0
 004446a7          j_sub_43afa0()
-0044453a  else if (data_4d121c == 0 && config_name_slot_selected != 0)
+0044453a  else if (data_4d121c == 0 && config_selected_saved_name_slot != 0)
 00444639      xy = fconvert.s(fconvert.t(*arg1))
 00444650      float var_4_3 = fconvert.s(fconvert.t(arg1[1]) + fconvert.t(22f))
 00444650      
 0044465e      if (ui_button_update(&xy, button: &data_4ccb00).b != 0)
 00444665          int32_t i_3 = 0xffffffff
-00444668          int32_t eax_8 = config_name_slot_count - 1
-00444669          config_name_slot_count = eax_8
+00444668          int32_t eax_8 = config_saved_name_count - 1
+00444669          config_saved_name_count = eax_8
 00444671          void* edi_8 = eax_8 * 0x1b + &config_saved_name_0
 00444671          
 00444689          while (i_3 != 0)
@@ -56370,10 +56370,10 @@ Sections:
 00444698          int32_t esi_6
 00444698          int32_t edi_11
 00444698          edi_11, esi_6 = __builtin_memcpy(
-00444698              dest: config_name_slot_selected * 0x1b + &config_saved_name_0, 
+00444698              dest: config_selected_saved_name_slot * 0x1b + &config_saved_name_0, 
 00444698              src: edi_8 - ecx_11, count: ecx_11 u>> 2 << 2)
 0044469f          __builtin_memcpy(dest: edi_11, src: esi_6, count: ecx_11 & 3)
-004446a1          config_name_slot_selected = 0
+004446a1          config_selected_saved_name_slot = 0
 004446a7          j_sub_43afa0()
 004446ac  eax_1.b = profile_menu_init_flags.b
 004446ac  
@@ -56384,7 +56384,7 @@ Sections:
 004446de      __builtin_memset(dest: &data_4d0eec, ch: 0, count: 0x11)
 004446f0      crt_atexit(func: sub_4447d0)
 004446f0  
-00444700  int32_t config_name_slot_selected_1 = config_name_slot_selected
+00444700  int32_t config_name_slot_selected_1 = config_selected_saved_name_slot
 0044470e  data_4d0ef4 = &data_4ccb5c
 00444718  data_4d0ef8 = config_name_slot_count_3 + 1
 0044471e  profile_name_slot_list = arg2
@@ -56409,7 +56409,7 @@ Sections:
 00444762      
 00444767      if (eax_13 s>= 0)
 0044476c          data_4d0ef0 = eax_13
-00444774          config_name_slot_selected = eax_13
+00444774          config_selected_saved_name_slot = eax_13
 00444774          
 0044477a          if (eax_13 != config_name_slot_count_3)
 0044477c              j_sub_43afa0()
@@ -59159,7 +59159,7 @@ Sections:
 00447bc6  int32_t eax_14
 00447bc6  int32_t edx_13
 00447bc6  
-00447bc6  if (config_fx_toggle == 0)
+00447bc6  if (config_violence_disabled == 0)
 00447be5      edx_13 = data_4c3648
 00447beb      eax_14 = eax_13 << 2
 00447bee      *(eax_14 + &perk_meta_table) = data_4c3640
@@ -60098,7 +60098,7 @@ Sections:
 004491f8      crt_atexit(func: sub_44ed20)
 004491f8  
 00449219  struct ui_checkbox_t ecx_8 =
-00449219      *(controls_rebind_player_index + &config_hud_indicator_toggle)
+00449219      *(controls_rebind_player_index + &config_direction_arrow_flags)
 0044921f  data_4d77f4 = "Show direction arrow"
 00449229  float var_50_5 = fconvert.s(fconvert.t(var_50_4) + fconvert.t(4f))
 0044922d  controls_direction_arrow_checkbox = ecx_8
@@ -60108,7 +60108,7 @@ Sections:
 00449255  struct ui_checkbox_t controls_direction_arrow_checkbox_1 =
 00449255      controls_direction_arrow_checkbox
 0044925e  var_40 = fconvert.s(fconvert.t(data_48ee6c) + fconvert.t(data_48ee90))
-00449262  *(controls_rebind_player_index_2 + &config_hud_indicator_toggle) =
+00449262  *(controls_rebind_player_index_2 + &config_direction_arrow_flags) =
 00449262      controls_direction_arrow_checkbox_1
 00449268  struct player_state_t* ecx_9 = &player_state_table.__offset(0x320)
 00449273  float var_5c = fconvert.s(x87_r7_31 + fconvert.t(50f))
@@ -105900,7 +105900,7 @@ Sections:
 0048034b  // Config: high-score duplicate handling (1 replaces existing entry).
 0048034b  char config_highscore_duplicate_mode = 0x0
 0048034c  // Config: per-player HUD indicator toggle (u8[2], gates extra indicator pass).
-0048034c  int16_t config_hud_indicator_toggle = 0x0
+0048034c  int16_t config_direction_arrow_flags = 0x0
 
 0048034e                                            00 00 00 00 00 00 00 00                                              ........
 
@@ -105948,9 +105948,9 @@ Sections:
 004803c5                 00 00 00                                                                               ...
 
 004803c8  // Config: selected saved-name slot (0..7).
-004803c8  int32_t config_name_slot_selected = 0x0
+004803c8  int32_t config_selected_saved_name_slot = 0x0
 004803cc  // Config: saved-name count / insert index.
-004803cc  int32_t config_name_slot_count = 0x0
+004803cc  int32_t config_saved_name_count = 0x0
 
 004803d0                                                  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                  ................
 004803e0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                                                  ................
@@ -106053,7 +106053,7 @@ Sections:
 
 004807ac  int32_t config_sfx_volume = 0x0  // Config: SFX volume multiplier.
 004807b0  int32_t config_music_volume = 0x0  // Config: music volume multiplier.
-004807b4  char config_fx_toggle = 0x0  // Config: FX toggle (gore/particle path).
+004807b4  char config_violence_disabled = 0x0  // Config: violence-disabled flag (gates blood/particle paths and alternate perk text).
 004807b5  // Config: score-load gating flag (used with config_highscore_date_mode).
 004807b5  char config_score_load_gate = 0x0
 004807b6  char data_4807b6 = 0x0

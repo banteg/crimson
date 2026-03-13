@@ -61,7 +61,7 @@ class PauseMenuView:
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
-        layout_w = float(self.state.config.screen_width)
+        layout_w = float(self.state.config.display.width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         ys = [
@@ -308,7 +308,7 @@ class PauseMenuView:
         label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         item_w = float(item.width)
         item_h = float(item.height)
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         for idx in range(len(self._menu_entries) - 1, -1, -1):
             entry = self._menu_entries[idx]
             pos = Vec2(MenuView._menu_slot_pos_x(entry.slot), entry.y)
@@ -390,7 +390,7 @@ class PauseMenuView:
                 rl.end_blend_mode()
 
     def _draw_menu_sign(self) -> None:
-        screen_w = float(self.state.config.screen_width)
+        screen_w = float(self.state.config.display.width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -411,7 +411,7 @@ class PauseMenuView:
             _ = slide_x
             rotation_deg = math.degrees(angle_rad)
         sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

@@ -45,7 +45,7 @@ def make_creature_update_options(
     players: list[PlayerState],
     rng: CrandLike | None = None,
     detail_preset: int = 5,
-    gore_disabled: int = 0,
+    violence_disabled: int = 0,
     env: SpawnEnv | None = None,
     world_width: float = 1024.0,
     world_height: float = 1024.0,
@@ -72,7 +72,7 @@ def make_creature_update_options(
         fx_queue=FxQueue() if fx_queue is None else fx_queue,
         fx_queue_rotated=FxQueueRotated() if fx_queue_rotated is None else fx_queue_rotated,
         detail_preset=int(detail_preset),
-        gore_disabled=int(gore_disabled),
+        violence_disabled=int(violence_disabled),
     )
 
 
