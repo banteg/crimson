@@ -45,17 +45,10 @@ def input_scheme_label(scheme: MovementControlType) -> str:
     return labels.get(scheme, "Unknown")
 
 
-def controls_method_values(
-    controls: CrimsonControlsConfig,
-    *,
-    player_index: int,
-) -> tuple[AimScheme, MovementControlType]:
-    player = controls.player(player_index)
-    return player.aim_scheme, player.movement
-
-
 def controls_method_labels(controls: CrimsonControlsConfig, *, player_index: int) -> tuple[str, str]:
-    aim_scheme, move_mode = controls_method_values(controls, player_index=player_index)
+    player = controls.player(player_index)
+    aim_scheme = player.aim_scheme
+    move_mode = player.movement
     return input_configure_for_label(aim_scheme), input_scheme_label(move_mode)
 
 

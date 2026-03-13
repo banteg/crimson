@@ -8,7 +8,6 @@ from crimson.screens.panels.controls_labels import (
     RebindRowSpec,
     controls_aim_method_dropdown_ids,
     controls_method_labels,
-    controls_method_values,
     controls_rebind_plan,
     input_configure_for_label,
     input_scheme_label,
@@ -54,17 +53,16 @@ def test_controls_method_labels_reads_player_arrays() -> None:
     assert controls_method_labels(controls, player_index=1) == ("Joystick", "Mouse point click")
     assert controls_method_labels(controls, player_index=2) == ("Dual Action Pad", "Computer")
     assert controls_method_labels(controls, player_index=3) == ("Computer", "Relative")
-    assert controls_method_values(controls, player_index=1) == (AimScheme.JOYSTICK, MovementControlType.MOUSE_POINT_CLICK)
 
 
 def test_controls_method_labels_defaults_missing_blob() -> None:
     assert controls_method_labels(_controls(), player_index=0) == ("Mouse", "Static")
 
 
-def test_controls_method_values_unknown_move_mode_maps_to_unknown_enum() -> None:
+def test_controls_method_labels_unknown_move_mode_maps_to_unknown_enum() -> None:
     controls = _controls()
     controls.player(0).movement = MovementControlType.UNKNOWN
-    assert controls_method_values(controls, player_index=0) == (AimScheme.MOUSE, MovementControlType.UNKNOWN)
+    assert controls_method_labels(controls, player_index=0) == ("Mouse", "Unknown")
 
 
 def test_controls_aim_method_dropdown_ids_hides_computer_unless_loaded() -> None:

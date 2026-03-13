@@ -18,7 +18,6 @@ from .input_codes import (
     input_code_is_pressed,
 )
 from .movement_controls import MovementControlType
-from .screens.panels.controls_labels import controls_method_values
 from .sim.input import PlayerInput
 from .sim.state_types import PlayerState
 
@@ -248,8 +247,8 @@ class LocalInputInterpreter:
 
     @staticmethod
     def _safe_controls_modes(config: CrimsonConfig, *, player_index: int) -> tuple[AimScheme, MovementControlType]:
-        aim_scheme, move_mode = controls_method_values(config.controls, player_index=int(player_index))
-        return aim_scheme, move_mode
+        player_controls = config.controls.player(int(player_index))
+        return player_controls.aim_scheme, player_controls.movement
 
     def build_player_input(
         self,

@@ -26,7 +26,6 @@ from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .controls_labels import (
     RebindRowSpec,
     controls_aim_method_dropdown_ids,
-    controls_method_values,
     controls_rebind_plan,
     input_configure_for_label,
     input_scheme_label,
@@ -379,7 +378,9 @@ class ControlsMenuView(PanelMenuView):
 
     def _update_rebind_capture(self, *, right_top_left: Vec2, panel_scale: float, font: SmallFontData) -> bool:
         player_idx = self._current_player_index()
-        aim_scheme, move_mode = controls_method_values(self.state.config.controls, player_index=player_idx)
+        player_controls = self.state.config.controls.player(player_idx)
+        aim_scheme = player_controls.aim_scheme
+        move_mode = player_controls.movement
         sections = self._rebind_sections(player_index=player_idx, aim_scheme=aim_scheme, move_mode=move_mode)
         rows = self._collect_rebind_rows(
             right_top_left=right_top_left,
@@ -534,7 +535,9 @@ class ControlsMenuView(PanelMenuView):
     def _update_method_dropdowns(self, *, left_top_left: Vec2, panel_scale: float, font: SmallFontData) -> bool:
         config = self.state.config
         player_idx = self._current_player_index()
-        aim_scheme, move_mode = controls_method_values(config.controls, player_index=player_idx)
+        player_controls = config.controls.player(player_idx)
+        aim_scheme = player_controls.aim_scheme
+        move_mode = player_controls.movement
         move_mode_ids = self._move_method_ids(move_mode=move_mode)
         move_items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
         aim_item_ids = controls_aim_method_dropdown_ids(aim_scheme)
@@ -649,7 +652,9 @@ class ControlsMenuView(PanelMenuView):
         text_color_soft = rl.Color(255, 255, 255, 204)
         config = self.state.config
         player_idx = self._current_player_index()
-        aim_scheme, move_mode = controls_method_values(config.controls, player_index=player_idx)
+        player_controls = config.controls.player(player_idx)
+        aim_scheme = player_controls.aim_scheme
+        move_mode = player_controls.movement
         move_mode_ids = self._move_method_ids(move_mode=move_mode)
         move_items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
         aim_item_ids = controls_aim_method_dropdown_ids(aim_scheme)
