@@ -65,9 +65,9 @@ def _apply_config_updates(cfg: "CrimsonConfig", updates: Mapping[str, object]) -
             case "music_volume":
                 cfg.audio.music_volume = _as_float(value)
             case "keybind_pick_perk":
-                cfg.controls.pick_perk_key = _as_int(value)
+                cfg.controls.pick_perk_code = _as_int(value)
             case "keybind_reload":
-                cfg.controls.reload_key = _as_int(value)
+                cfg.controls.reload_code = _as_int(value)
             case "player_name":
                 cfg.profile.set_player_name_input(str(value))
             case "selected_saved_name_slot":

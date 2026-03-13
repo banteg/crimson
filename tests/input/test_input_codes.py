@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import crimson.input_codes as input_codes
 from crimson.input_codes import INPUT_CODE_UNBOUND, input_code_name
-from grim.config import default_player_keybind_block
 
 
 def test_input_code_name_extended_axes_match_original_labels() -> None:
@@ -47,22 +46,23 @@ def test_pressed_edge_does_not_retrigger_after_unpolled_held_frame(mocker) -> No
 
     input_codes.input_begin_frame()
     key_down["value"] = True
-    assert input_codes.input_code_is_pressed_for_player(0x11, player_index=0)
+    assert input_codes.input_code_is_pressed(0x11, player_index=0)
 
     input_codes.input_begin_frame()
     # Simulate a frame where this binding is not queried at all.
     input_codes.input_begin_frame()
 
-    assert not input_codes.input_code_is_pressed_for_player(0x11, player_index=0)
+    assert not input_codes.input_code_is_pressed(0x11, player_index=0)
 
 
 def test_input_primary_just_pressed_latches_across_multiplayer_fire_keys(mocker) -> None:
     down: dict[tuple[int, int], bool] = {}
+    fire_codes = (0x100, 0x9D, 0x36, 0x11F)
 
-    def _fake_input_code_is_down_for_player(key_code: int, *, player_index: int) -> bool:
+    def _fake_input_code_is_down(key_code: int, *, player_index: int = 0) -> bool:
         return bool(down.get((int(player_index), int(key_code)), False))
 
-    mocker.patch.object(input_codes, "input_code_is_down_for_player", side_effect=_fake_input_code_is_down_for_player)
+    mocker.patch.object(input_codes, "input_code_is_down", side_effect=_fake_input_code_is_down)
     mocker.patch.object(input_codes.rl, "get_mouse_wheel_move", return_value=0.0)
 
     input_codes._PRESSED_STATE.prev_down.clear()
@@ -74,30 +74,24 @@ def test_input_primary_just_pressed_latches_across_multiplayer_fire_keys(mocker)
     # Player 2 fire key press opens the latch in two-player mode.
     input_codes.input_begin_frame()
     down[(1, 0x9D)] = True
-    assert input_codes.input_primary_just_pressed(None, player_count=2)
+    assert input_codes.input_primary_just_pressed(fire_codes=fire_codes, player_count=2)
 
     # Holding any primary source should not retrigger next frame.
     input_codes.input_begin_frame()
-    assert not input_codes.input_primary_just_pressed(None, player_count=2)
+    assert not input_codes.input_primary_just_pressed(fire_codes=fire_codes, player_count=2)
 
     # Pressing another primary source while already held still does not retrigger.
     input_codes.input_begin_frame()
     down[(0, 0x100)] = True
-    assert not input_codes.input_primary_just_pressed(None, player_count=2)
+    assert not input_codes.input_primary_just_pressed(fire_codes=fire_codes, player_count=2)
 
     # Releasing all sources clears the latch.
     input_codes.input_begin_frame()
     down[(1, 0x9D)] = False
     down[(0, 0x100)] = False
-    assert not input_codes.input_primary_just_pressed(None, player_count=2)
+    assert not input_codes.input_primary_just_pressed(fire_codes=fire_codes, player_count=2)
 
     # Fresh primary press edges again after full release.
     input_codes.input_begin_frame()
     down[(0, 0x100)] = True
-    assert input_codes.input_primary_just_pressed(None, player_count=2)
-
-
-def test_player_move_fire_keybinds_falls_back_to_default_block() -> None:
-    expected = tuple(int(value) for value in default_player_keybind_block(0)[:5])
-
-    assert input_codes.player_move_fire_keybinds(None, player_index=0) == expected
+    assert input_codes.input_primary_just_pressed(fire_codes=fire_codes, player_count=2)

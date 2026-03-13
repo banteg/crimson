@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from enum import IntEnum
 from pathlib import Path
-from typing import TypeAlias, cast
+from typing import Any
 
 import msgspec
 from construct import Array, Byte, Bytes, Float32l, Int32sl, Struct
@@ -20,7 +20,6 @@ PLAYER_NAME_MAX_BYTES = PLAYER_NAME_SIZE - 1
 SAVED_NAME_SLOT_COUNT = 8
 SAVED_NAME_ENTRY_SIZE = 0x1B
 SAVED_NAMES_BLOB_SIZE = SAVED_NAME_SLOT_COUNT * SAVED_NAME_ENTRY_SIZE
-KEYBINDS_BLOB_SIZE = 0x80
 UNKNOWN_248_SIZE = 0x1F8
 PLAYER_BIND_BLOCK_DWORDS = 0x10
 PLAYER_BIND_BLOCK_SIZE = PLAYER_BIND_BLOCK_DWORDS * 4
@@ -31,27 +30,24 @@ EXT_DIRECTION_ARROW_UNSET = 0
 EXT_DIRECTION_ARROW_OFF = 1
 EXT_DIRECTION_ARROW_ON = 2
 KEYBIND_UNBOUND_CODE = 0x17E
+RESERVED_KEYBIND_SLOT_COUNT = 2
+PADDING_KEYBIND_SLOT_COUNT = 3
 
-PlayerKeybindBlock: TypeAlias = tuple[
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-]
-
-PLAYER_BIND_BLOCK_STRUCT = Array(PLAYER_BIND_BLOCK_DWORDS, Int32sl)
+PLAYER_BIND_BLOCK_STRUCT = Struct(
+    "move_forward" / Int32sl,
+    "move_backward" / Int32sl,
+    "turn_left" / Int32sl,
+    "turn_right" / Int32sl,
+    "fire" / Int32sl,
+    "reserved_keys" / Array(RESERVED_KEYBIND_SLOT_COUNT, Int32sl),
+    "aim_left" / Int32sl,
+    "aim_right" / Int32sl,
+    "axis_aim_y" / Int32sl,
+    "axis_aim_x" / Int32sl,
+    "axis_move_y" / Int32sl,
+    "axis_move_x" / Int32sl,
+    "padding" / Array(PADDING_KEYBIND_SLOT_COUNT, Int32sl),
+)
 
 CRIMSON_CFG_STRUCT = Struct(
     "sound_disable" / Byte,
@@ -293,23 +289,24 @@ class CrimsonProfileConfig(msgspec.Struct):
 class CrimsonPlayerControls(msgspec.Struct):
     movement: MovementControlType
     aim_scheme: AimScheme
-    keybinds: PlayerKeybindBlock
     show_direction_arrow: bool
-
-    def keybind(self, slot_index: int) -> int:
-        return int(self.keybinds[_slot_index(slot_index)])
-
-    def set_keybind(self, slot_index: int, value: int) -> None:
-        slot = _slot_index(slot_index)
-        block = list(self.keybinds)
-        block[slot] = int(value)
-        self.keybinds = _player_keybind_block(block)
+    move_forward_code: int
+    move_backward_code: int
+    turn_left_code: int
+    turn_right_code: int
+    fire_code: int
+    aim_left_code: int
+    aim_right_code: int
+    aim_vertical_axis_code: int
+    aim_horizontal_axis_code: int
+    move_vertical_axis_code: int
+    move_horizontal_axis_code: int
 
 
 class CrimsonControlsConfig(msgspec.Struct):
     players: tuple[CrimsonPlayerControls, CrimsonPlayerControls, CrimsonPlayerControls, CrimsonPlayerControls]
-    pick_perk_key: int
-    reload_key: int
+    pick_perk_code: int
+    reload_code: int
 
     def player(self, player_index: int) -> CrimsonPlayerControls:
         return self.players[_player_index(player_index)]
@@ -334,13 +331,6 @@ def _player_index(player_index: int) -> int:
     return idx
 
 
-def _slot_index(slot_index: int) -> int:
-    idx = int(slot_index)
-    if idx < 0 or idx >= PLAYER_BIND_BLOCK_DWORDS:
-        raise IndexError(f"keybind slot must be in 0..{PLAYER_BIND_BLOCK_DWORDS - 1}, got {idx}")
-    return idx
-
-
 def _require_range(value: int, *, minimum: int, maximum: int, field: str) -> int:
     if value < minimum or value > maximum:
         raise ValueError(f"{field} must be in {minimum}..{maximum}, got {value}")
@@ -354,29 +344,114 @@ def _block_uninitialized(values: Sequence[int]) -> bool:
     return True
 
 
-def _player_keybind_block(values: Sequence[int]) -> PlayerKeybindBlock:
+def _player_bind_values(values: Sequence[int]) -> tuple[int, ...]:
     if len(values) != PLAYER_BIND_BLOCK_DWORDS:
         raise ValueError(f"keybind block must have {PLAYER_BIND_BLOCK_DWORDS} entries, got {len(values)}")
-    return cast(PlayerKeybindBlock, tuple(int(value) for value in values))
+    return (
+        int(values[0]),
+        int(values[1]),
+        int(values[2]),
+        int(values[3]),
+        int(values[4]),
+        int(values[5]),
+        int(values[6]),
+        int(values[7]),
+        int(values[8]),
+        int(values[9]),
+        int(values[10]),
+        int(values[11]),
+        int(values[12]),
+        int(values[13]),
+        int(values[14]),
+        int(values[15]),
+    )
 
 
-def _decode_player_bind_block(raw: dict, *, player_index: int) -> PlayerKeybindBlock:
+def _raw_player_bind_values(raw_block: dict[str, Any]) -> tuple[int, ...]:
+    return _player_bind_values(
+        (
+            int(raw_block["move_forward"]),
+            int(raw_block["move_backward"]),
+            int(raw_block["turn_left"]),
+            int(raw_block["turn_right"]),
+            int(raw_block["fire"]),
+            int(raw_block["reserved_keys"][0]),
+            int(raw_block["reserved_keys"][1]),
+            int(raw_block["aim_left"]),
+            int(raw_block["aim_right"]),
+            int(raw_block["axis_aim_y"]),
+            int(raw_block["axis_aim_x"]),
+            int(raw_block["axis_move_y"]),
+            int(raw_block["axis_move_x"]),
+            int(raw_block["padding"][0]),
+            int(raw_block["padding"][1]),
+            int(raw_block["padding"][2]),
+        ),
+    )
+
+
+def _player_controls_from_bind_values(
+    values: Sequence[int],
+    *,
+    movement: MovementControlType,
+    aim_scheme: AimScheme,
+    show_direction_arrow: bool,
+) -> CrimsonPlayerControls:
+    bind_values = _player_bind_values(values)
+    return CrimsonPlayerControls(
+        movement=movement,
+        aim_scheme=aim_scheme,
+        show_direction_arrow=show_direction_arrow,
+        move_forward_code=int(bind_values[0]),
+        move_backward_code=int(bind_values[1]),
+        turn_left_code=int(bind_values[2]),
+        turn_right_code=int(bind_values[3]),
+        fire_code=int(bind_values[4]),
+        aim_left_code=int(bind_values[7]),
+        aim_right_code=int(bind_values[8]),
+        aim_vertical_axis_code=int(bind_values[9]),
+        aim_horizontal_axis_code=int(bind_values[10]),
+        move_vertical_axis_code=int(bind_values[11]),
+        move_horizontal_axis_code=int(bind_values[12]),
+    )
+
+
+def _encode_player_bind_block(player: CrimsonPlayerControls, *, player_index: int) -> dict[str, object]:
+    defaults = _default_player_bind_values(player_index)
+    return {
+        "move_forward": int(player.move_forward_code),
+        "move_backward": int(player.move_backward_code),
+        "turn_left": int(player.turn_left_code),
+        "turn_right": int(player.turn_right_code),
+        "fire": int(player.fire_code),
+        "reserved_keys": [int(defaults[5]), int(defaults[6])],
+        "aim_left": int(player.aim_left_code),
+        "aim_right": int(player.aim_right_code),
+        "axis_aim_y": int(player.aim_vertical_axis_code),
+        "axis_aim_x": int(player.aim_horizontal_axis_code),
+        "axis_move_y": int(player.move_vertical_axis_code),
+        "axis_move_x": int(player.move_horizontal_axis_code),
+        "padding": [int(defaults[13]), int(defaults[14]), int(defaults[15])],
+    }
+
+
+def _decode_player_bind_values(raw: dict[str, Any], *, player_index: int) -> tuple[int, ...]:
     idx = _player_index(player_index)
     if idx < 2:
-        block = tuple(int(value) for value in raw["keybinds_p1_p2"][idx])
+        values = _raw_player_bind_values(raw["keybinds_p1_p2"][idx])
     else:
-        block = tuple(int(value) for value in raw["extended_keybinds_p3_p4"][idx - 2])
-    if _block_uninitialized(block):
-        return _default_player_bind_block(idx)
-    return _player_keybind_block(block)
+        values = _raw_player_bind_values(raw["extended_keybinds_p3_p4"][idx - 2])
+    if _block_uninitialized(values):
+        return _default_player_bind_values(idx)
+    return values
 
 
-def _encode_primary_keybinds(players: Sequence[CrimsonPlayerControls]) -> list[list[int]]:
-    return [[int(value) for value in players[idx].keybinds] for idx in range(2)]
+def _encode_primary_keybinds(players: Sequence[CrimsonPlayerControls]) -> list[dict[str, object]]:
+    return [_encode_player_bind_block(players[idx], player_index=idx) for idx in range(2)]
 
 
-def _encode_extended_keybinds(players: Sequence[CrimsonPlayerControls]) -> list[list[int]]:
-    return [[int(value) for value in players[idx].keybinds] for idx in range(2, 4)]
+def _encode_extended_keybinds(players: Sequence[CrimsonPlayerControls]) -> list[dict[str, object]]:
+    return [_encode_player_bind_block(players[idx], player_index=idx) for idx in range(2, 4)]
 
 
 def _decode_direction_arrow(raw: dict, *, player_index: int) -> bool:
@@ -458,21 +533,28 @@ def _saved_name_order_values() -> tuple[int, ...]:
     return tuple(range(SAVED_NAME_SLOT_COUNT))
 
 
-def _default_player_bind_block(player_index: int) -> PlayerKeybindBlock:
+def _default_player_bind_values(player_index: int) -> tuple[int, ...]:
     idx = _player_index(player_index)
-    return cast(PlayerKeybindBlock, _DEFAULT_PLAYER_BIND_BLOCKS[idx])
-
-
-def default_player_keybind_block(player_index: int) -> tuple[int, ...]:
-    return _default_player_bind_block(player_index)
+    return _player_bind_values(_DEFAULT_PLAYER_BIND_BLOCKS[idx])
 
 
 def _default_player_controls(player_index: int) -> CrimsonPlayerControls:
+    values = _default_player_bind_values(player_index)
     return CrimsonPlayerControls(
         movement=MovementControlType.STATIC,
         aim_scheme=AimScheme.MOUSE,
-        keybinds=_default_player_bind_block(player_index),
         show_direction_arrow=True,
+        move_forward_code=int(values[0]),
+        move_backward_code=int(values[1]),
+        turn_left_code=int(values[2]),
+        turn_right_code=int(values[3]),
+        fire_code=int(values[4]),
+        aim_left_code=int(values[7]),
+        aim_right_code=int(values[8]),
+        aim_vertical_axis_code=int(values[9]),
+        aim_horizontal_axis_code=int(values[10]),
+        move_vertical_axis_code=int(values[11]),
+        move_horizontal_axis_code=int(values[12]),
     )
 
 
@@ -522,8 +604,8 @@ def default_crimson_cfg(path: Path = Path("<memory>")) -> CrimsonConfig:
                 _default_player_controls(2),
                 _default_player_controls(3),
             ),
-            pick_perk_key=0x101,
-            reload_key=0x102,
+            pick_perk_code=0x101,
+            reload_code=0x102,
         ),
     )
 
@@ -546,10 +628,10 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
         detail_preset = _require_range(detail_preset, minimum=1, maximum=5, field="detail_preset")
 
     players = tuple(
-        CrimsonPlayerControls(
+        _player_controls_from_bind_values(
+            _decode_player_bind_values(raw, player_index=idx),
             movement=_decode_movement(raw["player_mode_flags"][idx]),
             aim_scheme=_decode_aim_scheme(raw["aim_schemes"][idx]),
-            keybinds=_decode_player_bind_block(raw, player_index=idx),
             show_direction_arrow=_decode_direction_arrow(raw, player_index=idx),
         )
         for idx in range(4)
@@ -607,8 +689,8 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
         ),
         controls=CrimsonControlsConfig(
             players=players,  # type: ignore[arg-type]
-            pick_perk_key=int(raw["keybind_pick_perk"]),
-            reload_key=int(raw["keybind_reload"]),
+            pick_perk_code=int(raw["keybind_pick_perk"]),
+            reload_code=int(raw["keybind_reload"]),
         ),
     )
 
@@ -685,8 +767,8 @@ def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
         field="detail_preset",
     )
     data["mouse_sensitivity"] = float(config.display.mouse_sensitivity)
-    data["keybind_pick_perk"] = int(config.controls.pick_perk_key)
-    data["keybind_reload"] = int(config.controls.reload_key)
+    data["keybind_pick_perk"] = int(config.controls.pick_perk_code)
+    data["keybind_reload"] = int(config.controls.reload_code)
     return CRIMSON_CFG_STRUCT.build(data)
 
 

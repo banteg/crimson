@@ -16,7 +16,7 @@ from grim.raylib_api import rl
 
 def _config():
     config = default_crimson_cfg()
-    config.controls.pick_perk_key = 0x101
+    config.controls.pick_perk_code = 0x101
     config.gameplay.show_info_texts = True
     return config
 
@@ -62,17 +62,12 @@ def test_prompt_open_request_from_pick_key(mocker) -> None:
 
     mocker.patch.object(
         perk_prompt_controller_module,
-        "input_code_is_pressed_for_player",
+        "input_code_is_pressed",
         return_value=True,
     )
     mocker.patch.object(
         perk_prompt_controller_module,
-        "player_fire_keybind",
-        return_value=0x100,
-    )
-    mocker.patch.object(
-        perk_prompt_controller_module,
-        "input_code_is_down_for_player",
+        "input_code_is_down",
         return_value=False,
     )
     mocker.patch.object(
@@ -98,13 +93,8 @@ def test_prompt_open_request_from_hover_click(mocker) -> None:
 
     mocker.patch.object(
         perk_prompt_controller_module,
-        "input_code_is_pressed_for_player",
+        "input_code_is_pressed",
         return_value=False,
-    )
-    mocker.patch.object(
-        perk_prompt_controller_module,
-        "player_fire_keybind",
-        return_value=0x100,
     )
     mocker.patch.object(
         perk_prompt_controller_module,
@@ -146,7 +136,7 @@ def test_prompt_open_request_returns_false_while_menu_active(mocker) -> None:
 
     mocker.patch.object(
         perk_prompt_controller_module,
-        "input_code_is_pressed_for_player",
+        "input_code_is_pressed",
         return_value=True,
     )
 

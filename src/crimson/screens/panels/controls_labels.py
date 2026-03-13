@@ -1,12 +1,27 @@
 from __future__ import annotations
 
+from enum import Enum, auto
+
 from grim.config import CrimsonControlsConfig
 
 from ...aim_schemes import AimScheme
 from ...movement_controls import MovementControlType
 
-PICK_PERK_BIND_SLOT = -1
-RELOAD_BIND_SLOT = -2
+
+class BindingId(Enum):
+    MOVE_FORWARD_CODE = auto()
+    MOVE_BACKWARD_CODE = auto()
+    TURN_LEFT_CODE = auto()
+    TURN_RIGHT_CODE = auto()
+    FIRE_CODE = auto()
+    AIM_LEFT_CODE = auto()
+    AIM_RIGHT_CODE = auto()
+    AIM_VERTICAL_AXIS_CODE = auto()
+    AIM_HORIZONTAL_AXIS_CODE = auto()
+    MOVE_VERTICAL_AXIS_CODE = auto()
+    MOVE_HORIZONTAL_AXIS_CODE = auto()
+    PICK_PERK_CODE = auto()
+    RELOAD_CODE = auto()
 
 
 def input_configure_for_label(config_id: AimScheme) -> str:
@@ -65,57 +80,61 @@ def controls_aim_method_dropdown_ids(current_aim_scheme: AimScheme) -> tuple[Aim
     return tuple(ids)
 
 
-def controls_rebind_slot_plan(
+def controls_rebind_plan(
     *,
     aim_scheme: AimScheme,
     move_mode: MovementControlType,
     player_index: int,
-) -> tuple[tuple[tuple[str, int], ...], tuple[tuple[str, int], ...], tuple[tuple[str, int], ...]]:
+) -> tuple[
+    tuple[tuple[str, BindingId], ...],
+    tuple[tuple[str, BindingId], ...],
+    tuple[tuple[str, BindingId], ...],
+]:
     """Return (aim_rows, move_rows, misc_rows) for `controls_menu_update`."""
 
-    aim_rows: list[tuple[str, int]] = []
-    move_rows: list[tuple[str, int]] = []
-    misc_rows: list[tuple[str, int]] = []
+    aim_rows: list[tuple[str, BindingId]] = []
+    move_rows: list[tuple[str, BindingId]] = []
+    misc_rows: list[tuple[str, BindingId]] = []
 
     if aim_scheme is AimScheme.KEYBOARD:
-        aim_rows.append(("Torso left:", 7))
-        aim_rows.append(("Torso right:", 8))
+        aim_rows.append(("Torso left:", BindingId.AIM_LEFT_CODE))
+        aim_rows.append(("Torso right:", BindingId.AIM_RIGHT_CODE))
     elif aim_scheme is AimScheme.DUAL_ACTION_PAD:
-        aim_rows.append(("Aim Up/Down Axis:", 9))
-        aim_rows.append(("Aim Left/Right Axis:", 10))
-    aim_rows.append(("Fire:", 4))
+        aim_rows.append(("Aim Up/Down Axis:", BindingId.AIM_VERTICAL_AXIS_CODE))
+        aim_rows.append(("Aim Left/Right Axis:", BindingId.AIM_HORIZONTAL_AXIS_CODE))
+    aim_rows.append(("Fire:", BindingId.FIRE_CODE))
 
     if move_mode is MovementControlType.STATIC:
         move_rows.extend(
             (
-                ("Move Up:", 0),
-                ("Move Down:", 1),
-                ("Move Left:", 2),
-                ("Move Right:", 3),
+                ("Move Up:", BindingId.MOVE_FORWARD_CODE),
+                ("Move Down:", BindingId.MOVE_BACKWARD_CODE),
+                ("Move Left:", BindingId.TURN_LEFT_CODE),
+                ("Move Right:", BindingId.TURN_RIGHT_CODE),
             ),
         )
     elif move_mode is MovementControlType.RELATIVE:
         move_rows.extend(
             (
-                ("Forward:", 0),
-                ("Backwards:", 1),
-                ("Turn left:", 2),
-                ("Turn right:", 3),
+                ("Forward:", BindingId.MOVE_FORWARD_CODE),
+                ("Backwards:", BindingId.MOVE_BACKWARD_CODE),
+                ("Turn left:", BindingId.TURN_LEFT_CODE),
+                ("Turn right:", BindingId.TURN_RIGHT_CODE),
             ),
         )
     elif move_mode is MovementControlType.DUAL_ACTION_PAD:
         move_rows.extend(
             (
-                ("Up/Down Axis:", 11),
-                ("Left/Right Axis:", 12),
+                ("Up/Down Axis:", BindingId.MOVE_VERTICAL_AXIS_CODE),
+                ("Left/Right Axis:", BindingId.MOVE_HORIZONTAL_AXIS_CODE),
             ),
         )
     elif move_mode is MovementControlType.MOUSE_POINT_CLICK:
-        move_rows.append(("Move to cursor:", RELOAD_BIND_SLOT))
+        move_rows.append(("Move to cursor:", BindingId.RELOAD_CODE))
 
     if int(player_index) == 0:
-        misc_rows.append(("Level Up:", PICK_PERK_BIND_SLOT))
+        misc_rows.append(("Level Up:", BindingId.PICK_PERK_CODE))
         if move_mode is not MovementControlType.MOUSE_POINT_CLICK:
-            misc_rows.append(("Reload:", RELOAD_BIND_SLOT))
+            misc_rows.append(("Reload:", BindingId.RELOAD_CODE))
 
     return tuple(aim_rows), tuple(move_rows), tuple(misc_rows)

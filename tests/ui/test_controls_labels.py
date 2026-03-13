@@ -5,12 +5,11 @@ from typing import cast
 from crimson.aim_schemes import AimScheme
 from crimson.movement_controls import MovementControlType
 from crimson.screens.panels.controls_labels import (
-    PICK_PERK_BIND_SLOT,
-    RELOAD_BIND_SLOT,
+    BindingId,
     controls_aim_method_dropdown_ids,
     controls_method_labels,
     controls_method_values,
-    controls_rebind_slot_plan,
+    controls_rebind_plan,
     input_configure_for_label,
     input_scheme_label,
 )
@@ -86,23 +85,36 @@ def test_controls_aim_method_dropdown_ids_hides_computer_unless_loaded() -> None
     )
 
 
-def test_controls_rebind_slot_plan_keyboard_static_player1() -> None:
-    aim_rows, move_rows, misc_rows = controls_rebind_slot_plan(
+def test_controls_rebind_plan_keyboard_static_player1() -> None:
+    aim_rows, move_rows, misc_rows = controls_rebind_plan(
         aim_scheme=AimScheme.KEYBOARD,
         move_mode=MovementControlType.STATIC,
         player_index=0,
     )
-    assert aim_rows == (("Torso left:", 7), ("Torso right:", 8), ("Fire:", 4))
-    assert move_rows == (("Move Up:", 0), ("Move Down:", 1), ("Move Left:", 2), ("Move Right:", 3))
-    assert misc_rows == (("Level Up:", PICK_PERK_BIND_SLOT), ("Reload:", RELOAD_BIND_SLOT))
+    assert aim_rows == (
+        ("Torso left:", BindingId.AIM_LEFT_CODE),
+        ("Torso right:", BindingId.AIM_RIGHT_CODE),
+        ("Fire:", BindingId.FIRE_CODE),
+    )
+    assert move_rows == (
+        ("Move Up:", BindingId.MOVE_FORWARD_CODE),
+        ("Move Down:", BindingId.MOVE_BACKWARD_CODE),
+        ("Move Left:", BindingId.TURN_LEFT_CODE),
+        ("Move Right:", BindingId.TURN_RIGHT_CODE),
+    )
+    assert misc_rows == (("Level Up:", BindingId.PICK_PERK_CODE), ("Reload:", BindingId.RELOAD_CODE))
 
 
-def test_controls_rebind_slot_plan_dualpad_mouse_cursor_player2() -> None:
-    aim_rows, move_rows, misc_rows = controls_rebind_slot_plan(
+def test_controls_rebind_plan_dualpad_mouse_cursor_player2() -> None:
+    aim_rows, move_rows, misc_rows = controls_rebind_plan(
         aim_scheme=AimScheme.DUAL_ACTION_PAD,
         move_mode=MovementControlType.MOUSE_POINT_CLICK,
         player_index=1,
     )
-    assert aim_rows == (("Aim Up/Down Axis:", 9), ("Aim Left/Right Axis:", 10), ("Fire:", 4))
-    assert move_rows == (("Move to cursor:", RELOAD_BIND_SLOT),)
+    assert aim_rows == (
+        ("Aim Up/Down Axis:", BindingId.AIM_VERTICAL_AXIS_CODE),
+        ("Aim Left/Right Axis:", BindingId.AIM_HORIZONTAL_AXIS_CODE),
+        ("Fire:", BindingId.FIRE_CODE),
+    )
+    assert move_rows == (("Move to cursor:", BindingId.RELOAD_CODE),)
     assert misc_rows == ()

@@ -41,17 +41,56 @@ def _test_config(**updates: object) -> CrimsonConfig:
 def _patch_keys_down(mocker: MockerFixture, *, down_codes: set[int]) -> None:
     mocker.patch.object(
         local_input,
-        "input_code_is_down_for_player",
+        "input_code_is_down",
         lambda key, **_kwargs: int(key) in down_codes,
     )
-    mocker.patch.object(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
-    mocker.patch.object(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
+    mocker.patch.object(local_input, "input_code_is_pressed", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_axis_value", lambda *_args, **_kwargs: 0.0)
 
 
 def _patch_no_user_input(mocker: MockerFixture) -> None:
-    mocker.patch.object(local_input, "input_code_is_down_for_player", lambda *_args, **_kwargs: False)
-    mocker.patch.object(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
-    mocker.patch.object(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
+    mocker.patch.object(local_input, "input_code_is_down", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_code_is_pressed", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_axis_value", lambda *_args, **_kwargs: 0.0)
+
+
+def _bind_values(values: list[int] | tuple[int, ...] | range) -> tuple[int, ...]:
+    block = tuple(int(v) for v in values)
+    if len(block) != 16:
+        raise ValueError(f"expected 16 keybind values, got {len(block)}")
+    return block
+
+
+def _set_player_bind_values(
+    cfg: CrimsonConfig,
+    values: list[int] | tuple[int, ...] | range,
+    *,
+    player_index: int = 0,
+) -> CrimsonConfig:
+    block = _bind_values(values)
+    player = cfg.controls.player(player_index)
+    player.move_forward_code = block[0]
+    player.move_backward_code = block[1]
+    player.turn_left_code = block[2]
+    player.turn_right_code = block[3]
+    player.fire_code = block[4]
+    player.aim_left_code = block[7]
+    player.aim_right_code = block[8]
+    player.aim_vertical_axis_code = block[9]
+    player.aim_horizontal_axis_code = block[10]
+    player.move_vertical_axis_code = block[11]
+    player.move_horizontal_axis_code = block[12]
+    return cfg
+
+
+def _config_with_player_bind_values(
+    values: list[int] | tuple[int, ...] | range,
+    *,
+    player_index: int = 0,
+    player_count: int = 1,
+) -> CrimsonConfig:
+    cfg = _test_config(player_count=player_count)
+    return _set_player_bind_values(cfg, values, player_index=player_index)
 
 
 def test_local_input_computer_aim_auto_fires_without_fire_pressed(mocker: MockerFixture) -> None:
@@ -69,7 +108,7 @@ def test_local_input_computer_aim_auto_fires_without_fire_pressed(mocker: Mocker
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=_test_config(),
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -97,7 +136,7 @@ def test_local_input_computer_aim_without_target_points_away_from_center(mocker:
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=_test_config(),
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -133,7 +172,7 @@ def test_local_input_computer_target_state_tracks_player_identity_not_call_slot(
     interpreter.build_player_input(
         player_index=0,
         player=player1,
-        config=None,
+        config=_test_config(),
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -144,7 +183,7 @@ def test_local_input_computer_target_state_tracks_player_identity_not_call_slot(
     out = interpreter.build_player_input(
         player_index=0,
         player=player0,
-        config=None,
+        config=_test_config(),
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -172,11 +211,6 @@ def test_local_input_static_mode_conflict_precedence_matches_native(
 ) -> None:
     _patch_keys_down(mocker, down_codes=down_codes)
     mocker.patch.object(
-        local_input,
-        "_load_player_bind_block",
-        lambda _config, *, player_index: tuple(range(16)),
-    )
-    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.STATIC)),
@@ -184,11 +218,12 @@ def test_local_input_static_mode_conflict_precedence_matches_native(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+    config = _config_with_player_bind_values(range(16))
 
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=config,
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -204,11 +239,6 @@ def test_local_input_relative_mode_single_player_uses_alt_arrow_fallback(
 ) -> None:
     _patch_keys_down(mocker, down_codes={0xC8, 0xCB})
     mocker.patch.object(
-        local_input,
-        "_load_player_bind_block",
-        lambda _config, *, player_index: (0x17E,) * 16,
-    )
-    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.RELATIVE)),
@@ -216,11 +246,12 @@ def test_local_input_relative_mode_single_player_uses_alt_arrow_fallback(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+    config = _config_with_player_bind_values((0x17E,) * 16)
 
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=config,
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -238,16 +269,11 @@ def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
 ) -> None:
     _patch_keys_down(mocker, down_codes={0xC8, 0xCB})
     mocker.patch.object(
-        local_input,
-        "_load_player_bind_block",
-        lambda _config, *, player_index: (0x17E,) * 16,
-    )
-    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE, MovementControlType.RELATIVE)),
     )
-    config = _test_config(player_count=2)
+    config = _config_with_player_bind_values((0x17E,) * 16, player_count=2)
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
@@ -274,7 +300,7 @@ def test_local_input_reload_pressed_is_available_in_multiplayer(
     _patch_no_user_input(mocker)
     mocker.patch.object(
         local_input,
-        "input_code_is_pressed_for_player",
+        "input_code_is_pressed",
         lambda key, **_kwargs: int(key) == 0x102,
     )
     mocker.patch.object(
@@ -316,7 +342,7 @@ def test_local_input_reload_pressed_reads_per_player_input_slot(
     _patch_no_user_input(mocker)
     mocker.patch.object(
         local_input,
-        "input_code_is_pressed_for_player",
+        "input_code_is_pressed",
         lambda key, **kwargs: int(key) == 0x102 and int(kwargs.get("player_index", -1)) == 1,
     )
     mocker.patch.object(
@@ -347,20 +373,15 @@ def test_local_input_mouse_point_click_marks_move_to_cursor_press(
     mouse_world = Vec2(160.0, 140.0)
     mocker.patch.object(
         local_input,
-        "input_code_is_down_for_player",
+        "input_code_is_down",
         lambda key, **_kwargs: int(key) == 0x102,
     )
     mocker.patch.object(
         local_input,
-        "input_code_is_pressed_for_player",
+        "input_code_is_pressed",
         lambda key, **_kwargs: int(key) == 0x102,
     )
-    mocker.patch.object(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
-    mocker.patch.object(
-        local_input,
-        "_load_player_bind_block",
-        lambda _config, *, player_index: tuple(range(16)),
-    )
+    mocker.patch.object(local_input, "input_axis_value", lambda *_args, **_kwargs: 0.0)
     mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
@@ -369,11 +390,12 @@ def test_local_input_mouse_point_click_marks_move_to_cursor_press(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+    config = _config_with_player_bind_values(range(16))
 
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=config,
         mouse_screen=Vec2(),
         mouse_world=mouse_world,
         screen_center=Vec2(),
@@ -406,7 +428,7 @@ def test_local_input_computer_move_mode_near_center_heads_toward_target(
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=_test_config(),
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -435,7 +457,7 @@ def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=_test_config(),
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -465,7 +487,7 @@ def test_local_input_computer_aim_scheme_forces_computer_movement(
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=_test_config(),
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -482,11 +504,6 @@ def test_local_input_joystick_aim_uses_pov_not_aim_keybinds(
 ) -> None:
     _patch_keys_down(mocker, down_codes={8})
     mocker.patch.object(
-        local_input,
-        "_load_player_bind_block",
-        lambda _config, *, player_index: tuple(range(16)),
-    )
-    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.JOYSTICK, MovementControlType.STATIC)),
@@ -494,11 +511,12 @@ def test_local_input_joystick_aim_uses_pov_not_aim_keybinds(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+    config = _config_with_player_bind_values(range(16))
 
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=config,
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -516,11 +534,6 @@ def test_local_input_joystick_aim_turns_with_pov_input(
 ) -> None:
     _patch_keys_down(mocker, down_codes={0x134})
     mocker.patch.object(
-        local_input,
-        "_load_player_bind_block",
-        lambda _config, *, player_index: tuple(range(16)),
-    )
-    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.JOYSTICK, MovementControlType.STATIC)),
@@ -528,11 +541,12 @@ def test_local_input_joystick_aim_turns_with_pov_input(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+    config = _config_with_player_bind_values(range(16))
 
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=config,
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -550,16 +564,11 @@ def test_local_input_joystick_aim_reads_player_pov_by_default(
 ) -> None:
     mocker.patch.object(
         local_input,
-        "input_code_is_down_for_player",
+        "input_code_is_down",
         lambda key, **kwargs: int(key) == 0x134 and int(kwargs.get("player_index", -1)) == 1,
     )
-    mocker.patch.object(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
-    mocker.patch.object(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
-    mocker.patch.object(
-        local_input,
-        "_load_player_bind_block",
-        lambda _config, *, player_index: tuple(range(16)),
-    )
+    mocker.patch.object(local_input, "input_code_is_pressed", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_axis_value", lambda *_args, **_kwargs: 0.0)
     mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
@@ -568,11 +577,12 @@ def test_local_input_joystick_aim_reads_player_pov_by_default(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=1, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+    config = _config_with_player_bind_values(range(16), player_index=1, player_count=2)
 
     out = interpreter.build_player_input(
         player_index=1,
         player=player,
-        config=_test_config(player_count=2),
+        config=config,
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -590,16 +600,11 @@ def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
 ) -> None:
     mocker.patch.object(
         local_input,
-        "input_code_is_down_for_player",
+        "input_code_is_down",
         lambda key, **kwargs: int(key) == 0x134 and int(kwargs.get("player_index", -1)) == 0,
     )
-    mocker.patch.object(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
-    mocker.patch.object(local_input, "input_axis_value_for_player", lambda *_args, **_kwargs: 0.0)
-    mocker.patch.object(
-        local_input,
-        "_load_player_bind_block",
-        lambda _config, *, player_index: tuple(range(16)),
-    )
+    mocker.patch.object(local_input, "input_code_is_pressed", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_axis_value", lambda *_args, **_kwargs: 0.0)
     mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
@@ -609,11 +614,12 @@ def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
     interpreter = local_input.LocalInputInterpreter()
     interpreter.set_preserve_bugs(True)
     player = PlayerState(index=1, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+    config = _config_with_player_bind_values(range(16), player_index=1, player_count=2)
 
     out = interpreter.build_player_input(
         player_index=1,
         player=player,
-        config=_test_config(player_count=2),
+        config=config,
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -629,17 +635,12 @@ def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
 def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
     mocker: MockerFixture,
 ) -> None:
-    mocker.patch.object(local_input, "input_code_is_down_for_player", lambda *_args, **_kwargs: False)
-    mocker.patch.object(local_input, "input_code_is_pressed_for_player", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_code_is_down", lambda *_args, **_kwargs: False)
+    mocker.patch.object(local_input, "input_code_is_pressed", lambda *_args, **_kwargs: False)
     mocker.patch.object(
         local_input,
-        "input_axis_value_for_player",
+        "input_axis_value",
         lambda key, **_kwargs: 1.0 if int(key) == 10 else 0.0,
-    )
-    mocker.patch.object(
-        local_input,
-        "_load_player_bind_block",
-        lambda _config, *, player_index: tuple(range(16)),
     )
     mocker.patch.object(
         local_input.LocalInputInterpreter,
@@ -649,11 +650,12 @@ def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
+    config = _config_with_player_bind_values(range(16))
 
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=config,
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -671,11 +673,6 @@ def test_local_input_keyboard_aim_in_static_mode_reanchors_to_heading(
 ) -> None:
     _patch_no_user_input(mocker)
     mocker.patch.object(
-        local_input,
-        "_load_player_bind_block",
-        lambda _config, *, player_index: tuple(range(16)),
-    )
-    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.KEYBOARD, MovementControlType.STATIC)),
@@ -683,11 +680,12 @@ def test_local_input_keyboard_aim_in_static_mode_reanchors_to_heading(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(180.0, 130.0), aim_heading=0.0)
+    config = _config_with_player_bind_values(range(16))
 
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=config,
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -704,11 +702,6 @@ def test_local_input_keyboard_aim_with_non_relative_move_mode_keeps_world_aim(
 ) -> None:
     _patch_no_user_input(mocker)
     mocker.patch.object(
-        local_input,
-        "_load_player_bind_block",
-        lambda _config, *, player_index: tuple(range(16)),
-    )
-    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.KEYBOARD, MovementControlType.DUAL_ACTION_PAD)),
@@ -716,11 +709,12 @@ def test_local_input_keyboard_aim_with_non_relative_move_mode_keeps_world_aim(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(180.0, 130.0), aim_heading=0.0)
+    config = _config_with_player_bind_values(range(16))
 
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=config,
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
@@ -739,11 +733,6 @@ def test_local_input_relative_mouse_aim_centered_keeps_world_aim(
 ) -> None:
     _patch_no_user_input(mocker)
     mocker.patch.object(
-        local_input,
-        "_load_player_bind_block",
-        lambda _config, *, player_index: tuple(range(16)),
-    )
-    mocker.patch.object(
         local_input.LocalInputInterpreter,
         "_safe_controls_modes",
         staticmethod(lambda _config, *, player_index: (AimScheme.MOUSE_RELATIVE, MovementControlType.STATIC)),
@@ -752,11 +741,12 @@ def test_local_input_relative_mouse_aim_centered_keeps_world_aim(
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(180.0, 130.0), aim_heading=0.0)
     center = Vec2(320.0, 200.0)
+    config = _config_with_player_bind_values(range(16))
 
     out = interpreter.build_player_input(
         player_index=0,
         player=player,
-        config=None,
+        config=config,
         mouse_screen=center,
         mouse_world=Vec2(),
         screen_center=center,
