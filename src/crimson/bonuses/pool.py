@@ -16,13 +16,6 @@ from ..weapon_runtime.availability import weapon_pick_random_available
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 from .apply import bonus_apply
 from .ids import BONUS_BY_ID, BonusId, bonus_display_name
-from .payload import (
-    BonusPayload,
-    BonusPointsPayload,
-    BonusWeaponPayload,
-    bonus_payload_from_bonus,
-    bonus_payload_value,
-)
 from .selection import bonus_pick_random_type
 
 if TYPE_CHECKING:
@@ -48,17 +41,6 @@ class BonusEntry(msgspec.Struct):
     pos: Vec2 = Vec2()
     amount: int = 0
 
-    @property
-    def payload(self) -> BonusPayload:
-        return bonus_payload_from_bonus(
-            bonus_id=self.bonus_id,
-            amount=int(self.amount),
-        )
-
-    @payload.setter
-    def payload(self, value: BonusPayload) -> None:
-        self.amount = int(bonus_payload_value(value))
-
 
 def _bonus_entry_is_empty(entry: BonusEntry) -> bool:
     return (
@@ -72,29 +54,28 @@ def _bonus_entry_is_empty(entry: BonusEntry) -> bool:
 
 # Native `bonus_try_spawn_on_kill` uses the bonus entry `amount` field for a weird
 # suppression check: it clears the spawned entry when `amount == player1.weapon_id`
-# regardless of bonus type. In the rewrite, `amount` is used as the "effective"
-# duration/value for some bonuses, so `--preserve-bugs` compares against the
-# native amount domain (see docs/rewrite/original-bugs.md).
+# regardless of bonus type. `--preserve-bugs` therefore always compares against
+# the raw native amount domain (see docs/rewrite/original-bugs.md).
 _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[BonusId, WeaponId] = {
-    # Native default amount stored for Double Experience drops is 1.
+    # Native stored amount for Double Experience drops is 1.
     BonusId.DOUBLE_EXPERIENCE: WeaponId.PISTOL,
     BonusId.FIRE_BULLETS: WeaponId.SAWED_OFF_SHOTGUN,
 }
 
 
-def _weapon_id_from_native_payload_value(payload: BonusPayload) -> WeaponId | None:
-    # Keep native amount-domain behavior: any payload numeric value that happens
-    # to match a weapon id can trip suppression checks under `--preserve-bugs`.
-    weapon_id = int(bonus_payload_value(payload))
+def _weapon_id_from_native_amount(amount: int) -> WeaponId | None:
+    # Keep native amount-domain behavior: any raw bonus amount that happens to
+    # match a weapon id can trip suppression checks under `--preserve-bugs`.
+    weapon_id = int(amount)
     if weapon_id not in WEAPON_BY_ID:
         return None
     return WeaponId(weapon_id)
 
 
-def _weapon_id_from_weapon_payload(payload: BonusPayload) -> WeaponId | None:
-    if not isinstance(payload, BonusWeaponPayload):
+def _weapon_id_from_weapon_entry(entry: BonusEntry) -> WeaponId | None:
+    if entry.bonus_id != BonusId.WEAPON:
         return None
-    return payload.weapon_id
+    return _weapon_id_from_native_amount(entry.amount)
 
 
 def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[WeaponId]:
@@ -196,11 +177,8 @@ class BonusPool:
         amount = duration_override
         if amount == -1:
             meta = BONUS_BY_ID.get(bonus_id)
-            amount = int(meta.default_amount or 0) if meta is not None else 0
-        entry.payload = bonus_payload_from_bonus(
-            bonus_id=bonus_id,
-            amount=int(amount),
-        )
+            amount = int(meta.native_amount or 0) if meta is not None else 0
+        entry.amount = int(amount)
         return entry
 
     def spawn_at_pos(
@@ -241,17 +219,12 @@ class BonusPool:
 
         rng = state.rng
         if entry.bonus_id == BonusId.WEAPON:
-            entry.payload = BonusWeaponPayload(weapon_id=weapon_pick_random_available(state))
+            entry.amount = int(weapon_pick_random_available(state))
         elif entry.bonus_id == BonusId.POINTS:
-            entry.payload = BonusPointsPayload(
-                points=1000 if (rng.rand(caller=RngCallerStatic.BONUS_SPAWN_AT_POS_POINTS_AMOUNT) & 7) < 3 else 500,
-            )
+            entry.amount = 1000 if (rng.rand(caller=RngCallerStatic.BONUS_SPAWN_AT_POS_POINTS_AMOUNT) & 7) < 3 else 500
         else:
             meta = BONUS_BY_ID.get(entry.bonus_id)
-            entry.payload = bonus_payload_from_bonus(
-                bonus_id=entry.bonus_id,
-                amount=int(meta.default_amount or 0) if meta is not None else 0,
-            )
+            entry.amount = int(meta.native_amount or 0) if meta is not None else 0
         return entry
 
     def try_spawn_on_kill(
@@ -292,17 +265,17 @@ class BonusPool:
 
                 entry.bonus_id = BonusId.WEAPON
                 weapon_id = weapon_pick_random_available(state)
-                entry.payload = BonusWeaponPayload(weapon_id=weapon_id)
+                entry.amount = int(weapon_id)
                 if weapon_id == WeaponId.PISTOL:
                     weapon_id = weapon_pick_random_available(state)
-                    entry.payload = BonusWeaponPayload(weapon_id=weapon_id)
+                    entry.amount = int(weapon_id)
 
                 matches = sum(1 for bonus in self._entries if bonus.bonus_id == entry.bonus_id)
                 if matches > 1:
                     self._clear_entry(entry)
                     return None
 
-                if int(bonus_payload_value(entry.payload)) == WeaponId.PISTOL or (
+                if entry.amount == WeaponId.PISTOL or (
                     players and perk_active(players[0], PerkId.MY_FAVOURITE_WEAPON)
                 ):
                     self._clear_entry(entry)
@@ -360,7 +333,7 @@ class BonusPool:
                     near_player = any(Vec2.distance_sq(pos, player.pos) < near_sq for player in players)
             if near_player:
                 entry.bonus_id = BonusId.POINTS
-                entry.payload = BonusPointsPayload(points=100)
+                entry.amount = 100
 
         if entry.bonus_id != BonusId.POINTS:
             matches = sum(1 for bonus in self._entries if bonus.bonus_id == entry.bonus_id)
@@ -373,13 +346,13 @@ class BonusPool:
                 weapon_id = players[0].weapon.weapon_id
                 suppression_weapon_id = _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION.get(entry.bonus_id)
                 if suppression_weapon_id is None:
-                    suppression_weapon_id = _weapon_id_from_native_payload_value(entry.payload)
+                    suppression_weapon_id = _weapon_id_from_native_amount(entry.amount)
                 if suppression_weapon_id == weapon_id:
                     self._clear_entry(entry)
                     return None
             else:
                 carried_weapon_ids = _all_carried_weapon_ids(players)
-                bonus_weapon_id = _weapon_id_from_weapon_payload(entry.payload)
+                bonus_weapon_id = _weapon_id_from_weapon_entry(entry)
                 if entry.bonus_id == BonusId.WEAPON and bonus_weapon_id in carried_weapon_ids:
                     self._clear_entry(entry)
                     return None
@@ -488,13 +461,13 @@ def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> 
     """Return the classic label text for a bonus entry (`bonus_label_for_entry`)."""
 
     bonus_id = entry.bonus_id
-    payload = entry.payload
     if bonus_id == BonusId.WEAPON:
-        if not isinstance(payload, BonusWeaponPayload):
+        weapon_id = _weapon_id_from_weapon_entry(entry)
+        if weapon_id is None:
             return "Weapon"
-        return weapon_display_name(payload.weapon_id, preserve_bugs=bool(preserve_bugs))
+        return weapon_display_name(weapon_id, preserve_bugs=bool(preserve_bugs))
     if bonus_id == BonusId.POINTS:
-        points = int(payload.points) if isinstance(payload, BonusPointsPayload) else int(entry.amount)
+        points = int(entry.amount)
         points_label = bonus_display_name(BonusId.POINTS, preserve_bugs=bool(preserve_bugs))
         return f"{points_label}: {points}"
     meta = BONUS_BY_ID.get(bonus_id)

@@ -9,9 +9,8 @@ from grim.math import clamp
 from grim.raylib_api import rl
 
 from ...bonuses import BONUS_BY_ID, BonusId
-from ...bonuses.payload import BonusPointsPayload, BonusWeaponPayload
 from ...bonuses.pool import bonus_find_aim_hover_entry, bonus_label_for_entry
-from ...weapons import WEAPON_BY_ID
+from ...weapons import WEAPON_BY_ID, WeaponId
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
 
@@ -82,10 +81,10 @@ def draw_bonus_pickups(
 
         bonus_id = bonus.bonus_id
         if bonus_id == BonusId.WEAPON:
-            payload = bonus.payload
-            if not isinstance(payload, BonusWeaponPayload):
+            if bonus.amount not in WEAPON_BY_ID:
                 continue
-            icon_index = int(WEAPON_BY_ID[payload.weapon_id].icon_index)
+            weapon_id = WeaponId(bonus.amount)
+            icon_index = int(WEAPON_BY_ID[weapon_id].icon_index)
             if not (0 <= icon_index <= 31):
                 continue
 
@@ -106,7 +105,7 @@ def draw_bonus_pickups(
         icon_id = int(meta.icon_id) if meta is not None and meta.icon_id is not None else None
         if icon_id is None or icon_id < 0:
             continue
-        if bonus_id == BonusId.POINTS and isinstance(bonus.payload, BonusPointsPayload) and int(bonus.payload.points) == 1000:
+        if bonus_id == BonusId.POINTS and int(bonus.amount) == 1000:
             icon_id += 1
 
         pulse = math.sin(float(idx) + float(frame.bonus_anim_phase)) ** 4 * 0.25 + 0.75
