@@ -162,7 +162,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         console.log.log("demo trial: timers reset")
 
     def cmd_demo_trial_info(_args: list[str]) -> None:
-        mode_raw = state.config.game_mode
+        mode_raw = state.config.gameplay.mode
         try:
             mode_id = GameMode(mode_raw)
         except ValueError:
@@ -249,8 +249,8 @@ def run_game(config: GameConfig) -> None:
     faulthandler.enable(crash_file)
     crash_file.write(f"\n[{dt.datetime.now().isoformat()}] run_game start\n")
     cfg = ensure_crimson_cfg(base_dir)
-    width = cfg.screen_width if config.width is None else config.width
-    height = cfg.screen_height if config.height is None else config.height
+    width = cfg.display.width if config.width is None else config.width
+    height = cfg.display.height if config.height is None else config.height
     rng = Crand(config.seed)
     assets_dir = _resolve_assets_dir(config)
     console = create_console(base_dir, assets_dir=assets_dir)
@@ -308,7 +308,7 @@ def run_game(config: GameConfig) -> None:
         register_core_cvars(console, width, height)
         _apply_debug_console_defaults(console, debug=config.debug)
         console.log.log("crimson: boot start")
-        console.log.log(f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}")
+        console.log.log(f"config: {cfg.display.width}x{cfg.display.height} windowed={cfg.display.windowed}")
         console.log.log(f"status: {status.path.name} loaded")
         console.log.log(f"assets: {assets_dir}")
         download_missing_paqs(assets_dir, console, names=_runtime_download_targets(assets_dir))
@@ -319,7 +319,7 @@ def run_game(config: GameConfig) -> None:
         console.exec_line("exec autoexec.txt")
         console.log.flush()
         config_flags = 0
-        if cfg.windowed_flag == 0:
+        if not cfg.display.windowed:
             config_flags |= rl.ConfigFlags.FLAG_FULLSCREEN_MODE
         view: View = GameLoopView(state)
         run_view(

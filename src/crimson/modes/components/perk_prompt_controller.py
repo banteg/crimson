@@ -107,7 +107,7 @@ class PerkPromptState:
 
     def _prompt_open_requested(self, *, config: CrimsonConfig, player_count: int) -> bool:
         fire_key = player_fire_keybind(config, player_index=0)
-        pick_key = config.keybind_pick_perk
+        pick_key = config.controls.pick_perk_key
         if input_code_is_pressed_for_player(pick_key, player_index=0) and (
             not input_code_is_down_for_player(fire_key, player_index=0)
         ):

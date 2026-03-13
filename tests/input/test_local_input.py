@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 from pytest_mock import MockerFixture
 
 from crimson import local_input
 from crimson.aim_schemes import AimScheme
+from crimson.game_modes import GameMode
 from crimson.movement_controls import MovementControlType
 from crimson.sim.state_types import PlayerState
-from grim.config import CrimsonConfig, default_crimson_cfg_data
+from grim.config import CrimsonConfig, default_crimson_cfg
 from grim.geom import Vec2
 from tests.support.helpers import assert_float_close
 
@@ -22,9 +24,18 @@ class _DummyCreature:
 
 
 def _test_config(**updates: object) -> CrimsonConfig:
-    data = default_crimson_cfg_data()
-    data.update(updates)
-    return CrimsonConfig(path=Path("<memory>"), data=data)
+    cfg = default_crimson_cfg(Path("<memory>"))
+    for key, value in updates.items():
+        match str(key):
+            case "player_count":
+                cfg.gameplay.player_count = int(cast(Any, value))
+            case "game_mode":
+                cfg.gameplay.mode = GameMode(int(cast(Any, value)))
+            case "fx_detail_0":
+                cfg.display.set_fx_detail(0, bool(value))
+            case _:
+                raise KeyError(f"unsupported config update: {key}")
+    return cfg
 
 
 def _patch_keys_down(mocker: MockerFixture, *, down_codes: set[int]) -> None:

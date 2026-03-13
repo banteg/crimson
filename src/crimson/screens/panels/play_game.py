@@ -232,7 +232,7 @@ class PlayGameMenuView(PanelMenuView):
 
         # Clamp to a valid range; older configs in the repo can contain 0 here,
         # which would incorrectly hide the Tutorial entry (it is gated on == 1).
-        player_count = config.player_count
+        player_count = config.gameplay.player_count
         if player_count < 1:
             player_count = 1
         if player_count > len(self._PLAYER_COUNT_LABELS):
@@ -360,7 +360,7 @@ class PlayGameMenuView(PanelMenuView):
 
     def _activate_mode(self, mode: _PlayGameModeEntry) -> None:
         if mode.game_mode is not None:
-            self.state.config.game_mode = int(mode.game_mode)
+            self.state.config.gameplay.mode = GameMode(int(mode.game_mode))
             self._dirty = True
         self._begin_close_transition(mode.action)
 
@@ -439,7 +439,7 @@ class PlayGameMenuView(PanelMenuView):
                 height=14.0 * scale,
             )
             if item_hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-                config.player_count = idx + 1
+                config.gameplay.player_count = idx + 1
                 self._dirty = True
                 self._player_list_open = False
                 return True
@@ -550,7 +550,7 @@ class PlayGameMenuView(PanelMenuView):
             rl.WHITE,
         )
 
-        player_count = self.state.config.player_count
+        player_count = self.state.config.gameplay.player_count
         if player_count < 1:
             player_count = 1
         if player_count > len(self._PLAYER_COUNT_LABELS):

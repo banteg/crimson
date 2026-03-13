@@ -40,7 +40,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
     def _draw_contents(self, left_top_left: Vec2, right_top_left: Vec2, *, scale: float, font: SmallFontData) -> None:
         left = left_top_left
         right = right_top_left
-        detail_shift_x = weapons_db_right_detail_x_shift(float(self.state.config.screen_width))
+        detail_shift_x = weapons_db_right_detail_x_shift(float(self.state.config.display.width))
         detail_top_left = right + Vec2(detail_shift_x * scale, 0.0)
         dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
         text_color = rl.WHITE
@@ -163,7 +163,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
 
         available = build_weapon_availability(
             status=self.state.status,
-            game_mode=GameMode(self.state.config.game_mode),
+            game_mode=GameMode(self.state.config.gameplay.mode),
             demo_mode_active=self.state.demo_enabled,
         )
         status = self.state.status

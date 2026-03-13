@@ -125,7 +125,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self.state.config.game_mode = int(GameMode.SURVIVAL)
+            self.state.config.gameplay.mode = GameMode.SURVIVAL
             self._begin_close_transition("start_survival")
             return
 
@@ -139,7 +139,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self.state.config.game_mode = int(GameMode.RUSH)
+            self.state.config.gameplay.mode = GameMode.RUSH
             self._begin_close_transition("start_rush")
             return
 
@@ -153,7 +153,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self.state.config.game_mode = int(GameMode.TYPO)
+            self.state.config.gameplay.mode = GameMode.TYPO
             self._begin_close_transition("start_typo", fade_to_black=True)
             return
 
@@ -199,11 +199,11 @@ class EndNoteView:
             float(END_NOTE_PANEL_H * scale),
         )
 
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
         font = resources.small_font
-        hardcore = self.state.config.hardcore
+        hardcore = self.state.config.gameplay.hardcore
         header = "   Incredible!" if hardcore else "Congratulations!"
         levels_line = (
             "You've completed all the levels but the battle"

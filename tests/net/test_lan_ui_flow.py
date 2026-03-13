@@ -53,8 +53,8 @@ def test_loop_view_maps_lan_start_action_into_mode_action(make_game_state) -> No
     action = loop._resolve_lan_action("start_quest_lan")
 
     assert action == "open_lan_lobby"
-    assert state.config.game_mode == int(GameMode.QUESTS)
-    assert state.config.player_count == 3
+    assert state.config.gameplay.mode == int(GameMode.QUESTS)
+    assert state.config.gameplay.player_count == 3
     assert state.pending_quest_level == QuestLevel(1, 1)
     assert state.network_in_lobby is True
     assert state.network_waiting_for_players is True

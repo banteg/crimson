@@ -183,14 +183,14 @@ class QuestResultsUi(msgspec.Struct):
             self._play_next_button.label = "Play Next"
 
         assert self.quest_level is not None, "quest results require quest level"
-        hardcore = self.config.hardcore
+        hardcore = self.config.gameplay.hardcore
         self._scores_path = scores_path_for_mode(
             self.base_dir,
             GameMode.QUESTS,
             hardcore=hardcore,
             quest_stage_major=int(self.quest_level.major),
             quest_stage_minor=int(self.quest_level.minor),
-            player_count=self.config.player_count,
+            player_count=self.config.gameplay.player_count,
         )
 
         try:
@@ -496,7 +496,7 @@ class QuestResultsUi(msgspec.Struct):
                         except (OSError, ValueError):
                             self.highlight_rank = None
                         self._saved = True
-                    self.config.set_player_name(self.input_text)
+                    self.config.profile.set_player_name_input(self.input_text)
                     self.config.save()
                     self.phase = 2
                     return None
@@ -637,7 +637,7 @@ class QuestResultsUi(msgspec.Struct):
         panel_layout = self._panel_layout(screen_w=screen_w, scale=scale)
         panel = panel_layout.panel
 
-        fx_detail = self.config.fx_detail(level=0, default=False)
+        fx_detail = self.config.display.fx_detail_enabled(level=0, default=False)
         draw_classic_menu_panel(
             resources.texture(TextureId.UI_MENU_PANEL),
             dst=panel.to_rl(),

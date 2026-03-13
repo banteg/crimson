@@ -97,7 +97,7 @@ class QuestsMenuView:
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
-        layout_w = float(self.state.config.screen_width)
+        layout_w = float(self.state.config.display.width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         # Sign and ground match the main menu/panels.
@@ -160,8 +160,8 @@ class QuestsMenuView:
 
         # The original forcibly clears hardcore in the demo build.
         if self.state.demo_enabled:
-            if config.hardcore:
-                config.hardcore = False
+            if config.gameplay.hardcore:
+                config.gameplay.hardcore = False
                 self._dirty = True
 
         if debug_enabled() and rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
@@ -303,7 +303,7 @@ class QuestsMenuView:
         resources = require_runtime_resources(self.state)
         check_on = resources.texture(TextureId.UI_CHECK_ON)
         config = self.state.config
-        hardcore = config.hardcore
+        hardcore = config.gameplay.hardcore
 
         font = resources.small_font
         text_scale = 1.0
@@ -317,10 +317,10 @@ class QuestsMenuView:
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
         hovered = Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
         if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            config.hardcore = not hardcore
+            config.gameplay.hardcore = not hardcore
             self._dirty = True
             if self.state.demo_enabled:
-                config.hardcore = False
+                config.gameplay.hardcore = False
             return True
         return False
 
@@ -370,7 +370,7 @@ class QuestsMenuView:
         status = self.state.status
         config = self.state.config
         unlock = int(status.quest_unlock_index)
-        if config.hardcore:
+        if config.gameplay.hardcore:
             unlock = int(status.quest_unlock_index_full)
         level = QuestLevel(int(stage), int(row) + 1)
         return unlock >= int(level.global_index)
@@ -380,8 +380,8 @@ class QuestsMenuView:
             return
         level = QuestLevel(int(stage), int(row) + 1)
         self.state.pending_quest_level = level
-        self.state.config.game_mode = int(GameMode.QUESTS)
-        self.state.config.quest_level_value = level
+        self.state.config.gameplay.mode = GameMode.QUESTS
+        self.state.config.gameplay.quest_level = level
         self._dirty = True
         self._begin_close_transition("start_quest")
 
@@ -514,7 +514,7 @@ class QuestsMenuView:
 
         config = self.state.config
         status = self.state.status
-        hardcore_flag = config.hardcore
+        hardcore_flag = config.gameplay.hardcore
         base_color, hover_color = self._quest_row_colors(hardcore=hardcore_flag)
 
         font = resources.small_font
@@ -581,7 +581,7 @@ class QuestsMenuView:
         )
 
     def _draw_sign(self) -> None:
-        screen_w = float(self.state.config.screen_width)
+        screen_w = float(self.state.config.display.width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -603,7 +603,7 @@ class QuestsMenuView:
             _ = slide_x
             rotation_deg = math.degrees(angle_rad)
         sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
@@ -629,7 +629,7 @@ class QuestsMenuView:
             end_ms=PANEL_TIMELINE_END_MS,
             width=MENU_PANEL_WIDTH,
         )
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         draw_classic_menu_panel(
             require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
             dst=rl.Rectangle(

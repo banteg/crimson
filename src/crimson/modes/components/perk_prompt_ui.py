@@ -36,7 +36,7 @@ PERK_PROMPT_TEXT_OFFSET_Y = 8.0
 class PerkPromptUi:
     @staticmethod
     def label(config: CrimsonConfig, *, pending_count: int) -> str:
-        if not config.ui_info_texts:
+        if not config.gameplay.show_info_texts:
             return ""
         pending = int(pending_count)
         if pending <= 0:

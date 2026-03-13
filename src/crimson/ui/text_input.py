@@ -77,7 +77,7 @@ def update_name_entry_text(
 
 
 def gameplay_controls_held(config: CrimsonConfig) -> bool:
-    player_count = max(1, min(4, config.player_count))
+    player_count = max(1, min(4, config.gameplay.player_count))
     for player_index in range(player_count):
         binds = config_keybinds_for_player(config, player_index=player_index)
         for code in binds[:_CONTROL_BIND_SLOTS]:

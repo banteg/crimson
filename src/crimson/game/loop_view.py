@@ -345,14 +345,14 @@ class GameLoopView:
             return None
 
         player_count = max(1, min(4, int(cfg.player_count)))
-        self.state.config.player_count = int(player_count)
+        self.state.config.gameplay.player_count = int(player_count)
         self.state.network_in_lobby = True
         self.state.network_expected_players = int(player_count)
         self.state.network_connected_players = 1 if str(pending.role) == "host" else 0
         self.state.network_waiting_for_players = True
         self.state.network_desync_count = 0
         self.state.network_resync_failure_count = 0
-        self.state.config.game_mode = int(mode_id)
+        self.state.config.gameplay.mode = mode_id
 
         runtime = self.state.network_runtime
         if runtime is not None:
@@ -786,7 +786,7 @@ class GameLoopView:
             return False
         gameplay = self._gameplay_screen(self._front_active)
 
-        mode_raw = self.state.config.game_mode
+        mode_raw = self.state.config.gameplay.mode
         try:
             mode_id = GameMode(mode_raw)
         except ValueError:

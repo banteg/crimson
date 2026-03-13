@@ -59,7 +59,7 @@ class _DatabaseBaseView:
         self._back_button = UiButtonState("Back", force_wide=False)
 
     def open(self) -> None:
-        layout_w = float(self.state.config.screen_width)
+        layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._cursor_pulse_time = 0.0
@@ -114,7 +114,7 @@ class _DatabaseBaseView:
 
     def _draw_sign(self) -> None:
         sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        screen_w = float(self.state.config.screen_width)
+        screen_w = float(self.state.config.display.width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -125,7 +125,7 @@ class _DatabaseBaseView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
@@ -174,7 +174,7 @@ class _DatabaseBaseView:
         if not enabled:
             return
 
-        screen_width = float(self.state.config.screen_width)
+        screen_width = float(self.state.config.display.width)
         scale = 1.0
         left_panel_pos_x = hs_left_panel_pos_x(screen_width)
         left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y), scale=scale)
@@ -208,9 +208,9 @@ class _DatabaseBaseView:
             self._ground.draw(menu_ground_camera(self.state))
         _draw_screen_fade(self.state)
 
-        screen_width = float(self.state.config.screen_width)
+        screen_width = float(self.state.config.display.width)
         scale = 1.0
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
 
         panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, left_slide_x = MenuView._ui_element_anim(

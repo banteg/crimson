@@ -36,7 +36,7 @@ def test_tutorial_open_creates_session_and_recorder(mocker, make_mode_config) ->
     reset_runtime = mocker.patch.object(mode._world_runtime, "reset", wraps=mode._world_runtime.reset)
     mode.open()
 
-    assert int(mode.config.player_count) == 4
+    assert int(mode.config.gameplay.player_count) == 4
     assert reset_runtime.call_args.kwargs["player_count"] == 1
     assert isinstance(mode._sim_session, DeterministicSession)
     assert mode._replay_recorder is not None

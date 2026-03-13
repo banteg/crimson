@@ -8,16 +8,17 @@ from crimson.modes.components.perk_menu_controller import PerkMenuUiContext
 from crimson.modes.components.perk_prompt_controller import PerkPromptState
 from crimson.sim.state_types import PlayerState
 from grim.assets import RuntimeResources
+from grim.config import default_crimson_cfg
 from grim.fonts.small import SmallFontData
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
 
 def _config():
-    return SimpleNamespace(
-        keybind_pick_perk=0x101,
-        ui_info_texts=True,
-    )
+    config = default_crimson_cfg()
+    config.controls.pick_perk_key = 0x101
+    config.gameplay.show_info_texts = True
+    return config
 
 
 def _texture() -> rl.Texture:

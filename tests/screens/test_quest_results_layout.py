@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any, cast
 from unittest.mock import MagicMock
 
 import crimson.screens.results.quest_results as quest_results_module
 import crimson.ui.text_input as text_input_module
+from crimson.game_modes import GameMode
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.quests.results import QuestFinalTime
 from crimson.rng_caller_static import RngCallerStatic
@@ -16,16 +18,23 @@ from crimson.screens.results.quest_results import (
 )
 from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
-from grim.config import CrimsonConfig, default_crimson_cfg_data
+from grim.config import CrimsonConfig, default_crimson_cfg
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand
 
 
 def _test_config(**updates: object) -> CrimsonConfig:
-    data = default_crimson_cfg_data()
-    data.update(updates)
-    return CrimsonConfig(path=Path("<memory>"), data=data)
+    cfg = default_crimson_cfg(Path("<memory>"))
+    for key, value in updates.items():
+        match str(key):
+            case "fx_detail_0":
+                cfg.display.set_fx_detail(0, bool(value))
+            case "game_mode":
+                cfg.gameplay.mode = GameMode(int(cast(Any, value)))
+            case _:
+                raise KeyError(f"unsupported config update: {key}")
+    return cfg
 
 
 def _texture(*, width: int = 0, height: int = 0) -> rl.Texture:

@@ -70,8 +70,8 @@ class StandaloneTickHarness:
         gore_disabled = 0
         config = runtime.config
         if config is not None:
-            detail_preset = config.detail_preset
-            gore_disabled = config.gore_disabled
+            detail_preset = config.display.detail_preset
+            gore_disabled = config.display.gore_disabled
 
         session = DeterministicSession(
             world=world_state,

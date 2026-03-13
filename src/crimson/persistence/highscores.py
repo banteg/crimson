@@ -306,20 +306,16 @@ def scores_path_for_mode(
 
 
 def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage_major: int = 0, quest_stage_minor: int = 0) -> Path:
-    mode = _known_game_mode(config.game_mode)
+    mode = _known_game_mode(config.gameplay.mode)
     root = scores_dir_for_base_dir(base_dir)
     match mode:
         case GameMode.QUESTS:
-            hardcore = config.hardcore
+            hardcore = config.gameplay.hardcore
             if int(quest_stage_major) == 0 and int(quest_stage_minor) == 0:
-                major = config.quest_stage_major
-                minor = config.quest_stage_minor
-                if major == 0 and minor == 0:
-                    level = config.quest_level_value
-                    if level is not None:
-                        major, minor = level.major, level.minor
-                quest_stage_major = major
-                quest_stage_minor = minor
+                level = config.gameplay.quest_level
+                if level is not None:
+                    quest_stage_major = int(level.major)
+                    quest_stage_minor = int(level.minor)
             path = _scores_path_for_mode_root(
                 root=root,
                 game_mode_id=mode,
@@ -331,12 +327,12 @@ def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage
             path = _scores_path_for_mode_root(
                 root=root,
                 game_mode_id=mode,
-                hardcore=config.hardcore,
+                hardcore=config.gameplay.hardcore,
                 quest_stage_major=int(quest_stage_major),
                 quest_stage_minor=int(quest_stage_minor),
             )
 
-    return _with_player_count_suffix(path, player_count=config.player_count)
+    return _with_player_count_suffix(path, player_count=config.gameplay.player_count)
 
 
 def decode_record_payload(encoded: bytes) -> bytes:

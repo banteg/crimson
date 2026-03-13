@@ -85,16 +85,7 @@ if TYPE_CHECKING:
 
 
 def _saved_score_names(view: "HighScoresView") -> list[str]:
-    slot_count = max(1, min(8, int(view.state.config.int_value("saved_name_index", 1))))
-    names_blob = view.state.config.blob_value("saved_names", size=0x1B * 8, default=b"")  # 8 entries
-    names: list[str] = []
-    for i in range(slot_count):
-        entry = names_blob[i * 0x1B : (i + 1) * 0x1B]
-        label = entry.split(b"\x00", 1)[0].decode("latin-1", errors="ignore").strip()
-        if not label:
-            label = "default" if i == 0 else f"slot_{i}"
-        names.append(label)
-    return names
+    return list(view.state.config.profile.saved_name_labels())
 
 
 def _draw_dropdown(
@@ -223,14 +214,14 @@ def _draw_right_panel_quest_options(
     right_top_left: Vec2,
     scale: float,
 ) -> None:
-    options_shift_x = hs_right_options_x_shift(float(view.state.config.screen_width))
+    options_shift_x = hs_right_options_x_shift(float(view.state.config.display.width))
     options_top_left = right_top_left + Vec2(options_shift_x * scale, 0.0)
     text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
     # Checkbox: "Show internet scores"
     check_tex = (
         resources.texture(TextureId.UI_CHECK_ON)
-        if view.state.config.score_load_gate
+        if view.state.config.profile.show_internet_scores
         else resources.texture(TextureId.UI_CHECK_OFF)
     )
     check_w = float(check_tex.width) * scale
@@ -262,16 +253,16 @@ def _draw_right_panel_quest_options(
         mode_items.append(("Typ'o'Shooter", 4))
     names = _saved_score_names(view)
 
-    player_count = max(1, min(4, view.state.config.player_count))
+    player_count = max(1, min(4, view.state.config.gameplay.player_count))
     player_selected = player_count - 1
-    show_scores_selected = max(0, min(len(show_scores_items) - 1, view.state.config.highscore_date_mode))
-    mode_id = view.state.config.game_mode
+    show_scores_selected = max(0, min(len(show_scores_items) - 1, int(view.state.config.profile.score_date_mode)))
+    mode_id = view.state.config.gameplay.mode
     mode_selected = 0
     for idx, (_label, _id) in enumerate(mode_items):
         if int(_id) == int(mode_id):
             mode_selected = idx
             break
-    name_selected = max(0, min(len(names) - 1, int(view.state.config.int_value("selected_name_slot", 0))))
+    name_selected = max(0, min(len(names) - 1, int(view.state.config.profile.selected_saved_name_slot)))
 
     dropdowns = (
         (
@@ -359,7 +350,7 @@ def _draw_right_panel_local_score(
     scale: float,
     highlight_rank: int | None,
 ) -> None:
-    local_shift_x = hs_right_local_card_x_shift(float(view.state.config.screen_width))
+    local_shift_x = hs_right_local_card_x_shift(float(view.state.config.display.width))
     card_top_left = right_top_left + Vec2(local_shift_x * scale, 0.0)
     if not view._records:
         return

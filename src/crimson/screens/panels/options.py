@@ -83,15 +83,15 @@ class OptionsMenuView(PanelMenuView):
         rect_off = resources.texture(TextureId.UI_RECT_OFF)
 
         if self._update_slider("sfx", self._slider_sfx, slider_pos.offset(dy=47.0 * scale), rect_on, rect_off, scale):
-            config.sfx_volume = float(self._slider_sfx.value) * 0.1
-            set_sfx_volume(self.state.audio, config.sfx_volume)
+            config.audio.sfx_volume = float(self._slider_sfx.value) * 0.1
+            set_sfx_volume(self.state.audio, config.audio.sfx_volume)
             self._dirty = True
 
         if self._update_slider(
             "music", self._slider_music, slider_pos.offset(dy=67.0 * scale), rect_on, rect_off, scale,
         ):
-            config.music_volume = float(self._slider_music.value) * 0.1
-            set_music_volume(self.state.audio, config.music_volume)
+            config.audio.music_volume = float(self._slider_music.value) * 0.1
+            set_music_volume(self.state.audio, config.audio.music_volume)
             self._dirty = True
 
         if self._update_slider(
@@ -109,11 +109,11 @@ class OptionsMenuView(PanelMenuView):
                 sensitivity = 0.1
             if sensitivity > 1.0:
                 sensitivity = 1.0
-            config.mouse_sensitivity = sensitivity
+            config.display.mouse_sensitivity = sensitivity
             self._dirty = True
 
         if self._update_checkbox(label_pos.offset(dy=135.0 * scale), scale):
-            config.ui_info_texts = self._ui_info_texts
+            config.gameplay.show_info_texts = self._ui_info_texts
             self._dirty = True
 
         # `sub_4475d0`: controls button is aligned with the panel content base.
@@ -166,12 +166,12 @@ class OptionsMenuView(PanelMenuView):
 
     def _sync_from_config(self) -> None:
         config = self.state.config
-        self._ui_info_texts = config.ui_info_texts
+        self._ui_info_texts = config.gameplay.show_info_texts
 
-        sfx_volume = config.sfx_volume
-        music_volume = config.music_volume
-        detail_preset = config.detail_preset
-        mouse_sensitivity = config.mouse_sensitivity
+        sfx_volume = config.audio.sfx_volume
+        music_volume = config.audio.music_volume
+        detail_preset = config.display.detail_preset
+        mouse_sensitivity = config.display.mouse_sensitivity
 
         self._slider_sfx.value = max(
             self._slider_sfx.min_value, min(self._slider_sfx.max_value, int(sfx_volume * 10.0)),

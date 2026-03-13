@@ -225,25 +225,21 @@ class ControlsMenuView(PanelMenuView):
     def _slot_key(self, *, player_index: int, slot: int) -> int:
         slot_idx = int(slot)
         if slot_idx == PICK_PERK_BIND_SLOT:
-            return self.state.config.keybind_pick_perk
+            return self.state.config.controls.pick_perk_key
         if slot_idx == RELOAD_BIND_SLOT:
-            return self.state.config.keybind_reload
-        return self.state.config.player_keybind_value(player_index=int(player_index), slot_index=slot_idx)
+            return self.state.config.controls.reload_key
+        return self.state.config.controls.player(player_index).keybind(slot_idx)
 
     def _set_slot_key(self, *, player_index: int, slot: int, code: int) -> None:
         slot_idx = int(slot)
         value = int(code)
         if slot_idx == PICK_PERK_BIND_SLOT:
-            self.state.config.keybind_pick_perk = value
+            self.state.config.controls.pick_perk_key = value
             return
         if slot_idx == RELOAD_BIND_SLOT:
-            self.state.config.keybind_reload = value
+            self.state.config.controls.reload_key = value
             return
-        self.state.config.set_player_keybind_value(
-            player_index=int(player_index),
-            slot_index=slot_idx,
-            value=value,
-        )
+        self.state.config.controls.player(player_index).set_keybind(slot_idx, value)
 
     def _left_panel_top_left(self, panel_scale: float) -> Vec2:
         panel_w = MENU_PANEL_WIDTH * panel_scale
@@ -256,7 +252,7 @@ class ControlsMenuView(PanelMenuView):
         )
         return (
             Vec2(
-                _controls_left_panel_pos_x(float(self.state.config.screen_width)) + slide_x,
+                _controls_left_panel_pos_x(float(self.state.config.display.width)) + slide_x,
                 self._panel_pos.y + self._widescreen_y_shift,
             )
             + self._panel_offset * panel_scale
@@ -274,20 +270,17 @@ class ControlsMenuView(PanelMenuView):
         )
         return (
             Vec2(
-                _controls_right_panel_pos_x(float(self.state.config.screen_width)) + slide_x,
-                _controls_right_panel_pos_y(float(self.state.config.screen_width)) + self._widescreen_y_shift,
+                _controls_right_panel_pos_x(float(self.state.config.display.width)) + slide_x,
+                _controls_right_panel_pos_y(float(self.state.config.display.width)) + self._widescreen_y_shift,
             )
             + self._panel_offset * panel_scale
         )
 
     def _direction_arrow_enabled(self) -> bool:
-        return self.state.config.direction_arrow_enabled_for_player(player_index=int(self._current_player_index()))
+        return self.state.config.controls.player(self._current_player_index()).show_direction_arrow
 
     def _set_direction_arrow_enabled(self, enabled: bool) -> None:
-        self.state.config.set_direction_arrow_enabled_for_player(
-            player_index=int(self._current_player_index()),
-            enabled=bool(enabled),
-        )
+        self.state.config.controls.player(self._current_player_index()).show_direction_arrow = bool(enabled)
 
     def _checkbox_enabled(self) -> bool:
         return not (self._move_method_open or self._aim_method_open or self._rebind_active())
@@ -391,7 +384,7 @@ class ControlsMenuView(PanelMenuView):
 
     def _update_rebind_capture(self, *, right_top_left: Vec2, panel_scale: float, font: SmallFontData) -> bool:
         player_idx = self._current_player_index()
-        aim_scheme, move_mode = controls_method_values(self.state.config.data, player_index=player_idx)
+        aim_scheme, move_mode = controls_method_values(self.state.config.controls, player_index=player_idx)
         sections = self._rebind_sections(player_index=player_idx, aim_scheme=aim_scheme, move_mode=move_mode)
         rows = self._collect_rebind_rows(
             right_top_left=right_top_left,
@@ -458,10 +451,10 @@ class ControlsMenuView(PanelMenuView):
         return False
 
     def _set_player_move_mode(self, *, player_index: int, move_mode: MovementControlType) -> None:
-        self.state.config.set_player_mode_flag(player_index=player_index, value=move_mode.value)
+        self.state.config.controls.player(player_index).movement = move_mode
 
     def _set_player_aim_scheme(self, *, player_index: int, aim_scheme: AimScheme) -> None:
-        self.state.config.set_aim_scheme_for_player(player_index=player_index, value=aim_scheme)
+        self.state.config.controls.player(player_index).aim_scheme = aim_scheme
 
     @staticmethod
     def _move_method_ids(*, move_mode: MovementControlType) -> tuple[MovementControlType, ...]:
@@ -546,7 +539,7 @@ class ControlsMenuView(PanelMenuView):
     def _update_method_dropdowns(self, *, left_top_left: Vec2, panel_scale: float, font: SmallFontData) -> bool:
         config = self.state.config
         player_idx = self._current_player_index()
-        aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
+        aim_scheme, move_mode = controls_method_values(config.controls, player_index=player_idx)
         move_mode_ids = self._move_method_ids(move_mode=move_mode)
         move_items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
         aim_item_ids = controls_aim_method_dropdown_ids(aim_scheme)
@@ -620,7 +613,7 @@ class ControlsMenuView(PanelMenuView):
         return False
 
     def _draw_panel(self) -> None:
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         panel_scale, _local_y_shift = self._menu_item_scale(0)
         panel_w = MENU_PANEL_WIDTH * panel_scale
         panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
@@ -661,7 +654,7 @@ class ControlsMenuView(PanelMenuView):
         text_color_soft = rl.Color(255, 255, 255, 204)
         config = self.state.config
         player_idx = self._current_player_index()
-        aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
+        aim_scheme, move_mode = controls_method_values(config.controls, player_index=player_idx)
         move_mode_ids = self._move_method_ids(move_mode=move_mode)
         move_items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
         aim_item_ids = controls_aim_method_dropdown_ids(aim_scheme)

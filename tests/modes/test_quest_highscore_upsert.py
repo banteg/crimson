@@ -9,7 +9,8 @@ from crimson.persistence.highscores import (
     scores_path_for_config,
     upsert_highscore_record,
 )
-from grim.config import CrimsonConfig
+from crimson.quests.level import QuestLevel
+from grim.config import default_crimson_cfg
 
 
 def _record(*, time_ms: int) -> HighScoreRecord:
@@ -20,14 +21,9 @@ def _record(*, time_ms: int) -> HighScoreRecord:
 
 
 def test_upsert_highscore_record_quest_sorts_ascending_with_zero_last(tmp_path: Path) -> None:
-    config = CrimsonConfig(
-        path=tmp_path / "crimson.cfg",
-        data={
-            "game_mode": 3,
-            "quest_stage_major": 1,
-            "quest_stage_minor": 1,
-        },
-    )
+    config = default_crimson_cfg(tmp_path / "crimson.cfg")
+    config.gameplay.mode = GameMode.QUESTS
+    config.gameplay.quest_level = QuestLevel(1, 1)
     path = scores_path_for_config(tmp_path, config)
 
     upsert_highscore_record(path, _record(time_ms=5000))

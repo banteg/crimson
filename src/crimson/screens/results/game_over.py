@@ -256,7 +256,7 @@ class GameOverUi(msgspec.Struct):
         if self.phase == -1:
             # If in the top 100, prompt for a name. Otherwise show score-too-low message and buttons.
             try:
-                game_mode_id = GameMode(self.config.game_mode)
+                game_mode_id = GameMode(self.config.gameplay.mode)
             except ValueError:
                 game_mode_id = GameMode.DEMO
             candidate = record.copy()
@@ -314,7 +314,7 @@ class GameOverUi(msgspec.Struct):
                         play_sfx(SfxId.UI_TYPEENTER)
                     candidate = (self._candidate_record or record).copy()
                     candidate.set_name(self.input_text)
-                    self.config.set_player_name(self.input_text)
+                    self.config.profile.set_player_name_input(self.input_text)
                     self.config.save()
                     path = scores_path_for_config(self.base_dir, self.config)
                     if not self._saved:
@@ -641,7 +641,7 @@ class GameOverUi(msgspec.Struct):
         panel_top_left = panel_layout.top_left
 
         # Panel background
-        fx_detail = self.config.fx_detail(level=0, default=False)
+        fx_detail = self.config.display.fx_detail_enabled(level=0, default=False)
         draw_classic_menu_panel(
             resources.texture(TextureId.UI_MENU_PANEL),
             dst=panel.to_rl(),

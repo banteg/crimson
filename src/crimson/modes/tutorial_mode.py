@@ -200,7 +200,7 @@ class TutorialMode(BaseGameplayMode):
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
-        reload_key = self.config.keybind_reload
+        reload_key = self.config.controls.reload_key
         reload_pressed = input_code_is_pressed(reload_key)
 
         return PlayerInput(

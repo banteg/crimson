@@ -49,7 +49,7 @@ class WorldRuntimeHost:
         )
         player_count = 1
         if config is not None:
-            player_count = int(config.player_count)
+            player_count = int(config.gameplay.player_count)
         self._runtime.reset(player_count=max(1, min(4, int(player_count))))
         self._survival_test_spawn_state = SurvivalSpawnState()
         self._survival_test_elapsed_ms = 0.0
@@ -267,8 +267,8 @@ class WorldRuntimeHost:
         detail_preset = 5
         gore_disabled = 0
         if self.config is not None:
-            detail_preset = int(self.config.detail_preset)
-            gore_disabled = int(self.config.gore_disabled)
+            detail_preset = int(self.config.display.detail_preset)
+            gore_disabled = int(self.config.display.gore_disabled)
 
         session = DeterministicSession(
             world=self.sim_world.world_state,

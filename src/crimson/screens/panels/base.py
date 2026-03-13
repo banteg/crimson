@@ -94,7 +94,7 @@ class PanelMenuView:
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
-        layout_w = float(self.state.config.screen_width)
+        layout_w = float(self.state.config.display.width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos.y)
@@ -244,7 +244,7 @@ class PanelMenuView:
             + self._panel_offset * item_scale
         )
         dst = rl.Rectangle(panel_top_left.x, panel_top_left.y, float(panel_w), float(panel_h))
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         draw_classic_menu_panel(panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
     def _draw_entry(self, entry: MenuEntry) -> None:
@@ -271,7 +271,7 @@ class PanelMenuView:
             item_h * item_scale,
         )
         origin = rl.Vector2(-offset_x, -offset_y)
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=item,
@@ -326,7 +326,7 @@ class PanelMenuView:
             rl.end_blend_mode()
 
     def _draw_sign(self) -> None:
-        screen_w = float(self.state.config.screen_width)
+        screen_w = float(self.state.config.display.width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -340,7 +340,7 @@ class PanelMenuView:
         # so the sign is already locked in place. Keep it static here.
         rotation_deg = 0.0
         sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

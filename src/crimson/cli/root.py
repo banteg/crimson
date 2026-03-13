@@ -333,17 +333,18 @@ def cmd_config(
 
     cfg_path = path if path is not None else base_dir / CRIMSON_CFG_NAME
     config = load_crimson_cfg(cfg_path)
+    raw_fields = CRIMSON_CFG_STRUCT.parse(cfg_path.read_bytes())
     typer.echo(f"path: {config.path}")
-    typer.echo(f"screen: {config.screen_width}x{config.screen_height}")
-    typer.echo(f"windowed: {config.windowed_flag}")
-    typer.echo(f"bpp: {config.screen_bpp}")
-    typer.echo(f"texture_scale: {config.texture_scale}")
+    typer.echo(f"screen: {config.display.width}x{config.display.height}")
+    typer.echo(f"windowed: {config.display.windowed}")
+    typer.echo(f"bpp: {config.display.bpp}")
+    typer.echo(f"texture_scale: {config.display.texture_scale}")
     typer.echo("fields:")
     for sub in CRIMSON_CFG_STRUCT.subcons:
         name = sub.name
         if not name:
             continue
-        value = config.data[name]
+        value = raw_fields[name]
         typer.echo(f"{name}: {_format_cfg_value(value)}")
 
 

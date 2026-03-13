@@ -14,6 +14,11 @@ from crimson.screens.panels.controls_labels import (
     input_configure_for_label,
     input_scheme_label,
 )
+from grim.config import default_crimson_cfg
+
+
+def _controls():
+    return default_crimson_cfg().controls
 
 
 def test_input_configure_for_label_mapping() -> None:
@@ -36,37 +41,31 @@ def test_input_scheme_label_mapping() -> None:
 
 
 def test_controls_method_labels_reads_player_arrays() -> None:
-    config_data = {
-        "player_mode_flag_p1": 2,
-        "player_mode_flag_p2": 4,
-        "player_mode_flag_p3": 5,
-        "player_mode_flag_p4": 1,
-        "aim_scheme_p1": 3,
-        "aim_scheme_p2": 2,
-        "aim_scheme_p3": 4,
-        "aim_scheme_p4": 5,
-    }
+    controls = _controls()
+    controls.player(0).movement = MovementControlType.STATIC
+    controls.player(1).movement = MovementControlType.MOUSE_POINT_CLICK
+    controls.player(2).movement = MovementControlType.COMPUTER
+    controls.player(3).movement = MovementControlType.RELATIVE
+    controls.player(0).aim_scheme = AimScheme.MOUSE_RELATIVE
+    controls.player(1).aim_scheme = AimScheme.JOYSTICK
+    controls.player(2).aim_scheme = AimScheme.DUAL_ACTION_PAD
+    controls.player(3).aim_scheme = AimScheme.COMPUTER
 
-    assert controls_method_labels(config_data, player_index=0) == ("Mouse relative", "Static")
-    assert controls_method_labels(config_data, player_index=1) == ("Joystick", "Mouse point click")
-    assert controls_method_labels(config_data, player_index=2) == ("Dual Action Pad", "Computer")
-    assert controls_method_labels(config_data, player_index=3) == ("Computer", "Relative")
-    assert controls_method_values(config_data, player_index=1) == (AimScheme.JOYSTICK, MovementControlType.MOUSE_POINT_CLICK)
+    assert controls_method_labels(controls, player_index=0) == ("Mouse relative", "Static")
+    assert controls_method_labels(controls, player_index=1) == ("Joystick", "Mouse point click")
+    assert controls_method_labels(controls, player_index=2) == ("Dual Action Pad", "Computer")
+    assert controls_method_labels(controls, player_index=3) == ("Computer", "Relative")
+    assert controls_method_values(controls, player_index=1) == (AimScheme.JOYSTICK, MovementControlType.MOUSE_POINT_CLICK)
 
 
 def test_controls_method_labels_defaults_missing_blob() -> None:
-    assert controls_method_labels({}, player_index=0) == ("Mouse", "Static")
+    assert controls_method_labels(_controls(), player_index=0) == ("Mouse", "Static")
 
 
 def test_controls_method_values_unknown_move_mode_maps_to_unknown_enum() -> None:
-    config_data = {
-        "player_mode_flag_p1": 99,
-        "player_mode_flag_p2": 2,
-        "player_mode_flag_p3": 2,
-        "player_mode_flag_p4": 2,
-    }
-
-    assert controls_method_values(config_data, player_index=0) == (AimScheme.MOUSE, MovementControlType.UNKNOWN)
+    controls = _controls()
+    controls.player(0).movement = MovementControlType.UNKNOWN
+    assert controls_method_values(controls, player_index=0) == (AimScheme.MOUSE, MovementControlType.UNKNOWN)
 
 
 def test_controls_aim_method_dropdown_ids_hides_computer_unless_loaded() -> None:

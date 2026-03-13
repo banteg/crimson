@@ -119,7 +119,7 @@ class StatisticsMenuView:
         self._btn_back = UiButtonState("Back", force_wide=False)
 
     def open(self) -> None:
-        layout_w = float(self.state.config.screen_width)
+        layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._cursor_pulse_time = 0.0
@@ -230,7 +230,7 @@ class StatisticsMenuView:
         if not interactive:
             return
 
-        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
+        scale = 0.9 if float(self.state.config.display.width) < 641.0 else 1.0
         panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
@@ -291,7 +291,7 @@ class StatisticsMenuView:
 
         resources = require_runtime_resources(self.state)
 
-        scale = 0.9 if float(self.state.config.screen_width) < 641.0 else 1.0
+        scale = 0.9 if float(self.state.config.display.width) < 641.0 else 1.0
         panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
@@ -305,7 +305,7 @@ class StatisticsMenuView:
         dst = rl.Rectangle(
             panel_top_left.x, panel_top_left.y, panel_w, STATISTICS_PANEL_HEIGHT * scale,
         )
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
         # Title: full-size row from ui_itemTexts.jaz (128x32).
@@ -364,7 +364,7 @@ class StatisticsMenuView:
 
     def _draw_sign(self, *, scale: float) -> None:
         sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        screen_w = float(self.state.config.screen_width)
+        screen_w = float(self.state.config.display.width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
         sign_pos = Vec2(
             screen_w + MENU_SIGN_POS_X_PAD,
@@ -375,7 +375,7 @@ class StatisticsMenuView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = self.state.config.fx_detail(level=0, default=False)
+        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
         if fx_detail:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,

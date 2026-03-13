@@ -58,7 +58,7 @@ def draw_particle_pool(
     if src_normal is None or src_style_8 is None:
         return
 
-    fx_detail_1 = frame.config.fx_detail(level=1, default=True) if frame.config is not None else True
+    fx_detail_1 = frame.config.display.fx_detail_enabled(level=1, default=True) if frame.config is not None else True
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
@@ -126,7 +126,7 @@ def draw_sprite_effect_pool(
     if alpha <= 1e-3:
         return
     frame = render_ctx.frame
-    if frame.config is not None and not frame.config.fx_detail(level=2, default=False):
+    if frame.config is not None and not frame.config.display.fx_detail_enabled(level=2, default=False):
         return
     texture = frame.resources.texture(TextureId.PARTICLES)
 

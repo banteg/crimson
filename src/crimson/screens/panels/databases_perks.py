@@ -60,7 +60,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         text_color = rl.WHITE
         dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
         gore_disabled = self._gore_disabled()
-        detail_shift_x = perks_db_right_detail_x_shift(float(self.state.config.screen_width))
+        detail_shift_x = perks_db_right_detail_x_shift(float(self.state.config.display.width))
 
         # state_16 title at (163,244) => relative to left panel (-98,194): (261,50)
         title_pos = left + Vec2(261.0 * scale, 50.0 * scale)
@@ -353,7 +353,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         return self.state.preserve_bugs
 
     def _gore_disabled(self) -> int:
-        return self.state.config.gore_disabled
+        return self.state.config.display.gore_disabled
 
     def _prewrapped_perk_desc(self, perk_id: PerkId, font: SmallFontData, *, gore_disabled: int) -> str:
         key = (int(perk_id), int(gore_disabled), int(bool(self._preserve_bugs())))

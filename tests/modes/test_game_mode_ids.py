@@ -11,7 +11,7 @@ from crimson.perks.availability import perk_can_offer
 from crimson.persistence.highscores import HighScoreRecord, rank_index, scores_path_for_config, sort_highscores
 from crimson.quests.level import QuestLevel
 from crimson.sim.state_types import PlayerState
-from grim.config import CrimsonConfig
+from grim.config import CrimsonConfig, default_crimson_cfg
 from grim.geom import Vec2
 
 
@@ -29,6 +29,22 @@ def _record_xp(*, mode: GameMode, xp: int) -> HighScoreRecord:
     return record
 
 
+def _config(
+    path: Path,
+    *,
+    game_mode: GameMode,
+    player_count: int = 1,
+    hardcore: bool = False,
+    quest_level: QuestLevel | None = None,
+) -> CrimsonConfig:
+    config = default_crimson_cfg(path)
+    config.gameplay.mode = game_mode
+    config.gameplay.player_count = int(player_count)
+    config.gameplay.hardcore = bool(hardcore)
+    config.gameplay.quest_level = quest_level
+    return config
+
+
 @pytest.mark.parametrize(
     ("hardcore_flag", "expected_name"),
     [
@@ -42,10 +58,11 @@ def test_scores_path_for_config_quest_mode_explicit_stage_filename(
     hardcore_flag: int,
     expected_name: str,
 ) -> None:
-    data: dict[str, int] = {"game_mode": int(GameMode.QUESTS)}
-    if hardcore_flag:
-        data["hardcore_flag"] = hardcore_flag
-    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data=data)
+    config = _config(
+        tmp_path / "crimson.cfg",
+        game_mode=GameMode.QUESTS,
+        hardcore=bool(hardcore_flag),
+    )
     path = scores_path_for_config(tmp_path, config, quest_stage_major=1, quest_stage_minor=2)
     assert path == tmp_path / "scores5" / expected_name
 
@@ -64,7 +81,7 @@ def test_scores_path_for_config_mode_uses_base_filename(
     game_mode: GameMode,
     expected_name: str,
 ) -> None:
-    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(game_mode)})
+    config = _config(tmp_path / "crimson.cfg", game_mode=game_mode)
     path = scores_path_for_config(tmp_path, config)
     assert path == tmp_path / "scores5" / expected_name
 
@@ -83,10 +100,7 @@ def test_scores_path_for_config_mode_uses_player_count_suffix(
     player_count: int,
     expected_name: str,
 ) -> None:
-    config = CrimsonConfig(
-        path=tmp_path / "crimson.cfg",
-        data={"game_mode": int(game_mode), "player_count": player_count},
-    )
+    config = _config(tmp_path / "crimson.cfg", game_mode=game_mode, player_count=player_count)
     path = scores_path_for_config(tmp_path, config)
     assert path == tmp_path / "scores5" / expected_name
 
@@ -104,14 +118,12 @@ def test_scores_path_for_config_quest_mode_uses_config_stage_fields(
     player_count: int | None,
     expected_name: str,
 ) -> None:
-    data: dict[str, int] = {
-        "game_mode": int(GameMode.QUESTS),
-        "quest_stage_major": 4,
-        "quest_stage_minor": 7,
-    }
-    if player_count is not None:
-        data["player_count"] = player_count
-    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data=data)
+    config = _config(
+        tmp_path / "crimson.cfg",
+        game_mode=GameMode.QUESTS,
+        player_count=1 if player_count is None else player_count,
+        quest_level=QuestLevel(4, 7),
+    )
     path = scores_path_for_config(tmp_path, config)
     assert path == tmp_path / "scores5" / expected_name
 

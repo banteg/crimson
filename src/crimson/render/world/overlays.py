@@ -93,7 +93,7 @@ def direction_arrow_enabled(render_ctx: WorldRenderCtx, player_index: int) -> bo
     config = render_ctx.frame.config
     if config is None:
         return True
-    return config.direction_arrow_enabled_for_player(player_index=int(player_index))
+    return config.controls.player(player_index).show_direction_arrow
 
 
 def direction_arrow_tint(render_ctx: WorldRenderCtx, player_index: int, *, alpha: float) -> rl.Color:

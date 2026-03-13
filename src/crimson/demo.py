@@ -81,7 +81,7 @@ class DemoView:
             assets_dir=state.assets_dir,
             world_size=float(WORLD_SIZE),
             demo_mode_active=True,
-            hardcore=state.config.hardcore,
+            hardcore=state.config.gameplay.hardcore,
             preserve_bugs=bool(state.preserve_bugs),
             config=state.config,
             audio=state.audio,
@@ -251,7 +251,7 @@ class DemoView:
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
 
     def _purchase_layout_wide_shift(self) -> float:
-        screen_w = self.state.config.screen_width
+        screen_w = self.state.config.display.width
         if screen_w == 0x320:  # 800
             return 64.0
         if screen_w == 0x400:  # 1024
@@ -274,8 +274,8 @@ class DemoView:
 
         resources = require_runtime_resources(self.state)
 
-        w = float(self.state.config.screen_width)
-        h = float(self.state.config.screen_height)
+        w = float(self.state.config.display.width)
+        h = float(self.state.config.display.height)
         wide_shift = self._purchase_layout_wide_shift()
         button_base_y = h / 2.0 + 102.0 + wide_shift * 0.3
         button_base_pos = Vec2(w / 2.0 + 128.0, button_base_y + 50.0)
@@ -322,8 +322,8 @@ class DemoView:
         pulse = math.sin(pulse_phase * 6.2831855)
         pulse = pulse * pulse
 
-        screen_w = float(self.state.config.screen_width)
-        screen_h = float(self.state.config.screen_height)
+        screen_w = float(self.state.config.display.width)
+        screen_h = float(self.state.config.display.height)
 
         # demo_purchase_screen_update @ 0x0040b985:
         #   - full-screen quad
