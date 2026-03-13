@@ -364,8 +364,7 @@ def _player_controls_from_parsed_bind_block(
     )
 
 
-def _encode_player_bind_block(player: CrimsonPlayerControls, *, player_index: int) -> dict[str, object]:
-    _ = player_index
+def _encode_player_bind_block(player: CrimsonPlayerControls) -> dict[str, object]:
     return {
         "move_forward": player.move_codes[0],
         "move_backward": player.move_codes[1],
@@ -384,11 +383,11 @@ def _encode_player_bind_block(player: CrimsonPlayerControls, *, player_index: in
 
 
 def _encode_primary_keybinds(players: Sequence[CrimsonPlayerControls]) -> list[dict[str, object]]:
-    return [_encode_player_bind_block(players[idx], player_index=idx) for idx in range(2)]
+    return [_encode_player_bind_block(players[idx]) for idx in range(2)]
 
 
 def _encode_extended_keybinds(players: Sequence[CrimsonPlayerControls]) -> list[dict[str, object]]:
-    return [_encode_player_bind_block(players[idx], player_index=idx) for idx in range(2, 4)]
+    return [_encode_player_bind_block(players[idx]) for idx in range(2, 4)]
 
 
 def _decode_direction_arrow(raw: dict, *, player_index: int) -> bool:
