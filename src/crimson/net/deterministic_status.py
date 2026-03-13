@@ -3,30 +3,19 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
-from ..persistence.save_status import GameStatus
-from ..status_snapshot import (
-    game_status_from_progress_status,
-    hash_progress_status,
-    lockstep_status_from_progress,
-    progress_status_from_game_status,
-    progress_status_from_lockstep,
-)
-from .lockstep_protocol import StatusSnapshot
+from ..persistence.save_status import GameStatus, GameStatusData, default_status_data, hash_status_data
 
 
-def status_snapshot_from_status(status: GameStatus | None) -> StatusSnapshot:
-    return lockstep_status_from_progress(progress_status_from_game_status(status))
+def status_data_from_status(status: GameStatus | None) -> GameStatusData:
+    if status is None:
+        return default_status_data()
+    return status.as_data()
 
 
-def hash_status_snapshot(snapshot: StatusSnapshot) -> str:
-    """Stable hash for sanity-checking host/client status snapshots."""
-    return hash_progress_status(progress_status_from_lockstep(snapshot))
-
-
-def build_lan_deterministic_status(*, snapshot: StatusSnapshot | None = None) -> GameStatus:
+def build_lan_deterministic_status(*, status: GameStatusData | None = None) -> GameStatus:
     """Return a session-local `GameStatus` for deterministic LAN simulation.
 
-    The host sends its save snapshot in `MatchStart`, and all peers use it as the
+    The host sends its save status in `MatchStart`, and all peers use it as the
     simulation status. This avoids split brain where local save progress impacts
     deterministic simulation (weapon availability / RNG consumption).
     """
@@ -35,5 +24,12 @@ def build_lan_deterministic_status(*, snapshot: StatusSnapshot | None = None) ->
     # safe temp path so accidental `save_if_dirty()` calls don't clobber
     # `game.cfg`.
     path = Path(tempfile.gettempdir()) / "crimson-lan-sim-game.cfg"
-    progress = progress_status_from_lockstep(snapshot)
-    return game_status_from_progress_status(progress, path=path)
+    data = default_status_data() if status is None else status
+    return GameStatus.from_data(path=path, data=data, dirty=False)
+
+
+__all__ = [
+    "build_lan_deterministic_status",
+    "hash_status_data",
+    "status_data_from_status",
+]

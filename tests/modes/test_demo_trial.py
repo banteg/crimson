@@ -54,8 +54,8 @@ class _DummyGameplay:
     def bind_lan_runtime(self, runtime) -> None:
         _ = runtime
 
-    def set_lan_match_start(self, *, seed: int, start_tick: int = 0, status_snapshot=None) -> None:
-        _ = seed, start_tick, status_snapshot
+    def set_lan_match_start(self, *, seed: int, start_tick: int = 0, status=None) -> None:
+        _ = seed, start_tick, status
 
     def steal_ground_for_menu(self):
         return None

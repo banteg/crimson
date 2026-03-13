@@ -82,8 +82,8 @@ class GameplayScreenStub:
     def bind_lan_runtime(self, runtime) -> None:
         self.last_lan_runtime = runtime
 
-    def set_lan_match_start(self, *, seed: int, start_tick: int = 0, status_snapshot=None) -> None:
-        self.last_lan_match_start = (int(seed), int(start_tick), status_snapshot)
+    def set_lan_match_start(self, *, seed: int, start_tick: int = 0, status=None) -> None:
+        self.last_lan_match_start = (int(seed), int(start_tick), status)
 
     def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
         _ = entity_alpha

@@ -4,12 +4,13 @@ from pathlib import Path
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
-from crimson.net.deterministic_status import build_lan_deterministic_status, status_snapshot_from_status
+from crimson.net.deterministic_status import build_lan_deterministic_status, hash_status_data, status_data_from_status
 from crimson.persistence.save_status import (
     QUEST_PLAY_COUNT,
     UNKNOWN_TAIL_SIZE,
     WEAPON_USAGE_COUNT,
     GameStatus,
+    GameStatusData,
 )
 from crimson.weapon_runtime.availability import prepare_weapon_availability, weapon_pick_random_available
 from crimson.weapons import WeaponId
@@ -34,19 +35,22 @@ def _make_status(*, pistol_used: bool) -> GameStatus:
     usage_counts = [0] * int(WEAPON_USAGE_COUNT)
     if pistol_used:
         usage_counts[1] = 1
-    data = {
-        "quest_unlock_index": 50,
-        "quest_unlock_index_full": 50,
-        "weapon_usage_counts": usage_counts,
-        "quest_play_counts": [0] * int(QUEST_PLAY_COUNT),
-        "mode_play_survival": 0,
-        "mode_play_rush": 0,
-        "mode_play_typo": 0,
-        "mode_play_other": 0,
-        "game_sequence_id": 0,
-        "unknown_tail": b"\x00" * int(UNKNOWN_TAIL_SIZE),
-    }
-    return GameStatus(path=Path("game.cfg"), data=data, dirty=False)
+    return GameStatus.from_data(
+        path=Path("game.cfg"),
+        data=GameStatusData(
+            quest_unlock_index=50,
+            quest_unlock_index_full=50,
+            weapon_usage_counts=tuple(usage_counts),
+            quest_play_counts=tuple(0 for _ in range(int(QUEST_PLAY_COUNT))),
+            mode_play_survival=0,
+            mode_play_rush=0,
+            mode_play_typo=0,
+            mode_play_other=0,
+            game_sequence_id=0,
+            unknown_tail=b"\x00" * int(UNKNOWN_TAIL_SIZE),
+        ),
+        dirty=False,
+    )
 
 
 def _make_state(*, status: GameStatus, rng: _SeqRng) -> GameplayState:
@@ -78,9 +82,9 @@ def test_lan_deterministic_status_uses_host_save_snapshot() -> None:
     assert rng_a.calls == 3
     assert rng_b.calls == 1
 
-    host_snapshot = status_snapshot_from_status(status_used)
-    lan_status_a = build_lan_deterministic_status(snapshot=host_snapshot)
-    lan_status_b = build_lan_deterministic_status(snapshot=host_snapshot)
+    host_status = status_data_from_status(status_used)
+    lan_status_a = build_lan_deterministic_status(status=host_status)
+    lan_status_b = build_lan_deterministic_status(status=host_status)
 
     # LAN sim status uses the host's save snapshot for all peers, so both runs
     # should take the same path and consume the same RNG regardless of local saves.
@@ -93,3 +97,4 @@ def test_lan_deterministic_status_uses_host_save_snapshot() -> None:
     assert weapon_pick_random_available(state_d) == WeaponId.ASSAULT_RIFLE
     assert rng_c.calls == 3
     assert rng_d.calls == 3
+    assert hash_status_data(host_status) == hash_status_data(lan_status_a.as_data())

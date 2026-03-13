@@ -10,6 +10,7 @@ import structlog
 
 from ..game_modes import GameMode
 from ..logging import ensure_structlog_stdlib_defaults
+from ..persistence.save_status import GameStatusData
 from ..quests.level import QuestLevel
 from .relay_protocol import (
     LINK_TIMEOUT_MS,
@@ -35,7 +36,6 @@ from .relay_protocol import (
     RoomCreate,
     RoomJoin,
     RoomReady,
-    StatusSnapshot,
     builds_compatible,
 )
 from .relay_reliable import RelayReliableLink
@@ -101,7 +101,7 @@ class _Room(msgspec.Struct):
     input_delay_ticks: int
     rollback_max_ticks: int
     netcode_mode: NetcodeMode
-    status_snapshot: StatusSnapshot | None = None
+    status: GameStatusData | None = None
     started: bool = False
     seed: int = 0
     start_tick: int = 0
@@ -382,7 +382,7 @@ class RelayServer:
             input_delay_ticks=int(settings.input_delay_ticks),
             rollback_max_ticks=int(settings.rollback_max_ticks),
             netcode_mode=settings.netcode_mode,
-            status_snapshot=message.status_snapshot,
+            status=message.status,
             slots=slots,
         )
         self._rooms[code] = room
@@ -717,7 +717,7 @@ class RelayServer:
                 slot_index=int(slot_index),
                 host_slot_index=0,
                 reconnect_token=str(reconnect_token),
-                status_snapshot=room.status_snapshot,
+                status=room.status,
             ),
             reliable=True,
             now_ms=int(now_ms),

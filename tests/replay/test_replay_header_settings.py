@@ -6,9 +6,10 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.net.session_settings import LockstepSessionSettings, session_settings_for_lockstep
+from crimson.persistence.save_status import GameStatusData
 from crimson.quests.level import QuestLevel
 from crimson.replay.header_settings import replay_header_from_session_settings, session_settings_from_replay_header
-from crimson.replay.types import ReplayHeader, ReplayStatusSnapshot
+from crimson.replay.types import ReplayHeader
 
 
 def test_replay_header_from_session_settings_roundtrip() -> None:
@@ -20,7 +21,7 @@ def test_replay_header_from_session_settings_roundtrip() -> None:
         tick_rate=75,
         input_delay_ticks=2,
     )
-    status = ReplayStatusSnapshot(quest_unlock_index=4, quest_unlock_index_full=7)
+    status = GameStatusData(quest_unlock_index=4, quest_unlock_index_full=7)
     header = replay_header_from_session_settings(
         settings,
         seed=1234,

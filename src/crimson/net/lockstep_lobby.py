@@ -5,6 +5,7 @@ import uuid
 import msgspec
 
 from ..game_modes import GameMode
+from ..persistence.save_status import GameStatusData
 from ..quests.level import QuestLevel
 from .lockstep_protocol import (
     PROTOCOL_VERSION,
@@ -13,7 +14,6 @@ from .lockstep_protocol import (
     LobbyState,
     MatchStart,
     Ready,
-    StatusSnapshot,
     Welcome,
     builds_compatible,
 )
@@ -174,7 +174,7 @@ class HostLobby(msgspec.Struct):
         *,
         seed: int,
         start_tick: int = 0,
-        status_snapshot: StatusSnapshot | None = None,
+        status: GameStatusData | None = None,
     ) -> MatchStart:
         self.started = True
         return match_start_from_session_settings(
@@ -182,7 +182,7 @@ class HostLobby(msgspec.Struct):
             session_id=str(self.session_id),
             seed=int(seed),
             start_tick=int(start_tick),
-            status_snapshot=status_snapshot,
+            status=status,
         )
 
 

@@ -11,7 +11,6 @@ from ..game_modes import GameMode
 from ..math_parity import f32
 from .types import (
     REPLAY_FORMAT_VERSION,
-    WEAPON_USAGE_COUNT,
     PackedPlayerInput,
     PackedTickInputs,
     Replay,
@@ -53,13 +52,6 @@ def _quantize_f32(value: float) -> float:
     return float(f32(float(value)))
 
 
-def _validate_usage_counts(counts: tuple[int, ...] | list[int]) -> None:
-    if len(counts) != int(WEAPON_USAGE_COUNT):
-        raise ReplayCodecError(
-            f"replay header status.weapon_usage_counts must have {int(WEAPON_USAGE_COUNT)} entries",
-        )
-
-
 def _validate_claimed_stats(stats: ReplayClaimedStatsSnapshot) -> None:
     if int(stats.shots_hit) > int(stats.shots_fired):
         raise ReplayCodecError(
@@ -74,7 +66,6 @@ def _validate_header(header: ReplayHeader, *, from_load: bool) -> None:
         raise ReplayCodecError(
             f"unsupported replay format version in header: {int(header.replay_format_version)}",
         )
-    _validate_usage_counts(header.status.weapon_usage_counts)
     _validate_claimed_stats(header.claimed_stats)
     if int(header.game_mode_id) == int(GameMode.QUESTS):
         if header.quest_level is None:

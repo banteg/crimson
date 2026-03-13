@@ -13,7 +13,6 @@ from crimson.dbg.canonical_channels import (
     SimStateSnapshot,
     SnapshotBonusTimers,
     SnapshotGameplay,
-    SnapshotStatus,
     SnapshotVec2,
 )
 from crimson.dbg.schema import (
@@ -26,8 +25,8 @@ from crimson.dbg.schema import (
     channel_versions_for,
 )
 from crimson.dbg.trace import TraceError, TraceReader, write_trace
+from crimson.persistence.save_status import GameStatusData
 from crimson.replay.checkpoints import ReplayCheckpoint, ReplayDeathLedgerEntry
-from crimson.replay.types import WEAPON_USAGE_COUNT
 
 
 def _meta() -> TraceMeta:
@@ -41,6 +40,7 @@ def _meta() -> TraceMeta:
         channel_versions=channel_versions_for(TRACE_REQUIRED_CHANNELS),
         tick_range={"start_tick": 0, "end_tick": 2, "tick_count": 3},
         config={},
+        status=GameStatusData(),
     )
 
 
@@ -79,11 +79,6 @@ def _channels(*, tick_index: int, elapsed_ms: int, score_xp: int) -> ReplayTickC
                     energizer_ms=0,
                     double_experience_ms=0,
                     freeze_ms=0,
-                ),
-                status=SnapshotStatus(
-                    quest_unlock_index=0,
-                    quest_unlock_index_full=0,
-                    weapon_usage_counts=[0] * int(WEAPON_USAGE_COUNT),
                 ),
             ),
             players=[],

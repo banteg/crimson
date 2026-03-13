@@ -23,7 +23,11 @@ def test_weapon_assign_player_queues_reload_sfx_and_sets_aux_timer() -> None:
 
 
 def test_weapon_assign_player_skips_untracked_weapon_usage_ids() -> None:
-    status = save_status.GameStatus(path=Path("game.cfg"), data=save_status.default_status_data(), dirty=False)
+    status = save_status.GameStatus.from_data(
+        path=Path("game.cfg"),
+        data=save_status.default_status_data(),
+        dirty=False,
+    )
     state = GameplayState(status=status)
     player = PlayerState(index=0, pos=Vec2())
 

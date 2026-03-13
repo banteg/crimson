@@ -11,13 +11,13 @@ from crimson.dbg.canonical_channels import (
     SimStateSnapshot,
     SnapshotBonusTimers,
     SnapshotGameplay,
-    SnapshotStatus,
 )
 from crimson.dbg.schema import TRACE_SCHEMA_VERSION
 from crimson.dbg.trace import load_trace
 from crimson.game_modes import GameMode
+from crimson.persistence.save_status import GameStatusData
 from crimson.replay.checkpoints import ReplayCheckpoint
-from crimson.replay.types import WEAPON_USAGE_COUNT, Replay, ReplayHeader, ReplayStatusSnapshot, ReplayTick
+from crimson.replay.types import Replay, ReplayHeader, ReplayTick
 
 
 def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Path) -> None:
@@ -110,9 +110,7 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
         header=ReplayHeader(
             game_mode_id=GameMode.SURVIVAL,
             seed=0x1234,
-            status=ReplayStatusSnapshot(
-                weapon_usage_counts=(0,) * int(WEAPON_USAGE_COUNT),
-            ),
+            status=GameStatusData(),
         ),
         ticks=[ReplayTick(dt=0.016, inputs=[[0.0, 0.0, 0.0, 0.0, 0]])],
     )
@@ -172,11 +170,6 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
                     double_experience_ms=0,
                     freeze_ms=0,
                 ),
-                status=SnapshotStatus(
-                    quest_unlock_index=0,
-                    quest_unlock_index_full=0,
-                    weapon_usage_counts=[0] * int(WEAPON_USAGE_COUNT),
-                ),
             ),
             players=[],
         ),
@@ -191,5 +184,6 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
     assert summary.meta.trace_schema_version == TRACE_SCHEMA_VERSION
     meta, ticks, footer = load_trace(tmp_path / "sample.cdt")
     assert meta.trace_schema_version == TRACE_SCHEMA_VERSION
+    assert meta.status == replay.header.status
     assert footer.tick_count == 1
     assert ticks[0].channels.rng_stream[0].caller is None

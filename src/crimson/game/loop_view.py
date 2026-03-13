@@ -372,11 +372,11 @@ class GameLoopView:
                 RollbackRuntime,
             )
 
-        sim_status_snapshot = None
+        sim_status = None
         if str(pending.role) == "host":
-            from ..net.deterministic_status import status_snapshot_from_status
+            from ..net.deterministic_status import status_data_from_status
 
-            sim_status_snapshot = status_snapshot_from_status(self.state.status)
+            sim_status = status_data_from_status(self.state.status)
 
         if netcode_mode == "lockstep":
             endpoint = cfg.endpoint
@@ -390,7 +390,7 @@ class GameLoopView:
                     quest_level=cfg.quest_level,
                     preserve_bugs=False,
                     input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
-                    sim_status_snapshot=sim_status_snapshot,
+                    sim_status=sim_status,
                 )
             else:
                 runtime_cfg = JoinLockstepRuntimeConfig(
@@ -402,7 +402,7 @@ class GameLoopView:
                     quest_level=cfg.quest_level,
                     preserve_bugs=False,
                     input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
-                    sim_status_snapshot=sim_status_snapshot,
+                    sim_status=sim_status,
                 )
             runtime = LockstepRuntime(
                 runtime_cfg,
@@ -422,7 +422,7 @@ class GameLoopView:
                     input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
                     rollback_max_ticks=max(1, int(cfg.rollback_max_ticks)),
                     reconnect_timeout_ms=max(1000, int(cfg.reconnect_timeout_ms)),
-                    sim_status_snapshot=sim_status_snapshot,
+                    sim_status=sim_status,
                 )
             else:
                 runtime_cfg = JoinRollbackRuntimeConfig(
@@ -437,7 +437,7 @@ class GameLoopView:
                     input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
                     rollback_max_ticks=max(1, int(cfg.rollback_max_ticks)),
                     reconnect_timeout_ms=max(1000, int(cfg.reconnect_timeout_ms)),
-                    sim_status_snapshot=sim_status_snapshot,
+                    sim_status=sim_status,
                 )
             runtime = RollbackRuntime(
                 runtime_cfg,
@@ -633,13 +633,13 @@ class GameLoopView:
             if action in {"start_survival", "start_rush", "start_typo"}:
                 # Temporary: bump the counter on mode start so the Play Game overlay (F1)
                 # and Statistics screen reflect activity.
-                mode_name = {
-                    "start_survival": "survival",
-                    "start_rush": "rush",
-                    "start_typo": "typo",
+                mode_id = {
+                    "start_survival": GameMode.SURVIVAL,
+                    "start_rush": GameMode.RUSH,
+                    "start_typo": GameMode.TYPO,
                 }.get(action)
-                if mode_name is not None:
-                    self.state.status.increment_mode_play_count(mode_name)
+                if mode_id is not None:
+                    self.state.status.increment_mode_play_count_for_mode(mode_id)
             if action is not None:
                 view = self._front_views.get(action)
                 if view is not None:
@@ -942,7 +942,7 @@ class GameLoopView:
                     gameplay.set_lan_match_start(
                         seed=int(event.seed),
                         start_tick=int(event.start_tick),
-                        status_snapshot=event.status_snapshot,
+                        status=event.status,
                     )
 
     def _prepare_quest_run(self, gameplay: QuestMode) -> None:

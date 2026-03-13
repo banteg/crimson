@@ -10,6 +10,7 @@ import crimson
 import crimson.replay.codec as replay_codec_mod
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32
+from crimson.persistence.save_status import GameStatusData
 from crimson.replay import (
     ReplayClaimedStatsSnapshot,
     ReplayCodecError,
@@ -17,7 +18,6 @@ from crimson.replay import (
     ReplayGameVersionWarning,
     ReplayHeader,
     ReplayRecorder,
-    ReplayStatusSnapshot,
     dump_replay,
     load_replay,
     warn_on_game_version_mismatch,
@@ -71,7 +71,7 @@ def test_replay_codec_roundtrip() -> None:
         preserve_bugs=True,
         world_size=1024.0,
         player_count=2,
-        status=ReplayStatusSnapshot(quest_unlock_index=7, quest_unlock_index_full=40),
+        status=GameStatusData(quest_unlock_index=7, quest_unlock_index_full=40),
         input_quantization="f32",
     )
     rec = ReplayRecorder(header)

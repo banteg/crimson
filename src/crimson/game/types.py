@@ -27,10 +27,9 @@ if TYPE_CHECKING:
     from grim.terrain_render import GroundRenderer
 
     from ..modes.quest_mode import QuestRunOutcome
-    from ..net.lockstep_protocol import StatusSnapshot
     from ..net.lockstep_runtime import LockstepRuntime
     from ..net.rollback_runtime import RollbackRuntime
-    from ..persistence.save_status import GameStatus
+    from ..persistence.save_status import GameStatus, GameStatusData
 
 
 class GameConfig(msgspec.Struct, frozen=True):
@@ -144,7 +143,7 @@ class GameplayScreen(Screen, PauseBackground, Protocol):
         *,
         seed: int,
         start_tick: int = 0,
-        status_snapshot: "StatusSnapshot | None" = None,
+        status: "GameStatusData | None" = None,
     ) -> None: ...
 
     def steal_ground_for_menu(self) -> "GroundRenderer | None": ...

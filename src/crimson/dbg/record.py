@@ -17,7 +17,6 @@ from ..replay.driver.playback_driver import PlaybackWalkHooks, build_verify_play
 from ..replay.types import Replay
 from ..sim.timing import ftol_ms_i32
 from ..sim.world_state import WorldState
-from ..status_snapshot import debug_snapshot_from_progress_status, progress_status_from_game_status
 from .canonical_channels import (
     BonusEntitySample,
     CreatureEntitySample,
@@ -29,7 +28,6 @@ from .canonical_channels import (
     SnapshotBonusTimers,
     SnapshotGameplay,
     SnapshotPlayer,
-    SnapshotStatus,
     SnapshotVec2,
     SnapshotWeapon,
     bonus_timer_ms,
@@ -218,15 +216,6 @@ def _entity_samples_for_world(
         secondary_projectiles=secondary_projectiles,
         bonuses=bonuses,
     )
-
-
-def _status_snapshot_from_world(world: WorldState) -> SnapshotStatus:
-    gameplay = world.state
-    if gameplay.status is None:
-        raise ValueError("gameplay status missing while recording trace")
-    return debug_snapshot_from_progress_status(progress_status_from_game_status(gameplay.status))
-
-
 def _sim_state_from_world(world: WorldState, *, replay: Replay) -> SimStateSnapshot:
     gameplay = world.state
     players: list[SnapshotPlayer] = []
@@ -263,7 +252,6 @@ def _sim_state_from_world(world: WorldState, *, replay: Replay) -> SimStateSnaps
                 double_experience_ms=bonus_timer_ms(float(gameplay.bonuses.double_experience)),
                 freeze_ms=bonus_timer_ms(float(gameplay.bonuses.freeze)),
             ),
-            status=_status_snapshot_from_world(world),
         ),
         players=players,
     )
@@ -319,6 +307,7 @@ def _build_trace_meta(
             "tick_count": len(tick_rows),
         },
         config=config,
+        status=replay.header.status,
     )
 
 

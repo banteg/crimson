@@ -97,8 +97,7 @@ if TYPE_CHECKING:
     from ..creatures.runtime import CreatureDeath, CreaturePool
     from ..game.types import GameState
     from ..gameplay import GameplayState
-    from ..net.lockstep_protocol import StatusSnapshot
-    from ..persistence.save_status import GameStatus
+    from ..persistence.save_status import GameStatus, GameStatusData
     from ..replay import ReplayRecorder
     from ..sim.state_types import PlayerState
     from ..sim.world_state import WorldEvents
@@ -257,7 +256,7 @@ class BaseGameplayMode:
         self._status_base: GameStatus | None = None
         self._status_sim: GameStatus | None = None
         self._lan_status: GameStatus | None = None
-        self._lan_status_snapshot: StatusSnapshot | None = None
+        self._lan_status_data: GameStatusData | None = None
         self._local_input: LocalInputInterpreter = LocalInputInterpreter()
         self._game_over_ui: GameOverUi = GameOverUi(
             assets_root=self._assets_root,
@@ -421,11 +420,11 @@ class BaseGameplayMode:
     def _refresh_effective_status(self, *, reset_lan_status: bool) -> None:
         if self._lan_enabled:
             if reset_lan_status or self._lan_status is None:
-                self._lan_status = build_lan_deterministic_status(snapshot=self._lan_status_snapshot)
+                self._lan_status = build_lan_deterministic_status(status=self._lan_status_data)
             self._status_sim = self._lan_status
         else:
             self._lan_status = None
-            self._lan_status_snapshot = None
+            self._lan_status_data = None
             self._status_sim = self._status_base
 
         # Keep the currently-bound world state in sync (note that `open()` resets
@@ -453,12 +452,12 @@ class BaseGameplayMode:
         *,
         seed: int,
         start_tick: int = 0,
-        status_snapshot: StatusSnapshot | None = None,
+        status: GameStatusData | None = None,
     ) -> None:
         self._lan_seed_override = int(seed)
         self._lan_start_tick = int(start_tick)
-        if status_snapshot is not None:
-            self._lan_status_snapshot = status_snapshot
+        if status is not None:
+            self._lan_status_data = status
             if self._lan_enabled:
                 self._refresh_effective_status(reset_lan_status=True)
 

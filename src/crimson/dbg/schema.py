@@ -5,12 +5,13 @@ from typing import Any
 
 import msgspec
 
+from ..persistence.save_status import GameStatusData
 from ..replay.checkpoints import ReplayCheckpoint
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
 
 TRACE_MAGIC = b"crimson_debug_trace_v1\n"
 TRACE_FORMAT_VERSION = 1
-TRACE_SCHEMA_VERSION = 9
+TRACE_SCHEMA_VERSION = 10
 SUPPORTED_TRACE_SCHEMA_VERSIONS = frozenset((TRACE_SCHEMA_VERSION,))
 
 TRACE_REQUIRED_CHANNELS = (
@@ -49,6 +50,7 @@ class TraceMeta(msgspec.Struct):
     channel_versions: dict[str, int]
     tick_range: dict[str, int]
     config: dict[str, Any]
+    status: GameStatusData | None = None
 
 
 class ReplayTickChannels(msgspec.Struct):

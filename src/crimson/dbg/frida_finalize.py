@@ -12,13 +12,21 @@ import msgspec
 
 from ..game_modes import GameMode
 from ..net.session_settings import session_settings_for_lockstep
+from ..persistence.save_status import GameStatusData
 from ..quests.level import QuestLevel
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
 from ..replay.header_settings import replay_header_from_session_settings
-from ..replay.types import WEAPON_USAGE_COUNT, Replay, ReplayStatusSnapshot, ReplayTick
-from ..status_snapshot import progress_status_from_debug_snapshot, replay_status_from_progress
-from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
+from ..replay.types import Replay, ReplayTick
+from .canonical_channels import (
+    EntitySamplesSnapshot,
+    RngStreamRow,
+    SimStateSnapshot,
+    SnapshotBonusTimers,
+    SnapshotGameplay,
+    SnapshotPlayer,
+    TimingSampleRow,
+)
 from .payloads import BuiltinObject
 from .schema import (
     TRACE_FORMAT_VERSION,
@@ -63,9 +71,24 @@ class _CaptureRngStreamRow(msgspec.Struct, frozen=True, forbid_unknown_fields=Tr
     branch_id: str | None = None
 
 
+class _CaptureSnapshotGameplay(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    mode_id: int
+    quest_stage_major: int
+    quest_stage_minor: int
+    perk_pending_count: int
+    perk_choices_dirty: bool
+    bonus_timers: SnapshotBonusTimers
+    status: GameStatusData | None = None
+
+
+class _CaptureSimStateSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    gameplay: _CaptureSnapshotGameplay
+    players: list[SnapshotPlayer]
+
+
 class _TickChannels(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     checkpoint: ReplayCheckpoint
-    sim_state: SimStateSnapshot
+    sim_state: _CaptureSimStateSnapshot
     entity_samples: EntitySamplesSnapshot
     rng_stream: list[_CaptureRngStreamRow]
     timing_samples: list[TimingSampleRow]
@@ -257,7 +280,7 @@ class _OpenRun(msgspec.Struct):
     next_local_tick: int = 0
     replay_inputs: list[list[list[float | int]]] = msgspec.field(default_factory=list)
     replay_dt: list[float] = msgspec.field(default_factory=list)
-    replay_status: ReplayStatusSnapshot = msgspec.field(default_factory=lambda: ReplayStatusSnapshot())
+    status: GameStatusData = msgspec.field(default_factory=GameStatusData)
     channels_seen: set[str] = msgspec.field(default_factory=set)
     global_tick_first: int | None = None
     global_tick_last: int | None = None
@@ -312,9 +335,20 @@ def _canonical_channels_payload(
         rng_stream=list(channels.rng_stream),
         timing_samples=list(channels.timing_samples),
     )
+    gameplay = normalized.sim_state.gameplay
     return checkpoint, ReplayTickChannels(
         checkpoint=normalized.checkpoint,
-        sim_state=normalized.sim_state,
+        sim_state=SimStateSnapshot(
+            gameplay=SnapshotGameplay(
+                mode_id=int(gameplay.mode_id),
+                quest_stage_major=int(gameplay.quest_stage_major),
+                quest_stage_minor=int(gameplay.quest_stage_minor),
+                perk_pending_count=int(gameplay.perk_pending_count),
+                perk_choices_dirty=bool(gameplay.perk_choices_dirty),
+                bonus_timers=gameplay.bonus_timers,
+            ),
+            players=list(normalized.sim_state.players),
+        ),
         entity_samples=normalized.entity_samples,
         rng_stream=rng_stream,
         timing_samples=list(normalized.timing_samples),
@@ -437,20 +471,6 @@ def _validate_tick_channels(
             f"{field}.timing_samples.gpur_enter.frame_dt_ms_i32={int(gpur_enter.frame_dt_ms_i32)} "
             f"does not match tick.dt_ms_i32 {int(dt_ms_i32)}",
         )
-
-
-def _replay_status_from_channels(channels: _TickChannels) -> ReplayStatusSnapshot:
-    status = channels.sim_state.gameplay.status
-    expected_usage_count = int(WEAPON_USAGE_COUNT)
-    if len(status.weapon_usage_counts) != expected_usage_count:
-        raise FridaFinalizeError(
-            "sim_state.gameplay.status.weapon_usage_counts length mismatch: "
-            f"expected {expected_usage_count}, got {len(status.weapon_usage_counts)}",
-        )
-    progress = progress_status_from_debug_snapshot(status)
-    return replay_status_from_progress(progress)
-
-
 def _tick_iter_from_spool(path: Path):
     with Path(path).open("rb") as handle:
         while True:
@@ -544,6 +564,7 @@ def _build_meta(
             "tick_count": int(tick_count),
         },
         config=config,
+        status=run.status,
     )
 
 
@@ -610,7 +631,7 @@ def _write_run_trace(
     replay_header = replay_header_from_session_settings(
         settings,
         seed=int(run.replay_seed),
-        status=run.replay_status,
+        status=run.status,
     )
     replay_ticks = [
         ReplayTick(
@@ -792,7 +813,8 @@ def finalize_frida_jsonl_to_traces(
                             local_tick=int(active_run.next_local_tick),
                             field=f"{raw_path}.lines[{line_no}].channels",
                         )
-                        active_run.replay_status = _replay_status_from_channels(tick_row.channels)
+                        if int(active_run.tick_count) == 0 and tick_row.channels.sim_state.gameplay.status is not None:
+                            active_run.status = tick_row.channels.sim_state.gameplay.status
                         active_run.replay_inputs.append(list(replay_inputs))
                         active_run.replay_dt.append(float(tick_row.dt))
                         tick = TickRecord(

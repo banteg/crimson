@@ -3,7 +3,8 @@ from __future__ import annotations
 from ..game_modes import GameMode
 from ..net.lockstep_protocol import INPUT_DELAY_TICKS as LOCKSTEP_INPUT_DELAY_TICKS
 from ..net.session_settings import LockstepSessionSettings, session_settings_for_lockstep
-from .types import ReplayHeader, ReplayStatusSnapshot
+from ..persistence.save_status import GameStatusData
+from .types import ReplayHeader
 
 
 def session_settings_from_replay_header(
@@ -30,7 +31,7 @@ def replay_header_from_session_settings(
     detail_preset: int = 5,
     violence_disabled: int = 0,
     world_size: float = 1024.0,
-    status: ReplayStatusSnapshot | None = None,
+    status: GameStatusData | None = None,
 ) -> ReplayHeader:
     mode_raw = settings.mode_id
     try:
@@ -55,5 +56,5 @@ def replay_header_from_session_settings(
         violence_disabled=violence_disabled,
         world_size=world_size,
         player_count=settings.player_count,
-        status=ReplayStatusSnapshot() if status is None else status,
+        status=GameStatusData() if status is None else status,
     )

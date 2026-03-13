@@ -10,6 +10,7 @@ from typing import Literal, TypeAlias, cast
 import msgspec
 
 from ..game_modes import GameMode
+from ..persistence.save_status import GameStatusData
 from ..quests.level import QuestLevel
 from ..replay.types import PackedPlayerInput
 from ..sim.input_providers import GameCommand
@@ -31,7 +32,6 @@ from .lockstep_protocol import (
     NetMessage,
     PauseState,
     Ready,
-    StatusSnapshot,
     TickFrame,
     Welcome,
     current_build_id,
@@ -92,7 +92,7 @@ class _LockstepRuntimeConfigBase(msgspec.Struct):
     preserve_bugs: bool = False
     tick_rate: int = TICK_RATE
     input_delay_ticks: int = INPUT_DELAY_TICKS
-    sim_status_snapshot: StatusSnapshot | None = None
+    sim_status: GameStatusData | None = None
 
 
 class HostLockstepRuntimeConfig(_LockstepRuntimeConfigBase):
@@ -742,9 +742,9 @@ class LockstepRuntime(msgspec.Struct):
 
         # Start automatically once ready.
         if (not lobby.started) and lobby.all_ready():
-            status_snapshot = self.cfg.sim_status_snapshot
-            if status_snapshot is None:
-                self.error = "missing_sim_status_snapshot"
+            status = self.cfg.sim_status
+            if status is None:
+                self.error = "missing_sim_status"
                 lan_debug_log(
                     "net_sanity_error",
                     role="host",
@@ -755,7 +755,7 @@ class LockstepRuntime(msgspec.Struct):
             self.host_seed = int((_now_ms() * 1103515245 + 12345) & 0xFFFFFFFF)
             event = lobby.start_match(
                 seed=int(self.host_seed),
-                status_snapshot=status_snapshot,
+                status=status,
             )
             self.started = True
             self.host_match_start = event
@@ -771,8 +771,8 @@ class LockstepRuntime(msgspec.Struct):
                 start_tick=int(event.start_tick),
                 quest_level=str(event.quest_level or ""),
                 preserve_bugs=bool(event.preserve_bugs),
-                status_quest_unlock_index=int(status_snapshot.quest_unlock_index),
-                status_quest_unlock_index_full=int(status_snapshot.quest_unlock_index_full),
+                status_quest_unlock_index=int(status.quest_unlock_index),
+                status_quest_unlock_index_full=int(status.quest_unlock_index_full),
                 tick_rate=int(self.cfg.tick_rate),
                 input_delay_ticks=int(self.cfg.input_delay_ticks),
             )
@@ -1153,12 +1153,12 @@ class LockstepRuntime(msgspec.Struct):
             lobby.ingest_lobby_state(message)
             return
         if isinstance(message, MatchStart):
-            status_snapshot = message.status_snapshot
+            status = message.status
             status_unlock = 0
             status_unlock_full = 0
-            if status_snapshot is not None:
-                status_unlock = int(status_snapshot.quest_unlock_index)
-                status_unlock_full = int(status_snapshot.quest_unlock_index_full)
+            if status is not None:
+                status_unlock = int(status.quest_unlock_index)
+                status_unlock_full = int(status.quest_unlock_index_full)
             lan_debug_log(
                 "net_recv",
                 role="join",
@@ -1216,9 +1216,9 @@ class LockstepRuntime(msgspec.Struct):
                 )
                 return
 
-            status_snapshot = message.status_snapshot
-            if status_snapshot is None:
-                self._set_client_error("match_start_missing_status_snapshot")
+            status = message.status
+            if status is None:
+                self._set_client_error("match_start_missing_status")
                 lan_debug_log(
                     "net_sanity_error",
                     role="join",
