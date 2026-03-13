@@ -318,26 +318,22 @@ def _parsed_bind_pair(raw_block: dict[str, object], field: str) -> tuple[int, in
 
 
 def _parsed_player_bind_block_is_uninitialized(raw_block: dict[str, object]) -> bool:
-    if _parsed_bind_int(raw_block, "move_forward") != 0:
-        return False
-    if _parsed_bind_int(raw_block, "move_backward") != 0:
-        return False
-    if _parsed_bind_int(raw_block, "turn_left") != 0:
-        return False
-    if _parsed_bind_int(raw_block, "turn_right") != 0:
-        return False
-    if _parsed_bind_int(raw_block, "fire") != 0:
-        return False
-    reserved_keys = _parsed_bind_pair(raw_block, "reserved_keys")
-    if reserved_keys[0] != 0 or reserved_keys[1] != 0:
-        return False
-    if _parsed_bind_int(raw_block, "aim_left") != 0 or _parsed_bind_int(raw_block, "aim_right") != 0:
-        return False
-    if _parsed_bind_int(raw_block, "axis_aim_y") != 0 or _parsed_bind_int(raw_block, "axis_aim_x") != 0:
-        return False
-    if _parsed_bind_int(raw_block, "axis_move_y") != 0 or _parsed_bind_int(raw_block, "axis_move_x") != 0:
-        return False
-    return True
+    return not any(
+        (
+            _parsed_bind_int(raw_block, "move_forward"),
+            _parsed_bind_int(raw_block, "move_backward"),
+            _parsed_bind_int(raw_block, "turn_left"),
+            _parsed_bind_int(raw_block, "turn_right"),
+            _parsed_bind_int(raw_block, "fire"),
+            *_parsed_bind_pair(raw_block, "reserved_keys"),
+            _parsed_bind_int(raw_block, "aim_left"),
+            _parsed_bind_int(raw_block, "aim_right"),
+            _parsed_bind_int(raw_block, "axis_aim_y"),
+            _parsed_bind_int(raw_block, "axis_aim_x"),
+            _parsed_bind_int(raw_block, "axis_move_y"),
+            _parsed_bind_int(raw_block, "axis_move_x"),
+        ),
+    )
 
 
 def _player_controls_from_parsed_bind_block(
