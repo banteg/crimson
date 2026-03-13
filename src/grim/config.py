@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from enum import IntEnum
 from pathlib import Path
-from typing import TypedDict, cast
+from typing import cast
 
 import msgspec
 from construct import Array, Byte, Bytes, Float32l, Int32sl, Struct
@@ -31,6 +31,8 @@ EXT_DIRECTION_ARROW_ON = 2
 KEYBIND_UNBOUND_CODE = 0x17E
 RESERVED_KEYBIND_SLOT_COUNT = 2
 PADDING_KEYBIND_SLOT_COUNT = 3
+_DEFAULT_WIRE_RESERVED_KEYS = (KEYBIND_UNBOUND_CODE, KEYBIND_UNBOUND_CODE)
+_DEFAULT_WIRE_PADDING = (KEYBIND_UNBOUND_CODE, KEYBIND_UNBOUND_CODE, KEYBIND_UNBOUND_CODE)
 
 PLAYER_BIND_BLOCK_STRUCT = Struct(
     "move_forward" / Int32sl,
@@ -47,52 +49,6 @@ PLAYER_BIND_BLOCK_STRUCT = Struct(
     "axis_move_x" / Int32sl,
     "padding" / Array(PADDING_KEYBIND_SLOT_COUNT, Int32sl),
 )
-
-
-class _RawPlayerBindBlock(msgspec.Struct, frozen=True):
-    move_codes: tuple[int, int, int, int]
-    fire_code: int
-    reserved_keys: tuple[int, int]
-    keyboard_aim_codes: tuple[int, int]
-    aim_axis_codes: tuple[int, int]
-    move_axis_codes: tuple[int, int]
-    padding: tuple[int, int, int]
-
-
-class _ParsedPlayerBindBlockDict(TypedDict):
-    move_forward: int
-    move_backward: int
-    turn_left: int
-    turn_right: int
-    fire: int
-    reserved_keys: list[int]
-    aim_left: int
-    aim_right: int
-    axis_aim_y: int
-    axis_aim_x: int
-    axis_move_y: int
-    axis_move_x: int
-    padding: list[int]
-
-
-def _parsed_player_bind_block(raw_block: object) -> _RawPlayerBindBlock:
-    block = cast(_ParsedPlayerBindBlockDict, raw_block)
-    reserved_keys = block["reserved_keys"]
-    padding = block["padding"]
-    return _RawPlayerBindBlock(
-        move_codes=(
-            block["move_forward"],
-            block["move_backward"],
-            block["turn_left"],
-            block["turn_right"],
-        ),
-        fire_code=block["fire"],
-        reserved_keys=(reserved_keys[0], reserved_keys[1]),
-        keyboard_aim_codes=(block["aim_left"], block["aim_right"]),
-        aim_axis_codes=(block["axis_aim_y"], block["axis_aim_x"]),
-        move_axis_codes=(block["axis_move_y"], block["axis_move_x"]),
-        padding=(padding[0], padding[1], padding[2]),
-    )
 
 CRIMSON_CFG_STRUCT = Struct(
     "sound_disable" / Byte,
@@ -160,45 +116,6 @@ CRIMSON_CFG_STRUCT = Struct(
     "mouse_sensitivity" / Float32l,
     "keybind_pick_perk" / Int32sl,
     "keybind_reload" / Int32sl,
-)
-
-_DEFAULT_PLAYER_BIND_BLOCKS: tuple[_RawPlayerBindBlock, ...] = (
-    _RawPlayerBindBlock(
-        move_codes=(0x11, 0x1F, 0x1E, 0x20),
-        fire_code=0x100,
-        reserved_keys=(0x17E, 0x17E),
-        keyboard_aim_codes=(0x10, 0x12),
-        aim_axis_codes=(0x13F, 0x140),
-        move_axis_codes=(0x141, 0x153),
-        padding=(0x17E, 0x17E, 0x17E),
-    ),
-    _RawPlayerBindBlock(
-        move_codes=(0xC8, 0xD0, 0xCB, 0xCD),
-        fire_code=0x9D,
-        reserved_keys=(0x17E, 0x17E),
-        keyboard_aim_codes=(0xD3, 0xD1),
-        aim_axis_codes=(0x13F, 0x140),
-        move_axis_codes=(0x141, 0x153),
-        padding=(0x17E, 0x17E, 0x17E),
-    ),
-    _RawPlayerBindBlock(
-        move_codes=(0x17, 0x25, 0x24, 0x26),
-        fire_code=0x36,
-        reserved_keys=(0x17E, 0x17E),
-        keyboard_aim_codes=(0x16, 0x18),
-        aim_axis_codes=(0x17E, 0x17E),
-        move_axis_codes=(0x17E, 0x17E),
-        padding=(0x17E, 0x17E, 0x17E),
-    ),
-    _RawPlayerBindBlock(
-        move_codes=(0x131, 0x132, 0x133, 0x134),
-        fire_code=0x11F,
-        reserved_keys=(0x17E, 0x17E),
-        keyboard_aim_codes=(0x17E, 0x17E),
-        aim_axis_codes=(0x140, 0x13F),
-        move_axis_codes=(0x153, 0x154),
-        padding=(0x17E, 0x17E, 0x17E),
-    ),
 )
 
 _DEFAULT_PROFILE_NAME = "10tons"
@@ -306,6 +223,50 @@ class CrimsonPlayerControls(msgspec.Struct):
     move_axis_codes: tuple[int, int]
 
 
+_DEFAULT_PLAYER_CONTROL_TEMPLATES: tuple[CrimsonPlayerControls, ...] = (
+    CrimsonPlayerControls(
+        movement=MovementControlType.STATIC,
+        aim_scheme=AimScheme.MOUSE,
+        show_direction_arrow=True,
+        move_codes=(0x11, 0x1F, 0x1E, 0x20),
+        fire_code=0x100,
+        keyboard_aim_codes=(0x10, 0x12),
+        aim_axis_codes=(0x13F, 0x140),
+        move_axis_codes=(0x141, 0x153),
+    ),
+    CrimsonPlayerControls(
+        movement=MovementControlType.STATIC,
+        aim_scheme=AimScheme.MOUSE,
+        show_direction_arrow=True,
+        move_codes=(0xC8, 0xD0, 0xCB, 0xCD),
+        fire_code=0x9D,
+        keyboard_aim_codes=(0xD3, 0xD1),
+        aim_axis_codes=(0x13F, 0x140),
+        move_axis_codes=(0x141, 0x153),
+    ),
+    CrimsonPlayerControls(
+        movement=MovementControlType.STATIC,
+        aim_scheme=AimScheme.MOUSE,
+        show_direction_arrow=True,
+        move_codes=(0x17, 0x25, 0x24, 0x26),
+        fire_code=0x36,
+        keyboard_aim_codes=(0x16, 0x18),
+        aim_axis_codes=(0x17E, 0x17E),
+        move_axis_codes=(0x17E, 0x17E),
+    ),
+    CrimsonPlayerControls(
+        movement=MovementControlType.STATIC,
+        aim_scheme=AimScheme.MOUSE,
+        show_direction_arrow=True,
+        move_codes=(0x131, 0x132, 0x133, 0x134),
+        fire_code=0x11F,
+        keyboard_aim_codes=(0x17E, 0x17E),
+        aim_axis_codes=(0x140, 0x13F),
+        move_axis_codes=(0x153, 0x154),
+    ),
+)
+
+
 class CrimsonControlsConfig(msgspec.Struct):
     players: tuple[CrimsonPlayerControls, CrimsonPlayerControls, CrimsonPlayerControls, CrimsonPlayerControls]
     pick_perk_code: int
@@ -340,49 +301,55 @@ def _require_range(value: int, *, minimum: int, maximum: int, field: str) -> int
     return value
 
 
-def _raw_player_bind_block_is_uninitialized(raw_block: _RawPlayerBindBlock) -> bool:
-    if raw_block.move_codes[0] != 0:
+def _parsed_player_bind_block(raw: dict[str, object], *, player_index: int) -> dict[str, object]:
+    idx = _player_index(player_index)
+    if idx < 2:
+        return cast(dict[str, object], cast(list[object], raw["keybinds_p1_p2"])[idx])
+    return cast(dict[str, object], cast(list[object], raw["extended_keybinds_p3_p4"])[idx - 2])
+
+
+def _parsed_bind_int(raw_block: dict[str, object], field: str) -> int:
+    return int(cast(int, raw_block[field]))
+
+
+def _parsed_bind_pair(raw_block: dict[str, object], field: str) -> tuple[int, int]:
+    values = cast(list[object], raw_block[field])
+    return int(cast(int, values[0])), int(cast(int, values[1]))
+
+
+def _parsed_player_bind_block_is_uninitialized(raw_block: dict[str, object]) -> bool:
+    if _parsed_bind_int(raw_block, "move_forward") != 0:
         return False
-    if raw_block.move_codes[1] != 0:
+    if _parsed_bind_int(raw_block, "move_backward") != 0:
         return False
-    if raw_block.move_codes[2] != 0:
+    if _parsed_bind_int(raw_block, "turn_left") != 0:
         return False
-    if raw_block.move_codes[3] != 0:
+    if _parsed_bind_int(raw_block, "turn_right") != 0:
         return False
-    if raw_block.fire_code != 0:
+    if _parsed_bind_int(raw_block, "fire") != 0:
         return False
-    if raw_block.reserved_keys[0] != 0 or raw_block.reserved_keys[1] != 0:
+    reserved_keys = _parsed_bind_pair(raw_block, "reserved_keys")
+    if reserved_keys[0] != 0 or reserved_keys[1] != 0:
         return False
-    if raw_block.keyboard_aim_codes[0] != 0 or raw_block.keyboard_aim_codes[1] != 0:
+    if _parsed_bind_int(raw_block, "aim_left") != 0 or _parsed_bind_int(raw_block, "aim_right") != 0:
         return False
-    if raw_block.aim_axis_codes[0] != 0 or raw_block.aim_axis_codes[1] != 0:
+    if _parsed_bind_int(raw_block, "axis_aim_y") != 0 or _parsed_bind_int(raw_block, "axis_aim_x") != 0:
         return False
-    if raw_block.move_axis_codes[0] != 0 or raw_block.move_axis_codes[1] != 0:
+    if _parsed_bind_int(raw_block, "axis_move_y") != 0 or _parsed_bind_int(raw_block, "axis_move_x") != 0:
         return False
     return True
 
 
-def _default_player_bind_block(player_index: int) -> _RawPlayerBindBlock:
-    return _DEFAULT_PLAYER_BIND_BLOCKS[_player_index(player_index)]
-
-
-def _raw_player_bind_block(raw: dict[str, object], *, player_index: int) -> _RawPlayerBindBlock:
-    idx = _player_index(player_index)
-    if idx < 2:
-        return _parsed_player_bind_block(cast(list[object], raw["keybinds_p1_p2"])[idx])
-    return _parsed_player_bind_block(cast(list[object], raw["extended_keybinds_p3_p4"])[idx - 2])
-
-
-def _player_controls_from_raw_bind_block(
-    raw_block: _RawPlayerBindBlock,
+def _player_controls_from_parsed_bind_block(
+    raw_block: dict[str, object],
     *,
     player_index: int,
     movement: MovementControlType,
     aim_scheme: AimScheme,
     show_direction_arrow: bool,
 ) -> CrimsonPlayerControls:
-    if _raw_player_bind_block_is_uninitialized(raw_block):
-        defaults = _default_player_bind_block(player_index)
+    if _parsed_player_bind_block_is_uninitialized(raw_block):
+        defaults = _default_player_controls(player_index)
         return CrimsonPlayerControls(
             movement=movement,
             aim_scheme=aim_scheme,
@@ -397,30 +364,35 @@ def _player_controls_from_raw_bind_block(
         movement=movement,
         aim_scheme=aim_scheme,
         show_direction_arrow=show_direction_arrow,
-        move_codes=raw_block.move_codes,
-        fire_code=raw_block.fire_code,
-        keyboard_aim_codes=raw_block.keyboard_aim_codes,
-        aim_axis_codes=raw_block.aim_axis_codes,
-        move_axis_codes=raw_block.move_axis_codes,
+        move_codes=(
+            _parsed_bind_int(raw_block, "move_forward"),
+            _parsed_bind_int(raw_block, "move_backward"),
+            _parsed_bind_int(raw_block, "turn_left"),
+            _parsed_bind_int(raw_block, "turn_right"),
+        ),
+        fire_code=_parsed_bind_int(raw_block, "fire"),
+        keyboard_aim_codes=(_parsed_bind_int(raw_block, "aim_left"), _parsed_bind_int(raw_block, "aim_right")),
+        aim_axis_codes=(_parsed_bind_int(raw_block, "axis_aim_y"), _parsed_bind_int(raw_block, "axis_aim_x")),
+        move_axis_codes=(_parsed_bind_int(raw_block, "axis_move_y"), _parsed_bind_int(raw_block, "axis_move_x")),
     )
 
 
 def _encode_player_bind_block(player: CrimsonPlayerControls, *, player_index: int) -> dict[str, object]:
-    defaults = _default_player_bind_block(player_index)
+    _ = player_index
     return {
         "move_forward": player.move_codes[0],
         "move_backward": player.move_codes[1],
         "turn_left": player.move_codes[2],
         "turn_right": player.move_codes[3],
         "fire": player.fire_code,
-        "reserved_keys": [defaults.reserved_keys[0], defaults.reserved_keys[1]],
+        "reserved_keys": [int(_DEFAULT_WIRE_RESERVED_KEYS[0]), int(_DEFAULT_WIRE_RESERVED_KEYS[1])],
         "aim_left": player.keyboard_aim_codes[0],
         "aim_right": player.keyboard_aim_codes[1],
         "axis_aim_y": player.aim_axis_codes[0],
         "axis_aim_x": player.aim_axis_codes[1],
         "axis_move_y": player.move_axis_codes[0],
         "axis_move_x": player.move_axis_codes[1],
-        "padding": [defaults.padding[0], defaults.padding[1], defaults.padding[2]],
+        "padding": [int(_DEFAULT_WIRE_PADDING[0]), int(_DEFAULT_WIRE_PADDING[1]), int(_DEFAULT_WIRE_PADDING[2])],
     }
 
 
@@ -512,11 +484,11 @@ def _saved_name_order_values() -> tuple[int, ...]:
 
 
 def _default_player_controls(player_index: int) -> CrimsonPlayerControls:
-    defaults = _default_player_bind_block(player_index)
+    defaults = _DEFAULT_PLAYER_CONTROL_TEMPLATES[_player_index(player_index)]
     return CrimsonPlayerControls(
-        movement=MovementControlType.STATIC,
-        aim_scheme=AimScheme.MOUSE,
-        show_direction_arrow=True,
+        movement=defaults.movement,
+        aim_scheme=defaults.aim_scheme,
+        show_direction_arrow=defaults.show_direction_arrow,
         move_codes=defaults.move_codes,
         fire_code=defaults.fire_code,
         keyboard_aim_codes=defaults.keyboard_aim_codes,
@@ -595,8 +567,8 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
         detail_preset = _require_range(detail_preset, minimum=1, maximum=5, field="detail_preset")
 
     players = tuple(
-        _player_controls_from_raw_bind_block(
-            _raw_player_bind_block(raw, player_index=idx),
+        _player_controls_from_parsed_bind_block(
+            _parsed_player_bind_block(raw, player_index=idx),
             player_index=idx,
             movement=_decode_movement(raw["player_mode_flags"][idx]),
             aim_scheme=_decode_aim_scheme(raw["aim_schemes"][idx]),
