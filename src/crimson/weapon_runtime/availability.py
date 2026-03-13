@@ -1,14 +1,53 @@
 from __future__ import annotations
 
 from ..game_modes import GameMode
+from ..persistence.save_status import GameStatus
 from ..quests import all_quests
 from ..quests.level import QuestLevel
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import GameplayState, WeaponAvailabilityCacheKey
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
-from ..weapons import WeaponId
+from ..weapons import WEAPON_TABLE, WeaponId
 
 WEAPON_DROP_ID_COUNT = 0x21  # weapon ids 1..33
+WEAPON_AVAILABLE_COUNT = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
+
+
+def build_weapon_availability(
+    *,
+    status: GameStatus | None,
+    game_mode: GameMode,
+    demo_mode_active: bool,
+) -> list[bool]:
+    available = [False] * WEAPON_AVAILABLE_COUNT
+    unlock_index = 0
+    unlock_index_full = 0
+    if status is not None:
+        unlock_index = status.quest_unlock_index
+        unlock_index_full = status.quest_unlock_index_full
+
+    pistol_id = WeaponId.PISTOL
+    if 0 <= pistol_id < len(available):
+        available[pistol_id] = True
+
+    if unlock_index > 0:
+        quests = all_quests()
+        for quest in quests[:unlock_index]:
+            weapon_id = quest.unlock_weapon_id
+            if weapon_id is not None and 0 < weapon_id < len(available):
+                available[weapon_id] = True
+
+    if game_mode == GameMode.SURVIVAL:
+        for weapon_id in (WeaponId.ASSAULT_RIFLE, WeaponId.SHOTGUN, WeaponId.SUBMACHINE_GUN):
+            if 0 <= weapon_id < len(available):
+                available[weapon_id] = True
+
+    if (not demo_mode_active) and unlock_index_full >= 0x28:
+        splitter_id = WeaponId.SPLITTER_GUN
+        if 0 <= splitter_id < len(available):
+            available[splitter_id] = True
+
+    return available
 
 
 def weapon_refresh_available(state: GameplayState) -> None:
@@ -33,37 +72,11 @@ def weapon_refresh_available(state: GameplayState) -> None:
     if state._weapon_available_key == cache_key:
         return
 
-    # Clear unlocked flags.
-    available = state.weapon_available
-    for idx in range(len(available)):
-        available[idx] = False
-
-    # Pistol is always available.
-    pistol_id = WeaponId.PISTOL
-    if 0 <= pistol_id < len(available):
-        available[pistol_id] = True
-
-    # Unlock weapons from the quest list (first `quest_unlock_index` entries).
-    if unlock_index > 0:
-        quests = all_quests()
-        for quest in quests[:unlock_index]:
-            weapon_id = quest.unlock_weapon_id
-            if weapon_id is not None and 0 < weapon_id < len(available):
-                available[weapon_id] = True
-
-    # Survival default loadout: Assault Rifle, Shotgun, Submachine Gun.
-    if game_mode == GameMode.SURVIVAL:
-        for weapon_id in (WeaponId.ASSAULT_RIFLE, WeaponId.SHOTGUN, WeaponId.SUBMACHINE_GUN):
-            if 0 <= weapon_id < len(available):
-                available[weapon_id] = True
-
-    # Secret unlock: Splitter Gun (weapon id 29) becomes available once the hardcore
-    # unlock track reaches stage 5 (quest_unlock_index_full >= 40).
-    if (not state.demo_mode_active) and unlock_index_full >= 0x28:
-        splitter_id = WeaponId.SPLITTER_GUN
-        if 0 <= splitter_id < len(available):
-            available[splitter_id] = True
-
+    state.weapon_available[:] = build_weapon_availability(
+        status=status,
+        game_mode=game_mode,
+        demo_mode_active=state.demo_mode_active,
+    )
     state._weapon_available_key = cache_key
 
 

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import cast
-
 from grim.audio import play_sfx
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
@@ -308,22 +306,10 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         return track_x, track_y, track_h, thumb_top, thumb_h, scroll_span
 
     def _build_perk_database_ids(self) -> list[PerkId]:
-        from ...perks.availability import perks_rebuild_available
-        from ...sim.state_types import PERK_COUNT_SIZE, GameplayState, PerkAvailabilityCacheKey
+        from ...perks.availability import build_perk_availability
 
-        # Avoid spinning up a full GameplayState; perks_rebuild_available only needs these fields.
-        class _Stub:
-            status: object | None
-            perk_available: list[bool]
-            _perk_available_key: PerkAvailabilityCacheKey | None
-
-        stub = _Stub()
-        stub.status = self.state.status
-        stub.perk_available = [False] * int(PERK_COUNT_SIZE)
-        stub._perk_available_key = None
-        perks_rebuild_available(cast(GameplayState, stub))
-
-        perk_ids = [PerkId(idx) for idx, available in enumerate(stub.perk_available) if available and idx > 0]
+        available = build_perk_availability(status=self.state.status)
+        perk_ids = [PerkId(idx) for idx, available in enumerate(available) if available and idx > 0]
         perk_ids.sort()
         return perk_ids
 

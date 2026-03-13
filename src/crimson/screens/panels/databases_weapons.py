@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from grim.assets import TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -157,48 +156,24 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         self._selected_weapon_id = None
 
     def _build_weapon_database_ids(self) -> list[int]:
+        from ...game_modes import GameMode
+        from ...weapon_runtime.availability import build_weapon_availability
         from ...weapon_usage import weapon_usage_slot_for_weapon_id
         from ...weapons import WEAPON_TABLE, WeaponId
 
-        available: list[bool] | None = None
-        from ...game_modes import GameMode
-        from ...gameplay import WEAPON_COUNT_SIZE
-        from ...sim.state_types import WeaponAvailabilityCacheKey
-        from ...weapon_runtime import (
-            weapon_refresh_available as refresh_available,
+        available = build_weapon_availability(
+            status=self.state.status,
+            game_mode=GameMode(self.state.config.game_mode),
+            demo_mode_active=self.state.demo_enabled,
         )
-
-        weapon_refresh_available = cast(Callable[..., None], refresh_available)
-
-        if weapon_refresh_available is not None:
-            class _Stub:
-                status: object | None
-                game_mode: GameMode
-                demo_mode_active: bool
-                weapon_available: list[bool]
-                _weapon_available_key: WeaponAvailabilityCacheKey | None
-
-            stub = _Stub()
-            stub.status = self.state.status
-            stub.game_mode = GameMode(self.state.config.game_mode)
-            stub.demo_mode_active = self.state.demo_enabled
-            stub.weapon_available = [False] * int(WEAPON_COUNT_SIZE)
-            stub._weapon_available_key = None
-            try:
-                weapon_refresh_available(stub)
-                available = stub.weapon_available
-            except (AttributeError, IndexError, TypeError, ValueError):
-                available = None
-
         status = self.state.status
         used: list[int] = []
         for weapon in WEAPON_TABLE:
             weapon_id = int(weapon.weapon_id)
             include = False
-            if available is not None:
-                if 0 <= weapon_id < len(available):
-                    include = bool(available[weapon_id])
-            else:
+            if 0 <= weapon_id < len(available):
+                include = bool(available[weapon_id])
+            if not include:
                 if weapon_id == WeaponId.PISTOL:
                     include = True
                 else:
