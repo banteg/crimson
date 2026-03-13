@@ -51,12 +51,14 @@ PlayerKeybindBlock: TypeAlias = tuple[
     int,
 ]
 
+PLAYER_BIND_BLOCK_STRUCT = Array(PLAYER_BIND_BLOCK_DWORDS, Int32sl)
+
 CRIMSON_CFG_STRUCT = Struct(
     "sound_disable" / Byte,
     "music_disable" / Byte,
     "highscore_date_mode" / Byte,
     "highscore_duplicate_mode" / Byte,
-    "direction_arrow_flags" / Bytes(2),
+    "direction_arrow_flags" / Array(2, Byte),
     "unknown_06" / Bytes(2),
     "unknown_08" / Int32sl,
     "unknown_0c" / Bytes(2),
@@ -67,15 +69,9 @@ CRIMSON_CFG_STRUCT = Struct(
     "unknown_12" / Bytes(2),
     "player_count" / Int32sl,
     "game_mode" / Int32sl,
-    "player_mode_flag_p1" / Int32sl,
-    "player_mode_flag_p2" / Int32sl,
-    "player_mode_flag_p3" / Int32sl,
-    "player_mode_flag_p4" / Int32sl,
+    "player_mode_flags" / Array(4, Int32sl),
     "player_mode_flags_reserved" / Bytes(0x18),
-    "aim_scheme_p1" / Int32sl,
-    "aim_scheme_p2" / Int32sl,
-    "aim_scheme_p3" / Int32sl,
-    "aim_scheme_p4" / Int32sl,
+    "aim_schemes" / Array(4, Int32sl),
     "aim_schemes_reserved" / Bytes(0x18),
     "unknown_6c" / Int32sl,
     "texture_scale" / Float32l,
@@ -96,12 +92,11 @@ CRIMSON_CFG_STRUCT = Struct(
     "screen_height" / Int32sl,
     "windowed_flag" / Byte,
     "unknown_1c5" / Bytes(3),
-    "keybinds" / Bytes(KEYBINDS_BLOB_SIZE),
+    "keybinds_p1_p2" / Array(2, PLAYER_BIND_BLOCK_STRUCT),
     # The original wire format leaves this 0x1F8-byte gap uninterpreted.
     # The Python port uses the front of it for P3/P4 control bindings and
     # their direction-arrow flags, while preserving the remaining bytes.
-    "extended_keybinds_p3" / Array(PLAYER_BIND_BLOCK_DWORDS, Int32sl),
-    "extended_keybinds_p4" / Array(PLAYER_BIND_BLOCK_DWORDS, Int32sl),
+    "extended_keybinds_p3_p4" / Array(2, PLAYER_BIND_BLOCK_STRUCT),
     "extended_direction_arrow_flags" / Array(EXT_DIRECTION_ARROW_FLAG_COUNT, Byte),
     "extended_reserved_gap" / Bytes(EXTENDED_RESERVED_GAP_SIZE),
     "unknown_440" / Int32sl,
@@ -352,14 +347,6 @@ def _require_range(value: int, *, minimum: int, maximum: int, field: str) -> int
     return value
 
 
-def _read_dword_block(blob: bytes | bytearray, *, offset: int) -> tuple[int, ...]:
-    values: list[int] = []
-    for idx in range(PLAYER_BIND_BLOCK_DWORDS):
-        start = offset + idx * 4
-        values.append(int.from_bytes(blob[start : start + 4], "little"))
-    return tuple(values)
-
-
 def _block_uninitialized(values: Sequence[int]) -> bool:
     for idx in range(min(len(values), PLAYER_BIND_INPUT_DWORDS)):
         if int(values[idx]) != 0:
@@ -376,28 +363,26 @@ def _player_keybind_block(values: Sequence[int]) -> PlayerKeybindBlock:
 def _decode_player_bind_block(raw: dict, *, player_index: int) -> PlayerKeybindBlock:
     idx = _player_index(player_index)
     if idx < 2:
-        block = _read_dword_block(raw["keybinds"], offset=idx * PLAYER_BIND_BLOCK_SIZE)
+        block = tuple(int(value) for value in raw["keybinds_p1_p2"][idx])
     else:
-        field = "extended_keybinds_p3" if idx == 2 else "extended_keybinds_p4"
-        block = tuple(int(value) for value in raw[field])
+        block = tuple(int(value) for value in raw["extended_keybinds_p3_p4"][idx - 2])
     if _block_uninitialized(block):
         return _default_player_bind_block(idx)
     return _player_keybind_block(block)
 
 
-def _encode_keybind_blob(players: Sequence[CrimsonPlayerControls]) -> bytes:
-    blob = bytearray(KEYBINDS_BLOB_SIZE)
-    for idx in range(2):
-        for slot, value in enumerate(players[idx].keybinds):
-            start = idx * PLAYER_BIND_BLOCK_SIZE + slot * 4
-            blob[start : start + 4] = int(value).to_bytes(4, "little")
-    return bytes(blob)
+def _encode_primary_keybinds(players: Sequence[CrimsonPlayerControls]) -> list[list[int]]:
+    return [[int(value) for value in players[idx].keybinds] for idx in range(2)]
+
+
+def _encode_extended_keybinds(players: Sequence[CrimsonPlayerControls]) -> list[list[int]]:
+    return [[int(value) for value in players[idx].keybinds] for idx in range(2, 4)]
 
 
 def _decode_direction_arrow(raw: dict, *, player_index: int) -> bool:
     idx = _player_index(player_index)
     if idx < 2:
-        return bool(raw["direction_arrow_flags"][idx])
+        return bool(int(raw["direction_arrow_flags"][idx]))
 
     value = int(raw["extended_direction_arrow_flags"][idx - 2])
     if value == EXT_DIRECTION_ARROW_OFF:
@@ -407,14 +392,14 @@ def _decode_direction_arrow(raw: dict, *, player_index: int) -> bool:
     raise ValueError(f"unsupported extended direction arrow flag value: {value}")
 
 
-def _encode_direction_arrow_flags(players: Sequence[CrimsonPlayerControls]) -> tuple[bytes, tuple[int, int]]:
-    primary = bytearray(b"\x01\x01")
+def _encode_direction_arrow_flags(players: Sequence[CrimsonPlayerControls]) -> tuple[list[int], tuple[int, int]]:
+    primary = [1, 1]
     for idx in range(2):
         primary[idx] = 1 if bool(players[idx].show_direction_arrow) else 0
     extended: list[int] = []
     for idx in range(2, 4):
         extended.append(EXT_DIRECTION_ARROW_ON if bool(players[idx].show_direction_arrow) else EXT_DIRECTION_ARROW_OFF)
-    return bytes(primary), (extended[0], extended[1])
+    return primary, (extended[0], extended[1])
 
 
 def _decode_movement(value: int) -> MovementControlType:
@@ -562,8 +547,8 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
 
     players = tuple(
         CrimsonPlayerControls(
-            movement=_decode_movement(raw[f"player_mode_flag_p{idx + 1}"]),
-            aim_scheme=_decode_aim_scheme(raw[f"aim_scheme_p{idx + 1}"]),
+            movement=_decode_movement(raw["player_mode_flags"][idx]),
+            aim_scheme=_decode_aim_scheme(raw["aim_schemes"][idx]),
             keybinds=_decode_player_bind_block(raw, player_index=idx),
             show_direction_arrow=_decode_direction_arrow(raw, player_index=idx),
         )
@@ -651,10 +636,8 @@ def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
         field="player_count",
     )
     data["game_mode"] = int(config.gameplay.mode)
-    for idx in range(4):
-        player = config.controls.player(idx)
-        data[f"player_mode_flag_p{idx + 1}"] = int(player.movement)
-        data[f"aim_scheme_p{idx + 1}"] = int(player.aim_scheme)
+    data["player_mode_flags"] = [int(player.movement) for player in config.controls.players]
+    data["aim_schemes"] = [int(player.aim_scheme) for player in config.controls.players]
     data["texture_scale"] = float(config.display.texture_scale)
     data["selected_saved_name_slot"] = _require_range(
         int(config.profile.selected_saved_name_slot),
@@ -684,9 +667,8 @@ def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
     data["screen_width"] = int(config.display.width)
     data["screen_height"] = int(config.display.height)
     data["windowed_flag"] = 1 if config.display.windowed else 0
-    data["keybinds"] = _encode_keybind_blob(config.controls.players)
-    data["extended_keybinds_p3"] = list(config.controls.player(2).keybinds)
-    data["extended_keybinds_p4"] = list(config.controls.player(3).keybinds)
+    data["keybinds_p1_p2"] = _encode_primary_keybinds(config.controls.players)
+    data["extended_keybinds_p3_p4"] = _encode_extended_keybinds(config.controls.players)
     data["extended_direction_arrow_flags"] = [int(extended_direction_arrows[0]), int(extended_direction_arrows[1])]
     data["hardcore_flag"] = 1 if config.gameplay.hardcore else 0
     data["ui_info_texts"] = 1 if config.gameplay.show_info_texts else 0
