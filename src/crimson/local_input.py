@@ -245,11 +245,6 @@ class LocalInputInterpreter:
             state.aim_heading = float(player.aim_heading)
         return state
 
-    @staticmethod
-    def _safe_controls_modes(config: CrimsonConfig, *, player_index: int) -> tuple[AimScheme, MovementControlType]:
-        player_controls = config.controls.player(int(player_index))
-        return player_controls.aim_scheme, player_controls.movement
-
     def build_player_input(
         self,
         *,
@@ -265,7 +260,8 @@ class LocalInputInterpreter:
         idx = max(0, min(3, int(player_index)))
         state = self._state_for_player(idx, player=player)
         binds = config.controls.player(idx)
-        aim_scheme, move_mode_type = self._safe_controls_modes(config, player_index=idx)
+        aim_scheme = binds.aim_scheme
+        move_mode_type = binds.movement
         reload_key = config.controls.reload_code
 
         move_forward_key, move_backward_key, turn_left_key, turn_right_key = binds.move_codes
