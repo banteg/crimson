@@ -80,12 +80,12 @@ def gameplay_controls_held(config: CrimsonConfig) -> bool:
     player_count = max(1, min(4, config.gameplay.player_count))
     for player_index in range(player_count):
         player_controls = config.controls.player(player_index)
-        move_codes = player_controls.move_codes
+        move_forward_key, move_backward_key, turn_left_key, turn_right_key = player_controls.move_codes
         for code in (
-            move_codes[0],
-            move_codes[1],
-            move_codes[2],
-            move_codes[3],
+            move_forward_key,
+            move_backward_key,
+            turn_left_key,
+            turn_right_key,
             player_controls.fire_code,
         )[:_CONTROL_BIND_SLOTS]:
             if code == INPUT_CODE_UNBOUND:

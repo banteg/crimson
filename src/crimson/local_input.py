@@ -269,11 +269,11 @@ class LocalInputInterpreter:
         aim_scheme, move_mode_type = self._safe_controls_modes(config, player_index=idx)
         reload_key = config.controls.reload_code
 
-        move_codes = binds.move_codes
+        move_forward_key, move_backward_key, turn_left_key, turn_right_key = binds.move_codes
         fire_key = binds.fire_code
-        keyboard_aim_codes = binds.keyboard_aim_codes
-        aim_axis_codes = binds.aim_axis_codes
-        move_axis_codes = binds.move_axis_codes
+        aim_left_key, aim_right_key = binds.keyboard_aim_codes
+        aim_axis_y, aim_axis_x = binds.aim_axis_codes
+        move_axis_y, move_axis_x = binds.move_axis_codes
 
         move_vec = Vec2()
         move_forward_pressed: bool | None = None
@@ -314,25 +314,25 @@ class LocalInputInterpreter:
                 move_vec = move_dir
         elif move_mode_type is MovementControlType.RELATIVE:
             move_forward_pressed = _key_down_with_single_player_alt(
-                move_codes[0],
+                move_forward_key,
                 alt_key=_ALT_MOVE_KEY_UP,
                 config=config,
                 player_index=idx,
             )
             move_backward_pressed = _key_down_with_single_player_alt(
-                move_codes[1],
+                move_backward_key,
                 alt_key=_ALT_MOVE_KEY_DOWN,
                 config=config,
                 player_index=idx,
             )
             turn_left_pressed = _key_down_with_single_player_alt(
-                move_codes[2],
+                turn_left_key,
                 alt_key=_ALT_MOVE_KEY_LEFT,
                 config=config,
                 player_index=idx,
             )
             turn_right_pressed = _key_down_with_single_player_alt(
-                move_codes[3],
+                turn_right_key,
                 alt_key=_ALT_MOVE_KEY_RIGHT,
                 config=config,
                 player_index=idx,
@@ -342,8 +342,8 @@ class LocalInputInterpreter:
                 float(move_backward_pressed) - float(move_forward_pressed),
             )
         elif move_mode_type is MovementControlType.DUAL_ACTION_PAD:
-            axis_y = -input_axis_value(move_axis_codes[0], player_index=idx)
-            axis_x = -input_axis_value(move_axis_codes[1], player_index=idx)
+            axis_y = -input_axis_value(move_axis_y, player_index=idx)
+            axis_x = -input_axis_value(move_axis_x, player_index=idx)
             move_vec = Vec2(_clamp_unit(axis_x), _clamp_unit(axis_y))
         elif move_mode_type is MovementControlType.MOUSE_POINT_CLICK:
             move_to_cursor_pressed = input_code_is_down(reload_key, player_index=idx)
@@ -356,25 +356,25 @@ class LocalInputInterpreter:
                     move_vec = _dir
         elif move_mode_type is MovementControlType.STATIC:
             move_up_pressed = _key_down_with_single_player_alt(
-                move_codes[0],
+                move_forward_key,
                 alt_key=_ALT_MOVE_KEY_UP,
                 config=config,
                 player_index=idx,
             )
             move_down_pressed = _key_down_with_single_player_alt(
-                move_codes[1],
+                move_backward_key,
                 alt_key=_ALT_MOVE_KEY_DOWN,
                 config=config,
                 player_index=idx,
             )
             move_left_pressed = _key_down_with_single_player_alt(
-                move_codes[2],
+                turn_left_key,
                 alt_key=_ALT_MOVE_KEY_LEFT,
                 config=config,
                 player_index=idx,
             )
             move_right_pressed = _key_down_with_single_player_alt(
-                move_codes[3],
+                turn_right_key,
                 alt_key=_ALT_MOVE_KEY_RIGHT,
                 config=config,
                 player_index=idx,
@@ -391,10 +391,10 @@ class LocalInputInterpreter:
             )
         else:
             move_vec = Vec2(
-                float(input_code_is_down(move_codes[3], player_index=idx))
-                - float(input_code_is_down(move_codes[2], player_index=idx)),
-                float(input_code_is_down(move_codes[1], player_index=idx))
-                - float(input_code_is_down(move_codes[0], player_index=idx)),
+                float(input_code_is_down(turn_right_key, player_index=idx))
+                - float(input_code_is_down(turn_left_key, player_index=idx)),
+                float(input_code_is_down(move_backward_key, player_index=idx))
+                - float(input_code_is_down(move_forward_key, player_index=idx)),
             )
 
         heading = float(state.aim_heading)
@@ -409,9 +409,9 @@ class LocalInputInterpreter:
                 heading = delta.to_heading()
         elif aim_scheme is AimScheme.KEYBOARD:
             if move_mode_type in {MovementControlType.RELATIVE, MovementControlType.STATIC}:
-                if input_code_is_down(keyboard_aim_codes[1], player_index=idx):
+                if input_code_is_down(aim_right_key, player_index=idx):
                     heading = float(heading + float(dt) * _AIM_KEYBOARD_TURN_RATE)
-                if input_code_is_down(keyboard_aim_codes[0], player_index=idx):
+                if input_code_is_down(aim_left_key, player_index=idx):
                     heading = float(heading - float(dt) * _AIM_KEYBOARD_TURN_RATE)
                 aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.MOUSE_RELATIVE:
@@ -420,8 +420,8 @@ class LocalInputInterpreter:
                 heading = rel.to_heading()
                 aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.DUAL_ACTION_PAD:
-            axis_y = input_axis_value(aim_axis_codes[0], player_index=idx)
-            axis_x = input_axis_value(aim_axis_codes[1], player_index=idx)
+            axis_y = input_axis_value(aim_axis_y, player_index=idx)
+            axis_x = input_axis_value(aim_axis_x, player_index=idx)
             axis_vec = Vec2(axis_x, axis_y)
             mag_sq = axis_vec.length_sq()
             if mag_sq > 1e-9:

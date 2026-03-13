@@ -186,12 +186,12 @@ class TutorialMode(BaseGameplayMode):
 
     def _build_input(self) -> PlayerInput:
         controls = self.config.controls.player(0)
-        move_codes = controls.move_codes
+        move_forward_key, move_backward_key, turn_left_key, turn_right_key = controls.move_codes
         fire_key = controls.fire_code
 
         move = Vec2(
-            float(input_code_is_down(move_codes[3])) - float(input_code_is_down(move_codes[2])),
-            float(input_code_is_down(move_codes[1])) - float(input_code_is_down(move_codes[0])),
+            float(input_code_is_down(turn_right_key)) - float(input_code_is_down(turn_left_key)),
+            float(input_code_is_down(move_backward_key)) - float(input_code_is_down(move_forward_key)),
         )
 
         mouse = self._ui_mouse_pos()
