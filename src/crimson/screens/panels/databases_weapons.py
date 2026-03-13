@@ -161,7 +161,9 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         from ...weapons import WEAPON_TABLE, WeaponId
 
         available: list[bool] | None = None
+        from ...game_modes import GameMode
         from ...gameplay import WEAPON_COUNT_SIZE
+        from ...sim.state_types import WeaponAvailabilityCacheKey
         from ...weapon_runtime import (
             weapon_refresh_available as refresh_available,
         )
@@ -171,21 +173,17 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         if weapon_refresh_available is not None:
             class _Stub:
                 status: object | None
-                game_mode: int
+                game_mode: GameMode
                 demo_mode_active: bool
                 weapon_available: list[bool]
-                _weapon_available_game_mode: int | None
-                _weapon_available_unlock_index: int | None
-                _weapon_available_unlock_index_full: int | None
+                _weapon_available_key: WeaponAvailabilityCacheKey | None
 
             stub = _Stub()
             stub.status = self.state.status
-            stub.game_mode = self.state.config.game_mode
+            stub.game_mode = GameMode(self.state.config.game_mode)
             stub.demo_mode_active = self.state.demo_enabled
             stub.weapon_available = [False] * int(WEAPON_COUNT_SIZE)
-            stub._weapon_available_game_mode = None
-            stub._weapon_available_unlock_index = None
-            stub._weapon_available_unlock_index_full = None
+            stub._weapon_available_key = None
             try:
                 weapon_refresh_available(stub)
                 available = stub.weapon_available

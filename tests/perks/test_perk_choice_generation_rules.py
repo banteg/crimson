@@ -11,7 +11,7 @@ from crimson.perks.selection import PERK_ID_MAX, perk_generate_choices
 from crimson.persistence import save_status
 from crimson.quests.level import QuestLevel
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.state_types import PlayerState, WeaponSlot
+from crimson.sim.state_types import PerkAvailabilityCacheKey, PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_rng_progression
@@ -122,7 +122,7 @@ def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order
 
 def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None:
     state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])))
-    state._perk_available_unlock_index = 0
+    state._perk_available_key = PerkAvailabilityCacheKey(unlock_index=0)
     for perk_id in (PerkId.PYROMANIAC, PerkId.SHARPSHOOTER, PerkId.FASTLOADER, PerkId.LEAN_MEAN_EXP_MACHINE, PerkId.LONG_DISTANCE_RUNNER, PerkId.PYROKINETIC, PerkId.INSTANT_WINNER, PerkId.GRIM_DEAL):
         state.perk_available[int(perk_id)] = True
 
@@ -133,7 +133,7 @@ def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None
 
 def test_perk_generate_choices_default_allows_pyromaniac_when_any_alive_player_has_flamethrower() -> None:
     state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])), preserve_bugs=False)
-    state._perk_available_unlock_index = 0
+    state._perk_available_key = PerkAvailabilityCacheKey(unlock_index=0)
     for perk_id in (
         PerkId.PYROMANIAC,
         PerkId.SHARPSHOOTER,
@@ -160,7 +160,7 @@ def test_perk_generate_choices_default_allows_pyromaniac_when_any_alive_player_h
 
 def test_perk_generate_choices_preserve_bugs_keeps_player1_pyromaniac_gate() -> None:
     state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])), preserve_bugs=True)
-    state._perk_available_unlock_index = 0
+    state._perk_available_key = PerkAvailabilityCacheKey(unlock_index=0)
     for perk_id in (
         PerkId.PYROMANIAC,
         PerkId.SHARPSHOOTER,
@@ -201,7 +201,7 @@ def test_perk_generate_choices_applies_rarity_gate() -> None:
     # Anxious Loader is in the global rarity gate; when (rand & 3) == 1 it is rejected.
     rng = ScriptedCrand([17, 1, 1, 2, 3, 4, 5, 6, 7], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     state = GameplayState(rng=rng)
-    state._perk_available_unlock_index = 0
+    state._perk_available_key = PerkAvailabilityCacheKey(unlock_index=0)
     for perk_id in (PerkId.ANXIOUS_LOADER, PerkId.SHARPSHOOTER, PerkId.FASTLOADER, PerkId.LEAN_MEAN_EXP_MACHINE, PerkId.LONG_DISTANCE_RUNNER, PerkId.PYROKINETIC, PerkId.INSTANT_WINNER, PerkId.GRIM_DEAL):
         state.perk_available[int(perk_id)] = True
 

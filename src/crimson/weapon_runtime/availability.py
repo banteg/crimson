@@ -4,7 +4,7 @@ from ..game_modes import GameMode
 from ..quests import all_quests
 from ..quests.level import QuestLevel
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import GameplayState
+from ..sim.state_types import GameplayState, WeaponAvailabilityCacheKey
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
 from ..weapons import WeaponId
 
@@ -21,15 +21,16 @@ def weapon_refresh_available(state: GameplayState) -> None:
     unlock_index_full = 0
     status = state.status
     if status is not None:
-        unlock_index = int(status.quest_unlock_index)
-        unlock_index_full = int(status.quest_unlock_index_full)
+        unlock_index = status.quest_unlock_index
+        unlock_index_full = status.quest_unlock_index_full
 
     game_mode = state.game_mode
-    if (
-        state._weapon_available_game_mode == game_mode
-        and state._weapon_available_unlock_index == unlock_index
-        and state._weapon_available_unlock_index_full == unlock_index_full
-    ):
+    cache_key = WeaponAvailabilityCacheKey(
+        game_mode=game_mode,
+        unlock_index=unlock_index,
+        unlock_index_full=unlock_index_full,
+    )
+    if state._weapon_available_key == cache_key:
         return
 
     # Clear unlocked flags.
@@ -53,9 +54,8 @@ def weapon_refresh_available(state: GameplayState) -> None:
     # Survival default loadout: Assault Rifle, Shotgun, Submachine Gun.
     if game_mode == GameMode.SURVIVAL:
         for weapon_id in (WeaponId.ASSAULT_RIFLE, WeaponId.SHOTGUN, WeaponId.SUBMACHINE_GUN):
-            idx = int(weapon_id)
-            if 0 <= idx < len(available):
-                available[idx] = True
+            if 0 <= weapon_id < len(available):
+                available[weapon_id] = True
 
     # Secret unlock: Splitter Gun (weapon id 29) becomes available once the hardcore
     # unlock track reaches stage 5 (quest_unlock_index_full >= 40).
@@ -64,9 +64,7 @@ def weapon_refresh_available(state: GameplayState) -> None:
         if 0 <= splitter_id < len(available):
             available[splitter_id] = True
 
-    state._weapon_available_game_mode = game_mode
-    state._weapon_available_unlock_index = unlock_index
-    state._weapon_available_unlock_index_full = unlock_index_full
+    state._weapon_available_key = cache_key
 
 
 def weapon_pick_random_available(state: GameplayState) -> WeaponId:
@@ -92,7 +90,7 @@ def weapon_pick_random_available(state: GameplayState) -> WeaponId:
                     base_rand = state.rng.rand(caller=RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_PICK)
                     weapon_id = WeaponId(base_rand % WEAPON_DROP_ID_COUNT + 1)
 
-        if not (0 <= int(weapon_id) < len(state.weapon_available)):
+        if not (0 <= weapon_id < len(state.weapon_available)):
             continue
         if not state.weapon_available[weapon_id]:
             continue

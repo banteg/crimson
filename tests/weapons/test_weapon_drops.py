@@ -7,6 +7,7 @@ from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.persistence import save_status
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.state_types import WeaponAvailabilityCacheKey
 from crimson.weapon_runtime import (
     weapon_pick_random_available,
     weapon_refresh_available,
@@ -63,7 +64,11 @@ def test_weapon_refresh_available_unlocks_quest_weapon_ids() -> None:
     assert state.weapon_available[WeaponId.PISTOL]
     assert state.weapon_available[WeaponId.ASSAULT_RIFLE]
     assert not state.weapon_available[WeaponId.SHOTGUN]
-    assert state._weapon_available_game_mode == GameMode.QUESTS
+    assert state._weapon_available_key == WeaponAvailabilityCacheKey(
+        game_mode=GameMode.QUESTS,
+        unlock_index=1,
+        unlock_index_full=0,
+    )
 
 
 def test_weapon_pick_random_available_enforces_unlocked() -> None:

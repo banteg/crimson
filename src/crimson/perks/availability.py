@@ -3,7 +3,7 @@ from __future__ import annotations
 from ..game_modes import GameMode
 from ..quests import all_quests
 from ..quests.level import QuestLevel
-from ..sim.state_types import GameplayState, PlayerState
+from ..sim.state_types import GameplayState, PerkAvailabilityCacheKey, PlayerState
 from .helpers import perk_count_get
 from .ids import PERK_BY_ID, PerkFlags, PerkId
 
@@ -24,9 +24,10 @@ def perks_rebuild_available(state: GameplayState) -> None:
 
     unlock_index = 0
     if state.status is not None:
-        unlock_index = int(state.status.quest_unlock_index)
+        unlock_index = state.status.quest_unlock_index
 
-    if state._perk_available_unlock_index == unlock_index:
+    cache_key = PerkAvailabilityCacheKey(unlock_index=unlock_index)
+    if state._perk_available_key == cache_key:
         return
 
     available = state.perk_available
@@ -38,9 +39,8 @@ def perks_rebuild_available(state: GameplayState) -> None:
             available[perk_id] = True
 
     for perk_id in _PERK_ALWAYS_AVAILABLE:
-        idx = int(perk_id)
-        if 0 <= idx < len(available):
-            available[idx] = True
+        if 0 <= perk_id < len(available):
+            available[perk_id] = True
 
     if unlock_index > 0:
         quests = all_quests()
@@ -50,7 +50,7 @@ def perks_rebuild_available(state: GameplayState) -> None:
                 available[perk_id] = True
 
     available[int(PerkId.ANTIPERK)] = False
-    state._perk_available_unlock_index = unlock_index
+    state._perk_available_key = cache_key
 
 
 def perk_can_offer(
@@ -84,7 +84,7 @@ def perk_can_offer(
     # - in two-player mode, offered perks must have bit 0x2 set
     if game_mode == GameMode.QUESTS and (flags & PerkFlags.QUEST_MODE_ALLOWED) == 0:
         return False
-    if int(player_count) == 2 and (flags & PerkFlags.TWO_PLAYER_ALLOWED) == 0:
+    if player_count == 2 and (flags & PerkFlags.TWO_PLAYER_ALLOWED) == 0:
         return False
 
     if meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq):
