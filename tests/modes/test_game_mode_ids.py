@@ -272,13 +272,13 @@ def test_hardcore_quest_2_10_blocks_poison_related_perks() -> None:
 
 def test_perk_flags_match_native_ctor_defaults_and_known_overrides() -> None:
     assert PERK_BY_ID[PerkId.SHARPSHOOTER].flags == (
-        PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED
+        PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.MULTIPLAYER_ALLOWED
     )
     assert PERK_BY_ID[PerkId.INSTANT_WINNER].flags == (
-        PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED | PerkFlags.STACKABLE
+        PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.MULTIPLAYER_ALLOWED | PerkFlags.STACKABLE
     )
     assert PERK_BY_ID[PerkId.RANDOM_WEAPON].flags == (
         PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.STACKABLE
     )
-    assert PERK_BY_ID[PerkId.BREATHING_ROOM].flags == PerkFlags.TWO_PLAYER_ALLOWED
+    assert PERK_BY_ID[PerkId.BREATHING_ROOM].flags == PerkFlags.MULTIPLAYER_ALLOWED
     assert PERK_BY_ID[PerkId.GRIM_DEAL].flags == PerkFlags(0)

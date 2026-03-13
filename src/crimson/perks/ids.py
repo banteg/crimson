@@ -10,16 +10,15 @@ import msgspec
 class PerkFlags(IntFlag):
     # `perk_can_offer` uses these bits as mode-specific allow-lists:
     # - in quest mode, only perks with QUEST_MODE_ALLOWED are eligible
-    # - in multiplayer, only perks with TWO_PLAYER_ALLOWED are eligible
-    # The flag keeps its native name even though the port applies it to 3p/4p too.
+    # - in multiplayer, only perks with MULTIPLAYER_ALLOWED are eligible
     QUEST_MODE_ALLOWED = 0x1
-    TWO_PLAYER_ALLOWED = 0x2
+    MULTIPLAYER_ALLOWED = 0x2
     STACKABLE = 0x4  # can be offered even if already owned
 
 
-# Native perk metadata defaults to both quest and two-player allow bits enabled
+# Native perk metadata defaults to both quest and multiplayer allow bits enabled
 # (`sub_42fac0` initializes flags to 3).
-PERK_DEFAULT_FLAGS = PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED
+PERK_DEFAULT_FLAGS = PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.MULTIPLAYER_ALLOWED
 
 
 @unique
@@ -419,7 +418,7 @@ _PERK_TABLE = [
         perk_id=PerkId.BREATHING_ROOM,
         name="Breathing Room",
         description="Trade 2/3rds of your health for the killing of every single creature on the screen. No, you don't get the experience.",
-        flags=PerkFlags.TWO_PLAYER_ALLOWED,
+        flags=PerkFlags.MULTIPLAYER_ALLOWED,
         prereq=(),
     ),
     PerkMeta(

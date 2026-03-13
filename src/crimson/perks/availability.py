@@ -79,7 +79,7 @@ def perk_can_offer(
     # multiplayer counts for consistent 3p/4p behavior.
     if game_mode == GameMode.QUESTS and (flags & PerkFlags.QUEST_MODE_ALLOWED) == 0:
         return False
-    if player_count > 1 and (flags & PerkFlags.TWO_PLAYER_ALLOWED) == 0:
+    if player_count > 1 and (flags & PerkFlags.MULTIPLAYER_ALLOWED) == 0:
         return False
 
     if meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq):
