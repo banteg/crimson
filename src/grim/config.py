@@ -290,17 +290,11 @@ class CrimsonPlayerControls(msgspec.Struct):
     movement: MovementControlType
     aim_scheme: AimScheme
     show_direction_arrow: bool
-    move_forward_code: int
-    move_backward_code: int
-    turn_left_code: int
-    turn_right_code: int
+    move_codes: tuple[int, int, int, int]
     fire_code: int
-    aim_left_code: int
-    aim_right_code: int
-    aim_vertical_axis_code: int
-    aim_horizontal_axis_code: int
-    move_vertical_axis_code: int
-    move_horizontal_axis_code: int
+    keyboard_aim_codes: tuple[int, int]
+    aim_axis_codes: tuple[int, int]
+    move_axis_codes: tuple[int, int]
 
 
 class CrimsonControlsConfig(msgspec.Struct):
@@ -402,35 +396,34 @@ def _player_controls_from_bind_values(
         movement=movement,
         aim_scheme=aim_scheme,
         show_direction_arrow=show_direction_arrow,
-        move_forward_code=int(bind_values[0]),
-        move_backward_code=int(bind_values[1]),
-        turn_left_code=int(bind_values[2]),
-        turn_right_code=int(bind_values[3]),
+        move_codes=(
+            int(bind_values[0]),
+            int(bind_values[1]),
+            int(bind_values[2]),
+            int(bind_values[3]),
+        ),
         fire_code=int(bind_values[4]),
-        aim_left_code=int(bind_values[7]),
-        aim_right_code=int(bind_values[8]),
-        aim_vertical_axis_code=int(bind_values[9]),
-        aim_horizontal_axis_code=int(bind_values[10]),
-        move_vertical_axis_code=int(bind_values[11]),
-        move_horizontal_axis_code=int(bind_values[12]),
+        keyboard_aim_codes=(int(bind_values[7]), int(bind_values[8])),
+        aim_axis_codes=(int(bind_values[9]), int(bind_values[10])),
+        move_axis_codes=(int(bind_values[11]), int(bind_values[12])),
     )
 
 
 def _encode_player_bind_block(player: CrimsonPlayerControls, *, player_index: int) -> dict[str, object]:
     defaults = _default_player_bind_values(player_index)
     return {
-        "move_forward": int(player.move_forward_code),
-        "move_backward": int(player.move_backward_code),
-        "turn_left": int(player.turn_left_code),
-        "turn_right": int(player.turn_right_code),
+        "move_forward": int(player.move_codes[0]),
+        "move_backward": int(player.move_codes[1]),
+        "turn_left": int(player.move_codes[2]),
+        "turn_right": int(player.move_codes[3]),
         "fire": int(player.fire_code),
         "reserved_keys": [int(defaults[5]), int(defaults[6])],
-        "aim_left": int(player.aim_left_code),
-        "aim_right": int(player.aim_right_code),
-        "axis_aim_y": int(player.aim_vertical_axis_code),
-        "axis_aim_x": int(player.aim_horizontal_axis_code),
-        "axis_move_y": int(player.move_vertical_axis_code),
-        "axis_move_x": int(player.move_horizontal_axis_code),
+        "aim_left": int(player.keyboard_aim_codes[0]),
+        "aim_right": int(player.keyboard_aim_codes[1]),
+        "axis_aim_y": int(player.aim_axis_codes[0]),
+        "axis_aim_x": int(player.aim_axis_codes[1]),
+        "axis_move_y": int(player.move_axis_codes[0]),
+        "axis_move_x": int(player.move_axis_codes[1]),
         "padding": [int(defaults[13]), int(defaults[14]), int(defaults[15])],
     }
 
@@ -544,17 +537,11 @@ def _default_player_controls(player_index: int) -> CrimsonPlayerControls:
         movement=MovementControlType.STATIC,
         aim_scheme=AimScheme.MOUSE,
         show_direction_arrow=True,
-        move_forward_code=int(values[0]),
-        move_backward_code=int(values[1]),
-        turn_left_code=int(values[2]),
-        turn_right_code=int(values[3]),
+        move_codes=(int(values[0]), int(values[1]), int(values[2]), int(values[3])),
         fire_code=int(values[4]),
-        aim_left_code=int(values[7]),
-        aim_right_code=int(values[8]),
-        aim_vertical_axis_code=int(values[9]),
-        aim_horizontal_axis_code=int(values[10]),
-        move_vertical_axis_code=int(values[11]),
-        move_horizontal_axis_code=int(values[12]),
+        keyboard_aim_codes=(int(values[7]), int(values[8])),
+        aim_axis_codes=(int(values[9]), int(values[10])),
+        move_axis_codes=(int(values[11]), int(values[12])),
     )
 
 

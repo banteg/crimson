@@ -49,14 +49,24 @@ CONTROLS_REBIND_ACTIVE_COLOR = rl.Color(255, 228, 170, 255)
 
 
 def _row_binding_code(row: RebindRowSpec, *, player_index: int, controls) -> int:
+    owner = controls if row.controls_field else controls.player(player_index)
+    value = getattr(owner, row.field_name)
+    if row.field_index is not None:
+        return int(value[row.field_index])
     if row.controls_field:
-        return int(getattr(controls, row.field_name))
-    return int(getattr(controls.player(player_index), row.field_name))
+        return int(value)
+    return int(value)
 
 
 def _set_row_binding_code(row: RebindRowSpec, value: int, *, player_index: int, controls) -> None:
     owner = controls if row.controls_field else controls.player(player_index)
-    setattr(owner, row.field_name, int(value))
+    code = int(value)
+    if row.field_index is None:
+        setattr(owner, row.field_name, code)
+        return
+    values = list(getattr(owner, row.field_name))
+    values[row.field_index] = code
+    setattr(owner, row.field_name, tuple(values))
 
 
 def _default_row_binding_code(player_index: int, row: RebindRowSpec) -> int:

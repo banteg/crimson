@@ -77,7 +77,7 @@ def test_crimson_cfg_backfills_zero_keybinds(tmp_path: Path) -> None:
 def test_player_keybind_roundtrip_for_extended_players_uses_reserved_gap_extension() -> None:
     cfg = grim_config.default_crimson_cfg(Path("<memory>"))
     cfg.controls.player(2).fire_code = 0x120
-    cfg.controls.player(3).move_forward_code = 0x11F
+    cfg.controls.player(3).move_codes = (0x11F, 0x91, 0x8A, 0x97)
 
     blob = grim_config.encode_crimson_cfg(cfg)
     parsed = grim_config.CRIMSON_CFG_STRUCT.parse(blob)
@@ -89,7 +89,7 @@ def test_player_keybind_roundtrip_for_extended_players_uses_reserved_gap_extensi
 
     loaded = grim_config.decode_crimson_cfg(Path("<memory>"), blob)
     assert loaded.controls.player(2).fire_code == 0x120
-    assert loaded.controls.player(3).move_forward_code == 0x11F
+    assert loaded.controls.player(3).move_codes[0] == 0x11F
 
 
 def test_direction_arrow_extension_roundtrip_for_players_three_and_four() -> None:

@@ -69,17 +69,11 @@ def _set_player_bind_values(
 ) -> CrimsonConfig:
     block = _bind_values(values)
     player = cfg.controls.player(player_index)
-    player.move_forward_code = block[0]
-    player.move_backward_code = block[1]
-    player.turn_left_code = block[2]
-    player.turn_right_code = block[3]
+    player.move_codes = (block[0], block[1], block[2], block[3])
     player.fire_code = block[4]
-    player.aim_left_code = block[7]
-    player.aim_right_code = block[8]
-    player.aim_vertical_axis_code = block[9]
-    player.aim_horizontal_axis_code = block[10]
-    player.move_vertical_axis_code = block[11]
-    player.move_horizontal_axis_code = block[12]
+    player.keyboard_aim_codes = (block[7], block[8])
+    player.aim_axis_codes = (block[9], block[10])
+    player.move_axis_codes = (block[11], block[12])
     return cfg
 
 

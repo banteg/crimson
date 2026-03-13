@@ -12,6 +12,7 @@ from ...movement_controls import MovementControlType
 class RebindRowSpec:
     label: str
     field_name: str
+    field_index: int | None = None
     axis: bool = False
     controls_field: bool = False
 
@@ -89,36 +90,36 @@ def controls_rebind_plan(
     misc_rows: list[RebindRowSpec] = []
 
     if aim_scheme is AimScheme.KEYBOARD:
-        aim_rows.append(RebindRowSpec("Torso left:", "aim_left_code"))
-        aim_rows.append(RebindRowSpec("Torso right:", "aim_right_code"))
+        aim_rows.append(RebindRowSpec("Torso left:", "keyboard_aim_codes", 0))
+        aim_rows.append(RebindRowSpec("Torso right:", "keyboard_aim_codes", 1))
     elif aim_scheme is AimScheme.DUAL_ACTION_PAD:
-        aim_rows.append(RebindRowSpec("Aim Up/Down Axis:", "aim_vertical_axis_code", axis=True))
-        aim_rows.append(RebindRowSpec("Aim Left/Right Axis:", "aim_horizontal_axis_code", axis=True))
+        aim_rows.append(RebindRowSpec("Aim Up/Down Axis:", "aim_axis_codes", 0, axis=True))
+        aim_rows.append(RebindRowSpec("Aim Left/Right Axis:", "aim_axis_codes", 1, axis=True))
     aim_rows.append(RebindRowSpec("Fire:", "fire_code"))
 
     if move_mode is MovementControlType.STATIC:
         move_rows.extend(
             (
-                RebindRowSpec("Move Up:", "move_forward_code"),
-                RebindRowSpec("Move Down:", "move_backward_code"),
-                RebindRowSpec("Move Left:", "turn_left_code"),
-                RebindRowSpec("Move Right:", "turn_right_code"),
+                RebindRowSpec("Move Up:", "move_codes", 0),
+                RebindRowSpec("Move Down:", "move_codes", 1),
+                RebindRowSpec("Move Left:", "move_codes", 2),
+                RebindRowSpec("Move Right:", "move_codes", 3),
             ),
         )
     elif move_mode is MovementControlType.RELATIVE:
         move_rows.extend(
             (
-                RebindRowSpec("Forward:", "move_forward_code"),
-                RebindRowSpec("Backwards:", "move_backward_code"),
-                RebindRowSpec("Turn left:", "turn_left_code"),
-                RebindRowSpec("Turn right:", "turn_right_code"),
+                RebindRowSpec("Forward:", "move_codes", 0),
+                RebindRowSpec("Backwards:", "move_codes", 1),
+                RebindRowSpec("Turn left:", "move_codes", 2),
+                RebindRowSpec("Turn right:", "move_codes", 3),
             ),
         )
     elif move_mode is MovementControlType.DUAL_ACTION_PAD:
         move_rows.extend(
             (
-                RebindRowSpec("Up/Down Axis:", "move_vertical_axis_code", axis=True),
-                RebindRowSpec("Left/Right Axis:", "move_horizontal_axis_code", axis=True),
+                RebindRowSpec("Up/Down Axis:", "move_axis_codes", 0, axis=True),
+                RebindRowSpec("Left/Right Axis:", "move_axis_codes", 1, axis=True),
             ),
         )
     elif move_mode is MovementControlType.MOUSE_POINT_CLICK:

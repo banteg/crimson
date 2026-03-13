@@ -92,15 +92,15 @@ def test_controls_rebind_plan_keyboard_static_player1() -> None:
         player_index=0,
     )
     assert aim_rows == (
-        RebindRowSpec("Torso left:", "aim_left_code"),
-        RebindRowSpec("Torso right:", "aim_right_code"),
+        RebindRowSpec("Torso left:", "keyboard_aim_codes", 0),
+        RebindRowSpec("Torso right:", "keyboard_aim_codes", 1),
         RebindRowSpec("Fire:", "fire_code"),
     )
     assert move_rows == (
-        RebindRowSpec("Move Up:", "move_forward_code"),
-        RebindRowSpec("Move Down:", "move_backward_code"),
-        RebindRowSpec("Move Left:", "turn_left_code"),
-        RebindRowSpec("Move Right:", "turn_right_code"),
+        RebindRowSpec("Move Up:", "move_codes", 0),
+        RebindRowSpec("Move Down:", "move_codes", 1),
+        RebindRowSpec("Move Left:", "move_codes", 2),
+        RebindRowSpec("Move Right:", "move_codes", 3),
     )
     assert misc_rows == (
         RebindRowSpec("Level Up:", "pick_perk_code", controls_field=True),
@@ -115,8 +115,8 @@ def test_controls_rebind_plan_dualpad_mouse_cursor_player2() -> None:
         player_index=1,
     )
     assert aim_rows == (
-        RebindRowSpec("Aim Up/Down Axis:", "aim_vertical_axis_code", axis=True),
-        RebindRowSpec("Aim Left/Right Axis:", "aim_horizontal_axis_code", axis=True),
+        RebindRowSpec("Aim Up/Down Axis:", "aim_axis_codes", 0, axis=True),
+        RebindRowSpec("Aim Left/Right Axis:", "aim_axis_codes", 1, axis=True),
         RebindRowSpec("Fire:", "fire_code"),
     )
     assert move_rows == (RebindRowSpec("Move to cursor:", "reload_code", controls_field=True),)
