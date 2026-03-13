@@ -10,11 +10,9 @@ from grim.geom import Vec2
 from ...effects import FxQueue, FxQueueRotated
 from ...game_modes import GameMode
 from ...math_parity import f32
-from ...persistence.save_status import GameStatus
-from ...replay.types import ReplayStatusSnapshot
+from ...persistence.save_status import GameStatus, GameStatusData
 from ...sim.state_types import GameplayState, PlayerState
 from ...sim.step_pipeline import time_scale_reflex_boost_bonus as _time_scale_reflex_boost_bonus
-from ...status_snapshot import game_status_from_replay_status
 from ...weapon_runtime import most_used_weapon_id_for_player
 from ...weapons import WEAPON_TABLE, WeaponId
 from ...world.sim_world_state import reset_world_players
@@ -50,19 +48,19 @@ def build_empty_fx_queues() -> tuple[FxQueue, FxQueueRotated]:
     return FxQueue(), FxQueueRotated()
 
 
-def status_from_snapshot(
+def status_from_replay_status_fields(
     *,
     quest_unlock_index: int,
     quest_unlock_index_full: int,
     weapon_usage_counts: tuple[int, ...] = (),
 ) -> GameStatus:
-    return game_status_from_replay_status(
-        ReplayStatusSnapshot(
+    return GameStatus.from_data(
+        path=Path("replay://status"),
+        data=GameStatusData(
             quest_unlock_index=int(quest_unlock_index),
             quest_unlock_index_full=int(quest_unlock_index_full),
             weapon_usage_counts=tuple(weapon_usage_counts),
         ),
-        path=Path("replay://status"),
     )
 
 

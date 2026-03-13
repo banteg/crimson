@@ -1,13 +1,18 @@
 from __future__ import annotations
 
-import datetime as dt
-import warnings
 from pathlib import Path
+from typing import Annotated, Final, TypeAlias
 
 import msgspec
-from construct import Array, Bytes, ConstructError, Int16ul, Int32ul, Struct
+from construct import Array, Bytes, Int16ul, Int32ul, Struct
 
-from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT, weapon_usage_slot_for_weapon_id
+from ..game_modes import GameMode
+from ..weapon_usage import (
+    WEAPON_USAGE_SLOT_COUNT,
+    ZERO_WEAPON_USAGE_COUNTS,
+    WeaponUsageCounts,
+    weapon_usage_slot_for_weapon_id,
+)
 
 GAME_CFG_NAME = "game.cfg"
 
@@ -19,14 +24,29 @@ WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 # Quest play count length inferred from known trailing fields in the blob (0xD8..0x244).
 QUEST_PLAY_COUNT = 91
 
-MODE_COUNT_ORDER = (
-    ("survival", "mode_play_survival"),
-    ("rush", "mode_play_rush"),
-    ("typo", "mode_play_typo"),
-    ("other", "mode_play_other"),
-)
-
 UNKNOWN_TAIL_SIZE = 0x10
+
+QuestPlayCounts: TypeAlias = Annotated[
+    tuple[int, ...],
+    msgspec.Meta(min_length=QUEST_PLAY_COUNT, max_length=QUEST_PLAY_COUNT),
+]
+
+_ZERO_QUEST_PLAY_COUNTS: Final[QuestPlayCounts] = tuple(0 for _ in range(QUEST_PLAY_COUNT))
+_ZERO_UNKNOWN_TAIL: Final[bytes] = b"\x00" * UNKNOWN_TAIL_SIZE
+_STATUS_FIELD_NAMES: Final[frozenset[str]] = frozenset(
+    {
+        "quest_unlock_index",
+        "quest_unlock_index_full",
+        "weapon_usage_counts",
+        "quest_play_counts",
+        "mode_play_survival",
+        "mode_play_rush",
+        "mode_play_typo",
+        "mode_play_other",
+        "game_sequence_id",
+        "unknown_tail",
+    },
+)
 
 GAME_STATUS_STRUCT = Struct(
     "quest_unlock_index" / Int16ul,
@@ -47,78 +67,85 @@ GAME_CFG_STRUCT = Struct(
 )
 
 
-class StatusBlob(msgspec.Struct):
-    decoded: bytes
-    checksum: int
-    checksum_expected: int
+class GameStatusData(msgspec.Struct):
+    quest_unlock_index: int = 0
+    quest_unlock_index_full: int = 0
+    weapon_usage_counts: WeaponUsageCounts = msgspec.field(default_factory=lambda: ZERO_WEAPON_USAGE_COUNTS)
+    quest_play_counts: QuestPlayCounts = msgspec.field(default_factory=lambda: _ZERO_QUEST_PLAY_COUNTS)
+    mode_play_survival: int = 0
+    mode_play_rush: int = 0
+    mode_play_typo: int = 0
+    mode_play_other: int = 0
+    game_sequence_id: int = 0
+    unknown_tail: bytes = _ZERO_UNKNOWN_TAIL
 
-    @property
-    def checksum_valid(self) -> bool:
-        return (self.checksum & 0xFFFFFFFF) == (self.checksum_expected & 0xFFFFFFFF)
 
-
-class GameStatus(msgspec.Struct):
+class GameStatus(GameStatusData, kw_only=True):
     path: Path
-    data: dict
     dirty: bool = False
 
-    @property
-    def quest_unlock_index(self) -> int:
-        return int(self.data["quest_unlock_index"])
+    def __setattr__(self, name: str, value: object) -> None:
+        mark_dirty = name in _STATUS_FIELD_NAMES
+        current = _MISSING
+        if mark_dirty:
+            try:
+                current = object.__getattribute__(self, name)
+            except AttributeError:
+                pass
+        super().__setattr__(name, value)
+        if mark_dirty and current is not _MISSING and current != value:
+            super().__setattr__("dirty", True)
 
-    @quest_unlock_index.setter
-    def quest_unlock_index(self, value: int) -> None:
-        self.data["quest_unlock_index"] = int(value) & 0xFFFF
-        self.dirty = True
+    @classmethod
+    def from_data(cls, *, path: Path, data: GameStatusData, dirty: bool = False) -> GameStatus:
+        return cls(
+            path=path,
+            dirty=dirty,
+            quest_unlock_index=data.quest_unlock_index,
+            quest_unlock_index_full=data.quest_unlock_index_full,
+            weapon_usage_counts=tuple(data.weapon_usage_counts),
+            quest_play_counts=tuple(data.quest_play_counts),
+            mode_play_survival=data.mode_play_survival,
+            mode_play_rush=data.mode_play_rush,
+            mode_play_typo=data.mode_play_typo,
+            mode_play_other=data.mode_play_other,
+            game_sequence_id=data.game_sequence_id,
+            unknown_tail=bytes(data.unknown_tail),
+        )
 
-    @property
-    def quest_unlock_index_full(self) -> int:
-        return int(self.data["quest_unlock_index_full"])
+    def as_data(self) -> GameStatusData:
+        return GameStatusData(
+            quest_unlock_index=self.quest_unlock_index,
+            quest_unlock_index_full=self.quest_unlock_index_full,
+            weapon_usage_counts=tuple(self.weapon_usage_counts),
+            quest_play_counts=tuple(self.quest_play_counts),
+            mode_play_survival=self.mode_play_survival,
+            mode_play_rush=self.mode_play_rush,
+            mode_play_typo=self.mode_play_typo,
+            mode_play_other=self.mode_play_other,
+            game_sequence_id=self.game_sequence_id,
+            unknown_tail=bytes(self.unknown_tail),
+        )
 
-    @quest_unlock_index_full.setter
-    def quest_unlock_index_full(self, value: int) -> None:
-        self.data["quest_unlock_index_full"] = int(value) & 0xFFFF
-        self.dirty = True
+    def mode_play_count_for_mode(self, game_mode: GameMode) -> int:
+        return getattr(self, _mode_count_field_for_mode(game_mode))
 
-    @property
-    def game_sequence_id(self) -> int:
-        return int(self.data["game_sequence_id"])
-
-    @game_sequence_id.setter
-    def game_sequence_id(self, value: int) -> None:
-        self.data["game_sequence_id"] = int(value) & 0xFFFFFFFF
-        self.dirty = True
-
-    def mode_play_count(self, name: str) -> int:
-        for mode_name, field in MODE_COUNT_ORDER:
-            if mode_name == name:
-                return int(self.data[field])
-        raise KeyError(f"unknown mode: {name}")
-
-    def increment_mode_play_count(self, name: str, delta: int = 1) -> int:
-        for mode_name, field in MODE_COUNT_ORDER:
-            if mode_name == name:
-                value = (int(self.data[field]) + int(delta)) & 0xFFFFFFFF
-                self.data[field] = value
-                self.dirty = True
-                return value
-        raise KeyError(f"unknown mode: {name}")
+    def increment_mode_play_count_for_mode(self, game_mode: GameMode, delta: int = 1) -> int:
+        field = _mode_count_field_for_mode(game_mode)
+        value = getattr(self, field) + int(delta)
+        setattr(self, field, value)
+        return value
 
     def weapon_usage_count_slot(self, slot: int) -> int:
-        slot = int(slot)
-        if not (0 <= slot < WEAPON_USAGE_COUNT):
-            raise IndexError(f"weapon usage slot out of range: {slot}")
-        return int(self.data["weapon_usage_counts"][slot])
+        slot_idx = _require_index(slot, size=WEAPON_USAGE_COUNT, field="weapon_usage_slot")
+        return int(self.weapon_usage_counts[slot_idx])
 
     def increment_weapon_usage_slot(self, slot: int, delta: int = 1) -> int:
-        slot = int(slot)
-        if not (0 <= slot < WEAPON_USAGE_COUNT):
-            raise IndexError(f"weapon usage slot out of range: {slot}")
-        counts = self.data["weapon_usage_counts"]
-        value = (int(counts[slot]) + int(delta)) & 0xFFFFFFFF
-        counts[slot] = value
-        self.dirty = True
-        return value
+        slot_idx = _require_index(slot, size=WEAPON_USAGE_COUNT, field="weapon_usage_slot")
+        counts = list(self.weapon_usage_counts)
+        counts[slot_idx] = counts[slot_idx] + int(delta)
+        self.weapon_usage_counts = tuple(counts)
+        return counts[slot_idx]
 
     def weapon_usage_count_for_weapon_id(self, weapon_id: int) -> int:
         slot = weapon_usage_slot_for_weapon_id(weapon_id)
@@ -132,40 +159,93 @@ class GameStatus(msgspec.Struct):
             return None
         return self.increment_weapon_usage_slot(slot, delta=delta)
 
-    def weapon_usage_count(self, slot: int) -> int:
-        return self.weapon_usage_count_slot(slot)
-
-    def increment_weapon_usage(self, slot: int, delta: int = 1) -> int:
-        return self.increment_weapon_usage_slot(slot, delta=delta)
-
     def quest_play_count(self, index: int) -> int:
-        index = int(index)
-        if not (0 <= index < QUEST_PLAY_COUNT):
-            raise IndexError(f"quest index out of range: {index}")
-        return int(self.data["quest_play_counts"][index])
+        quest_idx = _require_index(index, size=QUEST_PLAY_COUNT, field="quest_play_count")
+        return int(self.quest_play_counts[quest_idx])
 
     def increment_quest_play_count(self, index: int, delta: int = 1) -> int:
-        index = int(index)
-        if not (0 <= index < QUEST_PLAY_COUNT):
-            raise IndexError(f"quest index out of range: {index}")
-        counts = self.data["quest_play_counts"]
-        value = (int(counts[index]) + int(delta)) & 0xFFFFFFFF
-        counts[index] = value
-        self.dirty = True
-        return value
-
-    def unknown_tail(self) -> bytes:
-        return bytes(self.data["unknown_tail"])
+        quest_idx = _require_index(index, size=QUEST_PLAY_COUNT, field="quest_play_count")
+        counts = list(self.quest_play_counts)
+        counts[quest_idx] = counts[quest_idx] + int(delta)
+        self.quest_play_counts = tuple(counts)
+        return counts[quest_idx]
 
     def save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        decoded = build_status_blob(self.data)
-        save_status(self.path, decoded)
+        save_status(self.path, self)
         self.dirty = False
 
     def save_if_dirty(self) -> None:
         if self.dirty:
             self.save()
+
+
+class _Missing:
+    pass
+
+
+_MISSING: Final = _Missing()
+
+
+def _mode_count_field_for_mode(game_mode: GameMode) -> str:
+    mode = game_mode if isinstance(game_mode, GameMode) else GameMode(int(game_mode))
+    match mode:
+        case GameMode.SURVIVAL:
+            return "mode_play_survival"
+        case GameMode.RUSH:
+            return "mode_play_rush"
+        case GameMode.TYPO:
+            return "mode_play_typo"
+        case _:
+            return "mode_play_other"
+
+
+def _require_index(index: int, *, size: int, field: str) -> int:
+    idx = int(index)
+    if 0 <= idx < int(size):
+        return idx
+    raise IndexError(f"{field} out of range: {idx}")
+
+
+def _status_blob_dict(data: GameStatusData) -> dict[str, object]:
+    return {
+        "quest_unlock_index": data.quest_unlock_index,
+        "quest_unlock_index_full": data.quest_unlock_index_full,
+        "weapon_usage_counts": list(data.weapon_usage_counts),
+        "quest_play_counts": list(data.quest_play_counts),
+        "mode_play_survival": data.mode_play_survival,
+        "mode_play_rush": data.mode_play_rush,
+        "mode_play_typo": data.mode_play_typo,
+        "mode_play_other": data.mode_play_other,
+        "game_sequence_id": data.game_sequence_id,
+        "unknown_tail": bytes(data.unknown_tail),
+    }
+
+
+def default_status_data() -> GameStatusData:
+    return GameStatusData()
+
+
+def parse_status_blob(decoded: bytes) -> GameStatusData:
+    if len(decoded) != BLOB_SIZE:
+        raise ValueError(f"expected decoded blob of {BLOB_SIZE:#x} bytes, got {len(decoded):#x}")
+    raw = GAME_STATUS_STRUCT.parse(decoded)
+    return GameStatusData(
+        quest_unlock_index=int(raw["quest_unlock_index"]),
+        quest_unlock_index_full=int(raw["quest_unlock_index_full"]),
+        weapon_usage_counts=tuple(int(value) for value in raw["weapon_usage_counts"]),
+        quest_play_counts=tuple(int(value) for value in raw["quest_play_counts"]),
+        mode_play_survival=int(raw["mode_play_survival"]),
+        mode_play_rush=int(raw["mode_play_rush"]),
+        mode_play_typo=int(raw["mode_play_typo"]),
+        mode_play_other=int(raw["mode_play_other"]),
+        game_sequence_id=int(raw["game_sequence_id"]),
+        unknown_tail=bytes(raw["unknown_tail"]),
+    )
+
+
+def build_status_blob(data: GameStatusData) -> bytes:
+    return GAME_STATUS_STRUCT.build(_status_blob_dict(data))
 
 
 def to_s8(value: int) -> int:
@@ -207,7 +287,7 @@ def compute_checksum(decoded: bytes) -> int:
     return acc
 
 
-def load_status(path: Path) -> StatusBlob:
+def load_status(path: Path) -> GameStatus:
     raw = path.read_bytes()
     if len(raw) != FILE_SIZE:
         raise ValueError(f"expected {FILE_SIZE:#x} bytes, got {len(raw):#x}")
@@ -216,73 +296,53 @@ def load_status(path: Path) -> StatusBlob:
     stored_checksum = int(parsed["checksum"])
     decoded = decode_blob(encoded)
     computed = compute_checksum(decoded)
-    return StatusBlob(decoded=decoded, checksum=stored_checksum, checksum_expected=computed)
+    if stored_checksum != computed:
+        raise ValueError("checksum mismatch")
+    return GameStatus.from_data(path=path, data=parse_status_blob(decoded), dirty=False)
 
 
-def save_status(path: Path, decoded: bytes) -> None:
+def save_status(path: Path, status: GameStatusData | GameStatus) -> None:
+    decoded = build_status_blob(status.as_data() if isinstance(status, GameStatus) else status)
     checksum = compute_checksum(decoded)
     encoded = encode_blob(decoded)
     path.write_bytes(GAME_CFG_STRUCT.build({"encoded": encoded, "checksum": checksum}))
 
 
-def parse_status_blob(decoded: bytes) -> dict:
-    if len(decoded) != BLOB_SIZE:
-        raise ValueError(f"expected decoded blob of {BLOB_SIZE:#x} bytes, got {len(decoded):#x}")
-    return GAME_STATUS_STRUCT.parse(decoded)
-
-
-def build_status_blob(data: dict) -> bytes:
-    decoded = GAME_STATUS_STRUCT.build(data)
-    if len(decoded) != BLOB_SIZE:
-        raise ValueError(f"expected decoded blob of {BLOB_SIZE:#x} bytes, got {len(decoded):#x}")
-    return decoded
-
-
-def default_status_data() -> dict:
-    return parse_status_blob(bytes(BLOB_SIZE))
-
-
-def default_status_blob() -> bytes:
-    return bytes(BLOB_SIZE)
-
-
-def _backup_corrupt_status(path: Path) -> Path | None:
-    timestamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
-    backup_path = path.with_name(f"{path.name}.corrupt.{timestamp}.bak")
-    if backup_path.exists():
-        backup_path = path.with_name(f"{path.name}.corrupt.{timestamp}.{int(path.stat().st_mtime_ns)}.bak")
-    try:
-        path.replace(backup_path)
-    except OSError:
-        return None
-    return backup_path
-
-
 def ensure_game_status(base_dir: Path) -> GameStatus:
     path = base_dir / GAME_CFG_NAME
     if path.exists():
-        try:
-            blob = load_status(path)
-            if not blob.checksum_valid:
-                raise ValueError("checksum mismatch")
-            data = parse_status_blob(blob.decoded)
-        except (ConstructError, OSError, ValueError) as exc:
-            backup_path = _backup_corrupt_status(path)
-            data = default_status_data()
-            decoded = build_status_blob(data)
-            save_status(path, decoded)
-            if backup_path is not None:
-                warnings.warn(
-                    f"status: failed to load {path} ({exc}); backed up corrupt file to {backup_path} and reset state",
-                    stacklevel=2,
-                )
-            else:
-                warnings.warn(
-                    f"status: failed to load {path} ({exc}); backup failed and state was reset",
-                    stacklevel=2,
-                )
-        return GameStatus(path=path, data=data, dirty=False)
-    data = default_status_data()
-    decoded = build_status_blob(data)
-    save_status(path, decoded)
-    return GameStatus(path=path, data=data, dirty=False)
+        return load_status(path)
+    status = GameStatus.from_data(path=path, data=default_status_data(), dirty=False)
+    status.save()
+    return status
+
+
+def hash_status_data(status: GameStatusData) -> str:
+    import hashlib
+
+    return hashlib.sha256(build_status_blob(status)).hexdigest()
+
+
+__all__ = [
+    "BLOB_SIZE",
+    "FILE_SIZE",
+    "GAME_CFG_NAME",
+    "GAME_CFG_STRUCT",
+    "GAME_STATUS_STRUCT",
+    "GameStatus",
+    "GameStatusData",
+    "QUEST_PLAY_COUNT",
+    "QuestPlayCounts",
+    "UNKNOWN_TAIL_SIZE",
+    "WEAPON_USAGE_COUNT",
+    "build_status_blob",
+    "compute_checksum",
+    "decode_blob",
+    "default_status_data",
+    "encode_blob",
+    "ensure_game_status",
+    "hash_status_data",
+    "load_status",
+    "parse_status_blob",
+    "save_status",
+]

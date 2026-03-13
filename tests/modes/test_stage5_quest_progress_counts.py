@@ -7,20 +7,25 @@ from crimson.screens.quest_views import QuestsMenuView
 
 
 def test_quest_select_f1_counts_stage5_reads_tail_fields(make_game_state, tmp_path: Path) -> None:
-    data = save_status.default_status_data()
-    data["mode_play_survival"] = 111
-    data["mode_play_rush"] = 222
-    data["mode_play_typo"] = 333
-    data["mode_play_other"] = 444
-    data["game_sequence_id"] = 0x01020304
-    data["unknown_tail"] = bytes(range(save_status.UNKNOWN_TAIL_SIZE))
+    quest_counts = [0] * int(save_status.QUEST_PLAY_COUNT)
+    quest_counts[51] = 123
+    quest_counts[55] = 456
+    quest_counts[56] = 789
+    quest_counts[60] = 999
 
-    data["quest_play_counts"][51] = 123
-    data["quest_play_counts"][55] = 456
-    data["quest_play_counts"][56] = 789
-    data["quest_play_counts"][60] = 999
-
-    status = save_status.GameStatus(path=Path("game.cfg"), data=data, dirty=False)
+    status = save_status.GameStatus.from_data(
+        path=Path("game.cfg"),
+        data=save_status.GameStatusData(
+            mode_play_survival=111,
+            mode_play_rush=222,
+            mode_play_typo=333,
+            mode_play_other=444,
+            game_sequence_id=0x01020304,
+            unknown_tail=bytes(range(save_status.UNKNOWN_TAIL_SIZE)),
+            quest_play_counts=tuple(quest_counts),
+        ),
+        dirty=False,
+    )
     state = make_game_state(assets_root=tmp_path, status=status)
     view = QuestsMenuView(state)
 

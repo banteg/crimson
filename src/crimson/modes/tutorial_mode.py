@@ -13,7 +13,8 @@ from grim.view import ViewContext
 from ..game_modes import GameMode
 from ..input_codes import input_code_is_down, input_code_is_pressed
 from ..perks.selection import perk_selection_prepared_choices
-from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
+from ..persistence.save_status import GameStatusData
+from ..replay import ReplayHeader, ReplayRecorder
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..sim.bootstrap import advance_unlock_terrain
 from ..sim.input import PlayerInput
@@ -33,7 +34,6 @@ from ..ui.perk_menu import (
     button_width,
 )
 from ..weapon_runtime import weapon_assign_player
-from ..weapon_usage import normalize_weapon_usage_counts
 from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
 from .components.perk_menu_controller import PerkMenuController
@@ -119,9 +119,6 @@ class TutorialMode(BaseGameplayMode):
         self.player.pos = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5)
         weapon_assign_player(self.player, WeaponId.PISTOL, state=self.state)
         self._sim_session = self._new_sim_session()
-        weapon_usage_counts = normalize_weapon_usage_counts(
-            status.data.get("weapon_usage_counts") if status is not None else None,
-        )
         self._replay_recorder = ReplayRecorder(
             ReplayHeader(
                 game_mode_id=GameMode.TUTORIAL,
@@ -134,11 +131,7 @@ class TutorialMode(BaseGameplayMode):
                 violence_disabled=int(self._deterministic_violence_disabled()),
                 world_size=float(self.world_size),
                 player_count=1,
-                status=ReplayStatusSnapshot(
-                    quest_unlock_index=(0 if status is None else int(status.quest_unlock_index)),
-                    quest_unlock_index_full=(0 if status is None else int(status.quest_unlock_index_full)),
-                    weapon_usage_counts=weapon_usage_counts,
-                ),
+                status=GameStatusData() if status is None else status.as_data(),
             ),
         )
         self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)

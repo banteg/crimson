@@ -14,12 +14,13 @@ from ..game_modes import GameMode
 from ..math_parity import f32
 from ..movement_controls import MovementControlType, movement_control_type_from_value
 from ..msgspec_types import NonNegativeInt, PlayerCount, PositiveFloat, PositiveInt
+from ..persistence.save_status import GameStatusData
 from ..quests.level import QuestLevel
 from ..sim.input_providers import GameCommand
-from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT, WeaponUsageCounts
+from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
-REPLAY_FORMAT_VERSION = 10
+REPLAY_FORMAT_VERSION = 11
 
 WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 
@@ -223,12 +224,6 @@ def unpack_packed_player_input(packed: PackedPlayerInput) -> tuple[float, float,
     return mx, my, ax, ay, flags
 
 
-class ReplayStatusSnapshot(msgspec.Struct, frozen=True):
-    quest_unlock_index: NonNegativeInt = 0
-    quest_unlock_index_full: NonNegativeInt = 0
-    weapon_usage_counts: WeaponUsageCounts = msgspec.field(default_factory=lambda: (0,) * WEAPON_USAGE_COUNT)
-
-
 class ReplayClaimedStatsSnapshot(msgspec.Struct, frozen=True):
     complete: bool = False
     ticks: NonNegativeInt = 0
@@ -257,7 +252,7 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     violence_disabled: NonNegativeInt = 0
     world_size: PositiveFloat = 1024.0
     player_count: PlayerCount = 1
-    status: ReplayStatusSnapshot = msgspec.field(default_factory=ReplayStatusSnapshot)
+    status: GameStatusData = msgspec.field(default_factory=GameStatusData)
     claimed_stats: ReplayClaimedStatsSnapshot = msgspec.field(default_factory=ReplayClaimedStatsSnapshot)
     input_quantization: InputQuantization = "f32"
 

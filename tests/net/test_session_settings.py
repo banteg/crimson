@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from crimson.game_modes import GameMode
 from crimson.net.lockstep_protocol import MatchStart, Welcome
-from crimson.net.lockstep_protocol import StatusSnapshot as LockstepStatusSnapshot
 from crimson.net.relay_protocol import RelaySlot
-from crimson.net.relay_protocol import StatusSnapshot as RelayStatusSnapshot
 from crimson.net.session_settings import (
     LockstepSessionSettings,
     RelaySessionSettings,
@@ -21,6 +19,7 @@ from crimson.net.session_settings import (
     session_settings_from_welcome,
     welcome_from_session_settings,
 )
+from crimson.persistence.save_status import GameStatusData
 from crimson.quests.level import QuestLevel
 
 
@@ -85,7 +84,7 @@ def test_lockstep_session_settings_roundtrip_with_welcome_and_match_start() -> N
         session_id="session1",
         seed=12345,
         start_tick=7,
-        status_snapshot=LockstepStatusSnapshot(quest_unlock_index=4, quest_unlock_index_full=9),
+        status=GameStatusData(quest_unlock_index=4, quest_unlock_index_full=9),
     )
     assert isinstance(start, MatchStart)
     assert start.mode_id == GameMode.RUSH
@@ -112,11 +111,11 @@ def test_relay_session_settings_roundtrip_from_room_create() -> None:
     assert settings.rollback_max_ticks == 1
     assert isinstance(settings, RelaySessionSettings)
 
-    snapshot = RelayStatusSnapshot(quest_unlock_index=11, quest_unlock_index_full=22)
-    create = room_create_from_session_settings(settings, status_snapshot=snapshot)
+    status = GameStatusData(quest_unlock_index=11, quest_unlock_index_full=22)
+    create = room_create_from_session_settings(settings, status=status)
     restored = session_settings_from_room_create(create)
     assert restored == settings
-    assert create.status_snapshot == snapshot
+    assert create.status == status
 
 
 def test_relay_session_settings_build_room_state_and_start() -> None:
@@ -158,7 +157,7 @@ def test_relay_session_settings_build_room_state_and_start() -> None:
         slot_index=1,
         host_slot_index=0,
         reconnect_token="token123",
-        status_snapshot=RelayStatusSnapshot(),
+        status=GameStatusData(),
     )
     assert start.mode_id == GameMode.SURVIVAL
     assert start.player_count == 2

@@ -10,6 +10,7 @@ from crimson.quests.level import QuestLevel
 from grim.rand import CallerStatic, CrtRand, RngTraceSink
 
 from ...game_modes import GameMode
+from ...persistence.save_status import GameStatus
 from ...quests import quest_by_level
 from ...quests.runtime import build_quest_spawn_table
 from ...quests.types import QuestContext, QuestDefinition, SpawnEntry
@@ -35,7 +36,6 @@ from ...sim.sessions import (
     QuestSpawnState,
 )
 from ...sim.world_state import WorldState
-from ...status_snapshot import game_status_from_replay_status
 from ...typo.state import typo_shot_counts
 from ...weapons import WeaponId
 from ...world.sim_world_state import reset_world_players
@@ -208,9 +208,10 @@ class PlaybackDriver:
             world_size=float(self.world_size),
             player_count=int(self.session_settings.player_count),
         )
-        world.state.status = game_status_from_replay_status(
-            self.replay.header.status,
+        world.state.status = GameStatus.from_data(
             path=Path("replay://status"),
+            data=self.replay.header.status,
+            dirty=False,
         )
         self._quest_definition = None
         self._quest_total_spawn_count = 0

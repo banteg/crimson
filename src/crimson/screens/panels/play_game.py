@@ -213,8 +213,8 @@ class PlayGameMenuView(PanelMenuView):
         )
 
     def _quests_total_played(self) -> int:
-        counts = self.state.status.data.get("quest_play_counts", [])
-        if not isinstance(counts, list) or not counts:
+        counts = self.state.status.quest_play_counts
+        if not counts:
             return 0
         # `sub_44ed80` sums 40 ints from game_status_blob+0x104..0x1a4.
         # Our `quest_play_counts` array starts at blob+0xd8, so this is indices 11..50.
@@ -241,8 +241,8 @@ class PlayGameMenuView(PanelMenuView):
         full_version = not self.state.demo_enabled
 
         quests_total = self._quests_total_played()
-        rush_total = int(status.mode_play_count("rush"))
-        survival_total = int(status.mode_play_count("survival"))
+        rush_total = int(status.mode_play_count_for_mode(GameMode.RUSH))
+        survival_total = int(status.mode_play_count_for_mode(GameMode.SURVIVAL))
         # Matches the tutorial placement gating in `sub_44ed80` (excludes Typ-o).
         main_total = quests_total + rush_total + survival_total
 
@@ -595,11 +595,11 @@ class PlayGameMenuView(PanelMenuView):
         if key == "quests":
             count = self._quests_total_played()
         elif key == "rush":
-            count = int(status.mode_play_count("rush"))
+            count = int(status.mode_play_count_for_mode(GameMode.RUSH))
         elif key == "survival":
-            count = int(status.mode_play_count("survival"))
+            count = int(status.mode_play_count_for_mode(GameMode.SURVIVAL))
         elif key == "typo":
-            count = int(status.mode_play_count("typo"))
+            count = int(status.mode_play_count_for_mode(GameMode.TYPO))
         else:
             return
         draw_small_text(font, f"{count}", pos, color)

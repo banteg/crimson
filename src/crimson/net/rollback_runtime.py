@@ -9,6 +9,7 @@ from typing import Literal, TypeAlias, cast
 import msgspec
 
 from ..game_modes import GameMode
+from ..persistence.save_status import GameStatusData
 from ..quests.level import QuestLevel
 from ..replay.types import PackedPlayerInput
 from .debug_log import lan_debug_log
@@ -38,7 +39,6 @@ from .relay_protocol import (
     RoomReady,
     RoomStart,
     RoomState,
-    StatusSnapshot,
     current_build_id,
 )
 from .relay_reliable import RelayReliableLink
@@ -71,7 +71,7 @@ class _RollbackRuntimeConfigBase(msgspec.Struct):
     input_delay_ticks: int = INPUT_DELAY_TICKS
     rollback_max_ticks: int = ROLLBACK_MAX_TICKS
     reconnect_timeout_ms: int = RECONNECT_TIMEOUT_MS
-    sim_status_snapshot: StatusSnapshot | None = None
+    sim_status: GameStatusData | None = None
 
 
 class HostRollbackRuntimeConfig(_RollbackRuntimeConfigBase):
@@ -390,7 +390,7 @@ class RollbackRuntime(msgspec.Struct):
                 self._send(
                     room_create_from_session_settings(
                         settings,
-                        status_snapshot=self.cfg.sim_status_snapshot,
+                        status=self.cfg.sim_status,
                     ),
                     reliable=True,
                     now_ms=int(now_ms),

@@ -25,13 +25,13 @@ from ..net.rollback_resync_v5 import (
     QuestsStateSnapshotV2,
 )
 from ..perks.selection import perk_selection_prepared_choices
-from ..persistence.save_status import GameStatus
+from ..persistence.save_status import GameStatus, GameStatusData
 from ..quests import quest_by_level
 from ..quests.level import QuestLevel
 from ..quests.runtime import build_quest_spawn_table
 from ..quests.status import tracked_quest_games_counter_index
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
-from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
+from ..replay import Replay, ReplayHeader, ReplayRecorder
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..rng_caller_static import RngCallerStatic
 from ..sim.bootstrap import advance_explicit_terrain, advance_unlock_terrain
@@ -50,7 +50,6 @@ from ..ui.overlays.quest_run import (
     draw_quest_title_timer_overlay,
 )
 from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
-from ..weapon_usage import normalize_weapon_usage_counts
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
@@ -435,16 +434,7 @@ class QuestMode(BaseGameplayMode):
         self._reset_gameplay_frame_clock()
         self._sim_session = self._new_sim_session(spawn_entries=tuple(entries))
 
-        weapon_usage_counts = normalize_weapon_usage_counts(
-            status.data.get("weapon_usage_counts") if status is not None else None,
-        )
-        status_snapshot = ReplayStatusSnapshot(
-            quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
-            quest_unlock_index_full=int(status.quest_unlock_index_full)
-            if status is not None
-            else 0,
-            weapon_usage_counts=weapon_usage_counts,
-        )
+        replay_status = GameStatusData() if status is None else status.as_data()
         record_replay = (not bool(self._lan_enabled)) or str(self._lan_role) == "host"
         if record_replay:
             self._replay_recorder = ReplayRecorder(
@@ -460,7 +450,7 @@ class QuestMode(BaseGameplayMode):
                     violence_disabled=self.config.display.violence_disabled,
                     world_size=float(self.world_size),
                     player_count=len(self.sim_world.players),
-                    status=status_snapshot,
+                    status=replay_status,
                 ),
             )
             self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)

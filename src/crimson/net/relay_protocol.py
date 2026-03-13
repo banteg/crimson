@@ -6,6 +6,7 @@ import msgspec
 
 from ..game_modes import GameMode
 from ..msgspec_types import NonNegativeInt, PlayerCount, PositiveInt, SignedIndex
+from ..persistence.save_status import GameStatusData
 from ..quests.level import QuestLevel
 from ..replay.types import PackedPlayerInput
 from .lockstep_protocol import (
@@ -13,7 +14,6 @@ from .lockstep_protocol import (
     MAX_PLAYERS,
     RELIABLE_RESEND_MS,
     TICK_RATE,
-    StatusSnapshot,
     build_git_hash,
     build_public_version,
     builds_compatible,
@@ -22,7 +22,7 @@ from .lockstep_protocol import (
 from .room_code import ROOM_CODE_LENGTH, RoomCode
 from .schema_shared import PacketHeader, SlotState
 
-PROTOCOL_VERSION = 5
+PROTOCOL_VERSION = 6
 DEFAULT_PORT = 31993
 INPUT_DELAY_TICKS = 1
 ROLLBACK_MAX_TICKS = 8
@@ -62,7 +62,7 @@ class RoomCreate(msgspec.Struct, tag="room_create", forbid_unknown_fields=True):
     input_delay_ticks: NonNegativeInt = INPUT_DELAY_TICKS
     rollback_max_ticks: PositiveInt = ROLLBACK_MAX_TICKS
     netcode_mode: NetcodeMode = "rollback"
-    status_snapshot: StatusSnapshot | None = None
+    status: GameStatusData | None = None
 
 
 class RoomJoin(msgspec.Struct, tag="room_join", forbid_unknown_fields=True):
@@ -107,7 +107,7 @@ class RoomStart(msgspec.Struct, tag="room_start", forbid_unknown_fields=True):
     slot_index: SignedIndex = -1
     host_slot_index: NonNegativeInt = 0
     reconnect_token: str = ""
-    status_snapshot: StatusSnapshot | None = None
+    status: GameStatusData | None = None
 
 
 class PeerDisconnect(msgspec.Struct, tag="peer_disconnect", forbid_unknown_fields=True):
@@ -253,7 +253,6 @@ __all__ = [
     "RoomReady",
     "RoomStart",
     "RoomState",
-    "StatusSnapshot",
     "build_git_hash",
     "build_public_version",
     "builds_compatible",

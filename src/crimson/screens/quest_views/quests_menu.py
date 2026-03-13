@@ -434,17 +434,17 @@ class QuestsMenuView:
                 return None
             tail_slot = int(global_index) - 40
             if tail_slot == 0:
-                completed = int(status.mode_play_count("survival"))
+                completed = int(status.mode_play_count_for_mode(GameMode.SURVIVAL))
             elif tail_slot == 1:
-                completed = int(status.mode_play_count("rush"))
+                completed = int(status.mode_play_count_for_mode(GameMode.RUSH))
             elif tail_slot == 2:
-                completed = int(status.mode_play_count("typo"))
+                completed = int(status.mode_play_count_for_mode(GameMode.TYPO))
             elif tail_slot == 3:
-                completed = int(status.mode_play_count("other"))
+                completed = int(status.mode_play_other)
             elif tail_slot == 4:
                 completed = int(status.game_sequence_id)
             elif 5 <= tail_slot <= 8:
-                tail = status.unknown_tail()
+                tail = status.unknown_tail
                 off = (tail_slot - 5) * 4
                 if len(tail) < off + 4:
                     completed = 0

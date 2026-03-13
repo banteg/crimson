@@ -19,14 +19,14 @@ from ..net.rollback_resync_v5 import (
     RushRuntimeSnapshotV2,
     RushStateSnapshotV2,
 )
-from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
+from ..persistence.save_status import GameStatusData
+from ..replay import Replay, ReplayHeader, ReplayRecorder
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..sim.bootstrap import advance_unlock_terrain
 from ..sim.session_builders import build_rush_session, enforce_rush_loadout
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, RushSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
-from ..weapon_usage import normalize_weapon_usage_counts
 from .base_gameplay_mode import (
     BaseGameplayMode,
     LanSession,
@@ -122,16 +122,7 @@ class RushMode(BaseGameplayMode):
         self.sim_world.state.rng.srand(int(self.state.rng.state))
         self._sim_session = self._new_sim_session()
         enforce_rush_loadout(self.sim_world.world_state)
-        weapon_usage_counts = normalize_weapon_usage_counts(
-            status.data.get("weapon_usage_counts") if status is not None else None,
-        )
-        status_snapshot = ReplayStatusSnapshot(
-            quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
-            quest_unlock_index_full=int(status.quest_unlock_index_full)
-            if status is not None
-            else 0,
-            weapon_usage_counts=weapon_usage_counts,
-        )
+        replay_status = GameStatusData() if status is None else status.as_data()
         record_replay = (not bool(self._lan_enabled)) or str(self._lan_role) == "host"
         if record_replay:
             self._replay_recorder = ReplayRecorder(
@@ -146,7 +137,7 @@ class RushMode(BaseGameplayMode):
                     violence_disabled=int(self._deterministic_violence_disabled()),
                     world_size=float(self.world_size),
                     player_count=len(self.sim_world.players),
-                    status=status_snapshot,
+                    status=replay_status,
                 ),
             )
             self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)

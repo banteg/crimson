@@ -13,7 +13,6 @@ from crimson.net.lockstep_protocol import (
     InputBatch,
     PauseState,
     Ready,
-    StatusSnapshot,
     Welcome,
 )
 from crimson.net.lockstep_runtime import (
@@ -26,6 +25,7 @@ from crimson.net.lockstep_runtime import (
 from crimson.net.lockstep_state import HostReadyTick
 from crimson.net.reliable import ReliableLink
 from crimson.net.transport import UdpTransport
+from crimson.persistence.save_status import GameStatusData
 from crimson.sim.input_providers import PerkPickCommand
 
 
@@ -62,7 +62,7 @@ def test_host_does_not_track_unknown_non_hello_packets(mocker) -> None:
             bind_host="127.0.0.1",
             host_ip="",
             port=0,
-            sim_status_snapshot=StatusSnapshot(),
+            sim_status=GameStatusData(),
         ),
     )
     runtime.open()
@@ -89,7 +89,7 @@ def test_host_pop_tick_frame_attaches_pending_commands_to_first_canonical_frame(
             bind_host="127.0.0.1",
             host_ip="",
             port=0,
-            sim_status_snapshot=StatusSnapshot(),
+            sim_status=GameStatusData(),
         ),
     )
     runtime.host_ready_ticks.append(HostReadyTick(tick_index=7, frame_inputs=[[0.0, 0.0, 0.0, 0.0, 0]]))
@@ -116,7 +116,7 @@ def test_host_timeout_aborts_started_match() -> None:
             bind_host="127.0.0.1",
             host_ip="",
             port=0,
-            sim_status_snapshot=StatusSnapshot(),
+            sim_status=GameStatusData(),
         ),
     )
     runtime.open()
@@ -160,7 +160,7 @@ def test_host_waiting_input_pause_uses_extended_timeout() -> None:
             bind_host="127.0.0.1",
             host_ip="",
             port=0,
-            sim_status_snapshot=StatusSnapshot(),
+            sim_status=GameStatusData(),
         ),
     )
     runtime.open()

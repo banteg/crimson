@@ -10,7 +10,8 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..persistence.highscores import scores_path_for_mode
-from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
+from ..persistence.save_status import GameStatusData
+from ..replay import Replay, ReplayHeader, ReplayRecorder
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..sim.bootstrap import advance_unlock_terrain
 from ..sim.input import PlayerInput
@@ -23,7 +24,6 @@ from ..typo.state import typo_shot_counts
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
-from ..weapon_usage import normalize_weapon_usage_counts
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
@@ -90,9 +90,6 @@ class TypoShooterMode(BaseGameplayMode):
         self.state.typo.highscore_names = highscore_names
         self._sim_session = self._new_sim_session()
 
-        weapon_usage_counts = normalize_weapon_usage_counts(
-            status.data.get("weapon_usage_counts") if status is not None else None,
-        )
         self._replay_recorder = ReplayRecorder(
             ReplayHeader(
                 game_mode_id=GameMode.TYPO,
@@ -105,11 +102,7 @@ class TypoShooterMode(BaseGameplayMode):
                 violence_disabled=int(self._deterministic_violence_disabled()),
                 world_size=float(self.world_size),
                 player_count=1,
-                status=ReplayStatusSnapshot(
-                    quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
-                    quest_unlock_index_full=int(status.quest_unlock_index_full) if status is not None else 0,
-                    weapon_usage_counts=weapon_usage_counts,
-                ),
+                status=GameStatusData() if status is None else status.as_data(),
                 typo_dictionary_words=tuple(dictionary_words),
                 typo_highscore_names=tuple(highscore_names),
             ),

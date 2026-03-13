@@ -34,7 +34,11 @@ def _as_rng(value: object) -> Any:
 
 
 def _status_default() -> save_status.GameStatus:
-    return save_status.GameStatus(path=Path("game.cfg"), data=save_status.default_status_data(), dirty=False)
+    return save_status.GameStatus.from_data(
+        path=Path("game.cfg"),
+        data=save_status.default_status_data(),
+        dirty=False,
+    )
 
 
 def test_prepare_weapon_availability_includes_survival_defaults() -> None:

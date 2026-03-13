@@ -6,12 +6,12 @@ import msgspec
 
 from ..game_modes import GameMode
 from ..msgspec_types import NonNegativeInt, PlayerCount, PositiveInt
+from ..persistence.save_status import GameStatusData
 from ..quests.level import QuestLevel
 from .lockstep_protocol import INPUT_DELAY_TICKS as LOCKSTEP_INPUT_DELAY_TICKS
 from .lockstep_protocol import PROTOCOL_VERSION as LOCKSTEP_PROTOCOL_VERSION
 from .lockstep_protocol import TICK_RATE as LOCKSTEP_TICK_RATE
 from .lockstep_protocol import Hello, MatchStart, Welcome
-from .lockstep_protocol import StatusSnapshot as LockstepStatusSnapshot
 from .relay_protocol import (
     INPUT_DELAY_TICKS as RELAY_INPUT_DELAY_TICKS,
 )
@@ -22,7 +22,6 @@ from .relay_protocol import (
     RoomCreate,
     RoomStart,
     RoomState,
-    StatusSnapshot,
 )
 from .relay_protocol import (
     TICK_RATE as RELAY_TICK_RATE,
@@ -152,7 +151,7 @@ def match_start_from_session_settings(
     session_id: str,
     seed: int,
     start_tick: int = 0,
-    status_snapshot: LockstepStatusSnapshot | None = None,
+    status: GameStatusData | None = None,
 ) -> MatchStart:
     return MatchStart(
         session_id=session_id,
@@ -162,7 +161,7 @@ def match_start_from_session_settings(
         start_tick=start_tick,
         quest_level=settings.quest_level,
         preserve_bugs=settings.preserve_bugs,
-        status_snapshot=status_snapshot,
+        status=status,
     )
 
 
@@ -229,7 +228,7 @@ def hello_from_session_settings(
 def room_create_from_session_settings(
     settings: RelaySessionSettings,
     *,
-    status_snapshot: StatusSnapshot | None = None,
+    status: GameStatusData | None = None,
 ) -> RoomCreate:
     return RoomCreate(
         mode_id=settings.mode_id,
@@ -240,7 +239,7 @@ def room_create_from_session_settings(
         input_delay_ticks=settings.input_delay_ticks,
         rollback_max_ticks=settings.rollback_max_ticks,
         netcode_mode=settings.netcode_mode,
-        status_snapshot=status_snapshot,
+        status=status,
     )
 
 
@@ -280,7 +279,7 @@ def room_start_from_session_settings(
     slot_index: int,
     host_slot_index: int,
     reconnect_token: str,
-    status_snapshot: StatusSnapshot | None = None,
+    status: GameStatusData | None = None,
 ) -> RoomStart:
     return RoomStart(
         room_code=room_code,
@@ -298,5 +297,5 @@ def room_start_from_session_settings(
         slot_index=slot_index,
         host_slot_index=host_slot_index,
         reconnect_token=reconnect_token,
-        status_snapshot=status_snapshot,
+        status=status,
     )

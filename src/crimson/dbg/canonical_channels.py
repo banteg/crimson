@@ -28,13 +28,6 @@ class SnapshotPlayer(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     experience: int
     level: int
 
-
-class SnapshotStatus(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    quest_unlock_index: int
-    quest_unlock_index_full: int
-    weapon_usage_counts: list[int]
-
-
 class SnapshotBonusTimers(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     weapon_power_up_ms: int
     reflex_boost_ms: int
@@ -50,7 +43,6 @@ class SnapshotGameplay(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     perk_pending_count: int
     perk_choices_dirty: bool
     bonus_timers: SnapshotBonusTimers
-    status: SnapshotStatus
 
 
 class SimStateSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
