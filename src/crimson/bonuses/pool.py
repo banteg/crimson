@@ -52,17 +52,6 @@ def _bonus_entry_is_empty(entry: BonusEntry) -> bool:
     )
 
 
-# Native `bonus_try_spawn_on_kill` uses the bonus entry `amount` field for a weird
-# suppression check: it clears the spawned entry when `amount == player1.weapon_id`
-# regardless of bonus type. `--preserve-bugs` therefore always compares against
-# the raw native amount domain (see docs/rewrite/original-bugs.md).
-_BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[BonusId, WeaponId] = {
-    # Native stored amount for Double Experience drops is 1.
-    BonusId.DOUBLE_EXPERIENCE: WeaponId.PISTOL,
-    BonusId.FIRE_BULLETS: WeaponId.SAWED_OFF_SHOTGUN,
-}
-
-
 def _weapon_id_from_native_amount(amount: int) -> WeaponId | None:
     # Keep native amount-domain behavior: any raw bonus amount that happens to
     # match a weapon id can trip suppression checks under `--preserve-bugs`.
@@ -344,9 +333,7 @@ class BonusPool:
         if players:
             if bool(state.preserve_bugs):
                 weapon_id = players[0].weapon.weapon_id
-                suppression_weapon_id = _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION.get(entry.bonus_id)
-                if suppression_weapon_id is None:
-                    suppression_weapon_id = _weapon_id_from_native_amount(entry.amount)
+                suppression_weapon_id = _weapon_id_from_native_amount(entry.amount)
                 if suppression_weapon_id == weapon_id:
                     self._clear_entry(entry)
                     return None
