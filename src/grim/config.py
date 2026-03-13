@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from enum import IntEnum
 from pathlib import Path
-from typing import cast
+from typing import Any
 
 import msgspec
 from construct import Array, Byte, Bytes, Float32l, Int32sl, Struct
@@ -301,43 +301,34 @@ def _require_range(value: int, *, minimum: int, maximum: int, field: str) -> int
     return value
 
 
-def _parsed_player_bind_block(raw: dict[str, object], *, player_index: int) -> dict[str, object]:
+def _parsed_player_bind_block(raw: dict[str, Any], *, player_index: int) -> dict[str, Any]:
     idx = _player_index(player_index)
     if idx < 2:
-        return cast(dict[str, object], cast(list[object], raw["keybinds_p1_p2"])[idx])
-    return cast(dict[str, object], cast(list[object], raw["extended_keybinds_p3_p4"])[idx - 2])
+        return raw["keybinds_p1_p2"][idx]
+    return raw["extended_keybinds_p3_p4"][idx - 2]
 
 
-def _parsed_bind_int(raw_block: dict[str, object], field: str) -> int:
-    return int(cast(int, raw_block[field]))
-
-
-def _parsed_bind_pair(raw_block: dict[str, object], field: str) -> tuple[int, int]:
-    values = cast(list[object], raw_block[field])
-    return int(cast(int, values[0])), int(cast(int, values[1]))
-
-
-def _parsed_player_bind_block_is_uninitialized(raw_block: dict[str, object]) -> bool:
+def _parsed_player_bind_block_is_uninitialized(raw_block: dict[str, Any]) -> bool:
     return not any(
         (
-            _parsed_bind_int(raw_block, "move_forward"),
-            _parsed_bind_int(raw_block, "move_backward"),
-            _parsed_bind_int(raw_block, "turn_left"),
-            _parsed_bind_int(raw_block, "turn_right"),
-            _parsed_bind_int(raw_block, "fire"),
-            *_parsed_bind_pair(raw_block, "reserved_keys"),
-            _parsed_bind_int(raw_block, "aim_left"),
-            _parsed_bind_int(raw_block, "aim_right"),
-            _parsed_bind_int(raw_block, "axis_aim_y"),
-            _parsed_bind_int(raw_block, "axis_aim_x"),
-            _parsed_bind_int(raw_block, "axis_move_y"),
-            _parsed_bind_int(raw_block, "axis_move_x"),
+            raw_block["move_forward"],
+            raw_block["move_backward"],
+            raw_block["turn_left"],
+            raw_block["turn_right"],
+            raw_block["fire"],
+            *raw_block["reserved_keys"],
+            raw_block["aim_left"],
+            raw_block["aim_right"],
+            raw_block["axis_aim_y"],
+            raw_block["axis_aim_x"],
+            raw_block["axis_move_y"],
+            raw_block["axis_move_x"],
         ),
     )
 
 
 def _player_controls_from_parsed_bind_block(
-    raw_block: dict[str, object],
+    raw_block: dict[str, Any],
     *,
     player_index: int,
     movement: MovementControlType,
@@ -361,15 +352,15 @@ def _player_controls_from_parsed_bind_block(
         aim_scheme=aim_scheme,
         show_direction_arrow=show_direction_arrow,
         move_codes=(
-            _parsed_bind_int(raw_block, "move_forward"),
-            _parsed_bind_int(raw_block, "move_backward"),
-            _parsed_bind_int(raw_block, "turn_left"),
-            _parsed_bind_int(raw_block, "turn_right"),
+            raw_block["move_forward"],
+            raw_block["move_backward"],
+            raw_block["turn_left"],
+            raw_block["turn_right"],
         ),
-        fire_code=_parsed_bind_int(raw_block, "fire"),
-        keyboard_aim_codes=(_parsed_bind_int(raw_block, "aim_left"), _parsed_bind_int(raw_block, "aim_right")),
-        aim_axis_codes=(_parsed_bind_int(raw_block, "axis_aim_y"), _parsed_bind_int(raw_block, "axis_aim_x")),
-        move_axis_codes=(_parsed_bind_int(raw_block, "axis_move_y"), _parsed_bind_int(raw_block, "axis_move_x")),
+        fire_code=raw_block["fire"],
+        keyboard_aim_codes=(raw_block["aim_left"], raw_block["aim_right"]),
+        aim_axis_codes=(raw_block["axis_aim_y"], raw_block["axis_aim_x"]),
+        move_axis_codes=(raw_block["axis_move_y"], raw_block["axis_move_x"]),
     )
 
 
