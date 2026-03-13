@@ -74,10 +74,12 @@ def perk_can_offer(
     # Native `perk_can_offer` treats these metadata bits as allow-lists for
     # specific runtime modes, not "only in this mode":
     # - in quest mode, offered perks must have bit 0x1 set
-    # - in two-player mode, offered perks must have bit 0x2 set
+    # - in multiplayer, offered perks must have bit 0x2 set
+    # The original game only had 1p/2p, but the port extends this gate to all
+    # multiplayer counts for consistent 3p/4p behavior.
     if game_mode == GameMode.QUESTS and (flags & PerkFlags.QUEST_MODE_ALLOWED) == 0:
         return False
-    if player_count == 2 and (flags & PerkFlags.TWO_PLAYER_ALLOWED) == 0:
+    if player_count > 1 and (flags & PerkFlags.TWO_PLAYER_ALLOWED) == 0:
         return False
 
     if meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq):

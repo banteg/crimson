@@ -10,7 +10,8 @@ import msgspec
 class PerkFlags(IntFlag):
     # `perk_can_offer` uses these bits as mode-specific allow-lists:
     # - in quest mode, only perks with QUEST_MODE_ALLOWED are eligible
-    # - in two-player mode, only perks with TWO_PLAYER_ALLOWED are eligible
+    # - in multiplayer, only perks with TWO_PLAYER_ALLOWED are eligible
+    # The flag keeps its native name even though the port applies it to 3p/4p too.
     QUEST_MODE_ALLOWED = 0x1
     TWO_PLAYER_ALLOWED = 0x2
     STACKABLE = 0x4  # can be offered even if already owned
