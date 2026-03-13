@@ -60,18 +60,18 @@ def _player_bind_block(
     padding: tuple[int, int, int],
 ) -> dict[str, Any]:
     return {
-        "move_forward": int(move_codes[0]),
-        "move_backward": int(move_codes[1]),
-        "turn_left": int(move_codes[2]),
-        "turn_right": int(move_codes[3]),
-        "fire": int(fire_code),
+        "move_forward": move_codes[0],
+        "move_backward": move_codes[1],
+        "turn_left": move_codes[2],
+        "turn_right": move_codes[3],
+        "fire": fire_code,
         "reserved_keys": reserved_keys,
-        "aim_left": int(keyboard_aim_codes[0]),
-        "aim_right": int(keyboard_aim_codes[1]),
-        "axis_aim_y": int(aim_axis_codes[0]),
-        "axis_aim_x": int(aim_axis_codes[1]),
-        "axis_move_y": int(move_axis_codes[0]),
-        "axis_move_x": int(move_axis_codes[1]),
+        "aim_left": keyboard_aim_codes[0],
+        "aim_right": keyboard_aim_codes[1],
+        "axis_aim_y": aim_axis_codes[0],
+        "axis_aim_x": aim_axis_codes[1],
+        "axis_move_y": move_axis_codes[0],
+        "axis_move_x": move_axis_codes[1],
         "padding": padding,
     }
 
@@ -383,18 +383,18 @@ def _player_controls_from_raw_bind_block(
 def _encode_player_bind_block(player: CrimsonPlayerControls, *, player_index: int) -> dict[str, object]:
     defaults = _default_player_bind_block(player_index)
     return {
-        "move_forward": int(player.move_codes[0]),
-        "move_backward": int(player.move_codes[1]),
-        "turn_left": int(player.move_codes[2]),
-        "turn_right": int(player.move_codes[3]),
-        "fire": int(player.fire_code),
+        "move_forward": player.move_codes[0],
+        "move_backward": player.move_codes[1],
+        "turn_left": player.move_codes[2],
+        "turn_right": player.move_codes[3],
+        "fire": player.fire_code,
         "reserved_keys": [int(defaults["reserved_keys"][0]), int(defaults["reserved_keys"][1])],
-        "aim_left": int(player.keyboard_aim_codes[0]),
-        "aim_right": int(player.keyboard_aim_codes[1]),
-        "axis_aim_y": int(player.aim_axis_codes[0]),
-        "axis_aim_x": int(player.aim_axis_codes[1]),
-        "axis_move_y": int(player.move_axis_codes[0]),
-        "axis_move_x": int(player.move_axis_codes[1]),
+        "aim_left": player.keyboard_aim_codes[0],
+        "aim_right": player.keyboard_aim_codes[1],
+        "axis_aim_y": player.aim_axis_codes[0],
+        "axis_aim_x": player.aim_axis_codes[1],
+        "axis_move_y": player.move_axis_codes[0],
+        "axis_move_x": player.move_axis_codes[1],
         "padding": [int(defaults["padding"][0]), int(defaults["padding"][1]), int(defaults["padding"][2])],
     }
 
@@ -706,8 +706,8 @@ def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
         field="detail_preset",
     )
     data["mouse_sensitivity"] = float(config.display.mouse_sensitivity)
-    data["keybind_pick_perk"] = int(config.controls.pick_perk_code)
-    data["keybind_reload"] = int(config.controls.reload_code)
+    data["keybind_pick_perk"] = config.controls.pick_perk_code
+    data["keybind_reload"] = config.controls.reload_code
     return CRIMSON_CFG_STRUCT.build(data)
 
 

@@ -79,18 +79,18 @@ def update_name_entry_text(
 def gameplay_controls_held(config: CrimsonConfig) -> bool:
     player_count = max(1, min(4, config.gameplay.player_count))
     for player_index in range(player_count):
-        move_codes = tuple(int(code) for code in config.controls.player(player_index).move_codes)
+        player_controls = config.controls.player(player_index)
+        move_codes = player_controls.move_codes
         for code in (
             move_codes[0],
             move_codes[1],
             move_codes[2],
             move_codes[3],
-            int(config.controls.player(player_index).fire_code),
+            player_controls.fire_code,
         )[:_CONTROL_BIND_SLOTS]:
-            key_code = int(code)
-            if key_code == INPUT_CODE_UNBOUND:
+            if code == INPUT_CODE_UNBOUND:
                 continue
-            if input_code_is_down(key_code, player_index=player_index):
+            if input_code_is_down(code, player_index=player_index):
                 return True
 
     for code in _SINGLE_PLAYER_ALT_MOVE_CODES:

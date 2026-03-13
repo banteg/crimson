@@ -269,11 +269,11 @@ class LocalInputInterpreter:
         aim_scheme, move_mode_type = self._safe_controls_modes(config, player_index=idx)
         reload_key = config.controls.reload_code
 
-        move_codes = tuple(int(code) for code in binds.move_codes)
-        fire_key = int(binds.fire_code)
-        keyboard_aim_codes = tuple(int(code) for code in binds.keyboard_aim_codes)
-        aim_axis_codes = tuple(int(code) for code in binds.aim_axis_codes)
-        move_axis_codes = tuple(int(code) for code in binds.move_axis_codes)
+        move_codes = binds.move_codes
+        fire_key = binds.fire_code
+        keyboard_aim_codes = binds.keyboard_aim_codes
+        aim_axis_codes = binds.aim_axis_codes
+        move_axis_codes = binds.move_axis_codes
 
         move_vec = Vec2()
         move_forward_pressed: bool | None = None
