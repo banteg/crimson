@@ -10,8 +10,14 @@ def test_crimson_cfg_roundtrip_default() -> None:
     blob = grim_config.encode_crimson_cfg(cfg)
     assert len(blob) == grim_config.CRIMSON_CFG_SIZE
     parsed = grim_config.CRIMSON_CFG_STRUCT.parse(blob)
+    assert int(parsed["unknown_08"]) == 0
+    assert int(parsed["unknown_450"]) == 1
+    assert int(parsed["sound_freq_adjustment_enabled"]) == 1
+    assert int(parsed["ui_info_texts"]) == 1
     assert int(parsed["keybind_pick_perk"]) == 0x101
     assert int(parsed["keybind_reload"]) == 0x102
+    assert float(parsed["mouse_sensitivity"]) == 0.5
+    assert list(parsed["saved_name_order"]) == list(range(grim_config.SAVED_NAME_SLOT_COUNT))
     rebuilt = grim_config.CRIMSON_CFG_STRUCT.build(parsed)
     assert rebuilt == blob
 

@@ -627,7 +627,7 @@ typedef struct crimson_cfg_t {
     unsigned char reserved3[0x0c];
     unsigned char reserved4[0x200];
     unsigned char hardcore;
-    unsigned char full_version;
+    unsigned char ui_info_texts;
     unsigned char reserved5[2];
     int perk_prompt_counter;
     unsigned char reserved6[0x14];

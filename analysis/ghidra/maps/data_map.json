@@ -1892,8 +1892,8 @@
     },
     {
       "address": "0x00480791",
-      "comment": "Config: full-version/unlimited flag (gates quest logic and UI strings).",
-      "name": "config_full_version",
+      "comment": "Config: UI info texts toggle.",
+      "name": "config_ui_info_texts",
       "program": "crimsonland.exe"
     },
     {
@@ -3472,7 +3472,7 @@
     },
     {
       "address": "0x00487038",
-      "comment": "Full-version quest unlock index (u16). Saved in game_status_blob; gated by config_full_version.",
+      "comment": "Full-version quest unlock index (u16). Saved in game_status_blob; gated by game_is_full_version().",
       "name": "quest_unlock_index_full",
       "program": "crimsonland.exe",
       "type": "u16_t"

@@ -3,14 +3,14 @@ from __future__ import annotations
 from collections.abc import Sequence
 from enum import IntEnum
 from pathlib import Path
-from typing import Any, TypeAlias, cast
+from typing import TypeAlias, cast
 
 import msgspec
-from construct import Array, Byte, Bytes, Float32l, Int32ul, Struct
+from construct import Array, Byte, Bytes, Float32l, Int32sl, Struct
 
-from crimson.aim_schemes import AimScheme, aim_scheme_from_value
+from crimson.aim_schemes import AimScheme
 from crimson.game_modes import GameMode
-from crimson.movement_controls import MovementControlType, movement_control_type_from_value
+from crimson.movement_controls import MovementControlType
 from crimson.quests.level import QuestLevel
 
 CRIMSON_CFG_NAME = "crimson.cfg"
@@ -58,71 +58,72 @@ CRIMSON_CFG_STRUCT = Struct(
     "highscore_duplicate_mode" / Byte,
     "direction_arrow_flags" / Bytes(2),
     "unknown_06" / Bytes(2),
-    "unknown_08" / Int32ul,
+    "unknown_08" / Int32sl,
     "unknown_0c" / Bytes(2),
     "fx_detail_0" / Byte,
     "unknown_0f" / Byte,
     "fx_detail_1" / Byte,
     "fx_detail_2" / Byte,
     "unknown_12" / Bytes(2),
-    "player_count" / Int32ul,
-    "game_mode" / Int32ul,
-    "player_mode_flag_p1" / Int32ul,
-    "player_mode_flag_p2" / Int32ul,
-    "player_mode_flag_p3" / Int32ul,
-    "player_mode_flag_p4" / Int32ul,
+    "player_count" / Int32sl,
+    "game_mode" / Int32sl,
+    "player_mode_flag_p1" / Int32sl,
+    "player_mode_flag_p2" / Int32sl,
+    "player_mode_flag_p3" / Int32sl,
+    "player_mode_flag_p4" / Int32sl,
     "player_mode_flags_reserved" / Bytes(0x18),
-    "aim_scheme_p1" / Int32ul,
-    "aim_scheme_p2" / Int32ul,
-    "aim_scheme_p3" / Int32ul,
-    "aim_scheme_p4" / Int32ul,
+    "aim_scheme_p1" / Int32sl,
+    "aim_scheme_p2" / Int32sl,
+    "aim_scheme_p3" / Int32sl,
+    "aim_scheme_p4" / Int32sl,
     "aim_schemes_reserved" / Bytes(0x18),
-    "unknown_6c" / Int32ul,
+    "unknown_6c" / Int32sl,
     "texture_scale" / Float32l,
     "name_tag" / Bytes(12),
-    "selected_name_slot" / Int32ul,
-    "saved_name_index" / Int32ul,
-    "saved_name_order" / Bytes(0x20),
+    "selected_name_slot" / Int32sl,
+    "saved_name_index" / Int32sl,
+    "saved_name_order" / Array(SAVED_NAME_SLOT_COUNT, Int32sl),
     "saved_names" / Bytes(SAVED_NAMES_BLOB_SIZE),
     "player_name" / Bytes(PLAYER_NAME_SIZE),
-    "player_name_len" / Int32ul,
-    "unknown_1a4" / Int32ul,
-    "unknown_1a8" / Int32ul,
-    "unknown_1ac" / Int32ul,
-    "aim_pov_right" / Int32ul,
-    "aim_pov_left" / Int32ul,
-    "screen_bpp" / Int32ul,
-    "screen_width" / Int32ul,
-    "screen_height" / Int32ul,
+    "player_name_len" / Int32sl,
+    "unknown_1a4" / Int32sl,
+    "unknown_1a8" / Int32sl,
+    "unknown_1ac" / Int32sl,
+    "aim_pov_right" / Int32sl,
+    "aim_pov_left" / Int32sl,
+    "screen_bpp" / Int32sl,
+    "screen_width" / Int32sl,
+    "screen_height" / Int32sl,
     "windowed_flag" / Byte,
     "unknown_1c5" / Bytes(3),
     "keybinds" / Bytes(KEYBINDS_BLOB_SIZE),
     # The original wire format leaves this 0x1F8-byte gap uninterpreted.
     # The Python port uses the front of it for P3/P4 control bindings and
     # their direction-arrow flags, while preserving the remaining bytes.
-    "extended_keybinds_p3" / Array(PLAYER_BIND_BLOCK_DWORDS, Int32ul),
-    "extended_keybinds_p4" / Array(PLAYER_BIND_BLOCK_DWORDS, Int32ul),
+    "extended_keybinds_p3" / Array(PLAYER_BIND_BLOCK_DWORDS, Int32sl),
+    "extended_keybinds_p4" / Array(PLAYER_BIND_BLOCK_DWORDS, Int32sl),
     "extended_direction_arrow_flags" / Array(EXT_DIRECTION_ARROW_FLAG_COUNT, Byte),
     "extended_reserved_gap" / Bytes(EXTENDED_RESERVED_GAP_SIZE),
-    "unknown_440" / Int32ul,
-    "unknown_444" / Int32ul,
+    "unknown_440" / Int32sl,
+    "unknown_444" / Int32sl,
     "hardcore_flag" / Byte,
     "ui_info_texts" / Byte,
     "unknown_44a" / Bytes(2),
-    "perk_prompt_counter" / Int32ul,
-    "unknown_450" / Int32ul,
+    "perk_prompt_counter" / Int32sl,
+    "unknown_450" / Int32sl,
     "unknown_454" / Bytes(0x0C),
-    "unknown_460" / Int32ul,
+    "sound_freq_adjustment_enabled" / Byte,
+    "unknown_461" / Bytes(3),
     "sfx_volume" / Float32l,
     "music_volume" / Float32l,
     "gore_disabled" / Byte,
     "score_load_gate" / Byte,
     "unknown_46e" / Byte,
     "unknown_46f" / Byte,
-    "detail_preset" / Int32ul,
+    "detail_preset" / Int32sl,
     "mouse_sensitivity" / Float32l,
-    "keybind_pick_perk" / Int32ul,
-    "keybind_reload" / Int32ul,
+    "keybind_pick_perk" / Int32sl,
+    "keybind_reload" / Int32sl,
 )
 
 _DEFAULT_PLAYER_BIND_BLOCKS: tuple[tuple[int, ...], ...] = (
@@ -232,16 +233,12 @@ class CrimsonDisplayConfig(msgspec.Struct):
     gore_disabled: int
 
     def fx_detail_enabled(self, level: int, default: bool = False) -> bool:
-        idx = _clamp(level, minimum=0, maximum=2)
-        if idx >= len(self.fx_detail):
-            return bool(default)
-        return bool(self.fx_detail[idx])
+        _ = default
+        return bool(self.fx_detail[int(level)])
 
     def set_fx_detail(self, level: int, enabled: bool) -> None:
-        idx = _clamp(level, minimum=0, maximum=2)
+        idx = int(level)
         values = list(self.fx_detail)
-        while len(values) < 3:
-            values.append(False)
         values[idx] = bool(enabled)
         self.fx_detail = (bool(values[0]), bool(values[1]), bool(values[2]))
 
@@ -286,7 +283,9 @@ class CrimsonProfileConfig(msgspec.Struct):
         self.player_name_input_len = len(encoded)
 
     def saved_name_labels(self) -> tuple[str, ...]:
-        count = _clamp(self.saved_name_count, minimum=1, maximum=SAVED_NAME_SLOT_COUNT)
+        count = int(self.saved_name_count)
+        if count < 1 or count > SAVED_NAME_SLOT_COUNT:
+            raise ValueError(f"saved_name_count must be in 1..{SAVED_NAME_SLOT_COUNT}, got {count}")
         labels: list[str] = []
         for idx in range(count):
             label = str(self.saved_names[idx]).strip()
@@ -303,20 +302,13 @@ class CrimsonPlayerControls(msgspec.Struct):
     show_direction_arrow: bool
 
     def keybind(self, slot_index: int) -> int:
-        slot = int(slot_index)
-        if slot < 0 or slot >= PLAYER_BIND_BLOCK_DWORDS:
-            return KEYBIND_UNBOUND_CODE
-        return int(self.keybinds[slot])
+        return int(self.keybinds[_slot_index(slot_index)])
 
     def set_keybind(self, slot_index: int, value: int) -> None:
-        slot = int(slot_index)
-        if slot < 0 or slot >= PLAYER_BIND_BLOCK_DWORDS:
-            return
+        slot = _slot_index(slot_index)
         block = list(self.keybinds)
-        while len(block) < PLAYER_BIND_BLOCK_DWORDS:
-            block.append(KEYBIND_UNBOUND_CODE)
-        block[slot] = int(value) & 0xFFFFFFFF
-        self.keybinds = _bind_block_tuple(block)
+        block[slot] = int(value)
+        self.keybinds = _player_keybind_block(block)
 
 
 class CrimsonControlsConfig(msgspec.Struct):
@@ -325,7 +317,7 @@ class CrimsonControlsConfig(msgspec.Struct):
     reload_key: int
 
     def player(self, player_index: int) -> CrimsonPlayerControls:
-        return self.players[_clamp(player_index, minimum=0, maximum=3)]
+        return self.players[_player_index(player_index)]
 
 
 class CrimsonConfig(msgspec.Struct):
@@ -340,75 +332,30 @@ class CrimsonConfig(msgspec.Struct):
         self.path.write_bytes(encode_crimson_cfg(self))
 
 
-def _clamp(value: int, *, minimum: int, maximum: int) -> int:
-    return max(minimum, min(maximum, int(value)))
+def _player_index(player_index: int) -> int:
+    idx = int(player_index)
+    if idx < 0 or idx >= 4:
+        raise IndexError(f"player index must be in 0..3, got {idx}")
+    return idx
 
 
-def _as_int(value: object, *, default: int = 0) -> int:
-    if value is None:
-        return int(default)
-    return int(cast(Any, value))
+def _slot_index(slot_index: int) -> int:
+    idx = int(slot_index)
+    if idx < 0 or idx >= PLAYER_BIND_BLOCK_DWORDS:
+        raise IndexError(f"keybind slot must be in 0..{PLAYER_BIND_BLOCK_DWORDS - 1}, got {idx}")
+    return idx
 
 
-def _as_float(value: object, *, default: float = 0.0) -> float:
-    if value is None:
-        return float(default)
-    return float(cast(Any, value))
-
-
-def _u32(value: object) -> int:
-    return _as_int(value) & 0xFFFFFFFF
-
-
-def _u8(value: object) -> int:
-    return _as_int(value) & 0xFF
-
-
-def _bool_from_raw(value: object, *, default: bool = False) -> bool:
-    return _as_int(value, default=1 if default else 0) != 0
-
-
-def _float_from_raw(value: object, *, default: float) -> float:
-    return _as_float(value, default=default)
-
-
-def _coerce_u32_sequence(raw: object, *, count: int) -> tuple[int, ...]:
-    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes, bytearray)):
-        return tuple(0 for _ in range(count))
-    values = [0] * count
-    for idx in range(min(len(raw), count)):
-        values[idx] = _u32(raw[idx])
-    return tuple(values)
-
-
-def _coerce_u8_sequence(raw: object, *, count: int, fill: int = 0) -> tuple[int, ...]:
-    values = [_u8(fill)] * count
-    if isinstance(raw, (bytes, bytearray)):
-        seq: Sequence[int] = raw
-    elif isinstance(raw, Sequence) and not isinstance(raw, str):
-        seq = raw
-    else:
-        return tuple(values)
-    for idx in range(min(len(seq), count)):
-        values[idx] = _u8(seq[idx])
-    return tuple(values)
-
-
-def _coerce_keybind_blob(raw: object) -> bytearray:
-    if not isinstance(raw, (bytes, bytearray)):
-        return bytearray(KEYBINDS_BLOB_SIZE)
-    blob = bytearray(raw)
-    if len(blob) < KEYBINDS_BLOB_SIZE:
-        blob.extend(b"\x00" * (KEYBINDS_BLOB_SIZE - len(blob)))
-    if len(blob) > KEYBINDS_BLOB_SIZE:
-        del blob[KEYBINDS_BLOB_SIZE:]
-    return blob
+def _require_range(value: int, *, minimum: int, maximum: int, field: str) -> int:
+    if value < minimum or value > maximum:
+        raise ValueError(f"{field} must be in {minimum}..{maximum}, got {value}")
+    return value
 
 
 def _read_dword_block(blob: bytes | bytearray, *, offset: int) -> tuple[int, ...]:
     values: list[int] = []
     for idx in range(PLAYER_BIND_BLOCK_DWORDS):
-        start = int(offset) + idx * 4
+        start = offset + idx * 4
         values.append(int.from_bytes(blob[start : start + 4], "little"))
     return tuple(values)
 
@@ -420,67 +367,44 @@ def _block_uninitialized(values: Sequence[int]) -> bool:
     return True
 
 
-def _bind_block_tuple(values: Sequence[int], *, default_values: Sequence[int] | None = None) -> PlayerKeybindBlock:
-    defaults = list(default_values if default_values is not None else _default_player_bind_block(0))
-    while len(defaults) < PLAYER_BIND_BLOCK_DWORDS:
-        defaults.append(KEYBIND_UNBOUND_CODE)
-    block = defaults[:PLAYER_BIND_BLOCK_DWORDS]
-    for idx in range(min(len(values), PLAYER_BIND_BLOCK_DWORDS)):
-        block[idx] = _u32(values[idx])
-    return cast(
-        PlayerKeybindBlock,
-        tuple(_u32(value) for value in block[:PLAYER_BIND_BLOCK_DWORDS]),
-    )
+def _player_keybind_block(values: Sequence[int]) -> PlayerKeybindBlock:
+    if len(values) != PLAYER_BIND_BLOCK_DWORDS:
+        raise ValueError(f"keybind block must have {PLAYER_BIND_BLOCK_DWORDS} entries, got {len(values)}")
+    return cast(PlayerKeybindBlock, tuple(int(value) for value in values))
 
 
 def _decode_player_bind_block(raw: dict, *, player_index: int) -> PlayerKeybindBlock:
-    idx = _clamp(player_index, minimum=0, maximum=3)
+    idx = _player_index(player_index)
     if idx < 2:
-        blob = _coerce_keybind_blob(raw.get("keybinds"))
-        block = _read_dword_block(blob, offset=idx * PLAYER_BIND_BLOCK_SIZE)
+        block = _read_dword_block(raw["keybinds"], offset=idx * PLAYER_BIND_BLOCK_SIZE)
     else:
         field = "extended_keybinds_p3" if idx == 2 else "extended_keybinds_p4"
-        block = _coerce_u32_sequence(raw.get(field), count=PLAYER_BIND_BLOCK_DWORDS)
+        block = tuple(int(value) for value in raw[field])
     if _block_uninitialized(block):
         return _default_player_bind_block(idx)
-    return _bind_block_tuple(block)
+    return _player_keybind_block(block)
 
 
 def _encode_keybind_blob(players: Sequence[CrimsonPlayerControls]) -> bytes:
     blob = bytearray(KEYBINDS_BLOB_SIZE)
     for idx in range(2):
-        values = _bind_block_tuple(players[idx].keybinds, default_values=_default_player_bind_block(idx))
-        for slot, value in enumerate(values):
+        for slot, value in enumerate(players[idx].keybinds):
             start = idx * PLAYER_BIND_BLOCK_SIZE + slot * 4
-            blob[start : start + 4] = _u32(value).to_bytes(4, "little")
+            blob[start : start + 4] = int(value).to_bytes(4, "little")
     return bytes(blob)
 
 
 def _decode_direction_arrow(raw: dict, *, player_index: int) -> bool:
-    idx = int(player_index)
-    if idx < 0:
-        return False
+    idx = _player_index(player_index)
     if idx < 2:
-        values = raw.get("direction_arrow_flags", b"\x01\x01")
-        if not isinstance(values, (bytes, bytearray)):
-            return True
-        if idx >= len(values):
-            return True
-        return bool(values[idx])
+        return bool(raw["direction_arrow_flags"][idx])
 
-    flags = _coerce_u8_sequence(
-        raw.get("extended_direction_arrow_flags"),
-        count=EXT_DIRECTION_ARROW_FLAG_COUNT,
-        fill=EXT_DIRECTION_ARROW_UNSET,
-    )
-    if idx > 3:
-        return True
-    value = int(flags[idx - 2])
+    value = int(raw["extended_direction_arrow_flags"][idx - 2])
     if value == EXT_DIRECTION_ARROW_OFF:
         return False
-    if value == EXT_DIRECTION_ARROW_ON:
+    if value in (EXT_DIRECTION_ARROW_UNSET, EXT_DIRECTION_ARROW_ON):
         return True
-    return True
+    raise ValueError(f"unsupported extended direction arrow flag value: {value}")
 
 
 def _encode_direction_arrow_flags(players: Sequence[CrimsonPlayerControls]) -> tuple[bytes, tuple[int, int]]:
@@ -493,46 +417,26 @@ def _encode_direction_arrow_flags(players: Sequence[CrimsonPlayerControls]) -> t
     return bytes(primary), (extended[0], extended[1])
 
 
-def _decode_movement(value: object) -> MovementControlType:
-    raw = _as_int(value, default=0)
-    if raw <= 0:
+def _decode_movement(value: int) -> MovementControlType:
+    raw = int(value)
+    if raw == 0:
         return MovementControlType.STATIC
-    return movement_control_type_from_value(raw)
+    return MovementControlType(raw)
 
 
-def _decode_aim_scheme(value: object) -> AimScheme:
-    scheme = aim_scheme_from_value(_as_int(value, default=0))
-    if scheme is AimScheme.UNKNOWN:
-        return AimScheme.MOUSE
-    return scheme
+def _decode_aim_scheme(value: int) -> AimScheme:
+    return AimScheme(int(value))
 
 
-def _decode_game_mode(value: object) -> GameMode:
-    try:
-        return GameMode(_as_int(value, default=0))
-    except (TypeError, ValueError):
-        return GameMode.DEMO
+def _decode_game_mode(value: int) -> GameMode:
+    return GameMode(int(value))
 
 
-def _decode_quest_level(major: object, minor: object) -> QuestLevel | None:
-    major_value = _as_int(major, default=0)
-    minor_value = _as_int(minor, default=0)
-    if major_value <= 0 or minor_value <= 0:
-        return None
-    try:
-        return QuestLevel(major=major_value, minor=minor_value)
-    except msgspec.ValidationError:
-        return None
+def _decode_high_score_date_mode(value: int) -> HighScoreDateMode:
+    return HighScoreDateMode(int(value))
 
 
-def _decode_high_score_date_mode(value: object) -> HighScoreDateMode:
-    raw = _clamp(_as_int(value, default=0), minimum=0, maximum=3)
-    return HighScoreDateMode(raw)
-
-
-def _decode_player_name(raw: object) -> str:
-    if not isinstance(raw, (bytes, bytearray)):
-        return ""
+def _decode_player_name(raw: bytes) -> str:
     return bytes(raw).split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
 
 
@@ -544,12 +448,8 @@ def _encode_player_name_buffer(name: str) -> bytes:
     return bytes(buf)
 
 
-def _decode_saved_names(raw: object) -> tuple[str, str, str, str, str, str, str, str]:
-    blob = bytes(raw) if isinstance(raw, (bytes, bytearray)) else (b"\x00" * SAVED_NAMES_BLOB_SIZE)
-    if len(blob) < SAVED_NAMES_BLOB_SIZE:
-        blob = blob.ljust(SAVED_NAMES_BLOB_SIZE, b"\x00")
-    if len(blob) > SAVED_NAMES_BLOB_SIZE:
-        blob = blob[:SAVED_NAMES_BLOB_SIZE]
+def _decode_saved_names(raw: bytes) -> tuple[str, str, str, str, str, str, str, str]:
+    blob = bytes(raw)
     names: list[str] = []
     for idx in range(SAVED_NAME_SLOT_COUNT):
         entry = blob[idx * SAVED_NAME_ENTRY_SIZE : (idx + 1) * SAVED_NAME_ENTRY_SIZE]
@@ -569,15 +469,12 @@ def _encode_saved_names_blob(names: Sequence[str]) -> bytes:
     return bytes(out)
 
 
-def _saved_name_order_blob() -> bytes:
-    blob = bytearray()
-    for idx in range(SAVED_NAME_SLOT_COUNT):
-        blob += int(idx).to_bytes(4, "little")
-    return bytes(blob)
+def _saved_name_order_values() -> tuple[int, ...]:
+    return tuple(range(SAVED_NAME_SLOT_COUNT))
 
 
 def _default_player_bind_block(player_index: int) -> PlayerKeybindBlock:
-    idx = _clamp(player_index, minimum=0, maximum=len(_DEFAULT_PLAYER_BIND_BLOCKS) - 1)
+    idx = _player_index(player_index)
     return cast(PlayerKeybindBlock, _DEFAULT_PLAYER_BIND_BLOCKS[idx])
 
 
@@ -589,7 +486,7 @@ def _default_player_controls(player_index: int) -> CrimsonPlayerControls:
     return CrimsonPlayerControls(
         movement=MovementControlType.STATIC,
         aim_scheme=AimScheme.MOUSE,
-        keybinds=_bind_block_tuple(_default_player_bind_block(player_index)),
+        keybinds=_default_player_bind_block(player_index),
         show_direction_arrow=True,
     )
 
@@ -614,7 +511,7 @@ def default_crimson_cfg(path: Path = Path("<memory>")) -> CrimsonConfig:
             windowed=True,
             bpp=32,
             texture_scale=1.0,
-            mouse_sensitivity=1.0,
+            mouse_sensitivity=0.5,
             detail_preset=5,
             fx_detail=(True, True, True),
             gore_disabled=0,
@@ -652,20 +549,22 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
     raw = CRIMSON_CFG_STRUCT.parse(blob)
 
     fx_detail = (
-        _bool_from_raw(raw.get("fx_detail_0")),
-        _bool_from_raw(raw.get("fx_detail_1")),
-        _bool_from_raw(raw.get("fx_detail_2")),
+        bool(raw["fx_detail_0"]),
+        bool(raw["fx_detail_1"]),
+        bool(raw["fx_detail_2"]),
     )
-    detail_preset = _as_int(raw.get("detail_preset"), default=5)
+    detail_preset = int(raw["detail_preset"])
     if detail_preset == 0 and not any(fx_detail):
         detail_preset = 5
         fx_detail = (True, True, True)
+    else:
+        detail_preset = _require_range(detail_preset, minimum=1, maximum=5, field="detail_preset")
 
     players = tuple(
         CrimsonPlayerControls(
-            movement=_decode_movement(raw.get(f"player_mode_flag_p{idx + 1}")),
-            aim_scheme=_decode_aim_scheme(raw.get(f"aim_scheme_p{idx + 1}")),
-            keybinds=_bind_block_tuple(_decode_player_bind_block(raw, player_index=idx)),
+            movement=_decode_movement(raw[f"player_mode_flag_p{idx + 1}"]),
+            aim_scheme=_decode_aim_scheme(raw[f"aim_scheme_p{idx + 1}"]),
+            keybinds=_decode_player_bind_block(raw, player_index=idx),
             show_direction_arrow=_decode_direction_arrow(raw, player_index=idx),
         )
         for idx in range(4)
@@ -674,54 +573,57 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
     return CrimsonConfig(
         path=path,
         display=CrimsonDisplayConfig(
-            width=_as_int(raw.get("screen_width"), default=1024),
-            height=_as_int(raw.get("screen_height"), default=768),
-            windowed=_bool_from_raw(raw.get("windowed_flag"), default=True),
-            bpp=_as_int(raw.get("screen_bpp"), default=32),
-            texture_scale=_float_from_raw(raw.get("texture_scale"), default=1.0),
-            mouse_sensitivity=_float_from_raw(raw.get("mouse_sensitivity"), default=1.0),
-            detail_preset=_clamp(detail_preset, minimum=1, maximum=5),
+            width=int(raw["screen_width"]),
+            height=int(raw["screen_height"]),
+            windowed=bool(raw["windowed_flag"]),
+            bpp=int(raw["screen_bpp"]),
+            texture_scale=float(raw["texture_scale"]),
+            mouse_sensitivity=float(raw["mouse_sensitivity"]),
+            detail_preset=detail_preset,
             fx_detail=fx_detail,
-            gore_disabled=_as_int(raw.get("gore_disabled"), default=0),
+            gore_disabled=int(raw["gore_disabled"]),
         ),
         audio=CrimsonAudioConfig(
-            sound_disabled=_bool_from_raw(raw.get("sound_disable"), default=False),
-            music_disabled=_bool_from_raw(raw.get("music_disable"), default=False),
-            sfx_volume=_float_from_raw(raw.get("sfx_volume"), default=1.0),
-            music_volume=_float_from_raw(raw.get("music_volume"), default=1.0),
+            sound_disabled=bool(raw["sound_disable"]),
+            music_disabled=bool(raw["music_disable"]),
+            sfx_volume=float(raw["sfx_volume"]),
+            music_volume=float(raw["music_volume"]),
         ),
         gameplay=CrimsonGameplayConfig(
-            mode=_decode_game_mode(raw.get("game_mode")),
-            player_count=_clamp(_as_int(raw.get("player_count"), default=1), minimum=1, maximum=4),
-            hardcore=_bool_from_raw(raw.get("hardcore_flag"), default=False),
-            quest_level=_decode_quest_level(raw.get("quest_stage_major"), raw.get("quest_stage_minor")),
-            show_info_texts=_bool_from_raw(raw.get("ui_info_texts"), default=True),
+            mode=_decode_game_mode(raw["game_mode"]),
+            player_count=_require_range(int(raw["player_count"]), minimum=1, maximum=4, field="player_count"),
+            hardcore=bool(raw["hardcore_flag"]),
+            quest_level=None,
+            show_info_texts=bool(raw["ui_info_texts"]),
         ),
         profile=CrimsonProfileConfig(
-            player_name=_decode_player_name(raw.get("player_name")),
-            player_name_input_len=_clamp(
-                _as_int(raw.get("player_name_len"), default=0),
+            player_name=_decode_player_name(raw["player_name"]),
+            player_name_input_len=_require_range(
+                int(raw["player_name_len"]),
                 minimum=0,
                 maximum=PLAYER_NAME_MAX_BYTES,
+                field="player_name_len",
             ),
-            saved_name_count=_clamp(
-                _as_int(raw.get("saved_name_index"), default=1),
+            saved_name_count=_require_range(
+                int(raw["saved_name_index"]),
                 minimum=1,
                 maximum=SAVED_NAME_SLOT_COUNT,
+                field="saved_name_index",
             ),
-            selected_saved_name_slot=_clamp(
-                _as_int(raw.get("selected_name_slot"), default=0),
+            selected_saved_name_slot=_require_range(
+                int(raw["selected_name_slot"]),
                 minimum=0,
                 maximum=SAVED_NAME_SLOT_COUNT - 1,
+                field="selected_name_slot",
             ),
-            saved_names=_decode_saved_names(raw.get("saved_names")),
-            show_internet_scores=_bool_from_raw(raw.get("score_load_gate"), default=False),
-            score_date_mode=_decode_high_score_date_mode(raw.get("highscore_date_mode")),
+            saved_names=_decode_saved_names(raw["saved_names"]),
+            show_internet_scores=bool(raw["score_load_gate"]),
+            score_date_mode=_decode_high_score_date_mode(raw["highscore_date_mode"]),
         ),
         controls=CrimsonControlsConfig(
             players=players,  # type: ignore[arg-type]
-            pick_perk_key=_as_int(raw.get("keybind_pick_perk"), default=0x101) or 0x101,
-            reload_key=_as_int(raw.get("keybind_reload"), default=0x102) or 0x102,
+            pick_perk_key=int(raw["keybind_pick_perk"]),
+            reload_key=int(raw["keybind_reload"]),
         ),
     )
 
@@ -738,58 +640,71 @@ def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
     data["music_disable"] = 1 if config.audio.music_disabled else 0
     data["highscore_date_mode"] = int(config.profile.score_date_mode)
     data["direction_arrow_flags"] = primary_direction_arrows
-    data["unknown_08"] = 8
+    data["unknown_08"] = 0
     data["fx_detail_0"] = 1 if config.display.fx_detail_enabled(0) else 0
     data["fx_detail_1"] = 1 if config.display.fx_detail_enabled(1) else 0
     data["fx_detail_2"] = 1 if config.display.fx_detail_enabled(2) else 0
-    data["player_count"] = _clamp(config.gameplay.player_count, minimum=1, maximum=4)
+    data["player_count"] = _require_range(
+        int(config.gameplay.player_count),
+        minimum=1,
+        maximum=4,
+        field="player_count",
+    )
     data["game_mode"] = int(config.gameplay.mode)
     for idx in range(4):
         player = config.controls.player(idx)
         data[f"player_mode_flag_p{idx + 1}"] = int(player.movement)
         data[f"aim_scheme_p{idx + 1}"] = int(player.aim_scheme)
     data["texture_scale"] = float(config.display.texture_scale)
-    data["selected_name_slot"] = _clamp(
-        config.profile.selected_saved_name_slot,
+    data["selected_name_slot"] = _require_range(
+        int(config.profile.selected_saved_name_slot),
         minimum=0,
         maximum=SAVED_NAME_SLOT_COUNT - 1,
+        field="selected_name_slot",
     )
-    data["saved_name_index"] = _clamp(config.profile.saved_name_count, minimum=1, maximum=SAVED_NAME_SLOT_COUNT)
-    data["saved_name_order"] = _saved_name_order_blob()
+    data["saved_name_index"] = _require_range(
+        int(config.profile.saved_name_count),
+        minimum=1,
+        maximum=SAVED_NAME_SLOT_COUNT,
+        field="saved_name_index",
+    )
+    data["saved_name_order"] = list(_saved_name_order_values())
     data["saved_names"] = _encode_saved_names_blob(config.profile.saved_names)
     data["player_name"] = _encode_player_name_buffer(config.profile.player_name)
-    data["player_name_len"] = _clamp(config.profile.player_name_input_len, minimum=0, maximum=PLAYER_NAME_MAX_BYTES)
+    data["player_name_len"] = _require_range(
+        int(config.profile.player_name_input_len),
+        minimum=0,
+        maximum=PLAYER_NAME_MAX_BYTES,
+        field="player_name_len",
+    )
     data["unknown_1a4"] = 100
     data["aim_pov_right"] = 9000
     data["aim_pov_left"] = 27000
-    data["screen_bpp"] = _u32(config.display.bpp)
-    data["screen_width"] = _u32(config.display.width)
-    data["screen_height"] = _u32(config.display.height)
+    data["screen_bpp"] = int(config.display.bpp)
+    data["screen_width"] = int(config.display.width)
+    data["screen_height"] = int(config.display.height)
     data["windowed_flag"] = 1 if config.display.windowed else 0
     data["keybinds"] = _encode_keybind_blob(config.controls.players)
-    data["extended_keybinds_p3"] = list(
-        _bind_block_tuple(
-            config.controls.player(2).keybinds,
-            default_values=_default_player_bind_block(2),
-        ),
-    )
-    data["extended_keybinds_p4"] = list(
-        _bind_block_tuple(
-            config.controls.player(3).keybinds,
-            default_values=_default_player_bind_block(3),
-        ),
-    )
+    data["extended_keybinds_p3"] = list(config.controls.player(2).keybinds)
+    data["extended_keybinds_p4"] = list(config.controls.player(3).keybinds)
     data["extended_direction_arrow_flags"] = [int(extended_direction_arrows[0]), int(extended_direction_arrows[1])]
     data["hardcore_flag"] = 1 if config.gameplay.hardcore else 0
     data["ui_info_texts"] = 1 if config.gameplay.show_info_texts else 0
+    data["unknown_450"] = 1
+    data["sound_freq_adjustment_enabled"] = 1
     data["sfx_volume"] = float(config.audio.sfx_volume)
     data["music_volume"] = float(config.audio.music_volume)
-    data["gore_disabled"] = _u8(config.display.gore_disabled)
+    data["gore_disabled"] = int(config.display.gore_disabled)
     data["score_load_gate"] = 1 if config.profile.show_internet_scores else 0
-    data["detail_preset"] = _clamp(config.display.detail_preset, minimum=1, maximum=5)
+    data["detail_preset"] = _require_range(
+        int(config.display.detail_preset),
+        minimum=1,
+        maximum=5,
+        field="detail_preset",
+    )
     data["mouse_sensitivity"] = float(config.display.mouse_sensitivity)
-    data["keybind_pick_perk"] = _u32(config.controls.pick_perk_key or 0x101)
-    data["keybind_reload"] = _u32(config.controls.reload_key or 0x102)
+    data["keybind_pick_perk"] = int(config.controls.pick_perk_key)
+    data["keybind_reload"] = int(config.controls.reload_key)
     return CRIMSON_CFG_STRUCT.build(data)
 
 
@@ -803,17 +718,12 @@ def ensure_crimson_cfg(base_dir: Path) -> CrimsonConfig:
         config = default_crimson_cfg(path)
         config.save()
         return config
-    raw = path.read_bytes()
-    config = decode_crimson_cfg(path, raw)
-    canonical = encode_crimson_cfg(config)
-    if canonical != raw:
-        path.write_bytes(canonical)
-    return config
+    return load_crimson_cfg(path)
 
 
 def apply_detail_preset(config: CrimsonConfig, preset: int | None = None) -> int:
     selected = config.display.detail_preset if preset is None else int(preset)
-    selected = _clamp(selected, minimum=1, maximum=5)
+    selected = _require_range(selected, minimum=1, maximum=5, field="detail_preset")
     config.display.detail_preset = selected
     if selected <= 1:
         config.display.fx_detail = (False, False, False)
