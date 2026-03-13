@@ -4,7 +4,6 @@ import msgspec
 
 from grim.assets import RuntimeResources, TextureId
 from grim.config import (
-    CrimsonPlayerControls,
     default_crimson_cfg,
 )
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -25,7 +24,7 @@ from ..menu import (
 )
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .controls_labels import (
-    BindingId,
+    RebindRowSpec,
     controls_aim_method_dropdown_ids,
     controls_method_values,
     controls_rebind_plan,
@@ -48,94 +47,21 @@ CONTROLS_REBIND_VALUE_COLOR = rl.Color(70, 180, 240, 153)
 CONTROLS_REBIND_HOVER_COLOR = rl.Color(200, 230, 250, 230)
 CONTROLS_REBIND_ACTIVE_COLOR = rl.Color(255, 228, 170, 255)
 
-_AXIS_REBIND_BINDINGS = frozenset(
-    (
-        BindingId.AIM_VERTICAL_AXIS_CODE,
-        BindingId.AIM_HORIZONTAL_AXIS_CODE,
-        BindingId.MOVE_VERTICAL_AXIS_CODE,
-        BindingId.MOVE_HORIZONTAL_AXIS_CODE,
-    ),
-)
+
+def _row_binding_code(row: RebindRowSpec, *, player_index: int, controls) -> int:
+    if row.controls_field:
+        return int(getattr(controls, row.field_name))
+    return int(getattr(controls.player(player_index), row.field_name))
 
 
-def _binding_code(player: CrimsonPlayerControls, binding_id: BindingId, *, controls) -> int:
-    if binding_id is BindingId.MOVE_FORWARD_CODE:
-        return int(player.move_forward_code)
-    if binding_id is BindingId.MOVE_BACKWARD_CODE:
-        return int(player.move_backward_code)
-    if binding_id is BindingId.TURN_LEFT_CODE:
-        return int(player.turn_left_code)
-    if binding_id is BindingId.TURN_RIGHT_CODE:
-        return int(player.turn_right_code)
-    if binding_id is BindingId.FIRE_CODE:
-        return int(player.fire_code)
-    if binding_id is BindingId.AIM_LEFT_CODE:
-        return int(player.aim_left_code)
-    if binding_id is BindingId.AIM_RIGHT_CODE:
-        return int(player.aim_right_code)
-    if binding_id is BindingId.AIM_VERTICAL_AXIS_CODE:
-        return int(player.aim_vertical_axis_code)
-    if binding_id is BindingId.AIM_HORIZONTAL_AXIS_CODE:
-        return int(player.aim_horizontal_axis_code)
-    if binding_id is BindingId.MOVE_VERTICAL_AXIS_CODE:
-        return int(player.move_vertical_axis_code)
-    if binding_id is BindingId.MOVE_HORIZONTAL_AXIS_CODE:
-        return int(player.move_horizontal_axis_code)
-    if binding_id is BindingId.PICK_PERK_CODE:
-        return int(controls.pick_perk_code)
-    if binding_id is BindingId.RELOAD_CODE:
-        return int(controls.reload_code)
-    raise ValueError(f"unsupported binding id: {binding_id!r}")
+def _set_row_binding_code(row: RebindRowSpec, value: int, *, player_index: int, controls) -> None:
+    owner = controls if row.controls_field else controls.player(player_index)
+    setattr(owner, row.field_name, int(value))
 
 
-def _set_binding_code(player: CrimsonPlayerControls, binding_id: BindingId, value: int, *, controls) -> None:
-    code = int(value)
-    if binding_id is BindingId.MOVE_FORWARD_CODE:
-        player.move_forward_code = code
-        return
-    if binding_id is BindingId.MOVE_BACKWARD_CODE:
-        player.move_backward_code = code
-        return
-    if binding_id is BindingId.TURN_LEFT_CODE:
-        player.turn_left_code = code
-        return
-    if binding_id is BindingId.TURN_RIGHT_CODE:
-        player.turn_right_code = code
-        return
-    if binding_id is BindingId.FIRE_CODE:
-        player.fire_code = code
-        return
-    if binding_id is BindingId.AIM_LEFT_CODE:
-        player.aim_left_code = code
-        return
-    if binding_id is BindingId.AIM_RIGHT_CODE:
-        player.aim_right_code = code
-        return
-    if binding_id is BindingId.AIM_VERTICAL_AXIS_CODE:
-        player.aim_vertical_axis_code = code
-        return
-    if binding_id is BindingId.AIM_HORIZONTAL_AXIS_CODE:
-        player.aim_horizontal_axis_code = code
-        return
-    if binding_id is BindingId.MOVE_VERTICAL_AXIS_CODE:
-        player.move_vertical_axis_code = code
-        return
-    if binding_id is BindingId.MOVE_HORIZONTAL_AXIS_CODE:
-        player.move_horizontal_axis_code = code
-        return
-    if binding_id is BindingId.PICK_PERK_CODE:
-        controls.pick_perk_code = code
-        return
-    if binding_id is BindingId.RELOAD_CODE:
-        controls.reload_code = code
-        return
-    raise ValueError(f"unsupported binding id: {binding_id!r}")
-
-
-def _default_binding_code(player_index: int, binding_id: BindingId) -> int:
+def _default_row_binding_code(player_index: int, row: RebindRowSpec) -> int:
     controls = default_crimson_cfg().controls
-    player = controls.player(player_index)
-    return _binding_code(player, binding_id, controls=controls)
+    return _row_binding_code(row, player_index=player_index, controls=controls)
 
 
 def _controls_left_panel_pos_x(screen_width: float) -> float:
@@ -191,8 +117,7 @@ class _ControlsDropdownLayout(DropdownLayoutBase, frozen=True):
 
 
 class _RebindRowLayout(msgspec.Struct, frozen=True):
-    label: str
-    binding_id: BindingId
+    row: RebindRowSpec
     row_y: float
     value_pos: Vec2
     value_rect: Rect
@@ -212,7 +137,7 @@ class ControlsMenuView(PanelMenuView):
         self._aim_method_open = False
         self._player_profile_open = False
         self._dirty = False
-        self._rebind_binding_id: BindingId | None = None
+        self._rebind_row: RebindRowSpec | None = None
         self._rebind_player_index: int | None = None
         self._rebind_skip_frames = 0
 
@@ -271,15 +196,15 @@ class ControlsMenuView(PanelMenuView):
         return max(0, min(3, int(self._config_player) - 1))
 
     def _rebind_active(self) -> bool:
-        return self._rebind_binding_id is not None and self._rebind_player_index is not None
+        return self._rebind_row is not None and self._rebind_player_index is not None
 
     def _clear_rebind_capture(self) -> None:
-        self._rebind_binding_id = None
+        self._rebind_row = None
         self._rebind_player_index = None
         self._rebind_skip_frames = 0
 
-    def _start_rebind_capture(self, *, binding_id: BindingId, player_index: int) -> None:
-        self._rebind_binding_id = binding_id
+    def _start_rebind_capture(self, *, row: RebindRowSpec, player_index: int) -> None:
+        self._rebind_row = row
         self._rebind_player_index = max(0, min(3, int(player_index)))
         self._move_method_open = False
         self._aim_method_open = False
@@ -288,32 +213,19 @@ class ControlsMenuView(PanelMenuView):
         self._rebind_skip_frames = 1
 
     @staticmethod
-    def _binding_is_axis(binding_id: BindingId) -> bool:
-        return binding_id in _AXIS_REBIND_BINDINGS
-
-    @staticmethod
-    def _capture_prompt_for_binding(binding_id: BindingId) -> str:
-        if ControlsMenuView._binding_is_axis(binding_id):
+    def _capture_prompt_for_binding(row: RebindRowSpec) -> str:
+        if row.axis:
             return "<press axis>"
         return "<press input>"
 
-    def _binding_default_code(self, *, player_index: int, binding_id: BindingId) -> int:
-        return _default_binding_code(player_index, binding_id)
+    def _binding_default_code(self, *, player_index: int, row: RebindRowSpec) -> int:
+        return _default_row_binding_code(player_index, row)
 
-    def _binding_code(self, *, player_index: int, binding_id: BindingId) -> int:
-        return _binding_code(
-            self.state.config.controls.player(player_index),
-            binding_id,
-            controls=self.state.config.controls,
-        )
+    def _binding_code(self, *, player_index: int, row: RebindRowSpec) -> int:
+        return _row_binding_code(row, player_index=player_index, controls=self.state.config.controls)
 
-    def _set_binding_code(self, *, player_index: int, binding_id: BindingId, code: int) -> None:
-        _set_binding_code(
-            self.state.config.controls.player(player_index),
-            binding_id,
-            int(code),
-            controls=self.state.config.controls,
-        )
+    def _set_binding_code(self, *, player_index: int, row: RebindRowSpec, code: int) -> None:
+        _set_row_binding_code(row, int(code), player_index=player_index, controls=self.state.config.controls)
 
     def _left_panel_top_left(self, panel_scale: float) -> Vec2:
         panel_w = MENU_PANEL_WIDTH * panel_scale
@@ -409,13 +321,13 @@ class ControlsMenuView(PanelMenuView):
         player_index: int,
         aim_scheme: AimScheme,
         move_mode: MovementControlType,
-    ) -> tuple[tuple[str, tuple[tuple[str, BindingId], ...]], ...]:
+    ) -> tuple[tuple[str, tuple[RebindRowSpec, ...]], ...]:
         aim_rows, move_rows, misc_rows = controls_rebind_plan(
             aim_scheme=aim_scheme,
             move_mode=move_mode,
             player_index=player_index,
         )
-        sections: list[tuple[str, tuple[tuple[str, BindingId], ...]]] = [("Aiming", aim_rows), ("Moving", move_rows)]
+        sections: list[tuple[str, tuple[RebindRowSpec, ...]]] = [("Aiming", aim_rows), ("Moving", move_rows)]
         if misc_rows:
             sections.append(("Misc", misc_rows))
         return tuple(sections)
@@ -426,15 +338,15 @@ class ControlsMenuView(PanelMenuView):
         right_top_left: Vec2,
         panel_scale: float,
         player_index: int,
-        sections: tuple[tuple[str, tuple[tuple[str, BindingId], ...]], ...],
+        sections: tuple[tuple[str, tuple[RebindRowSpec, ...]], ...],
         font: SmallFontData,
     ) -> tuple[_RebindRowLayout, ...]:
         rows: list[_RebindRowLayout] = []
         y = right_top_left.y + 64.0 * panel_scale
         for _section_title, section_rows in sections:
             row_y = y + 18.0 * panel_scale
-            for label, binding_id in section_rows:
-                key_code = int(self._binding_code(player_index=player_index, binding_id=binding_id))
+            for row in section_rows:
+                key_code = int(self._binding_code(player_index=player_index, row=row))
                 value_text = input_code_name(key_code)
                 value_pos = Vec2(right_top_left.x + 180.0 * panel_scale, row_y)
                 value_w = max(60.0 * panel_scale, measure_small_text_width(font, value_text))
@@ -445,8 +357,7 @@ class ControlsMenuView(PanelMenuView):
                 )
                 rows.append(
                     _RebindRowLayout(
-                        label=str(label),
-                        binding_id=binding_id,
+                        row=row,
                         row_y=float(row_y),
                         value_pos=value_pos,
                         value_rect=value_rect,
@@ -469,7 +380,7 @@ class ControlsMenuView(PanelMenuView):
         )
 
         if self._rebind_active():
-            active_binding_id = self._rebind_binding_id or BindingId.FIRE_CODE
+            active_row = self._rebind_row or RebindRowSpec("Fire:", "fire_code")
             active_player = int(self._rebind_player_index or 0)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or rl.is_mouse_button_pressed(
                 rl.MouseButton.MOUSE_BUTTON_RIGHT,
@@ -480,15 +391,15 @@ class ControlsMenuView(PanelMenuView):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
                 self._set_binding_code(
                     player_index=active_player,
-                    binding_id=active_binding_id,
-                    code=self._binding_default_code(player_index=active_player, binding_id=active_binding_id),
+                    row=active_row,
+                    code=self._binding_default_code(player_index=active_player, row=active_row),
                 )
                 self._dirty = True
                 self._clear_rebind_capture()
                 return True
 
             if rl.is_key_pressed(rl.KeyboardKey.KEY_DELETE):
-                self._set_binding_code(player_index=active_player, binding_id=active_binding_id, code=INPUT_CODE_UNBOUND)
+                self._set_binding_code(player_index=active_player, row=active_row, code=INPUT_CODE_UNBOUND)
                 self._dirty = True
                 self._clear_rebind_capture()
                 return True
@@ -497,7 +408,7 @@ class ControlsMenuView(PanelMenuView):
                 self._rebind_skip_frames = max(0, int(self._rebind_skip_frames) - 1)
                 return True
 
-            axis_only = self._binding_is_axis(active_binding_id)
+            axis_only = active_row.axis
             captured = capture_first_pressed_input_code(
                 player_index=active_player,
                 include_keyboard=not axis_only,
@@ -507,7 +418,7 @@ class ControlsMenuView(PanelMenuView):
                 axis_threshold=0.5,
             )
             if captured is not None:
-                self._set_binding_code(player_index=active_player, binding_id=active_binding_id, code=int(captured))
+                self._set_binding_code(player_index=active_player, row=active_row, code=int(captured))
                 self._dirty = True
                 self._clear_rebind_capture()
             return True
@@ -520,7 +431,7 @@ class ControlsMenuView(PanelMenuView):
         mouse = Vec2.from_xy(rl.get_mouse_position())
         for row in rows:
             if row.value_rect.contains(mouse):
-                self._start_rebind_capture(binding_id=row.binding_id, player_index=player_idx)
+                self._start_rebind_capture(row=row.row, player_index=player_idx)
                 return True
         return False
 
@@ -904,20 +815,23 @@ class ControlsMenuView(PanelMenuView):
             row_y = y + 18.0 * panel_scale
             for _ in section_rows:
                 row = next(row_iter)
-                label = row.label
-                binding_id = row.binding_id
-                active_row = rebind_active and self._rebind_binding_id is binding_id and int(
+                active_row = rebind_active and self._rebind_row == row.row and int(
                     self._rebind_player_index or -1,
                 ) == player_idx
                 hovered_row = (not rebind_active) and (not dropdown_blocked) and row.value_rect.contains(mouse)
                 value_text = (
-                    self._capture_prompt_for_binding(binding_id)
+                    self._capture_prompt_for_binding(row.row)
                     if active_row
-                    else input_code_name(self._binding_code(player_index=player_idx, binding_id=binding_id))
+                    else input_code_name(self._binding_code(player_index=player_idx, row=row.row))
                 )
                 value_pos = row.value_pos
 
-                draw_small_text(font, label, Vec2(right_top_left.x + 52.0 * panel_scale, row_y), rl.Color(255, 255, 255, 178))
+                draw_small_text(
+                    font,
+                    row.row.label,
+                    Vec2(right_top_left.x + 52.0 * panel_scale, row_y),
+                    rl.Color(255, 255, 255, 178),
+                )
                 value_color = CONTROLS_REBIND_VALUE_COLOR
                 if hovered_row:
                     value_color = CONTROLS_REBIND_HOVER_COLOR

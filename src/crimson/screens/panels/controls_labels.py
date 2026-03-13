@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum, auto
+from dataclasses import dataclass
 
 from grim.config import CrimsonControlsConfig
 
@@ -8,20 +8,12 @@ from ...aim_schemes import AimScheme
 from ...movement_controls import MovementControlType
 
 
-class BindingId(Enum):
-    MOVE_FORWARD_CODE = auto()
-    MOVE_BACKWARD_CODE = auto()
-    TURN_LEFT_CODE = auto()
-    TURN_RIGHT_CODE = auto()
-    FIRE_CODE = auto()
-    AIM_LEFT_CODE = auto()
-    AIM_RIGHT_CODE = auto()
-    AIM_VERTICAL_AXIS_CODE = auto()
-    AIM_HORIZONTAL_AXIS_CODE = auto()
-    MOVE_VERTICAL_AXIS_CODE = auto()
-    MOVE_HORIZONTAL_AXIS_CODE = auto()
-    PICK_PERK_CODE = auto()
-    RELOAD_CODE = auto()
+@dataclass(frozen=True, slots=True)
+class RebindRowSpec:
+    label: str
+    field_name: str
+    axis: bool = False
+    controls_field: bool = False
 
 
 def input_configure_for_label(config_id: AimScheme) -> str:
@@ -86,55 +78,55 @@ def controls_rebind_plan(
     move_mode: MovementControlType,
     player_index: int,
 ) -> tuple[
-    tuple[tuple[str, BindingId], ...],
-    tuple[tuple[str, BindingId], ...],
-    tuple[tuple[str, BindingId], ...],
+    tuple[RebindRowSpec, ...],
+    tuple[RebindRowSpec, ...],
+    tuple[RebindRowSpec, ...],
 ]:
     """Return (aim_rows, move_rows, misc_rows) for `controls_menu_update`."""
 
-    aim_rows: list[tuple[str, BindingId]] = []
-    move_rows: list[tuple[str, BindingId]] = []
-    misc_rows: list[tuple[str, BindingId]] = []
+    aim_rows: list[RebindRowSpec] = []
+    move_rows: list[RebindRowSpec] = []
+    misc_rows: list[RebindRowSpec] = []
 
     if aim_scheme is AimScheme.KEYBOARD:
-        aim_rows.append(("Torso left:", BindingId.AIM_LEFT_CODE))
-        aim_rows.append(("Torso right:", BindingId.AIM_RIGHT_CODE))
+        aim_rows.append(RebindRowSpec("Torso left:", "aim_left_code"))
+        aim_rows.append(RebindRowSpec("Torso right:", "aim_right_code"))
     elif aim_scheme is AimScheme.DUAL_ACTION_PAD:
-        aim_rows.append(("Aim Up/Down Axis:", BindingId.AIM_VERTICAL_AXIS_CODE))
-        aim_rows.append(("Aim Left/Right Axis:", BindingId.AIM_HORIZONTAL_AXIS_CODE))
-    aim_rows.append(("Fire:", BindingId.FIRE_CODE))
+        aim_rows.append(RebindRowSpec("Aim Up/Down Axis:", "aim_vertical_axis_code", axis=True))
+        aim_rows.append(RebindRowSpec("Aim Left/Right Axis:", "aim_horizontal_axis_code", axis=True))
+    aim_rows.append(RebindRowSpec("Fire:", "fire_code"))
 
     if move_mode is MovementControlType.STATIC:
         move_rows.extend(
             (
-                ("Move Up:", BindingId.MOVE_FORWARD_CODE),
-                ("Move Down:", BindingId.MOVE_BACKWARD_CODE),
-                ("Move Left:", BindingId.TURN_LEFT_CODE),
-                ("Move Right:", BindingId.TURN_RIGHT_CODE),
+                RebindRowSpec("Move Up:", "move_forward_code"),
+                RebindRowSpec("Move Down:", "move_backward_code"),
+                RebindRowSpec("Move Left:", "turn_left_code"),
+                RebindRowSpec("Move Right:", "turn_right_code"),
             ),
         )
     elif move_mode is MovementControlType.RELATIVE:
         move_rows.extend(
             (
-                ("Forward:", BindingId.MOVE_FORWARD_CODE),
-                ("Backwards:", BindingId.MOVE_BACKWARD_CODE),
-                ("Turn left:", BindingId.TURN_LEFT_CODE),
-                ("Turn right:", BindingId.TURN_RIGHT_CODE),
+                RebindRowSpec("Forward:", "move_forward_code"),
+                RebindRowSpec("Backwards:", "move_backward_code"),
+                RebindRowSpec("Turn left:", "turn_left_code"),
+                RebindRowSpec("Turn right:", "turn_right_code"),
             ),
         )
     elif move_mode is MovementControlType.DUAL_ACTION_PAD:
         move_rows.extend(
             (
-                ("Up/Down Axis:", BindingId.MOVE_VERTICAL_AXIS_CODE),
-                ("Left/Right Axis:", BindingId.MOVE_HORIZONTAL_AXIS_CODE),
+                RebindRowSpec("Up/Down Axis:", "move_vertical_axis_code", axis=True),
+                RebindRowSpec("Left/Right Axis:", "move_horizontal_axis_code", axis=True),
             ),
         )
     elif move_mode is MovementControlType.MOUSE_POINT_CLICK:
-        move_rows.append(("Move to cursor:", BindingId.RELOAD_CODE))
+        move_rows.append(RebindRowSpec("Move to cursor:", "reload_code", controls_field=True))
 
     if int(player_index) == 0:
-        misc_rows.append(("Level Up:", BindingId.PICK_PERK_CODE))
+        misc_rows.append(RebindRowSpec("Level Up:", "pick_perk_code", controls_field=True))
         if move_mode is not MovementControlType.MOUSE_POINT_CLICK:
-            misc_rows.append(("Reload:", BindingId.RELOAD_CODE))
+            misc_rows.append(RebindRowSpec("Reload:", "reload_code", controls_field=True))
 
     return tuple(aim_rows), tuple(move_rows), tuple(misc_rows)

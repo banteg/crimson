@@ -5,7 +5,7 @@ from typing import cast
 from crimson.aim_schemes import AimScheme
 from crimson.movement_controls import MovementControlType
 from crimson.screens.panels.controls_labels import (
-    BindingId,
+    RebindRowSpec,
     controls_aim_method_dropdown_ids,
     controls_method_labels,
     controls_method_values,
@@ -92,17 +92,20 @@ def test_controls_rebind_plan_keyboard_static_player1() -> None:
         player_index=0,
     )
     assert aim_rows == (
-        ("Torso left:", BindingId.AIM_LEFT_CODE),
-        ("Torso right:", BindingId.AIM_RIGHT_CODE),
-        ("Fire:", BindingId.FIRE_CODE),
+        RebindRowSpec("Torso left:", "aim_left_code"),
+        RebindRowSpec("Torso right:", "aim_right_code"),
+        RebindRowSpec("Fire:", "fire_code"),
     )
     assert move_rows == (
-        ("Move Up:", BindingId.MOVE_FORWARD_CODE),
-        ("Move Down:", BindingId.MOVE_BACKWARD_CODE),
-        ("Move Left:", BindingId.TURN_LEFT_CODE),
-        ("Move Right:", BindingId.TURN_RIGHT_CODE),
+        RebindRowSpec("Move Up:", "move_forward_code"),
+        RebindRowSpec("Move Down:", "move_backward_code"),
+        RebindRowSpec("Move Left:", "turn_left_code"),
+        RebindRowSpec("Move Right:", "turn_right_code"),
     )
-    assert misc_rows == (("Level Up:", BindingId.PICK_PERK_CODE), ("Reload:", BindingId.RELOAD_CODE))
+    assert misc_rows == (
+        RebindRowSpec("Level Up:", "pick_perk_code", controls_field=True),
+        RebindRowSpec("Reload:", "reload_code", controls_field=True),
+    )
 
 
 def test_controls_rebind_plan_dualpad_mouse_cursor_player2() -> None:
@@ -112,9 +115,9 @@ def test_controls_rebind_plan_dualpad_mouse_cursor_player2() -> None:
         player_index=1,
     )
     assert aim_rows == (
-        ("Aim Up/Down Axis:", BindingId.AIM_VERTICAL_AXIS_CODE),
-        ("Aim Left/Right Axis:", BindingId.AIM_HORIZONTAL_AXIS_CODE),
-        ("Fire:", BindingId.FIRE_CODE),
+        RebindRowSpec("Aim Up/Down Axis:", "aim_vertical_axis_code", axis=True),
+        RebindRowSpec("Aim Left/Right Axis:", "aim_horizontal_axis_code", axis=True),
+        RebindRowSpec("Fire:", "fire_code"),
     )
-    assert move_rows == (("Move to cursor:", BindingId.RELOAD_CODE),)
+    assert move_rows == (RebindRowSpec("Move to cursor:", "reload_code", controls_field=True),)
     assert misc_rows == ()
