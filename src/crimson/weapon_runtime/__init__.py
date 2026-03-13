@@ -8,7 +8,7 @@ from .assign import (
     weapon_assign_player,
     weapon_entry,
 )
-from .availability import weapon_pick_random_available, weapon_refresh_available
+from .availability import prepare_weapon_availability, weapon_pick_random_available
 from .fire import WeaponFireCtx, WeaponFireResult, fire_weapon
 from .spawn import (
     owner_ref_for_player,
@@ -31,8 +31,8 @@ __all__ = [
     "travel_budget_for_type_id",
     "projectile_spawn",
     "spawn_projectile_ring",
+    "prepare_weapon_availability",
     "weapon_assign_player",
     "weapon_entry",
     "weapon_pick_random_available",
-    "weapon_refresh_available",
 ]

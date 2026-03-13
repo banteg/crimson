@@ -13,7 +13,7 @@ from grim.sfx_map import SfxId
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from ..game_modes import GameMode
 from ..gameplay import survival_update_weapon_handouts
-from ..perks.availability import perks_rebuild_available
+from ..perks.availability import prepare_perk_availability
 from ..perks.selection import (
     perk_selection_open_choices,
     perk_selection_pick,
@@ -22,7 +22,7 @@ from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
 from ..typo.runtime import apply_typo_command
-from ..weapon_runtime import weapon_refresh_available
+from ..weapon_runtime.availability import prepare_weapon_availability
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .input_providers import (
@@ -250,6 +250,13 @@ class DeterministicSession(msgspec.Struct):
     before_step_hook: Callable[[], None] | None = None
     input_transform: Callable[[list[PlayerInput]], list[PlayerInput]] | None = None
 
+    def __post_init__(self) -> None:
+        state = self.world.state
+        state.game_mode = self.game_mode
+        state.demo_mode_active = self.demo_mode_active
+        prepare_weapon_availability(state)
+        prepare_perk_availability(state)
+
     def timing_for_dt(self, dt: float) -> FrameTiming:
         return _session_timing(self.world.state, dt)
 
@@ -331,9 +338,6 @@ class DeterministicSession(msgspec.Struct):
         normalized_inputs = normalize_input_frame(tick_inputs, player_count=len(self.world.players)).as_list()
         state.game_mode = self.game_mode
         state.demo_mode_active = self.demo_mode_active
-
-        weapon_refresh_available(state)
-        perks_rebuild_available(state)
 
         prev_audio = [
             (player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in self.world.players

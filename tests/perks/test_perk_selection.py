@@ -168,7 +168,6 @@ def test_perk_select_random_tags_exact_native_caller(mocker) -> None:
     state.perk_available[1] = True
     player = PlayerState(index=0, pos=Vec2())
 
-    mocker.patch.object(perk_selection_module, "perks_rebuild_available", return_value=None)
     mocker.patch.object(perk_selection_module, "perk_can_offer", return_value=True)
 
     perk_id = perk_select_random(state, player, game_mode=GameMode.SURVIVAL, player_count=1)

@@ -8,7 +8,7 @@ from ..quests.level import QuestLevel
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WeaponId
-from .availability import perk_can_offer, perks_rebuild_available
+from .availability import perk_can_offer
 from .helpers import perk_active
 from .ids import PERK_BY_ID, PerkFlags, PerkId
 from .runtime.apply import perk_apply
@@ -59,8 +59,6 @@ def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: 
     Port of `perk_select_random` (0x0042fbd0).
     """
 
-    perks_rebuild_available(state)
-
     for _ in range(1000):
         perk_id = PerkId(
             state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM) % PERK_ID_MAX + 1,
@@ -83,8 +81,6 @@ def _perk_offerable_mask(
     player_count: int,
 ) -> list[bool]:
     """Build a cached `perk_select_random` eligibility mask for `1..PERK_ID_MAX`."""
-
-    perks_rebuild_available(state)
     offerable: list[bool] = [False] * (PERK_ID_MAX + 1)
     max_perk_index = min(PERK_ID_MAX, len(state.perk_available) - 1)
     for perk_index in range(1, max_perk_index + 1):

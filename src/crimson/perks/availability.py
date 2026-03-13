@@ -4,7 +4,7 @@ from ..game_modes import GameMode
 from ..persistence.save_status import GameStatus
 from ..quests import all_quests
 from ..quests.level import QuestLevel
-from ..sim.state_types import PERK_COUNT_SIZE, GameplayState, PerkAvailabilityCacheKey, PlayerState
+from ..sim.state_types import PERK_COUNT_SIZE, GameplayState, PlayerState
 from .helpers import perk_count_get
 from .ids import PERK_BY_ID, PerkFlags, PerkId
 
@@ -42,22 +42,8 @@ def build_perk_availability(*, status: GameStatus | None) -> list[bool]:
     return available
 
 
-def perks_rebuild_available(state: GameplayState) -> None:
-    """Rebuild quest unlock driven `perk_meta_table[perk_id].available` flags.
-
-    Port of `perks_rebuild_available` (0x0042fc30).
-    """
-
-    unlock_index = 0
-    if state.status is not None:
-        unlock_index = state.status.quest_unlock_index
-
-    cache_key = PerkAvailabilityCacheKey(unlock_index=unlock_index)
-    if state._perk_available_key == cache_key:
-        return
-
+def prepare_perk_availability(state: GameplayState) -> None:
     state.perk_available[:] = build_perk_availability(status=state.status)
-    state._perk_available_key = cache_key
 
 
 def perk_can_offer(

@@ -7,20 +7,9 @@ import msgspec
 from grim.geom import Vec2
 
 from ..bonuses.ids import BonusId
-from ..game_modes import GameMode
 from ..weapons import WeaponId
 
 PERK_COUNT_SIZE = 0x80
-
-
-class PerkAvailabilityCacheKey(msgspec.Struct, frozen=True):
-    unlock_index: int
-
-
-class WeaponAvailabilityCacheKey(msgspec.Struct, frozen=True):
-    game_mode: GameMode
-    unlock_index: int
-    unlock_index_full: int
 
 
 class WeaponSlot(msgspec.Struct):

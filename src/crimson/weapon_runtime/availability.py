@@ -5,7 +5,7 @@ from ..persistence.save_status import GameStatus
 from ..quests import all_quests
 from ..quests.level import QuestLevel
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import GameplayState, WeaponAvailabilityCacheKey
+from ..sim.state_types import GameplayState
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
 from ..weapons import WEAPON_TABLE, WeaponId
 
@@ -50,34 +50,12 @@ def build_weapon_availability(
     return available
 
 
-def weapon_refresh_available(state: GameplayState) -> None:
-    """Rebuild `weapon_table[weapon_id].unlocked` equivalents from quest progression.
-
-    Port of `weapon_refresh_available` (0x00452e40).
-    """
-
-    unlock_index = 0
-    unlock_index_full = 0
-    status = state.status
-    if status is not None:
-        unlock_index = status.quest_unlock_index
-        unlock_index_full = status.quest_unlock_index_full
-
-    game_mode = state.game_mode
-    cache_key = WeaponAvailabilityCacheKey(
-        game_mode=game_mode,
-        unlock_index=unlock_index,
-        unlock_index_full=unlock_index_full,
-    )
-    if state._weapon_available_key == cache_key:
-        return
-
+def prepare_weapon_availability(state: GameplayState) -> None:
     state.weapon_available[:] = build_weapon_availability(
-        status=status,
-        game_mode=game_mode,
+        status=state.status,
+        game_mode=state.game_mode,
         demo_mode_active=state.demo_mode_active,
     )
-    state._weapon_available_key = cache_key
 
 
 def weapon_pick_random_available(state: GameplayState) -> WeaponId:
@@ -86,7 +64,6 @@ def weapon_pick_random_available(state: GameplayState) -> WeaponId:
     Port of `weapon_pick_random_available` (0x00452cd0).
     """
 
-    weapon_refresh_available(state)
     status = state.status
 
     for _ in range(1000):

@@ -11,7 +11,7 @@ from crimson.persistence.save_status import (
     WEAPON_USAGE_COUNT,
     GameStatus,
 )
-from crimson.weapon_runtime.availability import weapon_pick_random_available
+from crimson.weapon_runtime.availability import prepare_weapon_availability, weapon_pick_random_available
 from crimson.weapons import WeaponId
 from grim.rand import Crand
 
@@ -52,6 +52,7 @@ def _make_status(*, pistol_used: bool) -> GameStatus:
 def _make_state(*, status: GameStatus, rng: _SeqRng) -> GameplayState:
     state = GameplayState(rng=rng, game_mode=GameMode.SURVIVAL, demo_mode_active=False)
     state.status = status
+    prepare_weapon_availability(state)
     return state
 
 
