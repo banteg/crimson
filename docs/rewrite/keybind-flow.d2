@@ -1,0 +1,138 @@
+direction: right
+
+cfg_blob: {
+  shape: document
+  label: "crimson.cfg\n0x480-byte blob"
+}
+
+wire: {
+  label: "Wire Boundary"
+
+  construct: {
+    label: "CRIMSON_CFG_STRUCT\nConstruct layout"
+  }
+
+  raw_blocks: {
+    label: "Raw bind blocks\nP1/P2 in original keybinds region\nP3/P4 in reserved-gap extension"
+  }
+
+  decode: {
+    label: "decode_crimson_cfg()"
+  }
+
+  encode: {
+    label: "encode_crimson_cfg()"
+  }
+
+  defaults: {
+    label: "Canonical defaults\nunused bind slots\nreserved bytes\nP3/P4 extension"
+  }
+}
+
+model: {
+  label: "Semantic Config Model"
+
+  cfg: {
+    label: "CrimsonConfig"
+  }
+
+  controls: {
+    label: "CrimsonControlsConfig\nplayers[4]\npick_perk_code\nreload_code"
+  }
+
+  player_controls: {
+    label: "CrimsonPlayerControls\nmovement\naim_scheme\nshow_direction_arrow\nmove_codes[4]\nfire_code\nkeyboard_aim_codes[2]\naim_axis_codes[2]\nmove_axis_codes[2]"
+  }
+}
+
+ui: {
+  label: "Controls Menu"
+
+  labels: {
+    label: "controls_rebind_plan()\nchooses visible rows\nfrom aim_scheme + movement"
+  }
+
+  rowspec: {
+    label: "RebindRowSpec\nlabel\nfield_name\nfield_index?\ncontrols_field?\naxis?"
+  }
+
+  reflection: {
+    label: "_row_binding_code()\n_set_row_binding_code()\ngetattr/setattr"
+  }
+
+  capture: {
+    label: "capture_first_pressed_input_code()"
+  }
+}
+
+runtime: {
+  label: "Runtime Consumers"
+
+  local_input: {
+    label: "LocalInputInterpreter\nbuild_player_input()\nbuild_frame_inputs()"
+  }
+
+  perk_prompt: {
+    label: "PerkPromptController\nreads fire_code + pick_perk_code"
+  }
+
+  tutorial: {
+    label: "TutorialMode\nreads move_codes + fire_code + reload_code"
+  }
+
+  text_input: {
+    label: "text_input.gameplay_controls_held()\nreads first 5 gameplay controls"
+  }
+}
+
+translator: {
+  label: "Input Translator"
+
+  input_codes: {
+    label: "input_codes.py\nGrim input code -> raylib polling"
+  }
+
+  raylib: {
+    label: "raylib\nkeyboard\nmouse\ngamepad\naxes"
+  }
+}
+
+cfg_blob -> wire.construct: "parse/build"
+wire.construct -> wire.raw_blocks: "typed raw fields"
+wire.raw_blocks -> wire.decode: "read"
+wire.defaults -> wire.decode: "zero-block backfill"
+wire.decode -> model.cfg: "build semantic model"
+
+model.cfg -> model.controls
+model.controls -> model.player_controls
+
+model.cfg -> wire.encode: "save()"
+wire.defaults -> wire.encode: "canonicalize"
+wire.encode -> wire.construct: "build raw dict"
+wire.construct -> cfg_blob: "write blob"
+
+model.controls -> ui.labels: "current movement + aim scheme"
+ui.labels -> ui.rowspec: "row plan"
+ui.rowspec -> ui.reflection: "field_name / field_index"
+model.controls -> ui.reflection: "controls or player object"
+ui.reflection -> model.controls: "read/write selected field"
+ui.capture -> ui.reflection: "captured Grim code"
+
+model.controls -> runtime.local_input: "grouped player controls"
+model.controls -> runtime.perk_prompt: "fire_code / pick_perk_code"
+model.controls -> runtime.tutorial: "move_codes / fire_code / reload_code"
+model.controls -> runtime.text_input: "move_codes / fire_code"
+
+runtime.local_input -> translator.input_codes: "poll bindings"
+runtime.perk_prompt -> translator.input_codes: "primary/open checks"
+runtime.tutorial -> translator.input_codes: "poll bindings"
+runtime.text_input -> translator.input_codes: "held checks"
+ui.capture -> translator.input_codes: "capture input code"
+
+translator.input_codes -> translator.raylib: "query backend state"
+
+notes: {
+  label: "Why getattr/setattr feels bad\n\nIt is a tiny reflection layer used only by the controls menu.\nThe row spec stores field names as strings like \"move_codes\" or \"reload_code\".\ncontrols.py then uses getattr()/setattr() to read or update that field on either:\n- CrimsonControlsConfig, or\n- CrimsonPlayerControls\n\nThis keeps slot numbers out of the UI, but it is still stringly typed:\n- typos fail at runtime\n- refactors are less safe\n- type checkers cannot follow the field access"
+}
+
+ui.reflection -> notes: "current weak spot"

@@ -25,6 +25,7 @@ from ..menu import (
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .controls_labels import (
     RebindRowSpec,
+    RebindTarget,
     controls_aim_method_dropdown_ids,
     controls_rebind_plan,
     input_configure_for_label,
@@ -48,24 +49,58 @@ CONTROLS_REBIND_ACTIVE_COLOR = rl.Color(255, 228, 170, 255)
 
 
 def _row_binding_code(row: RebindRowSpec, *, player_index: int, controls) -> int:
-    owner = controls if row.controls_field else controls.player(player_index)
-    value = getattr(owner, row.field_name)
-    if row.field_index is not None:
-        return int(value[row.field_index])
-    if row.controls_field:
-        return int(value)
-    return int(value)
+    player_controls = controls.player(player_index)
+    match row.target:
+        case RebindTarget.PLAYER_MOVE_CODES:
+            assert row.target_index is not None
+            return int(player_controls.move_codes[row.target_index])
+        case RebindTarget.PLAYER_FIRE_CODE:
+            return int(player_controls.fire_code)
+        case RebindTarget.PLAYER_KEYBOARD_AIM_CODES:
+            assert row.target_index is not None
+            return int(player_controls.keyboard_aim_codes[row.target_index])
+        case RebindTarget.PLAYER_AIM_AXIS_CODES:
+            assert row.target_index is not None
+            return int(player_controls.aim_axis_codes[row.target_index])
+        case RebindTarget.PLAYER_MOVE_AXIS_CODES:
+            assert row.target_index is not None
+            return int(player_controls.move_axis_codes[row.target_index])
+        case RebindTarget.GLOBAL_PICK_PERK_CODE:
+            return int(controls.pick_perk_code)
+        case RebindTarget.GLOBAL_RELOAD_CODE:
+            return int(controls.reload_code)
 
 
 def _set_row_binding_code(row: RebindRowSpec, value: int, *, player_index: int, controls) -> None:
-    owner = controls if row.controls_field else controls.player(player_index)
+    player_controls = controls.player(player_index)
     code = int(value)
-    if row.field_index is None:
-        setattr(owner, row.field_name, code)
-        return
-    values = list(getattr(owner, row.field_name))
-    values[row.field_index] = code
-    setattr(owner, row.field_name, tuple(values))
+    match row.target:
+        case RebindTarget.PLAYER_MOVE_CODES:
+            assert row.target_index is not None
+            values = list(player_controls.move_codes)
+            values[row.target_index] = code
+            player_controls.move_codes = tuple(values)
+        case RebindTarget.PLAYER_FIRE_CODE:
+            player_controls.fire_code = code
+        case RebindTarget.PLAYER_KEYBOARD_AIM_CODES:
+            assert row.target_index is not None
+            values = list(player_controls.keyboard_aim_codes)
+            values[row.target_index] = code
+            player_controls.keyboard_aim_codes = tuple(values)
+        case RebindTarget.PLAYER_AIM_AXIS_CODES:
+            assert row.target_index is not None
+            values = list(player_controls.aim_axis_codes)
+            values[row.target_index] = code
+            player_controls.aim_axis_codes = tuple(values)
+        case RebindTarget.PLAYER_MOVE_AXIS_CODES:
+            assert row.target_index is not None
+            values = list(player_controls.move_axis_codes)
+            values[row.target_index] = code
+            player_controls.move_axis_codes = tuple(values)
+        case RebindTarget.GLOBAL_PICK_PERK_CODE:
+            controls.pick_perk_code = code
+        case RebindTarget.GLOBAL_RELOAD_CODE:
+            controls.reload_code = code
 
 
 def _default_row_binding_code(player_index: int, row: RebindRowSpec) -> int:
@@ -391,7 +426,7 @@ class ControlsMenuView(PanelMenuView):
         )
 
         if self._rebind_active():
-            active_row = self._rebind_row or RebindRowSpec("Fire:", "fire_code")
+            active_row = self._rebind_row or RebindRowSpec("Fire:", RebindTarget.PLAYER_FIRE_CODE)
             active_player = int(self._rebind_player_index or 0)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or rl.is_mouse_button_pressed(
                 rl.MouseButton.MOUSE_BUTTON_RIGHT,
