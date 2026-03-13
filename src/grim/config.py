@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import msgspec
-from construct import Byte, Bytes, Float32l, Int32ul, Struct
+from construct import Array, Byte, Bytes, Float32l, Int32ul, Struct
 
 from crimson.quests.level import QuestLevel
 
@@ -18,13 +18,11 @@ UNKNOWN_248_SIZE = 0x1F8
 PLAYER_BIND_BLOCK_DWORDS = 0x10
 PLAYER_BIND_BLOCK_SIZE = PLAYER_BIND_BLOCK_DWORDS * 4
 PLAYER_BIND_INPUT_DWORDS = 0x0D
-EXT_KEYBINDS_P3_OFFSET = 0x00
-EXT_KEYBINDS_P4_OFFSET = EXT_KEYBINDS_P3_OFFSET + PLAYER_BIND_BLOCK_SIZE
-EXT_HUD_INDICATOR_P3_OFFSET = EXT_KEYBINDS_P4_OFFSET + PLAYER_BIND_BLOCK_SIZE
-EXT_HUD_INDICATOR_P4_OFFSET = EXT_HUD_INDICATOR_P3_OFFSET + 1
-EXT_HUD_INDICATOR_UNSET = 0
-EXT_HUD_INDICATOR_OFF = 1
-EXT_HUD_INDICATOR_ON = 2
+EXT_DIRECTION_ARROW_FLAG_COUNT = 2
+EXTENDED_RESERVED_GAP_SIZE = UNKNOWN_248_SIZE - 2 * PLAYER_BIND_BLOCK_SIZE - EXT_DIRECTION_ARROW_FLAG_COUNT
+EXT_DIRECTION_ARROW_UNSET = 0
+EXT_DIRECTION_ARROW_OFF = 1
+EXT_DIRECTION_ARROW_ON = 2
 KEYBIND_UNBOUND_CODE = 0x17E
 PLAYER_MODE_FLAG_KEYS = (
     "player_mode_flag_p1",
@@ -44,7 +42,7 @@ CRIMSON_CFG_STRUCT = Struct(
     "music_disable" / Byte,
     "highscore_date_mode" / Byte,
     "highscore_duplicate_mode" / Byte,
-    "hud_indicators" / Bytes(2),
+    "direction_arrow_flags" / Bytes(2),
     "unknown_06" / Bytes(2),
     "unknown_08" / Int32ul,
     "unknown_0c" / Bytes(2),
@@ -85,7 +83,13 @@ CRIMSON_CFG_STRUCT = Struct(
     "windowed_flag" / Byte,
     "unknown_1c5" / Bytes(3),
     "keybinds" / Bytes(0x80),
-    "unknown_248" / Bytes(0x1F8),
+    # The original wire format leaves this 0x1F8-byte gap uninterpreted.
+    # The Python port uses the front of it for P3/P4 control bindings and
+    # their direction-arrow flags, while preserving the remaining bytes.
+    "extended_keybinds_p3" / Array(PLAYER_BIND_BLOCK_DWORDS, Int32ul),
+    "extended_keybinds_p4" / Array(PLAYER_BIND_BLOCK_DWORDS, Int32ul),
+    "extended_direction_arrow_flags" / Array(EXT_DIRECTION_ARROW_FLAG_COUNT, Byte),
+    "extended_reserved_gap" / Bytes(EXTENDED_RESERVED_GAP_SIZE),
     "unknown_440" / Int32ul,
     "unknown_444" / Int32ul,
     "hardcore_flag" / Byte,
@@ -201,17 +205,6 @@ def _coerce_keybind_blob(raw: object) -> bytearray:
         data.extend(b"\x00" * (KEYBINDS_BLOB_SIZE - len(data)))
     if len(data) > KEYBINDS_BLOB_SIZE:
         del data[KEYBINDS_BLOB_SIZE:]
-    return data
-
-
-def _coerce_unknown_248_blob(raw: object) -> bytearray:
-    if not isinstance(raw, (bytes, bytearray)):
-        return bytearray(UNKNOWN_248_SIZE)
-    data = bytearray(raw)
-    if len(data) < UNKNOWN_248_SIZE:
-        data.extend(b"\x00" * (UNKNOWN_248_SIZE - len(data)))
-    if len(data) > UNKNOWN_248_SIZE:
-        del data[UNKNOWN_248_SIZE:]
     return data
 
 
@@ -335,8 +328,8 @@ def config_quest_level(config: CrimsonConfig | None, default: str | None = None)
     return default
 
 
-def config_hud_indicators(config: CrimsonConfig | None, default: bytes = b"\x01\x01") -> bytes:
-    value = config_raw(config, "hud_indicators", default)
+def config_direction_arrow_flags(config: CrimsonConfig | None, default: bytes = b"\x01\x01") -> bytes:
+    value = config_raw(config, "direction_arrow_flags", default)
     if isinstance(value, (bytes, bytearray)):
         return bytes(value)
     return bytes(default)
@@ -370,6 +363,14 @@ def _read_dword_block(blob: bytes | bytearray, *, offset: int) -> tuple[int, ...
     return tuple(values)
 
 
+def _resolved_dword_block(values: Sequence[int], *, default_values: Sequence[int] | None = None) -> tuple[int, ...]:
+    block = list(default_values if default_values is not None else _default_player_bind_block(0))
+    limit = min(len(values), PLAYER_BIND_BLOCK_DWORDS)
+    for idx in range(limit):
+        block[idx] = int(values[idx]) & 0xFFFFFFFF
+    return tuple(int(value) & 0xFFFFFFFF for value in block[:PLAYER_BIND_BLOCK_DWORDS])
+
+
 def _write_dword_block(
     blob: bytearray,
     *,
@@ -377,10 +378,7 @@ def _write_dword_block(
     values: Sequence[int],
     default_values: Sequence[int] | None = None,
 ) -> None:
-    block = list(default_values if default_values is not None else _default_player_bind_block(0))
-    limit = min(len(values), PLAYER_BIND_BLOCK_DWORDS)
-    for idx in range(limit):
-        block[idx] = int(values[idx]) & 0xFFFFFFFF
+    block = _resolved_dword_block(values, default_values=default_values)
     for idx in range(PLAYER_BIND_BLOCK_DWORDS):
         dst = int(offset) + idx * 4
         blob[dst : dst + 4] = int(block[idx]).to_bytes(4, "little")
@@ -393,11 +391,35 @@ def _block_uninitialized(values: Sequence[int]) -> bool:
     return True
 
 
+def _coerce_u32_sequence(raw: object, *, count: int) -> tuple[int, ...]:
+    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes, bytearray)):
+        return tuple(0 for _ in range(int(count)))
+    values = [0] * int(count)
+    limit = min(len(raw), int(count))
+    for idx in range(limit):
+        values[idx] = int(cast(Any, raw[idx])) & 0xFFFFFFFF
+    return tuple(values)
+
+
+def _coerce_u8_sequence(raw: object, *, count: int, fill: int = 0) -> tuple[int, ...]:
+    values = [int(fill) & 0xFF] * int(count)
+    if isinstance(raw, (bytes, bytearray)):
+        seq: Sequence[int] = raw
+    elif isinstance(raw, Sequence) and not isinstance(raw, str):
+        seq = raw
+    else:
+        return tuple(values)
+    limit = min(len(seq), int(count))
+    for idx in range(limit):
+        values[idx] = int(cast(Any, seq[idx])) & 0xFF
+    return tuple(values)
+
+
 def player_keybind_block(config_data: dict, *, player_index: int) -> tuple[int, ...]:
     """Return the 16-dword keybind block for player index 0..3.
 
-    P1/P2 live in `keybinds` (0x80 bytes). P3/P4 are persisted in `unknown_248`
-    reserved bytes to keep `crimson.cfg` layout unchanged.
+    P1/P2 live in the original `keybinds` blob. The port stores P3/P4 in named
+    extension fields carved from the original reserved gap at 0x248.
     """
 
     idx = max(0, min(3, int(player_index)))
@@ -405,9 +427,8 @@ def player_keybind_block(config_data: dict, *, player_index: int) -> tuple[int, 
         blob = _coerce_keybind_blob(config_data.get("keybinds"))
         block = _read_dword_block(blob, offset=idx * PLAYER_BIND_BLOCK_SIZE)
     else:
-        blob = _coerce_unknown_248_blob(config_data.get("unknown_248"))
-        offset = EXT_KEYBINDS_P3_OFFSET if idx == 2 else EXT_KEYBINDS_P4_OFFSET
-        block = _read_dword_block(blob, offset=offset)
+        field = "extended_keybinds_p3" if idx == 2 else "extended_keybinds_p4"
+        block = _coerce_u32_sequence(config_data.get(field), count=PLAYER_BIND_BLOCK_DWORDS)
     if _block_uninitialized(block):
         return _default_player_bind_block(idx)
     return tuple(int(value) for value in block)
@@ -426,15 +447,8 @@ def set_player_keybind_block(config_data: dict, *, player_index: int, values: Se
         )
         config_data["keybinds"] = bytes(blob)
         return
-    blob = _coerce_unknown_248_blob(config_data.get("unknown_248"))
-    offset = EXT_KEYBINDS_P3_OFFSET if idx == 2 else EXT_KEYBINDS_P4_OFFSET
-    _write_dword_block(
-        blob,
-        offset=offset,
-        values=values,
-        default_values=defaults,
-    )
-    config_data["unknown_248"] = bytes(blob)
+    field = "extended_keybinds_p3" if idx == 2 else "extended_keybinds_p4"
+    config_data[field] = _resolved_dword_block(values, default_values=defaults)
 
 
 def default_player_keybind_block(player_index: int) -> tuple[int, ...]:
@@ -469,46 +483,54 @@ def set_player_keybind_value(
     set_player_keybind_block(config_data, player_index=idx, values=block)
 
 
-def hud_indicator_enabled_for_player(config_data: dict, *, player_index: int) -> bool:
+def direction_arrow_enabled_for_player(config_data: dict, *, player_index: int) -> bool:
     idx = int(player_index)
     if idx < 0:
         return False
     if idx < 2:
-        raw = config_data.get("hud_indicators", b"\x01\x01")
+        raw = config_data.get("direction_arrow_flags", b"\x01\x01")
         if not isinstance(raw, (bytes, bytearray)):
             return True
         if idx >= len(raw):
             return True
         return bool(raw[idx])
 
-    blob = _coerce_unknown_248_blob(config_data.get("unknown_248"))
-    offset = EXT_HUD_INDICATOR_P3_OFFSET if idx == 2 else EXT_HUD_INDICATOR_P4_OFFSET
-    value = int(blob[offset]) if 0 <= offset < len(blob) else EXT_HUD_INDICATOR_UNSET
-    if value == EXT_HUD_INDICATOR_OFF:
+    flags = _coerce_u8_sequence(
+        config_data.get("extended_direction_arrow_flags"),
+        count=EXT_DIRECTION_ARROW_FLAG_COUNT,
+        fill=EXT_DIRECTION_ARROW_UNSET,
+    )
+    value = int(flags[idx - 2]) if 2 <= idx <= 3 else EXT_DIRECTION_ARROW_UNSET
+    if value == EXT_DIRECTION_ARROW_OFF:
         return False
-    if value == EXT_HUD_INDICATOR_ON:
+    if value == EXT_DIRECTION_ARROW_ON:
         return True
     return True
 
 
-def set_hud_indicator_for_player(config_data: dict, *, player_index: int, enabled: bool) -> None:
+def set_direction_arrow_enabled_for_player(config_data: dict, *, player_index: int, enabled: bool) -> None:
     idx = int(player_index)
     if idx < 0:
         return
     if idx < 2:
-        raw = config_data.get("hud_indicators", b"\x01\x01")
+        raw = config_data.get("direction_arrow_flags", b"\x01\x01")
         values = bytearray(raw) if isinstance(raw, (bytes, bytearray)) else bytearray(b"\x01\x01")
         if len(values) < 2:
             values.extend(b"\x01" * (2 - len(values)))
         values[idx] = 1 if bool(enabled) else 0
-        config_data["hud_indicators"] = bytes(values[:2])
+        config_data["direction_arrow_flags"] = bytes(values[:2])
         return
 
-    blob = _coerce_unknown_248_blob(config_data.get("unknown_248"))
-    offset = EXT_HUD_INDICATOR_P3_OFFSET if idx == 2 else EXT_HUD_INDICATOR_P4_OFFSET
-    if 0 <= offset < len(blob):
-        blob[offset] = EXT_HUD_INDICATOR_ON if bool(enabled) else EXT_HUD_INDICATOR_OFF
-    config_data["unknown_248"] = bytes(blob)
+    flags = list(
+        _coerce_u8_sequence(
+            config_data.get("extended_direction_arrow_flags"),
+            count=EXT_DIRECTION_ARROW_FLAG_COUNT,
+            fill=EXT_DIRECTION_ARROW_UNSET,
+        ),
+    )
+    if 2 <= idx <= 3:
+        flags[idx - 2] = EXT_DIRECTION_ARROW_ON if bool(enabled) else EXT_DIRECTION_ARROW_OFF
+    config_data["extended_direction_arrow_flags"] = tuple(flags)
 
 
 class CrimsonConfig(msgspec.Struct):
@@ -696,12 +718,12 @@ class CrimsonConfig(msgspec.Struct):
         self.quest_stage_minor = int(value.minor)
 
     @property
-    def hud_indicators(self) -> bytes:
-        return self.blob_value("hud_indicators", size=2, default=b"\x01\x01", fill=1)
+    def direction_arrow_flags(self) -> bytes:
+        return self.blob_value("direction_arrow_flags", size=2, default=b"\x01\x01", fill=1)
 
-    @hud_indicators.setter
-    def hud_indicators(self, value: bytes | bytearray) -> None:
-        self.set_blob_value("hud_indicators", value, size=2, fill=1)
+    @direction_arrow_flags.setter
+    def direction_arrow_flags(self, value: bytes | bytearray) -> None:
+        self.set_blob_value("direction_arrow_flags", value, size=2, fill=1)
 
     def player_mode_flag(self, *, player_index: int, default: int = 2) -> int:
         return self.int_value(_player_mode_flag_key(player_index), default)
@@ -775,11 +797,11 @@ class CrimsonConfig(msgspec.Struct):
     def set_player_keybind_value(self, *, player_index: int, slot_index: int, value: int) -> None:
         set_player_keybind_value(self.data, player_index=player_index, slot_index=slot_index, value=value)
 
-    def hud_indicator_enabled_for_player(self, *, player_index: int) -> bool:
-        return hud_indicator_enabled_for_player(self.data, player_index=player_index)
+    def direction_arrow_enabled_for_player(self, *, player_index: int) -> bool:
+        return direction_arrow_enabled_for_player(self.data, player_index=player_index)
 
-    def set_hud_indicator_for_player(self, *, player_index: int, enabled: bool) -> None:
-        set_hud_indicator_for_player(self.data, player_index=player_index, enabled=enabled)
+    def set_direction_arrow_enabled_for_player(self, *, player_index: int, enabled: bool) -> None:
+        set_direction_arrow_enabled_for_player(self.data, player_index=player_index, enabled=enabled)
 
     @property
     def texture_scale(self) -> float:
@@ -854,7 +876,7 @@ class CrimsonConfig(msgspec.Struct):
 def default_crimson_cfg_data() -> dict:
     data = CRIMSON_CFG_STRUCT.parse(bytes(CRIMSON_CFG_SIZE))
     config = CrimsonConfig(path=Path("<memory>"), data=data)
-    config.hud_indicators = b"\x01\x01"
+    config.direction_arrow_flags = b"\x01\x01"
     config.data["unknown_08"] = 8
     config.set_fx_detail(level=0, enabled=True)
     config.set_fx_detail(level=1, enabled=True)

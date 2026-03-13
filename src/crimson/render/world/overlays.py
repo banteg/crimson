@@ -89,19 +89,11 @@ def draw_clock_gauge(
     rl.draw_texture_pro(pointer, pointer_src, pointer_dst, origin, rotation_deg, tint)
 
 
-def hud_indicator_enabled(render_ctx: WorldRenderCtx, player_index: int) -> bool:
+def direction_arrow_enabled(render_ctx: WorldRenderCtx, player_index: int) -> bool:
     config = render_ctx.frame.config
     if config is None:
         return True
-    raw = config.hud_indicators
-    if not isinstance(raw, (bytes, bytearray)):
-        return True
-    idx = int(player_index)
-    if idx < 0:
-        return False
-    if idx >= len(raw):
-        return True
-    return bool(raw[idx])
+    return config.direction_arrow_enabled_for_player(player_index=int(player_index))
 
 
 def direction_arrow_tint(render_ctx: WorldRenderCtx, player_index: int, *, alpha: float) -> rl.Color:
@@ -135,7 +127,7 @@ def draw_direction_arrows(
         if float(player.health) <= 0.0:
             continue
         index = int(player.index)
-        if not hud_indicator_enabled(render_ctx, index):
+        if not direction_arrow_enabled(render_ctx, index):
             continue
 
         heading = float(player.heading)

@@ -32,12 +32,11 @@ def test_crimson_cfg_backfills_zero_keybinds(tmp_path) -> None:
     assert cfg.data["keybinds"] == grim_config.default_crimson_cfg_data()["keybinds"]
 
 
-def test_player_keybind_block_roundtrip_for_extended_players_preserves_unknown_bytes() -> None:
+def test_player_keybind_block_roundtrip_for_extended_players_preserves_reserved_gap() -> None:
     data = grim_config.default_crimson_cfg_data()
-    unknown = bytearray(data["unknown_248"])
-    assert len(unknown) == grim_config.UNKNOWN_248_SIZE
-    unknown[:] = b"\xA5" * len(unknown)
-    data["unknown_248"] = bytes(unknown)
+    reserved = bytearray(data["extended_reserved_gap"])
+    reserved[:] = b"\xA5" * len(reserved)
+    data["extended_reserved_gap"] = bytes(reserved)
 
     grim_config.set_player_keybind_value(data, player_index=2, slot_index=4, value=0x120)
     grim_config.set_player_keybind_value(data, player_index=3, slot_index=0, value=0x11F)
@@ -47,18 +46,17 @@ def test_player_keybind_block_roundtrip_for_extended_players_preserves_unknown_b
     assert int(player3_block[4]) == 0x120
     assert int(player4_block[0]) == 0x11F
 
-    unknown_after = bytes(data["unknown_248"])
-    assert len(unknown_after) == grim_config.UNKNOWN_248_SIZE
-    assert unknown_after[0x80:] == bytes([0xA5]) * (grim_config.UNKNOWN_248_SIZE - 0x80)
+    reserved_after = bytes(data["extended_reserved_gap"])
+    assert reserved_after == bytes([0xA5]) * len(reserved)
 
 
-def test_hud_indicator_extension_roundtrip_for_players_three_and_four() -> None:
+def test_direction_arrow_extension_roundtrip_for_players_three_and_four() -> None:
     data = grim_config.default_crimson_cfg_data()
-    assert grim_config.hud_indicator_enabled_for_player(data, player_index=2)
-    assert grim_config.hud_indicator_enabled_for_player(data, player_index=3)
+    assert grim_config.direction_arrow_enabled_for_player(data, player_index=2)
+    assert grim_config.direction_arrow_enabled_for_player(data, player_index=3)
 
-    grim_config.set_hud_indicator_for_player(data, player_index=2, enabled=False)
-    grim_config.set_hud_indicator_for_player(data, player_index=3, enabled=True)
+    grim_config.set_direction_arrow_enabled_for_player(data, player_index=2, enabled=False)
+    grim_config.set_direction_arrow_enabled_for_player(data, player_index=3, enabled=True)
 
-    assert not grim_config.hud_indicator_enabled_for_player(data, player_index=2)
-    assert grim_config.hud_indicator_enabled_for_player(data, player_index=3)
+    assert not grim_config.direction_arrow_enabled_for_player(data, player_index=2)
+    assert grim_config.direction_arrow_enabled_for_player(data, player_index=3)

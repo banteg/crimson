@@ -281,10 +281,10 @@ class ControlsMenuView(PanelMenuView):
         )
 
     def _direction_arrow_enabled(self) -> bool:
-        return self.state.config.hud_indicator_enabled_for_player(player_index=int(self._current_player_index()))
+        return self.state.config.direction_arrow_enabled_for_player(player_index=int(self._current_player_index()))
 
     def _set_direction_arrow_enabled(self, enabled: bool) -> None:
-        self.state.config.set_hud_indicator_for_player(
+        self.state.config.set_direction_arrow_enabled_for_player(
             player_index=int(self._current_player_index()),
             enabled=bool(enabled),
         )
