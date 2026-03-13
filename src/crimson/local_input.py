@@ -6,20 +6,18 @@ from typing import Protocol
 
 import msgspec
 
-from grim.config import CrimsonConfig, default_player_keybind_block
+from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from .aim_constants import _AIM_JOYSTICK_TURN_RATE, _AIM_KEYBOARD_TURN_RATE
 from .aim_schemes import AimScheme
 from .input_codes import (
-    config_keybinds_for_player,
-    input_axis_value_for_player,
-    input_code_is_down_for_player,
-    input_code_is_pressed_for_player,
+    input_axis_value,
+    input_code_is_down,
+    input_code_is_pressed,
 )
 from .movement_controls import MovementControlType
-from .screens.panels.controls_labels import controls_method_values
 from .sim.input import PlayerInput
 from .sim.state_types import PlayerState
 
@@ -34,18 +32,6 @@ _COMPUTER_MOVE_TARGET_RADIUS = 300.0
 _COMPUTER_AIM_SNAP_DISTANCE = 4.0
 _COMPUTER_AIM_TRACK_GAIN = 6.0
 _COMPUTER_AUTO_FIRE_DISTANCE = 128.0
-
-_MOVE_SLOT_UP = 0
-_MOVE_SLOT_DOWN = 1
-_MOVE_SLOT_LEFT = 2
-_MOVE_SLOT_RIGHT = 3
-_FIRE_SLOT = 4
-_AIM_LEFT_SLOT = 7
-_AIM_RIGHT_SLOT = 8
-_AIM_AXIS_Y_SLOT = 9
-_AIM_AXIS_X_SLOT = 10
-_MOVE_AXIS_Y_SLOT = 11
-_MOVE_AXIS_X_SLOT = 12
 
 _ALT_MOVE_KEY_UP = 0xC8
 _ALT_MOVE_KEY_DOWN = 0xD0
@@ -119,19 +105,11 @@ def _resolve_static_move_vector(
     return move
 
 
-def _load_player_bind_block(config: CrimsonConfig | None, *, player_index: int) -> tuple[int, ...]:
-    binds = config_keybinds_for_player(config, player_index=int(player_index))
-    if len(binds) >= 16:
-        return tuple(int(v) for v in binds[:16])
-    return tuple(int(v) for v in default_player_keybind_block(int(player_index)))
+def _config_player_count(config: CrimsonConfig) -> int:
+    return max(1, int(config.gameplay.player_count))
 
 
-def _config_player_count(config: CrimsonConfig | None) -> int:
-    value = config.gameplay.player_count if config is not None else 1
-    return max(1, value)
-
-
-def _single_player_alt_keys_enabled(config: CrimsonConfig | None, *, player_index: int) -> bool:
+def _single_player_alt_keys_enabled(config: CrimsonConfig, *, player_index: int) -> bool:
     return int(player_index) == 0 and _config_player_count(config) == 1
 
 
@@ -139,26 +117,26 @@ def _key_down_with_single_player_alt(
     primary_key: int,
     *,
     alt_key: int,
-    config: CrimsonConfig | None,
+    config: CrimsonConfig,
     player_index: int,
 ) -> bool:
-    if input_code_is_down_for_player(primary_key, player_index=int(player_index)):
+    if input_code_is_down(primary_key, player_index=int(player_index)):
         return True
     if _single_player_alt_keys_enabled(config, player_index=int(player_index)):
-        return input_code_is_down_for_player(int(alt_key), player_index=int(player_index))
+        return input_code_is_down(int(alt_key), player_index=int(player_index))
     return False
 
 
 def _aim_pov_left_active(*, player_index: int, preserve_bugs: bool) -> bool:
     # Native `input_aim_pov_left_active` always reads joystick POV index 0.
     pov_index = 0 if preserve_bugs else int(player_index)
-    return input_code_is_down_for_player(_AIM_POV_LEFT_CODE, player_index=pov_index)
+    return input_code_is_down(_AIM_POV_LEFT_CODE, player_index=pov_index)
 
 
 def _aim_pov_right_active(*, player_index: int, preserve_bugs: bool) -> bool:
     # Native `input_aim_pov_right_active` always reads joystick POV index 0.
     pov_index = 0 if preserve_bugs else int(player_index)
-    return input_code_is_down_for_player(_AIM_POV_RIGHT_CODE, player_index=pov_index)
+    return input_code_is_down(_AIM_POV_RIGHT_CODE, player_index=pov_index)
 
 
 def clear_input_edges(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
@@ -267,25 +245,12 @@ class LocalInputInterpreter:
             state.aim_heading = float(player.aim_heading)
         return state
 
-    @staticmethod
-    def _reload_key(config: CrimsonConfig | None) -> int:
-        if config is None:
-            return 0x102
-        return config.controls.reload_key
-
-    @staticmethod
-    def _safe_controls_modes(config: CrimsonConfig | None, *, player_index: int) -> tuple[AimScheme, MovementControlType]:
-        if config is None:
-            return AimScheme.MOUSE, MovementControlType.STATIC
-        aim_scheme, move_mode = controls_method_values(config.controls, player_index=int(player_index))
-        return aim_scheme, move_mode
-
     def build_player_input(
         self,
         *,
         player_index: int,
         player: PlayerState,
-        config: CrimsonConfig | None,
+        config: CrimsonConfig,
         mouse_screen: Vec2,
         mouse_world: Vec2,
         screen_center: Vec2,
@@ -294,21 +259,16 @@ class LocalInputInterpreter:
     ) -> PlayerInput:
         idx = max(0, min(3, int(player_index)))
         state = self._state_for_player(idx, player=player)
-        binds = _load_player_bind_block(config, player_index=idx)
-        aim_scheme, move_mode_type = self._safe_controls_modes(config, player_index=idx)
-        reload_key = self._reload_key(config)
+        binds = config.controls.player(idx)
+        aim_scheme = binds.aim_scheme
+        move_mode_type = binds.movement
+        reload_key = config.controls.reload_code
 
-        up_key = int(binds[_MOVE_SLOT_UP])
-        down_key = int(binds[_MOVE_SLOT_DOWN])
-        left_key = int(binds[_MOVE_SLOT_LEFT])
-        right_key = int(binds[_MOVE_SLOT_RIGHT])
-        fire_key = int(binds[_FIRE_SLOT])
-        aim_left_key = int(binds[_AIM_LEFT_SLOT])
-        aim_right_key = int(binds[_AIM_RIGHT_SLOT])
-        aim_axis_y = int(binds[_AIM_AXIS_Y_SLOT])
-        aim_axis_x = int(binds[_AIM_AXIS_X_SLOT])
-        move_axis_y = int(binds[_MOVE_AXIS_Y_SLOT])
-        move_axis_x = int(binds[_MOVE_AXIS_X_SLOT])
+        move_forward_key, move_backward_key, turn_left_key, turn_right_key = binds.move_codes
+        fire_key = binds.fire_code
+        aim_left_key, aim_right_key = binds.keyboard_aim_codes
+        aim_axis_y, aim_axis_x = binds.aim_axis_codes
+        move_axis_y, move_axis_x = binds.move_axis_codes
 
         move_vec = Vec2()
         move_forward_pressed: bool | None = None
@@ -349,25 +309,25 @@ class LocalInputInterpreter:
                 move_vec = move_dir
         elif move_mode_type is MovementControlType.RELATIVE:
             move_forward_pressed = _key_down_with_single_player_alt(
-                up_key,
+                move_forward_key,
                 alt_key=_ALT_MOVE_KEY_UP,
                 config=config,
                 player_index=idx,
             )
             move_backward_pressed = _key_down_with_single_player_alt(
-                down_key,
+                move_backward_key,
                 alt_key=_ALT_MOVE_KEY_DOWN,
                 config=config,
                 player_index=idx,
             )
             turn_left_pressed = _key_down_with_single_player_alt(
-                left_key,
+                turn_left_key,
                 alt_key=_ALT_MOVE_KEY_LEFT,
                 config=config,
                 player_index=idx,
             )
             turn_right_pressed = _key_down_with_single_player_alt(
-                right_key,
+                turn_right_key,
                 alt_key=_ALT_MOVE_KEY_RIGHT,
                 config=config,
                 player_index=idx,
@@ -377,11 +337,11 @@ class LocalInputInterpreter:
                 float(move_backward_pressed) - float(move_forward_pressed),
             )
         elif move_mode_type is MovementControlType.DUAL_ACTION_PAD:
-            axis_y = -input_axis_value_for_player(move_axis_y, player_index=idx)
-            axis_x = -input_axis_value_for_player(move_axis_x, player_index=idx)
+            axis_y = -input_axis_value(move_axis_y, player_index=idx)
+            axis_x = -input_axis_value(move_axis_x, player_index=idx)
             move_vec = Vec2(_clamp_unit(axis_x), _clamp_unit(axis_y))
         elif move_mode_type is MovementControlType.MOUSE_POINT_CLICK:
-            move_to_cursor_pressed = input_code_is_down_for_player(reload_key, player_index=idx)
+            move_to_cursor_pressed = input_code_is_down(reload_key, player_index=idx)
             if move_to_cursor_pressed:
                 state.move_target = mouse_world
             if float(state.move_target.x) >= 0.0 and float(state.move_target.y) >= 0.0:
@@ -391,25 +351,25 @@ class LocalInputInterpreter:
                     move_vec = _dir
         elif move_mode_type is MovementControlType.STATIC:
             move_up_pressed = _key_down_with_single_player_alt(
-                up_key,
+                move_forward_key,
                 alt_key=_ALT_MOVE_KEY_UP,
                 config=config,
                 player_index=idx,
             )
             move_down_pressed = _key_down_with_single_player_alt(
-                down_key,
+                move_backward_key,
                 alt_key=_ALT_MOVE_KEY_DOWN,
                 config=config,
                 player_index=idx,
             )
             move_left_pressed = _key_down_with_single_player_alt(
-                left_key,
+                turn_left_key,
                 alt_key=_ALT_MOVE_KEY_LEFT,
                 config=config,
                 player_index=idx,
             )
             move_right_pressed = _key_down_with_single_player_alt(
-                right_key,
+                turn_right_key,
                 alt_key=_ALT_MOVE_KEY_RIGHT,
                 config=config,
                 player_index=idx,
@@ -426,10 +386,10 @@ class LocalInputInterpreter:
             )
         else:
             move_vec = Vec2(
-                float(input_code_is_down_for_player(right_key, player_index=idx))
-                - float(input_code_is_down_for_player(left_key, player_index=idx)),
-                float(input_code_is_down_for_player(down_key, player_index=idx))
-                - float(input_code_is_down_for_player(up_key, player_index=idx)),
+                float(input_code_is_down(turn_right_key, player_index=idx))
+                - float(input_code_is_down(turn_left_key, player_index=idx)),
+                float(input_code_is_down(move_backward_key, player_index=idx))
+                - float(input_code_is_down(move_forward_key, player_index=idx)),
             )
 
         heading = float(state.aim_heading)
@@ -444,9 +404,9 @@ class LocalInputInterpreter:
                 heading = delta.to_heading()
         elif aim_scheme is AimScheme.KEYBOARD:
             if move_mode_type in {MovementControlType.RELATIVE, MovementControlType.STATIC}:
-                if input_code_is_down_for_player(aim_right_key, player_index=idx):
+                if input_code_is_down(aim_right_key, player_index=idx):
                     heading = float(heading + float(dt) * _AIM_KEYBOARD_TURN_RATE)
-                if input_code_is_down_for_player(aim_left_key, player_index=idx):
+                if input_code_is_down(aim_left_key, player_index=idx):
                     heading = float(heading - float(dt) * _AIM_KEYBOARD_TURN_RATE)
                 aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.MOUSE_RELATIVE:
@@ -455,8 +415,8 @@ class LocalInputInterpreter:
                 heading = rel.to_heading()
                 aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.DUAL_ACTION_PAD:
-            axis_y = input_axis_value_for_player(aim_axis_y, player_index=idx)
-            axis_x = input_axis_value_for_player(aim_axis_x, player_index=idx)
+            axis_y = input_axis_value(aim_axis_y, player_index=idx)
+            axis_x = input_axis_value(aim_axis_x, player_index=idx)
             axis_vec = Vec2(axis_x, axis_y)
             mag_sq = axis_vec.length_sq()
             if mag_sq > 1e-9:
@@ -505,12 +465,12 @@ class LocalInputInterpreter:
             heading = delta.to_heading()
         state.aim_heading = float(heading)
 
-        fire_down = input_code_is_down_for_player(fire_key, player_index=idx)
-        fire_pressed = input_code_is_pressed_for_player(fire_key, player_index=idx)
+        fire_down = input_code_is_down(fire_key, player_index=idx)
+        fire_pressed = input_code_is_pressed(fire_key, player_index=idx)
         if aim_scheme is AimScheme.COMPUTER and computer_auto_fire:
             fire_down = True
-        reload_pressed = input_code_is_pressed_for_player(reload_key, player_index=idx)
-        reload_down = input_code_is_down_for_player(reload_key, player_index=idx)
+        reload_pressed = input_code_is_pressed(reload_key, player_index=idx)
+        reload_down = input_code_is_down(reload_key, player_index=idx)
 
         return PlayerInput(
             move=move_vec,
@@ -532,7 +492,7 @@ class LocalInputInterpreter:
         self,
         *,
         players: Sequence[PlayerState],
-        config: CrimsonConfig | None,
+        config: CrimsonConfig,
         mouse_screen: Vec2,
         screen_to_world: Callable[[Vec2], Vec2],
         dt: float,

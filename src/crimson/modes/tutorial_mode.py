@@ -11,7 +11,7 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
-from ..input_codes import input_code_is_down, input_code_is_pressed, player_move_fire_keybinds
+from ..input_codes import input_code_is_down, input_code_is_pressed
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
@@ -185,14 +185,13 @@ class TutorialMode(BaseGameplayMode):
             return
 
     def _build_input(self) -> PlayerInput:
-        up_key, down_key, left_key, right_key, fire_key = player_move_fire_keybinds(
-            self.config,
-            player_index=0,
-        )
+        controls = self.config.controls.player(0)
+        move_forward_key, move_backward_key, turn_left_key, turn_right_key = controls.move_codes
+        fire_key = controls.fire_code
 
         move = Vec2(
-            float(input_code_is_down(right_key)) - float(input_code_is_down(left_key)),
-            float(input_code_is_down(down_key)) - float(input_code_is_down(up_key)),
+            float(input_code_is_down(turn_right_key)) - float(input_code_is_down(turn_left_key)),
+            float(input_code_is_down(move_backward_key)) - float(input_code_is_down(move_forward_key)),
         )
 
         mouse = self._ui_mouse_pos()
@@ -200,7 +199,7 @@ class TutorialMode(BaseGameplayMode):
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
-        reload_key = self.config.controls.reload_key
+        reload_key = self.config.controls.reload_code
         reload_pressed = input_code_is_pressed(reload_key)
 
         return PlayerInput(

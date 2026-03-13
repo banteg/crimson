@@ -7,7 +7,7 @@ from grim.rand import CrandLike
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
-from ..input_codes import INPUT_CODE_UNBOUND, config_keybinds_for_player, input_code_is_down_for_player
+from ..input_codes import INPUT_CODE_UNBOUND, input_code_is_down
 from ..rng_caller_static import RngCallerStatic
 
 _CONTROL_BIND_SLOTS = 5
@@ -79,15 +79,21 @@ def update_name_entry_text(
 def gameplay_controls_held(config: CrimsonConfig) -> bool:
     player_count = max(1, min(4, config.gameplay.player_count))
     for player_index in range(player_count):
-        binds = config_keybinds_for_player(config, player_index=player_index)
-        for code in binds[:_CONTROL_BIND_SLOTS]:
-            key_code = int(code)
-            if key_code == INPUT_CODE_UNBOUND:
+        player_controls = config.controls.player(player_index)
+        move_forward_key, move_backward_key, turn_left_key, turn_right_key = player_controls.move_codes
+        for code in (
+            move_forward_key,
+            move_backward_key,
+            turn_left_key,
+            turn_right_key,
+            player_controls.fire_code,
+        )[:_CONTROL_BIND_SLOTS]:
+            if code == INPUT_CODE_UNBOUND:
                 continue
-            if input_code_is_down_for_player(key_code, player_index=player_index):
+            if input_code_is_down(code, player_index=player_index):
                 return True
 
     for code in _SINGLE_PLAYER_ALT_MOVE_CODES:
-        if input_code_is_down_for_player(int(code), player_index=0):
+        if input_code_is_down(int(code), player_index=0):
             return True
     return False

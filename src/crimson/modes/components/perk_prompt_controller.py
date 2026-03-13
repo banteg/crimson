@@ -7,10 +7,9 @@ from grim.config import CrimsonConfig
 from grim.math import clamp
 
 from ...input_codes import (
-    input_code_is_down_for_player,
-    input_code_is_pressed_for_player,
+    input_code_is_down,
+    input_code_is_pressed,
     input_primary_just_pressed,
-    player_fire_keybind,
 )
 from .perk_menu_controller import PerkMenuUiContext
 from .perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
@@ -106,10 +105,11 @@ class PerkPromptState:
         )
 
     def _prompt_open_requested(self, *, config: CrimsonConfig, player_count: int) -> bool:
-        fire_key = player_fire_keybind(config, player_index=0)
-        pick_key = config.controls.pick_perk_key
-        if input_code_is_pressed_for_player(pick_key, player_index=0) and (
-            not input_code_is_down_for_player(fire_key, player_index=0)
+        fire_key = int(config.controls.player(0).fire_code)
+        pick_key = config.controls.pick_perk_code
+        if input_code_is_pressed(pick_key, player_index=0) and (
+            not input_code_is_down(fire_key, player_index=0)
         ):
             return True
-        return self.hover and input_primary_just_pressed(config, player_count=player_count)
+        fire_codes = tuple(int(config.controls.player(idx).fire_code) for idx in range(4))
+        return self.hover and input_primary_just_pressed(fire_codes=fire_codes, player_count=player_count)

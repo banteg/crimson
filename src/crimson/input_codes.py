@@ -4,7 +4,6 @@ from collections.abc import Sequence
 
 import msgspec
 
-from grim.config import CrimsonConfig, default_player_keybind_block
 from grim.raylib_api import rl
 
 INPUT_CODE_UNBOUND = 0x17E
@@ -234,7 +233,7 @@ def _axis_value_from_code(key_code: int, *, player_index: int) -> float:
     return 0.0
 
 
-def input_axis_value_for_player(key_code: int, *, player_index: int) -> float:
+def input_axis_value(key_code: int, *, player_index: int = 0) -> float:
     return _axis_value_from_code(int(key_code), player_index=int(player_index))
 
 
@@ -372,20 +371,12 @@ def input_code_name(key_code: int) -> str:
     return f"KEY_{key_code:04X}"
 
 
-def input_code_is_down(key_code: int) -> bool:
-    return input_code_is_down_for_player(int(key_code), player_index=0)
-
-
-def input_code_is_pressed(key_code: int) -> bool:
-    return input_code_is_pressed_for_player(int(key_code), player_index=0)
-
-
-def input_code_is_down_for_player(key_code: int, *, player_index: int) -> bool:
+def input_code_is_down(key_code: int, *, player_index: int = 0) -> bool:
     down = _digital_down_for_player(int(key_code), player_index=int(player_index))
     return _PRESSED_STATE.mark_down(player_index=int(player_index), key_code=int(key_code), is_down=down)
 
 
-def input_code_is_pressed_for_player(key_code: int, *, player_index: int) -> bool:
+def input_code_is_pressed(key_code: int, *, player_index: int = 0) -> bool:
     code = int(key_code)
     player_idx = int(player_index)
     if code == 0x109:
@@ -440,69 +431,25 @@ def capture_first_pressed_input_code(
                 value = float(rl.get_gamepad_axis_movement(gamepad, axis))
                 if abs(value) >= float(axis_threshold):
                     return int(code)
-
     return None
 
 
-def _parse_keybinds_blob(blob: bytes | bytearray | None) -> tuple[int, ...]:
-    if blob is None:
-        return ()
-    if not isinstance(blob, (bytes, bytearray)):
-        return ()
-    if len(blob) != 0x80:
-        return ()
-    out: list[int] = []
-    for offset in range(0, 0x80, 4):
-        out.append(int.from_bytes(blob[offset : offset + 4], "little"))
-    return tuple(out)
-
-
-def config_keybinds(config: CrimsonConfig | None) -> tuple[int, ...]:
-    if config is None:
-        return ()
-    values: list[int] = []
-    for player_index in range(2):
-        values.extend(int(value) for value in config.controls.player(player_index).keybinds)
-    return tuple(values)
-
-
-def config_keybinds_for_player(config: CrimsonConfig | None, *, player_index: int) -> tuple[int, ...]:
-    if config is None:
-        return ()
-    return tuple(int(value) for value in config.controls.player(player_index).keybinds)
-
-
-def player_fire_keybind(config: CrimsonConfig | None, *, player_index: int) -> int:
-    idx = max(0, min(3, int(player_index)))
-    keybinds = config_keybinds_for_player(config, player_index=idx)
-    if len(keybinds) >= 5:
-        return int(keybinds[4])
-    return int(default_player_keybind_block(idx)[4])
-
-
-def player_move_fire_keybinds(config: CrimsonConfig | None, *, player_index: int) -> tuple[int, int, int, int, int]:
-    idx = max(0, min(3, int(player_index)))
-    keybinds = config_keybinds_for_player(config, player_index=idx)
-    if len(keybinds) >= 5:
-        return player_move_fire_binds(keybinds, 0)
-    defaults = tuple(int(value) for value in default_player_keybind_block(idx))
-    return int(defaults[0]), int(defaults[1]), int(defaults[2]), int(defaults[3]), int(defaults[4])
-
-
-def _input_primary_any_down(config: CrimsonConfig | None, *, player_count: int) -> bool:
-    if input_code_is_down_for_player(0x100, player_index=0):
+def _input_primary_any_down(*, fire_codes: Sequence[int], player_count: int) -> bool:
+    if input_code_is_down(0x100, player_index=0):
         return True
 
     count = max(1, min(4, int(player_count)))
+    if len(fire_codes) < count:
+        raise ValueError(f"fire_codes must provide at least {count} entries, got {len(fire_codes)}")
     for player_index in range(count):
-        fire_key = player_fire_keybind(config, player_index=player_index)
-        if input_code_is_down_for_player(fire_key, player_index=player_index):
+        fire_key = int(fire_codes[player_index])
+        if input_code_is_down(fire_key, player_index=player_index):
             return True
     return False
 
 
-def input_primary_is_down(config: CrimsonConfig | None, *, player_count: int) -> bool:
-    down = _input_primary_any_down(config, player_count=player_count)
+def input_primary_is_down(*, fire_codes: Sequence[int], player_count: int) -> bool:
+    down = _input_primary_any_down(fire_codes=fire_codes, player_count=player_count)
     _PRESSED_STATE.mark_down(
         player_index=_PRIMARY_EDGE_SENTINEL_PLAYER,
         key_code=_PRIMARY_EDGE_SENTINEL_KEY,
@@ -511,26 +458,10 @@ def input_primary_is_down(config: CrimsonConfig | None, *, player_count: int) ->
     return bool(down)
 
 
-def input_primary_just_pressed(config: CrimsonConfig | None, *, player_count: int) -> bool:
-    down = _input_primary_any_down(config, player_count=player_count)
+def input_primary_just_pressed(*, fire_codes: Sequence[int], player_count: int) -> bool:
+    down = _input_primary_any_down(fire_codes=fire_codes, player_count=player_count)
     return _PRESSED_STATE.is_pressed(
         player_index=_PRIMARY_EDGE_SENTINEL_PLAYER,
         key_code=_PRIMARY_EDGE_SENTINEL_KEY,
         is_down=down,
     )
-
-
-def player_move_fire_binds(keybinds: Sequence[int], player_index: int) -> tuple[int, int, int, int, int]:
-    """Return (up, down, left, right, fire) key codes for a player.
-
-    The classic config packs keybind blocks in 0x10-int strides; the first five entries
-    are used by `ui_render_keybind_help` (Up/Down/Left/Right/Fire).
-    """
-
-    base = int(player_index) * 0x10
-    values = [INPUT_CODE_UNBOUND, INPUT_CODE_UNBOUND, INPUT_CODE_UNBOUND, INPUT_CODE_UNBOUND, INPUT_CODE_UNBOUND]
-    for idx in range(5):
-        src = base + idx
-        if 0 <= src < len(keybinds):
-            values[idx] = int(keybinds[src])
-    return values[0], values[1], values[2], values[3], values[4]

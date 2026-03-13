@@ -1,12 +1,30 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+from enum import Enum, auto
+
 from grim.config import CrimsonControlsConfig
 
 from ...aim_schemes import AimScheme
 from ...movement_controls import MovementControlType
 
-PICK_PERK_BIND_SLOT = -1
-RELOAD_BIND_SLOT = -2
+
+class RebindTarget(Enum):
+    PLAYER_MOVE_CODES = auto()
+    PLAYER_FIRE_CODE = auto()
+    PLAYER_KEYBOARD_AIM_CODES = auto()
+    PLAYER_AIM_AXIS_CODES = auto()
+    PLAYER_MOVE_AXIS_CODES = auto()
+    GLOBAL_PICK_PERK_CODE = auto()
+    GLOBAL_RELOAD_CODE = auto()
+
+
+@dataclass(frozen=True, slots=True)
+class RebindRowSpec:
+    label: str
+    target: RebindTarget
+    target_index: int | None = None
+    axis: bool = False
 
 
 def input_configure_for_label(config_id: AimScheme) -> str:
@@ -37,17 +55,10 @@ def input_scheme_label(scheme: MovementControlType) -> str:
     return labels.get(scheme, "Unknown")
 
 
-def controls_method_values(
-    controls: CrimsonControlsConfig,
-    *,
-    player_index: int,
-) -> tuple[AimScheme, MovementControlType]:
-    player = controls.player(player_index)
-    return player.aim_scheme, player.movement
-
-
 def controls_method_labels(controls: CrimsonControlsConfig, *, player_index: int) -> tuple[str, str]:
-    aim_scheme, move_mode = controls_method_values(controls, player_index=player_index)
+    player = controls.player(player_index)
+    aim_scheme = player.aim_scheme
+    move_mode = player.movement
     return input_configure_for_label(aim_scheme), input_scheme_label(move_mode)
 
 
@@ -65,57 +76,61 @@ def controls_aim_method_dropdown_ids(current_aim_scheme: AimScheme) -> tuple[Aim
     return tuple(ids)
 
 
-def controls_rebind_slot_plan(
+def controls_rebind_plan(
     *,
     aim_scheme: AimScheme,
     move_mode: MovementControlType,
     player_index: int,
-) -> tuple[tuple[tuple[str, int], ...], tuple[tuple[str, int], ...], tuple[tuple[str, int], ...]]:
+) -> tuple[
+    tuple[RebindRowSpec, ...],
+    tuple[RebindRowSpec, ...],
+    tuple[RebindRowSpec, ...],
+]:
     """Return (aim_rows, move_rows, misc_rows) for `controls_menu_update`."""
 
-    aim_rows: list[tuple[str, int]] = []
-    move_rows: list[tuple[str, int]] = []
-    misc_rows: list[tuple[str, int]] = []
+    aim_rows: list[RebindRowSpec] = []
+    move_rows: list[RebindRowSpec] = []
+    misc_rows: list[RebindRowSpec] = []
 
     if aim_scheme is AimScheme.KEYBOARD:
-        aim_rows.append(("Torso left:", 7))
-        aim_rows.append(("Torso right:", 8))
+        aim_rows.append(RebindRowSpec("Torso left:", RebindTarget.PLAYER_KEYBOARD_AIM_CODES, 0))
+        aim_rows.append(RebindRowSpec("Torso right:", RebindTarget.PLAYER_KEYBOARD_AIM_CODES, 1))
     elif aim_scheme is AimScheme.DUAL_ACTION_PAD:
-        aim_rows.append(("Aim Up/Down Axis:", 9))
-        aim_rows.append(("Aim Left/Right Axis:", 10))
-    aim_rows.append(("Fire:", 4))
+        aim_rows.append(RebindRowSpec("Aim Up/Down Axis:", RebindTarget.PLAYER_AIM_AXIS_CODES, 0, axis=True))
+        aim_rows.append(RebindRowSpec("Aim Left/Right Axis:", RebindTarget.PLAYER_AIM_AXIS_CODES, 1, axis=True))
+    aim_rows.append(RebindRowSpec("Fire:", RebindTarget.PLAYER_FIRE_CODE))
 
     if move_mode is MovementControlType.STATIC:
         move_rows.extend(
             (
-                ("Move Up:", 0),
-                ("Move Down:", 1),
-                ("Move Left:", 2),
-                ("Move Right:", 3),
+                RebindRowSpec("Move Up:", RebindTarget.PLAYER_MOVE_CODES, 0),
+                RebindRowSpec("Move Down:", RebindTarget.PLAYER_MOVE_CODES, 1),
+                RebindRowSpec("Move Left:", RebindTarget.PLAYER_MOVE_CODES, 2),
+                RebindRowSpec("Move Right:", RebindTarget.PLAYER_MOVE_CODES, 3),
             ),
         )
     elif move_mode is MovementControlType.RELATIVE:
         move_rows.extend(
             (
-                ("Forward:", 0),
-                ("Backwards:", 1),
-                ("Turn left:", 2),
-                ("Turn right:", 3),
+                RebindRowSpec("Forward:", RebindTarget.PLAYER_MOVE_CODES, 0),
+                RebindRowSpec("Backwards:", RebindTarget.PLAYER_MOVE_CODES, 1),
+                RebindRowSpec("Turn left:", RebindTarget.PLAYER_MOVE_CODES, 2),
+                RebindRowSpec("Turn right:", RebindTarget.PLAYER_MOVE_CODES, 3),
             ),
         )
     elif move_mode is MovementControlType.DUAL_ACTION_PAD:
         move_rows.extend(
             (
-                ("Up/Down Axis:", 11),
-                ("Left/Right Axis:", 12),
+                RebindRowSpec("Up/Down Axis:", RebindTarget.PLAYER_MOVE_AXIS_CODES, 0, axis=True),
+                RebindRowSpec("Left/Right Axis:", RebindTarget.PLAYER_MOVE_AXIS_CODES, 1, axis=True),
             ),
         )
     elif move_mode is MovementControlType.MOUSE_POINT_CLICK:
-        move_rows.append(("Move to cursor:", RELOAD_BIND_SLOT))
+        move_rows.append(RebindRowSpec("Move to cursor:", RebindTarget.GLOBAL_RELOAD_CODE))
 
     if int(player_index) == 0:
-        misc_rows.append(("Level Up:", PICK_PERK_BIND_SLOT))
+        misc_rows.append(RebindRowSpec("Level Up:", RebindTarget.GLOBAL_PICK_PERK_CODE))
         if move_mode is not MovementControlType.MOUSE_POINT_CLICK:
-            misc_rows.append(("Reload:", RELOAD_BIND_SLOT))
+            misc_rows.append(RebindRowSpec("Reload:", RebindTarget.GLOBAL_RELOAD_CODE))
 
     return tuple(aim_rows), tuple(move_rows), tuple(misc_rows)
