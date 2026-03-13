@@ -583,7 +583,7 @@ LAB_0042733a:
             }
           }
           else {
-            if (config_fx_toggle == '\0') {
+            if (config_violence_disabled == '\0') {
               if ((((&creature_pool)[creature_idx].flags & 4U) == 0) ||
                  (((&creature_pool)[creature_idx].flags & 0x40U) != 0)) {
                 local_8 = (&creature_pool)[creature_idx].size * 0.5;
@@ -612,7 +612,7 @@ LAB_0042733a:
             }
             creature_kill_count = creature_kill_count + 1;
             /* Spawner-class deaths burst extra blood and can be culled immediately. */
-            if ((config_fx_toggle == '\0') && (((&creature_pool)[creature_idx].flags & 4) != 0)) {
+            if ((config_violence_disabled == '\0') && (((&creature_pool)[creature_idx].flags & 4) != 0)) {
               iVar7 = 8;
               do {
                 fVar17 = 0.0;

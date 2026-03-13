@@ -79,9 +79,9 @@ CRIMSON_CFG_STRUCT = Struct(
     "aim_schemes_reserved" / Bytes(0x18),
     "unknown_6c" / Int32sl,
     "texture_scale" / Float32l,
-    "name_tag" / Bytes(12),
-    "selected_name_slot" / Int32sl,
-    "saved_name_index" / Int32sl,
+    "player_name_buf" / Bytes(12),
+    "selected_saved_name_slot" / Int32sl,
+    "saved_name_count" / Int32sl,
     "saved_name_order" / Array(SAVED_NAME_SLOT_COUNT, Int32sl),
     "saved_names" / Bytes(SAVED_NAMES_BLOB_SIZE),
     "player_name" / Bytes(PLAYER_NAME_SIZE),
@@ -116,9 +116,9 @@ CRIMSON_CFG_STRUCT = Struct(
     "unknown_461" / Bytes(3),
     "sfx_volume" / Float32l,
     "music_volume" / Float32l,
-    "gore_disabled" / Byte,
+    "violence_disabled" / Byte,
     "score_load_gate" / Byte,
-    "unknown_46e" / Byte,
+    "safe_mode_backend_enabled" / Byte,
     "unknown_46f" / Byte,
     "detail_preset" / Int32sl,
     "mouse_sensitivity" / Float32l,
@@ -230,7 +230,7 @@ class CrimsonDisplayConfig(msgspec.Struct):
     mouse_sensitivity: float
     detail_preset: int
     fx_detail: tuple[bool, bool, bool]
-    gore_disabled: int
+    violence_disabled: int
 
     def fx_detail_enabled(self, level: int, default: bool = False) -> bool:
         _ = default
@@ -514,7 +514,7 @@ def default_crimson_cfg(path: Path = Path("<memory>")) -> CrimsonConfig:
             mouse_sensitivity=0.5,
             detail_preset=5,
             fx_detail=(True, True, True),
-            gore_disabled=0,
+            violence_disabled=0,
         ),
         audio=CrimsonAudioConfig(
             sound_disabled=False,
@@ -581,7 +581,7 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
             mouse_sensitivity=float(raw["mouse_sensitivity"]),
             detail_preset=detail_preset,
             fx_detail=fx_detail,
-            gore_disabled=int(raw["gore_disabled"]),
+            violence_disabled=int(raw["violence_disabled"]),
         ),
         audio=CrimsonAudioConfig(
             sound_disabled=bool(raw["sound_disable"]),
@@ -605,16 +605,16 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
                 field="player_name_len",
             ),
             saved_name_count=_require_range(
-                int(raw["saved_name_index"]),
+                int(raw["saved_name_count"]),
                 minimum=1,
                 maximum=SAVED_NAME_SLOT_COUNT,
-                field="saved_name_index",
+                field="saved_name_count",
             ),
             selected_saved_name_slot=_require_range(
-                int(raw["selected_name_slot"]),
+                int(raw["selected_saved_name_slot"]),
                 minimum=0,
                 maximum=SAVED_NAME_SLOT_COUNT - 1,
-                field="selected_name_slot",
+                field="selected_saved_name_slot",
             ),
             saved_names=_decode_saved_names(raw["saved_names"]),
             show_internet_scores=bool(raw["score_load_gate"]),
@@ -656,17 +656,17 @@ def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
         data[f"player_mode_flag_p{idx + 1}"] = int(player.movement)
         data[f"aim_scheme_p{idx + 1}"] = int(player.aim_scheme)
     data["texture_scale"] = float(config.display.texture_scale)
-    data["selected_name_slot"] = _require_range(
+    data["selected_saved_name_slot"] = _require_range(
         int(config.profile.selected_saved_name_slot),
         minimum=0,
         maximum=SAVED_NAME_SLOT_COUNT - 1,
-        field="selected_name_slot",
+        field="selected_saved_name_slot",
     )
-    data["saved_name_index"] = _require_range(
+    data["saved_name_count"] = _require_range(
         int(config.profile.saved_name_count),
         minimum=1,
         maximum=SAVED_NAME_SLOT_COUNT,
-        field="saved_name_index",
+        field="saved_name_count",
     )
     data["saved_name_order"] = list(_saved_name_order_values())
     data["saved_names"] = _encode_saved_names_blob(config.profile.saved_names)
@@ -694,7 +694,7 @@ def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
     data["sound_freq_adjustment_enabled"] = 1
     data["sfx_volume"] = float(config.audio.sfx_volume)
     data["music_volume"] = float(config.audio.music_volume)
-    data["gore_disabled"] = int(config.display.gore_disabled)
+    data["violence_disabled"] = int(config.display.violence_disabled)
     data["score_load_gate"] = 1 if config.profile.show_internet_scores else 0
     data["detail_preset"] = _require_range(
         int(config.display.detail_preset),

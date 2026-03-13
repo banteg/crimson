@@ -108,7 +108,7 @@ def test_plan_world_presentation_step_orders_sfx() -> None:
         perk_progression_enabled=True,
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
         game_tune_started=False,
     )
 
@@ -139,7 +139,7 @@ def test_queue_projectile_decals_consumes_rand() -> None:
         hits=_hits(1),
         rng=rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     assert_rng_progression(
@@ -168,7 +168,7 @@ def test_queue_projectile_decals_native_default_draw_count() -> None:
         hits=_hits(1),
         rng=rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     # Native `projectile_update` default creature-hit path consumes:
@@ -213,9 +213,9 @@ def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(moc
         age: float,
         rng,
         detail_preset: int,
-        gore_disabled: int,
+        violence_disabled: int,
     ) -> None:
-        _ = pos, age, rng, detail_preset, gore_disabled
+        _ = pos, age, rng, detail_preset, violence_disabled
         splatter_angles.append(float(angle))
 
     mocker.patch.object(
@@ -231,7 +231,7 @@ def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(moc
         hits=_hits(1, type_id=ProjectileTemplateId.BLADE_GUN),
         rng=rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     assert len(splatter_angles) >= 8
@@ -258,7 +258,7 @@ def test_queue_projectile_decals_bloody_mess_tags_exact_pre_hit_callers() -> Non
         hits=_hits(1),
         rng=rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     assert [
@@ -293,7 +293,7 @@ def test_queue_projectile_decals_default_tags_exact_reverse_splatter_gate() -> N
         hits=_hits(1),
         rng=rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     assert [
@@ -327,7 +327,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(m
         hits=_hits(1, type_id=ProjectileTemplateId.FIRE_BULLETS),
         rng=rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     assert spawn_freeze_shard.call_count == 6
@@ -362,7 +362,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_tags_exact_streak_callers(m
         hits=_hits(1, type_id=ProjectileTemplateId.FIRE_BULLETS),
         rng=rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     assert spawn_freeze_shard.call_count == 6
@@ -388,7 +388,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_tags_exact_streak_callers(m
     ] * 6
 
 
-def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_gore_disabled_set(mocker) -> None:
+def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_violence_disabled_set(mocker) -> None:
     state = GameplayState()
     state.bonuses.freeze = 1.0
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
@@ -409,7 +409,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_gore_disabl
         hits=_hits(1, type_id=ProjectileTemplateId.FIRE_BULLETS),
         rng=rng,
         detail_preset=5,
-        gore_disabled=1,
+        violence_disabled=1,
     )
 
     assert spawn_freeze_shard.call_count == 6
@@ -439,7 +439,7 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
         hits=_hits(1),
         rng=rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     assert_rng_progression(
@@ -474,7 +474,7 @@ def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
         perk_progression_enabled=True,
         rng=rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
         game_tune_started=False,
         trigger_game_tune=True,
         hit_sfx=[SfxId.BULLET_HIT_01],

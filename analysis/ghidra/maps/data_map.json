@@ -1531,8 +1531,8 @@
     },
     {
       "address": "0x0048034c",
-      "comment": "Config: per-player HUD indicator toggle (u8[2], gates extra indicator pass).",
-      "name": "config_hud_indicator_toggle",
+      "comment": "Config: per-player direction-arrow flags (u8[2], gates the world-arrow pass).",
+      "name": "config_direction_arrow_flags",
       "program": "crimsonland.exe"
     },
     {
@@ -1593,19 +1593,19 @@
     {
       "address": "0x004803c8",
       "comment": "Config: selected saved-name slot (0..7).",
-      "name": "config_name_slot_selected",
+      "name": "config_selected_saved_name_slot",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004803cc",
       "comment": "Config: saved-name count / insert index.",
-      "name": "config_name_slot_count",
+      "name": "config_saved_name_count",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004803d0",
       "comment": "Config: saved-name order table (u32[8]).",
-      "name": "config_name_slot_order",
+      "name": "config_saved_name_order",
       "program": "crimsonland.exe"
     },
     {
@@ -1916,14 +1916,20 @@
     },
     {
       "address": "0x004807b4",
-      "comment": "Config: FX toggle (gore/particle path).",
-      "name": "config_fx_toggle",
+      "comment": "Config: violence-disabled flag (gates blood/particle paths and alternate perk text).",
+      "name": "config_violence_disabled",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004807b5",
       "comment": "Config: score-load gating flag (used with config_highscore_date_mode).",
       "name": "config_score_load_gate",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004807b6",
+      "comment": "Config: safe-mode backend flag mirrored to Grim config var id 0x54.",
+      "name": "config_safe_mode_backend_enabled",
       "program": "crimsonland.exe"
     },
     {
@@ -7302,7 +7308,7 @@
     },
     {
       "address": "0x004c3644",
-      "comment": "Wrapped perk name string for \"Quick Learner\" (alternate for perk slot 1 when config_fx_toggle != 0).",
+      "comment": "Wrapped perk name string for \"Quick Learner\" (alternate for perk slot 1 when config_violence_disabled != 0).",
       "name": "perk_slot_1_name_wrapped_alternate",
       "program": "crimsonland.exe",
       "type": "char *"

@@ -134,7 +134,7 @@ def queue_projectile_decals(
     hits: list[ProjectileHit],
     rng: CrandLike,
     detail_preset: int,
-    gore_disabled: int,
+    violence_disabled: int,
 ) -> None:
     for hit in hits:
         post_ctx = queue_projectile_decals_pre_hit(
@@ -144,7 +144,7 @@ def queue_projectile_decals(
             hit=hit,
             rng=rng,
             detail_preset=detail_preset,
-            gore_disabled=gore_disabled,
+            violence_disabled=violence_disabled,
         )
         queue_projectile_decals_post_hit(
             fx_queue=fx_queue,
@@ -161,7 +161,7 @@ def queue_projectile_decals_pre_hit(
     hit: ProjectileHit,
     rng: CrandLike,
     detail_preset: int,
-    gore_disabled: int,
+    violence_disabled: int,
 ) -> ProjectileDecalPostCtx:
     freeze_active = freeze_bonus_active(state=state)
     bloody = bool(players) and perk_active(players[0], PerkId.BLOODY_MESS_QUICK_LEARNER)
@@ -191,7 +191,7 @@ def queue_projectile_decals_pre_hit(
                 age=0.0,
                 rng=rng,
                 detail_preset=detail_preset,
-                gore_disabled=gore_disabled,
+                violence_disabled=violence_disabled,
             )
 
     # Native `projectile_update` spawns blood splatter before terrain decals.
@@ -206,7 +206,7 @@ def queue_projectile_decals_pre_hit(
                 age=0.0,
                 rng=rng,
                 detail_preset=detail_preset,
-                gore_disabled=gore_disabled,
+                violence_disabled=violence_disabled,
             )
         state.effects.spawn_blood_splatter(
             pos=hit.hit,
@@ -214,7 +214,7 @@ def queue_projectile_decals_pre_hit(
             age=0.0,
             rng=rng,
             detail_preset=detail_preset,
-            gore_disabled=gore_disabled,
+            violence_disabled=violence_disabled,
         )
 
         lo = -30
@@ -247,7 +247,7 @@ def queue_projectile_decals_pre_hit(
                 age=0.0,
                 rng=rng,
                 detail_preset=detail_preset,
-                gore_disabled=gore_disabled,
+                violence_disabled=violence_disabled,
             )
             if (rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_REVERSE_SPLATTER_GATE) & 7) == 2:
                 state.effects.spawn_blood_splatter(
@@ -256,7 +256,7 @@ def queue_projectile_decals_pre_hit(
                     age=0.0,
                     rng=rng,
                     detail_preset=detail_preset,
-                    gore_disabled=gore_disabled,
+                    violence_disabled=violence_disabled,
                 )
 
     return ProjectileDecalPostCtx(
@@ -327,7 +327,7 @@ def plan_world_presentation_step(
     perk_progression_enabled: bool,
     rng: CrandLike,
     detail_preset: int,
-    gore_disabled: int,
+    violence_disabled: int,
     game_tune_started: bool,
     trigger_game_tune: bool | None = None,
     hit_sfx: Sequence[SfxId] | None = None,
@@ -344,7 +344,7 @@ def plan_world_presentation_step(
                 hits=hits,
                 rng=rng,
                 detail_preset=int(detail_preset),
-                gore_disabled=int(gore_disabled),
+                violence_disabled=int(violence_disabled),
             )
             if freeze_bonus_active(state=state):
                 if (not bool(demo_mode_active)) and game_mode != GameMode.RUSH and (not bool(game_tune_started)):

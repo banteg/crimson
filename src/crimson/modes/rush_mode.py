@@ -73,7 +73,7 @@ class RushMode(BaseGameplayMode):
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             detail_preset=5,
-            gore_disabled=0,
+            violence_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             finalize_post_render_lifecycle=True,
         )
@@ -143,7 +143,7 @@ class RushMode(BaseGameplayMode):
                     hardcore=bool(self.hardcore),
                     preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=int(self._deterministic_detail_preset()),
-                    gore_disabled=int(self._deterministic_gore_disabled()),
+                    violence_disabled=int(self._deterministic_violence_disabled()),
                     world_size=float(self.world_size),
                     player_count=len(self.sim_world.players),
                     status=status_snapshot,
@@ -220,7 +220,7 @@ class RushMode(BaseGameplayMode):
     ) -> bool:
         _ = role, dt_ui_ms, dt_tick
         session.detail_preset = int(self._deterministic_detail_preset())
-        session.gore_disabled = int(self._deterministic_gore_disabled())
+        session.violence_disabled = int(self._deterministic_violence_disabled())
         return True
 
     def _lan_on_tick_applied(

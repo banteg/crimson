@@ -52,8 +52,8 @@ def _apply_config_updates(cfg: "CrimsonConfig", updates: Mapping[str, object]) -
                 cfg.display.texture_scale = _as_float(value)
             case "detail_preset":
                 cfg.display.detail_preset = _as_int(value)
-            case "gore_disabled":
-                cfg.display.gore_disabled = _as_int(value)
+            case "violence_disabled":
+                cfg.display.violence_disabled = _as_int(value)
             case "mouse_sensitivity":
                 cfg.display.mouse_sensitivity = _as_float(value)
             case "sound_disable":
@@ -70,9 +70,9 @@ def _apply_config_updates(cfg: "CrimsonConfig", updates: Mapping[str, object]) -
                 cfg.controls.reload_key = _as_int(value)
             case "player_name":
                 cfg.profile.set_player_name_input(str(value))
-            case "selected_name_slot":
+            case "selected_saved_name_slot":
                 cfg.profile.selected_saved_name_slot = _as_int(value)
-            case "saved_name_index":
+            case "saved_name_count":
                 cfg.profile.saved_name_count = _as_int(value)
             case "score_load_gate":
                 cfg.profile.show_internet_scores = bool(value)

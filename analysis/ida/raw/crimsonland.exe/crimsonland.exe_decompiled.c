@@ -1468,10 +1468,10 @@ int config_init_defaults()
   HIWORD(config_blob) = 0;
   memset(config_player_name, 0, sizeof(config_player_name));
   strcpy(config_player_name, default_player_name);
-  config_name_slot_count = 1;
-  config_name_slot_selected = 0;
+  config_saved_name_count = 1;
+  config_selected_saved_name_slot = 0;
   LOWORD(config_blob) = 0;
-  config_fx_toggle = 0;
+  config_violence_disabled = 0;
   byte_4807A8 = 1;
   dword_4804F0 = 0;
   dword_4804F4 = 0;
@@ -1528,7 +1528,7 @@ int config_init_defaults()
   config_p2_padding_0 = 382;
   config_p2_padding_1 = 382;
   config_p2_padding_2 = 382;
-  config_hud_indicator_toggle = 257;
+  config_direction_arrow_flags = 257;
   return 382;
 }
 
@@ -7026,7 +7026,7 @@ void ui_render_aim_indicators()
     v9 = 0;
     for ( render_overlay_player_index = 0; v9 < v0; render_overlay_player_index = v9 )
     {
-      if ( *(float *)&player_health[216 * v9] > 0.0 && *((_BYTE *)&config_hud_indicator_toggle + v9) )
+      if ( *(float *)&player_health[216 * v9] > 0.0 && *((_BYTE *)&config_direction_arrow_flags + v9) )
       {
         (*(void (__thiscall **)(void *, int))(*(_DWORD *)grim_interface_ptr + 252))(
           grim_interface_ptr,
@@ -19278,7 +19278,7 @@ LABEL_90:
   while ( (int)v18 < (int)flt_4AA3CC );
 LABEL_91:
   (*(void (__thiscall **)(void *))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
-  if ( config_fx_toggle )
+  if ( config_violence_disabled )
   {
     (*(void (__thiscall **)(void *, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
       grim_interface_ptr,
@@ -23189,7 +23189,7 @@ int config_sync_from_grim()
       {
         crt_fseek(v5, 0, 0);
         crt_fread(Buffer, 0x480u, 1u, v5);
-        config_fx_toggle = v71;
+        config_violence_disabled = v71;
         strcpy((char *)&config_player_name_buf, (const char *)v25);
       }
       crt_fclose(v5);
@@ -23225,7 +23225,7 @@ void config_ensure_file()
   }
   else
   {
-    config_fx_toggle = 1;
+    config_violence_disabled = 1;
     v2 = game_build_path(config_filename);
     v3 = crt_fopen(v2, file_mode_write_binary);
     v4 = v3;
@@ -23391,7 +23391,7 @@ uint config_load_presets()
       qmemcpy(v6, v7, v8 & 3);
       player_name_length = config_player_name_length;
       BYTE2(config_blob) = 0;
-      config_name_slot_selected = 0;
+      config_selected_saved_name_slot = 0;
     }
     else
     {
@@ -25123,7 +25123,7 @@ LABEL_126:
             effect_template_age = 0;
             effect_template_half_width = 1082130432;
             effect_template_half_height = 1082130432;
-            if ( !config_fx_toggle )
+            if ( !config_violence_disabled )
             {
               if ( perk_count_get(perk_id_bloody_mess_quick_learner) )
               {
@@ -31295,7 +31295,7 @@ LABEL_157:
             __asm { fnstsw  ax }
             if ( (_AX & 0x4100) != 0 )
             {
-              if ( config_fx_toggle )
+              if ( config_violence_disabled )
                 goto LABEL_175;
               v153 = creature_flags[2 * _ESI];
               if ( (v153 & 4) == 0 || (v153 & 0x40) != 0 )
@@ -31353,7 +31353,7 @@ LABEL_157:
               {
 LABEL_175:
                 ++creature_kill_count;
-                if ( !config_fx_toggle && (creature_flags[2 * _ESI] & 4) != 0 )
+                if ( !config_violence_disabled && (creature_flags[2 * _ESI] & 4) != 0 )
                 {
                   v156 = 8;
                   do
@@ -31485,7 +31485,7 @@ void fx_queue_add_random(float *pos)
   float rotation; // [esp+4h] [ebp-Ch]
   float v5[2]; // [esp+8h] [ebp-8h] BYREF
 
-  if ( !config_fx_toggle )
+  if ( !config_violence_disabled )
   {
     if ( (fx_queue_random_init_flags & 1) == 0 )
     {
@@ -35230,7 +35230,7 @@ void __noreturn highscore_sync_worker(void *arg)
   v1[1] = 72;
   v1[2] = -13;
   v1[3] = -123;
-  if ( config_name_slot_selected )
+  if ( config_selected_saved_name_slot )
     v1[4] = 1;
   else
     v1[4] = 0;
@@ -35244,7 +35244,7 @@ void __noreturn highscore_sync_worker(void *arg)
   v1[7] = quest_stage_major;
   v1[8] = quest_stage_minor;
   v1[9] = config_player_count;
-  strcpy((char *)v1 + 10, &config_saved_name_0[27 * config_name_slot_selected]);
+  strcpy((char *)v1 + 10, &config_saved_name_0[27 * config_selected_saved_name_slot]);
   memset(record, 0, sizeof(record));
   v2 = strlen((const char *)v1 + 10) + 11;
   strcpy((char *)record, default_player_name);
@@ -36186,7 +36186,7 @@ void effect_spawn_blood_splatter(float *pos, float angle, float age)
   float v7; // [esp+4h] [ebp-14h]
   float anglea; // [esp+20h] [ebp+8h]
 
-  if ( !config_fx_toggle )
+  if ( !config_violence_disabled )
   {
     *(float *)&effect_template_lifetime = 0.25 - age;
     v3 = angle + 3.1415927;
@@ -36815,7 +36815,7 @@ void perks_init_database()
   dword_4C3644 = (int)wrap_text_to_width_alloc(aQuickLearner, 256);
   v0 = wrap_text_to_width_alloc(aYouLearnThings, 256);
   dword_4C364C = (int)v0;
-  if ( config_fx_toggle )
+  if ( config_violence_disabled )
   {
     v1 = 5 * perk_id_bloody_mess_quick_learner;
     *(int *)((char *)&perk_meta_table + v1 * 4) = dword_4C3644;
@@ -43510,7 +43510,7 @@ LABEL_31:
     {
       crt_qsort(&highscore_table, 0x64u, 0x48u, highscore_compare_survival_score_desc);
     }
-    if ( config_name_slot_selected )
+    if ( config_selected_saved_name_slot )
     {
       if ( highscore_table_count > 0 )
       {
@@ -43729,9 +43729,9 @@ char *highscore_build_path()
     *(&byte_4C36DC + v0) = 105;
     byte_4C36DD[v0] = 0;
   }
-  if ( config_name_slot_selected )
+  if ( config_selected_saved_name_slot )
   {
-    crt_sprintf(byte_4C365C, "%s%s", &byte_4C36DC, &config_saved_name_0[27 * config_name_slot_selected]);
+    crt_sprintf(byte_4C365C, "%s%s", &byte_4C36DC, &config_saved_name_0[27 * config_selected_saved_name_slot]);
     console_printf(&console_log_queue, "Opening named cache '%s'\n", byte_4C365C);
     return byte_4C365C;
   }
@@ -50360,13 +50360,13 @@ int ui_profile_menu_update(float *arg1, char arg2)
     profile_name_input_state_width_px = 96;
     crt_atexit(nullsub_70);
   }
-  v2 = config_name_slot_count;
+  v2 = config_saved_name_count;
   v8 = 0;
-  if ( config_name_slot_count > 0 )
+  if ( config_saved_name_count > 0 )
   {
     v3 = dword_4CCB5C;
     v4 = config_saved_name_0;
-    v8 = config_name_slot_count;
+    v8 = config_saved_name_count;
     do
     {
       *v3 = (int)v4;
@@ -50415,12 +50415,12 @@ int ui_profile_menu_update(float *arg1, char arg2)
     if ( (unsigned __int8)ui_text_input_update(&xy, &profile_name_input_state)
       || (xy = *arg1 + 180.0, v10 = arg1[1] + 22.0, (unsigned __int8)ui_button_update(&xy, &dword_4CCC90)) )
     {
-      strcpy(&config_saved_name_0[27 * config_name_slot_count], &byte_4CCB18);
-      config_name_slot_selected = config_name_slot_count++;
-      if ( config_name_slot_count >= 8 )
+      strcpy(&config_saved_name_0[27 * config_saved_name_count], &byte_4CCB18);
+      config_selected_saved_name_slot = config_saved_name_count++;
+      if ( config_saved_name_count >= 8 )
       {
         strcpy(config_saved_name_1, &byte_4CCB18);
-        --config_name_slot_count;
+        --config_saved_name_count;
       }
       byte_4CCB18 = 0;
       profile_name_input_state_cursor = 0;
@@ -50430,15 +50430,15 @@ int ui_profile_menu_update(float *arg1, char arg2)
   }
   else if ( !dword_4D121C )
   {
-    if ( config_name_slot_selected )
+    if ( config_selected_saved_name_slot )
     {
       xy = *arg1;
       v10 = arg1[1] + 22.0;
       if ( (unsigned __int8)ui_button_update(&xy, &dword_4CCB00) )
       {
-        --config_name_slot_count;
-        strcpy(&config_saved_name_0[27 * config_name_slot_selected], &config_saved_name_0[27 * config_name_slot_count]);
-        config_name_slot_selected = 0;
+        --config_saved_name_count;
+        strcpy(&config_saved_name_0[27 * config_selected_saved_name_slot], &config_saved_name_0[27 * config_saved_name_count]);
+        config_selected_saved_name_slot = 0;
 LABEL_20:
         j_highscore_load_table();
       }
@@ -50459,7 +50459,7 @@ LABEL_20:
   dword_4D0EF4 = (int)dword_4CCB5C;
   dword_4D0EF8 = v8 + 1;
   LOBYTE(profile_name_slot_list) = arg2;
-  dword_4D0EF0 = config_name_slot_selected;
+  dword_4D0EF0 = config_selected_saved_name_slot;
   v5 = ui_list_widget_update(arg1, &profile_name_slot_list);
   if ( v5 > -2
     && ((unsigned __int8)input_primary_just_pressed()
@@ -50470,7 +50470,7 @@ LABEL_20:
     if ( v5 >= 0 )
     {
       dword_4D0EF0 = v5;
-      config_name_slot_selected = v5;
+      config_selected_saved_name_slot = v5;
       if ( v5 != v8 )
       {
         j_highscore_load_table();
@@ -53133,7 +53133,7 @@ void options_menu_update()
   *(float *)&arg1 = v16 + 10.0;
   v19 = v17 + 155.0;
   ui_button_update((float *)&arg1, &dword_4D7988);
-  if ( config_fx_toggle )
+  if ( config_violence_disabled )
   {
     v3 = dword_4C364C;
     v4 = 5 * perk_id_bloody_mess_quick_learner;
@@ -54103,14 +54103,14 @@ void controls_menu_update()
     dword_4D77F4 = 0;
     crt_atexit(nullsub_90);
   }
-  v3 = *((_BYTE *)&config_hud_indicator_toggle + controls_rebind_player_index);
+  v3 = *((_BYTE *)&config_direction_arrow_flags + controls_rebind_player_index);
   dword_4D77F4 = (int)aShowDirectionA;
   v105 = v105 + 4.0;
   LOBYTE(controls_direction_arrow_checkbox) = v3;
   ui_checkbox_update(&xy, &controls_direction_arrow_checkbox);
   v4 = flt_48EE8C + *(float *)&dword_48EE68;
   v109 = *(float *)&dword_48EE6C + flt_48EE90;
-  *((_BYTE *)&config_hud_indicator_toggle + controls_rebind_player_index) = controls_direction_arrow_checkbox;
+  *((_BYTE *)&config_direction_arrow_flags + controls_rebind_player_index) = controls_direction_arrow_checkbox;
   v5 = &player_move_key_backward;
   arg1 = v4 + 50.0;
   *(float *)&v103 = v109 + 40.0;

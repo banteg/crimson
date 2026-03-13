@@ -574,7 +574,7 @@ LAB_0042733a:
             }
           }
           else {
-            if (config_fx_toggle == '\0') {
+            if (config_violence_disabled == '\0') {
               if ((((&creature_pool)[local_7c].flags & 4U) == 0) ||
                  (((&creature_pool)[local_7c].flags & 0x40U) != 0)) {
                 local_8 = (&creature_pool)[local_7c].size * 0.5;
@@ -602,7 +602,7 @@ LAB_0042733a:
               }
             }
             creature_kill_count = creature_kill_count + 1;
-            if ((config_fx_toggle == '\0') && (((&creature_pool)[local_7c].flags & 4) != 0)) {
+            if ((config_violence_disabled == '\0') && (((&creature_pool)[local_7c].flags & 4) != 0)) {
               iVar6 = 8;
               do {
                 fVar16 = 0.0;

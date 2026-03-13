@@ -265,10 +265,10 @@ class WorldRuntimeHost:
         self.terrain_runtime.process_pending()
 
         detail_preset = 5
-        gore_disabled = 0
+        violence_disabled = 0
         if self.config is not None:
             detail_preset = int(self.config.display.detail_preset)
-            gore_disabled = int(self.config.display.gore_disabled)
+            violence_disabled = int(self.config.display.violence_disabled)
 
         session = DeterministicSession(
             world=self.sim_world.world_state,
@@ -277,7 +277,7 @@ class WorldRuntimeHost:
             game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=perk_progression_enabled,
             detail_preset=detail_preset,
-            gore_disabled=gore_disabled,
+            violence_disabled=violence_disabled,
             game_tune_started=self.sim_world.game_tune_started,
             demo_mode_active=self.demo_mode_active,
             defer_camera_shake_update=defer_camera_shake_update,

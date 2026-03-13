@@ -67,10 +67,10 @@ class QuestResultsView:
                 perk_id = PerkId(perk_id_native)
                 perk_entry = PERK_BY_ID.get(perk_id)
                 if perk_entry is not None and perk_entry.name:
-                    gore_disabled = self.state.config.display.gore_disabled
+                    violence_disabled = self.state.config.display.violence_disabled
                     self._unlock_perk_name = perk_display_name(
                         perk_id,
-                        gore_disabled=gore_disabled,
+                        violence_disabled=violence_disabled,
                         preserve_bugs=bool(self.state.preserve_bugs),
                     )
                 else:

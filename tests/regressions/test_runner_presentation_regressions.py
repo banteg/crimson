@@ -27,7 +27,7 @@ def _build_runner(
         damage_scale_by_type=world.sim_world.damage_scale_by_type,
         game_mode=GameMode.SURVIVAL,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
         game_tune_started=bool(world.sim_world.game_tune_started),
         demo_mode_active=False,
         perk_progression_enabled=False,

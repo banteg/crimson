@@ -28,7 +28,7 @@ def replay_header_from_session_settings(
     quest_fail_retry_count: int = 0,
     hardcore: bool = False,
     detail_preset: int = 5,
-    gore_disabled: int = 0,
+    violence_disabled: int = 0,
     world_size: float = 1024.0,
     status: ReplayStatusSnapshot | None = None,
 ) -> ReplayHeader:
@@ -52,7 +52,7 @@ def replay_header_from_session_settings(
         hardcore=hardcore,
         preserve_bugs=settings.preserve_bugs,
         detail_preset=detail_preset,
-        gore_disabled=gore_disabled,
+        violence_disabled=violence_disabled,
         world_size=world_size,
         player_count=settings.player_count,
         status=ReplayStatusSnapshot() if status is None else status,

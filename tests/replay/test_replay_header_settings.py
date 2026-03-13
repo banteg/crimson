@@ -27,7 +27,7 @@ def test_replay_header_from_session_settings_roundtrip() -> None:
         quest_fail_retry_count=2,
         hardcore=True,
         detail_preset=4,
-        gore_disabled=1,
+        violence_disabled=1,
         world_size=2048.0,
         status=status,
     )

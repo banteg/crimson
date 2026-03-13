@@ -1742,7 +1742,7 @@ int config_init_defaults(void)
   _DAT_00480798 = 1;
   _config_key_pick_perk = 0x101;
   _config_key_reload = 0x102;
-  DAT_004807b6 = 0;
+  config_safe_mode_backend_enabled = 0;
   _config_texture_scale = 0x3f800000;
   config_score_load_gate = 0;
   DAT_004803c4 = 0;
@@ -1808,11 +1808,11 @@ int config_init_defaults(void)
     pcVar6 = pcVar6 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _config_name_slot_count = 1;
-  _config_name_slot_selected = 0;
+  _config_saved_name_count = 1;
+  _config_selected_saved_name_slot = 0;
   config_blob = 0;
   config_music_disabled = 0;
-  config_fx_toggle = 0;
+  config_violence_disabled = 0;
   DAT_004807a8 = 1;
   _DAT_004804f0 = 0;
   _DAT_004804f4 = 0;
@@ -1869,7 +1869,7 @@ int config_init_defaults(void)
   _config_p2_padding_0 = 0x17e;
   _config_p2_padding_1 = 0x17e;
   _config_p2_padding_2 = 0x17e;
-  _config_hud_indicator_toggle = 0x101;
+  _config_direction_arrow_flags = 0x101;
   return 0x17e;
 }
 
@@ -6627,7 +6627,7 @@ void ui_render_aim_indicators(void)
     if (0 < iVar1) {
       do {
         if ((0.0 < *(float *)(&player_health + render_overlay_player_index * 0x360)) &&
-           ((&config_hud_indicator_toggle)[render_overlay_player_index] != '\0')) {
+           ((&config_direction_arrow_flags)[render_overlay_player_index] != '\0')) {
           (*grim_interface_ptr->vtable->grim_set_rotation)
                     (*(float *)(&player_heading + render_overlay_player_index * 0x360));
           (*grim_interface_ptr->vtable->grim_bind_texture)(world_arrow_marker_texture,0);
@@ -14427,7 +14427,7 @@ void __cdecl creature_render_type(int type_id)
     } while ((int)pfVar6 < 0x4aa360);
   }
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  if (config_fx_toggle != '\0') {
+  if (config_violence_disabled != '\0') {
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     pfVar6 = &creature_pool[0].hitbox_size;
@@ -17730,7 +17730,7 @@ int config_sync_from_grim(void)
   _config_texture_scale = *puVar3;
   puVar2 = (undefined1 *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_490,0x54);
   _config_player_name_length = player_name_length;
-  DAT_004807b6 = *puVar2;
+  config_safe_mode_backend_enabled = *puVar2;
   uVar7 = 0xffffffff;
   pcVar4 = &highscore_active_record;
   do {
@@ -17921,7 +17921,7 @@ int config_sync_from_grim(void)
           pcVar4 = pcVar11;
         } while (cVar1 != '\0');
         uVar7 = ~uVar7;
-        config_fx_toggle = uStack_14;
+        config_violence_disabled = uStack_14;
         pcVar4 = pcVar11 + -uVar7;
         pcVar11 = &config_player_name_buf;
         for (uVar8 = uVar7 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
@@ -17970,7 +17970,7 @@ void config_ensure_file(void)
     return;
   }
   pcVar3 = &file_mode_write_binary;
-  config_fx_toggle = 1;
+  config_violence_disabled = 1;
   pcVar1 = game_build_path(config_filename);
   pFVar2 = crt_fopen(pcVar1,pcVar3);
   if (pFVar2 != (FILE *)0x0) {
@@ -18063,7 +18063,7 @@ uint config_load_presets(void)
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x59,_config_texture_scale);
   if (cVar9 == '\0') {
     (*grim_interface_ptr->vtable->grim_set_config_var)
-              (0x54,CONCAT31((int3)((uint)uVar8 >> 8),DAT_004807b6));
+              (0x54,CONCAT31((int3)((uint)uVar8 >> 8),config_safe_mode_backend_enabled));
     (*grim_interface_ptr->vtable->grim_set_config_var)
               (8,CONCAT31((int3)((uint)in_stack_ffffffc0 >> 8),config_windowed));
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x2b,_config_display_bpp);
@@ -18097,7 +18097,7 @@ uint config_load_presets(void)
   }
   player_name_length = _config_player_name_length;
   config_highscore_date_mode = 0;
-  _config_name_slot_selected = 0;
+  _config_selected_saved_name_slot = 0;
   return CONCAT31((int3)(uVar3 >> 8),1);
 }
 
@@ -19377,7 +19377,7 @@ LAB_004219f8:
                   _effect_template_age = 0;
                   _effect_template_half_width = 0x40800000;
                   _effect_template_half_height = 0x40800000;
-                  if (config_fx_toggle == '\0') {
+                  if (config_violence_disabled == '\0') {
                     iVar12 = perk_count_get(perk_id_bloody_mess_quick_learner);
                     if (iVar12 == 0) {
                       if (bonus_freeze_timer <= 0.0) {
@@ -21961,7 +21961,7 @@ LAB_0042733a:
             }
           }
           else {
-            if (config_fx_toggle == '\0') {
+            if (config_violence_disabled == '\0') {
               if (((creature_pool[local_7c].flags & 4U) == 0) ||
                  ((creature_pool[local_7c].flags & 0x40U) != 0)) {
                 local_8 = creature_pool[local_7c].size * 0.5;
@@ -21989,7 +21989,7 @@ LAB_0042733a:
               }
             }
             creature_kill_count = creature_kill_count + 1;
-            if ((config_fx_toggle == '\0') && ((creature_pool[local_7c].flags & 4) != 0)) {
+            if ((config_violence_disabled == '\0') && ((creature_pool[local_7c].flags & 4) != 0)) {
               iVar6 = 8;
               do {
                 fVar16 = 0.0;
@@ -22047,7 +22047,7 @@ void __cdecl fx_queue_add_random(float *pos)
   float local_8;
   float local_4;
   
-  if (config_fx_toggle == '\0') {
+  if (config_violence_disabled == '\0') {
     if (((byte)fx_queue_random_init_flags & 1) == 0) {
       fx_queue_random_init_flags._0_1_ = (byte)fx_queue_random_init_flags | 1;
       _fx_queue_random_color_r = 0.9;
@@ -24748,7 +24748,7 @@ void highscore_sync_worker(void *arg)
   lpszBuffer[1] = 0x48;
   lpszBuffer[2] = 0xf3;
   lpszBuffer[3] = 0x85;
-  if (_config_name_slot_selected == 0) {
+  if (_config_selected_saved_name_slot == 0) {
     lpszBuffer[4] = 0;
   }
   else {
@@ -24769,7 +24769,7 @@ void highscore_sync_worker(void *arg)
   lpszBuffer[8] = (byte)quest_stage_minor;
   lpszBuffer[9] = config_player_count;
   uVar6 = 0xffffffff;
-  pcVar17 = &config_saved_name_0 + _config_name_slot_selected * 0x1b;
+  pcVar17 = &config_saved_name_0 + _config_selected_saved_name_slot * 0x1b;
   do {
     pcVar14 = pcVar17;
     if (uVar6 == 0) break;
@@ -25797,7 +25797,7 @@ void __cdecl effect_spawn_blood_splatter(float *pos,float angle,float age)
   float10 fVar4;
   float10 fVar5;
   
-  if (config_fx_toggle == '\0') {
+  if (config_violence_disabled == '\0') {
     _effect_template_lifetime = 0.25 - age;
     fVar3 = (float10)angle + (float10)3.1415927;
     _effect_template_color_r = 0x3f800000;
@@ -26673,7 +26673,7 @@ void __fastcall perks_init_database(void)
   this_04 = perk_slot_1_name_wrapped_primary;
   iVar1 = perk_id_bloody_mess_quick_learner;
   perk_slot_1_desc_wrapped_alternate = pcVar3;
-  if (config_fx_toggle == '\0') {
+  if (config_violence_disabled == '\0') {
     (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = perk_slot_1_name_wrapped_primary;
     (&perk_meta_table)[iVar1].description = pcVar2;
   }
@@ -33689,7 +33689,7 @@ LAB_0043b2ba:
       cmp = highscore_compare_survival_score_desc;
     }
     crt_qsort(&highscore_table,100,0x48,cmp);
-    if (_config_name_slot_selected == 0) {
+    if (_config_selected_saved_name_slot == 0) {
       local_4c = 0;
       if (0 < highscore_table_count) {
         local_50 = 0;
@@ -33924,7 +33924,7 @@ char * highscore_build_path(void)
       }
       goto LAB_0043b67f;
     }
-    puVar4 = &config_saved_name_0 + _config_name_slot_selected * 0x1b;
+    puVar4 = &config_saved_name_0 + _config_selected_saved_name_slot * 0x1b;
     pcVar3 = s_scores5_unknown_hi_00477bfc;
   }
   crt_sprintf(&highscore_path_buf,pcVar3,puVar4);
@@ -33946,9 +33946,9 @@ LAB_0043b67f:
     (&highscore_path_buf)[uVar2] = 0x69;
     (&DAT_004c36dd)[uVar2] = 0;
   }
-  if (_config_name_slot_selected != 0) {
+  if (_config_selected_saved_name_slot != 0) {
     crt_sprintf(&highscore_named_path_buf,&s_fmt_typo_target_name_2_parts,&highscore_path_buf,
-                &config_saved_name_0 + _config_name_slot_selected * 0x1b);
+                &config_saved_name_0 + _config_selected_saved_name_slot * 0x1b);
     console_printf(&console_log_queue,s_Opening_named_cache___s__00477bd8,&highscore_named_path_buf)
     ;
     return &highscore_named_path_buf;
@@ -34248,7 +34248,7 @@ LAB_0043b2ba:
       cmp = highscore_compare_survival_score_desc;
     }
     crt_qsort(&highscore_table,100,0x48,cmp);
-    if (_config_name_slot_selected == 0) {
+    if (_config_selected_saved_name_slot == 0) {
       iStack_4c = 0;
       if (0 < highscore_table_count) {
         iStack_50 = 0;
@@ -39295,11 +39295,11 @@ int __cdecl ui_profile_menu_update(float *arg1,char arg2)
     crt_atexit(&DAT_00444800);
   }
   local_c = 0;
-  if (0 < _config_name_slot_count) {
+  if (0 < _config_saved_name_count) {
     puVar5 = &DAT_004ccb5c;
     puVar2 = &config_saved_name_0;
-    local_c = _config_name_slot_count;
-    iVar8 = _config_name_slot_count;
+    local_c = _config_saved_name_count;
+    iVar8 = _config_saved_name_count;
     do {
       *puVar5 = puVar2;
       puVar2 = puVar2 + 0x1b;
@@ -39339,14 +39339,14 @@ int __cdecl ui_profile_menu_update(float *arg1,char arg2)
   _DAT_004ccb00 = s_Delete_00478c60;
   profile_name_input_state.width_px = 0xae;
   if (DAT_004d1220 == '\0') {
-    if ((DAT_004d121c != 0) || (_config_name_slot_selected == 0)) goto LAB_004446ac;
+    if ((DAT_004d121c != 0) || (_config_selected_saved_name_slot == 0)) goto LAB_004446ac;
     local_8 = *arg1;
     local_4 = arg1[1] + 22.0;
     iVar8 = ui_button_update(&local_8,(ui_button_t *)&DAT_004ccb00);
     if ((char)iVar8 == '\0') goto LAB_004446ac;
     uVar6 = 0xffffffff;
-    _config_name_slot_count = _config_name_slot_count + -1;
-    pcVar3 = &config_saved_name_0 + _config_name_slot_count * 0x1b;
+    _config_saved_name_count = _config_saved_name_count + -1;
+    pcVar3 = &config_saved_name_0 + _config_saved_name_count * 0x1b;
     do {
       pcVar9 = pcVar3;
       if (uVar6 == 0) break;
@@ -39357,7 +39357,7 @@ int __cdecl ui_profile_menu_update(float *arg1,char arg2)
     } while (cVar1 != '\0');
     uVar6 = ~uVar6;
     pcVar3 = pcVar9 + -uVar6;
-    pcVar9 = &config_saved_name_0 + _config_name_slot_selected * 0x1b;
+    pcVar9 = &config_saved_name_0 + _config_selected_saved_name_slot * 0x1b;
     for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
       *(undefined4 *)pcVar9 = *(undefined4 *)pcVar3;
       pcVar3 = pcVar3 + 4;
@@ -39368,7 +39368,7 @@ int __cdecl ui_profile_menu_update(float *arg1,char arg2)
       pcVar3 = pcVar3 + 1;
       pcVar9 = pcVar9 + 1;
     }
-    _config_name_slot_selected = 0;
+    _config_selected_saved_name_slot = 0;
   }
   else {
     local_8 = *arg1;
@@ -39392,7 +39392,7 @@ int __cdecl ui_profile_menu_update(float *arg1,char arg2)
     } while (cVar1 != '\0');
     uVar6 = ~uVar6;
     pcVar3 = pcVar9 + -uVar6;
-    pcVar9 = &config_saved_name_0 + _config_name_slot_count * 0x1b;
+    pcVar9 = &config_saved_name_0 + _config_saved_name_count * 0x1b;
     for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
       *(undefined4 *)pcVar9 = *(undefined4 *)pcVar3;
       pcVar3 = pcVar3 + 4;
@@ -39403,9 +39403,9 @@ int __cdecl ui_profile_menu_update(float *arg1,char arg2)
       pcVar3 = pcVar3 + 1;
       pcVar9 = pcVar9 + 1;
     }
-    _config_name_slot_selected = _config_name_slot_count;
-    _config_name_slot_count = _config_name_slot_count + 1;
-    if (7 < _config_name_slot_count) {
+    _config_selected_saved_name_slot = _config_saved_name_count;
+    _config_saved_name_count = _config_saved_name_count + 1;
+    if (7 < _config_saved_name_count) {
       uVar6 = 0xffffffff;
       pcVar3 = &DAT_004ccb18;
       do {
@@ -39429,7 +39429,7 @@ int __cdecl ui_profile_menu_update(float *arg1,char arg2)
         pcVar3 = pcVar3 + 1;
         pcVar9 = pcVar9 + 1;
       }
-      _config_name_slot_count = _config_name_slot_count + -1;
+      _config_saved_name_count = _config_saved_name_count + -1;
     }
     DAT_004ccb18 = 0;
     profile_name_input_state.cursor = 0;
@@ -39451,14 +39451,14 @@ LAB_004446ac:
   profile_name_slot_list.item_count = local_c + 1;
   profile_name_slot_list.items = (char **)&DAT_004ccb5c;
   profile_name_slot_list.enabled = arg2;
-  profile_name_slot_list.selected_index = _config_name_slot_selected;
+  profile_name_slot_list.selected_index = _config_selected_saved_name_slot;
   iVar8 = ui_list_widget_update(arg1,&profile_name_slot_list);
   if ((-2 < iVar8) &&
      ((iVar4 = input_primary_just_pressed(), (char)iVar4 != '\0' ||
       (iVar4 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c), (char)iVar4 != '\0')))) {
     DAT_004d121c = 1 - DAT_004d121c;
     if (-1 < iVar8) {
-      _config_name_slot_selected = iVar8;
+      _config_selected_saved_name_slot = iVar8;
       profile_name_slot_list.selected_index = iVar8;
       if (iVar8 != local_c) {
         highscore_load_table();
@@ -41636,7 +41636,7 @@ void options_menu_update(void)
   pcVar4 = perk_slot_1_desc_wrapped_alternate;
   pcVar6 = perk_slot_1_desc_wrapped_primary;
   iVar5 = perk_id_bloody_mess_quick_learner;
-  if (config_fx_toggle == '\0') {
+  if (config_violence_disabled == '\0') {
     (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = perk_slot_1_name_wrapped_primary;
   }
   else {
@@ -42331,12 +42331,12 @@ void controls_menu_update(void)
     crt_atexit(&DAT_0044ed20);
   }
   controls_direction_arrow_checkbox.checked =
-       (&config_hud_indicator_toggle)[controls_rebind_player_index];
+       (&config_direction_arrow_flags)[controls_rebind_player_index];
   controls_direction_arrow_checkbox.label = s_Show_direction_arrow_004790f8;
   ui_checkbox_update((float *)&stack0xffffff80,&controls_direction_arrow_checkbox);
   fVar25 = ui_element_slot_40.quad0[0] + ui_element_slot_40.pos_x;
   fStack_6c = ui_element_slot_40.pos_y + ui_element_slot_40.quad0[1];
-  (&config_hud_indicator_toggle)[controls_rebind_player_index] =
+  (&config_direction_arrow_flags)[controls_rebind_player_index] =
        controls_direction_arrow_checkbox.checked;
   puVar10 = (undefined4 *)&player_move_key_backward;
   fVar24 = fStack_6c + 40.0;

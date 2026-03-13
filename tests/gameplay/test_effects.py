@@ -371,7 +371,7 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
         age=0.0,
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     assert len(pool.iter_active()) == 2
@@ -405,7 +405,7 @@ def test_spawn_blood_splatter_tags_exact_native_callers() -> None:
         age=0.0,
         rng=rng,
         detail_preset=5,
-        gore_disabled=0,
+        violence_disabled=0,
     )
 
     assert [record.caller for record in rng.records_since()] == [

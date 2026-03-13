@@ -595,7 +595,7 @@ typedef struct crimson_cfg_t {
     unsigned char music_disabled;
     unsigned char highscore_date_mode;
     unsigned char highscore_duplicate_mode;
-    unsigned char hud_indicator_toggle[2];
+    unsigned char direction_arrow_flags[2];
     unsigned char reserved0_06[0x08];
     unsigned char fx_detail_flag0;
     unsigned char reserved0_0f;
@@ -610,9 +610,9 @@ typedef struct crimson_cfg_t {
     unsigned char reserved0_48[0x28];
     float texture_scale;
     char player_name_buf[12];
-    int name_slot_selected;
-    int name_slot_count;
-    int name_slot_order[8];
+    int selected_saved_name_slot;
+    int saved_name_count;
+    int saved_name_order[8];
     char saved_names[8][27];
     char player_name[32];
     int player_name_length;
@@ -633,9 +633,10 @@ typedef struct crimson_cfg_t {
     unsigned char reserved6[0x14];
     float sfx_volume;
     float music_volume;
-    unsigned char fx_toggle;
+    unsigned char violence_disabled;
     unsigned char score_load_gate;
-    unsigned char reserved7[2];
+    unsigned char safe_mode_backend_enabled;
+    unsigned char reserved7_46f;
     int detail_preset;
     float mouse_sensitivity;
     int key_pick_perk;

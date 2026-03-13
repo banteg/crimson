@@ -496,9 +496,9 @@ class FxQueue:
         self._entries = [FxQueueEntry() for _ in range(capacity)]
         self._count = 0
         self._max_count = max_count
-        # Mirrors native `config_fx_toggle` gate in `fx_queue_add_random`.
-        # Nonzero suppresses gore-linked random decals.
-        self.gore_disabled = 0
+        # Mirrors native `config_violence_disabled` gate in `fx_queue_add_random`.
+        # Nonzero suppresses violence-linked random decals.
+        self.violence_disabled = 0
 
     @property
     def entries(self) -> list[FxQueueEntry]:
@@ -541,7 +541,7 @@ class FxQueue:
 
     def add_random(self, *, pos: Vec2, rng: CrandLike) -> bool:
         """Port of `fx_queue_add_random` (effect ids 3..7 with grayscale tint)."""
-        if int(self.gore_disabled) != 0:
+        if int(self.violence_disabled) != 0:
             return False
         # Native `fx_queue_add_random` always consumes RNG even when the queue
         # is full, then lets `fx_queue_add` fail silently.
@@ -824,11 +824,11 @@ class EffectPool:
         age: float,
         rng: CrandLike,
         detail_preset: int,
-        gore_disabled: int,
+        violence_disabled: int,
     ) -> None:
         """Port of `effect_spawn_blood_splatter` (0x0042eb10)."""
 
-        if int(gore_disabled) != 0:
+        if int(violence_disabled) != 0:
             return
 
         lifetime = 0.25 - float(age)

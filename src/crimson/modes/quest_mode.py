@@ -150,7 +150,7 @@ class QuestMode(BaseGameplayMode):
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             detail_preset=5,
-            gore_disabled=0,
+            violence_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             demo_mode_active=bool(self.demo_mode_active),
             apply_world_dt_steps=False,
@@ -253,7 +253,7 @@ class QuestMode(BaseGameplayMode):
     ) -> bool:
         _ = role, dt_ui_ms, dt_tick
         session.detail_preset = int(self._deterministic_detail_preset())
-        session.gore_disabled = int(self._deterministic_gore_disabled())
+        session.violence_disabled = int(self._deterministic_violence_disabled())
         return True
 
     def _lan_on_tick_applied(
@@ -457,7 +457,7 @@ class QuestMode(BaseGameplayMode):
                     hardcore=bool(self.hardcore),
                     preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=self.config.display.detail_preset,
-                    gore_disabled=self.config.display.gore_disabled,
+                    violence_disabled=self.config.display.violence_disabled,
                     world_size=float(self.world_size),
                     player_count=len(self.sim_world.players),
                     status=status_snapshot,
@@ -596,7 +596,7 @@ class QuestMode(BaseGameplayMode):
             return
 
         session.detail_preset = int(self._deterministic_detail_preset())
-        session.gore_disabled = int(self._deterministic_gore_disabled())
+        session.violence_disabled = int(self._deterministic_violence_disabled())
 
         self._world_runtime.sync_audio_bridge_state()
         if self.render_resources.ground is not None:

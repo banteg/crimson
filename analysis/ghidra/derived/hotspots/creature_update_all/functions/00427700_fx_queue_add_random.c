@@ -21,7 +21,7 @@ void fx_queue_add_random(float *pos)
   float local_8;
   float local_4;
   
-  if (config_fx_toggle == '\0') {
+  if (config_violence_disabled == '\0') {
     if (((byte)fx_queue_random_init_flags & 1) == 0) {
       fx_queue_random_init_flags._0_1_ = (byte)fx_queue_random_init_flags | 1;
       _fx_queue_random_color_r = 0.9;

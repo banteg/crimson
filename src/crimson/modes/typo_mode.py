@@ -60,7 +60,7 @@ class TypoShooterMode(BaseGameplayMode):
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             detail_preset=5,
-            gore_disabled=0,
+            violence_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             dictionary_words=self.state.typo.dictionary_words,
             highscore_names=self.state.typo.highscore_names,
@@ -102,7 +102,7 @@ class TypoShooterMode(BaseGameplayMode):
                 hardcore=bool(self.hardcore),
                 preserve_bugs=bool(self.state.preserve_bugs),
                 detail_preset=int(self._deterministic_detail_preset()),
-                gore_disabled=int(self._deterministic_gore_disabled()),
+                violence_disabled=int(self._deterministic_violence_disabled()),
                 world_size=float(self.world_size),
                 player_count=1,
                 status=ReplayStatusSnapshot(

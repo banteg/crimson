@@ -17,7 +17,7 @@ void effect_spawn_blood_splatter(float *pos, float angle, float age)
   float10 fVar4;
   float10 fVar5;
   
-  if (config_fx_toggle == '\0') {
+  if (config_violence_disabled == '\0') {
     _effect_template_lifetime = 0.25 - age;
     fVar3 = (float10)angle + (float10)3.1415927;
     _effect_template_color_r = 0x3f800000;
