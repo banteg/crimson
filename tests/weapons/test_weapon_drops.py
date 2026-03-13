@@ -8,8 +8,8 @@ from crimson.gameplay import GameplayState
 from crimson.persistence import save_status
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.weapon_runtime import (
+    prepare_weapon_availability,
     weapon_pick_random_available,
-    weapon_refresh_available,
 )
 from crimson.weapons import WeaponId
 from tests.support.helpers import ScriptedCrand
@@ -37,11 +37,11 @@ def _status_default() -> save_status.GameStatus:
     return save_status.GameStatus(path=Path("game.cfg"), data=save_status.default_status_data(), dirty=False)
 
 
-def test_weapon_refresh_available_includes_survival_defaults() -> None:
+def test_prepare_weapon_availability_includes_survival_defaults() -> None:
     state = GameplayState()
     state.game_mode = GameMode.SURVIVAL
 
-    weapon_refresh_available(state)
+    prepare_weapon_availability(state)
 
     assert state.weapon_available[WeaponId.PISTOL]
     assert state.weapon_available[WeaponId.ASSAULT_RIFLE]
@@ -50,7 +50,7 @@ def test_weapon_refresh_available_includes_survival_defaults() -> None:
     assert not state.weapon_available[WeaponId.FLAMETHROWER]
 
 
-def test_weapon_refresh_available_unlocks_quest_weapon_ids() -> None:
+def test_prepare_weapon_availability_unlocks_quest_weapon_ids() -> None:
     status = _status_default()
     status.quest_unlock_index = 1
 
@@ -58,12 +58,11 @@ def test_weapon_refresh_available_unlocks_quest_weapon_ids() -> None:
     state.status = status
     state.game_mode = GameMode.QUESTS
 
-    weapon_refresh_available(state)
+    prepare_weapon_availability(state)
 
     assert state.weapon_available[WeaponId.PISTOL]
     assert state.weapon_available[WeaponId.ASSAULT_RIFLE]
     assert not state.weapon_available[WeaponId.SHOTGUN]
-    assert state._weapon_available_game_mode == GameMode.QUESTS
 
 
 def test_weapon_pick_random_available_enforces_unlocked() -> None:
@@ -73,6 +72,7 @@ def test_weapon_pick_random_available_enforces_unlocked() -> None:
     state = GameplayState(rng=_as_rng(_SeqRng([1, 0])))
     state.status = status
     state.game_mode = GameMode.QUESTS
+    prepare_weapon_availability(state)
 
     picked = weapon_pick_random_available(state)
 
@@ -87,6 +87,7 @@ def test_weapon_pick_random_available_rerolls_used_weapons() -> None:
     state = GameplayState(rng=_as_rng(_SeqRng([0, 0, 1])))
     state.status = status
     state.game_mode = GameMode.SURVIVAL
+    prepare_weapon_availability(state)
 
     assert weapon_pick_random_available(state) == WeaponId.ASSAULT_RIFLE
 
@@ -99,6 +100,7 @@ def test_weapon_pick_random_available_tags_exact_native_callers_on_reroll() -> N
     state = GameplayState(rng=rng)
     state.status = status
     state.game_mode = GameMode.SURVIVAL
+    prepare_weapon_availability(state)
 
     assert weapon_pick_random_available(state) == WeaponId.ASSAULT_RIFLE
     assert [record.caller for record in rng.records_since()] == [

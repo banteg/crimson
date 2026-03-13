@@ -126,11 +126,7 @@ class GameplayState(msgspec.Struct):
     tutorial_overlay: TutorialOverlayState = msgspec.field(default_factory=TutorialOverlayState)
     typo: TypoState = msgspec.field(default_factory=TypoState)
     perk_available: list[bool] = msgspec.field(default_factory=lambda: [False] * PERK_COUNT_SIZE)
-    _perk_available_unlock_index: int | None = None
     weapon_available: list[bool] = msgspec.field(default_factory=lambda: [False] * WEAPON_COUNT_SIZE)
-    _weapon_available_game_mode: GameMode | None = None
-    _weapon_available_unlock_index: int | None = None
-    _weapon_available_unlock_index_full: int | None = None
     friendly_fire_enabled: bool = False
     bonus_spawn_guard: bool = False
     player_alt_weapon_swap_cooldown_ms: int = 0
@@ -140,7 +136,7 @@ class GameplayState(msgspec.Struct):
     player_death_hook_skip_indices: set[int] = msgspec.field(default_factory=set)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
-    survival_reward_weapon_guard_id: int = WeaponId.PISTOL
+    survival_reward_weapon_guard_id: WeaponId = WeaponId.PISTOL
     survival_reward_handout_enabled: bool = True
     survival_reward_fire_seen: bool = False
     survival_reward_damage_seen: bool = False
@@ -327,7 +323,7 @@ def survival_update_weapon_handouts(
 def survival_enforce_reward_weapon_guard(state: GameplayState, players: Sequence[PlayerState]) -> None:
     """Revoke temporary Survival handout weapons when guard id mismatches."""
 
-    guard_id = int(state.survival_reward_weapon_guard_id)
+    guard_id = state.survival_reward_weapon_guard_id
     for player in players:
         weapon_id = player.weapon.weapon_id
         if weapon_id == WeaponId.BLADE_GUN and guard_id != WeaponId.BLADE_GUN:

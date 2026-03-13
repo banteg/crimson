@@ -6,7 +6,7 @@ from typing import Any
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
-from crimson.perks.availability import perks_rebuild_available
+from crimson.perks.availability import prepare_perk_availability
 from crimson.perks.selection import PERK_ID_MAX, perk_generate_choices
 from crimson.persistence import save_status
 from crimson.quests.level import QuestLevel
@@ -37,18 +37,18 @@ def _status_default() -> save_status.GameStatus:
     return save_status.GameStatus(path=Path("game.cfg"), data=save_status.default_status_data(), dirty=False)
 
 
-def test_perks_rebuild_available_unlocks_base_and_quest_perks() -> None:
+def test_prepare_perk_availability_unlocks_base_and_quest_perks() -> None:
     status = _status_default()
     status.quest_unlock_index = 0
     state = GameplayState()
     state.status = status
-    perks_rebuild_available(state)
+    prepare_perk_availability(state)
 
     assert state.perk_available[int(PerkId.BONUS_MAGNET)]
     assert not state.perk_available[int(PerkId.URANIUM_FILLED_BULLETS)]
 
     status.quest_unlock_index = 3  # includes quest 1.3 unlock_perk_id=URANIUM_FILLED_BULLETS
-    perks_rebuild_available(state)
+    prepare_perk_availability(state)
     assert state.perk_available[int(PerkId.URANIUM_FILLED_BULLETS)]
 
 
@@ -89,6 +89,7 @@ def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order
     status.quest_unlock_index_full = 49
     state.status = status
     state.quest_level = QuestLevel(3, 4)
+    prepare_perk_availability(state)
     player = PlayerState(index=0, pos=Vec2())
 
     choices = perk_generate_choices(
@@ -122,7 +123,6 @@ def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order
 
 def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None:
     state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])))
-    state._perk_available_unlock_index = 0
     for perk_id in (PerkId.PYROMANIAC, PerkId.SHARPSHOOTER, PerkId.FASTLOADER, PerkId.LEAN_MEAN_EXP_MACHINE, PerkId.LONG_DISTANCE_RUNNER, PerkId.PYROKINETIC, PerkId.INSTANT_WINNER, PerkId.GRIM_DEAL):
         state.perk_available[int(perk_id)] = True
 
@@ -133,7 +133,6 @@ def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None
 
 def test_perk_generate_choices_default_allows_pyromaniac_when_any_alive_player_has_flamethrower() -> None:
     state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])), preserve_bugs=False)
-    state._perk_available_unlock_index = 0
     for perk_id in (
         PerkId.PYROMANIAC,
         PerkId.SHARPSHOOTER,
@@ -160,7 +159,6 @@ def test_perk_generate_choices_default_allows_pyromaniac_when_any_alive_player_h
 
 def test_perk_generate_choices_preserve_bugs_keeps_player1_pyromaniac_gate() -> None:
     state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])), preserve_bugs=True)
-    state._perk_available_unlock_index = 0
     for perk_id in (
         PerkId.PYROMANIAC,
         PerkId.SHARPSHOOTER,
@@ -187,7 +185,7 @@ def test_perk_generate_choices_preserve_bugs_keeps_player1_pyromaniac_gate() -> 
 
 def test_perk_generate_choices_blocks_perks_when_death_clock_active() -> None:
     state = GameplayState(rng=_as_rng(_SeqRng([41, 1, 2, 3, 4, 5, 6, 9])))
-    perks_rebuild_available(state)
+    prepare_perk_availability(state)
     state.perk_available[int(PerkId.JINXED)] = True
 
     player = PlayerState(index=0, pos=Vec2())
@@ -201,7 +199,6 @@ def test_perk_generate_choices_applies_rarity_gate() -> None:
     # Anxious Loader is in the global rarity gate; when (rand & 3) == 1 it is rejected.
     rng = ScriptedCrand([17, 1, 1, 2, 3, 4, 5, 6, 7], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     state = GameplayState(rng=rng)
-    state._perk_available_unlock_index = 0
     for perk_id in (PerkId.ANXIOUS_LOADER, PerkId.SHARPSHOOTER, PerkId.FASTLOADER, PerkId.LEAN_MEAN_EXP_MACHINE, PerkId.LONG_DISTANCE_RUNNER, PerkId.PYROKINETIC, PerkId.INSTANT_WINNER, PerkId.GRIM_DEAL):
         state.perk_available[int(perk_id)] = True
 
@@ -237,7 +234,7 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
     state = GameplayState(rng=_as_rng(rng))
     state.status = status
     state.quest_level = QuestLevel(4, 10)
-    perks_rebuild_available(state)
+    prepare_perk_availability(state)
 
     player = PlayerState(index=0, pos=Vec2())
     for idx in range(len(player.perk_counts)):
@@ -272,7 +269,7 @@ def test_perk_generate_choices_caches_offerability_checks(mocker) -> None:
     state = GameplayState(rng=_as_rng(_SeqRng(list(range(2048)))))
     state.status = status
     state.quest_level = QuestLevel(4, 10)
-    perks_rebuild_available(state)
+    prepare_perk_availability(state)
 
     player = PlayerState(index=0, pos=Vec2())
     for idx in range(len(player.perk_counts)):

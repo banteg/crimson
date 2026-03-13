@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from ..game_modes import GameMode
+from ..persistence.save_status import GameStatus
 from ..quests import all_quests
 from ..quests.level import QuestLevel
-from ..sim.state_types import GameplayState, PlayerState
+from ..sim.state_types import PERK_COUNT_SIZE, GameplayState, PlayerState
 from .helpers import perk_count_get
 from .ids import PERK_BY_ID, PerkFlags, PerkId
 
@@ -16,31 +17,19 @@ _PERK_ALWAYS_AVAILABLE: tuple[PerkId, ...] = (
 )
 
 
-def perks_rebuild_available(state: GameplayState) -> None:
-    """Rebuild quest unlock driven `perk_meta_table[perk_id].available` flags.
-
-    Port of `perks_rebuild_available` (0x0042fc30).
-    """
-
+def build_perk_availability(*, status: GameStatus | None) -> list[bool]:
+    available = [False] * PERK_COUNT_SIZE
     unlock_index = 0
-    if state.status is not None:
-        unlock_index = int(state.status.quest_unlock_index)
-
-    if state._perk_available_unlock_index == unlock_index:
-        return
-
-    available = state.perk_available
-    for idx in range(len(available)):
-        available[idx] = False
+    if status is not None:
+        unlock_index = status.quest_unlock_index
 
     for perk_id in range(1, _PERK_BASE_AVAILABLE_MAX_ID + 1):
         if 0 <= perk_id < len(available):
             available[perk_id] = True
 
     for perk_id in _PERK_ALWAYS_AVAILABLE:
-        idx = int(perk_id)
-        if 0 <= idx < len(available):
-            available[idx] = True
+        if 0 <= perk_id < len(available):
+            available[perk_id] = True
 
     if unlock_index > 0:
         quests = all_quests()
@@ -50,7 +39,11 @@ def perks_rebuild_available(state: GameplayState) -> None:
                 available[perk_id] = True
 
     available[int(PerkId.ANTIPERK)] = False
-    state._perk_available_unlock_index = unlock_index
+    return available
+
+
+def prepare_perk_availability(state: GameplayState) -> None:
+    state.perk_available[:] = build_perk_availability(status=state.status)
 
 
 def perk_can_offer(
@@ -81,10 +74,12 @@ def perk_can_offer(
     # Native `perk_can_offer` treats these metadata bits as allow-lists for
     # specific runtime modes, not "only in this mode":
     # - in quest mode, offered perks must have bit 0x1 set
-    # - in two-player mode, offered perks must have bit 0x2 set
+    # - in multiplayer, offered perks must have bit 0x2 set
+    # The original game only had 1p/2p, but the port extends this gate to all
+    # multiplayer counts for consistent 3p/4p behavior.
     if game_mode == GameMode.QUESTS and (flags & PerkFlags.QUEST_MODE_ALLOWED) == 0:
         return False
-    if int(player_count) == 2 and (flags & PerkFlags.TWO_PLAYER_ALLOWED) == 0:
+    if player_count > 1 and (flags & PerkFlags.MULTIPLAYER_ALLOWED) == 0:
         return False
 
     if meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq):

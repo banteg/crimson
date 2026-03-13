@@ -200,6 +200,8 @@ def test_perk_mode_3_flag_allows_perk_in_survival_and_quest_modes() -> None:
     assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.QUESTS, player_count=1) is True
     assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.SURVIVAL, player_count=2) is False
     assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.QUESTS, player_count=2) is False
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.SURVIVAL, player_count=4) is False
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.QUESTS, player_count=4) is False
 
 
 def test_perk_without_mode_3_flag_is_rejected_in_quest_mode() -> None:
@@ -215,25 +217,34 @@ def test_perk_without_mode_3_flag_is_rejected_in_quest_mode() -> None:
 @pytest.mark.parametrize(
     ("perk_id", "expected"),
     [
-        (PerkId.RANDOM_WEAPON, (True, True, False, False)),
-        (PerkId.BREATHING_ROOM, (True, False, True, False)),
+        (PerkId.RANDOM_WEAPON, (True, True, False, False, False, False)),
+        (PerkId.BREATHING_ROOM, (True, False, True, False, True, False)),
     ],
     ids=["random-weapon", "breathing-room"],
 )
 def test_mode_flags_match_native_allowlist_behavior(
     perk_id: PerkId,
-    expected: tuple[bool, bool, bool, bool],
+    expected: tuple[bool, bool, bool, bool, bool, bool],
 ) -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    expected_survival_1p, expected_quest_1p, expected_survival_2p, expected_quest_2p = expected
+    (
+        expected_survival_1p,
+        expected_quest_1p,
+        expected_survival_2p,
+        expected_quest_2p,
+        expected_survival_4p,
+        expected_quest_4p,
+    ) = expected
     assert perk_can_offer(state, player, perk_id, game_mode=GameMode.SURVIVAL, player_count=1) is expected_survival_1p
     assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=1) is expected_quest_1p
     assert perk_can_offer(state, player, perk_id, game_mode=GameMode.SURVIVAL, player_count=2) is expected_survival_2p
     assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=2) is expected_quest_2p
+    assert perk_can_offer(state, player, perk_id, game_mode=GameMode.SURVIVAL, player_count=4) is expected_survival_4p
+    assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=4) is expected_quest_4p
 
 
-def test_mode_flag_gated_perks_reject_quest_and_two_player() -> None:
+def test_mode_flag_gated_perks_reject_quest_and_multiplayer() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
     for perk_id in (PerkId.FATAL_LOTTERY, PerkId.FINAL_REVENGE, PerkId.HIGHLANDER):
@@ -241,6 +252,8 @@ def test_mode_flag_gated_perks_reject_quest_and_two_player() -> None:
         assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=1) is False
         assert perk_can_offer(state, player, perk_id, game_mode=GameMode.SURVIVAL, player_count=2) is False
         assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=2) is False
+        assert perk_can_offer(state, player, perk_id, game_mode=GameMode.SURVIVAL, player_count=4) is False
+        assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=4) is False
 
 
 def test_hardcore_quest_2_10_blocks_poison_related_perks() -> None:
@@ -259,13 +272,13 @@ def test_hardcore_quest_2_10_blocks_poison_related_perks() -> None:
 
 def test_perk_flags_match_native_ctor_defaults_and_known_overrides() -> None:
     assert PERK_BY_ID[PerkId.SHARPSHOOTER].flags == (
-        PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED
+        PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.MULTIPLAYER_ALLOWED
     )
     assert PERK_BY_ID[PerkId.INSTANT_WINNER].flags == (
-        PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED | PerkFlags.STACKABLE
+        PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.MULTIPLAYER_ALLOWED | PerkFlags.STACKABLE
     )
     assert PERK_BY_ID[PerkId.RANDOM_WEAPON].flags == (
         PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.STACKABLE
     )
-    assert PERK_BY_ID[PerkId.BREATHING_ROOM].flags == PerkFlags.TWO_PLAYER_ALLOWED
+    assert PERK_BY_ID[PerkId.BREATHING_ROOM].flags == PerkFlags.MULTIPLAYER_ALLOWED
     assert PERK_BY_ID[PerkId.GRIM_DEAL].flags == PerkFlags(0)

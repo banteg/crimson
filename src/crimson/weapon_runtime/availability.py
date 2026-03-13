@@ -1,48 +1,35 @@
 from __future__ import annotations
 
 from ..game_modes import GameMode
+from ..persistence.save_status import GameStatus
 from ..quests import all_quests
 from ..quests.level import QuestLevel
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import GameplayState
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
-from ..weapons import WeaponId
+from ..weapons import WEAPON_TABLE, WeaponId
 
 WEAPON_DROP_ID_COUNT = 0x21  # weapon ids 1..33
+WEAPON_AVAILABLE_COUNT = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
 
-def weapon_refresh_available(state: GameplayState) -> None:
-    """Rebuild `weapon_table[weapon_id].unlocked` equivalents from quest progression.
-
-    Port of `weapon_refresh_available` (0x00452e40).
-    """
-
+def build_weapon_availability(
+    *,
+    status: GameStatus | None,
+    game_mode: GameMode,
+    demo_mode_active: bool,
+) -> list[bool]:
+    available = [False] * WEAPON_AVAILABLE_COUNT
     unlock_index = 0
     unlock_index_full = 0
-    status = state.status
     if status is not None:
-        unlock_index = int(status.quest_unlock_index)
-        unlock_index_full = int(status.quest_unlock_index_full)
+        unlock_index = status.quest_unlock_index
+        unlock_index_full = status.quest_unlock_index_full
 
-    game_mode = state.game_mode
-    if (
-        state._weapon_available_game_mode == game_mode
-        and state._weapon_available_unlock_index == unlock_index
-        and state._weapon_available_unlock_index_full == unlock_index_full
-    ):
-        return
-
-    # Clear unlocked flags.
-    available = state.weapon_available
-    for idx in range(len(available)):
-        available[idx] = False
-
-    # Pistol is always available.
     pistol_id = WeaponId.PISTOL
     if 0 <= pistol_id < len(available):
         available[pistol_id] = True
 
-    # Unlock weapons from the quest list (first `quest_unlock_index` entries).
     if unlock_index > 0:
         quests = all_quests()
         for quest in quests[:unlock_index]:
@@ -50,23 +37,25 @@ def weapon_refresh_available(state: GameplayState) -> None:
             if weapon_id is not None and 0 < weapon_id < len(available):
                 available[weapon_id] = True
 
-    # Survival default loadout: Assault Rifle, Shotgun, Submachine Gun.
     if game_mode == GameMode.SURVIVAL:
         for weapon_id in (WeaponId.ASSAULT_RIFLE, WeaponId.SHOTGUN, WeaponId.SUBMACHINE_GUN):
-            idx = int(weapon_id)
-            if 0 <= idx < len(available):
-                available[idx] = True
+            if 0 <= weapon_id < len(available):
+                available[weapon_id] = True
 
-    # Secret unlock: Splitter Gun (weapon id 29) becomes available once the hardcore
-    # unlock track reaches stage 5 (quest_unlock_index_full >= 40).
-    if (not state.demo_mode_active) and unlock_index_full >= 0x28:
+    if (not demo_mode_active) and unlock_index_full >= 0x28:
         splitter_id = WeaponId.SPLITTER_GUN
         if 0 <= splitter_id < len(available):
             available[splitter_id] = True
 
-    state._weapon_available_game_mode = game_mode
-    state._weapon_available_unlock_index = unlock_index
-    state._weapon_available_unlock_index_full = unlock_index_full
+    return available
+
+
+def prepare_weapon_availability(state: GameplayState) -> None:
+    state.weapon_available[:] = build_weapon_availability(
+        status=state.status,
+        game_mode=state.game_mode,
+        demo_mode_active=state.demo_mode_active,
+    )
 
 
 def weapon_pick_random_available(state: GameplayState) -> WeaponId:
@@ -75,7 +64,6 @@ def weapon_pick_random_available(state: GameplayState) -> WeaponId:
     Port of `weapon_pick_random_available` (0x00452cd0).
     """
 
-    weapon_refresh_available(state)
     status = state.status
 
     for _ in range(1000):
@@ -92,7 +80,7 @@ def weapon_pick_random_available(state: GameplayState) -> WeaponId:
                     base_rand = state.rng.rand(caller=RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_PICK)
                     weapon_id = WeaponId(base_rand % WEAPON_DROP_ID_COUNT + 1)
 
-        if not (0 <= int(weapon_id) < len(state.weapon_available)):
+        if not (0 <= weapon_id < len(state.weapon_available)):
             continue
         if not state.weapon_available[weapon_id]:
             continue

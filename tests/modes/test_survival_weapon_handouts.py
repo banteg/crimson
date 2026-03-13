@@ -24,7 +24,7 @@ def test_survival_handout_time_gate_assigns_shrinkifier() -> None:
     )
 
     assert player.weapon.weapon_id == WeaponId.SHRINKIFIER_5K
-    assert int(state.survival_reward_weapon_guard_id) == WeaponId.SHRINKIFIER_5K
+    assert state.survival_reward_weapon_guard_id == WeaponId.SHRINKIFIER_5K
     assert state.survival_reward_handout_enabled is False
     assert state.survival_reward_damage_seen is True
     assert state.survival_reward_fire_seen is True
@@ -42,7 +42,7 @@ def test_survival_handout_time_gate_consumes_gate_even_without_pistol() -> None:
     )
 
     assert player.weapon.weapon_id == WeaponId.ASSAULT_RIFLE
-    assert int(state.survival_reward_weapon_guard_id) == WeaponId.PISTOL
+    assert state.survival_reward_weapon_guard_id == WeaponId.PISTOL
     assert state.survival_reward_handout_enabled is False
     assert state.survival_reward_damage_seen is True
     assert state.survival_reward_fire_seen is True
@@ -89,7 +89,7 @@ def test_survival_handout_centroid_gate_assigns_blade_gun() -> None:
     )
 
     assert player.weapon.weapon_id == WeaponId.BLADE_GUN
-    assert int(state.survival_reward_weapon_guard_id) == WeaponId.BLADE_GUN
+    assert state.survival_reward_weapon_guard_id == WeaponId.BLADE_GUN
     assert state.survival_reward_fire_seen is True
     assert state.survival_reward_handout_enabled is False
 
