@@ -128,7 +128,6 @@ See also:
 - [CDT trace format (rewrite tooling)](cdt-trace-format.md)
 - [Terrain (rewrite)](terrain.md)
 - [Perks architecture (rewrite)](perks-architecture.md)
-- [Keybind flow](keybind-flow.md)
 - [Original bugs (and rewrite fixes)](original-bugs.md)
 
 ## Known gaps (short list)

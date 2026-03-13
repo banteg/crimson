@@ -41,7 +41,6 @@ nav = [
       { "Module map" = "rewrite/module-map.md" },
       { "Mode systems" = "rewrite/mode-systems.md" },
       { "Perks architecture" = "rewrite/perks-architecture.md" },
-      { "Keybind flow" = "rewrite/keybind-flow.md" },
     ]},
     { "Contracts" = [
       { "Overview" = "rewrite/contracts/index.md" },
