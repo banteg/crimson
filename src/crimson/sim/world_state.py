@@ -109,20 +109,13 @@ class WorldState(msgspec.Struct):
         game_mode: GameMode,
         perk_progression_enabled: bool,
         game_tune_started: bool = False,
-        rng_marks: dict[str, int] | None = None,
     ) -> WorldEvents:
-        def _mark(name: str) -> None:
-            if rng_marks is None:
-                return
-            rng_marks[str(name)] = int(self.state.rng.state)
-
         dt = float(dt)
         fx_queue.gore_disabled = int(gore_disabled)
         self.state.player_death_hook_skip_indices.clear()
         if apply_world_dt_steps:
             for step in _WORLD_DT_STEPS:
                 dt = float(step(dt=dt, players=self.players))
-        _mark("ws_begin")
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
         prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
@@ -134,10 +127,8 @@ class WorldState(msgspec.Struct):
             if creature.active and float(creature.hp) <= 0.0
         }
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
-        _mark("ws_after_perk_effects")
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=fx_queue)
-        _mark("ws_after_effects_update")
 
         def _apply_projectile_damage_to_player(player_index: int, damage: float) -> None:
             idx = int(player_index)
@@ -160,7 +151,6 @@ class WorldState(msgspec.Struct):
                 gore_disabled=int(gore_disabled),
             ),
         )
-        _mark("ws_after_creatures")
         deaths = list(creature_result.deaths)
         sfx = list(creature_result.sfx)
         trigger_game_tune = False
@@ -267,8 +257,6 @@ class WorldState(msgspec.Struct):
                 ),
             ),
         )
-        _mark("ws_after_projectiles")
-        _mark("ws_after_hit_sfx")
         self.state.secondary_projectiles.step(
             SecondaryStepCtx(
                 dt=float(dt),
@@ -279,7 +267,6 @@ class WorldState(msgspec.Struct):
                 on_detonation_kill=_on_secondary_detonation_kill,
             ),
         )
-        _mark("ws_after_secondary_projectiles")
         self._run_post_damage_player_death_hooks(
             prev_health=prev_health,
             dt=float(dt),
@@ -317,11 +304,7 @@ class WorldState(msgspec.Struct):
             fx_queue=fx_queue,
             sprite_effects=self.state.sprite_effects,
         )
-        _mark("ws_after_particles_update")
         self.state.sprite_effects.update(dt)
-        _mark("ws_after_sprite_effects")
-        _mark("ws_after_particles")
-        _mark("ws_after_death_sfx")
         reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
         player_dt = float(dt)
         if dt_player_local is not None:
@@ -354,10 +337,7 @@ class WorldState(msgspec.Struct):
                     time_scale_active=bool(self.state.time_scale_active),
                     reflex_boost_timer=float(self.state.bonuses.reflex_boost),
                 )
-            if idx == 0:
-                _mark("ws_after_player_update_p0")
         dt = float(player_dt)
-        _mark("ws_after_player_update")
         if dt > 0.0:
             self._advance_creature_anim(dt)
             self._advance_player_anim(dt, prev_positions)
@@ -365,7 +345,6 @@ class WorldState(msgspec.Struct):
             mid_step_hook()
         if not bool(defer_camera_shake_update):
             camera_shake_update(self.state, dt)
-        _mark("ws_after_camera_update")
         # Native level-up/perk-pending check runs before `bonus_update` in
         # gameplay_update_and_render. Keep the same ordering so XP awarded from
         # bonus-side kill paths (e.g. freeze cleanup) levels on the next tick.
@@ -374,7 +353,6 @@ class WorldState(msgspec.Struct):
                 self.state,
                 self.players,
             )
-        _mark("ws_after_progression")
         # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.
         self.state.time_scale_active = float(self.state.bonuses.reflex_boost) > 0.0
         bonus_update_pre_pickup_timers(self.state, dt)
@@ -395,15 +373,11 @@ class WorldState(msgspec.Struct):
                 detail_preset=int(detail_preset),
             )
         survival_enforce_reward_weapon_guard(self.state, self.players)
-        _mark("ws_after_bonus_update")
         if self.state.sfx_queue:
             sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()
-        _mark("ws_after_sfx_queue_merge")
         # Player-damage VO RNG work lives inside `player_take_damage` for native
         # ordering parity (VO draw before heading-jitter draw).
-        _mark("ws_after_player_damage_sfx")
-        _mark("ws_after_sfx")
         self.state.player_death_hook_skip_indices.clear()
         self._restore_creature_damage_appliers(prev_creature_damage_appliers)
         return WorldEvents(

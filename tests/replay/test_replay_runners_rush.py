@@ -4,6 +4,7 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.sim.input_providers import PerkPickCommand
+from grim.rand import CallerStatic
 from tests.support.replay_runner_helpers import _blank_rush_replay, _run_verify_playback
 
 
@@ -79,25 +80,19 @@ def test_rush_runner_checkpoints_capture_debug_fields() -> None:
         assert isinstance(ckpt.deaths, list)
 
 
-def test_rush_runner_trace_rng_captures_presentation_marks() -> None:
+def test_rush_runner_tick_rng_trace_observer_emits_rows_for_first_tick() -> None:
     _header, rec = _blank_rush_replay(ticks=1, seed=0x1234)
     replay = rec.finish()
-    marks_by_tick: dict[int, dict[str, int]] = {}
+    rows_by_tick: dict[int, list[tuple[int, int, int, CallerStatic]]] = {}
 
-    def _observer(
-        tick_index: int,
-        _world: object,
-        _elapsed_ms: float,
-        _events: object,
-        rng_marks: dict[str, int],
-    ) -> None:
-        marks_by_tick[int(tick_index)] = dict(rng_marks)
+    def _observer(tick_index: int, draws: list[tuple[int, int, int, CallerStatic]]) -> None:
+        rows_by_tick[int(tick_index)] = list(draws)
 
     _run_verify_playback(
         replay,
         trace_rng=True,
-        tick_trace_observer=_observer,
+        tick_rng_trace_observer=_observer,
     )
 
-    assert sorted(marks_by_tick.keys()) == [0]
-    assert marks_by_tick[0]["ps_draws_total"] >= 0
+    assert sorted(rows_by_tick.keys()) == [0]
+    assert rows_by_tick[0]

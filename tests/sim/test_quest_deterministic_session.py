@@ -49,7 +49,6 @@ def test_quest_session_tick_exposes_required_fields() -> None:
 
     assert tick.step is not None
     assert isinstance(tick.elapsed_ms, float)
-    assert isinstance(tick.rng_marks, dict)
     assert isinstance(tick.creature_count_world_step, int)
     assert not hasattr(tick, "spawn_timeline_ms")
     assert not hasattr(tick, "no_creatures_timer_ms")
@@ -77,7 +76,7 @@ def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
         trace0.append(
             (
                 float(tick0.step.dt_sim),
-                int(tick0.rng_marks.get("after_world_step", -1)),
+                int(session0.world.state.rng.state),
                 float(spawn0.spawn_timeline_ms),
                 float(spawn0.no_creatures_timer_ms),
                 float(spawn0.completion_transition_ms),
@@ -88,7 +87,7 @@ def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
         trace1.append(
             (
                 float(tick1.step.dt_sim),
-                int(tick1.rng_marks.get("after_world_step", -1)),
+                int(session1.world.state.rng.state),
                 float(spawn1.spawn_timeline_ms),
                 float(spawn1.no_creatures_timer_ms),
                 float(spawn1.completion_transition_ms),

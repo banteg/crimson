@@ -159,7 +159,6 @@ def test_typo_spawn_step_tags_exact_spawn_tinted_callers() -> None:
     typo_mid_step(
         MidStepContext(
             world=world,
-            rng_marks={},
             elapsed_before_ms=0.0,
             dt_sim_ms=1.0,
             dt_raw_ms=1.0,
