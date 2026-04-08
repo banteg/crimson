@@ -39,9 +39,9 @@ Last reviewed: **2026-02-24**
   - `uv run crimson dbg bisect <expected.cdt> <actual.cdt>`
   - `uv run crimson dbg focus <expected.cdt> <actual.cdt> --tick <n>`
 
-## Zig replay verifier status
+## Zig native port status
 
-- Zig verifier details now live on a dedicated page:
+- Zig native-port details now live on a dedicated page:
   - [`docs/rewrite/zig-verifier.md`](zig-verifier.md)
 - This page remains focused on overall rewrite (Python + raylib) status and
   major parity gaps.

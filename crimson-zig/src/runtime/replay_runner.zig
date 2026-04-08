@@ -68,7 +68,6 @@ pub const ReplayRunnerError = error{
     UnsupportedPlayerCount,
     UnsupportedInputQuantization,
     UnsupportedDemoMode,
-    UnsupportedPreserveBugs,
     UnsupportedEventOrdering,
     UnsupportedEventKind,
     UnsupportedEventPlayerIndex,
@@ -150,10 +149,8 @@ pub const ReplayScaffoldOptions = struct {
 
 fn ensureSupportedReplayFeatureFlags(
     demo_mode_active: bool,
-    preserve_bugs: bool,
 ) ReplayRunnerError!void {
     if (demo_mode_active) return error.UnsupportedDemoMode;
-    if (preserve_bugs) return error.UnsupportedPreserveBugs;
 }
 
 pub fn runReplayScaffold(
@@ -187,7 +184,7 @@ pub fn runReplayScaffoldWithTrace(
     if (header.player_count <= 0 or header.player_count > state_mod.max_players) {
         return error.UnsupportedPlayerCount;
     }
-    try ensureSupportedReplayFeatureFlags(false, header.preserve_bugs);
+    try ensureSupportedReplayFeatureFlags(false);
     if (!std.mem.eql(u8, header.input_quantization, "f32")) {
         return error.UnsupportedInputQuantization;
     }
@@ -375,7 +372,7 @@ pub fn runReplayScaffoldWithTrace(
         if (outcome.signal == .request_capture_state_reset) {
             context.pending_capture_state_reset = true;
         }
-        try ensureSupportedReplayFeatureFlags(context.state.demo_mode_active, context.state.preserve_bugs);
+        try ensureSupportedReplayFeatureFlags(context.state.demo_mode_active);
     }
     if (context.event_index != events.len) return error.UnsupportedEventOrdering;
 
@@ -681,13 +678,27 @@ fn applyCaptureCreatureSpawnEvent(
 test "replay scaffold rejects unsupported demo/preserve feature flags" {
     try std.testing.expectError(
         error.UnsupportedDemoMode,
-        ensureSupportedReplayFeatureFlags(true, false),
+        ensureSupportedReplayFeatureFlags(true),
     );
-    try std.testing.expectError(
-        error.UnsupportedPreserveBugs,
-        ensureSupportedReplayFeatureFlags(false, true),
-    );
-    try ensureSupportedReplayFeatureFlags(false, false);
+    try ensureSupportedReplayFeatureFlags(false);
+}
+
+test "survival scaffold accepts preserve bugs replay headers" {
+    const allocator = std.testing.allocator;
+
+    var replay = try buildTestReplay(allocator, .{
+        .tick_rate = 60,
+        .game_version = "0.6.9",
+        .preserve_bugs = true,
+        .inputs = &.{0},
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+
+    const result = try runReplayScaffold(replay);
+    try std.testing.expectEqual(@as(usize, 1), result.ticks);
+    try std.testing.expectEqual(@as(i64, 17), result.elapsed_ms_nominal);
+    try std.testing.expectEqual(@as(i64, 16), result.elapsed_ms_sim);
 }
 
 test "survival scaffold tracks event and input counters" {
@@ -2451,6 +2462,8 @@ const TestReplayConfig = struct {
     game_mode_id: i32 = @intFromEnum(GameModeId.survival),
     seed: u32 = 1,
     tick_rate: i32,
+    game_version: []const u8 = "0.7.0",
+    preserve_bugs: bool = false,
     quest_level: []const u8 = "",
     inputs: []const u32,
     events: []const replay_codec.ReplayEvent,
@@ -2461,6 +2474,8 @@ const TestReplayMultiConfig = struct {
     seed: u32 = 1,
     tick_rate: i32,
     player_count: i32,
+    game_version: []const u8 = "0.7.0",
+    preserve_bugs: bool = false,
     quest_level: []const u8 = "",
     inputs: []const []const u32,
     events: []const replay_codec.ReplayEvent,
@@ -2507,11 +2522,11 @@ fn buildTestReplay(
             .quest_level = try allocator.dupe(u8, cfg.quest_level),
             .bootstrap_kind = try allocator.dupe(u8, "none"),
             .bootstrap_seed = 1,
-            .game_version = try allocator.dupe(u8, "0.7.0"),
+            .game_version = try allocator.dupe(u8, cfg.game_version),
             .tick_rate = cfg.tick_rate,
             .difficulty_level = 0,
             .hardcore = false,
-            .preserve_bugs = false,
+            .preserve_bugs = cfg.preserve_bugs,
             .detail_preset = 5,
             .gore_disabled = 0,
             .world_size = 1024.0,
@@ -2574,11 +2589,11 @@ fn buildTestReplayMulti(
             .quest_level = try allocator.dupe(u8, cfg.quest_level),
             .bootstrap_kind = try allocator.dupe(u8, "none"),
             .bootstrap_seed = 1,
-            .game_version = try allocator.dupe(u8, "0.7.0"),
+            .game_version = try allocator.dupe(u8, cfg.game_version),
             .tick_rate = cfg.tick_rate,
             .difficulty_level = 0,
             .hardcore = false,
-            .preserve_bugs = false,
+            .preserve_bugs = cfg.preserve_bugs,
             .detail_preset = 5,
             .gore_disabled = 0,
             .world_size = 1024.0,

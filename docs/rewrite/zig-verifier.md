@@ -5,16 +5,21 @@ tags:
   - zig
 ---
 
-# Zig replay verifier status (`crimson-zig/`)
+# Zig native port status (`crimson-zig/`)
 
 Last reviewed: **2026-02-26**
 
-Scope target: fast, headless, deterministic verification with a native fast-path
-for latest-ruleset **1-4 player Survival/Rush/Quest** replays (`preserve_bugs=false`),
-with explicit hard-fail behavior for unsupported native paths.
+Scope target: a full native Zig port of Crimson systems and content, with replay
+verification as one of the first mature consumers of the ported runtime.
+
+Current most-complete product surface: fast, headless, deterministic replay
+verification for **1-4 player Survival/Rush/Quest** replays, including
+preserve-bugs compatibility mode, with explicit hard-fail behavior for
+unsupported native paths.
 
 ## Ported in Zig (current)
 
+- Native runtime work is aimed at full gameplay/content parity, not a verifier-only fork.
 - Replay ingestion from `.crd` bytes (msgpack decode path in-tree).
 - Deterministic Survival/Rush/Quest sim scaffold + runtime loops for:
   - player/weapon runtime (reload/fire/ammo counters, level/XP progression),
@@ -48,13 +53,12 @@ with explicit hard-fail behavior for unsupported native paths.
 
 ## Not fully ported / known parity gaps
 
-- Native fast path is still scoped to **1-4 player Survival/Rush/Quest**:
-  - no native `preserve_bugs=true` compatibility layer.
+- Native fast path is still scoped to **1-4 player Survival/Rush/Quest**.
 - Replay compatibility is still under active expansion using differential captures;
   parity is strong on the current working set but not yet claimed for all unseen
-  Survival captures.
-- Mode/scope limits still apply to the **native** path:
-  - latest ruleset only (`preserve_bugs=false`).
+  Survival captures or all preserve-bugs-era captures.
+- Front-end, rendering, and broader non-verifier product surfaces are still
+  earlier in the Zig port than the replay runtime.
 
 ## Current replay parity snapshot (2026-02-25)
 

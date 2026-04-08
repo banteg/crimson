@@ -19,14 +19,15 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - `uv run crimson net host --mode survival --players 2 --relay-host 127.0.0.1 --relay-port 31993` (host rollback room)
 - `uv run crimson net join --code <ROOMCODE> --relay-host 127.0.0.1 --relay-port 31993` (join rollback room)
 
-## Zig verifier (current WIP)
+## Zig port (current WIP)
 
 - Workspace: `crimson-zig/`
-- CLI: `./crimson-zig/zig-out/bin/crimson-zig replay verify <replay.crd>`
-- Target scope is 1-player Survival headless verification on latest ruleset
-  (`preserve_bugs=false`) with native + wasm builds.
+- Current most-complete CLI: `./crimson-zig/zig-out/bin/crimson-zig replay verify <replay.crd>`
+- Project direction is a full native Zig port, not just a replay verifier.
+- Replay verification is currently the most mature Zig surface, with native +
+  wasm build targets already in-tree.
 - Current state is in-progress parity, not universal replay acceptance yet.
-  See [Zig replay verifier status](zig-verifier.md) for the detailed
+  See [Zig native port status](zig-verifier.md) for the detailed
   ported/not-ported list and known divergences.
 
 ## What exists now
