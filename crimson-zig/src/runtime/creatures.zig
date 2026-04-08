@@ -48,6 +48,7 @@ pub const CreatureState = struct {
     link_index: i32 = -1,
     orbit_angle: f32 = 0.0,
     orbit_radius: f32 = 0.0,
+    ranged_projectile_type: i32 = 0,
     hp: f32 = 0.0,
     max_hp: f32 = 0.0,
     move_speed: f32 = 0.0,
@@ -1437,7 +1438,7 @@ pub const CreaturePool = struct {
                     true,
                 );
                 self.entries[idx].orbit_angle = 0.9;
-                self.entries[idx].orbit_radius = 9.0;
+                self.entries[idx].ranged_projectile_type = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
                 _ = rng.rand() % 314;
             },
             0x3B => {
@@ -1476,7 +1477,7 @@ pub const CreaturePool = struct {
                 self.entries[idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
                 self.entries[idx].link_index = 0;
                 self.entries[idx].orbit_angle = 0.4;
-                self.entries[idx].orbit_radius = 26.0;
+                self.entries[idx].ranged_projectile_type = @intFromEnum(game_ids.ProjectileTypeId.spider_plasma);
                 _ = rng.rand() % 314;
             },
             0x2E => {
@@ -2055,7 +2056,7 @@ pub const CreaturePool = struct {
                     if ((creature.flags & spawn_mod.CreatureFlags.ranged_attack_variant) != 0 and
                         creature.attack_cooldown <= 0.0)
                     {
-                        const projectile_type: i32 = @intFromFloat(creature.orbit_radius);
+                        const projectile_type = creature.ranged_projectile_type;
                         queueCreatureProjectile(
                             state,
                             creature.pos,
@@ -4062,11 +4063,66 @@ test "template spawn supports survival early-stage templates" {
         &rng,
     );
     try std.testing.expectEqual(@as(usize, 9), pool.activeCount());
+    const parent = pool.entries[0];
+    try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), parent.type_id);
+    try std.testing.expectEqual(spawn_mod.CreatureAiMode.orbit_player, parent.ai_mode);
+    try expectFloatClose(200.0, parent.hp);
+    try expectFloatClose(2.2, parent.move_speed);
+    try expectFloatClose(600.0, parent.reward_value);
+    try expectFloatClose(55.0, parent.size);
+    try expectFloatClose(14.0, parent.contact_damage);
+    const child = pool.entries[1];
+    try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), child.type_id);
+    try std.testing.expectEqual(spawn_mod.CreatureAiMode.follow_link, child.ai_mode);
+    try std.testing.expectEqual(@as(i32, 0), child.link_index);
+    try expectFloatClose(40.0, child.hp);
+    try expectFloatClose(2.4, child.move_speed);
+    try expectFloatClose(60.0, child.reward_value);
+    try expectFloatClose(50.0, child.size);
+    try expectFloatClose(4.0, child.contact_damage);
+    try expectFloatClose(100.0, child.target_offset.x);
+    try expectFloatClose(0.0, child.target_offset.y);
 }
 
 test "template spawn supports survival late-stage templates" {
     var pool: CreaturePool = .{};
     var rng = spawn_mod.Crand.init(1);
+
+    try pool.spawnTemplateCall(
+        .{
+            .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_red_fast_2b),
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .heading = 1.23,
+        },
+        &rng,
+    );
+    const red_fast_entry = pool.entries[0];
+    try std.testing.expect(red_fast_entry.active);
+    try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), red_fast_entry.type_id);
+    try std.testing.expectEqual(@as(u32, 0), red_fast_entry.flags);
+    try expectFloatClose(30.0, red_fast_entry.hp);
+    try expectFloatClose(3.6, red_fast_entry.move_speed);
+    try expectFloatClose(450.0, red_fast_entry.reward_value);
+    try expectFloatClose(35.0, red_fast_entry.size);
+    try expectFloatClose(20.0, red_fast_entry.contact_damage);
+
+    try pool.spawnTemplateCall(
+        .{
+            .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_red_boss_2c),
+            .pos = .{ .x = 20.0, .y = 30.0 },
+            .heading = 1.78,
+        },
+        &rng,
+    );
+    const red_boss_entry = pool.entries[1];
+    try std.testing.expect(red_boss_entry.active);
+    try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), red_boss_entry.type_id);
+    try std.testing.expectEqual(@as(u32, 0), red_boss_entry.flags);
+    try expectFloatClose(3800.0, red_boss_entry.hp);
+    try expectFloatClose(2.0, red_boss_entry.move_speed);
+    try expectFloatClose(1500.0, red_boss_entry.reward_value);
+    try expectFloatClose(80.0, red_boss_entry.size);
+    try expectFloatClose(40.0, red_boss_entry.contact_damage);
 
     try pool.spawnTemplateCall(
         .{
@@ -4076,7 +4132,7 @@ test "template spawn supports survival late-stage templates" {
         },
         &rng,
     );
-    const split_entry = pool.entries[0];
+    const split_entry = pool.entries[2];
     try std.testing.expect(split_entry.active);
     try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.spider_sp2)), split_entry.type_id);
     try std.testing.expect((split_entry.flags & spawn_mod.CreatureFlags.split_on_death) != 0);
@@ -4094,7 +4150,7 @@ test "template spawn supports survival late-stage templates" {
         },
         &rng,
     );
-    const shock_entry = pool.entries[1];
+    const shock_entry = pool.entries[3];
     try std.testing.expect(shock_entry.active);
     try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.spider_sp1)), shock_entry.type_id);
     try std.testing.expect((shock_entry.flags & spawn_mod.CreatureFlags.ranged_attack_shock) != 0);
@@ -4104,7 +4160,7 @@ test "template spawn supports survival late-stage templates" {
     try expectFloatClose(64.0, shock_entry.size);
     try expectFloatClose(50.0, shock_entry.contact_damage);
     try expectFloatClose(0.9, shock_entry.orbit_angle);
-    try expectFloatClose(9.0, shock_entry.orbit_radius);
+    try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), shock_entry.ranged_projectile_type);
 
     try pool.spawnTemplateCall(
         .{
@@ -4114,7 +4170,7 @@ test "template spawn supports survival late-stage templates" {
         },
         &rng,
     );
-    const ranged_entry = pool.entries[2];
+    const ranged_entry = pool.entries[4];
     try std.testing.expect(ranged_entry.active);
     try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.spider_sp1)), ranged_entry.type_id);
     try std.testing.expect((ranged_entry.flags & spawn_mod.CreatureFlags.ranged_attack_variant) != 0);
@@ -4127,7 +4183,7 @@ test "template spawn supports survival late-stage templates" {
     try expectFloatClose(40.0, ranged_entry.size);
     try expectFloatClose(20.0, ranged_entry.contact_damage);
     try expectFloatClose(0.4, ranged_entry.orbit_angle);
-    try expectFloatClose(26.0, ranged_entry.orbit_radius);
+    try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.spider_plasma), ranged_entry.ranged_projectile_type);
 }
 
 test "template spawn supports quest random and ai7 templates" {
@@ -4242,6 +4298,50 @@ test "template spawn supports quest random and ai7 templates" {
 }
 
 test "template spawn supports quest spider and zombie late templates" {
+    {
+        var pool: CreaturePool = .{};
+        var rng = spawn_mod.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = @intFromEnum(spawn_mod.SpawnId.spider_sp2_random_35),
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.spider_sp2)), entry.type_id);
+        try std.testing.expectEqual(@as(u32, 0), entry.flags);
+        try expectFloatClose(58.85714340209961, entry.hp);
+        try expectFloatClose(1.5, entry.move_speed);
+        try expectFloatClose(118.0, entry.reward_value);
+        try expectFloatClose(34.0, entry.size);
+        try expectFloatClose(8.0, entry.contact_damage);
+    }
+
+    {
+        var pool: CreaturePool = .{};
+        var rng = spawn_mod.Crand.init(1);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = @intFromEnum(spawn_mod.SpawnId.spider_sp1_ai7_timer_38),
+                .pos = .{ .x = 10.0, .y = 20.0 },
+                .heading = 1.23,
+            },
+            &rng,
+        );
+        const entry = pool.entries[0];
+        try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.spider_sp1)), entry.type_id);
+        try std.testing.expect((entry.flags & spawn_mod.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expectEqual(spawn_mod.CreatureAiMode.orbit_player, entry.ai_mode);
+        try std.testing.expectEqual(@as(i32, 0), entry.link_index);
+        try expectFloatClose(50.0, entry.hp);
+        try expectFloatClose(4.8, entry.move_speed);
+        try expectFloatClose(433.0, entry.reward_value);
+        try expectFloatClose(43.0, entry.size);
+        try expectFloatClose(10.0, entry.contact_damage);
+    }
+
     {
         var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
@@ -6168,7 +6268,7 @@ test "ranged shock creature does not fire when too close" {
     try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectile_count);
 }
 
-test "ranged variant uses orbit radius as projectile type and random cooldown" {
+test "ranged variant uses explicit projectile type and random cooldown" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(3);
     var bonuses: bonus_runtime.BonusPool = .{};
@@ -6195,7 +6295,7 @@ test "ranged variant uses orbit radius as projectile type and random cooldown" {
         .reward_value = 10.0,
         .contact_damage = 0.0,
     });
-    pool.entries[0].orbit_radius = 26.0;
+    pool.entries[0].ranged_projectile_type = @intFromEnum(game_ids.ProjectileTypeId.spider_plasma);
     pool.entries[0].orbit_angle = 0.4;
 
     try pool.update(&state, players[0..], 0.001, 1024.0, &bonuses);
