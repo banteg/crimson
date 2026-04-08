@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import msgspec
 import pytest
 
 import crimson.dbg.record as dbg_record
@@ -187,3 +188,83 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
     assert meta.status == replay.header.status
     assert footer.tick_count == 1
     assert ticks[0].channels.rng_stream[0].caller is None
+
+
+def test_record_replay_to_trace_zig_emits_python_readable_trace(tmp_path: Path) -> None:
+    replay_path = tmp_path / "zig-compatible.crd"
+    out_path = tmp_path / "zig-sample.cdt"
+    replay_path.write_bytes(
+        msgspec.msgpack.encode(
+            {
+                "header": {
+                    "game_mode_id": int(GameMode.SURVIVAL),
+                    "seed": 0xBEEF,
+                    "replay_format_version": 8,
+                    "quest_level": "",
+                    "bootstrap_kind": "none",
+                    "bootstrap_seed": 0,
+                    "game_version": "0.7.0",
+                    "tick_rate": 60,
+                    "difficulty_level": 0,
+                    "hardcore": False,
+                    "preserve_bugs": False,
+                    "detail_preset": 5,
+                    "gore_disabled": 0,
+                    "world_size": 1024.0,
+                    "player_count": 1,
+                    "status": {
+                        "quest_unlock_index": 0,
+                        "quest_unlock_index_full": 0,
+                        "weapon_usage_counts": [0] * 53,
+                    },
+                    "claimed_stats": {
+                        "complete": False,
+                        "ticks": 1,
+                        "elapsed_ms": 16,
+                        "score_xp": 0,
+                        "kills": 0,
+                        "most_used_weapon_id": 1,
+                        "shots_fired": 0,
+                        "shots_hit": 0,
+                    },
+                    "input_quantization": "f32",
+                },
+                "inputs": [
+                    [
+                        [0.0, 0.0, 512.0, 512.0, 0],
+                    ],
+                ],
+                "dt": [1.0 / 60.0],
+                "events": [],
+            },
+        ),
+    )
+
+    build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
+    assert build_run.returncode == 0, dbg_record._command_detail(build_run)
+
+    verify_run = dbg_record._run_process(
+        [
+            str(dbg_record._ZIG_BIN),
+            "replay",
+            "verify",
+            str(replay_path),
+            "--debug-trace-cdt",
+            str(out_path),
+            "--debug-trace-cdt-chunk-ticks",
+            "64",
+            "--format",
+            "json",
+        ],
+        cwd=Path.cwd(),
+    )
+    assert verify_run.returncode == 0, dbg_record._command_detail(verify_run)
+
+    meta, ticks, footer = load_trace(out_path)
+    assert meta.trace_schema_version == TRACE_SCHEMA_VERSION
+    assert meta.status is not None
+    assert footer.tick_count == len(ticks)
+    assert len(ticks) > 0
+    assert len(ticks[0].channels.sim_state.players) == 1
+    if ticks[0].channels.rng_stream:
+        assert ticks[0].channels.rng_stream[0].caller is None

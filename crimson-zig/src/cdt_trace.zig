@@ -8,14 +8,13 @@ const replay_codec = @import("replay_codec.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
 const state_mod = @import("runtime/state.zig");
 
-const weapon_usage_count = replay_codec.weapon_usage_count;
 const crt_rand_mult: u32 = 214_013;
 const crt_rand_inc: u32 = 2_531_011;
 const max_rng_draws_per_phase: usize = 1_000_000;
 
 const trace_magic = "crimson_debug_trace_v1\n";
 const trace_format_version: u32 = 1;
-const trace_schema_version: i32 = 7;
+const trace_schema_version: i32 = 10;
 
 const chunk_kind_meta = "META";
 const chunk_kind_tick = "TICK";
@@ -122,6 +121,7 @@ const TraceMeta = struct {
     channel_versions: ChannelVersions = .{},
     tick_range: TickRange,
     config: TraceConfig,
+    status: replay_codec.ReplayStatus = .{},
 };
 
 const TickBlockIndexEntry = struct {
@@ -174,12 +174,6 @@ const SnapshotPlayer = struct {
     level: i32,
 };
 
-const SnapshotStatus = struct {
-    quest_unlock_index: i32 = 0,
-    quest_unlock_index_full: i32 = 0,
-    weapon_usage_counts: [weapon_usage_count]i32,
-};
-
 const SnapshotBonusTimers = struct {
     weapon_power_up_ms: i32,
     reflex_boost_ms: i32,
@@ -195,12 +189,11 @@ const SnapshotGameplay = struct {
     perk_pending_count: i32,
     perk_choices_dirty: bool = false,
     bonus_timers: SnapshotBonusTimers,
-    status: SnapshotStatus,
 };
 
 const SimStateSnapshot = struct {
     gameplay: SnapshotGameplay,
-    players: [1]SnapshotPlayer,
+    players: []const SnapshotPlayer,
 };
 
 const RngStreamRow = struct {
@@ -208,8 +201,7 @@ const RngStreamRow = struct {
     value_15: i32,
     state_before_u32: i64,
     state_after_u32: i64,
-    caller_static: ?[]const u8 = null,
-    branch_id: ?[]const u8 = null,
+    caller: ?i32 = null,
 };
 
 const TimingSampleRow = struct {
@@ -493,6 +485,7 @@ pub fn writeReplayTickTraceCdt(
             .zig_exit_code = options.verify_exit_code,
             .zig_stderr_present = options.verify_stderr_present,
         },
+        .status = replay.header.status,
     };
 
     try out.writeAll(trace_magic);
@@ -534,11 +527,6 @@ pub fn writeReplayTickTraceCdt(
     const chunk_ticks = if (options.chunk_ticks == 0) 1 else options.chunk_ticks;
     var elapsed_ms_accum: i64 = 0;
     var tick_rng_start_state: u32 = replay.header.seed;
-    const status_usage_offset_weapon_id: ?game_ids.WeaponId =
-        if (replay.header.game_mode_id == @intFromEnum(game_ids.GameModeId.quests))
-            rows[0].player_state.weapon.weapon_id
-        else
-            null;
 
     var last_tick_seen: ?i32 = null;
     for (rows) |row| {
@@ -552,7 +540,6 @@ pub fn writeReplayTickTraceCdt(
             dt_ms_i32,
             elapsed_ms_accum,
             tick_rng_start_state,
-            status_usage_offset_weapon_id,
             &creature_state,
             &projectile_state,
             &secondary_state,
@@ -683,7 +670,6 @@ fn buildTickRecord(
     dt_ms_i32: i32,
     elapsed_ms: i64,
     tick_rng_start_state: u32,
-    status_usage_offset_weapon_id: ?game_ids.WeaponId,
     creature_state: *EntityGenerationState,
     projectile_state: *EntityGenerationState,
     secondary_state: *EntityGenerationState,
@@ -694,11 +680,12 @@ fn buildTickRecord(
     errdefer if (rng_stream.len > 0) allocator.free(rng_stream);
     const checkpoint = try buildCheckpoint(allocator, row, elapsed_ms);
     errdefer deinitCheckpoint(allocator, &checkpoint);
-    const sim_state = buildSimState(
+    const sim_state = try buildSimState(
+        allocator,
         row,
         replay.header.game_mode_id,
-        status_usage_offset_weapon_id,
     );
+    errdefer allocator.free(sim_state.players);
     const entity_samples = try buildEntitySamples(
         allocator,
         row,
@@ -724,6 +711,7 @@ fn buildTickRecord(
 
 fn deinitTickRecord(allocator: std.mem.Allocator, record: *TickRecord) void {
     deinitCheckpoint(allocator, &record.channels.checkpoint);
+    allocator.free(record.channels.sim_state.players);
     allocator.free(record.channels.entity_samples.creatures);
     allocator.free(record.channels.entity_samples.projectiles);
     allocator.free(record.channels.entity_samples.secondary_projectiles);
@@ -847,19 +835,28 @@ fn buildEntitySamples(
 }
 
 fn buildSimState(
+    allocator: std.mem.Allocator,
     row: replay_runner.ReplayTickTrace,
     mode_id: i32,
-    status_usage_offset_weapon_id: ?game_ids.WeaponId,
-) SimStateSnapshot {
+) TraceWriteError!SimStateSnapshot {
     const player = row.player_state;
-    var usage_counts = gameplayStatusUsageCounts(row.gameplay_state.status_weapon_usage_counts);
-    if (status_usage_offset_weapon_id) |weapon_id| {
-        // Quest bootstrap in Python status applies one initial loadout usage increment.
-        const weapon_idx: usize = @intCast(@max(0, @intFromEnum(weapon_id)));
-        if (weapon_idx < usage_counts.len) {
-            usage_counts[weapon_idx] = usage_counts[weapon_idx] + 1;
-        }
-    }
+    const players = try allocator.alloc(SnapshotPlayer, 1);
+    players[0] = .{
+        .index = player.index,
+        .pos = .{ .x = player.pos.x, .y = player.pos.y },
+        .health = player.health,
+        .weapon = .{
+            .weapon_id = @intFromEnum(player.weapon.weapon_id),
+            .ammo = player.weapon.ammo,
+            .clip_size = player.weapon.clip_size,
+            .reload_active = player.weapon.reload_active,
+            .reload_timer = player.weapon.reload_timer,
+            .reload_timer_max = player.weapon.reload_timer_max,
+            .shot_cooldown = player.weapon.shot_cooldown,
+        },
+        .experience = player.experience,
+        .level = player.level,
+    };
     return .{
         .gameplay = .{
             .mode_id = mode_id,
@@ -874,30 +871,8 @@ fn buildSimState(
                 .double_experience_ms = bonusTimerMs(row.gameplay_state.bonuses.double_experience),
                 .freeze_ms = bonusTimerMs(row.gameplay_state.bonuses.freeze),
             },
-            .status = .{
-                .quest_unlock_index = row.gameplay_state.status_quest_unlock_index,
-                .quest_unlock_index_full = row.gameplay_state.status_quest_unlock_index_full,
-                .weapon_usage_counts = usage_counts,
-            },
         },
-        .players = .{
-            .{
-                .index = player.index,
-                .pos = .{ .x = player.pos.x, .y = player.pos.y },
-                .health = player.health,
-                .weapon = .{
-                    .weapon_id = @intFromEnum(player.weapon.weapon_id),
-                    .ammo = player.weapon.ammo,
-                    .clip_size = player.weapon.clip_size,
-                    .reload_active = player.weapon.reload_active,
-                    .reload_timer = player.weapon.reload_timer,
-                    .reload_timer_max = player.weapon.reload_timer_max,
-                    .shot_cooldown = player.weapon.shot_cooldown,
-                },
-                .experience = player.experience,
-                .level = player.level,
-            },
-        },
+        .players = players,
     };
 }
 
@@ -969,15 +944,6 @@ fn deinitCheckpoint(allocator: std.mem.Allocator, checkpoint: *const CheckpointC
             allocator.free(pairs);
         }
     }
-}
-
-fn gameplayStatusUsageCounts(raw: state_mod.WeaponUsageCounts) [weapon_usage_count]i32 {
-    var out: [weapon_usage_count]i32 = [_]i32{0} ** weapon_usage_count;
-    for (0..weapon_usage_count) |idx| {
-        const weapon_id: game_ids.WeaponId = @enumFromInt(idx);
-        out[idx] = @intCast(raw.get(weapon_id));
-    }
-    return out;
 }
 
 fn buildPerkChoices(
