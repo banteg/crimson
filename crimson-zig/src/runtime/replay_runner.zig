@@ -295,13 +295,28 @@ pub fn runReplayScaffoldWithTrace(
             tick_inputs_storage[idx] = mapReplayInputToGameInput(input);
         }
 
+        var step_options: replay_step.StepOptions = .{};
+        var trace_collector: TickTraceCollector = undefined;
+        var trace_collector_active = false;
+        defer if (trace_collector_active) trace_collector.deinit();
+        defer if (trace_collector_active) context.state.rng.setTraceSink(null, null);
+        if (trace_out != null) {
+            trace_collector = TickTraceCollector.init(trace_allocator);
+            trace_collector_active = true;
+
+            context.state.rng.setTraceSink(&trace_collector, TickTraceCollector.onRngDraw);
+
+            step_options.timing_trace_ctx = &trace_collector;
+            step_options.timing_trace_sink = TickTraceCollector.onTimingSample;
+        }
+
         const step_result = try replay_step.stepTick(
             &context,
             tick_index,
             tick_inputs_storage[0..tick_input_len],
             events[tick_event_start..tick_event_end],
             dt_tick,
-            .{},
+            step_options,
         );
 
         if (trace_out) |trace| {
@@ -312,6 +327,10 @@ pub fn runReplayScaffoldWithTrace(
             };
             const players = context.playersConst();
             const player0 = players[0];
+            const rng_rows = try trace_collector.takeRngRows();
+            errdefer if (rng_rows.len > 0) trace_allocator.free(rng_rows);
+            const timing_samples = try trace_collector.takeTimingSamples();
+            errdefer if (timing_samples.len > 0) trace_allocator.free(timing_samples);
             try trace.append(
                 trace_allocator,
                 try buildTickTrace(
@@ -334,6 +353,8 @@ pub fn runReplayScaffoldWithTrace(
                     step_result.rng_after_wave_spawns,
                     step_result.rng_after_spawns,
                     step_result.rng_after_bonus_update,
+                    rng_rows,
+                    timing_samples,
                 ),
             );
         }
@@ -446,6 +467,8 @@ fn buildTickTrace(
     rng_after_wave_spawns: u32,
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
+    rng_rows: []const replay_diagnostic_trace.ReplayTickRngDraw,
+    timing_samples: []const replay_diagnostic_trace.ReplayTickTimingSample,
 ) !ReplayTickTrace {
     return replay_diagnostic_trace.buildReplayTickTraceWithEntities(
         allocator,
@@ -467,8 +490,66 @@ fn buildTickTrace(
         rng_after_wave_spawns,
         rng_after_spawns,
         rng_after_bonus_update,
+        rng_rows,
+        timing_samples,
     );
 }
+
+const TickTraceCollector = struct {
+    allocator: std.mem.Allocator,
+    failed: bool = false,
+    rng_rows: std.ArrayList(replay_diagnostic_trace.ReplayTickRngDraw) = .empty,
+    timing_samples: std.ArrayList(replay_diagnostic_trace.ReplayTickTimingSample) = .empty,
+
+    fn init(allocator: std.mem.Allocator) TickTraceCollector {
+        return .{
+            .allocator = allocator,
+        };
+    }
+
+    fn deinit(self: *TickTraceCollector) void {
+        self.rng_rows.deinit(self.allocator);
+        self.timing_samples.deinit(self.allocator);
+    }
+
+    fn takeRngRows(self: *TickTraceCollector) error{OutOfMemory}![]const replay_diagnostic_trace.ReplayTickRngDraw {
+        if (self.failed) return error.OutOfMemory;
+        if (self.rng_rows.items.len == 0) return &.{};
+        return self.rng_rows.toOwnedSlice(self.allocator);
+    }
+
+    fn takeTimingSamples(self: *TickTraceCollector) error{OutOfMemory}![]const replay_diagnostic_trace.ReplayTickTimingSample {
+        if (self.failed) return error.OutOfMemory;
+        if (self.timing_samples.items.len == 0) return &.{};
+        return self.timing_samples.toOwnedSlice(self.allocator);
+    }
+
+    fn onRngDraw(ctx: ?*anyopaque, draw: spawn_mod.Crand.TraceDraw) void {
+        var self: *TickTraceCollector = @ptrCast(@alignCast(ctx orelse return));
+        if (self.failed) return;
+
+        self.rng_rows.append(self.allocator, .{
+            .tick_call_index = std.math.cast(i32, self.rng_rows.items.len + 1) orelse {
+                self.failed = true;
+                return;
+            },
+            .value_15 = @intCast(draw.value_15),
+            .state_before_u32 = draw.state_before,
+            .state_after_u32 = draw.state_after,
+        }) catch {
+            self.failed = true;
+        };
+    }
+
+    fn onTimingSample(ctx: ?*anyopaque, sample: replay_diagnostic_trace.ReplayTickTimingSample) void {
+        var self: *TickTraceCollector = @ptrCast(@alignCast(ctx orelse return));
+        if (self.failed) return;
+
+        self.timing_samples.append(self.allocator, sample) catch {
+            self.failed = true;
+        };
+    }
+};
 
 fn f32Bits(value: f32) u32 {
     return @bitCast(value);
@@ -1453,6 +1534,46 @@ test "rush scaffold accepts capture bootstrap events" {
     try std.testing.expectEqual(@as(usize, 1), result.ticks);
     try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.player_weapon_id);
     try std.testing.expectEqual(@as(i32, 123), result.player_experience);
+}
+
+test "survival trace records authoritative rng rows and timing samples" {
+    const allocator = std.testing.allocator;
+
+    const replay = try buildTestReplay(allocator, .{
+        .seed = 0x1234,
+        .tick_rate = 60,
+        .inputs = &.{replay_codec.fire_down_flag | replay_codec.fire_pressed_flag},
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+    replay.inputs[0][0].aim_x = 700.0;
+    replay.inputs[0][0].aim_y = 512.0;
+
+    var trace: std.ArrayList(ReplayTickTrace) = .empty;
+    defer trace.deinit(allocator);
+    defer deinitReplayTickTraceRows(allocator, trace.items);
+    _ = try runReplayScaffoldWithTrace(
+        allocator,
+        replay,
+        &trace,
+        .{},
+    );
+
+    try std.testing.expectEqual(@as(usize, 1), trace.items.len);
+    const row = trace.items[0];
+    try std.testing.expectEqual(@as(usize, 1), row.timing_samples.len);
+    try std.testing.expectEqualStrings("gpur_enter", row.timing_samples[0].phase);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0 / 60.0), row.timing_samples[0].frame_dt_f32.?, 1e-6);
+    try std.testing.expectEqual(@as(i32, 16), row.timing_samples[0].frame_dt_ms_i32.?);
+    try std.testing.expectEqualStrings("gameplay_update_and_render", row.timing_samples[0].mode_fn.?);
+
+    try std.testing.expect(row.rng_rows.len > 0);
+    try std.testing.expectEqual(@as(i32, 1), row.rng_rows[0].tick_call_index);
+    for (row.rng_rows[1..], 1..) |draw, idx| {
+        try std.testing.expectEqual(@as(i32, @intCast(idx + 1)), draw.tick_call_index);
+        try std.testing.expectEqual(row.rng_rows[idx - 1].state_after_u32, draw.state_before_u32);
+    }
+    try std.testing.expectEqual(row.rng.rng_state, row.rng_rows[row.rng_rows.len - 1].state_after_u32);
 }
 
 test "rush scaffold original capture bootstrap keeps packed move vector behavior" {

@@ -116,9 +116,12 @@ pub const StepOptions = struct {
     hooks: StepHooks = .{},
     trace_sink: ?diagnostic_trace.Sink = null,
     diagnostic_trace_sink: ?DiagnosticTraceSink = null,
+    timing_trace_ctx: ?*anyopaque = null,
+    timing_trace_sink: ?TimingTraceSink = null,
 };
 
 pub const DiagnosticTraceSink = *const fn (trace: diagnostic_trace_mod.ReplayTickTrace) void;
+pub const TimingTraceSink = *const fn (ctx: ?*anyopaque, sample: diagnostic_trace_mod.ReplayTickTimingSample) void;
 
 pub const diagnostic_trace = struct {
     pub const TickSnapshot = struct {
@@ -231,6 +234,22 @@ pub fn stepTick(
 
     const dt_ms = narrowF32(frame.dt * 1000.0);
     frame.dt_ms_i32 = timing.ftolMsI32(frame.dt);
+    emitTimingTrace(options, .{
+        .tick_index = @intCast(tick_index),
+        .gameplay_frame = @intCast(tick_index),
+        .phase = "gpur_enter",
+        .frame_dt_f32 = frame.dt,
+        .frame_dt_ms_i32 = frame.dt_ms_i32,
+        .frame_dt_ms_f32 = @floatFromInt(frame.dt_ms_i32),
+        .time_scale_active_entry = context.state.time_scale_active,
+        .time_scale_active_current = context.state.time_scale_active,
+        .time_scale_factor = currentTimeScaleFactor(
+            context.state.bonuses.reflex_boost,
+            context.state.time_scale_active,
+        ),
+        .bonus_reflex_boost_timer = context.state.bonuses.reflex_boost,
+        .mode_fn = "gameplay_update_and_render",
+    });
     const dt_sim_ms = frame.dt_sim * 1000.0;
     const elapsed_before_ms: f32 = if (context.game_mode == .rush)
         @floatFromInt(context.elapsed_ms_sim_rush)
@@ -647,6 +666,28 @@ fn callPhaseHook(
     }
 }
 
+fn emitTimingTrace(
+    options: StepOptions,
+    sample: diagnostic_trace_mod.ReplayTickTimingSample,
+) void {
+    if (options.timing_trace_sink) |sink| {
+        sink(options.timing_trace_ctx, sample);
+    }
+}
+
+fn currentTimeScaleFactor(
+    reflex_boost_timer: f32,
+    time_scale_active: bool,
+) f32 {
+    if (!time_scale_active) return 1.0;
+
+    const reflex_f32 = narrowF32(reflex_boost_timer);
+    if (reflex_f32 >= 1.0) return narrowF32(0.3);
+    return narrowF32(
+        (@as(f64, 1.0) - @as(f64, @floatCast(reflex_f32))) * 0.7 + 0.3,
+    );
+}
+
 fn cameraShakeUpdate(
     state: *state_mod.GameplayState,
     dt: f32,
@@ -771,6 +812,8 @@ fn buildDiagnosticTrace(
         frame.rng_after_wave_spawns,
         frame.rng_after_spawns,
         frame.rng_after_bonus_update,
+        &.{},
+        &.{},
     );
 }
 

@@ -377,8 +377,11 @@ pub fn applyCaptureStateReset(
     const perk_interval_man_bomb = state.perk_interval_man_bomb;
     const perk_interval_fire_cough = state.perk_interval_fire_cough;
     const perk_interval_hot_tempered = state.perk_interval_hot_tempered;
+    const rng_trace_ctx = state.rng.trace_ctx;
+    const rng_trace_sink = state.rng.trace_sink;
 
     state.* = state_mod.GameplayState.init(rng_state);
+    state.rng.setTraceSink(rng_trace_ctx, rng_trace_sink);
     state.status_quest_unlock_index = status_quest_unlock_index;
     state.status_quest_unlock_index_full = status_quest_unlock_index_full;
     state.status_weapon_usage_counts = status_weapon_usage_counts;
