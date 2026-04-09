@@ -1,6 +1,5 @@
 const std = @import("std");
 const game_ids = @import("../../game_ids.zig");
-const native_math = @import("../native_math.zig");
 const replay_codec = @import("../../replay_codec.zig");
 
 const capture_state = @import("capture_state.zig");
@@ -9,7 +8,6 @@ const perks = @import("../perks.zig");
 const spawn_mod = @import("../spawn.zig");
 const state_mod = @import("../state.zig");
 
-const narrowF32 = native_math.roundF32;
 const GameModeId = game_ids.GameModeId;
 const PerkId = perks.PerkId;
 
@@ -60,37 +58,6 @@ pub fn classifyTickEvent(
         .capture_state_transition => .post_state_transition,
         else => .pre_step,
     };
-}
-
-pub fn applyReplayPerkCreatureEffects(
-    perk_id: PerkId,
-    state: *state_mod.GameplayState,
-    creatures: *creatures_mod.CreaturePool,
-    dt_frame: f32,
-) void {
-    switch (perk_id) {
-        PerkId.breathing_room => {
-            for (&creatures.entries) |*creature| {
-                if (!creature.active) continue;
-                creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt_frame);
-            }
-        },
-        PerkId.lifeline_50_50 => {
-            var kill_toggle = false;
-            for (&creatures.entries) |*creature| {
-                if (kill_toggle and
-                    creature.active and
-                    creature.hp <= 500.0 and
-                    (creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0)
-                {
-                    creature.active = false;
-                    consumeSpawnBurstRng(state, 4);
-                }
-                kill_toggle = !kill_toggle;
-            }
-        },
-        else => {},
-    }
 }
 
 pub fn applyReplayEvent(
@@ -152,11 +119,11 @@ pub fn applyReplayEvent(
                 }
                 return error.InvalidPerkPickEvent;
             }
-            applyReplayPerkCreatureEffects(
+            perks.applyReplayPerkCreatureEffects(
                 applied.?,
                 state,
                 creatures,
-                narrowF32(dt_frame),
+                dt_frame,
             );
             outcome.perk_pick_count_delta = 1;
             return outcome;
@@ -192,11 +159,11 @@ pub fn applyReplayEvent(
             perks.applyPerk(state, players, perk_id) catch |err| switch (err) {
                 error.UnsupportedPerkApplyHandler => return error.UnsupportedPerkApplyHandler,
             };
-            applyReplayPerkCreatureEffects(
+            perks.applyReplayPerkCreatureEffects(
                 perk_id,
                 state,
                 creatures,
-                narrowF32(dt_frame),
+                dt_frame,
             );
             if (capture_perk_apply.outside_before) {
                 if (capture_perk_apply.pending_after) |pending_after| {
@@ -241,18 +208,6 @@ pub fn applyReplayEvent(
             }
             return outcome;
         },
-    }
-}
-
-fn consumeSpawnBurstRng(
-    state: *state_mod.GameplayState,
-    count: usize,
-) void {
-    for (0..count) |_| {
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
     }
 }
 
@@ -356,7 +311,7 @@ test "lifeline 50-50 replay perk effect deactivates every other eligible creatur
     creatures.entries[3].flags = spawn_mod.CreatureFlags.anim_ping_pong;
     creatures.entries[5].hp = 600.0;
 
-    applyReplayPerkCreatureEffects(
+    perks.applyReplayPerkCreatureEffects(
         PerkId.lifeline_50_50,
         &state,
         &creatures,

@@ -3,20 +3,18 @@ const game_ids = @import("../game_ids.zig");
 const replay_codec = @import("../replay_codec.zig");
 const replay_runner = @import("replay_runner.zig");
 
-const quest_spawn_logic = @import("../quest_spawn/logic_full.zig");
 const bonuses_mod = @import("bonuses.zig");
 const player_runtime = @import("player.zig");
 const replay_context_mod = @import("replay/context.zig");
 const replay_events = @import("replay/events.zig");
+const replay_setup = @import("replay/setup.zig");
 const replay_step = @import("replay/step.zig");
-const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
 const weapon_data = @import("weapon_data.zig");
 
 const GameModeId = game_ids.GameModeId;
 const PerkId = game_ids.PerkId;
 const SimulationContext = replay_context_mod.SimulationContext;
-const max_test_quest_spawn_entries: usize = 1024;
 const epsilon: f32 = 1e-6;
 
 pub const ReplayInfoError = replay_runner.ReplayRunnerError || error{
@@ -215,61 +213,13 @@ pub fn collect(
     }
 
     const events = replay.events;
-    var original_capture_replay = false;
-    var has_capture_creature_spawn_events = false;
-    for (events) |event| {
-        switch (event) {
-            .capture_bootstrap => original_capture_replay = true,
-            .capture_creature_spawn => has_capture_creature_spawn_events = true,
-            else => {},
-        }
-    }
-    const capture_spawn_events_authoritative = original_capture_replay and has_capture_creature_spawn_events;
-    const apply_world_dt_steps = !original_capture_replay;
-    const defer_menu_open_events = original_capture_replay;
-
-    var quest_start_weapon_id_for_reset: i32 = @intFromEnum(game_ids.WeaponId.pistol);
-    var quest_spawn_entries_storage: [max_test_quest_spawn_entries]spawn_mod.QuestSpawnEntry = undefined;
-    var quest_spawn_entries: []spawn_mod.QuestSpawnEntry = quest_spawn_entries_storage[0..0];
-
-    if (game_mode == .quests) {
-        const level_key = resolveQuestLevelKey(header) orelse return error.UnsupportedQuestSpawnTable;
-        const built = quest_spawn_logic.buildQuestSpawnTable(
-            level_key,
-            header.player_count,
-            header.seed,
-            header.world_size,
-            quest_spawn_entries_storage[0..],
-        ) catch |build_err| switch (build_err) {
-            error.UnsupportedQuestSpawnTable => return error.UnsupportedQuestSpawnTable,
-            error.OutOfSpace => return error.UnsupportedQuestSpawnTable,
-        };
-        quest_spawn_entries = quest_spawn_entries_storage[0..built.entries.len];
-        quest_start_weapon_id_for_reset = @intFromEnum(built.start_weapon_id);
-        if (quest_spawn_entries.len == 0) {
-            return error.UnsupportedQuestSpawnTable;
-        }
-        if (header.hardcore) {
-            spawn_mod.applyHardcoreQuestSpawnTableAdjustment(quest_spawn_entries);
-        }
-        if (capture_spawn_events_authoritative) {
-            quest_spawn_entries = quest_spawn_entries_storage[0..0];
-        }
-    }
-
-    var context = replay_context_mod.SimulationContext.initFromReplayHeader(
+    var context = replay_setup.prepareSimulationContext(
+        game_mode,
         header,
+        events,
         .{
             .strict_events = true,
             .inter_tick_rand_draws = 0,
-            .defer_menu_open_events = defer_menu_open_events,
-            .apply_world_dt_steps = apply_world_dt_steps,
-            .capture_spawn_events_authoritative = capture_spawn_events_authoritative,
-            .quest_start_weapon_id_for_reset = quest_start_weapon_id_for_reset,
-            .quest_spawn_entries = if (game_mode == .quests and !capture_spawn_events_authoritative)
-                quest_spawn_entries
-            else
-                null,
         },
     ) catch |err| switch (err) {
         error.InvalidPlayerCount => return error.UnsupportedPlayerCount,
@@ -278,14 +228,6 @@ pub fn collect(
         error.UnsupportedGameMode => return error.UnsupportedGameMode,
         error.UnsupportedQuestSpawnTable => return error.UnsupportedQuestSpawnTable,
     };
-    context.rebindQuestSpawnEntries();
-
-    if (game_mode == .quests) {
-        const weapon_id = @max(1, quest_start_weapon_id_for_reset);
-        for (context.players()) |*player| {
-            player_runtime.weaponAssignPlayer(player, weapon_data.weaponIdFromInt(weapon_id));
-        }
-    }
 
     const ticks_to_simulate: usize = if (options.max_ticks) |max_ticks|
         @min(max_ticks, replay.tickCount())
@@ -735,31 +677,4 @@ fn makeEvent(
 
 fn ensureSupportedReplayFeatureFlags(demo_mode_active: bool) ReplayInfoError!void {
     if (demo_mode_active) return error.UnsupportedDemoMode;
-}
-
-const ParsedQuestLevel = struct {
-    major: i32,
-    minor: i32,
-};
-
-fn parseQuestLevel(value: []const u8) ?ParsedQuestLevel {
-    const dot = std.mem.indexOfScalar(u8, value, '.') orelse return null;
-    if (dot == 0 or dot + 1 >= value.len) return null;
-    const major = std.fmt.parseInt(i32, value[0..dot], 10) catch return null;
-    const minor = std.fmt.parseInt(i32, value[dot + 1 ..], 10) catch return null;
-    return .{ .major = major, .minor = minor };
-}
-
-fn resolveQuestLevelKey(header: replay_codec.ReplayHeader) ?i32 {
-    if (parseQuestLevel(header.quest_level)) |parsed| {
-        if (parsed.major >= 1 and parsed.major <= 5 and parsed.minor >= 1 and parsed.minor <= 10) {
-            return parsed.major * 100 + parsed.minor;
-        }
-    }
-    if (header.seed > @as(u32, @intCast(std.math.maxInt(i32)))) return null;
-    const seed_i32: i32 = @intCast(header.seed);
-    const major = @divTrunc(seed_i32, 100);
-    const minor = @mod(seed_i32, 100);
-    if (major < 1 or major > 5 or minor < 1 or minor > 10) return null;
-    return major * 100 + minor;
 }

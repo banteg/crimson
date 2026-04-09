@@ -3,6 +3,7 @@ const game_ids = @import("../../game_ids.zig");
 const replay_codec = @import("../../replay_codec.zig");
 
 const bonus_runtime = @import("../bonuses.zig");
+const runtime_bootstrap = @import("../bootstrap.zig");
 const creatures_mod = @import("../creatures.zig");
 const particles_mod = @import("../particles.zig");
 const player_runtime = @import("../player.zig");
@@ -11,16 +12,7 @@ const secondary_projectiles_mod = @import("../secondary_projectiles.zig");
 const spawn_mod = @import("../spawn.zig");
 const state_mod = @import("../state.zig");
 
-const capture_state = @import("capture_state.zig");
-
 pub const max_sim_quest_spawn_entries: usize = 1024;
-const terrain_random_prelude_draws: usize = 3;
-const terrain_density_base: u64 = 800;
-const terrain_density_overlay: u64 = 0x23;
-const terrain_density_detail: u64 = 0x0F;
-const terrain_density_shift: u6 = 19;
-const terrain_rand_draws_per_stamp: u64 = 3;
-
 pub const SimulationContextError = error{
     InvalidPlayerCount,
     InvalidWorldSize,
@@ -175,12 +167,12 @@ pub const SimulationContext = struct {
         context.creatures.capture_spawn_events_authoritative = options.capture_spawn_events_authoritative;
 
         if (game_mode == .rush) {
-            capture_state.enforceRushLoadout(context.players());
+            runtime_bootstrap.enforceRushLoadout(context.players());
         } else if (game_mode == .quests) {
-            capture_state.applyQuestStageFromHeader(&context.state, header);
+            runtime_bootstrap.applyQuestStageFromHeader(&context.state, header);
         }
 
-        advanceReplayBootstrapRng(
+        runtime_bootstrap.advanceReplayBootstrapRng(
             &context.state.rng,
             game_mode,
             header.status.quest_unlock_index,
@@ -258,61 +250,6 @@ pub const SimulationContext = struct {
         self.quest_spawn_entries = self.quest_spawn_entries_storage[0..entries.len];
     }
 };
-
-fn terrainStampingDraws(width: i32, height: i32) usize {
-    const clamped_width: u64 = @intCast(@max(width, 0));
-    const clamped_height: u64 = @intCast(@max(height, 0));
-    const area = clamped_width * clamped_height;
-    const stamps = ((area * terrain_density_base) >> terrain_density_shift) +
-        ((area * terrain_density_overlay) >> terrain_density_shift) +
-        ((area * terrain_density_detail) >> terrain_density_shift);
-    return @intCast(stamps * terrain_rand_draws_per_stamp);
-}
-
-fn advanceRng(rng: *spawn_mod.Crand, draws: usize) void {
-    for (0..draws) |_| _ = rng.rand();
-}
-
-fn advanceUnlockTerrainRng(
-    rng: *spawn_mod.Crand,
-    unlock_index: i32,
-    width: i32,
-    height: i32,
-) void {
-    advanceRng(rng, terrain_random_prelude_draws);
-    if (unlock_index >= 40 and (rng.rand() & 7) == 3) {
-        advanceRng(rng, terrainStampingDraws(width, height));
-        return;
-    }
-    if (unlock_index >= 30 and (rng.rand() & 7) == 3) {
-        advanceRng(rng, terrainStampingDraws(width, height));
-        return;
-    }
-    if (unlock_index >= 20 and (rng.rand() & 7) == 3) {
-        advanceRng(rng, terrainStampingDraws(width, height));
-        return;
-    }
-    advanceRng(rng, terrainStampingDraws(width, height));
-}
-
-fn advanceReplayBootstrapRng(
-    rng: *spawn_mod.Crand,
-    game_mode: game_ids.GameModeId,
-    unlock_index: i32,
-    terrain_width: i32,
-    terrain_height: i32,
-) void {
-    switch (game_mode) {
-        .survival, .rush, .typo, .tutorial => {
-            advanceUnlockTerrainRng(rng, unlock_index, terrain_width, terrain_height);
-        },
-        .quests => {
-            advanceUnlockTerrainRng(rng, unlock_index, terrain_width, terrain_height);
-            _ = rng.rand();
-            advanceRng(rng, terrainStampingDraws(terrain_width, terrain_height));
-        },
-    }
-}
 
 fn testHeader(game_mode: game_ids.GameModeId) replay_codec.ReplayHeader {
     return .{

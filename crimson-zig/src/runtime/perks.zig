@@ -8,6 +8,7 @@ const creatures_mod = @import("creatures.zig");
 const owner_ref = @import("owner_ref.zig");
 const particles_mod = @import("particles.zig");
 const player_runtime = @import("player.zig");
+const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
 
 const narrowF32 = native_math.roundF32;
@@ -343,6 +344,37 @@ pub fn applyPerk(
     }
 }
 
+pub fn applyReplayPerkCreatureEffects(
+    perk_id: PerkId,
+    state: *state_mod.GameplayState,
+    creatures: *creatures_mod.CreaturePool,
+    dt_frame: f32,
+) void {
+    switch (perk_id) {
+        PerkId.breathing_room => {
+            for (&creatures.entries) |*creature| {
+                if (!creature.active) continue;
+                creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt_frame);
+            }
+        },
+        PerkId.lifeline_50_50 => {
+            var kill_toggle = false;
+            for (&creatures.entries) |*creature| {
+                if (kill_toggle and
+                    creature.active and
+                    creature.hp <= 500.0 and
+                    (creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0)
+                {
+                    creature.active = false;
+                    consumeSpawnBurstRng(state, 4);
+                }
+                kill_toggle = !kill_toggle;
+            }
+        },
+        else => {},
+    }
+}
+
 fn consumeSpawnBurstRng(
     state: *state_mod.GameplayState,
     count: usize,
@@ -429,6 +461,20 @@ pub fn updatePerkEffects(
         } else {
             player.health -= dt * 3.3333333;
         }
+    }
+}
+
+pub fn updateEvilEyesTargets(
+    players: []state_mod.PlayerState,
+    creatures: []const creatures_mod.CreatureState,
+) void {
+    if (players.len == 0) return;
+    for (players) |*player| {
+        if (player.health <= 0.0 or !perkActive(player, PerkId.evil_eyes)) {
+            player.evil_eyes_target_creature = -1;
+            continue;
+        }
+        player.evil_eyes_target_creature = creatureFindInRadius(creatures, player.aim, 12.0, 0);
     }
 }
 
@@ -1412,4 +1458,102 @@ test "lean mean exp machine tick awards player zero only in multiplayer" {
     updatePerkEffects(&state, players[0..], 0.1);
     try std.testing.expectEqual(@as(i32, 20), players[0].experience);
     try std.testing.expectEqual(@as(i32, 0), players[1].experience);
+}
+
+test "lifeline 50-50 replay perk effect deactivates every other eligible creature slot" {
+    var state = state_mod.GameplayState.init(1);
+    const before_rng = state.rng.state;
+    var creatures: creatures_mod.CreaturePool = .{};
+
+    for (0..8) |idx| {
+        creatures.entries[idx].active = true;
+        creatures.entries[idx].hp = 100.0;
+        creatures.entries[idx].pos = .{
+            .x = @floatFromInt(idx),
+            .y = @as(f32, @floatFromInt(idx)) * 10.0,
+        };
+        creatures.entries[idx].flags = 0;
+    }
+    creatures.entries[3].flags = spawn_mod.CreatureFlags.anim_ping_pong;
+    creatures.entries[5].hp = 600.0;
+
+    applyReplayPerkCreatureEffects(
+        PerkId.lifeline_50_50,
+        &state,
+        &creatures,
+        0.016,
+    );
+
+    const expected = [_]bool{ true, false, true, true, true, true, true, false };
+    for (expected, 0..) |active_expected, idx| {
+        try std.testing.expectEqual(active_expected, creatures.entries[idx].active);
+    }
+    try std.testing.expect(before_rng != state.rng.state);
+}
+
+test "evil eyes targeting defaults to alive player slot" {
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 0.0 },
+        .{
+            .index = 1,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 100.0, .y = 200.0 },
+        },
+    };
+    players[1].perk_counts.set(PerkId.evil_eyes, 1);
+
+    var creatures = [_]creatures_mod.CreatureState{
+        .{
+            .active = true,
+            .pos = .{ .x = 100.0, .y = 200.0 },
+            .lifecycle_stage = creature_lifecycle.alive,
+            .size = 50.0,
+            .hp = 100.0,
+        },
+    };
+
+    updateEvilEyesTargets(players[0..], creatures[0..]);
+    try std.testing.expectEqual(@as(i32, -1), players[0].evil_eyes_target_creature);
+    try std.testing.expectEqual(@as(i32, 0), players[1].evil_eyes_target_creature);
+}
+
+test "evil eyes targeting assigns each alive owner" {
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 100.0, .y = 200.0 },
+        },
+        .{
+            .index = 1,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 140.0, .y = 200.0 },
+        },
+    };
+    players[0].perk_counts.set(PerkId.evil_eyes, 1);
+    players[1].perk_counts.set(PerkId.evil_eyes, 1);
+
+    var creatures = [_]creatures_mod.CreatureState{
+        .{
+            .active = true,
+            .pos = .{ .x = 100.0, .y = 200.0 },
+            .lifecycle_stage = creature_lifecycle.alive,
+            .size = 50.0,
+            .hp = 100.0,
+        },
+        .{
+            .active = true,
+            .pos = .{ .x = 140.0, .y = 200.0 },
+            .lifecycle_stage = creature_lifecycle.alive,
+            .size = 50.0,
+            .hp = 100.0,
+        },
+    };
+
+    updateEvilEyesTargets(players[0..], creatures[0..]);
+    try std.testing.expectEqual(@as(i32, 0), players[0].evil_eyes_target_creature);
+    try std.testing.expectEqual(@as(i32, 1), players[1].evil_eyes_target_creature);
 }
