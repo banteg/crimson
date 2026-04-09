@@ -23,12 +23,21 @@ def test_zig_replay_verify_respects_max_ticks_partial_run_contract(tmp_path: Pat
         [str(replay_path), "--format", "json", "--max-ticks", "2"],
     )
 
-    assert python_payload["status"] == "ok"
-    assert python_payload["header_claim"] is None
-    assert zig_payload["status"] == python_payload["status"]
-    assert zig_payload["header_claim"] is None
-    assert zig_payload["score_claim"] == python_payload["score_claim"]
-    assert zig_payload["run_result"] == python_payload["run_result"]
+    assert zig_payload == python_payload
+
+
+def test_zig_replay_verify_matches_python_full_payload_on_simple_replay(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    python_payload = _run_python_replay_verify(
+        [str(replay_path), "--format", "json"],
+    )
+    zig_payload = _run_zig_replay_verify(
+        [str(replay_path), "--format", "json"],
+    )
+
+    assert zig_payload == python_payload
 
 
 def _run_python_replay_verify(args: list[str]) -> dict[str, object]:
