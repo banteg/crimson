@@ -3,12 +3,11 @@ const std = @import("std");
 const msgpack = @import("msgpack");
 
 const cdt_trace = @import("cdt_trace.zig");
-const hash = @import("hash.zig");
 const replay_codec = @import("replay_codec.zig");
 const diagnostic_trace = @import("runtime/replay/diagnostic_trace.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
 
-const replay_schema_version: i32 = 1;
+const replay_schema_version: i32 = 2;
 
 pub const CommandOutput = struct {
     stdout: []u8,
@@ -97,7 +96,6 @@ const VerifyPayload = struct {
     schema_version: i32,
     status: []const u8,
     replay: []const u8,
-    replay_sha256: []const u8,
     run_result: RunResult,
     header_claim: ?HeaderClaimPayload,
     score_claim: ?struct {},
@@ -253,9 +251,6 @@ fn runNativeVerify(
         };
     };
 
-    var replay_sha256: [64]u8 = undefined;
-    hash.sha256HexLower(replay_bytes, &replay_sha256);
-
     const run_result: RunResult = .{
         .game_mode_id = header.game_mode_id,
         .tick_rate = header.tick_rate,
@@ -302,7 +297,6 @@ fn runNativeVerify(
     const payload = try buildVerifyPayload(
         allocator,
         resolution.resolved_path,
-        replay_sha256[0..],
         run_result,
         status,
         header_claim_payload_storage,
@@ -499,7 +493,6 @@ fn buildHeaderClaimPayload(
 fn buildVerifyPayload(
     allocator: std.mem.Allocator,
     replay_path: []const u8,
-    replay_sha256: []const u8,
     run_result: RunResult,
     status: []const u8,
     header_claim: ?HeaderClaimPayload,
@@ -508,7 +501,6 @@ fn buildVerifyPayload(
         .schema_version = replay_schema_version,
         .status = status,
         .replay = replay_path,
-        .replay_sha256 = replay_sha256,
         .run_result = run_result,
         .header_claim = header_claim,
         .score_claim = null,
@@ -1178,7 +1170,6 @@ test "build verify payload header mismatch" {
     const payload = try buildVerifyPayload(
         allocator,
         "/tmp/replay.crd",
-        "1234567890123456789012345678901234567890123456789012345678901234",
         .{
             .game_mode_id = 1,
             .tick_rate = 60,
@@ -1196,8 +1187,10 @@ test "build verify payload header mismatch" {
     );
     defer allocator.free(payload);
 
+    try std.testing.expect(std.mem.indexOf(u8, payload, "\"schema_version\":2") != null);
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"status\":\"header_stats_mismatch\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"mismatched_fields\":[\"score_xp\"]") != null);
+    try std.testing.expect(std.mem.indexOf(u8, payload, "replay_sha256") == null);
 }
 
 test "build verify payload escapes replay path via json stringify" {
@@ -1205,7 +1198,6 @@ test "build verify payload escapes replay path via json stringify" {
     const payload = try buildVerifyPayload(
         allocator,
         "test\"\nreplay.crd",
-        "1234567890123456789012345678901234567890123456789012345678901234",
         .{
             .game_mode_id = 1,
             .tick_rate = 60,
