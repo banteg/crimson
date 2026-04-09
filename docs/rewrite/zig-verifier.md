@@ -9,17 +9,21 @@ tags:
 
 Last reviewed: **2026-02-26**
 
-Scope target: a full native Zig port of Crimson systems and content, with replay
-verification as one of the first mature consumers of the ported runtime.
+Scope target: a full native Zig port of Crimson systems, content, codecs, and
+product surfaces.
 
-Current most-complete product surface: fast, headless, deterministic replay
-verification for **1-4 player Survival/Rush/Quest** replays, including
-preserve-bugs compatibility mode, with explicit hard-fail behavior for
-unsupported native paths.
+Replay tooling is currently the most mature public entrypoint in the Zig tree,
+not the definition of the project. Today that means fast, headless,
+deterministic replay verification/info for **1-4 player Survival/Rush/Quest**
+replays, including preserve-bugs compatibility mode, with explicit hard-fail
+behavior for unsupported native paths.
 
 ## Ported in Zig (current)
 
 - Native runtime work is aimed at full gameplay/content parity, not a verifier-only fork.
+- Native architecture is being shaped to mirror the Python/runtime split where it
+  makes sense, so replay tooling consumes shared gameplay/runtime modules instead
+  of owning a separate simulation fork.
 - Replay ingestion from `.crd` bytes (msgpack decode path in-tree).
 - Deterministic Survival/Rush/Quest sim scaffold + runtime loops for:
   - player/weapon runtime (reload/fire/ammo counters, level/XP progression),
@@ -28,6 +32,8 @@ unsupported native paths.
   - primary/secondary projectile runtime,
   - bonus/perk runtime integration,
   - run-result assembly (`ticks`, `elapsed_ms`, `score_xp`, kills, weapon usage, RNG state).
+- Native checkpoint/trace plumbing and raylib/bootstrap targets are in-tree as
+  part of the same port effort.
 - Verification is fully self-contained from replay bytes (no checkpoint/high-score
   sidecars).
 - Deterministic Rush spawn runtime path (`tick_rush_mode_spawns`) ported in Zig.
@@ -53,12 +59,13 @@ unsupported native paths.
 
 ## Not fully ported / known parity gaps
 
-- Native fast path is still scoped to **1-4 player Survival/Rush/Quest**.
+- The most complete native fast path is still **1-4 player Survival/Rush/Quest**
+  replay execution.
 - Replay compatibility is still under active expansion using differential captures;
   parity is strong on the current working set but not yet claimed for all unseen
   Survival captures or all preserve-bugs-era captures.
-- Front-end, rendering, and broader non-verifier product surfaces are still
-  earlier in the Zig port than the replay runtime.
+- Menus, live presentation, and broader game-product surfaces are still earlier
+  in the Zig port than the replay/runtime core.
 
 ## Current replay parity snapshot (2026-02-25)
 
