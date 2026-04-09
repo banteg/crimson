@@ -50,6 +50,7 @@ inline fn weaponIdFromProjectileTypeId(type_id: ProjectileTypeId) WeaponId {
         .ion_cannon => .ion_cannon,
         .shrinkifier => .shrinkifier_5k,
         .blade_gun => .blade_gun,
+        .spider_plasma => .spider_plasma,
         .plasma_cannon => .plasma_cannon,
         .splitter_gun => .splitter_gun,
         .plague_spreader => .plague_spreader_gun,
@@ -1742,6 +1743,29 @@ test "plasma shotgun consumes one ammo per shot" {
     const start_ammo = player.weapon.ammo;
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     try expectFloatClose(start_ammo - 1.0, player.weapon.ammo);
+}
+
+test "spider plasma uses the native primary projectile mapping" {
+    var state = state_mod.GameplayState.init(1);
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var particles: particles_mod.ParticlePool = .{};
+    var player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 200.0, .y = 0.0 },
+        .aim_dir = .{ .x = 1.0, .y = 0.0 },
+        .spread_heat = 0.0,
+    };
+
+    player_runtime.weaponAssignPlayer(&player, .spider_plasma);
+    try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
+
+    try std.testing.expectEqual(@as(usize, 1), activeProjectileCount(&projectiles));
+    try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.spider_plasma), projectiles.entries[0].type_id);
+    try expectFloatClose(weapon_data.weapon_stats.get(.spider_plasma).travel_budget, projectiles.entries[0].travel_budget);
+    try std.testing.expectEqual(@as(i32, 1), state.weapon_shots_fired[0][@intFromEnum(game_ids.WeaponId.spider_plasma)]);
 }
 
 test "shotgun family fires expected pellet counts and formulas" {

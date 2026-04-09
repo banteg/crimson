@@ -1,12 +1,13 @@
 # crimson-zig
 
-Standalone Zig replay verifier workspace.
+Standalone Zig workspace for the native Crimson port.
 
 ## Scope (current)
 
-- Native CLI surface: `crimson-zig replay verify ...`
-- JSON output contract: mirrors `crimson replay verify --format json`
-- WASM target: `wasm32-freestanding` export ABI for Worker-style hosts
+- Direction: full native port of Crimson runtime and supporting codecs/tooling.
+- Current primary shipped CLI surface: `crimson-zig replay verify ...`
+- Current JSON output contract: mirrors `crimson replay verify --format json`
+- Current WASM target: `wasm32-freestanding` export ABI for Worker-style hosts
 
 ## Format codecs (library-only)
 
@@ -23,18 +24,21 @@ This wave is intentionally codec-only:
 - no `ensure_*`/repair helpers,
 - no JPEG-to-RGBA expansion yet (JAZ returns split payload components).
 
-## Current backend behavior
+## Current native state
 
-- Native CLI currently verifies **latest-ruleset single-player survival/rush** replays using:
+- `crimson-zig` is no longer verifier-only in project direction.
+  - Replay verification is the most complete user-facing entrypoint today.
+  - Runtime, codecs, and window/bootstrap targets are being ported as pieces of a full native implementation.
+- Native CLI currently verifies **1-4 player survival/rush/quest** replays, including preserve-bugs compatibility mode, using:
   - replay msgpack+gzip decoding in Zig (via `msgpack.zig`, full header/inputs/events model),
   - native deterministic simulation pass in Zig (canonical event ordering + input/event counters),
   - canonical terrain bootstrap RNG validation,
   - full deterministic run-result generation on supported native paths.
 - Native verifier now intentionally **does not** read replay sidecars (`.crd.chk`) or highscores (`scores5/survival.hi`); replay-only inputs are the source of truth.
-- CLI hard-fails for unsupported/unported native paths (quests, multiplayer, preserve-bugs, non-latest ruleset, or unsupported option/event shapes).
+- CLI still hard-fails for unsupported or unported native paths instead of falling back.
 - WASM exports keep ABI shape but currently hard-fail verification with a `not yet ported` error.
 
-This gives immediate CLI/ABI parity scaffolding while deeper gameplay porting proceeds.
+The verifier remains a useful parity harness, but it is now a consumer of the broader Zig port rather than the whole point of the workspace.
 
 ## Build
 

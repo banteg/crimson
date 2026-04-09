@@ -69,6 +69,7 @@ pub const ProjectileTypeId = enum(i32) {
     ion_cannon = 0x17,
     shrinkifier = 0x18,
     blade_gun = 0x19,
+    spider_plasma = 0x1A,
     plasma_cannon = 0x1C,
     splitter_gun = 0x1D,
     plague_spreader = 0x29,

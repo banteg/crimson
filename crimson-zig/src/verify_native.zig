@@ -622,16 +622,13 @@ fn unsupportedReplayHeaderDetail(
     if (header.player_count < 1 or header.player_count > 4) {
         return "only 1-4 player replays are currently ported";
     }
-    if (header.preserve_bugs) {
-        return "preserve_bugs=true replays are not ported";
-    }
     if (!std.mem.eql(u8, header.input_quantization, "f32")) {
         return "only f32 input quantization is currently ported";
     }
     if (tick_count > std.math.maxInt(i32)) {
         return "replay has too many ticks for current native verifier";
     }
-    if (!std.mem.startsWith(u8, header.game_version, "0.7.")) {
+    if (!header.preserve_bugs and !std.mem.startsWith(u8, header.game_version, "0.7.")) {
         return "only latest ruleset replays are currently ported";
     }
     return null;
@@ -670,7 +667,6 @@ fn buildNotPortedOutputForReplayRunnerError(
         error.UnsupportedPlayerCount => "replay simulation scaffold only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "replay simulation scaffold only supports f32 quantization",
         error.UnsupportedDemoMode => "replay simulation scaffold does not support demo_mode_active=true",
-        error.UnsupportedPreserveBugs => "replay simulation scaffold does not support preserve_bugs=true",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
         error.UnsupportedEventKind => "replay events include kinds unsupported for this mode",
         error.UnsupportedEventPlayerIndex => "replay simulation scaffold encountered an out-of-range player_index event",
@@ -1337,16 +1333,6 @@ test "unsupported replay header detail rejects unsupported player count" {
     try std.testing.expectEqualStrings("only 1-4 player replays are currently ported", detail);
 }
 
-test "unsupported replay header detail rejects preserve bugs replays" {
-    const allocator = std.testing.allocator;
-    var header = try makeTestReplayHeader(allocator);
-    defer header.deinit(allocator);
-    header.preserve_bugs = true;
-
-    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
-    try std.testing.expectEqualStrings("preserve_bugs=true replays are not ported", detail);
-}
-
 test "unsupported replay header detail rejects non f32 quantization" {
     const allocator = std.testing.allocator;
     var header = try makeTestReplayHeader(allocator);
@@ -1383,6 +1369,17 @@ test "unsupported replay header detail accepts supported replay envelope" {
     const allocator = std.testing.allocator;
     const header = try makeTestReplayHeader(allocator);
     defer header.deinit(allocator);
+
+    try std.testing.expect(unsupportedReplayHeaderDetail(header, 1) == null);
+}
+
+test "unsupported replay header detail accepts preserve bugs older ruleset replay envelope" {
+    const allocator = std.testing.allocator;
+    var header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+    header.preserve_bugs = true;
+    allocator.free(header.game_version);
+    header.game_version = try allocator.dupe(u8, "0.6.9");
 
     try std.testing.expect(unsupportedReplayHeaderDetail(header, 1) == null);
 }

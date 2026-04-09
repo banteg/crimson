@@ -30,7 +30,6 @@ pub const StepError = events.EventError ||
     weapons_runtime.WeaponRuntimeError ||
     error{
         UnsupportedDemoMode,
-        UnsupportedPreserveBugs,
     };
 
 pub const TickPhase = enum {
@@ -157,7 +156,6 @@ pub fn stepTick(
     weapons_runtime.WeaponRuntimeError ||
     error{
         UnsupportedDemoMode,
-        UnsupportedPreserveBugs,
     })!StepResult {
     var frame: StepFrame = .{
         .tick_index = tick_index,
@@ -636,9 +634,6 @@ fn ensureSupportedReplayFeatureFlags(
     if (state.demo_mode_active) {
         return error.UnsupportedDemoMode;
     }
-    if (state.preserve_bugs) {
-        return error.UnsupportedPreserveBugs;
-    }
 }
 
 fn callPhaseHook(
@@ -851,4 +846,43 @@ test "step tick applies counters and emits trace snapshot" {
 
     try std.testing.expectEqual(@as(usize, 1), TraceCapture.calls);
     try std.testing.expectEqual(@as(usize, 0), TraceCapture.last_tick_index);
+}
+
+test "step tick accepts preserve bugs and keeps player zero perk targeting" {
+    var header = testHeader();
+    header.seed = 1;
+    header.player_count = 2;
+    header.preserve_bugs = true;
+
+    var context = try context_mod.SimulationContext.initFromReplayHeader(header, .{});
+    context.rebindQuestSpawnEntries();
+
+    const players = context.players();
+    players[0].health = 90.0;
+    players[1].health = 80.0;
+    players[0].perk_counts.set(perks.PerkId.regeneration, 1);
+
+    const idle_input: player_runtime.GameInput = .{
+        .move_x = 0.0,
+        .move_y = 0.0,
+        .aim_x = 0.0,
+        .aim_y = 0.0,
+        .flags = .{
+            .fire_down = false,
+            .fire_pressed = false,
+            .reload_pressed = false,
+        },
+    };
+
+    _ = try stepTick(
+        &context,
+        0,
+        &[_]player_runtime.GameInput{ idle_input, idle_input },
+        &.{},
+        0.2,
+        .{},
+    );
+
+    try std.testing.expectApproxEqAbs(@as(f32, 90.4), players[0].health, 1e-5);
+    try std.testing.expectApproxEqAbs(@as(f32, 80.0), players[1].health, 1e-6);
 }

@@ -21,36 +21,43 @@ jobs:
           - task: lint-imports
             use_uv: true
             do_sync: true
+            use_zig: false
             command: uv run --no-sync lint-imports
             sync_args: --group dev
           - task: docs-check
             use_uv: true
             do_sync: false
+            use_zig: false
             command: uv run --no-sync python scripts/check_docs.py
             sync_args: ""
           - task: ast-grep
             use_uv: false
             do_sync: false
+            use_zig: false
             command: sg scan && sg test && bash tools/ast-grep/scripts/build-zig-parser.sh tools/ast-grep/parsers/zig.so && sg scan -c sgconfig.ci.yml && sg test -c sgconfig.ci.yml
             sync_args: ""
           - task: ty
             use_uv: true
             do_sync: true
+            use_zig: false
             command: uv run --no-sync ty check src
             sync_args: --group dev
           - task: ty-tests
             use_uv: true
             do_sync: true
+            use_zig: false
             command: uv run --no-sync ty check tests
             sync_args: --group dev
           - task: pytest
             use_uv: true
             do_sync: true
+            use_zig: true
             command: uv run --no-sync pytest --no-cov
             sync_args: --group dev
           - task: build
             use_uv: true
             do_sync: false
+            use_zig: false
             command: uv build
             sync_args: ""
 
@@ -72,6 +79,12 @@ jobs:
           if [[ -n "${UV_CACHE_DIR:-}" ]]; then
             mkdir -p "$UV_CACHE_DIR"
           fi
+
+      - name: Setup Zig
+        if: matrix.use_zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: "0.15.2"
 
       - name: Setup Node
         if: ${{ matrix.task == 'ast-grep' }}
