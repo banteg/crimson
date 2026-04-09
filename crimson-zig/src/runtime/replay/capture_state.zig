@@ -2,6 +2,7 @@ const std = @import("std");
 const game_ids = @import("../../game_ids.zig");
 const replay_codec = @import("../../replay_codec.zig");
 
+const runtime_bootstrap = @import("../bootstrap.zig");
 const bonus_runtime = @import("../bonuses.zig");
 const creature_lifecycle = @import("../lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("../creatures.zig");
@@ -14,67 +15,34 @@ const state_mod = @import("../state.zig");
 const weapon_data = @import("../weapon_data.zig");
 
 pub const capture_state_reset_target: i32 = 12;
+pub const ParsedQuestLevel = runtime_bootstrap.ParsedQuestLevel;
 
 const ai7_link_timer_rollover_min: i32 = -1723;
 const ai7_link_timer_rollover_max: i32 = -700;
 const max_test_quest_spawn_entries: usize = 1024;
-const rush_forced_ammo: f32 = 30.0;
 
 pub const CaptureStateError = error{
     InvalidCaptureEnumValue,
     UnsupportedSpawnTemplate,
 };
 
-pub const ParsedQuestLevel = struct {
-    major: i32,
-    minor: i32,
-};
-
 pub fn parseQuestLevel(value: []const u8) ?ParsedQuestLevel {
-    const dot = std.mem.indexOfScalar(u8, value, '.') orelse return null;
-    if (dot == 0 or dot + 1 >= value.len) return null;
-    const major = std.fmt.parseInt(i32, value[0..dot], 10) catch return null;
-    const minor = std.fmt.parseInt(i32, value[dot + 1 ..], 10) catch return null;
-    return .{
-        .major = major,
-        .minor = minor,
-    };
+    return runtime_bootstrap.parseQuestLevel(value);
 }
 
 pub fn resolveQuestLevelKey(header: replay_codec.ReplayHeader) ?i32 {
-    if (parseQuestLevel(header.quest_level)) |parsed| {
-        if (parsed.major >= 1 and parsed.major <= 5 and parsed.minor >= 1 and parsed.minor <= 10) {
-            return parsed.major * 100 + parsed.minor;
-        }
-    }
-    if (header.seed > @as(u32, @intCast(std.math.maxInt(i32)))) return null;
-    const seed_i32: i32 = @intCast(header.seed);
-    const major = @divTrunc(seed_i32, 100);
-    const minor = @mod(seed_i32, 100);
-    if (major < 1 or major > 5 or minor < 1 or minor > 10) return null;
-    return major * 100 + minor;
+    return runtime_bootstrap.resolveQuestLevelKey(header);
 }
 
 pub fn applyQuestStageFromHeader(
     state: *state_mod.GameplayState,
     header: replay_codec.ReplayHeader,
 ) void {
-    if (resolveQuestLevelKey(header)) |level_key| {
-        state.quest_stage_major = @divTrunc(level_key, 100);
-        state.quest_stage_minor = @mod(level_key, 100);
-        return;
-    }
-    state.quest_stage_major = 0;
-    state.quest_stage_minor = 0;
+    runtime_bootstrap.applyQuestStageFromHeader(state, header);
 }
 
 pub fn enforceRushLoadout(players: []state_mod.PlayerState) void {
-    for (players) |*player| {
-        if (player.weapon.weapon_id != game_ids.WeaponId.assault_rifle) {
-            player_runtime.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
-        }
-        player.weapon.ammo = rush_forced_ammo;
-    }
+    runtime_bootstrap.enforceRushLoadout(players);
 }
 
 pub fn applyCaptureBootstrapEvent(

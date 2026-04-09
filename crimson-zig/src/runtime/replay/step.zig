@@ -3,7 +3,7 @@ const game_ids = @import("../../game_ids.zig");
 const native_math = @import("../native_math.zig");
 const replay_codec = @import("../../replay_codec.zig");
 
-const effects = @import("effects.zig");
+const runtime_bootstrap = @import("../bootstrap.zig");
 const events = @import("events.zig");
 const movement = @import("../movement.zig");
 const timing = @import("../timing.zig");
@@ -274,7 +274,7 @@ pub fn stepTick(
     }
 
     callPhaseHook(options.hooks, context, .pre_effects, &frame);
-    effects.updateEvilEyesTargets(&context.state, players, context.creatures.entries[0..]);
+    perks.updateEvilEyesTargets(players, context.creatures.entries[0..]);
     perks.updatePerkEffects(&context.state, players, frame.dt_sim);
     perks.applyJinxedEffects(&context.state, players, &context.creatures, frame.dt_sim);
     perks.applyPyrokineticEffects(
@@ -296,7 +296,7 @@ pub fn stepTick(
         context.world_size,
         &context.bonuses,
     );
-    effects.applyPendingCreatureProjectiles(&context.state, &context.projectiles);
+    bonus_runtime.applyPendingCreatureProjectiles(&context.state, &context.projectiles);
     frame.rng_after_creatures = context.state.rng.state;
 
     for (players, 0..) |_, player_idx| {
@@ -347,7 +347,7 @@ pub fn stepTick(
 
     callPhaseHook(options.hooks, context, .pre_player_movement, &frame);
     if (context.game_mode == .rush) {
-        capture_state.enforceRushLoadout(players);
+        runtime_bootstrap.enforceRushLoadout(players);
     }
     var player_preprocessed_alive = [_]bool{false} ** state_mod.max_players;
     for (players, 0..) |*player, player_idx| {
@@ -555,13 +555,13 @@ pub fn stepTick(
         &context.tick_bonus_pickups,
     );
     if (context.state.debug_last_picked_bonus_id == game_ids.BonusId.freeze) {
-        effects.applyFreezePickupCorpseCleanupRng(
+        bonus_runtime.applyFreezePickupCorpseCleanupRng(
             &context.state,
             &context.creatures,
             freeze_corpse_at_tick_start[0..],
         );
     }
-    effects.applyPendingBonusEffects(
+    bonus_runtime.applyPendingBonusEffects(
         &context.state,
         players,
         &context.projectiles,
