@@ -142,6 +142,7 @@ pub fn deinitReplayTickTraceRows(
 
 pub const ReplayScaffoldOptions = struct {
     strict_events: bool = true,
+    max_ticks: ?usize = null,
     inter_tick_rand_draws: i32 = 0,
     quest_spawn_entries: ?[]const spawn_mod.QuestSpawnEntry = null,
     quest_start_weapon_id: ?i32 = null,
@@ -279,7 +280,13 @@ pub fn runReplayScaffoldWithTrace(
         }
     }
 
-    for (0..replay.tickCount()) |tick_index| {
+    const ticks_to_simulate: usize = if (options.max_ticks) |max_ticks|
+        @min(max_ticks, replay.tickCount())
+    else
+        replay.tickCount();
+    const full_replay_simulated = ticks_to_simulate == replay.tickCount();
+
+    for (0..ticks_to_simulate) |tick_index| {
         if (context.event_index < events.len and events[context.event_index].tickIndex() < tick_index) {
             return error.UnsupportedEventOrdering;
         }
@@ -360,45 +367,47 @@ pub fn runReplayScaffoldWithTrace(
         }
     }
 
-    const terminal_tick = replay.tickCount();
-    if (context.event_index < events.len and events[context.event_index].tickIndex() < terminal_tick) {
-        return error.UnsupportedEventOrdering;
-    }
-    var terminal_menu_open_seen = false;
-    while (context.event_index < events.len and events[context.event_index].tickIndex() == terminal_tick) : (context.event_index += 1) {
-        const dt_tick = if (replay.dt.len > 0)
-            replay.dt[replay.dt.len - 1]
-        else
-            context.dt_nominal;
-        const outcome = try replay_events.applyReplayEvent(
-            events[context.event_index],
-            &context.state,
-            context.players(),
-            &context.creatures,
-            narrowF32(dt_tick),
-            &context.quest_spawn_timeline_ms,
-            &context.quest_no_creatures_timer_ms,
-            &context.quest_completion_transition_ms,
-            .{
-                .game_mode = context.game_mode,
-                .player_count = context.player_count,
-                .quest_unlock_index = context.quest_unlock_index,
-                .strict_events = context.strict_events,
-                .menu_open_seen_this_tick = terminal_menu_open_seen,
-            },
-        );
-        terminal_menu_open_seen = terminal_menu_open_seen or outcome.menu_open_seen_this_tick;
-        context.perk_menu_open_count += outcome.perk_menu_open_count_delta;
-        context.perk_pick_count += outcome.perk_pick_count_delta;
-        if (outcome.signal == .request_capture_state_reset) {
-            context.pending_capture_state_reset = true;
+    if (full_replay_simulated) {
+        const terminal_tick = replay.tickCount();
+        if (context.event_index < events.len and events[context.event_index].tickIndex() < terminal_tick) {
+            return error.UnsupportedEventOrdering;
         }
-        try ensureSupportedReplayFeatureFlags(context.state.demo_mode_active);
+        var terminal_menu_open_seen = false;
+        while (context.event_index < events.len and events[context.event_index].tickIndex() == terminal_tick) : (context.event_index += 1) {
+            const dt_tick = if (replay.dt.len > 0)
+                replay.dt[replay.dt.len - 1]
+            else
+                context.dt_nominal;
+            const outcome = try replay_events.applyReplayEvent(
+                events[context.event_index],
+                &context.state,
+                context.players(),
+                &context.creatures,
+                narrowF32(dt_tick),
+                &context.quest_spawn_timeline_ms,
+                &context.quest_no_creatures_timer_ms,
+                &context.quest_completion_transition_ms,
+                .{
+                    .game_mode = context.game_mode,
+                    .player_count = context.player_count,
+                    .quest_unlock_index = context.quest_unlock_index,
+                    .strict_events = context.strict_events,
+                    .menu_open_seen_this_tick = terminal_menu_open_seen,
+                },
+            );
+            terminal_menu_open_seen = terminal_menu_open_seen or outcome.menu_open_seen_this_tick;
+            context.perk_menu_open_count += outcome.perk_menu_open_count_delta;
+            context.perk_pick_count += outcome.perk_pick_count_delta;
+            if (outcome.signal == .request_capture_state_reset) {
+                context.pending_capture_state_reset = true;
+            }
+            try ensureSupportedReplayFeatureFlags(context.state.demo_mode_active);
+        }
+        if (context.event_index != events.len) return error.UnsupportedEventOrdering;
     }
-    if (context.event_index != events.len) return error.UnsupportedEventOrdering;
 
     const tick_rate_f32: f32 = @floatFromInt(header.tick_rate);
-    const ticks_f32: f32 = @floatFromInt(replay.tickCount());
+    const ticks_f32: f32 = @floatFromInt(ticks_to_simulate);
     const elapsed_ms_nominal: i64 = @intFromFloat(@round(ticks_f32 * (1000.0 / tick_rate_f32)));
     const elapsed_ms_sim_i64: i64 = switch (game_mode) {
         .quests => @intFromFloat(context.quest_spawn_timeline_ms),
@@ -416,7 +425,7 @@ pub fn runReplayScaffoldWithTrace(
     );
 
     return .{
-        .ticks = replay.tickCount(),
+        .ticks = ticks_to_simulate,
         .elapsed_ms_nominal = elapsed_ms_nominal,
         .elapsed_ms_sim = elapsed_ms_sim_i64,
         .perk_menu_open_count = context.perk_menu_open_count,
@@ -1124,6 +1133,37 @@ test "survival scaffold applies terminal tick events" {
     const with_result = try runReplayScaffold(with_terminal_event);
     const without_result = try runReplayScaffold(without_terminal_event);
     try std.testing.expect(with_result.wave_spawn_rng_state != without_result.wave_spawn_rng_state);
+}
+
+test "survival scaffold max ticks skips terminal tick events beyond clamp" {
+    const allocator = std.testing.allocator;
+
+    const with_terminal_event = try buildTestReplay(allocator, .{
+        .tick_rate = 60,
+        .seed = 0x1234,
+        .inputs = &.{ 0, 0, 0 },
+        .events = &.{
+            .{ .perk_menu_open = .{ .tick_index = 3, .player_index = 0 } },
+        },
+    });
+    defer with_terminal_event.deinit(allocator);
+
+    const without_terminal_event = try buildTestReplay(allocator, .{
+        .tick_rate = 60,
+        .seed = 0x1234,
+        .inputs = &.{ 0, 0, 0 },
+        .events = &.{},
+    });
+    defer without_terminal_event.deinit(allocator);
+
+    const with_result = try runReplayScaffoldWithOptions(with_terminal_event, .{
+        .max_ticks = 2,
+    });
+    const without_result = try runReplayScaffoldWithOptions(without_terminal_event, .{
+        .max_ticks = 2,
+    });
+    try std.testing.expectEqual(@as(usize, 2), with_result.ticks);
+    try std.testing.expectEqual(without_result.wave_spawn_rng_state, with_result.wave_spawn_rng_state);
 }
 
 test "survival scaffold bootstrap player shot cooldown blocks first-tick fire" {

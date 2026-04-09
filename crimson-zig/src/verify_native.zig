@@ -31,6 +31,7 @@ const VerifyRequest = struct {
     output_format: OutputFormat = .human,
     json_out: ?[]const u8 = null,
     base_dir: ?[]const u8 = null,
+    max_ticks: ?usize = null,
     debug_trace_msgpack: ?[]const u8 = null,
     debug_trace_cdt: ?[]const u8 = null,
     debug_trace_cdt_chunk_ticks: i32 = 256,
@@ -188,6 +189,11 @@ fn runNativeVerify(
         return buildNotPortedOutputForReplayCodecError(allocator, err);
     };
     const trace_requested = request.debug_trace_msgpack != null or request.debug_trace_cdt != null;
+    const ticks_to_simulate: usize = if (request.max_ticks) |max_ticks|
+        @min(max_ticks, replay.tickCount())
+    else
+        replay.tickCount();
+    const full_replay_simulated = ticks_to_simulate == replay.tickCount();
     var tick_trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
     defer if (trace_requested) {
         replay_runner.deinitReplayTickTraceRows(allocator, tick_trace.items);
@@ -200,7 +206,9 @@ fn runNativeVerify(
                 allocator,
                 replay,
                 &tick_trace,
-                .{},
+                .{
+                    .max_ticks = request.max_ticks,
+                },
             ) catch |err| {
                 writeRequestedDebugTraceOutputs(
                     allocator,
@@ -223,7 +231,7 @@ fn runNativeVerify(
                     err,
                     .{
                         .processed_ticks = tick_trace.items.len,
-                        .total_ticks = replay.tickCount(),
+                        .total_ticks = ticks_to_simulate,
                         .event_count = replay.events.len,
                     },
                 );
@@ -231,12 +239,14 @@ fn runNativeVerify(
             break :blk traced;
         }
 
-        break :blk replay_runner.runReplayScaffoldWithOptions(replay, .{}) catch |err| {
+        break :blk replay_runner.runReplayScaffoldWithOptions(replay, .{
+            .max_ticks = request.max_ticks,
+        }) catch |err| {
             return buildNotPortedOutputForReplayRunnerError(
                 allocator,
                 err,
                 .{
-                    .total_ticks = replay.tickCount(),
+                    .total_ticks = ticks_to_simulate,
                     .event_count = replay.events.len,
                 },
             );
@@ -258,12 +268,17 @@ fn runNativeVerify(
         .shots_hit = scaffold.shots_hit,
         .rng_state = scaffold.wave_spawn_rng_state,
     };
-    const header_claim_payload = try buildHeaderClaimPayload(allocator, header.claimed_stats, run_result);
-    defer allocator.free(header_claim_payload.mismatched_fields);
+    var header_claim_payload_storage: ?HeaderClaimPayload = null;
+    defer if (header_claim_payload_storage) |payload| allocator.free(payload.mismatched_fields);
 
-    const status: []const u8 = if (header_claim_payload.match) "ok" else "header_stats_mismatch";
-
-    const exit_code: u8 = if (std.mem.eql(u8, status, "ok")) 0 else 3;
+    var status: []const u8 = "ok";
+    var exit_code: u8 = 0;
+    if (full_replay_simulated) {
+        const header_claim_payload = try buildHeaderClaimPayload(allocator, header.claimed_stats, run_result);
+        header_claim_payload_storage = header_claim_payload;
+        status = if (header_claim_payload.match) "ok" else "header_stats_mismatch";
+        exit_code = if (std.mem.eql(u8, status, "ok")) 0 else 3;
+    }
 
     if (trace_requested) {
         writeRequestedDebugTraceOutputs(
@@ -290,7 +305,7 @@ fn runNativeVerify(
         replay_sha256[0..],
         run_result,
         status,
-        header_claim_payload,
+        header_claim_payload_storage,
     );
     defer allocator.free(payload);
 
@@ -328,19 +343,21 @@ fn runNativeVerify(
                 run_result.rng_state,
             },
         );
-        try writer.print(
-            "; header_claim complete={s} match={s} mismatches=",
-            .{
-                if (header_claim_payload.expected.complete) "true" else "false",
-                if (header_claim_payload.match) "true" else "false",
-            },
-        );
-        if (header_claim_payload.mismatched_fields.len == 0) {
-            try writer.writeAll("-");
-        } else {
-            for (header_claim_payload.mismatched_fields, 0..) |field, idx| {
-                if (idx != 0) try writer.writeByte(',');
-                try writer.writeAll(field);
+        if (header_claim_payload_storage) |header_claim_payload| {
+            try writer.print(
+                "; header_claim complete={s} match={s} mismatches=",
+                .{
+                    if (header_claim_payload.expected.complete) "true" else "false",
+                    if (header_claim_payload.match) "true" else "false",
+                },
+            );
+            if (header_claim_payload.mismatched_fields.len == 0) {
+                try writer.writeAll("-");
+            } else {
+                for (header_claim_payload.mismatched_fields, 0..) |field, idx| {
+                    if (idx != 0) try writer.writeByte(',');
+                    try writer.writeAll(field);
+                }
             }
         }
         try writer.writeByte('\n');
@@ -740,8 +757,19 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         if (std.mem.eql(u8, arg, "--trace-rng")) {
             return .{ .unsupported = "--trace-rng" };
         }
-        if (std.mem.eql(u8, arg, "--max-ticks") or std.mem.startsWith(u8, arg, "--max-ticks=")) {
-            return .{ .unsupported = "--max-ticks" };
+        if (std.mem.eql(u8, arg, "--max-ticks")) {
+            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --max-ticks" };
+            idx += 1;
+            const parsed = std.fmt.parseInt(i64, args[idx], 10) catch return .{ .invalid = "invalid --max-ticks value" };
+            if (parsed < 0) return .{ .invalid = "invalid --max-ticks value" };
+            request.max_ticks = @intCast(parsed);
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--max-ticks=")) {
+            const parsed = std.fmt.parseInt(i64, arg["--max-ticks=".len..], 10) catch return .{ .invalid = "invalid --max-ticks value" };
+            if (parsed < 0) return .{ .invalid = "invalid --max-ticks value" };
+            request.max_ticks = @intCast(parsed);
+            continue;
         }
         if (std.mem.eql(u8, arg, "--debug-trace-msgpack")) {
             if (idx + 1 >= args.len) return .{ .invalid = "missing value for --debug-trace-msgpack" };
@@ -1087,14 +1115,25 @@ test "parse native subset reports unsupported lenient events option" {
     }
 }
 
-test "parse native subset reports unsupported max ticks option" {
+test "parse native subset accepts max ticks option" {
     const parsed = parseNativeSubset(&.{
         "survival_20260224_041009_score76661.crd",
         "--max-ticks=1000",
     });
     switch (parsed) {
-        .unsupported => |detail| try std.testing.expectEqualStrings("--max-ticks", detail),
-        else => return error.TestExpectedUnsupportedOption,
+        .ok => |request| try std.testing.expectEqual(@as(?usize, 1000), request.max_ticks),
+        else => return error.TestExpectedValidOption,
+    }
+}
+
+test "parse native subset rejects invalid max ticks value" {
+    const parsed = parseNativeSubset(&.{
+        "survival_20260224_041009_score76661.crd",
+        "--max-ticks=-1",
+    });
+    switch (parsed) {
+        .invalid => |detail| try std.testing.expectEqualStrings("invalid --max-ticks value", detail),
+        else => return error.TestExpectedInvalidOption,
     }
 }
 
