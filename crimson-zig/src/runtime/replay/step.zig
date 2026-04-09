@@ -902,6 +902,7 @@ test "step tick accepts preserve bugs and keeps player zero perk targeting" {
 
     var context = try context_mod.SimulationContext.initFromReplayHeader(header, .{});
     context.rebindQuestSpawnEntries();
+    context.state.rng.srand(1);
 
     const players = context.players();
     players[0].health = 90.0;
