@@ -203,7 +203,7 @@ def test_record_replay_to_trace_zig_emits_python_readable_trace(tmp_path: Path) 
                     "quest_level": "",
                     "bootstrap_kind": "none",
                     "bootstrap_seed": 0,
-                    "game_version": "0.7.0",
+                    "game_version": "0.9.0",
                     "tick_rate": 60,
                     "difficulty_level": 0,
                     "hardcore": False,

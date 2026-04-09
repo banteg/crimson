@@ -17,6 +17,25 @@ pub const BonusRuntimeError = error{
 };
 
 pub const bonus_pool_size: usize = 16;
+pub const BonusPickupRecord = struct {
+    bonus_id: BonusId = .unused,
+    amount: i32 = 0,
+    player_index: i32 = -1,
+};
+pub const BonusPickupBuffer = struct {
+    items: [bonus_pool_size]BonusPickupRecord = [_]BonusPickupRecord{.{}} ** bonus_pool_size,
+    len: usize = 0,
+
+    pub fn append(self: *BonusPickupBuffer, record: BonusPickupRecord) error{OutOfSpace}!void {
+        if (self.len >= self.items.len) return error.OutOfSpace;
+        self.items[self.len] = record;
+        self.len += 1;
+    }
+
+    pub fn constSlice(self: *const BonusPickupBuffer) []const BonusPickupRecord {
+        return self.items[0..self.len];
+    }
+};
 const weapon_drop_id_count: u32 = 0x21;
 
 const bonus_spawn_margin: f32 = 32.0;
@@ -167,6 +186,7 @@ pub const BonusPool = struct {
         dt: f32,
         pickup_bonus_ids: *[bonus_pool_size]BonusId,
         pickup_count: *usize,
+        pickup_records: ?*BonusPickupBuffer,
     ) BonusRuntimeError!void {
         if (!(dt > 0.0)) return;
 
@@ -201,6 +221,11 @@ pub const BonusPool = struct {
                 state.debug_last_picked_bonus_id = entry.bonus_id;
                 state.debug_last_picked_bonus_amount = entry.amount;
                 appendPickupBonusId(pickup_bonus_ids, pickup_count, entry.bonus_id);
+                appendPickupRecord(pickup_records, .{
+                    .bonus_id = entry.bonus_id,
+                    .amount = entry.amount,
+                    .player_index = player.index,
+                });
                 entry.picked = true;
                 entry.time_left = narrowF32(bonus_pickup_linger);
                 picked_now = true;
@@ -241,15 +266,17 @@ pub fn bonusUpdate(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
     dt: f32,
+    pickup_records: ?*BonusPickupBuffer,
 ) BonusRuntimeError!void {
     state.debug_last_picked_bonus_id = .unused;
     state.debug_last_picked_bonus_amount = 0;
+    if (pickup_records) |records| records.* = BonusPickupBuffer{};
 
     var pickup_bonus_ids = [_]BonusId{.unused} ** bonus_pool_size;
     var pickup_count: usize = 0;
 
-    try bonusTelekineticUpdate(pool, state, players, dt, &pickup_bonus_ids, &pickup_count);
-    try pool.update(state, players, dt, &pickup_bonus_ids, &pickup_count);
+    try bonusTelekineticUpdate(pool, state, players, dt, &pickup_bonus_ids, &pickup_count, pickup_records);
+    try pool.update(state, players, dt, &pickup_bonus_ids, &pickup_count, pickup_records);
 
     if (dt > 0.0) {
         if (state.bonuses.double_experience <= 0.0) {
@@ -277,6 +304,7 @@ fn bonusTelekineticUpdate(
     dt: f32,
     pickup_bonus_ids: *[bonus_pool_size]BonusId,
     pickup_count: *usize,
+    pickup_records: ?*BonusPickupBuffer,
 ) BonusRuntimeError!void {
     if (!(dt > 0.0)) return;
     const dt_ms = dt * 1000.0;
@@ -300,6 +328,11 @@ fn bonusTelekineticUpdate(
 
         try applyBonus(state, player, players, entry.bonus_id, entry.amount, entry.pos);
         appendPickupBonusId(pickup_bonus_ids, pickup_count, entry.bonus_id);
+        appendPickupRecord(pickup_records, .{
+            .bonus_id = entry.bonus_id,
+            .amount = entry.amount,
+            .player_index = player.index,
+        });
         entry.picked = true;
         entry.time_left = narrowF32(bonus_pickup_linger);
         player.bonus_aim_hover_index = -1;
@@ -652,6 +685,16 @@ fn appendPickupBonusId(
     if (pickup_count.* >= pickup_bonus_ids.len) return;
     pickup_bonus_ids[pickup_count.*] = bonus_id;
     pickup_count.* += 1;
+}
+
+fn appendPickupRecord(
+    pickup_records: ?*BonusPickupBuffer,
+    record: BonusPickupRecord,
+) void {
+    var records = pickup_records orelse return;
+    records.append(record) catch |err| switch (err) {
+        error.OutOfSpace => {},
+    };
 }
 
 fn consumeBonusPickupEffectsRng(
@@ -1077,6 +1120,7 @@ fn runTelekineticUpdate(
         dt,
         &pickup_bonus_ids,
         &pickup_count,
+        null,
     );
 }
 

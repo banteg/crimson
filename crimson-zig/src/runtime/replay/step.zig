@@ -55,6 +55,7 @@ pub const StepFrame = struct {
     dt_world: f32 = 0.0,
     dt_sim: f32 = 0.0,
     dt_ms_i32: i32 = 0,
+    dt_sim_ms_i32: i32 = 0,
     menu_open_seen_this_tick: bool = false,
     reload_active_any: bool = false,
     pre_events_applied: usize = 0,
@@ -234,6 +235,8 @@ pub fn stepTick(
 
     const dt_ms = narrowF32(frame.dt * 1000.0);
     frame.dt_ms_i32 = timing.ftolMsI32(frame.dt);
+    frame.dt_sim_ms_i32 = timing.ftolMsI32(frame.dt_sim);
+    const dt_sim_ms: f32 = @floatFromInt(frame.dt_sim_ms_i32);
     emitTimingTrace(options, .{
         .tick_index = @intCast(tick_index),
         .gameplay_frame = @intCast(tick_index),
@@ -250,17 +253,16 @@ pub fn stepTick(
         .bonus_reflex_boost_timer = context.state.bonuses.reflex_boost,
         .mode_fn = "gameplay_update_and_render",
     });
-    const dt_sim_ms = frame.dt_sim * 1000.0;
     const elapsed_before_ms: f32 = if (context.game_mode == .rush)
         @floatFromInt(context.elapsed_ms_sim_rush)
     else
         context.elapsed_ms_sim;
     const elapsed_after_ms = if (context.game_mode == .survival)
-        elapsed_before_ms + dt_sim_ms
+        elapsed_before_ms + @as(f32, @floatFromInt(frame.dt_sim_ms_i32))
     else if (context.game_mode == .rush)
         @as(f32, @floatFromInt(context.elapsed_ms_sim_rush + @as(i64, frame.dt_ms_i32)))
     else
-        elapsed_before_ms + dt_ms;
+        elapsed_before_ms + @as(f32, @floatFromInt(frame.dt_sim_ms_i32));
 
     var freeze_corpse_at_tick_start = [_]bool{false} ** context.creatures.entries.len;
     for (context.creatures.entries, 0..) |creature, idx| {
@@ -550,6 +552,7 @@ pub fn stepTick(
         &context.state,
         players,
         dt_after_player,
+        &context.tick_bonus_pickups,
     );
     if (context.state.debug_last_picked_bonus_id == game_ids.BonusId.freeze) {
         effects.applyFreezePickupCorpseCleanupRng(

@@ -153,7 +153,17 @@ fn runNativeVerify(
     var replay_payload_alloc: ?[]u8 = null;
     defer if (replay_payload_alloc) |buf| allocator.free(buf);
 
-    const replay_payload: []const u8 = if (replay_codec.isGzipPayload(replay_bytes)) blk: {
+    const replay_payload: []const u8 = if (replay_codec.isZstdPayload(replay_bytes)) blk: {
+        const inflated = replay_codec.inflateZstdPayload(
+            allocator,
+            replay_bytes,
+            replay_codec.max_replay_payload_bytes,
+        ) catch |err| {
+            return buildNotPortedOutputForReplayCodecError(allocator, err);
+        };
+        replay_payload_alloc = inflated;
+        break :blk inflated;
+    } else if (replay_codec.isGzipPayload(replay_bytes)) blk: {
         const inflated = replay_codec.inflateGzipPayload(
             allocator,
             replay_bytes,
@@ -628,7 +638,7 @@ fn unsupportedReplayHeaderDetail(
     if (tick_count > std.math.maxInt(i32)) {
         return "replay has too many ticks for current native verifier";
     }
-    if (!header.preserve_bugs and !std.mem.startsWith(u8, header.game_version, "0.7.")) {
+    if (!header.preserve_bugs and !replay_codec.isLatestRulesetGameVersion(header.game_version)) {
         return "only latest ruleset replays are currently ported";
     }
     return null;
@@ -645,6 +655,7 @@ fn buildNotPortedOutputForReplayCodecError(
         error.UnsupportedInputShape => return buildVerifyFailedOutput(allocator, "replay input rows are not in the canonical wire shape"),
         error.UnsupportedEventShape => return buildVerifyFailedOutput(allocator, "replay events are not in the canonical wire shape"),
         error.InvalidGzipPayload => return buildVerifyFailedOutput(allocator, "unable to inflate replay gzip payload"),
+        error.InvalidZstdPayload => return buildVerifyFailedOutput(allocator, "unable to inflate replay zstd payload"),
         error.UnsupportedReplayFormatVersion => return buildNotPortedOutput(allocator, "replay format version is not supported"),
         error.UnsupportedEventKind => return buildNotPortedOutput(allocator, "replay events include kinds not yet ported"),
         error.UnsupportedBootstrapKind => return buildNotPortedOutput(allocator, "replay bootstrap kind is not supported"),
@@ -1295,7 +1306,7 @@ fn makeTestReplayHeader(
         .quest_level = try allocator.dupe(u8, ""),
         .bootstrap_kind = try allocator.dupe(u8, "none"),
         .bootstrap_seed = 0,
-        .game_version = try allocator.dupe(u8, "0.7.0"),
+        .game_version = try allocator.dupe(u8, "0.9.0"),
         .tick_rate = 60,
         .difficulty_level = 0,
         .hardcore = false,
