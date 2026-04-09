@@ -14,6 +14,29 @@ pub const ReplayTickTiming = struct {
     elapsed_ms: i64,
 };
 
+pub const ReplayTickRngDraw = struct {
+    tick_call_index: i32,
+    value_15: i32,
+    state_before_u32: u32,
+    state_after_u32: u32,
+};
+
+pub const ReplayTickTimingSample = struct {
+    tick_index: i32,
+    gameplay_frame: ?i32 = null,
+    phase: []const u8,
+    write_kind: []const u8 = "snapshot",
+    frame_dt_f32: ?f32 = null,
+    frame_dt_ms_i32: ?i32 = null,
+    frame_dt_ms_f32: ?f32 = null,
+    time_scale_active_entry: ?bool = null,
+    time_scale_active_current: ?bool = null,
+    time_scale_factor: ?f32 = null,
+    bonus_reflex_boost_timer: ?f32 = null,
+    mode_fn: ?[]const u8 = null,
+    player_index: ?i32 = null,
+};
+
 pub const ReplayTickRng = struct {
     rng_state: u32,
     rng_after_perk_effects: u32,
@@ -102,6 +125,8 @@ pub const ReplayTickTrace = struct {
     summary: ReplayTickSummary,
     gameplay_state: state_mod.GameplayState,
     player_state: state_mod.PlayerState,
+    rng_rows: []const ReplayTickRngDraw = &.{},
+    timing_samples: []const ReplayTickTimingSample = &.{},
     entities: ReplayTickEntitySamples = .{},
 };
 
@@ -121,6 +146,8 @@ pub fn buildReplayTickTrace(
     rng_after_wave_spawns: u32,
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
+    rng_rows: []const ReplayTickRngDraw,
+    timing_samples: []const ReplayTickTimingSample,
 ) ReplayTickTrace {
     return .{
         .schema_version = replay_tick_trace_schema_version,
@@ -150,6 +177,8 @@ pub fn buildReplayTickTrace(
         },
         .gameplay_state = state.*,
         .player_state = player,
+        .rng_rows = rng_rows,
+        .timing_samples = timing_samples,
     };
 }
 
@@ -173,6 +202,8 @@ pub fn buildReplayTickTraceWithEntities(
     rng_after_wave_spawns: u32,
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
+    rng_rows: []const ReplayTickRngDraw,
+    timing_samples: []const ReplayTickTimingSample,
 ) !ReplayTickTrace {
     const entities: ReplayTickEntitySamples = .{
         .creatures = try collectCreatureSamples(allocator, creatures),
@@ -203,16 +234,22 @@ pub fn buildReplayTickTraceWithEntities(
         rng_after_wave_spawns,
         rng_after_spawns,
         rng_after_bonus_update,
+        rng_rows,
+        timing_samples,
     );
     row.entities = entities;
     return row;
 }
 
 pub fn deinitReplayTickTrace(allocator: std.mem.Allocator, trace: *ReplayTickTrace) void {
+    if (trace.rng_rows.len > 0) allocator.free(trace.rng_rows);
+    if (trace.timing_samples.len > 0) allocator.free(trace.timing_samples);
     if (trace.entities.creatures.len > 0) allocator.free(trace.entities.creatures);
     if (trace.entities.projectiles.len > 0) allocator.free(trace.entities.projectiles);
     if (trace.entities.secondary_projectiles.len > 0) allocator.free(trace.entities.secondary_projectiles);
     if (trace.entities.bonuses.len > 0) allocator.free(trace.entities.bonuses);
+    trace.rng_rows = &.{};
+    trace.timing_samples = &.{};
     trace.entities = .{};
 }
 

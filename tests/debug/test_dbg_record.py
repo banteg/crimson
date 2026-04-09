@@ -266,5 +266,12 @@ def test_record_replay_to_trace_zig_emits_python_readable_trace(tmp_path: Path) 
     assert footer.tick_count == len(ticks)
     assert len(ticks) > 0
     assert len(ticks[0].channels.sim_state.players) == 1
+    assert len(ticks[0].channels.timing_samples) > 0
+    gpur_enter = next(
+        sample for sample in ticks[0].channels.timing_samples if sample.phase == "gpur_enter"
+    )
+    assert gpur_enter.frame_dt_f32 == pytest.approx(1.0 / 60.0)
+    assert gpur_enter.frame_dt_ms_i32 == ticks[0].dt_ms_i32
+    assert gpur_enter.mode_fn == "gameplay_update_and_render"
     if ticks[0].channels.rng_stream:
         assert ticks[0].channels.rng_stream[0].caller is None

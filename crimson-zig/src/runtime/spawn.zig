@@ -116,7 +116,17 @@ pub const Vec2 = struct {
 };
 
 pub const Crand = struct {
+    pub const TraceDraw = struct {
+        state_before: u32,
+        state_after: u32,
+        value_15: u32,
+    };
+
+    pub const TraceSink = *const fn (ctx: ?*anyopaque, draw: TraceDraw) void;
+
     state: u32 = 0,
+    trace_ctx: ?*anyopaque = null,
+    trace_sink: ?TraceSink = null,
 
     pub fn init(seed: u32) Crand {
         return .{ .state = seed };
@@ -126,9 +136,29 @@ pub const Crand = struct {
         self.state = seed;
     }
 
+    pub fn setTraceSink(self: *Crand, ctx: ?*anyopaque, sink: ?TraceSink) void {
+        self.trace_ctx = ctx;
+        self.trace_sink = sink;
+    }
+
+    pub fn msgpackWrite(self: Crand, packer: anytype) !void {
+        try packer.writeMapHeader(1);
+        try packer.writeString("state");
+        try packer.writeInt(self.state);
+    }
+
     pub fn rand(self: *Crand) u32 {
+        const state_before = self.state;
         self.state = self.state *% crt_rand_mult +% crt_rand_inc;
-        return (self.state >> 16) & 0x7fff;
+        const value = (self.state >> 16) & 0x7fff;
+        if (self.trace_sink) |sink| {
+            sink(self.trace_ctx, .{
+                .state_before = state_before,
+                .state_after = self.state,
+                .value_15 = value,
+            });
+        }
+        return value;
     }
 };
 

@@ -8,10 +8,6 @@ const replay_codec = @import("replay_codec.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
 const state_mod = @import("runtime/state.zig");
 
-const crt_rand_mult: u32 = 214_013;
-const crt_rand_inc: u32 = 2_531_011;
-const max_rng_draws_per_phase: usize = 1_000_000;
-
 const trace_magic = "crimson_debug_trace_v1\n";
 const trace_format_version: u32 = 1;
 const trace_schema_version: i32 = 10;
@@ -676,8 +672,11 @@ fn buildTickRecord(
     bonus_state: *EntityGenerationState,
 ) TraceWriteError!TickRecord {
     const tick_index_i32 = try castI32(row.tick_index);
-    const rng_stream = try buildRngStream(allocator, row, tick_rng_start_state);
+    _ = tick_rng_start_state;
+    const rng_stream = try buildRngStream(allocator, row);
     errdefer if (rng_stream.len > 0) allocator.free(rng_stream);
+    const timing_samples = try buildTimingSamples(allocator, row);
+    errdefer if (timing_samples.len > 0) allocator.free(timing_samples);
     const checkpoint = try buildCheckpoint(allocator, row, elapsed_ms);
     errdefer deinitCheckpoint(allocator, &checkpoint);
     const sim_state = try buildSimState(
@@ -705,6 +704,7 @@ fn buildTickRecord(
             .sim_state = sim_state,
             .entity_samples = entity_samples,
             .rng_stream = rng_stream,
+            .timing_samples = timing_samples,
         },
     };
 }
@@ -718,6 +718,9 @@ fn deinitTickRecord(allocator: std.mem.Allocator, record: *TickRecord) void {
     allocator.free(record.channels.entity_samples.bonuses);
     if (record.channels.rng_stream.len > 0) {
         allocator.free(record.channels.rng_stream);
+    }
+    if (record.channels.timing_samples.len > 0) {
+        allocator.free(record.channels.timing_samples);
     }
 }
 
@@ -989,70 +992,51 @@ fn buildNonzeroPerkCounts(
 fn buildRngStream(
     allocator: std.mem.Allocator,
     row: replay_runner.ReplayTickTrace,
-    tick_rng_start_state: u32,
 ) TraceWriteError![]const RngStreamRow {
-    var rows: std.ArrayList(RngStreamRow) = .empty;
-    defer rows.deinit(allocator);
-
-    var state = tick_rng_start_state;
-    const targets = [_]u32{
-        row.rng.rng_after_perk_effects,
-        row.rng.rng_after_creatures,
-        row.rng.rng_after_projectiles,
-        row.rng.rng_after_secondary_projectiles,
-        row.rng.rng_after_particles,
-        row.rng.rng_after_player_update,
-        row.rng.rng_after_stage_spawns,
-        row.rng.rng_after_wave_spawns,
-        row.rng.rng_after_spawns,
-        row.rng.rng_after_bonus_update,
-        row.rng.rng_state,
-    };
-    for (targets) |target_state| {
-        state = try appendRngTransition(
-            allocator,
-            &rows,
-            state,
-            target_state,
-        );
-    }
-    if (state != row.rng.rng_state) {
-        return error.RngTransitionNotReconstructable;
-    }
-    if (rows.items.len == 0) {
+    if (row.rng_rows.len == 0) {
         return empty_rng_stream;
     }
-    return rows.toOwnedSlice(allocator);
-}
 
-fn appendRngTransition(
-    allocator: std.mem.Allocator,
-    rows: *std.ArrayList(RngStreamRow),
-    from_state: u32,
-    target_state: u32,
-) TraceWriteError!u32 {
-    if (from_state == target_state) return from_state;
-
-    var state = from_state;
-    var draws: usize = 0;
-    while (state != target_state) : (draws += 1) {
-        if (draws >= max_rng_draws_per_phase) {
-            return error.RngTransitionNotReconstructable;
-        }
-        const next_state = lcgStep(state);
-        try rows.append(allocator, .{
-            .tick_call_index = try castI32(rows.items.len + 1),
-            .value_15 = @intCast((next_state >> 16) & 0x7fff),
-            .state_before_u32 = @intCast(state),
-            .state_after_u32 = @intCast(next_state),
-        });
-        state = next_state;
+    const rows = try allocator.alloc(RngStreamRow, row.rng_rows.len);
+    for (row.rng_rows, 0..) |draw, idx| {
+        rows[idx] = .{
+            .tick_call_index = draw.tick_call_index,
+            .value_15 = draw.value_15,
+            .state_before_u32 = @intCast(draw.state_before_u32),
+            .state_after_u32 = @intCast(draw.state_after_u32),
+            .caller = null,
+        };
     }
-    return state;
+    return rows;
 }
 
-fn lcgStep(state: u32) u32 {
-    return state *% crt_rand_mult +% crt_rand_inc;
+fn buildTimingSamples(
+    allocator: std.mem.Allocator,
+    row: replay_runner.ReplayTickTrace,
+) TraceWriteError![]const TimingSampleRow {
+    if (row.timing_samples.len == 0) {
+        return empty_timing_samples;
+    }
+
+    const samples = try allocator.alloc(TimingSampleRow, row.timing_samples.len);
+    for (row.timing_samples, 0..) |sample, idx| {
+        samples[idx] = .{
+            .tick_index = sample.tick_index,
+            .gameplay_frame = sample.gameplay_frame,
+            .phase = sample.phase,
+            .write_kind = sample.write_kind,
+            .frame_dt_f32 = sample.frame_dt_f32,
+            .frame_dt_ms_i32 = sample.frame_dt_ms_i32,
+            .frame_dt_ms_f32 = sample.frame_dt_ms_f32,
+            .time_scale_active_entry = sample.time_scale_active_entry,
+            .time_scale_active_current = sample.time_scale_active_current,
+            .time_scale_factor = sample.time_scale_factor,
+            .bonus_reflex_boost_timer = sample.bonus_reflex_boost_timer,
+            .mode_fn = sample.mode_fn,
+            .player_index = sample.player_index,
+        };
+    }
+    return samples;
 }
 
 fn encodeMsgpackOwned(allocator: std.mem.Allocator, value: anytype) ![]u8 {
