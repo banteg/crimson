@@ -510,6 +510,7 @@ const TickTraceCollector = struct {
     fn deinit(self: *TickTraceCollector) void {
         self.rng_rows.deinit(self.allocator);
         self.timing_samples.deinit(self.allocator);
+        self.* = undefined;
     }
 
     fn takeRngRows(self: *TickTraceCollector) error{OutOfMemory}![]const replay_diagnostic_trace.ReplayTickRngDraw {
@@ -555,7 +556,7 @@ fn f32Bits(value: f32) u32 {
     return @bitCast(value);
 }
 
-fn mapReplayInputToGameInput(input: replay_codec.ReplayPlayerInput) player_runtime.GameInput {
+pub fn mapReplayInputToGameInput(input: replay_codec.ReplayPlayerInput) player_runtime.GameInput {
     const flags = replay_codec.unpackInputFlags(input.flags);
     return .{
         .move_x = input.move_x,
@@ -800,7 +801,7 @@ test "survival scaffold tracks event and input counters" {
     const result = try runReplayScaffold(replay);
     try std.testing.expectEqual(@as(usize, 2), result.ticks);
     try std.testing.expectEqual(@as(i64, 33), result.elapsed_ms_nominal);
-    try std.testing.expectEqual(@as(i64, 33), result.elapsed_ms_sim);
+    try std.testing.expectEqual(@as(i64, 32), result.elapsed_ms_sim);
     try std.testing.expectEqual(@as(usize, 1), result.perk_menu_open_count);
     try std.testing.expectEqual(@as(usize, 0), result.perk_pick_count);
     try std.testing.expectEqual(@as(usize, 1), result.fire_pressed_count);
@@ -2583,7 +2584,7 @@ const TestReplayConfig = struct {
     game_mode_id: i32 = @intFromEnum(GameModeId.survival),
     seed: u32 = 1,
     tick_rate: i32,
-    game_version: []const u8 = "0.7.0",
+    game_version: []const u8 = "0.9.0",
     preserve_bugs: bool = false,
     quest_level: []const u8 = "",
     inputs: []const u32,
@@ -2595,7 +2596,7 @@ const TestReplayMultiConfig = struct {
     seed: u32 = 1,
     tick_rate: i32,
     player_count: i32,
-    game_version: []const u8 = "0.7.0",
+    game_version: []const u8 = "0.9.0",
     preserve_bugs: bool = false,
     quest_level: []const u8 = "",
     inputs: []const []const u32,

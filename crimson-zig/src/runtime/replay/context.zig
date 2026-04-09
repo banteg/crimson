@@ -61,6 +61,7 @@ pub const SimulationContext = struct {
     projectiles: projectiles_mod.ProjectilePool = .{},
     secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{},
     bonuses: bonus_runtime.BonusPool = .{},
+    tick_bonus_pickups: bonus_runtime.BonusPickupBuffer = .{},
 
     game_mode: game_ids.GameModeId,
     player_count: i32,

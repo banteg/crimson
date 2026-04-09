@@ -5,7 +5,12 @@ pub const replay_format_version: i32 = 8;
 pub const weapon_usage_count: usize = 53;
 pub const max_players: usize = 4;
 pub const gzip_magic = [_]u8{ 0x1f, 0x8b };
+pub const zstd_magic = [_]u8{ 0x28, 0xB5, 0x2F, 0xFD };
 pub const max_replay_payload_bytes: usize = 64 * 1024 * 1024;
+pub const latest_ruleset_game_version_prefix = "0.9.";
+const msgpack_bin8: u8 = 0xC4;
+const msgpack_bin16: u8 = 0xC5;
+const msgpack_bin32: u8 = 0xC6;
 
 pub const fire_down_flag: u32 = 1 << 0;
 pub const fire_pressed_flag: u32 = 1 << 1;
@@ -43,6 +48,7 @@ pub const ReplayCodecError = error{
     UnsupportedInputQuantization,
     BootstrapSeedMismatch,
     InvalidGzipPayload,
+    InvalidZstdPayload,
     PayloadTooLarge,
     OutOfMemory,
 };
@@ -135,6 +141,10 @@ pub fn unpackInputFlags(flags: u32) InputFlags {
         decoded.aim_scheme = if (raw == @as(i32, @intCast(aim_scheme_mask))) -1 else raw;
     }
     return decoded;
+}
+
+pub fn isLatestRulesetGameVersion(game_version: []const u8) bool {
+    return std.mem.startsWith(u8, game_version, latest_ruleset_game_version_prefix);
 }
 
 pub const PerkPickEvent = struct {
@@ -393,6 +403,54 @@ const ReplayStatusWire = struct {
     weapon_usage_counts: []const u32 = &.{},
 };
 
+pub const ReplayStatusCurrentWire = struct {
+    quest_unlock_index: i32 = 0,
+    quest_unlock_index_full: i32 = 0,
+    weapon_usage_counts: []const u32 = &.{},
+    quest_play_counts: []const u32 = &.{},
+    mode_play_survival: i32 = 0,
+    mode_play_rush: i32 = 0,
+    mode_play_typo: i32 = 0,
+    mode_play_other: i32 = 0,
+    game_sequence_id: i32 = 0,
+    unknown_tail: BinaryBytes = .{ .data = "" },
+
+    pub fn msgpackRead(unpacker: anytype) !ReplayStatusCurrentWire {
+        const field_count = try unpacker.readMapHeader(u16);
+        var field_name_buf: [64]u8 = undefined;
+        var status: ReplayStatusCurrentWire = .{};
+
+        for (0..field_count) |_| {
+            const field_name = try unpacker.readStringInto(&field_name_buf);
+            if (std.mem.eql(u8, field_name, "quest_unlock_index")) {
+                status.quest_unlock_index = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "quest_unlock_index_full")) {
+                status.quest_unlock_index_full = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "weapon_usage_counts")) {
+                status.weapon_usage_counts = try readExactU32Array(unpacker);
+            } else if (std.mem.eql(u8, field_name, "quest_play_counts")) {
+                status.quest_play_counts = try readExactU32Array(unpacker);
+            } else if (std.mem.eql(u8, field_name, "mode_play_survival")) {
+                status.mode_play_survival = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "mode_play_rush")) {
+                status.mode_play_rush = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "mode_play_typo")) {
+                status.mode_play_typo = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "mode_play_other")) {
+                status.mode_play_other = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "game_sequence_id")) {
+                status.game_sequence_id = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "unknown_tail")) {
+                status.unknown_tail = .{ .data = try readExactBinary(unpacker) };
+            } else {
+                return error.UnknownStructField;
+            }
+        }
+
+        return status;
+    }
+};
+
 const ReplayClaimedStatsWire = struct {
     complete: bool = false,
     ticks: i32 = 0,
@@ -425,6 +483,32 @@ const ReplayHeaderWire = struct {
     input_quantization: []const u8 = "f32",
 };
 
+const QuestLevelCurrentWire = struct {
+    major: i32,
+    minor: i32,
+};
+
+const ReplayHeaderCurrentWire = struct {
+    game_mode_id: i32,
+    seed: u32,
+    replay_format_version: i32,
+    quest_level: ?QuestLevelCurrentWire = null,
+    typo_dictionary_words: []const []const u8 = &.{},
+    typo_highscore_names: []const []const u8 = &.{},
+    game_version: []const u8 = "",
+    tick_rate: i32 = 60,
+    quest_fail_retry_count: i32 = 0,
+    hardcore: bool = false,
+    preserve_bugs: bool = false,
+    detail_preset: i32 = 5,
+    violence_disabled: i32 = 0,
+    world_size: f32 = 1024.0,
+    player_count: i32 = 1,
+    status: ReplayStatusCurrentWire = .{},
+    claimed_stats: ReplayClaimedStatsWire,
+    input_quantization: []const u8 = "f32",
+};
+
 const ReplayInputWire = struct {
     move_x: f32,
     move_y: f32,
@@ -447,6 +531,52 @@ const PerkMenuOpenEventWire = struct {
     tick_index: i32,
     player_index: i32,
 };
+
+const ReplayCommandCurrentWire = struct {
+    type: []const u8,
+    player_index: i32 = 0,
+    choice_index: ?i32 = null,
+    ch: ?[]const u8 = null,
+};
+
+pub const BinaryBytes = struct {
+    data: []const u8,
+
+    pub fn msgpackRead(unpacker: anytype) !BinaryBytes {
+        return .{ .data = try readExactBinary(unpacker) };
+    }
+};
+
+fn readExactBinary(unpacker: anytype) ![]const u8 {
+    const header = try unpacker.reader.takeByte();
+    const len = switch (header) {
+        msgpack_bin8 => try readPackedInt(u8, unpacker.reader),
+        msgpack_bin16 => try readPackedInt(u16, unpacker.reader),
+        msgpack_bin32 => try readPackedInt(u32, unpacker.reader),
+        else => return error.InvalidFormat,
+    };
+
+    const bytes = try unpacker.allocator.alloc(u8, len);
+    errdefer unpacker.allocator.free(bytes);
+    try unpacker.reader.readSliceAll(bytes);
+    return bytes;
+}
+
+fn readExactU32Array(unpacker: anytype) ![]const u32 {
+    const len = try msgpack.unpackArrayHeader(unpacker.reader, u32);
+    const out = try unpacker.allocator.alloc(u32, len);
+    errdefer unpacker.allocator.free(out);
+    for (out) |*item| {
+        item.* = try unpacker.readInt(u32);
+    }
+    return out;
+}
+
+fn readPackedInt(comptime T: type, reader: *std.Io.Reader) !T {
+    var buf: [@sizeOf(T)]u8 = undefined;
+    try reader.readSliceAll(&buf);
+    return std.mem.readInt(T, &buf, .big);
+}
 
 const CaptureBootstrapQuestSessionWire = struct {
     spawn_timeline_ms: ?f32,
@@ -586,6 +716,17 @@ const ReplayWire = struct {
     events: []const ReplayEventWire = &.{},
 };
 
+const ReplayTickCurrentWire = struct {
+    dt: f32,
+    inputs: []const ReplayInputWire,
+    commands: []const ReplayCommandCurrentWire = &.{},
+};
+
+const ReplayCurrentWire = struct {
+    header: ReplayHeaderCurrentWire,
+    ticks: []const ReplayTickCurrentWire,
+};
+
 const TerrainRule = struct {
     threshold: i32,
 };
@@ -614,6 +755,11 @@ pub fn isGzipPayload(bytes: []const u8) bool {
     return std.mem.eql(u8, bytes[0..gzip_magic.len], gzip_magic[0..]);
 }
 
+pub fn isZstdPayload(bytes: []const u8) bool {
+    if (bytes.len < zstd_magic.len) return false;
+    return std.mem.eql(u8, bytes[0..zstd_magic.len], zstd_magic[0..]);
+}
+
 pub fn inflateGzipPayload(
     allocator: std.mem.Allocator,
     compressed: []const u8,
@@ -640,10 +786,43 @@ pub fn inflateGzipPayload(
     return out.toOwnedSlice(allocator) catch return error.OutOfMemory;
 }
 
+pub fn inflateZstdPayload(
+    allocator: std.mem.Allocator,
+    compressed: []const u8,
+    max_output_bytes: usize,
+) ReplayCodecError![]u8 {
+    var input: std.Io.Reader = .fixed(compressed);
+    var window: [std.compress.zstd.default_window_len]u8 = undefined;
+    var decompress: std.compress.zstd.Decompress = .init(&input, &window, .{ .verify_checksum = false });
+
+    var out: std.ArrayList(u8) = .empty;
+    defer out.deinit(allocator);
+
+    var chunk: [8192]u8 = undefined;
+    var total: usize = 0;
+    while (true) {
+        const n = decompress.reader.readSliceShort(&chunk) catch {
+            _ = decompress.err;
+            return error.InvalidZstdPayload;
+        };
+        if (n == 0) break;
+        total += n;
+        if (total > max_output_bytes) return error.PayloadTooLarge;
+        out.appendSlice(allocator, chunk[0..n]) catch return error.OutOfMemory;
+        if (n < chunk.len) break;
+    }
+
+    return out.toOwnedSlice(allocator) catch return error.OutOfMemory;
+}
+
 pub fn parseReplaySummary(
     allocator: std.mem.Allocator,
     payload: []const u8,
 ) ReplayCodecError!ReplaySummary {
+    if (try tryParseCurrentReplaySummary(allocator, payload)) |summary| {
+        return summary;
+    }
+
     var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch |err| {
         return switch (err) {
             error.OutOfMemory => error.OutOfMemory,
@@ -656,7 +835,7 @@ pub fn parseReplaySummary(
     const header = try buildHeader(allocator, wire.header);
     errdefer header.deinit(allocator);
 
-    if (header.replay_format_version != replay_format_version) {
+    if (!isSupportedReplayFormatVersion(header.replay_format_version)) {
         return error.UnsupportedReplayFormatVersion;
     }
 
@@ -675,6 +854,10 @@ pub fn parseReplay(
     allocator: std.mem.Allocator,
     payload: []const u8,
 ) ReplayCodecError!Replay {
+    if (try tryParseCurrentReplay(allocator, payload)) |replay| {
+        return replay;
+    }
+
     var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch |err| {
         return switch (err) {
             error.OutOfMemory => error.OutOfMemory,
@@ -687,7 +870,7 @@ pub fn parseReplay(
     const header = try buildHeader(allocator, wire.header);
     errdefer header.deinit(allocator);
 
-    if (header.replay_format_version != replay_format_version) {
+    if (!isSupportedReplayFormatVersion(header.replay_format_version)) {
         return error.UnsupportedReplayFormatVersion;
     }
 
@@ -811,6 +994,123 @@ fn buildDt(
         out[idx] = value;
     }
     return out;
+}
+
+fn validateCurrentTicks(
+    wire_ticks: []const ReplayTickCurrentWire,
+    player_count: i32,
+) ReplayCodecError!void {
+    const expected_players: usize = @intCast(player_count);
+    for (wire_ticks) |tick| {
+        if (!std.math.isFinite(tick.dt) or tick.dt < 0.0) return error.UnsupportedInputShape;
+        if (tick.inputs.len != expected_players) return error.UnsupportedInputShape;
+    }
+}
+
+fn parseCurrentEventSummary(
+    wire_ticks: []const ReplayTickCurrentWire,
+    input_len: usize,
+) ReplayCodecError!ReplayEventSummary {
+    var summary: ReplayEventSummary = .{};
+    for (wire_ticks, 0..) |tick, tick_index| {
+        for (tick.commands) |command| {
+            const event = try parseCurrentCommand(command, tick_index, input_len);
+            summary.total_count += 1;
+            switch (event) {
+                .perk_pick => summary.perk_pick_count += 1,
+                .perk_menu_open => summary.perk_menu_open_count += 1,
+                .capture_bootstrap => summary.capture_bootstrap_count += 1,
+                .capture_perk_apply => summary.capture_perk_apply_count += 1,
+                .capture_perk_pending => summary.capture_perk_pending_count += 1,
+                .capture_creature_spawn => summary.capture_creature_spawn_count += 1,
+                .capture_state_transition => summary.capture_state_transition_count += 1,
+            }
+        }
+    }
+    return summary;
+}
+
+fn buildInputsCurrent(
+    allocator: std.mem.Allocator,
+    wire_ticks: []const ReplayTickCurrentWire,
+) ReplayCodecError![]ReplayTickInputs {
+    const out = allocator.alloc(ReplayTickInputs, wire_ticks.len) catch return error.OutOfMemory;
+    var built: usize = 0;
+    errdefer {
+        for (0..built) |idx| allocator.free(out[idx]);
+        allocator.free(out);
+    }
+
+    for (wire_ticks, 0..) |tick, tick_idx| {
+        const tick_inputs = allocator.alloc(ReplayPlayerInput, tick.inputs.len) catch return error.OutOfMemory;
+        errdefer allocator.free(tick_inputs);
+        for (tick.inputs, 0..) |wire_input, player_idx| {
+            tick_inputs[player_idx] = .{
+                .move_x = normalizeInputValue(wire_input.move_x),
+                .move_y = normalizeInputValue(wire_input.move_y),
+                .aim_x = normalizeInputValue(wire_input.aim_x),
+                .aim_y = normalizeInputValue(wire_input.aim_y),
+                .flags = try parseInputFlagsValue(wire_input.flags),
+            };
+        }
+        out[tick_idx] = tick_inputs;
+        built += 1;
+    }
+    return out;
+}
+
+fn buildEventsCurrent(
+    allocator: std.mem.Allocator,
+    wire_ticks: []const ReplayTickCurrentWire,
+    input_len: usize,
+) ReplayCodecError![]ReplayEvent {
+    var total_count: usize = 0;
+    for (wire_ticks) |tick| total_count += tick.commands.len;
+
+    const events = allocator.alloc(ReplayEvent, total_count) catch return error.OutOfMemory;
+    errdefer allocator.free(events);
+
+    var event_index: usize = 0;
+    for (wire_ticks, 0..) |tick, tick_index| {
+        for (tick.commands) |command| {
+            events[event_index] = try parseCurrentCommand(command, tick_index, input_len);
+            event_index += 1;
+        }
+    }
+    return events;
+}
+
+fn buildDtCurrent(
+    allocator: std.mem.Allocator,
+    wire_ticks: []const ReplayTickCurrentWire,
+) ReplayCodecError![]f32 {
+    const out = allocator.alloc(f32, wire_ticks.len) catch return error.OutOfMemory;
+    for (wire_ticks, 0..) |tick, idx| {
+        out[idx] = tick.dt;
+    }
+    return out;
+}
+
+fn parseCurrentCommand(
+    command: ReplayCommandCurrentWire,
+    tick_index: usize,
+    input_len: usize,
+) ReplayCodecError!ReplayEvent {
+    _ = input_len;
+    if (std.mem.eql(u8, command.type, "perk_menu_open")) {
+        return .{ .perk_menu_open = .{
+            .tick_index = tick_index,
+            .player_index = command.player_index,
+        } };
+    }
+    if (std.mem.eql(u8, command.type, "perk_pick")) {
+        return .{ .perk_pick = .{
+            .tick_index = tick_index,
+            .player_index = command.player_index,
+            .choice_index = command.choice_index orelse return error.UnsupportedEventShape,
+        } };
+    }
+    return error.UnsupportedEventKind;
 }
 
 fn validateDtRows(
@@ -1125,6 +1425,73 @@ fn validateInputShape(
     }
 }
 
+fn isSupportedReplayFormatVersion(version: i32) bool {
+    return version == 8 or version == 11;
+}
+
+fn tryParseCurrentReplaySummary(
+    allocator: std.mem.Allocator,
+    payload: []const u8,
+) ReplayCodecError!?ReplaySummary {
+    var decoded = msgpack.decodeFromSlice(ReplayCurrentWire, allocator, payload) catch |err| {
+        return switch (err) {
+            error.OutOfMemory => error.OutOfMemory,
+            else => null,
+        };
+    };
+    defer decoded.deinit();
+
+    const wire = decoded.value;
+    const header = try buildHeaderCurrent(allocator, wire.header);
+    errdefer header.deinit(allocator);
+    if (!isSupportedReplayFormatVersion(header.replay_format_version)) {
+        return error.UnsupportedReplayFormatVersion;
+    }
+
+    const tick_count = wire.ticks.len;
+    try validateCurrentTicks(wire.ticks, header.player_count);
+    return .{
+        .header = header,
+        .tick_count = tick_count,
+        .events = try parseCurrentEventSummary(wire.ticks, tick_count),
+    };
+}
+
+fn tryParseCurrentReplay(
+    allocator: std.mem.Allocator,
+    payload: []const u8,
+) ReplayCodecError!?Replay {
+    var decoded = msgpack.decodeFromSlice(ReplayCurrentWire, allocator, payload) catch |err| {
+        return switch (err) {
+            error.OutOfMemory => error.OutOfMemory,
+            else => null,
+        };
+    };
+    defer decoded.deinit();
+
+    const wire = decoded.value;
+    const header = try buildHeaderCurrent(allocator, wire.header);
+    errdefer header.deinit(allocator);
+    if (!isSupportedReplayFormatVersion(header.replay_format_version)) {
+        return error.UnsupportedReplayFormatVersion;
+    }
+
+    try validateCurrentTicks(wire.ticks, header.player_count);
+    const inputs = try buildInputsCurrent(allocator, wire.ticks);
+    errdefer freeInputs(allocator, inputs);
+    const dt = try buildDtCurrent(allocator, wire.ticks);
+    errdefer allocator.free(dt);
+    const events = try buildEventsCurrent(allocator, wire.ticks, wire.ticks.len);
+    errdefer allocator.free(events);
+
+    return .{
+        .header = header,
+        .inputs = inputs,
+        .dt = dt,
+        .events = events,
+    };
+}
+
 fn buildHeader(
     allocator: std.mem.Allocator,
     wire: ReplayHeaderWire,
@@ -1202,6 +1569,88 @@ fn buildHeader(
         .preserve_bugs = wire.preserve_bugs,
         .detail_preset = detail_preset,
         .gore_disabled = gore_disabled,
+        .world_size = wire.world_size,
+        .player_count = player_count,
+        .status = .{
+            .quest_unlock_index = quest_unlock_index,
+            .quest_unlock_index_full = quest_unlock_index_full,
+            .weapon_usage_counts = usage_counts,
+        },
+        .claimed_stats = claimed_stats,
+        .input_quantization = allocator.dupe(u8, wire.input_quantization) catch return error.OutOfMemory,
+    };
+}
+
+fn buildHeaderCurrent(
+    allocator: std.mem.Allocator,
+    wire: ReplayHeaderCurrentWire,
+) ReplayCodecError!ReplayHeader {
+    const max_world_size_i32_f32: f32 = @floatFromInt(std.math.maxInt(i32));
+    if (!std.math.isFinite(wire.world_size) or wire.world_size <= 0.0 or wire.world_size > max_world_size_i32_f32) {
+        return error.InvalidHeaderValue;
+    }
+    if (!std.mem.eql(u8, wire.input_quantization, "f32")) {
+        return error.UnsupportedInputQuantization;
+    }
+
+    const tick_rate = try parseI32(wire.tick_rate);
+    const player_count = try parseI32(wire.player_count);
+    const quest_fail_retry_count = try parseI32(wire.quest_fail_retry_count);
+    const detail_preset = try parseI32(wire.detail_preset);
+    const violence_disabled = try parseI32(wire.violence_disabled);
+    const quest_unlock_index = try parseI32(wire.status.quest_unlock_index);
+    const quest_unlock_index_full = try parseI32(wire.status.quest_unlock_index_full);
+
+    if (tick_rate <= 0 or player_count <= 0) return error.InvalidHeaderValue;
+    if (wire.game_version.len == 0) return error.MissingHeaderField;
+    if (wire.status.weapon_usage_counts.len != weapon_usage_count) return error.InvalidHeaderValue;
+
+    var usage_counts: [weapon_usage_count]u32 = [_]u32{0} ** weapon_usage_count;
+    for (wire.status.weapon_usage_counts, 0..) |value, idx| {
+        usage_counts[idx] = try parseU32(value);
+    }
+
+    const claimed_stats: ReplayClaimedStats = .{
+        .complete = wire.claimed_stats.complete,
+        .ticks = try parseI32(wire.claimed_stats.ticks),
+        .elapsed_ms = try parseI64(wire.claimed_stats.elapsed_ms),
+        .score_xp = try parseI64(wire.claimed_stats.score_xp),
+        .kills = try parseI32(wire.claimed_stats.kills),
+        .most_used_weapon_id = try parseI32(wire.claimed_stats.most_used_weapon_id),
+        .shots_fired = try parseI32(wire.claimed_stats.shots_fired),
+        .shots_hit = try parseI32(wire.claimed_stats.shots_hit),
+    };
+    if (claimed_stats.ticks < 0 or
+        claimed_stats.elapsed_ms < 0 or
+        claimed_stats.score_xp < 0 or
+        claimed_stats.kills < 0 or
+        claimed_stats.shots_fired < 0 or
+        claimed_stats.shots_hit < 0 or
+        claimed_stats.shots_hit > claimed_stats.shots_fired)
+    {
+        return error.InvalidHeaderValue;
+    }
+
+    const quest_level = if (wire.quest_level) |level|
+        std.fmt.allocPrint(allocator, "{d}.{d}", .{ level.major, level.minor }) catch return error.OutOfMemory
+    else
+        allocator.dupe(u8, "") catch return error.OutOfMemory;
+    errdefer allocator.free(quest_level);
+
+    return .{
+        .game_mode_id = wire.game_mode_id,
+        .seed = wire.seed,
+        .replay_format_version = wire.replay_format_version,
+        .quest_level = quest_level,
+        .bootstrap_kind = allocator.dupe(u8, "none") catch return error.OutOfMemory,
+        .bootstrap_seed = 0,
+        .game_version = allocator.dupe(u8, wire.game_version) catch return error.OutOfMemory,
+        .tick_rate = tick_rate,
+        .difficulty_level = quest_fail_retry_count,
+        .hardcore = wire.hardcore,
+        .preserve_bugs = wire.preserve_bugs,
+        .detail_preset = detail_preset,
+        .gore_disabled = violence_disabled,
         .world_size = wire.world_size,
         .player_count = player_count,
         .status = .{
@@ -1631,6 +2080,14 @@ test "parse replay decode errors preserve oom and map invalid msgpack" {
     const invalid_payload = [_]u8{0xc1};
     try std.testing.expectError(error.InvalidMsgpack, parseReplaySummary(std.testing.allocator, invalid_payload[0..]));
     try std.testing.expectError(error.InvalidMsgpack, parseReplay(std.testing.allocator, invalid_payload[0..]));
+}
+
+test "binary bytes reader accepts msgpack bin8 payloads" {
+    const payload = [_]u8{ 0xC4, 0x04, 0xDE, 0xAD, 0xBE, 0xEF };
+    var decoded = try msgpack.decodeFromSlice(BinaryBytes, std.testing.allocator, &payload);
+    defer decoded.deinit();
+
+    try std.testing.expectEqualSlices(u8, &.{ 0xDE, 0xAD, 0xBE, 0xEF }, decoded.value.data);
 }
 
 test "capture bootstrap rejects perk nonzero counts above max players" {
