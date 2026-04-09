@@ -43,8 +43,10 @@ Last reviewed: **2026-02-24**
 
 - Zig native-port details now live on a dedicated page:
   - [`docs/rewrite/zig-verifier.md`](zig-verifier.md)
+- `crimson-zig/` is being tracked as a full native port effort, not a verifier
+  side project.
 - This page remains focused on overall rewrite (Python + raylib) status and
-  major parity gaps.
+  major parity gaps, while the Zig page tracks the native-port surface directly.
 
 ## Coverage map (rewrite vs classic)
 
