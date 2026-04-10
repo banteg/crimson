@@ -14,6 +14,24 @@ const terrain_density_shift: u6 = 19;
 const terrain_rand_draws_per_stamp: u64 = 3;
 const rush_forced_ammo: f32 = 30.0;
 
+pub const TerrainSlotTriplet = [3]u8;
+
+pub const TerrainSetup = struct {
+    terrain_slots: TerrainSlotTriplet,
+    terrain_seed: u32,
+};
+
+const default_terrain_slots: TerrainSlotTriplet = .{ 0, 1, 0 };
+
+const unlock_terrain_slots = [_]struct {
+    threshold: i32,
+    slots: TerrainSlotTriplet,
+}{
+    .{ .threshold = 40, .slots = .{ 6, 7, 6 } },
+    .{ .threshold = 30, .slots = .{ 4, 5, 4 } },
+    .{ .threshold = 20, .slots = .{ 2, 3, 2 } },
+};
+
 pub const ParsedQuestLevel = struct {
     major: i32,
     minor: i32,
@@ -85,6 +103,21 @@ pub fn advanceReplayBootstrapRng(
     }
 }
 
+pub fn previewUnlockTerrain(
+    seed: u32,
+    unlock_index: i32,
+    terrain_width: i32,
+    terrain_height: i32,
+) TerrainSetup {
+    var rng = spawn_mod.Crand.init(seed);
+    return advanceUnlockTerrain(
+        &rng,
+        unlock_index,
+        terrain_width,
+        terrain_height,
+    );
+}
+
 fn terrainStampingDraws(width: i32, height: i32) usize {
     const clamped_width: u64 = @intCast(@max(width, 0));
     const clamped_height: u64 = @intCast(@max(height, 0));
@@ -105,18 +138,50 @@ fn advanceUnlockTerrainRng(
     width: i32,
     height: i32,
 ) void {
+    _ = advanceUnlockTerrain(rng, unlock_index, width, height);
+}
+
+fn advanceUnlockTerrain(
+    rng: *spawn_mod.Crand,
+    unlock_index: i32,
+    width: i32,
+    height: i32,
+) TerrainSetup {
     advanceRng(rng, terrain_random_prelude_draws);
-    if (unlock_index >= 40 and (rng.rand() & 7) == 3) {
-        advanceRng(rng, terrainStampingDraws(width, height));
-        return;
-    }
-    if (unlock_index >= 30 and (rng.rand() & 7) == 3) {
-        advanceRng(rng, terrainStampingDraws(width, height));
-        return;
-    }
-    if (unlock_index >= 20 and (rng.rand() & 7) == 3) {
-        advanceRng(rng, terrainStampingDraws(width, height));
-        return;
-    }
+    const terrain_slots = chooseUnlockTerrainSlots(rng, unlock_index);
+    const terrain_seed = rng.state;
     advanceRng(rng, terrainStampingDraws(width, height));
+    return .{
+        .terrain_slots = terrain_slots,
+        .terrain_seed = terrain_seed,
+    };
+}
+
+fn chooseUnlockTerrainSlots(
+    rng: *spawn_mod.Crand,
+    unlock_index: i32,
+) TerrainSlotTriplet {
+    for (unlock_terrain_slots) |entry| {
+        if (unlock_index >= entry.threshold and (rng.rand() & 7) == 3) {
+            return entry.slots;
+        }
+    }
+    return default_terrain_slots;
+}
+
+test "preview unlock terrain matches replay bootstrap rng advance for survival" {
+    const terrain = previewUnlockTerrain(0xBEEF, 30, 1024, 1024);
+
+    var expected_rng = spawn_mod.Crand.init(0xBEEF);
+    advanceRng(&expected_rng, terrain_random_prelude_draws);
+    const expected_slots = chooseUnlockTerrainSlots(&expected_rng, 30);
+    const expected_seed = expected_rng.state;
+    advanceRng(&expected_rng, terrainStampingDraws(1024, 1024));
+
+    var rng = spawn_mod.Crand.init(0xBEEF);
+    advanceReplayBootstrapRng(&rng, .survival, 30, 1024, 1024);
+
+    try std.testing.expectEqualDeep(expected_slots, terrain.terrain_slots);
+    try std.testing.expectEqual(expected_seed, terrain.terrain_seed);
+    try std.testing.expectEqual(expected_rng.state, rng.state);
 }

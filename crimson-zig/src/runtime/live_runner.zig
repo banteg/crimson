@@ -63,6 +63,7 @@ pub fn defaultGameInput() player_runtime.GameInput {
 }
 
 pub const LiveSurvivalRunner = struct {
+    seed: u32,
     session: runtime_session.DeterministicSession,
     accumulator: f32 = 0.0,
     max_substeps_per_frame: usize = 8,
@@ -86,6 +87,7 @@ pub const LiveSurvivalRunner = struct {
         );
 
         return .{
+            .seed = config.seed,
             .session = session,
         };
     }
