@@ -19,7 +19,8 @@ const math = @import("math.zig");
 const replay_diagnostic_trace = @import("replay/diagnostic_trace.zig");
 const replay_events = @import("replay/events.zig");
 const replay_movement = @import("movement.zig");
-const replay_setup = @import("replay/setup.zig");
+const runtime_session = @import("session.zig");
+const session_builders = @import("session_builders.zig");
 const replay_step = @import("replay/step.zig");
 
 const narrowF32 = native_math.roundF32;
@@ -196,7 +197,7 @@ pub fn runReplayScaffoldWithTrace(
     }
 
     const events = replay.events;
-    var context = replay_setup.prepareSimulationContext(
+    var context = session_builders.buildReplaySession(
         game_mode,
         header,
         events,
@@ -2303,7 +2304,7 @@ test "quest scaffold rejects oversized quest spawn override table" {
 
     const oversized = try allocator.alloc(
         spawn_mod.QuestSpawnEntry,
-        replay_setup.max_sim_quest_spawn_entries + 1,
+        runtime_session.max_sim_quest_spawn_entries + 1,
     );
     defer allocator.free(oversized);
     for (oversized) |*entry| {

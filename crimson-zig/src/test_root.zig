@@ -7,6 +7,8 @@ test {
     _ = @import("runtime/perks.zig");
     _ = @import("runtime/projectiles.zig");
     _ = @import("runtime/replay_runner.zig");
+    _ = @import("runtime/session.zig");
+    _ = @import("runtime/session_builders.zig");
     _ = @import("runtime/spawn.zig");
     _ = @import("runtime/state.zig");
     _ = @import("runtime/weapons.zig");

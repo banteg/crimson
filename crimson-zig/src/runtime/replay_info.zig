@@ -5,16 +5,16 @@ const replay_runner = @import("replay_runner.zig");
 
 const bonuses_mod = @import("bonuses.zig");
 const player_runtime = @import("player.zig");
-const replay_context_mod = @import("replay/context.zig");
 const replay_events = @import("replay/events.zig");
-const replay_setup = @import("replay/setup.zig");
+const runtime_session = @import("session.zig");
+const session_builders = @import("session_builders.zig");
 const replay_step = @import("replay/step.zig");
 const state_mod = @import("state.zig");
 const weapon_data = @import("weapon_data.zig");
 
 const GameModeId = game_ids.GameModeId;
 const PerkId = game_ids.PerkId;
-const SimulationContext = replay_context_mod.SimulationContext;
+const SimulationContext = runtime_session.DeterministicSession;
 const epsilon: f32 = 1e-6;
 
 pub const ReplayInfoError = replay_runner.ReplayRunnerError || error{
@@ -213,7 +213,7 @@ pub fn collect(
     }
 
     const events = replay.events;
-    var context = replay_setup.prepareSimulationContext(
+    var context = session_builders.buildReplaySession(
         game_mode,
         header,
         events,

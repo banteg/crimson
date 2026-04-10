@@ -8,7 +8,7 @@ const events = @import("events.zig");
 const movement = @import("../movement.zig");
 const timing = @import("../timing.zig");
 const capture_state = @import("capture_state.zig");
-const context_mod = @import("context.zig");
+const session_mod = @import("../session.zig");
 const diagnostic_trace_mod = @import("diagnostic_trace.zig");
 
 const bonus_runtime = @import("../bonuses.zig");
@@ -22,7 +22,7 @@ const survival_progression = @import("../survival_progression.zig");
 const weapons_runtime = @import("../weapons.zig");
 
 const narrowF32 = native_math.roundF32;
-const SimulationContext = context_mod.SimulationContext;
+const SimulationContext = session_mod.DeterministicSession;
 
 pub const StepError = events.EventError ||
     creatures_mod.CreatureRuntimeError ||
@@ -845,7 +845,7 @@ fn testHeader() replay_codec.ReplayHeader {
 
 test "step tick applies counters and emits trace snapshot" {
     const header = testHeader();
-    var context = try context_mod.SimulationContext.initFromReplayHeader(header, .{});
+    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
     context.rebindQuestSpawnEntries();
 
     const before_speed = context.players()[0].move_speed;
@@ -900,7 +900,7 @@ test "step tick accepts preserve bugs and keeps player zero perk targeting" {
     header.player_count = 2;
     header.preserve_bugs = true;
 
-    var context = try context_mod.SimulationContext.initFromReplayHeader(header, .{});
+    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
     context.rebindQuestSpawnEntries();
     context.state.rng.srand(1);
 

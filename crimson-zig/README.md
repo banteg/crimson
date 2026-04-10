@@ -9,6 +9,9 @@ Standalone Zig workspace for the native Crimson port.
 - Current JSON contracts mirror the Python replay CLI for verify/info payloads.
 - Current native targets include headless replay tooling, runtime modules, codec libraries,
   a raylib bootstrap window target, and a freestanding WASM ABI target.
+- Shared runtime/session seams now live under `src/runtime/session.zig` and
+  `src/runtime/session_builders.zig`, so replay tooling sits on top of the same
+  deterministic session shell we intend to use for broader native surfaces.
 
 ## Format codecs (library-only)
 
@@ -30,6 +33,9 @@ This wave is intentionally codec-only:
 - `crimson-zig` is the native-port workspace, not a replay-verifier workspace.
   - Replay verification/info are the most complete user-facing entrypoints today.
   - Runtime, codecs, startup/bootstrap, and window targets are being ported as parts of one native implementation.
+- Replay session construction now routes through the shared deterministic session
+  layer (`runtime/session*.zig`) rather than keeping the mutable loop shell under
+  `runtime/replay/`.
 - Native CLI currently executes **1-4 player survival/rush/quest** replay paths, including preserve-bugs compatibility mode, using:
   - replay msgpack+gzip decoding in Zig (via `msgpack.zig`, full header/inputs/events model),
   - native deterministic simulation pass in Zig (canonical event ordering + input/event counters),

@@ -7,7 +7,7 @@ tags:
 
 # Zig native port status (`crimson-zig/`)
 
-Last reviewed: **2026-02-26**
+Last reviewed: **2026-04-10**
 
 Scope target: a full native Zig port of Crimson systems, content, codecs, and
 product surfaces.
@@ -24,6 +24,9 @@ behavior for unsupported native paths.
 - Native architecture is being shaped to mirror the Python/runtime split where it
   makes sense, so replay tooling consumes shared gameplay/runtime modules instead
   of owning a separate simulation fork.
+- Shared deterministic session/state ownership now lives in
+  `crimson-zig/src/runtime/session.zig` plus `session_builders.zig`; replay
+  commands use compatibility wrappers around that runtime-facing layer.
 - Replay ingestion from `.crd` bytes (msgpack decode path in-tree).
 - Deterministic Survival/Rush/Quest sim scaffold + runtime loops for:
   - player/weapon runtime (reload/fire/ammo counters, level/XP progression),
