@@ -82,6 +82,7 @@ const GameplayScreen = struct {
     run_config: live_runner.LiveModeConfig,
     last_update: live_runner.FrameUpdate,
     input_interpreter: local_input.LocalInputInterpreter = .{},
+    hud_state: HudRuntimeState = .{},
     ground: ?window_ground.GroundRenderer = null,
     terrain_fx: window_terrain_fx.TerrainFxTracker = .{},
 
@@ -91,6 +92,97 @@ const GameplayScreen = struct {
             self.ground = null;
         }
         self.* = undefined;
+    }
+};
+
+const BonusHudSlotState = struct {
+    active: bool = false,
+    bonus_id: game_ids.BonusId = .unused,
+    icon_id: i32 = -1,
+    slide_x: f32 = -184.0,
+    timer_value: f32 = 0.0,
+    timer_value_alt: f32 = 0.0,
+};
+
+const HudBonusSpec = struct {
+    bonus_id: game_ids.BonusId,
+    icon_id: i32,
+    timer_value: f32,
+    timer_value_alt: f32 = 0.0,
+};
+
+const HudRuntimeState = struct {
+    survival_xp_smoothed: i32 = 0,
+    bonus_slots: [16]BonusHudSlotState = [_]BonusHudSlotState{.{}} ** 16,
+
+    fn smoothXp(self: *HudRuntimeState, target_raw: i32, frame_dt_ms_raw: f32) i32 {
+        const target = @max(target_raw, 0);
+        if (target == 0) {
+            self.survival_xp_smoothed = 0;
+            return 0;
+        }
+
+        var smoothed = self.survival_xp_smoothed;
+        if (smoothed == target) return smoothed;
+
+        const frame_dt_ms = @max(frame_dt_ms_raw, 0.0);
+        var step = @max(@as(i32, 1), @as(i32, @intFromFloat(frame_dt_ms)) / 2);
+        const diff = @abs(smoothed - target);
+        if (diff > 1000) {
+            step *= @divTrunc(diff, 100);
+        }
+
+        if (smoothed < target) {
+            smoothed += step;
+            if (smoothed > target) smoothed = target;
+        } else {
+            smoothed -= step;
+            if (smoothed < target) smoothed = target;
+        }
+
+        self.survival_xp_smoothed = smoothed;
+        return smoothed;
+    }
+
+    fn update(self: *HudRuntimeState, frame_dt: f32, session: *const runtime_session.DeterministicSession) void {
+        var desired_specs: [16]HudBonusSpec = undefined;
+        var desired_count: usize = 0;
+        collectHudBonusSpecs(session, desired_specs[0..], &desired_count);
+
+        var matched = [_]bool{false} ** 16;
+        for (desired_specs[0..desired_count]) |spec| {
+            var existing_index: ?usize = null;
+            for (self.bonus_slots, 0..) |slot, idx| {
+                if (slot.active and slot.bonus_id == spec.bonus_id) {
+                    existing_index = idx;
+                    break;
+                }
+            }
+            const slot_index = existing_index orelse blk: {
+                for (self.bonus_slots, 0..) |slot, idx| {
+                    if (!slot.active) break :blk idx;
+                }
+                break :blk self.bonus_slots.len - 1;
+            };
+            var slot = &self.bonus_slots[slot_index];
+            slot.active = true;
+            slot.bonus_id = spec.bonus_id;
+            slot.icon_id = spec.icon_id;
+            slot.timer_value = spec.timer_value;
+            slot.timer_value_alt = spec.timer_value_alt;
+            slot.slide_x = @min(-2.0, slot.slide_x + @max(frame_dt, 0.0) * 350.0);
+            matched[slot_index] = true;
+        }
+
+        for (&self.bonus_slots, 0..) |*slot, idx| {
+            if (!slot.active or matched[idx]) continue;
+            slot.timer_value = 0.0;
+            slot.timer_value_alt = 0.0;
+            slot.slide_x -= @max(frame_dt, 0.0) * 320.0;
+            if (slot.slide_x < -184.0) {
+                slot.* = .{};
+            }
+        }
     }
 };
 
@@ -302,6 +394,7 @@ const App = struct {
                 self.finishRun(gameplay, .runtime_error, @errorName(err));
                 return;
             };
+            gameplay.hud_state.update(frame_dt, &gameplay.runner.session);
             self.audio.handleFrameAudio(gameplay.last_update.audio, gameplay.runner.session.state.bonuses.reflex_boost);
             if (self.runtime_assets) |*runtime_assets| {
                 if (gameplay.ground) |*ground| {
@@ -404,13 +497,33 @@ const App = struct {
 
         switch (self.options.selection) {
             0 => {
-                self.runtime.config.sound_disable = if (self.runtime.config.sound_disable == 0) 1 else 0;
+                var value = if (self.runtime.config.sound_disable != 0)
+                    @as(i32, 0)
+                else
+                    @as(i32, @intFromFloat(std.math.clamp(self.runtime.config.sfx_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
+                if (adjust_left or adjust_right) {
+                    value = std.math.clamp(value + (if (adjust_left and !adjust_right) @as(i32, -1) else @as(i32, 1)), @as(i32, 0), @as(i32, 10));
+                } else {
+                    value = if (value == 0) 10 else 0;
+                }
+                self.runtime.config.sfx_volume = @as(f32, @floatFromInt(value)) * 0.1;
+                self.runtime.config.sound_disable = if (value == 0) 1 else 0;
                 self.runtime.config_dirty = true;
                 self.reloadAudioConfig();
                 self.audio.playUiButtonClick();
             },
             1 => {
-                self.runtime.config.music_disable = if (self.runtime.config.music_disable == 0) 1 else 0;
+                var value = if (self.runtime.config.music_disable != 0)
+                    @as(i32, 0)
+                else
+                    @as(i32, @intFromFloat(std.math.clamp(self.runtime.config.music_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
+                if (adjust_left or adjust_right) {
+                    value = std.math.clamp(value + (if (adjust_left and !adjust_right) @as(i32, -1) else @as(i32, 1)), @as(i32, 0), @as(i32, 10));
+                } else {
+                    value = if (value == 0) 10 else 0;
+                }
+                self.runtime.config.music_volume = @as(f32, @floatFromInt(value)) * 0.1;
+                self.runtime.config.music_disable = if (value == 0) 1 else 0;
                 self.runtime.config_dirty = true;
                 self.reloadAudioConfig();
                 self.audio.playUiButtonClick();
@@ -558,6 +671,7 @@ const App = struct {
             .last_update = last_update,
             .terrain_fx = window_terrain_fx.TerrainFxTracker.init(runner.seed),
         };
+        gameplay.hud_state.update(0.0, &gameplay.runner.session);
         gameplay.input_interpreter.setPreserveBugs(gameplay.runner.session.state.preserve_bugs);
         gameplay.input_interpreter.reset(gameplay.runner.session.playersConst());
         if (self.runtime_assets) |*runtime_assets| {
@@ -774,9 +888,9 @@ const App = struct {
             drawBonuses(runner, runtime_assets);
             camera.end();
 
-            drawGameplayHud(runner, gameplay.last_update, runtime_assets);
+            drawGameplayHud(gameplay, runtime_assets);
             if (gameplay.last_update.paused_for_perk_pick) {
-                drawPerkOverlay(runner, runtime_assets);
+                drawPerkOverlay(gameplay, runtime_assets);
             }
         }
     }
@@ -790,18 +904,23 @@ const App = struct {
                 drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(262.0, 116.0, 756.0, 392.0), colorWithAlpha(rl.Color.white, 0.96));
                 switch (results.reason) {
                     .dead => drawTextureFit(runtime_assets.texture(.ui_text_reaper), rl.Rectangle.init(464.0, 136.0, 354.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
-                    .completed, .abandoned, .runtime_error => drawSmallTextCentered(runtime_assets, resultsTitle(results.reason), 152.0, HudTextColor.accent),
+                    .completed => drawTextureFit(runtime_assets.texture(.ui_text_level_complete), rl.Rectangle.init(406.0, 136.0, 468.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
+                    .abandoned, .runtime_error => drawSmallTextCentered(runtime_assets, resultsTitle(results.reason), 152.0, HudTextColor.accent),
                 }
                 drawSmallTextCentered(runtime_assets, resultsSubtitle(results.reason), 196.0, HudTextColor.primary);
-                drawSmallTextFmt("ELAPSED_MS {d}", runtime_assets, .{results.summary.elapsed_ms_sim}, 330.0, 258.0, HudTextColor.primary);
-                drawSmallTextFmt("XP {d}", runtime_assets, .{results.summary.player_experience}, 330.0, 286.0, HudTextColor.primary);
-                drawSmallTextFmt("LEVEL {d}", runtime_assets, .{results.summary.player_level}, 330.0, 314.0, HudTextColor.primary);
-                drawSmallTextFmt("FIRE {d}  RELOAD {d}", runtime_assets, .{ results.summary.fire_pressed_count, results.summary.reload_pressed_count }, 330.0, 342.0, HudTextColor.primary);
-                drawSmallTextFmt("SPAWNS STAGE {d}  WAVE {d}", runtime_assets, .{ results.summary.stage_spawn_count, results.summary.wave_spawn_count }, 330.0, 370.0, HudTextColor.primary);
-                drawSmallTextFmt("WEAPON {s}  HP {d:.1}", runtime_assets, .{ weaponName(results.summary.player_weapon_id), results.player_health }, 330.0, 398.0, HudTextColor.primary);
+                drawSmallText(runtime_assets, "TIME", 370.0, 258.0, HudTextColor.dim);
+                drawSmallText(runtime_assets, "XP", 370.0, 286.0, HudTextColor.dim);
+                drawSmallText(runtime_assets, "LEVEL", 370.0, 314.0, HudTextColor.dim);
+                drawSmallText(runtime_assets, "WEAPON", 370.0, 342.0, HudTextColor.dim);
+                drawSmallText(runtime_assets, "HP", 370.0, 370.0, HudTextColor.dim);
+                drawSmallTextFmt("{d} ms", runtime_assets, .{results.summary.elapsed_ms_sim}, 510.0, 258.0, HudTextColor.primary);
+                drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_experience}, 510.0, 286.0, HudTextColor.primary);
+                drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_level}, 510.0, 314.0, HudTextColor.primary);
+                drawSmallText(runtime_assets, weaponName(results.summary.player_weapon_id), 510.0, 342.0, HudTextColor.primary);
+                drawSmallTextFmt("{d:.1}", runtime_assets, .{results.player_health}, 510.0, 370.0, HudTextColor.primary);
 
                 if (results.runtime_error) |runtime_error| {
-                    drawSmallText(runtime_assets, runtime_error, 330.0, 438.0, rl.Color.orange);
+                    drawSmallText(runtime_assets, runtime_error, 330.0, 430.0, rl.Color.orange);
                 }
                 if (results.highscore) |highscore| {
                     drawResultsHighscore(runtime_assets, &highscore);
@@ -1851,19 +1970,19 @@ fn drawHighScoreTable(runtime_assets: *const window_assets.RuntimeAssets, high_s
         return;
     }
 
-    drawSmallText(runtime_assets, "RANK", 286.0, 194.0, HudTextColor.dim);
-    drawSmallText(runtime_assets, "NAME", 356.0, 194.0, HudTextColor.dim);
-    drawSmallText(runtime_assets, "VALUE", 660.0, 194.0, HudTextColor.dim);
-    drawSmallText(runtime_assets, "WEAPON", 810.0, 194.0, HudTextColor.dim);
+    rl.drawRectangle(438, 189, 322, 166, rl.Color.white);
+    rl.drawRectangle(439, 190, 320, 164, rl.Color.black);
+    drawSmallText(runtime_assets, "RANK", 452.0, 194.0, HudTextColor.dim);
+    drawSmallText(runtime_assets, "VALUE", 492.0, 194.0, HudTextColor.dim);
+    drawSmallText(runtime_assets, "PLAYER", 556.0, 194.0, HudTextColor.dim);
 
     const row_count = @min(high_scores.records.len, 10);
     for (high_scores.records[0..row_count], 0..) |record, idx| {
-        const row_y = 224.0 + @as(f32, @floatFromInt(idx)) * 28.0;
+        const row_y = 208.0 + @as(f32, @floatFromInt(idx)) * 16.0;
         var value_buf: [32]u8 = undefined;
-        drawSmallTextFmt("#{d}", runtime_assets, .{idx + 1}, 286.0, row_y, HudTextColor.primary);
-        drawSmallText(runtime_assets, record.name(), 356.0, row_y, rl.Color.white);
-        drawSmallText(runtime_assets, formatHighScoreValue(&value_buf, record), 660.0, row_y, HudTextColor.primary);
-        drawSmallText(runtime_assets, weaponName(@intFromEnum(record.mostUsedWeaponId())), 810.0, row_y, HudTextColor.dim);
+        drawSmallTextFmt("{d}", runtime_assets, .{idx + 1}, 458.0, row_y, HudTextColor.primary);
+        drawSmallText(runtime_assets, formatHighScoreValue(&value_buf, record), 492.0, row_y, HudTextColor.primary);
+        drawSmallText(runtime_assets, record.name(), 556.0, row_y, rl.Color.white);
     }
 }
 
@@ -1900,17 +2019,38 @@ fn formatHighScoreValue(buf: []u8, record: persistence.highscores.HighScoreRecor
 
 fn drawOptionsTable(runtime_assets: *const window_assets.RuntimeAssets, app: *const App) void {
     const labels = [_][]const u8{
-        "SFX",
-        "MUSIC",
-        "DETAIL",
-        "GORE",
+        "SOUND VOLUME",
+        "MUSIC VOLUME",
+        "GRAPHICS DETAIL",
+        "VIOLENCE",
         "HARDCORE",
     };
     for (labels, 0..) |label, idx| {
         const row_y = 230.0 + @as(f32, @floatFromInt(idx)) * 54.0;
         var value_buf: [32]u8 = undefined;
         drawSmallText(runtime_assets, label, 330.0, row_y, HudTextColor.dim);
-        drawSmallText(runtime_assets, optionValueText(&value_buf, app, idx), 604.0, row_y, rl.Color.white);
+        switch (idx) {
+            0, 1, 2 => {
+                const slider_value: i32 = switch (idx) {
+                    0 => if (app.runtime.config.sound_disable != 0) 0 else @intFromFloat(std.math.clamp(app.runtime.config.sfx_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5),
+                    1 => if (app.runtime.config.music_disable != 0) 0 else @intFromFloat(std.math.clamp(app.runtime.config.music_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5),
+                    else => @intCast(std.math.clamp(app.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5))),
+                };
+                drawSliderRow(runtime_assets, rl.Vector2.init(620.0, row_y - 2.0), if (idx == 2) 5 else 10, slider_value);
+                drawSmallText(runtime_assets, optionValueText(&value_buf, app, idx), 708.0, row_y, rl.Color.white);
+            },
+            3, 4 => {
+                const checked = switch (idx) {
+                    3 => app.runtime.config.gore_disabled == 0,
+                    4 => app.runtime.config.hardcore_flag != 0,
+                    else => false,
+                };
+                const texture_id: window_assets.TextureId = if (checked) .ui_check_on else .ui_check_off;
+                drawTextureFit(runtime_assets.texture(texture_id), rl.Rectangle.init(620.0, row_y - 1.0, 16.0, 16.0), rl.Color.white);
+                drawSmallText(runtime_assets, optionValueText(&value_buf, app, idx), 646.0, row_y, rl.Color.white);
+            },
+            else => {},
+        }
     }
 }
 
@@ -1937,8 +2077,8 @@ fn drawOptionsTableFallback(app: *const App) void {
 
 fn optionValueText(buf: []u8, app: *const App, idx: usize) []const u8 {
     return switch (idx) {
-        0 => if (app.runtime.config.sound_disable == 0) "ON" else "OFF",
-        1 => if (app.runtime.config.music_disable == 0) "ON" else "OFF",
+        0 => std.fmt.bufPrint(buf, "{d}", .{if (app.runtime.config.sound_disable != 0) @as(i32, 0) else @as(i32, @intFromFloat(std.math.clamp(app.runtime.config.sfx_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5))}) catch "0",
+        1 => std.fmt.bufPrint(buf, "{d}", .{if (app.runtime.config.music_disable != 0) @as(i32, 0) else @as(i32, @intFromFloat(std.math.clamp(app.runtime.config.music_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5))}) catch "0",
         2 => std.fmt.bufPrint(buf, "{d}", .{std.math.clamp(app.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5))}) catch "5",
         3 => if (app.runtime.config.gore_disabled == 0) "ON" else "OFF",
         4 => if (app.runtime.config.hardcore_flag == 0) "OFF" else "ON",
@@ -1952,17 +2092,255 @@ const HudTextColor = struct {
     const accent = rl.Color.init(240, 200, 80, 255);
 };
 
-fn drawAmmoIndicators(assets: *const window_assets.RuntimeAssets, texture_id: window_assets.TextureId, ammo: f32) void {
-    const texture = assets.texture(texture_id);
-    const count = @max(0, @min(30, @as(i32, @intFromFloat(ammo + 0.999))));
+const HudFlags = struct {
+    show_health: bool,
+    show_weapon: bool,
+    show_xp: bool,
+    show_time: bool,
+    show_quest_hud: bool,
+};
+
+fn hudFlagsForGameMode(game_mode: game_ids.GameModeId) HudFlags {
+    return switch (game_mode) {
+        .quests => .{
+            .show_health = true,
+            .show_weapon = true,
+            .show_xp = true,
+            .show_time = false,
+            .show_quest_hud = true,
+        },
+        .survival => .{
+            .show_health = true,
+            .show_weapon = true,
+            .show_xp = true,
+            .show_time = false,
+            .show_quest_hud = false,
+        },
+        .rush => .{
+            .show_health = true,
+            .show_weapon = false,
+            .show_xp = false,
+            .show_time = true,
+            .show_quest_hud = false,
+        },
+        .typo => .{
+            .show_health = true,
+            .show_weapon = false,
+            .show_xp = true,
+            .show_time = true,
+            .show_quest_hud = false,
+        },
+        .tutorial => .{
+            .show_health = false,
+            .show_weapon = false,
+            .show_xp = false,
+            .show_time = false,
+            .show_quest_hud = false,
+        },
+    };
+}
+
+fn hudBonusIconId(bonus_id: game_ids.BonusId) ?i32 {
+    return switch (bonus_id) {
+        .energizer => 10,
+        .weapon_power_up => 7,
+        .double_experience => 4,
+        .reflex_boost => 5,
+        .shield => 6,
+        .freeze => 8,
+        .speed => 9,
+        .fire_bullets => 11,
+        else => null,
+    };
+}
+
+fn collectHudBonusSpecs(session: *const runtime_session.DeterministicSession, dest: []HudBonusSpec, count: *usize) void {
+    count.* = 0;
+    const state = &session.state;
+    const players = session.playersConst();
+
+    appendHudBonusSpec(dest, count, .weapon_power_up, state.bonuses.weapon_power_up, 0.0);
+    appendHudBonusSpec(dest, count, .reflex_boost, state.bonuses.reflex_boost, 0.0);
+    appendHudBonusSpec(dest, count, .energizer, state.bonuses.energizer, 0.0);
+    appendHudBonusSpec(dest, count, .double_experience, state.bonuses.double_experience, 0.0);
+    appendHudBonusSpec(dest, count, .freeze, state.bonuses.freeze, 0.0);
+
+    const player0 = if (players.len > 0) players[0] else null;
+    const player1 = if (players.len > 1) players[1] else null;
+    appendHudBonusSpec(
+        dest,
+        count,
+        .fire_bullets,
+        if (player0) |player| player.fire_bullets_timer else 0.0,
+        if (player1) |player| player.fire_bullets_timer else 0.0,
+    );
+    appendHudBonusSpec(
+        dest,
+        count,
+        .shield,
+        if (player0) |player| player.shield_timer else 0.0,
+        if (player1) |player| player.shield_timer else 0.0,
+    );
+    appendHudBonusSpec(
+        dest,
+        count,
+        .speed,
+        if (player0) |player| player.speed_bonus_timer else 0.0,
+        if (player1) |player| player.speed_bonus_timer else 0.0,
+    );
+}
+
+fn appendHudBonusSpec(dest: []HudBonusSpec, count: *usize, bonus_id: game_ids.BonusId, timer_value: f32, timer_value_alt: f32) void {
+    if (!(timer_value > 0.0 or timer_value_alt > 0.0)) return;
+    if (count.* >= dest.len) return;
+    dest[count.*] = .{
+        .bonus_id = bonus_id,
+        .icon_id = hudBonusIconId(bonus_id) orelse -1,
+        .timer_value = @max(timer_value, 0.0),
+        .timer_value_alt = @max(timer_value_alt, 0.0),
+    };
+    count.* += 1;
+}
+
+fn drawProgressBar(pos: rl.Vector2, width: f32, ratio_raw: f32, fg_color: rl.Color) void {
+    const ratio = std.math.clamp(ratio_raw, @as(f32, 0.0), @as(f32, 1.0));
+    rl.drawRectangle(@intFromFloat(pos.x), @intFromFloat(pos.y), @intFromFloat(width), 4, rl.Color.init(
+        @intFromFloat(@as(f32, @floatFromInt(fg_color.r)) * 0.6),
+        @intFromFloat(@as(f32, @floatFromInt(fg_color.g)) * 0.6),
+        @intFromFloat(@as(f32, @floatFromInt(fg_color.b)) * 0.6),
+        102,
+    ));
+    rl.drawRectangle(@intFromFloat(pos.x + 1.0), @intFromFloat(pos.y + 1.0), @intFromFloat((width - 2.0) * ratio), 2, fg_color);
+}
+
+fn drawSliderRow(assets: *const window_assets.RuntimeAssets, pos: rl.Vector2, count: i32, value: i32) void {
+    const rect_on = assets.texture(.ui_rect_on);
+    const rect_off = assets.texture(.ui_rect_off);
     var idx: i32 = 0;
     while (idx < count) : (idx += 1) {
-        const alpha: f32 = if (idx < 20) 0.8 else 0.45;
+        const tex = if (idx < value) rect_on else rect_off;
+        const tint = if (idx < value) rl.Color.white else colorWithAlpha(rl.Color.white, 0.5);
+        rl.drawTexturePro(
+            tex,
+            rl.Rectangle.init(0.0, 0.0, @floatFromInt(tex.width), @floatFromInt(tex.height)),
+            rl.Rectangle.init(pos.x + @as(f32, @floatFromInt(idx * tex.width)), pos.y, @floatFromInt(tex.width), @floatFromInt(tex.height)),
+            rl.Vector2.zero(),
+            0.0,
+            tint,
+        );
+    }
+}
+
+fn questProgressRatio(session: *const runtime_session.DeterministicSession) ?f32 {
+    if (session.game_mode != .quests) return null;
+    if (session.quest_completed or session.quest_completion_transition_ms >= 0.0) return 1.0;
+    if (session.reset_quest_spawn_entries_len == 0) return null;
+    const last_trigger_ms = session.quest_spawn_entries_storage[session.reset_quest_spawn_entries_len - 1].trigger_ms;
+    if (last_trigger_ms <= 0) return null;
+    return std.math.clamp(session.quest_spawn_timeline_ms / @as(f32, @floatFromInt(last_trigger_ms)), @as(f32, 0.0), @as(f32, 1.0));
+}
+
+fn drawModeClock(assets: *const window_assets.RuntimeAssets, elapsed_ms: f32, x: f32, y: f32) void {
+    drawTextureFit(assets.texture(.ui_clock_table), rl.Rectangle.init(x, y, 32.0, 32.0), colorWithAlpha(rl.Color.white, 0.9));
+    rl.drawTexturePro(
+        assets.texture(.ui_clock_pointer),
+        rl.Rectangle.init(0.0, 0.0, @floatFromInt(assets.texture(.ui_clock_pointer).width), @floatFromInt(assets.texture(.ui_clock_pointer).height)),
+        rl.Rectangle.init(x + 16.0, y + 16.0, 32.0, 32.0),
+        rl.Vector2.init(16.0, 16.0),
+        elapsed_ms * 0.006,
+        colorWithAlpha(rl.Color.white, 0.9),
+    );
+}
+
+fn drawQuestHud(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets) void {
+    const elapsed_ms = @as(f32, @floatFromInt(gameplay.last_update.elapsed_ms_sim));
+    const slide_x = if (elapsed_ms < 1000.0) (1000.0 - elapsed_ms) * -0.128 else 0.0;
+
+    drawTextureFit(assets.texture(.ui_ind_panel), rl.Rectangle.init(slide_x - 90.0, 67.0, 182.0, 53.0), colorWithAlpha(rl.Color.white, 0.7));
+    drawTextureFit(assets.texture(.ui_ind_panel), rl.Rectangle.init(-80.0, 107.0, 182.0, 53.0), colorWithAlpha(rl.Color.white, 0.7));
+    drawModeClock(assets, elapsed_ms, slide_x + 2.0, 78.0);
+    drawSmallTextFmt("{d}:{d:0>2}", assets, .{ @divTrunc(gameplay.last_update.elapsed_ms_sim, 60_000), @mod(@divTrunc(gameplay.last_update.elapsed_ms_sim, 1000), 60) }, slide_x + 32.0, 86.0, HudTextColor.primary);
+    drawSmallText(assets, "Progress", 18.0, 122.0, HudTextColor.primary);
+    if (questProgressRatio(&gameplay.runner.session)) |ratio| {
+        drawProgressBar(rl.Vector2.init(10.0, 139.0), 70.0, ratio, rl.Color.init(51, 204, 77, 204));
+    }
+}
+
+fn drawBonusHud(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets) void {
+    var bonus_y: f32 = if (gameplay.runner.session.game_mode == .quests) 201.0 else 121.0;
+    const bonuses_texture = assets.texture(.bonuses);
+    for (gameplay.hud_state.bonus_slots) |slot| {
+        if (!slot.active) continue;
+        if (slot.slide_x < -184.0) {
+            bonus_y += 52.0;
+            continue;
+        }
+        drawTextureFit(assets.texture(.ui_ind_panel), rl.Rectangle.init(slot.slide_x, bonus_y - 11.0, 182.0, 53.0), colorWithAlpha(rl.Color.white, 0.7));
+        if (slot.icon_id >= 0) {
+            drawTextureRegionCenteredRotated(
+                bonuses_texture,
+                window_atlas.bonusIconRect(bonuses_texture.width, bonuses_texture.height, slot.icon_id),
+                rl.Vector2.init(slot.slide_x + 15.0, bonus_y + 16.0),
+                32.0,
+                32.0,
+                0.0,
+                rl.Color.white,
+            );
+        }
+        drawSmallText(assets, game_ids.bonusDisplayName(slot.bonus_id, gameplay.runner.session.state.preserve_bugs), slot.slide_x + 36.0, bonus_y + 6.0, HudTextColor.primary);
+        drawProgressBar(rl.Vector2.init(slot.slide_x + 36.0, bonus_y + 21.0), 100.0, slot.timer_value * 0.05, rl.Color.init(26, 77, 153, 179));
+        if (slot.timer_value_alt > 0.0) {
+            drawProgressBar(rl.Vector2.init(slot.slide_x + 36.0, bonus_y + 27.0), 100.0, slot.timer_value_alt * 0.05, rl.Color.init(26, 77, 153, 179));
+        }
+        bonus_y += 52.0;
+    }
+}
+
+fn drawWeaponAuxHud(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets) void {
+    const players = gameplay.runner.session.playersConst();
+    var bonus_bottom_y: f32 = if (gameplay.runner.session.game_mode == .quests) 201.0 else 121.0;
+    for (gameplay.hud_state.bonus_slots) |slot| {
+        if (slot.active) bonus_bottom_y += 52.0;
+    }
+    for (players, 0..) |player, idx| {
+        if (!(player.aux_timer > 0.0)) continue;
+        const fade_raw = if (player.aux_timer > 1.0) 2.0 - player.aux_timer else player.aux_timer;
+        const fade = std.math.clamp(fade_raw, @as(f32, 0.0), @as(f32, 1.0));
+        if (fade <= 1e-3) continue;
+        const y = bonus_bottom_y - 17.0 + @as(f32, @floatFromInt(idx)) * 32.0;
+        drawTextureFit(assets.texture(.ui_ind_panel), rl.Rectangle.init(-12.0, y, 182.0, 53.0), colorWithAlpha(rl.Color.white, fade * 0.8));
+        const icon_index = weapon_data.weaponIconIndex(player.weapon.weapon_id);
+        if (icon_index >= 0) {
+            drawTextureRegionCenteredRotated(
+                assets.texture(.ui_wicons),
+                window_atlas.weaponIconRect(assets.texture(.ui_wicons).width, assets.texture(.ui_wicons).height, icon_index),
+                rl.Vector2.init(135.0, y + 20.0),
+                60.0,
+                30.0,
+                0.0,
+                colorWithAlpha(rl.Color.white, fade * 0.8),
+            );
+        }
+        drawSmallText(assets, game_ids.weaponDisplayName(player.weapon.weapon_id, gameplay.runner.session.state.preserve_bugs), 8.0, y + 18.0, colorWithAlpha(HudTextColor.primary, fade));
+    }
+}
+
+fn drawAmmoIndicators(assets: *const window_assets.RuntimeAssets, texture_id: window_assets.TextureId, ammo: f32, clip_size: i32) void {
+    const texture = assets.texture(texture_id);
+    const ammo_count = @max(0, @as(i32, @intFromFloat(ammo)));
+    var bars = @max(0, clip_size);
+    if (bars > 30) bars = 20;
+    var idx: i32 = 0;
+    while (idx < bars) : (idx += 1) {
+        const alpha: f32 = if (idx < ammo_count) 0.8 else 0.24;
         drawTextureFit(
             texture,
             rl.Rectangle.init(300.0 + @as(f32, @floatFromInt(idx)) * 6.0, 10.0, 6.0, 16.0),
             colorWithAlpha(rl.Color.white, alpha),
         );
+    }
+    if (ammo_count > bars) {
+        drawSmallTextFmt("+ {d}", assets, .{ammo_count - bars}, 300.0 + @as(f32, @floatFromInt(bars)) * 6.0 + 8.0, 11.0, HudTextColor.primary);
     }
 }
 
@@ -2072,70 +2450,90 @@ fn drawSmallTextCentered(
     drawSmallText(runtime_assets, text, x, y, color);
 }
 
-fn drawGameplayHud(
-    runner: *live_runner.LiveRunner,
-    update: live_runner.FrameUpdate,
-    runtime_assets: ?*const window_assets.RuntimeAssets,
-) void {
+fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+    const runner = &gameplay.runner;
+    const update = gameplay.last_update;
     const player = runner.player0Const() orelse return;
     if (runtime_assets) |assets| {
+        const flags = hudFlagsForGameMode(runner.session.game_mode);
+        const elapsed_ms = @as(f32, @floatFromInt(update.elapsed_ms_sim));
+        const top_alpha = 0.7;
+
         drawTextureFit(
             assets.texture(.ui_game_top),
             rl.Rectangle.init(0.0, 0.0, 512.0, 64.0),
-            colorWithAlpha(rl.Color.white, 0.9),
-        );
-        drawTextureCentered(assets.texture(.ui_life_heart), rl.Vector2.init(27.0, 21.0), 32.0, 32.0, colorWithAlpha(rl.Color.white, 0.9));
-
-        rl.drawRectangleRounded(
-            .{
-                .x = 64.0,
-                .y = 16.0,
-                .width = 120.0,
-                .height = 9.0,
-            },
-            0.22,
-            4,
-            rl.Color.init(72, 20, 20, 128),
-        );
-        rl.drawRectangleRounded(
-            .{
-                .x = 64.0,
-                .y = 16.0,
-                .width = 120.0 * std.math.clamp(player.health / 100.0, @as(f32, 0.0), @as(f32, 1.0)),
-                .height = 9.0,
-            },
-            0.22,
-            4,
-            rl.Color.init(208, 58, 58, 220),
+            colorWithAlpha(rl.Color.white, top_alpha),
         );
 
-        const weapon_id = std.meta.intToEnum(game_ids.WeaponId, update.player_weapon_id) catch .pistol;
-        const icon_index = weapon_data.weaponIconIndex(weapon_id);
-        if (icon_index >= 0) {
-            drawTextureRegionCenteredRotated(
-                assets.texture(.ui_wicons),
-                window_atlas.weaponIconRect(assets.texture(.ui_wicons).width, assets.texture(.ui_wicons).height, icon_index),
-                rl.Vector2.init(252.0, 18.0),
-                64.0,
-                32.0,
-                0.0,
-                colorWithAlpha(rl.Color.white, 0.9),
+        if (flags.show_health) {
+            const pulse_speed: f32 = if (player.health < 30.0) 5.0 else 2.0;
+            const t = elapsed_ms * 0.001;
+            const pulse = std.math.pow(f32, std.math.sin(t * pulse_speed), 4) * 4.0 + 14.0;
+            drawTextureCentered(
+                assets.texture(.ui_life_heart),
+                rl.Vector2.init(27.0, 21.0),
+                pulse * 2.0,
+                pulse * 2.0,
+                colorWithAlpha(rl.Color.white, 0.8),
             );
+
+            const ind_life = assets.texture(.ui_ind_life);
+            const health_ratio = std.math.clamp(player.health / 100.0, @as(f32, 0.0), @as(f32, 1.0));
+            drawTextureFit(ind_life, rl.Rectangle.init(64.0, 16.0, 120.0, 9.0), colorWithAlpha(rl.Color.white, 0.5));
+            if (health_ratio > 0.0) {
+                rl.drawTexturePro(
+                    ind_life,
+                    rl.Rectangle.init(0.0, 0.0, @as(f32, @floatFromInt(ind_life.width)) * health_ratio, @floatFromInt(ind_life.height)),
+                    rl.Rectangle.init(64.0, 16.0, 120.0 * health_ratio, 9.0),
+                    rl.Vector2.zero(),
+                    0.0,
+                    colorWithAlpha(rl.Color.white, 0.8),
+                );
+            }
         }
 
-        drawAmmoIndicators(assets, weaponIndicatorTextureId(weapon_id), player.weapon.ammo);
-        drawTextureFit(assets.texture(.ui_ind_panel), rl.Rectangle.init(0.0, 60.0, 182.0, 53.0), colorWithAlpha(rl.Color.white, 0.9));
+        if (flags.show_weapon) {
+            const weapon_id = std.meta.intToEnum(game_ids.WeaponId, update.player_weapon_id) catch .pistol;
+            const icon_index = weapon_data.weaponIconIndex(weapon_id);
+            if (icon_index >= 0) {
+                drawTextureRegionCenteredRotated(
+                    assets.texture(.ui_wicons),
+                    window_atlas.weaponIconRect(assets.texture(.ui_wicons).width, assets.texture(.ui_wicons).height, icon_index),
+                    rl.Vector2.init(252.0, 18.0),
+                    64.0,
+                    32.0,
+                    0.0,
+                    colorWithAlpha(rl.Color.white, 0.8),
+                );
+            }
+            drawAmmoIndicators(assets, weaponIndicatorTextureId(weapon_id), player.weapon.ammo, player.weapon.clip_size);
+        }
 
-        drawSmallTextFmt("HP {d:.0}", assets, .{player.health}, 30.0, 38.0, HudTextColor.primary);
-        drawSmallTextFmt("XP", assets, .{}, 6.0, 78.0, HudTextColor.dim);
-        drawSmallTextFmt("{d}", assets, .{update.player_experience}, 26.0, 74.0, HudTextColor.primary);
-        drawSmallTextFmt("LV {d}", assets, .{update.player_level}, 86.0, 79.0, HudTextColor.accent);
+        if (flags.show_quest_hud) {
+            drawQuestHud(gameplay, assets);
+        }
 
-        rl.drawRectangle(26, 91, 54, 4, rl.Color.init(16, 26, 54, 140));
-        rl.drawRectangle(27, 92, @intFromFloat(52.0 * xpProgressRatio(update.player_experience, update.player_level)), 2, rl.Color.init(26, 77, 153, 255));
-        drawSmallTextFmt("{d}ms", assets, .{update.elapsed_ms_sim}, 92.0, 74.0, HudTextColor.dim);
-        drawSmallTextFmt("{d}/{d}", assets, .{ @as(i32, @intFromFloat(player.weapon.ammo)), weapon_data.weapon_stats.get(weapon_id).clip_size }, 308.0, 28.0, HudTextColor.primary);
-        drawSmallTextFmt("shots {d} hits {d}", assets, .{ update.shots_fired, update.shots_hit }, 24.0, @floatFromInt(rl.getScreenHeight() - 34), HudTextColor.dim);
+        if (flags.show_xp) {
+            const hud_y_shift: f32 = if (flags.show_quest_hud) 80.0 else 0.0;
+            drawTextureFit(
+                assets.texture(.ui_ind_panel),
+                rl.Rectangle.init(-68.0, 60.0 + hud_y_shift, 182.0, 53.0),
+                colorWithAlpha(rl.Color.white, 0.9),
+            );
+            const xp_display = gameplay.hud_state.survival_xp_smoothed;
+            drawSmallText(assets, "Xp", 4.0, 78.0 + hud_y_shift, HudTextColor.dim);
+            drawSmallTextFmt("{d}", assets, .{xp_display}, 26.0, 74.0 + hud_y_shift, HudTextColor.primary);
+            drawSmallTextFmt("{d}", assets, .{update.player_level}, 85.0, 79.0 + hud_y_shift, HudTextColor.primary);
+            drawProgressBar(rl.Vector2.init(26.0, 91.0 + hud_y_shift), 54.0, xpProgressRatio(update.player_experience, update.player_level), rl.Color.init(26, 77, 153, 255));
+        }
+
+        if (flags.show_time) {
+            drawModeClock(assets, elapsed_ms, 220.0, 2.0);
+            drawSmallTextFmt("{d} seconds", assets, .{@divTrunc(update.elapsed_ms_sim, 1000)}, 255.0, 10.0, HudTextColor.primary);
+        }
+
+        drawBonusHud(gameplay, assets);
+        drawWeaponAuxHud(gameplay, assets);
         return;
     }
 
@@ -2154,30 +2552,24 @@ fn drawGameplayHud(
     drawTextFmt("weapon {s}  ammo {d:.1}", .{ weaponName(update.player_weapon_id), player.weapon.ammo }, 36, 62, 22, text_color);
     drawTextFmt("shots {d}  hits {d}  creatures {d}", .{ update.shots_fired, update.shots_hit, update.creature_active_count }, 36, 90, 20, muted_text);
     drawTextFmt("elapsed {d}ms  pickups {d}  pending perks {d}", .{ update.elapsed_ms_sim, update.bonus_active_count, runner.perkPendingCount() }, 36, 116, 20, muted_text);
-
-    drawTextSlice("WASD move  mouse aim/fire  R reload  Esc end run", 24, rl.getScreenHeight() - 34, 18, muted_text);
 }
 
-fn drawPerkOverlay(runner: *live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+fn drawPerkOverlay(gameplay: *GameplayScreen, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), overlay_color);
+    const runner = &gameplay.runner;
     if (runtime_assets) |assets| {
-        drawTextureFit(assets.texture(.ui_menu_panel), rl.Rectangle.init(262.0, 152.0, 756.0, 360.0), colorWithAlpha(rl.Color.white, 0.96));
-        drawTextureFit(assets.texture(.ui_text_pick_a_perk), rl.Rectangle.init(432.0, 176.0, 410.0, 40.0), colorWithAlpha(rl.Color.white, 0.96));
+        drawTextureFit(assets.texture(.ui_menu_panel), rl.Rectangle.init(258.0, 140.0, 764.0, 378.0), colorWithAlpha(rl.Color.white, 0.96));
+        drawTextureFit(assets.texture(.ui_text_level_up), rl.Rectangle.init(456.0, 152.0, 364.0, 40.0), colorWithAlpha(rl.Color.white, 0.96));
+        drawTextureFit(assets.texture(.ui_text_pick_a_perk), rl.Rectangle.init(424.0, 190.0, 430.0, 40.0), colorWithAlpha(rl.Color.white, 0.96));
 
         const choices = runner.currentPerkChoices();
         for (choices, 0..) |perk_id, idx| {
-            const row_y = 240.0 + @as(f32, @floatFromInt(idx)) * 28.0;
-            rl.drawTexturePro(
-                assets.texture(.ui_menu_item),
-                rl.Rectangle.init(0.0, 0.0, @floatFromInt(assets.texture(.ui_menu_item).width), @floatFromInt(assets.texture(.ui_menu_item).height)),
-                rl.Rectangle.init(332.0, row_y - 6.0, 612.0, 32.0),
-                rl.Vector2.zero(),
-                0.0,
-                colorWithAlpha(rl.Color.white, if (idx == 0) 0.95 else 0.72),
-            );
-            drawSmallTextFmt("{d}. {s}", assets, .{ idx + 1, @tagName(perk_id) }, 360.0, row_y, if (idx == 0) HudTextColor.accent else HudTextColor.primary);
+            const row_y = 246.0 + @as(f32, @floatFromInt(idx)) * 19.0;
+            drawSmallTextFmt("{d}.", assets, .{idx + 1}, 346.0, row_y, if (idx == 0) HudTextColor.accent else HudTextColor.primary);
+            drawSmallText(assets, game_ids.perkDisplayName(perk_id, gameplay.run_config.gore_disabled, gameplay.runner.session.state.preserve_bugs), 374.0, row_y, if (idx == 0) HudTextColor.accent else HudTextColor.primary);
         }
-        drawSmallText(assets, "Press 1-7 to select. Gameplay is paused.", 334.0, 458.0, HudTextColor.dim);
+        drawSmallText(assets, "Press 1-7 to select", 352.0, 438.0, HudTextColor.dim);
+        drawSmallText(assets, "Gameplay is paused", 352.0, 456.0, HudTextColor.dim);
         return;
     }
 
