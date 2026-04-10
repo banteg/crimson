@@ -277,7 +277,8 @@ pub fn loadRuntimeAssetsFromDefaultSearch(allocator: std.mem.Allocator) LoadRunt
 
     if (env_assets_dir) |dir| {
         if (try archiveExistsAtDir(allocator, dir)) {
-            return loadRuntimeAssets(allocator, dir);
+            const assets = try loadRuntimeAssets(allocator, dir);
+            return assets;
         }
     }
 
@@ -287,7 +288,8 @@ pub fn loadRuntimeAssetsFromDefaultSearch(allocator: std.mem.Allocator) LoadRunt
     };
     for (default_candidates) |candidate| {
         if (try archiveExistsAtDir(allocator, candidate)) {
-            return loadRuntimeAssets(allocator, candidate);
+            const assets = try loadRuntimeAssets(allocator, candidate);
+            return assets;
         }
     }
 
