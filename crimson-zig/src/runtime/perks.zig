@@ -20,6 +20,11 @@ pub const PerkApplyError = error{
 pub const PerkId = game_ids.PerkId;
 pub const GameModeId = game_ids.GameModeId;
 
+pub const PerkApplyContext = struct {
+    creatures: ?*creatures_mod.CreaturePool = null,
+    dt_frame: ?f32 = null,
+};
+
 const PerkFlag = enum {
     quest_mode_allowed,
     two_player_allowed,
@@ -208,6 +213,26 @@ pub fn perkSelectionPick(
     player_count: i32,
     quest_unlock_index: i32,
 ) PerkApplyError!?PerkId {
+    return perkSelectionPickWithContext(
+        state,
+        players,
+        choice_index,
+        game_mode,
+        player_count,
+        quest_unlock_index,
+        .{},
+    );
+}
+
+pub fn perkSelectionPickWithContext(
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
+    choice_index: i32,
+    game_mode: GameModeId,
+    player_count: i32,
+    quest_unlock_index: i32,
+    context: PerkApplyContext,
+) PerkApplyError!?PerkId {
     if (players.len == 0) return null;
     if (state.perk_selection.pending_count <= 0) return null;
 
@@ -222,7 +247,7 @@ pub fn perkSelectionPick(
     if (choice_index < 0 or choice_index >= choices.len) return null;
 
     const perk_id = choices[@intCast(choice_index)];
-    try applyPerk(state, players, perk_id);
+    try applyPerkWithContext(state, players, perk_id, context);
 
     state.perk_selection.pending_count = @max(0, state.perk_selection.pending_count - 1);
     state.perk_selection.choices_dirty = true;
@@ -241,6 +266,15 @@ pub fn applyPerk(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
     perk_id: PerkId,
+) PerkApplyError!void {
+    return applyPerkWithContext(state, players, perk_id, .{});
+}
+
+pub fn applyPerkWithContext(
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
+    perk_id: PerkId,
+    context: PerkApplyContext,
 ) PerkApplyError!void {
     if (players.len == 0) return;
     players[0].perk_counts.set(perk_id, players[0].perk_counts.get(perk_id) + 1);
@@ -324,6 +358,7 @@ pub fn applyPerk(
                 const reduction = narrowF32(player.health * (2.0 / 3.0));
                 player.health = narrowF32(player.health - reduction);
             }
+            applyPerkImmediateCreatureEffects(perk_id, state, context);
             state.bonus_spawn_guard = false;
         },
         PerkId.bandage => {
@@ -339,7 +374,7 @@ pub fn applyPerk(
                 }
             }
         },
-        PerkId.lifeline_50_50 => {},
+        PerkId.lifeline_50_50 => applyPerkImmediateCreatureEffects(perk_id, state, context),
         else => {},
     }
 }
@@ -350,6 +385,19 @@ pub fn applyReplayPerkCreatureEffects(
     creatures: *creatures_mod.CreaturePool,
     dt_frame: f32,
 ) void {
+    applyPerkImmediateCreatureEffects(perk_id, state, .{
+        .creatures = creatures,
+        .dt_frame = dt_frame,
+    });
+}
+
+fn applyPerkImmediateCreatureEffects(
+    perk_id: PerkId,
+    state: *state_mod.GameplayState,
+    context: PerkApplyContext,
+) void {
+    const creatures = context.creatures orelse return;
+    const dt_frame = context.dt_frame orelse 0.0;
     switch (perk_id) {
         PerkId.breathing_room => {
             for (&creatures.entries) |*creature| {
@@ -1396,6 +1444,22 @@ test "breathing room reduces player health and clears bonus spawn guard" {
     try std.testing.expect(!state.bonus_spawn_guard);
 }
 
+test "breathing room applies immediate creature lifecycle step when context is provided" {
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 90.0 },
+    };
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.entries[0].active = true;
+    creatures.entries[0].lifecycle_stage = 3.5;
+
+    try applyPerkWithContext(&state, players[0..], PerkId.breathing_room, .{
+        .creatures = &creatures,
+        .dt_frame = 0.2,
+    });
+    try std.testing.expectApproxEqAbs(@as(f32, 3.3), creatures.entries[0].lifecycle_stage, 1e-6);
+}
+
 test "thick skinned clamps health floor at one" {
     var state = state_mod.GameplayState.init(1);
     var players = [_]state_mod.PlayerState{
@@ -1489,6 +1553,29 @@ test "lifeline 50-50 replay perk effect deactivates every other eligible creatur
         try std.testing.expectEqual(active_expected, creatures.entries[idx].active);
     }
     try std.testing.expect(before_rng != state.rng.state);
+}
+
+test "lifeline 50-50 immediate apply uses shared creature-effect path" {
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    var creatures: creatures_mod.CreaturePool = .{};
+
+    for (0..4) |idx| {
+        creatures.entries[idx].active = true;
+        creatures.entries[idx].hp = 100.0;
+        creatures.entries[idx].flags = 0;
+    }
+
+    try applyPerkWithContext(&state, players[0..], PerkId.lifeline_50_50, .{
+        .creatures = &creatures,
+        .dt_frame = 0.016,
+    });
+    try std.testing.expect(creatures.entries[0].active);
+    try std.testing.expect(!creatures.entries[1].active);
+    try std.testing.expect(creatures.entries[2].active);
+    try std.testing.expect(!creatures.entries[3].active);
 }
 
 test "evil eyes targeting defaults to alive player slot" {

@@ -100,13 +100,17 @@ pub fn applyReplayEvent(
             if (pick.player_index < 0 or pick.player_index >= @as(i32, @intCast(players.len))) {
                 return error.UnsupportedEventPlayerIndex;
             }
-            const applied = perks.perkSelectionPick(
+            const applied = perks.perkSelectionPickWithContext(
                 state,
                 players,
                 pick.choice_index,
                 options.game_mode,
                 options.player_count,
                 options.quest_unlock_index,
+                .{
+                    .creatures = creatures,
+                    .dt_frame = dt_frame,
+                },
             ) catch |err| switch (err) {
                 error.UnsupportedPerkApplyHandler => return error.UnsupportedPerkApplyHandler,
             };
@@ -119,12 +123,6 @@ pub fn applyReplayEvent(
                 }
                 return error.InvalidPerkPickEvent;
             }
-            perks.applyReplayPerkCreatureEffects(
-                applied.?,
-                state,
-                creatures,
-                dt_frame,
-            );
             outcome.perk_pick_count_delta = 1;
             return outcome;
         },
@@ -156,15 +154,17 @@ pub fn applyReplayEvent(
                 if (options.strict_events) return error.UnsupportedEventKind;
                 return outcome;
             };
-            perks.applyPerk(state, players, perk_id) catch |err| switch (err) {
+            perks.applyPerkWithContext(
+                state,
+                players,
+                perk_id,
+                .{
+                    .creatures = creatures,
+                    .dt_frame = dt_frame,
+                },
+            ) catch |err| switch (err) {
                 error.UnsupportedPerkApplyHandler => return error.UnsupportedPerkApplyHandler,
             };
-            perks.applyReplayPerkCreatureEffects(
-                perk_id,
-                state,
-                creatures,
-                dt_frame,
-            );
             if (capture_perk_apply.outside_before) {
                 if (capture_perk_apply.pending_after) |pending_after| {
                     state.perk_selection.pending_count = pending_after;
@@ -323,4 +323,42 @@ test "lifeline 50-50 replay perk effect deactivates every other eligible creatur
         try std.testing.expectEqual(active_expected, creatures.entries[idx].active);
     }
     try std.testing.expect(before_rng != state.rng.state);
+}
+
+test "perk pick event applies immediate creature perk effects through shared path" {
+    var state = state_mod.GameplayState.init(1);
+    var creatures: creatures_mod.CreaturePool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 90.0 },
+    };
+    var quest_spawn_timeline_ms: f32 = 0.0;
+    var quest_no_creatures_timer_ms: f32 = 0.0;
+    var quest_completion_transition_ms: f32 = -1.0;
+
+    state.perk_selection.pending_count = 1;
+    state.perk_selection.choice_count = 1;
+    state.perk_selection.choices[0] = .breathing_room;
+    state.perk_selection.choices_dirty = false;
+    creatures.entries[0].active = true;
+    creatures.entries[0].lifecycle_stage = 5.0;
+
+    const outcome = try applyReplayEvent(
+        .{ .perk_pick = .{ .tick_index = 0, .player_index = 0, .choice_index = 0 } },
+        &state,
+        players[0..],
+        &creatures,
+        0.075,
+        &quest_spawn_timeline_ms,
+        &quest_no_creatures_timer_ms,
+        &quest_completion_transition_ms,
+        .{
+            .game_mode = .survival,
+            .player_count = 1,
+            .quest_unlock_index = 0,
+            .strict_events = true,
+        },
+    );
+
+    try std.testing.expectEqual(@as(usize, 1), outcome.perk_pick_count_delta);
+    try std.testing.expectApproxEqAbs(@as(f32, 4.925), creatures.entries[0].lifecycle_stage, 1e-6);
 }
