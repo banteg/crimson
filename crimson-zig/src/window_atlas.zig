@@ -15,9 +15,20 @@ pub const AtlasRect = struct {
 };
 
 pub const EffectId = enum(i32) {
+    effect_03 = 0x03,
+    effect_04 = 0x04,
+    effect_05 = 0x05,
+    effect_06 = 0x06,
+    blood_splatter = 0x07,
+    freeze_shard_0 = 0x08,
+    freeze_shard_1 = 0x09,
+    freeze_shard_2 = 0x0A,
+    explosion_burst = 0x0C,
     shield_ring = 0x02,
     glow = 0x0D,
+    freeze_shatter = 0x0E,
     aura = 0x10,
+    explosion_puff = 0x11,
 };
 
 pub const ColorRgb = struct {
@@ -102,14 +113,30 @@ pub fn atlasRectSpan(texture_width: i32, texture_height: i32, grid: i32, frame: 
 }
 
 pub fn effectRect(texture_width: i32, texture_height: i32, effect_id: EffectId) ?AtlasRect {
+    return effectRectById(texture_width, texture_height, @intFromEnum(effect_id));
+}
+
+pub fn effectRectById(texture_width: i32, texture_height: i32, effect_id_raw: i32) ?AtlasRect {
     const EffectEntry = struct {
         size_code: i32,
         frame: i32,
     };
-    const entry = switch (effect_id) {
-        .shield_ring => EffectEntry{ .size_code = 0x20, .frame = 0x00 },
-        .glow => EffectEntry{ .size_code = 0x40, .frame = 0x03 },
-        .aura => EffectEntry{ .size_code = 0x40, .frame = 0x06 },
+    const entry = switch (effect_id_raw) {
+        0x02 => EffectEntry{ .size_code = 0x20, .frame = 0x00 },
+        0x03 => EffectEntry{ .size_code = 0x20, .frame = 0x01 },
+        0x04 => EffectEntry{ .size_code = 0x20, .frame = 0x02 },
+        0x05 => EffectEntry{ .size_code = 0x20, .frame = 0x03 },
+        0x06 => EffectEntry{ .size_code = 0x20, .frame = 0x04 },
+        0x07 => EffectEntry{ .size_code = 0x20, .frame = 0x05 },
+        0x08 => EffectEntry{ .size_code = 0x20, .frame = 0x08 },
+        0x09 => EffectEntry{ .size_code = 0x20, .frame = 0x09 },
+        0x0A => EffectEntry{ .size_code = 0x20, .frame = 0x0A },
+        0x0C => EffectEntry{ .size_code = 0x40, .frame = 0x05 },
+        0x0D => EffectEntry{ .size_code = 0x40, .frame = 0x03 },
+        0x0E => EffectEntry{ .size_code = 0x40, .frame = 0x04 },
+        0x10 => EffectEntry{ .size_code = 0x40, .frame = 0x06 },
+        0x11 => EffectEntry{ .size_code = 0x40, .frame = 0x07 },
+        else => return null,
     };
     const grid: i32 = switch (entry.size_code) {
         0x10 => 16,
