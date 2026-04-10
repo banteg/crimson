@@ -208,6 +208,10 @@ pub const RuntimeAssets = struct {
 
 pub const texture_count = std.meta.fields(TextureId).len;
 
+pub fn runtimeTextureSpec(texture_id: TextureId) TextureSpec {
+    return textureSpec(texture_id);
+}
+
 pub fn detectAssetFormat(rel_path: []const u8) AssetFormat {
     if (std.ascii.endsWithIgnoreCase(rel_path, ".jaz")) return .jaz;
     if (std.ascii.endsWithIgnoreCase(rel_path, ".tga")) return .tga;
@@ -266,30 +270,28 @@ pub fn loadRuntimeAssets(allocator: std.mem.Allocator, assets_dir: []const u8) L
     };
 }
 
-pub fn loadRuntimeAssetsFromDefaultSearch(allocator: std.mem.Allocator) LoadRuntimeAssetsError!?RuntimeAssets {
+pub fn resolveRuntimeAssetsDir(allocator: std.mem.Allocator) LoadRuntimeAssetsError!?[]u8 {
     if (builtin.target.os.tag == .emscripten) return null;
 
     const env_assets_dir = std.process.getEnvVarOwned(allocator, "CRIMSON_ASSETS_DIR") catch |err| switch (err) {
         error.EnvironmentVariableNotFound => null,
         else => return err,
     };
-    defer if (env_assets_dir) |dir| allocator.free(dir);
 
     if (env_assets_dir) |dir| {
         if (try archiveExistsAtDir(allocator, dir)) {
-            const assets = try loadRuntimeAssets(allocator, dir);
-            return assets;
+            return dir;
         }
+        allocator.free(dir);
     }
 
     const runtime_dir = try defaultRuntimeDir(allocator);
-    defer if (runtime_dir) |dir| allocator.free(dir);
 
     if (runtime_dir) |dir| {
         if (try archiveExistsAtDir(allocator, dir)) {
-            const assets = try loadRuntimeAssets(allocator, dir);
-            return assets;
+            return dir;
         }
+        allocator.free(dir);
     }
 
     const default_candidates = [_][]const u8{
@@ -298,12 +300,19 @@ pub fn loadRuntimeAssetsFromDefaultSearch(allocator: std.mem.Allocator) LoadRunt
     };
     for (default_candidates) |candidate| {
         if (try archiveExistsAtDir(allocator, candidate)) {
-            const assets = try loadRuntimeAssets(allocator, candidate);
-            return assets;
+            const owned_candidate = try allocator.dupe(u8, candidate);
+            return owned_candidate;
         }
     }
 
     return null;
+}
+
+pub fn loadRuntimeAssetsFromDefaultSearch(allocator: std.mem.Allocator) LoadRuntimeAssetsError!?RuntimeAssets {
+    const assets_dir = (try resolveRuntimeAssetsDir(allocator)) orelse return null;
+    defer allocator.free(assets_dir);
+    const assets = try loadRuntimeAssets(allocator, assets_dir);
+    return assets;
 }
 
 fn defaultRuntimeDir(allocator: std.mem.Allocator) (std.process.GetEnvVarOwnedError || std.mem.Allocator.Error)!?[]u8 {

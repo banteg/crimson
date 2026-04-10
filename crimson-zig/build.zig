@@ -77,6 +77,25 @@ pub fn build(b: *std.Build) void {
     const run_window_cmd = b.addRunArtifact(window_exe);
     run_window_step.dependOn(&run_window_cmd.step);
 
+    const asset_smoke_exe = b.addExecutable(.{
+        .name = "crimson-zig-asset-smoke",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/asset_smoke_main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "raylib", .module = raylib_module },
+                .{ .name = "crimson_zig", .module = mod },
+            },
+        }),
+    });
+    const asset_smoke_step = b.step("asset-smoke", "Run local runtime asset decode smoke");
+    const asset_smoke_cmd = b.addRunArtifact(asset_smoke_exe);
+    asset_smoke_step.dependOn(&asset_smoke_cmd.step);
+    if (b.args) |args| {
+        asset_smoke_cmd.addArgs(args);
+    }
+
     const web_target = b.resolveTargetQuery(.{
         .cpu_arch = .wasm32,
         .os_tag = .emscripten,

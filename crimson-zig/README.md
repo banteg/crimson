@@ -67,6 +67,7 @@ zig build
 zig build run -- replay verify survival_20260224_041009_score76661.crd --format json
 zig build run-window
 zig build web-window
+zig build asset-smoke
 zig build test
 zig build wasm
 ```
@@ -75,6 +76,8 @@ zig build wasm
 
 - `zig build run-window` opens the current desktop playable slice using `raylib-zig`.
 - `zig build window` compiles that target without running it.
+- `zig build asset-smoke` runs a local decode smoke pass over `crimson.paq` and
+  runtime-mapped texture entries, printing exact failing asset paths.
 - `zig build web-window` builds an HTML+WASM placeholder window for browser use.
 - `zig build run-web-window` serves the web build through `emrun` (`--no_browser`).
 - The desktop target is currently a menu-to-gameplay Survival slice with a
