@@ -8,7 +8,7 @@ Standalone Zig workspace for the native Crimson port.
 - Current most mature CLI surfaces: `crimson-zig replay verify ...` and `crimson-zig replay info ...`
 - Current JSON contracts mirror the Python replay CLI for verify/info payloads.
 - Current native targets include headless replay tooling, runtime modules, codec libraries,
-  a raylib bootstrap window target, and a freestanding WASM ABI target.
+  a raylib desktop app target, and a freestanding WASM ABI target.
 - Shared runtime/session seams now live under `src/runtime/session.zig` and
   `src/runtime/session_builders.zig`, so replay tooling sits on top of the same
   deterministic session shell we intend to use for broader native surfaces.
@@ -45,6 +45,8 @@ This wave is intentionally codec-only:
   - full deterministic run-result generation on supported native paths.
 - Replay-side validation remains a primary parity harness, but it is now a consumer of shared runtime code rather than the whole point of the workspace.
 - Native CLI still hard-fails for unsupported or unported native paths instead of falling back.
+- `zig build run-window` now boots a real desktop Survival slice:
+  boot screen -> main menu -> live 1-player Survival run -> results.
 - The freestanding WASM ABI now runs the same replay verification core for
   byte-input payloads, with JSON output and JSON error reporting via
   `crimson_last_error_json`.
@@ -64,12 +66,12 @@ zig build wasm
 
 ## Raylib bootstrap
 
-- `zig build run-window` opens an empty placeholder window using `raylib-zig`.
+- `zig build run-window` opens the current desktop playable slice using `raylib-zig`.
 - `zig build window` compiles that target without running it.
 - `zig build web-window` builds an HTML+WASM placeholder window for browser use.
 - `zig build run-web-window` serves the web build through `emrun` (`--no_browser`).
-- These targets exist as early native application/bootstrap surfaces for the full
-  Zig port, while `zig build run -- ...` continues to expose the replay tooling.
+- The desktop target is currently a menu-to-gameplay Survival slice with primitive
+  rendering and HUD, while `zig build run -- ...` continues to expose the replay tooling.
 - `zig build wasm` remains the freestanding ABI module (`wasm32-freestanding`) and
   is intentionally separate from the raylib web target (`wasm32-emscripten`).
 

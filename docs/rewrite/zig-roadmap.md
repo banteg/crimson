@@ -25,7 +25,8 @@ It also has two intentionally early placeholders:
 
 - native window bootstrap:
   [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig)
-  opens an empty window only,
+  now boots a simple desktop menu -> survival run -> results slice with
+  primitive rendering,
 - wasm runtime ABI:
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig)
   now executes byte-input replay verify calls, but still exposes only a narrow
@@ -154,10 +155,11 @@ Remaining work:
 
 Current evidence that this workstream is still early:
 
-- empty window:
+- the desktop slice still uses primitive shapes/text instead of the real asset
+  stack:
   [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig)
-- build labels still describe the window targets as placeholder surfaces:
-  [`crimson-zig/build.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/build.zig)
+- `formats.jaz` is still decode-only and the README still calls out missing
+  JPEG-to-RGBA expansion.
 
 Definition of done for this workstream:
 
