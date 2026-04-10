@@ -3,6 +3,7 @@ const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
 const creatures_mod = @import("creatures.zig");
+const fire_recipes = @import("fire_recipes.zig");
 const owner_ref = @import("owner_ref.zig");
 const particles_mod = @import("particles.zig");
 const perks = @import("perks.zig");
@@ -37,25 +38,9 @@ inline fn weaponId(value: i32) WeaponId {
 
 inline fn weaponIdFromProjectileTypeId(type_id: ProjectileTypeId) WeaponId {
     return switch (type_id) {
-        .pistol => .pistol,
-        .assault_rifle => .assault_rifle,
-        .shotgun => .shotgun,
-        .submachine_gun => .submachine_gun,
-        .gauss_gun => .gauss_gun,
-        .plasma_rifle => .plasma_rifle,
-        .plasma_minigun => .plasma_minigun,
-        .pulse_gun => .pulse_gun,
-        .ion_rifle => .ion_rifle,
-        .ion_minigun => .ion_minigun,
-        .ion_cannon => .ion_cannon,
         .shrinkifier => .shrinkifier_5k,
-        .blade_gun => .blade_gun,
-        .spider_plasma => .spider_plasma,
-        .plasma_cannon => .plasma_cannon,
-        .splitter_gun => .splitter_gun,
         .plague_spreader => .plague_spreader_gun,
-        .rainbow_gun => .rainbow_gun,
-        .fire_bullets => .fire_bullets,
+        else => @enumFromInt(@intFromEnum(type_id)),
     };
 }
 
@@ -388,22 +373,70 @@ fn tryFireWeaponWithForce(
         consumeMuzzleSpriteRng(state, player.weapon.weapon_id, is_fire_bullets);
     }
 
-    if (is_fire_bullets) {
-        const meta = weapon_data.weapon_stats.get(.fire_bullets).travel_budget;
-        for (0..@as(usize, @intCast(shot_count))) |_| {
-            const jitter_roll = state.rng.rand();
-            const jitter = @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll % 200)) - 100)) * 0.0015;
-            _ = projectiles.spawn(
+    const recipe = fire_recipes.resolveFireRecipe(
+        player.weapon.weapon_id,
+        pellet_count,
+        is_fire_bullets,
+    );
+    var ammo_cost = recipe.ammo_cost;
+
+    switch (recipe.mode) {
+        .primary_pellets => |mode| {
+            const type_id = mode.type_id orelse return error.UnsupportedWeaponFirePath;
+            const type_id_i32 = @intFromEnum(type_id);
+            const pellets = @max(0, mode.count);
+            shot_count = pellets;
+            const meta = projectileTravelBudgetFromTypeId(type_id);
+            for (0..@as(usize, @intCast(pellets))) |_| {
+                const angle = applyPelletJitter(state, shot_angle, mode.jitter);
+                const id = projectiles.spawn(
+                    muzzle,
+                    angle,
+                    type_id_i32,
+                    projectile_owner,
+                    meta,
+                    false,
+                );
+                applySpeedScaleRule(state, projectiles, id, mode.speed_scale);
+            }
+        },
+        .secondary_shot => |mode| {
+            const target_hint = if (mode.targeting == .use_aim_target_hint) player.aim else null;
+            _ = secondary_projectiles.spawn(
                 muzzle,
-                shot_angle + jitter,
-                @intFromEnum(game_ids.ProjectileTypeId.fire_bullets),
-                projectile_owner,
-                meta,
-                false,
+                narrowF32(shot_angle),
+                mode.type_id,
+                secondary_owner,
+                2.0,
+                target_hint,
+                if (target_hint != null) creatures else null,
             );
-        }
-    } else switch (player.weapon.weapon_id) {
-        .multi_plasma => {
+            shot_count = 1;
+        },
+        .particle_stream => |mode| {
+            if (mode.slow) {
+                _ = particles.spawnParticleSlow(
+                    state,
+                    muzzle,
+                    directionFromHeading(shot_angle).toAngle(),
+                    owner_ref.OwnerRef.fromLocalPlayer(0),
+                );
+            } else {
+                const particle_id = particles.spawnParticle(
+                    state,
+                    muzzle,
+                    particle_angle,
+                    1.0,
+                    owner_ref.OwnerRef.fromLocalPlayer(0),
+                );
+                if (mode.style) |style| {
+                    particles.entries[particle_id].style_id = style;
+                }
+            }
+            shot_count = 1;
+        },
+        .multi_plasma_fan => {
+            shot_count = 5;
             const spread_small = std.math.pi / 10.0;
             const spread_large = std.math.pi / 6.0;
             _ = projectiles.spawn(muzzle, narrowF32(shot_angle - spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, false);
@@ -412,118 +445,18 @@ fn tryFireWeaponWithForce(
             _ = projectiles.spawn(muzzle, narrowF32(shot_angle + spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, false);
             _ = projectiles.spawn(muzzle, narrowF32(shot_angle + spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, false);
         },
-        .plasma_shotgun => {
-            const meta = weapon_data.weapon_stats.get(.plasma_minigun).travel_budget;
-            for (0..14) |_| {
-                const jitter = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.rand() & 0xff)) - 0x80)) * 0.002;
-                const id = projectiles.spawn(
-                    muzzle,
-                    shot_angle + jitter,
-                    @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun),
-                    projectile_owner,
-                    meta,
-                    false,
-                );
-                projectiles.entries[id].speed_scale = narrowF32(1.0 + @as(f32, @floatFromInt(state.rng.rand() % 100)) * 0.01);
-            }
-        },
-        .gauss_shotgun => {
-            const meta = weapon_data.weapon_stats.get(.gauss_gun).travel_budget;
-            for (0..6) |_| {
-                const jitter = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.002;
-                const id = projectiles.spawn(
-                    muzzle,
-                    shot_angle + jitter,
-                    @intFromEnum(game_ids.ProjectileTypeId.gauss_gun),
-                    projectile_owner,
-                    meta,
-                    false,
-                );
-                projectiles.entries[id].speed_scale = narrowF32(1.4 + @as(f32, @floatFromInt(state.rng.rand() % 0x50)) * 0.01);
-            }
-        },
-        .ion_shotgun => {
-            const meta = weapon_data.weapon_stats.get(.ion_minigun).travel_budget;
-            for (0..8) |_| {
-                const jitter = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.0026;
-                const id = projectiles.spawn(
-                    muzzle,
-                    shot_angle + jitter,
-                    @intFromEnum(game_ids.ProjectileTypeId.ion_minigun),
-                    projectile_owner,
-                    meta,
-                    false,
-                );
-                projectiles.entries[id].speed_scale = narrowF32(1.4 + @as(f32, @floatFromInt(state.rng.rand() % 0x50)) * 0.01);
-            }
-        },
-        .flamethrower => {
-            _ = particles.spawnParticle(
-                state,
-                muzzle,
-                particle_angle,
-                1.0,
-                owner_ref.OwnerRef.fromLocalPlayer(0),
-            );
-        },
-        .blow_torch => {
-            const particle_id = particles.spawnParticle(
-                state,
-                muzzle,
-                particle_angle,
-                1.0,
-                owner_ref.OwnerRef.fromLocalPlayer(0),
-            );
-            particles.entries[particle_id].style_id = particles_mod.ParticleStyleId.blow_torch;
-        },
-        .hr_flamer => {
-            const particle_id = particles.spawnParticle(
-                state,
-                muzzle,
-                particle_angle,
-                1.0,
-                owner_ref.OwnerRef.fromLocalPlayer(0),
-            );
-            particles.entries[particle_id].style_id = particles_mod.ParticleStyleId.hr_flamer;
-        },
-        .bubblegun => {
-            _ = particles.spawnParticleSlow(
-                state,
-                muzzle,
-                directionFromHeading(shot_angle).toAngle(),
-                owner_ref.OwnerRef.fromLocalPlayer(0),
-            );
-        },
-        .rocket_launcher => {
-            _ = secondary_projectiles.spawn(
-                muzzle,
-                narrowF32(shot_angle),
-                secondary_projectiles_mod.SecondaryProjectileTypeId.rocket,
-                secondary_owner,
-                2.0,
-                null,
-                creatures,
-            );
-        },
-        .seeker_rockets => {
-            _ = secondary_projectiles.spawn(
-                muzzle,
-                narrowF32(shot_angle),
-                secondary_projectiles_mod.SecondaryProjectileTypeId.homing_rocket,
-                secondary_owner,
-                2.0,
-                player.aim,
-                creatures,
-            );
-        },
-        .mini_rocket_swarmers => {
+        .swarmer_dump => {
             const rocket_count = shot_count;
-            const spread = native_pi * (2.0 / 3.0);
-            const step = if (rocket_count <= 1)
+            const step = if (state.preserve_bugs)
+                narrowF32(@as(f32, @floatFromInt(rocket_count)) * (native_pi / 3.0))
+            else if (rocket_count <= 1)
                 0.0
             else
-                spread / @as(f32, @floatFromInt(rocket_count - 1));
-            var angle = shot_angle - spread * 0.5;
+                narrowF32((native_pi * (2.0 / 3.0)) / @as(f32, @floatFromInt(rocket_count - 1)));
+            var angle = if (state.preserve_bugs)
+                narrowF32((shot_angle - native_pi) - step * @as(f32, @floatFromInt(rocket_count)) * 0.5)
+            else
+                narrowF32(shot_angle - native_pi * (1.0 / 3.0));
             for (0..@as(usize, @intCast(rocket_count))) |_| {
                 _ = secondary_projectiles.spawn(
                     muzzle,
@@ -536,43 +469,7 @@ fn tryFireWeaponWithForce(
                 );
                 angle = narrowF32(angle + step);
             }
-        },
-        .rocket_minigun => {
-            _ = secondary_projectiles.spawn(
-                muzzle,
-                narrowF32(shot_angle),
-                secondary_projectiles_mod.SecondaryProjectileTypeId.rocket_minigun,
-                secondary_owner,
-                2.0,
-                null,
-                creatures,
-            );
-        },
-        else => {
-            const type_id = weapon_data.projectileTypeIdFromWeaponId(player.weapon.weapon_id) orelse return error.UnsupportedWeaponFirePath;
-            const type_id_i32 = @intFromEnum(type_id);
-            const meta = projectileTravelBudgetFromTypeId(type_id);
-            const pellets = @max(1, weapon_data.weapon_stats.get(player.weapon.weapon_id).pellet_count);
-            for (0..@as(usize, @intCast(pellets))) |_| {
-                var angle = shot_angle;
-                if (pellets > 1) {
-                    const jitter_step = pelletJitterStep(player.weapon.weapon_id);
-                    angle += narrowF32(@as(f32, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * jitter_step);
-                }
-                const id = projectiles.spawn(
-                    muzzle,
-                    angle,
-                    type_id_i32,
-                    projectile_owner,
-                    meta,
-                    false,
-                );
-                if (pellets > 1 and
-                    (player.weapon.weapon_id == .shotgun or player.weapon.weapon_id == .sawed_off_shotgun or player.weapon.weapon_id == .jackhammer))
-                {
-                    projectiles.entries[id].speed_scale = narrowF32(1.0 + @as(f32, @floatFromInt(state.rng.rand() % 100)) * 0.01);
-                }
-            }
+            ammo_cost = @floatFromInt(rocket_count);
         },
     }
 
@@ -591,7 +488,6 @@ fn tryFireWeaponWithForce(
     }
     state.shots_fired_total += shot_count;
 
-    const ammo_cost = computeAmmoCost(player.weapon.weapon_id, shot_count);
     if (state.bonuses.reflex_boost <= 0.0 and !is_fire_bullets) {
         player.weapon.ammo -= ammo_cost;
     }
@@ -814,12 +710,43 @@ fn spawnPerkProjectile(
     }
 }
 
-fn pelletJitterStep(weapon_id: WeaponId) f32 {
-    return switch (weapon_id) {
-        .shotgun, .jackhammer => 0.0013,
-        .sawed_off_shotgun => 0.004,
-        else => 0.0015,
+fn applyPelletJitter(
+    state: *state_mod.GameplayState,
+    shot_angle: f32,
+    rule: fire_recipes.PelletJitterRule,
+) f32 {
+    return switch (rule) {
+        .none => shot_angle,
+        .modulo_centered => |jitter| {
+            const jitter_roll = state.rng.rand();
+            return shot_angle + narrowF32(
+                @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll % jitter.modulo)) - jitter.center)) * jitter.step,
+            );
+        },
+        .mask_centered => |jitter| {
+            const jitter_roll = state.rng.rand();
+            return shot_angle + narrowF32(
+                @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll & jitter.mask)) - jitter.center)) * jitter.step,
+            );
+        },
     };
+}
+
+fn applySpeedScaleRule(
+    state: *state_mod.GameplayState,
+    projectiles: *projectiles_mod.ProjectilePool,
+    projectile_idx: usize,
+    rule: fire_recipes.SpeedScaleRule,
+) void {
+    switch (rule) {
+        .none => {},
+        .modulo => |speed| {
+            const speed_roll = state.rng.rand();
+            projectiles.entries[projectile_idx].speed_scale = narrowF32(
+                speed.base + @as(f32, @floatFromInt(speed_roll % speed.modulo)) * speed.step,
+            );
+        },
+    }
 }
 
 fn consumeMuzzleSpriteRng(
@@ -879,20 +806,6 @@ fn computeShotCount(
         .gauss_shotgun => 6,
         .ion_shotgun => 8,
         else => @max(1, weapon_data.weapon_stats.get(weapon_id).pellet_count),
-    };
-}
-
-fn computeAmmoCost(
-    weapon_id: WeaponId,
-    shot_count: i32,
-) f32 {
-    return switch (weapon_id) {
-        .flamethrower => 0.1,
-        .blow_torch => 0.05,
-        .hr_flamer => 0.1,
-        .mini_rocket_swarmers => @floatFromInt(shot_count),
-        .bubblegun => 0.15,
-        else => 1.0,
     };
 }
 
@@ -2269,4 +2182,106 @@ test "ammunition within fire ammo class costs less health and spends fractional 
     try expectFloatClose(narrowF32(9.85), player.health);
     try std.testing.expect(particles.entries[0].active);
     try expectFloatClose(4.9, player.weapon.ammo);
+}
+
+test "same-id primary dev weapons fire through the main projectile pool" {
+    const cases = [_]WeaponId{
+        .evil_scythe,
+        .flameburst,
+        .raygun,
+        .grim_weapon,
+        .transmutator,
+        .blaster_r_300,
+        .lightning_rifle,
+        .nuke_launcher,
+    };
+
+    for (cases) |weapon_id| {
+        var state = state_mod.GameplayState.init(1);
+        var projectiles: projectiles_mod.ProjectilePool = .{};
+        var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+        var creatures: creatures_mod.CreaturePool = .{};
+        var particles: particles_mod.ParticlePool = .{};
+        var player: state_mod.PlayerState = .{
+            .index = 0,
+            .pos = .{},
+            .aim = .{ .x = 200.0, .y = 0.0 },
+            .aim_dir = .{ .x = 1.0, .y = 0.0 },
+            .spread_heat = 0.0,
+        };
+
+        player_runtime.weaponAssignPlayer(&player, weapon_id);
+        try std.testing.expect(try tryFireWeapon(
+            &state,
+            &player,
+            &projectiles,
+            &secondary_projectiles,
+            &creatures,
+            &particles,
+        ));
+
+        try std.testing.expectEqual(@as(usize, 1), activeProjectileCount(&projectiles));
+        try std.testing.expectEqual(@as(usize, 0), activeSecondaryProjectileCount(&secondary_projectiles));
+        try std.testing.expect(!particles.entries[0].active);
+        try std.testing.expectEqual(@intFromEnum(weapon_id), projectiles.entries[0].type_id);
+        try std.testing.expectEqual(@as(i32, 1), state.weapon_shots_fired[0][@intCast(@intFromEnum(weapon_id))]);
+    }
+}
+
+test "mini rocket swarmers preserve bugged spread when requested" {
+    var fixed_state = state_mod.GameplayState.init(1);
+    var fixed_projectiles: projectiles_mod.ProjectilePool = .{};
+    var fixed_secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+    var fixed_creatures: creatures_mod.CreaturePool = .{};
+    var fixed_particles: particles_mod.ParticlePool = .{};
+    var fixed_player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 200.0, .y = 0.0 },
+        .aim_dir = .{ .x = 1.0, .y = 0.0 },
+        .spread_heat = 0.0,
+    };
+
+    player_runtime.weaponAssignPlayer(&fixed_player, .mini_rocket_swarmers);
+    fixed_player.weapon.ammo = 6.0;
+    try std.testing.expect(try tryFireWeapon(
+        &fixed_state,
+        &fixed_player,
+        &fixed_projectiles,
+        &fixed_secondary_projectiles,
+        &fixed_creatures,
+        &fixed_particles,
+    ));
+
+    var bug_state = state_mod.GameplayState.init(1);
+    bug_state.preserve_bugs = true;
+    var bug_projectiles: projectiles_mod.ProjectilePool = .{};
+    var bug_secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+    var bug_creatures: creatures_mod.CreaturePool = .{};
+    var bug_particles: particles_mod.ParticlePool = .{};
+    var bug_player = fixed_player;
+    bug_player.weapon.shot_cooldown = 0.0;
+    bug_player.weapon.reload_timer = 0.0;
+    bug_player.weapon.ammo = 6.0;
+
+    try std.testing.expect(try tryFireWeapon(
+        &bug_state,
+        &bug_player,
+        &bug_projectiles,
+        &bug_secondary_projectiles,
+        &bug_creatures,
+        &bug_particles,
+    ));
+
+    const shot_angle = std.math.pi / 2.0;
+    const rocket_count: f32 = 6.0;
+    const fixed_step = (native_pi * (2.0 / 3.0)) / (rocket_count - 1.0);
+    const fixed_first_angle = shot_angle - native_pi * (1.0 / 3.0);
+    try expectFloatClose(fixed_first_angle, fixed_secondary_projectiles.entries[0].angle);
+    try expectFloatClose(fixed_first_angle + fixed_step, fixed_secondary_projectiles.entries[1].angle);
+
+    const bug_step = rocket_count * (native_pi / 3.0);
+    const bug_first_angle = (shot_angle - native_pi) - bug_step * rocket_count * 0.5;
+    try expectFloatClose(bug_first_angle, bug_secondary_projectiles.entries[0].angle);
+    try expectFloatClose(bug_first_angle + bug_step, bug_secondary_projectiles.entries[1].angle);
 }
