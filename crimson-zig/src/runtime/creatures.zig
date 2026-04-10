@@ -2,6 +2,7 @@ const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
+const runtime_anim = @import("anim.zig");
 const bonus_runtime = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const owner_ref = @import("owner_ref.zig");
@@ -40,6 +41,7 @@ pub const CreatureState = struct {
     heading: f32 = 0.0,
     target_heading: f32 = 0.0,
     phase_seed: f32 = 0.0,
+    anim_phase: f32 = 0.0,
     vel: state_mod.Vec2 = .{},
     move_scale: f32 = 1.0,
     force_target: i32 = 0,
@@ -140,6 +142,7 @@ pub const CreaturePool = struct {
             .heading = if (init.set_heading) narrowF32(init.heading) else stale_heading,
             .target_heading = stale_target_heading,
             .phase_seed = narrowF32(init.phase_seed),
+            .anim_phase = 0.0,
             .vel = .{},
             .move_scale = 1.0,
             .force_target = 0,
@@ -2001,6 +2004,19 @@ pub const CreaturePool = struct {
                         .y = moved_y,
                     };
                 }
+            }
+            if (runtime_anim.creatureAnimInfoForRawTypeId(creature.type_id)) |anim_info| {
+                const advanced = runtime_anim.creatureAnimAdvancePhase(
+                    creature.anim_phase,
+                    anim_info.anim_rate,
+                    creature.move_speed,
+                    dt_f32,
+                    creature.size,
+                    creature.move_scale,
+                    creature.flags,
+                    creature.ai_mode,
+                );
+                creature.anim_phase = advanced.phase;
             }
             if (perkActive(player, PerkId.plaguebearer) and state.plaguebearer_infection_count < 0x3c) {
                 spreadPlagueInfection(self.entries[0..], creature);
