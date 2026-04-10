@@ -177,6 +177,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "crimson_zig", .module = mod },
+            .{ .name = "msgpack", .module = msgpack_dep.module("msgpack") },
         },
     });
 

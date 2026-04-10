@@ -45,8 +45,9 @@ This wave is intentionally codec-only:
   - full deterministic run-result generation on supported native paths.
 - Replay-side validation remains a primary parity harness, but it is now a consumer of shared runtime code rather than the whole point of the workspace.
 - Native CLI still hard-fails for unsupported or unported native paths instead of falling back.
-- WASM exports keep ABI shape for future native web/worker integration, but the
-  freestanding verify path is still stubbed.
+- The freestanding WASM ABI now runs the same replay verification core for
+  byte-input payloads, with JSON output and JSON error reporting via
+  `crimson_last_error_json`.
 - A staged scope of the remaining port work lives in
   [`docs/rewrite/zig-roadmap.md`](/Users/banteg/dev/banteg/crimson/docs/rewrite/zig-roadmap.md).
 
@@ -78,3 +79,7 @@ zig build wasm
 - `crimson_free(ptr, size) -> void`
 - `crimson_verify_replay_json(replay_ptr, replay_len, opts_ptr, opts_len, out_ptr, out_len) -> i32`
 - `crimson_last_error_json(out_ptr, out_len) -> i32`
+- `crimson_verify_replay_json` returns copied JSON length on success, negative
+  required output length when `out_ptr/out_len` is too small, and `-1` on
+  verification/option errors.
+- `opts_ptr/opts_len` currently accepts a JSON object with optional `max_ticks`.

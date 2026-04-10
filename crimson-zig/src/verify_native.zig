@@ -112,10 +112,27 @@ pub fn runReplayVerify(
     }
 }
 
+pub fn runReplayVerifyBytesJson(
+    allocator: std.mem.Allocator,
+    replay_name: []const u8,
+    replay_bytes: []const u8,
+    max_ticks: ?usize,
+) !CommandOutput {
+    return runVerifyWithReplayBytes(allocator, .{
+        .replay_file = replay_name,
+        .output_format = .json,
+        .max_ticks = max_ticks,
+    }, replay_name, replay_bytes);
+}
+
 fn runNativeVerify(
     allocator: std.mem.Allocator,
     request: VerifyRequest,
 ) !CommandOutput {
+    if (builtin.os.tag == .freestanding) {
+        return buildVerifyFailedOutput(allocator, "native file replay verify is unavailable on freestanding targets");
+    }
+
     var default_base_dir: ?[]u8 = null;
     defer if (default_base_dir) |path| allocator.free(path);
 
@@ -149,6 +166,15 @@ fn runNativeVerify(
     };
     defer allocator.free(replay_bytes);
 
+    return runVerifyWithReplayBytes(allocator, request, resolution.resolved_path, replay_bytes);
+}
+
+fn runVerifyWithReplayBytes(
+    allocator: std.mem.Allocator,
+    request: VerifyRequest,
+    replay_path: []const u8,
+    replay_bytes: []const u8,
+) !CommandOutput {
     var replay_payload_alloc: ?[]u8 = null;
     defer if (replay_payload_alloc) |buf| allocator.free(buf);
 
@@ -211,7 +237,7 @@ fn runNativeVerify(
                 writeRequestedDebugTraceOutputs(
                     allocator,
                     request,
-                    resolution.resolved_path,
+                    replay_path,
                     replay_bytes,
                     replay,
                     tick_trace.items,
@@ -279,7 +305,7 @@ fn runNativeVerify(
         writeRequestedDebugTraceOutputs(
             allocator,
             request,
-            resolution.resolved_path,
+            replay_path,
             replay_bytes,
             replay,
             tick_trace.items,
@@ -296,7 +322,7 @@ fn runNativeVerify(
 
     const payload = try buildVerifyPayload(
         allocator,
-        resolution.resolved_path,
+        replay_path,
         run_result,
         status,
         header_claim_payload_storage,
@@ -369,6 +395,10 @@ fn writeReplayTickTraceMsgpack(
     trace_path: []const u8,
     trace: []const replay_runner.ReplayTickTrace,
 ) !void {
+    if (builtin.os.tag == .freestanding) {
+        return error.UnsupportedTarget;
+    }
+
     if (std.fs.path.dirname(trace_path)) |dir| {
         if (dir.len > 0) try std.fs.cwd().makePath(dir);
     }
@@ -404,6 +434,10 @@ fn writeRequestedDebugTraceOutputs(
     tick_trace: []const replay_runner.ReplayTickTrace,
     cdt_options: cdt_trace.WriteOptions,
 ) !void {
+    if (builtin.os.tag == .freestanding) {
+        return error.UnsupportedTarget;
+    }
+
     if (request.debug_trace_msgpack) |trace_path| {
         try writeReplayTickTraceMsgpack(allocator, trace_path, tick_trace);
     }
@@ -513,6 +547,10 @@ fn buildVerifyPayload(
 }
 
 fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
+    if (builtin.os.tag == .freestanding) {
+        return error.UnsupportedTarget;
+    }
+
     if (std.fs.path.dirname(path)) |dir| {
         if (dir.len > 0) try std.fs.cwd().makePath(dir);
     }
@@ -871,6 +909,10 @@ fn resolveReplayPath(
     replay_file: []const u8,
     base_dir: []const u8,
 ) !ReplayResolution {
+    if (builtin.os.tag == .freestanding) {
+        return error.UnsupportedTarget;
+    }
+
     const primary_exists = try isFile(replay_file);
     if (primary_exists) {
         const resolved_path = try allocator.dupe(u8, replay_file);
@@ -925,6 +967,10 @@ fn isSingleSegmentPath(path: []const u8) bool {
 }
 
 fn isFile(path: []const u8) !bool {
+    if (builtin.os.tag == .freestanding) {
+        return error.UnsupportedTarget;
+    }
+
     const file = std.fs.cwd().openFile(path, .{}) catch |err| switch (err) {
         error.FileNotFound, error.NotDir, error.IsDir => return false,
         else => return err,
@@ -934,6 +980,10 @@ fn isFile(path: []const u8) !bool {
 }
 
 fn defaultRuntimeDir(allocator: std.mem.Allocator) ![]u8 {
+    if (builtin.os.tag == .freestanding) {
+        return error.UnsupportedTarget;
+    }
+
     if (std.process.getEnvVarOwned(allocator, "CRIMSON_RUNTIME_DIR")) |path| {
         return path;
     } else |err| switch (err) {

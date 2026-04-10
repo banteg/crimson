@@ -28,7 +28,8 @@ It also has two intentionally early placeholders:
   opens an empty window only,
 - wasm runtime ABI:
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig)
-  still returns `"replay verification path not yet ported for wasm target"`.
+  now executes byte-input replay verify calls, but still exposes only a narrow
+  replay-oriented surface.
 
 And the CLI is still narrow:
 
@@ -242,8 +243,6 @@ The build targets exist, but the runtime surface is still thin.
 
 Remaining work:
 
-- replace `crimson_verify_replay_json` stub behavior with real wasm-side replay
-  execution or runtime/session APIs,
 - widen the ABI beyond replay-only behavior,
 - decide whether browser/web-worker embedding targets:
   - replay verification,
