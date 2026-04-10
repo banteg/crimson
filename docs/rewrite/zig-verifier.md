@@ -12,6 +12,9 @@ Last reviewed: **2026-04-10**
 Scope target: a full native Zig port of Crimson systems, content, codecs, and
 product surfaces.
 
+For the staged remaining-work breakdown, see
+[`docs/rewrite/zig-roadmap.md`](zig-roadmap.md).
+
 Replay tooling is currently the most mature public entrypoint in the Zig tree,
 not the definition of the project. Today that means fast, headless,
 deterministic replay verification/info for **1-4 player Survival/Rush/Quest**

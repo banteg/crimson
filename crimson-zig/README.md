@@ -47,6 +47,8 @@ This wave is intentionally codec-only:
 - Native CLI still hard-fails for unsupported or unported native paths instead of falling back.
 - WASM exports keep ABI shape for future native web/worker integration, but the
   freestanding verify path is still stubbed.
+- A staged scope of the remaining port work lives in
+  [`docs/rewrite/zig-roadmap.md`](/Users/banteg/dev/banteg/crimson/docs/rewrite/zig-roadmap.md).
 
 ## Build
 

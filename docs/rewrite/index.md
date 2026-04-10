@@ -29,6 +29,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Current state is in-progress parity, not universal replay acceptance yet.
   See [Zig native port status](zig-verifier.md) for the detailed
   ported/not-ported list and known divergences.
+- For a staged remaining-work breakdown, see [Zig port roadmap](zig-roadmap.md).
 
 ## What exists now
 
