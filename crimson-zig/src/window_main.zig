@@ -56,6 +56,7 @@ const Screen = enum {
     gameplay,
     results,
     high_scores,
+    options,
 };
 
 const ResultsReason = enum {
@@ -124,6 +125,10 @@ const HighScoresScreen = struct {
     }
 };
 
+const OptionsScreen = struct {
+    selection: usize = 0,
+};
+
 const ResultsHighscoreState = struct {
     record: persistence.highscores.HighScoreRecord,
     rank_index: usize,
@@ -164,6 +169,7 @@ const App = struct {
     gameplay: ?GameplayScreen = null,
     results: ?ResultsScreen = null,
     high_scores: ?HighScoresScreen = null,
+    options: OptionsScreen = .{},
     runtime_assets: ?window_assets.RuntimeAssets = null,
     audio: live_audio.Bridge,
     assets_state: AssetsState = .unavailable,
@@ -226,6 +232,7 @@ const App = struct {
             .gameplay => self.updateGameplay(frame_dt),
             .results => self.updateResults(),
             .high_scores => self.updateHighScores(),
+            .options => self.updateOptions(),
         }
         self.audio.update(frame_dt);
     }
@@ -237,6 +244,7 @@ const App = struct {
             .gameplay => self.drawGameplay(),
             .results => self.drawResults(),
             .high_scores => self.drawHighScores(),
+            .options => self.drawOptions(),
         }
     }
 
@@ -267,8 +275,9 @@ const App = struct {
             0 => self.startNewRun(runConfigForMenuSelection(0, &self.next_seed_state)),
             1 => self.startNewRun(runConfigForMenuSelection(1, &self.next_seed_state)),
             2 => self.startNewRun(runConfigForMenuSelection(2, &self.next_seed_state)),
-            3 => self.openHighScores(),
-            4 => self.quit_requested = true,
+            3 => self.screen = .options,
+            4 => self.openHighScores(),
+            5 => self.quit_requested = true,
             else => {},
         }
     }
@@ -375,6 +384,60 @@ const App = struct {
                 },
                 else => {},
             }
+        }
+    }
+
+    fn updateOptions(self: *App) void {
+        const buttons = optionsButtons();
+        updateSelectionFromPointer(&self.options.selection, buttons[0..]);
+        if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
+            self.options.selection = if (self.options.selection == 0) buttons.len - 1 else self.options.selection - 1;
+        }
+        if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
+            self.options.selection = (self.options.selection + 1) % buttons.len;
+        }
+
+        const activate = buttonActivated(buttons[0..], self.options.selection);
+        const adjust_left = rl.isKeyPressed(.left) or rl.isKeyPressed(.a);
+        const adjust_right = rl.isKeyPressed(.right) or rl.isKeyPressed(.d);
+        if (!(activate or adjust_left or adjust_right)) return;
+
+        switch (self.options.selection) {
+            0 => {
+                self.runtime.config.sound_disable = if (self.runtime.config.sound_disable == 0) 1 else 0;
+                self.runtime.config_dirty = true;
+                self.reloadAudioConfig();
+                self.audio.playUiButtonClick();
+            },
+            1 => {
+                self.runtime.config.music_disable = if (self.runtime.config.music_disable == 0) 1 else 0;
+                self.runtime.config_dirty = true;
+                self.reloadAudioConfig();
+                self.audio.playUiButtonClick();
+            },
+            2 => {
+                const current: i32 = @intCast(std.math.clamp(self.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5)));
+                const delta: i32 = if (adjust_left and !activate) -1 else 1;
+                self.runtime.config.detail_preset = @intCast(std.math.clamp(current + delta, @as(i32, 1), @as(i32, 5)));
+                self.runtime.config_dirty = true;
+                self.audio.playUiButtonClick();
+            },
+            3 => {
+                self.runtime.config.gore_disabled = if (self.runtime.config.gore_disabled == 0) 1 else 0;
+                self.runtime.config_dirty = true;
+                self.audio.playUiButtonClick();
+            },
+            4 => {
+                self.runtime.config.hardcore_flag = if (self.runtime.config.hardcore_flag == 0) 1 else 0;
+                self.runtime.config_dirty = true;
+                self.audio.playUiButtonClick();
+            },
+            5 => {
+                self.audio.playUiButtonClick();
+                self.menu_selection = 3;
+                self.screen = .main_menu;
+            },
+            else => {},
         }
     }
 
@@ -561,6 +624,15 @@ const App = struct {
             high_scores.records = records.items;
             high_scores.records_owned = true;
         }
+    }
+
+    fn reloadAudioConfig(self: *App) void {
+        self.audio.deinit();
+        self.audio = live_audio.Bridge.init(
+            self.allocator,
+            audio_mod.audioConfigFromCrimsonCfg(self.runtime.config),
+            null,
+        );
     }
 
     fn finishRun(self: *App, gameplay: *GameplayScreen, reason: ResultsReason, runtime_error: ?[]const u8) void {
@@ -807,6 +879,29 @@ const App = struct {
         }
         drawAudioStatus(&self.audio);
     }
+
+    fn drawOptions(self: *const App) void {
+        rl.clearBackground(bg_color);
+        drawBackdrop();
+
+        if (self.runtime_assets) |*runtime_assets| {
+            drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(240.0, 96.0, 800.0, 520.0), colorWithAlpha(rl.Color.white, 0.97));
+            drawSmallTextCentered(runtime_assets, "OPTIONS", 120.0, HudTextColor.accent);
+            drawSmallTextCentered(runtime_assets, "LEFT / RIGHT ADJUST. ENTER ALSO TOGGLES.", 152.0, HudTextColor.dim);
+            drawOptionsTable(runtime_assets, self);
+        } else {
+            drawCenteredText("OPTIONS", 112, 46, accent_color);
+            drawCenteredText("Left / Right adjust. Enter also toggles.", 150, 18, muted_text);
+            drawOptionsTableFallback(self);
+        }
+
+        const buttons = optionsButtons();
+        for (buttons, 0..) |button, idx| {
+            const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+            drawButton(button, idx == self.options.selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
+        }
+        drawAudioStatus(&self.audio);
+    }
 };
 
 pub fn main() !void {
@@ -1045,14 +1140,15 @@ fn drawTextureTiled(texture: rl.Texture2D, area: rl.Rectangle, tint: rl.Color) v
     }
 }
 
-fn mainMenuButtons() [5]UiButton {
+fn mainMenuButtons() [6]UiButton {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     return .{
-        .{ .label = "START SURVIVAL", .rect = centeredRect(center_x, 248.0, ui_button_width, ui_button_height) },
-        .{ .label = "START RUSH", .rect = centeredRect(center_x, 314.0, ui_button_width, ui_button_height) },
-        .{ .label = "START QUEST 1.1", .rect = centeredRect(center_x, 380.0, ui_button_width, ui_button_height) },
-        .{ .label = "HIGH SCORES", .rect = centeredRect(center_x, 446.0, ui_button_width, ui_button_height) },
-        .{ .label = "QUIT", .rect = centeredRect(center_x, 512.0, ui_button_width, ui_button_height) },
+        .{ .label = "START SURVIVAL", .rect = centeredRect(center_x, 214.0, ui_button_width, 48.0) },
+        .{ .label = "START RUSH", .rect = centeredRect(center_x, 272.0, ui_button_width, 48.0) },
+        .{ .label = "START QUEST 1.1", .rect = centeredRect(center_x, 330.0, ui_button_width, 48.0) },
+        .{ .label = "OPTIONS", .rect = centeredRect(center_x, 388.0, ui_button_width, 48.0) },
+        .{ .label = "HIGH SCORES", .rect = centeredRect(center_x, 446.0, ui_button_width, 48.0) },
+        .{ .label = "QUIT", .rect = centeredRect(center_x, 504.0, ui_button_width, 48.0) },
     };
 }
 
@@ -1079,6 +1175,17 @@ fn highScoresButtons() [4]UiButton {
         .{ .label = "RUSH", .rect = centeredRect(center_x, 616.0, 220.0, 48.0) },
         .{ .label = "QUEST 1.1", .rect = centeredRect(center_x, 672.0, 220.0, 48.0) },
         .{ .label = "BACK", .rect = centeredRect(center_x + 262.0, 672.0, 150.0, 48.0) },
+    };
+}
+
+fn optionsButtons() [6]UiButton {
+    return .{
+        .{ .label = "SFX", .rect = rl.Rectangle.init(304.0, 220.0, 420.0, 44.0) },
+        .{ .label = "MUSIC", .rect = rl.Rectangle.init(304.0, 274.0, 420.0, 44.0) },
+        .{ .label = "DETAIL", .rect = rl.Rectangle.init(304.0, 328.0, 420.0, 44.0) },
+        .{ .label = "GORE", .rect = rl.Rectangle.init(304.0, 382.0, 420.0, 44.0) },
+        .{ .label = "HARDCORE", .rect = rl.Rectangle.init(304.0, 436.0, 420.0, 44.0) },
+        .{ .label = "BACK", .rect = rl.Rectangle.init(304.0, 522.0, 220.0, 48.0) },
     };
 }
 
@@ -1788,6 +1895,54 @@ fn formatHighScoreValue(buf: []u8, record: persistence.highscores.HighScoreRecor
     return switch (record.gameModeId() orelse .survival) {
         .rush, .quests => std.fmt.bufPrint(buf, "{d} ms", .{record.survivalElapsedMs()}) catch "0 ms",
         else => std.fmt.bufPrint(buf, "{d} xp", .{record.scoreXp()}) catch "0 xp",
+    };
+}
+
+fn drawOptionsTable(runtime_assets: *const window_assets.RuntimeAssets, app: *const App) void {
+    const labels = [_][]const u8{
+        "SFX",
+        "MUSIC",
+        "DETAIL",
+        "GORE",
+        "HARDCORE",
+    };
+    for (labels, 0..) |label, idx| {
+        const row_y = 230.0 + @as(f32, @floatFromInt(idx)) * 54.0;
+        var value_buf: [32]u8 = undefined;
+        drawSmallText(runtime_assets, label, 330.0, row_y, HudTextColor.dim);
+        drawSmallText(runtime_assets, optionValueText(&value_buf, app, idx), 604.0, row_y, rl.Color.white);
+    }
+}
+
+fn drawOptionsTableFallback(app: *const App) void {
+    const labels = [_][]const u8{
+        "SFX",
+        "MUSIC",
+        "DETAIL",
+        "GORE",
+        "HARDCORE",
+    };
+    for (labels, 0..) |label, idx| {
+        var value_buf: [32]u8 = undefined;
+        drawTextFmt(
+            "{s}: {s}",
+            .{ label, optionValueText(&value_buf, app, idx) },
+            320,
+            230 + @as(i32, @intCast(idx)) * 54,
+            20,
+            text_color,
+        );
+    }
+}
+
+fn optionValueText(buf: []u8, app: *const App, idx: usize) []const u8 {
+    return switch (idx) {
+        0 => if (app.runtime.config.sound_disable == 0) "ON" else "OFF",
+        1 => if (app.runtime.config.music_disable == 0) "ON" else "OFF",
+        2 => std.fmt.bufPrint(buf, "{d}", .{std.math.clamp(app.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5))}) catch "5",
+        3 => if (app.runtime.config.gore_disabled == 0) "ON" else "OFF",
+        4 => if (app.runtime.config.hardcore_flag == 0) "OFF" else "ON",
+        else => "",
     };
 }
 
