@@ -3,6 +3,7 @@ const rl = @import("raylib");
 
 const cz = @import("crimson_zig");
 const window_assets = @import("window_assets.zig");
+const window_ground = @import("window_ground.zig");
 
 const bonuses_runtime = cz.bonuses;
 const game_ids = cz.game_ids;
@@ -65,6 +66,15 @@ const UiButton = struct {
 const GameplayScreen = struct {
     runner: live_runner.LiveSurvivalRunner,
     last_update: live_runner.FrameUpdate,
+    ground: ?window_ground.GroundRenderer = null,
+
+    fn deinit(self: *GameplayScreen) void {
+        if (self.ground) |*ground| {
+            ground.deinit();
+            self.ground = null;
+        }
+        self.* = undefined;
+    }
 };
 
 const ResultsScreen = struct {
@@ -97,6 +107,10 @@ const App = struct {
     }
 
     fn deinit(self: *App) void {
+        if (self.gameplay) |*gameplay| {
+            gameplay.deinit();
+            self.gameplay = null;
+        }
         if (self.runtime_assets) |*runtime_assets| {
             runtime_assets.deinit();
             self.runtime_assets = null;
@@ -165,7 +179,7 @@ const App = struct {
     fn updateGameplay(self: *App, frame_dt: f32) void {
         if (self.gameplay) |*gameplay| {
             if (rl.isKeyPressed(.escape)) {
-                self.finishRun(&gameplay.runner, .abandoned, null);
+                self.finishRun(gameplay, .abandoned, null);
                 return;
             }
 
@@ -175,12 +189,12 @@ const App = struct {
             );
             const input = collectGameplayInput(&gameplay.runner, camera);
             gameplay.last_update = gameplay.runner.stepFrame(frame_dt, input) catch |err| {
-                self.finishRun(&gameplay.runner, .runtime_error, @errorName(err));
+                self.finishRun(gameplay, .runtime_error, @errorName(err));
                 return;
             };
 
             if (gameplay.last_update.all_players_dead) {
-                self.finishRun(&gameplay.runner, .dead, null);
+                self.finishRun(gameplay, .dead, null);
             }
         }
     }
@@ -201,7 +215,10 @@ const App = struct {
         switch (self.results_selection) {
             0 => self.startNewRun(),
             1 => {
-                self.gameplay = null;
+                if (self.gameplay) |*gameplay| {
+                    gameplay.deinit();
+                    self.gameplay = null;
+                }
                 self.results = null;
                 self.menu_selection = 0;
                 self.screen = .main_menu;
@@ -225,15 +242,31 @@ const App = struct {
             return;
         };
         const last_update = runner.stepFrame(0.0, .{}) catch unreachable;
-        self.gameplay = .{
+        if (self.gameplay) |*gameplay| {
+            gameplay.deinit();
+            self.gameplay = null;
+        }
+
+        var gameplay: GameplayScreen = .{
             .runner = runner,
             .last_update = last_update,
         };
+        if (self.runtime_assets) |*runtime_assets| {
+            gameplay.ground = window_ground.GroundRenderer.initForUnlockTerrain(
+                runtime_assets,
+                gameplay.runner.seed,
+                gameplay.runner.session.quest_unlock_index,
+                gameplay.runner.session.terrain_size,
+                gameplay.runner.session.terrain_size,
+            ) catch null;
+        }
+        self.gameplay = gameplay;
         self.results = null;
         self.screen = .gameplay;
     }
 
-    fn finishRun(self: *App, runner: *const live_runner.LiveSurvivalRunner, reason: ResultsReason, runtime_error: ?[]const u8) void {
+    fn finishRun(self: *App, gameplay: *GameplayScreen, reason: ResultsReason, runtime_error: ?[]const u8) void {
+        const runner = &gameplay.runner;
         const player_health = if (runner.player0Const()) |player| player.health else 0.0;
         self.results = .{
             .reason = reason,
@@ -241,6 +274,7 @@ const App = struct {
             .player_health = player_health,
             .runtime_error = runtime_error,
         };
+        gameplay.deinit();
         self.gameplay = null;
         self.results_selection = 0;
         self.screen = .results;
@@ -292,7 +326,7 @@ const App = struct {
             );
 
             camera.begin();
-            drawWorld(runner, runtime_assets);
+            drawWorld(runner, runtime_assets, if (gameplay.ground) |*ground| ground else null);
             drawPlayers(runner, runtime_assets);
             drawCreatures(runner, runtime_assets);
             drawProjectiles(runner, runtime_assets);
@@ -588,11 +622,17 @@ fn axisFromKeys(negative: rl.KeyboardKey, positive: rl.KeyboardKey) f32 {
     return value;
 }
 
-fn drawWorld(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+fn drawWorld(
+    runner: *const live_runner.LiveSurvivalRunner,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
+    ground: ?*const window_ground.GroundRenderer,
+) void {
     const world_size = runner.session.world_size;
     const world_rect = rl.Rectangle.init(0.0, 0.0, world_size, world_size);
 
-    if (runtime_assets) |assets| {
+    if (ground) |rendered_ground| {
+        rendered_ground.draw();
+    } else if (runtime_assets) |assets| {
         const terrain_set = terrainTextureSet(runner.session.quest_unlock_index);
         drawTextureTiled(assets.texture(terrain_set.base), world_rect, rl.Color.white);
         drawTextureTiled(assets.texture(terrain_set.overlay), world_rect, rl.Color.init(255, 255, 255, 124));
