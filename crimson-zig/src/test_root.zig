@@ -1,13 +1,15 @@
 test {
     const cz = @import("crimson_zig");
 
-    _ = @import("audio/mod.zig");
+    _ = @import("app_runtime.zig");
     _ = cz.anim;
+    _ = @import("audio/mod.zig");
     _ = cz.bonuses;
     _ = cz.creatures;
     _ = cz.hash;
     _ = cz.formats;
     _ = cz.helpers;
+    _ = @import("input_codes.zig");
     _ = cz.lifecycle;
     _ = cz.live_runner;
     _ = cz.perks;
