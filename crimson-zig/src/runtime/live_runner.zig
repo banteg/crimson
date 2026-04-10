@@ -3,10 +3,12 @@ const game_ids = @import("../game_ids.zig");
 
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
+const projectiles = @import("projectiles.zig");
 const replay_step = @import("replay/step.zig");
 const runtime_session = @import("session.zig");
 const session_builders = @import("session_builders.zig");
 const state_mod = @import("state.zig");
+const creatures = @import("creatures.zig");
 
 pub const LiveRunnerError = runtime_session.DeterministicSessionError ||
     replay_step.StepError ||
@@ -33,6 +35,51 @@ pub const FrameInput = struct {
     perk_choice_index: ?i32 = null,
 };
 
+pub const ShotAudioEvent = struct {
+    weapon_id: i32,
+    fire_bullets_active: bool,
+};
+
+pub const FrameAudioEvents = struct {
+    shot_events: [8]ShotAudioEvent = [_]ShotAudioEvent{.{
+        .weapon_id = 0,
+        .fire_bullets_active = false,
+    }} ** 8,
+    shot_event_count: usize = 0,
+    reload_weapon_ids: [8]i32 = [_]i32{0} ** 8,
+    reload_event_count: usize = 0,
+    hit_events: [4]creatures.HitSfxPlan = [_]creatures.HitSfxPlan{.{}} ** 4,
+    hit_event_count: usize = 0,
+    trigger_game_tune: bool = false,
+    perk_menu_opened: bool = false,
+    quest_play_hit_sfx: bool = false,
+    quest_play_completion_music: bool = false,
+
+    fn appendShot(self: *FrameAudioEvents, weapon_id: game_ids.WeaponId, fire_bullets_active: bool) void {
+        if (self.shot_event_count >= self.shot_events.len) return;
+        self.shot_events[self.shot_event_count] = .{
+            .weapon_id = @intFromEnum(weapon_id),
+            .fire_bullets_active = fire_bullets_active,
+        };
+        self.shot_event_count += 1;
+    }
+
+    fn appendReload(self: *FrameAudioEvents, weapon_id: game_ids.WeaponId) void {
+        if (self.reload_event_count >= self.reload_weapon_ids.len) return;
+        self.reload_weapon_ids[self.reload_event_count] = @intFromEnum(weapon_id);
+        self.reload_event_count += 1;
+    }
+
+    fn appendHitPlans(self: *FrameAudioEvents, tick_stats: projectiles.ProjectileTickStats) void {
+        self.trigger_game_tune = self.trigger_game_tune or tick_stats.hit_audio_trigger_game_tune;
+        var idx: usize = 0;
+        while (idx < tick_stats.hit_audio_event_count and self.hit_event_count < self.hit_events.len) : (idx += 1) {
+            self.hit_events[self.hit_event_count] = tick_stats.hit_audio_events[idx];
+            self.hit_event_count += 1;
+        }
+    }
+};
+
 pub const FrameUpdate = struct {
     ticks_advanced: usize,
     paused_for_perk_pick: bool,
@@ -46,6 +93,7 @@ pub const FrameUpdate = struct {
     elapsed_ms_sim: i64,
     shots_fired: i32,
     shots_hit: i32,
+    audio: FrameAudioEvents,
 };
 
 pub fn defaultGameInput() player_runtime.GameInput {
@@ -99,20 +147,25 @@ pub const LiveSurvivalRunner = struct {
 
         const paused_for_perk_pick = self.perkPendingCount() > 0;
         if (self.allPlayersDead() or paused_for_perk_pick or !(frame_dt > 0.0)) {
-            return self.snapshot(0, paused_for_perk_pick);
+            return self.snapshot(0, paused_for_perk_pick, .{});
         }
 
         const clamped_dt = std.math.clamp(frame_dt, @as(f32, 0.0), max_frame_dt);
         self.accumulator = std.math.clamp(self.accumulator + clamped_dt, @as(f32, 0.0), max_frame_dt);
 
         var ticks_advanced: usize = 0;
+        var frame_audio: FrameAudioEvents = .{};
         const tick_inputs = [_]player_runtime.GameInput{input.player};
         while (ticks_advanced < self.max_substeps_per_frame and
             !self.allPlayersDead() and
             self.perkPendingCount() <= 0 and
             self.accumulator + epsilon_dt >= self.session.dt_nominal)
         {
-            _ = try replay_step.stepTick(
+            const before_player = self.player0Const().?.*;
+            const before_perk_pending = self.perkPendingCount();
+            const before_quest_hit_sfx = self.session.quest_play_hit_sfx;
+            const before_quest_completion_music = self.session.quest_play_completion_music;
+            const step_result = try replay_step.stepTick(
                 &self.session,
                 self.session.tick_index,
                 tick_inputs[0..],
@@ -120,11 +173,28 @@ pub const LiveSurvivalRunner = struct {
                 self.session.dt_nominal,
                 .{},
             );
+            const after_player = self.player0Const().?.*;
+            if (after_player.shot_seq > before_player.shot_seq) {
+                frame_audio.appendShot(after_player.weapon.weapon_id, after_player.fire_bullets_timer > 0.0);
+            }
+            const reload_started = (!before_player.weapon.reload_active and after_player.weapon.reload_active) or
+                (after_player.weapon.reload_timer > before_player.weapon.reload_timer + 1e-6);
+            if (reload_started) {
+                frame_audio.appendReload(after_player.weapon.weapon_id);
+            }
+            if (before_perk_pending <= 0 and self.perkPendingCount() > 0) {
+                frame_audio.perk_menu_opened = true;
+            }
+            frame_audio.appendHitPlans(step_result.projectile_tick_stats);
+            frame_audio.quest_play_hit_sfx = frame_audio.quest_play_hit_sfx or
+                (!before_quest_hit_sfx and self.session.quest_play_hit_sfx);
+            frame_audio.quest_play_completion_music = frame_audio.quest_play_completion_music or
+                (!before_quest_completion_music and self.session.quest_play_completion_music);
             self.accumulator = @max(0.0, self.accumulator - self.session.dt_nominal);
             ticks_advanced += 1;
         }
 
-        return self.snapshot(ticks_advanced, self.perkPendingCount() > 0);
+        return self.snapshot(ticks_advanced, self.perkPendingCount() > 0, frame_audio);
     }
 
     pub fn perkPendingCount(self: *const LiveSurvivalRunner) i32 {
@@ -178,7 +248,12 @@ pub const LiveSurvivalRunner = struct {
         return self.session.finalize();
     }
 
-    fn snapshot(self: *const LiveSurvivalRunner, ticks_advanced: usize, paused_for_perk_pick: bool) FrameUpdate {
+    fn snapshot(
+        self: *const LiveSurvivalRunner,
+        ticks_advanced: usize,
+        paused_for_perk_pick: bool,
+        audio: FrameAudioEvents,
+    ) FrameUpdate {
         const run_summary = self.session.finalize();
         const player_health = if (self.player0Const()) |player| player.health else 0.0;
         var shots_hit_total: i32 = 0;
@@ -198,6 +273,7 @@ pub const LiveSurvivalRunner = struct {
             .elapsed_ms_sim = run_summary.elapsed_ms_sim,
             .shots_fired = self.session.state.shots_fired_total,
             .shots_hit = shots_hit_total,
+            .audio = audio,
         };
     }
 };

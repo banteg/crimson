@@ -39,6 +39,9 @@ pub const Projectile = struct {
 
 pub const ProjectileTickStats = struct {
     hit_count: i32 = 0,
+    hit_audio_event_count: usize = 0,
+    hit_audio_trigger_game_tune: bool = false,
+    hit_audio_events: [4]creatures_mod.HitSfxPlan = [_]creatures_mod.HitSfxPlan{.{}} ** 4,
     first_hit_creature_index: i32 = -1,
     first_hit_projectile_index: i32 = -1,
     first_hit_type_id: i32 = 0,
@@ -478,11 +481,18 @@ pub const ProjectilePool = struct {
                             state,
                             proj.type_id,
                         );
-                        creatures_mod.consumeHitSfxRng(
+                        const hit_sfx_plan = creatures_mod.consumeHitSfxRng(
                             state,
                             &hit_audio_game_tune_started,
                             proj.type_id,
                         );
+                        if (hit_sfx_plan.trigger_game_tune) {
+                            tick_stats.hit_audio_trigger_game_tune = true;
+                        }
+                        if (tick_stats.hit_audio_event_count < tick_stats.hit_audio_events.len) {
+                            tick_stats.hit_audio_events[tick_stats.hit_audio_event_count] = hit_sfx_plan;
+                            tick_stats.hit_audio_event_count += 1;
+                        }
                     }
                     break;
                 }
@@ -491,11 +501,18 @@ pub const ProjectilePool = struct {
                         state,
                         proj.type_id,
                     );
-                    creatures_mod.consumeHitSfxRng(
+                    const hit_sfx_plan = creatures_mod.consumeHitSfxRng(
                         state,
                         &hit_audio_game_tune_started,
                         proj.type_id,
                     );
+                    if (hit_sfx_plan.trigger_game_tune) {
+                        tick_stats.hit_audio_trigger_game_tune = true;
+                    }
+                    if (tick_stats.hit_audio_event_count < tick_stats.hit_audio_events.len) {
+                        tick_stats.hit_audio_events[tick_stats.hit_audio_event_count] = hit_sfx_plan;
+                        tick_stats.hit_audio_event_count += 1;
+                    }
                 }
                 if (proj.damage_pool <= 0.0) break;
             }

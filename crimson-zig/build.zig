@@ -179,6 +179,7 @@ pub fn build(b: *std.Build) void {
         .imports = &.{
             .{ .name = "crimson_zig", .module = mod },
             .{ .name = "msgpack", .module = msgpack_dep.module("msgpack") },
+            .{ .name = "raylib", .module = raylib_module },
         },
     });
     const mod_tests = b.addTest(.{ .root_module = test_root_module });

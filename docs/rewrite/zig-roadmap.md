@@ -197,15 +197,36 @@ Definition of done for this workstream:
 
 ### 5. Audio
 
-Audio is effectively still unported at the product level.
+Audio now has a real desktop/runtime foothold, but it is not done.
+
+Current progress:
+
+- [`crimson-zig/src/audio/audio.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/audio/audio.zig),
+  [`crimson-zig/src/audio/music.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/audio/music.zig),
+  [`crimson-zig/src/audio/sfx.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/audio/sfx.zig),
+  and
+  [`crimson-zig/src/audio/live_audio.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/audio/live_audio.zig)
+  now mirror the Python split between device/audio orchestration, music state,
+  sfx state, and gameplay/menu routing.
+- `music.paq`, `sfx.paq`, `music/game_tunes.txt`, and `crimson.cfg` are now
+  consumed by the desktop Zig slice.
+- the desktop app now has native intro/menu music, first-hit game-tune
+  triggering, cfg-driven volume/enable behavior, and gameplay/menu/perk ui sfx.
 
 Remaining work:
 
-- music and sfx asset loading from PAQ/runtime assets,
-- mixer/stream integration,
-- gameplay event routing,
-- menu/intro/game tune transitions,
-- cfg-driven volume/state behavior.
+- widen gameplay event parity beyond the current desktop slice:
+  - creature pain/death/attack sfx,
+  - bonus/perk-triggered sfx outside the currently surfaced frame events,
+  - fuller quest/tutorial/demo audio routing.
+- port the remaining product-shell audio behavior:
+  - panels/options/high-score entry/results flows,
+  - pause/game over/victory transition muting details,
+  - console-driven tune loading commands on the native shell side.
+- validate audio parity more deeply against the Python/native reference:
+  - game-tune queue mutation,
+  - per-mode music behavior,
+  - any remaining edge cases around exclusive fading and reflex pitch scaling.
 
 Closest Python references:
 

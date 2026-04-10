@@ -1,9 +1,10 @@
-const builtin = @import("builtin");
 const std = @import("std");
 const rl = @import("raylib");
 
 const cz = @import("crimson_zig");
 const formats = cz.formats;
+const runtime_archive = @import("runtime_archive.zig");
+const runtime_paths = @import("runtime_paths.zig");
 
 pub const paq_name = "crimson.paq";
 pub const small_font_widths_path = "load/smallFnt.dat";
@@ -96,9 +97,7 @@ pub const AssetFormat = enum {
     unsupported,
 };
 
-pub const AssetArchiveError = formats.paq.PaqError || std.mem.Allocator.Error || error{
-    InvalidAssetPath,
-};
+pub const AssetArchiveError = runtime_archive.RuntimeArchiveError;
 
 pub const DecodeImageError = formats.jaz.JazError || formats.tga.TgaError || std.mem.Allocator.Error || rl.RaylibError || error{
     InvalidImageDimensions,
@@ -116,69 +115,7 @@ pub const LoadRuntimeAssetsError = AssetArchiveError ||
         MissingFontWidths,
     };
 
-pub const AssetArchive = struct {
-    allocator: std.mem.Allocator,
-    archive: formats.paq.Archive,
-    normalized_names: [][]u8,
-    index_by_name: std.StringHashMap(usize),
-
-    pub fn fromBytes(allocator: std.mem.Allocator, bytes: []const u8) AssetArchiveError!AssetArchive {
-        var archive = try formats.paq.decode(allocator, bytes);
-        errdefer archive.deinit(allocator);
-
-        var normalized_names = try allocator.alloc([]u8, archive.entries.len);
-        errdefer allocator.free(normalized_names);
-        @memset(normalized_names, &.{});
-        errdefer {
-            for (normalized_names) |name| {
-                if (name.len == 0) continue;
-                allocator.free(name);
-            }
-        }
-
-        var index_by_name = std.StringHashMap(usize).init(allocator);
-        errdefer index_by_name.deinit();
-
-        for (archive.entries, 0..) |entry, idx| {
-            const normalized = try normalizeArchiveEntryNameOwned(allocator, entry.name);
-            normalized_names[idx] = normalized;
-            try index_by_name.put(normalized, idx);
-        }
-
-        return .{
-            .allocator = allocator,
-            .archive = archive,
-            .normalized_names = normalized_names,
-            .index_by_name = index_by_name,
-        };
-    }
-
-    pub fn fromPath(allocator: std.mem.Allocator, paq_path: []const u8) LoadRuntimeAssetsError!AssetArchive {
-        const bytes = try readFileAlloc(allocator, paq_path);
-        defer allocator.free(bytes);
-        return fromBytes(allocator, bytes);
-    }
-
-    pub fn deinit(self: *AssetArchive) void {
-        for (self.normalized_names) |name| {
-            if (name.len == 0) continue;
-            self.allocator.free(name);
-        }
-        self.allocator.free(self.normalized_names);
-        self.index_by_name.deinit();
-        self.archive.deinit(self.allocator);
-        self.* = undefined;
-    }
-
-    pub fn get(self: *const AssetArchive, rel_path: []const u8) ?[]const u8 {
-        const idx = self.index_by_name.get(rel_path) orelse return null;
-        return self.archive.entries[idx].payload;
-    }
-
-    pub fn entryCount(self: *const AssetArchive) usize {
-        return self.archive.entries.len;
-    }
-};
+pub const AssetArchive = runtime_archive.Archive;
 
 pub const RuntimeAssets = struct {
     allocator: std.mem.Allocator,
@@ -271,41 +208,7 @@ pub fn loadRuntimeAssets(allocator: std.mem.Allocator, assets_dir: []const u8) L
 }
 
 pub fn resolveRuntimeAssetsDir(allocator: std.mem.Allocator) LoadRuntimeAssetsError!?[]u8 {
-    if (builtin.target.os.tag == .emscripten) return null;
-
-    const env_assets_dir = std.process.getEnvVarOwned(allocator, "CRIMSON_ASSETS_DIR") catch |err| switch (err) {
-        error.EnvironmentVariableNotFound => null,
-        else => return err,
-    };
-
-    if (env_assets_dir) |dir| {
-        if (try archiveExistsAtDir(allocator, dir)) {
-            return dir;
-        }
-        allocator.free(dir);
-    }
-
-    const runtime_dir = try defaultRuntimeDir(allocator);
-
-    if (runtime_dir) |dir| {
-        if (try archiveExistsAtDir(allocator, dir)) {
-            return dir;
-        }
-        allocator.free(dir);
-    }
-
-    const default_candidates = [_][]const u8{
-        "artifacts/assets",
-        ".",
-    };
-    for (default_candidates) |candidate| {
-        if (try archiveExistsAtDir(allocator, candidate)) {
-            const owned_candidate = try allocator.dupe(u8, candidate);
-            return owned_candidate;
-        }
-    }
-
-    return null;
+    return runtime_paths.resolveArchiveDir(allocator, paq_name);
 }
 
 pub fn loadRuntimeAssetsFromDefaultSearch(allocator: std.mem.Allocator) LoadRuntimeAssetsError!?RuntimeAssets {
@@ -313,72 +216,6 @@ pub fn loadRuntimeAssetsFromDefaultSearch(allocator: std.mem.Allocator) LoadRunt
     defer allocator.free(assets_dir);
     const assets = try loadRuntimeAssets(allocator, assets_dir);
     return assets;
-}
-
-fn defaultRuntimeDir(allocator: std.mem.Allocator) (std.process.GetEnvVarOwnedError || std.mem.Allocator.Error)!?[]u8 {
-    if (builtin.target.os.tag == .emscripten or builtin.target.os.tag == .freestanding) {
-        return null;
-    }
-
-    if (std.process.getEnvVarOwned(allocator, "CRIMSON_RUNTIME_DIR")) |path| {
-        return path;
-    } else |err| switch (err) {
-        error.EnvironmentVariableNotFound => {},
-        else => return err,
-    }
-
-    if (std.process.getEnvVarOwned(allocator, "CRIMSON_BASE_DIR")) |path| {
-        return path;
-    } else |err| switch (err) {
-        error.EnvironmentVariableNotFound => {},
-        else => return err,
-    }
-
-    return switch (builtin.target.os.tag) {
-        .macos => blk: {
-            const home = std.process.getEnvVarOwned(allocator, "HOME") catch |err| switch (err) {
-                error.EnvironmentVariableNotFound => return null,
-                else => return err,
-            };
-            defer allocator.free(home);
-            break :blk try std.fs.path.join(allocator, &.{ home, "Library", "Application Support", "banteg", "crimsonland" });
-        },
-        .windows => blk: {
-            const appdata = std.process.getEnvVarOwned(allocator, "APPDATA") catch |err| switch (err) {
-                error.EnvironmentVariableNotFound => return null,
-                else => return err,
-            };
-            defer allocator.free(appdata);
-            break :blk try std.fs.path.join(allocator, &.{ appdata, "banteg", "crimsonland" });
-        },
-        else => blk: {
-            if (std.process.getEnvVarOwned(allocator, "XDG_DATA_HOME")) |xdg_data_home| {
-                defer allocator.free(xdg_data_home);
-                break :blk try std.fs.path.join(allocator, &.{ xdg_data_home, "banteg", "crimsonland" });
-            } else |err| switch (err) {
-                error.EnvironmentVariableNotFound => {},
-                else => return err,
-            }
-
-            const home = std.process.getEnvVarOwned(allocator, "HOME") catch |err| switch (err) {
-                error.EnvironmentVariableNotFound => return null,
-                else => return err,
-            };
-            defer allocator.free(home);
-            break :blk try std.fs.path.join(allocator, &.{ home, ".local", "share", "banteg", "crimsonland" });
-        },
-    };
-}
-
-fn archiveExistsAtDir(allocator: std.mem.Allocator, dir_path: []const u8) (std.mem.Allocator.Error || std.fs.Dir.AccessError)!bool {
-    const paq_path = try std.fs.path.join(allocator, &.{ dir_path, paq_name });
-    defer allocator.free(paq_path);
-
-    std.fs.cwd().access(paq_path, .{}) catch |err| switch (err) {
-        error.FileNotFound => return false,
-        else => return err,
-    };
-    return true;
 }
 
 fn loadTextureFromBytes(allocator: std.mem.Allocator, spec: TextureSpec, bytes: []const u8) DecodeImageError!rl.Texture2D {
@@ -500,37 +337,6 @@ fn textureSpec(texture_id: TextureId) TextureSpec {
     };
 }
 
-fn normalizeArchiveEntryNameOwned(allocator: std.mem.Allocator, raw_name: []const u8) AssetArchiveError![]u8 {
-    var out: std.ArrayList(u8) = .empty;
-    errdefer out.deinit(allocator);
-
-    var segment_start: usize = 0;
-    var segment_count: usize = 0;
-    var idx: usize = 0;
-    while (idx <= raw_name.len) : (idx += 1) {
-        const is_separator = idx == raw_name.len or raw_name[idx] == '/' or raw_name[idx] == '\\';
-        if (!is_separator) continue;
-
-        const segment = raw_name[segment_start..idx];
-        if (segment.len == 0 or std.mem.eql(u8, segment, ".") or std.mem.eql(u8, segment, "..")) {
-            return error.InvalidAssetPath;
-        }
-        if (segment_count > 0) try out.append(allocator, '/');
-        try out.appendSlice(allocator, segment);
-        segment_count += 1;
-        segment_start = idx + 1;
-    }
-
-    if (segment_count == 0) return error.InvalidAssetPath;
-    return out.toOwnedSlice(allocator);
-}
-
-fn readFileAlloc(allocator: std.mem.Allocator, path: []const u8) (std.mem.Allocator.Error || std.fs.File.OpenError || std.fs.File.ReadError)![]u8 {
-    const file = try std.fs.cwd().openFile(path, .{});
-    defer file.close();
-    return file.readToEndAlloc(allocator, std.math.maxInt(usize));
-}
-
 test "detect asset formats from extension" {
     try std.testing.expectEqual(AssetFormat.jaz, detectAssetFormat("ui/ui_button.jaz"));
     try std.testing.expectEqual(AssetFormat.tga, detectAssetFormat("load/logo.tga"));
@@ -540,42 +346,9 @@ test "detect asset formats from extension" {
     try std.testing.expectEqual(AssetFormat.unsupported, detectAssetFormat("load/file.bin"));
 }
 
-test "asset archive normalizes separators and rejects traversal" {
-    const allocator = std.testing.allocator;
-
-    const encoded = try formats.paq.encode(allocator, &[_]formats.paq.EntryInput{
-        .{ .name = "ui\\button\\icon.tga", .payload = "abc" },
-    });
-    defer allocator.free(encoded);
-
-    var archive = try AssetArchive.fromBytes(allocator, encoded);
-    defer archive.deinit();
-
-    try std.testing.expectEqual(@as(usize, 1), archive.entryCount());
-    try std.testing.expectEqualStrings("abc", archive.get("ui/button/icon.tga").?);
-
-    const traversal = try formats.paq.encode(allocator, &[_]formats.paq.EntryInput{
-        .{ .name = "../escape.tga", .payload = "abc" },
-    });
-    defer allocator.free(traversal);
-    try std.testing.expectError(error.InvalidAssetPath, AssetArchive.fromBytes(allocator, traversal));
-}
-
 test "decode image rejects unsupported extensions" {
     try std.testing.expectError(
         error.UnsupportedTextureFormat,
         decodeImageFromBytes(std.testing.allocator, "test.dat", "abc"),
     );
-}
-
-test "default runtime dir matches python platformdirs layout on supported targets" {
-    const allocator = std.testing.allocator;
-    const runtime_dir = (try defaultRuntimeDir(allocator)) orelse return;
-    defer allocator.free(runtime_dir);
-
-    switch (builtin.target.os.tag) {
-        .macos => try std.testing.expect(std.mem.endsWith(u8, runtime_dir, "/Library/Application Support/banteg/crimsonland")),
-        .windows => try std.testing.expect(std.mem.endsWith(u8, runtime_dir, "\\banteg\\crimsonland") or std.mem.endsWith(u8, runtime_dir, "/banteg/crimsonland")),
-        else => try std.testing.expect(std.mem.endsWith(u8, runtime_dir, "/banteg/crimsonland")),
-    }
 }

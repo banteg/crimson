@@ -8,6 +8,7 @@ pub const spawn = @import("runtime/spawn.zig");
 pub const anim = @import("runtime/anim.zig");
 pub const creatures = @import("runtime/creatures.zig");
 pub const helpers = @import("runtime/helpers.zig");
+pub const native_math = @import("runtime/native_math.zig");
 pub const lifecycle = @import("runtime/lifecycle.zig");
 pub const perks = @import("runtime/perks.zig");
 pub const weapon_data = @import("runtime/weapon_data.zig");

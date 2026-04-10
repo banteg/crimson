@@ -4,6 +4,7 @@ const rl = @import("raylib");
 const cz = @import("crimson_zig");
 const runtime_anim = cz.anim;
 const weapon_data = cz.weapon_data;
+const live_audio = @import("audio/live_audio.zig");
 const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
 const window_ground = @import("window_ground.zig");
@@ -98,6 +99,7 @@ const App = struct {
     gameplay: ?GameplayScreen = null,
     results: ?ResultsScreen = null,
     runtime_assets: ?window_assets.RuntimeAssets = null,
+    audio: live_audio.Bridge,
     assets_state: AssetsState = .unavailable,
     assets_message: ?[]u8 = null,
     next_seed_state: u32 = 0xC0FFEE,
@@ -106,6 +108,7 @@ const App = struct {
     fn init(allocator: std.mem.Allocator) App {
         var app: App = .{
             .allocator = allocator,
+            .audio = live_audio.Bridge.init(allocator),
         };
         app.loadAssets();
         return app;
@@ -120,6 +123,7 @@ const App = struct {
             runtime_assets.deinit();
             self.runtime_assets = null;
         }
+        self.audio.deinit();
         if (self.assets_message) |message| {
             self.allocator.free(message);
             self.assets_message = null;
@@ -143,6 +147,7 @@ const App = struct {
             .gameplay => self.updateGameplay(frame_dt),
             .results => self.updateResults(),
         }
+        self.audio.update(frame_dt);
     }
 
     fn draw(self: *App) void {
@@ -155,6 +160,7 @@ const App = struct {
     }
 
     fn updateBoot(self: *App, frame_dt: f32) void {
+        self.audio.ensureIntroMusic();
         self.boot_elapsed += frame_dt;
         if (self.boot_elapsed >= boot_duration_seconds) {
             self.screen = .main_menu;
@@ -162,6 +168,7 @@ const App = struct {
     }
 
     fn updateMainMenu(self: *App) void {
+        self.audio.ensureMenuTheme();
         const buttons = mainMenuButtons();
         updateSelectionFromPointer(&self.menu_selection, buttons[0..]);
         if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
@@ -173,6 +180,7 @@ const App = struct {
 
         const activated = buttonActivated(buttons[0..], self.menu_selection);
         if (!activated) return;
+        self.audio.playUiButtonClick();
 
         switch (self.menu_selection) {
             0 => self.startNewRun(),
@@ -193,10 +201,14 @@ const App = struct {
                 gameplay.runner.session.state.camera_shake_offset,
             );
             const input = collectGameplayInput(&gameplay.runner, camera);
+            if (input.perk_choice_index != null) {
+                self.audio.playUiButtonClick();
+            }
             gameplay.last_update = gameplay.runner.stepFrame(frame_dt, input) catch |err| {
                 self.finishRun(gameplay, .runtime_error, @errorName(err));
                 return;
             };
+            self.audio.handleFrameAudio(gameplay.last_update.audio, gameplay.runner.session.state.bonuses.reflex_boost);
             if (self.runtime_assets) |*runtime_assets| {
                 if (gameplay.ground) |*ground| {
                     gameplay.terrain_fx.bake(&gameplay.runner.session, ground, runtime_assets);
@@ -221,6 +233,7 @@ const App = struct {
 
         const activated = buttonActivated(buttons[0..], self.results_selection);
         if (!activated) return;
+        self.audio.playUiButtonClick();
 
         switch (self.results_selection) {
             0 => self.startNewRun(),
@@ -238,6 +251,7 @@ const App = struct {
     }
 
     fn startNewRun(self: *App) void {
+        self.audio.stopGameplayMusic();
         var runner = live_runner.LiveSurvivalRunner.init(.{
             .seed = nextRunSeed(&self.next_seed_state),
         }) catch |err| {
@@ -284,6 +298,7 @@ const App = struct {
     }
 
     fn finishRun(self: *App, gameplay: *GameplayScreen, reason: ResultsReason, runtime_error: ?[]const u8) void {
+        self.audio.stopGameplayMusic();
         const runner = &gameplay.runner;
         const player_health = if (runner.player0Const()) |player| player.health else 0.0;
         self.results = .{
@@ -308,6 +323,7 @@ const App = struct {
         drawCenteredText("Desktop survival slice booting", 232, 24, text_color);
         drawCenteredText("raylib shell + live Zig runtime + archive-backed assets", 270, 18, muted_text);
         drawAssetsStatus(self);
+        drawAudioStatus(&self.audio);
     }
 
     fn drawMainMenu(self: *const App) void {
@@ -324,6 +340,7 @@ const App = struct {
             drawCenteredText("Replay tooling is no longer the only real surface.", 232, 18, muted_text);
         }
         drawAssetsStatus(self);
+        drawAudioStatus(&self.audio);
 
         const buttons = mainMenuButtons();
         for (buttons, 0..) |button, idx| {
@@ -409,6 +426,7 @@ const App = struct {
             const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
             drawButton(button, idx == self.results_selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
         }
+        drawAudioStatus(&self.audio);
     }
 };
 
@@ -501,6 +519,30 @@ fn drawAssetsStatus(app: *const App) void {
             drawTextSlice("assets: load failed; using primitive fallback", 28, 668, 18, muted_text);
             if (app.assets_message) |message| {
                 drawTextSlice(message, 28, 688, 18, rl.Color.orange);
+            }
+        },
+    }
+}
+
+fn drawAudioStatus(audio: *const live_audio.Bridge) void {
+    switch (audio.load_state) {
+        .loaded => {
+            const assets_dir = audio.assetsDir() orelse return;
+            drawTextFmt(
+                "audio: {d} music / {d} queued tunes / {d} sfx samples from {s}",
+                .{ audio.musicTrackCount(), audio.queuedGameTuneCount(), audio.sfxSampleCount(), assets_dir },
+                28,
+                708,
+                18,
+                muted_text,
+            );
+        },
+        .unavailable => drawTextSlice("audio: music.paq or sfx.paq missing; running silent", 28, 708, 18, muted_text),
+        .disabled => drawTextSlice("audio: disabled by crimson.cfg", 28, 708, 18, muted_text),
+        .failed => {
+            drawTextSlice("audio: init failed; running silent", 28, 708, 18, muted_text);
+            if (audio.message) |message| {
+                drawTextSlice(message, 420, 708, 18, rl.Color.orange);
             }
         },
     }

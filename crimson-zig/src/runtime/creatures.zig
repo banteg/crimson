@@ -2267,7 +2267,7 @@ pub const CreaturePool = struct {
                 world_size,
             );
             consumeProjectileHitPresentationPostRng(state, projectile_type_id);
-            consumeHitSfxRng(state, &hit_audio_game_tune_started, projectile_type_id);
+            _ = consumeHitSfxRng(state, &hit_audio_game_tune_started, projectile_type_id);
             if (xp_gained > 0) {
                 result.deaths += 1;
                 result.xp_awarded += xp_gained;
@@ -3247,21 +3247,30 @@ pub fn consumeHitSfxRng(
     state: *state_mod.GameplayState,
     game_tune_started: *bool,
     projectile_type_id: i32,
-) void {
+) HitSfxPlan {
     // Mirrors plan_hit_sfx_keys: first eligible hit starts tune and consumes one RNG draw.
     if (!state.demo_mode_active and state.game_mode != .rush and !game_tune_started.*) {
         game_tune_started.* = true;
-        _ = state.rng.rand();
-        return;
+        return .{
+            .trigger_game_tune = true,
+            .game_tune_roll = state.rng.rand(),
+        };
     }
     if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) or
         projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) or
         projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_cannon))
     {
-        return;
+        return .{ .shock_hit = true };
     }
-    _ = state.rng.rand();
+    return .{ .bullet_hit_roll = state.rng.rand() };
 }
+
+pub const HitSfxPlan = struct {
+    trigger_game_tune: bool = false,
+    game_tune_roll: ?u32 = null,
+    shock_hit: bool = false,
+    bullet_hit_roll: ?u32 = null,
+};
 
 fn consumeSpawnBloodSplatterRng(state: *state_mod.GameplayState) void {
     for (0..2) |_| {

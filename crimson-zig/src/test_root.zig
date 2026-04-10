@@ -1,21 +1,26 @@
 test {
-    _ = @import("runtime/anim.zig");
-    _ = @import("hash.zig");
-    _ = @import("quest_spawn/logic_full.zig");
-    _ = @import("replay_codec.zig");
-    _ = @import("runtime/bonuses.zig");
-    _ = @import("runtime/creatures.zig");
-    _ = @import("runtime/live_runner.zig");
-    _ = @import("runtime/perks.zig");
-    _ = @import("runtime/projectiles.zig");
-    _ = @import("runtime/replay_runner.zig");
-    _ = @import("runtime/session.zig");
-    _ = @import("runtime/session_builders.zig");
-    _ = @import("runtime/spawn.zig");
-    _ = @import("runtime/state.zig");
-    _ = @import("runtime/weapons.zig");
-    _ = @import("verify_native.zig");
-    _ = @import("wasm_exports.zig");
-    _ = @import("window_atlas.zig");
-    _ = @import("formats/mod.zig");
+    const cz = @import("crimson_zig");
+
+    _ = @import("audio/mod.zig");
+    _ = cz.anim;
+    _ = cz.bonuses;
+    _ = cz.creatures;
+    _ = cz.hash;
+    _ = cz.formats;
+    _ = cz.helpers;
+    _ = cz.lifecycle;
+    _ = cz.live_runner;
+    _ = cz.perks;
+    _ = cz.projectiles;
+    _ = cz.quest_spawn_logic_full;
+    _ = cz.replay_codec;
+    _ = cz.replay_runner;
+    _ = cz.secondary_projectiles;
+    _ = cz.session;
+    _ = cz.session_builders;
+    _ = cz.spawn;
+    _ = cz.state;
+    _ = cz.weapon_data;
+    _ = cz.weapons;
+    _ = cz.window_atlas;
 }
