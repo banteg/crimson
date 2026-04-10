@@ -133,18 +133,14 @@ pub fn weaponIdFromInt(value: i32) WeaponId {
 }
 
 pub fn projectileTypeIdFromWeaponId(weapon_id: WeaponId) ?ProjectileTypeId {
+    // Mirror Python/native `PROJECTILE_TEMPLATE_OVERRIDES`: explicit remaps and
+    // non-primary paths live here; other projectile-backed weapons default to
+    // `type_id == weapon_id` when the projectile enum has that slot.
     return switch (weapon_id) {
-        .pistol => ProjectileTypeId.pistol,
-        .assault_rifle => ProjectileTypeId.assault_rifle,
-        .shotgun => ProjectileTypeId.shotgun,
         .sawed_off_shotgun => ProjectileTypeId.shotgun,
-        .submachine_gun => ProjectileTypeId.submachine_gun,
-        .gauss_gun => ProjectileTypeId.gauss_gun,
         .mean_minigun => ProjectileTypeId.pistol,
         .flamethrower => null,
-        .plasma_rifle => ProjectileTypeId.plasma_rifle,
         .multi_plasma => ProjectileTypeId.plasma_rifle,
-        .plasma_minigun => ProjectileTypeId.plasma_minigun,
         .rocket_launcher => null,
         .seeker_rockets => null,
         .plasma_shotgun => ProjectileTypeId.plasma_minigun,
@@ -152,23 +148,11 @@ pub fn projectileTypeIdFromWeaponId(weapon_id: WeaponId) ?ProjectileTypeId {
         .hr_flamer => null,
         .mini_rocket_swarmers => null,
         .rocket_minigun => null,
-        .pulse_gun => ProjectileTypeId.pulse_gun,
         .jackhammer => ProjectileTypeId.shotgun,
-        .ion_rifle => ProjectileTypeId.ion_rifle,
-        .ion_minigun => ProjectileTypeId.ion_minigun,
-        .ion_cannon => ProjectileTypeId.ion_cannon,
-        .shrinkifier_5k => ProjectileTypeId.shrinkifier,
-        .blade_gun => ProjectileTypeId.blade_gun,
-        .spider_plasma => ProjectileTypeId.spider_plasma,
-        .plasma_cannon => ProjectileTypeId.plasma_cannon,
-        .splitter_gun => ProjectileTypeId.splitter_gun,
         .gauss_shotgun => ProjectileTypeId.gauss_gun,
         .ion_shotgun => ProjectileTypeId.ion_minigun,
-        .plague_spreader_gun => ProjectileTypeId.plague_spreader,
         .bubblegun => null,
-        .rainbow_gun => ProjectileTypeId.rainbow_gun,
-        .fire_bullets => ProjectileTypeId.fire_bullets,
-        else => null,
+        else => std.meta.intToEnum(ProjectileTypeId, @intFromEnum(weapon_id)) catch null,
     };
 }
 
@@ -223,13 +207,21 @@ test "projectile type id mapping mirrors native fire paths" {
         .{ .weapon_id = 24, .type_id = .shrinkifier },
         .{ .weapon_id = 25, .type_id = .blade_gun },
         .{ .weapon_id = 26, .type_id = .spider_plasma },
+        .{ .weapon_id = 27, .type_id = .evil_scythe },
         .{ .weapon_id = 28, .type_id = .plasma_cannon },
         .{ .weapon_id = 29, .type_id = .splitter_gun },
         .{ .weapon_id = 30, .type_id = .gauss_gun },
         .{ .weapon_id = 31, .type_id = .ion_minigun },
+        .{ .weapon_id = 32, .type_id = .flameburst },
+        .{ .weapon_id = 33, .type_id = .raygun },
         .{ .weapon_id = 41, .type_id = .plague_spreader },
         .{ .weapon_id = 43, .type_id = .rainbow_gun },
+        .{ .weapon_id = 44, .type_id = .grim_weapon },
         .{ .weapon_id = 45, .type_id = .fire_bullets },
+        .{ .weapon_id = 50, .type_id = .transmutator },
+        .{ .weapon_id = 51, .type_id = .blaster_r_300 },
+        .{ .weapon_id = 52, .type_id = .lightning_rifle },
+        .{ .weapon_id = 53, .type_id = .nuke_launcher },
     };
 
     for (cases) |case| {

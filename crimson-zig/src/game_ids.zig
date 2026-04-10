@@ -70,11 +70,19 @@ pub const ProjectileTypeId = enum(i32) {
     shrinkifier = 0x18,
     blade_gun = 0x19,
     spider_plasma = 0x1A,
+    evil_scythe = 0x1B,
     plasma_cannon = 0x1C,
     splitter_gun = 0x1D,
+    flameburst = 0x20,
+    raygun = 0x21,
     plague_spreader = 0x29,
     rainbow_gun = 0x2B,
+    grim_weapon = 0x2C,
     fire_bullets = 0x2D,
+    transmutator = 0x32,
+    blaster_r_300 = 0x33,
+    lightning_rifle = 0x34,
+    nuke_launcher = 0x35,
 };
 
 pub const BonusId = enum(i32) {
