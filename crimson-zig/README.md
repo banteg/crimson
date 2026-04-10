@@ -48,10 +48,12 @@ This wave is intentionally codec-only:
 - Native CLI still hard-fails for unsupported or unported native paths instead of falling back.
 - `zig build run-window` now boots a real desktop Survival slice:
   boot screen -> main menu -> live 1-player Survival run -> results.
-- `zig build run-window` now also opportunistically loads runtime assets from
-  `CRIMSON_ASSETS_DIR`, `./artifacts/assets`, or the current directory when
-  `crimson.paq` is present, including `.jaz`, `.tga`, `.jpg/.jpeg`, and
-  `load/smallFnt.dat`.
+- `zig build run-window` now looks for runtime assets using the same default
+  runtime-dir policy as Python first:
+  `CRIMSON_ASSETS_DIR`, then `CRIMSON_RUNTIME_DIR` / `CRIMSON_BASE_DIR`, then
+  the per-user platform data dir (`platformdirs`-compatible layout), with
+  `./artifacts/assets` and the current directory left as checkout-local
+  fallback. It loads `.jaz`, `.tga`, `.jpg/.jpeg`, and `load/smallFnt.dat`.
 - The freestanding WASM ABI now runs the same replay verification core for
   byte-input payloads, with JSON output and JSON error reporting via
   `crimson_last_error_json`.
@@ -65,6 +67,7 @@ zig build
 zig build run -- replay verify survival_20260224_041009_score76661.crd --format json
 zig build run-window
 zig build web-window
+zig build asset-smoke
 zig build test
 zig build wasm
 ```
@@ -73,11 +76,14 @@ zig build wasm
 
 - `zig build run-window` opens the current desktop playable slice using `raylib-zig`.
 - `zig build window` compiles that target without running it.
+- `zig build asset-smoke` runs a local decode smoke pass over `crimson.paq` and
+  runtime-mapped texture entries, printing exact failing asset paths.
 - `zig build web-window` builds an HTML+WASM placeholder window for browser use.
 - `zig build run-web-window` serves the web build through `emrun` (`--no_browser`).
-- The desktop target is currently a menu-to-gameplay Survival slice with primitive
-  gameplay rendering and HUD, but it now loads archive-backed textures for
-  boot/menu surfaces when `crimson.paq` is available.
+- The desktop target is currently a menu-to-gameplay Survival slice with a
+  mixed renderer: gameplay world surfaces now use archive-backed textures when
+  `crimson.paq` is available, with primitive fallback where exact sprite atlas
+  mapping is still incomplete.
 - `zig build wasm` remains the freestanding ABI module (`wasm32-freestanding`) and
   is intentionally separate from the raylib web target (`wasm32-emscripten`).
 

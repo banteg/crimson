@@ -4,9 +4,12 @@ const rl = @import("raylib");
 const cz = @import("crimson_zig");
 const window_assets = @import("window_assets.zig");
 
+const bonuses_runtime = cz.bonuses;
 const game_ids = cz.game_ids;
 const live_runner = cz.live_runner;
+const secondary_projectiles_runtime = cz.secondary_projectiles;
 const runtime_session = cz.session;
+const spawn_runtime = cz.spawn;
 const state_mod = cz.state;
 
 const window_width = 1280;
@@ -282,19 +285,19 @@ const App = struct {
 
         if (self.gameplay) |*gameplay| {
             const runner = &gameplay.runner;
+            const runtime_assets: ?*const window_assets.RuntimeAssets = if (self.runtime_assets) |*loaded_assets| loaded_assets else null;
             const camera = buildWorldCamera(
                 runner.session.world_size,
                 runner.session.state.camera_shake_offset,
             );
 
             camera.begin();
-            defer camera.end();
-
-            drawWorld(runner);
-            drawPlayers(runner);
-            drawCreatures(runner);
-            drawProjectiles(runner);
-            drawBonuses(runner);
+            drawWorld(runner, runtime_assets);
+            drawPlayers(runner, runtime_assets);
+            drawCreatures(runner, runtime_assets);
+            drawProjectiles(runner, runtime_assets);
+            drawBonuses(runner, runtime_assets);
+            camera.end();
 
             drawGameplayHud(runner, gameplay.last_update);
             if (gameplay.last_update.paused_for_perk_pick) {
@@ -441,6 +444,32 @@ fn drawTextureCentered(texture: rl.Texture2D, center: rl.Vector2, width: f32, he
     );
 }
 
+fn drawTextureCenteredRotated(texture: rl.Texture2D, center: rl.Vector2, width: f32, height: f32, rotation_deg: f32, tint: rl.Color) void {
+    const src = rl.Rectangle.init(0.0, 0.0, @floatFromInt(texture.width), @floatFromInt(texture.height));
+    const dest = rl.Rectangle.init(center.x, center.y, width, height);
+    rl.drawTexturePro(texture, src, dest, rl.Vector2.init(width * 0.5, height * 0.5), rotation_deg, tint);
+}
+
+fn drawTextureTiled(texture: rl.Texture2D, area: rl.Rectangle, tint: rl.Color) void {
+    const tile_width = @as(f32, @floatFromInt(texture.width));
+    const tile_height = @as(f32, @floatFromInt(texture.height));
+    if (!(tile_width > 0.0 and tile_height > 0.0 and area.width > 0.0 and area.height > 0.0)) return;
+
+    const max_x = area.x + area.width;
+    const max_y = area.y + area.height;
+    var y = area.y;
+    while (y < max_y - 0.001) : (y += tile_height) {
+        const draw_height = @min(tile_height, max_y - y);
+        var x = area.x;
+        while (x < max_x - 0.001) : (x += tile_width) {
+            const draw_width = @min(tile_width, max_x - x);
+            const src = rl.Rectangle.init(0.0, 0.0, draw_width, draw_height);
+            const dest = rl.Rectangle.init(x, y, draw_width, draw_height);
+            rl.drawTexturePro(texture, src, dest, rl.Vector2.zero(), 0.0, tint);
+        }
+    }
+}
+
 fn mainMenuButtons() [2]UiButton {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     return .{
@@ -559,68 +588,150 @@ fn axisFromKeys(negative: rl.KeyboardKey, positive: rl.KeyboardKey) f32 {
     return value;
 }
 
-fn drawWorld(runner: *const live_runner.LiveSurvivalRunner) void {
-    const terrain = runner.session.terrain_size;
+fn drawWorld(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     const world_size = runner.session.world_size;
-    rl.drawRectangleRec(.{
+    const world_rect = rl.Rectangle.init(0.0, 0.0, world_size, world_size);
+
+    if (runtime_assets) |assets| {
+        const terrain_set = terrainTextureSet(runner.session.quest_unlock_index);
+        drawTextureTiled(assets.texture(terrain_set.base), world_rect, rl.Color.white);
+        drawTextureTiled(assets.texture(terrain_set.overlay), world_rect, rl.Color.init(255, 255, 255, 124));
+        rl.drawRectangleRec(world_rect, rl.Color.init(16, 11, 9, 34));
+    } else {
+        rl.drawRectangleRec(world_rect, arena_color);
+
+        var coord: i32 = 0;
+        while (coord <= runner.session.terrain_size) : (coord += 128) {
+            const line_pos: f32 = @floatFromInt(coord);
+            rl.drawLineV(rl.Vector2.init(line_pos, 0.0), rl.Vector2.init(line_pos, world_size), arena_grid);
+            rl.drawLineV(rl.Vector2.init(0.0, line_pos), rl.Vector2.init(world_size, line_pos), arena_grid);
+        }
+    }
+
+    rl.drawRectangleLinesEx(.{
         .x = 0.0,
         .y = 0.0,
         .width = world_size,
         .height = world_size,
-    }, arena_color);
-
-    var coord: i32 = 0;
-    while (coord <= terrain) : (coord += 128) {
-        const line_pos: f32 = @floatFromInt(coord);
-        rl.drawLineV(rl.Vector2.init(line_pos, 0.0), rl.Vector2.init(line_pos, world_size), arena_grid);
-        rl.drawLineV(rl.Vector2.init(0.0, line_pos), rl.Vector2.init(world_size, line_pos), arena_grid);
-    }
-    rl.drawRectangleLinesEx(
-        .{
-            .x = 0.0,
-            .y = 0.0,
-            .width = world_size,
-            .height = world_size,
-        },
-        4.0,
-        border_color,
-    );
+    }, 4.0, border_color);
 }
 
-fn drawPlayers(runner: *const live_runner.LiveSurvivalRunner) void {
+fn drawPlayers(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     for (runner.session.playersConst()) |player| {
         const center = toRlVec(player.pos);
         const radius = @max(10.0, player.size * 0.28);
         const color = if (player.health > 0.0) player_color else dead_player_color;
-        rl.drawCircleV(center, radius, color);
-        rl.drawCircleLinesV(center, radius + 2.0, rl.Color.black);
+
+        if (runtime_assets) |assets| {
+            const base_tint = if (player.health > 0.0) rl.Color.white else dead_player_color;
+            drawTextureCenteredRotated(
+                assets.texture(.trooper),
+                center,
+                player.size * 1.2,
+                player.size * 1.2,
+                headingToDegrees(player.aim_heading),
+                base_tint,
+            );
+
+            if (player.health > 0.0 and player.muzzle_flash_alpha > 0.02) {
+                drawTextureCenteredRotated(
+                    assets.texture(.muzzle_flash),
+                    toRlVec(player.aim),
+                    player.size * 0.72,
+                    player.size * 0.72,
+                    headingToDegrees(player.aim_heading),
+                    colorWithAlpha(rl.Color.white, std.math.clamp(player.muzzle_flash_alpha, @as(f32, 0.0), @as(f32, 1.0))),
+                );
+            }
+        } else {
+            rl.drawCircleV(center, radius, color);
+            rl.drawCircleLinesV(center, radius + 2.0, rl.Color.black);
+        }
+
         rl.drawLineEx(center, toRlVec(player.aim), 2.0, rl.Color.gold);
     }
 }
 
-fn drawCreatures(runner: *const live_runner.LiveSurvivalRunner) void {
+fn drawCreatures(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     for (runner.session.creatures.entries) |creature| {
         if (!creature.active) continue;
         const color = if (creature.hp > 0.0) creature_color else corpse_color;
         const radius = @max(6.0, creature.size * 0.24);
+        if (runtime_assets) |assets| {
+            if (creatureTextureId(creature)) |texture_id| {
+                drawTextureCenteredRotated(
+                    assets.texture(texture_id),
+                    toRlVec(creature.pos),
+                    creature.size * 1.14,
+                    creature.size * 1.14,
+                    headingToDegrees(creature.heading),
+                    if (creature.hp > 0.0) rl.Color.white else corpse_color,
+                );
+                continue;
+            }
+        }
         rl.drawCircleV(toRlVec(creature.pos), radius, color);
     }
 }
 
-fn drawProjectiles(runner: *const live_runner.LiveSurvivalRunner) void {
+fn drawProjectiles(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     for (runner.session.projectiles.entries) |projectile| {
         if (!projectile.active) continue;
+        if (runtime_assets) |assets| {
+            const projectile_texture = projectileTextureId(projectile.type_id) orelse {
+                rl.drawCircleV(toRlVec(projectile.pos), 3.0, projectile_color);
+                continue;
+            };
+            const sprite_size = projectileSpriteSize(projectile.type_id);
+            drawTextureCenteredRotated(
+                assets.texture(projectile_texture),
+                toRlVec(projectile.pos),
+                sprite_size,
+                sprite_size,
+                headingToDegrees(projectile.angle),
+                rl.Color.white,
+            );
+            continue;
+        }
         rl.drawCircleV(toRlVec(projectile.pos), 3.0, projectile_color);
     }
     for (runner.session.secondary_projectiles.entries) |projectile| {
         if (!projectile.active) continue;
+        if (runtime_assets) |assets| {
+            if (secondaryProjectileTextureId(projectile.type_id)) |texture_id| {
+                const sprite_size = secondaryProjectileSpriteSize(projectile);
+                drawTextureCenteredRotated(
+                    assets.texture(texture_id),
+                    toRlVec(projectile.pos),
+                    sprite_size,
+                    sprite_size,
+                    headingToDegrees(projectile.angle),
+                    colorWithAlpha(rl.Color.white, secondaryProjectileAlpha(projectile)),
+                );
+                continue;
+            }
+        }
         rl.drawCircleV(toRlVec(projectile.pos), 6.0, secondary_projectile_color);
     }
 }
 
-fn drawBonuses(runner: *const live_runner.LiveSurvivalRunner) void {
+fn drawBonuses(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     for (runner.session.bonuses.entries) |entry| {
         if (entry.bonus_id == .unused) continue;
+        if (runtime_assets) |assets| {
+            if (bonusTextureId(entry)) |texture_id| {
+                const alpha = bonusAlpha(entry);
+                drawTextureCenteredRotated(
+                    assets.texture(texture_id),
+                    toRlVec(entry.pos),
+                    26.0,
+                    26.0,
+                    0.0,
+                    colorWithAlpha(rl.Color.white, alpha),
+                );
+                continue;
+            }
+        }
         rl.drawRectangleRec(
             .{
                 .x = entry.pos.x - 8.0,
@@ -631,6 +742,139 @@ fn drawBonuses(runner: *const live_runner.LiveSurvivalRunner) void {
             bonus_color,
         );
     }
+}
+
+const TerrainTextureSet = struct {
+    base: window_assets.TextureId,
+    overlay: window_assets.TextureId,
+};
+
+fn terrainTextureSet(quest_unlock_index: i32) TerrainTextureSet {
+    return if (quest_unlock_index >= 40)
+        .{ .base = .ter_q4_base, .overlay = .ter_q4_overlay }
+    else if (quest_unlock_index >= 30)
+        .{ .base = .ter_q3_base, .overlay = .ter_q3_overlay }
+    else if (quest_unlock_index >= 20)
+        .{ .base = .ter_q2_base, .overlay = .ter_q2_overlay }
+    else
+        .{ .base = .ter_q1_base, .overlay = .ter_q1_overlay };
+}
+
+fn creatureTextureId(creature: cz.creatures.CreatureState) ?window_assets.TextureId {
+    const creature_type = std.meta.intToEnum(spawn_runtime.CreatureTypeId, creature.type_id) catch return null;
+    return switch (creature_type) {
+        .alien => .alien,
+        .lizard => .lizard,
+        .spider_sp1 => .spider_sp1,
+        .spider_sp2 => .spider_sp2,
+        .trooper => .trooper,
+        .zombie => .zombie,
+    };
+}
+
+fn projectileTextureId(projectile_type_raw: i32) ?window_assets.TextureId {
+    const projectile_type = std.meta.intToEnum(game_ids.ProjectileTypeId, projectile_type_raw) catch return null;
+    return switch (projectile_type) {
+        .pistol,
+        .assault_rifle,
+        .shotgun,
+        .submachine_gun,
+        => .bullet_i,
+        .gauss_gun,
+        .plasma_rifle,
+        .plasma_minigun,
+        .pulse_gun,
+        .ion_rifle,
+        .ion_minigun,
+        .ion_cannon,
+        .shrinkifier,
+        .blade_gun,
+        .spider_plasma,
+        .plasma_cannon,
+        .splitter_gun,
+        .plague_spreader,
+        .rainbow_gun,
+        .fire_bullets,
+        => .bullet_trail,
+    };
+}
+
+fn projectileSpriteSize(projectile_type_raw: i32) f32 {
+    const projectile_type = std.meta.intToEnum(game_ids.ProjectileTypeId, projectile_type_raw) catch return 10.0;
+    return switch (projectile_type) {
+        .ion_cannon,
+        .plasma_cannon,
+        => 26.0,
+        .ion_rifle,
+        .ion_minigun,
+        .plasma_rifle,
+        .plasma_minigun,
+        .pulse_gun,
+        => 18.0,
+        .gauss_gun,
+        .blade_gun,
+        => 16.0,
+        else => 12.0,
+    };
+}
+
+fn secondaryProjectileTextureId(projectile_type: secondary_projectiles_runtime.SecondaryProjectileTypeId) ?window_assets.TextureId {
+    return switch (projectile_type) {
+        .rocket, .homing_rocket, .rocket_minigun => .arrow,
+        .detonation => .muzzle_flash,
+        .none => null,
+    };
+}
+
+fn secondaryProjectileSpriteSize(projectile: secondary_projectiles_runtime.SecondaryProjectile) f32 {
+    return switch (projectile.type_id) {
+        .rocket => 26.0,
+        .homing_rocket => 30.0,
+        .rocket_minigun => 22.0,
+        .detonation => 96.0 * projectile.detonation_scale * @max(0.35, projectile.detonation_t),
+        .none => 18.0,
+    };
+}
+
+fn secondaryProjectileAlpha(projectile: secondary_projectiles_runtime.SecondaryProjectile) f32 {
+    return switch (projectile.type_id) {
+        .detonation => std.math.clamp(1.0 - projectile.detonation_t * 0.5, @as(f32, 0.15), @as(f32, 1.0)),
+        else => 1.0,
+    };
+}
+
+fn bonusTextureId(entry: bonuses_runtime.BonusEntry) ?window_assets.TextureId {
+    return switch (entry.bonus_id) {
+        .unused => null,
+        .points, .energizer, .double_experience => .ui_arrow,
+        .weapon, .weapon_power_up => .ui_ind_bullet,
+        .nuke => .ui_ind_rocket,
+        .shock_chain => .ui_ind_electric,
+        .fireblast, .fire_bullets => .ui_ind_fire,
+        .reflex_boost => .ui_icon_aim,
+        .shield, .medikit => .ui_ind_life,
+        .freeze => .ui_ind_panel,
+        .speed => .arrow,
+    };
+}
+
+fn bonusAlpha(entry: bonuses_runtime.BonusEntry) f32 {
+    if (entry.picked) return 0.42;
+    if (!(entry.time_max > 0.0)) return 1.0;
+    return std.math.clamp(entry.time_left / entry.time_max, @as(f32, 0.28), @as(f32, 1.0));
+}
+
+fn colorWithAlpha(color: rl.Color, alpha: f32) rl.Color {
+    return rl.Color.init(
+        color.r,
+        color.g,
+        color.b,
+        @intFromFloat(std.math.clamp(alpha, @as(f32, 0.0), @as(f32, 1.0)) * 255.0),
+    );
+}
+
+fn headingToDegrees(heading: f32) f32 {
+    return heading * (180.0 / std.math.pi);
 }
 
 fn drawGameplayHud(runner: *live_runner.LiveSurvivalRunner, update: live_runner.FrameUpdate) void {

@@ -100,7 +100,7 @@ pub const AssetArchiveError = formats.paq.PaqError || std.mem.Allocator.Error ||
     InvalidAssetPath,
 };
 
-pub const DecodeImageError = formats.jaz.JazError || std.mem.Allocator.Error || rl.RaylibError || error{
+pub const DecodeImageError = formats.jaz.JazError || formats.tga.TgaError || std.mem.Allocator.Error || rl.RaylibError || error{
     InvalidImageDimensions,
     UnsupportedTextureFormat,
 };
@@ -208,6 +208,10 @@ pub const RuntimeAssets = struct {
 
 pub const texture_count = std.meta.fields(TextureId).len;
 
+pub fn runtimeTextureSpec(texture_id: TextureId) TextureSpec {
+    return textureSpec(texture_id);
+}
+
 pub fn detectAssetFormat(rel_path: []const u8) AssetFormat {
     if (std.ascii.endsWithIgnoreCase(rel_path, ".jaz")) return .jaz;
     if (std.ascii.endsWithIgnoreCase(rel_path, ".tga")) return .tga;
@@ -220,7 +224,7 @@ pub fn detectAssetFormat(rel_path: []const u8) AssetFormat {
 pub fn decodeImageFromBytes(allocator: std.mem.Allocator, rel_path: []const u8, bytes: []const u8) DecodeImageError!rl.Image {
     return switch (detectAssetFormat(rel_path)) {
         .jaz => decodeJazImage(allocator, bytes),
-        .tga => rl.loadImageFromMemory(".tga", bytes),
+        .tga => decodeTgaImage(bytes),
         .jpg => rl.loadImageFromMemory(".jpg", bytes),
         .jpeg => rl.loadImageFromMemory(".jpeg", bytes),
         else => error.UnsupportedTextureFormat,
@@ -266,19 +270,28 @@ pub fn loadRuntimeAssets(allocator: std.mem.Allocator, assets_dir: []const u8) L
     };
 }
 
-pub fn loadRuntimeAssetsFromDefaultSearch(allocator: std.mem.Allocator) LoadRuntimeAssetsError!?RuntimeAssets {
+pub fn resolveRuntimeAssetsDir(allocator: std.mem.Allocator) LoadRuntimeAssetsError!?[]u8 {
     if (builtin.target.os.tag == .emscripten) return null;
 
     const env_assets_dir = std.process.getEnvVarOwned(allocator, "CRIMSON_ASSETS_DIR") catch |err| switch (err) {
         error.EnvironmentVariableNotFound => null,
         else => return err,
     };
-    defer if (env_assets_dir) |dir| allocator.free(dir);
 
     if (env_assets_dir) |dir| {
         if (try archiveExistsAtDir(allocator, dir)) {
-            return loadRuntimeAssets(allocator, dir);
+            return dir;
         }
+        allocator.free(dir);
+    }
+
+    const runtime_dir = try defaultRuntimeDir(allocator);
+
+    if (runtime_dir) |dir| {
+        if (try archiveExistsAtDir(allocator, dir)) {
+            return dir;
+        }
+        allocator.free(dir);
     }
 
     const default_candidates = [_][]const u8{
@@ -287,11 +300,74 @@ pub fn loadRuntimeAssetsFromDefaultSearch(allocator: std.mem.Allocator) LoadRunt
     };
     for (default_candidates) |candidate| {
         if (try archiveExistsAtDir(allocator, candidate)) {
-            return loadRuntimeAssets(allocator, candidate);
+            const owned_candidate = try allocator.dupe(u8, candidate);
+            return owned_candidate;
         }
     }
 
     return null;
+}
+
+pub fn loadRuntimeAssetsFromDefaultSearch(allocator: std.mem.Allocator) LoadRuntimeAssetsError!?RuntimeAssets {
+    const assets_dir = (try resolveRuntimeAssetsDir(allocator)) orelse return null;
+    defer allocator.free(assets_dir);
+    const assets = try loadRuntimeAssets(allocator, assets_dir);
+    return assets;
+}
+
+fn defaultRuntimeDir(allocator: std.mem.Allocator) (std.process.GetEnvVarOwnedError || std.mem.Allocator.Error)!?[]u8 {
+    if (builtin.target.os.tag == .emscripten or builtin.target.os.tag == .freestanding) {
+        return null;
+    }
+
+    if (std.process.getEnvVarOwned(allocator, "CRIMSON_RUNTIME_DIR")) |path| {
+        return path;
+    } else |err| switch (err) {
+        error.EnvironmentVariableNotFound => {},
+        else => return err,
+    }
+
+    if (std.process.getEnvVarOwned(allocator, "CRIMSON_BASE_DIR")) |path| {
+        return path;
+    } else |err| switch (err) {
+        error.EnvironmentVariableNotFound => {},
+        else => return err,
+    }
+
+    return switch (builtin.target.os.tag) {
+        .macos => blk: {
+            const home = std.process.getEnvVarOwned(allocator, "HOME") catch |err| switch (err) {
+                error.EnvironmentVariableNotFound => return null,
+                else => return err,
+            };
+            defer allocator.free(home);
+            break :blk try std.fs.path.join(allocator, &.{ home, "Library", "Application Support", "banteg", "crimsonland" });
+        },
+        .windows => blk: {
+            const appdata = std.process.getEnvVarOwned(allocator, "APPDATA") catch |err| switch (err) {
+                error.EnvironmentVariableNotFound => return null,
+                else => return err,
+            };
+            defer allocator.free(appdata);
+            break :blk try std.fs.path.join(allocator, &.{ appdata, "banteg", "crimsonland" });
+        },
+        else => blk: {
+            if (std.process.getEnvVarOwned(allocator, "XDG_DATA_HOME")) |xdg_data_home| {
+                defer allocator.free(xdg_data_home);
+                break :blk try std.fs.path.join(allocator, &.{ xdg_data_home, "banteg", "crimsonland" });
+            } else |err| switch (err) {
+                error.EnvironmentVariableNotFound => {},
+                else => return err,
+            }
+
+            const home = std.process.getEnvVarOwned(allocator, "HOME") catch |err| switch (err) {
+                error.EnvironmentVariableNotFound => return null,
+                else => return err,
+            };
+            defer allocator.free(home);
+            break :blk try std.fs.path.join(allocator, &.{ home, ".local", "share", "banteg", "crimsonland" });
+        },
+    };
 }
 
 fn archiveExistsAtDir(allocator: std.mem.Allocator, dir_path: []const u8) (std.mem.Allocator.Error || std.fs.Dir.AccessError)!bool {
@@ -336,6 +412,17 @@ fn decodeJazImage(allocator: std.mem.Allocator, bytes: []const u8) DecodeImageEr
     }
 
     return image;
+}
+
+fn decodeTgaImage(bytes: []const u8) DecodeImageError!rl.Image {
+    const decoded = try formats.tga.decode(std.heap.c_allocator, bytes);
+    return .{
+        .data = @ptrCast(decoded.pixels_rgba.ptr),
+        .width = decoded.width,
+        .height = decoded.height,
+        .mipmaps = 1,
+        .format = .uncompressed_r8g8b8a8,
+    };
 }
 
 fn textureSpec(texture_id: TextureId) TextureSpec {
@@ -479,4 +566,16 @@ test "decode image rejects unsupported extensions" {
         error.UnsupportedTextureFormat,
         decodeImageFromBytes(std.testing.allocator, "test.dat", "abc"),
     );
+}
+
+test "default runtime dir matches python platformdirs layout on supported targets" {
+    const allocator = std.testing.allocator;
+    const runtime_dir = (try defaultRuntimeDir(allocator)) orelse return;
+    defer allocator.free(runtime_dir);
+
+    switch (builtin.target.os.tag) {
+        .macos => try std.testing.expect(std.mem.endsWith(u8, runtime_dir, "/Library/Application Support/banteg/crimsonland")),
+        .windows => try std.testing.expect(std.mem.endsWith(u8, runtime_dir, "\\banteg\\crimsonland") or std.mem.endsWith(u8, runtime_dir, "/banteg/crimsonland")),
+        else => try std.testing.expect(std.mem.endsWith(u8, runtime_dir, "/banteg/crimsonland")),
+    }
 }
