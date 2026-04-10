@@ -23,7 +23,6 @@ pub const EventError = error{
     UnsupportedEventKind,
     UnsupportedEventPlayerIndex,
     InvalidPerkPickEvent,
-    UnsupportedPerkApplyHandler,
     UnsupportedSpawnTemplate,
 };
 
@@ -111,9 +110,7 @@ pub fn applyReplayEvent(
                     .creatures = creatures,
                     .dt_frame = dt_frame,
                 },
-            ) catch |err| switch (err) {
-                error.UnsupportedPerkApplyHandler => return error.UnsupportedPerkApplyHandler,
-            };
+            ) catch unreachable;
             if (applied == null) {
                 if (!options.strict_events) {
                     return outcome;
@@ -162,9 +159,7 @@ pub fn applyReplayEvent(
                     .creatures = creatures,
                     .dt_frame = dt_frame,
                 },
-            ) catch |err| switch (err) {
-                error.UnsupportedPerkApplyHandler => return error.UnsupportedPerkApplyHandler,
-            };
+            ) catch unreachable;
             if (capture_perk_apply.outside_before) {
                 if (capture_perk_apply.pending_after) |pending_after| {
                     state.perk_selection.pending_count = pending_after;

@@ -71,11 +71,9 @@ pub const ReplayRunnerError = error{
     UnsupportedEventKind,
     UnsupportedEventPlayerIndex,
     InvalidPerkPickEvent,
-    UnsupportedPerkApplyHandler,
     UnsupportedSpawnTemplate,
     UnsupportedQuestSpawnTable,
     UnsupportedWeaponFirePath,
-    UnsupportedBonusApplyPath,
 };
 
 fn parseCaptureCreatureAiMode(value: i32) ReplayRunnerError!spawn_mod.CreatureAiMode {
