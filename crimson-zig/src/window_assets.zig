@@ -100,7 +100,7 @@ pub const AssetArchiveError = formats.paq.PaqError || std.mem.Allocator.Error ||
     InvalidAssetPath,
 };
 
-pub const DecodeImageError = formats.jaz.JazError || std.mem.Allocator.Error || rl.RaylibError || error{
+pub const DecodeImageError = formats.jaz.JazError || formats.tga.TgaError || std.mem.Allocator.Error || rl.RaylibError || error{
     InvalidImageDimensions,
     UnsupportedTextureFormat,
 };
@@ -224,7 +224,7 @@ pub fn detectAssetFormat(rel_path: []const u8) AssetFormat {
 pub fn decodeImageFromBytes(allocator: std.mem.Allocator, rel_path: []const u8, bytes: []const u8) DecodeImageError!rl.Image {
     return switch (detectAssetFormat(rel_path)) {
         .jaz => decodeJazImage(allocator, bytes),
-        .tga => rl.loadImageFromMemory(".tga", bytes),
+        .tga => decodeTgaImage(bytes),
         .jpg => rl.loadImageFromMemory(".jpg", bytes),
         .jpeg => rl.loadImageFromMemory(".jpeg", bytes),
         else => error.UnsupportedTextureFormat,
@@ -412,6 +412,17 @@ fn decodeJazImage(allocator: std.mem.Allocator, bytes: []const u8) DecodeImageEr
     }
 
     return image;
+}
+
+fn decodeTgaImage(bytes: []const u8) DecodeImageError!rl.Image {
+    const decoded = try formats.tga.decode(std.heap.c_allocator, bytes);
+    return .{
+        .data = @ptrCast(decoded.pixels_rgba.ptr),
+        .width = decoded.width,
+        .height = decoded.height,
+        .mipmaps = 1,
+        .format = .uncompressed_r8g8b8a8,
+    };
 }
 
 fn textureSpec(texture_id: TextureId) TextureSpec {

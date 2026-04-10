@@ -3,6 +3,7 @@ pub const crimson_cfg = @import("crimson_cfg.zig");
 pub const game_cfg = @import("game_cfg.zig");
 pub const jaz = @import("jaz.zig");
 pub const paq = @import("paq.zig");
+pub const tga = @import("tga.zig");
 
 test {
     _ = binary;
@@ -10,4 +11,5 @@ test {
     _ = game_cfg;
     _ = jaz;
     _ = paq;
+    _ = tga;
 }
