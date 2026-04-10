@@ -54,6 +54,13 @@ This wave is intentionally codec-only:
   the per-user platform data dir (`platformdirs`-compatible layout), with
   `./artifacts/assets` and the current directory left as checkout-local
   fallback. It loads `.jaz`, `.tga`, `.jpg/.jpeg`, and `load/smallFnt.dat`.
+- The desktop slice now also uses the same runtime-dir policy for `music.paq`,
+  `sfx.paq`, and `crimson.cfg`, with:
+  - archive-backed music + sfx loading in Zig,
+  - `music/game_tunes.txt` playlist loading,
+  - menu theme + intro playback,
+  - first-hit Survival game-tune trigger,
+  - cfg-driven music/sfx enable and volume behavior.
 - The freestanding WASM ABI now runs the same replay verification core for
   byte-input payloads, with JSON output and JSON error reporting via
   `crimson_last_error_json`.
@@ -78,6 +85,9 @@ zig build wasm
 - `zig build window` compiles that target without running it.
 - `zig build asset-smoke` runs a local decode smoke pass over `crimson.paq` and
   runtime-mapped texture entries, printing exact failing asset paths.
+- `zig build run-window` now initializes audio from `music.paq` / `sfx.paq`
+  when they are present in the resolved runtime dir, and falls back to silent
+  execution when audio archives are missing or disabled in `crimson.cfg`.
 - `zig build web-window` builds an HTML+WASM placeholder window for browser use.
 - `zig build run-web-window` serves the web build through `emrun` (`--no_browser`).
 - The desktop target is currently a menu-to-gameplay Survival slice with a
