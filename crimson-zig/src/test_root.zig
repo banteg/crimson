@@ -14,6 +14,7 @@ test {
     _ = cz.lifecycle;
     _ = cz.live_runner;
     _ = cz.perks;
+    _ = cz.persistence;
     _ = cz.projectiles;
     _ = cz.quest_spawn_logic_full;
     _ = cz.replay_codec;
