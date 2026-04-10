@@ -359,6 +359,26 @@ pub fn defaultConfig() CrimsonCfg {
     return cfg;
 }
 
+pub fn playerName(cfg: *const CrimsonCfg) []const u8 {
+    return std.mem.sliceTo(cfg.player_name[0..], 0);
+}
+
+pub fn setPlayerNameInput(cfg: *CrimsonCfg, name: []const u8) void {
+    const len = @min(name.len, player_name_max_bytes);
+
+    @memset(cfg.player_name[0..], 0);
+    @memcpy(cfg.player_name[0..len], name[0..len]);
+    cfg.player_name[@min(len, player_name_max_bytes)] = 0;
+    cfg.player_name_len = @intCast(len);
+
+    const raw = cfg.player_name[0..];
+    const end = std.mem.indexOfScalar(u8, raw, 0) orelse raw.len;
+    var i = end;
+    while (i > 0 and raw[i - 1] == 0x20) : (i -= 1) {
+        raw[i - 1] = 0;
+    }
+}
+
 pub fn decode(bytes: []const u8) CrimsonCfgError!CrimsonCfg {
     if (bytes.len != file_size) return error.InvalidSize;
 
@@ -585,6 +605,14 @@ test "crimson.cfg default config mirrors python defaults" {
     try std.testing.expectEqual(defaultPlayerBindBlock(3).move_forward, p4.move_forward);
     try std.testing.expectEqual(defaultPlayerBindBlock(3).fire, p4.fire);
     try std.testing.expect(playerShowDirectionArrow(&cfg, 3));
+}
+
+test "crimson.cfg player name input helper trims trailing spaces and preserves typed length" {
+    var cfg = defaultConfig();
+    setPlayerNameInput(&cfg, "Alpha   ");
+
+    try std.testing.expectEqualStrings("Alpha", playerName(&cfg));
+    try std.testing.expectEqual(@as(u32, 8), cfg.player_name_len);
 }
 
 test "crimson.cfg bind block helpers roundtrip" {

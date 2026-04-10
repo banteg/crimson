@@ -40,6 +40,8 @@ pub fn buildHighscoreRecordForGameOver(
     game_mode_id: game_ids.GameModeId,
     options: BuildRecordOptions,
 ) highscores.HighScoreRecord {
+    const player_index: usize = if (player.index < 0) 0 else @intCast(player.index);
+
     var record = highscores.HighScoreRecord.blank();
     record.setScoreXp(@intCast(@max(0, player.experience)));
     record.setSurvivalElapsedMs(@intCast(@max(0, survival_elapsed_ms)));
@@ -47,22 +49,22 @@ pub fn buildHighscoreRecordForGameOver(
     record.setMostUsedWeaponId(
         survival_progression.mostUsedWeaponIdForPlayer(
             state,
-            @intCast(std.math.clamp(player.index, @as(i32, 0), @as(i32, std.math.maxInt(usize)))),
+            player_index,
             player.weapon.weapon_id,
         ),
     );
     record.setGameModeId(game_mode_id);
 
-    const shot_counts = blk: {
+    const shot_counts: ShotCounts = blk: {
         if (options.shots_fired == null or options.shots_hit == null) {
-            break :blk shotsFromState(state, @intCast(std.math.clamp(player.index, @as(i32, 0), @as(i32, std.math.maxInt(usize)))));
+            break :blk shotsFromState(state, player_index);
         }
 
         if (options.clamp_shots_hit) {
             break :blk clampShots(options.shots_fired.?, options.shots_hit.?);
         }
 
-        break :blk .{
+        break :blk ShotCounts{
             .fired = options.shots_fired.?,
             .hit = options.shots_hit.?,
         };
