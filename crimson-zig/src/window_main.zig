@@ -7,12 +7,12 @@ const weapon_data = cz.weapon_data;
 const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
 const window_ground = @import("window_ground.zig");
+const window_projectiles = @import("window_projectiles.zig");
 
 const bonuses_runtime = cz.bonuses;
 const game_ids = cz.game_ids;
 const live_runner = cz.live_runner;
 const runtime_perks = cz.perks;
-const secondary_projectiles_runtime = cz.secondary_projectiles;
 const runtime_session = cz.session;
 const state_mod = cz.state;
 
@@ -558,15 +558,6 @@ fn colorLerp(a: rl.Color, b: rl.Color, t_raw: f32) rl.Color {
     };
 }
 
-fn rgbfColor(rgb: window_atlas.ColorRgbf, alpha: f32) rl.Color {
-    return .{
-        .r = @intFromFloat(std.math.clamp(rgb.r, @as(f32, 0.0), @as(f32, 1.0)) * 255.0),
-        .g = @intFromFloat(std.math.clamp(rgb.g, @as(f32, 0.0), @as(f32, 1.0)) * 255.0),
-        .b = @intFromFloat(std.math.clamp(rgb.b, @as(f32, 0.0), @as(f32, 1.0)) * 255.0),
-        .a = @intFromFloat(std.math.clamp(alpha, @as(f32, 0.0), @as(f32, 1.0)) * 255.0),
-    };
-}
-
 fn drawTextureTiled(texture: rl.Texture2D, area: rl.Rectangle, tint: rl.Color) void {
     const tile_width = @as(f32, @floatFromInt(texture.width));
     const tile_height = @as(f32, @floatFromInt(texture.height));
@@ -968,28 +959,23 @@ fn drawCreatures(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: 
 }
 
 fn drawProjectiles(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
-    for (runner.session.projectiles.entries) |projectile| {
+    for (runner.session.projectiles.entries, 0..) |projectile, proj_index| {
         if (!projectile.active) continue;
         if (runtime_assets) |assets| {
-            if (drawProjectileWithAssets(projectile, assets)) continue;
+            if (window_projectiles.drawMainProjectile(projectile, proj_index, .{
+                .session = &runner.session,
+                .assets = assets,
+            })) continue;
         }
         rl.drawCircleV(toRlVec(projectile.pos), 3.0, projectile_color);
     }
     for (runner.session.secondary_projectiles.entries) |projectile| {
         if (!projectile.active) continue;
         if (runtime_assets) |assets| {
-            if (secondaryProjectileTextureId(projectile.type_id)) |texture_id| {
-                const sprite_size = secondaryProjectileSpriteSize(projectile);
-                drawTextureCenteredRotated(
-                    assets.texture(texture_id),
-                    toRlVec(projectile.pos),
-                    sprite_size,
-                    sprite_size,
-                    radiansToDegrees(projectile.angle),
-                    colorWithAlpha(rl.Color.white, secondaryProjectileAlpha(projectile)),
-                );
-                continue;
-            }
+            if (window_projectiles.drawSecondaryProjectile(projectile, .{
+                .session = &runner.session,
+                .assets = assets,
+            })) continue;
         }
         rl.drawCircleV(toRlVec(projectile.pos), 6.0, secondary_projectile_color);
     }
@@ -1071,178 +1057,6 @@ fn drawBonuses(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*
     }
 }
 
-fn drawProjectileWithAssets(projectile: cz.projectiles.Projectile, assets: *const window_assets.RuntimeAssets) bool {
-    if (window_atlas.isBulletTrailType(projectile.type_id)) {
-        return drawBulletTrailProjectile(projectile, assets);
-    }
-    if (window_atlas.isBeamType(projectile.type_id)) {
-        return drawBeamProjectile(projectile, assets);
-    }
-    if (window_atlas.isPlasmaParticleType(projectile.type_id)) {
-        return drawPlasmaProjectile(projectile, assets);
-    }
-    if (window_atlas.projectileKnownFrame(projectile.type_id)) |known| {
-        const rgb = window_atlas.knownProjectileRgb(projectile.type_id);
-        drawAtlasFrameCenteredRotated(
-            assets.texture(.projs),
-            known.grid,
-            known.frame,
-            toRlVec(projectile.pos),
-            0.6,
-            projectile.angle,
-            colorWithAlpha(rl.Color.init(rgb.r, rgb.g, rgb.b, 255), std.math.clamp(projectile.life_timer / 0.4, @as(f32, 0.0), @as(f32, 1.0))),
-        );
-        return true;
-    }
-    return false;
-}
-
-fn drawBulletTrailProjectile(projectile: cz.projectiles.Projectile, assets: *const window_assets.RuntimeAssets) bool {
-    const start = toRlVec(projectile.origin);
-    const end = toRlVec(projectile.pos);
-    const segment = vecSub(end, start);
-    const distance = vecLength(segment);
-    const rotation = radiansToDegrees(std.math.atan2(segment.y, segment.x));
-    const alpha = std.math.clamp(projectile.life_timer, @as(f32, 0.0), @as(f32, 1.0));
-    if (distance > 1e-3) {
-        rl.beginBlendMode(.additive);
-        drawTextureCenteredRotated(
-            assets.texture(.bullet_trail),
-            .{ .x = (start.x + end.x) * 0.5, .y = (start.y + end.y) * 0.5 },
-            distance,
-            4.0,
-            rotation,
-            colorWithAlpha(rl.Color.init(180, 180, 180, 255), alpha),
-        );
-        rl.endBlendMode();
-    }
-    if (projectile.life_timer >= 0.39) {
-        const size = window_atlas.bulletSpriteSize(projectile.type_id);
-        drawTextureCenteredRotated(
-            assets.texture(.bullet_i),
-            end,
-            size,
-            size,
-            radiansToDegrees(projectile.angle),
-            colorWithAlpha(rl.Color.init(220, 220, 220, 255), alpha),
-        );
-    }
-    return true;
-}
-
-fn drawBeamProjectile(projectile: cz.projectiles.Projectile, assets: *const window_assets.RuntimeAssets) bool {
-    const origin = toRlVec(projectile.origin);
-    const head = toRlVec(projectile.pos);
-    const delta = vecSub(head, origin);
-    const dist = vecLength(delta);
-    if (!(dist > 1e-6)) return true;
-
-    const direction = vecNormalizeOr(delta, .{ .x = 1.0, .y = 0.0 });
-    const effect_scale = window_atlas.beamEffectScale(projectile.type_id);
-    const start = if (dist > 256.0) dist - 256.0 else 0.0;
-    const span = dist - start;
-    const step = @min(effect_scale * 3.1, 9.0);
-    const base_alpha = if (projectile.life_timer >= 0.4)
-        1.0
-    else
-        std.math.clamp(projectile.life_timer * 2.5, @as(f32, 0.0), @as(f32, 1.0));
-    const streak_rgb = if (projectile.type_id == @intFromEnum(game_ids.ProjectileTypeId.fire_bullets))
-        rl.Color.init(255, 153, 26, 255)
-    else
-        rl.Color.init(128, 153, 255, 255);
-
-    rl.beginBlendMode(.additive);
-    var s: f32 = start;
-    while (s < dist) : (s += step) {
-        const t = if (span > 1e-6) (s - start) / span else 1.0;
-        const seg_alpha = std.math.clamp(t * base_alpha, @as(f32, 0.0), @as(f32, 1.0));
-        if (seg_alpha <= 1e-3) continue;
-        const pos = vecAdd(origin, vecScale(direction, s));
-        drawAtlasFrameCenteredRotated(assets.texture(.projs), 4, 2, pos, effect_scale, 0.0, colorWithAlpha(streak_rgb, seg_alpha));
-    }
-    drawAtlasFrameCenteredRotated(assets.texture(.projs), 4, 2, head, effect_scale, projectile.angle, colorWithAlpha(rl.Color.init(255, 255, 179, 255), base_alpha));
-    if (projectile.type_id == @intFromEnum(game_ids.ProjectileTypeId.fire_bullets)) {
-        if (window_atlas.effectRect(assets.texture(.particles).width, assets.texture(.particles).height, .glow)) |src_rect| {
-            drawTextureRegionCenteredRotated(
-                assets.texture(.particles),
-                src_rect,
-                head,
-                64.0,
-                64.0,
-                radiansToDegrees(projectile.angle),
-                colorWithAlpha(rl.Color.white, base_alpha),
-            );
-        }
-    }
-    rl.endBlendMode();
-    return true;
-}
-
-fn drawPlasmaProjectile(projectile: cz.projectiles.Projectile, assets: *const window_assets.RuntimeAssets) bool {
-    const src_rect = window_atlas.effectRect(assets.texture(.particles).width, assets.texture(.particles).height, .glow) orelse return false;
-    const cfg = window_atlas.plasmaRenderConfig(projectile.type_id);
-    const alpha = if (projectile.life_timer >= 0.4)
-        1.0
-    else
-        std.math.clamp(projectile.life_timer * 2.5, @as(f32, 0.0), @as(f32, 1.0));
-    const origin = toRlVec(projectile.origin);
-    const head = toRlVec(projectile.pos);
-    const direction = vecNormalizeOr(vecSub(head, origin), .{ .x = 0.0, .y = -1.0 });
-
-    rl.beginBlendMode(.additive);
-    if (projectile.life_timer >= 0.4) {
-        var seg_count = @as(i32, @intFromFloat(projectile.travel_budget));
-        if (seg_count < 0) seg_count = 0;
-        seg_count = @divTrunc(seg_count, 5);
-        if (seg_count > cfg.seg_limit) seg_count = cfg.seg_limit;
-
-        var idx: i32 = 0;
-        while (idx < seg_count) : (idx += 1) {
-            const pos = vecAdd(head, vecScale(direction, -@as(f32, @floatFromInt(idx)) * cfg.spacing));
-            drawTextureRegionCenteredRotated(
-                assets.texture(.particles),
-                src_rect,
-                pos,
-                cfg.tail_size,
-                cfg.tail_size,
-                0.0,
-                rgbfColor(cfg.rgb, alpha * 0.4),
-            );
-        }
-
-        drawTextureRegionCenteredRotated(
-            assets.texture(.particles),
-            src_rect,
-            head,
-            cfg.head_size,
-            cfg.head_size,
-            0.0,
-            rgbfColor(cfg.rgb, alpha * cfg.head_alpha_mul),
-        );
-        drawTextureRegionCenteredRotated(
-            assets.texture(.particles),
-            src_rect,
-            head,
-            cfg.aura_size,
-            cfg.aura_size,
-            0.0,
-            rgbfColor(cfg.aura_rgb, alpha * cfg.aura_alpha_mul),
-        );
-    } else {
-        drawTextureRegionCenteredRotated(
-            assets.texture(.particles),
-            src_rect,
-            head,
-            56.0,
-            56.0,
-            0.0,
-            colorWithAlpha(rl.Color.white, alpha),
-        );
-    }
-    rl.endBlendMode();
-    return true;
-}
-
 const TerrainTextureSet = struct {
     base: window_assets.TextureId,
     overlay: window_assets.TextureId,
@@ -1259,31 +1073,6 @@ fn terrainTextureSet(quest_unlock_index: i32) TerrainTextureSet {
         .{ .base = .ter_q1_base, .overlay = .ter_q1_overlay };
 }
 
-fn secondaryProjectileTextureId(projectile_type: secondary_projectiles_runtime.SecondaryProjectileTypeId) ?window_assets.TextureId {
-    return switch (projectile_type) {
-        .rocket, .homing_rocket, .rocket_minigun => .arrow,
-        .detonation => .muzzle_flash,
-        .none => null,
-    };
-}
-
-fn secondaryProjectileSpriteSize(projectile: secondary_projectiles_runtime.SecondaryProjectile) f32 {
-    return switch (projectile.type_id) {
-        .rocket => 26.0,
-        .homing_rocket => 30.0,
-        .rocket_minigun => 22.0,
-        .detonation => 96.0 * projectile.detonation_scale * @max(0.35, projectile.detonation_t),
-        .none => 18.0,
-    };
-}
-
-fn secondaryProjectileAlpha(projectile: secondary_projectiles_runtime.SecondaryProjectile) f32 {
-    return switch (projectile.type_id) {
-        .detonation => std.math.clamp(1.0 - projectile.detonation_t * 0.5, @as(f32, 0.15), @as(f32, 1.0)),
-        else => 1.0,
-    };
-}
-
 fn colorWithAlpha(color: rl.Color, alpha: f32) rl.Color {
     return rl.Color.init(
         color.r,
@@ -1291,10 +1080,6 @@ fn colorWithAlpha(color: rl.Color, alpha: f32) rl.Color {
         color.b,
         @intFromFloat(std.math.clamp(alpha, @as(f32, 0.0), @as(f32, 1.0)) * 255.0),
     );
-}
-
-fn headingToDegrees(heading: f32) f32 {
-    return heading * (180.0 / std.math.pi);
 }
 
 fn drawGameplayHud(runner: *live_runner.LiveSurvivalRunner, update: live_runner.FrameUpdate) void {
