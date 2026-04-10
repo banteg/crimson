@@ -27,6 +27,9 @@ behavior for unsupported native paths.
 - Shared deterministic session/state ownership now lives in
   `crimson-zig/src/runtime/session.zig` plus `session_builders.zig`; replay
   commands use compatibility wrappers around that runtime-facing layer.
+- The Zig builder layer now exposes explicit mode-oriented session constructors
+  (`buildSurvivalSession`, `buildRushSession`, `buildQuestSession`) to mirror the
+  Python rewrite structure instead of only offering replay-specialized startup.
 - Replay ingestion from `.crd` bytes (msgpack decode path in-tree).
 - Deterministic Survival/Rush/Quest sim scaffold + runtime loops for:
   - player/weapon runtime (reload/fire/ammo counters, level/XP progression),

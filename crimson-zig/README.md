@@ -12,6 +12,8 @@ Standalone Zig workspace for the native Crimson port.
 - Shared runtime/session seams now live under `src/runtime/session.zig` and
   `src/runtime/session_builders.zig`, so replay tooling sits on top of the same
   deterministic session shell we intend to use for broader native surfaces.
+- `runtime/session_builders.zig` now mirrors the Python `build_*_session(...)`
+  split with explicit Survival/Rush/Quest builders, not just replay startup glue.
 
 ## Format codecs (library-only)
 

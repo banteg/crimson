@@ -189,6 +189,6 @@ pub fn build(b: *std.Build) void {
     wasm_exe.export_memory = true;
 
     const install_wasm = b.addInstallArtifact(wasm_exe, .{});
-    const wasm_step = b.step("wasm", "Build wasm32-freestanding verifier module");
+    const wasm_step = b.step("wasm", "Build wasm32-freestanding runtime ABI module");
     wasm_step.dependOn(&install_wasm.step);
 }
