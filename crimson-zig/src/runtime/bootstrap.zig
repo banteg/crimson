@@ -118,6 +118,40 @@ pub fn previewUnlockTerrain(
     );
 }
 
+pub fn previewExplicitTerrain(
+    seed: u32,
+    terrain_slots: TerrainSlotTriplet,
+    terrain_width: i32,
+    terrain_height: i32,
+) TerrainSetup {
+    var rng = spawn_mod.Crand.init(seed);
+    return advanceExplicitTerrain(
+        &rng,
+        terrain_slots,
+        terrain_width,
+        terrain_height,
+    );
+}
+
+pub fn terrainSlotsForQuestLevelKey(level_key: i32) ?TerrainSlotTriplet {
+    const major = @divTrunc(level_key, 100);
+    const minor = @mod(level_key, 100);
+    if (major < 1 or major > 5 or minor < 1 or minor > 10) return null;
+
+    if (major <= 4) {
+        const base: u8 = @intCast((major - 1) * 2);
+        const alt: u8 = base + 1;
+        if (minor < 6) return .{ base, alt, base };
+        return .{ base, base, alt };
+    }
+
+    return .{
+        @intCast(minor & 3),
+        1,
+        3,
+    };
+}
+
 fn terrainStampingDraws(width: i32, height: i32) usize {
     const clamped_width: u64 = @intCast(@max(width, 0));
     const clamped_height: u64 = @intCast(@max(height, 0));
@@ -141,7 +175,7 @@ fn advanceUnlockTerrainRng(
     _ = advanceUnlockTerrain(rng, unlock_index, width, height);
 }
 
-fn advanceUnlockTerrain(
+pub fn advanceUnlockTerrain(
     rng: *spawn_mod.Crand,
     unlock_index: i32,
     width: i32,
@@ -149,6 +183,20 @@ fn advanceUnlockTerrain(
 ) TerrainSetup {
     advanceRng(rng, terrain_random_prelude_draws);
     const terrain_slots = chooseUnlockTerrainSlots(rng, unlock_index);
+    const terrain_seed = rng.state;
+    advanceRng(rng, terrainStampingDraws(width, height));
+    return .{
+        .terrain_slots = terrain_slots,
+        .terrain_seed = terrain_seed,
+    };
+}
+
+pub fn advanceExplicitTerrain(
+    rng: *spawn_mod.Crand,
+    terrain_slots: TerrainSlotTriplet,
+    width: i32,
+    height: i32,
+) TerrainSetup {
     const terrain_seed = rng.state;
     advanceRng(rng, terrainStampingDraws(width, height));
     return .{
@@ -184,4 +232,31 @@ test "preview unlock terrain matches replay bootstrap rng advance for survival" 
     try std.testing.expectEqualDeep(expected_slots, terrain.terrain_slots);
     try std.testing.expectEqual(expected_seed, terrain.terrain_seed);
     try std.testing.expectEqual(expected_rng.state, rng.state);
+}
+
+test "terrain slots for quest level key mirror quest stage mapping" {
+    try std.testing.expectEqualDeep(@as(TerrainSlotTriplet, .{ 0, 1, 0 }), terrainSlotsForQuestLevelKey(101).?);
+    try std.testing.expectEqualDeep(@as(TerrainSlotTriplet, .{ 0, 0, 1 }), terrainSlotsForQuestLevelKey(106).?);
+    try std.testing.expectEqualDeep(@as(TerrainSlotTriplet, .{ 2, 3, 2 }), terrainSlotsForQuestLevelKey(201).?);
+    try std.testing.expectEqualDeep(@as(TerrainSlotTriplet, .{ 2, 2, 3 }), terrainSlotsForQuestLevelKey(206).?);
+    try std.testing.expectEqualDeep(@as(TerrainSlotTriplet, .{ 1, 1, 3 }), terrainSlotsForQuestLevelKey(505).?);
+    try std.testing.expect(terrainSlotsForQuestLevelKey(0) == null);
+    try std.testing.expect(terrainSlotsForQuestLevelKey(511) == null);
+}
+
+test "preview explicit terrain preserves slot choice and advances stamping rng" {
+    const slots: TerrainSlotTriplet = .{ 2, 2, 3 };
+    const terrain = previewExplicitTerrain(0xBEEF, slots, 1024, 1024);
+
+    var rng = spawn_mod.Crand.init(0xBEEF);
+    const expected_seed = rng.state;
+    advanceRng(&rng, terrainStampingDraws(1024, 1024));
+
+    try std.testing.expectEqualDeep(slots, terrain.terrain_slots);
+    try std.testing.expectEqual(expected_seed, terrain.terrain_seed);
+    try std.testing.expectEqual(rng.state, blk: {
+        var verify_rng = spawn_mod.Crand.init(0xBEEF);
+        _ = advanceExplicitTerrain(&verify_rng, slots, 1024, 1024);
+        break :blk verify_rng.state;
+    });
 }

@@ -4,9 +4,12 @@ const game_ids = @import("../game_ids.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
 const projectiles = @import("projectiles.zig");
+const quest_spawn_logic = @import("../quest_spawn/logic_full.zig");
 const replay_step = @import("replay/step.zig");
+const runtime_bootstrap = @import("bootstrap.zig");
 const runtime_session = @import("session.zig");
 const session_builders = @import("session_builders.zig");
+const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
 const creatures = @import("creatures.zig");
 const survival_progression = @import("survival_progression.zig");
@@ -18,8 +21,10 @@ pub const LiveRunnerError = runtime_session.DeterministicSessionError ||
 const max_frame_dt: f32 = 0.25;
 const epsilon_dt: f32 = 1e-6;
 
-pub const LiveSurvivalConfig = struct {
+pub const LiveModeConfig = struct {
     seed: u32 = 1,
+    game_mode: game_ids.GameModeId = .survival,
+    quest_level_key: i32 = 101,
     player_count: i32 = 1,
     world_size: f32 = 1024.0,
     tick_rate: i32 = 60,
@@ -30,6 +35,8 @@ pub const LiveSurvivalConfig = struct {
     status_quest_unlock_index: i32 = 0,
     status_quest_unlock_index_full: i32 = 0,
 };
+
+pub const LiveSurvivalConfig = LiveModeConfig;
 
 pub const FrameInput = struct {
     player: player_runtime.GameInput = defaultGameInput(),
@@ -111,37 +118,120 @@ pub fn defaultGameInput() player_runtime.GameInput {
     };
 }
 
-pub const LiveSurvivalRunner = struct {
+pub const LiveRunner = struct {
     seed: u32,
+    terrain_setup: runtime_bootstrap.TerrainSetup,
+    quest_level_key: ?i32 = null,
     session: runtime_session.DeterministicSession,
     accumulator: f32 = 0.0,
     max_substeps_per_frame: usize = 8,
 
-    pub fn init(config: LiveSurvivalConfig) LiveRunnerError!LiveSurvivalRunner {
-        const session = try session_builders.buildSurvivalSession(
-            .{
-                .seed = config.seed,
-                .game_mode = .survival,
-                .player_count = config.player_count,
-                .world_size = config.world_size,
-                .tick_rate = config.tick_rate,
-                .detail_preset = config.detail_preset,
-                .gore_disabled = config.gore_disabled,
-                .hardcore = config.hardcore,
-                .preserve_bugs = config.preserve_bugs,
-                .status_quest_unlock_index = config.status_quest_unlock_index,
-                .status_quest_unlock_index_full = config.status_quest_unlock_index_full,
+    pub fn init(config: LiveModeConfig) LiveRunnerError!LiveRunner {
+        const base_config: runtime_session.SessionConfig = .{
+            .seed = config.seed,
+            .game_mode = config.game_mode,
+            .player_count = config.player_count,
+            .world_size = config.world_size,
+            .tick_rate = config.tick_rate,
+            .detail_preset = config.detail_preset,
+            .gore_disabled = config.gore_disabled,
+            .hardcore = config.hardcore,
+            .preserve_bugs = config.preserve_bugs,
+            .status_quest_unlock_index = config.status_quest_unlock_index,
+            .status_quest_unlock_index_full = config.status_quest_unlock_index_full,
+        };
+        const terrain_size = @max(1, @as(i32, @intFromFloat(@floor(config.world_size))));
+
+        var terrain_setup: runtime_bootstrap.TerrainSetup = undefined;
+        var quest_level_key: ?i32 = null;
+        var quest_spawn_entries_storage: [runtime_session.max_sim_quest_spawn_entries]spawn_mod.QuestSpawnEntry = undefined;
+        const session = switch (config.game_mode) {
+            .survival => blk: {
+                terrain_setup = runtime_bootstrap.previewUnlockTerrain(
+                    config.seed,
+                    config.status_quest_unlock_index,
+                    terrain_size,
+                    terrain_size,
+                );
+                break :blk try session_builders.buildSurvivalSession(base_config, .{});
             },
-            .{},
-        );
+            .rush => blk: {
+                terrain_setup = runtime_bootstrap.previewUnlockTerrain(
+                    config.seed,
+                    config.status_quest_unlock_index,
+                    terrain_size,
+                    terrain_size,
+                );
+                break :blk try session_builders.buildRushSession(base_config, .{});
+            },
+            .quests => blk: {
+                quest_level_key = config.quest_level_key;
+                const terrain_slots = runtime_bootstrap.terrainSlotsForQuestLevelKey(config.quest_level_key) orelse
+                    return error.UnsupportedQuestSpawnTable;
+                const built = quest_spawn_logic.buildQuestSpawnTable(
+                    config.quest_level_key,
+                    config.player_count,
+                    config.seed,
+                    config.world_size,
+                    quest_spawn_entries_storage[0..],
+                ) catch |err| switch (err) {
+                    error.UnsupportedQuestSpawnTable => return error.UnsupportedQuestSpawnTable,
+                    error.OutOfSpace => return error.UnsupportedQuestSpawnTable,
+                };
+                const quest_entries = quest_spawn_entries_storage[0..built.entries.len];
+                if (config.hardcore) {
+                    spawn_mod.applyHardcoreQuestSpawnTableAdjustment(quest_entries);
+                }
+
+                var terrain_rng = spawn_mod.Crand.init(config.seed);
+                _ = runtime_bootstrap.advanceUnlockTerrain(
+                    &terrain_rng,
+                    config.status_quest_unlock_index,
+                    terrain_size,
+                    terrain_size,
+                );
+                _ = terrain_rng.rand();
+                terrain_setup = runtime_bootstrap.advanceExplicitTerrain(
+                    &terrain_rng,
+                    terrain_slots,
+                    terrain_size,
+                    terrain_size,
+                );
+
+                break :blk try session_builders.buildQuestSession(
+                    .{
+                        .seed = base_config.seed,
+                        .game_mode = .quests,
+                        .player_count = base_config.player_count,
+                        .world_size = base_config.world_size,
+                        .tick_rate = base_config.tick_rate,
+                        .detail_preset = base_config.detail_preset,
+                        .gore_disabled = base_config.gore_disabled,
+                        .hardcore = base_config.hardcore,
+                        .preserve_bugs = base_config.preserve_bugs,
+                        .status_quest_unlock_index = base_config.status_quest_unlock_index,
+                        .status_quest_unlock_index_full = base_config.status_quest_unlock_index_full,
+                        .quest_stage_major = @divTrunc(config.quest_level_key, 100),
+                        .quest_stage_minor = @mod(config.quest_level_key, 100),
+                    },
+                    .{
+                        .quest_spawn_entries = quest_entries,
+                        .quest_start_weapon_id = @intFromEnum(built.start_weapon_id),
+                    },
+                );
+            },
+            else => return error.UnsupportedGameMode,
+        };
 
         return .{
             .seed = config.seed,
+            .terrain_setup = terrain_setup,
+            .quest_level_key = quest_level_key,
             .session = session,
         };
     }
 
-    pub fn stepFrame(self: *LiveSurvivalRunner, frame_dt: f32, input: FrameInput) LiveRunnerError!FrameUpdate {
+    pub fn stepFrame(self: *LiveRunner, frame_dt: f32, input: FrameInput) LiveRunnerError!FrameUpdate {
         const clamped_dt = std.math.clamp(frame_dt, @as(f32, 0.0), max_frame_dt);
         if (input.perk_choice_index) |choice_index| {
             _ = try self.pickPerk(choice_index, clamped_dt);
@@ -198,11 +288,11 @@ pub const LiveSurvivalRunner = struct {
         return self.snapshot(ticks_advanced, self.perkPendingCount() > 0, frame_audio);
     }
 
-    pub fn perkPendingCount(self: *const LiveSurvivalRunner) i32 {
+    pub fn perkPendingCount(self: *const LiveRunner) i32 {
         return self.session.state.perk_selection.pending_count;
     }
 
-    pub fn currentPerkChoices(self: *LiveSurvivalRunner) []const game_ids.PerkId {
+    pub fn currentPerkChoices(self: *LiveRunner) []const game_ids.PerkId {
         return perks.perkSelectionCurrentChoices(
             &self.session.state,
             self.session.players(),
@@ -212,7 +302,7 @@ pub const LiveSurvivalRunner = struct {
         );
     }
 
-    pub fn pickPerk(self: *LiveSurvivalRunner, choice_index: i32, frame_dt: f32) LiveRunnerError!bool {
+    pub fn pickPerk(self: *LiveRunner, choice_index: i32, frame_dt: f32) LiveRunnerError!bool {
         const dt_sim = survival_progression.timeScaleReflexBoostBonus(
             self.session.state.bonuses.reflex_boost,
             self.session.state.time_scale_active,
@@ -233,7 +323,7 @@ pub const LiveSurvivalRunner = struct {
         return picked != null;
     }
 
-    pub fn allPlayersDead(self: *const LiveSurvivalRunner) bool {
+    pub fn allPlayersDead(self: *const LiveRunner) bool {
         const players = self.session.playersConst();
         if (players.len == 0) return true;
         for (players) |player| {
@@ -242,24 +332,24 @@ pub const LiveSurvivalRunner = struct {
         return true;
     }
 
-    pub fn player0(self: *LiveSurvivalRunner) ?*state_mod.PlayerState {
+    pub fn player0(self: *LiveRunner) ?*state_mod.PlayerState {
         const players = self.session.players();
         if (players.len == 0) return null;
         return &players[0];
     }
 
-    pub fn player0Const(self: *const LiveSurvivalRunner) ?*const state_mod.PlayerState {
+    pub fn player0Const(self: *const LiveRunner) ?*const state_mod.PlayerState {
         const players = self.session.playersConst();
         if (players.len == 0) return null;
         return &players[0];
     }
 
-    pub fn summary(self: *const LiveSurvivalRunner) runtime_session.SessionSummary {
+    pub fn summary(self: *const LiveRunner) runtime_session.SessionSummary {
         return self.session.finalize();
     }
 
     fn snapshot(
-        self: *const LiveSurvivalRunner,
+        self: *const LiveRunner,
         ticks_advanced: usize,
         paused_for_perk_pick: bool,
         audio: FrameAudioEvents,
@@ -288,11 +378,35 @@ pub const LiveSurvivalRunner = struct {
     }
 };
 
+pub const LiveSurvivalRunner = LiveRunner;
+
 test "live survival runner bootstraps pistol survival session" {
     var runner = try LiveSurvivalRunner.init(.{});
     try std.testing.expectEqual(game_ids.GameModeId.survival, runner.session.game_mode);
     try std.testing.expectEqual(@as(usize, 1), runner.session.players().len);
     try std.testing.expectEqual(game_ids.WeaponId.pistol, runner.session.players()[0].weapon.weapon_id);
+}
+
+test "live runner bootstraps rush session with forced assault rifle" {
+    var runner = try LiveRunner.init(.{
+        .game_mode = .rush,
+    });
+    try std.testing.expectEqual(game_ids.GameModeId.rush, runner.session.game_mode);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, runner.session.players()[0].weapon.weapon_id);
+    try std.testing.expectEqual(@as(f32, 30.0), runner.session.players()[0].weapon.ammo);
+}
+
+test "live runner bootstraps quest session from level key" {
+    var runner = try LiveRunner.init(.{
+        .game_mode = .quests,
+        .quest_level_key = 205,
+    });
+    try std.testing.expectEqual(game_ids.GameModeId.quests, runner.session.game_mode);
+    try std.testing.expectEqual(@as(?i32, 205), runner.quest_level_key);
+    try std.testing.expectEqual(@as(i32, 2), runner.session.state.quest_stage_major);
+    try std.testing.expectEqual(@as(i32, 5), runner.session.state.quest_stage_minor);
+    try std.testing.expectEqual(game_ids.WeaponId.gauss_gun, runner.session.players()[0].weapon.weapon_id);
+    try std.testing.expectEqualDeep(@as(runtime_bootstrap.TerrainSlotTriplet, .{ 2, 3, 2 }), runner.terrain_setup.terrain_slots);
 }
 
 test "live survival runner advances fixed ticks from frame time" {

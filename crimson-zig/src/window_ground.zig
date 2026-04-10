@@ -103,6 +103,15 @@ pub const GroundRenderer = struct {
         height: i32,
     ) GroundRenderError!GroundRenderer {
         const terrain = runtime_bootstrap.previewUnlockTerrain(seed, unlock_index, width, height);
+        return initForTerrainSetup(runtime_assets, terrain, width, height);
+    }
+
+    pub fn initForTerrainSetup(
+        runtime_assets: *const window_assets.RuntimeAssets,
+        terrain: runtime_bootstrap.TerrainSetup,
+        width: i32,
+        height: i32,
+    ) GroundRenderError!GroundRenderer {
         const texture_ids = terrainTextureSet(terrain.terrain_slots);
 
         var renderer: GroundRenderer = .{
