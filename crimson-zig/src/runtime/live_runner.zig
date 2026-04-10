@@ -9,6 +9,7 @@ const runtime_session = @import("session.zig");
 const session_builders = @import("session_builders.zig");
 const state_mod = @import("state.zig");
 const creatures = @import("creatures.zig");
+const survival_progression = @import("survival_progression.zig");
 
 pub const LiveRunnerError = runtime_session.DeterministicSessionError ||
     replay_step.StepError ||
@@ -141,8 +142,9 @@ pub const LiveSurvivalRunner = struct {
     }
 
     pub fn stepFrame(self: *LiveSurvivalRunner, frame_dt: f32, input: FrameInput) LiveRunnerError!FrameUpdate {
+        const clamped_dt = std.math.clamp(frame_dt, @as(f32, 0.0), max_frame_dt);
         if (input.perk_choice_index) |choice_index| {
-            _ = try self.pickPerk(choice_index);
+            _ = try self.pickPerk(choice_index, clamped_dt);
         }
 
         const paused_for_perk_pick = self.perkPendingCount() > 0;
@@ -150,7 +152,6 @@ pub const LiveSurvivalRunner = struct {
             return self.snapshot(0, paused_for_perk_pick, .{});
         }
 
-        const clamped_dt = std.math.clamp(frame_dt, @as(f32, 0.0), max_frame_dt);
         self.accumulator = std.math.clamp(self.accumulator + clamped_dt, @as(f32, 0.0), max_frame_dt);
 
         var ticks_advanced: usize = 0;
@@ -211,14 +212,23 @@ pub const LiveSurvivalRunner = struct {
         );
     }
 
-    pub fn pickPerk(self: *LiveSurvivalRunner, choice_index: i32) LiveRunnerError!bool {
-        const picked = try perks.perkSelectionPick(
+    pub fn pickPerk(self: *LiveSurvivalRunner, choice_index: i32, frame_dt: f32) LiveRunnerError!bool {
+        const dt_sim = survival_progression.timeScaleReflexBoostBonus(
+            self.session.state.bonuses.reflex_boost,
+            self.session.state.time_scale_active,
+            frame_dt,
+        );
+        const picked = try perks.perkSelectionPickWithContext(
             &self.session.state,
             self.session.players(),
             choice_index,
             self.session.game_mode,
             self.session.player_count,
             self.session.quest_unlock_index,
+            .{
+                .creatures = &self.session.creatures,
+                .dt_frame = dt_sim,
+            },
         );
         return picked != null;
     }
@@ -320,7 +330,7 @@ test "live survival runner pauses for pending perk picks" {
 
     const choices = runner.currentPerkChoices();
     try std.testing.expect(choices.len > 0);
-    try std.testing.expect(try runner.pickPerk(0));
+    try std.testing.expect(try runner.pickPerk(0, runner.session.dt_nominal));
     try std.testing.expectEqual(@as(i32, 0), runner.perkPendingCount());
 }
 
@@ -331,4 +341,17 @@ test "live survival runner reports dead run state" {
     const update = try runner.stepFrame(runner.session.dt_nominal, .{});
     try std.testing.expect(update.all_players_dead);
     try std.testing.expectEqual(@as(usize, 0), update.ticks_advanced);
+}
+
+test "live survival runner perk picks apply immediate creature effects" {
+    var runner = try LiveSurvivalRunner.init(.{});
+    runner.session.state.perk_selection.pending_count = 1;
+    runner.session.state.perk_selection.choice_count = 1;
+    runner.session.state.perk_selection.choices[0] = .breathing_room;
+    runner.session.state.perk_selection.choices_dirty = false;
+    runner.session.creatures.entries[0].active = true;
+    runner.session.creatures.entries[0].lifecycle_stage = 5.0;
+
+    try std.testing.expect(try runner.pickPerk(0, 0.25));
+    try std.testing.expectApproxEqAbs(@as(f32, 4.75), runner.session.creatures.entries[0].lifecycle_stage, 1e-6);
 }

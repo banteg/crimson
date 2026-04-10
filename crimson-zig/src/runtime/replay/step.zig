@@ -196,11 +196,16 @@ pub fn stepTick(
     }
 
     callPhaseHook(options.hooks, context, .pre_events, &frame);
+    const perk_event_dt = survival_progression.timeScaleReflexBoostBonus(
+        context.state.bonuses.reflex_boost,
+        context.state.time_scale_active,
+        frame.dt,
+    );
     frame.pre_events_applied = try applyEventsForPhase(
         context,
         tick_events,
         .pre_step,
-        frame.dt,
+        perk_event_dt,
         &frame.menu_open_seen_this_tick,
     );
     try ensureSupportedReplayFeatureFlags(&context.state);
@@ -596,7 +601,7 @@ pub fn stepTick(
                 context,
                 tick_events,
                 post_phase,
-                frame.dt,
+                perk_event_dt,
                 &frame.menu_open_seen_this_tick,
             );
             try ensureSupportedReplayFeatureFlags(&context.state);
