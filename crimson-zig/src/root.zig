@@ -25,6 +25,7 @@ pub const session_builders = @import("runtime/session_builders.zig");
 pub const live_runner = @import("runtime/live_runner.zig");
 
 pub const formats = @import("formats/mod.zig");
+pub const local_input = @import("local_input.zig");
 pub const window_atlas = @import("window_atlas.zig");
 
 pub const version = "0.1.0-dev";
