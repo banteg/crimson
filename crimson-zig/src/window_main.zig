@@ -873,7 +873,8 @@ fn collectGameplayInput(
 }
 
 fn boolAxis(negative: bool, positive: bool) f32 {
-    return @floatFromInt(@intFromBool(positive) - @intFromBool(negative));
+    if (negative == positive) return 0.0;
+    return if (positive) 1.0 else -1.0;
 }
 
 fn inputCodeIsDownWithAlt(primary_code: i32, alt_code: i32) bool {
@@ -886,6 +887,13 @@ fn statusWeaponUsageCounts(status: formats.game_cfg.Status) [state_mod.weapon_co
         counts[idx] = status.weapon_usage_counts[idx];
     }
     return counts;
+}
+
+test "boolAxis returns signed unit values without overflow" {
+    try std.testing.expectEqual(@as(f32, -1.0), boolAxis(true, false));
+    try std.testing.expectEqual(@as(f32, 0.0), boolAxis(false, false));
+    try std.testing.expectEqual(@as(f32, 0.0), boolAxis(true, true));
+    try std.testing.expectEqual(@as(f32, 1.0), boolAxis(false, true));
 }
 
 fn drawWorld(
