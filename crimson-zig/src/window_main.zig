@@ -3,6 +3,7 @@ const rl = @import("raylib");
 
 const cz = @import("crimson_zig");
 const formats = cz.formats;
+const persistence = cz.persistence;
 const runtime_anim = cz.anim;
 const weapon_data = cz.weapon_data;
 const app_runtime = @import("app_runtime.zig");
@@ -97,6 +98,37 @@ const ResultsScreen = struct {
     summary: runtime_session.SessionSummary,
     player_health: f32,
     runtime_error: ?[]const u8 = null,
+    highscore: ?ResultsHighscoreState = null,
+};
+
+const ResultsHighscoreState = struct {
+    record: persistence.highscores.HighScoreRecord,
+    rank_index: usize,
+    selection: usize = 0,
+    save_error: ?[]const u8 = null,
+    saved: bool = false,
+    input: [persistence.highscores.name_size]u8 = [_]u8{0} ** persistence.highscores.name_size,
+    input_len: usize = 0,
+
+    fn setInput(self: *ResultsHighscoreState, value: []const u8) void {
+        @memset(self.input[0..], 0);
+        self.input_len = @min(value.len, persistence.highscores.name_max_edit);
+        @memcpy(self.input[0..self.input_len], value[0..self.input_len]);
+    }
+
+    fn inputSlice(self: *const ResultsHighscoreState) []const u8 {
+        return self.input[0..self.input_len];
+    }
+
+    fn trimmedInputSlice(self: *const ResultsHighscoreState) []const u8 {
+        var end = self.input_len;
+        while (end > 0 and self.input[end - 1] == 0x20) : (end -= 1) {}
+        return self.input[0..end];
+    }
+
+    fn promptActive(self: *const ResultsHighscoreState) bool {
+        return !self.saved;
+    }
 };
 
 const App = struct {
@@ -248,6 +280,15 @@ const App = struct {
     }
 
     fn updateResults(self: *App) void {
+        if (self.results) |*results| {
+            if (results.highscore) |*highscore| {
+                if (highscore.promptActive()) {
+                    self.updateResultsHighscoreEntry(results, highscore);
+                    return;
+                }
+            }
+        }
+
         const buttons = resultsButtons();
         updateSelectionFromPointer(&self.results_selection, buttons[0..]);
         if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
@@ -276,6 +317,88 @@ const App = struct {
             },
             else => {},
         }
+    }
+
+    fn updateResultsHighscoreEntry(
+        self: *App,
+        results: *ResultsScreen,
+        highscore: *ResultsHighscoreState,
+    ) void {
+        collectNameInput(highscore);
+
+        const buttons = resultsHighscoreButtons();
+        updateSelectionFromPointer(&highscore.selection, buttons[0..]);
+        if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
+            highscore.selection = if (highscore.selection == 0) buttons.len - 1 else highscore.selection - 1;
+        }
+        if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
+            highscore.selection = (highscore.selection + 1) % buttons.len;
+        }
+
+        if (!buttonActivated(buttons[0..], highscore.selection)) return;
+        self.audio.playUiButtonClick();
+
+        switch (highscore.selection) {
+            0 => self.saveResultsHighscore(results, highscore),
+            1 => {
+                highscore.saved = true;
+                highscore.save_error = null;
+                self.results_selection = 0;
+            },
+            else => {},
+        }
+    }
+
+    fn saveResultsHighscore(
+        self: *App,
+        results: *const ResultsScreen,
+        highscore: *ResultsHighscoreState,
+    ) void {
+        const trimmed = highscore.trimmedInputSlice();
+        if (trimmed.len == 0) {
+            highscore.save_error = "name required";
+            return;
+        }
+
+        highscore.record.setName(trimmed);
+        formats.crimson_cfg.setPlayerNameInput(&self.runtime.config, trimmed);
+        self.runtime.config_dirty = true;
+
+        const score_path = persistence.highscores.scoresPathForMode(
+            self.allocator,
+            self.runtime.base_dir,
+            @intFromEnum(results.run_config.game_mode),
+            .{
+                .hardcore = results.run_config.hardcore,
+                .quest_stage_major = @divTrunc(results.run_config.quest_level_key, 100),
+                .quest_stage_minor = @mod(results.run_config.quest_level_key, 100),
+                .player_count = results.run_config.player_count,
+            },
+        ) catch |err| {
+            highscore.save_error = @errorName(err);
+            return;
+        };
+        defer self.allocator.free(score_path);
+
+        var upsert = persistence.highscores.upsertHighscoreRecord(
+            self.allocator,
+            score_path,
+            highscore.record,
+            null,
+        ) catch |err| {
+            highscore.save_error = @errorName(err);
+            return;
+        };
+        defer upsert.deinit(self.allocator);
+
+        self.runtime.saveConfigIfDirty() catch |err| {
+            highscore.save_error = @errorName(err);
+            return;
+        };
+
+        highscore.saved = true;
+        highscore.save_error = null;
+        self.results_selection = 0;
     }
 
     fn startNewRun(self: *App, run_config: live_runner.LiveModeConfig) void {
@@ -344,17 +467,72 @@ const App = struct {
             self.runtime.saveStatusIfDirty() catch |err| break :save_err @errorName(err);
             break :save_err null;
         };
+        const highscore = self.buildResultsHighscore(runner, reason, runtime_error orelse save_error);
         self.results = .{
             .reason = reason,
             .run_config = gameplay.run_config,
             .summary = runner.summary(),
             .player_health = player_health,
             .runtime_error = runtime_error orelse save_error,
+            .highscore = highscore,
         };
         gameplay.deinit();
         self.gameplay = null;
         self.results_selection = 0;
         self.screen = .results;
+    }
+
+    fn buildResultsHighscore(
+        self: *App,
+        runner: *const live_runner.LiveRunner,
+        reason: ResultsReason,
+        runtime_error: ?[]const u8,
+    ) ?ResultsHighscoreState {
+        if (runtime_error != null) return null;
+        switch (reason) {
+            .dead, .completed => {},
+            .abandoned, .runtime_error => return null,
+        }
+
+        const player = runner.player0Const() orelse return null;
+        const record = persistence.highscore_record_builder.buildHighscoreRecordForGameOver(
+            runner.session.state,
+            player.*,
+            @intCast(runner.summary().elapsed_ms_sim),
+            @intCast(runner.session.creatures.kill_count),
+            runner.session.game_mode,
+            .{},
+        );
+
+        const score_path = persistence.highscores.scoresPathForMode(
+            self.allocator,
+            self.runtime.base_dir,
+            @intFromEnum(runner.session.game_mode),
+            .{
+                .hardcore = runner.session.state.hardcore,
+                .quest_stage_major = runner.session.state.quest_stage_major,
+                .quest_stage_minor = runner.session.state.quest_stage_minor,
+                .player_count = runner.session.player_count,
+            },
+        ) catch return null;
+        defer self.allocator.free(score_path);
+
+        const table = persistence.highscores.readHighscoreTable(
+            self.allocator,
+            score_path,
+            @intFromEnum(runner.session.game_mode),
+        ) catch return null;
+        defer table.deinit(self.allocator);
+
+        const rank_index = persistence.highscores.rankIndex(table.items, record);
+        if (rank_index >= persistence.highscores.table_max) return null;
+
+        var highscore: ResultsHighscoreState = .{
+            .record = record,
+            .rank_index = rank_index,
+        };
+        highscore.setInput(formats.crimson_cfg.playerName(&self.runtime.config));
+        return highscore;
     }
 
     fn drawBoot(self: *const App) void {
@@ -448,6 +626,9 @@ const App = struct {
                 if (results.runtime_error) |runtime_error| {
                     drawSmallText(runtime_assets, runtime_error, 330.0, 438.0, rl.Color.orange);
                 }
+                if (results.highscore) |highscore| {
+                    drawResultsHighscore(runtime_assets, &highscore);
+                }
             } else {
                 drawCenteredText(resultsTitle(results.reason), 124, 64, accent_color);
                 drawCenteredText(resultsSubtitle(results.reason), 188, 22, text_color);
@@ -462,13 +643,27 @@ const App = struct {
                 if (results.runtime_error) |runtime_error| {
                     drawTextSlice(runtime_error, 460, 520, 20, rl.Color.orange);
                 }
+                if (results.highscore) |highscore| {
+                    drawResultsHighscoreFallback(&highscore);
+                }
             }
         }
 
-        const buttons = resultsButtons();
+        const prompt_active = if (self.results) |results|
+            if (results.highscore) |highscore| highscore.promptActive() else false
+        else
+            false;
+        const buttons = if (prompt_active) resultsHighscoreButtons() else resultsButtons();
         for (buttons, 0..) |button, idx| {
             const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-            drawButton(button, idx == self.results_selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
+            const selected = if (prompt_active)
+                if (self.results) |results|
+                    if (results.highscore) |highscore| idx == highscore.selection else false
+                else
+                    false
+            else
+                idx == self.results_selection;
+            drawButton(button, selected, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
         }
         drawAudioStatus(&self.audio);
     }
@@ -728,6 +923,14 @@ fn resultsButtons() [2]UiButton {
     };
 }
 
+fn resultsHighscoreButtons() [2]UiButton {
+    const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
+    return .{
+        .{ .label = "SAVE SCORE", .rect = centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
+        .{ .label = "SKIP", .rect = centeredRect(center_x, 658.0, ui_button_width, ui_button_height) },
+    };
+}
+
 fn centeredRect(center_x: f32, top_y: f32, width: f32, height: f32) rl.Rectangle {
     return .{
         .x = center_x - width * 0.5,
@@ -758,6 +961,22 @@ fn buttonActivated(buttons: []const UiButton, selection: usize) bool {
         }
     }
     return false;
+}
+
+fn collectNameInput(highscore: *ResultsHighscoreState) void {
+    while (true) {
+        const codepoint = rl.getCharPressed();
+        if (codepoint == 0) break;
+        if (codepoint < 0x20 or codepoint > 0xFF) continue;
+        if (highscore.input_len >= persistence.highscores.name_max_edit) continue;
+        highscore.input[highscore.input_len] = @intCast(codepoint);
+        highscore.input_len += 1;
+    }
+
+    if ((rl.isKeyPressed(.backspace) or rl.isKeyPressedRepeat(.backspace)) and highscore.input_len > 0) {
+        highscore.input_len -= 1;
+        highscore.input[highscore.input_len] = 0;
+    }
 }
 
 fn drawButton(
@@ -1286,6 +1505,64 @@ fn colorWithAlpha(color: rl.Color, alpha: f32) rl.Color {
     );
 }
 
+fn drawResultsHighscore(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    highscore: *const ResultsHighscoreState,
+) void {
+    const prompt_y = 452.0;
+    if (highscore.promptActive()) {
+        drawSmallTextCentered(runtime_assets, "NEW HIGH SCORE", prompt_y, HudTextColor.accent);
+        drawSmallTextFmt("RANK #{d}", runtime_assets, .{highscore.rank_index + 1}, 420.0, prompt_y + 28.0, HudTextColor.primary);
+        drawSmallTextCentered(runtime_assets, "ENTER YOUR NAME TO SAVE THIS RUN", prompt_y + 56.0, HudTextColor.dim);
+
+        rl.drawRectangleRounded(
+            rl.Rectangle.init(392.0, prompt_y + 86.0, 496.0, 34.0),
+            0.15,
+            8,
+            rl.Color.init(22, 18, 16, 230),
+        );
+        rl.drawRectangleRoundedLinesEx(
+            rl.Rectangle.init(392.0, prompt_y + 86.0, 496.0, 34.0),
+            0.15,
+            8,
+            2.0,
+            rl.Color.init(138, 101, 78, 255),
+        );
+
+        const caret_visible = @mod(@as(i32, @intFromFloat(rl.getTime() * 2.5)), 2) == 0;
+        const shown_name = if (highscore.input_len == 0 and caret_visible) "_" else highscore.inputSlice();
+        drawSmallText(runtime_assets, shown_name, 410.0, prompt_y + 95.0, rl.Color.white);
+
+        if (highscore.save_error) |save_error| {
+            drawSmallText(runtime_assets, save_error, 410.0, prompt_y + 126.0, rl.Color.orange);
+        }
+    } else {
+        drawSmallTextCentered(runtime_assets, "SCORE SAVED", prompt_y, HudTextColor.accent);
+        drawSmallTextFmt("RANK #{d}  NAME {s}", runtime_assets, .{ highscore.rank_index + 1, highscore.record.name() }, 330.0, prompt_y + 28.0, HudTextColor.primary);
+    }
+}
+
+fn drawResultsHighscoreFallback(highscore: *const ResultsHighscoreState) void {
+    if (highscore.promptActive()) {
+        drawCenteredText("NEW HIGH SCORE", 514, 24, rl.Color.gold);
+        drawCenteredTextFmt("rank #{d}", .{highscore.rank_index + 1}, 546, 20, text_color);
+        drawCenteredText("Enter your name to save this run.", 574, 18, muted_text);
+        rl.drawRectangleRounded(.{ .x = 392.0, .y = 604.0, .width = 496.0, .height = 34.0 }, 0.15, 8, panel_color);
+        rl.drawRectangleRoundedLinesEx(.{ .x = 392.0, .y = 604.0, .width = 496.0, .height = 34.0 }, 0.15, 8, 2.0, panel_outline);
+
+        const caret_visible = @mod(@as(i32, @intFromFloat(rl.getTime() * 2.5)), 2) == 0;
+        const shown_name = if (highscore.input_len == 0 and caret_visible) "_" else highscore.inputSlice();
+        drawTextSlice(shown_name, 410, 612, 22, text_color);
+
+        if (highscore.save_error) |save_error| {
+            drawTextSlice(save_error, 410, 648, 18, rl.Color.orange);
+        }
+    } else {
+        drawCenteredText("SCORE SAVED", 514, 24, rl.Color.gold);
+        drawCenteredTextFmt("rank #{d}  name {s}", .{ highscore.rank_index + 1, highscore.record.name() }, 546, 18, text_color);
+    }
+}
+
 const HudTextColor = struct {
     const primary = rl.Color.init(220, 220, 220, 255);
     const dim = rl.Color.init(170, 170, 180, 255);
@@ -1631,6 +1908,12 @@ fn drawCenteredText(text: [:0]const u8, y: i32, font_size: i32, color: rl.Color)
     const width = rl.measureText(text, font_size);
     const x = @divTrunc(rl.getScreenWidth() - width, 2);
     rl.drawText(text, x, y, font_size, color);
+}
+
+fn drawCenteredTextFmt(comptime fmt: []const u8, args: anytype, y: i32, font_size: i32, color: rl.Color) void {
+    var buf: [256]u8 = undefined;
+    const text = std.fmt.bufPrintZ(&buf, fmt, args) catch return;
+    drawCenteredText(text, y, font_size, color);
 }
 
 fn drawTextFmt(comptime fmt: []const u8, args: anytype, x: i32, y: i32, font_size: i32, color: rl.Color) void {

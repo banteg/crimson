@@ -304,7 +304,8 @@ pub fn readHighscoreTable(
 }
 
 pub fn rankIndex(records_sorted: []const HighScoreRecord, record: HighScoreRecord) usize {
-    return switch (normalizeGameMode(record.gameModeRaw())) {
+    const mode = normalizeGameMode(record.gameModeRaw());
+    return switch (mode orelse .survival) {
         .rush => blk: {
             const score = record.survivalElapsedMs();
             for (records_sorted, 0..) |entry, idx| {
@@ -338,14 +339,14 @@ pub fn upsertHighscoreRecord(
     now: ?DateStamp,
 ) HighScoreError!UpsertResult {
     var records_sorted = try readHighscoreTable(allocator, path, record.gameModeRaw());
-    errdefer records_sorted.deinit(allocator);
 
     const idx = rankIndex(records_sorted.items, record);
     if (idx >= table_max) {
         return .{ .records = records_sorted.items, .rank_index = idx };
     }
 
-    var updated: std.ArrayList(HighScoreRecord) = .fromOwnedSlice(allocator, records_sorted.items);
+    var updated = std.ArrayList(HighScoreRecord).fromOwnedSlice(records_sorted.items);
+    records_sorted.items = &.{};
     errdefer updated.deinit(allocator);
     try updated.insert(allocator, idx, record.copy());
     if (updated.items.len > table_max) {
@@ -354,7 +355,7 @@ pub fn upsertHighscoreRecord(
 
     try writeHighscoreRecords(allocator, path, updated.items, now);
     return .{
-        .records = try updated.toOwnedSlice(),
+        .records = try updated.toOwnedSlice(allocator),
         .rank_index = idx,
     };
 }
@@ -368,7 +369,8 @@ fn normalizeGameMode(game_mode_id_raw: i32) ?game_ids.GameModeId {
 }
 
 fn highscoreLessThan(game_mode_id_raw: i32, lhs: HighScoreRecord, rhs: HighScoreRecord) bool {
-    return switch (normalizeGameMode(game_mode_id_raw)) {
+    const mode = normalizeGameMode(game_mode_id_raw);
+    return switch (mode orelse .survival) {
         .rush => lhs.survivalElapsedMs() > rhs.survivalElapsedMs(),
         .quests => blk: {
             const lhs_time = lhs.survivalElapsedMs();
@@ -420,10 +422,11 @@ fn scoresFileName(
     game_mode_id_raw: i32,
     options: ScoresPathOptions,
 ) std.mem.Allocator.Error![]u8 {
-    const base = switch (normalizeGameMode(game_mode_id_raw)) {
-        .survival => "survival.hi",
-        .rush => "rush.hi",
-        .typo => "typo.hi",
+    const mode = normalizeGameMode(game_mode_id_raw);
+    const base = if (mode) |known_mode| switch (known_mode) {
+        .survival => try allocator.dupe(u8, "survival.hi"),
+        .rush => try allocator.dupe(u8, "rush.hi"),
+        .typo => try allocator.dupe(u8, "typo.hi"),
         .quests => blk: {
             const prefix = if (options.hardcore) "quest" else "questhc";
             break :blk try std.fmt.allocPrint(
@@ -432,22 +435,20 @@ fn scoresFileName(
                 .{ prefix, options.quest_stage_major, options.quest_stage_minor },
             );
         },
-        else => "unknown.hi",
-    };
+        else => try allocator.dupe(u8, "unknown.hi"),
+    } else try allocator.dupe(u8, "unknown.hi");
 
-    const owned_base = switch (normalizeGameMode(game_mode_id_raw)) {
-        .quests => base,
-        else => try allocator.dupe(u8, base),
-    };
-    errdefer allocator.free(owned_base);
+    errdefer allocator.free(base);
 
-    if (options.player_count <= 1 or !std.mem.endsWith(u8, owned_base, ".hi")) {
-        return owned_base;
+    if (options.player_count <= 1 or !std.mem.endsWith(u8, base, ".hi")) {
+        return base;
     }
 
     const count = std.math.clamp(options.player_count, 2, 4);
-    const stem_len = owned_base.len - 3;
-    return std.fmt.allocPrint(allocator, "{s}_{d}.hi", .{ owned_base[0..stem_len], count });
+    const stem_len = base.len - 3;
+    const suffixed = try std.fmt.allocPrint(allocator, "{s}_{d}.hi", .{ base[0..stem_len], count });
+    allocator.free(base);
+    return suffixed;
 }
 
 fn appendU32(allocator: std.mem.Allocator, list: *std.ArrayList(u8), value: u32) std.mem.Allocator.Error!void {
@@ -465,7 +466,7 @@ fn writeU32(bytes: []u8, value: u32) void {
 }
 
 fn currentDateStampUtc() DateStamp {
-    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = std.time.timestamp() };
+    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(@max(std.time.timestamp(), 0)) };
     const epoch_day = epoch_seconds.getEpochDay();
     const year_day = epoch_day.calculateYearDay();
     const month_day = year_day.calculateMonthDay();
