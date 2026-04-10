@@ -8,6 +8,7 @@ const weapon_data = cz.weapon_data;
 const app_runtime = @import("app_runtime.zig");
 const audio_mod = @import("audio/audio.zig");
 const input_codes = @import("input_codes.zig");
+const local_input = cz.local_input;
 const live_audio = @import("audio/live_audio.zig");
 const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
@@ -77,6 +78,7 @@ const GameplayScreen = struct {
     runner: live_runner.LiveRunner,
     run_config: live_runner.LiveModeConfig,
     last_update: live_runner.FrameUpdate,
+    input_interpreter: local_input.LocalInputInterpreter = .{},
     ground: ?window_ground.GroundRenderer = null,
     terrain_fx: window_terrain_fx.TerrainFxTracker = .{},
 
@@ -220,7 +222,7 @@ const App = struct {
                 gameplay.runner.session.state.camera_shake_offset,
             );
             self.runtime.recordGameplayFrame(frame_dt);
-            const input = collectGameplayInput(&gameplay.runner, camera, &self.runtime);
+            const input = collectGameplayInput(&gameplay.input_interpreter, &gameplay.runner, camera, &self.runtime, frame_dt);
             if (input.perk_choice_index != null) {
                 self.audio.playUiButtonClick();
             }
@@ -311,6 +313,8 @@ const App = struct {
             .last_update = last_update,
             .terrain_fx = window_terrain_fx.TerrainFxTracker.init(runner.seed),
         };
+        gameplay.input_interpreter.setPreserveBugs(gameplay.runner.session.state.preserve_bugs);
+        gameplay.input_interpreter.reset(gameplay.runner.session.playersConst());
         if (self.runtime_assets) |*runtime_assets| {
             gameplay.ground = window_ground.GroundRenderer.initForTerrainSetup(
                 runtime_assets,
@@ -489,6 +493,7 @@ pub fn main() !void {
 
     while (!rl.windowShouldClose() and !app.quit_requested) {
         const frame_dt = rl.getFrameTime();
+        input_codes.inputBeginFrame();
         app.update(frame_dt);
 
         rl.beginDrawing();
@@ -828,35 +833,38 @@ fn buildWorldCamera(world_size: f32, shake_offset: state_mod.Vec2) rl.Camera2D {
 }
 
 fn collectGameplayInput(
+    interpreter: *local_input.LocalInputInterpreter,
     runner: *live_runner.LiveRunner,
     camera: rl.Camera2D,
     runtime: *const app_runtime.DesktopRuntime,
+    frame_dt: f32,
 ) live_runner.FrameInput {
-    const binds = runtime.primaryBindBlock();
-    const move_up_pressed = inputCodeIsDownWithAlt(binds.move_forward, 0xC8);
-    const move_down_pressed = inputCodeIsDownWithAlt(binds.move_backward, 0xD0);
-    const move_left_pressed = inputCodeIsDownWithAlt(binds.turn_left, 0xCB);
-    const move_right_pressed = inputCodeIsDownWithAlt(binds.turn_right, 0xCD);
     const mouse_world = rl.getScreenToWorld2D(rl.getMousePosition(), camera);
+    const player = runner.player0Const() orelse return .{};
+    const screen_center: state_mod.Vec2 = .{
+        .x = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5,
+        .y = @as(f32, @floatFromInt(rl.getScreenHeight())) * 0.5,
+    };
 
     var frame_input: live_runner.FrameInput = .{
-        .player = .{
-            .move_x = boolAxis(move_left_pressed, move_right_pressed),
-            .move_y = boolAxis(move_up_pressed, move_down_pressed),
-            .aim_x = mouse_world.x,
-            .aim_y = mouse_world.y,
-            .flags = .{
-                .fire_down = input_codes.inputCodeIsDown(binds.fire),
-                .fire_pressed = input_codes.inputCodeIsPressed(binds.fire),
-                .reload_pressed = input_codes.inputCodeIsPressed(@intCast(runtime.config.keybind_reload)),
-                .move_mode = @intCast(runtime.config.player_mode_flag_p1),
-                .aim_scheme = 0,
-                .move_forward_pressed = move_up_pressed,
-                .move_backward_pressed = move_down_pressed,
-                .turn_left_pressed = move_left_pressed,
-                .turn_right_pressed = move_right_pressed,
+        .player = interpreter.buildPlayerInput(
+            input_codes.RaylibInputSampler{},
+            0,
+            runner.session.playersConst().len,
+            player,
+            &runtime.config,
+            .{
+                .x = rl.getMousePosition().x,
+                .y = rl.getMousePosition().y,
             },
-        },
+            .{
+                .x = mouse_world.x,
+                .y = mouse_world.y,
+            },
+            screen_center,
+            frame_dt,
+            runner.session.creatures.entries[0..],
+        ),
     };
 
     if (runner.perkPendingCount() > 0) {
@@ -873,11 +881,8 @@ fn collectGameplayInput(
 }
 
 fn boolAxis(negative: bool, positive: bool) f32 {
-    return @floatFromInt(@intFromBool(positive) - @intFromBool(negative));
-}
-
-fn inputCodeIsDownWithAlt(primary_code: i32, alt_code: i32) bool {
-    return input_codes.inputCodeIsDown(primary_code) or input_codes.inputCodeIsDown(alt_code);
+    if (negative == positive) return 0.0;
+    return if (positive) 1.0 else -1.0;
 }
 
 fn statusWeaponUsageCounts(status: formats.game_cfg.Status) [state_mod.weapon_count_size]u32 {
@@ -886,6 +891,13 @@ fn statusWeaponUsageCounts(status: formats.game_cfg.Status) [state_mod.weapon_co
         counts[idx] = status.weapon_usage_counts[idx];
     }
     return counts;
+}
+
+test "boolAxis returns signed unit values without overflow" {
+    try std.testing.expectEqual(@as(f32, -1.0), boolAxis(true, false));
+    try std.testing.expectEqual(@as(f32, 0.0), boolAxis(false, false));
+    try std.testing.expectEqual(@as(f32, 0.0), boolAxis(true, true));
+    try std.testing.expectEqual(@as(f32, 1.0), boolAxis(false, true));
 }
 
 fn drawWorld(

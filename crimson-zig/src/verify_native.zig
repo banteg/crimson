@@ -730,11 +730,9 @@ fn buildNotPortedOutputForReplayRunnerError(
         error.UnsupportedEventPlayerIndex => "replay simulation scaffold encountered an out-of-range player_index event",
         error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
-        error.UnsupportedPerkApplyHandler => "replay selected a perk with apply/effect behavior not yet ported",
         error.UnsupportedSpawnTemplate => "replay triggered survival template spawns not yet ported in native creature runtime",
         error.UnsupportedQuestSpawnTable => "quest replay requires a quest spawn table variant not yet ported in native runtime",
         error.UnsupportedWeaponFirePath => "replay triggered weapon fire path not yet ported in native projectile runtime",
-        error.UnsupportedBonusApplyPath => "replay triggered bonus apply path not yet ported in native bonus runtime",
     };
 
     var stderr_buf: std.ArrayList(u8) = .empty;
@@ -1342,20 +1340,6 @@ test "survival sim not ported output maps unsupported demo mode path" {
 
     try std.testing.expectEqual(@as(i32, 1), output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "does not support demo_mode_active=true") != null);
-}
-
-test "survival sim not ported output maps unsupported bonus apply path" {
-    const allocator = std.testing.allocator;
-    const output = try buildNotPortedOutputForReplayRunnerError(
-        allocator,
-        error.UnsupportedBonusApplyPath,
-        .{},
-    );
-    defer allocator.free(output.stdout);
-    defer allocator.free(output.stderr);
-
-    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "bonus apply path not yet ported") != null);
 }
 
 test "survival sim not ported output includes replay progress hints" {

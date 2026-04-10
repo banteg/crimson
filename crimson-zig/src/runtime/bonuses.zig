@@ -16,9 +16,7 @@ const PerkId = perks.PerkId;
 const BonusId = game_ids.BonusId;
 const GameModeId = game_ids.GameModeId;
 
-pub const BonusRuntimeError = error{
-    UnsupportedBonusApplyPath,
-};
+pub const BonusRuntimeError = error{};
 
 pub const bonus_pool_size: usize = 16;
 pub const BonusPickupRecord = struct {

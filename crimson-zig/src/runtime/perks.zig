@@ -13,9 +13,7 @@ const state_mod = @import("state.zig");
 
 const narrowF32 = native_math.roundF32;
 
-pub const PerkApplyError = error{
-    UnsupportedPerkApplyHandler,
-};
+pub const PerkApplyError = error{};
 
 pub const PerkId = game_ids.PerkId;
 pub const GameModeId = game_ids.GameModeId;
