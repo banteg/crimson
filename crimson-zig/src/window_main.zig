@@ -8,6 +8,7 @@ const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
 const window_ground = @import("window_ground.zig");
 const window_projectiles = @import("window_projectiles.zig");
+const window_terrain_fx = @import("window_terrain_fx.zig");
 
 const bonuses_runtime = cz.bonuses;
 const game_ids = cz.game_ids;
@@ -70,6 +71,7 @@ const GameplayScreen = struct {
     runner: live_runner.LiveSurvivalRunner,
     last_update: live_runner.FrameUpdate,
     ground: ?window_ground.GroundRenderer = null,
+    terrain_fx: window_terrain_fx.TerrainFxTracker = .{},
 
     fn deinit(self: *GameplayScreen) void {
         if (self.ground) |*ground| {
@@ -195,6 +197,11 @@ const App = struct {
                 self.finishRun(gameplay, .runtime_error, @errorName(err));
                 return;
             };
+            if (self.runtime_assets) |*runtime_assets| {
+                if (gameplay.ground) |*ground| {
+                    gameplay.terrain_fx.bake(&gameplay.runner.session, ground, runtime_assets);
+                }
+            }
 
             if (gameplay.last_update.all_players_dead) {
                 self.finishRun(gameplay, .dead, null);
@@ -253,6 +260,7 @@ const App = struct {
         var gameplay: GameplayScreen = .{
             .runner = runner,
             .last_update = last_update,
+            .terrain_fx = window_terrain_fx.TerrainFxTracker.init(runner.seed),
         };
         if (self.runtime_assets) |*runtime_assets| {
             gameplay.ground = window_ground.GroundRenderer.initForUnlockTerrain(
@@ -262,6 +270,13 @@ const App = struct {
                 gameplay.runner.session.terrain_size,
                 gameplay.runner.session.terrain_size,
             ) catch null;
+            if (gameplay.ground) |*ground| {
+                gameplay.terrain_fx.bake(&gameplay.runner.session, ground, runtime_assets);
+            } else {
+                gameplay.terrain_fx.capture(&gameplay.runner.session);
+            }
+        } else {
+            gameplay.terrain_fx.capture(&gameplay.runner.session);
         }
         self.gameplay = gameplay;
         self.results = null;

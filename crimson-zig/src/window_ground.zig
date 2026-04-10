@@ -3,6 +3,7 @@ const rl = @import("raylib");
 
 const cz = @import("crimson_zig");
 const window_assets = @import("window_assets.zig");
+const window_atlas = cz.window_atlas;
 
 const runtime_bootstrap = cz.bootstrap;
 const spawn_runtime = cz.spawn;
@@ -64,6 +65,24 @@ pub const TerrainTextureSet = struct {
     base: window_assets.TextureId,
     overlay: window_assets.TextureId,
     detail: window_assets.TextureId,
+};
+
+pub const GroundDecal = struct {
+    texture: rl.Texture2D,
+    src: window_atlas.AtlasRect,
+    pos: rl.Vector2,
+    width: f32,
+    height: f32,
+    rotation_rad: f32 = 0.0,
+    tint: rl.Color = rl.Color.white,
+};
+
+pub const GroundCorpseDecal = struct {
+    bodyset_frame: i32,
+    top_left: rl.Vector2,
+    size: f32,
+    rotation_rad: f32,
+    tint: rl.Color = rl.Color.white,
 };
 
 pub const GroundRenderer = struct {
@@ -141,6 +160,64 @@ pub const GroundRenderer = struct {
         beginCustomBlend(rl.gl.rl_one, rl.gl.rl_zero, rl.gl.rl_func_add);
         defer endCustomBlend();
         rl.drawTexturePro(target.texture, src, dst, rl.Vector2.zero(), 0.0, rl.Color.white);
+    }
+
+    pub fn bakeDecals(self: *GroundRenderer, decals: []const GroundDecal) bool {
+        if (decals.len == 0 or !self.ready) return false;
+        const target = self.render_target orelse return false;
+
+        rl.beginTextureMode(target);
+        defer rl.endTextureMode();
+
+        if (self.alpha_test_shader) |shader| {
+            shader.activate();
+            defer shader.deactivate();
+        }
+
+        beginTerrainRenderTargetBlendWithFactors(rl.gl.rl_src_alpha, rl.gl.rl_one_minus_src_alpha, rl.gl.rl_func_add);
+        defer endTerrainRenderTargetBlend();
+
+        for (decals) |decal| {
+            const dst = rl.Rectangle.init(decal.pos.x, decal.pos.y, decal.width, decal.height);
+            const origin = rl.Vector2.init(decal.width * 0.5, decal.height * 0.5);
+            rl.drawTexturePro(
+                decal.texture,
+                atlasRectToRl(decal.src),
+                dst,
+                origin,
+                radiansToDegrees(decal.rotation_rad),
+                decal.tint,
+            );
+        }
+
+        self.ready = true;
+        return true;
+    }
+
+    pub fn bakeCorpseDecals(
+        self: *GroundRenderer,
+        bodyset_texture: rl.Texture2D,
+        decals: []const GroundCorpseDecal,
+    ) bool {
+        if (decals.len == 0 or !self.ready) return false;
+        const target = self.render_target orelse return false;
+
+        const inv_scale: f32 = 1.0;
+        const offset = 2.0 / @as(f32, @floatFromInt(@max(self.width, 1)));
+
+        rl.beginTextureMode(target);
+        defer rl.endTextureMode();
+
+        if (self.alpha_test_shader) |shader| {
+            shader.activate();
+            defer shader.deactivate();
+        }
+
+        drawCorpseShadowPass(bodyset_texture, decals, inv_scale, offset);
+        drawCorpseColorPass(bodyset_texture, decals, inv_scale, offset);
+
+        self.ready = true;
+        return true;
     }
 
     fn generate(self: *GroundRenderer, terrain_seed: u32) GroundRenderError!void {
@@ -255,6 +332,10 @@ fn radiansToDegrees(radians: f32) f32 {
     return radians * (180.0 / std.math.pi);
 }
 
+fn atlasRectToRl(src: window_atlas.AtlasRect) rl.Rectangle {
+    return rl.Rectangle.init(src.x, src.y, src.width, src.height);
+}
+
 fn beginCustomBlend(src_factor: i32, dst_factor: i32, blend_equation: i32) void {
     rl.gl.rlSetBlendFactors(src_factor, dst_factor, blend_equation);
     rl.beginBlendMode(.custom);
@@ -266,13 +347,81 @@ fn endCustomBlend() void {
 }
 
 fn beginTerrainRenderTargetBlend() void {
+    beginTerrainRenderTargetBlendWithFactors(rl.gl.rl_src_alpha, rl.gl.rl_one_minus_src_alpha, rl.gl.rl_func_add);
+}
+
+fn beginTerrainRenderTargetBlendWithFactors(src_factor: i32, dst_factor: i32, blend_equation: i32) void {
     rl.gl.rlColorMask(true, true, true, false);
-    beginCustomBlend(rl.gl.rl_src_alpha, rl.gl.rl_one_minus_src_alpha, rl.gl.rl_func_add);
+    beginCustomBlend(src_factor, dst_factor, blend_equation);
 }
 
 fn endTerrainRenderTargetBlend() void {
     endCustomBlend();
     rl.gl.rlColorMask(true, true, true, true);
+}
+
+fn corpseSrc(bodyset_texture: rl.Texture2D, frame: i32) window_atlas.AtlasRect {
+    return window_atlas.atlasRect(bodyset_texture.width, bodyset_texture.height, 4, frame & 0xF);
+}
+
+fn drawCorpseShadowPass(
+    bodyset_texture: rl.Texture2D,
+    decals: []const GroundCorpseDecal,
+    inv_scale: f32,
+    offset: f32,
+) void {
+    beginTerrainRenderTargetBlendWithFactors(rl.gl.rl_zero, rl.gl.rl_one_minus_src_alpha, rl.gl.rl_func_add);
+    defer endTerrainRenderTargetBlend();
+
+    for (decals) |decal| {
+        const src = atlasRectToRl(corpseSrc(bodyset_texture, decal.bodyset_frame));
+        const size = decal.size * inv_scale * 1.064;
+        const x = (decal.top_left.x - 0.5) * inv_scale - offset;
+        const y = (decal.top_left.y - 0.5) * inv_scale - offset;
+        const dst = rl.Rectangle.init(x + size * 0.5, y + size * 0.5, size, size);
+        const origin = rl.Vector2.init(size * 0.5, size * 0.5);
+        const tint = rl.Color.init(
+            decal.tint.r,
+            decal.tint.g,
+            decal.tint.b,
+            @intFromFloat(@as(f32, @floatFromInt(decal.tint.a)) * 0.5),
+        );
+        rl.drawTexturePro(
+            bodyset_texture,
+            src,
+            dst,
+            origin,
+            radiansToDegrees(decal.rotation_rad - std.math.pi * 0.5),
+            tint,
+        );
+    }
+}
+
+fn drawCorpseColorPass(
+    bodyset_texture: rl.Texture2D,
+    decals: []const GroundCorpseDecal,
+    inv_scale: f32,
+    offset: f32,
+) void {
+    beginTerrainRenderTargetBlendWithFactors(rl.gl.rl_src_alpha, rl.gl.rl_one_minus_src_alpha, rl.gl.rl_func_add);
+    defer endTerrainRenderTargetBlend();
+
+    for (decals) |decal| {
+        const src = atlasRectToRl(corpseSrc(bodyset_texture, decal.bodyset_frame));
+        const size = decal.size * inv_scale;
+        const x = decal.top_left.x * inv_scale - offset;
+        const y = decal.top_left.y * inv_scale - offset;
+        const dst = rl.Rectangle.init(x + size * 0.5, y + size * 0.5, size, size);
+        const origin = rl.Vector2.init(size * 0.5, size * 0.5);
+        rl.drawTexturePro(
+            bodyset_texture,
+            src,
+            dst,
+            origin,
+            radiansToDegrees(decal.rotation_rad - std.math.pi * 0.5),
+            decal.tint,
+        );
+    }
 }
 
 test "terrain slot mapping follows python ids" {
