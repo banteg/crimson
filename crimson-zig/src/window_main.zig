@@ -55,6 +55,7 @@ const Screen = enum {
     main_menu,
     gameplay,
     results,
+    high_scores,
 };
 
 const ResultsReason = enum {
@@ -101,6 +102,28 @@ const ResultsScreen = struct {
     highscore: ?ResultsHighscoreState = null,
 };
 
+const HighScoresScreen = struct {
+    mode: game_ids.GameModeId = .survival,
+    quest_level_key: i32 = 101,
+    selection: usize = 0,
+    records: []persistence.highscores.HighScoreRecord = &.{},
+    records_owned: bool = false,
+    load_error: ?[]const u8 = null,
+
+    fn clear(self: *HighScoresScreen, allocator: std.mem.Allocator) void {
+        if (self.records_owned) {
+            allocator.free(self.records);
+        }
+        self.records = &.{};
+        self.records_owned = false;
+    }
+
+    fn deinit(self: *HighScoresScreen, allocator: std.mem.Allocator) void {
+        self.clear(allocator);
+        self.* = undefined;
+    }
+};
+
 const ResultsHighscoreState = struct {
     record: persistence.highscores.HighScoreRecord,
     rank_index: usize,
@@ -140,6 +163,7 @@ const App = struct {
     results_selection: usize = 0,
     gameplay: ?GameplayScreen = null,
     results: ?ResultsScreen = null,
+    high_scores: ?HighScoresScreen = null,
     runtime_assets: ?window_assets.RuntimeAssets = null,
     audio: live_audio.Bridge,
     assets_state: AssetsState = .unavailable,
@@ -161,6 +185,10 @@ const App = struct {
         if (self.gameplay) |*gameplay| {
             gameplay.deinit();
             self.gameplay = null;
+        }
+        if (self.high_scores) |*high_scores| {
+            high_scores.deinit(self.allocator);
+            self.high_scores = null;
         }
         if (self.runtime_assets) |*runtime_assets| {
             runtime_assets.deinit();
@@ -197,6 +225,7 @@ const App = struct {
             .main_menu => self.updateMainMenu(),
             .gameplay => self.updateGameplay(frame_dt),
             .results => self.updateResults(),
+            .high_scores => self.updateHighScores(),
         }
         self.audio.update(frame_dt);
     }
@@ -207,6 +236,7 @@ const App = struct {
             .main_menu => self.drawMainMenu(),
             .gameplay => self.drawGameplay(),
             .results => self.drawResults(),
+            .high_scores => self.drawHighScores(),
         }
     }
 
@@ -237,7 +267,8 @@ const App = struct {
             0 => self.startNewRun(runConfigForMenuSelection(0, &self.next_seed_state)),
             1 => self.startNewRun(runConfigForMenuSelection(1, &self.next_seed_state)),
             2 => self.startNewRun(runConfigForMenuSelection(2, &self.next_seed_state)),
-            3 => self.quit_requested = true,
+            3 => self.openHighScores(),
+            4 => self.quit_requested = true,
             else => {},
         }
     }
@@ -316,6 +347,34 @@ const App = struct {
                 self.screen = .main_menu;
             },
             else => {},
+        }
+    }
+
+    fn updateHighScores(self: *App) void {
+        if (self.high_scores) |*high_scores| {
+            const buttons = highScoresButtons();
+            updateSelectionFromPointer(&high_scores.selection, buttons[0..]);
+            if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
+                high_scores.selection = if (high_scores.selection == 0) buttons.len - 1 else high_scores.selection - 1;
+            }
+            if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
+                high_scores.selection = (high_scores.selection + 1) % buttons.len;
+            }
+
+            const activated = buttonActivated(buttons[0..], high_scores.selection);
+            if (!activated) return;
+            self.audio.playUiButtonClick();
+
+            switch (high_scores.selection) {
+                0 => self.setHighScoresMode(.survival),
+                1 => self.setHighScoresMode(.rush),
+                2 => self.setHighScoresMode(.quests),
+                3 => {
+                    self.menu_selection = 3;
+                    self.screen = .main_menu;
+                },
+                else => {},
+            }
         }
     }
 
@@ -458,6 +517,52 @@ const App = struct {
         self.screen = .gameplay;
     }
 
+    fn openHighScores(self: *App) void {
+        if (self.high_scores == null) {
+            self.high_scores = .{};
+        }
+        self.setHighScoresMode(.survival);
+        self.screen = .high_scores;
+    }
+
+    fn setHighScoresMode(self: *App, mode: game_ids.GameModeId) void {
+        if (self.high_scores == null) {
+            self.high_scores = .{};
+        }
+        if (self.high_scores) |*high_scores| {
+            high_scores.mode = mode;
+            high_scores.load_error = null;
+            high_scores.clear(self.allocator);
+
+            const score_path = persistence.highscores.scoresPathForMode(
+                self.allocator,
+                self.runtime.base_dir,
+                @intFromEnum(mode),
+                .{
+                    .hardcore = self.runtime.config.hardcore_flag != 0,
+                    .quest_stage_major = @divTrunc(high_scores.quest_level_key, 100),
+                    .quest_stage_minor = @mod(high_scores.quest_level_key, 100),
+                    .player_count = @intCast(self.runtime.config.player_count),
+                },
+            ) catch |err| {
+                high_scores.load_error = @errorName(err);
+                return;
+            };
+            defer self.allocator.free(score_path);
+
+            const records = persistence.highscores.readHighscoreTable(
+                self.allocator,
+                score_path,
+                @intFromEnum(mode),
+            ) catch |err| {
+                high_scores.load_error = @errorName(err);
+                return;
+            };
+            high_scores.records = records.items;
+            high_scores.records_owned = true;
+        }
+    }
+
     fn finishRun(self: *App, gameplay: *GameplayScreen, reason: ResultsReason, runtime_error: ?[]const u8) void {
         self.audio.stopGameplayMusic();
         const runner = &gameplay.runner;
@@ -571,9 +676,9 @@ const App = struct {
         }
 
         if (self.runtime_assets) |*runtime_assets| {
-            drawSmallTextCentered(runtime_assets, "ENTER STARTS. QUEST CURRENTLY BOOTS LEVEL 1.1. ESC CLOSES THE WINDOW.", 624.0, HudTextColor.dim);
+            drawSmallTextCentered(runtime_assets, "ENTER STARTS. HIGH SCORES NOW READ REAL ZIG `.HI` TABLES. ESC CLOSES THE WINDOW.", 624.0, HudTextColor.dim);
         } else {
-            drawCenteredText("Enter starts. Quest currently boots level 1.1. Esc closes the window.", 620, 18, muted_text);
+            drawCenteredText("Enter starts. High scores now read real Zig .hi tables. Esc closes the window.", 620, 18, muted_text);
         }
     }
 
@@ -664,6 +769,41 @@ const App = struct {
             else
                 idx == self.results_selection;
             drawButton(button, selected, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
+        }
+        drawAudioStatus(&self.audio);
+    }
+
+    fn drawHighScores(self: *const App) void {
+        rl.clearBackground(bg_color);
+        drawBackdrop();
+
+        if (self.runtime_assets) |*runtime_assets| {
+            drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(230.0, 88.0, 820.0, 440.0), colorWithAlpha(rl.Color.white, 0.97));
+            drawSmallTextCentered(runtime_assets, "HIGH SCORES", 116.0, HudTextColor.accent);
+        } else {
+            drawCenteredText("HIGH SCORES", 110, 46, accent_color);
+        }
+
+        if (self.high_scores) |high_scores| {
+            if (self.runtime_assets) |*runtime_assets| {
+                drawSmallTextCentered(
+                    runtime_assets,
+                    highScoreModeLabel(high_scores.mode),
+                    150.0,
+                    HudTextColor.primary,
+                );
+                drawHighScoreTable(runtime_assets, high_scores);
+            } else {
+                drawCenteredText(highScoreModeLabelZ(high_scores.mode), 148, 24, text_color);
+                drawHighScoreTableFallback(high_scores);
+            }
+        }
+
+        const buttons = highScoresButtons();
+        const selected_idx = if (self.high_scores) |high_scores| high_scores.selection else 0;
+        for (buttons, 0..) |button, idx| {
+            const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+            drawButton(button, idx == selected_idx, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
         }
         drawAudioStatus(&self.audio);
     }
@@ -905,13 +1045,14 @@ fn drawTextureTiled(texture: rl.Texture2D, area: rl.Rectangle, tint: rl.Color) v
     }
 }
 
-fn mainMenuButtons() [4]UiButton {
+fn mainMenuButtons() [5]UiButton {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     return .{
-        .{ .label = "START SURVIVAL", .rect = centeredRect(center_x, 264.0, ui_button_width, ui_button_height) },
-        .{ .label = "START RUSH", .rect = centeredRect(center_x, 336.0, ui_button_width, ui_button_height) },
-        .{ .label = "START QUEST 1.1", .rect = centeredRect(center_x, 408.0, ui_button_width, ui_button_height) },
-        .{ .label = "QUIT", .rect = centeredRect(center_x, 480.0, ui_button_width, ui_button_height) },
+        .{ .label = "START SURVIVAL", .rect = centeredRect(center_x, 248.0, ui_button_width, ui_button_height) },
+        .{ .label = "START RUSH", .rect = centeredRect(center_x, 314.0, ui_button_width, ui_button_height) },
+        .{ .label = "START QUEST 1.1", .rect = centeredRect(center_x, 380.0, ui_button_width, ui_button_height) },
+        .{ .label = "HIGH SCORES", .rect = centeredRect(center_x, 446.0, ui_button_width, ui_button_height) },
+        .{ .label = "QUIT", .rect = centeredRect(center_x, 512.0, ui_button_width, ui_button_height) },
     };
 }
 
@@ -928,6 +1069,16 @@ fn resultsHighscoreButtons() [2]UiButton {
     return .{
         .{ .label = "SAVE SCORE", .rect = centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
         .{ .label = "SKIP", .rect = centeredRect(center_x, 658.0, ui_button_width, ui_button_height) },
+    };
+}
+
+fn highScoresButtons() [4]UiButton {
+    const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
+    return .{
+        .{ .label = "SURVIVAL", .rect = centeredRect(center_x, 560.0, 220.0, 48.0) },
+        .{ .label = "RUSH", .rect = centeredRect(center_x, 616.0, 220.0, 48.0) },
+        .{ .label = "QUEST 1.1", .rect = centeredRect(center_x, 672.0, 220.0, 48.0) },
+        .{ .label = "BACK", .rect = centeredRect(center_x + 262.0, 672.0, 150.0, 48.0) },
     };
 }
 
@@ -1561,6 +1712,83 @@ fn drawResultsHighscoreFallback(highscore: *const ResultsHighscoreState) void {
         drawCenteredText("SCORE SAVED", 514, 24, rl.Color.gold);
         drawCenteredTextFmt("rank #{d}  name {s}", .{ highscore.rank_index + 1, highscore.record.name() }, 546, 18, text_color);
     }
+}
+
+fn highScoreModeLabel(mode: game_ids.GameModeId) []const u8 {
+    return switch (mode) {
+        .survival => "SURVIVAL",
+        .rush => "RUSH",
+        .quests => "QUEST 1.1",
+        .typo => "TYPO",
+        .tutorial => "TUTORIAL",
+    };
+}
+
+fn highScoreModeLabelZ(mode: game_ids.GameModeId) [:0]const u8 {
+    return switch (mode) {
+        .survival => "SURVIVAL",
+        .rush => "RUSH",
+        .quests => "QUEST 1.1",
+        .typo => "TYPO",
+        .tutorial => "TUTORIAL",
+    };
+}
+
+fn drawHighScoreTable(runtime_assets: *const window_assets.RuntimeAssets, high_scores: HighScoresScreen) void {
+    if (high_scores.load_error) |load_error| {
+        drawSmallText(runtime_assets, load_error, 280.0, 194.0, rl.Color.orange);
+        return;
+    }
+    if (high_scores.records.len == 0) {
+        drawSmallTextCentered(runtime_assets, "NO SCORES SAVED YET", 226.0, HudTextColor.dim);
+        return;
+    }
+
+    drawSmallText(runtime_assets, "RANK", 286.0, 194.0, HudTextColor.dim);
+    drawSmallText(runtime_assets, "NAME", 356.0, 194.0, HudTextColor.dim);
+    drawSmallText(runtime_assets, "VALUE", 660.0, 194.0, HudTextColor.dim);
+    drawSmallText(runtime_assets, "WEAPON", 810.0, 194.0, HudTextColor.dim);
+
+    const row_count = @min(high_scores.records.len, 10);
+    for (high_scores.records[0..row_count], 0..) |record, idx| {
+        const row_y = 224.0 + @as(f32, @floatFromInt(idx)) * 28.0;
+        var value_buf: [32]u8 = undefined;
+        drawSmallTextFmt("#{d}", runtime_assets, .{idx + 1}, 286.0, row_y, HudTextColor.primary);
+        drawSmallText(runtime_assets, record.name(), 356.0, row_y, rl.Color.white);
+        drawSmallText(runtime_assets, formatHighScoreValue(&value_buf, record), 660.0, row_y, HudTextColor.primary);
+        drawSmallText(runtime_assets, weaponName(@intFromEnum(record.mostUsedWeaponId())), 810.0, row_y, HudTextColor.dim);
+    }
+}
+
+fn drawHighScoreTableFallback(high_scores: HighScoresScreen) void {
+    if (high_scores.load_error) |load_error| {
+        drawTextSlice(load_error, 280, 194, 20, rl.Color.orange);
+        return;
+    }
+    if (high_scores.records.len == 0) {
+        drawCenteredText("No scores saved yet.", 230, 20, muted_text);
+        return;
+    }
+
+    const row_count = @min(high_scores.records.len, 10);
+    for (high_scores.records[0..row_count], 0..) |record, idx| {
+        var value_buf: [32]u8 = undefined;
+        drawTextFmt(
+            "#{d}  {s}  {s}  {s}",
+            .{ idx + 1, record.name(), formatHighScoreValue(&value_buf, record), weaponName(@intFromEnum(record.mostUsedWeaponId())) },
+            240,
+            210 + @as(i32, @intCast(idx)) * 28,
+            18,
+            text_color,
+        );
+    }
+}
+
+fn formatHighScoreValue(buf: []u8, record: persistence.highscores.HighScoreRecord) []const u8 {
+    return switch (record.gameModeId() orelse .survival) {
+        .rush, .quests => std.fmt.bufPrint(buf, "{d} ms", .{record.survivalElapsedMs()}) catch "0 ms",
+        else => std.fmt.bufPrint(buf, "{d} xp", .{record.scoreXp()}) catch "0 xp",
+    };
 }
 
 const HudTextColor = struct {
