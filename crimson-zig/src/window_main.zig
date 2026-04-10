@@ -2,6 +2,7 @@ const std = @import("std");
 const rl = @import("raylib");
 
 const cz = @import("crimson_zig");
+const window_assets = @import("window_assets.zig");
 
 const game_ids = cz.game_ids;
 const live_runner = cz.live_runner;
@@ -47,6 +48,12 @@ const ResultsReason = enum {
     abandoned,
 };
 
+const AssetsState = enum {
+    loaded,
+    unavailable,
+    failed,
+};
+
 const UiButton = struct {
     label: [:0]const u8,
     rect: rl.Rectangle,
@@ -65,14 +72,47 @@ const ResultsScreen = struct {
 };
 
 const App = struct {
+    allocator: std.mem.Allocator,
     screen: Screen = .boot,
     boot_elapsed: f32 = 0.0,
     menu_selection: usize = 0,
     results_selection: usize = 0,
     gameplay: ?GameplayScreen = null,
     results: ?ResultsScreen = null,
+    runtime_assets: ?window_assets.RuntimeAssets = null,
+    assets_state: AssetsState = .unavailable,
+    assets_message: ?[]u8 = null,
     next_seed_state: u32 = 0xC0FFEE,
     quit_requested: bool = false,
+
+    fn init(allocator: std.mem.Allocator) App {
+        var app: App = .{
+            .allocator = allocator,
+        };
+        app.loadAssets();
+        return app;
+    }
+
+    fn deinit(self: *App) void {
+        if (self.runtime_assets) |*runtime_assets| {
+            runtime_assets.deinit();
+            self.runtime_assets = null;
+        }
+        if (self.assets_message) |message| {
+            self.allocator.free(message);
+            self.assets_message = null;
+        }
+        self.* = undefined;
+    }
+
+    fn loadAssets(self: *App) void {
+        self.runtime_assets = window_assets.loadRuntimeAssetsFromDefaultSearch(self.allocator) catch |err| {
+            self.assets_state = .failed;
+            self.assets_message = self.allocator.dupe(u8, @errorName(err)) catch null;
+            return;
+        };
+        self.assets_state = if (self.runtime_assets != null) .loaded else .unavailable;
+    }
 
     fn update(self: *App, frame_dt: f32) void {
         switch (self.screen) {
@@ -205,18 +245,27 @@ const App = struct {
 
     fn drawBoot(self: *const App) void {
         rl.clearBackground(bgColorLerp(bootProgress(self.boot_elapsed)));
+        drawBackdrop();
+        if (self.runtime_assets) |*runtime_assets| {
+            drawBootAssets(runtime_assets, bootProgress(self.boot_elapsed));
+        }
         drawCenteredText("CRIMSON-ZIG", 144, 72, accent_color);
         drawCenteredText("Desktop survival slice booting", 232, 24, text_color);
-        drawCenteredText("raylib shell + live Zig runtime", 270, 18, muted_text);
+        drawCenteredText("raylib shell + live Zig runtime + archive-backed assets", 270, 18, muted_text);
+        drawAssetsStatus(self);
     }
 
     fn drawMainMenu(self: *const App) void {
         rl.clearBackground(bg_color);
         drawBackdrop();
+        if (self.runtime_assets) |*runtime_assets| {
+            drawMenuAssets(runtime_assets);
+        }
 
         drawCenteredText("CRIMSON-ZIG", 118, 68, accent_color);
         drawCenteredText("Native menu-to-gameplay survival slice", 198, 24, text_color);
         drawCenteredText("Replay tooling is no longer the only real surface.", 232, 18, muted_text);
+        drawAssetsStatus(self);
 
         const buttons = mainMenuButtons();
         for (buttons, 0..) |button, idx| {
@@ -292,7 +341,12 @@ pub fn main() !void {
 
     rl.setTargetFPS(60);
 
-    var app: App = .{};
+    var gpa: std.heap.GeneralPurposeAllocator(.{}) = .{};
+    defer _ = gpa.deinit();
+
+    var app = App.init(gpa.allocator());
+    defer app.deinit();
+
     while (!rl.windowShouldClose() and !app.quit_requested) {
         const frame_dt = rl.getFrameTime();
         app.update(frame_dt);
@@ -322,6 +376,69 @@ fn drawBackdrop() void {
     rl.drawRectangleGradientV(0, 0, width, height, rl.Color.init(32, 18, 16, 255), bg_color);
     rl.drawCircle(width - 180, 120, 200.0, rl.Color.init(93, 31, 22, 80));
     rl.drawCircle(160, height - 80, 220.0, rl.Color.init(58, 23, 18, 90));
+}
+
+fn drawBootAssets(runtime_assets: *const window_assets.RuntimeAssets, progress: f32) void {
+    const left_rect = rl.Rectangle.init(98.0, 112.0, 320.0, 180.0);
+    const right_rect = rl.Rectangle.init(862.0, 112.0, 320.0, 180.0);
+    const alpha = @as(u8, @intFromFloat(64.0 + progress * 160.0));
+
+    drawTextureFit(runtime_assets.texture(.splash_10tons), left_rect, rl.Color.init(255, 255, 255, alpha));
+    drawTextureFit(runtime_assets.texture(.splash_reflexive), right_rect, rl.Color.init(255, 255, 255, alpha));
+    drawTextureFit(runtime_assets.texture(.loading), rl.Rectangle.init(520.0, 330.0, 240.0, 72.0), rl.Color.init(255, 255, 255, alpha));
+}
+
+fn drawMenuAssets(runtime_assets: *const window_assets.RuntimeAssets) void {
+    drawTextureFit(
+        runtime_assets.texture(.backplasma),
+        rl.Rectangle.init(0.0, 0.0, @floatFromInt(rl.getScreenWidth()), @floatFromInt(rl.getScreenHeight())),
+        rl.Color.init(255, 255, 255, 92),
+    );
+    rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), rl.Color.init(16, 11, 9, 160));
+    drawTextureCentered(
+        runtime_assets.texture(.cl_logo),
+        rl.Vector2.init(@as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5, 120.0),
+        380.0,
+        120.0,
+        rl.Color.init(255, 255, 255, 232),
+    );
+    drawTextureFit(runtime_assets.texture(.logo_esrb), rl.Rectangle.init(42.0, 44.0, 112.0, 150.0), rl.Color.init(255, 255, 255, 190));
+}
+
+fn drawAssetsStatus(app: *const App) void {
+    switch (app.assets_state) {
+        .loaded => {
+            const runtime_assets = &(app.runtime_assets orelse return);
+            drawTextFmt(
+                "assets: {d} textures / {d} archive entries from {s}",
+                .{ runtime_assets.textureCount(), runtime_assets.archive_entry_count, runtime_assets.assets_dir },
+                28,
+                688,
+                18,
+                muted_text,
+            );
+        },
+        .unavailable => drawTextSlice("assets: no crimson.paq found; using primitive fallback", 28, 688, 18, muted_text),
+        .failed => {
+            drawTextSlice("assets: load failed; using primitive fallback", 28, 668, 18, muted_text);
+            if (app.assets_message) |message| {
+                drawTextSlice(message, 28, 688, 18, rl.Color.orange);
+            }
+        },
+    }
+}
+
+fn drawTextureFit(texture: rl.Texture2D, dest: rl.Rectangle, tint: rl.Color) void {
+    const src = rl.Rectangle.init(0.0, 0.0, @floatFromInt(texture.width), @floatFromInt(texture.height));
+    rl.drawTexturePro(texture, src, dest, rl.Vector2.zero(), 0.0, tint);
+}
+
+fn drawTextureCentered(texture: rl.Texture2D, center: rl.Vector2, width: f32, height: f32, tint: rl.Color) void {
+    drawTextureFit(
+        texture,
+        rl.Rectangle.init(center.x - width * 0.5, center.y - height * 0.5, width, height),
+        tint,
+    );
 }
 
 fn mainMenuButtons() [2]UiButton {

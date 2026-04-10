@@ -26,7 +26,7 @@ It also has two intentionally early placeholders:
 - native window bootstrap:
   [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig)
   now boots a simple desktop menu -> survival run -> results slice with
-  primitive rendering,
+  primitive gameplay rendering plus archive-backed menu/bootstrap asset loading,
 - wasm runtime ABI:
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig)
   now executes byte-input replay verify calls, but still exposes only a narrow
@@ -133,12 +133,14 @@ placeholder window targets, but not a real presentation pipeline.
 
 Remaining work:
 
-- Convert codec outputs into renderer-usable asset objects.
-  - JAZ decode is present, but the README explicitly notes no JPEG-to-RGBA
-    expansion yet.
-- Build texture/material/font loading on top of:
-  - [`crimson-zig/src/formats/paq.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/formats/paq.zig)
-  - [`crimson-zig/src/formats/jaz.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/formats/jaz.zig)
+- Convert newly loaded archive textures into renderer-usable asset objects.
+  - current progress:
+    [`crimson-zig/src/window_assets.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_assets.zig)
+    now loads `crimson.paq`, normalizes entry paths, expands JAZ alpha into
+    RGBA textures, and supports `.tga` / `.jpg` / `.jpeg` image assets plus
+    `load/smallFnt.dat`
+  - remaining: sprite atlas/frame metadata, terrain materials, font builders,
+    and broader non-window consumers of that asset layer
 - Port the terrain renderer and decal/effects presentation model.
 - Port gameplay rendering:
   - players,
@@ -155,11 +157,11 @@ Remaining work:
 
 Current evidence that this workstream is still early:
 
-- the desktop slice still uses primitive shapes/text instead of the real asset
-  stack:
+- the desktop slice still uses primitive shapes/text for live gameplay instead
+  of the real asset stack:
   [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig)
-- `formats.jaz` is still decode-only and the README still calls out missing
-  JPEG-to-RGBA expansion.
+- current asset use is shallow: boot/menu surfaces consume textures, but the
+  world renderer, terrain pipeline, HUD widgets, and product UI still do not.
 
 Definition of done for this workstream:
 

@@ -28,7 +28,8 @@ This wave is intentionally codec-only:
 
 - no new CLI commands yet,
 - no `ensure_*`/repair helpers,
-- no JPEG-to-RGBA expansion yet (JAZ returns split payload components).
+- core `formats.jaz` still returns split payload components, while the desktop
+  raylib asset loader now expands JAZ JPEG+alpha payloads into RGBA textures.
 
 ## Current native state
 
@@ -47,6 +48,10 @@ This wave is intentionally codec-only:
 - Native CLI still hard-fails for unsupported or unported native paths instead of falling back.
 - `zig build run-window` now boots a real desktop Survival slice:
   boot screen -> main menu -> live 1-player Survival run -> results.
+- `zig build run-window` now also opportunistically loads runtime assets from
+  `CRIMSON_ASSETS_DIR`, `./artifacts/assets`, or the current directory when
+  `crimson.paq` is present, including `.jaz`, `.tga`, `.jpg/.jpeg`, and
+  `load/smallFnt.dat`.
 - The freestanding WASM ABI now runs the same replay verification core for
   byte-input payloads, with JSON output and JSON error reporting via
   `crimson_last_error_json`.
@@ -71,7 +76,8 @@ zig build wasm
 - `zig build web-window` builds an HTML+WASM placeholder window for browser use.
 - `zig build run-web-window` serves the web build through `emrun` (`--no_browser`).
 - The desktop target is currently a menu-to-gameplay Survival slice with primitive
-  rendering and HUD, while `zig build run -- ...` continues to expose the replay tooling.
+  gameplay rendering and HUD, but it now loads archive-backed textures for
+  boot/menu surfaces when `crimson.paq` is available.
 - `zig build wasm` remains the freestanding ABI module (`wasm32-freestanding`) and
   is intentionally separate from the raylib web target (`wasm32-emscripten`).
 
