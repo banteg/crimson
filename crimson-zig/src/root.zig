@@ -12,6 +12,8 @@ pub const state = @import("runtime/state.zig");
 pub const weapons = @import("runtime/weapons.zig");
 pub const projectiles = @import("runtime/projectiles.zig");
 pub const bonuses = @import("runtime/bonuses.zig");
+pub const session = @import("runtime/session.zig");
+pub const session_builders = @import("runtime/session_builders.zig");
 
 pub const formats = @import("formats/mod.zig");
 
