@@ -57,6 +57,7 @@ const Screen = enum {
 
 const ResultsReason = enum {
     dead,
+    completed,
     runtime_error,
     abandoned,
 };
@@ -73,7 +74,8 @@ const UiButton = struct {
 };
 
 const GameplayScreen = struct {
-    runner: live_runner.LiveSurvivalRunner,
+    runner: live_runner.LiveRunner,
+    run_config: live_runner.LiveModeConfig,
     last_update: live_runner.FrameUpdate,
     ground: ?window_ground.GroundRenderer = null,
     terrain_fx: window_terrain_fx.TerrainFxTracker = .{},
@@ -89,6 +91,7 @@ const GameplayScreen = struct {
 
 const ResultsScreen = struct {
     reason: ResultsReason,
+    run_config: live_runner.LiveModeConfig,
     summary: runtime_session.SessionSummary,
     player_health: f32,
     runtime_error: ?[]const u8 = null,
@@ -197,8 +200,10 @@ const App = struct {
         self.audio.playUiButtonClick();
 
         switch (self.menu_selection) {
-            0 => self.startNewRun(),
-            1 => self.quit_requested = true,
+            0 => self.startNewRun(runConfigForMenuSelection(0, &self.next_seed_state)),
+            1 => self.startNewRun(runConfigForMenuSelection(1, &self.next_seed_state)),
+            2 => self.startNewRun(runConfigForMenuSelection(2, &self.next_seed_state)),
+            3 => self.quit_requested = true,
             else => {},
         }
     }
@@ -230,6 +235,10 @@ const App = struct {
                 }
             }
 
+            if (gameplay.runner.session.game_mode == .quests and gameplay.runner.session.quest_completed) {
+                self.finishRun(gameplay, .completed, null);
+                return;
+            }
             if (gameplay.last_update.all_players_dead) {
                 self.finishRun(gameplay, .dead, null);
             }
@@ -251,7 +260,9 @@ const App = struct {
         self.audio.playUiButtonClick();
 
         switch (self.results_selection) {
-            0 => self.startNewRun(),
+            0 => if (self.results) |results| {
+                self.startNewRun(results.run_config);
+            },
             1 => {
                 if (self.gameplay) |*gameplay| {
                     gameplay.deinit();
@@ -265,20 +276,21 @@ const App = struct {
         }
     }
 
-    fn startNewRun(self: *App) void {
+    fn startNewRun(self: *App, run_config: live_runner.LiveModeConfig) void {
         self.audio.stopGameplayMusic();
-        self.runtime.recordModeStart(.survival);
-        var runner = live_runner.LiveSurvivalRunner.init(.{
-            .seed = nextRunSeed(&self.next_seed_state),
-            .detail_preset = @intCast(std.math.clamp(self.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5))),
-            .gore_disabled = @intCast(self.runtime.config.gore_disabled),
-            .hardcore = self.runtime.config.hardcore_flag != 0,
-            .status_quest_unlock_index = self.runtime.status.quest_unlock_index,
-            .status_quest_unlock_index_full = self.runtime.status.quest_unlock_index_full,
-            .status_weapon_usage_counts = statusWeaponUsageCounts(self.runtime.status),
-        }) catch |err| {
+        var configured_run = run_config;
+        configured_run.detail_preset = @intCast(std.math.clamp(self.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5)));
+        configured_run.gore_disabled = @intCast(self.runtime.config.gore_disabled);
+        configured_run.hardcore = self.runtime.config.hardcore_flag != 0;
+        configured_run.status_quest_unlock_index = @intCast(self.runtime.status.quest_unlock_index);
+        configured_run.status_quest_unlock_index_full = @intCast(self.runtime.status.quest_unlock_index_full);
+        configured_run.status_weapon_usage_counts = statusWeaponUsageCounts(self.runtime.status);
+
+        self.runtime.recordModeStart(configured_run.game_mode);
+        var runner = live_runner.LiveRunner.init(configured_run) catch |err| {
             self.results = .{
                 .reason = .runtime_error,
+                .run_config = configured_run,
                 .summary = zeroSessionSummary(),
                 .player_health = 0.0,
                 .runtime_error = @errorName(err),
@@ -295,14 +307,14 @@ const App = struct {
 
         var gameplay: GameplayScreen = .{
             .runner = runner,
+            .run_config = configured_run,
             .last_update = last_update,
             .terrain_fx = window_terrain_fx.TerrainFxTracker.init(runner.seed),
         };
         if (self.runtime_assets) |*runtime_assets| {
-            gameplay.ground = window_ground.GroundRenderer.initForUnlockTerrain(
+            gameplay.ground = window_ground.GroundRenderer.initForTerrainSetup(
                 runtime_assets,
-                gameplay.runner.seed,
-                gameplay.runner.session.quest_unlock_index,
+                gameplay.runner.terrain_setup,
                 gameplay.runner.session.terrain_size,
                 gameplay.runner.session.terrain_size,
             ) catch null;
@@ -330,6 +342,7 @@ const App = struct {
         };
         self.results = .{
             .reason = reason,
+            .run_config = gameplay.run_config,
             .summary = runner.summary(),
             .player_health = player_health,
             .runtime_error = runtime_error orelse save_error,
@@ -347,7 +360,7 @@ const App = struct {
             drawBootAssets(runtime_assets, bootProgress(self.boot_elapsed));
         }
         drawCenteredText("CRIMSON-ZIG", 144, 72, accent_color);
-        drawCenteredText("Desktop survival slice booting", 232, 24, text_color);
+        drawCenteredText("Desktop gameplay slice booting", 232, 24, text_color);
         drawCenteredText("raylib shell + live Zig runtime + archive-backed assets", 270, 18, muted_text);
         drawAssetsStatus(self);
         drawAudioStatus(&self.audio);
@@ -358,13 +371,13 @@ const App = struct {
         drawBackdrop();
         if (self.runtime_assets) |*runtime_assets| {
             drawMenuAssets(runtime_assets);
-            drawSmallTextCentered(runtime_assets, "NATIVE MENU-TO-GAMEPLAY SURVIVAL SLICE", 204.0, HudTextColor.primary);
-            drawSmallTextCentered(runtime_assets, "REPLAY TOOLING IS NO LONGER THE ONLY REAL SURFACE.", 234.0, HudTextColor.dim);
+            drawSmallTextCentered(runtime_assets, "NATIVE SURVIVAL / RUSH / QUEST GAMEPLAY SLICE", 204.0, HudTextColor.primary);
+            drawSmallTextCentered(runtime_assets, "LIVE ZIG RUNTIME NOW BOOTS MULTIPLE REAL MODES.", 234.0, HudTextColor.dim);
         }
         if (self.runtime_assets == null) {
             drawCenteredText("CRIMSON-ZIG", 118, 68, accent_color);
-            drawCenteredText("Native menu-to-gameplay survival slice", 198, 24, text_color);
-            drawCenteredText("Replay tooling is no longer the only real surface.", 232, 18, muted_text);
+            drawCenteredText("Native survival / rush / quest gameplay slice", 198, 24, text_color);
+            drawCenteredText("Live Zig runtime now boots multiple real modes.", 232, 18, muted_text);
         }
         drawAssetsStatus(self);
         drawAudioStatus(&self.audio);
@@ -376,9 +389,9 @@ const App = struct {
         }
 
         if (self.runtime_assets) |*runtime_assets| {
-            drawSmallTextCentered(runtime_assets, "ENTER STARTS. MOUSE CLICK ALSO WORKS. ESC CLOSES THE WINDOW.", 624.0, HudTextColor.dim);
+            drawSmallTextCentered(runtime_assets, "ENTER STARTS. QUEST CURRENTLY BOOTS LEVEL 1.1. ESC CLOSES THE WINDOW.", 624.0, HudTextColor.dim);
         } else {
-            drawCenteredText("Enter starts. Mouse click also works. Esc closes the window.", 620, 18, muted_text);
+            drawCenteredText("Enter starts. Quest currently boots level 1.1. Esc closes the window.", 620, 18, muted_text);
         }
     }
 
@@ -418,7 +431,7 @@ const App = struct {
                 drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(262.0, 116.0, 756.0, 392.0), colorWithAlpha(rl.Color.white, 0.96));
                 switch (results.reason) {
                     .dead => drawTextureFit(runtime_assets.texture(.ui_text_reaper), rl.Rectangle.init(464.0, 136.0, 354.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
-                    .abandoned, .runtime_error => drawSmallTextCentered(runtime_assets, resultsTitle(results.reason), 152.0, HudTextColor.accent),
+                    .completed, .abandoned, .runtime_error => drawSmallTextCentered(runtime_assets, resultsTitle(results.reason), 152.0, HudTextColor.accent),
                 }
                 drawSmallTextCentered(runtime_assets, resultsSubtitle(results.reason), 196.0, HudTextColor.primary);
                 drawSmallTextFmt("ELAPSED_MS {d}", runtime_assets, .{results.summary.elapsed_ms_sim}, 330.0, 258.0, HudTextColor.primary);
@@ -692,11 +705,13 @@ fn drawTextureTiled(texture: rl.Texture2D, area: rl.Rectangle, tint: rl.Color) v
     }
 }
 
-fn mainMenuButtons() [2]UiButton {
+fn mainMenuButtons() [4]UiButton {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     return .{
-        .{ .label = "START SURVIVAL", .rect = centeredRect(center_x, 300.0, ui_button_width, ui_button_height) },
-        .{ .label = "QUIT", .rect = centeredRect(center_x, 372.0, ui_button_width, ui_button_height) },
+        .{ .label = "START SURVIVAL", .rect = centeredRect(center_x, 264.0, ui_button_width, ui_button_height) },
+        .{ .label = "START RUSH", .rect = centeredRect(center_x, 336.0, ui_button_width, ui_button_height) },
+        .{ .label = "START QUEST 1.1", .rect = centeredRect(center_x, 408.0, ui_button_width, ui_button_height) },
+        .{ .label = "QUIT", .rect = centeredRect(center_x, 480.0, ui_button_width, ui_button_height) },
     };
 }
 
@@ -813,7 +828,7 @@ fn buildWorldCamera(world_size: f32, shake_offset: state_mod.Vec2) rl.Camera2D {
 }
 
 fn collectGameplayInput(
-    runner: *live_runner.LiveSurvivalRunner,
+    runner: *live_runner.LiveRunner,
     camera: rl.Camera2D,
     runtime: *const app_runtime.DesktopRuntime,
 ) live_runner.FrameInput {
@@ -874,7 +889,7 @@ fn statusWeaponUsageCounts(status: formats.game_cfg.Status) [state_mod.weapon_co
 }
 
 fn drawWorld(
-    runner: *const live_runner.LiveSurvivalRunner,
+    runner: *const live_runner.LiveRunner,
     runtime_assets: ?*const window_assets.RuntimeAssets,
     ground: ?*const window_ground.GroundRenderer,
 ) void {
@@ -907,7 +922,7 @@ fn drawWorld(
     }, 4.0, border_color);
 }
 
-fn drawPlayers(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+fn drawPlayers(runner: *const live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     for (runner.session.playersConst()) |player| {
         const center = toRlVec(player.pos);
         const radius = @max(10.0, player.size * 0.28);
@@ -1059,7 +1074,7 @@ fn drawPlayers(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*
     }
 }
 
-fn drawCreatures(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+fn drawCreatures(runner: *const live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     const monster_vision_active = if (runner.player0Const()) |player|
         runtime_perks.perkActive(player, .monster_vision)
     else
@@ -1135,7 +1150,7 @@ fn drawCreatures(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: 
     }
 }
 
-fn drawProjectiles(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+fn drawProjectiles(runner: *const live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     for (runner.session.projectiles.entries, 0..) |projectile, proj_index| {
         if (!projectile.active) continue;
         if (runtime_assets) |assets| {
@@ -1158,7 +1173,7 @@ fn drawProjectiles(runner: *const live_runner.LiveSurvivalRunner, runtime_assets
     }
 }
 
-fn drawBonuses(runner: *const live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+fn drawBonuses(runner: *const live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     const bonus_phase = runner.session.elapsed_ms_sim * 0.001 * 1.3;
     for (runner.session.bonuses.entries, 0..) |entry, idx| {
         if (entry.bonus_id == .unused) continue;
@@ -1386,7 +1401,7 @@ fn drawSmallTextCentered(
 }
 
 fn drawGameplayHud(
-    runner: *live_runner.LiveSurvivalRunner,
+    runner: *live_runner.LiveRunner,
     update: live_runner.FrameUpdate,
     runtime_assets: ?*const window_assets.RuntimeAssets,
 ) void {
@@ -1471,7 +1486,7 @@ fn drawGameplayHud(
     drawTextSlice("WASD move  mouse aim/fire  R reload  Esc end run", 24, rl.getScreenHeight() - 34, 18, muted_text);
 }
 
-fn drawPerkOverlay(runner: *live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+fn drawPerkOverlay(runner: *live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), overlay_color);
     if (runtime_assets) |assets| {
         drawTextureFit(assets.texture(.ui_menu_panel), rl.Rectangle.init(262.0, 152.0, 756.0, 360.0), colorWithAlpha(rl.Color.white, 0.96));
@@ -1551,9 +1566,29 @@ fn nextRunSeed(seed_state: *u32) u32 {
     return if (seed_state.* == 0) 1 else seed_state.*;
 }
 
+fn runConfigForMenuSelection(selection: usize, seed_state: *u32) live_runner.LiveModeConfig {
+    const seed = nextRunSeed(seed_state);
+    return switch (selection) {
+        1 => .{
+            .seed = seed,
+            .game_mode = .rush,
+        },
+        2 => .{
+            .seed = seed,
+            .game_mode = .quests,
+            .quest_level_key = 101,
+        },
+        else => .{
+            .seed = seed,
+            .game_mode = .survival,
+        },
+    };
+}
+
 fn resultsTitle(reason: ResultsReason) [:0]const u8 {
     return switch (reason) {
         .dead => "Run Over",
+        .completed => "Quest Complete",
         .runtime_error => "Run Interrupted",
         .abandoned => "Run Abandoned",
     };
@@ -1562,6 +1597,7 @@ fn resultsTitle(reason: ResultsReason) [:0]const u8 {
 fn resultsSubtitle(reason: ResultsReason) [:0]const u8 {
     return switch (reason) {
         .dead => "All players are down.",
+        .completed => "Quest objectives cleared.",
         .abandoned => "Run returned to menu before completion.",
         .runtime_error => "Runtime hit an unported or invalid path.",
     };
