@@ -315,20 +315,27 @@ const App = struct {
         drawBackdrop();
         if (self.runtime_assets) |*runtime_assets| {
             drawMenuAssets(runtime_assets);
+            drawSmallTextCentered(runtime_assets, "NATIVE MENU-TO-GAMEPLAY SURVIVAL SLICE", 204.0, HudTextColor.primary);
+            drawSmallTextCentered(runtime_assets, "REPLAY TOOLING IS NO LONGER THE ONLY REAL SURFACE.", 234.0, HudTextColor.dim);
         }
-
-        drawCenteredText("CRIMSON-ZIG", 118, 68, accent_color);
-        drawCenteredText("Native menu-to-gameplay survival slice", 198, 24, text_color);
-        drawCenteredText("Replay tooling is no longer the only real surface.", 232, 18, muted_text);
+        if (self.runtime_assets == null) {
+            drawCenteredText("CRIMSON-ZIG", 118, 68, accent_color);
+            drawCenteredText("Native menu-to-gameplay survival slice", 198, 24, text_color);
+            drawCenteredText("Replay tooling is no longer the only real surface.", 232, 18, muted_text);
+        }
         drawAssetsStatus(self);
 
         const buttons = mainMenuButtons();
         for (buttons, 0..) |button, idx| {
             const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-            drawButton(button, idx == self.menu_selection, mouse_hovered);
+            drawButton(button, idx == self.menu_selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
         }
 
-        drawCenteredText("Enter starts. Mouse click also works. Esc closes the window.", 620, 18, muted_text);
+        if (self.runtime_assets) |*runtime_assets| {
+            drawSmallTextCentered(runtime_assets, "ENTER STARTS. MOUSE CLICK ALSO WORKS. ESC CLOSES THE WINDOW.", 624.0, HudTextColor.dim);
+        } else {
+            drawCenteredText("Enter starts. Mouse click also works. Esc closes the window.", 620, 18, muted_text);
+        }
     }
 
     fn drawGameplay(self: *App) void {
@@ -351,9 +358,9 @@ const App = struct {
             drawBonuses(runner, runtime_assets);
             camera.end();
 
-            drawGameplayHud(runner, gameplay.last_update);
+            drawGameplayHud(runner, gameplay.last_update, runtime_assets);
             if (gameplay.last_update.paused_for_perk_pick) {
-                drawPerkOverlay(runner);
+                drawPerkOverlay(runner, runtime_assets);
             }
         }
     }
@@ -363,29 +370,44 @@ const App = struct {
         drawBackdrop();
 
         if (self.results) |results| {
-            drawCenteredText(resultsTitle(results.reason), 124, 64, accent_color);
-            switch (results.reason) {
-                .dead => drawCenteredText("All players are down.", 188, 22, text_color),
-                .abandoned => drawCenteredText("Run returned to menu before completion.", 188, 22, text_color),
-                .runtime_error => drawCenteredText("Runtime hit an unported or invalid path.", 188, 22, text_color),
-            }
+            if (self.runtime_assets) |*runtime_assets| {
+                drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(262.0, 116.0, 756.0, 392.0), colorWithAlpha(rl.Color.white, 0.96));
+                switch (results.reason) {
+                    .dead => drawTextureFit(runtime_assets.texture(.ui_text_reaper), rl.Rectangle.init(464.0, 136.0, 354.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
+                    .abandoned, .runtime_error => drawSmallTextCentered(runtime_assets, resultsTitle(results.reason), 152.0, HudTextColor.accent),
+                }
+                drawSmallTextCentered(runtime_assets, resultsSubtitle(results.reason), 196.0, HudTextColor.primary);
+                drawSmallTextFmt("ELAPSED_MS {d}", runtime_assets, .{results.summary.elapsed_ms_sim}, 330.0, 258.0, HudTextColor.primary);
+                drawSmallTextFmt("XP {d}", runtime_assets, .{results.summary.player_experience}, 330.0, 286.0, HudTextColor.primary);
+                drawSmallTextFmt("LEVEL {d}", runtime_assets, .{results.summary.player_level}, 330.0, 314.0, HudTextColor.primary);
+                drawSmallTextFmt("FIRE {d}  RELOAD {d}", runtime_assets, .{ results.summary.fire_pressed_count, results.summary.reload_pressed_count }, 330.0, 342.0, HudTextColor.primary);
+                drawSmallTextFmt("SPAWNS STAGE {d}  WAVE {d}", runtime_assets, .{ results.summary.stage_spawn_count, results.summary.wave_spawn_count }, 330.0, 370.0, HudTextColor.primary);
+                drawSmallTextFmt("WEAPON {s}  HP {d:.1}", runtime_assets, .{ weaponName(results.summary.player_weapon_id), results.player_health }, 330.0, 398.0, HudTextColor.primary);
 
-            drawTextFmt("elapsed_ms: {d}", .{results.summary.elapsed_ms_sim}, 460, 280, 24, text_color);
-            drawTextFmt("xp: {d}", .{results.summary.player_experience}, 460, 316, 24, text_color);
-            drawTextFmt("level: {d}", .{results.summary.player_level}, 460, 352, 24, text_color);
-            drawTextFmt("fire inputs: {d} / reloads: {d}", .{ results.summary.fire_pressed_count, results.summary.reload_pressed_count }, 460, 388, 24, text_color);
-            drawTextFmt("spawns: stage={d} wave={d}", .{ results.summary.stage_spawn_count, results.summary.wave_spawn_count }, 460, 424, 24, text_color);
-            drawTextFmt("weapon_id: {d}  hp: {d:.1}", .{ results.summary.player_weapon_id, results.player_health }, 460, 460, 24, text_color);
+                if (results.runtime_error) |runtime_error| {
+                    drawSmallText(runtime_assets, runtime_error, 330.0, 438.0, rl.Color.orange);
+                }
+            } else {
+                drawCenteredText(resultsTitle(results.reason), 124, 64, accent_color);
+                drawCenteredText(resultsSubtitle(results.reason), 188, 22, text_color);
 
-            if (results.runtime_error) |runtime_error| {
-                drawTextSlice(runtime_error, 460, 520, 20, rl.Color.orange);
+                drawTextFmt("elapsed_ms: {d}", .{results.summary.elapsed_ms_sim}, 460, 280, 24, text_color);
+                drawTextFmt("xp: {d}", .{results.summary.player_experience}, 460, 316, 24, text_color);
+                drawTextFmt("level: {d}", .{results.summary.player_level}, 460, 352, 24, text_color);
+                drawTextFmt("fire inputs: {d} / reloads: {d}", .{ results.summary.fire_pressed_count, results.summary.reload_pressed_count }, 460, 388, 24, text_color);
+                drawTextFmt("spawns: stage={d} wave={d}", .{ results.summary.stage_spawn_count, results.summary.wave_spawn_count }, 460, 424, 24, text_color);
+                drawTextFmt("weapon_id: {d}  hp: {d:.1}", .{ results.summary.player_weapon_id, results.player_health }, 460, 460, 24, text_color);
+
+                if (results.runtime_error) |runtime_error| {
+                    drawTextSlice(runtime_error, 460, 520, 20, rl.Color.orange);
+                }
             }
         }
 
         const buttons = resultsButtons();
         for (buttons, 0..) |button, idx| {
             const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-            drawButton(button, idx == self.results_selection, mouse_hovered);
+            drawButton(button, idx == self.results_selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
         }
     }
 };
@@ -451,12 +473,13 @@ fn drawMenuAssets(runtime_assets: *const window_assets.RuntimeAssets) void {
     );
     rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), rl.Color.init(16, 11, 9, 160));
     drawTextureCentered(
-        runtime_assets.texture(.cl_logo),
+        runtime_assets.texture(.ui_sign_crimson),
         rl.Vector2.init(@as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5, 120.0),
-        380.0,
-        120.0,
+        446.0,
+        110.0,
         rl.Color.init(255, 255, 255, 232),
     );
+    drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(388.0, 242.0, 504.0, 252.0), rl.Color.init(255, 255, 255, 220));
     drawTextureFit(runtime_assets.texture(.logo_esrb), rl.Rectangle.init(42.0, 44.0, 112.0, 150.0), rl.Color.init(255, 255, 255, 190));
 }
 
@@ -641,7 +664,50 @@ fn buttonActivated(buttons: []const UiButton, selection: usize) bool {
     return false;
 }
 
-fn drawButton(button: UiButton, selected: bool, hovered: bool) void {
+fn drawButton(
+    button: UiButton,
+    selected: bool,
+    hovered: bool,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
+) void {
+    if (runtime_assets) |assets| {
+        const scale = button.rect.height / 32.0;
+        const texture = if (button.rect.width > 120.0) assets.texture(.ui_button_md) else assets.texture(.ui_button_sm);
+        const glow_alpha: f32 = if (selected or hovered) 0.92 else 0.72;
+        if (selected or hovered) {
+            rl.drawRectangleRounded(
+                .{
+                    .x = button.rect.x + 12.0 * scale,
+                    .y = button.rect.y + 5.0 * scale,
+                    .width = button.rect.width - 24.0 * scale,
+                    .height = button.rect.height - 10.0 * scale,
+                },
+                0.18,
+                8,
+                rl.Color.init(128, 128, 178, @intFromFloat(glow_alpha * 120.0)),
+            );
+        }
+        const plate_alpha: f32 = if (selected or hovered) 255.0 else 230.0;
+        rl.drawTexturePro(
+            texture,
+            rl.Rectangle.init(0.0, 0.0, @floatFromInt(texture.width), @floatFromInt(texture.height)),
+            button.rect,
+            rl.Vector2.zero(),
+            0.0,
+            rl.Color.init(255, 255, 255, @intFromFloat(plate_alpha)),
+        );
+
+        const label_width = measureSmallText(assets, button.label);
+        drawSmallText(
+            assets,
+            button.label,
+            button.rect.x + (button.rect.width - label_width) * 0.5 + 1.0,
+            button.rect.y + 10.0,
+            colorWithAlpha(rl.Color.white, if (selected or hovered) 1.0 else 0.7),
+        );
+        return;
+    }
+
     const fill = if (selected or hovered) accent_color else panel_color;
     const outline = if (selected or hovered) rl.Color.gold else panel_outline;
     rl.drawRectangleRounded(button.rect, 0.2, 8, fill);
@@ -1097,8 +1163,199 @@ fn colorWithAlpha(color: rl.Color, alpha: f32) rl.Color {
     );
 }
 
-fn drawGameplayHud(runner: *live_runner.LiveSurvivalRunner, update: live_runner.FrameUpdate) void {
+const HudTextColor = struct {
+    const primary = rl.Color.init(220, 220, 220, 255);
+    const dim = rl.Color.init(170, 170, 180, 255);
+    const accent = rl.Color.init(240, 200, 80, 255);
+};
+
+fn drawAmmoIndicators(assets: *const window_assets.RuntimeAssets, texture_id: window_assets.TextureId, ammo: f32) void {
+    const texture = assets.texture(texture_id);
+    const count = @max(0, @min(30, @as(i32, @intFromFloat(ammo + 0.999))));
+    var idx: i32 = 0;
+    while (idx < count) : (idx += 1) {
+        const alpha: f32 = if (idx < 20) 0.8 else 0.45;
+        drawTextureFit(
+            texture,
+            rl.Rectangle.init(300.0 + @as(f32, @floatFromInt(idx)) * 6.0, 10.0, 6.0, 16.0),
+            colorWithAlpha(rl.Color.white, alpha),
+        );
+    }
+}
+
+fn weaponIndicatorTextureId(weapon_id: game_ids.WeaponId) window_assets.TextureId {
+    return switch (weapon_id) {
+        .rocket_launcher, .seeker_rockets, .mini_rocket_swarmers, .rocket_minigun, .nuke_launcher => .ui_ind_rocket,
+        .ion_rifle, .ion_minigun, .ion_cannon, .ion_shotgun, .lightning_rifle => .ui_ind_electric,
+        .flamethrower, .blow_torch, .hr_flamer, .flameburst, .fire_bullets => .ui_ind_fire,
+        else => .ui_ind_bullet,
+    };
+}
+
+fn xpProgressRatio(xp: i32, level: i32) f32 {
+    const safe_level = @max(level, 1);
+    const prev_threshold = if (safe_level <= 1) 0 else survivalLevelThreshold(safe_level - 1);
+    const next_threshold = survivalLevelThreshold(safe_level);
+    if (next_threshold <= prev_threshold) return 0.0;
+    return std.math.clamp(
+        @as(f32, @floatFromInt(xp - prev_threshold)) / @as(f32, @floatFromInt(next_threshold - prev_threshold)),
+        @as(f32, 0.0),
+        @as(f32, 1.0),
+    );
+}
+
+fn survivalLevelThreshold(level: i32) i32 {
+    const safe_level = @max(level, 1);
+    return @intFromFloat(1000.0 + std.math.pow(f32, @floatFromInt(safe_level), 1.8) * 1000.0);
+}
+
+fn drawSmallText(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    text: []const u8,
+    x: f32,
+    y: f32,
+    color: rl.Color,
+) void {
+    const texture = runtime_assets.texture(.small_white);
+    var x_pos = @floor(x);
+    var y_pos = @floor(y);
+    const base_x = x_pos;
+    for (text) |value| {
+        switch (value) {
+            '\n' => {
+                x_pos = base_x;
+                y_pos += 16.0;
+                continue;
+            },
+            '\r' => continue,
+            else => {},
+        }
+
+        const width = runtime_assets.small_font_widths[value];
+        if (width == 0) continue;
+        const col = value % 16;
+        const row = value / 16;
+        rl.drawTexturePro(
+            texture,
+            rl.Rectangle.init(@as(f32, @floatFromInt(col * 16)), @as(f32, @floatFromInt(row * 16)), @floatFromInt(width), 16.0),
+            rl.Rectangle.init(x_pos, y_pos, @floatFromInt(width), 16.0),
+            rl.Vector2.zero(),
+            0.0,
+            color,
+        );
+        x_pos += @as(f32, @floatFromInt(width));
+    }
+}
+
+fn measureSmallText(runtime_assets: *const window_assets.RuntimeAssets, text: []const u8) f32 {
+    var width: f32 = 0.0;
+    var best: f32 = 0.0;
+    for (text) |value| {
+        switch (value) {
+            '\n' => {
+                best = @max(best, width);
+                width = 0.0;
+                continue;
+            },
+            '\r' => continue,
+            else => {},
+        }
+        width += @as(f32, @floatFromInt(runtime_assets.small_font_widths[value]));
+    }
+    return @max(best, width);
+}
+
+fn drawSmallTextFmt(
+    comptime fmt: []const u8,
+    runtime_assets: *const window_assets.RuntimeAssets,
+    args: anytype,
+    x: f32,
+    y: f32,
+    color: rl.Color,
+) void {
+    var buf: [256]u8 = undefined;
+    const text = std.fmt.bufPrint(&buf, fmt, args) catch return;
+    drawSmallText(runtime_assets, text, x, y, color);
+}
+
+fn drawSmallTextCentered(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    text: []const u8,
+    y: f32,
+    color: rl.Color,
+) void {
+    const width = measureSmallText(runtime_assets, text);
+    const x = (@as(f32, @floatFromInt(rl.getScreenWidth())) - width) * 0.5;
+    drawSmallText(runtime_assets, text, x, y, color);
+}
+
+fn drawGameplayHud(
+    runner: *live_runner.LiveSurvivalRunner,
+    update: live_runner.FrameUpdate,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
+) void {
     const player = runner.player0Const() orelse return;
+    if (runtime_assets) |assets| {
+        drawTextureFit(
+            assets.texture(.ui_game_top),
+            rl.Rectangle.init(0.0, 0.0, 512.0, 64.0),
+            colorWithAlpha(rl.Color.white, 0.9),
+        );
+        drawTextureCentered(assets.texture(.ui_life_heart), rl.Vector2.init(27.0, 21.0), 32.0, 32.0, colorWithAlpha(rl.Color.white, 0.9));
+
+        rl.drawRectangleRounded(
+            .{
+                .x = 64.0,
+                .y = 16.0,
+                .width = 120.0,
+                .height = 9.0,
+            },
+            0.22,
+            4,
+            rl.Color.init(72, 20, 20, 128),
+        );
+        rl.drawRectangleRounded(
+            .{
+                .x = 64.0,
+                .y = 16.0,
+                .width = 120.0 * std.math.clamp(player.health / 100.0, @as(f32, 0.0), @as(f32, 1.0)),
+                .height = 9.0,
+            },
+            0.22,
+            4,
+            rl.Color.init(208, 58, 58, 220),
+        );
+
+        const weapon_id = std.meta.intToEnum(game_ids.WeaponId, update.player_weapon_id) catch .pistol;
+        const icon_index = weapon_data.weaponIconIndex(weapon_id);
+        if (icon_index >= 0) {
+            drawTextureRegionCenteredRotated(
+                assets.texture(.ui_wicons),
+                window_atlas.weaponIconRect(assets.texture(.ui_wicons).width, assets.texture(.ui_wicons).height, icon_index),
+                rl.Vector2.init(252.0, 18.0),
+                64.0,
+                32.0,
+                0.0,
+                colorWithAlpha(rl.Color.white, 0.9),
+            );
+        }
+
+        drawAmmoIndicators(assets, weaponIndicatorTextureId(weapon_id), player.weapon.ammo);
+        drawTextureFit(assets.texture(.ui_ind_panel), rl.Rectangle.init(0.0, 60.0, 182.0, 53.0), colorWithAlpha(rl.Color.white, 0.9));
+
+        drawSmallTextFmt("HP {d:.0}", assets, .{player.health}, 30.0, 38.0, HudTextColor.primary);
+        drawSmallTextFmt("XP", assets, .{}, 6.0, 78.0, HudTextColor.dim);
+        drawSmallTextFmt("{d}", assets, .{update.player_experience}, 26.0, 74.0, HudTextColor.primary);
+        drawSmallTextFmt("LV {d}", assets, .{update.player_level}, 86.0, 79.0, HudTextColor.accent);
+
+        rl.drawRectangle(26, 91, 54, 4, rl.Color.init(16, 26, 54, 140));
+        rl.drawRectangle(27, 92, @intFromFloat(52.0 * xpProgressRatio(update.player_experience, update.player_level)), 2, rl.Color.init(26, 77, 153, 255));
+        drawSmallTextFmt("{d}ms", assets, .{update.elapsed_ms_sim}, 92.0, 74.0, HudTextColor.dim);
+        drawSmallTextFmt("{d}/{d}", assets, .{ @as(i32, @intFromFloat(player.weapon.ammo)), weapon_data.weapon_stats.get(weapon_id).clip_size }, 308.0, 28.0, HudTextColor.primary);
+        drawSmallTextFmt("shots {d} hits {d}", assets, .{ update.shots_fired, update.shots_hit }, 24.0, @floatFromInt(rl.getScreenHeight() - 34), HudTextColor.dim);
+        return;
+    }
+
     rl.drawRectangleRounded(
         .{
             .x = 22.0,
@@ -1118,8 +1375,29 @@ fn drawGameplayHud(runner: *live_runner.LiveSurvivalRunner, update: live_runner.
     drawTextSlice("WASD move  mouse aim/fire  R reload  Esc end run", 24, rl.getScreenHeight() - 34, 18, muted_text);
 }
 
-fn drawPerkOverlay(runner: *live_runner.LiveSurvivalRunner) void {
+fn drawPerkOverlay(runner: *live_runner.LiveSurvivalRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), overlay_color);
+    if (runtime_assets) |assets| {
+        drawTextureFit(assets.texture(.ui_menu_panel), rl.Rectangle.init(262.0, 152.0, 756.0, 360.0), colorWithAlpha(rl.Color.white, 0.96));
+        drawTextureFit(assets.texture(.ui_text_pick_a_perk), rl.Rectangle.init(432.0, 176.0, 410.0, 40.0), colorWithAlpha(rl.Color.white, 0.96));
+
+        const choices = runner.currentPerkChoices();
+        for (choices, 0..) |perk_id, idx| {
+            const row_y = 240.0 + @as(f32, @floatFromInt(idx)) * 28.0;
+            rl.drawTexturePro(
+                assets.texture(.ui_menu_item),
+                rl.Rectangle.init(0.0, 0.0, @floatFromInt(assets.texture(.ui_menu_item).width), @floatFromInt(assets.texture(.ui_menu_item).height)),
+                rl.Rectangle.init(332.0, row_y - 6.0, 612.0, 32.0),
+                rl.Vector2.zero(),
+                0.0,
+                colorWithAlpha(rl.Color.white, if (idx == 0) 0.95 else 0.72),
+            );
+            drawSmallTextFmt("{d}. {s}", assets, .{ idx + 1, @tagName(perk_id) }, 360.0, row_y, if (idx == 0) HudTextColor.accent else HudTextColor.primary);
+        }
+        drawSmallText(assets, "Press 1-7 to select. Gameplay is paused.", 334.0, 458.0, HudTextColor.dim);
+        return;
+    }
+
     rl.drawRectangleRounded(
         .{
             .x = 280.0,
@@ -1182,6 +1460,14 @@ fn resultsTitle(reason: ResultsReason) [:0]const u8 {
         .dead => "Run Over",
         .runtime_error => "Run Interrupted",
         .abandoned => "Run Abandoned",
+    };
+}
+
+fn resultsSubtitle(reason: ResultsReason) [:0]const u8 {
+    return switch (reason) {
+        .dead => "All players are down.",
+        .abandoned => "Run returned to menu before completion.",
+        .runtime_error => "Runtime hit an unported or invalid path.",
     };
 }
 
