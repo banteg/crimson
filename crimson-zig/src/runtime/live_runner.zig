@@ -29,6 +29,7 @@ pub const LiveSurvivalConfig = struct {
     preserve_bugs: bool = false,
     status_quest_unlock_index: i32 = 0,
     status_quest_unlock_index_full: i32 = 0,
+    status_weapon_usage_counts: [state_mod.weapon_count_size]u32 = [_]u32{0} ** state_mod.weapon_count_size,
 };
 
 pub const FrameInput = struct {
@@ -131,6 +132,7 @@ pub const LiveSurvivalRunner = struct {
                 .preserve_bugs = config.preserve_bugs,
                 .status_quest_unlock_index = config.status_quest_unlock_index,
                 .status_quest_unlock_index_full = config.status_quest_unlock_index_full,
+                .status_weapon_usage_counts = config.status_weapon_usage_counts,
             },
             .{},
         );

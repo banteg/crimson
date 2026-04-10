@@ -21,9 +21,13 @@ pub const Bridge = struct {
     load_state: LoadState = .unavailable,
     message: ?[]u8 = null,
 
-    pub fn init(allocator: std.mem.Allocator) Bridge {
+    pub fn init(
+        allocator: std.mem.Allocator,
+        config: audio_mod.AudioConfig,
+        assets_dir: ?[]const u8,
+    ) Bridge {
         var bridge: Bridge = .{ .allocator = allocator };
-        bridge.load();
+        bridge.load(config, assets_dir);
         return bridge;
     }
 
@@ -39,8 +43,8 @@ pub const Bridge = struct {
         self.* = undefined;
     }
 
-    pub fn load(self: *Bridge) void {
-        self.state = audio_mod.loadRuntimeAudioFromDefaultSearch(self.allocator) catch |err| {
+    pub fn load(self: *Bridge, config: audio_mod.AudioConfig, assets_dir: ?[]const u8) void {
+        self.state = audio_mod.loadRuntimeAudio(self.allocator, assets_dir, config) catch |err| {
             self.load_state = .failed;
             self.replaceMessage(@errorName(err));
             return;

@@ -47,7 +47,19 @@ pub const LoadRuntimeAudioError = std.mem.Allocator.Error ||
 
 pub fn loadRuntimeAudioFromDefaultSearch(allocator: std.mem.Allocator) LoadRuntimeAudioError!?AudioState {
     const config = try loadAudioConfig(allocator);
-    const assets_dir = (try resolveAudioAssetsDir(allocator)) orelse {
+    return loadRuntimeAudio(allocator, null, config);
+}
+
+pub fn loadRuntimeAudio(
+    allocator: std.mem.Allocator,
+    resolved_assets_dir: ?[]const u8,
+    config: AudioConfig,
+) LoadRuntimeAudioError!?AudioState {
+    const owned_assets_dir = if (resolved_assets_dir) |dir|
+        try allocator.dupe(u8, dir)
+    else
+        try resolveAudioAssetsDir(allocator);
+    const assets_dir = owned_assets_dir orelse {
         if (!config.music_enabled and !config.sfx_enabled) {
             const disabled_state = try initAudioState(allocator, "", config);
             return disabled_state;
@@ -57,6 +69,15 @@ pub fn loadRuntimeAudioFromDefaultSearch(allocator: std.mem.Allocator) LoadRunti
     defer allocator.free(assets_dir);
     const state = try initAudioState(allocator, assets_dir, config);
     return state;
+}
+
+pub fn audioConfigFromCrimsonCfg(cfg: formats.crimson_cfg.CrimsonCfg) AudioConfig {
+    return .{
+        .music_enabled = cfg.music_disable == 0,
+        .sfx_enabled = cfg.sound_disable == 0,
+        .music_volume = clampVolume(cfg.music_volume),
+        .sfx_volume = clampVolume(cfg.sfx_volume),
+    };
 }
 
 pub fn playMusic(state: *AudioState, track_name: []const u8) void {
@@ -187,12 +208,7 @@ fn loadAudioConfig(allocator: std.mem.Allocator) LoadRuntimeAudioError!AudioConf
     defer allocator.free(bytes);
 
     const parsed = try formats.crimson_cfg.decode(bytes);
-    return .{
-        .music_enabled = parsed.music_disable == 0,
-        .sfx_enabled = parsed.sound_disable == 0,
-        .music_volume = clampVolume(parsed.music_volume),
-        .sfx_volume = clampVolume(parsed.sfx_volume),
-    };
+    return audioConfigFromCrimsonCfg(parsed);
 }
 
 fn runtimeArchiveReadConfig(

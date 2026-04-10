@@ -61,6 +61,17 @@ This wave is intentionally codec-only:
   - menu theme + intro playback,
   - first-hit Survival game-tune trigger,
   - cfg-driven music/sfx enable and volume behavior.
+- The desktop slice now also owns real runtime config/status files under the
+  Python-compatible runtime dir:
+  - missing `crimson.cfg` and `game.cfg` are created from Zig using the same
+    native defaults/codecs,
+  - window size/fullscreen and current Survival runtime defaults are read from
+    `crimson.cfg`,
+  - `game.cfg` mode-play counters, weapon usage counts, unlock indices, and
+    global playtime counters are now mutated and saved back out by the Zig app.
+- For the current 1-player desktop slice, player 1 movement/fire plus global
+  reload bindings now come from the encoded `crimson.cfg` control blocks rather
+  than hardcoded `WASD` / `Mouse1` / `R`.
 - The freestanding WASM ABI now runs the same replay verification core for
   byte-input payloads, with JSON output and JSON error reporting via
   `crimson_last_error_json`.
@@ -88,6 +99,9 @@ zig build wasm
 - `zig build run-window` now initializes audio from `music.paq` / `sfx.paq`
   when they are present in the resolved runtime dir, and falls back to silent
   execution when audio archives are missing or disabled in `crimson.cfg`.
+- `zig build run-window` now creates/loads `crimson.cfg` + `game.cfg` in the
+  resolved runtime dir before booting the window target, and writes back status
+  mutations on run end / app exit.
 - `zig build web-window` builds an HTML+WASM placeholder window for browser use.
 - `zig build run-web-window` serves the web build through `emrun` (`--no_browser`).
 - The desktop target is currently a menu-to-gameplay Survival slice with a

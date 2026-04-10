@@ -245,10 +245,23 @@ Definition of done for this workstream:
 The Zig tree has important codec groundwork here, but not the full application
 integration.
 
+Current progress:
+
+- [`crimson-zig/src/app_runtime.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/app_runtime.zig)
+  now gives the desktop slice a native owner for runtime-dir `crimson.cfg` and
+  `game.cfg`.
+- Missing `crimson.cfg` / `game.cfg` files are now created in Zig using the
+  existing codecs and Python-matching defaults.
+- [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig)
+  now reads `crimson.cfg` for current window/audio/gameplay defaults and writes
+  back `game.cfg` play counters, playtime, unlock indices, and weapon-usage
+  state from live runs.
+
 Remaining work:
 
-- use `crimson.cfg` and `game.cfg` codecs in real runtime boot/save flows,
-- wire unlocks, counters, highscores, and status mutation into the Zig app,
+- widen beyond the current Survival desktop slice:
+  Rush/Quest/Tutorial/Typ-o save semantics, quest counters, highscores,
+  and broader state ownership,
 - support in-product config editing rather than config-as-fixture only,
 - expose useful CLI/admin surfaces for inspecting and repairing local state.
 

@@ -2,9 +2,41 @@ const std = @import("std");
 const binary = @import("binary.zig");
 
 pub const file_size: usize = 0x480;
+pub const player_name_size: usize = 0x20;
+pub const player_name_max_bytes: usize = player_name_size - 1;
+pub const saved_name_slot_count: usize = 8;
+pub const saved_name_entry_size: usize = 0x1B;
+pub const saved_names_blob_size: usize = saved_name_slot_count * saved_name_entry_size;
+pub const player_bind_block_dwords: usize = 0x10;
+pub const player_bind_block_size: usize = player_bind_block_dwords * 4;
+pub const player_bind_block_count_primary: usize = 2;
+pub const player_bind_block_count_total: usize = 4;
+pub const reserved_keybind_slot_count: usize = 2;
+pub const padding_keybind_slot_count: usize = 3;
+pub const extended_direction_arrow_flag_count: usize = 2;
+pub const ext_direction_arrow_unset: u8 = 0;
+pub const ext_direction_arrow_off: u8 = 1;
+pub const ext_direction_arrow_on: u8 = 2;
+pub const keybind_unbound_code: i32 = 0x17E;
 
 pub const CrimsonCfgError = binary.BinaryError || error{
     InvalidSize,
+};
+
+pub const PlayerBindBlock = struct {
+    move_forward: i32,
+    move_backward: i32,
+    turn_left: i32,
+    turn_right: i32,
+    fire: i32,
+    reserved_keys: [reserved_keybind_slot_count]i32,
+    aim_left: i32,
+    aim_right: i32,
+    axis_aim_y: i32,
+    axis_aim_x: i32,
+    axis_move_y: i32,
+    axis_move_x: i32,
+    padding: [padding_keybind_slot_count]i32,
 };
 
 pub const CrimsonCfg = struct {
@@ -74,6 +106,258 @@ pub const CrimsonCfg = struct {
     keybind_pick_perk: u32,
     keybind_reload: u32,
 };
+
+pub fn decodePlayerBindBlock(bytes: []const u8) CrimsonCfgError!PlayerBindBlock {
+    if (bytes.len != player_bind_block_size) return error.InvalidSize;
+
+    var reader = binary.Reader.init(bytes);
+    return .{
+        .move_forward = @bitCast(try reader.readU32Le()),
+        .move_backward = @bitCast(try reader.readU32Le()),
+        .turn_left = @bitCast(try reader.readU32Le()),
+        .turn_right = @bitCast(try reader.readU32Le()),
+        .fire = @bitCast(try reader.readU32Le()),
+        .reserved_keys = .{
+            @bitCast(try reader.readU32Le()),
+            @bitCast(try reader.readU32Le()),
+        },
+        .aim_left = @bitCast(try reader.readU32Le()),
+        .aim_right = @bitCast(try reader.readU32Le()),
+        .axis_aim_y = @bitCast(try reader.readU32Le()),
+        .axis_aim_x = @bitCast(try reader.readU32Le()),
+        .axis_move_y = @bitCast(try reader.readU32Le()),
+        .axis_move_x = @bitCast(try reader.readU32Le()),
+        .padding = .{
+            @bitCast(try reader.readU32Le()),
+            @bitCast(try reader.readU32Le()),
+            @bitCast(try reader.readU32Le()),
+        },
+    };
+}
+
+pub fn encodePlayerBindBlock(block: PlayerBindBlock) [player_bind_block_size]u8 {
+    var bytes: [player_bind_block_size]u8 = undefined;
+    var writer = binary.Writer.init(bytes[0..]);
+
+    writer.writeU32Le(@bitCast(block.move_forward)) catch unreachable;
+    writer.writeU32Le(@bitCast(block.move_backward)) catch unreachable;
+    writer.writeU32Le(@bitCast(block.turn_left)) catch unreachable;
+    writer.writeU32Le(@bitCast(block.turn_right)) catch unreachable;
+    writer.writeU32Le(@bitCast(block.fire)) catch unreachable;
+    for (block.reserved_keys) |value| {
+        writer.writeU32Le(@bitCast(value)) catch unreachable;
+    }
+    writer.writeU32Le(@bitCast(block.aim_left)) catch unreachable;
+    writer.writeU32Le(@bitCast(block.aim_right)) catch unreachable;
+    writer.writeU32Le(@bitCast(block.axis_aim_y)) catch unreachable;
+    writer.writeU32Le(@bitCast(block.axis_aim_x)) catch unreachable;
+    writer.writeU32Le(@bitCast(block.axis_move_y)) catch unreachable;
+    writer.writeU32Le(@bitCast(block.axis_move_x)) catch unreachable;
+    for (block.padding) |value| {
+        writer.writeU32Le(@bitCast(value)) catch unreachable;
+    }
+
+    std.debug.assert(writer.pos == player_bind_block_size);
+    return bytes;
+}
+
+pub fn defaultPlayerBindBlock(player_index: usize) PlayerBindBlock {
+    return switch (player_index) {
+        0 => .{
+            .move_forward = 0x11,
+            .move_backward = 0x1F,
+            .turn_left = 0x1E,
+            .turn_right = 0x20,
+            .fire = 0x100,
+            .reserved_keys = [_]i32{ keybind_unbound_code, keybind_unbound_code },
+            .aim_left = 0x10,
+            .aim_right = 0x12,
+            .axis_aim_y = 0x13F,
+            .axis_aim_x = 0x140,
+            .axis_move_y = 0x141,
+            .axis_move_x = 0x153,
+            .padding = [_]i32{ keybind_unbound_code, keybind_unbound_code, keybind_unbound_code },
+        },
+        1 => .{
+            .move_forward = 0xC8,
+            .move_backward = 0xD0,
+            .turn_left = 0xCB,
+            .turn_right = 0xCD,
+            .fire = 0x9D,
+            .reserved_keys = [_]i32{ keybind_unbound_code, keybind_unbound_code },
+            .aim_left = 0xD3,
+            .aim_right = 0xD1,
+            .axis_aim_y = 0x13F,
+            .axis_aim_x = 0x140,
+            .axis_move_y = 0x141,
+            .axis_move_x = 0x153,
+            .padding = [_]i32{ keybind_unbound_code, keybind_unbound_code, keybind_unbound_code },
+        },
+        2 => .{
+            .move_forward = 0x17,
+            .move_backward = 0x25,
+            .turn_left = 0x24,
+            .turn_right = 0x26,
+            .fire = 0x36,
+            .reserved_keys = [_]i32{ keybind_unbound_code, keybind_unbound_code },
+            .aim_left = 0x16,
+            .aim_right = 0x18,
+            .axis_aim_y = keybind_unbound_code,
+            .axis_aim_x = keybind_unbound_code,
+            .axis_move_y = keybind_unbound_code,
+            .axis_move_x = keybind_unbound_code,
+            .padding = [_]i32{ keybind_unbound_code, keybind_unbound_code, keybind_unbound_code },
+        },
+        3 => .{
+            .move_forward = 0x131,
+            .move_backward = 0x132,
+            .turn_left = 0x133,
+            .turn_right = 0x134,
+            .fire = 0x11F,
+            .reserved_keys = [_]i32{ keybind_unbound_code, keybind_unbound_code },
+            .aim_left = keybind_unbound_code,
+            .aim_right = keybind_unbound_code,
+            .axis_aim_y = 0x140,
+            .axis_aim_x = 0x13F,
+            .axis_move_y = 0x153,
+            .axis_move_x = 0x154,
+            .padding = [_]i32{ keybind_unbound_code, keybind_unbound_code, keybind_unbound_code },
+        },
+        else => unreachable,
+    };
+}
+
+fn playerBindBlockOffsets(player_index: usize) struct { start: usize, extended: bool } {
+    return switch (player_index) {
+        0 => .{ .start = 0, .extended = false },
+        1 => .{ .start = player_bind_block_size, .extended = false },
+        2 => .{ .start = 0, .extended = true },
+        3 => .{ .start = player_bind_block_size, .extended = true },
+        else => unreachable,
+    };
+}
+
+fn playerBindBlockBytes(cfg: *const CrimsonCfg, player_index: usize) [player_bind_block_size]u8 {
+    const offsets = playerBindBlockOffsets(player_index);
+    var bytes: [player_bind_block_size]u8 = undefined;
+    if (offsets.extended) {
+        @memcpy(bytes[0..], cfg.unknown_248[offsets.start .. offsets.start + player_bind_block_size]);
+    } else {
+        @memcpy(bytes[0..], cfg.keybinds[offsets.start .. offsets.start + player_bind_block_size]);
+    }
+    return bytes;
+}
+
+fn playerBindBlockIsUninitialized(bytes: [player_bind_block_size]u8) bool {
+    for (bytes) |byte| {
+        if (byte != 0) return false;
+    }
+    return true;
+}
+
+pub fn playerBindBlock(cfg: *const CrimsonCfg, player_index: usize) PlayerBindBlock {
+    const bytes = playerBindBlockBytes(cfg, player_index);
+    if (playerBindBlockIsUninitialized(bytes)) {
+        return defaultPlayerBindBlock(player_index);
+    }
+    return decodePlayerBindBlock(bytes[0..]) catch unreachable;
+}
+
+pub fn setPlayerBindBlock(cfg: *CrimsonCfg, player_index: usize, block: PlayerBindBlock) void {
+    const offsets = playerBindBlockOffsets(player_index);
+    const bytes = encodePlayerBindBlock(block);
+    if (offsets.extended) {
+        @memcpy(cfg.unknown_248[offsets.start .. offsets.start + player_bind_block_size], bytes[0..]);
+    } else {
+        @memcpy(cfg.keybinds[offsets.start .. offsets.start + player_bind_block_size], bytes[0..]);
+    }
+}
+
+pub fn playerMovement(cfg: *const CrimsonCfg, player_index: usize) u32 {
+    return switch (player_index) {
+        0 => cfg.player_mode_flag_p1,
+        1 => cfg.player_mode_flag_p2,
+        2 => cfg.player_mode_flag_p3,
+        3 => cfg.player_mode_flag_p4,
+        else => unreachable,
+    };
+}
+
+pub fn playerAimScheme(cfg: *const CrimsonCfg, player_index: usize) u32 {
+    return switch (player_index) {
+        0 => cfg.aim_scheme_p1,
+        1 => cfg.aim_scheme_p2,
+        2 => cfg.aim_scheme_p3,
+        3 => cfg.aim_scheme_p4,
+        else => unreachable,
+    };
+}
+
+pub fn playerShowDirectionArrow(cfg: *const CrimsonCfg, player_index: usize) bool {
+    return switch (player_index) {
+        0 => cfg.hud_indicators[0] != 0,
+        1 => cfg.hud_indicators[1] != 0,
+        2 => cfg.unknown_248[player_bind_block_size * 2] != ext_direction_arrow_off,
+        3 => cfg.unknown_248[player_bind_block_size * 2 + 1] != ext_direction_arrow_off,
+        else => unreachable,
+    };
+}
+
+pub fn defaultConfig() CrimsonCfg {
+    var cfg = std.mem.zeroes(CrimsonCfg);
+    cfg.hud_indicators = [_]u8{ 1, 1 };
+    cfg.fx_detail_0 = 1;
+    cfg.fx_detail_1 = 1;
+    cfg.fx_detail_2 = 1;
+    cfg.player_count = 1;
+    cfg.game_mode = 1;
+    cfg.player_mode_flag_p1 = 2;
+    cfg.player_mode_flag_p2 = 2;
+    cfg.player_mode_flag_p3 = 2;
+    cfg.player_mode_flag_p4 = 2;
+    cfg.texture_scale = 1.0;
+    cfg.selected_name_slot = 0;
+    cfg.saved_name_index = 1;
+    cfg.player_name_len = 0;
+    cfg.unknown_1a4 = 100;
+    cfg.aim_pov_right = 9000;
+    cfg.aim_pov_left = 27000;
+    cfg.screen_bpp = 32;
+    cfg.screen_width = 1024;
+    cfg.screen_height = 768;
+    cfg.windowed_flag = 1;
+    cfg.hardcore_flag = 0;
+    cfg.ui_info_texts = 1;
+    cfg.unknown_450 = 1;
+    cfg.unknown_460 = 1;
+    cfg.sfx_volume = 1.0;
+    cfg.music_volume = 1.0;
+    cfg.gore_disabled = 0;
+    cfg.score_load_gate = 0;
+    cfg.detail_preset = 5;
+    cfg.mouse_sensitivity = 0.5;
+    cfg.keybind_pick_perk = 0x101;
+    cfg.keybind_reload = 0x102;
+
+    for (0..saved_name_slot_count) |idx| {
+        std.mem.writeInt(u32, cfg.saved_name_order[idx * 4 ..][0..4], @intCast(idx), .little);
+        const start = idx * saved_name_entry_size;
+        @memset(cfg.saved_names[start .. start + saved_name_entry_size], 0);
+        @memcpy(cfg.saved_names[start .. start + "default".len], "default");
+    }
+
+    @memset(cfg.player_name[0..], 0);
+    @memcpy(cfg.player_name[0.."10tons".len], "10tons");
+
+    cfg.unknown_248[player_bind_block_size * 2] = ext_direction_arrow_on;
+    cfg.unknown_248[player_bind_block_size * 2 + 1] = ext_direction_arrow_on;
+
+    inline for (0..player_bind_block_count_total) |idx| {
+        setPlayerBindBlock(&cfg, idx, defaultPlayerBindBlock(idx));
+    }
+
+    return cfg;
+}
 
 pub fn decode(bytes: []const u8) CrimsonCfgError!CrimsonCfg {
     if (bytes.len != file_size) return error.InvalidSize;
@@ -274,4 +558,54 @@ test "crimson.cfg maps representative field offsets" {
     try std.testing.expectEqual(@as(u8, 1), encoded[0x1C4]);
     try std.testing.expectEqual(@as(u32, 0x101), std.mem.readInt(u32, encoded[0x478..0x47C], .little));
     try std.testing.expectEqual(@as(u32, 0x102), std.mem.readInt(u32, encoded[0x47C..0x480], .little));
+}
+
+test "crimson.cfg default config mirrors python defaults" {
+    const cfg = defaultConfig();
+
+    try std.testing.expectEqual(@as(u32, 1), cfg.player_count);
+    try std.testing.expectEqual(@as(u32, 1), cfg.game_mode);
+    try std.testing.expectEqual(@as(u32, 32), cfg.screen_bpp);
+    try std.testing.expectEqual(@as(u32, 1024), cfg.screen_width);
+    try std.testing.expectEqual(@as(u32, 768), cfg.screen_height);
+    try std.testing.expectEqual(@as(u8, 1), cfg.windowed_flag);
+    try std.testing.expectEqual(@as(u32, 5), cfg.detail_preset);
+    try std.testing.expectEqual(@as(f32, 1.0), cfg.texture_scale);
+    try std.testing.expectEqual(@as(f32, 0.5), cfg.mouse_sensitivity);
+    try std.testing.expectEqual(@as(u32, 0x101), cfg.keybind_pick_perk);
+    try std.testing.expectEqual(@as(u32, 0x102), cfg.keybind_reload);
+    try std.testing.expectEqualStrings("10tons", std.mem.sliceTo(cfg.player_name[0..], 0));
+    try std.testing.expectEqualStrings("default", cfg.saved_names[0.."default".len]);
+
+    const p1 = playerBindBlock(&cfg, 0);
+    try std.testing.expectEqual(defaultPlayerBindBlock(0).move_forward, p1.move_forward);
+    try std.testing.expectEqual(defaultPlayerBindBlock(0).fire, p1.fire);
+
+    const p4 = playerBindBlock(&cfg, 3);
+    try std.testing.expectEqual(defaultPlayerBindBlock(3).move_forward, p4.move_forward);
+    try std.testing.expectEqual(defaultPlayerBindBlock(3).fire, p4.fire);
+    try std.testing.expect(playerShowDirectionArrow(&cfg, 3));
+}
+
+test "crimson.cfg bind block helpers roundtrip" {
+    const expected: PlayerBindBlock = .{
+        .move_forward = 0x11,
+        .move_backward = 0x1F,
+        .turn_left = 0x1E,
+        .turn_right = 0x20,
+        .fire = 0x100,
+        .reserved_keys = [_]i32{ keybind_unbound_code, keybind_unbound_code },
+        .aim_left = 0x10,
+        .aim_right = 0x12,
+        .axis_aim_y = 0x13F,
+        .axis_aim_x = 0x140,
+        .axis_move_y = 0x141,
+        .axis_move_x = 0x153,
+        .padding = [_]i32{ keybind_unbound_code, keybind_unbound_code, keybind_unbound_code },
+    };
+
+    const encoded = encodePlayerBindBlock(expected);
+    const decoded = try decodePlayerBindBlock(encoded[0..]);
+
+    try std.testing.expectEqualDeep(expected, decoded);
 }

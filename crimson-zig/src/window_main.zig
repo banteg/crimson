@@ -2,8 +2,12 @@ const std = @import("std");
 const rl = @import("raylib");
 
 const cz = @import("crimson_zig");
+const formats = cz.formats;
 const runtime_anim = cz.anim;
 const weapon_data = cz.weapon_data;
+const app_runtime = @import("app_runtime.zig");
+const audio_mod = @import("audio/audio.zig");
+const input_codes = @import("input_codes.zig");
 const live_audio = @import("audio/live_audio.zig");
 const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
@@ -92,6 +96,7 @@ const ResultsScreen = struct {
 
 const App = struct {
     allocator: std.mem.Allocator,
+    runtime: app_runtime.DesktopRuntime,
     screen: Screen = .boot,
     boot_elapsed: f32 = 0.0,
     menu_selection: usize = 0,
@@ -105,10 +110,11 @@ const App = struct {
     next_seed_state: u32 = 0xC0FFEE,
     quit_requested: bool = false,
 
-    fn init(allocator: std.mem.Allocator) App {
+    fn init(allocator: std.mem.Allocator, runtime: app_runtime.DesktopRuntime) App {
         var app: App = .{
             .allocator = allocator,
-            .audio = live_audio.Bridge.init(allocator),
+            .runtime = runtime,
+            .audio = live_audio.Bridge.init(allocator, audio_mod.audioConfigFromCrimsonCfg(runtime.config), null),
         };
         app.loadAssets();
         return app;
@@ -128,7 +134,15 @@ const App = struct {
             self.allocator.free(message);
             self.assets_message = null;
         }
+        self.runtime.deinit();
         self.* = undefined;
+    }
+
+    fn saveAllIfDirty(self: *App) !void {
+        if (self.gameplay) |*gameplay| {
+            self.runtime.absorbSessionState(&gameplay.runner.session);
+        }
+        try self.runtime.saveAllIfDirty();
     }
 
     fn loadAssets(self: *App) void {
@@ -200,7 +214,8 @@ const App = struct {
                 gameplay.runner.session.world_size,
                 gameplay.runner.session.state.camera_shake_offset,
             );
-            const input = collectGameplayInput(&gameplay.runner, camera);
+            self.runtime.recordGameplayFrame(frame_dt);
+            const input = collectGameplayInput(&gameplay.runner, camera, &self.runtime);
             if (input.perk_choice_index != null) {
                 self.audio.playUiButtonClick();
             }
@@ -252,8 +267,15 @@ const App = struct {
 
     fn startNewRun(self: *App) void {
         self.audio.stopGameplayMusic();
+        self.runtime.recordModeStart(.survival);
         var runner = live_runner.LiveSurvivalRunner.init(.{
             .seed = nextRunSeed(&self.next_seed_state),
+            .detail_preset = @intCast(std.math.clamp(self.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5))),
+            .gore_disabled = @intCast(self.runtime.config.gore_disabled),
+            .hardcore = self.runtime.config.hardcore_flag != 0,
+            .status_quest_unlock_index = self.runtime.status.quest_unlock_index,
+            .status_quest_unlock_index_full = self.runtime.status.quest_unlock_index_full,
+            .status_weapon_usage_counts = statusWeaponUsageCounts(self.runtime.status),
         }) catch |err| {
             self.results = .{
                 .reason = .runtime_error,
@@ -300,12 +322,17 @@ const App = struct {
     fn finishRun(self: *App, gameplay: *GameplayScreen, reason: ResultsReason, runtime_error: ?[]const u8) void {
         self.audio.stopGameplayMusic();
         const runner = &gameplay.runner;
+        self.runtime.absorbSessionState(&runner.session);
         const player_health = if (runner.player0Const()) |player| player.health else 0.0;
+        const save_error: ?[]const u8 = save_err: {
+            self.runtime.saveStatusIfDirty() catch |err| break :save_err @errorName(err);
+            break :save_err null;
+        };
         self.results = .{
             .reason = reason,
             .summary = runner.summary(),
             .player_health = player_health,
-            .runtime_error = runtime_error,
+            .runtime_error = runtime_error orelse save_error,
         };
         gameplay.deinit();
         self.gameplay = null;
@@ -431,15 +458,20 @@ const App = struct {
 };
 
 pub fn main() !void {
-    rl.initWindow(window_width, window_height, "crimson-zig");
+    var gpa: std.heap.GeneralPurposeAllocator(.{}) = .{};
+    defer _ = gpa.deinit();
+
+    var runtime = try app_runtime.DesktopRuntime.init(gpa.allocator());
+
+    rl.setConfigFlags(.{
+        .fullscreen_mode = runtime.config.windowed_flag == 0,
+    });
+    rl.initWindow(runtime.windowWidth(window_width), runtime.windowHeight(window_height), "crimson-zig");
     defer rl.closeWindow();
 
     rl.setTargetFPS(60);
 
-    var gpa: std.heap.GeneralPurposeAllocator(.{}) = .{};
-    defer _ = gpa.deinit();
-
-    var app = App.init(gpa.allocator());
+    var app = App.init(gpa.allocator(), runtime);
     defer app.deinit();
 
     while (!rl.windowShouldClose() and !app.quit_requested) {
@@ -450,6 +482,8 @@ pub fn main() !void {
         defer rl.endDrawing();
         app.draw();
     }
+
+    try app.saveAllIfDirty();
 }
 
 fn bootProgress(boot_elapsed: f32) f32 {
@@ -778,23 +812,34 @@ fn buildWorldCamera(world_size: f32, shake_offset: state_mod.Vec2) rl.Camera2D {
     };
 }
 
-fn collectGameplayInput(runner: *live_runner.LiveSurvivalRunner, camera: rl.Camera2D) live_runner.FrameInput {
-    const move_x = axisFromKeys(.a, .d);
-    const move_y = axisFromKeys(.w, .s);
+fn collectGameplayInput(
+    runner: *live_runner.LiveSurvivalRunner,
+    camera: rl.Camera2D,
+    runtime: *const app_runtime.DesktopRuntime,
+) live_runner.FrameInput {
+    const binds = runtime.primaryBindBlock();
+    const move_up_pressed = inputCodeIsDownWithAlt(binds.move_forward, 0xC8);
+    const move_down_pressed = inputCodeIsDownWithAlt(binds.move_backward, 0xD0);
+    const move_left_pressed = inputCodeIsDownWithAlt(binds.turn_left, 0xCB);
+    const move_right_pressed = inputCodeIsDownWithAlt(binds.turn_right, 0xCD);
     const mouse_world = rl.getScreenToWorld2D(rl.getMousePosition(), camera);
 
     var frame_input: live_runner.FrameInput = .{
         .player = .{
-            .move_x = move_x,
-            .move_y = move_y,
+            .move_x = boolAxis(move_left_pressed, move_right_pressed),
+            .move_y = boolAxis(move_up_pressed, move_down_pressed),
             .aim_x = mouse_world.x,
             .aim_y = mouse_world.y,
             .flags = .{
-                .fire_down = rl.isMouseButtonDown(.left) or rl.isKeyDown(.space),
-                .fire_pressed = rl.isMouseButtonPressed(.left) or rl.isKeyPressed(.space),
-                .reload_pressed = rl.isKeyPressed(.r),
-                .move_mode = 3,
+                .fire_down = input_codes.inputCodeIsDown(binds.fire),
+                .fire_pressed = input_codes.inputCodeIsPressed(binds.fire),
+                .reload_pressed = input_codes.inputCodeIsPressed(@intCast(runtime.config.keybind_reload)),
+                .move_mode = @intCast(runtime.config.player_mode_flag_p1),
                 .aim_scheme = 0,
+                .move_forward_pressed = move_up_pressed,
+                .move_backward_pressed = move_down_pressed,
+                .turn_left_pressed = move_left_pressed,
+                .turn_right_pressed = move_right_pressed,
             },
         },
     };
@@ -812,11 +857,20 @@ fn collectGameplayInput(runner: *live_runner.LiveSurvivalRunner, camera: rl.Came
     return frame_input;
 }
 
-fn axisFromKeys(negative: rl.KeyboardKey, positive: rl.KeyboardKey) f32 {
-    var value: f32 = 0.0;
-    if (rl.isKeyDown(negative)) value -= 1.0;
-    if (rl.isKeyDown(positive)) value += 1.0;
-    return value;
+fn boolAxis(negative: bool, positive: bool) f32 {
+    return @floatFromInt(@intFromBool(positive) - @intFromBool(negative));
+}
+
+fn inputCodeIsDownWithAlt(primary_code: i32, alt_code: i32) bool {
+    return input_codes.inputCodeIsDown(primary_code) or input_codes.inputCodeIsDown(alt_code);
+}
+
+fn statusWeaponUsageCounts(status: formats.game_cfg.Status) [state_mod.weapon_count_size]u32 {
+    var counts: [state_mod.weapon_count_size]u32 = [_]u32{0} ** state_mod.weapon_count_size;
+    for (0..@min(counts.len, status.weapon_usage_counts.len)) |idx| {
+        counts[idx] = status.weapon_usage_counts[idx];
+    }
+    return counts;
 }
 
 fn drawWorld(
