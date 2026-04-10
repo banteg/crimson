@@ -28,6 +28,26 @@ pub const Decoded = struct {
     }
 };
 
+pub fn decodeAlphaRle(allocator: std.mem.Allocator, bytes: []const u8, expected_size: usize) JazError![]u8 {
+    const alpha = allocator.alloc(u8, expected_size) catch return error.OutOfMemory;
+    errdefer allocator.free(alpha);
+    @memset(alpha, 0);
+
+    var filled: usize = 0;
+    var idx: usize = 0;
+    while (idx + 1 < bytes.len and filled < expected_size) : (idx += 2) {
+        const count = bytes[idx];
+        const value = bytes[idx + 1];
+        if (count == 0) continue;
+
+        const run_len = @min(expected_size - filled, @as(usize, count));
+        @memset(alpha[filled .. filled + run_len], value);
+        filled += run_len;
+    }
+
+    return alpha;
+}
+
 pub fn decode(allocator: std.mem.Allocator, bytes: []const u8) JazError!Decoded {
     if (bytes.len < 9) return error.InvalidHeader;
 
@@ -148,4 +168,13 @@ test "JAZ rejects truncated compressed payload" {
     const allocator = std.testing.allocator;
     const bad = [_]u8{ 0x01, 0x04, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x78, 0x9c };
     try std.testing.expectError(error.TruncatedCompressedPayload, decode(allocator, &bad));
+}
+
+test "JAZ alpha rle decode pads tail with transparent pixels" {
+    const allocator = std.testing.allocator;
+
+    const alpha = try decodeAlphaRle(allocator, &[_]u8{ 1, 0xff, 1, 0x40 }, 3);
+    defer allocator.free(alpha);
+
+    try std.testing.expectEqualSlices(u8, &[_]u8{ 0xff, 0x40, 0x00 }, alpha);
 }
