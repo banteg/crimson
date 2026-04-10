@@ -1,3 +1,4 @@
+const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const replay_codec = @import("../replay_codec.zig");
 
@@ -7,6 +8,14 @@ const quest_spawn_logic = @import("../quest_spawn/logic_full.zig");
 const runtime_session = @import("session.zig");
 const spawn_mod = @import("spawn.zig");
 const weapon_data = @import("weapon_data.zig");
+
+pub const BuildSessionOptions = runtime_session.SessionInitOptions;
+
+pub const BuildQuestSessionOptions = struct {
+    session_options: BuildSessionOptions = .{},
+    quest_spawn_entries: []const spawn_mod.QuestSpawnEntry,
+    quest_start_weapon_id: i32 = @intFromEnum(game_ids.WeaponId.pistol),
+};
 
 pub const BuildReplaySessionOptions = struct {
     strict_events: bool = true,
@@ -38,6 +47,49 @@ pub fn deriveReplayExecutionMode(events: []const replay_codec.ReplayEvent) Repla
         .apply_world_dt_steps = !original_capture_replay,
         .defer_menu_open_events = original_capture_replay,
     };
+}
+
+pub fn buildSurvivalSession(
+    config: runtime_session.SessionConfig,
+    options: BuildSessionOptions,
+) runtime_session.DeterministicSessionError!runtime_session.DeterministicSession {
+    if (config.game_mode != .survival) {
+        return error.UnsupportedGameMode;
+    }
+    return runtime_session.DeterministicSession.init(config, options);
+}
+
+pub fn buildRushSession(
+    config: runtime_session.SessionConfig,
+    options: BuildSessionOptions,
+) runtime_session.DeterministicSessionError!runtime_session.DeterministicSession {
+    if (config.game_mode != .rush) {
+        return error.UnsupportedGameMode;
+    }
+    return runtime_session.DeterministicSession.init(config, options);
+}
+
+pub fn buildQuestSession(
+    config: runtime_session.SessionConfig,
+    options: BuildQuestSessionOptions,
+) runtime_session.DeterministicSessionError!runtime_session.DeterministicSession {
+    if (config.game_mode != .quests) {
+        return error.UnsupportedGameMode;
+    }
+
+    var session_options = options.session_options;
+    session_options.quest_start_weapon_id_for_reset = options.quest_start_weapon_id;
+    session_options.quest_spawn_entries = options.quest_spawn_entries;
+
+    var session = try runtime_session.DeterministicSession.init(config, session_options);
+    session.rebindQuestSpawnEntries();
+
+    const weapon_id = @max(1, options.quest_start_weapon_id);
+    for (session.players()) |*player| {
+        player_runtime.weaponAssignPlayer(player, weapon_data.weaponIdFromInt(weapon_id));
+    }
+
+    return session;
 }
 
 pub fn buildReplaySession(
@@ -88,29 +140,72 @@ pub fn buildReplaySession(
         }
     }
 
-    var session = try runtime_session.DeterministicSession.initFromReplayHeader(
-        header,
+    const config = try runtime_session.SessionConfig.fromReplayHeader(header);
+    const session_options: BuildSessionOptions = .{
+        .strict_events = options.strict_events,
+        .inter_tick_rand_draws = options.inter_tick_rand_draws,
+        .defer_menu_open_events = mode.defer_menu_open_events,
+        .apply_world_dt_steps = mode.apply_world_dt_steps,
+        .capture_spawn_events_authoritative = mode.capture_spawn_events_authoritative,
+    };
+
+    return switch (game_mode) {
+        .survival => buildSurvivalSession(config, session_options),
+        .rush => buildRushSession(config, session_options),
+        .quests => buildQuestSession(
+            config,
+            .{
+                .session_options = .{
+                    .strict_events = session_options.strict_events,
+                    .inter_tick_rand_draws = session_options.inter_tick_rand_draws,
+                    .defer_menu_open_events = session_options.defer_menu_open_events,
+                    .apply_world_dt_steps = session_options.apply_world_dt_steps,
+                    .capture_spawn_events_authoritative = session_options.capture_spawn_events_authoritative,
+                },
+                .quest_spawn_entries = if (!mode.capture_spawn_events_authoritative) quest_spawn_entries else quest_spawn_entries_storage[0..0],
+                .quest_start_weapon_id = quest_start_weapon_id_for_reset,
+            },
+        ),
+        else => error.UnsupportedGameMode,
+    };
+}
+
+fn testConfig(game_mode: game_ids.GameModeId) runtime_session.SessionConfig {
+    return .{
+        .seed = 0x1234,
+        .game_mode = game_mode,
+        .player_count = 1,
+        .world_size = 1024.0,
+        .tick_rate = 60,
+    };
+}
+
+test "build rush session enforces assault rifle loadout" {
+    var session = try buildRushSession(testConfig(.rush), .{});
+    const player = session.players()[0];
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.weapon.weapon_id);
+    try std.testing.expectEqual(@as(f32, 30.0), player.weapon.ammo);
+}
+
+test "build quest session assigns requested start weapon and spawn table" {
+    var entries = [_]spawn_mod.QuestSpawnEntry{
         .{
-            .strict_events = options.strict_events,
-            .inter_tick_rand_draws = options.inter_tick_rand_draws,
-            .defer_menu_open_events = mode.defer_menu_open_events,
-            .apply_world_dt_steps = mode.apply_world_dt_steps,
-            .capture_spawn_events_authoritative = mode.capture_spawn_events_authoritative,
-            .quest_start_weapon_id_for_reset = quest_start_weapon_id_for_reset,
-            .quest_spawn_entries = if (game_mode == .quests and !mode.capture_spawn_events_authoritative)
-                quest_spawn_entries
-            else
-                null,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .heading = 1.5,
+            .spawn_id = .zombie_boss_spawner_00,
+            .trigger_ms = 50,
+            .count = 2,
+        },
+    };
+    var session = try buildQuestSession(
+        testConfig(.quests),
+        .{
+            .quest_spawn_entries = entries[0..],
+            .quest_start_weapon_id = @intFromEnum(game_ids.WeaponId.shotgun),
         },
     );
-    session.rebindQuestSpawnEntries();
-
-    if (game_mode == .quests) {
-        const weapon_id = @max(1, quest_start_weapon_id_for_reset);
-        for (session.players()) |*player| {
-            player_runtime.weaponAssignPlayer(player, weapon_data.weaponIdFromInt(weapon_id));
-        }
-    }
-
-    return session;
+    const player = session.players()[0];
+    try std.testing.expectEqual(game_ids.WeaponId.shotgun, player.weapon.weapon_id);
+    try std.testing.expectEqual(@as(usize, 1), session.quest_spawn_entries.len);
+    try std.testing.expectEqual(entries[0].spawn_id, session.quest_spawn_entries[0].spawn_id);
 }

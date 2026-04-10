@@ -12,6 +12,9 @@ Last reviewed: **2026-04-10**
 Scope target: a full native Zig port of Crimson systems, content, codecs, and
 product surfaces.
 
+For the staged remaining-work breakdown, see
+[`docs/rewrite/zig-roadmap.md`](zig-roadmap.md).
+
 Replay tooling is currently the most mature public entrypoint in the Zig tree,
 not the definition of the project. Today that means fast, headless,
 deterministic replay verification/info for **1-4 player Survival/Rush/Quest**
@@ -27,6 +30,9 @@ behavior for unsupported native paths.
 - Shared deterministic session/state ownership now lives in
   `crimson-zig/src/runtime/session.zig` plus `session_builders.zig`; replay
   commands use compatibility wrappers around that runtime-facing layer.
+- The Zig builder layer now exposes explicit mode-oriented session constructors
+  (`buildSurvivalSession`, `buildRushSession`, `buildQuestSession`) to mirror the
+  Python rewrite structure instead of only offering replay-specialized startup.
 - Replay ingestion from `.crd` bytes (msgpack decode path in-tree).
 - Deterministic Survival/Rush/Quest sim scaffold + runtime loops for:
   - player/weapon runtime (reload/fire/ammo counters, level/XP progression),

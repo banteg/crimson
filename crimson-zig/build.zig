@@ -44,11 +44,12 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .imports = &.{
                 .{ .name = "raylib", .module = raylib_module },
+                .{ .name = "crimson_zig", .module = mod },
             },
         }),
     });
     window_exe.linkLibrary(raylib_artifact);
-    const window_step = b.step("window", "Build placeholder raylib window");
+    const window_step = b.step("window", "Build raylib desktop playable slice");
     window_step.dependOn(&window_exe.step);
 
     const quest_dump_exe = b.addExecutable(.{
@@ -72,7 +73,7 @@ pub fn build(b: *std.Build) void {
         run_cmd.addArgs(args);
     }
 
-    const run_window_step = b.step("run-window", "Run placeholder raylib window");
+    const run_window_step = b.step("run-window", "Run raylib desktop playable slice");
     const run_window_cmd = b.addRunArtifact(window_exe);
     run_window_step.dependOn(&run_window_cmd.step);
 
@@ -96,6 +97,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .imports = &.{
                 .{ .name = "raylib", .module = web_raylib_module },
+                .{ .name = "crimson_zig", .module = mod },
             },
         }),
     });
@@ -131,10 +133,10 @@ pub fn build(b: *std.Build) void {
     });
     web_emcc_step.dependOn(activate_emsdk_step);
 
-    const web_window_step = b.step("web-window", "Build placeholder raylib window for wasm32-emscripten");
+    const web_window_step = b.step("web-window", "Build raylib window app for wasm32-emscripten");
     web_window_step.dependOn(web_emcc_step);
 
-    const run_web_window_step = b.step("run-web-window", "Serve placeholder raylib web window with emrun");
+    const run_web_window_step = b.step("run-web-window", "Serve raylib web window app with emrun");
     const run_web_window_cmd = zemscripten.emrunStep(
         b,
         b.getInstallPath(web_install_dir, "crimson-zig-window.html"),
@@ -177,6 +179,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "crimson_zig", .module = mod },
+            .{ .name = "msgpack", .module = msgpack_dep.module("msgpack") },
         },
     });
 
@@ -189,6 +192,6 @@ pub fn build(b: *std.Build) void {
     wasm_exe.export_memory = true;
 
     const install_wasm = b.addInstallArtifact(wasm_exe, .{});
-    const wasm_step = b.step("wasm", "Build wasm32-freestanding verifier module");
+    const wasm_step = b.step("wasm", "Build wasm32-freestanding runtime ABI module");
     wasm_step.dependOn(&install_wasm.step);
 }

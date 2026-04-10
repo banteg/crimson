@@ -894,6 +894,72 @@ pub fn parseReplay(
     };
 }
 
+pub fn buildSmokeTestReplayPayload(allocator: std.mem.Allocator) ![]u8 {
+    // Small canonical replay payload used by ABI/tests that need real msgpack replay bytes
+    // without depending on checked-in fixture encodings.
+    const usage_counts = [_]u32{0} ** weapon_usage_count;
+    const tick0 = [_]ReplayInputWire{
+        .{
+            .move_x = 0.0,
+            .move_y = 0.0,
+            .aim_x = 0.0,
+            .aim_y = 0.0,
+            .flags = 0,
+        },
+    };
+    const tick1 = [_]ReplayInputWire{
+        .{
+            .move_x = 0.0,
+            .move_y = 0.0,
+            .aim_x = 0.0,
+            .aim_y = 0.0,
+            .flags = 0,
+        },
+    };
+    const inputs = [_][]const ReplayInputWire{
+        tick0[0..],
+        tick1[0..],
+    };
+    const dt = [_]f32{
+        1.0 / 60.0,
+        1.0 / 60.0,
+    };
+    const replay: ReplayWire = .{
+        .header = .{
+            .game_mode_id = 1,
+            .seed = 1,
+            .replay_format_version = replay_format_version,
+            .quest_level = "",
+            .bootstrap_kind = "none",
+            .bootstrap_seed = 0,
+            .game_version = "0.9.0",
+            .tick_rate = 60,
+            .difficulty_level = 0,
+            .hardcore = false,
+            .preserve_bugs = false,
+            .detail_preset = 5,
+            .gore_disabled = 0,
+            .world_size = 1024.0,
+            .player_count = 1,
+            .status = .{
+                .quest_unlock_index = 0,
+                .quest_unlock_index_full = 0,
+                .weapon_usage_counts = usage_counts[0..],
+            },
+            .claimed_stats = .{},
+            .input_quantization = "f32",
+        },
+        .inputs = inputs[0..],
+        .dt = dt[0..],
+        .events = &.{},
+    };
+
+    var writer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer writer.deinit();
+    try msgpack.encode(replay, &writer.writer);
+    return writer.toOwnedSlice();
+}
+
 pub fn validateReplayBootstrap(header: ReplayHeader) ReplayCodecError!void {
     if (std.mem.eql(u8, header.bootstrap_kind, "none")) {
         return;
