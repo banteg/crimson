@@ -138,6 +138,8 @@ pub const GroundRenderer = struct {
             @floatFromInt(self.width),
             @floatFromInt(self.height),
         );
+        beginCustomBlend(rl.gl.rl_one, rl.gl.rl_zero, rl.gl.rl_func_add);
+        defer endCustomBlend();
         rl.drawTexturePro(target.texture, src, dst, rl.Vector2.zero(), 0.0, rl.Color.white);
     }
 
@@ -155,6 +157,8 @@ pub const GroundRenderer = struct {
             defer shader.deactivate();
         }
 
+        beginTerrainRenderTargetBlend();
+        defer endTerrainRenderTargetBlend();
         self.scatterTexture(self.base, terrain_base_tint, &rng, terrain_density_base);
         self.scatterTexture(self.overlay, terrain_overlay_tint, &rng, terrain_density_overlay);
         self.scatterTexture(self.detail, terrain_detail_tint, &rng, terrain_density_detail);
@@ -249,6 +253,26 @@ fn terrainSlotTextureId(slot: u8) window_assets.TextureId {
 
 fn radiansToDegrees(radians: f32) f32 {
     return radians * (180.0 / std.math.pi);
+}
+
+fn beginCustomBlend(src_factor: i32, dst_factor: i32, blend_equation: i32) void {
+    rl.gl.rlSetBlendFactors(src_factor, dst_factor, blend_equation);
+    rl.beginBlendMode(.custom);
+    rl.gl.rlSetBlendFactors(src_factor, dst_factor, blend_equation);
+}
+
+fn endCustomBlend() void {
+    rl.endBlendMode();
+}
+
+fn beginTerrainRenderTargetBlend() void {
+    rl.gl.rlColorMask(true, true, true, false);
+    beginCustomBlend(rl.gl.rl_src_alpha, rl.gl.rl_one_minus_src_alpha, rl.gl.rl_func_add);
+}
+
+fn endTerrainRenderTargetBlend() void {
+    endCustomBlend();
+    rl.gl.rlColorMask(true, true, true, true);
 }
 
 test "terrain slot mapping follows python ids" {
