@@ -74,6 +74,55 @@ pub const weapon_stats = std.EnumArray(WeaponId, WeaponStats).init(.{
     .nuke_launcher = .{ .clip_size = 1, .reload_time = 8.0, .shot_cooldown = 4.0, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 8, .spread_heat_inc = 1.0 },
 });
 
+pub const weapon_icon_index = std.EnumArray(WeaponId, i32).initDefault(-1, .{
+    .pistol = 0,
+    .assault_rifle = 1,
+    .shotgun = 2,
+    .sawed_off_shotgun = 3,
+    .submachine_gun = 4,
+    .gauss_gun = 5,
+    .mean_minigun = 6,
+    .flamethrower = 7,
+    .plasma_rifle = 8,
+    .multi_plasma = 9,
+    .plasma_minigun = 10,
+    .rocket_launcher = 11,
+    .seeker_rockets = 12,
+    .plasma_shotgun = 13,
+    .blow_torch = 14,
+    .hr_flamer = 15,
+    .mini_rocket_swarmers = 16,
+    .rocket_minigun = 17,
+    .pulse_gun = 18,
+    .jackhammer = 19,
+    .ion_rifle = 20,
+    .ion_minigun = 21,
+    .ion_cannon = 22,
+    .shrinkifier_5k = 23,
+    .blade_gun = 24,
+    .spider_plasma = 25,
+    .evil_scythe = 25,
+    .plasma_cannon = 25,
+    .splitter_gun = 28,
+    .gauss_shotgun = 30,
+    .ion_shotgun = 31,
+    .flameburst = 29,
+    .raygun = 30,
+    .plague_spreader_gun = 40,
+    .bubblegun = 41,
+    .rainbow_gun = 42,
+    .grim_weapon = 43,
+    .fire_bullets = 44,
+    .transmutator = 49,
+    .blaster_r_300 = 50,
+    .lightning_rifle = 51,
+    .nuke_launcher = 52,
+});
+
+pub inline fn weaponIconIndex(weapon_id: WeaponId) i32 {
+    return weapon_icon_index.get(weapon_id);
+}
+
 pub inline fn weaponIdToInt(weapon_id: WeaponId) i32 {
     return @intFromEnum(weapon_id);
 }
@@ -201,4 +250,12 @@ test "non projectile weapons map to empty projectile type ids" {
         try std.testing.expectEqual(@as(?ProjectileTypeId, null), projectileTypeIdFromWeaponId(id));
         try std.testing.expectEqual(@as(usize, 0), projectileTypeIdsFromWeaponId(id).slice().len);
     }
+}
+
+test "weapon icon indices mirror runtime ui wicon metadata" {
+    try std.testing.expectEqual(@as(i32, 0), weaponIconIndex(.pistol));
+    try std.testing.expectEqual(@as(i32, 25), weaponIconIndex(.evil_scythe));
+    try std.testing.expectEqual(@as(i32, 30), weaponIconIndex(.raygun));
+    try std.testing.expectEqual(@as(i32, 52), weaponIconIndex(.nuke_launcher));
+    try std.testing.expectEqual(@as(i32, -1), weaponIconIndex(.unknown_34));
 }

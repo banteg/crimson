@@ -1,4 +1,5 @@
 test {
+    _ = @import("runtime/anim.zig");
     _ = @import("hash.zig");
     _ = @import("quest_spawn/logic_full.zig");
     _ = @import("replay_codec.zig");
@@ -15,5 +16,6 @@ test {
     _ = @import("runtime/weapons.zig");
     _ = @import("verify_native.zig");
     _ = @import("wasm_exports.zig");
+    _ = @import("window_atlas.zig");
     _ = @import("formats/mod.zig");
 }
