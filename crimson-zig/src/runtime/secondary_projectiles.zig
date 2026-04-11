@@ -5,6 +5,7 @@ const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 const runtime_helpers = @import("helpers.zig");
 const state_mod = @import("state.zig");
 
@@ -337,16 +338,26 @@ pub const SecondaryProjectilePool = struct {
                 };
 
                 if (freeze_active) {
+                    const freeze_angle_caller: u32 = switch (entry.type_id) {
+                        .rocket => rng_callers.secondary_projectile_update_rocket_freeze_shard_angle,
+                        .homing_rocket => rng_callers.secondary_projectile_update_seeker_rocket_freeze_shard_angle,
+                        .rocket_minigun => rng_callers.secondary_projectile_update_rocket_minigun_freeze_shard_angle,
+                        else => rng_callers.secondary_projectile_update_pre_hit_freeze_shard_angle,
+                    };
                     for (0..4) |_| {
-                        const shard_angle = @as(f32, @floatFromInt(state.rng.rand() % 612)) * 0.01;
+                        const shard_angle = @as(f32, @floatFromInt(state.rng.randTagged(freeze_angle_caller) % 612)) * 0.01;
                         effects.spawnFreezeShard(state, entry.pos, shard_angle, detail_preset);
                     }
                 } else {
-                    for (0..3) |_| {
-                        _ = state.rng.rand() % 0x14;
-                        _ = state.rng.rand() % 0x14;
-                        runtime_helpers.consumeAddRandomRng(state);
-                    }
+                    _ = state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dx_1) % 0x14;
+                    _ = state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dy_1) % 0x14;
+                    runtime_helpers.consumeAddRandomRng(state);
+                    _ = state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dx_2) % 0x14;
+                    _ = state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dy_2) % 0x14;
+                    runtime_helpers.consumeAddRandomRng(state);
+                    _ = state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dx_3) % 0x14;
+                    _ = state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dy_3) % 0x14;
+                    runtime_helpers.consumeAddRandomRng(state);
                 }
 
                 if (entry.type_id == SecondaryProjectileTypeId.rocket and detail_preset > 2) {
@@ -382,8 +393,14 @@ pub const SecondaryProjectilePool = struct {
                 entry.trail_timer = 0.0;
 
                 if (freeze_active) {
+                    const freeze_angle_caller: u32 = switch (entry.type_id) {
+                        .rocket => rng_callers.secondary_projectile_update_rocket_freeze_shard_angle,
+                        .homing_rocket => rng_callers.secondary_projectile_update_seeker_rocket_freeze_shard_angle,
+                        .rocket_minigun => rng_callers.secondary_projectile_update_rocket_minigun_freeze_shard_angle,
+                        else => rng_callers.secondary_projectile_update_pre_hit_freeze_shard_angle,
+                    };
                     for (0..8) |_| {
-                        const shard_angle = @as(f32, @floatFromInt(state.rng.rand() % 612)) * 0.01;
+                        const shard_angle = @as(f32, @floatFromInt(state.rng.randTagged(freeze_angle_caller) % 612)) * 0.01;
                         effects.spawnFreezeShard(state, entry.pos, shard_angle, detail_preset);
                     }
                 } else {
@@ -403,21 +420,33 @@ pub const SecondaryProjectilePool = struct {
                         44
                     else
                         0;
+                    const angle_caller: u32 = switch (entry.type_id) {
+                        .rocket => rng_callers.secondary_projectile_update_rocket_decal_angle,
+                        .homing_rocket => rng_callers.secondary_projectile_update_seeker_rocket_decal_angle,
+                        .rocket_minigun => rng_callers.secondary_projectile_update_rocket_minigun_decal_angle,
+                        else => rng_callers.secondary_projectile_update_rocket_decal_angle,
+                    };
+                    const radius_caller: u32 = switch (entry.type_id) {
+                        .rocket => rng_callers.secondary_projectile_update_rocket_decal_radius,
+                        .homing_rocket => rng_callers.secondary_projectile_update_seeker_rocket_decal_radius,
+                        .rocket_minigun => rng_callers.secondary_projectile_update_rocket_minigun_decal_radius,
+                        else => rng_callers.secondary_projectile_update_rocket_decal_radius,
+                    };
                     var i: i32 = 0;
                     while (i < extra_decals) : (i += 1) {
-                        _ = state.rng.rand() % 0x274;
+                        _ = state.rng.randTagged(angle_caller) % 0x274;
                         if (det_scale == 0.35) {
-                            _ = state.rng.rand() & 0x3f;
+                            _ = state.rng.randTagged(radius_caller) & 0x3f;
                         } else {
                             const radius_mod = @max(extra_radius, 1);
-                            _ = state.rng.rand() % @as(u32, @intCast(radius_mod));
+                            _ = state.rng.randTagged(radius_caller) % @as(u32, @intCast(radius_mod));
                         }
                         runtime_helpers.consumeAddRandomRng(state);
                     }
                 }
 
                 for (0..10) |sprite_idx| {
-                    const mag = @as(f32, @floatFromInt(state.rng.rand() % 800)) * 0.1;
+                    const mag = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.secondary_projectile_update_detonation_sprite_mag) % 800)) * 0.1;
                     const ang = @as(f32, @floatFromInt(sprite_idx)) * (native_math.native_tau / 10.0);
                     _ = sprite_effects.spawn(
                         state,
@@ -478,15 +507,15 @@ fn consumeExplosionBurstRng(
 ) void {
     if (detail_preset > 3) {
         for (0..2) |_| {
-            _ = state.rng.rand() % 0x266;
+            _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_puff_rotation) % 0x266;
         }
     }
     const count: usize = if (detail_preset < 2) 1 else 3 + (if (detail_preset > 3) @as(usize, 1) else 0);
     for (0..count) |_| {
-        _ = state.rng.rand() % 0x13A;
-        _ = state.rng.rand() & 0x3F;
-        _ = state.rng.rand() & 0x3F;
-        _ = state.rng.rand();
-        _ = state.rng.rand();
+        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_rotation) % 0x13A;
+        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_vel_x) & 0x3F;
+        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_vel_y) & 0x3F;
+        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_scale_step);
+        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_rotation_STEP);
     }
 }

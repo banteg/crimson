@@ -1004,7 +1004,7 @@ fn buildRngStream(
             .value_15 = draw.value_15,
             .state_before_u32 = @intCast(draw.state_before_u32),
             .state_after_u32 = @intCast(draw.state_after_u32),
-            .caller = null,
+            .caller = if (draw.caller) |caller| @intCast(caller) else null,
         };
     }
     return rows;

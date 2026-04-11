@@ -1,5 +1,6 @@
 const std = @import("std");
 const native_math = @import("native_math.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 
 const state_mod = @import("state.zig");
 const runtime_math = @import("math.zig");
@@ -55,9 +56,17 @@ pub fn consumeRngDraws(state: *state_mod.GameplayState, count: i32) void {
 }
 
 pub fn consumeAddRandomRng(state: *state_mod.GameplayState) void {
-    consumeRngDraws(state, 4);
+    _ = state.rng.randTagged(rng_callers.fx_queue_add_random_gray);
+    _ = state.rng.randTagged(rng_callers.fx_queue_add_random_width);
+    _ = state.rng.randTagged(rng_callers.fx_queue_add_random_rotation);
+    _ = state.rng.randTagged(rng_callers.fx_queue_add_random_effect_id);
 }
 
 pub fn consumeFreezeShardRng(state: *state_mod.GameplayState) void {
-    consumeRngDraws(state, 6);
+    _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_lifetime);
+    _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation);
+    _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_half);
+    _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation_step);
+    _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_scale_step);
+    _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_effect_id);
 }

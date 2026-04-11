@@ -7,8 +7,8 @@ const projectiles_mod = @import("../projectiles.zig");
 const secondary_projectiles_mod = @import("../secondary_projectiles.zig");
 const state_mod = @import("../state.zig");
 
-pub const replay_tick_trace_schema_version: i32 = 6;
-pub const replay_tick_trace_msgpack_magic = "crimson_replay_tick_trace_msgpack_v3\n";
+pub const replay_tick_trace_schema_version: i32 = 7;
+pub const replay_tick_trace_msgpack_magic = "crimson_replay_tick_trace_msgpack_v4\n";
 
 pub const ReplayTickTiming = struct {
     elapsed_ms: i64,
@@ -19,6 +19,7 @@ pub const ReplayTickRngDraw = struct {
     value_15: i32,
     state_before_u32: u32,
     state_after_u32: u32,
+    caller: ?u32 = null,
 };
 
 pub const ReplayTickTimingSample = struct {

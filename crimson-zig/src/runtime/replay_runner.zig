@@ -71,6 +71,7 @@ pub const ReplayRunnerError = error{
     UnsupportedEventKind,
     UnsupportedEventPlayerIndex,
     InvalidPerkPickEvent,
+    MissingRngCallerTag,
     UnsupportedSpawnTemplate,
     UnsupportedQuestSpawnTable,
     UnsupportedWeaponFirePath,
@@ -239,12 +240,12 @@ pub fn runReplayScaffoldWithTrace(
         var trace_collector: TickTraceCollector = undefined;
         var trace_collector_active = false;
         defer if (trace_collector_active) trace_collector.deinit();
-        defer if (trace_collector_active) context.state.rng.setTraceSink(null, null);
+        defer if (trace_collector_active) context.state.rng.setTraceSink(null, null, false);
         if (trace_out != null) {
             trace_collector = TickTraceCollector.init(trace_allocator);
             trace_collector_active = true;
 
-            context.state.rng.setTraceSink(&trace_collector, TickTraceCollector.onRngDraw);
+            context.state.rng.setTraceSink(&trace_collector, TickTraceCollector.onRngDraw, true);
 
             step_options.timing_trace_ctx = &trace_collector;
             step_options.timing_trace_sink = TickTraceCollector.onTimingSample;
@@ -258,6 +259,9 @@ pub fn runReplayScaffoldWithTrace(
             dt_tick,
             step_options,
         );
+        if (trace_collector_active and context.state.rng.consumeMissingTraceCaller()) {
+            return error.MissingRngCallerTag;
+        }
 
         if (trace_out) |trace| {
             const trace_elapsed_ms = switch (game_mode) {
@@ -479,6 +483,7 @@ const TickTraceCollector = struct {
             .value_15 = @intCast(draw.value_15),
             .state_before_u32 = draw.state_before,
             .state_after_u32 = draw.state_after,
+            .caller = draw.caller,
         }) catch {
             self.failed = true;
         };

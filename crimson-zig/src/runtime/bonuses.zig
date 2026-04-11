@@ -9,6 +9,7 @@ const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
 const projectiles_mod = @import("projectiles.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 const state_mod = @import("state.zig");
 const weapon_data = @import("weapon_data.zig");
 
@@ -108,7 +109,7 @@ pub const BonusPool = struct {
             }
         }
 
-        if (has_pistol and (state.rng.rand() & 3) < 3) {
+        if (has_pistol and (state.rng.randTagged(rng_callers.bonus_try_spawn_on_kill_pistol_force_weapon) & 3) < 3) {
             const slot = spawnAtPos(self, pos, state, players, world_size);
             var entry = slotPtr(self, slot);
             entry.bonus_id = .weapon;
@@ -134,17 +135,17 @@ pub const BonusPool = struct {
             return entry;
         }
 
-        const base_roll = state.rng.rand();
+        const base_roll = state.rng.randTagged(rng_callers.bonus_try_spawn_on_kill_base_gate);
         if ((base_roll % 9) != 1) {
             var allow_without_magnet = false;
             if (has_pistol) {
-                allow_without_magnet = (state.rng.rand() % 5) == 1;
+                allow_without_magnet = (state.rng.randTagged(rng_callers.bonus_try_spawn_on_kill_pistol_allow_without_magnet) % 5) == 1;
             }
             if (!allow_without_magnet) {
                 if (!anyPerkActive(players, PerkId.bonus_magnet)) {
                     return null;
                 }
-                if ((state.rng.rand() % 10) != 2) return null;
+                if ((state.rng.randTagged(rng_callers.bonus_try_spawn_on_kill_bonus_magnet) % 10) != 2) return null;
             }
         }
 
@@ -596,21 +597,22 @@ fn applyNukeBonus(
     state.camera_shake_pulses = 0x14;
     state.camera_shake_timer = 0.2;
 
-    var bullet_count: i32 = @intCast(state.rng.rand() & 3);
+    var bullet_count: i32 = @intCast(state.rng.randTagged(rng_callers.bonus_apply_nuke_bullet_count) & 3);
     bullet_count += 4;
     var bullet_idx: i32 = 0;
     while (bullet_idx < bullet_count) : (bullet_idx += 1) {
-        const angle = @as(f32, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
+        const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_angle) % 0x274)) * 0.01;
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
         const meta = projectileTravelBudgetFromRawId(type_id);
         const proj_idx = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
-        const speed_scale = @as(f32, @floatFromInt(state.rng.rand() % 0x32)) * 0.01 + 0.5;
+        const speed_scale = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_speed_scale) % 0x32)) * 0.01 + 0.5;
         projectiles.entries[proj_idx].speed_scale *= narrowF32(speed_scale);
     }
 
-    for (0..2) |_| {
-        const angle = @as(f32, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
+    for (0..2) |gauss_idx| {
+        const angle_caller = if (gauss_idx == 0) rng_callers.bonus_apply_nuke_gauss_angle_1 else rng_callers.bonus_apply_nuke_gauss_angle_2;
+        const angle = @as(f32, @floatFromInt(state.rng.randTagged(angle_caller) % 0x274)) * 0.01;
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
         const meta = projectileTravelBudgetFromRawId(type_id);
@@ -895,14 +897,14 @@ pub fn weaponPickRandomAvailable(state: *state_mod.GameplayState) game_ids.Weapo
     weaponRefreshAvailable(state);
 
     for (0..1000) |_| {
-        var base_rand = state.rng.rand();
+        var base_rand = state.rng.randTagged(rng_callers.weapon_pick_random_available_pick);
         var weapon_id: i32 = @intCast(base_rand % weapon_drop_id_count + 1);
         var weapon_enum = weapon_data.weaponIdFromInt(weapon_id);
 
         if (state.status_weapon_usage_counts.get(weapon_enum) != 0 and
-            (state.rng.rand() & 1) == 0)
+            (state.rng.randTagged(rng_callers.weapon_pick_random_available_reroll_gate) & 1) == 0)
         {
-            base_rand = state.rng.rand();
+            base_rand = state.rng.randTagged(rng_callers.weapon_pick_random_available_reroll_pick);
             weapon_id = @intCast(base_rand % weapon_drop_id_count + 1);
             weapon_enum = weapon_data.weaponIdFromInt(weapon_id);
         }
@@ -935,7 +937,7 @@ fn bonusPickRandomType(
     }
 
     for (0..101) |_| {
-        const roll: i32 = @intCast(state.rng.rand() % 162 + 1);
+        const roll: i32 = @intCast(state.rng.randTagged(rng_callers.bonus_pick_random_type_roll) % 162 + 1);
         const bonus_id = bonusIdFromRoll(roll, state) orelse continue;
         if (bonusPickSuppressed(state, players, bonus_id, has_fire_bullets_drop)) continue;
 
@@ -987,7 +989,7 @@ fn bonusIdFromRoll(
     if (roll < 1 or roll > 162) return null;
     if (roll <= 13) return .points;
     if (roll == 14) {
-        if ((state.rng.rand() & 0x3f) == 0) return .energizer;
+        if ((state.rng.randTagged(rng_callers.bonus_pick_random_type_energizer) & 0x3f) == 0) return .energizer;
         return .weapon;
     }
 
@@ -1183,7 +1185,7 @@ fn spawnAtPos(
     if (bonus_id == .weapon) {
         entry.amount = weapon_data.weaponIdToInt(weaponPickRandomAvailable(state));
     } else if (bonus_id == .points) {
-        entry.amount = if ((state.rng.rand() & 7) < 3) 1000 else 500;
+        entry.amount = if ((state.rng.randTagged(rng_callers.bonus_spawn_at_pos_points_amount) & 7) < 3) 1000 else 500;
     } else {
         entry.amount = defaultBonusAmount(bonus_id);
     }

@@ -8,6 +8,7 @@ const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 const runtime_helpers = @import("helpers.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
@@ -357,7 +358,7 @@ pub const ProjectilePool = struct {
 
                 if (owner_player) |player| {
                     if (perks.perkActive(player, PerkId.poison_bullets)) {
-                        const poison_roll = state.rng.rand();
+                        const poison_roll = state.rng.randTagged(rng_callers.projectile_update_poison_bullets_gate);
                         if ((poison_roll & 7) == 1) {
                             creatures.entries[hit_idx.?].flags |= spawn_mod.CreatureFlags.self_damage_tick;
                         }
@@ -388,7 +389,7 @@ pub const ProjectilePool = struct {
                     proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.blade_gun))
                 {
                     proj.life_timer = 0.25;
-                    const jitter = @as(f32, @floatFromInt(state.rng.rand() & 3));
+                    const jitter = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_stop_on_hit_jitter) & 3));
                     const jitter_dx = narrowF32(@as(f32, @floatCast(dir_x_ext * @as(f64, @floatCast(jitter)))));
                     const jitter_dy = narrowF32(@as(f32, @floatCast(dir_y_ext * @as(f64, @floatCast(jitter)))));
                     proj.pos = .{
@@ -622,14 +623,14 @@ fn emitProjectileHitPresentationPre(
 
     if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.blade_gun)) {
         for (0..8) |_| {
-            const angle = @as(f32, @floatFromInt(state.rng.rand() & 0xff)) * 0.024543693;
+            const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_blade_gun_splatter_angle) & 0xff)) * 0.024543693;
             effects.spawnBloodSplatter(state, hit_pos, angle, 0.0, detail_preset, state.gore_disabled);
         }
     }
 
     if (perks.perkActive(player, PerkId.bloody_mess_quick_learner)) {
         for (0..8) |_| {
-            const spread = (@as(f32, @floatFromInt(state.rng.rand() & 0x1f)) - 16.0) * 0.0625;
+            const spread = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_bloody_mess_spread) & 0x1f)) - 16.0) * 0.0625;
             effects.spawnBloodSplatter(state, hit_pos, base_angle + spread, 0.0, detail_preset, state.gore_disabled);
         }
         effects.spawnBloodSplatter(state, hit_pos, base_angle + std.math.pi, 0.0, detail_preset, state.gore_disabled);
@@ -639,8 +640,8 @@ fn emitProjectileHitPresentationPre(
         while (lo > -60) {
             const span: u32 = @intCast(hi - lo);
             for (0..2) |_| {
-                _ = state.rng.rand() % span;
-                _ = state.rng.rand() % span;
+                _ = state.rng.randTagged(rng_callers.projectile_update_bloody_mess_decal_dx_1) % span;
+                _ = state.rng.randTagged(rng_callers.projectile_update_bloody_mess_decal_dy_1) % span;
                 runtime_helpers.consumeAddRandomRng(state);
             }
             lo -= 10;
@@ -649,7 +650,7 @@ fn emitProjectileHitPresentationPre(
     } else if (!freeze_active) {
         for (0..2) |_| {
             effects.spawnBloodSplatter(state, hit_pos, base_angle, 0.0, detail_preset, state.gore_disabled);
-            if ((state.rng.rand() & 7) == 2) {
+            if ((state.rng.randTagged(rng_callers.projectile_update_default_reverse_splatter_gate) & 7) == 2) {
                 effects.spawnBloodSplatter(state, hit_pos, base_angle + std.math.pi, 0.0, detail_preset, state.gore_disabled);
             }
         }
@@ -687,10 +688,10 @@ fn emitProjectileTypeHitEffects(
             for (0..count) |_| {
                 effects.spawnBurstParticle(
                     pos,
-                    state.rng.rand(),
-                    state.rng.rand(),
-                    state.rng.rand(),
-                    state.rng.rand(),
+                    state.rng.randTagged(rng_callers.shrinkifier_hit_rotation),
+                    state.rng.randTagged(rng_callers.shrinkifier_hit_vel_x),
+                    state.rng.randTagged(rng_callers.shrinkifier_hit_vel_y),
+                    state.rng.randTagged(rng_callers.shrinkifier_hit_scale_step),
                     null,
                     0.3,
                     .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
@@ -736,10 +737,10 @@ fn emitProjectileTypeHitEffects(
                     @intFromEnum(effects_mod.EffectId.burst),
                     pos,
                     .{
-                        .x = (@as(f32, @floatFromInt(state.rng.rand() & 0x7f)) - 64.0) * burst * 1.4,
-                        .y = (@as(f32, @floatFromInt(state.rng.rand() & 0x7f)) - 64.0) * burst * 1.4,
+                        .x = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_vel_x) & 0x7f)) - 64.0) * burst * 1.4,
+                        .y = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_vel_y) & 0x7f)) - 64.0) * burst * 1.4,
                     },
-                    @as(f32, @floatFromInt(state.rng.rand() & 0x7f)) * 0.049087387,
+                    @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_rotation) & 0x7f)) * 0.049087387,
                     1.0,
                     burst * 32.0,
                     burst * 32.0,
@@ -748,7 +749,7 @@ fn emitProjectileTypeHitEffects(
                     0x1D,
                     .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
                     0.0,
-                    (@as(f32, @floatFromInt(state.rng.rand() % 100)) * 0.01 + 0.1) * burst,
+                    (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_scale_step) % 100)) * 0.01 + 0.1) * burst,
                     detail_preset,
                 );
             }
@@ -759,9 +760,9 @@ fn emitProjectileTypeHitEffects(
         },
         @intFromEnum(game_ids.ProjectileTypeId.splitter_gun) => {
             for (0..3) |_| {
-                const angle = @as(f32, @floatFromInt(state.rng.rand() & 0x1ff)) * (std.math.tau / 512.0);
-                const radius = @as(f32, @floatFromInt(state.rng.rand() % 26));
-                const jitter_age = -@as(f32, @floatFromInt(state.rng.rand() & 0xff)) * 0.0012;
+                const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.splitter_hit_angle) & 0x1ff)) * (std.math.tau / 512.0);
+                const radius = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.splitter_hit_radius) % 26));
+                const jitter_age = -@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.splitter_hit_age) & 0xff)) * 0.0012;
                 const offset = state_mod.Vec2.fromAngle(angle).mul(radius);
                 _ = effects.spawn(
                     @intFromEnum(effects_mod.EffectId.burst),

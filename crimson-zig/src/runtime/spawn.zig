@@ -1,5 +1,6 @@
 const std = @import("std");
 const native_math = @import("native_math.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 
 const crt_rand_mult: u32 = 214_013;
 const crt_rand_inc: u32 = 2_531_011;
@@ -116,10 +117,12 @@ pub const Vec2 = struct {
 };
 
 pub const Crand = struct {
+    pub const CallerStatic = ?u32;
     pub const TraceDraw = struct {
         state_before: u32,
         state_after: u32,
         value_15: u32,
+        caller: CallerStatic,
     };
 
     pub const TraceSink = *const fn (ctx: ?*anyopaque, draw: TraceDraw) void;
@@ -127,6 +130,8 @@ pub const Crand = struct {
     state: u32 = 0,
     trace_ctx: ?*anyopaque = null,
     trace_sink: ?TraceSink = null,
+    trace_require_caller: bool = false,
+    missing_trace_caller: bool = false,
 
     pub fn init(seed: u32) Crand {
         return .{ .state = seed };
@@ -136,9 +141,11 @@ pub const Crand = struct {
         self.state = seed;
     }
 
-    pub fn setTraceSink(self: *Crand, ctx: ?*anyopaque, sink: ?TraceSink) void {
+    pub fn setTraceSink(self: *Crand, ctx: ?*anyopaque, sink: ?TraceSink, require_caller: bool) void {
         self.trace_ctx = ctx;
         self.trace_sink = sink;
+        self.trace_require_caller = require_caller;
+        self.missing_trace_caller = false;
     }
 
     pub fn msgpackWrite(self: Crand, packer: anytype) !void {
@@ -148,18 +155,56 @@ pub const Crand = struct {
     }
 
     pub fn rand(self: *Crand) u32 {
+        return self.randTagged(null);
+    }
+
+    pub fn randTagged(self: *Crand, caller: CallerStatic) u32 {
         const state_before = self.state;
         self.state = self.state *% crt_rand_mult +% crt_rand_inc;
         const value = (self.state >> 16) & 0x7fff;
         if (self.trace_sink) |sink| {
+            if (self.trace_require_caller and caller == null) {
+                self.missing_trace_caller = true;
+            }
             sink(self.trace_ctx, .{
                 .state_before = state_before,
                 .state_after = self.state,
                 .value_15 = value,
+                .caller = caller,
             });
         }
         return value;
     }
+
+    pub fn consumeMissingTraceCaller(self: *Crand) bool {
+        const missing = self.missing_trace_caller;
+        self.missing_trace_caller = false;
+        return missing;
+    }
+};
+
+const SurvivalSpawnPosCallers = struct {
+    edge: u32,
+    top_x: u32,
+    bottom_x: u32,
+    left_y: u32,
+    right_y: u32,
+};
+
+const survival_spawn_pos_callers_extra: SurvivalSpawnPosCallers = .{
+    .edge = rng_callers.survival_update_extra_spawn_edge,
+    .top_x = rng_callers.survival_update_extra_spawn_top_x,
+    .bottom_x = rng_callers.survival_update_extra_spawn_bottom_x,
+    .left_y = rng_callers.survival_update_extra_spawn_left_y,
+    .right_y = rng_callers.survival_update_extra_spawn_right_y,
+};
+
+const survival_spawn_pos_callers_main: SurvivalSpawnPosCallers = .{
+    .edge = rng_callers.survival_update_main_spawn_edge,
+    .top_x = rng_callers.survival_update_main_spawn_top_x,
+    .bottom_x = rng_callers.survival_update_main_spawn_bottom_x,
+    .left_y = rng_callers.survival_update_main_spawn_left_y,
+    .right_y = rng_callers.survival_update_main_spawn_right_y,
 };
 
 pub const CreatureInit = struct {
@@ -486,7 +531,7 @@ pub fn buildSurvivalSpawnCreature(
     var creature = allocCreature(-1, pos, rng);
     creature.ai_mode = CreatureAiMode.orbit_player;
 
-    const r10 = @as(i32, @intCast(rng.rand() % 10));
+    const r10 = @as(i32, @intCast(rng.randTagged(rng_callers.survival_spawn_creature_type_roll) % 10));
 
     var type_id: CreatureTypeId = .zombie;
     if (xp < 12_000) {
@@ -498,7 +543,7 @@ pub fn buildSurvivalSpawnCreature(
         if (r10 < 5) {
             type_id = .alien;
         } else {
-            type_id = if ((rng.rand() & 1) == 0) .spider_sp1 else .spider_sp2;
+            type_id = if ((rng.randTagged(rng_callers.survival_spawn_creature_parity_pick) & 1) == 0) .spider_sp1 else .spider_sp2;
         }
     } else if (xp < 50_000) {
         type_id = .alien;
@@ -518,15 +563,15 @@ pub fn buildSurvivalSpawnCreature(
         }
     }
 
-    if ((rng.rand() & 0x1f) == 2) {
+    if ((rng.randTagged(rng_callers.survival_spawn_creature_rare_override) & 0x1f) == 2) {
         type_id = .spider_sp1;
     }
     creature.type_id = type_id;
 
-    const size = @as(f32, @floatFromInt(rng.rand() % 20 + 44));
+    const size = @as(f32, @floatFromInt(rng.randTagged(rng_callers.survival_spawn_creature_size) % 20 + 44));
     creature.size = size;
     {
-        const heading_base: f32 = @floatFromInt(rng.rand() % 314);
+        const heading_base: f32 = @floatFromInt(rng.randTagged(rng_callers.survival_spawn_creature_heading) % 314);
         const heading_scaled: f32 = heading_base * 0.01;
         creature.heading = heading_scaled;
     }
@@ -539,7 +584,7 @@ pub fn buildSurvivalSpawnCreature(
         move_speed = @as(f32, move_speed * @as(f32, 1.3));
     }
 
-    const r_health = rng.rand();
+    const r_health = rng.randTagged(rng_callers.survival_spawn_creature_health);
     const health_xp: f32 = @floatFromInt(xp);
     const health_scaled = @as(f32, health_xp * @as(f32, 0.00125));
     const health_rand = @as(f32, @floatFromInt(r_health & 0xF));
@@ -564,8 +609,8 @@ pub fn buildSurvivalSpawnCreature(
     if (xp < 50_000) {
         const xp_1000: f32 = @floatFromInt(@divTrunc(xp, 1000));
         const xp_10k: f32 = @floatFromInt(@divTrunc(xp, 10_000));
-        const rand_g: f32 = @floatFromInt(rng.rand() % 10);
-        const rand_b: f32 = @floatFromInt(rng.rand() % 10);
+        const rand_g: f32 = @floatFromInt(rng.randTagged(rng_callers.survival_spawn_creature_low_tint_g) % 10);
+        const rand_b: f32 = @floatFromInt(rng.randTagged(rng_callers.survival_spawn_creature_low_tint_b) % 10);
         tint_r = narrowF32(1.0 - 1.0 / narrowF32(xp_1000 + 10.0));
         tint_g = narrowF32(rand_g * 0.01 + 0.9 - 1.0 / narrowF32(xp_10k + 10.0));
         tint_b = narrowF32(rand_b * 0.01 + 0.7);
@@ -573,8 +618,8 @@ pub fn buildSurvivalSpawnCreature(
         const xp_1000: f32 = @floatFromInt(@divTrunc(xp, 1000));
         const xp_10k: f32 = @floatFromInt(@divTrunc(xp, 10_000));
         const xp_delta_50k: f32 = @floatFromInt(xp - 50_000);
-        const rand_g: f32 = @floatFromInt(rng.rand() % 10);
-        const rand_b: f32 = @floatFromInt(rng.rand() % 10);
+        const rand_g: f32 = @floatFromInt(rng.randTagged(rng_callers.survival_spawn_creature_mid_tint_g) % 10);
+        const rand_b: f32 = @floatFromInt(rng.randTagged(rng_callers.survival_spawn_creature_mid_tint_b) % 10);
         tint_r = narrowF32(0.9 - 1.0 / narrowF32(xp_1000 + 10.0));
         tint_g = narrowF32(rand_g * 0.01 + 0.8 - 1.0 / narrowF32(xp_10k + 10.0));
         tint_b = narrowF32(xp_delta_50k * 6e-06 + rand_b * 0.01 + 0.7);
@@ -582,8 +627,8 @@ pub fn buildSurvivalSpawnCreature(
         const xp_1000: f32 = @floatFromInt(@divTrunc(xp, 1000));
         const xp_10k: f32 = @floatFromInt(@divTrunc(xp, 10_000));
         const xp_delta_100k: f32 = @floatFromInt(xp - 100_000);
-        const rand_g: f32 = @floatFromInt(rng.rand() % 10);
-        const rand_b: f32 = @floatFromInt(rng.rand() % 10);
+        const rand_g: f32 = @floatFromInt(rng.randTagged(rng_callers.survival_spawn_creature_high_tint_g) % 10);
+        const rand_b: f32 = @floatFromInt(rng.randTagged(rng_callers.survival_spawn_creature_high_tint_b) % 10);
         tint_r = narrowF32(1.0 - 1.0 / narrowF32(xp_1000 + 10.0));
         tint_g = narrowF32(rand_g * 0.01 + 0.9 - 1.0 / narrowF32(xp_10k + 10.0));
         tint_b = narrowF32(rand_b * 0.01 + 1.0 - xp_delta_100k * 3e-06);
@@ -602,23 +647,23 @@ pub fn buildSurvivalSpawnCreature(
         health * 0.4 +
             contact_damage * 0.8 +
             move_speed * 5.0 +
-            @as(f32, @floatFromInt(rng.rand() % 10 + 10)),
+            @as(f32, @floatFromInt(rng.randTagged(rng_callers.survival_spawn_creature_reward_bonus) % 10 + 10)),
     );
     creature.reward_value = reward_value;
 
-    var r = rng.rand();
+    var r = rng.randTagged(rng_callers.survival_spawn_creature_rare_red);
     if ((r % 180) < 2) {
         applyTint(&creature, .{ 0.9, 0.4, 0.4, 1.0 });
         creature.health = 65.0;
         creature.reward_value = 320.0;
     } else {
-        r = rng.rand();
+        r = rng.randTagged(rng_callers.survival_spawn_creature_rare_green);
         if ((r % 240) < 2) {
             applyTint(&creature, .{ 0.4, 0.9, 0.4, 1.0 });
             creature.health = 85.0;
             creature.reward_value = 420.0;
         } else {
-            r = rng.rand();
+            r = rng.randTagged(rng_callers.survival_spawn_creature_rare_blue);
             if ((r % 360) < 2) {
                 applyTint(&creature, .{ 0.4, 0.4, 0.9, 1.0 });
                 creature.health = 125.0;
@@ -627,14 +672,14 @@ pub fn buildSurvivalSpawnCreature(
         }
     }
 
-    r = rng.rand();
+    r = rng.randTagged(rng_callers.survival_spawn_creature_rare_purple);
     if ((r % 1320) < 4) {
         applyTint(&creature, .{ 0.84, 0.24, 0.89, 1.0 });
         creature.size = 80.0;
         creature.reward_value = 600.0;
         creature.health += 230.0;
     } else {
-        r = rng.rand();
+        r = rng.randTagged(rng_callers.survival_spawn_creature_rare_yellow);
         if ((r % 1620) < 4) {
             applyTint(&creature, .{ 0.94, 0.84, 0.29, 1.0 });
             creature.size = 85.0;
@@ -655,24 +700,25 @@ pub fn buildSurvivalSpawnCreature(
     return creature;
 }
 
-pub fn randSurvivalSpawnPos(
+fn randSurvivalSpawnPos(
     rng: *Crand,
     terrain_width: i32,
     terrain_height: i32,
+    callers: SurvivalSpawnPosCallers,
 ) Vec2 {
     const width: u32 = @intCast(@max(1, terrain_width));
     const height: u32 = @intCast(@max(1, terrain_height));
 
-    return switch (rng.rand() & 3) {
-        0 => .{ .x = @floatFromInt(rng.rand() % width), .y = -40.0 },
+    return switch (rng.randTagged(callers.edge) & 3) {
+        0 => .{ .x = @floatFromInt(rng.randTagged(callers.top_x) % width), .y = -40.0 },
         1 => .{
-            .x = @floatFromInt(rng.rand() % width),
+            .x = @floatFromInt(rng.randTagged(callers.bottom_x) % width),
             .y = @as(f32, @floatFromInt(terrain_height)) + 40.0,
         },
-        2 => .{ .x = -40.0, .y = @floatFromInt(rng.rand() % height) },
+        2 => .{ .x = -40.0, .y = @floatFromInt(rng.randTagged(callers.left_y) % height) },
         else => .{
             .x = @as(f32, @floatFromInt(terrain_width)) + 40.0,
-            .y = @floatFromInt(rng.rand() % height),
+            .y = @floatFromInt(rng.randTagged(callers.right_y) % height),
         },
     };
 }
@@ -693,12 +739,12 @@ pub fn buildRushModeSpawnCreature(
     const elapsed_f32: f32 = @floatFromInt(elapsed_ms);
     creature.health = narrowF32(elapsed_f32 * 1e-4 + 10.0);
     {
-        const heading_base: f32 = @floatFromInt(rng.rand() % 314);
+        const heading_base: f32 = @floatFromInt(rng.randTagged(rng_callers.creature_spawn_heading) % 314);
         const heading_scaled: f32 = heading_base * 0.01;
         creature.heading = heading_scaled;
     }
     creature.move_speed = narrowF32(elapsed_f32 * 1e-5 + 2.5);
-    creature.reward_value = @floatFromInt(rng.rand() % 30 + 140);
+    creature.reward_value = @floatFromInt(rng.randTagged(rng_callers.creature_spawn_reward) % 30 + 140);
 
     creature.tint = .{
         tint_rgba[0],
@@ -841,7 +887,7 @@ pub fn tickSurvivalWaveSpawns(
             const extra: i32 = @divTrunc(1 - interval_ms, 2);
             interval_ms += extra * 2;
             for (0..@as(usize, @intCast(extra))) |_| {
-                const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+                const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height, survival_spawn_pos_callers_extra);
                 try spawns.append(allocator, buildSurvivalSpawnCreature(pos, rng, player_experience));
             }
         }
@@ -849,7 +895,7 @@ pub fn tickSurvivalWaveSpawns(
         if (interval_ms < 1) interval_ms = 1;
         cooldown += @floatFromInt(interval_ms);
 
-        const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+        const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height, survival_spawn_pos_callers_main);
         try spawns.append(allocator, buildSurvivalSpawnCreature(pos, rng, player_experience));
     }
 
@@ -885,7 +931,7 @@ pub fn tickSurvivalWaveSpawnsCount(
             const extra: i32 = @divTrunc(1 - interval_ms, 2);
             interval_ms += extra * 2;
             for (0..@as(usize, @intCast(extra))) |_| {
-                const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+                const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height, survival_spawn_pos_callers_extra);
                 _ = buildSurvivalSpawnCreature(pos, rng, player_experience);
                 count += 1;
             }
@@ -894,7 +940,7 @@ pub fn tickSurvivalWaveSpawnsCount(
         if (interval_ms < 1) interval_ms = 1;
         cooldown += @floatFromInt(interval_ms);
 
-        const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+        const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height, survival_spawn_pos_callers_main);
         _ = buildSurvivalSpawnCreature(pos, rng, player_experience);
         count += 1;
     }
@@ -930,7 +976,7 @@ pub fn tickSurvivalWaveSpawnsBatch(
             const extra: i32 = @divTrunc(1 - interval_ms, 2);
             interval_ms += extra * 2;
             for (0..@as(usize, @intCast(extra))) |_| {
-                const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+                const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height, survival_spawn_pos_callers_extra);
                 const spawn = buildSurvivalSpawnCreature(pos, rng, player_experience);
                 if (result.count < result.spawns.len) {
                     result.spawns[result.count] = spawn;
@@ -942,7 +988,7 @@ pub fn tickSurvivalWaveSpawnsBatch(
         if (interval_ms < 1) interval_ms = 1;
         result.cooldown += @floatFromInt(interval_ms);
 
-        const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+        const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height, survival_spawn_pos_callers_main);
         const spawn = buildSurvivalSpawnCreature(pos, rng, player_experience);
         if (result.count < result.spawns.len) {
             result.spawns[result.count] = spawn;
@@ -1105,7 +1151,7 @@ pub fn advanceSurvivalSpawnStage(
 }
 
 fn allocCreature(template_id: i32, pos: Vec2, rng: *Crand) CreatureInit {
-    const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
+    const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
     return .{
         .origin_template_id = template_id,
         .pos = pos,

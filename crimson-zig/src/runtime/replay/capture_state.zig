@@ -352,7 +352,7 @@ pub fn applyCaptureStateReset(
     const rng_trace_sink = state.rng.trace_sink;
 
     state.* = state_mod.GameplayState.init(rng_state);
-    state.rng.setTraceSink(rng_trace_ctx, rng_trace_sink);
+    state.rng.setTraceSink(rng_trace_ctx, rng_trace_sink, false);
     state.status_quest_unlock_index = status_quest_unlock_index;
     state.status_quest_unlock_index_full = status_quest_unlock_index_full;
     state.status_weapon_usage_counts = status_weapon_usage_counts;

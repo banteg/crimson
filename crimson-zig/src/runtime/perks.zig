@@ -9,6 +9,7 @@ const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
 const particles_mod = @import("particles.zig");
 const player_runtime = @import("player.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
 
@@ -332,7 +333,7 @@ pub fn applyPerkWithContext(
             }
         },
         PerkId.fatal_lottery => {
-            if ((state.rng.rand() & 1) != 0) {
+            if ((state.rng.randTagged(rng_callers.perk_apply_fatal_lottery) & 1) != 0) {
                 players[0].health = -1.0;
             } else {
                 players[0].experience += 10_000;
@@ -393,7 +394,7 @@ pub fn applyPerkWithContext(
             var effects: effects_mod.EffectPool = .{};
             for (players) |*player| {
                 if (player.health > 0.0) {
-                    const amount: f32 = @floatFromInt(state.rng.rand() % 50 + 1);
+                    const amount: f32 = @floatFromInt(state.rng.randTagged(rng_callers.perk_apply_bandage_heal) % 50 + 1);
                     if (state.preserve_bugs) {
                         player.health = @min(100.0, narrowF32(player.health * amount));
                     } else {
@@ -523,7 +524,7 @@ pub fn updatePerkEffects(
 
     if (dt > 0.0 and
         perkActive(&players[0], PerkId.regeneration) and
-        (state.rng.rand() & 1) != 0)
+        (state.rng.randTagged(rng_callers.perks_update_effects_regeneration_gate) & 1) != 0)
     {
         if (state.preserve_bugs) {
             var repeat: usize = 0;
@@ -607,8 +608,15 @@ pub fn applyPyrokineticEffects(
         if (creature.collision_timer >= 0.0) continue;
 
         creature.collision_timer = 0.5;
-        for (burn_intensities) |intensity| {
-            const angle = narrowF32(@as(f32, @floatFromInt(state.rng.rand() % 0x274)) * 0.01);
+        for (burn_intensities, 0..) |intensity, burn_idx| {
+            const caller = switch (burn_idx) {
+                0 => rng_callers.perks_update_effects_pyrokinetic_angle_0p8,
+                1 => rng_callers.perks_update_effects_pyrokinetic_angle_0p6,
+                2 => rng_callers.perks_update_effects_pyrokinetic_angle_0p4,
+                3 => rng_callers.perks_update_effects_pyrokinetic_angle_0p3,
+                else => rng_callers.perks_update_effects_pyrokinetic_angle_0p2,
+            };
+            const angle = narrowF32(@as(f32, @floatFromInt(state.rng.randTagged(caller) % 0x274)) * 0.01);
             _ = particles.spawnParticle(
                 state,
                 creature.pos,
@@ -638,12 +646,12 @@ pub fn applyJinxedEffects(
     if (players.len == 0) return;
     if (!perkActive(&players[0], PerkId.jinxed)) return;
 
-    if ((state.rng.rand() % 10) == 3) {
+    if ((state.rng.randTagged(rng_callers.perks_update_effects_jinxed_accident_gate) % 10) == 3) {
         const target_idx = selectJinxedAccidentTarget(state, players);
         players[target_idx].health = narrowF32(players[target_idx].health - 5.0);
     }
 
-    const timer_roll = @as(f32, @floatFromInt(state.rng.rand() % 0x14));
+    const timer_roll = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.perks_update_effects_jinxed_timer_reset) % 0x14));
     state.jinxed_timer = narrowF32(narrowF32(timer_roll * 0.1) + state.jinxed_timer + 2.0);
 
     if (state.bonuses.freeze > 0.0) return;
@@ -652,10 +660,10 @@ pub fn applyJinxedEffects(
     const pool_mod = @min(pool_limit, creatures.entries.len);
     if (pool_mod == 0) return;
 
-    var idx: usize = @intCast(state.rng.rand() % @as(u32, @intCast(pool_mod)));
+    var idx: usize = @intCast(state.rng.randTagged(rng_callers.perks_update_effects_jinxed_creature_pick) % @as(u32, @intCast(pool_mod)));
     var attempts: usize = 0;
     while (attempts < 10 and !creatures.entries[idx].active) : (attempts += 1) {
-        idx = @intCast(state.rng.rand() % @as(u32, @intCast(pool_mod)));
+        idx = @intCast(state.rng.randTagged(rng_callers.perks_update_effects_jinxed_creature_retry) % @as(u32, @intCast(pool_mod)));
     }
     if (!creatures.entries[idx].active) return;
 
@@ -765,16 +773,16 @@ pub fn consumeExplosionBurstRng(
 ) void {
     if (detail_preset > 3) {
         for (0..2) |_| {
-            _ = state.rng.rand() % 0x266;
+            _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_puff_rotation) % 0x266;
         }
     }
     const count: usize = if (detail_preset < 2) 1 else 3 + (if (detail_preset > 3) @as(usize, 1) else 0);
     for (0..count) |_| {
-        _ = state.rng.rand() % 0x13A;
-        _ = state.rng.rand() & 0x3F;
-        _ = state.rng.rand() & 0x3F;
-        _ = state.rng.rand();
-        _ = state.rng.rand();
+        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_rotation) % 0x13A;
+        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_vel_x) & 0x3F;
+        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_vel_y) & 0x3F;
+        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_scale_step);
+        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_rotation_STEP);
     }
 }
 
@@ -794,7 +802,7 @@ fn selectJinxedAccidentTarget(
     }
     if (alive_count == 0) return 0;
     if (alive_count == 1) return alive_indices[0];
-    const pick = state.rng.rand() % @as(u32, @intCast(alive_count));
+    const pick = state.rng.randTagged(rng_callers.rewrite_jinxed_accident_target_pick) % @as(u32, @intCast(alive_count));
     return alive_indices[@intCast(pick)];
 }
 
@@ -863,7 +871,7 @@ fn perkGenerateChoices(
 
             if (candidate == PerkId.pyromaniac and !pyromaniac_allowed) continue;
             if (death_clock_active and isDeathClockBlocked(candidate)) continue;
-            if (isRarityGate(candidate) and ((state.rng.rand() & 3) == 1)) continue;
+            if (isRarityGate(candidate) and ((state.rng.randTagged(rng_callers.perks_generate_choices_rarity_gate) & 3) == 1)) continue;
 
             const flags = perkFlags(candidate);
             const stackable = flags.contains(.stackable);
@@ -914,7 +922,7 @@ fn pyromaniacAllowed(
 fn selectRandomOffer(state: *state_mod.GameplayState, offerable: []const bool) PerkId {
     var draws: i32 = 0;
     while (draws < 1000) : (draws += 1) {
-        const candidate_raw: i32 = @intCast(state.rng.rand() % @as(u32, @intCast(perk_id_max)) + 1);
+        const candidate_raw: i32 = @intCast(state.rng.randTagged(rng_callers.perk_select_random) % @as(u32, @intCast(perk_id_max)) + 1);
         if (candidate_raw >= 0 and candidate_raw < offerable.len and offerable[@intCast(candidate_raw)]) {
             return @enumFromInt(candidate_raw);
         }

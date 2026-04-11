@@ -16,6 +16,7 @@ const creatures_mod = @import("../creatures.zig");
 const perks = @import("../perks.zig");
 const player_runtime = @import("../player.zig");
 const projectiles_mod = @import("../projectiles.zig");
+const rng_callers = @import("../../rng_caller_static.zig");
 const spawn_mod = @import("../spawn.zig");
 const state_mod = @import("../state.zig");
 const survival_progression = @import("../survival_progression.zig");
@@ -194,7 +195,7 @@ pub fn stepTick(
 
     context.state.game_mode = context.game_mode;
     for (0..@as(usize, @intCast(@max(context.inter_tick_rand_draws, 0)))) |_| {
-        _ = context.state.rng.rand();
+        _ = context.state.rng.randTagged(rng_callers.replay_driver_inter_tick_draw_by_tick);
     }
 
     callPhaseHook(options.hooks, context, .pre_events, &frame);
@@ -748,15 +749,15 @@ fn cameraShakeUpdate(
     }
 
     const max_amp_u32: u32 = @intCast(max_amp);
-    var mag_x: i32 = @intCast(state.rng.rand() % max_amp_u32);
-    mag_x += @intCast(state.rng.rand() % 10);
-    if ((state.rng.rand() & 1) == 0) {
+    var mag_x: i32 = @intCast(state.rng.randTagged(rng_callers.camera_update_offset_x_base) % max_amp_u32);
+    mag_x += @intCast(state.rng.randTagged(rng_callers.camera_update_offset_x_spread) % 10);
+    if ((state.rng.randTagged(rng_callers.camera_update_offset_x_sign) & 1) == 0) {
         mag_x = -mag_x;
     }
 
-    var mag_y: i32 = @intCast(state.rng.rand() % max_amp_u32);
-    mag_y += @intCast(state.rng.rand() % 10);
-    if ((state.rng.rand() & 1) == 0) {
+    var mag_y: i32 = @intCast(state.rng.randTagged(rng_callers.camera_update_offset_y_base) % max_amp_u32);
+    mag_y += @intCast(state.rng.randTagged(rng_callers.camera_update_offset_y_spread) % 10);
+    if ((state.rng.randTagged(rng_callers.camera_update_offset_y_sign) & 1) == 0) {
         mag_y = -mag_y;
     }
 

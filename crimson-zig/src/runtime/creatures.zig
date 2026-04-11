@@ -8,6 +8,7 @@ const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 const runtime_helpers = @import("helpers.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
@@ -2096,7 +2097,7 @@ pub const CreaturePool = struct {
                             owner_ref.OwnerRef.fromCreature(idx),
                         );
                         creature.attack_cooldown = narrowF32(
-                            @as(f32, @floatFromInt(state.rng.rand() & 3)) * 0.1 +
+                            @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_update_all_plasmaminigun_cooldown) & 3)) * 0.1 +
                                 creature.orbit_angle +
                                 creature.attack_cooldown,
                         );
@@ -2306,7 +2307,7 @@ pub const CreaturePool = struct {
         dt: f32,
         world_size: f32,
     ) i32 {
-        const jitter_rand = state.rng.rand();
+        const jitter_rand = state.rng.randTagged(rng_callers.creature_apply_damage_heading_jitter);
         if (creature_index < self.entries.len) {
             var creature = &self.entries[creature_index];
             if ((creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0) {
@@ -2394,7 +2395,7 @@ pub const CreaturePool = struct {
         var damage_amount = damage;
         if (anyPlayerHasPerk(players, PerkId.pyromaniac)) {
             damage_amount *= 1.5;
-            _ = state.rng.rand();
+            _ = state.rng.randTagged(rng_callers.creature_apply_damage_pyromaniac);
         }
         return self.applyDamage(
             state,
@@ -3217,7 +3218,7 @@ pub fn consumeProjectileHitPresentationPostRng(
     const freeze_active = state.bonuses.freeze > 0.0;
 
     // Native consumes one draw before post-hit decal branching.
-    _ = state.rng.rand();
+    _ = state.rng.randTagged(rng_callers.projectile_update_post_hit_decal_burn);
 
     if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) or
         projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.fire_bullets))
@@ -3228,7 +3229,7 @@ pub fn consumeProjectileHitPresentationPostRng(
     if (freeze_active) return;
 
     for (0..3) |_| {
-        _ = state.rng.rand();
+        _ = state.rng.randTagged(rng_callers.projectile_update_decal_spread);
         runtime_helpers.consumeAddRandomRng(state);
         runtime_helpers.consumeAddRandomRng(state);
         runtime_helpers.consumeAddRandomRng(state);
@@ -3241,23 +3242,23 @@ fn consumeLargeHitStreakRng(
     freeze_active: bool,
 ) void {
     for (0..6) |_| {
-        var dist = @as(i32, @intCast(state.rng.rand() % 100));
+        var dist = @as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_large_streak_dist) % 100));
         if (dist > 40) {
-            dist = @as(i32, @intCast(state.rng.rand() % 0x5A + 10));
+            dist = @as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_large_streak_dist_gt4) % 0x5A + 10));
         }
         if (dist > 70) {
-            dist = @as(i32, @intCast(state.rng.rand() % 0x50 + 0x14));
+            dist = @as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_large_streak_dist_gt7) % 0x50 + 0x14));
         }
-        _ = state.rng.rand();
+        _ = state.rng.randTagged(rng_callers.projectile_update_large_streak_burn);
         if (freeze_active) {
-            _ = state.rng.rand();
+            _ = state.rng.randTagged(rng_callers.projectile_update_large_streak_freeze_angle);
             // freeze shard spawn RNG
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
+            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_lifetime);
+            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation);
+            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_half);
+            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation_step);
+            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_scale_step);
+            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_effect_id);
         }
         runtime_helpers.consumeAddRandomRng(state);
     }
@@ -3273,7 +3274,7 @@ pub fn consumeHitSfxRng(
         game_tune_started.* = true;
         return .{
             .trigger_game_tune = true,
-            .game_tune_roll = state.rng.rand(),
+            .game_tune_roll = state.rng.randTagged(rng_callers.sfx_play_exclusive_playlist_pick),
         };
     }
     if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) or
@@ -3282,7 +3283,7 @@ pub fn consumeHitSfxRng(
     {
         return .{ .shock_hit = true };
     }
-    return .{ .bullet_hit_roll = state.rng.rand() };
+    return .{ .bullet_hit_roll = state.rng.randTagged(rng_callers.projectile_update_hit_sfx) };
 }
 
 pub const HitSfxPlan = struct {
@@ -3294,11 +3295,11 @@ pub const HitSfxPlan = struct {
 
 fn consumeSpawnBloodSplatterRng(state: *state_mod.GameplayState) void {
     for (0..2) |_| {
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
+        _ = state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_rotation);
+        _ = state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_half);
+        _ = state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_speed_x);
+        _ = state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_speed_y);
+        _ = state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_scale_step);
     }
 }
 
@@ -3331,14 +3332,14 @@ fn tickAi7LinkTimer(
         creature.link_index += dt_ms;
         if (creature.link_index >= 0) {
             creature.ai_mode = spawn_mod.CreatureAiMode.hold_timer;
-            creature.link_index = @as(i32, @intCast((rng.rand() & 0x1ff) + 500));
+            creature.link_index = @as(i32, @intCast((rng.randTagged(rng_callers.creature_update_all_ai7_link_timer_hold) & 0x1ff) + 500));
         }
         return;
     }
 
     creature.link_index -= dt_ms;
     if (creature.link_index < 1) {
-        creature.link_index = -700 - @as(i32, @intCast(rng.rand() & 0x3ff));
+        creature.link_index = -700 - @as(i32, @intCast(rng.randTagged(rng_callers.creature_update_all_ai7_link_timer_reset) & 0x3ff));
     }
 }
 
@@ -3454,7 +3455,7 @@ fn spawnSplitChildrenOnDeath(
         const child_idx = allocCreatureSlot(self, &state.rng);
         var child = source;
         child.active = true;
-        child.phase_seed = @floatFromInt(state.rng.rand() & 0xff);
+        child.phase_seed = @floatFromInt(state.rng.randTagged(if (heading_offset < 0.0) rng_callers.creature_handle_death_split_child_1_phase_seed else rng_callers.creature_handle_death_split_child_2_phase_seed) & 0xff);
         child.heading = wrapAngle(narrowF32(source.heading + heading_offset));
         child.target_heading = child.heading;
         child.hp = narrowF32(source.max_hp * 0.25);
@@ -3478,10 +3479,10 @@ fn spawnSplitChildrenOnDeath(
         );
     } else {
         for (0..8) |_| {
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
+            _ = state.rng.randTagged(rng_callers.effect_spawn_burst_rotation);
+            _ = state.rng.randTagged(rng_callers.effect_spawn_burst_vel_x);
+            _ = state.rng.randTagged(rng_callers.effect_spawn_burst_vel_y);
+            _ = state.rng.randTagged(rng_callers.effect_spawn_burst_scale_step);
         }
     }
 }
@@ -3560,35 +3561,29 @@ fn consumeDeathSideEffectsRng(
     if (state.bonuses.freeze > 0.0) {
         if (effects) |effect_pool| {
             for (0..8) |_| {
-                const angle = @as(f32, @floatFromInt(state.rng.rand() % 612)) * 0.01;
+                const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shard_angle) % 612)) * 0.01;
                 effect_pool.spawnFreezeShard(state, death_pos, angle, 5);
             }
-            const shatter_angle = @as(f32, @floatFromInt(state.rng.rand() % 612)) * 0.01;
+            const shatter_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shatter_angle) % 612)) * 0.01;
             effect_pool.spawnFreezeShatter(state, death_pos, shatter_angle, 5);
         } else {
             for (0..8) |_| {
-                _ = state.rng.rand() % 0x264;
-                for (0..6) |_| {
-                    _ = state.rng.rand();
-                }
+                _ = state.rng.randTagged(rng_callers.creature_handle_death_freeze_shard_angle) % 0x264;
+                runtime_helpers.consumeFreezeShardRng(state);
             }
-            _ = state.rng.rand() % 0x264;
+            _ = state.rng.randTagged(rng_callers.creature_handle_death_freeze_shatter_angle) % 0x264;
+            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_half);
+            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_rotation_step);
             for (0..4) |_| {
-                _ = state.rng.rand();
-                _ = state.rng.rand();
-            }
-            for (0..4) |_| {
-                _ = state.rng.rand() % 0x264;
-                for (0..6) |_| {
-                    _ = state.rng.rand();
-                }
+                _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_shard_angle) % 0x264;
+                runtime_helpers.consumeFreezeShardRng(state);
             }
         }
         runtime_helpers.consumeAddRandomRng(state);
     }
     if (plan_death_sfx) {
         // plan_death_sfx_keys chooses one death sample per death.
-        _ = state.rng.rand();
+        _ = state.rng.randTagged(rng_callers.creature_apply_damage_death_sfx);
     }
 }
 
@@ -3711,7 +3706,7 @@ fn creatureTypeHasContactSfx(type_id: i32) bool {
 
 fn consumeContactSfxRng(state: *state_mod.GameplayState, creature_type_id: i32) void {
     if (!creatureTypeHasContactSfx(creature_type_id)) return;
-    _ = state.rng.rand() & 1;
+    _ = state.rng.randTagged(rng_callers.creature_update_all_contact_sfx) & 1;
 }
 
 pub fn applyPlayerContactDamage(
@@ -3734,9 +3729,9 @@ pub fn applyPlayerContactDamage(
 
     var dodged = false;
     if (perkActive(player, PerkId.ninja)) {
-        dodged = (state.rng.rand() % 3) == 0;
+        dodged = (state.rng.randTagged(rng_callers.player_take_damage_ninja) % 3) == 0;
     } else if (perkActive(player, PerkId.dodger)) {
-        dodged = (state.rng.rand() % 5) == 0;
+        dodged = (state.rng.randTagged(rng_callers.player_take_damage_dodger) % 5) == 0;
     }
 
     if (perkActive(player, PerkId.thick_skinned)) {
@@ -3745,7 +3740,7 @@ pub fn applyPlayerContactDamage(
 
     if (!dodged) {
         if (perkActive(player, PerkId.highlander)) {
-            if ((state.rng.rand() % 10) == 0) {
+            if ((state.rng.randTagged(rng_callers.player_take_damage_highlander) % 10) == 0) {
                 player.health = 0.0;
             }
         } else {
@@ -3757,21 +3752,21 @@ pub fn applyPlayerContactDamage(
     }
 
     if (player.health >= 0.0) {
-        _ = state.rng.rand() % 3;
+        _ = state.rng.randTagged(rng_callers.player_take_damage_pain_sfx) % 3;
     } else if (!perkActive(player, PerkId.final_revenge)) {
-        _ = state.rng.rand() & 1;
+        _ = state.rng.randTagged(rng_callers.player_take_damage_death_sfx) & 1;
     }
 
     if (!dodged) {
         if (!perkActive(player, PerkId.unstoppable)) {
-            const jitter_i32: i32 = @as(i32, @intCast(state.rng.rand() % 100)) - 50;
+            const jitter_i32: i32 = @as(i32, @intCast(state.rng.randTagged(rng_callers.player_take_damage_heading) % 100)) - 50;
             player.heading = narrowF32(player.heading + @as(f32, @floatFromInt(jitter_i32)) * 0.04);
             player.spread_heat = narrowF32(@min(
                 0.48,
                 narrowF32(player.spread_heat + spread_heat_damage * 0.01),
             ));
         }
-        if (player.health <= 20.0 and (state.rng.rand() & 7) == 3) {
+        if (player.health <= 20.0 and (state.rng.randTagged(rng_callers.player_take_damage_low_health) & 7) == 3) {
             player.low_health_timer = 0.0;
         }
     }
