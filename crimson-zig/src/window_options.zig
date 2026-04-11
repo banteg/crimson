@@ -47,6 +47,14 @@ const DropdownItem = struct {
     value: i32,
 };
 
+const OptionSlider = enum {
+    none,
+    sfx,
+    music,
+    detail,
+    mouse,
+};
+
 pub const OptionsAction = enum {
     none,
     open_controls,
@@ -89,6 +97,8 @@ const PanelState = struct {
 
 pub const OptionsState = struct {
     panel: PanelState = .{},
+    active_slider: OptionSlider = .none,
+    back_hover_amount: i32 = 0,
 
     pub fn reset(self: *OptionsState) void {
         self.* = .{};
@@ -106,6 +116,7 @@ pub const ControlsState = struct {
     dropdown_selection: usize = 0,
     rebinding_row_index: ?usize = null,
     rebinding_player_index: usize = 0,
+    back_hover_amount: i32 = 0,
 
     pub fn reset(self: *ControlsState) void {
         self.* = .{};
@@ -114,76 +125,65 @@ pub const ControlsState = struct {
 
 const OptionButton = window_ui.UiButton;
 
-pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg) OptionsUpdate {
+pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, runtime_assets: ?*const window_assets.RuntimeAssets) OptionsUpdate {
     const dt_ms = state.panel.advance(frame_dt);
-    const buttons = optionsButtons();
-    window_ui.updateSelectionFromPointer(&state.panel.selection, buttons[0..]);
+    const mouse = rl.getMousePosition();
+    const click = rl.isMouseButtonPressed(.left);
+    const mouse_down = rl.isMouseButtonDown(.left);
+    const back_hovered = if (runtime_assets) |assets|
+        state.panel.timeline_ms >= panel_timeline_max_ms and rl.checkCollisionPointRec(mouse, window_menu.panelBackHitRect(assets, state.panel.timeline_ms))
+    else
+        false;
 
-    if (rl.isKeyPressed(.escape)) {
+    if (back_hovered) {
+        state.back_hover_amount = std.math.clamp(state.back_hover_amount + dt_ms * 6, 0, 1000);
+    } else {
+        state.back_hover_amount = std.math.clamp(state.back_hover_amount - dt_ms * 2, 0, 1000);
+    }
+
+    if (rl.isKeyPressed(.escape) or rl.isKeyPressed(.enter) or rl.isKeyPressed(.space) or (back_hovered and click)) {
+        state.active_slider = .none;
         return .{ .action = .back_to_menu, .play_button_click = true };
     }
-    if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-        state.panel.selection = if (state.panel.selection == 0) buttons.len - 1 else state.panel.selection - 1;
+
+    var result: OptionsUpdate = .{
+        .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
+    };
+
+    if (updateOptionSlider(state, .sfx, optionSliderRect(625.0, 234.0, 10), 10, mouse, click, mouse_down)) |value| {
+        config.sfx_volume = @as(f32, @floatFromInt(value)) * 0.1;
+        config.sound_disable = @intFromBool(value == 0);
+        result.config_dirty = true;
+        result.reload_audio = true;
+        result.play_button_click = true;
     }
-    if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-        state.panel.selection = (state.panel.selection + 1) % buttons.len;
+    if (updateOptionSlider(state, .music, optionSliderRect(625.0, 270.0, 10), 10, mouse, click, mouse_down)) |value| {
+        config.music_volume = @as(f32, @floatFromInt(value)) * 0.1;
+        config.music_disable = @intFromBool(value == 0);
+        result.config_dirty = true;
+        result.reload_audio = true;
+        result.play_button_click = true;
+    }
+    if (updateOptionSlider(state, .detail, optionSliderRect(625.0, 306.0, 5), 5, mouse, click, mouse_down)) |value| {
+        config.detail_preset = @intCast(std.math.clamp(value, @as(i32, 1), @as(i32, 5)));
+        result.config_dirty = true;
+        result.play_button_click = true;
+    }
+    if (updateOptionSlider(state, .mouse, optionSliderRect(625.0, 342.0, 10), 10, mouse, click, mouse_down)) |value| {
+        config.mouse_sensitivity = std.math.clamp(@as(f32, @floatFromInt(value)) * 0.1, @as(f32, 0.1), @as(f32, 1.0));
+        result.config_dirty = true;
+        result.play_button_click = true;
+    }
+    if (click and rectContains(optionCheckboxRect(), mouse)) {
+        config.ui_info_texts = if (config.ui_info_texts == 0) 1 else 0;
+        result.config_dirty = true;
+        result.play_button_click = true;
     }
 
-    const adjust_left = rl.isKeyPressed(.left) or rl.isKeyPressed(.a);
-    const adjust_right = rl.isKeyPressed(.right) or rl.isKeyPressed(.d);
-    const activated = window_ui.buttonActivated(buttons[0..], state.panel.selection);
-    if (!(adjust_left or adjust_right or activated)) {
-        return .{
-            .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
-        };
-    }
-
-    var result: OptionsUpdate = .{ .play_button_click = true };
-    switch (state.panel.selection) {
-        0 => {
-            var value = if (config.sound_disable != 0) @as(i32, 0) else @as(i32, @intFromFloat(std.math.clamp(config.sfx_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
-            if (adjust_left or adjust_right) {
-                value = std.math.clamp(value + (if (adjust_left and !adjust_right) @as(i32, -1) else @as(i32, 1)), @as(i32, 0), @as(i32, 10));
-            } else {
-                value = if (value == 0) 10 else 0;
-            }
-            config.sfx_volume = @as(f32, @floatFromInt(value)) * 0.1;
-            config.sound_disable = @intFromBool(value == 0);
-            result.config_dirty = true;
-            result.reload_audio = true;
-        },
-        1 => {
-            var value = if (config.music_disable != 0) @as(i32, 0) else @as(i32, @intFromFloat(std.math.clamp(config.music_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
-            if (adjust_left or adjust_right) {
-                value = std.math.clamp(value + (if (adjust_left and !adjust_right) @as(i32, -1) else @as(i32, 1)), @as(i32, 0), @as(i32, 10));
-            } else {
-                value = if (value == 0) 10 else 0;
-            }
-            config.music_volume = @as(f32, @floatFromInt(value)) * 0.1;
-            config.music_disable = @intFromBool(value == 0);
-            result.config_dirty = true;
-            result.reload_audio = true;
-        },
-        2 => {
-            var value: i32 = @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5)));
-            if (adjust_left and !adjust_right) value -= 1 else value += 1;
-            config.detail_preset = @intCast(std.math.clamp(value, @as(i32, 1), @as(i32, 5)));
-            result.config_dirty = true;
-        },
-        3 => {
-            var value = std.math.clamp(@as(i32, @intFromFloat(std.math.clamp(config.mouse_sensitivity, @as(f32, 0.1), @as(f32, 1.0)) * 10.0 + 0.5)), @as(i32, 1), @as(i32, 10));
-            if (adjust_left and !adjust_right) value -= 1 else value += 1;
-            value = std.math.clamp(value, @as(i32, 1), @as(i32, 10));
-            config.mouse_sensitivity = @as(f32, @floatFromInt(value)) * 0.1;
-            result.config_dirty = true;
-        },
-        4 => {
-            config.ui_info_texts = if (config.ui_info_texts == 0) 1 else 0;
-            result.config_dirty = true;
-        },
-        5 => result.action = .open_controls,
-        6 => result.action = .back_to_menu,
-        else => {},
+    const controls = controlsButton();
+    if (click and rl.checkCollisionPointRec(mouse, controls.rect)) {
+        result.action = .open_controls;
+        result.play_button_click = true;
     }
 
     return result;
@@ -198,17 +198,27 @@ pub fn drawOptions(state: *const OptionsState, runtime_assets: ?*const window_as
     rl.clearBackground(rl.Color.init(37, 24, 20, 255));
 }
 
-pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg) ControlsUpdate {
+pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, runtime_assets: ?*const window_assets.RuntimeAssets) ControlsUpdate {
     const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
     if (dt_ms > 0) {
         state.timeline_ms = @min(panel_timeline_max_ms, state.timeline_ms + dt_ms);
+    }
+    const mouse = rl.getMousePosition();
+    const back_hovered = if (runtime_assets) |assets|
+        state.timeline_ms >= panel_timeline_max_ms and rl.checkCollisionPointRec(mouse, window_menu.panelBackHitRect(assets, state.timeline_ms))
+    else
+        false;
+    if (back_hovered) {
+        state.back_hover_amount = std.math.clamp(state.back_hover_amount + dt_ms * 6, 0, 1000);
+    } else {
+        state.back_hover_amount = std.math.clamp(state.back_hover_amount - dt_ms * 2, 0, 1000);
     }
 
     if (state.rebinding_row_index != null) {
         return updateControlsRebinding(state, config);
     }
 
-    if (rl.isKeyPressed(.escape)) {
+    if (rl.isKeyPressed(.escape) or rl.isKeyPressed(.enter) or rl.isKeyPressed(.space) or (back_hovered and rl.isMouseButtonPressed(.left))) {
         if (state.open_dropdown != .none) {
             state.open_dropdown = .none;
             return .{};
@@ -277,7 +287,6 @@ pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.cri
             formats.crimson_cfg.setPlayerShowDirectionArrow(config, currentPlayerIndex(state), !formats.crimson_cfg.playerShowDirectionArrow(config, currentPlayerIndex(state)));
             result.config_dirty = true;
         },
-        4 => result.action = .back_to_options,
         else => {},
     }
     return result;
@@ -293,11 +302,9 @@ pub fn drawControls(state: *const ControlsState, runtime_assets: ?*const window_
 }
 
 fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg) void {
-    const buttons = optionsButtons();
-    for (buttons[5..], 5..) |button, idx| {
-        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-        window_ui.drawButton(button, idx == state.panel.selection, hovered, runtime_assets);
-    }
+    const controls = controlsButton();
+    const controls_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), controls.rect);
+    window_ui.drawButton(controls, false, controls_hovered, runtime_assets);
 
     const labels = [_][]const u8{
         "Sound volume:",
@@ -308,9 +315,15 @@ fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window
     };
     for (labels, 0..) |label, idx| {
         const y = 236.0 + @as(f32, @floatFromInt(idx)) * 36.0;
-        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), buttons[idx].rect);
-        const selected = idx == state.panel.selection;
-        window_ui.drawSmallText(runtime_assets, label, 420.0, y, if (selected or hovered) text_color else muted_text);
+        const hovered = switch (idx) {
+            0 => rectContains(optionSliderRect(625.0, 234.0, 10), rl.getMousePosition()),
+            1 => rectContains(optionSliderRect(625.0, 270.0, 10), rl.getMousePosition()),
+            2 => rectContains(optionSliderRect(625.0, 306.0, 5), rl.getMousePosition()),
+            3 => rectContains(optionSliderRect(625.0, 342.0, 10), rl.getMousePosition()),
+            4 => rectContains(optionCheckboxRect(), rl.getMousePosition()),
+            else => false,
+        };
+        window_ui.drawSmallText(runtime_assets, label, 420.0, y, if (hovered) text_color else muted_text);
     }
 
     drawSlider(runtime_assets, rl.Vector2.init(625.0, 234.0), 10, if (config.sound_disable != 0) 0 else @intFromFloat(std.math.clamp(config.sfx_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
@@ -320,7 +333,8 @@ fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window
 
     const checkbox_tex: window_assets.TextureId = if (config.ui_info_texts != 0) .ui_check_on else .ui_check_off;
     window_ui.drawTextureFit(runtime_assets.texture(checkbox_tex), rl.Rectangle.init(625.0, 378.0, 16.0, 16.0), rl.Color.white);
-    window_ui.drawSmallText(runtime_assets, "UI Info texts", 647.0, 379.0, if (state.panel.selection == 4 or rl.checkCollisionPointRec(rl.getMousePosition(), buttons[4].rect)) text_color else muted_text);
+    window_ui.drawSmallText(runtime_assets, "UI Info texts", 647.0, 379.0, if (rectContains(optionCheckboxRect(), rl.getMousePosition())) text_color else muted_text);
+    window_menu.drawPanelBackEntry(runtime_assets, state.panel.timeline_ms, state.back_hover_amount);
 }
 
 fn drawControlsPanels(state: *const ControlsState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg) void {
@@ -347,10 +361,7 @@ fn drawControlsPanels(state: *const ControlsState, runtime_assets: *const window
     const direction_checked: window_assets.TextureId = if (formats.crimson_cfg.playerShowDirectionArrow(&config, player_idx)) .ui_check_on else .ui_check_off;
     window_ui.drawTextureFit(runtime_assets.texture(direction_checked), rl.Rectangle.init(182.0, 418.0, 16.0, 16.0), rl.Color.white);
     window_ui.drawSmallText(runtime_assets, "Show direction arrow", 204.0, 418.0, if (state.left_selection == 3 and !state.focus_right) text_color else muted_text);
-
-    const back = controlsBackButton();
-    const back_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), back.rect);
-    window_ui.drawButton(back, state.left_selection == 4 and !state.focus_right, back_hovered, runtime_assets);
+    window_menu.drawPanelBackEntry(runtime_assets, state.timeline_ms, state.back_hover_amount);
 
     const rows = controlsRebindRows(&config, player_idx);
     var y: f32 = 198.0;
@@ -384,20 +395,45 @@ fn drawMenuPanelShellNoTitle(timeline_ms: i32, runtime_assets: *const window_ass
     window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
 }
 
-fn optionsButtons() [7]OptionButton {
-    return .{
-        .{ .label = "Sfx", .rect = rl.Rectangle.init(404.0, 226.0, 320.0, 28.0) },
-        .{ .label = "Music", .rect = rl.Rectangle.init(404.0, 262.0, 320.0, 28.0) },
-        .{ .label = "Detail", .rect = rl.Rectangle.init(404.0, 298.0, 320.0, 28.0) },
-        .{ .label = "Mouse", .rect = rl.Rectangle.init(404.0, 334.0, 320.0, 28.0) },
-        .{ .label = "UiInfo", .rect = rl.Rectangle.init(404.0, 370.0, 320.0, 28.0) },
-        window_ui.buttonAt("Controls", 572.0, 343.0, true),
-        window_ui.buttonAt("Back", 404.0, 470.0, false),
-    };
+fn controlsButton() OptionButton {
+    return window_ui.buttonAt("Controls", 572.0, 343.0, true);
 }
 
 fn controlsBackButton() OptionButton {
     return window_ui.buttonAt("Back", 182.0, 448.0, false);
+}
+
+fn optionSliderRect(x: f32, y: f32, count: i32) rl.Rectangle {
+    return rl.Rectangle.init(x - 3.0, y - 1.0, @as(f32, @floatFromInt(count * 16)) + 6.0, 18.0);
+}
+
+fn optionCheckboxRect() rl.Rectangle {
+    return rl.Rectangle.init(625.0, 378.0, 96.0, 16.0);
+}
+
+fn updateOptionSlider(
+    state: *OptionsState,
+    slider: OptionSlider,
+    rect: rl.Rectangle,
+    count: i32,
+    mouse: rl.Vector2,
+    click: bool,
+    mouse_down: bool,
+) ?i32 {
+    const hovered = rectContains(rect, mouse);
+    if (hovered and click) state.active_slider = slider;
+    if (state.active_slider == slider and mouse_down) {
+        const relative = mouse.x - (rect.x + 3.0);
+        var idx = @as(i32, @intFromFloat(@floor(relative / 16.0))) + 1;
+        idx = std.math.clamp(idx, @as(i32, 1), count);
+        return idx;
+    }
+    if (state.active_slider == slider and !mouse_down) state.active_slider = .none;
+    return null;
+}
+
+fn rectContains(rect: rl.Rectangle, point: rl.Vector2) bool {
+    return point.x >= rect.x and point.x <= rect.x + rect.width and point.y >= rect.y and point.y <= rect.y + rect.height;
 }
 
 fn drawSlider(runtime_assets: *const window_assets.RuntimeAssets, pos: rl.Vector2, count: i32, value: i32) void {
@@ -446,7 +482,7 @@ fn drawDropdown(
 }
 
 fn leftControlButtonCount() usize {
-    return 5;
+    return 4;
 }
 
 fn rebindRect(y: f32) rl.Rectangle {
@@ -467,11 +503,6 @@ fn updateControlsFocusFromPointer(state: *ControlsState, rows: []const RebindRow
             state.left_selection = idx;
             return;
         }
-    }
-    if (rl.checkCollisionPointRec(mouse, controlsBackButton().rect)) {
-        state.focus_right = false;
-        state.left_selection = 4;
-        return;
     }
     for (rows, 0..) |row, row_idx| {
         _ = row;

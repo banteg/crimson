@@ -147,10 +147,10 @@ pub const PlayGameState = struct {
     panel: PanelState = .{},
     player_list_open: bool = false,
     player_count_selection: usize = 0,
-    selection: usize = 0,
     closing: bool = false,
     close_action: ?PlayGameAction = null,
     tooltip_ms: [5]i32 = [_]i32{0} ** 5,
+    back_hover_amount: i32 = 0,
 
     pub fn reset(self: *PlayGameState) void {
         self.* = .{};
@@ -214,7 +214,7 @@ const quest_list_hover_top_pad: f32 = 2.0;
 const quest_list_hover_bottom_pad: f32 = 18.0;
 const quest_hardcore_unlock_index: u32 = 40;
 
-pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) PlayGameResult {
+pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, runtime_assets: ?*const window_assets.RuntimeAssets) PlayGameResult {
     const dt_ms = frameDeltaMs(frame_dt);
     if (state.closing) {
         if (dt_ms > 0) state.panel.timeline_ms -= dt_ms;
@@ -241,22 +241,17 @@ pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.cri
     }
 
     const entries = playGameEntries(config, status);
-    const button_count = entries.len + 1;
-    if (state.selection >= button_count) state.selection = button_count - 1;
-
     const layout = playGameLayout(config, status);
     const hovered = hoveredPlayGameEntry(entries[0..], layout);
     updatePlayGameTooltipTimers(state, entries[0..], hovered, dt_ms);
-    if (hovered) |hovered_idx| {
-        state.selection = hovered_idx;
-    } else if (rl.checkCollisionPointRec(rl.getMousePosition(), backOnlyButton()[0].rect)) {
-        state.selection = entries.len;
-    }
-    if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-        state.selection = if (state.selection == 0) button_count - 1 else state.selection - 1;
-    }
-    if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-        state.selection = (state.selection + 1) % button_count;
+    const back_hovered = if (runtime_assets) |assets|
+        state.panel.timeline_ms >= panel_timeline_max_ms and rl.checkCollisionPointRec(rl.getMousePosition(), window_menu.panelBackHitRect(assets, state.panel.timeline_ms))
+    else
+        false;
+    if (back_hovered) {
+        state.back_hover_amount = std.math.clamp(state.back_hover_amount + dt_ms * 6, 0, 1000);
+    } else {
+        state.back_hover_amount = std.math.clamp(state.back_hover_amount - dt_ms * 2, 0, 1000);
     }
 
     const selector = playerCountHeaderRect();
@@ -265,28 +260,25 @@ pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.cri
         state.player_count_selection = player_count - 1;
         return .{ .play_button_click = true };
     }
-    if ((rl.isKeyPressed(.left) or rl.isKeyPressed(.right)) and state.selection == entries.len) {
-        state.player_list_open = true;
-        state.player_count_selection = player_count - 1;
-        return .{ .play_button_click = true };
-    }
 
-    if (!playGameActivated(entries[0..], layout, state.selection)) {
-        return .{
-            .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
-        };
-    }
-
-    if (state.selection == entries.len) {
+    if (back_hovered and rl.isMouseButtonPressed(.left)) {
         beginClosePlayGame(state, .back_to_menu);
         return .{ .play_button_click = true };
     }
 
-    const entry = entries[state.selection];
-    beginClosePlayGame(state, entry.action);
+    if (hovered) |hovered_idx| {
+        const entry = entries[hovered_idx];
+        if (rl.isMouseButtonPressed(.left)) {
+            beginClosePlayGame(state, entry.action);
+            return .{
+                .play_button_click = true,
+                .config_dirty = if (entry.game_mode) |mode| setConfigGameMode(config, mode) else false,
+            };
+        }
+    }
+
     return .{
-        .play_button_click = true,
-        .config_dirty = if (entry.game_mode) |mode| setConfigGameMode(config, mode) else false,
+        .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
     };
 }
 
@@ -329,6 +321,7 @@ pub fn drawPlayGame(state: *const PlayGameState, runtime_assets: ?*const window_
     if (runtime_assets) |assets| {
         drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, playGameLayoutFromPlayerCount(player_count_raw, status).panel_rect);
         drawPlayGameContent(state, assets, status, player_count_raw);
+        window_menu.drawPanelBackEntry(assets, state.panel.timeline_ms, state.back_hover_amount);
         return;
     }
     rl.clearBackground(panel_color);
@@ -344,20 +337,15 @@ fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const windo
     drawPlayerCountWidget(state, runtime_assets, player_count_raw);
 
     var y = layout.content_y + layout.y_start;
-    for (entries, 0..) |entry, idx| {
+    for (entries) |entry| {
         const button = playGameButton(entry.label, layout.content_x, y);
         const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-        const selected = idx == state.selection and !state.player_list_open;
-        window_ui.drawButton(button, selected, hovered, runtime_assets);
+        window_ui.drawButton(button, false, hovered, runtime_assets);
         if (show_counts and entry.show_count) {
-            window_ui.drawSmallTextFmt("{d}", runtime_assets, .{playGameCount(entry.key, status)}, layout.count_x, y + 8.0, if (selected or hovered) text_color else muted_text);
+            window_ui.drawSmallTextFmt("{d}", runtime_assets, .{playGameCount(entry.key, status)}, layout.count_x, y + 8.0, if (hovered) text_color else muted_text);
         }
         y += layout.y_step;
     }
-
-    const back = backOnlyButton()[0];
-    const back_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), back.rect);
-    window_ui.drawButton(back, state.selection == entries.len and !state.player_list_open, back_hovered, runtime_assets);
 
     drawPlayGameTooltips(state, runtime_assets, entries[0..], layout);
 }
@@ -414,21 +402,6 @@ fn hoveredPlayGameEntry(entries: []const PlayGameEntry, layout: PlayGameLayout) 
         y += layout.y_step;
     }
     return null;
-}
-
-fn playGameActivated(entries: []const PlayGameEntry, layout: PlayGameLayout, selection: usize) bool {
-    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.space)) return true;
-    if (!rl.isMouseButtonPressed(.left)) return false;
-    if (selection == entries.len) return rl.checkCollisionPointRec(rl.getMousePosition(), backOnlyButton()[0].rect);
-
-    var y = layout.content_y + layout.y_start;
-    for (entries, 0..) |entry, idx| {
-        _ = entry;
-        const button = playGameButton(entries[idx].label, layout.content_x, y);
-        if (idx == selection and rl.checkCollisionPointRec(rl.getMousePosition(), button.rect)) return true;
-        y += layout.y_step;
-    }
-    return false;
 }
 
 fn playGameCount(key: PlayGameModeKey, status: formats.game_cfg.Status) u32 {

@@ -374,7 +374,7 @@ const App = struct {
 
     fn updatePlayGameMenu(self: *App, frame_dt: f32) void {
         self.audio.ensureMenuTheme();
-        const play_game_update = window_menu_panels.updatePlayGame(&self.play_game_menu, frame_dt, &self.runtime.config, self.runtime.status);
+        const play_game_update = window_menu_panels.updatePlayGame(&self.play_game_menu, frame_dt, &self.runtime.config, self.runtime.status, if (self.runtime_assets) |*assets| assets else null);
         if (play_game_update.config_dirty) self.runtime.config_dirty = true;
         if (play_game_update.play_panel_click and !self.play_game_menu.panel.panel_open_sfx_played) {
             self.audio.playUiPanelClick();
@@ -526,7 +526,7 @@ const App = struct {
 
     fn updateOptions(self: *App, frame_dt: f32) void {
         self.audio.ensureMenuTheme();
-        const options_update = window_options.updateOptions(&self.options, frame_dt, &self.runtime.config);
+        const options_update = window_options.updateOptions(&self.options, frame_dt, &self.runtime.config, if (self.runtime_assets) |*assets| assets else null);
         if (options_update.config_dirty) self.runtime.config_dirty = true;
         if (options_update.reload_audio) self.reloadAudioConfig();
         if (options_update.play_panel_click and !self.options.panel.panel_open_sfx_played) {
@@ -549,7 +549,7 @@ const App = struct {
 
     fn updateControls(self: *App, frame_dt: f32) void {
         self.audio.ensureMenuTheme();
-        const controls_update = window_options.updateControls(&self.controls, frame_dt, &self.runtime.config);
+        const controls_update = window_options.updateControls(&self.controls, frame_dt, &self.runtime.config, if (self.runtime_assets) |*assets| assets else null);
         if (controls_update.config_dirty) self.runtime.config_dirty = true;
         if (controls_update.play_panel_click and !self.controls.panel_open_sfx_played) {
             self.audio.playUiPanelClick();

@@ -121,7 +121,9 @@ const PerksScreen = struct {
 };
 
 const CreditsScreen = struct {
-    scroll: usize = 0,
+    scroll_time_s: f32 = 0.0,
+    line_start_index: i32 = 0,
+    line_end_index: i32 = 0,
 
     fn reset(self: *CreditsScreen) void {
         self.* = .{};
@@ -414,20 +416,14 @@ fn updatePerks(state: *State, frame_dt: f32, status: formats.game_cfg.Status) Up
 
 fn updateCredits(state: *State, frame_dt: f32) UpdateResult {
     _ = state.hub.panel.advance(frame_dt);
-    const max_scroll = if (window_statistics_data.credits_lines.len > 20) window_statistics_data.credits_lines.len - 20 else 0;
     if (rl.isKeyPressed(.escape) or backButtonActivated(backOnlyButton()[0])) {
         state.view = .hub;
         state.hub.reset();
         return .{ .play_button_click = true };
     }
-    if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-        if (state.credits.scroll > 0) state.credits.scroll -= 1;
-    }
-    if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-        state.credits.scroll = @min(state.credits.scroll + 1, max_scroll);
-    }
-    if (rl.getMouseWheelMove() > 0 and state.credits.scroll > 0) state.credits.scroll -= 1;
-    if (rl.getMouseWheelMove() < 0 and state.credits.scroll < max_scroll) state.credits.scroll += 1;
+    const dt_clamped = @min(frame_dt, 0.1);
+    state.credits.scroll_time_s += dt_clamped;
+    updateCreditsWindow(&state.credits);
     return .{};
 }
 
@@ -494,15 +490,24 @@ fn drawCredits(state: *const CreditsScreen, runtime_assets: ?*const window_asset
     if (runtime_assets) |assets| {
         drawPanelShellNoTitle(300, assets, credits_panel_rect);
         window_ui.drawSmallText(assets, "credits", credits_panel_rect.x + 202.0, credits_panel_rect.y + 46.0, text_color);
-        var y: f32 = credits_panel_rect.y + 60.0;
-        const start = state.scroll;
-        const end = @min(start + 16, window_statistics_data.credits_lines.len);
-        for (window_statistics_data.credits_lines[start..end]) |line| {
-            const color = if (line.heading) gold_color else text_color;
-            const line_width = window_ui.measureSmallText(assets, line.text);
-            const x = credits_panel_rect.x + 198.0 + 140.0 - line_width * 0.5;
-            window_ui.drawSmallText(assets, line.text, x, y, color);
-            y += 16.0;
+        const visible_count = state.line_end_index - state.line_start_index;
+        if (visible_count > 0) {
+            const base_y = credits_panel_rect.y + 60.0;
+            const frac_px = creditsScrollFractionPx(state.scroll_time_s);
+            const center_x = credits_panel_rect.x + 198.0 + 140.0;
+            var row: i32 = 0;
+            while (row < visible_count) : (row += 1) {
+                const index = state.line_start_index + row;
+                if (index < 0 or index >= window_statistics_data.credits_lines.len) continue;
+                const line = window_statistics_data.credits_lines[@intCast(index)];
+                const y = base_y + @as(f32, @floatFromInt(row)) * 16.0 - frac_px;
+                const alpha = creditsLineAlpha(y, base_y, visible_count);
+                if (alpha <= 0.0) continue;
+                const color = creditsLineColor(line.heading, alpha);
+                const line_width = window_ui.measureSmallText(assets, line.text);
+                const x = center_x - line_width * 0.5;
+                window_ui.drawSmallText(assets, line.text, x, y, color);
+            }
         }
         const back = backOnlyButton()[0];
         const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), back.rect);
@@ -813,6 +818,45 @@ fn drawListFrame(rect: rl.Rectangle) void {
 
 fn drawUnderline(x: f32, y: f32, width: f32) void {
     rl.drawRectangle(@intFromFloat(x), @intFromFloat(y), @intFromFloat(width), 1, rl.Color.init(255, 255, 255, 180));
+}
+
+fn creditsScrollFractionPx(scroll_time_s: f32) f32 {
+    var frac = scroll_time_s * 16.0;
+    while (frac > 16.0) frac -= 16.0;
+    return frac;
+}
+
+fn updateCreditsWindow(screen: *CreditsScreen) void {
+    const line_max_index: i32 = @intCast(window_statistics_data.credits_lines.len - 1);
+    if ((line_max_index + 2) < screen.line_start_index) {
+        screen.scroll_time_s = 0.0;
+        screen.line_start_index = 0;
+    }
+    const whole_scroll: i32 = @intFromFloat(screen.scroll_time_s);
+    screen.line_start_index = whole_scroll - 15;
+    screen.line_end_index = whole_scroll + 1;
+    if (line_max_index < screen.line_end_index) screen.line_end_index = line_max_index;
+}
+
+fn creditsLineColor(heading: bool, alpha: f32) rl.Color {
+    const rgb = if (heading)
+        [_]u8{ 255, 255, 255 }
+    else
+        [_]u8{ 102, 128, 178 };
+    return rl.Color.init(rgb[0], rgb[1], rgb[2], @intFromFloat(std.math.clamp(alpha, @as(f32, 0.0), @as(f32, 1.0)) * 255.0));
+}
+
+fn creditsLineAlpha(y: f32, base_y: f32, visible_count: i32) f32 {
+    const fade_px: f32 = 24.0;
+    const top = base_y + 8.0;
+    var alpha: f32 = 1.0;
+    if (y < top) {
+        alpha = 1.0 - ((top - y) / fade_px);
+    } else {
+        const bottom = base_y + @as(f32, @floatFromInt(visible_count - 1)) * 16.0 - fade_px;
+        if (y > bottom) alpha = ((bottom - y) / fade_px) + 1.0;
+    }
+    return std.math.clamp(alpha, @as(f32, 0.0), @as(f32, 1.0));
 }
 
 fn playerCountLabels() [4][]const u8 {
