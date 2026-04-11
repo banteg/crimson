@@ -13,6 +13,7 @@ const window_atlas = cz.window_atlas;
 
 const window_assets = @import("window_assets.zig");
 const window_menu = @import("window_menu.zig");
+const window_menu_panels = @import("window_menu_panels.zig");
 const window_ui = @import("window_ui.zig");
 const window_statistics_data = @import("window_statistics_data.zig");
 
@@ -88,6 +89,7 @@ const HighScoresScreen = struct {
     quest_level_key: i32 = 101,
     button_selection: usize = 0,
     dropdown_open: DropdownKind = .none,
+    scroll: usize = 0,
     records: []persistence.highscores.HighScoreRecord = &.{},
     records_owned: bool = false,
     load_error: ?[]const u8 = null,
@@ -300,6 +302,8 @@ fn updateHighScores(
     const hs = &state.high_scores;
     const buttons = highScoreButtons();
     window_ui.updateSelectionFromPointer(&hs.button_selection, buttons[0..]);
+    const rows: usize = 10;
+    const max_scroll = if (hs.records.len > rows) hs.records.len - rows else 0;
 
     if (rl.isKeyPressed(.escape)) {
         hs.dropdown_open = .none;
@@ -309,11 +313,29 @@ fn updateHighScores(
     }
 
     if (hs.dropdown_open == .none) {
+        const wheel = @as(i32, @intFromFloat(rl.getMouseWheelMove()));
+        if (wheel != 0) {
+            hs.scroll = @intCast(std.math.clamp(@as(i32, @intCast(hs.scroll)) - wheel, 0, @as(i32, @intCast(max_scroll))));
+        }
         if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
             hs.button_selection = if (hs.button_selection == 0) buttons.len - 1 else hs.button_selection - 1;
+            hs.scroll = hs.scroll -| 1;
         }
         if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
             hs.button_selection = (hs.button_selection + 1) % buttons.len;
+            hs.scroll = @min(hs.scroll + 1, max_scroll);
+        }
+        if (rl.isKeyPressed(.page_up)) {
+            hs.scroll = hs.scroll -| rows;
+        }
+        if (rl.isKeyPressed(.page_down)) {
+            hs.scroll = @min(hs.scroll + rows, max_scroll);
+        }
+        if (rl.isKeyPressed(.home)) {
+            hs.scroll = 0;
+        }
+        if (rl.isKeyPressed(.end)) {
+            hs.scroll = max_scroll;
         }
     }
 
@@ -550,23 +572,25 @@ fn drawHighScoreMainPanel(
     status: formats.game_cfg.Status,
 ) void {
     const title = highScoreTitle(state.mode);
-    window_ui.drawSmallText(assets, title, left_panel_rect.x + 158.0, left_panel_rect.y + 42.0, text_color);
-    drawUnderline(left_panel_rect.x + 158.0, left_panel_rect.y + 56.0, window_ui.measureSmallText(assets, title));
+    const title_x: f32 = if (state.mode == .survival) 266.0 else 269.0;
+    window_ui.drawSmallText(assets, title, left_panel_rect.x + title_x, left_panel_rect.y + 41.0, text_color);
+    drawUnderline(left_panel_rect.x + title_x, left_panel_rect.y + 55.0, window_ui.measureSmallText(assets, title));
 
     if (state.mode == .quests) {
         var quest_buf: [96]u8 = undefined;
+        const quest_title = questTitleForLevelKey(state.quest_level_key);
         const quest_label = std.fmt.bufPrint(&quest_buf, "{d}.{d}: {s}", .{
             @divTrunc(state.quest_level_key, 100),
             @mod(state.quest_level_key, 100),
-            if (config.hardcore_flag != 0) "Hardcore quest" else "Quest",
+            quest_title,
         }) catch "Quest";
-        window_ui.drawSmallText(assets, quest_label, left_panel_rect.x + 126.0, left_panel_rect.y + 64.0, if (config.hardcore_flag != 0) rl.Color.init(250, 70, 60, 180) else value_color);
+        window_ui.drawSmallText(assets, quest_label, left_panel_rect.x + 236.0, left_panel_rect.y + 63.0, if (config.hardcore_flag != 0) rl.Color.init(250, 70, 60, 180) else value_color);
         drawQuestArrows(assets, state.quest_level_key, config.hardcore_flag != 0, status);
     }
 
-    window_ui.drawSmallText(assets, "Rank", left_panel_rect.x + 102.0, left_panel_rect.y + 84.0, text_color);
-    window_ui.drawSmallText(assets, "Score", left_panel_rect.x + 138.0, left_panel_rect.y + 84.0, text_color);
-    window_ui.drawSmallText(assets, "Player", left_panel_rect.x + 194.0, left_panel_rect.y + 84.0, text_color);
+    window_ui.drawSmallText(assets, "Rank", left_panel_rect.x + 211.0, left_panel_rect.y + 84.0, text_color);
+    window_ui.drawSmallText(assets, "Score", left_panel_rect.x + 246.0, left_panel_rect.y + 84.0, text_color);
+    window_ui.drawSmallText(assets, "Player", left_panel_rect.x + 302.0, left_panel_rect.y + 84.0, text_color);
 
     const frame = scoreFrameRect();
     rl.drawRectangle(@intFromFloat(frame.x), @intFromFloat(frame.y), @intFromFloat(frame.width), @intFromFloat(frame.height), rl.Color.white);
@@ -575,17 +599,19 @@ fn drawHighScoreMainPanel(
     if (state.load_error) |load_error| {
         window_ui.drawSmallText(assets, load_error, frame.x + 8.0, frame.y + 8.0, rl.Color.orange);
     } else if (state.records.len == 0) {
-        window_ui.drawSmallText(assets, "No scores yet.", frame.x + 8.0, frame.y + 8.0, muted_text);
+        window_ui.drawSmallText(assets, "No scores yet.", left_panel_rect.x + 211.0, frame.y + 8.0, muted_text);
     } else {
-        const hovered_rank = hoveredHighScoreRank();
-        const row_count = @min(state.records.len, 10);
-        for (state.records[0..row_count], 0..) |record, idx| {
-            const row_y = frame.y + 8.0 + @as(f32, @floatFromInt(idx)) * 16.0;
+        const hovered_rank = hoveredHighScoreRank(state);
+        const start = @min(state.scroll, if (state.records.len > 10) state.records.len - 10 else 0);
+        const end = @min(start + 10, state.records.len);
+        for (state.records[start..end], 0..) |record, row| {
+            const idx = start + row;
             const color = if (hovered_rank != null and hovered_rank.? == idx) text_color else muted_text;
             var value_buf: [32]u8 = undefined;
-            window_ui.drawSmallTextFmt("{d}", assets, .{idx + 1}, frame.x + 6.0, row_y, color);
-            window_ui.drawSmallText(assets, formatHighScoreValue(&value_buf, record), frame.x + 36.0, row_y, color);
-            window_ui.drawSmallText(assets, clippedRecordName(record), frame.x + 94.0, row_y, color);
+            const y = frame.y + 8.0 + @as(f32, @floatFromInt(row)) * 16.0;
+            window_ui.drawSmallTextFmt("{d}", assets, .{idx + 1}, left_panel_rect.x + 216.0, y, color);
+            window_ui.drawSmallText(assets, formatHighScoreValue(&value_buf, record), left_panel_rect.x + 246.0, y, color);
+            window_ui.drawSmallText(assets, clippedRecordName(record), left_panel_rect.x + 304.0, y, color);
         }
     }
 
@@ -602,16 +628,16 @@ fn drawHighScoreRightPanel(
     config: formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
 ) void {
-    if (hoveredHighScoreRank()) |rank| {
+    if (hoveredHighScoreRank(state)) |rank| {
         if (rank < state.records.len) {
             drawHighScoreLocalDetails(assets, state.records[rank], rank);
             return;
         }
     }
 
-    const check_tex = if (config.hardcore_flag != 0) assets.texture(.ui_check_on) else assets.texture(.ui_check_off);
+    const check_tex = if (config.score_load_gate != 0) assets.texture(.ui_check_on) else assets.texture(.ui_check_off);
     window_ui.drawTextureFit(check_tex, rl.Rectangle.init(right_panel_rect.x + 44.0, right_panel_rect.y + 44.0, @floatFromInt(check_tex.width), @floatFromInt(check_tex.height)), rl.Color.white);
-    window_ui.drawSmallText(assets, "Hardcore", right_panel_rect.x + 66.0, right_panel_rect.y + 45.0, text_color);
+    window_ui.drawSmallText(assets, "Show internet scores", right_panel_rect.x + 66.0, right_panel_rect.y + 45.0, text_color);
     window_ui.drawSmallText(assets, "Number of players", right_panel_rect.x + 46.0, right_panel_rect.y + 64.0, text_color);
     window_ui.drawSmallText(assets, "Game mode", right_panel_rect.x + 174.0, right_panel_rect.y + 64.0, text_color);
     window_ui.drawSmallText(assets, "Show scores:", right_panel_rect.x + 44.0, right_panel_rect.y + 106.0, text_color);
@@ -661,13 +687,13 @@ fn drawWeaponsPanels(
     status: formats.game_cfg.Status,
 ) void {
     const title = "Unlocked Weapons Database";
-    window_ui.drawSmallText(assets, title, left_panel_rect.x + 150.0, left_panel_rect.y + 50.0, text_color);
-    drawUnderline(left_panel_rect.x + 150.0, left_panel_rect.y + 64.0, window_ui.measureSmallText(assets, title));
+    window_ui.drawSmallText(assets, title, left_panel_rect.x + 251.0, left_panel_rect.y + 50.0, text_color);
+    drawUnderline(left_panel_rect.x + 251.0, left_panel_rect.y + 63.0, window_ui.measureSmallText(assets, title));
 
     var weapon_ids: [state_mod.weapon_count_size]game_ids.WeaponId = undefined;
     const total = buildWeaponList(&weapon_ids, config, status);
-    window_ui.drawSmallTextFmt("{d} weapons in database", assets, .{total}, left_panel_rect.x + 102.0, left_panel_rect.y + 80.0, muted_text);
-    window_ui.drawSmallText(assets, "Weapon", left_panel_rect.x + 102.0, left_panel_rect.y + 108.0, text_color);
+    window_ui.drawSmallTextFmt("{d} weapons in database", assets, .{total}, left_panel_rect.x + 210.0, left_panel_rect.y + 80.0, muted_text);
+    window_ui.drawSmallText(assets, "Weapon", left_panel_rect.x + 210.0, left_panel_rect.y + 108.0, text_color);
     drawListFrame(weaponListRect());
 
     const start = @min(state.scroll, if (total > 10) total - 10 else 0);
@@ -675,7 +701,7 @@ fn drawWeaponsPanels(
     for (weapon_ids[start..end], 0..) |weapon_id, row| {
         const list_index = start + row;
         const color = if (list_index == state.selection) text_color else muted_text;
-        window_ui.drawSmallText(assets, game_ids.weaponDisplayName(weapon_id, false), weaponListRect().x + 6.0, weaponListRect().y + 6.0 + @as(f32, @floatFromInt(row)) * 16.0, color);
+        window_ui.drawSmallText(assets, game_ids.weaponDisplayName(weapon_id, false), left_panel_rect.x + 218.0, left_panel_rect.y + 130.0 + @as(f32, @floatFromInt(row)) * 16.0, color);
     }
 
     const back = backOnlyButton()[0];
@@ -684,17 +710,17 @@ fn drawWeaponsPanels(
 
     if (total == 0) return;
     const weapon_id = weapon_ids[@min(state.selection, total - 1)];
-    const detail_x = right_panel_rect.x + 46.0;
-    window_ui.drawSmallTextFmt("weapon #{d}", assets, .{@intFromEnum(weapon_id)}, detail_x + 146.0, right_panel_rect.y + 32.0, muted_text);
+    const detail_x = right_panel_rect.x;
+    window_ui.drawSmallTextFmt("weapon #{d}", assets, .{@intFromEnum(weapon_id)}, detail_x + 240.0, right_panel_rect.y + 32.0, muted_text);
     const name = game_ids.weaponDisplayName(weapon_id, false);
-    window_ui.drawSmallText(assets, name, detail_x, right_panel_rect.y + 50.0, text_color);
+    window_ui.drawSmallText(assets, name, detail_x + 50.0, right_panel_rect.y + 50.0, text_color);
     const icon_index = weapon_data.weaponIconIndex(weapon_id);
     if (icon_index >= 0) {
         const src_rect = window_atlas.weaponIconRect(assets.texture(.ui_wicons).width, assets.texture(.ui_wicons).height, icon_index);
         rl.drawTexturePro(
             assets.texture(.ui_wicons),
             rl.Rectangle.init(src_rect.x, src_rect.y, src_rect.width, src_rect.height),
-            rl.Rectangle.init(detail_x + 20.0, right_panel_rect.y + 82.0, 64.0, 32.0),
+            rl.Rectangle.init(detail_x + 82.0, right_panel_rect.y + 82.0, 64.0, 32.0),
             rl.Vector2.zero(),
             0.0,
             rl.Color.white,
@@ -707,11 +733,11 @@ fn drawWeaponsPanels(
         "Fire rate: n/a"
     else
         std.fmt.bufPrint(&fire_rate_buf, "Fire rate: {d} rpm", .{@as(i32, @intFromFloat(60.0 / stats_entry.shot_cooldown))}) catch "Fire rate: ?";
-    window_ui.drawSmallText(assets, fire_rate_text, detail_x + 16.0, right_panel_rect.y + 128.0, text_color);
+    window_ui.drawSmallText(assets, fire_rate_text, detail_x + 66.0, right_panel_rect.y + 128.0, text_color);
     var reload_buf: [64]u8 = undefined;
     const reload_text = std.fmt.bufPrint(&reload_buf, "Reload time: {d:.1} secs", .{stats_entry.reload_time}) catch "Reload time: ?";
-    window_ui.drawSmallText(assets, reload_text, detail_x + 16.0, right_panel_rect.y + 146.0, text_color);
-    window_ui.drawSmallTextFmt("Clip size: {d}", assets, .{stats_entry.clip_size}, detail_x + 16.0, right_panel_rect.y + 164.0, text_color);
+    window_ui.drawSmallText(assets, reload_text, detail_x + 66.0, right_panel_rect.y + 146.0, text_color);
+    window_ui.drawSmallTextFmt("Clip size: {d}", assets, .{stats_entry.clip_size}, detail_x + 66.0, right_panel_rect.y + 164.0, text_color);
 }
 
 fn drawPerksPanels(
@@ -724,13 +750,13 @@ fn drawPerksPanels(
 ) void {
     _ = hardcore;
     const title = "Unlocked Perks Database";
-    window_ui.drawSmallText(assets, title, left_panel_rect.x + 162.0, left_panel_rect.y + 50.0, text_color);
-    drawUnderline(left_panel_rect.x + 162.0, left_panel_rect.y + 64.0, window_ui.measureSmallText(assets, title));
+    window_ui.drawSmallText(assets, title, left_panel_rect.x + 261.0, left_panel_rect.y + 50.0, text_color);
+    drawUnderline(left_panel_rect.x + 261.0, left_panel_rect.y + 63.0, window_ui.measureSmallText(assets, title));
 
     var perk_ids: [state_mod.perk_count_size]game_ids.PerkId = undefined;
     const total = buildPerkList(&perk_ids, status);
-    window_ui.drawSmallTextFmt("{d} perks in database", assets, .{total}, left_panel_rect.x + 102.0, left_panel_rect.y + 78.0, muted_text);
-    window_ui.drawSmallText(assets, "Perks", left_panel_rect.x + 102.0, left_panel_rect.y + 106.0, text_color);
+    window_ui.drawSmallTextFmt("{d} perks in database", assets, .{total}, left_panel_rect.x + 210.0, left_panel_rect.y + 78.0, muted_text);
+    window_ui.drawSmallText(assets, "Perks", left_panel_rect.x + 210.0, left_panel_rect.y + 106.0, text_color);
     drawListFrame(perkListRect());
 
     const start = @min(state.scroll, if (total > 10) total - 10 else 0);
@@ -741,8 +767,8 @@ fn drawPerksPanels(
         window_ui.drawSmallText(
             assets,
             game_ids.perkDisplayName(perk_id, violence_disabled, preserve_bugs),
-            perkListRect().x + 6.0,
-            perkListRect().y + 6.0 + @as(f32, @floatFromInt(row)) * 16.0,
+            left_panel_rect.x + 218.0,
+            left_panel_rect.y + 128.0 + @as(f32, @floatFromInt(row)) * 16.0,
             color,
         );
     }
@@ -753,20 +779,22 @@ fn drawPerksPanels(
 
     if (total == 0) return;
     const perk_id = perk_ids[@min(state.selection, total - 1)];
-    const detail_x = right_panel_rect.x + 40.0;
-    window_ui.drawSmallTextFmt("perk #{d}", assets, .{@intFromEnum(perk_id)}, detail_x + 154.0, right_panel_rect.y + 32.0, muted_text);
+    const detail_x = right_panel_rect.x + 34.0;
+    window_ui.drawSmallTextFmt("perk #{d}", assets, .{@intFromEnum(perk_id)}, detail_x + 190.0, right_panel_rect.y + 32.0, muted_text);
     const name = game_ids.perkDisplayName(perk_id, violence_disabled, preserve_bugs);
-    window_ui.drawSmallText(assets, name, detail_x + 30.0, right_panel_rect.y + 50.0, text_color);
-    drawUnderline(detail_x + 30.0, right_panel_rect.y + 64.0, window_ui.measureSmallText(assets, name));
+    const name_width = window_ui.measureSmallText(assets, name);
+    const name_x = detail_x + 128.0 - name_width * 0.5;
+    window_ui.drawSmallText(assets, name, name_x, right_panel_rect.y + 50.0, text_color);
+    drawUnderline(name_x, right_panel_rect.y + 63.0, name_width);
 
-    var y = right_panel_rect.y + 92.0;
+    var y = right_panel_rect.y + 72.0;
     if (window_statistics_data.perkPrerequisite(perk_id)) |prereq| {
         var req_buf: [128]u8 = undefined;
         const req_text = std.fmt.bufPrint(&req_buf, "Requires: {s}", .{game_ids.perkDisplayName(prereq, violence_disabled, preserve_bugs)}) catch "Requires: ?";
-        window_ui.drawSmallText(assets, req_text, detail_x, y, rl.Color.init(255, 204, 204, 220));
+        window_ui.drawSmallText(assets, req_text, detail_x + 16.0, y, rl.Color.init(255, 204, 204, 220));
         y += 18.0;
     }
-    drawWrappedSmallText(assets, window_statistics_data.perkDescription(perk_id), detail_x, y, 256.0, muted_text);
+    drawWrappedSmallText(assets, window_statistics_data.perkDescription(perk_id), detail_x + 16.0, y, 256.0, muted_text);
 }
 
 fn drawSplitPanelShell(assets: *const window_assets.RuntimeAssets) void {
@@ -826,15 +854,15 @@ fn backOnlyButton() [1]window_ui.UiButton {
 }
 
 fn scoreFrameRect() rl.Rectangle {
-    return rl.Rectangle.init(left_panel_rect.x + 100.0, left_panel_rect.y + 101.0, 250.0, 164.0);
+    return rl.Rectangle.init(left_panel_rect.x + 210.0, left_panel_rect.y + 101.0, 250.0, 164.0);
 }
 
 fn weaponListRect() rl.Rectangle {
-    return rl.Rectangle.init(left_panel_rect.x + 102.0, left_panel_rect.y + 128.0, 250.0, 164.0);
+    return rl.Rectangle.init(left_panel_rect.x + 212.0, left_panel_rect.y + 128.0, 250.0, 164.0);
 }
 
 fn perkListRect() rl.Rectangle {
-    return rl.Rectangle.init(left_panel_rect.x + 102.0, left_panel_rect.y + 126.0, 250.0, 164.0);
+    return rl.Rectangle.init(left_panel_rect.x + 212.0, left_panel_rect.y + 126.0, 250.0, 164.0);
 }
 
 fn drawListFrame(rect: rl.Rectangle) void {
@@ -1109,24 +1137,27 @@ fn playerCountWidgetRect() rl.Rectangle {
 }
 
 fn gameModeWidgetRect() rl.Rectangle {
-    return rl.Rectangle.init(right_panel_rect.x + 174.0, right_panel_rect.y + 78.0, 118.0, 16.0);
+    return rl.Rectangle.init(right_panel_rect.x + 174.0, right_panel_rect.y + 78.0, 95.0, 16.0);
 }
 
 fn dateModeWidgetRect() rl.Rectangle {
-    return rl.Rectangle.init(right_panel_rect.x + 44.0, right_panel_rect.y + 120.0, 150.0, 16.0);
+    return rl.Rectangle.init(right_panel_rect.x + 44.0, right_panel_rect.y + 120.0, 134.0, 16.0);
 }
 
 fn scoreListWidgetRect() rl.Rectangle {
     return rl.Rectangle.init(right_panel_rect.x + 44.0, right_panel_rect.y + 164.0, 174.0, 16.0);
 }
 
-fn hoveredHighScoreRank() ?usize {
+fn hoveredHighScoreRank(state: *const HighScoresScreen) ?usize {
     const mouse = rl.getMousePosition();
     const frame = scoreFrameRect();
     if (!rectContains(frame, mouse)) return null;
     const row = @as(usize, @intFromFloat((mouse.y - (frame.y + 8.0)) / 16.0));
     if (row >= 10) return null;
-    return row;
+    const start = @min(state.scroll, if (state.records.len > 10) state.records.len - 10 else 0);
+    const rank = start + row;
+    if (rank >= state.records.len) return null;
+    return rank;
 }
 
 fn hoveredListRow(rect: rl.Rectangle, total: usize, scroll: usize) ?usize {
@@ -1139,22 +1170,48 @@ fn hoveredListRow(rect: rl.Rectangle, total: usize, scroll: usize) ?usize {
 
 fn drawHighScoreLocalDetails(assets: *const window_assets.RuntimeAssets, record: persistence.highscores.HighScoreRecord, rank: usize) void {
     const detail_x = right_panel_rect.x + 78.0;
-    window_ui.drawSmallText(assets, clippedRecordName(record), detail_x, right_panel_rect.y + 44.0, text_color);
-    window_ui.drawSmallText(assets, "Local score", detail_x, right_panel_rect.y + 58.0, muted_text);
+    const mode = record.gameModeId() orelse .survival;
+    const local_text = rl.Color.init(229, 229, 229, 204);
+    const value_text = rl.Color.init(229, 229, 255, 255);
+    const lower_text = rl.Color.init(229, 229, 229, 178);
+    const separator = rl.Color.init(149, 175, 198, 178);
+
+    window_ui.drawSmallText(assets, clippedRecordName(record), detail_x, right_panel_rect.y + 44.0, local_text);
+    window_ui.drawSmallText(assets, "Local score", detail_x, right_panel_rect.y + 58.0, local_text);
+    rl.drawLine(@intFromFloat(right_panel_rect.x + 78.0), @intFromFloat(right_panel_rect.y + 57.0), @intFromFloat(right_panel_rect.x + 117.0), @intFromFloat(right_panel_rect.y + 57.0), separator);
     var date_buf: [64]u8 = undefined;
     if (formatRecordDateBuf(&date_buf, record)) |date| {
-        window_ui.drawSmallText(assets, date, detail_x + 115.0, right_panel_rect.y + 72.0, muted_text);
+        const date_w = window_ui.measureSmallText(assets, date);
+        window_ui.drawSmallText(assets, date, right_panel_rect.x + 230.0 - date_w * 0.5, right_panel_rect.y + 72.0, local_text);
     }
-    window_ui.drawSmallText(assets, "Score", detail_x + 27.0, right_panel_rect.y + 90.0, muted_text);
-    window_ui.drawSmallText(assets, "Game time", detail_x + 114.0, right_panel_rect.y + 90.0, muted_text);
-    window_ui.drawSmallTextFmt("{d}", assets, .{record.scoreXp()}, detail_x + 27.0, right_panel_rect.y + 105.0, text_color);
-    var time_buf: [32]u8 = undefined;
-    window_ui.drawSmallText(assets, formatElapsedMmSsBuf(&time_buf, record.survivalElapsedMs()), detail_x + 148.0, right_panel_rect.y + 109.0, text_color);
+    rl.drawLine(@intFromFloat(right_panel_rect.x + 74.0), @intFromFloat(right_panel_rect.y + 72.0), @intFromFloat(right_panel_rect.x + 266.0), @intFromFloat(right_panel_rect.y + 72.0), separator);
+    window_ui.drawSmallText(assets, "Score", detail_x + 27.0, right_panel_rect.y + 90.0, local_text);
+    const time_label = if (mode == .quests) "Experience" else "Game time";
+    window_ui.drawSmallText(assets, time_label, detail_x + 114.0, right_panel_rect.y + 90.0, local_text);
+    rl.drawLine(@intFromFloat(right_panel_rect.x + 170.0), @intFromFloat(right_panel_rect.y + 90.0), @intFromFloat(right_panel_rect.x + 170.0), @intFromFloat(right_panel_rect.y + 138.0), separator);
+
+    switch (mode) {
+        .rush, .quests => {
+            var score_buf: [32]u8 = undefined;
+            const score_text = std.fmt.bufPrint(&score_buf, "{d:.2} secs", .{@as(f32, @floatFromInt(record.survivalElapsedMs())) * 0.001}) catch "0.00 secs";
+            const label_center_x = detail_x + 27.0 + window_ui.measureSmallText(assets, "Score") * 0.5;
+            const score_w = window_ui.measureSmallText(assets, score_text);
+            window_ui.drawSmallText(assets, score_text, label_center_x - score_w * 0.5, right_panel_rect.y + 105.0, value_text);
+            window_ui.drawSmallTextFmt("{d}", assets, .{record.scoreXp()}, detail_x + 148.0, right_panel_rect.y + 109.0, local_text);
+        },
+        .survival, .typo, .tutorial => {
+            window_ui.drawSmallTextFmt("{d}", assets, .{record.scoreXp()}, detail_x + 27.0, right_panel_rect.y + 105.0, value_text);
+            drawClockGauge(assets, record.survivalElapsedMs(), right_panel_rect.x + 194.0, right_panel_rect.y + 103.0);
+            var time_buf: [32]u8 = undefined;
+            window_ui.drawSmallText(assets, formatElapsedMmSsBuf(&time_buf, record.survivalElapsedMs()), detail_x + 148.0, right_panel_rect.y + 109.0, local_text);
+        },
+    }
     var rank_buf: [32]u8 = undefined;
     var ordinal_buf: [16]u8 = undefined;
     const rank_text = std.fmt.bufPrint(&rank_buf, "Rank: {s}", .{ordinalBuf(&ordinal_buf, rank + 1)}) catch "Rank: ?";
-    window_ui.drawSmallText(assets, rank_text, detail_x + 16.0, right_panel_rect.y + 120.0, muted_text);
+    window_ui.drawSmallText(assets, rank_text, detail_x + 16.0, right_panel_rect.y + 120.0, local_text);
     const icon_index = weapon_data.weaponIconIndex(record.mostUsedWeaponId());
+    rl.drawLine(@intFromFloat(right_panel_rect.x + 74.0), @intFromFloat(right_panel_rect.y + 142.0), @intFromFloat(right_panel_rect.x + 266.0), @intFromFloat(right_panel_rect.y + 142.0), separator);
     if (icon_index >= 0) {
         const src_rect = window_atlas.weaponIconRect(assets.texture(.ui_wicons).width, assets.texture(.ui_wicons).height, icon_index);
         rl.drawTexturePro(
@@ -1166,11 +1223,36 @@ fn drawHighScoreLocalDetails(assets: *const window_assets.RuntimeAssets, record:
             rl.Color.white,
         );
     }
-    window_ui.drawSmallTextFmt("Frags: {d}", assets, .{record.creatureKillCount()}, detail_x + 122.0, right_panel_rect.y + 147.0, muted_text);
+    window_ui.drawSmallTextFmt("Frags: {d}", assets, .{record.creatureKillCount()}, detail_x + 122.0, right_panel_rect.y + 147.0, lower_text);
     const shots_fired = record.shotsFired();
     const hit_pct: u32 = if (shots_fired == 0) 0 else @intCast(@divTrunc(record.shotsHit() * 100, shots_fired));
-    window_ui.drawSmallTextFmt("Hit %: {d}%", assets, .{hit_pct}, detail_x + 122.0, right_panel_rect.y + 161.0, muted_text);
-    window_ui.drawSmallText(assets, game_ids.weaponDisplayName(record.mostUsedWeaponId(), false), detail_x + 12.0, right_panel_rect.y + 178.0, text_color);
+    window_ui.drawSmallTextFmt("Hit %: {d}%", assets, .{hit_pct}, detail_x + 122.0, right_panel_rect.y + 161.0, lower_text);
+    const weapon_name = game_ids.weaponDisplayName(record.mostUsedWeaponId(), false);
+    const weapon_name_x = right_panel_rect.x + 90.0 + @max(@as(f32, 0.0), 32.0 - window_ui.measureSmallText(assets, weapon_name) * 0.5);
+    window_ui.drawSmallText(assets, weapon_name, weapon_name_x, right_panel_rect.y + 178.0, lower_text);
+    rl.drawLine(@intFromFloat(right_panel_rect.x + 74.0), @intFromFloat(right_panel_rect.y + 194.0), @intFromFloat(right_panel_rect.x + 266.0), @intFromFloat(right_panel_rect.y + 194.0), separator);
+}
+
+fn drawClockGauge(assets: *const window_assets.RuntimeAssets, elapsed_ms: u32, x: f32, y: f32) void {
+    const table = assets.texture(.ui_clock_table);
+    const pointer = assets.texture(.ui_clock_pointer);
+    rl.drawTexturePro(
+        table,
+        rl.Rectangle.init(0.0, 0.0, @floatFromInt(table.width), @floatFromInt(table.height)),
+        rl.Rectangle.init(x, y, 32.0, 32.0),
+        rl.Vector2.zero(),
+        0.0,
+        rl.Color.white,
+    );
+    const seconds = @divTrunc(elapsed_ms, 1000);
+    rl.drawTexturePro(
+        pointer,
+        rl.Rectangle.init(0.0, 0.0, @floatFromInt(pointer.width), @floatFromInt(pointer.height)),
+        rl.Rectangle.init(x + 16.0, y + 16.0, 32.0, 32.0),
+        rl.Vector2.init(16.0, 16.0),
+        @as(f32, @floatFromInt(seconds)) * 6.0,
+        rl.Color.white,
+    );
 }
 
 fn updateHighScoreWidgets(
@@ -1183,9 +1265,9 @@ fn updateHighScoreWidgets(
     const mouse = rl.getMousePosition();
     const click = rl.isMouseButtonPressed(.left);
 
-    const hardcore_rect = rl.Rectangle.init(right_panel_rect.x + 44.0, right_panel_rect.y + 44.0, 120.0, 16.0);
-    if (click and state.dropdown_open == .none and rectContains(hardcore_rect, mouse)) {
-        config.hardcore_flag = if (config.hardcore_flag == 0) 1 else 0;
+    const internet_rect = rl.Rectangle.init(right_panel_rect.x + 44.0, right_panel_rect.y + 44.0, 180.0, 16.0);
+    if (click and state.dropdown_open == .none and rectContains(internet_rect, mouse)) {
+        config.score_load_gate = if (config.score_load_gate == 0) 1 else 0;
         loadHighScores(state, allocator, base_dir, config.*, status);
         return .{ .config_dirty = true, .play_button_click = true };
     }
@@ -1417,6 +1499,7 @@ fn loadHighScores(
         return;
     };
     state.records_owned = true;
+    state.scroll = @min(state.scroll, if (state.records.len > 10) state.records.len - 10 else 0);
 }
 
 fn passesDateFilter(record: persistence.highscores.HighScoreRecord, date_mode_raw: u8) bool {
@@ -1537,6 +1620,12 @@ fn ordinalBuf(buf: []u8, rank: usize) []const u8 {
 fn questLevelKeyFromConfig(config: formats.crimson_cfg.CrimsonCfg) i32 {
     _ = config;
     return 101;
+}
+
+fn questTitleForLevelKey(level_key: i32) []const u8 {
+    const index = questLevelKeyToIndex(level_key);
+    if (index < 0 or index >= window_menu_panels.quest_titles.len) return "???";
+    return window_menu_panels.quest_titles[@intCast(index)];
 }
 
 fn questLevelKeyToIndex(level_key: i32) i32 {

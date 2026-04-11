@@ -22,7 +22,7 @@ const player_count_labels = [_][:0]const u8{
     "4 players",
 };
 
-const quest_titles = [_][]const u8{
+pub const quest_titles = [_][]const u8{
     "Land Hostile",          "Minor Alien Breach",       "Target Practice",    "Frontline Assault", "Alien Dens",
     "The Random Factor",     "Spider Wave Syndrome",     "Alien Squads",       "Nesting Grounds",   "8-legged Terror",
     "Everred Pastures",      "Spider Spawns",            "Arachnoid Farm",     "Two Fronts",        "Sweep Stakes",
