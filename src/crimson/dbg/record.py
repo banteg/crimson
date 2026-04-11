@@ -348,7 +348,7 @@ def _record_replay_to_trace_python(
         replay,
         max_ticks=None,
         trace_rng=True,
-        strict_rng_trace=False,
+        strict_rng_trace=True,
     )
 
     def _after_tick(tick_result, world: WorldState) -> None:
