@@ -17,6 +17,8 @@ const value_dim = rl.Color.init(70, 180, 240, 153);
 const active_color = rl.Color.init(255, 228, 170, 255);
 
 const panel_timeline_max_ms: i32 = 300;
+const controls_left_panel_rect = rl.Rectangle.init(132.0, 174.0, 510.0, 254.0);
+const controls_right_panel_rect = rl.Rectangle.init(598.0, 118.0, 510.0, 378.0);
 
 const DropdownKind = enum {
     none,
@@ -338,39 +340,48 @@ fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window
 }
 
 fn drawControlsPanels(state: *const ControlsState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg) void {
-    const left_rect = rl.Rectangle.init(132.0, 174.0, 510.0, 292.0);
-    const right_rect = rl.Rectangle.init(598.0, 118.0, 510.0, 392.0);
+    const left_rect = controls_left_panel_rect;
+    const right_rect = controls_right_panel_rect;
     window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), left_rect, rl.Color.white, false);
     window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), right_rect, rl.Color.white, true);
 
-    window_ui.drawTextureFit(runtime_assets.texture(.ui_text_controls), rl.Rectangle.init(322.0, 202.0, 128.0, 32.0), rl.Color.white);
-    window_ui.drawSmallText(runtime_assets, "Configured controls", 746.0, 156.0, text_color);
-    rl.drawRectangle(746, 169, @intFromFloat(window_ui.measureSmallText(runtime_assets, "Configured controls")), 1, rl.Color.init(255, 255, 255, 204));
+    window_ui.drawTextureFit(runtime_assets.texture(.ui_text_controls), rl.Rectangle.init(left_rect.x + 206.0, left_rect.y + 44.0, 128.0, 32.0), rl.Color.white);
+    window_ui.drawSmallText(runtime_assets, "Configured controls", right_rect.x + 120.0, right_rect.y + 38.0, text_color);
+    rl.drawRectangle(
+        @intFromFloat(right_rect.x + 120.0),
+        @intFromFloat(right_rect.y + 51.0),
+        @intFromFloat(window_ui.measureSmallText(runtime_assets, "Configured controls")),
+        1,
+        rl.Color.init(255, 255, 255, 204),
+    );
 
     const player_idx = currentPlayerIndex(state);
-    drawDropdownLabel(runtime_assets, "Configure for:", 182.0, 244.0);
-    drawDropdown(runtime_assets, dropdownRect(182.0, 262.0), player_items[0..], player_idx, state.open_dropdown == .player, state.dropdown_selection);
+    const player_rect = controlsDropdownRect(left_rect, 340.0, 56.0, dropdownWidth(player_items[0..], runtime_assets));
+    drawDropdownLabel(runtime_assets, "Configure for:", left_rect.x + 339.0, left_rect.y + 41.0);
+    drawDropdown(runtime_assets, player_rect, player_items[0..], player_idx, state.open_dropdown == .player, state.dropdown_selection);
 
-    drawDropdownLabel(runtime_assets, "Aiming method:", 182.0, 300.0);
+    drawDropdownLabel(runtime_assets, "Aiming method:", left_rect.x + 213.0, left_rect.y + 86.0);
     const current_aim_items = aimItems(&config, player_idx);
-    drawDropdown(runtime_assets, dropdownRect(182.0, 318.0), current_aim_items, aimItemIndex(&config, player_idx), state.open_dropdown == .aim, state.dropdown_selection);
+    const aim_rect = controlsDropdownRect(left_rect, 214.0, 102.0, dropdownWidth(current_aim_items, runtime_assets));
+    drawDropdown(runtime_assets, aim_rect, current_aim_items, aimItemIndex(&config, player_idx), state.open_dropdown == .aim, state.dropdown_selection);
 
-    drawDropdownLabel(runtime_assets, "Moving method:", 182.0, 356.0);
-    drawDropdown(runtime_assets, dropdownRect(182.0, 374.0), movement_items[0..], movementItemIndex(&config, player_idx), state.open_dropdown == .movement, state.dropdown_selection);
+    drawDropdownLabel(runtime_assets, "Moving method:", left_rect.x + 213.0, left_rect.y + 128.0);
+    const move_rect = controlsDropdownRect(left_rect, 214.0, 144.0, dropdownWidth(movement_items[0..], runtime_assets));
+    drawDropdown(runtime_assets, move_rect, movement_items[0..], movementItemIndex(&config, player_idx), state.open_dropdown == .movement, state.dropdown_selection);
 
     const direction_checked: window_assets.TextureId = if (formats.crimson_cfg.playerShowDirectionArrow(&config, player_idx)) .ui_check_on else .ui_check_off;
-    window_ui.drawTextureFit(runtime_assets.texture(direction_checked), rl.Rectangle.init(182.0, 418.0, 16.0, 16.0), rl.Color.white);
-    window_ui.drawSmallText(runtime_assets, "Show direction arrow", 204.0, 418.0, if (state.left_selection == 3 and !state.focus_right) text_color else muted_text);
+    window_ui.drawTextureFit(runtime_assets.texture(direction_checked), rl.Rectangle.init(left_rect.x + 213.0, left_rect.y + 174.0, 16.0, 16.0), rl.Color.white);
+    window_ui.drawSmallText(runtime_assets, "Show direction arrow", left_rect.x + 235.0, left_rect.y + 175.0, if (state.left_selection == 3 and !state.focus_right) text_color else muted_text);
     window_menu.drawPanelBackEntry(runtime_assets, state.timeline_ms, state.back_hover_amount);
 
     const rows = controlsRebindRows(&config, player_idx);
-    var y: f32 = 198.0;
+    var y: f32 = right_rect.y + 82.0;
     for (rows, 0..) |row, idx| {
         const selected = state.focus_right and idx == state.right_selection;
         const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), rebindRect(y));
         const color = if (state.rebinding_row_index != null and state.rebinding_row_index.? == idx) active_color else if (selected or hovered) value_color else value_dim;
-        window_ui.drawSmallText(runtime_assets, row.label, 650.0, y, muted_text);
-        window_ui.drawSmallText(runtime_assets, bindingValueText(row, &config, player_idx, state.rebinding_row_index != null and state.rebinding_row_index.? == idx), 868.0, y, color);
+        window_ui.drawSmallText(runtime_assets, row.label, right_rect.x + 52.0, y, muted_text);
+        window_ui.drawSmallText(runtime_assets, bindingValueText(row, &config, player_idx, state.rebinding_row_index != null and state.rebinding_row_index.? == idx), right_rect.x + 180.0, y, color);
         y += 24.0;
     }
 }
@@ -453,6 +464,34 @@ fn dropdownRect(x: f32, y: f32) rl.Rectangle {
     return rl.Rectangle.init(x, y, 148.0, 16.0);
 }
 
+fn controlsDropdownRect(panel_rect: rl.Rectangle, rel_x: f32, rel_y: f32, width: f32) rl.Rectangle {
+    return rl.Rectangle.init(panel_rect.x + rel_x, panel_rect.y + rel_y, width, 16.0);
+}
+
+fn dropdownWidth(items: []const DropdownItem, runtime_assets: ?*const window_assets.RuntimeAssets) f32 {
+    var max_label_w: f32 = 0.0;
+    for (items) |item| {
+        const width = if (runtime_assets) |assets|
+            window_ui.measureSmallText(assets, item.label)
+        else
+            approxTextWidth(item.label);
+        max_label_w = @max(max_label_w, width);
+    }
+    return max_label_w + 48.0;
+}
+
+fn approxTextWidth(text: []const u8) f32 {
+    var width: f32 = 0.0;
+    for (text) |ch| {
+        width += switch (ch) {
+            'i', 'l', '!', '.', ',', '\'', ':' => 4.0,
+            ' ' => 5.0,
+            else => 8.0,
+        };
+    }
+    return width;
+}
+
 fn drawDropdown(
     runtime_assets: *const window_assets.RuntimeAssets,
     rect: rl.Rectangle,
@@ -486,16 +525,16 @@ fn leftControlButtonCount() usize {
 }
 
 fn rebindRect(y: f32) rl.Rectangle {
-    return rl.Rectangle.init(640.0, y - 2.0, 360.0, 18.0);
+    return rl.Rectangle.init(controls_right_panel_rect.x + 48.0, y - 2.0, 360.0, 18.0);
 }
 
 fn updateControlsFocusFromPointer(state: *ControlsState, rows: []const RebindRow) void {
     const mouse = rl.getMousePosition();
     const left_rects = [_]rl.Rectangle{
-        dropdownRect(182.0, 262.0),
-        dropdownRect(182.0, 374.0),
-        dropdownRect(182.0, 318.0),
-        rl.Rectangle.init(182.0, 416.0, 220.0, 20.0),
+        controlsDropdownRect(controls_left_panel_rect, 340.0, 56.0, dropdownWidth(player_items[0..], null)),
+        controlsDropdownRect(controls_left_panel_rect, 214.0, 102.0, dropdownWidth(aim_items_with_computer[0..], null)),
+        controlsDropdownRect(controls_left_panel_rect, 214.0, 144.0, dropdownWidth(movement_items[0..], null)),
+        rl.Rectangle.init(controls_left_panel_rect.x + 213.0, controls_left_panel_rect.y + 174.0, 220.0, 20.0),
     };
     for (left_rects, 0..) |rect, idx| {
         if (rl.checkCollisionPointRec(mouse, rect)) {
@@ -506,7 +545,7 @@ fn updateControlsFocusFromPointer(state: *ControlsState, rows: []const RebindRow
     }
     for (rows, 0..) |row, row_idx| {
         _ = row;
-        if (rl.checkCollisionPointRec(mouse, rebindRect(198.0 + @as(f32, @floatFromInt(row_idx)) * 24.0))) {
+        if (rl.checkCollisionPointRec(mouse, rebindRect(controls_right_panel_rect.y + 82.0 + @as(f32, @floatFromInt(row_idx)) * 24.0))) {
             state.focus_right = true;
             state.right_selection = row_idx;
             return;
@@ -531,9 +570,9 @@ fn updateControlsDropdown(state: *ControlsState, config: *formats.crimson_cfg.Cr
 
     const mouse = rl.getMousePosition();
     const base_rect = switch (state.open_dropdown) {
-        .player => dropdownRect(182.0, 262.0),
-        .movement => dropdownRect(182.0, 374.0),
-        .aim => dropdownRect(182.0, 318.0),
+        .player => controlsDropdownRect(controls_left_panel_rect, 340.0, 56.0, dropdownWidth(player_items[0..], null)),
+        .movement => controlsDropdownRect(controls_left_panel_rect, 214.0, 144.0, dropdownWidth(movement_items[0..], null)),
+        .aim => controlsDropdownRect(controls_left_panel_rect, 214.0, 102.0, dropdownWidth(items, null)),
         .none => unreachable,
     };
     for (items, 0..) |item, idx| {

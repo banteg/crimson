@@ -644,7 +644,7 @@ fn drawQuestContent(state: *const QuestState, runtime_assets: *const window_asse
         rl.Rectangle.init(layout.title_pos.x, layout.title_pos.y, quest_title_w, quest_title_h),
         rl.Vector2.zero(),
         0.0,
-        rl.Color.white,
+        rl.Color.init(179, 179, 179, 179),
     );
 
     const stage_textures = [_]window_assets.TextureId{ .ui_num1, .ui_num2, .ui_num3, .ui_num4, .ui_num5 };
