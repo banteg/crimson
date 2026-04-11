@@ -403,7 +403,7 @@ const App = struct {
 
     fn updatePlayGameMenu(self: *App, frame_dt: f32) void {
         self.audio.ensureMenuTheme();
-        const play_game_update = window_menu_panels.updatePlayGame(&self.play_game_menu, frame_dt, &self.runtime.config);
+        const play_game_update = window_menu_panels.updatePlayGame(&self.play_game_menu, frame_dt, &self.runtime.config, self.runtime.status);
         if (play_game_update.config_dirty) self.runtime.config_dirty = true;
         if (play_game_update.play_panel_click and !self.play_game_menu.panel.panel_open_sfx_played) {
             self.audio.playUiPanelClick();
@@ -413,6 +413,8 @@ const App = struct {
         if (play_game_update.action) |action| switch (action) {
             .start_survival => self.startNewRun(runConfigForLiveMode(.survival, null, &self.next_seed_state)),
             .start_rush => self.startNewRun(runConfigForLiveMode(.rush, null, &self.next_seed_state)),
+            .start_typo => self.startNewRun(runConfigForLiveMode(.typo, null, &self.next_seed_state)),
+            .start_tutorial => self.startNewRun(runConfigForLiveMode(.tutorial, null, &self.next_seed_state)),
             .open_quests => {
                 self.quests_menu.reset();
                 self.screen = .quests_menu;
