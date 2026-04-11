@@ -70,8 +70,8 @@ _NAME_PARTS: tuple[str, ...] = (
 )
 
 
-def _draw(rng: CrandLike, *, caller: int | None = None) -> int:
-    return rng.rand(caller=caller)
+def _draw(rng: CrandLike, *, caller: int) -> int:
+    return rng.rand_tagged(caller)
 
 
 def _pick_highscore_name(rng: CrandLike, highscore_names: Sequence[str]) -> str:
@@ -146,7 +146,7 @@ def typo_build_name(
 
 
 def _pick_word(rng: CrandLike, words: Sequence[str]) -> str:
-    return str(words[_draw(rng) % len(words)])
+    return str(words[rng.rand() % len(words)])
 
 
 def _pick_unique_words(
@@ -162,7 +162,7 @@ def _pick_unique_words(
     picked: list[str] = []
     used: set[int] = set()
     while len(picked) < count:
-        idx = _draw(rng) % len(words)
+        idx = rng.rand() % len(words)
         if idx in used:
             continue
         used.add(idx)
@@ -178,18 +178,18 @@ def _typo_build_custom_name(
 ) -> str:
     score_xp = int(score_xp)
     if score_xp > 120:
-        if _draw(rng) % 100 < 10:
+        if rng.rand() % 100 < 10:
             return _pick_word(rng, dictionary_words)
-        if _draw(rng) % 100 < 80:
+        if rng.rand() % 100 < 80:
             return "".join(_pick_unique_words(rng, dictionary_words, 4))
 
-    if (score_xp > 80 and _draw(rng) % 100 < 80) or (
-        score_xp > 60 and _draw(rng) % 100 < 40
+    if (score_xp > 80 and rng.rand() % 100 < 80) or (
+        score_xp > 60 and rng.rand() % 100 < 40
     ):
         return "".join(_pick_unique_words(rng, dictionary_words, 3))
 
-    if (score_xp > 40 and _draw(rng) % 100 < 80) or (
-        score_xp > 20 and _draw(rng) % 100 < 40
+    if (score_xp > 40 and rng.rand() % 100 < 80) or (
+        score_xp > 20 and rng.rand() % 100 < 40
     ):
         return "".join(_pick_unique_words(rng, dictionary_words, 2))
 

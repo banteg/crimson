@@ -422,7 +422,7 @@ class ProjectilePool:
 
                     if proj.life_timer != 0.25 and rule.stop_on_hit:
                         proj.life_timer = 0.25
-                        jitter = rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER) & 3
+                        jitter = rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER) & 3
                         jitter_dx = float(f32(float(dir_x) * float(jitter)))
                         jitter_dy = float(f32(float(dir_y) * float(jitter)))
                         proj.pos = Vec2(
@@ -492,7 +492,7 @@ class ProjectilePool:
                     ):
                         shard_angle = float(float(proj.angle) - NATIVE_HALF_PI)
                         shard_angle += float(
-                            rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE) % 100,
+                            rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE) % 100,
                         ) * 0.01
                         effects.spawn_freeze_shard(
                             pos=proj.pos,

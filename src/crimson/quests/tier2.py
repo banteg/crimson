@@ -324,9 +324,7 @@ def build_2_5_sweep_stakes(
     while step > 720:
         angle = (
             float(
-                rng.rand(
-                    caller=RngCallerStatic.QUEST_BUILD_SWEEP_STAKES_ANGLE,
-                )
+                rng.rand_tagged(RngCallerStatic.QUEST_BUILD_SWEEP_STAKES_ANGLE)
                 % 612,
             )
             * 0.01

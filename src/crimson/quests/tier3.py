@@ -195,8 +195,8 @@ def _the_killing_random_spawner(
     y_caller: int,
     x_caller: int,
 ) -> SpawnEntry:
-    y = float(rng.rand(caller=y_caller) % 768) + 128.0
-    x = float(rng.rand(caller=x_caller) % 768) + 128.0
+    y = float(rng.rand_tagged(y_caller) % 768) + 128.0
+    x = float(rng.rand_tagged(x_caller) % 768) + 128.0
     return spawn(
         Vec2(x, y),
         heading=0.0,
@@ -224,9 +224,7 @@ def build_3_3_the_killing(
     trigger = 2000
     for _wave in range(10):
         spawn_cycle = (
-            rng.rand(
-                caller=RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK,
-            )
+            rng.rand_tagged(RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK)
             % 3
         )
         if spawn_cycle == 0:
@@ -237,9 +235,7 @@ def build_3_3_the_killing(
             spawn_id = SpawnId.AI1_LIZARD_BLUE_TINT_1C
 
         edge = (
-            rng.rand(
-                caller=RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK,
-            )
+            rng.rand_tagged(RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK)
             % 5
         )
         if edge == 0:
@@ -575,9 +571,7 @@ def build_3_9_deja_vu(
     while step > 560:
         angle = (
             float(
-                rng.rand(
-                    caller=RngCallerStatic.QUEST_BUILD_DEJA_VU_ANGLE,
-                )
+                rng.rand_tagged(RngCallerStatic.QUEST_BUILD_DEJA_VU_ANGLE)
                 % 612,
             )
             * 0.01

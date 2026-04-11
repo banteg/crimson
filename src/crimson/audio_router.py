@@ -94,7 +94,7 @@ class AudioRouter(msgspec.Struct):
         ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).ammo_class
         if ammo_class == 4:
             return SfxId.SHOCK_HIT_01
-        return _BULLET_HIT_SFX[rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX) % len(_BULLET_HIT_SFX)]
+        return _BULLET_HIT_SFX[rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX) % len(_BULLET_HIT_SFX)]
 
     def play_hit_sfx(
         self,

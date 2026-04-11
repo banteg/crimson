@@ -10,6 +10,7 @@ const particles_mod = @import("particles.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
 const projectiles_mod = @import("projectiles.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 const secondary_projectiles_mod = @import("secondary_projectiles.zig");
 const state_mod = @import("state.zig");
 const survival_progression = @import("survival_progression.zig");
@@ -106,7 +107,7 @@ pub fn preprocessPlayerForPerkTicksWithEffects(
                     state.gore_disabled,
                 );
             }
-            _ = state.rng.rand() & 1;
+            _ = state.rng.randTagged(rng_callers.player_update_low_health_bloodspill) & 1;
             player.low_health_timer = 1.0;
         }
     }
@@ -437,10 +438,10 @@ fn tryFireWeaponWithForce(
     const weapon_flags = weapon_data.weapon_stats.get(player.weapon.weapon_id).flags;
 
     if ((weapon_flags & 0x1) != 0) {
-        const angle_draw = state.rng.rand();
-        const speed_draw = state.rng.rand();
-        const rotation_draw = state.rng.rand();
-        const rotation_step_draw = state.rng.rand();
+        const angle_draw = state.rng.randTagged(rng_callers.player_update_casing_angle);
+        const speed_draw = state.rng.randTagged(rng_callers.player_update_casing_speed);
+        const rotation_draw = state.rng.randTagged(rng_callers.player_update_casing_rotation);
+        const rotation_step_draw = state.rng.randTagged(rng_callers.player_update_casing_rotation_step);
         effects.spawnShellCasing(
             detail_preset,
             player.pos,
@@ -454,9 +455,9 @@ fn tryFireWeaponWithForce(
 
     const dist = aim_delta.length();
     const max_offset = dist * player.spread_heat * 0.5;
-    const dir_roll = state.rng.rand();
+    const dir_roll = state.rng.randTagged(rng_callers.player_update_shot_jitter_dir);
     const dir_angle = @as(f32, @floatFromInt(dir_roll & 0x1ff)) * (native_tau / 512.0);
-    const mag_roll = state.rng.rand();
+    const mag_roll = state.rng.randTagged(rng_callers.player_update_shot_jitter_mag);
     const mag = @as(f32, @floatFromInt(mag_roll & 0x1ff)) * (1.0 / 512.0);
     const offset = max_offset * mag;
     const aim_jitter = state_mod.Vec2.add(player.aim, state_mod.Vec2.fromAngle(dir_angle).mul(offset));
@@ -468,7 +469,7 @@ fn tryFireWeaponWithForce(
 
     if (!is_fire_bullets) {
         // fire SFX variant selection.
-        _ = state.rng.rand();
+        _ = state.rng.randTagged(rng_callers.player_update_shot_sfx);
     }
 
     const spawn_muzzle_after_projectile = is_fire_bullets or
@@ -493,7 +494,7 @@ fn tryFireWeaponWithForce(
             shot_count = pellets;
             const meta = projectileTravelBudgetFromTypeId(type_id);
             for (0..@as(usize, @intCast(pellets))) |_| {
-                const angle = applyPelletJitter(state, shot_angle, mode.jitter);
+                const angle = applyPelletJitter(state, shot_angle, player.weapon.weapon_id, is_fire_bullets, mode.jitter);
                 const id = projectiles.spawn(
                     muzzle,
                     angle,
@@ -502,7 +503,7 @@ fn tryFireWeaponWithForce(
                     meta,
                     false,
                 );
-                applySpeedScaleRule(state, projectiles, id, mode.speed_scale);
+                applySpeedScaleRule(state, projectiles, id, player.weapon.weapon_id, is_fire_bullets, mode.speed_scale);
             }
         },
         .secondary_shot => |mode| {
@@ -668,7 +669,7 @@ fn tickManBomb(
         else
             .ion_rifle;
         const angle =
-            @as(f32, @floatFromInt(state.rng.rand() % 50)) * 0.01 +
+            @as(f32, @floatFromInt(state.rng.randTagged(if (type_id == .ion_minigun) rng_callers.player_update_man_bomb_ion_minigun_angle else rng_callers.player_update_man_bomb_ion_rifle_angle) % 50)) * 0.01 +
             @as(f32, @floatFromInt(idx)) * (native_pi / 4.0) - 0.25;
         spawnPerkProjectile(
             state,
@@ -723,9 +724,9 @@ fn tickFireCaugh(
     const aim_delta = state_mod.Vec2.sub(player.aim, origin_pos);
     const dist = aim_delta.length();
     const max_offset = dist * player.spread_heat * 0.5;
-    const dir_roll = state.rng.rand();
+    const dir_roll = state.rng.randTagged(rng_callers.player_update_fire_cough_spread_dir);
     const dir_angle = @as(f32, @floatFromInt(dir_roll & 0x1ff)) * (native_tau / 512.0);
-    const mag_roll = state.rng.rand();
+    const mag_roll = state.rng.randTagged(rng_callers.player_update_fire_cough_spread_mag);
     const mag = @as(f32, @floatFromInt(mag_roll & 0x1ff)) * (1.0 / 512.0);
     const offset = max_offset * mag;
     const jitter = state_mod.Vec2.add(
@@ -752,7 +753,7 @@ fn tickFireCaugh(
     );
 
     player.fire_cough_timer -= state.perk_interval_fire_cough;
-    state.perk_interval_fire_cough = @as(f32, @floatFromInt(state.rng.rand() % 4)) + 2.0;
+    state.perk_interval_fire_cough = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.player_update_fire_cough_interval_reset) % 4)) + 2.0;
 }
 
 fn tickHotTempered(
@@ -791,7 +792,7 @@ fn tickHotTempered(
     }
 
     player.hot_tempered_timer -= state.perk_interval_hot_tempered;
-    state.perk_interval_hot_tempered = @as(f32, @floatFromInt(state.rng.rand() % 8)) + 2.0;
+    state.perk_interval_hot_tempered = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.player_update_hot_tempered_interval_reset) % 8)) + 2.0;
 }
 
 fn spawnPerkProjectile(
@@ -840,18 +841,31 @@ fn spawnPerkProjectile(
 fn applyPelletJitter(
     state: *state_mod.GameplayState,
     shot_angle: f32,
+    weapon_id: WeaponId,
+    fire_bullets_active: bool,
     rule: fire_recipes.PelletJitterRule,
 ) f32 {
+    const caller = if (fire_bullets_active)
+        rng_callers.player_update_fire_bullets_pellet_jitter
+    else switch (weapon_id) {
+        .shotgun => rng_callers.player_update_shotgun_pellet_jitter,
+        .sawed_off_shotgun => rng_callers.player_update_sawed_off_shotgun_pellet_jitter,
+        .jackhammer => rng_callers.player_update_jackhammer_pellet_jitter,
+        .ion_shotgun => rng_callers.player_update_ion_shotgun_pellet_jitter,
+        .gauss_shotgun => rng_callers.player_update_gauss_shotgun_pellet_jitter,
+        .plasma_shotgun => rng_callers.player_update_plasma_shotgun_pellet_jitter,
+        else => unreachable,
+    };
     return switch (rule) {
         .none => shot_angle,
         .modulo_centered => |jitter| {
-            const jitter_roll = state.rng.rand();
+            const jitter_roll = state.rng.randTagged(caller);
             return shot_angle + narrowF32(
                 @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll % jitter.modulo)) - jitter.center)) * jitter.step,
             );
         },
         .mask_centered => |jitter| {
-            const jitter_roll = state.rng.rand();
+            const jitter_roll = state.rng.randTagged(caller);
             return shot_angle + narrowF32(
                 @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll & jitter.mask)) - jitter.center)) * jitter.step,
             );
@@ -863,12 +877,27 @@ fn applySpeedScaleRule(
     state: *state_mod.GameplayState,
     projectiles: *projectiles_mod.ProjectilePool,
     projectile_idx: usize,
+    weapon_id: WeaponId,
+    fire_bullets_active: bool,
     rule: fire_recipes.SpeedScaleRule,
 ) void {
     switch (rule) {
         .none => {},
         .modulo => |speed| {
-            const speed_roll = state.rng.rand();
+            const speed_roll = if (fire_bullets_active)
+                state.rng.rand()
+            else blk: {
+                const caller: rng_callers.Caller = switch (weapon_id) {
+                    .shotgun => rng_callers.player_update_shotgun_pellet_speed_scale,
+                    .sawed_off_shotgun => rng_callers.player_update_sawed_off_shotgun_pellet_speed_scale,
+                    .jackhammer => rng_callers.player_update_jackhammer_pellet_speed_scale,
+                    .ion_shotgun => rng_callers.player_update_ion_shotgun_pellet_speed_scale,
+                    .gauss_shotgun => rng_callers.player_update_gauss_shotgun_pellet_speed_scale,
+                    .plasma_shotgun => rng_callers.player_update_plasma_shotgun_pellet_speed_scale,
+                    else => unreachable,
+                };
+                break :blk state.rng.randTagged(caller);
+            };
             projectiles.entries[projectile_idx].speed_scale = narrowF32(
                 speed.base + @as(f32, @floatFromInt(speed_roll % speed.modulo)) * speed.step,
             );
@@ -1006,23 +1035,6 @@ fn activeSecondaryProjectileCount(
         if (entry.active) count += 1;
     }
     return count;
-}
-
-fn findSeedForNthRandValue(
-    draw_index: usize,
-    target: u32,
-    search_limit: u32,
-) ?u32 {
-    for (0..search_limit) |seed_usize| {
-        const seed: u32 = @intCast(seed_usize);
-        var rng = spawn_mod.Crand.init(seed);
-        var value: u32 = 0;
-        for (0..draw_index) |_| {
-            value = rng.rand();
-        }
-        if (value == target) return seed;
-    }
-    return null;
 }
 
 test "weapon usage tracks most used weapon" {
@@ -1741,7 +1753,7 @@ test "multi plasma fires five projectiles with fixed spread profile" {
 }
 
 test "plasma shotgun uses masked jitter and random speed scale" {
-    const seed = findSeedForNthRandValue(4, 255, 200_000) orelse unreachable;
+    const seed: u32 = 53_165;
 
     var state = state_mod.GameplayState.init(seed);
     var projectiles: projectiles_mod.ProjectilePool = .{};

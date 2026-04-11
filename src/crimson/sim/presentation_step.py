@@ -83,7 +83,7 @@ def _hit_sfx_for_type(
     ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).ammo_class
     if ammo_class == 4:
         return SfxId.SHOCK_HIT_01
-    return _BULLET_HIT_SFX[rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX) % len(_BULLET_HIT_SFX)]
+    return _BULLET_HIT_SFX[rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX) % len(_BULLET_HIT_SFX)]
 
 
 def plan_hit_sfx(
@@ -111,7 +111,7 @@ def plan_hit_sfx(
             # playlist entry, so consume one draw here for stream parity.
             trigger_game_tune = True
             local_game_tune_started = True
-            _ = rng.rand(caller=RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
+            _ = rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
             continue
         type_id = int(hits[idx].type_id)
         sfx.append(_hit_sfx_for_type(type_id, beam_types=beam_types, rng=rng))
@@ -186,7 +186,7 @@ def queue_projectile_decals_pre_hit(
         for _ in range(8):
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,
-                angle=float(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_BLADE_GUN_SPLATTER_ANGLE) & 0xFF)
+                angle=float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_BLADE_GUN_SPLATTER_ANGLE) & 0xFF)
                 * 0.024543693,
                 age=0.0,
                 rng=rng,
@@ -198,7 +198,7 @@ def queue_projectile_decals_pre_hit(
     if bloody:
         for _ in range(8):
             spread = (
-                float(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_SPREAD) & 0x1F) - 16.0
+                float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_SPREAD) & 0x1F) - 16.0
             ) * 0.0625
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,
@@ -231,8 +231,8 @@ def queue_projectile_decals_pre_hit(
                     RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_DECAL_DY_2,
                 ),
             ):
-                dx = float(rng.rand(caller=dx_caller) % span + lo)
-                dy = float(rng.rand(caller=dy_caller) % span + lo)
+                dx = float(rng.rand_tagged(dx_caller) % span + lo)
+                dy = float(rng.rand_tagged(dy_caller) % span + lo)
                 fx_queue.add_random(
                     pos=hit.target + Vec2(dx, dy),
                     rng=rng,
@@ -249,7 +249,7 @@ def queue_projectile_decals_pre_hit(
                 detail_preset=detail_preset,
                 violence_disabled=violence_disabled,
             )
-            if (rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_REVERSE_SPLATTER_GATE) & 7) == 2:
+            if (rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_REVERSE_SPLATTER_GATE) & 7) == 2:
                 state.effects.spawn_blood_splatter(
                     pos=hit.hit,
                     angle=base_angle + math.pi,
@@ -279,7 +279,7 @@ def queue_projectile_decals_post_hit(
 
     # Native consumes one extra `crt_rand()` per creature hit before the
     # post-hit terrain decal burst branch.
-    rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN)
+    rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN)
 
     hook_handled = queue_projectile_large_streak_decal(
         hit=hit,
@@ -294,7 +294,7 @@ def queue_projectile_decals_post_hit(
         return
 
     for _ in range(3):
-        spread = float(rng.rand(caller=RngCallerStatic.PROJECTILE_UPDATE_DECAL_SPREAD) % 20 - 10) * 0.1
+        spread = float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DECAL_SPREAD) % 20 - 10) * 0.1
         angle = base_angle + spread
         direction = Vec2.from_angle(angle) * 20.0
         fx_queue.add_random(pos=hit.target, rng=rng)

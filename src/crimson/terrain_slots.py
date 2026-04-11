@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TypeAlias, TypeVar
+from typing import TYPE_CHECKING, TypeAlias, TypeVar
 
 from grim.assets import TextureId
 from grim.rand import CrandLike
 
-from .quests.level import QuestLevel
 from .rng_caller_static import RngCallerStatic
+
+if TYPE_CHECKING:
+    from .quests.level import QuestLevel
 
 TerrainSlotTriplet: TypeAlias = tuple[int, int, int]
 _T = TypeVar("_T")
@@ -23,6 +25,12 @@ UNLOCK_TERRAIN_SLOTS: dict[int, TerrainSlotTriplet] = {
     30: Q3_TERRAIN_SLOTS,  # after quest 3.10 "Zombie Masters"
     20: Q2_TERRAIN_SLOTS,  # after quest 2.10 "Spideroids"
 }
+
+_UNLOCK_TERRAIN_RULES: tuple[tuple[int, TerrainSlotTriplet, RngCallerStatic], ...] = (
+    (40, Q4_TERRAIN_SLOTS, RngCallerStatic.UNLOCK_TERRAIN_Q4),
+    (30, Q3_TERRAIN_SLOTS, RngCallerStatic.UNLOCK_TERRAIN_Q3),
+    (20, Q2_TERRAIN_SLOTS, RngCallerStatic.UNLOCK_TERRAIN_Q2),
+)
 
 _TEXTURE_ID_BY_TERRAIN_SLOT: dict[int, TextureId] = {
     0: TextureId.TER_Q1_BASE,
@@ -52,15 +60,8 @@ def choose_unlock_terrain_slots(
     rng: CrandLike,
 ) -> TerrainSlotTriplet:
     # Keep the thresholds descending to preserve the native chained 1/8 roll order.
-    for threshold, slots in UNLOCK_TERRAIN_SLOTS.items():
-        caller = None
-        if threshold == 40:
-            caller = RngCallerStatic.UNLOCK_TERRAIN_Q4
-        elif threshold == 30:
-            caller = RngCallerStatic.UNLOCK_TERRAIN_Q3
-        elif threshold == 20:
-            caller = RngCallerStatic.UNLOCK_TERRAIN_Q2
-        if unlock_index >= threshold and (rng.rand(caller=caller) & 7) == 3:
+    for threshold, slots, caller in _UNLOCK_TERRAIN_RULES:
+        if unlock_index >= threshold and (rng.rand_tagged(caller) & 7) == 3:
             return slots
     return DEFAULT_TERRAIN_SLOTS
 

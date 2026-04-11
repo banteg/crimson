@@ -402,7 +402,7 @@ class QuestMode(BaseGameplayMode):
         )
         # Native `quest_start_selected()` burns one `crt_rand()` for
         # `highscore_record_random_tag` before quest terrain and spawn setup.
-        self.state.rng.rand(caller=RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
+        self.state.rng.rand_tagged(RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
         quest_terrain = advance_explicit_terrain(
             self.state.rng,
             terrain_slots=quest.terrain_slots,

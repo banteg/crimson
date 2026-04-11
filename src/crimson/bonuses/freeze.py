@@ -53,14 +53,14 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
                 )
             elif allow_shatter_fx:
                 for _ in range(8):
-                    angle = float(ctx.state.rng.rand(caller=RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612) * 0.01
+                    angle = float(ctx.state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612) * 0.01
                     ctx.state.effects.spawn_freeze_shard(
                         pos=pos,
                         angle=angle,
                         rng=ctx.state.rng,
                         detail_preset=int(ctx.detail_preset),
                     )
-                angle = float(ctx.state.rng.rand(caller=RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612) * 0.01
+                angle = float(ctx.state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612) * 0.01
                 ctx.state.effects.spawn_freeze_shatter(
                     pos=pos,
                     angle=angle,
@@ -82,7 +82,7 @@ def flush_deferred_freeze_corpse_fx(state: GameplayState) -> None:
         detail = int(queued.detail_preset)
         for _ in range(8):
             angle = float(
-                state.rng.rand(caller=RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612,
+                state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612,
             ) * 0.01
             state.effects.spawn_freeze_shard(
                 pos=pos,
@@ -91,7 +91,7 @@ def flush_deferred_freeze_corpse_fx(state: GameplayState) -> None:
                 detail_preset=detail,
             )
         angle = float(
-            state.rng.rand(caller=RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612,
+            state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612,
         ) * 0.01
         state.effects.spawn_freeze_shatter(
             pos=pos,

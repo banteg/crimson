@@ -1,5 +1,6 @@
 const std = @import("std");
 const native_math = @import("native_math.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 
 const bonus_runtime = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
@@ -52,7 +53,7 @@ pub const ParticlePool = struct {
         intensity: f32,
         owner: owner_ref.OwnerRef,
     ) usize {
-        const index = self.allocSlot(state);
+        const index = self.allocSlot(state, rng_callers.fx_spawn_particle_alloc);
         const entry = &self.entries[index];
         entry.* = .{
             .active = true,
@@ -68,7 +69,7 @@ pub const ParticlePool = struct {
             .age = 0.0,
             .intensity = intensity,
             .angle = angle,
-            .spin = @as(f32, @floatFromInt(state.rng.rand() % 0x274)) * 0.01,
+            .spin = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.fx_spawn_particle_spin) % 0x274)) * 0.01,
             .style_id = ParticleStyleId.flamethrower,
             .target_id = -1,
             .owner = owner,
@@ -83,7 +84,7 @@ pub const ParticlePool = struct {
         angle: f32,
         owner: owner_ref.OwnerRef,
     ) usize {
-        const index = self.allocSlot(state);
+        const index = self.allocSlot(state, rng_callers.fx_spawn_particle_slow_alloc);
         const entry = &self.entries[index];
         entry.* = .{
             .active = true,
@@ -99,7 +100,7 @@ pub const ParticlePool = struct {
             .age = 0.0,
             .intensity = 1.0,
             .angle = angle,
-            .spin = @as(f32, @floatFromInt(state.rng.rand() % 0x274)) * 0.01,
+            .spin = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.fx_spawn_particle_slow_spin) % 0x274)) * 0.01,
             .style_id = ParticleStyleId.bubblegun,
             .target_id = -1,
             .owner = owner,
@@ -169,7 +170,11 @@ pub const ParticlePool = struct {
             }
 
             if (entry.render_flag) {
-                const jitter_base = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 100)) - 50)) * 0.06;
+                const jitter_caller = switch (style) {
+                    .flamethrower, .blow_torch, .hr_flamer => rng_callers.projectile_update_particle_jitter_flamethrower,
+                    .bubblegun => rng_callers.projectile_update_particle_jitter_bubblegun,
+                };
+                const jitter_base = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(jitter_caller) % 100)) - 50)) * 0.06;
                 var jitter = jitter_base * @max(entry.intensity, 0.0) * dt_f32;
                 var speed: f32 = 82.0;
                 if (style == ParticleStyleId.flamethrower) {
@@ -236,7 +241,7 @@ pub const ParticlePool = struct {
                         }
 
                         const bounce = runtime_helpers.directionFromAngle(entry.angle).mul(82.0);
-                        const speed_scale = @as(f32, @floatFromInt(state.rng.rand() % 10)) * 0.1;
+                        const speed_scale = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_particle_bounce_speed_scale) % 10)) * 0.1;
                         entry.vel = .{
                             .x = bounce.x * speed_scale,
                             .y = bounce.y * speed_scale,
@@ -259,8 +264,8 @@ pub const ParticlePool = struct {
 
                         if ((particle_idx % 3) == 0) {
                             const sprite_vel: state_mod.Vec2 = .{
-                                .x = @as(f32, @floatFromInt(state.rng.rand() % 60)) - 30.0,
-                                .y = @as(f32, @floatFromInt(state.rng.rand() % 60)) - 30.0,
+                                .x = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_particle_sprite_vel_x) % 60)) - 30.0,
+                                .y = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_particle_sprite_vel_y) % 60)) - 30.0,
                             };
                             _ = sprite_effects.spawn(
                                 state,
@@ -277,11 +282,11 @@ pub const ParticlePool = struct {
         }
     }
 
-    fn allocSlot(self: *ParticlePool, state: *state_mod.GameplayState) usize {
+    fn allocSlot(self: *ParticlePool, state: *state_mod.GameplayState, alloc_caller: rng_callers.Caller) usize {
         for (self.entries, 0..) |entry, idx| {
             if (!entry.active) return idx;
         }
-        return state.rng.rand() % self.entries.len;
+        return state.rng.randTagged(alloc_caller) % self.entries.len;
     }
 };
 

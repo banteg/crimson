@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TypeAlias
 
 from crimson.quests.level import QuestLevel
-from grim.rand import CallerStatic, CrtRand, RngTraceSink
+from grim.rand import CallerStatic, CrtRand, RecordedCallerStatic, RngTraceSink
 
 from ...game_modes import GameMode
 from ...persistence.save_status import GameStatus
@@ -48,7 +48,7 @@ from .setup import (
     player0_shots,
 )
 
-RngTraceDraw: TypeAlias = tuple[int, int, int, CallerStatic]
+RngTraceDraw: TypeAlias = tuple[int, int, int, RecordedCallerStatic]
 TickRngTraceObserver: TypeAlias = Callable[[TickResult, tuple[RngTraceDraw, ...]], None]
 TickProgressCallback: TypeAlias = Callable[[int], None]
 TickBeginObserver: TypeAlias = Callable[
@@ -89,7 +89,7 @@ def _tick_rng_trace(rng: object, *, enabled: bool, strict: bool = False) -> Iter
         state_before_u32: int,
         state_after_u32: int,
         value_15: int,
-        caller: CallerStatic,
+        caller: CallerStatic | None,
     ) -> None:
         draws.append(
             (
@@ -265,7 +265,7 @@ class PlaybackDriver:
                 )
                 # Native `quest_start_selected()` burns one `crt_rand()` for
                 # `highscore_record_random_tag` before quest terrain and spawn setup.
-                world.state.rng.rand(caller=RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
+                world.state.rng.rand_tagged(RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
                 quest_terrain = advance_explicit_terrain(
                     world.state.rng,
                     terrain_slots=quest_definition.terrain_slots,
@@ -388,7 +388,7 @@ class PlaybackDriver:
             if draws is None:
                 draws = int(self.inter_tick_rand_draws)
             for _ in range(max(0, int(draws))):
-                state.rng.rand(caller=RngCallerStatic.REPLAY_DRIVER_INTER_TICK_DRAW_BY_TICK)
+                state.rng.rand_tagged(RngCallerStatic.REPLAY_DRIVER_INTER_TICK_DRAW_BY_TICK)
 
     def build_checkpoint(
         self,
@@ -444,7 +444,7 @@ class PlaybackDriver:
         if self.inter_tick_rand_draws_by_tick is None:
             draws = max(0, int(self.inter_tick_rand_draws))
             for _ in range(draws):
-                self.world.state.rng.rand(caller=RngCallerStatic.REPLAY_DRIVER_INTER_TICK_DRAW)
+                self.world.state.rng.rand_tagged(RngCallerStatic.REPLAY_DRIVER_INTER_TICK_DRAW)
         self._last_tick_rng_rows = tuple(tick_rng_rows)
         return tick_result
 

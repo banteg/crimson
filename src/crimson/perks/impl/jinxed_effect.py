@@ -47,9 +47,7 @@ def _select_jinxed_accident_target(ctx: PerksUpdateEffectsCtx) -> PlayerState:
         return alive_players[0]
 
     pick = (
-        ctx.state.rng.rand(
-            caller=RngCallerStatic.REWRITE_JINXED_ACCIDENT_TARGET_PICK,
-        )
+        ctx.state.rng.rand_tagged(RngCallerStatic.REWRITE_JINXED_ACCIDENT_TARGET_PICK)
         % len(alive_players)
     )
     return alive_players[pick]
@@ -69,9 +67,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         return
 
     if (
-        ctx.state.rng.rand(
-            caller=RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
-        )
+        ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE)
         % 10
         == 3
     ):
@@ -89,9 +85,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
 
     ctx.state.jinxed_timer = (
         float(
-            ctx.state.rng.rand(
-                caller=RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
-            )
+            ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET)
             % 20,
         )
         * 0.1
@@ -106,17 +100,13 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
             return
 
         idx = (
-            ctx.state.rng.rand(
-                caller=RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_PICK,
-            )
+            ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_PICK)
             % pool_mod
         )
         attempts = 0
         while attempts < 10 and not ctx.creatures[idx].active:
             idx = (
-                ctx.state.rng.rand(
-                    caller=RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_RETRY,
-                )
+                ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_RETRY)
                 % pool_mod
             )
             attempts += 1

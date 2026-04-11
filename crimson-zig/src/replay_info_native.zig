@@ -338,6 +338,7 @@ fn buildInfoFailedOutputForReplayInfoError(
         error.UnsupportedSpawnTemplate => "replay triggered survival template spawns not yet ported in native creature runtime",
         error.UnsupportedQuestSpawnTable => "quest replay requires a quest spawn table variant not yet ported in native runtime",
         error.UnsupportedWeaponFirePath => "replay triggered weapon fire path not yet ported in native projectile runtime",
+        error.MissingRngCallerTag => "native replay trace hit an untagged gameplay RNG draw",
     };
     return buildInfoFailedOutput(allocator, detail);
 }

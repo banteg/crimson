@@ -248,14 +248,14 @@ class AlienZooKeeperView:
         for i, value in enumerate(self._board):
             if value == -1:
                 self._board[i] = int(
-                    self.state.rng.rand(caller=RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_FILL_EMPTY) % 5,
+                    self.state.rng.rand_tagged(RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_FILL_EMPTY) % 5,
                 )
 
     def _reroll_board_no_initial_match(self) -> None:
         while True:
             for i in range(_BOARD_CELLS):
                 self._board[i] = int(
-                    self.state.rng.rand(caller=RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_REROLL_FILL) % 5,
+                    self.state.rng.rand_tagged(RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_REROLL_FILL) % 5,
                 )
             has_match, _out_idx, _out_dir = _credits_secret_match3_find(self._board)
             if not has_match:

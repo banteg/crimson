@@ -49,12 +49,12 @@ def _spawn_shrinkifier_hit_effects(
     # Debris puffs (effect_id=0), detail-scaled count.
     count = 2 if detail < 3 else 4
     for _ in range(count):
-        rotation = float(rng.rand(caller=RngCallerStatic.SHRINKIFIER_HIT_ROTATION) & 0x7F) * 0.049087387
+        rotation = float(rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_ROTATION) & 0x7F) * 0.049087387
         velocity = Vec2(
-            float((rng.rand(caller=RngCallerStatic.SHRINKIFIER_HIT_VEL_X) & 0x7F) - 0x40) * 1.4,
-            float((rng.rand(caller=RngCallerStatic.SHRINKIFIER_HIT_VEL_Y) & 0x7F) - 0x40) * 1.4,
+            float((rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_VEL_X) & 0x7F) - 0x40) * 1.4,
+            float((rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_VEL_Y) & 0x7F) - 0x40) * 1.4,
         )
-        scale_step = float(rng.rand(caller=RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP) % 100) * 0.01 + 0.1
+        scale_step = float(rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP) % 100) * 0.01 + 0.1
         effects.spawn(
             effect_id=int(EffectId.BURST),
             pos=pos,
@@ -136,12 +136,12 @@ def _spawn_ion_hit_effects(
         count //= 2
 
     for _ in range(max(0, count)):
-        rotation = float(rng.rand(caller=RngCallerStatic.ION_HIT_SPARK_ROTATION) & 0x7F) * 0.049087387
+        rotation = float(rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_ROTATION) & 0x7F) * 0.049087387
         velocity = Vec2(
-            float((rng.rand(caller=RngCallerStatic.ION_HIT_SPARK_VEL_X) & 0x7F) - 0x40) * burst * 1.4,
-            float((rng.rand(caller=RngCallerStatic.ION_HIT_SPARK_VEL_Y) & 0x7F) - 0x40) * burst * 1.4,
+            float((rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_VEL_X) & 0x7F) - 0x40) * burst * 1.4,
+            float((rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_VEL_Y) & 0x7F) - 0x40) * burst * 1.4,
         )
-        scale_step = (float(rng.rand(caller=RngCallerStatic.ION_HIT_SPARK_SCALE_STEP) % 100) * 0.01 + 0.1) * burst
+        scale_step = (float(rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_SCALE_STEP) % 100) * 0.01 + 0.1) * burst
         effects.spawn(
             effect_id=int(EffectId.BURST),
             pos=pos,
@@ -221,9 +221,9 @@ def _spawn_splitter_hit_effects(
 
     detail = int(detail_preset)
     for _ in range(3):
-        angle = float(rng.rand(caller=RngCallerStatic.SPLITTER_HIT_ANGLE) & 0x1FF) * (math.tau / 512.0)
-        radius = float(rng.rand(caller=RngCallerStatic.SPLITTER_HIT_RADIUS) % 26)
-        jitter_age = -float(rng.rand(caller=RngCallerStatic.SPLITTER_HIT_AGE) & 0xFF) * 0.0012
+        angle = float(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_ANGLE) & 0x1FF) * (math.tau / 512.0)
+        radius = float(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_RADIUS) % 26)
+        jitter_age = -float(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_AGE) & 0xFF) * 0.0012
         lifetime = 0.1 - jitter_age
 
         offset = Vec2.from_angle(angle) * radius

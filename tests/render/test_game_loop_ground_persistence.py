@@ -41,11 +41,17 @@ class _RngStub(Crand):
         super().__init__(0)
         self._values = list(values)
 
-    def rand(self, *, caller: int | None = None) -> int:
-        _ = caller
+    def _next(self) -> int:
         if not self._values:
             return 0
         return int(self._values.pop(0))
+
+    def rand(self) -> int:
+        return self._next()
+
+    def rand_tagged(self, caller: int) -> int:
+        _ = caller
+        return self._next()
 
 
 class _AdoptMenuGroundView:
@@ -180,9 +186,10 @@ def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(tmp_path: Path)
     resources = _ResourcesStub()
     state.resources = cast(RuntimeResources, resources)
     state.status.quest_unlock_index = 0x28
-    # unlock>=40 and first (rand & 7)==3 should pick (6,7,6) i.e. q4 base/tex1/base.
+    # terrain_generate_random() burns three hidden prelude draws before the
+    # unlock-gated variant rolls. The fourth draw is the Q4 unlock branch gate.
     # Remaining draws are consumed by terrain stamping and can be arbitrary.
-    state.rng = _RngStub([3, 1234])
+    state.rng = _RngStub([0, 0, 0, 3, 1234])
 
     ground = ensure_menu_ground(state, regenerate=True)
 

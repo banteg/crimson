@@ -2,12 +2,20 @@ from __future__ import annotations
 
 import pytest
 
-from grim.rand import CRT_RAND_INC, CRT_RAND_MULT, CallerStatic, CrtRand, MissingRngCallerError, RecordingCrand
+from grim.rand import (
+    CRT_RAND_INC,
+    CRT_RAND_MULT,
+    CallerStatic,
+    CrtRand,
+    MissingRngCallerError,
+    RecordedCallerStatic,
+    RecordingCrand,
+)
 from tests.support.helpers import ScriptedCrand
 
 
 def test_crt_rand_trace_sink_receives_caller() -> None:
-    rows: list[tuple[int, int, int, CallerStatic]] = []
+    rows: list[tuple[int, int, int, RecordedCallerStatic]] = []
     rng = CrtRand(0x1234)
     caller = 0x0040ABCD
 
@@ -15,12 +23,12 @@ def test_crt_rand_trace_sink_receives_caller() -> None:
         state_before_u32: int,
         state_after_u32: int,
         value_15: int,
-        caller: CallerStatic,
+        caller: RecordedCallerStatic,
     ) -> None:
         rows.append((state_before_u32, state_after_u32, value_15, caller))
 
     rng.set_trace_sink(_sink)
-    value = rng.rand(caller=caller)
+    value = rng.rand_tagged(caller)
 
     expected_after = (0x1234 * CRT_RAND_MULT + CRT_RAND_INC) & 0xFFFFFFFF
     assert value == ((expected_after >> 16) & 0x7FFF)
@@ -39,7 +47,7 @@ def test_recording_crand_records_history() -> None:
     rng = RecordingCrand(CrtRand(0x1234))
     caller = 0x0040ABCD
 
-    first = rng.rand(caller=caller)
+    first = rng.rand_tagged(caller)
     second = rng.rand()
 
     assert rng.calls == 2

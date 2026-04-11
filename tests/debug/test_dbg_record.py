@@ -19,6 +19,7 @@ from crimson.game_modes import GameMode
 from crimson.persistence.save_status import GameStatusData
 from crimson.replay.checkpoints import ReplayCheckpoint
 from crimson.replay.types import Replay, ReplayHeader, ReplayTick
+from crimson.rng_caller_static import RngCallerStatic
 
 
 def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Path) -> None:
@@ -274,4 +275,4 @@ def test_record_replay_to_trace_zig_emits_python_readable_trace(tmp_path: Path) 
     assert gpur_enter.frame_dt_ms_i32 == ticks[0].dt_ms_i32
     assert gpur_enter.mode_fn == "gameplay_update_and_render"
     if ticks[0].channels.rng_stream:
-        assert ticks[0].channels.rng_stream[0].caller is None
+        assert ticks[0].channels.rng_stream[0].caller == int(RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE)

@@ -1,5 +1,6 @@
 const std = @import("std");
 const native_math = @import("native_math.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 
 const state_mod = @import("state.zig");
 
@@ -93,13 +94,13 @@ pub const SpriteEffectPool = struct {
             if (!self.entries[idx].active) break;
         }
         if (idx >= self.entries.len) {
-            idx = state.rng.rand() % self.entries.len;
+            idx = state.rng.randTagged(rng_callers.fx_spawn_sprite_alloc) % self.entries.len;
         }
 
         self.entries[idx] = .{
             .active = true,
             .color = color orelse .{},
-            .rotation = @as(f32, @floatFromInt(state.rng.rand() % 628)) * 0.01,
+            .rotation = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.fx_spawn_sprite_rotation) % 628)) * 0.01,
             .pos = .{ .x = narrowF32(pos.x), .y = narrowF32(pos.y) },
             .vel = .{ .x = narrowF32(vel.x), .y = narrowF32(vel.y) },
             .scale = narrowF32(scale),
@@ -306,15 +307,15 @@ pub const EffectPool = struct {
         const base = narrowF32(angle + std.math.pi);
         const direction = state_mod.Vec2.fromAngle(base);
         for (0..2) |_| {
-            const rotation = @as(f32, @floatFromInt((state.rng.rand() & 0x3F) -% 0x20)) * 0.1 + base;
-            const half = @as(f32, @floatFromInt((state.rng.rand() & 7) + 1));
-            const speed_x = @as(f32, @floatFromInt((state.rng.rand() & 0x3F) + 100));
-            const speed_y = @as(f32, @floatFromInt((state.rng.rand() & 0x3F) + 100));
+            const rotation = @as(f32, @floatFromInt((state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_rotation) & 0x3F) -% 0x20)) * 0.1 + base;
+            const half = @as(f32, @floatFromInt((state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_half) & 7) + 1));
+            const speed_x = @as(f32, @floatFromInt((state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_speed_x) & 0x3F) + 100));
+            const speed_y = @as(f32, @floatFromInt((state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_speed_y) & 0x3F) + 100));
             const velocity: state_mod.Vec2 = .{
                 .x = narrowF32(direction.x * speed_x),
                 .y = narrowF32(direction.y * speed_y),
             };
-            const scale_step = @as(f32, @floatFromInt(state.rng.rand() & 0x7F)) * 0.03 + 0.1;
+            const scale_step = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_scale_step) & 0x7F)) * 0.03 + 0.1;
             _ = self.spawn(
                 @intFromEnum(EffectId.blood_splatter),
                 pos,
@@ -347,10 +348,10 @@ pub const EffectPool = struct {
         var idx: i32 = 0;
         const safe_count = @max(count, 0);
         while (idx < safe_count) : (idx += 1) {
-            const rotation_draw = state.rng.rand();
-            const vel_x_draw = state.rng.rand();
-            const vel_y_draw = state.rng.rand();
-            const scale_step_draw = if (scale_step == null) state.rng.rand() else 0;
+            const rotation_draw = state.rng.randTagged(rng_callers.effect_spawn_burst_rotation);
+            const vel_x_draw = state.rng.randTagged(rng_callers.effect_spawn_burst_vel_x);
+            const vel_y_draw = state.rng.randTagged(rng_callers.effect_spawn_burst_vel_y);
+            const scale_step_draw = if (scale_step == null) state.rng.randTagged(rng_callers.effect_spawn_burst_scale_step) else 0;
             self.spawnBurstParticle(
                 pos,
                 rotation_draw,
@@ -437,14 +438,14 @@ pub const EffectPool = struct {
         angle: f32,
         detail_preset: i32,
     ) void {
-        const lifetime = @as(f32, @floatFromInt(state.rng.rand() & 0xF)) * 0.01 + 0.2;
+        const lifetime = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_lifetime) & 0xF)) * 0.01 + 0.2;
         const base = narrowF32(angle + std.math.pi);
-        const rotation = @as(f32, @floatFromInt(state.rng.rand() % 100)) * 0.01 + base;
-        const half = @as(f32, @floatFromInt(state.rng.rand() % 5 + 7));
+        const rotation = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation) % 100)) * 0.01 + base;
+        const half = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_half) % 5 + 7));
         const velocity = state_mod.Vec2.fromAngle(base).mul(114.0);
-        const rotation_step = (@as(f32, @floatFromInt(state.rng.rand() % 20)) * 0.1 - 1.0) * 4.0;
-        const scale_step = -@as(f32, @floatFromInt(state.rng.rand() & 0xF)) * 0.1;
-        const effect_id = @as(i32, @intCast(state.rng.rand() % 3)) + 8;
+        const rotation_step = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation_step) % 20)) * 0.1 - 1.0) * 4.0;
+        const scale_step = -@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_scale_step) & 0xF)) * 0.1;
+        const effect_id = @as(i32, @intCast(state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_effect_id) % 3)) + 8;
         _ = self.spawn(
             effect_id,
             pos,
@@ -474,8 +475,8 @@ pub const EffectPool = struct {
         for (0..4) |idx| {
             const rotation = @as(f32, @floatFromInt(idx)) * (std.math.pi / 2.0) + angle;
             const velocity = state_mod.Vec2.fromAngle(rotation).mul(42.0);
-            const half = @as(f32, @floatFromInt(state.rng.rand() % 10 + 18));
-            const rotation_step = (@as(f32, @floatFromInt(state.rng.rand() % 20)) * 0.1 - 1.0) * 1.9;
+            const half = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_half) % 10 + 18));
+            const rotation_step = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_rotation_step) % 20)) * 0.1 - 1.0) * 1.9;
             _ = self.spawn(
                 @intFromEnum(EffectId.freeze_shatter),
                 pos,
@@ -494,7 +495,7 @@ pub const EffectPool = struct {
             );
         }
         for (0..4) |_| {
-            const shard_angle = @as(f32, @floatFromInt(state.rng.rand() % 612)) * 0.01;
+            const shard_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_shard_angle) % 612)) * 0.01;
             self.spawnFreezeShard(state, pos, shard_angle, detail_preset);
         }
     }
@@ -527,7 +528,7 @@ pub const EffectPool = struct {
             for (0..2) |idx| {
                 const age = @as(f32, @floatFromInt(idx)) * 0.2 - 0.5;
                 const lifetime = @as(f32, @floatFromInt(idx)) * 0.2 + 0.6;
-                const rotation = @as(f32, @floatFromInt(state.rng.rand() % 614)) * 0.02;
+                const rotation = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_puff_rotation) % 614)) * 0.02;
                 _ = self.spawn(
                     @intFromEnum(EffectId.explosion_puff),
                     pos,
@@ -566,13 +567,13 @@ pub const EffectPool = struct {
 
         const count: usize = if (detail_preset < 2) 1 else 3 + (if (detail_preset > 3) @as(usize, 1) else 0);
         for (0..count) |_| {
-            const rotation = @as(f32, @floatFromInt(state.rng.rand() % 314)) * 0.02;
+            const rotation = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_rotation) % 314)) * 0.02;
             const velocity: state_mod.Vec2 = .{
-                .x = @as(f32, @floatFromInt((state.rng.rand() & 0x3F) * 2 -% 0x40)),
-                .y = @as(f32, @floatFromInt((state.rng.rand() & 0x3F) * 2 -% 0x40)),
+                .x = @as(f32, @floatFromInt((state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_vel_x) & 0x3F) * 2 -% 0x40)),
+                .y = @as(f32, @floatFromInt((state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_vel_y) & 0x3F) * 2 -% 0x40)),
             };
-            const scale_step = @as(f32, @floatFromInt((state.rng.rand() -% 3) & 7)) * scale;
-            const rotation_step = @as(f32, @floatFromInt((state.rng.rand() +% 3) & 7));
+            const scale_step = @as(f32, @floatFromInt((state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_scale_step) -% 3) & 7)) * scale;
+            const rotation_step = @as(f32, @floatFromInt((state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_rotation_step) +% 3) & 7));
             _ = self.spawn(
                 @intFromEnum(EffectId.explosion_burst),
                 pos,

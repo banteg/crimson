@@ -127,18 +127,14 @@ def build_1_3_target_practice(
     while True:
         angle = (
             float(
-                rng.rand(
-                    caller=RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_ANGLE,
-                )
+                rng.rand_tagged(RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_ANGLE)
                 % 612,
             )
             * 0.01
         )
         radius = (
             int(
-                rng.rand(
-                    caller=RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_RADIUS,
-                )
+                rng.rand_tagged(RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_RADIUS)
                 % 8,
             )
             + 2
@@ -319,9 +315,7 @@ def build_1_6_the_random_factor(
         )
         if (
             int(
-                rng.rand(
-                    caller=RngCallerStatic.QUEST_BUILD_THE_RANDOM_FACTOR_BRUTE_GATE,
-                )
+                rng.rand_tagged(RngCallerStatic.QUEST_BUILD_THE_RANDOM_FACTOR_BRUTE_GATE)
                 % 5,
             )
             == 3

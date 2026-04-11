@@ -417,7 +417,7 @@ class SecondaryProjectilePool:
                     if effects is not None:
                         for _ in range(4):
                             shard_angle = float(
-                                rng.rand(caller=RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE)
+                                rng.rand_tagged(RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE)
                                 % 612,
                             ) * 0.01
                             effects.spawn_freeze_shard(
@@ -429,8 +429,8 @@ class SecondaryProjectilePool:
                 elif fx_queue is not None:
                     for dx_caller, dy_caller in _SECONDARY_PRE_HIT_DECAL_CALLERS:
                         offset = Vec2(
-                            float(rng.rand(caller=dx_caller) % 20 - 10),
-                            float(rng.rand(caller=dy_caller) % 20 - 10),
+                            float(rng.rand_tagged(dx_caller) % 20 - 10),
+                            float(rng.rand_tagged(dy_caller) % 20 - 10),
                         )
                         fx_queue.add_random(
                             pos=creatures[hit_idx].pos + offset,
@@ -478,7 +478,7 @@ class SecondaryProjectilePool:
                         if freeze_shard_target_pos:
                             shard_pos = creatures[hit_idx].pos
                         for _ in range(8):
-                            shard_angle = float(rng.rand(caller=freeze_angle_caller) % 612) * 0.01
+                            shard_angle = float(rng.rand_tagged(freeze_angle_caller) % 612) * 0.01
                             effects.spawn_freeze_shard(
                                 pos=shard_pos,
                                 angle=shard_angle,
@@ -497,11 +497,11 @@ class SecondaryProjectilePool:
                             angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_ANGLE
                             radius_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_RADIUS
                         for _ in range(int(extra_decals)):
-                            angle = float(rng.rand(caller=angle_caller) % 628) * 0.01
+                            angle = float(rng.rand_tagged(angle_caller) % 628) * 0.01
                             if isinstance(rule, HomingRocketRule):
-                                radius = float(rng.rand(caller=radius_caller) & 0x3F)
+                                radius = float(rng.rand_tagged(radius_caller) & 0x3F)
                             else:
-                                radius = float(rng.rand(caller=radius_caller) % max(1, int(extra_radius)))
+                                radius = float(rng.rand_tagged(radius_caller) % max(1, int(extra_radius)))
                             fx_queue.add_random(
                                 pos=center + Vec2.from_angle(angle) * radius,
                                 rng=rng,
@@ -511,7 +511,7 @@ class SecondaryProjectilePool:
                     step = math.tau / 10.0
                     for idx in range(10):
                         mag = float(
-                            rng.rand(caller=RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG) % 800,
+                            rng.rand_tagged(RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG) % 800,
                         ) * 0.1
                         ang = float(idx) * step
                         velocity = Vec2.from_angle(ang) * mag

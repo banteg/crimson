@@ -404,7 +404,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     # (creature_type_table[*].sfx_bank_b[rand & 1]) before applying damage.
     options = _CREATURE_CONTACT_SFX.get(creature.type_id)
     if options is not None:
-        ctx.sfx.append(options[ctx.rng.rand(caller=RngCallerStatic.CREATURE_UPDATE_ALL_CONTACT_SFX) & 1])
+        ctx.sfx.append(options[ctx.rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_CONTACT_SFX) & 1])
 
     mr_melee_killed = False
     if perk_active(ctx.player, PerkId.MR_MELEE):
@@ -1029,7 +1029,7 @@ class CreaturePool:
                         # creature attack SFX bank-b selection after death side effects.
                         contact_sfx_options = _CREATURE_CONTACT_SFX.get(creature.type_id)
                         if contact_sfx_options is not None:
-                            sfx_index = int(rng.rand(caller=RngCallerStatic.CREATURE_UPDATE_ALL_PLAGUE_KILL_SFX)) & 1
+                            sfx_index = int(rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_PLAGUE_KILL_SFX)) & 1
                             sfx.append(contact_sfx_options[sfx_index])
                         plague_killed = True
 
@@ -1213,7 +1213,7 @@ class CreaturePool:
                         )
                         sfx.append(SfxId.PLASMAMINIGUN_FIRE)
                         creature.attack_cooldown = (
-                            float(rng.rand(caller=RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN) & 3)
+                            float(rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN) & 3)
                             * 0.1
                             + float(creature.orbit_angle)
                             + float(creature.attack_cooldown)
@@ -1342,7 +1342,7 @@ class CreaturePool:
             creature_pos = creature.pos
             for _ in range(8):
                 angle = (
-                    float(int(rng.rand(caller=RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE)) % 612) * 0.01
+                    float(int(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE)) % 612) * 0.01
                 )
                 state.effects.spawn_freeze_shard(
                     pos=creature_pos,
@@ -1351,7 +1351,7 @@ class CreaturePool:
                     detail_preset=int(detail_preset),
                 )
             angle = (
-                float(int(rng.rand(caller=RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE)) % 612) * 0.01
+                float(int(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE)) % 612) * 0.01
             )
             state.effects.spawn_freeze_shatter(
                 pos=creature_pos,
@@ -1514,7 +1514,7 @@ class CreaturePool:
                 (5, -0.12, RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_5_ANGLE),
             ):
                 for _ in range(int(count)):
-                    angle = float(int(rng.rand(caller=angle_caller)) % 612) * 0.01
+                    angle = float(int(rng.rand_tagged(angle_caller)) % 612) * 0.01
                     self.effects.spawn_blood_splatter(
                         pos=creature.pos,
                         angle=float(angle),
@@ -1565,7 +1565,7 @@ class CreaturePool:
                 if child_idx is None:
                     continue
                 child = msgspec.structs.replace(creature)
-                child.phase_seed = float(int(rng.rand(caller=phase_seed_caller)) & 0xFF)
+                child.phase_seed = float(int(rng.rand_tagged(phase_seed_caller)) & 0xFF)
                 child.heading = _wrap_angle(float(creature.heading) + float(heading_offset))
                 child.target_heading = float(child.heading)
                 child.hp = float(creature.max_hp) * 0.25

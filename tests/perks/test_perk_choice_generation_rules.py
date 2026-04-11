@@ -22,11 +22,17 @@ class _SeqRng:
         self._values = [int(v) for v in values] or [0]
         self._idx = 0
 
-    def rand(self, *, caller: int | None = None) -> int:
-        _ = caller
+    def _next(self) -> int:
         value = int(self._values[self._idx % len(self._values)])
         self._idx += 1
         return value
+
+    def rand(self) -> int:
+        return self._next()
+
+    def rand_tagged(self, caller: int) -> int:
+        _ = caller
+        return self._next()
 
 
 def _as_rng(value: object) -> Any:
@@ -226,11 +232,17 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
         def state(self) -> int:
             return int(self._state)
 
-        def rand(self, *, caller: int | None = None) -> int:
-            _ = caller
+        def _next(self) -> int:
             self.calls += 1
             self._state = (1103515245 * self._state + 12345) & 0x7FFFFFFF
             return self._state
+
+        def rand(self) -> int:
+            return self._next()
+
+        def rand_tagged(self, caller: int) -> int:
+            _ = caller
+            return self._next()
 
     status = _status_default()
     status.quest_unlock_index = 40

@@ -583,7 +583,7 @@ def player_update(
                     violence_disabled=0,
             )
             bloodspill_sfx = _LOW_HEALTH_BLOODSPILL_SFX[
-                state.rng.rand(caller=RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL) & 1
+                state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL) & 1
             ]
             state.sfx_queue.append(bloodspill_sfx)
             player.low_health_timer = 1.0

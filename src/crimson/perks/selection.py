@@ -61,7 +61,7 @@ def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: 
 
     for _ in range(1000):
         perk_id = PerkId(
-            state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM) % PERK_ID_MAX + 1,
+            state.rng.rand_tagged(RngCallerStatic.PERK_SELECT_RANDOM) % PERK_ID_MAX + 1,
         )
         if not (0 <= int(perk_id) < len(state.perk_available)):
             continue
@@ -130,7 +130,7 @@ def perk_generate_choices(
 
     def _select_random_offer() -> PerkId:
         for _ in range(1000):
-            perk_index = state.rng.rand(caller=RngCallerStatic.PERK_SELECT_RANDOM) % PERK_ID_MAX + 1
+            perk_index = state.rng.rand_tagged(RngCallerStatic.PERK_SELECT_RANDOM) % PERK_ID_MAX + 1
             if offerable_mask[perk_index]:
                 return PerkId(perk_index)
         return PerkId.INSTANT_WINNER
@@ -164,7 +164,7 @@ def perk_generate_choices(
             # Global rarity gate: certain perks have a 25% chance to be rejected.
             if (
                 perk_id in _PERK_RARITY_GATE
-                and (state.rng.rand(caller=RngCallerStatic.PERKS_GENERATE_CHOICES_RARITY_GATE) & 3) == 1
+                and (state.rng.rand_tagged(RngCallerStatic.PERKS_GENERATE_CHOICES_RARITY_GATE) & 3) == 1
             ):
                 continue
 

@@ -9,7 +9,7 @@ from typing import Literal
 
 import msgspec
 
-from grim.rand import CallerStatic
+from grim.rand import RecordedCallerStatic
 
 from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint
@@ -81,7 +81,7 @@ def _fingerprint(path: Path) -> BuiltinObject:
     }
 
 
-def _rng_stream_from_draws(draws: list[tuple[int, int, int, CallerStatic]]) -> list[RngStreamRow]:
+def _rng_stream_from_draws(draws: list[tuple[int, int, int, RecordedCallerStatic]]) -> list[RngStreamRow]:
     rows: list[RngStreamRow] = []
     for index, row in enumerate(draws):
         state_before_u32, value_15, state_after_u32, caller = row
@@ -341,14 +341,14 @@ def _record_replay_to_trace_python(
         )
         sim_state_by_tick[tick_index] = _sim_state_from_world(world, replay=replay)
 
-    def _tick_rng_trace_observer(tick_index: int, draws: list[tuple[int, int, int, CallerStatic]]) -> None:
+    def _tick_rng_trace_observer(tick_index: int, draws: list[tuple[int, int, int, RecordedCallerStatic]]) -> None:
         rng_stream_by_tick[int(tick_index)] = _rng_stream_from_draws(draws)
 
     driver = build_verify_playback_driver(
         replay,
         max_ticks=None,
         trace_rng=True,
-        strict_rng_trace=False,
+        strict_rng_trace=True,
     )
 
     def _after_tick(tick_result, world: WorldState) -> None:
@@ -357,7 +357,7 @@ def _record_replay_to_trace_python(
             checkpoints.append(driver.build_checkpoint(tick_result=tick_result))
         _tick_observer(tick_index, world)
 
-    def _on_rng_trace(tick_result, draws: tuple[tuple[int, int, int, CallerStatic], ...]) -> None:
+    def _on_rng_trace(tick_result, draws: tuple[tuple[int, int, int, RecordedCallerStatic], ...]) -> None:
         _tick_rng_trace_observer(
             int(tick_result.source_tick.tick_index),
             list(draws),

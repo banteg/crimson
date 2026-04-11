@@ -40,9 +40,7 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
     ctx.state.sfx_queue.append(SfxId.EXPLOSION_SMALL)
 
     ctx.player.hot_tempered_timer -= ctx.state.perk_intervals.hot_tempered
-    interval_roll = ctx.state.rng.rand(
-        caller=RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET,
-    )
+    interval_roll = ctx.state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET)
     ctx.state.perk_intervals.hot_tempered = float(interval_roll % 8) + 2.0
 
 

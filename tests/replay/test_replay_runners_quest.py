@@ -88,7 +88,7 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
         height=int(replay.header.world_size),
     )
     # Native `quest_start_selected()` burns one `crt_rand()` before quest terrain.
-    rng.rand(caller=RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
+    rng.rand_tagged(RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
     quest_terrain = advance_explicit_terrain(
         rng,
         terrain_slots=quest.terrain_slots,

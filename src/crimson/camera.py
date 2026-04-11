@@ -63,18 +63,18 @@ def camera_shake_update(state: GameplayState, dt: float) -> None:
         return
 
     mag_x = (
-        state.rng.rand(caller=RngCallerStatic.CAMERA_UPDATE_OFFSET_X_BASE) % max_amp
-        + state.rng.rand(caller=RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SPREAD) % 10
+        state.rng.rand_tagged(RngCallerStatic.CAMERA_UPDATE_OFFSET_X_BASE) % max_amp
+        + state.rng.rand_tagged(RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SPREAD) % 10
     )
-    if (state.rng.rand(caller=RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SIGN) & 1) == 0:
+    if (state.rng.rand_tagged(RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SIGN) & 1) == 0:
         mag_x = -mag_x
     offset_x = float(mag_x)
 
     mag_y = (
-        state.rng.rand(caller=RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_BASE) % max_amp
-        + state.rng.rand(caller=RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SPREAD) % 10
+        state.rng.rand_tagged(RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_BASE) % max_amp
+        + state.rng.rand_tagged(RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SPREAD) % 10
     )
-    if (state.rng.rand(caller=RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SIGN) & 1) == 0:
+    if (state.rng.rand_tagged(RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SIGN) & 1) == 0:
         mag_y = -mag_y
     offset_y = float(mag_y)
     state.camera_shake_offset = Vec2(offset_x, offset_y)
