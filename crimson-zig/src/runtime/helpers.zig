@@ -55,6 +55,21 @@ pub fn consumeRngDraws(state: *state_mod.GameplayState, count: i32) void {
     }
 }
 
+pub fn consumeBurstRng(
+    state: *state_mod.GameplayState,
+    count: usize,
+    include_scale_step: bool,
+) void {
+    for (0..count) |_| {
+        _ = state.rng.randTagged(rng_callers.effect_spawn_burst_rotation);
+        _ = state.rng.randTagged(rng_callers.effect_spawn_burst_vel_x);
+        _ = state.rng.randTagged(rng_callers.effect_spawn_burst_vel_y);
+        if (include_scale_step) {
+            _ = state.rng.randTagged(rng_callers.effect_spawn_burst_scale_step);
+        }
+    }
+}
+
 pub fn consumeAddRandomRng(state: *state_mod.GameplayState) void {
     _ = state.rng.randTagged(rng_callers.fx_queue_add_random_gray);
     _ = state.rng.randTagged(rng_callers.fx_queue_add_random_width);
@@ -69,4 +84,24 @@ pub fn consumeFreezeShardRng(state: *state_mod.GameplayState) void {
     _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation_step);
     _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_scale_step);
     _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_effect_id);
+}
+
+pub fn consumeFreezeShatterRng(
+    state: *state_mod.GameplayState,
+    shard_angle_caller: u32,
+    shatter_angle_caller: u32,
+) void {
+    for (0..8) |_| {
+        _ = state.rng.randTagged(shard_angle_caller) % 0x264;
+        consumeFreezeShardRng(state);
+    }
+    _ = state.rng.randTagged(shatter_angle_caller) % 0x264;
+    for (0..4) |_| {
+        _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_half);
+        _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_rotation_step);
+    }
+    for (0..4) |_| {
+        _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_shard_angle) % 0x264;
+        consumeFreezeShardRng(state);
+    }
 }

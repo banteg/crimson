@@ -1,6 +1,7 @@
 const std = @import("std");
 const game_ids = @import("../../game_ids.zig");
 const replay_codec = @import("../../replay_codec.zig");
+const rng_callers = @import("../../rng_caller_static.zig");
 
 const runtime_bootstrap = @import("../bootstrap.zig");
 const bonus_runtime = @import("../bonuses.zig");
@@ -290,7 +291,7 @@ pub fn applyCaptureCreatureSpawnEvent(
             isAi7LinkTimerRolloverValue(row.link_index) and
             (flags_i32 & @as(i32, @intCast(spawn_mod.CreatureFlags.ai7_link_timer))) != 0;
         if (needs_ai7_rollover_rng_backfill) {
-            _ = state.rng.rand();
+            _ = state.rng.randTagged(rng_callers.creature_update_all_ai7_link_timer_reset);
         }
 
         if (row.has_pos) {
@@ -526,7 +527,7 @@ test "capture creature spawn event backfills ai7 rollover rng draw for spawned r
     const rng_after_rollover = rollover_state.rng.state;
 
     var probe_rng = spawn_mod.Crand.init(rng_after_base);
-    _ = probe_rng.rand();
+    _ = probe_rng.randTagged(rng_callers.creature_update_all_ai7_link_timer_reset);
     try std.testing.expectEqual(probe_rng.state, rng_after_rollover);
     try std.testing.expectEqual(@as(i32, -975), rollover_creatures.entries[0].link_index);
 }

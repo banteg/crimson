@@ -6,6 +6,7 @@ const bonus_runtime = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
+const runtime_helpers = @import("helpers.zig");
 const owner_ref = @import("owner_ref.zig");
 const particles_mod = @import("particles.zig");
 const player_runtime = @import("player.zig");
@@ -485,12 +486,7 @@ fn consumeSpawnBurstRng(
     state: *state_mod.GameplayState,
     count: usize,
 ) void {
-    for (0..count) |_| {
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-    }
+    runtime_helpers.consumeBurstRng(state, count, true);
 }
 
 pub fn updatePerkEffects(
@@ -626,10 +622,7 @@ pub fn applyPyrokineticEffects(
             );
         }
         // Consume native fx_queue_add_random RNG even though verifier does not render decals.
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
+        runtime_helpers.consumeAddRandomRng(state);
     }
 }
 

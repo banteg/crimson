@@ -1,5 +1,6 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
@@ -192,7 +193,7 @@ pub const LiveRunner = struct {
                     terrain_size,
                     terrain_size,
                 );
-                _ = terrain_rng.rand();
+                _ = terrain_rng.randTagged(rng_callers.quest_start_selected_highscore_random_tag);
                 terrain_setup = runtime_bootstrap.advanceExplicitTerrain(
                     &terrain_rng,
                     terrain_slots,

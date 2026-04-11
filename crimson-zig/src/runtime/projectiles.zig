@@ -858,10 +858,10 @@ fn consumeIonHitEffectsRng(
     if (count < 0) count = 0;
     var idx: i32 = 0;
     while (idx < count) : (idx += 1) {
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
+        _ = state.rng.randTagged(rng_callers.ion_hit_spark_rotation);
+        _ = state.rng.randTagged(rng_callers.ion_hit_spark_vel_x);
+        _ = state.rng.randTagged(rng_callers.ion_hit_spark_vel_y);
+        _ = state.rng.randTagged(rng_callers.ion_hit_spark_scale_step);
     }
 }
 

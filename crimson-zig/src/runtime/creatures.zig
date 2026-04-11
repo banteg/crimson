@@ -206,7 +206,7 @@ pub const CreaturePool = struct {
                 );
                 // Native template planning consumes a transient base-heading draw
                 // after base allocation but before child allocations.
-                const transient_heading = @as(f32, @floatFromInt(rng.rand() % 314)) * 0.01;
+                const transient_heading = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314)) * 0.01;
                 self.entries[parent_idx].heading = transient_heading;
 
                 const angle_step = std.math.pi / 4.0;
@@ -246,6 +246,7 @@ pub const CreaturePool = struct {
                 self.spawnBasicRandomTemplate(
                     rng,
                     call,
+                    0x03,
                     spawn_mod.CreatureTypeId.spider_sp1,
                 );
             },
@@ -253,6 +254,7 @@ pub const CreaturePool = struct {
                 self.spawnBasicRandomTemplate(
                     rng,
                     call,
+                    0x04,
                     spawn_mod.CreatureTypeId.lizard,
                 );
             },
@@ -260,6 +262,7 @@ pub const CreaturePool = struct {
                 self.spawnBasicRandomTemplate(
                     rng,
                     call,
+                    0x05,
                     spawn_mod.CreatureTypeId.spider_sp2,
                 );
             },
@@ -267,6 +270,7 @@ pub const CreaturePool = struct {
                 self.spawnBasicRandomTemplate(
                     rng,
                     call,
+                    0x06,
                     spawn_mod.CreatureTypeId.alien,
                 );
             },
@@ -507,7 +511,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 35.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x11 => {
                 const parent_idx = self.spawnFromStats(
@@ -523,7 +527,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 150.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.orbit_player_tight;
 
                 var chain_prev = parent_idx;
@@ -561,7 +565,7 @@ pub const CreaturePool = struct {
             },
             0x1A => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
-                _ = rng.rand() % 40;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_ai1_blue_tint_1a) % 40;
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -582,7 +586,7 @@ pub const CreaturePool = struct {
             },
             0x1B => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
-                _ = rng.rand() % 40;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_ai1_blue_tint_1b) % 40;
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -604,7 +608,7 @@ pub const CreaturePool = struct {
             },
             0x1C => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
-                _ = rng.rand() % 40;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_ai1_blue_tint_1c) % 40;
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -637,7 +641,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 20.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.orbit_link;
                 self.entries[parent_idx].pos.x = narrowF32(call.pos.x + 256.0);
                 self.entries[parent_idx].target.x = self.entries[parent_idx].pos.x;
@@ -675,14 +679,14 @@ pub const CreaturePool = struct {
             },
             0x1D => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
-                const size = randf(rng, 20, 1.0, 35.0);
+                const size = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_size, 20, 1.0, 35.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 10.0);
-                const move_speed = randf(rng, 15, 0.1, 1.1);
-                const reward_value = randf(rng, 100, 1.0, 50.0);
-                _ = randf(rng, 50, 0.001, 0.6);
-                _ = randf(rng, 50, 0.01, 0.5);
-                _ = randf(rng, 50, 0.001, 0.6);
-                const contact_damage = randf(rng, 10, 1.0, 4.0);
+                const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_move_speed, 15, 0.1, 1.1);
+                const reward_value = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_reward, 100, 1.0, 50.0);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_tint_r, 50, 0.001, 0.6);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_tint_g, 50, 0.01, 0.5);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_tint_b, 50, 0.001, 0.6);
+                const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_contact_damage, 10, 1.0, 4.0);
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -703,14 +707,14 @@ pub const CreaturePool = struct {
             },
             0x1E => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
-                const size = randf(rng, 30, 1.0, 35.0);
+                const size = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_size, 30, 1.0, 35.0);
                 const health = narrowF32(size * (16.0 / 7.0) + 10.0);
-                const move_speed = randf(rng, 17, 0.1, 1.5);
-                const reward_value = randf(rng, 200, 1.0, 50.0);
-                _ = randf(rng, 50, 0.001, 0.6);
-                _ = randf(rng, 50, 0.001, 0.6);
-                _ = randf(rng, 50, 0.01, 0.5);
-                const contact_damage = randf(rng, 30, 1.0, 4.0);
+                const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_move_speed, 17, 0.1, 1.5);
+                const reward_value = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_reward, 200, 1.0, 50.0);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_tint_r, 50, 0.001, 0.6);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_tint_g, 50, 0.001, 0.6);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_tint_b, 50, 0.01, 0.5);
+                const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_contact_damage, 30, 1.0, 4.0);
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -731,14 +735,14 @@ pub const CreaturePool = struct {
             },
             0x1F => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
-                const size = randf(rng, 30, 1.0, 45.0);
+                const size = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_size, 30, 1.0, 45.0);
                 const health = narrowF32(size * (26.0 / 7.0) + 30.0);
-                const move_speed = randf(rng, 21, 0.1, 1.6);
-                const reward_value = randf(rng, 200, 1.0, 80.0);
-                _ = randf(rng, 50, 0.01, 0.5);
-                _ = randf(rng, 50, 0.001, 0.6);
-                _ = randf(rng, 50, 0.001, 0.6);
-                const contact_damage = randf(rng, 35, 1.0, 8.0);
+                const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_move_speed, 21, 0.1, 1.6);
+                const reward_value = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_reward, 200, 1.0, 80.0);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_tint_r, 50, 0.01, 0.5);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_tint_g, 50, 0.001, 0.6);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_tint_b, 50, 0.001, 0.6);
+                const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_contact_damage, 35, 1.0, 8.0);
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -759,12 +763,12 @@ pub const CreaturePool = struct {
             },
             0x20 => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
-                const size = randf(rng, 30, 1.0, 40.0);
+                const size = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_green_20_size, 30, 1.0, 40.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 20.0);
                 const reward_value = narrowF32(size + size + 50.0);
-                const move_speed = randf(rng, 18, 0.1, 1.1);
-                _ = randf(rng, 40, 0.01, 0.6);
-                const contact_damage = randf(rng, 10, 1.0, 4.0);
+                const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_green_20_move_speed, 18, 0.1, 1.1);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_green_20_tint_g, 40, 0.01, 0.6);
+                const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_green_20_contact_damage, 10, 1.0, 4.0);
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -797,7 +801,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 8.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x22 => {
                 _ = self.spawnFromStats(
@@ -813,7 +817,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 8.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x23 => {
                 _ = self.spawnFromStats(
@@ -829,7 +833,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 8.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x24 => {
                 _ = self.spawnFromStats(
@@ -845,7 +849,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 4.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x25 => {
                 _ = self.spawnFromStats(
@@ -861,7 +865,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 3.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x26 => {
                 _ = self.spawnFromStats(
@@ -877,7 +881,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 10.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x27 => {
                 _ = self.spawnFromStatsWithFlags(
@@ -895,7 +899,7 @@ pub const CreaturePool = struct {
                     spawn_mod.CreatureFlags.bonus_on_death,
                     true,
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x28 => {
                 _ = self.spawnFromStats(
@@ -911,7 +915,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 8.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x29 => {
                 _ = self.spawnFromStats(
@@ -927,7 +931,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 20.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x2A => {
                 _ = self.spawnFromStats(
@@ -943,7 +947,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 8.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x14 => {
                 const parent_idx = self.spawnFromStats(
@@ -959,7 +963,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 40.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
 
                 var last_idx = parent_idx;
@@ -1010,7 +1014,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 40.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
 
                 var last_idx = parent_idx;
@@ -1061,7 +1065,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 40.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
 
                 var last_idx = parent_idx;
@@ -1112,7 +1116,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 40.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
 
                 var last_idx = parent_idx;
@@ -1163,7 +1167,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 40.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
 
                 for (0..9) |x_idx| {
@@ -1211,7 +1215,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 40.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
 
                 const angle_step = (2.0 * std.math.pi) / 5.0;
                 for (0..5) |idx| {
@@ -1257,7 +1261,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 20.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             @intFromEnum(spawn_mod.SpawnId.alien_const_red_boss_2c) => {
                 _ = self.spawnFromStats(
@@ -1273,7 +1277,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 40.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x2D => {
                 const idx = self.spawnFromStats(
@@ -1289,19 +1293,19 @@ pub const CreaturePool = struct {
                         .contact_damage = 3.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 self.entries[idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
             },
             @intFromEnum(spawn_mod.SpawnId.spider_sp2_random_35) => {
                 // Match Python/native plan builder ordering:
                 // allocCreature phase seed, transient heading draw, then template randoms.
-                const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
-                _ = rng.rand() % 314;
+                const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
 
-                const size = randf(rng, 10, 1.0, 30.0);
-                const move_speed = randf(rng, 18, 0.1, 1.1);
-                const tint_g = randf(rng, 20, 0.01, 0.8);
-                const contact_damage = randf(rng, 10, 1.0, 4.0);
+                const size = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp2_random_35_size, 10, 1.0, 30.0);
+                const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp2_random_35_move_speed, 18, 0.1, 1.1);
+                const tint_g = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp2_random_35_tint_g, 20, 0.01, 0.8);
+                const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp2_random_35_contact_damage, 10, 1.0, 4.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 20.0);
                 const reward_value = narrowF32(size + size + 50.0);
 
@@ -1337,15 +1341,15 @@ pub const CreaturePool = struct {
                         .contact_damage = 40.0,
                     },
                 );
-                _ = rng.rand() % 314;
-                _ = rng.rand() % 5;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_ai7_orbiter_tint_g) % 5;
                 self.entries[idx].ai_mode = spawn_mod.CreatureAiMode.hold_timer;
                 self.entries[idx].orbit_radius = 1.5;
             },
             0x37 => {
-                const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
-                _ = rng.rand() % 314;
-                const size = @as(f32, @floatFromInt((rng.rand() & 3) + 41));
+                const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
+                const size = @as(f32, @floatFromInt((rng.randTagged(rng_callers.creature_spawn_template_spider_sp2_ranged_variant_37_size) & 3) + 41));
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -1365,9 +1369,9 @@ pub const CreaturePool = struct {
                 });
             },
             @intFromEnum(spawn_mod.SpawnId.spider_sp1_ai7_timer_38) => {
-                const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
-                _ = rng.rand() % 314;
-                const size = @as(f32, @floatFromInt((rng.rand() & 3) + 41));
+                const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
+                const size = @as(f32, @floatFromInt((rng.randTagged(rng_callers.creature_spawn_template_spider_sp1_ai7_timer_38_size) & 3) + 41));
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -1388,9 +1392,9 @@ pub const CreaturePool = struct {
                 self.entries[idx].link_index = 0;
             },
             0x39 => {
-                const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
-                _ = rng.rand() % 314;
-                const size = @as(f32, @floatFromInt(rng.rand() % 4 + 26));
+                const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
+                const size = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_spider_sp1_ai7_timer_weak_39_size) % 4 + 26));
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -1426,7 +1430,7 @@ pub const CreaturePool = struct {
                     spawn_mod.CreatureFlags.split_on_death,
                     true,
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             @intFromEnum(spawn_mod.SpawnId.spider_sp1_const_shock_boss_3a) => {
                 const idx = self.spawnFromStatsWithFlags(
@@ -1446,7 +1450,7 @@ pub const CreaturePool = struct {
                 );
                 self.entries[idx].orbit_angle = 0.9;
                 self.entries[idx].ranged_projectile_type = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x3B => {
                 const idx = self.spawnFromStats(
@@ -1462,7 +1466,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 20.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             @intFromEnum(spawn_mod.SpawnId.spider_sp1_const_ranged_variant_3c) => {
@@ -1485,18 +1489,18 @@ pub const CreaturePool = struct {
                 self.entries[idx].link_index = 0;
                 self.entries[idx].orbit_angle = 0.4;
                 self.entries[idx].ranged_projectile_type = @intFromEnum(game_ids.ProjectileTypeId.spider_plasma);
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x2E => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
-                const size = randf(rng, 30, 1.0, 40.0);
+                const size = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_size, 30, 1.0, 40.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 20.0);
                 const reward_value = narrowF32(size + size + 50.0);
-                const move_speed = randf(rng, 18, 0.1, 1.1);
-                _ = randf(rng, 40, 0.01, 0.6);
-                _ = randf(rng, 40, 0.01, 0.6);
-                _ = randf(rng, 40, 0.01, 0.6);
-                const contact_damage = randf(rng, 10, 1.0, 4.0);
+                const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_move_speed, 18, 0.1, 1.1);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_tint_r, 40, 0.01, 0.6);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_tint_g, 40, 0.01, 0.6);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_tint_b, 40, 0.01, 0.6);
+                const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_contact_damage, 10, 1.0, 4.0);
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -1529,7 +1533,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 4.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x30 => {
                 _ = self.spawnFromStats(
@@ -1545,15 +1549,15 @@ pub const CreaturePool = struct {
                         .contact_damage = 10.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x31 => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
-                const size = randf(rng, 30, 1.0, 40.0);
+                const size = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_31_size, 30, 1.0, 40.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 10.0);
                 const reward_value = narrowF32(size + size + 50.0);
-                const move_speed = randf(rng, 18, 0.1, 1.1);
-                _ = randf(rng, 30, 0.01, 0.6);
+                const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_31_move_speed, 18, 0.1, 1.1);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_31_tint, 30, 0.01, 0.6);
                 const contact_damage = narrowF32(size * 0.14 + 4.0);
 
                 _ = self.spawnInit(.{
@@ -1575,11 +1579,11 @@ pub const CreaturePool = struct {
             },
             0x32 => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
-                const size = randf(rng, 25, 1.0, 40.0);
+                const size = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_32_size, 25, 1.0, 40.0);
                 const health = narrowF32(size + 10.0);
                 const reward_value = narrowF32(size + size + 50.0);
-                const move_speed = randf(rng, 17, 0.1, 1.1);
-                _ = randf(rng, 40, 0.01, 0.6);
+                const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_32_move_speed, 17, 0.1, 1.1);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_32_tint, 40, 0.01, 0.6);
                 const contact_damage = narrowF32(size * 0.14 + 4.0);
 
                 const idx = self.spawnInit(.{
@@ -1602,12 +1606,12 @@ pub const CreaturePool = struct {
             },
             0x33 => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
-                const size = randf(rng, 15, 1.0, 45.0);
+                const size = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_red_33_size, 15, 1.0, 45.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 20.0);
                 const reward_value = narrowF32(size + size + 50.0);
-                const move_speed = randf(rng, 18, 0.1, 1.1);
-                _ = randf(rng, 40, 0.01, 0.6);
-                const contact_damage = randf(rng, 10, 1.0, 4.0);
+                const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_red_33_move_speed, 18, 0.1, 1.1);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_red_33_tint_r, 40, 0.01, 0.6);
+                const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_red_33_contact_damage, 10, 1.0, 4.0);
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -1629,12 +1633,12 @@ pub const CreaturePool = struct {
             },
             0x34 => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
-                const size = randf(rng, 20, 1.0, 40.0);
+                const size = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_green_34_size, 20, 1.0, 40.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 20.0);
                 const reward_value = narrowF32(size + size + 50.0);
-                const move_speed = randf(rng, 18, 0.1, 1.1);
-                _ = randf(rng, 40, 0.01, 0.6);
-                const contact_damage = randf(rng, 10, 1.0, 4.0);
+                const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_green_34_move_speed, 18, 0.1, 1.1);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_green_34_tint_g, 40, 0.01, 0.6);
+                const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_green_34_contact_damage, 10, 1.0, 4.0);
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -1655,10 +1659,10 @@ pub const CreaturePool = struct {
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x3D => {
-                const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
-                _ = rng.rand() % 314;
-                _ = rng.rand() % 20;
-                const size = @as(f32, @floatFromInt(rng.rand() % 7 + 45));
+                const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_spider_sp1_random_3d_tint) % 20;
+                const size = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_spider_sp1_random_3d_size) % 7 + 45));
                 const contact_damage = narrowF32(size * 0.22);
 
                 const idx = self.spawnInit(.{
@@ -1693,7 +1697,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 40.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x3F => {
@@ -1710,7 +1714,7 @@ pub const CreaturePool = struct {
                         .contact_damage = 20.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x40 => {
@@ -1727,18 +1731,18 @@ pub const CreaturePool = struct {
                         .contact_damage = 5.0,
                     },
                 );
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x41 => {
-                const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
-                _ = rng.rand() % 314;
-                const size = randf(rng, 30, 1.0, 40.0);
+                const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
+                const size = randfTagged(rng, rng_callers.creature_spawn_template_zombie_random_41_size, 30, 1.0, 40.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 10.0);
                 const reward_value = narrowF32(size + size + 50.0);
                 const move_speed = narrowF32(size * 0.0025 + 0.9);
-                _ = randf(rng, 40, 0.01, 0.6);
-                const contact_damage = randf(rng, 10, 1.0, 4.0);
+                _ = randfTagged(rng, rng_callers.creature_spawn_template_zombie_random_41_tint, 40, 0.01, 0.6);
+                const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_zombie_random_41_contact_damage, 10, 1.0, 4.0);
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -1772,7 +1776,7 @@ pub const CreaturePool = struct {
                     },
                 );
                 _ = idx;
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x43 => {
                 const idx = self.spawnFromStats(
@@ -1789,7 +1793,7 @@ pub const CreaturePool = struct {
                     },
                 );
                 _ = idx;
-                _ = rng.rand() % 314;
+                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             else => return error.UnsupportedSpawnTemplate,
         }
@@ -2124,12 +2128,7 @@ pub const CreaturePool = struct {
                 };
 
                 if (state.bonuses.energizer > 0.0 and creature.max_hp < 380.0) {
-                    for (0..6) |_| {
-                        _ = state.rng.rand();
-                        _ = state.rng.rand();
-                        _ = state.rng.rand();
-                        _ = state.rng.rand();
-                    }
+                    runtime_helpers.consumeBurstRng(state, 6, true);
                     creature.last_hit_owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
                     const prev_spawn_guard = state.bonus_spawn_guard;
                     state.bonus_spawn_guard = true;
@@ -2260,7 +2259,7 @@ pub const CreaturePool = struct {
             };
 
             if (perkActive(player, PerkId.poison_bullets)) {
-                _ = state.rng.rand();
+                _ = state.rng.randTagged(rng_callers.projectile_update_poison_bullets_gate);
             }
             consumeProjectileHitPresentationPreRng(state, player, projectile_type_id);
 
@@ -2580,23 +2579,11 @@ pub const CreaturePool = struct {
         const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
 
         if (dt > 0.0 and state.bonuses.freeze > 0.0) {
-            for (0..8) |_| {
-                _ = state.rng.rand() % 0x264;
-                for (0..6) |_| {
-                    _ = state.rng.rand();
-                }
-            }
-            _ = state.rng.rand() % 0x264;
-            for (0..4) |_| {
-                _ = state.rng.rand();
-                _ = state.rng.rand();
-            }
-            for (0..4) |_| {
-                _ = state.rng.rand() % 0x264;
-                for (0..6) |_| {
-                    _ = state.rng.rand();
-                }
-            }
+            runtime_helpers.consumeFreezeShatterRng(
+                state,
+                rng_callers.creature_handle_death_freeze_shard_angle,
+                rng_callers.creature_handle_death_freeze_shatter_angle,
+            );
             self.kill_count += 1;
         }
 
@@ -2635,7 +2622,7 @@ pub const CreaturePool = struct {
             flags,
             true,
         );
-        _ = rng.rand() % 314;
+        _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
         const slot_idx = self.registerSpawnSlot(parent_idx, timer, limit, interval, child_template_id);
         self.entries[parent_idx].link_index = slot_idx;
         return parent_idx;
@@ -2650,7 +2637,7 @@ pub const CreaturePool = struct {
         flags: u32,
         set_heading: bool,
     ) usize {
-        const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
+        const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
         return self.spawnInit(.{
             .origin_template_id = -1,
             .pos = .{
@@ -2698,17 +2685,46 @@ pub const CreaturePool = struct {
         self: *CreaturePool,
         rng: *spawn_mod.Crand,
         call: spawn_mod.SpawnTemplateCall,
+        template_id: i32,
         creature_type: spawn_mod.CreatureTypeId,
     ) void {
-        const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
-        _ = rng.rand() % 314;
+        const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+        _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
 
-        const size = randf(rng, 15, 1.0, 38.0);
-        const base_move_speed = randf(rng, 18, 0.1, 1.1);
-        if (creature_type != .lizard) {
-            _ = randf(rng, 25, 0.01, 0.8);
+        const callers: BasicRandomCallers = switch (template_id) {
+            0x03 => BasicRandomCallers{
+                .size = rng_callers.creature_spawn_template_spider_sp1_random_03_size,
+                .move_speed = rng_callers.creature_spawn_template_spider_sp1_random_03_move_speed,
+                .tint = rng_callers.creature_spawn_template_spider_sp1_random_03_tint_b,
+                .contact_damage = rng_callers.creature_spawn_template_spider_sp1_random_03_contact_damage,
+            },
+            0x04 => BasicRandomCallers{
+                .size = rng_callers.creature_spawn_template_lizard_random_04_size,
+                .move_speed = rng_callers.creature_spawn_template_lizard_random_04_move_speed,
+                .tint = null,
+                .contact_damage = rng_callers.creature_spawn_template_lizard_random_04_contact_damage,
+            },
+            0x05 => BasicRandomCallers{
+                .size = rng_callers.creature_spawn_template_spider_sp2_random_05_size,
+                .move_speed = rng_callers.creature_spawn_template_spider_sp2_random_05_move_speed,
+                .tint = rng_callers.creature_spawn_template_spider_sp2_random_05_tint_b,
+                .contact_damage = rng_callers.creature_spawn_template_spider_sp2_random_05_contact_damage,
+            },
+            0x06 => BasicRandomCallers{
+                .size = rng_callers.creature_spawn_template_alien_random_06_size,
+                .move_speed = rng_callers.creature_spawn_template_alien_random_06_move_speed,
+                .tint = rng_callers.creature_spawn_template_alien_random_06_tint_b,
+                .contact_damage = rng_callers.creature_spawn_template_alien_random_06_contact_damage,
+            },
+            else => unreachable,
+        };
+
+        const size = randfTagged(rng, callers.size, 15, 1.0, 38.0);
+        const base_move_speed = randfTagged(rng, callers.move_speed, 18, 0.1, 1.1);
+        if (callers.tint) |caller| {
+            _ = randfTagged(rng, caller, 25, 0.01, 0.8);
         }
-        const contact_damage = randf(rng, 10, 1.0, 4.0);
+        const contact_damage = randfTagged(rng, callers.contact_damage, 10, 1.0, 4.0);
         const health = narrowF32(size * (8.0 / 7.0) + 20.0);
         const reward_value = narrowF32(size + size + 50.0);
 
@@ -3098,13 +3114,26 @@ const SpawnStats = struct {
     contact_damage: f32,
 };
 
-fn randf(rng: *spawn_mod.Crand, mod: u32, scale: f32, base: f32) f32 {
-    return @as(f32, @floatFromInt(rng.rand() % mod)) * scale + base;
+const BasicRandomCallers = struct {
+    size: u32,
+    move_speed: u32,
+    tint: ?u32,
+    contact_damage: u32,
+};
+
+fn randfTagged(
+    rng: *spawn_mod.Crand,
+    caller: u32,
+    mod: u32,
+    scale: f32,
+    base: f32,
+) f32 {
+    return @as(f32, @floatFromInt(rng.randTagged(caller) % mod)) * scale + base;
 }
 
 fn drawPhaseSeedWithTransientHeading(rng: *spawn_mod.Crand) f32 {
-    const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
-    _ = rng.rand() % 314;
+    const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+    _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
     return phase_seed;
 }
 
@@ -3177,14 +3206,14 @@ pub fn consumeProjectileHitPresentationPreRng(
 
     if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.blade_gun)) {
         for (0..8) |_| {
-            _ = state.rng.rand() & 0xff;
+            _ = state.rng.randTagged(rng_callers.projectile_update_blade_gun_splatter_angle) & 0xff;
             consumeSpawnBloodSplatterRng(state);
         }
     }
 
     if (perkActive(player, PerkId.bloody_mess_quick_learner)) {
         for (0..8) |_| {
-            _ = state.rng.rand() & 0x1f;
+            _ = state.rng.randTagged(rng_callers.projectile_update_bloody_mess_spread) & 0x1f;
             consumeSpawnBloodSplatterRng(state);
         }
         consumeSpawnBloodSplatterRng(state);
@@ -3194,8 +3223,8 @@ pub fn consumeProjectileHitPresentationPreRng(
         while (lo > -60) {
             const span: u32 = @intCast(hi - lo);
             for (0..2) |_| {
-                _ = state.rng.rand() % span;
-                _ = state.rng.rand() % span;
+                _ = state.rng.randTagged(rng_callers.projectile_update_bloody_mess_decal_dx_1) % span;
+                _ = state.rng.randTagged(rng_callers.projectile_update_bloody_mess_decal_dy_1) % span;
                 runtime_helpers.consumeAddRandomRng(state);
             }
             lo -= 10;
@@ -3204,7 +3233,7 @@ pub fn consumeProjectileHitPresentationPreRng(
     } else if (!freeze_active) {
         for (0..2) |_| {
             consumeSpawnBloodSplatterRng(state);
-            if ((state.rng.rand() & 7) == 2) {
+            if ((state.rng.randTagged(rng_callers.projectile_update_default_reverse_splatter_gate) & 7) == 2) {
                 consumeSpawnBloodSplatterRng(state);
             }
         }
@@ -3513,10 +3542,10 @@ fn consumeSpawnTemplateBurstRng(
     count: usize,
 ) void {
     for (0..count) |_| {
-        _ = rng.rand();
-        _ = rng.rand();
-        _ = rng.rand();
-        _ = rng.rand();
+        _ = rng.randTagged(rng_callers.effect_spawn_burst_rotation);
+        _ = rng.randTagged(rng_callers.effect_spawn_burst_vel_x);
+        _ = rng.randTagged(rng_callers.effect_spawn_burst_vel_y);
+        _ = rng.randTagged(rng_callers.effect_spawn_burst_scale_step);
     }
 }
 
@@ -3550,12 +3579,7 @@ fn consumeDeathSideEffectsRng(
                 .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
             );
         } else {
-            for (0..16) |_| {
-                _ = state.rng.rand();
-                _ = state.rng.rand();
-                _ = state.rng.rand();
-                _ = state.rng.rand();
-            }
+            runtime_helpers.consumeBurstRng(state, 16, true);
         }
     }
     if (state.bonuses.freeze > 0.0) {
@@ -3567,17 +3591,11 @@ fn consumeDeathSideEffectsRng(
             const shatter_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shatter_angle) % 612)) * 0.01;
             effect_pool.spawnFreezeShatter(state, death_pos, shatter_angle, 5);
         } else {
-            for (0..8) |_| {
-                _ = state.rng.randTagged(rng_callers.creature_handle_death_freeze_shard_angle) % 0x264;
-                runtime_helpers.consumeFreezeShardRng(state);
-            }
-            _ = state.rng.randTagged(rng_callers.creature_handle_death_freeze_shatter_angle) % 0x264;
-            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_half);
-            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_rotation_step);
-            for (0..4) |_| {
-                _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_shard_angle) % 0x264;
-                runtime_helpers.consumeFreezeShardRng(state);
-            }
+            runtime_helpers.consumeFreezeShatterRng(
+                state,
+                rng_callers.creature_handle_death_freeze_shard_angle,
+                rng_callers.creature_handle_death_freeze_shatter_angle,
+            );
         }
         runtime_helpers.consumeAddRandomRng(state);
     }
@@ -3625,10 +3643,15 @@ fn tickDead(
     if (state.gore_disabled == 0 and
         (creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) != 0)
     {
-        const burst_counts = [_]usize{ 8, 6, 5 };
-        for (burst_counts) |count| {
+        const burst_sets = [_]struct { count: usize, caller: u32 }{
+            .{ .count = 8, .caller = rng_callers.creature_update_all_ping_pong_blood_8_angle },
+            .{ .count = 6, .caller = rng_callers.creature_update_all_ping_pong_blood_6_angle },
+            .{ .count = 5, .caller = rng_callers.creature_update_all_ping_pong_blood_5_angle },
+        };
+        for (burst_sets) |entry| {
+            const count = entry.count;
             for (0..count) |_| {
-                _ = state.rng.rand() % 0x264;
+                _ = state.rng.randTagged(entry.caller) % 0x264;
                 consumeSpawnBloodSplatterRng(state);
             }
         }

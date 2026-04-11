@@ -1,5 +1,6 @@
 const std = @import("std");
 const msgpack = @import("msgpack");
+const rng_callers = @import("rng_caller_static.zig");
 
 pub const replay_format_version: i32 = 8;
 pub const weapon_usage_count: usize = 53;
@@ -737,6 +738,30 @@ const terrain_unlock_rules = [_]TerrainRule{
     .{ .threshold = 0x14 },
 };
 
+const unlock_random_terrain_prelude_callers = [_]u32{
+    rng_callers.terrain_generate_random_prelude_1,
+    rng_callers.terrain_generate_random_prelude_2,
+    rng_callers.terrain_generate_random_prelude_3,
+};
+
+const unlock_random_terrain_stamp_callers = [_][3]u32{
+    .{
+        rng_callers.terrain_generate_random_base_rotation,
+        rng_callers.terrain_generate_random_base_y,
+        rng_callers.terrain_generate_random_base_x,
+    },
+    .{
+        rng_callers.terrain_generate_random_overlay_rotation,
+        rng_callers.terrain_generate_random_overlay_y,
+        rng_callers.terrain_generate_random_overlay_x,
+    },
+    .{
+        rng_callers.terrain_generate_random_detail_rotation,
+        rng_callers.terrain_generate_random_detail_y,
+        rng_callers.terrain_generate_random_detail_x,
+    },
+};
+
 const Crand = struct {
     state: u32 = 0,
 
@@ -747,6 +772,10 @@ const Crand = struct {
     fn rand(self: *Crand) u32 {
         self.state = self.state *% crt_rand_mult +% crt_rand_inc;
         return (self.state >> 16) & 0x7fff;
+    }
+
+    fn randTagged(self: *Crand, _: u32) u32 {
+        return self.rand();
     }
 };
 
@@ -970,14 +999,12 @@ pub fn validateReplayBootstrap(header: ReplayHeader) ReplayCodecError!void {
 
     var rng: Crand = .{};
     rng.srand(header.bootstrap_seed);
+    advanceRandomTerrainPreludeRng(&rng);
     _ = chooseTerrainIds(header.status.quest_unlock_index, &rng);
 
     const width_i32 = @max(@as(i32, 1), floatToPositiveI32(header.world_size));
     const height_i32 = width_i32;
-    const draws = terrainStampingDraws(width_i32, height_i32, 3);
-    for (0..@as(usize, @intCast(draws))) |_| {
-        _ = rng.rand();
-    }
+    advanceTerrainStampingRng(&rng, width_i32, height_i32);
 
     if (rng.state != header.seed) {
         return error.BootstrapSeedMismatch;
@@ -1745,11 +1772,36 @@ fn parseEventI32(value: i32) ReplayCodecError!i32 {
 fn chooseTerrainIds(quest_unlock_index: i32, rng: *Crand) i32 {
     _ = i32;
     for (terrain_unlock_rules) |rule| {
-        if (quest_unlock_index >= rule.threshold and ((rng.rand() & 7) == 3)) {
+        const caller = switch (rule.threshold) {
+            0x28 => rng_callers.unlock_terrain_q4,
+            0x1E => rng_callers.unlock_terrain_q3,
+            0x14 => rng_callers.unlock_terrain_q2,
+            else => unreachable,
+        };
+        if (quest_unlock_index >= rule.threshold and ((rng.randTagged(caller) & 7) == 3)) {
             return 1;
         }
     }
     return 0;
+}
+
+fn advanceRandomTerrainPreludeRng(rng: *Crand) void {
+    for (unlock_random_terrain_prelude_callers) |caller| {
+        _ = rng.randTagged(caller);
+    }
+}
+
+fn advanceTerrainStampingRng(rng: *Crand, width: i32, height: i32) void {
+    const area = @as(i64, @max(width, 0)) * @as(i64, @max(height, 0));
+    const densities = [_]i64{ terrain_density_base, terrain_density_overlay, terrain_density_detail };
+    for (unlock_random_terrain_stamp_callers, densities) |callers, density| {
+        const count = (area * density) >> terrain_density_shift;
+        for (0..@as(usize, @intCast(count))) |_| {
+            _ = rng.randTagged(callers[0]);
+            _ = rng.randTagged(callers[1]);
+            _ = rng.randTagged(callers[2]);
+        }
+    }
 }
 
 fn terrainStampingDraws(width: i32, height: i32, layers: i32) i64 {

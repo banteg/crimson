@@ -1,6 +1,7 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 
 const replay_codec = @import("../replay_codec.zig");
 const runtime_bootstrap = @import("bootstrap.zig");
@@ -629,7 +630,7 @@ fn applyCaptureCreatureSpawnEvent(
             isAi7LinkTimerRolloverValue(row.link_index) and
             (flags_i32 & @as(i32, @intCast(spawn_mod.CreatureFlags.ai7_link_timer))) != 0;
         if (needs_ai7_rollover_rng_backfill) {
-            _ = state.rng.rand();
+            _ = state.rng.randTagged(rng_callers.creature_update_all_ai7_link_timer_reset);
         }
 
         if (row.has_pos) {

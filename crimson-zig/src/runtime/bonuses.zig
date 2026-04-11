@@ -5,6 +5,7 @@ const native_math = @import("native_math.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
+const runtime_helpers = @import("helpers.zig");
 const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
@@ -453,23 +454,11 @@ pub fn applyFreezePickupCorpseCleanupRng(
         }
 
         if (idx < freeze_corpse_at_tick_start.len and freeze_corpse_at_tick_start[idx]) {
-            for (0..8) |_| {
-                _ = state.rng.rand() % 0x264;
-                for (0..6) |_| {
-                    _ = state.rng.rand();
-                }
-            }
-            _ = state.rng.rand() % 0x264;
-            for (0..4) |_| {
-                _ = state.rng.rand();
-                _ = state.rng.rand();
-            }
-            for (0..4) |_| {
-                _ = state.rng.rand() % 0x264;
-                for (0..6) |_| {
-                    _ = state.rng.rand();
-                }
-            }
+            runtime_helpers.consumeFreezeShatterRng(
+                state,
+                rng_callers.bonus_apply_freeze_shard_angle,
+                rng_callers.bonus_apply_freeze_shatter_angle,
+            );
         }
 
         creature.active = false;
@@ -1085,11 +1074,7 @@ fn consumeBonusPickupEffectsRng(
 ) void {
     if (bonus_id != .nuke) {
         // emit_bonus_pickup_effects -> spawn_burst(count=12, scale_step set).
-        for (0..12) |_| {
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-        }
+        runtime_helpers.consumeBurstRng(state, 12, false);
     }
 }
 
@@ -1097,12 +1082,7 @@ fn consumeSpawnBurstRng(
     state: *state_mod.GameplayState,
     count: usize,
 ) void {
-    for (0..count) |_| {
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-    }
+    runtime_helpers.consumeBurstRng(state, count, true);
 }
 
 const quest_unlock_weapon_by_index = [_]i32{
