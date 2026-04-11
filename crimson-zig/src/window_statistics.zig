@@ -27,7 +27,8 @@ const panel_timeline_max_ms: i32 = 300;
 
 const left_panel_rect = rl.Rectangle.init(164.0, 156.0, 424.0, 402.0);
 const right_panel_rect = rl.Rectangle.init(678.0, 174.0, 424.0, 276.0);
-const credits_panel_rect = rl.Rectangle.init(250.0, 118.0, 780.0, 500.0);
+const stats_panel_rect = rl.Rectangle.init(390.0, 168.0, 510.0, 378.0);
+const credits_panel_rect = rl.Rectangle.init(360.0, 168.0, 510.0, 378.0);
 
 const HubAction = enum {
     high_scores,
@@ -432,9 +433,10 @@ fn updateCredits(state: *State, frame_dt: f32) UpdateResult {
 
 fn drawHub(state: *const HubState, runtime_assets: ?*const window_assets.RuntimeAssets, status: formats.game_cfg.Status) void {
     if (runtime_assets) |assets| {
-        drawPanelShell(state.panel.timeline_ms, assets, rl.Rectangle.init(390.0, 168.0, 500.0, 360.0), window_menu.label_row_statistics);
+        drawPanelShellNoTitle(state.panel.timeline_ms, assets, stats_panel_rect);
+        drawAtlasTitle(assets, stats_panel_rect, 290.0, 52.0, window_menu.label_row_statistics);
         var playtime_buf: [64]u8 = undefined;
-        window_ui.drawSmallText(assets, formatPlaytimeText(&playtime_buf, status.game_sequence_id), 492.0, 502.0, muted_text);
+        window_ui.drawSmallText(assets, formatPlaytimeText(&playtime_buf, status.game_sequence_id), stats_panel_rect.x + 204.0, stats_panel_rect.y + 334.0, muted_text);
         const buttons = hubButtons();
         for (buttons, 0..) |button, idx| {
             const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
@@ -490,13 +492,16 @@ fn drawPerks(
 
 fn drawCredits(state: *const CreditsScreen, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     if (runtime_assets) |assets| {
-        drawPanelShell(300, assets, credits_panel_rect, window_menu.label_row_statistics);
-        var y: f32 = 174.0;
+        drawPanelShellNoTitle(300, assets, credits_panel_rect);
+        drawAtlasTitle(assets, credits_panel_rect, 202.0, 46.0, window_menu.label_row_statistics);
+        var y: f32 = credits_panel_rect.y + 60.0;
         const start = state.scroll;
-        const end = @min(start + 20, window_statistics_data.credits_lines.len);
+        const end = @min(start + 16, window_statistics_data.credits_lines.len);
         for (window_statistics_data.credits_lines[start..end]) |line| {
             const color = if (line.heading) gold_color else text_color;
-            window_ui.drawSmallText(assets, line.text, 302.0, y, color);
+            const line_width = window_ui.measureSmallText(assets, line.text);
+            const x = credits_panel_rect.x + 198.0 + 140.0 - line_width * 0.5;
+            window_ui.drawSmallText(assets, line.text, x, y, color);
             y += 16.0;
         }
         const back = backOnlyButton()[0];
@@ -748,28 +753,45 @@ fn drawPanelShell(timeline_ms: i32, assets: *const window_assets.RuntimeAssets, 
     window_menu.drawAtlasLabelCentered(assets, label_row, rect.y + 42.0, window_ui.colorWithAlpha(rl.Color.white, 0.96));
 }
 
+fn drawPanelShellNoTitle(timeline_ms: i32, assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle) void {
+    window_menu.drawMenuBackdrop(assets);
+    window_menu.drawSign(timeline_ms, assets);
+    window_ui.drawTextureFit(assets.texture(.ui_menu_panel), rect, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+}
+
+fn drawAtlasTitle(assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle, rel_x: f32, rel_y: f32, row: i32) void {
+    const texture = assets.texture(.ui_item_texts);
+    rl.drawTexturePro(
+        texture,
+        rl.Rectangle.init(0.0, @as(f32, @floatFromInt(row)) * 32.0, 128.0, 32.0),
+        rl.Rectangle.init(rect.x + rel_x, rect.y + rel_y, 128.0, 32.0),
+        rl.Vector2.zero(),
+        0.0,
+        rl.Color.white,
+    );
+}
+
 fn hubButtons() [5]window_ui.UiButton {
-    const center_x = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     return .{
-        .{ .label = "HIGH SCORES", .rect = window_ui.centeredRect(center_x, 250.0, 240.0, 44.0) },
-        .{ .label = "WEAPONS", .rect = window_ui.centeredRect(center_x, 304.0, 240.0, 44.0) },
-        .{ .label = "PERKS", .rect = window_ui.centeredRect(center_x, 358.0, 240.0, 44.0) },
-        .{ .label = "CREDITS", .rect = window_ui.centeredRect(center_x, 412.0, 240.0, 44.0) },
-        .{ .label = "BACK", .rect = window_ui.centeredRect(center_x, 478.0, 180.0, 44.0) },
+        .{ .label = "High scores", .rect = window_ui.centeredRect(stats_panel_rect.x + 270.0, stats_panel_rect.y + 104.0, 240.0, 44.0) },
+        .{ .label = "Weapons", .rect = window_ui.centeredRect(stats_panel_rect.x + 270.0, stats_panel_rect.y + 138.0, 240.0, 44.0) },
+        .{ .label = "Perks", .rect = window_ui.centeredRect(stats_panel_rect.x + 270.0, stats_panel_rect.y + 172.0, 240.0, 44.0) },
+        .{ .label = "Credits", .rect = window_ui.centeredRect(stats_panel_rect.x + 270.0, stats_panel_rect.y + 206.0, 240.0, 44.0) },
+        .{ .label = "Back", .rect = window_ui.centeredRect(stats_panel_rect.x + 394.0, stats_panel_rect.y + 290.0, 180.0, 44.0) },
     };
 }
 
 fn highScoreButtons() [3]window_ui.UiButton {
     return .{
-        .{ .label = "UPDATE SCORES", .rect = window_ui.centeredRect(left_panel_rect.x + 212.0, left_panel_rect.y + 268.0, 240.0, 44.0) },
-        .{ .label = "PLAY A GAME", .rect = window_ui.centeredRect(left_panel_rect.x + 212.0, left_panel_rect.y + 322.0, 240.0, 44.0) },
-        .{ .label = "BACK", .rect = window_ui.centeredRect(left_panel_rect.x + 340.0, left_panel_rect.y + 355.0, 150.0, 44.0) },
+        .{ .label = "Update scores", .rect = window_ui.centeredRect(left_panel_rect.x + 212.0, left_panel_rect.y + 268.0, 240.0, 44.0) },
+        .{ .label = "Play a game", .rect = window_ui.centeredRect(left_panel_rect.x + 212.0, left_panel_rect.y + 322.0, 240.0, 44.0) },
+        .{ .label = "Back", .rect = window_ui.centeredRect(left_panel_rect.x + 340.0, left_panel_rect.y + 355.0, 150.0, 44.0) },
     };
 }
 
 fn backOnlyButton() [1]window_ui.UiButton {
     return .{
-        .{ .label = "BACK", .rect = window_ui.centeredRect(@as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5, 562.0, 180.0, 44.0) },
+        .{ .label = "Back", .rect = window_ui.centeredRect(credits_panel_rect.x + 298.0, credits_panel_rect.y + 310.0, 180.0, 44.0) },
     };
 }
 
@@ -1234,7 +1256,9 @@ fn formatPlaytimeText(buf: []u8, game_sequence_ms: u32) []const u8 {
     const total_minutes = @divTrunc(@divTrunc(game_sequence_ms, 1000), 60);
     const hours = @divTrunc(total_minutes, 60);
     const minutes = @mod(total_minutes, 60);
-    return std.fmt.bufPrint(buf, "played for {d} hours {d} minutes", .{ hours, minutes }) catch "played for 0 hours 0 minutes";
+    const hour_label = if (hours == 1) "hour" else "hours";
+    const minute_label = if (minutes == 1) "minute" else "minutes";
+    return std.fmt.bufPrint(buf, "played for {d} {s} {d} {s}", .{ hours, hour_label, minutes, minute_label }) catch "played for 0 hours 0 minutes";
 }
 
 fn formatElapsedMmSsBuf(buf: []u8, elapsed_ms: u32) []const u8 {
