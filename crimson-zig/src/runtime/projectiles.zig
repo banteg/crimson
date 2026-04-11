@@ -807,10 +807,12 @@ fn emitProjectileTypeHitEffects(
                 @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => 2.2,
                 else => 0.0,
             };
-            effects.spawnRing(
+            spawnProjectileImpactRing(
+                effects,
                 pos,
                 detail_preset,
                 .{ .r = 0.6, .g = 0.6, .b = 0.9, .a = 1.0 },
+                0.0,
                 ring_strength * 0.8,
                 ring_scale * 45.0,
             );
@@ -841,8 +843,24 @@ fn emitProjectileTypeHitEffects(
             }
         },
         @intFromEnum(game_ids.ProjectileTypeId.plasma_cannon) => {
-            effects.spawnRing(pos, detail_preset, .{ .r = 0.9, .g = 0.6, .b = 0.3, .a = 1.0 }, 1.0, 1.5 * 45.0);
-            effects.spawnRing(pos, detail_preset, .{ .r = 0.9, .g = 0.6, .b = 0.3, .a = 1.0 }, 1.0, 1.0 * 45.0);
+            spawnProjectileImpactRing(
+                effects,
+                pos,
+                detail_preset,
+                .{ .r = 0.9, .g = 0.6, .b = 0.3, .a = 1.0 },
+                0.1,
+                1.0,
+                1.5 * 45.0,
+            );
+            spawnProjectileImpactRing(
+                effects,
+                pos,
+                detail_preset,
+                .{ .r = 0.9, .g = 0.6, .b = 0.3, .a = 1.0 },
+                0.1,
+                1.0,
+                1.0 * 45.0,
+            );
         },
         @intFromEnum(game_ids.ProjectileTypeId.splitter_gun) => {
             for (0..3) |_| {
@@ -870,6 +888,33 @@ fn emitProjectileTypeHitEffects(
         },
         else => {},
     }
+}
+
+fn spawnProjectileImpactRing(
+    effects: *effects_mod.EffectPool,
+    pos: state_mod.Vec2,
+    detail_preset: i32,
+    color: effects_mod.Color,
+    age: f32,
+    lifetime: f32,
+    scale_step: f32,
+) void {
+    _ = effects.spawn(
+        @intFromEnum(effects_mod.EffectId.ring),
+        pos,
+        .{},
+        0.0,
+        1.0,
+        4.0,
+        4.0,
+        age,
+        lifetime,
+        0x19,
+        color,
+        0.0,
+        scale_step,
+        detail_preset,
+    );
 }
 
 fn creatureHitRadius(size: f32) f32 {
@@ -1001,6 +1046,55 @@ test "projectile hit consumes hit-presentation rng" {
     const rng_before = state.rng.state;
     _ = pool.update(&state, players[0..], &creatures, &bonuses, 1.0 / 60.0, 1024.0);
     try std.testing.expect(rng_before != state.rng.state);
+}
+
+test "ion and plasma hit rings use native small impact geometry" {
+    var state = state_mod.GameplayState.init(1);
+    var effects: effects_mod.EffectPool = .{};
+    const pos: state_mod.Vec2 = .{ .x = 100.0, .y = 120.0 };
+
+    emitProjectileTypeHitEffects(
+        &state,
+        @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
+        pos,
+        &effects,
+        5,
+    );
+
+    var ion_ring: ?effects_mod.EffectEntry = null;
+    for (effects.entries) |entry| {
+        if (entry.flags == 0) continue;
+        if (entry.effect_id != @intFromEnum(effects_mod.EffectId.ring)) continue;
+        ion_ring = entry;
+        break;
+    }
+    try std.testing.expect(ion_ring != null);
+    try expectFloatClose(4.0, ion_ring.?.half_width);
+    try expectFloatClose(4.0, ion_ring.?.half_height);
+    try expectFloatClose(0.0, ion_ring.?.age);
+    try expectFloatClose(0.32, ion_ring.?.lifetime);
+    try expectFloatClose(54.0, ion_ring.?.scale_step);
+
+    effects.reset();
+    emitProjectileTypeHitEffects(
+        &state,
+        @intFromEnum(game_ids.ProjectileTypeId.plasma_cannon),
+        pos,
+        &effects,
+        5,
+    );
+
+    var plasma_ring_count: usize = 0;
+    for (effects.entries) |entry| {
+        if (entry.flags == 0) continue;
+        if (entry.effect_id != @intFromEnum(effects_mod.EffectId.ring)) continue;
+        plasma_ring_count += 1;
+        try expectFloatClose(4.0, entry.half_width);
+        try expectFloatClose(4.0, entry.half_height);
+        try expectFloatClose(0.1, entry.age);
+        try expectFloatClose(1.0, entry.lifetime);
+    }
+    try std.testing.expectEqual(@as(usize, 2), plasma_ring_count);
 }
 
 test "pulse gun hit applies post-hit target push" {
