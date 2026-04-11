@@ -987,9 +987,9 @@ fn drawMenuPanelShell(timeline_ms: i32, runtime_assets: *const window_assets.Run
 
     const T = @TypeOf(title_row_or_texture);
     if (T == i32) {
-        drawAtlasLabelAt(runtime_assets, panel_rect.x + (panel_rect.width - 128.0) * 0.5, rect.y + 42.0, title_row_or_texture, rl.Color.white);
+        drawAtlasLabelAt(runtime_assets, panel_rect.x + (panel_rect.width - 128.0) * 0.5, panel_rect.y + 42.0, title_row_or_texture, rl.Color.white);
     } else {
-        drawTextureLabel(runtime_assets, title_row_or_texture, panel_rect.x + rect.width * 0.5 - 64.0, rect.y + 34.0, 128.0, 32.0, rl.Color.white);
+        drawTextureLabel(runtime_assets, title_row_or_texture, panel_rect.x + rect.width * 0.5 - 64.0, panel_rect.y + 34.0, 128.0, 32.0, rl.Color.white);
     }
 }
 

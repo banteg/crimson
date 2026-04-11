@@ -410,7 +410,7 @@ fn drawMenuPanelShell(timeline_ms: i32, runtime_assets: *const window_assets.Run
     const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
     const panel_rect = rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
     window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, rl.Color.white, false);
-    window_menu.drawAtlasLabelCentered(runtime_assets, title_row, rect.y + 38.0, rl.Color.white);
+    window_menu.drawAtlasLabelCentered(runtime_assets, title_row, panel_rect.y + 38.0, rl.Color.white);
 }
 
 fn drawMenuPanelShellNoTitle(timeline_ms: i32, runtime_assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle) void {
