@@ -12,6 +12,7 @@ const player_runtime = @import("player.zig");
 const projectiles_mod = @import("projectiles.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 const state_mod = @import("state.zig");
+const terrain_fx_mod = @import("terrain_fx.zig");
 const weapon_data = @import("weapon_data.zig");
 
 const narrowF32 = native_math.roundF32;
@@ -306,6 +307,7 @@ pub fn applyPendingBonusEffects(
     projectiles: *projectiles_mod.ProjectilePool,
     creatures: *creatures_mod.CreaturePool,
     bonuses: *BonusPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     dt: f32,
     world_size: f32,
     tick_index: usize,
@@ -318,6 +320,7 @@ pub fn applyPendingBonusEffects(
         creatures,
         bonuses,
         &effects,
+        terrain_fx,
         dt,
         world_size,
         tick_index,
@@ -331,6 +334,7 @@ pub fn applyPendingBonusEffectsWithEffects(
     creatures: *creatures_mod.CreaturePool,
     bonuses: *BonusPool,
     effects: *effects_mod.EffectPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     dt: f32,
     world_size: f32,
     tick_index: usize,
@@ -366,6 +370,7 @@ pub fn applyPendingBonusEffectsWithEffects(
             creatures,
             bonuses,
             effects,
+            terrain_fx,
             origin,
             dt,
             world_size,
@@ -573,6 +578,7 @@ fn applyNukeBonus(
     creatures: *creatures_mod.CreaturePool,
     bonuses: *BonusPool,
     effects: *effects_mod.EffectPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     origin: state_mod.Vec2,
     dt: f32,
     world_size: f32,
@@ -626,6 +632,7 @@ fn applyNukeBonus(
             state,
             players,
             bonuses,
+            terrain_fx,
             idx,
             damage,
             .{},

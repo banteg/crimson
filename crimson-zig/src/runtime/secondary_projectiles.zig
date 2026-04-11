@@ -221,6 +221,7 @@ pub const SecondaryProjectilePool = struct {
                         state,
                         players,
                         bonuses,
+                        terrain_fx,
                         idx,
                         damage,
                         impulse,
@@ -238,6 +239,7 @@ pub const SecondaryProjectilePool = struct {
                             state,
                             players,
                             bonuses,
+                            terrain_fx,
                             idx,
                             entry.owner,
                             dt_f32,
@@ -392,6 +394,7 @@ pub const SecondaryProjectilePool = struct {
                     state,
                     players,
                     bonuses,
+                    terrain_fx,
                     idx,
                     damage,
                     .{
