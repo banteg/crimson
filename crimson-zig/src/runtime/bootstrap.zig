@@ -294,7 +294,8 @@ fn advanceTerrainStampingRng(
     const densities = [_]u64{ terrain_density_base, terrain_density_overlay, terrain_density_detail };
     for (caller_sets, densities) |callers, density| {
         const count = (area * density) >> terrain_density_shift;
-        for (0..count) |_| {
+        const loop_count: usize = @intCast(count);
+        for (0..loop_count) |_| {
             _ = rng.randTagged(callers.rotation);
             _ = rng.randTagged(callers.y);
             _ = rng.randTagged(callers.x);
