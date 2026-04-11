@@ -3,6 +3,7 @@ const native_math = @import("native_math.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 
 const state_mod = @import("state.zig");
+const terrain_fx_mod = @import("terrain_fx.zig");
 
 const narrowF32 = native_math.roundF32;
 
@@ -227,7 +228,7 @@ pub const EffectPool = struct {
         return idx;
     }
 
-    pub fn update(self: *EffectPool, dt: f32) void {
+    pub fn update(self: *EffectPool, dt: f32, fx_queue: ?*terrain_fx_mod.FxQueue) void {
         if (!(dt > 0.0)) return;
         for (&self.entries, 0..) |*entry, idx| {
             const flags = entry.flags;
@@ -255,6 +256,24 @@ pub const EffectPool = struct {
                     }
                 }
                 continue;
+            }
+            if (fx_queue) |queue| {
+                if ((flags & 0x80) != 0) {
+                    const alpha: f32 = if ((flags & 0x100) != 0) 0.35 else 0.8;
+                    _ = queue.add(
+                        entry.effect_id,
+                        entry.pos,
+                        entry.half_width * 2.0,
+                        entry.half_height * 2.0,
+                        entry.rotation,
+                        .{
+                            .r = entry.color.r,
+                            .g = entry.color.g,
+                            .b = entry.color.b,
+                            .a = alpha,
+                        },
+                    );
+                }
             }
             self.freeSlot(idx);
         }

@@ -13,6 +13,7 @@ const player_runtime = @import("player.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
+const terrain_fx_mod = @import("terrain_fx.zig");
 
 const narrowF32 = native_math.roundF32;
 
@@ -585,6 +586,7 @@ pub fn applyPyrokineticEffects(
     players: []state_mod.PlayerState,
     creatures: *creatures_mod.CreaturePool,
     particles: *particles_mod.ParticlePool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     dt: f32,
 ) void {
     if (!(dt > 0.0)) return;
@@ -621,8 +623,7 @@ pub fn applyPyrokineticEffects(
                 owner_ref.OwnerRef.fromLocalPlayer(0),
             );
         }
-        // Consume native fx_queue_add_random RNG even though verifier does not render decals.
-        runtime_helpers.consumeAddRandomRng(state);
+        _ = terrain_fx.decals.addRandom(state, creature.pos);
     }
 }
 
@@ -630,6 +631,7 @@ pub fn applyJinxedEffects(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
     creatures: *creatures_mod.CreaturePool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     dt: f32,
 ) void {
     if (state.jinxed_timer >= 0.0) {
@@ -642,6 +644,8 @@ pub fn applyJinxedEffects(
     if ((state.rng.randTagged(rng_callers.perks_update_effects_jinxed_accident_gate) % 10) == 3) {
         const target_idx = selectJinxedAccidentTarget(state, players);
         players[target_idx].health = narrowF32(players[target_idx].health - 5.0);
+        _ = terrain_fx.decals.addRandom(state, players[target_idx].pos);
+        _ = terrain_fx.decals.addRandom(state, players[target_idx].pos);
     }
 
     const timer_roll = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.perks_update_effects_jinxed_timer_reset) % 0x14));

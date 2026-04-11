@@ -92,7 +92,6 @@ const GameplayScreen = struct {
     input_interpreter: local_input.LocalInputInterpreter = .{},
     hud_state: HudRuntimeState = .{},
     ground: ?window_ground.GroundRenderer = null,
-    terrain_fx: window_terrain_fx.TerrainFxTracker = .{},
 
     fn deinit(self: *GameplayScreen) void {
         if (self.ground) |*ground| {
@@ -472,7 +471,7 @@ const App = struct {
             self.audio.handleFrameAudio(gameplay.last_update.audio, gameplay.runner.session.state.bonuses.reflex_boost);
             if (self.runtime_assets) |*runtime_assets| {
                 if (gameplay.ground) |*ground| {
-                    gameplay.terrain_fx.bake(&gameplay.runner.session, ground, runtime_assets);
+                    window_terrain_fx.bakeTerrainFxBatch(ground, &gameplay.last_update.terrain_fx, runtime_assets);
                 }
             }
 
@@ -680,7 +679,6 @@ const App = struct {
             .runner = runner,
             .run_config = configured_run,
             .last_update = last_update,
-            .terrain_fx = window_terrain_fx.TerrainFxTracker.init(runner.seed),
         };
         gameplay.hud_state.update(0.0, &gameplay.runner.session);
         gameplay.input_interpreter.setPreserveBugs(gameplay.runner.session.state.preserve_bugs);
@@ -693,12 +691,8 @@ const App = struct {
                 gameplay.runner.session.terrain_size,
             ) catch null;
             if (gameplay.ground) |*ground| {
-                gameplay.terrain_fx.bake(&gameplay.runner.session, ground, runtime_assets);
-            } else {
-                gameplay.terrain_fx.capture(&gameplay.runner.session);
+                window_terrain_fx.bakeTerrainFxBatch(ground, &gameplay.last_update.terrain_fx, runtime_assets);
             }
-        } else {
-            gameplay.terrain_fx.capture(&gameplay.runner.session);
         }
         self.gameplay = gameplay;
         self.results = null;

@@ -14,6 +14,7 @@ const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
 const creatures = @import("creatures.zig");
 const survival_progression = @import("survival_progression.zig");
+const terrain_fx_mod = @import("terrain_fx.zig");
 
 pub const LiveRunnerError = runtime_session.DeterministicSessionError ||
     replay_step.StepError ||
@@ -104,6 +105,7 @@ pub const FrameUpdate = struct {
     shots_fired: i32,
     shots_hit: i32,
     audio: FrameAudioEvents,
+    terrain_fx: terrain_fx_mod.TerrainFxBatch,
 };
 
 pub fn defaultGameInput() player_runtime.GameInput {
@@ -242,13 +244,14 @@ pub const LiveRunner = struct {
 
         const paused_for_perk_pick = self.perkPendingCount() > 0;
         if (self.allPlayersDead() or paused_for_perk_pick or !(frame_dt > 0.0)) {
-            return self.snapshot(0, paused_for_perk_pick, .{});
+            return self.snapshot(0, paused_for_perk_pick, .{}, .{});
         }
 
         self.accumulator = std.math.clamp(self.accumulator + clamped_dt, @as(f32, 0.0), max_frame_dt);
 
         var ticks_advanced: usize = 0;
         var frame_audio: FrameAudioEvents = .{};
+        var frame_terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
         const tick_inputs = [_]player_runtime.GameInput{input.player};
         while (ticks_advanced < self.max_substeps_per_frame and
             !self.allPlayersDead() and
@@ -284,11 +287,30 @@ pub const LiveRunner = struct {
                 (!before_quest_hit_sfx and self.session.quest_play_hit_sfx);
             frame_audio.quest_play_completion_music = frame_audio.quest_play_completion_music or
                 (!before_quest_completion_music and self.session.quest_play_completion_music);
+            for (step_result.terrain_fx.decalsSlice()) |entry| {
+                _ = frame_terrain_fx.decals.add(
+                    entry.effect_id,
+                    entry.pos,
+                    entry.width,
+                    entry.height,
+                    entry.rotation,
+                    entry.color,
+                );
+            }
+            for (step_result.terrain_fx.corpsesSlice()) |entry| {
+                _ = frame_terrain_fx.corpses.add(
+                    entry.top_left,
+                    entry.color,
+                    entry.rotation,
+                    entry.scale,
+                    entry.creature_type_id,
+                );
+            }
             self.accumulator = @max(0.0, self.accumulator - self.session.dt_nominal);
             ticks_advanced += 1;
         }
 
-        return self.snapshot(ticks_advanced, self.perkPendingCount() > 0, frame_audio);
+        return self.snapshot(ticks_advanced, self.perkPendingCount() > 0, frame_audio, frame_terrain_fx.takeBatch());
     }
 
     pub fn perkPendingCount(self: *const LiveRunner) i32 {
@@ -356,6 +378,7 @@ pub const LiveRunner = struct {
         ticks_advanced: usize,
         paused_for_perk_pick: bool,
         audio: FrameAudioEvents,
+        terrain_fx: terrain_fx_mod.TerrainFxBatch,
     ) FrameUpdate {
         const run_summary = self.session.finalize();
         const player_health = if (self.player0Const()) |player| player.health else 0.0;
@@ -377,6 +400,7 @@ pub const LiveRunner = struct {
             .shots_fired = self.session.state.shots_fired_total,
             .shots_hit = shots_hit_total,
             .audio = audio,
+            .terrain_fx = terrain_fx,
         };
     }
 };

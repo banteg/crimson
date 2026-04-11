@@ -8,6 +8,7 @@ const owner_ref = @import("owner_ref.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 const runtime_helpers = @import("helpers.zig");
 const state_mod = @import("state.zig");
+const terrain_fx_mod = @import("terrain_fx.zig");
 
 const narrowF32 = native_math.roundF32;
 
@@ -124,6 +125,7 @@ pub const SecondaryProjectilePool = struct {
     ) void {
         var effects: effects_mod.EffectPool = .{};
         var sprite_effects: effects_mod.SpriteEffectPool = .{};
+        var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
         self.updatePulseGunWithEffects(
             state,
             players,
@@ -131,6 +133,7 @@ pub const SecondaryProjectilePool = struct {
             bonuses,
             &effects,
             &sprite_effects,
+            &terrain_fx,
             dt,
             world_size,
             detail_preset,
@@ -145,6 +148,7 @@ pub const SecondaryProjectilePool = struct {
         bonuses: *bonus_runtime.BonusPool,
         effects: *effects_mod.EffectPool,
         sprite_effects: *effects_mod.SpriteEffectPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
         dt: f32,
         world_size: f32,
         detail_preset: i32,
@@ -162,6 +166,14 @@ pub const SecondaryProjectilePool = struct {
                 const t = entry.detonation_t;
                 const scale = entry.detonation_scale;
                 if (t > 1.0) {
+                    _ = terrain_fx.decals.add(
+                        @intFromEnum(effects_mod.EffectId.aura),
+                        entry.pos,
+                        scale * 256.0,
+                        scale * 256.0,
+                        0.0,
+                        .{ .r = 0.0, .g = 0.0, .b = 0.0, .a = 0.25 },
+                    );
                     entry.active = false;
                 }
 
@@ -219,8 +231,8 @@ pub const SecondaryProjectilePool = struct {
                     );
                     if (hp_before > 0.0 and killed_now) {
                         if (!freeze_active) {
-                            runtime_helpers.consumeAddRandomRng(state);
-                            runtime_helpers.consumeAddRandomRng(state);
+                            _ = terrain_fx.decals.addRandom(state, target.pos);
+                            _ = terrain_fx.decals.addRandom(state, target.pos);
                         }
                         _ = creatures.handleSecondaryDetonationDeathFollowup(
                             state,
@@ -349,15 +361,21 @@ pub const SecondaryProjectilePool = struct {
                         effects.spawnFreezeShard(state, entry.pos, shard_angle, detail_preset);
                     }
                 } else {
-                    _ = state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dx_1) % 0x14;
-                    _ = state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dy_1) % 0x14;
-                    runtime_helpers.consumeAddRandomRng(state);
-                    _ = state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dx_2) % 0x14;
-                    _ = state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dy_2) % 0x14;
-                    runtime_helpers.consumeAddRandomRng(state);
-                    _ = state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dx_3) % 0x14;
-                    _ = state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dy_3) % 0x14;
-                    runtime_helpers.consumeAddRandomRng(state);
+                    const offset_1: state_mod.Vec2 = .{
+                        .x = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dx_1) % 20)) - 10)),
+                        .y = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dy_1) % 20)) - 10)),
+                    };
+                    _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(creatures.entries[idx].pos, offset_1));
+                    const offset_2: state_mod.Vec2 = .{
+                        .x = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dx_2) % 20)) - 10)),
+                        .y = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dy_2) % 20)) - 10)),
+                    };
+                    _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(creatures.entries[idx].pos, offset_2));
+                    const offset_3: state_mod.Vec2 = .{
+                        .x = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dx_3) % 20)) - 10)),
+                        .y = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.secondary_projectile_update_pre_hit_decal_dy_3) % 20)) - 10)),
+                    };
+                    _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(creatures.entries[idx].pos, offset_3));
                 }
 
                 if (entry.type_id == SecondaryProjectileTypeId.rocket and detail_preset > 2) {
@@ -434,14 +452,17 @@ pub const SecondaryProjectilePool = struct {
                     };
                     var i: i32 = 0;
                     while (i < extra_decals) : (i += 1) {
-                        _ = state.rng.randTagged(angle_caller) % 0x274;
+                        const angle = @as(f32, @floatFromInt(state.rng.randTagged(angle_caller) % 0x274)) * 0.01;
                         if (det_scale == 0.35) {
-                            _ = state.rng.randTagged(radius_caller) & 0x3f;
+                            const radius = @as(f32, @floatFromInt(state.rng.randTagged(radius_caller) & 0x3F));
+                            const pos = state_mod.Vec2.add(creatures.entries[idx].pos, state_mod.Vec2.fromAngle(angle).mul(radius));
+                            _ = terrain_fx.decals.addRandom(state, pos);
                         } else {
                             const radius_mod = @max(extra_radius, 1);
-                            _ = state.rng.randTagged(radius_caller) % @as(u32, @intCast(radius_mod));
+                            const radius = state.rng.randTagged(radius_caller) % @as(u32, @intCast(radius_mod));
+                            const pos = state_mod.Vec2.add(creatures.entries[idx].pos, state_mod.Vec2.fromAngle(angle).mul(@floatFromInt(radius)));
+                            _ = terrain_fx.decals.addRandom(state, pos);
                         }
-                        runtime_helpers.consumeAddRandomRng(state);
                     }
                 }
 

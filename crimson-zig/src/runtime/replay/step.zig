@@ -20,6 +20,7 @@ const rng_callers = @import("../../rng_caller_static.zig");
 const spawn_mod = @import("../spawn.zig");
 const state_mod = @import("../state.zig");
 const survival_progression = @import("../survival_progression.zig");
+const terrain_fx_mod = @import("../terrain_fx.zig");
 const weapons_runtime = @import("../weapons.zig");
 
 const narrowF32 = native_math.roundF32;
@@ -94,6 +95,7 @@ pub const StepResult = struct {
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
     projectile_tick_stats: projectiles_mod.ProjectileTickStats,
+    terrain_fx: terrain_fx_mod.TerrainFxBatch,
     rng_end: u32,
     pending_capture_state_reset: bool,
 };
@@ -282,15 +284,16 @@ pub fn stepTick(
     }
 
     callPhaseHook(options.hooks, context, .pre_effects, &frame);
-    context.effects.update(frame.dt);
+    context.effects.update(frame.dt, &context.terrain_fx.decals);
     perks.updateEvilEyesTargets(players, context.creatures.entries[0..]);
     perks.updatePerkEffects(&context.state, players, frame.dt_sim);
-    perks.applyJinxedEffects(&context.state, players, &context.creatures, frame.dt_sim);
+    perks.applyJinxedEffects(&context.state, players, &context.creatures, &context.terrain_fx, frame.dt_sim);
     perks.applyPyrokineticEffects(
         &context.state,
         players,
         &context.creatures,
         &context.particles,
+        &context.terrain_fx,
         frame.dt_sim,
     );
     frame.rng_after_perk_effects = context.state.rng.state;
@@ -304,6 +307,7 @@ pub fn stepTick(
         frame.dt_sim,
         context.world_size,
         &context.bonuses,
+        &context.terrain_fx,
     );
     bonus_runtime.applyPendingCreatureProjectiles(&context.state, &context.projectiles);
     frame.rng_after_creatures = context.state.rng.state;
@@ -329,6 +333,7 @@ pub fn stepTick(
         &context.creatures,
         &context.bonuses,
         &context.effects,
+        &context.terrain_fx,
         context.detail_preset,
         frame.dt_sim,
         context.world_size,
@@ -342,6 +347,7 @@ pub fn stepTick(
         &context.bonuses,
         &context.effects,
         &context.sprite_effects,
+        &context.terrain_fx,
         frame.dt_sim,
         context.world_size,
         context.detail_preset,
@@ -354,6 +360,7 @@ pub fn stepTick(
         &context.creatures,
         &context.bonuses,
         &context.sprite_effects,
+        &context.terrain_fx,
         frame.dt_sim,
         context.world_size,
     );
@@ -655,6 +662,7 @@ pub fn stepTick(
         .rng_after_spawns = frame.rng_after_spawns,
         .rng_after_bonus_update = frame.rng_after_bonus_update,
         .projectile_tick_stats = frame.projectile_tick_stats,
+        .terrain_fx = context.terrain_fx.takeBatch(),
         .rng_end = context.state.rng.state,
         .pending_capture_state_reset = context.pending_capture_state_reset,
     };

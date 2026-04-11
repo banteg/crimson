@@ -12,6 +12,7 @@ const rng_callers = @import("../rng_caller_static.zig");
 const runtime_helpers = @import("helpers.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
+const terrain_fx_mod = @import("terrain_fx.zig");
 const weapon_data = @import("weapon_data.zig");
 const math = @import("math.zig");
 const timing = @import("timing.zig");
@@ -1830,6 +1831,7 @@ pub const CreaturePool = struct {
         dt: f32,
         world_size: f32,
         bonus_pool: *bonus_runtime.BonusPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     ) CreatureRuntimeError!void {
         if (players.len == 0) return;
         if (!(dt > 0.0)) return;
@@ -1880,7 +1882,7 @@ pub const CreaturePool = struct {
                 if (creature_lifecycle.isAlive(creature.lifecycle_stage)) {
                     creature.lifecycle_stage -= dt_f32;
                 }
-                tickDead(creature, dt_f32, &self.kill_count, state);
+                tickDead(creature, dt_f32, &self.kill_count, state, self.effects, terrain_fx);
                 continue;
             }
 
@@ -1899,7 +1901,7 @@ pub const CreaturePool = struct {
                 );
                 if (!(creature.hp > 0.0)) {
                     if (creature.active) {
-                        tickDead(creature, dt_f32, &self.kill_count, state);
+                        tickDead(creature, dt_f32, &self.kill_count, state, self.effects, terrain_fx);
                     }
                     continue;
                 }
@@ -1931,7 +1933,7 @@ pub const CreaturePool = struct {
                 );
                 if (!(creature.hp > 0.0)) {
                     if (creature.active) {
-                        tickDead(creature, dt_f32, &self.kill_count, state);
+                        tickDead(creature, dt_f32, &self.kill_count, state, self.effects, terrain_fx);
                     }
                     continue;
                 }
@@ -1955,7 +1957,7 @@ pub const CreaturePool = struct {
                         // Plague timer kills consume one contact-SFX bank select draw.
                         consumeContactSfxRng(state, creature.type_id);
                     }
-                    runtime_helpers.consumeAddRandomRng(state);
+                    _ = terrain_fx.decals.addRandom(state, creature.pos);
                 }
             }
             if ((state.bonuses.energizer > 0.0 and creature.max_hp < 500.0) or creature.plague_infected) {
@@ -2056,7 +2058,7 @@ pub const CreaturePool = struct {
                         creature.collision_timer = plague_collision_period;
                         const pulse_damage = (100.0 - dist) * 0.3;
                         creature.hp = narrowF32(creature.hp - pulse_damage);
-                        runtime_helpers.consumeAddRandomRng(state);
+                        _ = terrain_fx.decals.addRandom(state, creature.pos);
                         if (creature.hp < 0.0) {
                             if (creature.type_id == @intFromEnum(spawn_mod.CreatureTypeId.lizard)) {
                                 creature.hp = 1.0;
@@ -2170,7 +2172,7 @@ pub const CreaturePool = struct {
                         world_size,
                     );
                     if (!(creature.hp > 0.0) and creature.active) {
-                        tickDead(creature, dt_f32, &self.kill_count, state);
+                        tickDead(creature, dt_f32, &self.kill_count, state, self.effects, terrain_fx);
                     }
                 }
                 if (player.shield_timer <= 0.0) {
@@ -2181,7 +2183,14 @@ pub const CreaturePool = struct {
                     }
                 }
                 applyPlayerContactDamage(state, player, creature.contact_damage, dt_f32);
-                runtime_helpers.consumeAddRandomRng(state);
+                const push_delta = state_mod.Vec2.sub(player.pos, creature.pos);
+                const push_len = push_delta.length();
+                if (push_len > 1e-6) {
+                    const push_dir = push_delta.mul(1.0 / push_len);
+                    _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(player.pos, push_dir.mul(3.0)));
+                } else {
+                    _ = terrain_fx.decals.addRandom(state, player.pos);
+                }
                 creature.attack_cooldown = narrowF32(creature.attack_cooldown + contact_damage_cooldown);
             }
 
@@ -3610,6 +3619,8 @@ fn tickDead(
     dt: f32,
     kill_count: *i32,
     state: *state_mod.GameplayState,
+    effects: ?*effects_mod.EffectPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
 ) void {
     if (!(dt > 0.0)) return;
     const hitbox = narrowF32(creature.lifecycle_stage);
@@ -3639,20 +3650,51 @@ fn tickDead(
         }
         return;
     }
+    if (state.gore_disabled == 0) {
+        const corpse_size = @max(1.0, creature.size);
+        const corpse_type_id = if (long_strip) creature.type_id else 7;
+        const corpse_ok = terrain_fx.corpses.add(
+            .{
+                .x = creature.pos.x - corpse_size * 0.5,
+                .y = creature.pos.y - corpse_size * 0.5,
+            },
+            .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+            creature.heading,
+            corpse_size,
+            corpse_type_id,
+        );
+        if (!corpse_ok) {
+            creature.lifecycle_stage = 0.001;
+            return;
+        }
+    }
     kill_count.* += 1;
     if (state.gore_disabled == 0 and
         (creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) != 0)
     {
-        const burst_sets = [_]struct { count: usize, caller: rng_callers.Caller }{
-            .{ .count = 8, .caller = rng_callers.creature_update_all_ping_pong_blood_8_angle },
-            .{ .count = 6, .caller = rng_callers.creature_update_all_ping_pong_blood_6_angle },
-            .{ .count = 5, .caller = rng_callers.creature_update_all_ping_pong_blood_5_angle },
-        };
-        for (burst_sets) |entry| {
-            const count = entry.count;
-            for (0..count) |_| {
-                _ = state.rng.randTagged(entry.caller) % 0x264;
-                consumeSpawnBloodSplatterRng(state);
+        if (effects) |effect_pool| {
+            const burst_sets = [_]struct { count: usize, age: f32, caller: rng_callers.Caller }{
+                .{ .count = 8, .age = 0.0, .caller = rng_callers.creature_update_all_ping_pong_blood_8_angle },
+                .{ .count = 6, .age = -0.07, .caller = rng_callers.creature_update_all_ping_pong_blood_6_angle },
+                .{ .count = 5, .age = -0.12, .caller = rng_callers.creature_update_all_ping_pong_blood_5_angle },
+            };
+            for (burst_sets) |entry| {
+                for (0..entry.count) |_| {
+                    const angle = @as(f32, @floatFromInt(state.rng.randTagged(entry.caller) % 612)) * 0.01;
+                    effect_pool.spawnBloodSplatter(state, creature.pos, angle, entry.age, 5, state.gore_disabled);
+                }
+            }
+        } else {
+            const burst_sets = [_]struct { count: usize, caller: rng_callers.Caller }{
+                .{ .count = 8, .caller = rng_callers.creature_update_all_ping_pong_blood_8_angle },
+                .{ .count = 6, .caller = rng_callers.creature_update_all_ping_pong_blood_6_angle },
+                .{ .count = 5, .caller = rng_callers.creature_update_all_ping_pong_blood_5_angle },
+            };
+            for (burst_sets) |entry| {
+                for (0..entry.count) |_| {
+                    _ = state.rng.randTagged(entry.caller) % 612;
+                    consumeSpawnBloodSplatterRng(state);
+                }
             }
         }
     }
