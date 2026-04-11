@@ -44,6 +44,7 @@ pub const LiveSurvivalConfig = LiveModeConfig;
 pub const FrameInput = struct {
     player: player_runtime.GameInput = defaultGameInput(),
     perk_choice_index: ?i32 = null,
+    perk_menu_active: bool = false,
 };
 
 pub const ShotAudioEvent = struct {
@@ -242,7 +243,7 @@ pub const LiveRunner = struct {
             _ = try self.pickPerk(choice_index, clamped_dt);
         }
 
-        const paused_for_perk_pick = self.perkPendingCount() > 0;
+        const paused_for_perk_pick = input.perk_menu_active and self.perkPendingCount() > 0;
         if (self.allPlayersDead() or paused_for_perk_pick or !(frame_dt > 0.0)) {
             return self.snapshot(0, paused_for_perk_pick, .{}, .{});
         }
@@ -255,7 +256,7 @@ pub const LiveRunner = struct {
         const tick_inputs = [_]player_runtime.GameInput{input.player};
         while (ticks_advanced < self.max_substeps_per_frame and
             !self.allPlayersDead() and
-            self.perkPendingCount() <= 0 and
+            !(input.perk_menu_active and self.perkPendingCount() > 0) and
             self.accumulator + epsilon_dt >= self.session.dt_nominal)
         {
             const before_player = self.player0Const().?.*;
@@ -317,6 +318,27 @@ pub const LiveRunner = struct {
         return self.session.state.perk_selection.pending_count;
     }
 
+    pub fn preparedPerkChoices(self: *LiveRunner) []const game_ids.PerkId {
+        return perks.perkSelectionPreparedChoices(
+            self.session.players(),
+            self.session.state.perk_selection,
+        );
+    }
+
+    pub fn openPerkMenu(self: *LiveRunner) []const game_ids.PerkId {
+        const choices = perks.perkSelectionOpenChoices(
+            &self.session.state,
+            self.session.players(),
+            self.session.game_mode,
+            self.session.player_count,
+            self.session.quest_unlock_index,
+        );
+        if (choices.len > 0) {
+            self.session.perk_menu_open_count += 1;
+        }
+        return choices;
+    }
+
     pub fn currentPerkChoices(self: *LiveRunner) []const game_ids.PerkId {
         return perks.perkSelectionCurrentChoices(
             &self.session.state,
@@ -345,6 +367,9 @@ pub const LiveRunner = struct {
                 .dt_frame = dt_sim,
             },
         );
+        if (picked != null) {
+            self.session.perk_pick_count += 1;
+        }
         return picked != null;
     }
 
@@ -465,13 +490,22 @@ test "live survival runner pauses for pending perk picks" {
     runner.session.state.perk_selection.pending_count = 1;
     runner.session.state.perk_selection.choices_dirty = true;
 
-    const blocked = try runner.stepFrame(runner.session.dt_nominal, .{});
+    const moving = try runner.stepFrame(runner.session.dt_nominal, .{});
+    try std.testing.expectEqual(@as(usize, 1), moving.ticks_advanced);
+    try std.testing.expect(!moving.paused_for_perk_pick);
+
+    const blocked = try runner.stepFrame(runner.session.dt_nominal, .{
+        .perk_menu_active = true,
+    });
     try std.testing.expectEqual(@as(usize, 0), blocked.ticks_advanced);
     try std.testing.expect(blocked.paused_for_perk_pick);
 
-    const choices = runner.currentPerkChoices();
+    try std.testing.expectEqual(@as(usize, 0), runner.preparedPerkChoices().len);
+    const choices = runner.openPerkMenu();
     try std.testing.expect(choices.len > 0);
+    try std.testing.expectEqual(@as(usize, 1), runner.session.perk_menu_open_count);
     try std.testing.expect(try runner.pickPerk(0, runner.session.dt_nominal));
+    try std.testing.expectEqual(@as(usize, 1), runner.session.perk_pick_count);
     try std.testing.expectEqual(@as(i32, 0), runner.perkPendingCount());
 }
 
