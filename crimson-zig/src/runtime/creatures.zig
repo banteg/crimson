@@ -3115,15 +3115,15 @@ const SpawnStats = struct {
 };
 
 const BasicRandomCallers = struct {
-    size: u32,
-    move_speed: u32,
-    tint: ?u32,
-    contact_damage: u32,
+    size: rng_callers.Caller,
+    move_speed: rng_callers.Caller,
+    tint: ?rng_callers.Caller,
+    contact_damage: rng_callers.Caller,
 };
 
 fn randfTagged(
     rng: *spawn_mod.Crand,
-    caller: u32,
+    caller: rng_callers.Caller,
     mod: u32,
     scale: f32,
     base: f32,
@@ -3643,7 +3643,7 @@ fn tickDead(
     if (state.gore_disabled == 0 and
         (creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) != 0)
     {
-        const burst_sets = [_]struct { count: usize, caller: u32 }{
+        const burst_sets = [_]struct { count: usize, caller: rng_callers.Caller }{
             .{ .count = 8, .caller = rng_callers.creature_update_all_ping_pong_blood_8_angle },
             .{ .count = 6, .caller = rng_callers.creature_update_all_ping_pong_blood_6_angle },
             .{ .count = 5, .caller = rng_callers.creature_update_all_ping_pong_blood_5_angle },

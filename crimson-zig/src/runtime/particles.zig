@@ -282,7 +282,7 @@ pub const ParticlePool = struct {
         }
     }
 
-    fn allocSlot(self: *ParticlePool, state: *state_mod.GameplayState, alloc_caller: u32) usize {
+    fn allocSlot(self: *ParticlePool, state: *state_mod.GameplayState, alloc_caller: rng_callers.Caller) usize {
         for (self.entries, 0..) |entry, idx| {
             if (!entry.active) return idx;
         }

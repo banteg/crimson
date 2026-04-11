@@ -6,6 +6,7 @@ const crt_rand_mult: u32 = 214_013;
 const crt_rand_inc: u32 = 2_531_011;
 
 const narrowF32 = native_math.roundF32;
+const RngCaller = rng_callers.Caller;
 
 pub const CreatureTypeId = enum(i32) {
     zombie = 0,
@@ -117,12 +118,12 @@ pub const Vec2 = struct {
 };
 
 pub const Crand = struct {
-    pub const CallerStatic = ?u32;
+    pub const Caller = RngCaller;
     pub const TraceDraw = struct {
         state_before: u32,
         state_after: u32,
         value_15: u32,
-        caller: CallerStatic,
+        caller: ?Caller,
     };
 
     pub const TraceSink = *const fn (ctx: ?*anyopaque, draw: TraceDraw) void;
@@ -155,10 +156,10 @@ pub const Crand = struct {
     }
 
     pub fn rand(self: *Crand) u32 {
-        return self.randTagged(null);
+        return self.draw(null);
     }
 
-    pub fn randTagged(self: *Crand, caller: CallerStatic) u32 {
+    fn draw(self: *Crand, caller: ?Caller) u32 {
         const state_before = self.state;
         self.state = self.state *% crt_rand_mult +% crt_rand_inc;
         const value = (self.state >> 16) & 0x7fff;
@@ -176,6 +177,10 @@ pub const Crand = struct {
         return value;
     }
 
+    pub fn randTagged(self: *Crand, caller: Caller) u32 {
+        return self.draw(caller);
+    }
+
     pub fn consumeMissingTraceCaller(self: *Crand) bool {
         const missing = self.missing_trace_caller;
         self.missing_trace_caller = false;
@@ -184,11 +189,11 @@ pub const Crand = struct {
 };
 
 const SurvivalSpawnPosCallers = struct {
-    edge: u32,
-    top_x: u32,
-    bottom_x: u32,
-    left_y: u32,
-    right_y: u32,
+    edge: RngCaller,
+    top_x: RngCaller,
+    bottom_x: RngCaller,
+    left_y: RngCaller,
+    right_y: RngCaller,
 };
 
 const survival_spawn_pos_callers_extra: SurvivalSpawnPosCallers = .{

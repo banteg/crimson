@@ -854,7 +854,7 @@ fn applyPelletJitter(
         .ion_shotgun => rng_callers.player_update_ion_shotgun_pellet_jitter,
         .gauss_shotgun => rng_callers.player_update_gauss_shotgun_pellet_jitter,
         .plasma_shotgun => rng_callers.player_update_plasma_shotgun_pellet_jitter,
-        else => null,
+        else => unreachable,
     };
     return switch (rule) {
         .none => shot_angle,
@@ -881,21 +881,23 @@ fn applySpeedScaleRule(
     fire_bullets_active: bool,
     rule: fire_recipes.SpeedScaleRule,
 ) void {
-    const caller = if (fire_bullets_active)
-        null
-    else switch (weapon_id) {
-        .shotgun => rng_callers.player_update_shotgun_pellet_speed_scale,
-        .sawed_off_shotgun => rng_callers.player_update_sawed_off_shotgun_pellet_speed_scale,
-        .jackhammer => rng_callers.player_update_jackhammer_pellet_speed_scale,
-        .ion_shotgun => rng_callers.player_update_ion_shotgun_pellet_speed_scale,
-        .gauss_shotgun => rng_callers.player_update_gauss_shotgun_pellet_speed_scale,
-        .plasma_shotgun => rng_callers.player_update_plasma_shotgun_pellet_speed_scale,
-        else => null,
-    };
     switch (rule) {
         .none => {},
         .modulo => |speed| {
-            const speed_roll = if (caller) |tag| state.rng.randTagged(tag) else state.rng.rand();
+            const speed_roll = if (fire_bullets_active)
+                state.rng.rand()
+            else blk: {
+                const caller: rng_callers.Caller = switch (weapon_id) {
+                    .shotgun => rng_callers.player_update_shotgun_pellet_speed_scale,
+                    .sawed_off_shotgun => rng_callers.player_update_sawed_off_shotgun_pellet_speed_scale,
+                    .jackhammer => rng_callers.player_update_jackhammer_pellet_speed_scale,
+                    .ion_shotgun => rng_callers.player_update_ion_shotgun_pellet_speed_scale,
+                    .gauss_shotgun => rng_callers.player_update_gauss_shotgun_pellet_speed_scale,
+                    .plasma_shotgun => rng_callers.player_update_plasma_shotgun_pellet_speed_scale,
+                    else => unreachable,
+                };
+                break :blk state.rng.randTagged(caller);
+            };
             projectiles.entries[projectile_idx].speed_scale = narrowF32(
                 speed.base + @as(f32, @floatFromInt(speed_roll % speed.modulo)) * speed.step,
             );

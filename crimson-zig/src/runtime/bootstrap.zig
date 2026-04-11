@@ -27,9 +27,9 @@ const TerrainGenerationKind = enum {
 };
 
 const TerrainStampCallerTriplet = struct {
-    rotation: u32,
-    y: u32,
-    x: u32,
+    rotation: rng_callers.Caller,
+    y: rng_callers.Caller,
+    x: rng_callers.Caller,
 };
 
 const default_terrain_slots: TerrainSlotTriplet = .{ 0, 1, 0 };
@@ -43,7 +43,7 @@ const unlock_terrain_slots = [_]struct {
     .{ .threshold = 20, .slots = .{ 2, 3, 2 } },
 };
 
-const unlock_random_terrain_prelude_callers = [_]u32{
+const unlock_random_terrain_prelude_callers = [_]rng_callers.Caller{
     rng_callers.terrain_generate_random_prelude_1,
     rng_callers.terrain_generate_random_prelude_2,
     rng_callers.terrain_generate_random_prelude_3,

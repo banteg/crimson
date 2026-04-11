@@ -484,7 +484,7 @@ const TickTraceCollector = struct {
             .value_15 = @intCast(draw.value_15),
             .state_before_u32 = draw.state_before,
             .state_after_u32 = draw.state_after,
-            .caller = draw.caller,
+            .caller = if (draw.caller) |caller| @intFromEnum(caller) else null,
         }) catch {
             self.failed = true;
         };

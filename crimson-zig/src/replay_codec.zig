@@ -738,13 +738,13 @@ const terrain_unlock_rules = [_]TerrainRule{
     .{ .threshold = 0x14 },
 };
 
-const unlock_random_terrain_prelude_callers = [_]u32{
+const unlock_random_terrain_prelude_callers = [_]rng_callers.Caller{
     rng_callers.terrain_generate_random_prelude_1,
     rng_callers.terrain_generate_random_prelude_2,
     rng_callers.terrain_generate_random_prelude_3,
 };
 
-const unlock_random_terrain_stamp_callers = [_][3]u32{
+const unlock_random_terrain_stamp_callers = [_][3]rng_callers.Caller{
     .{
         rng_callers.terrain_generate_random_base_rotation,
         rng_callers.terrain_generate_random_base_y,
@@ -774,7 +774,7 @@ const Crand = struct {
         return (self.state >> 16) & 0x7fff;
     }
 
-    fn randTagged(self: *Crand, _: u32) u32 {
+    fn randTagged(self: *Crand, _: rng_callers.Caller) u32 {
         return self.rand();
     }
 };

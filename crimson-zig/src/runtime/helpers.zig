@@ -88,8 +88,8 @@ pub fn consumeFreezeShardRng(state: *state_mod.GameplayState) void {
 
 pub fn consumeFreezeShatterRng(
     state: *state_mod.GameplayState,
-    shard_angle_caller: u32,
-    shatter_angle_caller: u32,
+    shard_angle_caller: rng_callers.Caller,
+    shatter_angle_caller: rng_callers.Caller,
 ) void {
     for (0..8) |_| {
         _ = state.rng.randTagged(shard_angle_caller) % 0x264;

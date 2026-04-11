@@ -338,7 +338,7 @@ pub const SecondaryProjectilePool = struct {
                 };
 
                 if (freeze_active) {
-                    const freeze_angle_caller: u32 = switch (entry.type_id) {
+                    const freeze_angle_caller: rng_callers.Caller = switch (entry.type_id) {
                         .rocket => rng_callers.secondary_projectile_update_rocket_freeze_shard_angle,
                         .homing_rocket => rng_callers.secondary_projectile_update_seeker_rocket_freeze_shard_angle,
                         .rocket_minigun => rng_callers.secondary_projectile_update_rocket_minigun_freeze_shard_angle,
@@ -393,7 +393,7 @@ pub const SecondaryProjectilePool = struct {
                 entry.trail_timer = 0.0;
 
                 if (freeze_active) {
-                    const freeze_angle_caller: u32 = switch (entry.type_id) {
+                    const freeze_angle_caller: rng_callers.Caller = switch (entry.type_id) {
                         .rocket => rng_callers.secondary_projectile_update_rocket_freeze_shard_angle,
                         .homing_rocket => rng_callers.secondary_projectile_update_seeker_rocket_freeze_shard_angle,
                         .rocket_minigun => rng_callers.secondary_projectile_update_rocket_minigun_freeze_shard_angle,
@@ -420,13 +420,13 @@ pub const SecondaryProjectilePool = struct {
                         44
                     else
                         0;
-                    const angle_caller: u32 = switch (entry.type_id) {
+                    const angle_caller: rng_callers.Caller = switch (entry.type_id) {
                         .rocket => rng_callers.secondary_projectile_update_rocket_decal_angle,
                         .homing_rocket => rng_callers.secondary_projectile_update_seeker_rocket_decal_angle,
                         .rocket_minigun => rng_callers.secondary_projectile_update_rocket_minigun_decal_angle,
                         else => rng_callers.secondary_projectile_update_rocket_decal_angle,
                     };
-                    const radius_caller: u32 = switch (entry.type_id) {
+                    const radius_caller: rng_callers.Caller = switch (entry.type_id) {
                         .rocket => rng_callers.secondary_projectile_update_rocket_decal_radius,
                         .homing_rocket => rng_callers.secondary_projectile_update_seeker_rocket_decal_radius,
                         .rocket_minigun => rng_callers.secondary_projectile_update_rocket_minigun_decal_radius,
