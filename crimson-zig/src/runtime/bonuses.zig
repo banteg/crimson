@@ -1439,7 +1439,7 @@ test "weapon pick random available enforces unlock table in quests" {
 }
 
 test "weapon pick random available rerolls used weapons on even gate" {
-    const seed = findSeedForWeaponReroll(2_000_000) orelse unreachable;
+    const seed: u32 = 160;
     var state = state_mod.GameplayState.init(seed);
     state.game_mode = .quests;
     state.status_quest_unlock_index = 1;
@@ -1449,19 +1449,6 @@ test "weapon pick random available rerolls used weapons on even gate" {
     const picked = weaponPickRandomAvailable(&state);
     try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, picked);
 }
-
-fn findSeedForWeaponReroll(max_seed: u32) ?u32 {
-    var seed: u32 = 0;
-    while (seed < max_seed) : (seed += 1) {
-        var state = state_mod.GameplayState.init(seed);
-        if ((state.rng.rand() % weapon_drop_id_count) != @as(u32, weaponIdIndex(.pistol))) continue;
-        if ((state.rng.rand() & 1) != 0) continue;
-        if ((state.rng.rand() % weapon_drop_id_count) != @as(u32, weaponIdIndex(.assault_rifle))) continue;
-        return seed;
-    }
-    return null;
-}
-
 fn setTestBonusEntry(
     pool: *BonusPool,
     idx: usize,

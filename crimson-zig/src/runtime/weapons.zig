@@ -1037,23 +1037,6 @@ fn activeSecondaryProjectileCount(
     return count;
 }
 
-fn findSeedForNthRandValue(
-    draw_index: usize,
-    target: u32,
-    search_limit: u32,
-) ?u32 {
-    for (0..search_limit) |seed_usize| {
-        const seed: u32 = @intCast(seed_usize);
-        var rng = spawn_mod.Crand.init(seed);
-        var value: u32 = 0;
-        for (0..draw_index) |_| {
-            value = rng.rand();
-        }
-        if (value == target) return seed;
-    }
-    return null;
-}
-
 test "weapon usage tracks most used weapon" {
     var state = state_mod.GameplayState.init(1);
     var projectiles: projectiles_mod.ProjectilePool = .{};
@@ -1770,7 +1753,7 @@ test "multi plasma fires five projectiles with fixed spread profile" {
 }
 
 test "plasma shotgun uses masked jitter and random speed scale" {
-    const seed = findSeedForNthRandValue(4, 255, 200_000) orelse unreachable;
+    const seed: u32 = 53_165;
 
     var state = state_mod.GameplayState.init(seed);
     var projectiles: projectiles_mod.ProjectilePool = .{};

@@ -3799,49 +3799,6 @@ fn expectFloatClose(expected: f32, actual: f32) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
 
-fn findSeedForNthRandMod(
-    nth: usize,
-    modulus: u32,
-    target: u32,
-    max_seed: u32,
-) ?u32 {
-    if (nth == 0) return null;
-    if (modulus == 0) return null;
-
-    var seed: u32 = 0;
-    while (seed < max_seed) : (seed += 1) {
-        var rng = spawn_mod.Crand.init(seed);
-        var roll: u32 = 0;
-        var idx: usize = 0;
-        while (idx < nth) : (idx += 1) {
-            roll = rng.rand() % modulus;
-        }
-        if (roll == target) return seed;
-    }
-    return null;
-}
-
-fn findSeedForFirstTwoRandMods(
-    modulus: u32,
-    first: u32,
-    second: u32,
-    max_seed: u32,
-) ?u32 {
-    if (modulus == 0) return null;
-
-    var seed: u32 = 0;
-    while (seed < max_seed) : (seed += 1) {
-        var rng = spawn_mod.Crand.init(seed);
-        const first_roll = rng.rand() % modulus;
-        _ = rng.rand();
-        const second_roll = rng.rand() % modulus;
-        if (first_roll == first and second_roll == second) {
-            return seed;
-        }
-    }
-    return null;
-}
-
 test "spawn init and shot resolution award xp on kill" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1234);
@@ -3931,12 +3888,7 @@ test "bloody mess quick learner reward is still doubled by double experience bon
 }
 
 test "split-on-death children use original source when first child reuses source slot" {
-    const seed = findSeedForFirstTwoRandMods(
-        @intCast(max_creatures),
-        0,
-        1,
-        2_000_000,
-    ) orelse return error.TestExpectedEqual;
+    const seed: u32 = 243_988;
 
     var pool: CreaturePool = .{};
     for (&pool.entries) |*entry| {
@@ -3971,12 +3923,7 @@ test "split-on-death children use original source when first child reuses source
 }
 
 test "explosion xp uses pre-split reward when source slot is reused by split child" {
-    const seed = findSeedForFirstTwoRandMods(
-        @intCast(max_creatures),
-        0,
-        1,
-        2_000_000,
-    ) orelse return error.TestExpectedEqual;
+    const seed: u32 = 243_988;
 
     var pool: CreaturePool = .{};
     for (&pool.entries) |*entry| {
@@ -5847,8 +5794,8 @@ test "tough reloader halves damage while reloading" {
 }
 
 test "highlander prevents contact damage except 1-in-10 lethal roll" {
-    const safe_seed = findSeedForNthRandMod(1, 10, 1, 200_000) orelse unreachable;
-    const lethal_seed = findSeedForNthRandMod(1, 10, 0, 200_000) orelse unreachable;
+    const safe_seed: u32 = 1;
+    const lethal_seed: u32 = 16;
 
     var safe_state = state_mod.GameplayState.init(safe_seed);
     var safe_player: state_mod.PlayerState = .{
@@ -5874,7 +5821,7 @@ test "highlander prevents contact damage except 1-in-10 lethal roll" {
 }
 
 test "unstoppable suppresses heading jitter and spread heat on damage" {
-    const jitter_seed = findSeedForNthRandMod(2, 100, 0, 200_000) orelse unreachable;
+    const jitter_seed: u32 = 42;
 
     var base_state = state_mod.GameplayState.init(jitter_seed);
     var base_player: state_mod.PlayerState = .{
