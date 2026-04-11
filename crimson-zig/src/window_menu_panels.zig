@@ -183,14 +183,13 @@ const PlayGameEntry = struct {
 
 const PlayGameLayout = struct {
     panel_rect: rl.Rectangle,
+    base_pos: rl.Vector2,
+    drop_pos: rl.Vector2,
     title_pos: rl.Vector2,
-    content_x: f32,
-    content_y: f32,
-    drop_x: f32,
     y_start: f32,
     y_step: f32,
     count_x: f32,
-    tooltip_y: f32,
+    tooltip_pos: rl.Vector2,
 };
 
 const QuestLayout = struct {
@@ -337,9 +336,9 @@ fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const windo
     drawAtlasLabelAt(runtime_assets, layout.title_pos.x, layout.title_pos.y, window_menu.label_row_play_game, rl.Color.white);
     drawPlayerCountWidget(state, runtime_assets, layout, player_count_raw);
 
-    var y = layout.content_y + layout.y_start;
+    var y = layout.base_pos.y + layout.y_start;
     for (entries) |entry| {
-        const button = playGameButton(entry.label, layout.content_x, y);
+        const button = playGameButton(entry.label, layout.base_pos.x, y);
         const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
         window_ui.drawButton(button, false, hovered, runtime_assets);
         if (show_counts and entry.show_count) {
@@ -378,16 +377,18 @@ fn playGameLayoutFromPlayerCount(player_count_raw: u32, status: formats.game_cfg
     const y_step: f32 = if (tight_spacing) 28.0 else 32.0;
     const y_start: f32 = if (tight_spacing) 42.0 else 48.0;
     const panel_rect = animatedPanelRect(.{ .x = 352.0, .y = 150.0, .width = 510.0, .height = 278.0 }, timeline_ms);
+    const base_pos = rl.Vector2.init(panel_rect.x + 266.0, panel_rect.y + 50.0);
+    const drop_pos = rl.Vector2.init(base_pos.x + 80.0, base_pos.y + 1.0);
+    const y_end = y_start + y_step * @as(f32, @floatFromInt(entries.len));
     return .{
         .panel_rect = panel_rect,
-        .title_pos = .{ .x = panel_rect.x + 144.0, .y = 184.0 },
-        .content_x = panel_rect.x + 118.0,
-        .content_y = 206.0,
-        .drop_x = panel_rect.x + 170.0,
-        .y_start = if (tight_spacing) 26.0 else 32.0,
+        .base_pos = base_pos,
+        .drop_pos = drop_pos,
+        .title_pos = .{ .x = base_pos.x - 64.0, .y = base_pos.y - 8.0 },
+        .y_start = y_start,
         .y_step = y_step,
-        .count_x = panel_rect.x + 392.0,
-        .tooltip_y = 222.0 + y_start + y_step * @as(f32, @floatFromInt(entries.len)),
+        .count_x = base_pos.x + 158.0,
+        .tooltip_pos = .{ .x = base_pos.x - 55.0, .y = base_pos.y + y_end + 16.0 },
     };
 }
 
@@ -397,9 +398,9 @@ fn playGameButton(label: [:0]const u8, center_x: f32, top_y: f32) window_ui.UiBu
 
 fn hoveredPlayGameEntry(entries: []const PlayGameEntry, layout: PlayGameLayout) ?usize {
     const mouse = rl.getMousePosition();
-    var y = layout.content_y + layout.y_start;
+    var y = layout.base_pos.y + layout.y_start;
     for (entries, 0..) |entry, idx| {
-        const button = playGameButton(entry.label, layout.content_x, y);
+        const button = playGameButton(entry.label, layout.base_pos.x, y);
         if (rl.checkCollisionPointRec(mouse, button.rect)) return idx;
         y += layout.y_step;
     }
@@ -445,15 +446,18 @@ fn updatePlayGameTooltipTimers(state: *PlayGameState, entries: []const PlayGameE
 }
 
 fn drawPlayGameTooltips(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, entries: []const PlayGameEntry, layout: PlayGameLayout) void {
-    const tooltip_x = layout.content_x - 55.0;
-    const tooltip_y = layout.tooltip_y + 16.0;
     for (entries) |entry| {
         const tooltip_idx = tooltipIndexForKey(entry.key);
         const ms = state.tooltip_ms[tooltip_idx];
         if (ms <= 0) continue;
         const alpha = @as(u8, @intFromFloat(@min(@as(f32, 1.0), @as(f32, @floatFromInt(ms)) * 0.0009) * 255.0));
         const offset = playGameTooltipOffset(entry.key);
-        window_ui.drawSmallText(runtime_assets, entry.tooltip, tooltip_x + offset.x, tooltip_y + offset.y, rl.Color.init(255, 255, 255, alpha));
+        var lines = std.mem.splitScalar(u8, entry.tooltip, '\n');
+        var y = layout.tooltip_pos.y + offset.y;
+        while (lines.next()) |line| {
+            window_ui.drawSmallText(runtime_assets, line, layout.tooltip_pos.x + offset.x, y, rl.Color.init(255, 255, 255, alpha));
+            y += 14.0;
+        }
     }
 }
 
@@ -596,8 +600,10 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
     const layout = questLayout(state.panel.timeline_ms);
     const hovered_stage = hoveredQuestStage(layout);
     if (hovered_stage) |stage| {
-        state.stage = stage;
-        if (rl.isMouseButtonPressed(.left)) return .{ .play_button_click = true };
+        if (rl.isMouseButtonPressed(.left)) {
+            state.stage = stage;
+            return .{ .play_button_click = true };
+        }
     }
 
     if (questDigitRowPressed()) |row| {
@@ -1028,15 +1034,15 @@ fn playGameButtons() [4]window_ui.UiButton {
 }
 
 fn playerCountHeaderRect(layout: PlayGameLayout) rl.Rectangle {
-    return rl.Rectangle.init(layout.drop_x - 30.0, 258.0, 124.0, 16.0);
+    return rl.Rectangle.init(layout.drop_pos.x, layout.drop_pos.y, 102.0, 16.0);
 }
 
 fn playerCountListRect(layout: PlayGameLayout) rl.Rectangle {
-    return rl.Rectangle.init(layout.drop_x - 30.0, 258.0, 124.0, 80.0);
+    return rl.Rectangle.init(layout.drop_pos.x, layout.drop_pos.y, 102.0, 88.0);
 }
 
 fn playerCountRowRect(layout: PlayGameLayout, idx: usize) rl.Rectangle {
-    return rl.Rectangle.init(layout.drop_x - 30.0, 275.0 + @as(f32, @floatFromInt(idx)) * 16.0, 124.0, 16.0);
+    return rl.Rectangle.init(layout.drop_pos.x, layout.drop_pos.y + 17.0 + @as(f32, @floatFromInt(idx)) * 16.0, 102.0, 16.0);
 }
 
 fn statisticsButtons(timeline_ms: i32) [5]window_ui.UiButton {
