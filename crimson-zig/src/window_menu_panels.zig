@@ -23,16 +23,16 @@ const player_count_labels = [_][:0]const u8{
 };
 
 const quest_titles = [_][]const u8{
-    "Land Hostile",             "Minor Alien Breach",      "Target Practice",        "Frontline Assault",      "Alien Dens",
-    "The Random Factor",        "Spider Wave Syndrome",    "Alien Squads",           "Nesting Grounds",        "8-legged Terror",
-    "Everred Pastures",         "Spider Spawns",           "Arachnoid Farm",         "Two Fronts",             "Sweep Stakes",
-    "Evil Zombies At Large",    "Survival Of The Fastest", "Land Of Lizards",        "Ghost Patrols",          "Spideroids",
-    "The Blighting",            "Lizard Kings",            "The Killing",            "Hidden Evil",            "Surrounded By Reptiles",
-    "The Lizquidation",         "Spiders Inc.",            "Lizard Raze",            "Deja vu",                "Zombie Masters",
-    "Major Alien Breach",       "Zombie Time",             "Lizard Zombie Pact",     "The Collaboration",      "The Massacre",
-    "The Unblitzkrieg",         "Gauntlet",                "Syntax Terror",          "The Annihilation",       "The End of All",
-    "The Beating",              "The Spanking Of The Dead","The Fortress",           "The Gang Wars",          "Knee-deep in the Dead",
-    "Cross Fire",               "Army of Three",           "Monster Blues",          "Nagolipoli",             "The Gathering",
+    "Land Hostile",          "Minor Alien Breach",       "Target Practice",    "Frontline Assault", "Alien Dens",
+    "The Random Factor",     "Spider Wave Syndrome",     "Alien Squads",       "Nesting Grounds",   "8-legged Terror",
+    "Everred Pastures",      "Spider Spawns",            "Arachnoid Farm",     "Two Fronts",        "Sweep Stakes",
+    "Evil Zombies At Large", "Survival Of The Fastest",  "Land Of Lizards",    "Ghost Patrols",     "Spideroids",
+    "The Blighting",         "Lizard Kings",             "The Killing",        "Hidden Evil",       "Surrounded By Reptiles",
+    "The Lizquidation",      "Spiders Inc.",             "Lizard Raze",        "Deja vu",           "Zombie Masters",
+    "Major Alien Breach",    "Zombie Time",              "Lizard Zombie Pact", "The Collaboration", "The Massacre",
+    "The Unblitzkrieg",      "Gauntlet",                 "Syntax Terror",      "The Annihilation",  "The End of All",
+    "The Beating",           "The Spanking Of The Dead", "The Fortress",       "The Gang Wars",     "Knee-deep in the Dead",
+    "Cross Fire",            "Army of Three",            "Monster Blues",      "Nagolipoli",        "The Gathering",
 };
 
 const credits_lines = [_][]const u8{
@@ -113,6 +113,8 @@ const credits_lines = [_][]const u8{
 pub const PlayGameAction = enum {
     start_survival,
     start_rush,
+    start_typo,
+    start_tutorial,
     open_quests,
     back_to_menu,
 };
@@ -145,6 +147,7 @@ pub const PlayGameState = struct {
     panel: PanelState = .{},
     player_list_open: bool = false,
     player_count_selection: usize = 0,
+    selection: usize = 0,
 
     pub fn reset(self: *PlayGameState) void {
         self.* = .{};
@@ -158,7 +161,35 @@ pub const PlayGameResult = struct {
     config_dirty: bool = false,
 };
 
-pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg) PlayGameResult {
+const PlayGameModeKey = enum {
+    tutorial,
+    quests,
+    rush,
+    survival,
+    typo,
+};
+
+const PlayGameEntry = struct {
+    key: PlayGameModeKey,
+    label: [:0]const u8,
+    tooltip: []const u8,
+    action: PlayGameAction,
+    game_mode: ?game_ids.GameModeId = null,
+    show_count: bool = false,
+};
+
+const PlayGameLayout = struct {
+    panel_rect: rl.Rectangle,
+    content_x: f32,
+    content_y: f32,
+    drop_x: f32,
+    y_start: f32,
+    y_step: f32,
+    count_x: f32,
+    tooltip_y: f32,
+};
+
+pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) PlayGameResult {
     const dt_ms = panelAdvance(&state.panel, frame_dt);
     const player_count = @as(usize, @intCast(std.math.clamp(config.player_count, @as(u32, 1), @as(u32, 4))));
     if (state.player_count_selection >= player_count_labels.len) state.player_count_selection = player_count - 1;
@@ -172,13 +203,21 @@ pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.cri
         return updatePlayGamePlayerList(state, config, dt_ms);
     }
 
-    const buttons = playGameButtons();
-    window_ui.updateSelectionFromPointer(&state.panel.selection, buttons[0..]);
+    const entries = playGameEntries(config, status);
+    const button_count = entries.len + 1;
+    if (state.selection >= button_count) state.selection = button_count - 1;
+
+    const layout = playGameLayout(config, status);
+    if (hoveredPlayGameEntry(entries[0..], layout)) |hovered| {
+        state.selection = hovered;
+    } else if (rl.checkCollisionPointRec(rl.getMousePosition(), backOnlyButton()[0].rect)) {
+        state.selection = entries.len;
+    }
     if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-        state.panel.selection = if (state.panel.selection == 0) buttons.len - 1 else state.panel.selection - 1;
+        state.selection = if (state.selection == 0) button_count - 1 else state.selection - 1;
     }
     if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-        state.panel.selection = (state.panel.selection + 1) % buttons.len;
+        state.selection = (state.selection + 1) % button_count;
     }
 
     const selector = playerCountHeaderRect();
@@ -187,24 +226,27 @@ pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.cri
         state.player_count_selection = player_count - 1;
         return .{ .play_button_click = true };
     }
-    if ((rl.isKeyPressed(.left) or rl.isKeyPressed(.right)) and state.panel.selection == buttons.len - 1) {
+    if ((rl.isKeyPressed(.left) or rl.isKeyPressed(.right)) and state.selection == entries.len) {
         state.player_list_open = true;
         state.player_count_selection = player_count - 1;
         return .{ .play_button_click = true };
     }
 
-    if (!window_ui.buttonActivated(buttons[0..], state.panel.selection)) {
+    if (!playGameActivated(entries[0..], layout, state.selection)) {
         return .{
             .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
         };
     }
 
-    return switch (state.panel.selection) {
-        0 => .{ .action = .open_quests, .play_button_click = true },
-        1 => .{ .action = .start_rush, .play_button_click = true, .config_dirty = setConfigGameMode(config, .rush) },
-        2 => .{ .action = .start_survival, .play_button_click = true, .config_dirty = setConfigGameMode(config, .survival) },
-        3 => .{ .action = .back_to_menu, .play_button_click = true },
-        else => .{},
+    if (state.selection == entries.len) {
+        return .{ .action = .back_to_menu, .play_button_click = true };
+    }
+
+    const entry = entries[state.selection];
+    return .{
+        .action = entry.action,
+        .play_button_click = true,
+        .config_dirty = if (entry.game_mode) |mode| setConfigGameMode(config, mode) else false,
     };
 }
 
@@ -245,7 +287,7 @@ fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.
 
 pub fn drawPlayGame(state: *const PlayGameState, runtime_assets: ?*const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32) void {
     if (runtime_assets) |assets| {
-        drawMenuPanelShell(state.panel.timeline_ms, assets, .{ .x = 420.0, .y = 180.0, .width = 430.0, .height = 330.0 }, window_menu.label_row_play_game);
+        drawMenuPanelShell(state.panel.timeline_ms, assets, playGameLayoutFromPlayerCount(player_count_raw, status).panel_rect, window_menu.label_row_play_game);
         drawPlayGameContent(state, assets, status, player_count_raw);
         return;
     }
@@ -253,22 +295,159 @@ pub fn drawPlayGame(state: *const PlayGameState, runtime_assets: ?*const window_
 }
 
 fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32) void {
-    const buttons = playGameButtons();
-    for (buttons, 0..) |button, idx| {
-        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-        window_ui.drawButton(button, idx == state.panel.selection and !state.player_list_open, hovered, runtime_assets);
-    }
+    const clamped_player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
+    const layout = playGameLayoutFromPlayerCount(clamped_player_count, status);
+    const entries = playGameEntriesFromPlayerCount(clamped_player_count, status);
 
-    window_ui.drawSmallText(runtime_assets, "PLAYER COUNT", 492.0, 244.0, muted_text);
+    window_ui.drawSmallText(runtime_assets, "PLAYER COUNT", layout.drop_x, layout.content_y - 14.0, muted_text);
     drawPlayerCountWidget(state, runtime_assets, player_count_raw);
 
-    window_ui.drawSmallText(runtime_assets, "QUESTS", 628.0, 288.0, muted_text);
-    window_ui.drawSmallText(runtime_assets, "RUSH", 640.0, 344.0, muted_text);
-    window_ui.drawSmallText(runtime_assets, "SURVIVAL", 616.0, 400.0, muted_text);
-    window_ui.drawSmallTextFmt("{d}", runtime_assets, .{questTotalPlayed(status)}, 760.0, 288.0, text_color);
-    window_ui.drawSmallTextFmt("{d}", runtime_assets, .{status.mode_play_rush}, 760.0, 344.0, text_color);
-    window_ui.drawSmallTextFmt("{d}", runtime_assets, .{status.mode_play_survival}, 760.0, 400.0, text_color);
+    var y = layout.content_y + layout.y_start;
+    for (entries, 0..) |entry, idx| {
+        const button = playGameButton(entry.label, layout.content_x, y);
+        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+        const selected = idx == state.selection and !state.player_list_open;
+        window_ui.drawButton(button, selected, hovered, runtime_assets);
+        if (entry.show_count) {
+            window_ui.drawSmallTextFmt("{d}", runtime_assets, .{playGameCount(entry.key, status)}, layout.count_x, y + 8.0, if (selected or hovered) text_color else muted_text);
+        }
+        y += layout.y_step;
+    }
+
+    const back = backOnlyButton()[0];
+    const back_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), back.rect);
+    window_ui.drawButton(back, state.selection == entries.len and !state.player_list_open, back_hovered, runtime_assets);
+
+    const tooltip_entry = tooltipEntry(entries, state.selection, layout);
+    if (tooltip_entry) |entry| {
+        drawTooltip(runtime_assets, entry.tooltip, layout.content_x, layout.tooltip_y);
+    }
 }
+
+fn playGameEntries(config: *const formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) []const PlayGameEntry {
+    return playGameEntriesFromPlayerCount(config.player_count, status);
+}
+
+fn playGameEntriesFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status) []const PlayGameEntry {
+    const player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
+    const main_total = questTotalPlayed(status) + status.mode_play_rush + status.mode_play_survival;
+    const has_typo = player_count == 1 and status.quest_unlock_index >= 40;
+    const tutorial_first = player_count == 1 and main_total == 0;
+    if (player_count != 1) return play_game_entries_multi[0..];
+    if (has_typo and tutorial_first) return play_game_entries_single_typo_tutorial_first[0..];
+    if (has_typo) return play_game_entries_single_typo[0..];
+    if (tutorial_first) return play_game_entries_single_tutorial_first[0..];
+    return play_game_entries_single[0..];
+}
+
+fn playGameLayout(config: *const formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) PlayGameLayout {
+    return playGameLayoutFromPlayerCount(config.player_count, status);
+}
+
+fn playGameLayoutFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status) PlayGameLayout {
+    const entries = playGameEntriesFromPlayerCount(player_count_raw, status);
+    const player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
+    const tight_spacing = player_count == 1 and status.quest_unlock_index >= 40;
+    const y_step: f32 = if (tight_spacing) 28.0 else 32.0;
+    const y_start: f32 = if (tight_spacing) 42.0 else 48.0;
+    const panel_height = 206.0 + y_start + y_step * @as(f32, @floatFromInt(entries.len));
+    return .{
+        .panel_rect = .{ .x = 352.0, .y = 150.0, .width = 510.0, .height = panel_height },
+        .content_x = 470.0,
+        .content_y = 206.0,
+        .drop_x = 522.0,
+        .y_start = y_start,
+        .y_step = y_step,
+        .count_x = 744.0,
+        .tooltip_y = 230.0 + y_start + y_step * @as(f32, @floatFromInt(entries.len)),
+    };
+}
+
+fn playGameButton(label: [:0]const u8, center_x: f32, top_y: f32) window_ui.UiButton {
+    return .{ .label = label, .rect = window_ui.centeredRect(center_x, top_y, 220.0, 44.0) };
+}
+
+fn hoveredPlayGameEntry(entries: []const PlayGameEntry, layout: PlayGameLayout) ?usize {
+    const mouse = rl.getMousePosition();
+    var y = layout.content_y + layout.y_start;
+    for (entries, 0..) |entry, idx| {
+        const button = playGameButton(entry.label, layout.content_x, y);
+        if (rl.checkCollisionPointRec(mouse, button.rect)) return idx;
+        y += layout.y_step;
+    }
+    return null;
+}
+
+fn playGameActivated(entries: []const PlayGameEntry, layout: PlayGameLayout, selection: usize) bool {
+    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.space)) return true;
+    if (!rl.isMouseButtonPressed(.left)) return false;
+    if (selection == entries.len) return rl.checkCollisionPointRec(rl.getMousePosition(), backOnlyButton()[0].rect);
+
+    var y = layout.content_y + layout.y_start;
+    for (entries, 0..) |entry, idx| {
+        _ = entry;
+        const button = playGameButton(entries[idx].label, layout.content_x, y);
+        if (idx == selection and rl.checkCollisionPointRec(rl.getMousePosition(), button.rect)) return true;
+        y += layout.y_step;
+    }
+    return false;
+}
+
+fn tooltipEntry(entries: []const PlayGameEntry, selection: usize, layout: PlayGameLayout) ?PlayGameEntry {
+    if (hoveredPlayGameEntry(entries, layout)) |hovered| return entries[hovered];
+    if (selection < entries.len) return entries[selection];
+    return null;
+}
+
+fn drawTooltip(runtime_assets: *const window_assets.RuntimeAssets, text: []const u8, x: f32, y: f32) void {
+    window_ui.drawSmallText(runtime_assets, text, x - 40.0, y, rl.Color.init(185, 185, 196, 255));
+}
+
+fn playGameCount(key: PlayGameModeKey, status: formats.game_cfg.Status) u32 {
+    return switch (key) {
+        .quests => questTotalPlayed(status),
+        .rush => status.mode_play_rush,
+        .survival => status.mode_play_survival,
+        .typo => status.mode_play_typo,
+        .tutorial => status.mode_play_other,
+    };
+}
+
+const play_game_entries_multi = [_]PlayGameEntry{
+    .{ .key = .quests, .label = "QUESTS", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
+    .{ .key = .rush, .label = "RUSH", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
+    .{ .key = .survival, .label = "SURVIVAL", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
+};
+
+const play_game_entries_single_tutorial_first = [_]PlayGameEntry{
+    .{ .key = .tutorial, .label = "TUTORIAL", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
+    .{ .key = .quests, .label = "QUESTS", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
+    .{ .key = .rush, .label = "RUSH", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
+    .{ .key = .survival, .label = "SURVIVAL", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
+};
+
+const play_game_entries_single = [_]PlayGameEntry{
+    .{ .key = .quests, .label = "QUESTS", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
+    .{ .key = .rush, .label = "RUSH", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
+    .{ .key = .survival, .label = "SURVIVAL", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
+    .{ .key = .tutorial, .label = "TUTORIAL", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
+};
+
+const play_game_entries_single_typo_tutorial_first = [_]PlayGameEntry{
+    .{ .key = .tutorial, .label = "TUTORIAL", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
+    .{ .key = .quests, .label = "QUESTS", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
+    .{ .key = .rush, .label = "RUSH", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
+    .{ .key = .survival, .label = "SURVIVAL", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
+    .{ .key = .typo, .label = "TYP'O'SHOOTER", .tooltip = "Use your typing skills as the weapon to lay\nthem down.", .action = .start_typo, .game_mode = .typo, .show_count = true },
+};
+
+const play_game_entries_single_typo = [_]PlayGameEntry{
+    .{ .key = .quests, .label = "QUESTS", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
+    .{ .key = .rush, .label = "RUSH", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
+    .{ .key = .survival, .label = "SURVIVAL", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
+    .{ .key = .typo, .label = "TYP'O'SHOOTER", .tooltip = "Use your typing skills as the weapon to lay\nthem down.", .action = .start_typo, .game_mode = .typo, .show_count = true },
+    .{ .key = .tutorial, .label = "TUTORIAL", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
+};
 
 fn drawPlayerCountWidget(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, player_count_raw: u32) void {
     const rect = playerCountHeaderRect();
