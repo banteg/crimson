@@ -8,6 +8,10 @@ pub const UiButton = struct {
     rect: rl.Rectangle,
 };
 
+pub const ui_shadow_offset: f32 = 7.0;
+pub const ui_shadow_tint = rl.Color.init(0x44, 0x44, 0x44, 0x44);
+pub const button_plate_height: f32 = 32.0;
+
 pub fn centeredRect(center_x: f32, top_y: f32, width: f32, height: f32) rl.Rectangle {
     return .{
         .x = center_x - width * 0.5,
@@ -49,7 +53,7 @@ pub fn drawButton(
     if (runtime_assets) |assets| {
         const scale: f32 = 1.0;
         const texture = if (button.rect.width > 120.0) assets.texture(.ui_button_md) else assets.texture(.ui_button_sm);
-        const plate_rect = rl.Rectangle.init(button.rect.x, button.rect.y, button.rect.width, 32.0 * scale);
+        const plate_rect = rl.Rectangle.init(button.rect.x, button.rect.y, button.rect.width, button_plate_height * scale);
         if (selected or hovered) {
             rl.drawRectangle(
                 @intFromFloat(plate_rect.x + 12.0 * scale),
@@ -94,6 +98,31 @@ fn buttonHitRect(button: UiButton) rl.Rectangle {
     return rl.Rectangle.init(button.rect.x, button.rect.y + 2.0, button.rect.width, 28.0);
 }
 
+pub fn buttonWidth(label: []const u8, force_wide: bool) f32 {
+    if (force_wide) return 145.0;
+    if (approxButtonTextWidth(label) < 40.0) return 82.0;
+    return 145.0;
+}
+
+pub fn buttonAt(label: [:0]const u8, x: f32, y: f32, force_wide: bool) UiButton {
+    return .{
+        .label = label,
+        .rect = rl.Rectangle.init(x, y, buttonWidth(label, force_wide), button_plate_height),
+    };
+}
+
+fn approxButtonTextWidth(label: []const u8) f32 {
+    var width: f32 = 0.0;
+    for (label) |ch| {
+        width += switch (ch) {
+            'i', 'l', '!', '.', ',', '\'', ':' => 4.0,
+            ' ' => 5.0,
+            else => 8.0,
+        };
+    }
+    return width;
+}
+
 pub fn colorWithAlpha(color: rl.Color, alpha: f32) rl.Color {
     return rl.Color.init(
         color.r,
@@ -136,6 +165,7 @@ pub fn drawClassicMenuPanel(texture: rl.Texture2D, dst: rl.Rectangle, tint: rl.C
     }.make;
 
     if (mid_h <= 0.0) {
+        drawPanelShadow(texture, srcRect(rl.Rectangle.init(src_x, src_y, src_w, src_h), flip_x), dst);
         rl.drawTexturePro(
             texture,
             srcRect(rl.Rectangle.init(src_x, src_y, src_w, src_h), flip_x),
@@ -155,9 +185,29 @@ pub fn drawClassicMenuPanel(texture: rl.Texture2D, dst: rl.Rectangle, tint: rl.C
     const dst_mid = rl.Rectangle.init(dst.x, dst.y + top_h, dst.width, mid_h);
     const dst_bot = rl.Rectangle.init(dst.x, dst.y + top_h + mid_h, dst.width, bottom_h);
 
+    drawPanelShadow(texture, src_top, dst_top);
+    drawPanelShadow(texture, src_mid, dst_mid);
+    drawPanelShadow(texture, src_bot, dst_bot);
+
     rl.drawTexturePro(texture, src_top, dst_top, rl.Vector2.zero(), 0.0, tint);
     rl.drawTexturePro(texture, src_mid, dst_mid, rl.Vector2.zero(), 0.0, tint);
     rl.drawTexturePro(texture, src_bot, dst_bot, rl.Vector2.zero(), 0.0, tint);
+}
+
+fn drawPanelShadow(texture: rl.Texture2D, src: rl.Rectangle, dst: rl.Rectangle) void {
+    rl.gl.rlSetBlendFactors(rl.gl.rl_zero, rl.gl.rl_one_minus_src_alpha, rl.gl.rl_func_add);
+    rl.beginBlendMode(.custom);
+    rl.gl.rlSetBlendFactors(rl.gl.rl_zero, rl.gl.rl_one_minus_src_alpha, rl.gl.rl_func_add);
+    defer rl.endBlendMode();
+
+    rl.drawTexturePro(
+        texture,
+        src,
+        rl.Rectangle.init(dst.x + ui_shadow_offset, dst.y + ui_shadow_offset, dst.width, dst.height),
+        rl.Vector2.zero(),
+        0.0,
+        ui_shadow_tint,
+    );
 }
 
 pub fn drawSmallText(

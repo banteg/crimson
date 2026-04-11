@@ -341,7 +341,6 @@ fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const windo
     const show_counts = rl.isKeyDown(.f1);
 
     drawAtlasLabelAt(runtime_assets, layout.title_pos.x, layout.title_pos.y, window_menu.label_row_play_game, window_ui.colorWithAlpha(rl.Color.white, 0.96));
-    window_ui.drawSmallText(runtime_assets, "player count", layout.drop_x, layout.content_y - 12.0, muted_text);
     drawPlayerCountWidget(state, runtime_assets, player_count_raw);
 
     var y = layout.content_y + layout.y_start;
@@ -389,9 +388,8 @@ fn playGameLayoutFromPlayerCount(player_count_raw: u32, status: formats.game_cfg
     const tight_spacing = player_count == 1 and status.quest_unlock_index >= 40;
     const y_step: f32 = if (tight_spacing) 28.0 else 32.0;
     const y_start: f32 = if (tight_spacing) 42.0 else 48.0;
-    const panel_height = 206.0 + y_start + y_step * @as(f32, @floatFromInt(entries.len));
     return .{
-        .panel_rect = .{ .x = 352.0, .y = 150.0, .width = 510.0, .height = panel_height },
+        .panel_rect = .{ .x = 352.0, .y = 150.0, .width = 510.0, .height = 278.0 },
         .title_pos = .{ .x = 496.0, .y = 184.0 },
         .content_x = 470.0,
         .content_y = 206.0,
@@ -404,7 +402,7 @@ fn playGameLayoutFromPlayerCount(player_count_raw: u32, status: formats.game_cfg
 }
 
 fn playGameButton(label: [:0]const u8, center_x: f32, top_y: f32) window_ui.UiButton {
-    return .{ .label = label, .rect = window_ui.centeredRect(center_x, top_y, 220.0, 44.0) };
+    return window_ui.buttonAt(label, center_x, top_y, false);
 }
 
 fn hoveredPlayGameEntry(entries: []const PlayGameEntry, layout: PlayGameLayout) ?usize {
@@ -673,7 +671,7 @@ fn drawQuestContent(state: *const QuestState, runtime_assets: *const window_asse
         rl.Rectangle.init(layout.title_pos.x, layout.title_pos.y, quest_title_w, quest_title_h),
         rl.Vector2.zero(),
         0.0,
-        rl.Color.init(179, 179, 179, 179),
+        rl.Color.white,
     );
 
     const stage_textures = [_]window_assets.TextureId{ .ui_num1, .ui_num2, .ui_num3, .ui_num4, .ui_num5 };
@@ -718,6 +716,10 @@ fn drawQuestContent(state: *const QuestState, runtime_assets: *const window_asse
             }
         }
         y += quest_list_row_step;
+    }
+
+    if (show_counts) {
+        window_ui.drawSmallText(runtime_assets, "(completed/games)", layout.list_pos.x + 96.0, questRowsY0(layout, hardcoreUnlocked(status)) + quest_list_row_step * 10.0 - 2.0, questRowColor(config.hardcore_flag != 0, false));
     }
 
     const back = questBackButton(layout);
@@ -819,7 +821,7 @@ fn questRowsY0(layout: QuestLayout, show_hardcore_toggle: bool) f32 {
 }
 
 fn questBackButton(layout: QuestLayout) window_ui.UiButton {
-    return .{ .label = "Back", .rect = rl.Rectangle.init(layout.back_pos.x, layout.back_pos.y, 82.0, 32.0) };
+    return window_ui.buttonAt("Back", layout.back_pos.x, layout.back_pos.y, false);
 }
 
 fn questBackButtonActivated(layout: QuestLayout) bool {
@@ -1071,7 +1073,7 @@ fn statisticsButtons() [5]window_ui.UiButton {
 
 fn backOnlyButton() [1]window_ui.UiButton {
     return .{
-        .{ .label = "BACK", .rect = window_ui.centeredRect(@as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5, 562.0, 180.0, 44.0) },
+        window_ui.buttonAt("Back", @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5 - 41.0, 562.0, false),
     };
 }
 

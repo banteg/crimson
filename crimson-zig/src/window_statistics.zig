@@ -454,7 +454,7 @@ fn drawHighScores(
     status: formats.game_cfg.Status,
 ) void {
     if (runtime_assets) |assets| {
-        drawSplitPanelShell(assets, window_menu.label_row_statistics);
+        drawSplitPanelShell(assets);
         drawHighScoreMainPanel(state, assets, config, status);
         drawHighScoreRightPanel(state, assets, config, status);
         return;
@@ -469,7 +469,7 @@ fn drawWeapons(
     status: formats.game_cfg.Status,
 ) void {
     if (runtime_assets) |assets| {
-        drawSplitPanelShell(assets, window_menu.label_row_statistics);
+        drawSplitPanelShell(assets);
         drawWeaponsPanels(state, assets, config, status);
         return;
     }
@@ -483,7 +483,7 @@ fn drawPerks(
     status: formats.game_cfg.Status,
 ) void {
     if (runtime_assets) |assets| {
-        drawSplitPanelShell(assets, window_menu.label_row_statistics);
+        drawSplitPanelShell(assets);
         drawPerksPanels(state, assets, status, config.gore_disabled, config.hardcore_flag != 0, config.game_mode == @intFromEnum(game_ids.GameModeId.tutorial));
         return;
     }
@@ -493,7 +493,7 @@ fn drawPerks(
 fn drawCredits(state: *const CreditsScreen, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     if (runtime_assets) |assets| {
         drawPanelShellNoTitle(300, assets, credits_panel_rect);
-        drawAtlasTitle(assets, credits_panel_rect, 202.0, 46.0, window_menu.label_row_statistics);
+        window_ui.drawSmallText(assets, "credits", credits_panel_rect.x + 202.0, credits_panel_rect.y + 46.0, text_color);
         var y: f32 = credits_panel_rect.y + 60.0;
         const start = state.scroll;
         const end = @min(start + 16, window_statistics_data.credits_lines.len);
@@ -738,12 +738,11 @@ fn drawPerksPanels(
     drawWrappedSmallText(assets, window_statistics_data.perkDescription(perk_id), detail_x, y, 256.0, muted_text);
 }
 
-fn drawSplitPanelShell(assets: *const window_assets.RuntimeAssets, label_row: i32) void {
+fn drawSplitPanelShell(assets: *const window_assets.RuntimeAssets) void {
     window_menu.drawMenuBackdrop(assets);
     window_menu.drawSign(panel_timeline_max_ms, assets);
     window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), left_panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
     window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), right_panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), true);
-    window_menu.drawAtlasLabelCentered(assets, label_row, 146.0, window_ui.colorWithAlpha(rl.Color.white, 0.96));
 }
 
 fn drawPanelShell(timeline_ms: i32, assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle, label_row: i32) void {
@@ -773,25 +772,25 @@ fn drawAtlasTitle(assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle
 
 fn hubButtons() [5]window_ui.UiButton {
     return .{
-        .{ .label = "High scores", .rect = window_ui.centeredRect(stats_panel_rect.x + 270.0, stats_panel_rect.y + 104.0, 240.0, 44.0) },
-        .{ .label = "Weapons", .rect = window_ui.centeredRect(stats_panel_rect.x + 270.0, stats_panel_rect.y + 138.0, 240.0, 44.0) },
-        .{ .label = "Perks", .rect = window_ui.centeredRect(stats_panel_rect.x + 270.0, stats_panel_rect.y + 172.0, 240.0, 44.0) },
-        .{ .label = "Credits", .rect = window_ui.centeredRect(stats_panel_rect.x + 270.0, stats_panel_rect.y + 206.0, 240.0, 44.0) },
-        .{ .label = "Back", .rect = window_ui.centeredRect(stats_panel_rect.x + 394.0, stats_panel_rect.y + 290.0, 180.0, 44.0) },
+        window_ui.buttonAt("High scores", stats_panel_rect.x + 270.0, stats_panel_rect.y + 104.0, true),
+        window_ui.buttonAt("Weapons", stats_panel_rect.x + 270.0, stats_panel_rect.y + 138.0, true),
+        window_ui.buttonAt("Perks", stats_panel_rect.x + 270.0, stats_panel_rect.y + 172.0, true),
+        window_ui.buttonAt("Credits", stats_panel_rect.x + 270.0, stats_panel_rect.y + 206.0, true),
+        window_ui.buttonAt("Back", stats_panel_rect.x + 394.0, stats_panel_rect.y + 290.0, false),
     };
 }
 
 fn highScoreButtons() [3]window_ui.UiButton {
     return .{
-        .{ .label = "Update scores", .rect = window_ui.centeredRect(left_panel_rect.x + 212.0, left_panel_rect.y + 268.0, 240.0, 44.0) },
-        .{ .label = "Play a game", .rect = window_ui.centeredRect(left_panel_rect.x + 212.0, left_panel_rect.y + 322.0, 240.0, 44.0) },
-        .{ .label = "Back", .rect = window_ui.centeredRect(left_panel_rect.x + 340.0, left_panel_rect.y + 355.0, 150.0, 44.0) },
+        window_ui.buttonAt("Update scores", left_panel_rect.x + 234.0, left_panel_rect.y + 268.0, true),
+        window_ui.buttonAt("Play a game", left_panel_rect.x + 234.0, left_panel_rect.y + 301.0, true),
+        window_ui.buttonAt("Back", left_panel_rect.x + 400.0, left_panel_rect.y + 301.0, false),
     };
 }
 
 fn backOnlyButton() [1]window_ui.UiButton {
     return .{
-        .{ .label = "Back", .rect = window_ui.centeredRect(credits_panel_rect.x + 298.0, credits_panel_rect.y + 310.0, 180.0, 44.0) },
+        window_ui.buttonAt("Back", credits_panel_rect.x + 298.0, credits_panel_rect.y + 310.0, false),
     };
 }
 

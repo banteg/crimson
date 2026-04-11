@@ -191,7 +191,7 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
 
 pub fn drawOptions(state: *const OptionsState, runtime_assets: ?*const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg) void {
     if (runtime_assets) |assets| {
-        drawMenuPanelShell(state.panel.timeline_ms, assets, .{ .x = 360.0, .y = 148.0, .width = 510.0, .height = 364.0 }, window_menu.label_row_options);
+        drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, .{ .x = 360.0, .y = 148.0, .width = 510.0, .height = 364.0 });
         drawOptionsContents(state, assets, config);
         return;
     }
@@ -377,6 +377,13 @@ fn drawMenuPanelShell(timeline_ms: i32, runtime_assets: *const window_assets.Run
     window_menu.drawAtlasLabelCentered(runtime_assets, title_row, rect.y + 38.0, rl.Color.white);
 }
 
+fn drawMenuPanelShellNoTitle(timeline_ms: i32, runtime_assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle) void {
+    drawMenuBackdropAndSign(timeline_ms, runtime_assets);
+    const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
+    const panel_rect = rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
+    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
+}
+
 fn optionsButtons() [7]OptionButton {
     return .{
         .{ .label = "Sfx", .rect = rl.Rectangle.init(404.0, 226.0, 320.0, 28.0) },
@@ -384,13 +391,13 @@ fn optionsButtons() [7]OptionButton {
         .{ .label = "Detail", .rect = rl.Rectangle.init(404.0, 298.0, 320.0, 28.0) },
         .{ .label = "Mouse", .rect = rl.Rectangle.init(404.0, 334.0, 320.0, 28.0) },
         .{ .label = "UiInfo", .rect = rl.Rectangle.init(404.0, 370.0, 320.0, 28.0) },
-        .{ .label = "Controls", .rect = rl.Rectangle.init(404.0, 414.0, 240.0, 44.0) },
-        .{ .label = "Back", .rect = rl.Rectangle.init(404.0, 470.0, 180.0, 44.0) },
+        window_ui.buttonAt("Controls", 572.0, 343.0, true),
+        window_ui.buttonAt("Back", 404.0, 470.0, false),
     };
 }
 
 fn controlsBackButton() OptionButton {
-    return .{ .label = "Back", .rect = rl.Rectangle.init(182.0, 448.0, 180.0, 44.0) };
+    return window_ui.buttonAt("Back", 182.0, 448.0, false);
 }
 
 fn drawSlider(runtime_assets: *const window_assets.RuntimeAssets, pos: rl.Vector2, count: i32, value: i32) void {
