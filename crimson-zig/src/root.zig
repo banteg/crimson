@@ -14,6 +14,7 @@ pub const lifecycle = @import("runtime/lifecycle.zig");
 pub const perks = @import("runtime/perks.zig");
 pub const weapon_data = @import("runtime/weapon_data.zig");
 pub const particles = @import("runtime/particles.zig");
+pub const effects = @import("runtime/effects.zig");
 pub const secondary_projectiles = @import("runtime/secondary_projectiles.zig");
 pub const state = @import("runtime/state.zig");
 pub const weapons = @import("runtime/weapons.zig");

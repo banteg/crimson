@@ -172,6 +172,8 @@ pub fn stepTick(
             &context.state,
             context.players(),
             &context.creatures,
+            &context.effects,
+            &context.sprite_effects,
             &context.particles,
             &context.projectiles,
             &context.secondary_projectiles,
@@ -279,6 +281,7 @@ pub fn stepTick(
     }
 
     callPhaseHook(options.hooks, context, .pre_effects, &frame);
+    context.effects.update(frame.dt);
     perks.updateEvilEyesTargets(players, context.creatures.entries[0..]);
     perks.updatePerkEffects(&context.state, players, frame.dt_sim);
     perks.applyJinxedEffects(&context.state, players, &context.creatures, frame.dt_sim);
@@ -305,34 +308,39 @@ pub fn stepTick(
     frame.rng_after_creatures = context.state.rng.state;
 
     for (players, 0..) |_, player_idx| {
-        perks.applyFinalRevengeOnDeathTransition(
+        perks.applyFinalRevengeOnDeathTransitionWithEffects(
             &context.state,
             players,
             player_idx,
             health_before_creatures[player_idx],
             &context.creatures,
             &context.bonuses,
+            &context.effects,
             frame.dt_sim,
             context.world_size,
             context.detail_preset,
         );
     }
 
-    frame.projectile_tick_stats = context.projectiles.update(
+    frame.projectile_tick_stats = context.projectiles.updateWithEffects(
         &context.state,
         players,
         &context.creatures,
         &context.bonuses,
+        &context.effects,
+        context.detail_preset,
         frame.dt_sim,
         context.world_size,
     );
     frame.rng_after_projectiles = context.state.rng.state;
 
-    context.secondary_projectiles.updatePulseGun(
+    context.secondary_projectiles.updatePulseGunWithEffects(
         &context.state,
         players,
         &context.creatures,
         &context.bonuses,
+        &context.effects,
+        &context.sprite_effects,
         frame.dt_sim,
         context.world_size,
         context.detail_preset,
@@ -344,9 +352,11 @@ pub fn stepTick(
         players,
         &context.creatures,
         &context.bonuses,
+        &context.sprite_effects,
         frame.dt_sim,
         context.world_size,
     );
+    context.sprite_effects.update(frame.dt);
     frame.rng_after_particles = context.state.rng.state;
     callPhaseHook(options.hooks, context, .post_core_simulation, &frame);
 
@@ -356,17 +366,20 @@ pub fn stepTick(
     }
     var player_preprocessed_alive = [_]bool{false} ** state_mod.max_players;
     for (players, 0..) |*player, player_idx| {
-        const should_tick_perks = weapons_runtime.preprocessPlayerForPerkTicks(
+        const should_tick_perks = weapons_runtime.preprocessPlayerForPerkTicksWithEffects(
             &context.state,
             player,
+            &context.effects,
+            context.detail_preset,
             frame.dt_sim,
         );
         player_preprocessed_alive[player_idx] = should_tick_perks;
         if (!should_tick_perks) continue;
-        weapons_runtime.applyPlayerPerkTicks(
+        weapons_runtime.applyPlayerPerkTicksWithEffects(
             &context.state,
             player,
             &context.projectiles,
+            &context.sprite_effects,
             frame.dt_sim,
         );
     }
@@ -385,13 +398,16 @@ pub fn stepTick(
             &context.creatures,
             frame.dt_sim,
         );
-        try weapons_runtime.stepPlayerForTick(
+        try weapons_runtime.stepPlayerForTickWithEffects(
             &context.state,
             player,
             &context.projectiles,
             &context.secondary_projectiles,
             &context.creatures,
             &context.particles,
+            &context.effects,
+            &context.sprite_effects,
+            context.detail_preset,
             .{
                 .fire_down = flags.fire_down,
                 .fire_pressed = flags.fire_pressed,
@@ -403,13 +419,14 @@ pub fn stepTick(
             },
             frame.dt_sim,
         );
-        perks.applyFinalRevengeOnDeathTransition(
+        perks.applyFinalRevengeOnDeathTransitionWithEffects(
             &context.state,
             players,
             player_idx,
             health_before_player_step,
             &context.creatures,
             &context.bonuses,
+            &context.effects,
             frame.dt_sim,
             context.world_size,
             context.detail_preset,
@@ -559,6 +576,12 @@ pub fn stepTick(
         dt_after_player,
         &context.tick_bonus_pickups,
     );
+    bonus_runtime.emitBonusPickupEffects(
+        &context.state,
+        context.tick_bonus_pickups.constSlice(),
+        &context.effects,
+        context.detail_preset,
+    );
     if (context.state.debug_last_picked_bonus_id == game_ids.BonusId.freeze) {
         bonus_runtime.applyFreezePickupCorpseCleanupRng(
             &context.state,
@@ -566,12 +589,13 @@ pub fn stepTick(
             freeze_corpse_at_tick_start[0..],
         );
     }
-    bonus_runtime.applyPendingBonusEffects(
+    bonus_runtime.applyPendingBonusEffectsWithEffects(
         &context.state,
         players,
         &context.projectiles,
         &context.creatures,
         &context.bonuses,
+        &context.effects,
         dt_after_player,
         context.world_size,
         tick_index,

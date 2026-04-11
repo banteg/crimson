@@ -5,6 +5,7 @@ const replay_codec = @import("../replay_codec.zig");
 const bonus_runtime = @import("bonuses.zig");
 const runtime_bootstrap = @import("bootstrap.zig");
 const creatures_mod = @import("creatures.zig");
+const effects_mod = @import("effects.zig");
 const particles_mod = @import("particles.zig");
 const player_runtime = @import("player.zig");
 const projectiles_mod = @import("projectiles.zig");
@@ -104,6 +105,8 @@ pub const DeterministicSession = struct {
     players_len: usize,
 
     creatures: creatures_mod.CreaturePool = .{},
+    effects: effects_mod.EffectPool = .{},
+    sprite_effects: effects_mod.SpriteEffectPool = .{},
     particles: particles_mod.ParticlePool = .{},
     projectiles: projectiles_mod.ProjectilePool = .{},
     secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{},
@@ -213,6 +216,7 @@ pub const DeterministicSession = struct {
 
         player_runtime.resetPlayers(session.players(), config.world_size, null);
         session.creatures.capture_spawn_events_authoritative = options.capture_spawn_events_authoritative;
+        session.creatures.effects = &session.effects;
 
         if (config.game_mode == .rush) {
             runtime_bootstrap.enforceRushLoadout(session.players());

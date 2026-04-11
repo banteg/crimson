@@ -6,6 +6,7 @@ const runtime_bootstrap = @import("../bootstrap.zig");
 const bonus_runtime = @import("../bonuses.zig");
 const creature_lifecycle = @import("../lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("../creatures.zig");
+const effects_mod = @import("../effects.zig");
 const particles_mod = @import("../particles.zig");
 const player_runtime = @import("../player.zig");
 const projectiles_mod = @import("../projectiles.zig");
@@ -315,6 +316,8 @@ pub fn applyCaptureStateReset(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
     creatures: *creatures_mod.CreaturePool,
+    effects: *effects_mod.EffectPool,
+    sprite_effects: *effects_mod.SpriteEffectPool,
     particles: *particles_mod.ParticlePool,
     projectiles: *projectiles_mod.ProjectilePool,
     secondary_projectiles: *secondary_projectiles_mod.SecondaryProjectilePool,
@@ -379,6 +382,9 @@ pub fn applyCaptureStateReset(
     }
 
     creatures.reset();
+    creatures.effects = effects;
+    effects.reset();
+    sprite_effects.reset();
     particles.reset();
     projectiles.reset();
     secondary_projectiles.reset();
@@ -428,6 +434,12 @@ test "capture state reset clears transient pools and restores header fx toggle" 
     creatures.entries[0].active = true;
     creatures.entries[0].lifecycle_stage = creature_lifecycle.alive;
 
+    var effects: effects_mod.EffectPool = .{};
+    effects.entries[0].flags = 1;
+
+    var sprite_effects: effects_mod.SpriteEffectPool = .{};
+    sprite_effects.entries[0].active = true;
+
     var particles: particles_mod.ParticlePool = .{};
     particles.entries[0].active = true;
 
@@ -451,6 +463,8 @@ test "capture state reset clears transient pools and restores header fx toggle" 
         &state,
         players,
         &creatures,
+        &effects,
+        &sprite_effects,
         &particles,
         &projectiles,
         &secondary_projectiles,
@@ -470,6 +484,8 @@ test "capture state reset clears transient pools and restores header fx toggle" 
     try std.testing.expectEqual(@as(i32, 0), state.gore_disabled);
     try std.testing.expectEqual(@as(i32, 2), state.perk_selection.pending_count);
     try std.testing.expect(!creatures.entries[0].active);
+    try std.testing.expectEqual(@as(i32, 0), effects.entries[0].flags);
+    try std.testing.expect(!sprite_effects.entries[0].active);
     try std.testing.expect(!particles.entries[0].active);
     try std.testing.expect(!projectiles.entries[0].active);
     try std.testing.expect(!secondary_projectiles.entries[0].active);

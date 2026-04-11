@@ -5,6 +5,7 @@ const native_math = @import("native_math.zig");
 const bonus_runtime = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
+const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
 const particles_mod = @import("particles.zig");
 const player_runtime = @import("player.zig");
@@ -389,6 +390,7 @@ pub fn applyPerkWithContext(
             state.bonus_spawn_guard = false;
         },
         PerkId.bandage => {
+            var effects: effects_mod.EffectPool = .{};
             for (players) |*player| {
                 if (player.health > 0.0) {
                     const amount: f32 = @floatFromInt(state.rng.rand() % 50 + 1);
@@ -397,7 +399,15 @@ pub fn applyPerkWithContext(
                     } else {
                         player.health = @min(100.0, narrowF32(player.health + amount));
                     }
-                    consumeSpawnBurstRng(state, 8);
+                    effects.spawnBurst(
+                        state,
+                        player.pos,
+                        8,
+                        5,
+                        0.4,
+                        null,
+                        .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+                    );
                 }
             }
         },
@@ -412,7 +422,8 @@ pub fn applyReplayPerkCreatureEffects(
     creatures: *creatures_mod.CreaturePool,
     dt_frame: f32,
 ) void {
-    applyPerkImmediateCreatureEffects(perk_id, state, .{
+    var effects: effects_mod.EffectPool = .{};
+    applyPerkImmediateCreatureEffectsWithEffects(perk_id, state, &effects, 5, .{
         .creatures = creatures,
         .dt_frame = dt_frame,
     });
@@ -421,6 +432,17 @@ pub fn applyReplayPerkCreatureEffects(
 fn applyPerkImmediateCreatureEffects(
     perk_id: PerkId,
     state: *state_mod.GameplayState,
+    context: PerkApplyContext,
+) void {
+    var effects: effects_mod.EffectPool = .{};
+    applyPerkImmediateCreatureEffectsWithEffects(perk_id, state, &effects, 5, context);
+}
+
+fn applyPerkImmediateCreatureEffectsWithEffects(
+    perk_id: PerkId,
+    state: *state_mod.GameplayState,
+    effects: *effects_mod.EffectPool,
+    detail_preset: i32,
     context: PerkApplyContext,
 ) void {
     const creatures = context.creatures orelse return;
@@ -441,7 +463,15 @@ fn applyPerkImmediateCreatureEffects(
                     (creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0)
                 {
                     creature.active = false;
-                    consumeSpawnBurstRng(state, 4);
+                    effects.spawnBurst(
+                        state,
+                        creature.pos,
+                        4,
+                        detail_preset,
+                        0.4,
+                        null,
+                        .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+                    );
                 }
                 kill_toggle = !kill_toggle;
             }
@@ -647,12 +677,39 @@ pub fn applyFinalRevengeOnDeathTransition(
     world_size: f32,
     detail_preset: i32,
 ) void {
+    var effects: effects_mod.EffectPool = .{};
+    applyFinalRevengeOnDeathTransitionWithEffects(
+        state,
+        players,
+        player_index,
+        health_before,
+        creatures,
+        bonuses,
+        &effects,
+        dt,
+        world_size,
+        detail_preset,
+    );
+}
+
+pub fn applyFinalRevengeOnDeathTransitionWithEffects(
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
+    player_index: usize,
+    health_before: f32,
+    creatures: *creatures_mod.CreaturePool,
+    bonuses: *bonus_runtime.BonusPool,
+    effects: *effects_mod.EffectPool,
+    dt: f32,
+    world_size: f32,
+    detail_preset: i32,
+) void {
     if (player_index >= players.len) return;
     const player = &players[player_index];
     if (!(health_before > 0.0) or !(player.health <= 0.0)) return;
     if (!perkActive(player, PerkId.final_revenge)) return;
 
-    consumeExplosionBurstRng(state, detail_preset);
+    effects.spawnExplosionBurst(state, player.pos, 1.0, detail_preset);
     const prev_spawn_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
     defer state.bonus_spawn_guard = prev_spawn_guard;

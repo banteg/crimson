@@ -4,6 +4,7 @@ const native_math = @import("native_math.zig");
 const bonus_runtime = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
+const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
 const runtime_helpers = @import("helpers.zig");
 const state_mod = @import("state.zig");
@@ -112,6 +113,7 @@ pub const ParticlePool = struct {
         players: []state_mod.PlayerState,
         creatures: *creatures_mod.CreaturePool,
         bonuses: *bonus_runtime.BonusPool,
+        sprite_effects: *effects_mod.SpriteEffectPool,
         dt: f32,
         world_size: f32,
     ) void {
@@ -256,8 +258,17 @@ pub const ParticlePool = struct {
                         }
 
                         if ((particle_idx % 3) == 0) {
-                            _ = state.rng.rand() % 0x3c;
-                            _ = state.rng.rand() % 0x3c;
+                            const sprite_vel: state_mod.Vec2 = .{
+                                .x = @as(f32, @floatFromInt(state.rng.rand() % 60)) - 30.0,
+                                .y = @as(f32, @floatFromInt(state.rng.rand() % 60)) - 30.0,
+                            };
+                            _ = sprite_effects.spawn(
+                                state,
+                                creature.pos,
+                                sprite_vel,
+                                13.0,
+                                .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 0.7 },
+                            );
                         }
                         runtime_helpers.consumeAddRandomRng(state);
                     }

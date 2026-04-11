@@ -5,6 +5,7 @@ const native_math = @import("native_math.zig");
 const bonus_runtime = @import("bonuses.zig");
 const creatures_mod = @import("creatures.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
+const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const runtime_helpers = @import("helpers.zig");
@@ -131,6 +132,21 @@ pub const ProjectilePool = struct {
         players: []state_mod.PlayerState,
         creatures: *creatures_mod.CreaturePool,
         bonuses: *bonus_runtime.BonusPool,
+        dt: f32,
+        world_size: f32,
+    ) ProjectileTickStats {
+        var effects: effects_mod.EffectPool = .{};
+        return self.updateWithEffects(state, players, creatures, bonuses, &effects, 5, dt, world_size);
+    }
+
+    pub fn updateWithEffects(
+        self: *ProjectilePool,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
+        creatures: *creatures_mod.CreaturePool,
+        bonuses: *bonus_runtime.BonusPool,
+        effects: *effects_mod.EffectPool,
+        detail_preset: i32,
         dt: f32,
         world_size: f32,
     ) ProjectileTickStats {
@@ -348,10 +364,15 @@ pub const ProjectilePool = struct {
                     }
                 }
                 if (presentation_player) |player| {
-                    creatures_mod.consumeProjectileHitPresentationPreRng(
+                    emitProjectileHitPresentationPre(
                         state,
                         player,
                         proj.type_id,
+                        proj.origin,
+                        proj.pos,
+                        creatures.entries[hit_idx.?].pos,
+                        effects,
+                        detail_preset,
                     );
                 }
 
@@ -394,7 +415,13 @@ pub const ProjectilePool = struct {
                         .y = narrowF32(creatures.entries[hit_idx.?].pos.y + move.y * 3.0),
                     };
                 }
-                consumeIonHitEffectsRng(state, proj.type_id);
+                emitProjectileTypeHitEffects(
+                    state,
+                    proj.type_id,
+                    proj.pos,
+                    effects,
+                    detail_preset,
+                );
 
                 var dist = state_mod.Vec2.sub(proj.origin, proj.pos).length();
                 if (dist < 50.0) dist = 50.0;
@@ -460,7 +487,7 @@ pub const ProjectilePool = struct {
                     proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) and
                     proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.fire_bullets))
                 {
-                    consumeFreezeHitShardRng(state);
+                    effects.spawnFreezeShard(state, proj.pos, proj.angle, detail_preset);
                 }
 
                 if (proj.damage_pool == 1.0) {
@@ -580,15 +607,182 @@ fn applyIonLingerDamage(
     }
 }
 
-fn consumeFreezeHitShardRng(state: *state_mod.GameplayState) void {
-    // `shard_angle` draw + `effect_spawn_freeze_shard` internal draws.
-    _ = state.rng.rand() % 0x264;
-    _ = state.rng.rand() & 0xF;
-    _ = state.rng.rand() % 100;
-    _ = state.rng.rand() % 5;
-    _ = state.rng.rand() % 0x14;
-    _ = state.rng.rand() & 0xF;
-    _ = state.rng.rand() % 3;
+fn emitProjectileHitPresentationPre(
+    state: *state_mod.GameplayState,
+    player: *const state_mod.PlayerState,
+    projectile_type_id: i32,
+    hit_origin: state_mod.Vec2,
+    hit_pos: state_mod.Vec2,
+    hit_target: state_mod.Vec2,
+    effects: *effects_mod.EffectPool,
+    detail_preset: i32,
+) void {
+    const freeze_active = state.bonuses.freeze > 0.0;
+    const base_angle = state_mod.Vec2.sub(hit_pos, hit_origin).toAngle();
+
+    if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.blade_gun)) {
+        for (0..8) |_| {
+            const angle = @as(f32, @floatFromInt(state.rng.rand() & 0xff)) * 0.024543693;
+            effects.spawnBloodSplatter(state, hit_pos, angle, 0.0, detail_preset, state.gore_disabled);
+        }
+    }
+
+    if (perks.perkActive(player, PerkId.bloody_mess_quick_learner)) {
+        for (0..8) |_| {
+            const spread = (@as(f32, @floatFromInt(state.rng.rand() & 0x1f)) - 16.0) * 0.0625;
+            effects.spawnBloodSplatter(state, hit_pos, base_angle + spread, 0.0, detail_preset, state.gore_disabled);
+        }
+        effects.spawnBloodSplatter(state, hit_pos, base_angle + std.math.pi, 0.0, detail_preset, state.gore_disabled);
+
+        var lo: i32 = -30;
+        var hi: i32 = 30;
+        while (lo > -60) {
+            const span: u32 = @intCast(hi - lo);
+            for (0..2) |_| {
+                _ = state.rng.rand() % span;
+                _ = state.rng.rand() % span;
+                runtime_helpers.consumeAddRandomRng(state);
+            }
+            lo -= 10;
+            hi += 10;
+        }
+    } else if (!freeze_active) {
+        for (0..2) |_| {
+            effects.spawnBloodSplatter(state, hit_pos, base_angle, 0.0, detail_preset, state.gore_disabled);
+            if ((state.rng.rand() & 7) == 2) {
+                effects.spawnBloodSplatter(state, hit_pos, base_angle + std.math.pi, 0.0, detail_preset, state.gore_disabled);
+            }
+        }
+    }
+
+    _ = hit_target;
+}
+
+fn emitProjectileTypeHitEffects(
+    state: *state_mod.GameplayState,
+    projectile_type_id: i32,
+    pos: state_mod.Vec2,
+    effects: *effects_mod.EffectPool,
+    detail_preset: i32,
+) void {
+    switch (projectile_type_id) {
+        @intFromEnum(game_ids.ProjectileTypeId.shrinkifier) => {
+            _ = effects.spawn(
+                @intFromEnum(effects_mod.EffectId.ring),
+                pos,
+                .{},
+                0.0,
+                1.0,
+                36.0,
+                36.0,
+                0.0,
+                0.3,
+                0x19,
+                .{ .r = 0.3, .g = 0.6, .b = 0.9, .a = 1.0 },
+                0.0,
+                -4.0,
+                detail_preset,
+            );
+            const count: usize = if (detail_preset < 3) 2 else 4;
+            for (0..count) |_| {
+                effects.spawnBurstParticle(
+                    pos,
+                    state.rng.rand(),
+                    state.rng.rand(),
+                    state.rng.rand(),
+                    state.rng.rand(),
+                    null,
+                    0.3,
+                    .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
+                    detail_preset,
+                );
+            }
+        },
+        @intFromEnum(game_ids.ProjectileTypeId.ion_minigun),
+        @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
+        @intFromEnum(game_ids.ProjectileTypeId.ion_cannon),
+        => {
+            const ring_scale: f32 = switch (projectile_type_id) {
+                @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) => 1.5,
+                @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) => 1.2,
+                @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => 1.0,
+                else => 0.0,
+            };
+            const ring_strength: f32 = switch (projectile_type_id) {
+                @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) => 0.1,
+                @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) => 0.4,
+                @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => 1.0,
+                else => 0.0,
+            };
+            const burst_scale: f32 = switch (projectile_type_id) {
+                @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) => 0.8,
+                @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) => 1.2,
+                @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => 2.2,
+                else => 0.0,
+            };
+            effects.spawnRing(
+                pos,
+                detail_preset,
+                .{ .r = 0.6, .g = 0.6, .b = 0.9, .a = 1.0 },
+                ring_strength * 0.8,
+                ring_scale * 45.0,
+            );
+            const burst = burst_scale * 0.8;
+            var count: i32 = @intFromFloat(burst * 5.0);
+            if (detail_preset < 3) count = @divTrunc(count, 2);
+            var idx: i32 = 0;
+            while (idx < count) : (idx += 1) {
+                _ = effects.spawn(
+                    @intFromEnum(effects_mod.EffectId.burst),
+                    pos,
+                    .{
+                        .x = (@as(f32, @floatFromInt(state.rng.rand() & 0x7f)) - 64.0) * burst * 1.4,
+                        .y = (@as(f32, @floatFromInt(state.rng.rand() & 0x7f)) - 64.0) * burst * 1.4,
+                    },
+                    @as(f32, @floatFromInt(state.rng.rand() & 0x7f)) * 0.049087387,
+                    1.0,
+                    burst * 32.0,
+                    burst * 32.0,
+                    0.0,
+                    @min(burst * 0.7, 1.1),
+                    0x1D,
+                    .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
+                    0.0,
+                    (@as(f32, @floatFromInt(state.rng.rand() % 100)) * 0.01 + 0.1) * burst,
+                    detail_preset,
+                );
+            }
+        },
+        @intFromEnum(game_ids.ProjectileTypeId.plasma_cannon) => {
+            effects.spawnRing(pos, detail_preset, .{ .r = 0.9, .g = 0.6, .b = 0.3, .a = 1.0 }, 1.0, 1.5 * 45.0);
+            effects.spawnRing(pos, detail_preset, .{ .r = 0.9, .g = 0.6, .b = 0.3, .a = 1.0 }, 1.0, 1.0 * 45.0);
+        },
+        @intFromEnum(game_ids.ProjectileTypeId.splitter_gun) => {
+            for (0..3) |_| {
+                const angle = @as(f32, @floatFromInt(state.rng.rand() & 0x1ff)) * (std.math.tau / 512.0);
+                const radius = @as(f32, @floatFromInt(state.rng.rand() % 26));
+                const jitter_age = -@as(f32, @floatFromInt(state.rng.rand() & 0xff)) * 0.0012;
+                const offset = state_mod.Vec2.fromAngle(angle).mul(radius);
+                _ = effects.spawn(
+                    @intFromEnum(effects_mod.EffectId.burst),
+                    state_mod.Vec2.add(pos, offset),
+                    .{},
+                    0.0,
+                    1.0,
+                    4.0,
+                    4.0,
+                    jitter_age,
+                    0.1 - jitter_age,
+                    0x19,
+                    .{ .r = 1.0, .g = 0.9, .b = 0.1, .a = 1.0 },
+                    0.0,
+                    55.0,
+                    detail_preset,
+                );
+            }
+        },
+        else => {},
+    }
 }
 
 fn creatureHitRadius(size: f32) f32 {
