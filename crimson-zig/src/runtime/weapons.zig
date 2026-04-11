@@ -845,26 +845,31 @@ fn applyPelletJitter(
     fire_bullets_active: bool,
     rule: fire_recipes.PelletJitterRule,
 ) f32 {
-    const caller = if (fire_bullets_active)
-        rng_callers.player_update_fire_bullets_pellet_jitter
-    else switch (weapon_id) {
-        .shotgun => rng_callers.player_update_shotgun_pellet_jitter,
-        .sawed_off_shotgun => rng_callers.player_update_sawed_off_shotgun_pellet_jitter,
-        .jackhammer => rng_callers.player_update_jackhammer_pellet_jitter,
-        .ion_shotgun => rng_callers.player_update_ion_shotgun_pellet_jitter,
-        .gauss_shotgun => rng_callers.player_update_gauss_shotgun_pellet_jitter,
-        .plasma_shotgun => rng_callers.player_update_plasma_shotgun_pellet_jitter,
-        else => unreachable,
-    };
     return switch (rule) {
         .none => shot_angle,
         .modulo_centered => |jitter| {
+            const caller: rng_callers.Caller = if (fire_bullets_active)
+                rng_callers.player_update_fire_bullets_pellet_jitter
+            else switch (weapon_id) {
+                .shotgun => rng_callers.player_update_shotgun_pellet_jitter,
+                .sawed_off_shotgun => rng_callers.player_update_sawed_off_shotgun_pellet_jitter,
+                .jackhammer => rng_callers.player_update_jackhammer_pellet_jitter,
+                .ion_shotgun => rng_callers.player_update_ion_shotgun_pellet_jitter,
+                .gauss_shotgun => rng_callers.player_update_gauss_shotgun_pellet_jitter,
+                else => unreachable,
+            };
             const jitter_roll = state.rng.randTagged(caller);
             return shot_angle + narrowF32(
                 @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll % jitter.modulo)) - jitter.center)) * jitter.step,
             );
         },
         .mask_centered => |jitter| {
+            const caller: rng_callers.Caller = if (fire_bullets_active)
+                rng_callers.player_update_fire_bullets_pellet_jitter
+            else switch (weapon_id) {
+                .plasma_shotgun => rng_callers.player_update_plasma_shotgun_pellet_jitter,
+                else => unreachable,
+            };
             const jitter_roll = state.rng.randTagged(caller);
             return shot_angle + narrowF32(
                 @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll & jitter.mask)) - jitter.center)) * jitter.step,
@@ -2056,6 +2061,19 @@ test "pistol fire consumes native casing+jitter+sfx rng draws" {
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     try std.testing.expect(projectiles.entries[0].active);
+}
+
+test "pellet jitter none does not require shotgun caller mapping" {
+    var state = state_mod.GameplayState.init(1);
+    const shot_angle: f32 = 1.25;
+    const angle = applyPelletJitter(
+        &state,
+        shot_angle,
+        .pistol,
+        false,
+        .none,
+    );
+    try expectFloatClose(shot_angle, angle);
 }
 
 test "fastshot scales shot cooldown" {
