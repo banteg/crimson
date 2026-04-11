@@ -237,11 +237,11 @@ pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.cri
     }
 
     if (state.player_list_open) {
-        return updatePlayGamePlayerList(state, config, dt_ms);
+        return updatePlayGamePlayerList(state, config, status, dt_ms, state.panel.timeline_ms);
     }
 
     const entries = playGameEntries(config, status);
-    const layout = playGameLayout(config, status);
+    const layout = playGameLayout(config, status, state.panel.timeline_ms);
     const hovered = hoveredPlayGameEntry(entries[0..], layout);
     updatePlayGameTooltipTimers(state, entries[0..], hovered, dt_ms);
     const back_hovered = if (runtime_assets) |assets|
@@ -254,7 +254,7 @@ pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.cri
         state.back_hover_amount = std.math.clamp(state.back_hover_amount - dt_ms * 2, 0, 1000);
     }
 
-    const selector = playerCountHeaderRect();
+    const selector = playerCountHeaderRect(layout);
     if (rl.checkCollisionPointRec(rl.getMousePosition(), selector) and rl.isMouseButtonPressed(.left)) {
         state.player_list_open = true;
         state.player_count_selection = player_count - 1;
@@ -282,8 +282,9 @@ pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.cri
     };
 }
 
-fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.CrimsonCfg, dt_ms: i32) PlayGameResult {
+fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, dt_ms: i32, timeline_ms: i32) PlayGameResult {
     _ = dt_ms;
+    const layout = playGameLayout(config, status, timeline_ms);
     if (rl.isKeyPressed(.escape)) {
         state.player_list_open = false;
         return .{};
@@ -297,7 +298,7 @@ fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.
 
     const mouse = rl.getMousePosition();
     for (0..player_count_labels.len) |idx| {
-        if (rl.checkCollisionPointRec(mouse, playerCountRowRect(idx)) and rl.isMouseButtonPressed(.left)) {
+        if (rl.checkCollisionPointRec(mouse, playerCountRowRect(layout, idx)) and rl.isMouseButtonPressed(.left)) {
             config.player_count = @intCast(idx + 1);
             state.player_list_open = false;
             return .{ .play_button_click = true, .config_dirty = true };
@@ -310,7 +311,7 @@ fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.
         return .{ .play_button_click = true, .config_dirty = true };
     }
 
-    if (rl.isMouseButtonPressed(.left) and !rl.checkCollisionPointRec(mouse, playerCountListRect())) {
+    if (rl.isMouseButtonPressed(.left) and !rl.checkCollisionPointRec(mouse, playerCountListRect(layout))) {
         state.player_list_open = false;
     }
 
@@ -319,7 +320,7 @@ fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.
 
 pub fn drawPlayGame(state: *const PlayGameState, runtime_assets: ?*const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32) void {
     if (runtime_assets) |assets| {
-        drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, playGameLayoutFromPlayerCount(player_count_raw, status).panel_rect);
+        drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, playGameLayoutFromPlayerCount(player_count_raw, status, state.panel.timeline_ms).panel_rect);
         drawPlayGameContent(state, assets, status, player_count_raw);
         window_menu.drawPanelBackEntry(assets, state.panel.timeline_ms, state.back_hover_amount);
         return;
@@ -329,12 +330,12 @@ pub fn drawPlayGame(state: *const PlayGameState, runtime_assets: ?*const window_
 
 fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32) void {
     const clamped_player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
-    const layout = playGameLayoutFromPlayerCount(clamped_player_count, status);
+    const layout = playGameLayoutFromPlayerCount(clamped_player_count, status, state.panel.timeline_ms);
     const entries = playGameEntriesFromPlayerCount(clamped_player_count, status);
     const show_counts = rl.isKeyDown(.f1);
 
     drawAtlasLabelAt(runtime_assets, layout.title_pos.x, layout.title_pos.y, window_menu.label_row_play_game, rl.Color.white);
-    drawPlayerCountWidget(state, runtime_assets, player_count_raw);
+    drawPlayerCountWidget(state, runtime_assets, layout, player_count_raw);
 
     var y = layout.content_y + layout.y_start;
     for (entries) |entry| {
@@ -366,25 +367,26 @@ fn playGameEntriesFromPlayerCount(player_count_raw: u32, status: formats.game_cf
     return play_game_entries_single[0..];
 }
 
-fn playGameLayout(config: *const formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) PlayGameLayout {
-    return playGameLayoutFromPlayerCount(config.player_count, status);
+fn playGameLayout(config: *const formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, timeline_ms: i32) PlayGameLayout {
+    return playGameLayoutFromPlayerCount(config.player_count, status, timeline_ms);
 }
 
-fn playGameLayoutFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status) PlayGameLayout {
+fn playGameLayoutFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status, timeline_ms: i32) PlayGameLayout {
     const entries = playGameEntriesFromPlayerCount(player_count_raw, status);
     const player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
     const tight_spacing = player_count == 1 and status.quest_unlock_index >= 40;
     const y_step: f32 = if (tight_spacing) 28.0 else 32.0;
     const y_start: f32 = if (tight_spacing) 42.0 else 48.0;
+    const panel_rect = animatedPanelRect(.{ .x = 352.0, .y = 150.0, .width = 510.0, .height = 278.0 }, timeline_ms);
     return .{
-        .panel_rect = .{ .x = 352.0, .y = 150.0, .width = 510.0, .height = 278.0 },
-        .title_pos = .{ .x = 496.0, .y = 184.0 },
-        .content_x = 470.0,
+        .panel_rect = panel_rect,
+        .title_pos = .{ .x = panel_rect.x + 144.0, .y = 184.0 },
+        .content_x = panel_rect.x + 118.0,
         .content_y = 206.0,
-        .drop_x = 522.0,
+        .drop_x = panel_rect.x + 170.0,
         .y_start = if (tight_spacing) 26.0 else 32.0,
         .y_step = y_step,
-        .count_x = 744.0,
+        .count_x = panel_rect.x + 392.0,
         .tooltip_y = 222.0 + y_start + y_step * @as(f32, @floatFromInt(entries.len)),
     };
 }
@@ -501,8 +503,8 @@ const play_game_entries_single_typo = [_]PlayGameEntry{
     .{ .key = .tutorial, .label = "Tutorial", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
 };
 
-fn drawPlayerCountWidget(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, player_count_raw: u32) void {
-    const rect = playerCountHeaderRect();
+fn drawPlayerCountWidget(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, layout: PlayGameLayout, player_count_raw: u32) void {
+    const rect = playerCountHeaderRect(layout);
     const selected_index = @as(usize, @intCast(std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4)))) - 1;
     const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), rect);
     const active = state.player_list_open or hovered;
@@ -525,11 +527,11 @@ fn drawPlayerCountWidget(state: *const PlayGameState, runtime_assets: *const win
 
     if (!state.player_list_open) return;
 
-    const list_rect = playerCountListRect();
+    const list_rect = playerCountListRect(layout);
     rl.drawRectangleRec(list_rect, rl.Color.white);
     rl.drawRectangle(@intFromFloat(list_rect.x + 1.0), @intFromFloat(list_rect.y + 1.0), @intFromFloat(list_rect.width - 2.0), @intFromFloat(list_rect.height - 2.0), rl.Color.black);
     for (player_count_labels, 0..) |label, idx| {
-        const row_rect = playerCountRowRect(idx);
+        const row_rect = playerCountRowRect(layout, idx);
         const row_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), row_rect);
         const alpha: u8 = if (row_hovered) 242 else if (idx == state.player_count_selection) 245 else 153;
         window_ui.drawSmallText(runtime_assets, label, row_rect.x + 4.0, row_rect.y + 1.0, rl.Color.init(255, 255, 255, alpha));
@@ -591,7 +593,7 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
 
     if (rl.isKeyPressed(.left)) state.stage = @max(1, state.stage - 1);
     if (rl.isKeyPressed(.right)) state.stage = @min(5, state.stage + 1);
-    const layout = questLayout();
+    const layout = questLayout(state.panel.timeline_ms);
     const hovered_stage = hoveredQuestStage(layout);
     if (hovered_stage) |stage| {
         state.stage = stage;
@@ -630,7 +632,7 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
 
 pub fn drawQuests(state: *const QuestState, runtime_assets: ?*const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) void {
     if (runtime_assets) |assets| {
-        drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, questLayout().panel_rect);
+        drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, questLayout(state.panel.timeline_ms).panel_rect);
         drawQuestContent(state, assets, config, status);
         return;
     }
@@ -638,7 +640,7 @@ pub fn drawQuests(state: *const QuestState, runtime_assets: ?*const window_asset
 }
 
 fn drawQuestContent(state: *const QuestState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) void {
-    const layout = questLayout();
+    const layout = questLayout(state.panel.timeline_ms);
     const title_tex = runtime_assets.texture(.ui_text_quest);
     const hovered_stage = hoveredQuestStage(layout);
     const hovered_row = hoveredQuestRow(layout, hardcoreUnlocked(status));
@@ -784,13 +786,14 @@ fn questDigitRowPressed() ?usize {
     return null;
 }
 
-fn questLayout() QuestLayout {
+fn questLayout(timeline_ms: i32) QuestLayout {
+    const panel_rect = animatedPanelRect(.{ .x = 390.0, .y = 168.0, .width = 510.0, .height = 378.0 }, timeline_ms);
     return .{
-        .panel_rect = .{ .x = 390.0, .y = 168.0, .width = 510.0, .height = 378.0 },
-        .title_pos = .{ .x = 609.0, .y = 212.0 },
-        .icons_start_pos = .{ .x = 689.0, .y = 215.0 },
-        .list_pos = .{ .x = 641.0, .y = 262.0 },
-        .back_pos = .{ .x = 779.0, .y = 474.0 },
+        .panel_rect = panel_rect,
+        .title_pos = .{ .x = panel_rect.x + 219.0, .y = 212.0 },
+        .icons_start_pos = .{ .x = panel_rect.x + 299.0, .y = 215.0 },
+        .list_pos = .{ .x = panel_rect.x + 251.0, .y = 262.0 },
+        .back_pos = .{ .x = panel_rect.x + 389.0, .y = 474.0 },
     };
 }
 
@@ -845,7 +848,7 @@ pub const StatisticsResult = struct {
 
 pub fn updateStatistics(state: *StatisticsState, frame_dt: f32) StatisticsResult {
     const dt_ms = panelAdvance(&state.panel, frame_dt);
-    const buttons = statisticsButtons();
+    const buttons = statisticsButtons(state.panel.timeline_ms);
     window_ui.updateSelectionFromPointer(&state.panel.selection, buttons[0..]);
     if (rl.isKeyPressed(.escape)) return .{ .action = .back_to_menu, .play_button_click = true };
     if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
@@ -875,7 +878,7 @@ pub fn updateStatistics(state: *StatisticsState, frame_dt: f32) StatisticsResult
 pub fn drawStatistics(state: *const StatisticsState, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     if (runtime_assets) |assets| {
         drawMenuPanelShell(state.panel.timeline_ms, assets, .{ .x = 390.0, .y = 168.0, .width = 500.0, .height = 360.0 }, window_menu.label_row_statistics);
-        const buttons = statisticsButtons();
+        const buttons = statisticsButtons(state.panel.timeline_ms);
         for (buttons, 0..) |button, idx| {
             const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
             window_ui.drawButton(button, idx == state.panel.selection, hovered, assets);
@@ -979,15 +982,14 @@ fn drawMenuPanelShell(timeline_ms: i32, runtime_assets: *const window_assets.Run
     window_menu.drawMenuBackdrop(runtime_assets);
     window_menu.drawSign(timeline_ms, runtime_assets);
 
-    const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
-    const panel_rect = rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
+    const panel_rect = animatedPanelRect(rect, timeline_ms);
     window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, rl.Color.white, false);
 
     const T = @TypeOf(title_row_or_texture);
     if (T == i32) {
-        window_menu.drawAtlasLabelCentered(runtime_assets, title_row_or_texture, rect.y + 42.0, rl.Color.white);
+        drawAtlasLabelAt(runtime_assets, panel_rect.x + (panel_rect.width - 128.0) * 0.5, rect.y + 42.0, title_row_or_texture, rl.Color.white);
     } else {
-        drawTextureLabel(runtime_assets, title_row_or_texture, rect.x + rect.width * 0.5 - 64.0, rect.y + 34.0, 128.0, 32.0, rl.Color.white);
+        drawTextureLabel(runtime_assets, title_row_or_texture, panel_rect.x + rect.width * 0.5 - 64.0, rect.y + 34.0, 128.0, 32.0, rl.Color.white);
     }
 }
 
@@ -995,8 +997,7 @@ fn drawMenuPanelShellNoTitle(timeline_ms: i32, runtime_assets: *const window_ass
     window_menu.drawMenuBackdrop(runtime_assets);
     window_menu.drawSign(timeline_ms, runtime_assets);
 
-    const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
-    const panel_rect = rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
+    const panel_rect = animatedPanelRect(rect, timeline_ms);
     window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, rl.Color.white, false);
 }
 
@@ -1026,20 +1027,21 @@ fn playGameButtons() [4]window_ui.UiButton {
     };
 }
 
-fn playerCountHeaderRect() rl.Rectangle {
-    return rl.Rectangle.init(492.0, 258.0, 124.0, 16.0);
+fn playerCountHeaderRect(layout: PlayGameLayout) rl.Rectangle {
+    return rl.Rectangle.init(layout.drop_x - 30.0, 258.0, 124.0, 16.0);
 }
 
-fn playerCountListRect() rl.Rectangle {
-    return rl.Rectangle.init(492.0, 258.0, 124.0, 80.0);
+fn playerCountListRect(layout: PlayGameLayout) rl.Rectangle {
+    return rl.Rectangle.init(layout.drop_x - 30.0, 258.0, 124.0, 80.0);
 }
 
-fn playerCountRowRect(idx: usize) rl.Rectangle {
-    return rl.Rectangle.init(492.0, 275.0 + @as(f32, @floatFromInt(idx)) * 16.0, 124.0, 16.0);
+fn playerCountRowRect(layout: PlayGameLayout, idx: usize) rl.Rectangle {
+    return rl.Rectangle.init(layout.drop_x - 30.0, 275.0 + @as(f32, @floatFromInt(idx)) * 16.0, 124.0, 16.0);
 }
 
-fn statisticsButtons() [5]window_ui.UiButton {
-    const center_x = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
+fn statisticsButtons(timeline_ms: i32) [5]window_ui.UiButton {
+    const panel_rect = animatedPanelRect(.{ .x = 390.0, .y = 168.0, .width = 500.0, .height = 360.0 }, timeline_ms);
+    const center_x = panel_rect.x + panel_rect.width * 0.5;
     return .{
         .{ .label = "HIGH SCORES", .rect = window_ui.centeredRect(center_x, 250.0, 240.0, 44.0) },
         .{ .label = "WEAPONS", .rect = window_ui.centeredRect(center_x, 304.0, 240.0, 44.0) },
@@ -1047,6 +1049,11 @@ fn statisticsButtons() [5]window_ui.UiButton {
         .{ .label = "CREDITS", .rect = window_ui.centeredRect(center_x, 412.0, 240.0, 44.0) },
         .{ .label = "BACK", .rect = window_ui.centeredRect(center_x, 478.0, 180.0, 44.0) },
     };
+}
+
+fn animatedPanelRect(rect: rl.Rectangle, timeline_ms: i32) rl.Rectangle {
+    const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
+    return rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
 }
 
 fn backOnlyButton() [1]window_ui.UiButton {

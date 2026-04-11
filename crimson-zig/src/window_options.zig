@@ -17,6 +17,7 @@ const value_dim = rl.Color.init(70, 180, 240, 153);
 const active_color = rl.Color.init(255, 228, 170, 255);
 
 const panel_timeline_max_ms: i32 = 300;
+const options_panel_rect = rl.Rectangle.init(360.0, 148.0, 510.0, 364.0);
 const controls_left_panel_rect = rl.Rectangle.init(132.0, 174.0, 510.0, 254.0);
 const controls_right_panel_rect = rl.Rectangle.init(598.0, 118.0, 510.0, 378.0);
 
@@ -132,6 +133,7 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
     const mouse = rl.getMousePosition();
     const click = rl.isMouseButtonPressed(.left);
     const mouse_down = rl.isMouseButtonDown(.left);
+    const panel_rect = animatedLeftPanelRect(options_panel_rect, state.panel.timeline_ms);
     const back_hovered = if (runtime_assets) |assets|
         state.panel.timeline_ms >= panel_timeline_max_ms and rl.checkCollisionPointRec(mouse, window_menu.panelBackHitRect(assets, state.panel.timeline_ms))
     else
@@ -152,37 +154,37 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
         .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
     };
 
-    if (updateOptionSlider(state, .sfx, optionSliderRect(625.0, 234.0, 10), 10, mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .sfx, optionSliderRect(panel_rect, 265.0, 86.0, 10), 10, mouse, click, mouse_down)) |value| {
         config.sfx_volume = @as(f32, @floatFromInt(value)) * 0.1;
         config.sound_disable = @intFromBool(value == 0);
         result.config_dirty = true;
         result.reload_audio = true;
         result.play_button_click = true;
     }
-    if (updateOptionSlider(state, .music, optionSliderRect(625.0, 270.0, 10), 10, mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .music, optionSliderRect(panel_rect, 265.0, 122.0, 10), 10, mouse, click, mouse_down)) |value| {
         config.music_volume = @as(f32, @floatFromInt(value)) * 0.1;
         config.music_disable = @intFromBool(value == 0);
         result.config_dirty = true;
         result.reload_audio = true;
         result.play_button_click = true;
     }
-    if (updateOptionSlider(state, .detail, optionSliderRect(625.0, 306.0, 5), 5, mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .detail, optionSliderRect(panel_rect, 265.0, 158.0, 5), 5, mouse, click, mouse_down)) |value| {
         config.detail_preset = @intCast(std.math.clamp(value, @as(i32, 1), @as(i32, 5)));
         result.config_dirty = true;
         result.play_button_click = true;
     }
-    if (updateOptionSlider(state, .mouse, optionSliderRect(625.0, 342.0, 10), 10, mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .mouse, optionSliderRect(panel_rect, 265.0, 194.0, 10), 10, mouse, click, mouse_down)) |value| {
         config.mouse_sensitivity = std.math.clamp(@as(f32, @floatFromInt(value)) * 0.1, @as(f32, 0.1), @as(f32, 1.0));
         result.config_dirty = true;
         result.play_button_click = true;
     }
-    if (click and rectContains(optionCheckboxRect(), mouse)) {
+    if (click and rectContains(optionCheckboxRect(panel_rect), mouse)) {
         config.ui_info_texts = if (config.ui_info_texts == 0) 1 else 0;
         result.config_dirty = true;
         result.play_button_click = true;
     }
 
-    const controls = controlsButton();
+    const controls = controlsButton(panel_rect);
     if (click and rl.checkCollisionPointRec(mouse, controls.rect)) {
         result.action = .open_controls;
         result.play_button_click = true;
@@ -193,7 +195,7 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
 
 pub fn drawOptions(state: *const OptionsState, runtime_assets: ?*const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg) void {
     if (runtime_assets) |assets| {
-        drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, .{ .x = 360.0, .y = 148.0, .width = 510.0, .height = 364.0 });
+        drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, options_panel_rect);
         drawOptionsContents(state, assets, config);
         return;
     }
@@ -205,6 +207,8 @@ pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.cri
     if (dt_ms > 0) {
         state.timeline_ms = @min(panel_timeline_max_ms, state.timeline_ms + dt_ms);
     }
+    const left_rect = animatedLeftPanelRect(controls_left_panel_rect, state.timeline_ms);
+    const right_rect = animatedRightPanelRect(controls_right_panel_rect, state.timeline_ms);
     const mouse = rl.getMousePosition();
     const back_hovered = if (runtime_assets) |assets|
         state.timeline_ms >= panel_timeline_max_ms and rl.checkCollisionPointRec(mouse, window_menu.panelBackHitRect(assets, state.timeline_ms))
@@ -229,7 +233,7 @@ pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.cri
     }
 
     if (state.open_dropdown != .none) {
-        return updateControlsDropdown(state, config);
+        return updateControlsDropdown(state, config, left_rect);
     }
 
     const button_count = leftControlButtonCount();
@@ -240,7 +244,7 @@ pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.cri
         state.right_selection = rebind_rows.len - 1;
     }
 
-    updateControlsFocusFromPointer(state, rebind_rows[0..]);
+    updateControlsFocusFromPointer(state, rebind_rows[0..], left_rect, right_rect);
 
     if (rl.isKeyPressed(.tab)) {
         state.focus_right = !state.focus_right;
@@ -304,7 +308,8 @@ pub fn drawControls(state: *const ControlsState, runtime_assets: ?*const window_
 }
 
 fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg) void {
-    const controls = controlsButton();
+    const panel_rect = animatedLeftPanelRect(options_panel_rect, state.panel.timeline_ms);
+    const controls = controlsButton(panel_rect);
     const controls_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), controls.rect);
     window_ui.drawButton(controls, false, controls_hovered, runtime_assets);
 
@@ -316,32 +321,31 @@ fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window
         "UI Info texts",
     };
     for (labels, 0..) |label, idx| {
-        const y = 236.0 + @as(f32, @floatFromInt(idx)) * 36.0;
         const hovered = switch (idx) {
-            0 => rectContains(optionSliderRect(625.0, 234.0, 10), rl.getMousePosition()),
-            1 => rectContains(optionSliderRect(625.0, 270.0, 10), rl.getMousePosition()),
-            2 => rectContains(optionSliderRect(625.0, 306.0, 5), rl.getMousePosition()),
-            3 => rectContains(optionSliderRect(625.0, 342.0, 10), rl.getMousePosition()),
-            4 => rectContains(optionCheckboxRect(), rl.getMousePosition()),
+            0 => rectContains(optionSliderRect(panel_rect, 265.0, 86.0, 10), rl.getMousePosition()),
+            1 => rectContains(optionSliderRect(panel_rect, 265.0, 122.0, 10), rl.getMousePosition()),
+            2 => rectContains(optionSliderRect(panel_rect, 265.0, 158.0, 5), rl.getMousePosition()),
+            3 => rectContains(optionSliderRect(panel_rect, 265.0, 194.0, 10), rl.getMousePosition()),
+            4 => rectContains(optionCheckboxRect(panel_rect), rl.getMousePosition()),
             else => false,
         };
-        window_ui.drawSmallText(runtime_assets, label, 420.0, y, if (hovered) text_color else muted_text);
+        window_ui.drawSmallText(runtime_assets, label, panel_rect.x + 60.0, panel_rect.y + 88.0 + @as(f32, @floatFromInt(idx)) * 36.0, if (hovered) text_color else muted_text);
     }
 
-    drawSlider(runtime_assets, rl.Vector2.init(625.0, 234.0), 10, if (config.sound_disable != 0) 0 else @intFromFloat(std.math.clamp(config.sfx_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
-    drawSlider(runtime_assets, rl.Vector2.init(625.0, 270.0), 10, if (config.music_disable != 0) 0 else @intFromFloat(std.math.clamp(config.music_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
-    drawSlider(runtime_assets, rl.Vector2.init(625.0, 306.0), 5, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))));
-    drawSlider(runtime_assets, rl.Vector2.init(625.0, 342.0), 10, @intFromFloat(std.math.clamp(config.mouse_sensitivity, @as(f32, 0.1), @as(f32, 1.0)) * 10.0 + 0.5));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 86.0), 10, if (config.sound_disable != 0) 0 else @intFromFloat(std.math.clamp(config.sfx_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 122.0), 10, if (config.music_disable != 0) 0 else @intFromFloat(std.math.clamp(config.music_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 158.0), 5, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 194.0), 10, @intFromFloat(std.math.clamp(config.mouse_sensitivity, @as(f32, 0.1), @as(f32, 1.0)) * 10.0 + 0.5));
 
     const checkbox_tex: window_assets.TextureId = if (config.ui_info_texts != 0) .ui_check_on else .ui_check_off;
-    window_ui.drawTextureFit(runtime_assets.texture(checkbox_tex), rl.Rectangle.init(625.0, 378.0, 16.0, 16.0), rl.Color.white);
-    window_ui.drawSmallText(runtime_assets, "UI Info texts", 647.0, 379.0, if (rectContains(optionCheckboxRect(), rl.getMousePosition())) text_color else muted_text);
+    window_ui.drawTextureFit(runtime_assets.texture(checkbox_tex), rl.Rectangle.init(panel_rect.x + 265.0, panel_rect.y + 230.0, 16.0, 16.0), rl.Color.white);
+    window_ui.drawSmallText(runtime_assets, "UI Info texts", panel_rect.x + 287.0, panel_rect.y + 231.0, if (rectContains(optionCheckboxRect(panel_rect), rl.getMousePosition())) text_color else muted_text);
     window_menu.drawPanelBackEntry(runtime_assets, state.panel.timeline_ms, state.back_hover_amount);
 }
 
 fn drawControlsPanels(state: *const ControlsState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg) void {
-    const left_rect = controls_left_panel_rect;
-    const right_rect = controls_right_panel_rect;
+    const left_rect = animatedLeftPanelRect(controls_left_panel_rect, state.timeline_ms);
+    const right_rect = animatedRightPanelRect(controls_right_panel_rect, state.timeline_ms);
     window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), left_rect, rl.Color.white, false);
     window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), right_rect, rl.Color.white, true);
 
@@ -378,7 +382,7 @@ fn drawControlsPanels(state: *const ControlsState, runtime_assets: *const window
     var y: f32 = right_rect.y + 82.0;
     for (rows, 0..) |row, idx| {
         const selected = state.focus_right and idx == state.right_selection;
-        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), rebindRect(y));
+        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), rebindRect(right_rect, y));
         const color = if (state.rebinding_row_index != null and state.rebinding_row_index.? == idx) active_color else if (selected or hovered) value_color else value_dim;
         window_ui.drawSmallText(runtime_assets, row.label, right_rect.x + 52.0, y, muted_text);
         window_ui.drawSmallText(runtime_assets, bindingValueText(row, &config, player_idx, state.rebinding_row_index != null and state.rebinding_row_index.? == idx), right_rect.x + 180.0, y, color);
@@ -406,20 +410,20 @@ fn drawMenuPanelShellNoTitle(timeline_ms: i32, runtime_assets: *const window_ass
     window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, rl.Color.white, false);
 }
 
-fn controlsButton() OptionButton {
-    return window_ui.buttonAt("Controls", 572.0, 343.0, true);
+fn controlsButton(panel_rect: rl.Rectangle) OptionButton {
+    return window_ui.buttonAt("Controls", panel_rect.x + 212.0, panel_rect.y + 195.0, true);
 }
 
 fn controlsBackButton() OptionButton {
     return window_ui.buttonAt("Back", 182.0, 448.0, false);
 }
 
-fn optionSliderRect(x: f32, y: f32, count: i32) rl.Rectangle {
-    return rl.Rectangle.init(x - 3.0, y - 1.0, @as(f32, @floatFromInt(count * 16)) + 6.0, 18.0);
+fn optionSliderRect(panel_rect: rl.Rectangle, rel_x: f32, rel_y: f32, count: i32) rl.Rectangle {
+    return rl.Rectangle.init(panel_rect.x + rel_x - 3.0, panel_rect.y + rel_y - 1.0, @as(f32, @floatFromInt(count * 16)) + 6.0, 18.0);
 }
 
-fn optionCheckboxRect() rl.Rectangle {
-    return rl.Rectangle.init(625.0, 378.0, 96.0, 16.0);
+fn optionCheckboxRect(panel_rect: rl.Rectangle) rl.Rectangle {
+    return rl.Rectangle.init(panel_rect.x + 265.0, panel_rect.y + 230.0, 96.0, 16.0);
 }
 
 fn updateOptionSlider(
@@ -529,17 +533,17 @@ fn leftControlButtonCount() usize {
     return 4;
 }
 
-fn rebindRect(y: f32) rl.Rectangle {
-    return rl.Rectangle.init(controls_right_panel_rect.x + 48.0, y - 2.0, 360.0, 18.0);
+fn rebindRect(right_rect: rl.Rectangle, y: f32) rl.Rectangle {
+    return rl.Rectangle.init(right_rect.x + 48.0, y - 2.0, 360.0, 18.0);
 }
 
-fn updateControlsFocusFromPointer(state: *ControlsState, rows: []const RebindRow) void {
+fn updateControlsFocusFromPointer(state: *ControlsState, rows: []const RebindRow, left_rect: rl.Rectangle, right_rect: rl.Rectangle) void {
     const mouse = rl.getMousePosition();
     const left_rects = [_]rl.Rectangle{
-        controlsDropdownRect(controls_left_panel_rect, 340.0, 56.0, dropdownWidth(player_items[0..], null)),
-        controlsDropdownRect(controls_left_panel_rect, 214.0, 102.0, dropdownWidth(aim_items_with_computer[0..], null)),
-        controlsDropdownRect(controls_left_panel_rect, 214.0, 144.0, dropdownWidth(movement_items[0..], null)),
-        rl.Rectangle.init(controls_left_panel_rect.x + 213.0, controls_left_panel_rect.y + 174.0, 220.0, 20.0),
+        controlsDropdownRect(left_rect, 340.0, 56.0, dropdownWidth(player_items[0..], null)),
+        controlsDropdownRect(left_rect, 214.0, 102.0, dropdownWidth(aim_items_with_computer[0..], null)),
+        controlsDropdownRect(left_rect, 214.0, 144.0, dropdownWidth(movement_items[0..], null)),
+        rl.Rectangle.init(left_rect.x + 213.0, left_rect.y + 174.0, 220.0, 20.0),
     };
     for (left_rects, 0..) |rect, idx| {
         if (rl.checkCollisionPointRec(mouse, rect)) {
@@ -550,7 +554,7 @@ fn updateControlsFocusFromPointer(state: *ControlsState, rows: []const RebindRow
     }
     for (rows, 0..) |row, row_idx| {
         _ = row;
-        if (rl.checkCollisionPointRec(mouse, rebindRect(controls_right_panel_rect.y + 82.0 + @as(f32, @floatFromInt(row_idx)) * 24.0))) {
+        if (rl.checkCollisionPointRec(mouse, rebindRect(right_rect, right_rect.y + 82.0 + @as(f32, @floatFromInt(row_idx)) * 24.0))) {
             state.focus_right = true;
             state.right_selection = row_idx;
             return;
@@ -558,7 +562,7 @@ fn updateControlsFocusFromPointer(state: *ControlsState, rows: []const RebindRow
     }
 }
 
-fn updateControlsDropdown(state: *ControlsState, config: *formats.crimson_cfg.CrimsonCfg) ControlsUpdate {
+fn updateControlsDropdown(state: *ControlsState, config: *formats.crimson_cfg.CrimsonCfg, left_rect: rl.Rectangle) ControlsUpdate {
     const items = switch (state.open_dropdown) {
         .player => player_items[0..],
         .movement => movement_items[0..],
@@ -575,9 +579,9 @@ fn updateControlsDropdown(state: *ControlsState, config: *formats.crimson_cfg.Cr
 
     const mouse = rl.getMousePosition();
     const base_rect = switch (state.open_dropdown) {
-        .player => controlsDropdownRect(controls_left_panel_rect, 340.0, 56.0, dropdownWidth(player_items[0..], null)),
-        .movement => controlsDropdownRect(controls_left_panel_rect, 214.0, 144.0, dropdownWidth(movement_items[0..], null)),
-        .aim => controlsDropdownRect(controls_left_panel_rect, 214.0, 102.0, dropdownWidth(items, null)),
+        .player => controlsDropdownRect(left_rect, 340.0, 56.0, dropdownWidth(player_items[0..], null)),
+        .movement => controlsDropdownRect(left_rect, 214.0, 144.0, dropdownWidth(movement_items[0..], null)),
+        .aim => controlsDropdownRect(left_rect, 214.0, 102.0, dropdownWidth(items, null)),
         .none => unreachable,
     };
     for (items, 0..) |item, idx| {
@@ -1018,4 +1022,14 @@ fn openDropdown(state: *ControlsState, config: *const formats.crimson_cfg.Crimso
     if (state.dropdown_selection >= item_count) {
         state.dropdown_selection = item_count - 1;
     }
+}
+
+fn animatedLeftPanelRect(rect: rl.Rectangle, timeline_ms: i32) rl.Rectangle {
+    const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
+    return rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
+}
+
+fn animatedRightPanelRect(rect: rl.Rectangle, timeline_ms: i32) rl.Rectangle {
+    const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
+    return rl.Rectangle.init(rect.x - anim.offset_x, rect.y, rect.width, rect.height);
 }
