@@ -17,6 +17,7 @@ const window_boot = @import("window_boot.zig");
 const window_ground = @import("window_ground.zig");
 const window_menu = @import("window_menu.zig");
 const window_menu_panels = @import("window_menu_panels.zig");
+const window_options = @import("window_options.zig");
 const window_projectiles = @import("window_projectiles.zig");
 const window_terrain_fx = @import("window_terrain_fx.zig");
 const window_ui = @import("window_ui.zig");
@@ -63,6 +64,7 @@ const Screen = enum {
     results,
     high_scores,
     options,
+    controls,
     info_view,
 };
 
@@ -224,10 +226,6 @@ const HighScoresScreen = struct {
     }
 };
 
-const OptionsScreen = struct {
-    selection: usize = 0,
-};
-
 const ResultsHighscoreState = struct {
     record: persistence.highscores.HighScoreRecord,
     rank_index: usize,
@@ -272,7 +270,8 @@ const App = struct {
     gameplay: ?GameplayScreen = null,
     results: ?ResultsScreen = null,
     high_scores: ?HighScoresScreen = null,
-    options: OptionsScreen = .{},
+    options: window_options.OptionsState = .{},
+    controls: window_options.ControlsState = .{},
     runtime_assets: ?window_assets.RuntimeAssets = null,
     audio: live_audio.Bridge,
     assets_state: AssetsState = .unavailable,
@@ -340,7 +339,8 @@ const App = struct {
             .gameplay => self.updateGameplay(frame_dt),
             .results => self.updateResults(),
             .high_scores => self.updateHighScores(),
-            .options => self.updateOptions(),
+            .options => self.updateOptions(frame_dt),
+            .controls => self.updateControls(frame_dt),
             .info_view => self.updateInfoView(),
         }
         self.audio.update(frame_dt);
@@ -357,6 +357,7 @@ const App = struct {
             .results => self.drawResults(),
             .high_scores => self.drawHighScores(),
             .options => self.drawOptions(),
+            .controls => self.drawControls(),
             .info_view => self.drawInfoView(),
         }
     }
@@ -391,7 +392,10 @@ const App = struct {
                     self.play_game_menu.reset();
                     self.screen = .play_game_menu;
                 },
-                .open_options => self.screen = .options,
+                .open_options => {
+                    self.options.reset();
+                    self.screen = .options;
+                },
                 .open_statistics => {
                     self.statistics_menu.reset();
                     self.screen = .statistics_menu;
@@ -593,77 +597,41 @@ const App = struct {
         }
     }
 
-    fn updateOptions(self: *App) void {
-        const buttons = optionsButtons();
-        window_ui.updateSelectionFromPointer(&self.options.selection, buttons[0..]);
-        if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-            self.options.selection = if (self.options.selection == 0) buttons.len - 1 else self.options.selection - 1;
+    fn updateOptions(self: *App, frame_dt: f32) void {
+        self.audio.ensureMenuTheme();
+        const options_update = window_options.updateOptions(&self.options, frame_dt, &self.runtime.config);
+        if (options_update.config_dirty) self.runtime.config_dirty = true;
+        if (options_update.reload_audio) self.reloadAudioConfig();
+        if (options_update.play_panel_click and !self.options.panel.panel_open_sfx_played) {
+            self.audio.playUiPanelClick();
+            self.options.panel.panel_open_sfx_played = true;
         }
-        if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-            self.options.selection = (self.options.selection + 1) % buttons.len;
-        }
-
-        const activate = window_ui.buttonActivated(buttons[0..], self.options.selection);
-        const adjust_left = rl.isKeyPressed(.left) or rl.isKeyPressed(.a);
-        const adjust_right = rl.isKeyPressed(.right) or rl.isKeyPressed(.d);
-        if (!(activate or adjust_left or adjust_right)) return;
-
-        switch (self.options.selection) {
-            0 => {
-                var value = if (self.runtime.config.sound_disable != 0)
-                    @as(i32, 0)
-                else
-                    @as(i32, @intFromFloat(std.math.clamp(self.runtime.config.sfx_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
-                if (adjust_left or adjust_right) {
-                    value = std.math.clamp(value + (if (adjust_left and !adjust_right) @as(i32, -1) else @as(i32, 1)), @as(i32, 0), @as(i32, 10));
-                } else {
-                    value = if (value == 0) 10 else 0;
-                }
-                self.runtime.config.sfx_volume = @as(f32, @floatFromInt(value)) * 0.1;
-                self.runtime.config.sound_disable = if (value == 0) 1 else 0;
-                self.runtime.config_dirty = true;
-                self.reloadAudioConfig();
-                self.audio.playUiButtonClick();
+        if (options_update.play_button_click) self.audio.playUiButtonClick();
+        switch (options_update.action) {
+            .none => {},
+            .open_controls => {
+                self.controls.reset();
+                self.screen = .controls;
             },
-            1 => {
-                var value = if (self.runtime.config.music_disable != 0)
-                    @as(i32, 0)
-                else
-                    @as(i32, @intFromFloat(std.math.clamp(self.runtime.config.music_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
-                if (adjust_left or adjust_right) {
-                    value = std.math.clamp(value + (if (adjust_left and !adjust_right) @as(i32, -1) else @as(i32, 1)), @as(i32, 0), @as(i32, 10));
-                } else {
-                    value = if (value == 0) 10 else 0;
-                }
-                self.runtime.config.music_volume = @as(f32, @floatFromInt(value)) * 0.1;
-                self.runtime.config.music_disable = if (value == 0) 1 else 0;
-                self.runtime.config_dirty = true;
-                self.reloadAudioConfig();
-                self.audio.playUiButtonClick();
-            },
-            2 => {
-                const current: i32 = @intCast(std.math.clamp(self.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5)));
-                const delta: i32 = if (adjust_left and !activate) -1 else 1;
-                self.runtime.config.detail_preset = @intCast(std.math.clamp(current + delta, @as(i32, 1), @as(i32, 5)));
-                self.runtime.config_dirty = true;
-                self.audio.playUiButtonClick();
-            },
-            3 => {
-                self.runtime.config.gore_disabled = if (self.runtime.config.gore_disabled == 0) 1 else 0;
-                self.runtime.config_dirty = true;
-                self.audio.playUiButtonClick();
-            },
-            4 => {
-                self.runtime.config.hardcore_flag = if (self.runtime.config.hardcore_flag == 0) 1 else 0;
-                self.runtime.config_dirty = true;
-                self.audio.playUiButtonClick();
-            },
-            5 => {
-                self.audio.playUiButtonClick();
+            .back_to_menu => {
                 self.menu.openRoot();
                 self.screen = .main_menu;
             },
-            else => {},
+        }
+    }
+
+    fn updateControls(self: *App, frame_dt: f32) void {
+        self.audio.ensureMenuTheme();
+        const controls_update = window_options.updateControls(&self.controls, frame_dt, &self.runtime.config);
+        if (controls_update.config_dirty) self.runtime.config_dirty = true;
+        if (controls_update.play_panel_click and !self.controls.panel_open_sfx_played) {
+            self.audio.playUiPanelClick();
+            self.controls.panel_open_sfx_played = true;
+        }
+        if (controls_update.play_button_click) self.audio.playUiButtonClick();
+        switch (controls_update.action) {
+            .none => {},
+            .back_to_options => self.screen = .options,
         }
     }
 
@@ -1107,26 +1075,11 @@ const App = struct {
     }
 
     fn drawOptions(self: *const App) void {
-        rl.clearBackground(bg_color);
-        drawBackdrop();
+        window_options.drawOptions(&self.options, if (self.runtime_assets) |*assets| assets else null, self.runtime.config);
+    }
 
-        if (self.runtime_assets) |*runtime_assets| {
-            drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(240.0, 96.0, 800.0, 520.0), colorWithAlpha(rl.Color.white, 0.97));
-            drawSmallTextCentered(runtime_assets, "OPTIONS", 120.0, HudTextColor.accent);
-            drawSmallTextCentered(runtime_assets, "LEFT / RIGHT ADJUST. ENTER ALSO TOGGLES.", 152.0, HudTextColor.dim);
-            drawOptionsTable(runtime_assets, self);
-        } else {
-            drawCenteredText("OPTIONS", 112, 46, accent_color);
-            drawCenteredText("Left / Right adjust. Enter also toggles.", 150, 18, muted_text);
-            drawOptionsTableFallback(self);
-        }
-
-        const buttons = optionsButtons();
-        for (buttons, 0..) |button, idx| {
-            const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-            window_ui.drawButton(button, idx == self.options.selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
-        }
-        drawAudioStatus(&self.audio);
+    fn drawControls(self: *const App) void {
+        window_options.drawControls(&self.controls, if (self.runtime_assets) |*assets| assets else null, self.runtime.config);
     }
 
     fn drawInfoView(self: *const App) void {
@@ -1351,17 +1304,6 @@ fn highScoresButtons() [4]UiButton {
         .{ .label = "RUSH", .rect = window_ui.centeredRect(center_x, 616.0, 220.0, 48.0) },
         .{ .label = "QUEST 1.1", .rect = window_ui.centeredRect(center_x, 672.0, 220.0, 48.0) },
         .{ .label = "BACK", .rect = window_ui.centeredRect(center_x + 262.0, 672.0, 150.0, 48.0) },
-    };
-}
-
-fn optionsButtons() [6]UiButton {
-    return .{
-        .{ .label = "SFX", .rect = rl.Rectangle.init(304.0, 220.0, 420.0, 44.0) },
-        .{ .label = "MUSIC", .rect = rl.Rectangle.init(304.0, 274.0, 420.0, 44.0) },
-        .{ .label = "DETAIL", .rect = rl.Rectangle.init(304.0, 328.0, 420.0, 44.0) },
-        .{ .label = "GORE", .rect = rl.Rectangle.init(304.0, 382.0, 420.0, 44.0) },
-        .{ .label = "HARDCORE", .rect = rl.Rectangle.init(304.0, 436.0, 420.0, 44.0) },
-        .{ .label = "BACK", .rect = rl.Rectangle.init(304.0, 522.0, 220.0, 48.0) },
     };
 }
 
@@ -1987,74 +1929,6 @@ fn formatHighScoreValue(buf: []u8, record: persistence.highscores.HighScoreRecor
     };
 }
 
-fn drawOptionsTable(runtime_assets: *const window_assets.RuntimeAssets, app: *const App) void {
-    const labels = [_][]const u8{
-        "SOUND VOLUME",
-        "MUSIC VOLUME",
-        "GRAPHICS DETAIL",
-        "VIOLENCE",
-        "HARDCORE",
-    };
-    for (labels, 0..) |label, idx| {
-        const row_y = 230.0 + @as(f32, @floatFromInt(idx)) * 54.0;
-        var value_buf: [32]u8 = undefined;
-        drawSmallText(runtime_assets, label, 330.0, row_y, HudTextColor.dim);
-        switch (idx) {
-            0, 1, 2 => {
-                const slider_value: i32 = switch (idx) {
-                    0 => if (app.runtime.config.sound_disable != 0) 0 else @intFromFloat(std.math.clamp(app.runtime.config.sfx_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5),
-                    1 => if (app.runtime.config.music_disable != 0) 0 else @intFromFloat(std.math.clamp(app.runtime.config.music_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5),
-                    else => @intCast(std.math.clamp(app.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5))),
-                };
-                drawSliderRow(runtime_assets, rl.Vector2.init(620.0, row_y - 2.0), if (idx == 2) 5 else 10, slider_value);
-                drawSmallText(runtime_assets, optionValueText(&value_buf, app, idx), 708.0, row_y, rl.Color.white);
-            },
-            3, 4 => {
-                const checked = switch (idx) {
-                    3 => app.runtime.config.gore_disabled == 0,
-                    4 => app.runtime.config.hardcore_flag != 0,
-                    else => false,
-                };
-                const texture_id: window_assets.TextureId = if (checked) .ui_check_on else .ui_check_off;
-                drawTextureFit(runtime_assets.texture(texture_id), rl.Rectangle.init(620.0, row_y - 1.0, 16.0, 16.0), rl.Color.white);
-                drawSmallText(runtime_assets, optionValueText(&value_buf, app, idx), 646.0, row_y, rl.Color.white);
-            },
-            else => {},
-        }
-    }
-}
-
-fn drawOptionsTableFallback(app: *const App) void {
-    const labels = [_][]const u8{
-        "SFX",
-        "MUSIC",
-        "DETAIL",
-        "GORE",
-        "HARDCORE",
-    };
-    for (labels, 0..) |label, idx| {
-        var value_buf: [32]u8 = undefined;
-        drawTextFmt(
-            "{s}: {s}",
-            .{ label, optionValueText(&value_buf, app, idx) },
-            320,
-            230 + @as(i32, @intCast(idx)) * 54,
-            20,
-            text_color,
-        );
-    }
-}
-
-fn optionValueText(buf: []u8, app: *const App, idx: usize) []const u8 {
-    return switch (idx) {
-        0 => std.fmt.bufPrint(buf, "{d}", .{if (app.runtime.config.sound_disable != 0) @as(i32, 0) else @as(i32, @intFromFloat(std.math.clamp(app.runtime.config.sfx_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5))}) catch "0",
-        1 => std.fmt.bufPrint(buf, "{d}", .{if (app.runtime.config.music_disable != 0) @as(i32, 0) else @as(i32, @intFromFloat(std.math.clamp(app.runtime.config.music_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5))}) catch "0",
-        2 => std.fmt.bufPrint(buf, "{d}", .{std.math.clamp(app.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5))}) catch "5",
-        3 => if (app.runtime.config.gore_disabled == 0) "ON" else "OFF",
-        4 => if (app.runtime.config.hardcore_flag == 0) "OFF" else "ON",
-        else => "",
-    };
-}
 
 const HudTextColor = struct {
     const primary = rl.Color.init(220, 220, 220, 255);

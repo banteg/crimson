@@ -303,6 +303,37 @@ pub fn playerShowDirectionArrow(cfg: *const CrimsonCfg, player_index: usize) boo
     };
 }
 
+pub fn setPlayerMovement(cfg: *CrimsonCfg, player_index: usize, value: u32) void {
+    switch (player_index) {
+        0 => cfg.player_mode_flag_p1 = value,
+        1 => cfg.player_mode_flag_p2 = value,
+        2 => cfg.player_mode_flag_p3 = value,
+        3 => cfg.player_mode_flag_p4 = value,
+        else => unreachable,
+    }
+}
+
+pub fn setPlayerAimScheme(cfg: *CrimsonCfg, player_index: usize, value: u32) void {
+    switch (player_index) {
+        0 => cfg.aim_scheme_p1 = value,
+        1 => cfg.aim_scheme_p2 = value,
+        2 => cfg.aim_scheme_p3 = value,
+        3 => cfg.aim_scheme_p4 = value,
+        else => unreachable,
+    }
+}
+
+pub fn setPlayerShowDirectionArrow(cfg: *CrimsonCfg, player_index: usize, enabled: bool) void {
+    const raw: u8 = if (enabled) ext_direction_arrow_on else ext_direction_arrow_off;
+    switch (player_index) {
+        0 => cfg.hud_indicators[0] = @intFromBool(enabled),
+        1 => cfg.hud_indicators[1] = @intFromBool(enabled),
+        2 => cfg.unknown_248[player_bind_block_size * 2] = raw,
+        3 => cfg.unknown_248[player_bind_block_size * 2 + 1] = raw,
+        else => unreachable,
+    }
+}
+
 pub fn defaultConfig() CrimsonCfg {
     var cfg = std.mem.zeroes(CrimsonCfg);
     cfg.hud_indicators = [_]u8{ 1, 1 };

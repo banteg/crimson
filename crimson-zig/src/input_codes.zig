@@ -327,7 +327,7 @@ pub fn captureFirstPressedInputCode(
     if (include_keyboard) {
         while (true) {
             const key = rl.getKeyPressed();
-            if (key <= 0) break;
+            if (@intFromEnum(key) <= 0) break;
             inline for ([_]i32{
                 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
                 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E,
@@ -337,7 +337,7 @@ pub fn captureFirstPressedInputCode(
                 0xD0, 0xD1, 0xD2, 0xD3,
             }) |code| {
                 if (raylibKeyFromInputCode(code)) |mapped_key| {
-                    if (@intFromEnum(mapped_key) == key) return code;
+                    if (@intFromEnum(mapped_key) == @intFromEnum(key)) return code;
                 }
             }
         }
