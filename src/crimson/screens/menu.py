@@ -113,7 +113,7 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         ground.overlay_detail = detail
     if generated_new_terrain:
         assert ground is not None
-        ground.schedule_generate(seed=terrain.terrain_seed)
+        ground.schedule_generate(seed=terrain.terrain_seed, generation_kind="unlock_random")
         state.menu_ground_camera = None
     return ground
 

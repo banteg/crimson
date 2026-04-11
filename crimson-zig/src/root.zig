@@ -1,4 +1,5 @@
 pub const game_ids = @import("game_ids.zig");
+pub const rng_caller_static = @import("rng_caller_static.zig");
 pub const cli = @import("cli.zig");
 pub const hash = @import("hash.zig");
 pub const quest_spawn_logic_full = @import("quest_spawn/logic_full.zig");
