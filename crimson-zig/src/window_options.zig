@@ -313,6 +313,16 @@ fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window
     const controls_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), controls.rect);
     window_ui.drawButton(controls, false, controls_hovered, runtime_assets);
 
+    const labels_tex = runtime_assets.texture(.ui_item_texts);
+    rl.drawTexturePro(
+        labels_tex,
+        rl.Rectangle.init(0.0, @as(f32, @floatFromInt(window_menu.label_row_options)) * 32.0, 128.0, 32.0),
+        rl.Rectangle.init(panel_rect.x + 212.0, panel_rect.y + 40.0, 128.0, 32.0),
+        rl.Vector2.zero(),
+        0.0,
+        rl.Color.white,
+    );
+
     const labels = [_][]const u8{
         "Sound volume:",
         "Music volume:",
