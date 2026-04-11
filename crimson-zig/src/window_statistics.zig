@@ -24,6 +24,9 @@ const value_color = rl.Color.init(70, 180, 240, 255);
 const gold_color = rl.Color.init(255, 228, 170, 255);
 
 const panel_timeline_max_ms: i32 = 300;
+const credits_table_size: usize = 0x100;
+const credits_flag_heading: u8 = 0x1;
+const credits_flag_clicked: u8 = 0x4;
 
 const left_panel_rect = rl.Rectangle.init(164.0, 156.0, 424.0, 402.0);
 const right_panel_rect = rl.Rectangle.init(678.0, 174.0, 424.0, 276.0);
@@ -124,9 +127,27 @@ const CreditsScreen = struct {
     scroll_time_s: f32 = 0.0,
     line_start_index: i32 = 0,
     line_end_index: i32 = 0,
+    line_max_index: i32 = 0,
+    secret_line_base_index: usize = 0x54,
+    secret_unlock: bool = false,
+    lines: [credits_table_size]CreditLineState = [_]CreditLineState{.{}} ** credits_table_size,
 
     fn reset(self: *CreditsScreen) void {
         self.* = .{};
+        buildCreditsLines(self);
+    }
+};
+
+const CreditLineState = struct {
+    text: []const u8 = "",
+    flags: u8 = 0,
+
+    fn heading(self: CreditLineState) bool {
+        return (self.flags & credits_flag_heading) != 0;
+    }
+
+    fn clicked(self: CreditLineState) bool {
+        return (self.flags & credits_flag_clicked) != 0;
     }
 };
 
@@ -187,13 +208,14 @@ pub fn update(
     base_dir: []const u8,
     config: *formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
 ) UpdateResult {
     return switch (state.view) {
         .hub => updateHub(state, allocator, frame_dt, base_dir, config, status),
         .high_scores => updateHighScores(state, allocator, frame_dt, base_dir, config, status),
         .weapons => updateWeapons(state, frame_dt, config.*, status),
         .perks => updatePerks(state, frame_dt, status),
-        .credits => updateCredits(state, frame_dt),
+        .credits => updateCredits(state, frame_dt, runtime_assets),
     };
 }
 
@@ -414,7 +436,7 @@ fn updatePerks(state: *State, frame_dt: f32, status: formats.game_cfg.Status) Up
     return .{};
 }
 
-fn updateCredits(state: *State, frame_dt: f32) UpdateResult {
+fn updateCredits(state: *State, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
     _ = state.hub.panel.advance(frame_dt);
     if (rl.isKeyPressed(.escape) or backButtonActivated(backOnlyButton()[0])) {
         state.view = .hub;
@@ -424,6 +446,10 @@ fn updateCredits(state: *State, frame_dt: f32) UpdateResult {
     const dt_clamped = @min(frame_dt, 0.1);
     state.credits.scroll_time_s += dt_clamped;
     updateCreditsWindow(&state.credits);
+    if (runtime_assets) |assets| {
+        updateCreditsLineClicks(&state.credits, assets, rl.getMousePosition(), rl.isMouseButtonPressed(.left));
+        updateCreditsSecretUnlock(&state.credits);
+    }
     return .{};
 }
 
@@ -498,12 +524,12 @@ fn drawCredits(state: *const CreditsScreen, runtime_assets: ?*const window_asset
             var row: i32 = 0;
             while (row < visible_count) : (row += 1) {
                 const index = state.line_start_index + row;
-                if (index < 0 or index >= window_statistics_data.credits_lines.len) continue;
-                const line = window_statistics_data.credits_lines[@intCast(index)];
+                if (index < 0 or index >= credits_table_size) continue;
+                const line = state.lines[@intCast(index)];
                 const y = base_y + @as(f32, @floatFromInt(row)) * 16.0 - frac_px;
                 const alpha = creditsLineAlpha(y, base_y, visible_count);
                 if (alpha <= 0.0) continue;
-                const color = creditsLineColor(line.heading, alpha);
+                const color = creditsLineColor(line, alpha);
                 const line_width = window_ui.measureSmallText(assets, line.text);
                 const x = center_x - line_width * 0.5;
                 window_ui.drawSmallText(assets, line.text, x, y, color);
@@ -746,21 +772,21 @@ fn drawPerksPanels(
 fn drawSplitPanelShell(assets: *const window_assets.RuntimeAssets) void {
     window_menu.drawMenuBackdrop(assets);
     window_menu.drawSign(panel_timeline_max_ms, assets);
-    window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), left_panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
-    window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), right_panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), true);
+    window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), left_panel_rect, rl.Color.white, false);
+    window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), right_panel_rect, rl.Color.white, true);
 }
 
 fn drawPanelShell(timeline_ms: i32, assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle, label_row: i32) void {
     window_menu.drawMenuBackdrop(assets);
     window_menu.drawSign(timeline_ms, assets);
-    window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
-    window_menu.drawAtlasLabelCentered(assets, label_row, rect.y + 42.0, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+    window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), rect, rl.Color.white, false);
+    window_menu.drawAtlasLabelCentered(assets, label_row, rect.y + 42.0, rl.Color.white);
 }
 
 fn drawPanelShellNoTitle(timeline_ms: i32, assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle) void {
     window_menu.drawMenuBackdrop(assets);
     window_menu.drawSign(timeline_ms, assets);
-    window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
+    window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), rect, rl.Color.white, false);
 }
 
 fn drawAtlasTitle(assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle, rel_x: f32, rel_y: f32, row: i32) void {
@@ -827,19 +853,20 @@ fn creditsScrollFractionPx(scroll_time_s: f32) f32 {
 }
 
 fn updateCreditsWindow(screen: *CreditsScreen) void {
-    const line_max_index: i32 = @intCast(window_statistics_data.credits_lines.len - 1);
-    if ((line_max_index + 2) < screen.line_start_index) {
+    if ((screen.line_max_index + 2) < screen.line_start_index) {
         screen.scroll_time_s = 0.0;
         screen.line_start_index = 0;
     }
     const whole_scroll: i32 = @intFromFloat(screen.scroll_time_s);
     screen.line_start_index = whole_scroll - 15;
     screen.line_end_index = whole_scroll + 1;
-    if (line_max_index < screen.line_end_index) screen.line_end_index = line_max_index;
+    if (screen.line_max_index < screen.line_end_index) screen.line_end_index = screen.line_max_index;
 }
 
-fn creditsLineColor(heading: bool, alpha: f32) rl.Color {
-    const rgb = if (heading)
+fn creditsLineColor(line: CreditLineState, alpha: f32) rl.Color {
+    const rgb = if (line.clicked())
+        if (line.heading()) [_]u8{ 230, 255, 230 } else [_]u8{ 102, 179, 179 }
+    else if (line.heading())
         [_]u8{ 255, 255, 255 }
     else
         [_]u8{ 102, 128, 178 };
@@ -857,6 +884,180 @@ fn creditsLineAlpha(y: f32, base_y: f32, visible_count: i32) f32 {
         if (y > bottom) alpha = ((bottom - y) / fade_px) + 1.0;
     }
     return std.math.clamp(alpha, @as(f32, 0.0), @as(f32, 1.0));
+}
+
+const credits_secret_lines = [_][]const u8{
+    "Inside Dead Let Mighty Blood",
+    "Do Firepower See Mark Of",
+    "The Sacrifice Old Center",
+    "Yourself Ground First For",
+    "Triangle Cube Last Not Flee",
+    "0001001110000010101110011",
+    "0101001011100010010101100",
+    "011111001000111",
+    "(4 bits for index) <- OOOPS I meant FIVE!",
+    "(4 bits for index)",
+};
+
+fn buildCreditsLines(screen: *CreditsScreen) void {
+    for (&screen.lines) |*line| line.* = .{};
+    screen.line_max_index = 0;
+    screen.secret_line_base_index = 0x54;
+    screen.secret_unlock = false;
+
+    const setLine = struct {
+        fn apply(screen_: *CreditsScreen, index: usize, text: []const u8, flags: u8) void {
+            screen_.lines[index] = .{ .text = text, .flags = flags };
+            screen_.line_max_index = @intCast(index);
+        }
+    }.apply;
+
+    setLine(screen, 0x00, "2026 Remake:", credits_flag_heading);
+    setLine(screen, 0x01, "banteg", 0);
+    setLine(screen, 0x02, "", 0);
+    setLine(screen, 0x03, "Crimsonland", credits_flag_heading);
+    setLine(screen, 0x04, "Game Design:", credits_flag_heading);
+    setLine(screen, 0x05, "Tero Alatalo", 0);
+    setLine(screen, 0x06, "", 0);
+    setLine(screen, 0x07, "Programming:", credits_flag_heading);
+    setLine(screen, 0x08, "Tero Alatalo", 0);
+    setLine(screen, 0x09, "", 0);
+    setLine(screen, 0x0A, "Producer:", credits_flag_heading);
+    setLine(screen, 0x0B, "Zach Young", 0);
+    setLine(screen, 0x0C, "", 0);
+    setLine(screen, 0x0D, "2D Art:", credits_flag_heading);
+    setLine(screen, 0x0E, "Tero Alatalo", 0);
+    setLine(screen, 0x0F, "", 0);
+    setLine(screen, 0x10, "3D Modelling:", credits_flag_heading);
+    setLine(screen, 0x11, "Tero Alatalo", 0);
+    setLine(screen, 0x12, "Timo Palonen", 0);
+    setLine(screen, 0x13, "", 0);
+    setLine(screen, 0x14, "Music:", credits_flag_heading);
+    setLine(screen, 0x15, "Valtteri Pihlajam", 0);
+    setLine(screen, 0x16, "Ville Eriksson", 0);
+    setLine(screen, 0x17, "", 0);
+    setLine(screen, 0x18, "Sound Effects:", credits_flag_heading);
+    setLine(screen, 0x19, "Ion Hardie", 0);
+    setLine(screen, 0x1A, "Tero Alatalo", 0);
+    setLine(screen, 0x1B, "Valtteri Pihlajam", 0);
+    setLine(screen, 0x1C, "Ville Eriksson", 0);
+    setLine(screen, 0x1D, "", 0);
+    setLine(screen, 0x1E, "Manual:", credits_flag_heading);
+    setLine(screen, 0x1F, "Miikka Kulmala", 0);
+    setLine(screen, 0x20, "Zach Young", 0);
+    setLine(screen, 0x21, "", 0);
+    setLine(screen, 0x22, "Special thanks to:", credits_flag_heading);
+    setLine(screen, 0x23, "Petri J", 0);
+    setLine(screen, 0x24, "Peter Hajba / Remedy", 0);
+    setLine(screen, 0x25, "", 0);
+    setLine(screen, 0x26, "Play testers:", credits_flag_heading);
+    setLine(screen, 0x27, "Avraham Petrosyan", 0);
+    setLine(screen, 0x28, "Bryce Baker", 0);
+    setLine(screen, 0x29, "Dan Ruskin", 0);
+    setLine(screen, 0x2A, "Dirk Bunk", 0);
+    setLine(screen, 0x2B, "Eric Dallaire", 0);
+    setLine(screen, 0x2C, "Erik Van Pelt", 0);
+    setLine(screen, 0x2D, "Ernie Ramirez", 0);
+    setLine(screen, 0x2E, "Ion Hardie", 0);
+    setLine(screen, 0x2F, "James C. Smith", 0);
+    setLine(screen, 0x30, "Jarkko Forsbacka", 0);
+    setLine(screen, 0x31, "Jeff McAteer", 0);
+    setLine(screen, 0x32, "Juha Alatalo", 0);
+    setLine(screen, 0x33, "Kalle Hahl", 0);
+    setLine(screen, 0x34, "Lars Brubaker", 0);
+    setLine(screen, 0x35, "Lee Cooper", 0);
+    setLine(screen, 0x36, "Markus Lassila", 0);
+    setLine(screen, 0x37, "Matti Alanen", 0);
+    setLine(screen, 0x38, "Miikka Kulmala", 0);
+    setLine(screen, 0x39, "Mika Alatalo", 0);
+    setLine(screen, 0x3A, "Mike Colonnese", 0);
+    setLine(screen, 0x3B, "Simon Hallam", 0);
+    setLine(screen, 0x3C, "Toni Nurminen", 0);
+    setLine(screen, 0x3D, "Valtteri Pihlajam", 0);
+    setLine(screen, 0x3E, "Ville Eriksson", 0);
+    setLine(screen, 0x3F, "Ville M", 0);
+    setLine(screen, 0x40, "Zach Young", 0);
+    setLine(screen, 0x41, "", 0);
+    setLine(screen, 0x42, "", 0);
+    setLine(screen, 0x43, "", 0);
+    setLine(screen, 0x44, "2003 (c) 10tons entertainment", 0);
+    setLine(screen, 0x45, "10tons logo by", 0);
+    setLine(screen, 0x46, "Pasi Heinonen", 0);
+    setLine(screen, 0x47, "", 0);
+    setLine(screen, 0x48, "", 0);
+    setLine(screen, 0x49, "", 0);
+    setLine(screen, 0x4A, "Uses Vorbis Audio Decompression", 0);
+    setLine(screen, 0x4B, "2003 (c) Xiph.Org Foundation", 0);
+    setLine(screen, 0x4C, "(see vorbis.txt)", 0);
+    var index: usize = 0x4D;
+    while (index < 0x54) : (index += 1) setLine(screen, index, "", 0);
+    setLine(screen, 0x54, "", 0);
+    setLine(screen, 0x55, "", 0);
+    setLine(screen, 0x56, "", 0);
+    setLine(screen, 0x57, "You can stop watching now.", 0);
+    index = 0x58;
+    while (index < 0x77) : (index += 1) setLine(screen, index, "", 0);
+    setLine(screen, 0x77, "Click the ones with the round ones!", 0);
+    setLine(screen, 0x78, "(and be patient!)", 0);
+    index = 0x79;
+    while (index < 0x7E) : (index += 1) setLine(screen, index, "", 0);
+}
+
+fn updateCreditsLineClicks(screen: *CreditsScreen, assets: *const window_assets.RuntimeAssets, mouse: rl.Vector2, click: bool) void {
+    if (!click) return;
+    const visible_count = screen.line_end_index - screen.line_start_index;
+    if (visible_count <= 0) return;
+
+    const base_y = credits_panel_rect.y + 60.0;
+    const frac_px = creditsScrollFractionPx(screen.scroll_time_s);
+    const center_x = credits_panel_rect.x + 198.0 + 140.0;
+    var row: i32 = 0;
+    while (row < visible_count) : (row += 1) {
+        const index = screen.line_start_index + row;
+        if (index < 0 or index >= credits_table_size) continue;
+        const line = screen.lines[@intCast(index)];
+        const text_w = window_ui.measureSmallText(assets, line.text);
+        const x = center_x - text_w * 0.5;
+        const y = base_y + @as(f32, @floatFromInt(row)) * 16.0 - frac_px;
+        if (!(mouse.x >= x and mouse.x <= x + text_w and mouse.y >= y and mouse.y <= y + 16.0)) continue;
+        if (std.mem.indexOfScalar(u8, line.text, 'o') != null) {
+            screen.lines[@intCast(index)].flags |= credits_flag_clicked;
+        } else {
+            _ = creditsLineClearFlag(screen, index);
+        }
+        return;
+    }
+}
+
+fn creditsLineClearFlag(screen: *CreditsScreen, start_index: i32) bool {
+    var index = start_index;
+    while (index >= 0) : (index -= 1) {
+        const slot: usize = @intCast(index);
+        if ((screen.lines[slot].flags & credits_flag_clicked) != 0) {
+            screen.lines[slot].flags &= ~credits_flag_clicked;
+            return true;
+        }
+    }
+    return false;
+}
+
+fn updateCreditsSecretUnlock(screen: *CreditsScreen) void {
+    if (screen.secret_unlock or !creditsAllRoundLinesFlagged(screen)) return;
+    screen.secret_unlock = true;
+    for (credits_secret_lines, 0..) |text, offset| {
+        const index = screen.secret_line_base_index + offset;
+        screen.lines[index].text = text;
+        screen.lines[index].flags |= credits_flag_clicked;
+    }
+}
+
+fn creditsAllRoundLinesFlagged(screen: *const CreditsScreen) bool {
+    var index: usize = 0;
+    while (index < credits_table_size) : (index += 1) {
+        const line = screen.lines[index];
+        if (line.text.len != 0 and std.mem.indexOfScalar(u8, line.text, 'o') != null and (line.flags & credits_flag_clicked) == 0) return false;
+    }
+    return true;
 }
 
 fn playerCountLabels() [4][]const u8 {

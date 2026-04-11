@@ -425,6 +425,7 @@ const App = struct {
             self.runtime.base_dir,
             &self.runtime.config,
             self.runtime.status,
+            if (self.runtime_assets) |*assets| assets else null,
         );
         if (statistics_update.play_panel_click and !self.statistics_menu.hub.panel.panel_open_sfx_played) {
             self.audio.playUiPanelClick();

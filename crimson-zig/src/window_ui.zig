@@ -55,12 +55,13 @@ pub fn drawButton(
         const texture = if (button.rect.width > 120.0) assets.texture(.ui_button_md) else assets.texture(.ui_button_sm);
         const plate_rect = rl.Rectangle.init(button.rect.x, button.rect.y, button.rect.width, button_plate_height * scale);
         if (selected or hovered) {
+            const highlight_alpha: u8 = if (hovered) 255 else 170;
             rl.drawRectangle(
                 @intFromFloat(plate_rect.x + 12.0 * scale),
                 @intFromFloat(plate_rect.y + 5.0 * scale),
                 @intFromFloat(plate_rect.width - 24.0 * scale),
                 @intFromFloat(22.0 * scale),
-                rl.Color.init(128, 128, 178, 255),
+                rl.Color.init(128, 128, 178, highlight_alpha),
             );
         }
         rl.drawTexturePro(

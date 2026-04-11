@@ -333,7 +333,7 @@ fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const windo
     const entries = playGameEntriesFromPlayerCount(clamped_player_count, status);
     const show_counts = rl.isKeyDown(.f1);
 
-    drawAtlasLabelAt(runtime_assets, layout.title_pos.x, layout.title_pos.y, window_menu.label_row_play_game, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+    drawAtlasLabelAt(runtime_assets, layout.title_pos.x, layout.title_pos.y, window_menu.label_row_play_game, rl.Color.white);
     drawPlayerCountWidget(state, runtime_assets, player_count_raw);
 
     var y = layout.content_y + layout.y_start;
@@ -976,13 +976,13 @@ fn drawMenuPanelShell(timeline_ms: i32, runtime_assets: *const window_assets.Run
 
     const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
     const panel_rect = rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
-    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
+    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, rl.Color.white, false);
 
     const T = @TypeOf(title_row_or_texture);
     if (T == i32) {
-        window_menu.drawAtlasLabelCentered(runtime_assets, title_row_or_texture, rect.y + 42.0, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+        window_menu.drawAtlasLabelCentered(runtime_assets, title_row_or_texture, rect.y + 42.0, rl.Color.white);
     } else {
-        drawTextureLabel(runtime_assets, title_row_or_texture, rect.x + rect.width * 0.5 - 64.0, rect.y + 34.0, 128.0, 32.0, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+        drawTextureLabel(runtime_assets, title_row_or_texture, rect.x + rect.width * 0.5 - 64.0, rect.y + 34.0, 128.0, 32.0, rl.Color.white);
     }
 }
 
@@ -992,7 +992,7 @@ fn drawMenuPanelShellNoTitle(timeline_ms: i32, runtime_assets: *const window_ass
 
     const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
     const panel_rect = rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
-    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
+    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, rl.Color.white, false);
 }
 
 fn drawTextureLabel(runtime_assets: *const window_assets.RuntimeAssets, texture_id: window_assets.TextureId, x: f32, y: f32, w: f32, h: f32, tint: rl.Color) void {

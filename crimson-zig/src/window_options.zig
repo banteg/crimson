@@ -340,8 +340,8 @@ fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window
 fn drawControlsPanels(state: *const ControlsState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg) void {
     const left_rect = rl.Rectangle.init(132.0, 174.0, 510.0, 292.0);
     const right_rect = rl.Rectangle.init(598.0, 118.0, 510.0, 392.0);
-    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), left_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
-    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), right_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), true);
+    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), left_rect, rl.Color.white, false);
+    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), right_rect, rl.Color.white, true);
 
     window_ui.drawTextureFit(runtime_assets.texture(.ui_text_controls), rl.Rectangle.init(322.0, 202.0, 128.0, 32.0), rl.Color.white);
     window_ui.drawSmallText(runtime_assets, "Configured controls", 746.0, 156.0, text_color);
@@ -384,7 +384,7 @@ fn drawMenuPanelShell(timeline_ms: i32, runtime_assets: *const window_assets.Run
     drawMenuBackdropAndSign(timeline_ms, runtime_assets);
     const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
     const panel_rect = rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
-    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
+    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, rl.Color.white, false);
     window_menu.drawAtlasLabelCentered(runtime_assets, title_row, rect.y + 38.0, rl.Color.white);
 }
 
@@ -392,7 +392,7 @@ fn drawMenuPanelShellNoTitle(timeline_ms: i32, runtime_assets: *const window_ass
     drawMenuBackdropAndSign(timeline_ms, runtime_assets);
     const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
     const panel_rect = rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
-    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
+    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, rl.Color.white, false);
 }
 
 fn controlsButton() OptionButton {
