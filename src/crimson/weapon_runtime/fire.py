@@ -331,7 +331,11 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             pellets = max(0, int(count if count is not None else 0))
             shot_count = pellets
             meta = travel_budget_for_type_id(type_id)
-            pellet_jitter_caller = None if is_fire_bullets else _PELLET_JITTER_CALLER_BY_WEAPON.get(WeaponId(weapon_id))
+            pellet_jitter_caller = (
+                RngCallerStatic.PLAYER_UPDATE_FIRE_BULLETS_PELLET_JITTER
+                if is_fire_bullets
+                else _PELLET_JITTER_CALLER_BY_WEAPON.get(WeaponId(weapon_id))
+            )
             pellet_speed_caller = None if is_fire_bullets else _PELLET_SPEED_SCALE_CALLER_BY_WEAPON.get(WeaponId(weapon_id))
             for _ in range(pellets):
                 angle = _apply_pellet_jitter(

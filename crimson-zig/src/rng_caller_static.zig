@@ -21,6 +21,7 @@ pub const player_update_casing_rotation: u32 = 0x00415B26;
 pub const player_update_casing_rotation_step: u32 = 0x00415B79;
 pub const player_update_shot_jitter_dir: u32 = 0x00415C6B;
 pub const player_update_shot_jitter_mag: u32 = 0x00415C87;
+pub const player_update_fire_bullets_pellet_jitter: u32 = 0x00415DAD;
 pub const player_update_shot_sfx: u32 = 0x00415F09;
 pub const player_update_shotgun_pellet_jitter: u32 = 0x00416364;
 pub const player_update_shotgun_pellet_speed_scale: u32 = 0x00416399;

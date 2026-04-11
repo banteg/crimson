@@ -846,7 +846,7 @@ fn applyPelletJitter(
     rule: fire_recipes.PelletJitterRule,
 ) f32 {
     const caller = if (fire_bullets_active)
-        null
+        rng_callers.player_update_fire_bullets_pellet_jitter
     else switch (weapon_id) {
         .shotgun => rng_callers.player_update_shotgun_pellet_jitter,
         .sawed_off_shotgun => rng_callers.player_update_sawed_off_shotgun_pellet_jitter,
@@ -859,13 +859,13 @@ fn applyPelletJitter(
     return switch (rule) {
         .none => shot_angle,
         .modulo_centered => |jitter| {
-            const jitter_roll = if (caller) |tag| state.rng.randTagged(tag) else state.rng.rand();
+            const jitter_roll = state.rng.randTagged(caller);
             return shot_angle + narrowF32(
                 @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll % jitter.modulo)) - jitter.center)) * jitter.step,
             );
         },
         .mask_centered => |jitter| {
-            const jitter_roll = if (caller) |tag| state.rng.randTagged(tag) else state.rng.rand();
+            const jitter_roll = state.rng.randTagged(caller);
             return shot_angle + narrowF32(
                 @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll & jitter.mask)) - jitter.center)) * jitter.step,
             );
