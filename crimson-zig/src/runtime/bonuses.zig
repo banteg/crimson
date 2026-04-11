@@ -795,6 +795,37 @@ fn weaponRefreshAvailable(state: *state_mod.GameplayState) void {
     state.weapon_available_unlock_index_full = unlock_index_full;
 }
 
+pub fn buildWeaponAvailabilityForStatus(
+    game_mode: game_ids.GameModeId,
+    demo_mode_active: bool,
+    quest_unlock_index: i32,
+    quest_unlock_index_full: i32,
+) state_mod.WeaponAvailability {
+    var availability = state_mod.WeaponAvailability.initFill(false);
+    availability.set(.pistol, true);
+
+    if (quest_unlock_index > 0) {
+        const limit: usize = @min(@as(usize, @intCast(quest_unlock_index)), quest_unlock_weapon_by_index.len);
+        for (quest_unlock_weapon_by_index[0..limit]) |weapon_id| {
+            if (weapon_id > 0 and weapon_id < state_mod.weapon_count_size) {
+                availability.set(weapon_data.weaponIdFromInt(weapon_id), true);
+            }
+        }
+    }
+
+    if (game_mode == .survival) {
+        availability.set(.assault_rifle, true);
+        availability.set(.shotgun, true);
+        availability.set(.submachine_gun, true);
+    }
+
+    if (!demo_mode_active and quest_unlock_index_full >= 0x28) {
+        availability.set(.splitter_gun, true);
+    }
+
+    return availability;
+}
+
 pub fn weaponPickRandomAvailable(state: *state_mod.GameplayState) game_ids.WeaponId {
     weaponRefreshAvailable(state);
 

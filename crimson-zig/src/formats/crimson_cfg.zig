@@ -410,6 +410,24 @@ pub fn setPlayerNameInput(cfg: *CrimsonCfg, name: []const u8) void {
     }
 }
 
+pub fn selectedSavedNameSlot(cfg: *const CrimsonCfg) usize {
+    return @min(cfg.selected_name_slot, saved_name_slot_count - 1);
+}
+
+pub fn setSelectedSavedNameSlot(cfg: *CrimsonCfg, slot_index: usize) void {
+    cfg.selected_name_slot = @intCast(@min(slot_index, saved_name_slot_count - 1));
+}
+
+pub fn savedNameLabel(cfg: *const CrimsonCfg, slot_index: usize) []const u8 {
+    const safe_index = @min(slot_index, saved_name_slot_count - 1);
+    const order_offset = safe_index * 4;
+    const raw_slot = std.mem.readInt(u32, cfg.saved_name_order[order_offset..][0..4], .little);
+    const mapped_slot = @min(raw_slot, saved_name_slot_count - 1);
+    const start = mapped_slot * saved_name_entry_size;
+    const bytes = cfg.saved_names[start .. start + saved_name_entry_size];
+    return std.mem.sliceTo(bytes, 0);
+}
+
 pub fn decode(bytes: []const u8) CrimsonCfgError!CrimsonCfg {
     if (bytes.len != file_size) return error.InvalidSize;
 

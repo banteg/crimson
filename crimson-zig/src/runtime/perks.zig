@@ -166,6 +166,35 @@ pub fn perksRebuildAvailable(
     state.perk_available_unlock_index = quest_unlock_index;
 }
 
+pub fn buildPerkAvailabilityForUnlockIndex(quest_unlock_index: i32) state_mod.PerkAvailability {
+    var availability = state_mod.PerkAvailability.initFill(false);
+
+    var perk_id: i32 = 1;
+    while (perk_id <= perk_base_available_max_id) : (perk_id += 1) {
+        if (perk_id >= state_mod.perk_count_size) break;
+        availability.set(@enumFromInt(perk_id), true);
+    }
+
+    for (perk_always_available) |always_id| {
+        availability.set(always_id, true);
+    }
+
+    if (quest_unlock_index > 0) {
+        const limit: usize = @min(
+            @as(usize, @intCast(quest_unlock_index)),
+            quest_unlock_perk_by_index.len,
+        );
+        for (quest_unlock_perk_by_index[0..limit]) |maybe_perk_id| {
+            if (maybe_perk_id) |perk_unlock_id| {
+                availability.set(perk_unlock_id, true);
+            }
+        }
+    }
+
+    availability.set(PerkId.antiperk, false);
+    return availability;
+}
+
 pub fn perkChoiceCount(player: *const state_mod.PlayerState) i32 {
     if (perkCountGet(player, PerkId.perk_master) > 0) return 7;
     if (perkCountGet(player, PerkId.perk_expert) > 0) return 6;
