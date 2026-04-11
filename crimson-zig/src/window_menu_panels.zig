@@ -22,7 +22,7 @@ const player_count_labels = [_][:0]const u8{
     "4 players",
 };
 
-const quest_titles = [_][]const u8{
+pub const quest_titles = [_][]const u8{
     "Land Hostile",          "Minor Alien Breach",       "Target Practice",    "Frontline Assault", "Alien Dens",
     "The Random Factor",     "Spider Wave Syndrome",     "Alien Squads",       "Nesting Grounds",   "8-legged Terror",
     "Everred Pastures",      "Spider Spawns",            "Arachnoid Farm",     "Two Fronts",        "Sweep Stakes",
@@ -147,7 +147,10 @@ pub const PlayGameState = struct {
     panel: PanelState = .{},
     player_list_open: bool = false,
     player_count_selection: usize = 0,
-    selection: usize = 0,
+    closing: bool = false,
+    close_action: ?PlayGameAction = null,
+    tooltip_ms: [5]i32 = [_]i32{0} ** 5,
+    back_hover_amount: i32 = 0,
 
     pub fn reset(self: *PlayGameState) void {
         self.* = .{};
@@ -180,78 +183,107 @@ const PlayGameEntry = struct {
 
 const PlayGameLayout = struct {
     panel_rect: rl.Rectangle,
-    content_x: f32,
-    content_y: f32,
-    drop_x: f32,
+    base_pos: rl.Vector2,
+    drop_pos: rl.Vector2,
+    title_pos: rl.Vector2,
     y_start: f32,
     y_step: f32,
     count_x: f32,
-    tooltip_y: f32,
+    tooltip_pos: rl.Vector2,
 };
 
-pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) PlayGameResult {
-    const dt_ms = panelAdvance(&state.panel, frame_dt);
+const QuestLayout = struct {
+    panel_rect: rl.Rectangle,
+    title_pos: rl.Vector2,
+    icons_start_pos: rl.Vector2,
+    list_pos: rl.Vector2,
+    back_pos: rl.Vector2,
+};
+
+const quest_title_w: f32 = 64.0;
+const quest_title_h: f32 = 32.0;
+const quest_stage_icon_size: f32 = 32.0;
+const quest_stage_icon_step: f32 = 36.0;
+const quest_stage_icon_scale_unselected: f32 = 0.8;
+const quest_list_row_step: f32 = 20.0;
+const quest_list_name_x_offset: f32 = 32.0;
+const quest_list_hover_left_pad: f32 = 10.0;
+const quest_list_hover_right_pad: f32 = 210.0;
+const quest_list_hover_top_pad: f32 = 2.0;
+const quest_list_hover_bottom_pad: f32 = 18.0;
+const quest_hardcore_unlock_index: u32 = 40;
+
+pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, runtime_assets: ?*const window_assets.RuntimeAssets) PlayGameResult {
+    const dt_ms = frameDeltaMs(frame_dt);
+    if (state.closing) {
+        if (dt_ms > 0) state.panel.timeline_ms -= dt_ms;
+        if (state.panel.timeline_ms < 0) {
+            const action = state.close_action;
+            state.closing = false;
+            state.close_action = null;
+            if (action) |resolved| return .{ .action = resolved };
+        }
+        return .{};
+    }
+    if (dt_ms > 0) state.panel.timeline_ms = @min(panel_timeline_max_ms, state.panel.timeline_ms + dt_ms);
     const player_count = @as(usize, @intCast(std.math.clamp(config.player_count, @as(u32, 1), @as(u32, 4))));
     if (state.player_count_selection >= player_count_labels.len) state.player_count_selection = player_count - 1;
 
     if (rl.isKeyPressed(.escape)) {
         state.player_list_open = false;
-        return .{ .action = .back_to_menu, .play_button_click = true };
+        beginClosePlayGame(state, .back_to_menu);
+        return .{ .play_button_click = true };
     }
 
     if (state.player_list_open) {
-        return updatePlayGamePlayerList(state, config, dt_ms);
+        return updatePlayGamePlayerList(state, config, status, dt_ms, state.panel.timeline_ms);
     }
 
     const entries = playGameEntries(config, status);
-    const button_count = entries.len + 1;
-    if (state.selection >= button_count) state.selection = button_count - 1;
-
-    const layout = playGameLayout(config, status);
-    if (hoveredPlayGameEntry(entries[0..], layout)) |hovered| {
-        state.selection = hovered;
-    } else if (rl.checkCollisionPointRec(rl.getMousePosition(), backOnlyButton()[0].rect)) {
-        state.selection = entries.len;
-    }
-    if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-        state.selection = if (state.selection == 0) button_count - 1 else state.selection - 1;
-    }
-    if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-        state.selection = (state.selection + 1) % button_count;
+    const layout = playGameLayout(config, status, state.panel.timeline_ms);
+    const hovered = hoveredPlayGameEntry(entries[0..], layout);
+    updatePlayGameTooltipTimers(state, entries[0..], hovered, dt_ms);
+    const back_hovered = if (runtime_assets) |assets|
+        state.panel.timeline_ms >= panel_timeline_max_ms and rl.checkCollisionPointRec(rl.getMousePosition(), window_menu.panelBackHitRect(assets, state.panel.timeline_ms))
+    else
+        false;
+    if (back_hovered) {
+        state.back_hover_amount = std.math.clamp(state.back_hover_amount + dt_ms * 6, 0, 1000);
+    } else {
+        state.back_hover_amount = std.math.clamp(state.back_hover_amount - dt_ms * 2, 0, 1000);
     }
 
-    const selector = playerCountHeaderRect();
+    const selector = playerCountHeaderRect(layout);
     if (rl.checkCollisionPointRec(rl.getMousePosition(), selector) and rl.isMouseButtonPressed(.left)) {
         state.player_list_open = true;
         state.player_count_selection = player_count - 1;
         return .{ .play_button_click = true };
     }
-    if ((rl.isKeyPressed(.left) or rl.isKeyPressed(.right)) and state.selection == entries.len) {
-        state.player_list_open = true;
-        state.player_count_selection = player_count - 1;
+
+    if (back_hovered and rl.isMouseButtonPressed(.left)) {
+        beginClosePlayGame(state, .back_to_menu);
         return .{ .play_button_click = true };
     }
 
-    if (!playGameActivated(entries[0..], layout, state.selection)) {
-        return .{
-            .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
-        };
+    if (hovered) |hovered_idx| {
+        const entry = entries[hovered_idx];
+        if (rl.isMouseButtonPressed(.left)) {
+            beginClosePlayGame(state, entry.action);
+            return .{
+                .play_button_click = true,
+                .config_dirty = if (entry.game_mode) |mode| setConfigGameMode(config, mode) else false,
+            };
+        }
     }
 
-    if (state.selection == entries.len) {
-        return .{ .action = .back_to_menu, .play_button_click = true };
-    }
-
-    const entry = entries[state.selection];
     return .{
-        .action = entry.action,
-        .play_button_click = true,
-        .config_dirty = if (entry.game_mode) |mode| setConfigGameMode(config, mode) else false,
+        .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
     };
 }
 
-fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.CrimsonCfg, dt_ms: i32) PlayGameResult {
+fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, dt_ms: i32, timeline_ms: i32) PlayGameResult {
     _ = dt_ms;
+    const layout = playGameLayout(config, status, timeline_ms);
     if (rl.isKeyPressed(.escape)) {
         state.player_list_open = false;
         return .{};
@@ -265,7 +297,7 @@ fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.
 
     const mouse = rl.getMousePosition();
     for (0..player_count_labels.len) |idx| {
-        if (rl.checkCollisionPointRec(mouse, playerCountRowRect(idx)) and rl.isMouseButtonPressed(.left)) {
+        if (rl.checkCollisionPointRec(mouse, playerCountRowRect(layout, idx)) and rl.isMouseButtonPressed(.left)) {
             config.player_count = @intCast(idx + 1);
             state.player_list_open = false;
             return .{ .play_button_click = true, .config_dirty = true };
@@ -278,7 +310,7 @@ fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.
         return .{ .play_button_click = true, .config_dirty = true };
     }
 
-    if (rl.isMouseButtonPressed(.left) and !rl.checkCollisionPointRec(mouse, playerCountListRect())) {
+    if (rl.isMouseButtonPressed(.left) and !rl.checkCollisionPointRec(mouse, playerCountListRect(layout))) {
         state.player_list_open = false;
     }
 
@@ -287,8 +319,9 @@ fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.
 
 pub fn drawPlayGame(state: *const PlayGameState, runtime_assets: ?*const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32) void {
     if (runtime_assets) |assets| {
-        drawMenuPanelShell(state.panel.timeline_ms, assets, playGameLayoutFromPlayerCount(player_count_raw, status).panel_rect, window_menu.label_row_play_game);
+        drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, playGameLayoutFromPlayerCount(player_count_raw, status, state.panel.timeline_ms).panel_rect);
         drawPlayGameContent(state, assets, status, player_count_raw);
+        window_menu.drawPanelBackEntry(assets, state.panel.timeline_ms, state.back_hover_amount);
         return;
     }
     rl.clearBackground(panel_color);
@@ -296,32 +329,25 @@ pub fn drawPlayGame(state: *const PlayGameState, runtime_assets: ?*const window_
 
 fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32) void {
     const clamped_player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
-    const layout = playGameLayoutFromPlayerCount(clamped_player_count, status);
+    const layout = playGameLayoutFromPlayerCount(clamped_player_count, status, state.panel.timeline_ms);
     const entries = playGameEntriesFromPlayerCount(clamped_player_count, status);
+    const show_counts = rl.isKeyDown(.f1);
 
-    window_ui.drawSmallText(runtime_assets, "PLAYER COUNT", layout.drop_x, layout.content_y - 14.0, muted_text);
-    drawPlayerCountWidget(state, runtime_assets, player_count_raw);
+    drawAtlasLabelAt(runtime_assets, layout.title_pos.x, layout.title_pos.y, window_menu.label_row_play_game, rl.Color.white);
+    drawPlayerCountWidget(state, runtime_assets, layout, player_count_raw);
 
-    var y = layout.content_y + layout.y_start;
-    for (entries, 0..) |entry, idx| {
-        const button = playGameButton(entry.label, layout.content_x, y);
+    var y = layout.base_pos.y + layout.y_start;
+    for (entries) |entry| {
+        const button = playGameButton(entry.label, layout.base_pos.x, y);
         const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-        const selected = idx == state.selection and !state.player_list_open;
-        window_ui.drawButton(button, selected, hovered, runtime_assets);
-        if (entry.show_count) {
-            window_ui.drawSmallTextFmt("{d}", runtime_assets, .{playGameCount(entry.key, status)}, layout.count_x, y + 8.0, if (selected or hovered) text_color else muted_text);
+        window_ui.drawButton(button, false, hovered, runtime_assets);
+        if (show_counts and entry.show_count) {
+            window_ui.drawSmallTextFmt("{d}", runtime_assets, .{playGameCount(entry.key, status)}, layout.count_x, y + 8.0, if (hovered) text_color else muted_text);
         }
         y += layout.y_step;
     }
 
-    const back = backOnlyButton()[0];
-    const back_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), back.rect);
-    window_ui.drawButton(back, state.selection == entries.len and !state.player_list_open, back_hovered, runtime_assets);
-
-    const tooltip_entry = tooltipEntry(entries, state.selection, layout);
-    if (tooltip_entry) |entry| {
-        drawTooltip(runtime_assets, entry.tooltip, layout.content_x, layout.tooltip_y);
-    }
+    drawPlayGameTooltips(state, runtime_assets, entries[0..], layout);
 }
 
 fn playGameEntries(config: *const formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) []const PlayGameEntry {
@@ -340,67 +366,45 @@ fn playGameEntriesFromPlayerCount(player_count_raw: u32, status: formats.game_cf
     return play_game_entries_single[0..];
 }
 
-fn playGameLayout(config: *const formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) PlayGameLayout {
-    return playGameLayoutFromPlayerCount(config.player_count, status);
+fn playGameLayout(config: *const formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, timeline_ms: i32) PlayGameLayout {
+    return playGameLayoutFromPlayerCount(config.player_count, status, timeline_ms);
 }
 
-fn playGameLayoutFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status) PlayGameLayout {
+fn playGameLayoutFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status, timeline_ms: i32) PlayGameLayout {
     const entries = playGameEntriesFromPlayerCount(player_count_raw, status);
     const player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
     const tight_spacing = player_count == 1 and status.quest_unlock_index >= 40;
     const y_step: f32 = if (tight_spacing) 28.0 else 32.0;
     const y_start: f32 = if (tight_spacing) 42.0 else 48.0;
-    const panel_height = 206.0 + y_start + y_step * @as(f32, @floatFromInt(entries.len));
+    const panel_rect = animatedPanelRect(.{ .x = 352.0, .y = 150.0, .width = 510.0, .height = 278.0 }, timeline_ms);
+    const base_pos = rl.Vector2.init(panel_rect.x + 266.0, panel_rect.y + 50.0);
+    const drop_pos = rl.Vector2.init(base_pos.x + 80.0, base_pos.y + 1.0);
+    const y_end = y_start + y_step * @as(f32, @floatFromInt(entries.len));
     return .{
-        .panel_rect = .{ .x = 352.0, .y = 150.0, .width = 510.0, .height = panel_height },
-        .content_x = 470.0,
-        .content_y = 206.0,
-        .drop_x = 522.0,
+        .panel_rect = panel_rect,
+        .base_pos = base_pos,
+        .drop_pos = drop_pos,
+        .title_pos = .{ .x = base_pos.x - 64.0, .y = base_pos.y - 8.0 },
         .y_start = y_start,
         .y_step = y_step,
-        .count_x = 744.0,
-        .tooltip_y = 230.0 + y_start + y_step * @as(f32, @floatFromInt(entries.len)),
+        .count_x = base_pos.x + 158.0,
+        .tooltip_pos = .{ .x = base_pos.x - 55.0, .y = base_pos.y + y_end + 16.0 },
     };
 }
 
 fn playGameButton(label: [:0]const u8, center_x: f32, top_y: f32) window_ui.UiButton {
-    return .{ .label = label, .rect = window_ui.centeredRect(center_x, top_y, 220.0, 44.0) };
+    return window_ui.buttonAt(label, center_x, top_y, false);
 }
 
 fn hoveredPlayGameEntry(entries: []const PlayGameEntry, layout: PlayGameLayout) ?usize {
     const mouse = rl.getMousePosition();
-    var y = layout.content_y + layout.y_start;
+    var y = layout.base_pos.y + layout.y_start;
     for (entries, 0..) |entry, idx| {
-        const button = playGameButton(entry.label, layout.content_x, y);
+        const button = playGameButton(entry.label, layout.base_pos.x, y);
         if (rl.checkCollisionPointRec(mouse, button.rect)) return idx;
         y += layout.y_step;
     }
     return null;
-}
-
-fn playGameActivated(entries: []const PlayGameEntry, layout: PlayGameLayout, selection: usize) bool {
-    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.space)) return true;
-    if (!rl.isMouseButtonPressed(.left)) return false;
-    if (selection == entries.len) return rl.checkCollisionPointRec(rl.getMousePosition(), backOnlyButton()[0].rect);
-
-    var y = layout.content_y + layout.y_start;
-    for (entries, 0..) |entry, idx| {
-        _ = entry;
-        const button = playGameButton(entries[idx].label, layout.content_x, y);
-        if (idx == selection and rl.checkCollisionPointRec(rl.getMousePosition(), button.rect)) return true;
-        y += layout.y_step;
-    }
-    return false;
-}
-
-fn tooltipEntry(entries: []const PlayGameEntry, selection: usize, layout: PlayGameLayout) ?PlayGameEntry {
-    if (hoveredPlayGameEntry(entries, layout)) |hovered| return entries[hovered];
-    if (selection < entries.len) return entries[selection];
-    return null;
-}
-
-fn drawTooltip(runtime_assets: *const window_assets.RuntimeAssets, text: []const u8, x: f32, y: f32) void {
-    window_ui.drawSmallText(runtime_assets, text, x - 40.0, y, rl.Color.init(185, 185, 196, 255));
 }
 
 fn playGameCount(key: PlayGameModeKey, status: formats.game_cfg.Status) u32 {
@@ -413,51 +417,109 @@ fn playGameCount(key: PlayGameModeKey, status: formats.game_cfg.Status) u32 {
     };
 }
 
+fn beginClosePlayGame(state: *PlayGameState, action: PlayGameAction) void {
+    if (state.closing) return;
+    state.closing = true;
+    state.close_action = action;
+    state.player_list_open = false;
+}
+
+fn tooltipIndexForKey(key: PlayGameModeKey) usize {
+    return switch (key) {
+        .tutorial => 0,
+        .quests => 1,
+        .rush => 2,
+        .survival => 3,
+        .typo => 4,
+    };
+}
+
+fn updatePlayGameTooltipTimers(state: *PlayGameState, entries: []const PlayGameEntry, hovered: ?usize, dt_ms: i32) void {
+    for (entries, 0..) |entry, idx| {
+        const tooltip_idx = tooltipIndexForKey(entry.key);
+        if (hovered != null and hovered.? == idx) {
+            state.tooltip_ms[tooltip_idx] = @min(1000, state.tooltip_ms[tooltip_idx] + dt_ms * 6);
+        } else {
+            state.tooltip_ms[tooltip_idx] = @max(0, state.tooltip_ms[tooltip_idx] - dt_ms * 2);
+        }
+    }
+}
+
+fn drawPlayGameTooltips(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, entries: []const PlayGameEntry, layout: PlayGameLayout) void {
+    for (entries) |entry| {
+        const tooltip_idx = tooltipIndexForKey(entry.key);
+        const ms = state.tooltip_ms[tooltip_idx];
+        if (ms <= 0) continue;
+        const alpha = @as(u8, @intFromFloat(@min(@as(f32, 1.0), @as(f32, @floatFromInt(ms)) * 0.0009) * 255.0));
+        const offset = playGameTooltipOffset(entry.key);
+        var lines = std.mem.splitScalar(u8, entry.tooltip, '\n');
+        var y = layout.tooltip_pos.y + offset.y;
+        while (lines.next()) |line| {
+            window_ui.drawSmallText(runtime_assets, line, layout.tooltip_pos.x + offset.x, y, rl.Color.init(255, 255, 255, alpha));
+            y += 14.0;
+        }
+    }
+}
+
+fn playGameTooltipOffset(key: PlayGameModeKey) rl.Vector2 {
+    return switch (key) {
+        .quests => .{ .x = -8.0, .y = 0.0 },
+        .rush => .{ .x = 32.0, .y = 0.0 },
+        .survival => .{ .x = 20.0, .y = 0.0 },
+        .typo => .{ .x = 0.0, .y = -12.0 },
+        .tutorial => .{ .x = 38.0, .y = 0.0 },
+    };
+}
+
 const play_game_entries_multi = [_]PlayGameEntry{
-    .{ .key = .quests, .label = "QUESTS", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
-    .{ .key = .rush, .label = "RUSH", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
-    .{ .key = .survival, .label = "SURVIVAL", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
+    .{ .key = .quests, .label = " Quests ", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
+    .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
+    .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
 };
 
 const play_game_entries_single_tutorial_first = [_]PlayGameEntry{
-    .{ .key = .tutorial, .label = "TUTORIAL", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
-    .{ .key = .quests, .label = "QUESTS", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
-    .{ .key = .rush, .label = "RUSH", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
-    .{ .key = .survival, .label = "SURVIVAL", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
+    .{ .key = .tutorial, .label = "Tutorial", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
+    .{ .key = .quests, .label = " Quests ", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
+    .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
+    .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
 };
 
 const play_game_entries_single = [_]PlayGameEntry{
-    .{ .key = .quests, .label = "QUESTS", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
-    .{ .key = .rush, .label = "RUSH", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
-    .{ .key = .survival, .label = "SURVIVAL", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
-    .{ .key = .tutorial, .label = "TUTORIAL", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
+    .{ .key = .quests, .label = " Quests ", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
+    .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
+    .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
+    .{ .key = .tutorial, .label = "Tutorial", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
 };
 
 const play_game_entries_single_typo_tutorial_first = [_]PlayGameEntry{
-    .{ .key = .tutorial, .label = "TUTORIAL", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
-    .{ .key = .quests, .label = "QUESTS", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
-    .{ .key = .rush, .label = "RUSH", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
-    .{ .key = .survival, .label = "SURVIVAL", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
-    .{ .key = .typo, .label = "TYP'O'SHOOTER", .tooltip = "Use your typing skills as the weapon to lay\nthem down.", .action = .start_typo, .game_mode = .typo, .show_count = true },
+    .{ .key = .tutorial, .label = "Tutorial", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
+    .{ .key = .quests, .label = " Quests ", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
+    .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
+    .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
+    .{ .key = .typo, .label = "Typ'o'Shooter", .tooltip = "Use your typing skills as the weapon to lay\nthem down.", .action = .start_typo, .game_mode = .typo, .show_count = true },
 };
 
 const play_game_entries_single_typo = [_]PlayGameEntry{
-    .{ .key = .quests, .label = "QUESTS", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
-    .{ .key = .rush, .label = "RUSH", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
-    .{ .key = .survival, .label = "SURVIVAL", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
-    .{ .key = .typo, .label = "TYP'O'SHOOTER", .tooltip = "Use your typing skills as the weapon to lay\nthem down.", .action = .start_typo, .game_mode = .typo, .show_count = true },
-    .{ .key = .tutorial, .label = "TUTORIAL", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
+    .{ .key = .quests, .label = " Quests ", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
+    .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
+    .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
+    .{ .key = .typo, .label = "Typ'o'Shooter", .tooltip = "Use your typing skills as the weapon to lay\nthem down.", .action = .start_typo, .game_mode = .typo, .show_count = true },
+    .{ .key = .tutorial, .label = "Tutorial", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
 };
 
-fn drawPlayerCountWidget(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, player_count_raw: u32) void {
-    const rect = playerCountHeaderRect();
+fn drawPlayerCountWidget(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, layout: PlayGameLayout, player_count_raw: u32) void {
+    const rect = playerCountHeaderRect(layout);
     const selected_index = @as(usize, @intCast(std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4)))) - 1;
     const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), rect);
-    const texture = if (state.player_list_open or hovered) runtime_assets.texture(.ui_drop_on) else runtime_assets.texture(.ui_drop_off);
+    const active = state.player_list_open or hovered;
+    const texture = if (active) runtime_assets.texture(.ui_drop_on) else runtime_assets.texture(.ui_drop_off);
 
     rl.drawRectangleRec(rect, rl.Color.white);
     rl.drawRectangle(@intFromFloat(rect.x + 1.0), @intFromFloat(rect.y + 1.0), @intFromFloat(rect.width - 2.0), @intFromFloat(rect.height - 2.0), rl.Color.black);
-    window_ui.drawSmallText(runtime_assets, player_count_labels[selected_index], rect.x + 4.0, rect.y + 1.0, if (hovered or state.player_list_open) text_color else muted_text);
+    if (active) {
+        rl.drawRectangle(@intFromFloat(rect.x), @intFromFloat(rect.y + 15.0), @intFromFloat(rect.width), 1, rl.Color.init(255, 255, 255, 128));
+    }
+    window_ui.drawSmallText(runtime_assets, player_count_labels[selected_index], rect.x + 4.0, rect.y + 1.0, rl.Color.init(255, 255, 255, if (active) 242 else 191));
     rl.drawTexturePro(
         texture,
         rl.Rectangle.init(0.0, 0.0, @floatFromInt(texture.width), @floatFromInt(texture.height)),
@@ -469,13 +531,14 @@ fn drawPlayerCountWidget(state: *const PlayGameState, runtime_assets: *const win
 
     if (!state.player_list_open) return;
 
-    const list_rect = playerCountListRect();
+    const list_rect = playerCountListRect(layout);
     rl.drawRectangleRec(list_rect, rl.Color.white);
     rl.drawRectangle(@intFromFloat(list_rect.x + 1.0), @intFromFloat(list_rect.y + 1.0), @intFromFloat(list_rect.width - 2.0), @intFromFloat(list_rect.height - 2.0), rl.Color.black);
     for (player_count_labels, 0..) |label, idx| {
-        const row_rect = playerCountRowRect(idx);
+        const row_rect = playerCountRowRect(layout, idx);
         const row_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), row_rect);
-        window_ui.drawSmallText(runtime_assets, label, row_rect.x + 4.0, row_rect.y + 1.0, if (row_hovered or idx == state.player_count_selection) text_color else muted_text);
+        const alpha: u8 = if (row_hovered) 242 else if (idx == state.player_count_selection) 245 else 153;
+        window_ui.drawSmallText(runtime_assets, label, row_rect.x + 4.0, row_rect.y + 1.0, rl.Color.init(255, 255, 255, alpha));
     }
 }
 
@@ -491,7 +554,9 @@ fn questTotalPlayed(status: formats.game_cfg.Status) u32 {
 pub const QuestState = struct {
     panel: PanelState = .{},
     stage: i32 = 1,
-    row_selection: usize = 0,
+    closing: bool = false,
+    closing_level_key: ?i32 = null,
+    closing_back: bool = false,
 
     pub fn reset(self: *QuestState) void {
         self.* = .{};
@@ -507,47 +572,63 @@ pub const QuestResult = struct {
 };
 
 pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) QuestResult {
-    const dt_ms = panelAdvance(&state.panel, frame_dt);
-    if (rl.isKeyPressed(.escape)) return .{ .back_to_play_game = true, .play_button_click = true };
+    const dt_ms = frameDeltaMs(frame_dt);
+    if (state.closing) {
+        if (dt_ms > 0) state.panel.timeline_ms -= dt_ms;
+        if (state.panel.timeline_ms < 0) {
+            if (state.closing_back) {
+                state.closing = false;
+                state.closing_back = false;
+                return .{ .back_to_play_game = true };
+            }
+            if (state.closing_level_key) |level_key| {
+                state.closing = false;
+                state.closing_level_key = null;
+                return .{ .start_level_key = level_key };
+            }
+        }
+        return .{};
+    }
+    if (dt_ms > 0) state.panel.timeline_ms = @min(panel_timeline_max_ms, state.panel.timeline_ms + dt_ms);
+    if (rl.isKeyPressed(.escape)) {
+        beginCloseQuestBack(state);
+        return .{ .play_button_click = true };
+    }
 
     if (rl.isKeyPressed(.left)) state.stage = @max(1, state.stage - 1);
     if (rl.isKeyPressed(.right)) state.stage = @min(5, state.stage + 1);
-    if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-        state.row_selection = if (state.row_selection == 0) 9 else state.row_selection - 1;
-    }
-    if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-        state.row_selection = (state.row_selection + 1) % 10;
-    }
-
-    const hovered_stage = hoveredQuestStage();
+    const layout = questLayout(state.panel.timeline_ms);
+    const hovered_stage = hoveredQuestStage(layout);
     if (hovered_stage) |stage| {
-        state.stage = stage;
-        if (rl.isMouseButtonPressed(.left)) return .{ .play_button_click = true };
+        if (rl.isMouseButtonPressed(.left)) {
+            state.stage = stage;
+            return .{ .play_button_click = true };
+        }
     }
 
-    const hovered_row = hoveredQuestRow(hardcoreUnlocked(status));
-    if (hovered_row) |row| {
-        state.row_selection = row;
+    if (questDigitRowPressed()) |row| {
+        return tryStartQuest(state, config, status, state.stage, row);
     }
+
+    const hovered_row = hoveredQuestRow(layout, hardcoreUnlocked(status));
 
     if (hardcoreUnlocked(status)) {
-        const hardcore_rect = hardcoreCheckRect();
+        const hardcore_rect = hardcoreCheckRect(layout);
         if (rl.checkCollisionPointRec(rl.getMousePosition(), hardcore_rect) and rl.isMouseButtonPressed(.left)) {
             config.hardcore_flag = if (config.hardcore_flag == 0) 1 else 0;
             return .{ .play_button_click = true, .config_dirty = true };
         }
     }
 
-    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.space) or (hovered_row != null and rl.isMouseButtonPressed(.left))) {
-        if (questUnlocked(status, config.hardcore_flag != 0, state.stage, @intCast(state.row_selection + 1))) {
-            const level_key = state.stage * 100 + @as(i32, @intCast(state.row_selection + 1));
-            config.game_mode = @intFromEnum(game_ids.GameModeId.quests);
-            return .{ .start_level_key = level_key, .play_button_click = true, .config_dirty = true };
+    if (hovered_row) |row| {
+        if (rl.isMouseButtonPressed(.left) or rl.isKeyPressed(.enter)) {
+            return tryStartQuest(state, config, status, state.stage, row);
         }
     }
 
-    if (backButtonActivated()) {
-        return .{ .back_to_play_game = true, .play_button_click = true };
+    if (questBackButtonActivated(layout)) {
+        beginCloseQuestBack(state);
+        return .{ .play_button_click = true };
     }
 
     return .{
@@ -557,7 +638,7 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
 
 pub fn drawQuests(state: *const QuestState, runtime_assets: ?*const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) void {
     if (runtime_assets) |assets| {
-        drawMenuPanelShell(state.panel.timeline_ms, assets, .{ .x = 320.0, .y = 132.0, .width = 620.0, .height = 430.0 }, window_assets.TextureId.ui_text_quest);
+        drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, questLayout(state.panel.timeline_ms).panel_rect);
         drawQuestContent(state, assets, config, status);
         return;
     }
@@ -565,39 +646,69 @@ pub fn drawQuests(state: *const QuestState, runtime_assets: ?*const window_asset
 }
 
 fn drawQuestContent(state: *const QuestState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) void {
-    const base_x: f32 = 390.0;
-    const base_y: f32 = 182.0;
-    drawTextureLabel(runtime_assets, .ui_text_quest, 480.0, 166.0, 128.0, 32.0, rl.Color.init(179, 179, 179, 179));
+    const layout = questLayout(state.panel.timeline_ms);
+    const title_tex = runtime_assets.texture(.ui_text_quest);
+    const hovered_stage = hoveredQuestStage(layout);
+    const hovered_row = hoveredQuestRow(layout, hardcoreUnlocked(status));
+    const show_counts = rl.isKeyDown(.f1);
+    rl.drawTexturePro(
+        title_tex,
+        rl.Rectangle.init(0.0, 0.0, @floatFromInt(title_tex.width), @floatFromInt(title_tex.height)),
+        rl.Rectangle.init(layout.title_pos.x, layout.title_pos.y, quest_title_w, quest_title_h),
+        rl.Vector2.zero(),
+        0.0,
+        rl.Color.init(179, 179, 179, 179),
+    );
 
     const stage_textures = [_]window_assets.TextureId{ .ui_num1, .ui_num2, .ui_num3, .ui_num4, .ui_num5 };
     for (stage_textures, 0..) |texture_id, idx| {
         const stage = @as(i32, @intCast(idx + 1));
-        const rect = questStageRect(stage);
-        const tint = if (stage == state.stage) rl.Color.white else if (hoveredQuestStage() != null and hoveredQuestStage().? == stage) rl.Color.init(255, 255, 255, 204) else rl.Color.init(179, 179, 179, 179);
-        window_ui.drawTextureFit(runtime_assets.texture(texture_id), rect, tint);
+        const icon_scale = if (stage == state.stage) @as(f32, 1.0) else quest_stage_icon_scale_unselected;
+        const tint = if (stage == state.stage) rl.Color.white else if (hovered_stage != null and hovered_stage.? == stage) rl.Color.init(255, 255, 255, 204) else rl.Color.init(179, 179, 179, 179);
+        const x = layout.icons_start_pos.x + @as(f32, @floatFromInt(stage - 1)) * quest_stage_icon_step;
+        window_ui.drawTextureFit(runtime_assets.texture(texture_id), rl.Rectangle.init(x, layout.icons_start_pos.y, quest_stage_icon_size * icon_scale, quest_stage_icon_size * icon_scale), tint);
     }
 
     if (hardcoreUnlocked(status)) {
         const check_tex = if (config.hardcore_flag != 0) runtime_assets.texture(.ui_check_on) else runtime_assets.texture(.ui_check_off);
-        const rect = hardcoreCheckRect();
+        const rect = hardcoreCheckRect(layout);
         window_ui.drawTextureFit(check_tex, rl.Rectangle.init(rect.x, rect.y, @floatFromInt(check_tex.width), @floatFromInt(check_tex.height)), rl.Color.white);
-        window_ui.drawSmallText(runtime_assets, "Hardcore", rect.x + @as(f32, @floatFromInt(check_tex.width)) + 6.0, rect.y + 1.0, muted_text);
+        window_ui.drawSmallText(runtime_assets, "Hardcore", rect.x + @as(f32, @floatFromInt(check_tex.width)) + 6.0, rect.y + 1.0, questRowColor(config.hardcore_flag != 0, false));
     }
 
-    var y = base_y + (if (hardcoreUnlocked(status)) @as(f32, 26.0) else @as(f32, 0.0));
-    const hovered_row = hoveredQuestRow(hardcoreUnlocked(status));
+    var y = questRowsY0(layout, hardcoreUnlocked(status));
     for (0..10) |row| {
         const level_minor = @as(i32, @intCast(row + 1));
         const unlocked = questUnlocked(status, config.hardcore_flag != 0, state.stage, level_minor);
         const hovered = hovered_row != null and hovered_row.? == row;
-        const color = if (hovered or row == state.row_selection) rl.Color.init(70, 180, 240, 255) else rl.Color.init(70, 180, 240, 153);
-        window_ui.drawSmallTextFmt("{d}.{d}", runtime_assets, .{ state.stage, level_minor }, base_x, y, color);
+        const color = questRowColor(config.hardcore_flag != 0, hovered);
+        window_ui.drawSmallTextFmt("{d}.{d}", runtime_assets, .{ state.stage, level_minor }, layout.list_pos.x, y, color);
         const title = if (unlocked) questTitle(state.stage, level_minor) else "???";
-        window_ui.drawSmallText(runtime_assets, title, base_x + 52.0, y, color);
-        y += 18.0;
+        window_ui.drawSmallText(runtime_assets, title, layout.list_pos.x + quest_list_name_x_offset, y, color);
+        if (unlocked) {
+            const title_w = window_ui.measureSmallText(runtime_assets, title);
+            rl.drawLine(
+                @intFromFloat(layout.list_pos.x),
+                @intFromFloat(y + 13.0),
+                @intFromFloat(layout.list_pos.x + title_w + quest_list_name_x_offset),
+                @intFromFloat(y + 13.0),
+                color,
+            );
+            if (show_counts) {
+                const counts = questCounts(status, state.stage, row);
+                var counts_buf: [32]u8 = undefined;
+                const counts_text = std.fmt.bufPrint(&counts_buf, "({d}/{d})", .{ counts.completed, counts.games }) catch "";
+                window_ui.drawSmallText(runtime_assets, counts_text, layout.list_pos.x + quest_list_name_x_offset + title_w + 12.0, y, color);
+            }
+        }
+        y += quest_list_row_step;
     }
 
-    const back = backOnlyButton()[0];
+    if (show_counts) {
+        window_ui.drawSmallText(runtime_assets, "(completed/games)", layout.list_pos.x + 96.0, questRowsY0(layout, hardcoreUnlocked(status)) + quest_list_row_step * 10.0 - 2.0, questRowColor(config.hardcore_flag != 0, false));
+    }
+
+    const back = questBackButton(layout);
     const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), back.rect);
     window_ui.drawButton(back, false, hovered, runtime_assets);
 }
@@ -609,7 +720,7 @@ fn questUnlocked(status: formats.game_cfg.Status, hardcore: bool, stage: i32, mi
 }
 
 fn hardcoreUnlocked(status: formats.game_cfg.Status) bool {
-    return status.quest_unlock_index >= 49;
+    return status.quest_unlock_index >= quest_hardcore_unlock_index;
 }
 
 fn questTitle(stage: i32, minor: i32) []const u8 {
@@ -617,31 +728,114 @@ fn questTitle(stage: i32, minor: i32) []const u8 {
     return quest_titles[@intCast(std.math.clamp(index, @as(i32, 0), @as(i32, @intCast(quest_titles.len - 1))))];
 }
 
-fn questStageRect(stage: i32) rl.Rectangle {
-    return rl.Rectangle.init(554.0 + @as(f32, @floatFromInt(stage - 1)) * 40.0, 170.0, 32.0, 32.0);
-}
-
-fn hoveredQuestStage() ?i32 {
+fn hoveredQuestStage(layout: QuestLayout) ?i32 {
     const mouse = rl.getMousePosition();
     for (1..6) |stage| {
-        if (rl.checkCollisionPointRec(mouse, questStageRect(@intCast(stage)))) return @intCast(stage);
+        const x = layout.icons_start_pos.x + @as(f32, @floatFromInt(stage - 1)) * quest_stage_icon_step;
+        if (rl.checkCollisionPointRec(mouse, rl.Rectangle.init(x, layout.title_pos.y, quest_stage_icon_size, quest_stage_icon_size))) return @intCast(stage);
     }
     return null;
 }
 
-fn hoveredQuestRow(show_hardcore_toggle: bool) ?usize {
+fn hoveredQuestRow(layout: QuestLayout, show_hardcore_toggle: bool) ?usize {
     const mouse = rl.getMousePosition();
-    var y: f32 = 182.0 + if (show_hardcore_toggle) @as(f32, 26.0) else @as(f32, 0.0);
+    var y: f32 = questRowsY0(layout, show_hardcore_toggle);
     for (0..10) |row| {
-        const rect = rl.Rectangle.init(382.0, y - 3.0, 340.0, 16.0);
+        const rect = rl.Rectangle.init(
+            layout.list_pos.x - quest_list_hover_left_pad,
+            y - quest_list_hover_top_pad,
+            quest_list_hover_left_pad + quest_list_hover_right_pad,
+            quest_list_hover_bottom_pad - quest_list_hover_top_pad,
+        );
         if (rl.checkCollisionPointRec(mouse, rect)) return row;
-        y += 18.0;
+        y += quest_list_row_step;
     }
     return null;
 }
 
-fn hardcoreCheckRect() rl.Rectangle {
-    return rl.Rectangle.init(390.0, 182.0, 90.0, 16.0);
+fn hardcoreCheckRect(layout: QuestLayout) rl.Rectangle {
+    return rl.Rectangle.init(layout.list_pos.x + 132.0, layout.list_pos.y - 12.0, 120.0, 16.0);
+}
+
+fn beginCloseQuestBack(state: *QuestState) void {
+    if (state.closing) return;
+    state.closing = true;
+    state.closing_back = true;
+}
+
+fn beginCloseQuestStart(state: *QuestState, level_key: i32) void {
+    if (state.closing) return;
+    state.closing = true;
+    state.closing_level_key = level_key;
+}
+
+fn tryStartQuest(state: *QuestState, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, stage: i32, row: usize) QuestResult {
+    const minor = @as(i32, @intCast(row + 1));
+    if (!questUnlocked(status, config.hardcore_flag != 0, stage, minor)) return .{};
+    const level_key = stage * 100 + minor;
+    config.game_mode = @intFromEnum(game_ids.GameModeId.quests);
+    beginCloseQuestStart(state, level_key);
+    return .{ .play_button_click = true, .config_dirty = true };
+}
+
+fn questDigitRowPressed() ?usize {
+    if (rl.isKeyPressed(.one)) return 0;
+    if (rl.isKeyPressed(.two)) return 1;
+    if (rl.isKeyPressed(.three)) return 2;
+    if (rl.isKeyPressed(.four)) return 3;
+    if (rl.isKeyPressed(.five)) return 4;
+    if (rl.isKeyPressed(.six)) return 5;
+    if (rl.isKeyPressed(.seven)) return 6;
+    if (rl.isKeyPressed(.eight)) return 7;
+    if (rl.isKeyPressed(.nine)) return 8;
+    if (rl.isKeyPressed(.zero)) return 9;
+    return null;
+}
+
+fn questLayout(timeline_ms: i32) QuestLayout {
+    const panel_rect = animatedPanelRect(.{ .x = 390.0, .y = 168.0, .width = 510.0, .height = 378.0 }, timeline_ms);
+    return .{
+        .panel_rect = panel_rect,
+        .title_pos = .{ .x = panel_rect.x + 219.0, .y = 212.0 },
+        .icons_start_pos = .{ .x = panel_rect.x + 299.0, .y = 215.0 },
+        .list_pos = .{ .x = panel_rect.x + 251.0, .y = 262.0 },
+        .back_pos = .{ .x = panel_rect.x + 389.0, .y = 474.0 },
+    };
+}
+
+fn questRowsY0(layout: QuestLayout, show_hardcore_toggle: bool) f32 {
+    return layout.list_pos.y + if (show_hardcore_toggle) @as(f32, 10.0) else @as(f32, 0.0);
+}
+
+fn questBackButton(layout: QuestLayout) window_ui.UiButton {
+    return window_ui.buttonAt("Back", layout.back_pos.x, layout.back_pos.y, false);
+}
+
+fn questBackButtonActivated(layout: QuestLayout) bool {
+    const back = questBackButton(layout);
+    return rl.isMouseButtonPressed(.left) and rl.checkCollisionPointRec(rl.getMousePosition(), back.rect);
+}
+
+fn questRowColor(hardcore: bool, hovered: bool) rl.Color {
+    if (hardcore) {
+        return if (hovered) rl.Color.init(250, 70, 60, 255) else rl.Color.init(250, 70, 60, 153);
+    }
+    return if (hovered) rl.Color.init(70, 180, 240, 255) else rl.Color.init(70, 180, 240, 153);
+}
+
+const QuestCountPair = struct {
+    completed: u32,
+    games: u32,
+};
+
+fn questCounts(status: formats.game_cfg.Status, stage: i32, row: usize) QuestCountPair {
+    const global_index = @as(usize, @intCast((stage - 1) * 10 + @as(i32, @intCast(row))));
+    const games_idx = global_index;
+    const completed_idx = global_index + 40;
+    return .{
+        .completed = if (completed_idx < status.quest_play_counts.len) status.quest_play_counts[completed_idx] else 0,
+        .games = if (games_idx < status.quest_play_counts.len) status.quest_play_counts[games_idx] else 0,
+    };
 }
 
 pub const StatisticsState = struct {
@@ -660,7 +854,7 @@ pub const StatisticsResult = struct {
 
 pub fn updateStatistics(state: *StatisticsState, frame_dt: f32) StatisticsResult {
     const dt_ms = panelAdvance(&state.panel, frame_dt);
-    const buttons = statisticsButtons();
+    const buttons = statisticsButtons(state.panel.timeline_ms);
     window_ui.updateSelectionFromPointer(&state.panel.selection, buttons[0..]);
     if (rl.isKeyPressed(.escape)) return .{ .action = .back_to_menu, .play_button_click = true };
     if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
@@ -690,7 +884,7 @@ pub fn updateStatistics(state: *StatisticsState, frame_dt: f32) StatisticsResult
 pub fn drawStatistics(state: *const StatisticsState, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     if (runtime_assets) |assets| {
         drawMenuPanelShell(state.panel.timeline_ms, assets, .{ .x = 390.0, .y = 168.0, .width = 500.0, .height = 360.0 }, window_menu.label_row_statistics);
-        const buttons = statisticsButtons();
+        const buttons = statisticsButtons(state.panel.timeline_ms);
         for (buttons, 0..) |button, idx| {
             const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
             window_ui.drawButton(button, idx == state.panel.selection, hovered, assets);
@@ -776,8 +970,12 @@ fn infoLabelRow(kind: InfoKind) i32 {
     };
 }
 
+fn frameDeltaMs(frame_dt: f32) i32 {
+    return @intFromFloat(@min(frame_dt, 0.1) * 1000.0);
+}
+
 fn panelAdvance(panel: *PanelState, frame_dt: f32) i32 {
-    const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
+    const dt_ms = frameDeltaMs(frame_dt);
     if (dt_ms > 0) {
         panel.timeline_ms = @min(panel_timeline_max_ms, panel.timeline_ms + dt_ms);
     }
@@ -790,20 +988,39 @@ fn drawMenuPanelShell(timeline_ms: i32, runtime_assets: *const window_assets.Run
     window_menu.drawMenuBackdrop(runtime_assets);
     window_menu.drawSign(timeline_ms, runtime_assets);
 
-    const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
-    const panel_rect = rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
-    window_ui.drawTextureFit(runtime_assets.texture(.ui_menu_panel), panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+    const panel_rect = animatedPanelRect(rect, timeline_ms);
+    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, rl.Color.white, false);
 
     const T = @TypeOf(title_row_or_texture);
     if (T == i32) {
-        window_menu.drawAtlasLabelCentered(runtime_assets, title_row_or_texture, rect.y + 42.0, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+        drawAtlasLabelAt(runtime_assets, panel_rect.x + (panel_rect.width - 128.0) * 0.5, panel_rect.y + 42.0, title_row_or_texture, rl.Color.white);
     } else {
-        drawTextureLabel(runtime_assets, title_row_or_texture, rect.x + rect.width * 0.5 - 64.0, rect.y + 34.0, 128.0, 32.0, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+        drawTextureLabel(runtime_assets, title_row_or_texture, panel_rect.x + rect.width * 0.5 - 64.0, panel_rect.y + 34.0, 128.0, 32.0, rl.Color.white);
     }
+}
+
+fn drawMenuPanelShellNoTitle(timeline_ms: i32, runtime_assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle) void {
+    window_menu.drawMenuBackdrop(runtime_assets);
+    window_menu.drawSign(timeline_ms, runtime_assets);
+
+    const panel_rect = animatedPanelRect(rect, timeline_ms);
+    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, rl.Color.white, false);
 }
 
 fn drawTextureLabel(runtime_assets: *const window_assets.RuntimeAssets, texture_id: window_assets.TextureId, x: f32, y: f32, w: f32, h: f32, tint: rl.Color) void {
     window_ui.drawTextureFit(runtime_assets.texture(texture_id), rl.Rectangle.init(x, y, w, h), tint);
+}
+
+fn drawAtlasLabelAt(runtime_assets: *const window_assets.RuntimeAssets, x: f32, y: f32, row: i32, tint: rl.Color) void {
+    const texture = runtime_assets.texture(.ui_item_texts);
+    rl.drawTexturePro(
+        texture,
+        rl.Rectangle.init(0.0, @as(f32, @floatFromInt(row)) * 32.0, 128.0, 32.0),
+        rl.Rectangle.init(x, y, 128.0, 32.0),
+        rl.Vector2.zero(),
+        0.0,
+        tint,
+    );
 }
 
 fn playGameButtons() [4]window_ui.UiButton {
@@ -816,20 +1033,21 @@ fn playGameButtons() [4]window_ui.UiButton {
     };
 }
 
-fn playerCountHeaderRect() rl.Rectangle {
-    return rl.Rectangle.init(492.0, 258.0, 124.0, 16.0);
+fn playerCountHeaderRect(layout: PlayGameLayout) rl.Rectangle {
+    return rl.Rectangle.init(layout.drop_pos.x, layout.drop_pos.y, 102.0, 16.0);
 }
 
-fn playerCountListRect() rl.Rectangle {
-    return rl.Rectangle.init(492.0, 258.0, 124.0, 80.0);
+fn playerCountListRect(layout: PlayGameLayout) rl.Rectangle {
+    return rl.Rectangle.init(layout.drop_pos.x, layout.drop_pos.y, 102.0, 88.0);
 }
 
-fn playerCountRowRect(idx: usize) rl.Rectangle {
-    return rl.Rectangle.init(492.0, 275.0 + @as(f32, @floatFromInt(idx)) * 16.0, 124.0, 16.0);
+fn playerCountRowRect(layout: PlayGameLayout, idx: usize) rl.Rectangle {
+    return rl.Rectangle.init(layout.drop_pos.x, layout.drop_pos.y + 17.0 + @as(f32, @floatFromInt(idx)) * 16.0, 102.0, 16.0);
 }
 
-fn statisticsButtons() [5]window_ui.UiButton {
-    const center_x = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
+fn statisticsButtons(timeline_ms: i32) [5]window_ui.UiButton {
+    const panel_rect = animatedPanelRect(.{ .x = 390.0, .y = 168.0, .width = 500.0, .height = 360.0 }, timeline_ms);
+    const center_x = panel_rect.x + panel_rect.width * 0.5;
     return .{
         .{ .label = "HIGH SCORES", .rect = window_ui.centeredRect(center_x, 250.0, 240.0, 44.0) },
         .{ .label = "WEAPONS", .rect = window_ui.centeredRect(center_x, 304.0, 240.0, 44.0) },
@@ -839,9 +1057,14 @@ fn statisticsButtons() [5]window_ui.UiButton {
     };
 }
 
+fn animatedPanelRect(rect: rl.Rectangle, timeline_ms: i32) rl.Rectangle {
+    const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
+    return rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
+}
+
 fn backOnlyButton() [1]window_ui.UiButton {
     return .{
-        .{ .label = "BACK", .rect = window_ui.centeredRect(@as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5, 562.0, 180.0, 44.0) },
+        window_ui.buttonAt("Back", @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5 - 41.0, 562.0, false),
     };
 }
 

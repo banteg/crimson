@@ -33,6 +33,8 @@ pub const label_row_options: i32 = 2;
 pub const label_row_statistics: i32 = 3;
 pub const label_row_quit: i32 = 6;
 pub const label_row_back: i32 = 7;
+pub const panel_back_pos_x: f32 = -55.0;
+pub const panel_back_pos_y: f32 = 430.0;
 
 pub const Action = enum {
     open_play_game,
@@ -225,6 +227,60 @@ pub fn menuWidescreenYShift(screen_w: f32) f32 {
 
 pub fn menuScale(screen_w: i32) struct { scale: f32, shift_x: f32 } {
     return mainMenuSignLayoutScale(screen_w);
+}
+
+pub fn panelBackHitRect(runtime_assets: *const window_assets.RuntimeAssets, timeline_ms: i32) rl.Rectangle {
+    const item = runtime_assets.texture(.ui_menu_item);
+    const item_w = @as(f32, @floatFromInt(item.width));
+    const item_h = @as(f32, @floatFromInt(item.height));
+    const scale_info = menuItemScale(0);
+    const anim = uiElementAnim(2, 300, 0, item_w * scale_info.scale, timeline_ms);
+    const pos = rl.Vector2.init(panel_back_pos_x + anim.offset_x, panel_back_pos_y + menuWidescreenYShift(@floatFromInt(rl.getScreenWidth())));
+    const offset_min = rl.Vector2.init(
+        menu_item_offset_x * scale_info.scale,
+        menu_item_offset_y * scale_info.scale - scale_info.local_y_shift,
+    );
+    const offset_max = rl.Vector2.init(
+        (menu_item_offset_x + item_w) * scale_info.scale,
+        (menu_item_offset_y + item_h) * scale_info.scale - scale_info.local_y_shift,
+    );
+    const size = rl.Vector2.init(offset_max.x - offset_min.x, offset_max.y - offset_min.y);
+    const top_left = rl.Vector2.init(pos.x + offset_min.x + size.x * 0.54, pos.y + offset_min.y + size.y * 0.28);
+    const bottom_right = rl.Vector2.init(pos.x + offset_max.x - size.x * 0.05, pos.y + offset_max.y - size.y * 0.10);
+    return rl.Rectangle.init(top_left.x, top_left.y, bottom_right.x - top_left.x, bottom_right.y - top_left.y);
+}
+
+pub fn drawPanelBackEntry(runtime_assets: *const window_assets.RuntimeAssets, timeline_ms: i32, hover_amount: i32) void {
+    const item = runtime_assets.texture(.ui_menu_item);
+    const labels = runtime_assets.texture(.ui_item_texts);
+    const item_w = @as(f32, @floatFromInt(item.width));
+    const item_h = @as(f32, @floatFromInt(item.height));
+    const scale_info = menuItemScale(0);
+    const pos_x = panel_back_pos_x;
+    const pos_y = panel_back_pos_y + menuWidescreenYShift(@floatFromInt(rl.getScreenWidth()));
+    const anim = uiElementAnim(2, 300, 0, item_w * scale_info.scale, timeline_ms);
+    const dst = rl.Rectangle.init(pos_x + anim.offset_x, pos_y, item_w * scale_info.scale, item_h * scale_info.scale);
+    const origin = rl.Vector2.init(-(menu_item_offset_x * scale_info.scale), -(menu_item_offset_y * scale_info.scale - scale_info.local_y_shift));
+    const rotation_deg = radiansToDegrees(anim.angle_rad);
+
+    rl.drawTexturePro(
+        item,
+        rl.Rectangle.init(0.0, 0.0, item_w, item_h),
+        dst,
+        origin,
+        rotation_deg,
+        rl.Color.white,
+    );
+
+    const label_alpha = mainMenuLabelAlpha(hover_amount);
+    const tint = rl.Color.init(255, 255, 255, label_alpha);
+    const src = rl.Rectangle.init(0.0, @as(f32, @floatFromInt(label_row_back)) * menu_label_row_height, menu_label_width, menu_label_row_height);
+    const label_dst = rl.Rectangle.init(pos_x + anim.offset_x, pos_y, menu_label_width * scale_info.scale, menu_label_height * scale_info.scale);
+    const label_origin = rl.Vector2.init(-(menu_label_offset_x * scale_info.scale), -(menu_label_offset_y * scale_info.scale - scale_info.local_y_shift));
+    rl.drawTexturePro(labels, src, label_dst, label_origin, rotation_deg, tint);
+    rl.beginBlendMode(.additive);
+    rl.drawTexturePro(labels, src, label_dst, label_origin, rotation_deg, tint);
+    rl.endBlendMode();
 }
 
 fn drawFallbackBackdrop() void {

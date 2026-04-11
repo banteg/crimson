@@ -16,7 +16,7 @@ from crimson.weapons import WeaponId
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ZIG_CREATURES = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "creatures.zig"
-ZIG_WEAPONS = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "weapons.zig"
+ZIG_FIRE_RECIPES = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "fire_recipes.zig"
 ZIG_WEAPON_DATA = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "weapon_data.zig"
 
 
@@ -54,10 +54,10 @@ def _python_supported_fire_weapons() -> set[str]:
 
 
 def _zig_supported_fire_weapons() -> set[str]:
-    weapons_source = ZIG_WEAPONS.read_text()
+    fire_recipes_source = ZIG_FIRE_RECIPES.read_text()
     weapon_data_source = ZIG_WEAPON_DATA.read_text()
 
-    supported = set(re.findall(r"\n\s*\.([a-z0-9_]+)\s*=>\s*\{", weapons_source))
+    supported = set(re.findall(r"\n\s*\.([a-z0-9_]+)\s*=>\s*\.?\{", fire_recipes_source))
     switch_match = re.search(
         r"pub fn projectileTypeIdFromWeaponId\(weapon_id: WeaponId\) \?ProjectileTypeId \{\n\s*return switch \(weapon_id\) \{(.*?)\n\s*\};\n\}",
         weapon_data_source,
