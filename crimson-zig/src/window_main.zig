@@ -16,6 +16,7 @@ const window_atlas = cz.window_atlas;
 const window_boot = @import("window_boot.zig");
 const window_ground = @import("window_ground.zig");
 const window_menu = @import("window_menu.zig");
+const window_menu_panels = @import("window_menu_panels.zig");
 const window_projectiles = @import("window_projectiles.zig");
 const window_terrain_fx = @import("window_terrain_fx.zig");
 const window_ui = @import("window_ui.zig");
@@ -55,10 +56,14 @@ const overlay_color = rl.Color.init(8, 6, 5, 208);
 const Screen = enum {
     boot,
     main_menu,
+    play_game_menu,
+    quests_menu,
+    statistics_menu,
     gameplay,
     results,
     high_scores,
     options,
+    info_view,
 };
 
 const ResultsReason = enum {
@@ -203,6 +208,7 @@ const HighScoresScreen = struct {
     records: []persistence.highscores.HighScoreRecord = &.{},
     records_owned: bool = false,
     load_error: ?[]const u8 = null,
+    return_to_statistics: bool = false,
 
     fn clear(self: *HighScoresScreen, allocator: std.mem.Allocator) void {
         if (self.records_owned) {
@@ -259,6 +265,10 @@ const App = struct {
     boot: BootSequenceState = .{},
     menu: MenuScreenState = .{},
     results_selection: usize = 0,
+    play_game_menu: window_menu_panels.PlayGameState = .{},
+    quests_menu: window_menu_panels.QuestState = .{},
+    statistics_menu: window_menu_panels.StatisticsState = .{},
+    info_view: window_menu_panels.InfoViewState = .{},
     gameplay: ?GameplayScreen = null,
     results: ?ResultsScreen = null,
     high_scores: ?HighScoresScreen = null,
@@ -324,10 +334,14 @@ const App = struct {
         switch (self.screen) {
             .boot => self.updateBoot(frame_dt),
             .main_menu => self.updateMainMenu(frame_dt),
+            .play_game_menu => self.updatePlayGameMenu(frame_dt),
+            .quests_menu => self.updateQuestsMenu(frame_dt),
+            .statistics_menu => self.updateStatisticsMenu(frame_dt),
             .gameplay => self.updateGameplay(frame_dt),
             .results => self.updateResults(),
             .high_scores => self.updateHighScores(),
             .options => self.updateOptions(),
+            .info_view => self.updateInfoView(),
         }
         self.audio.update(frame_dt);
     }
@@ -336,10 +350,14 @@ const App = struct {
         switch (self.screen) {
             .boot => self.drawBoot(),
             .main_menu => self.drawMainMenu(),
+            .play_game_menu => self.drawPlayGameMenu(),
+            .quests_menu => self.drawQuestsMenu(),
+            .statistics_menu => self.drawStatisticsMenu(),
             .gameplay => self.drawGameplay(),
             .results => self.drawResults(),
             .high_scores => self.drawHighScores(),
             .options => self.drawOptions(),
+            .info_view => self.drawInfoView(),
         }
     }
 
@@ -369,13 +387,96 @@ const App = struct {
         }
         if (menu_update.action) |action| {
             switch (action) {
-                .start_survival => self.startNewRun(runConfigForMenuSelection(0, &self.next_seed_state)),
-                .start_rush => self.startNewRun(runConfigForMenuSelection(1, &self.next_seed_state)),
-                .start_quest_11 => self.startNewRun(runConfigForMenuSelection(2, &self.next_seed_state)),
+                .open_play_game => {
+                    self.play_game_menu.reset();
+                    self.screen = .play_game_menu;
+                },
                 .open_options => self.screen = .options,
-                .open_high_scores => self.openHighScores(),
+                .open_statistics => {
+                    self.statistics_menu.reset();
+                    self.screen = .statistics_menu;
+                },
                 .quit => self.quit_requested = true,
             }
+        }
+    }
+
+    fn updatePlayGameMenu(self: *App, frame_dt: f32) void {
+        self.audio.ensureMenuTheme();
+        const play_game_update = window_menu_panels.updatePlayGame(&self.play_game_menu, frame_dt, &self.runtime.config);
+        if (play_game_update.config_dirty) self.runtime.config_dirty = true;
+        if (play_game_update.play_panel_click and !self.play_game_menu.panel.panel_open_sfx_played) {
+            self.audio.playUiPanelClick();
+            self.play_game_menu.panel.panel_open_sfx_played = true;
+        }
+        if (play_game_update.play_button_click) self.audio.playUiButtonClick();
+        if (play_game_update.action) |action| switch (action) {
+            .start_survival => self.startNewRun(runConfigForLiveMode(.survival, null, &self.next_seed_state)),
+            .start_rush => self.startNewRun(runConfigForLiveMode(.rush, null, &self.next_seed_state)),
+            .open_quests => {
+                self.quests_menu.reset();
+                self.screen = .quests_menu;
+            },
+            .back_to_menu => {
+                self.menu.openRoot();
+                self.screen = .main_menu;
+            },
+        };
+    }
+
+    fn updateQuestsMenu(self: *App, frame_dt: f32) void {
+        self.audio.ensureMenuTheme();
+        const quest_update = window_menu_panels.updateQuests(&self.quests_menu, frame_dt, &self.runtime.config, self.runtime.status);
+        if (quest_update.config_dirty) self.runtime.config_dirty = true;
+        if (quest_update.play_panel_click and !self.quests_menu.panel.panel_open_sfx_played) {
+            self.audio.playUiPanelClick();
+            self.quests_menu.panel.panel_open_sfx_played = true;
+        }
+        if (quest_update.play_button_click) self.audio.playUiButtonClick();
+        if (quest_update.back_to_play_game) {
+            self.play_game_menu.reset();
+            self.screen = .play_game_menu;
+            return;
+        }
+        if (quest_update.start_level_key) |level_key| {
+            self.startNewRun(runConfigForLiveMode(.quests, level_key, &self.next_seed_state));
+        }
+    }
+
+    fn updateStatisticsMenu(self: *App, frame_dt: f32) void {
+        self.audio.ensureMenuTheme();
+        const statistics_update = window_menu_panels.updateStatistics(&self.statistics_menu, frame_dt);
+        if (statistics_update.play_panel_click and !self.statistics_menu.panel.panel_open_sfx_played) {
+            self.audio.playUiPanelClick();
+            self.statistics_menu.panel.panel_open_sfx_played = true;
+        }
+        if (statistics_update.play_button_click) self.audio.playUiButtonClick();
+        if (statistics_update.action) |action| switch (action) {
+            .open_high_scores => self.openHighScores(true),
+            .open_weapons => {
+                self.info_view.open(.weapons);
+                self.screen = .info_view;
+            },
+            .open_perks => {
+                self.info_view.open(.perks);
+                self.screen = .info_view;
+            },
+            .open_credits => {
+                self.info_view.open(.credits);
+                self.screen = .info_view;
+            },
+            .back_to_menu => {
+                self.menu.openRoot();
+                self.screen = .main_menu;
+            },
+        };
+    }
+
+    fn updateInfoView(self: *App) void {
+        const info_update = window_menu_panels.updateInfoView(&self.info_view);
+        if (info_update.back_to_statistics) {
+            self.statistics_menu.reset();
+            self.screen = .statistics_menu;
         }
     }
 
@@ -477,8 +578,13 @@ const App = struct {
                 1 => self.setHighScoresMode(.rush),
                 2 => self.setHighScoresMode(.quests),
                 3 => {
-                    self.menu.openRoot();
-                    self.screen = .main_menu;
+                    if (high_scores.return_to_statistics) {
+                        self.statistics_menu.reset();
+                        self.screen = .statistics_menu;
+                    } else {
+                        self.menu.openRoot();
+                        self.screen = .main_menu;
+                    }
                 },
                 else => {},
             }
@@ -644,6 +750,7 @@ const App = struct {
     fn startNewRun(self: *App, run_config: live_runner.LiveModeConfig) void {
         self.audio.stopGameplayMusic();
         var configured_run = run_config;
+        configured_run.player_count = @intCast(std.math.clamp(self.runtime.config.player_count, @as(u32, 1), @as(u32, 4)));
         configured_run.detail_preset = @intCast(std.math.clamp(self.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5)));
         configured_run.gore_disabled = @intCast(self.runtime.config.gore_disabled);
         configured_run.hardcore = self.runtime.config.hardcore_flag != 0;
@@ -699,9 +806,12 @@ const App = struct {
         self.screen = .gameplay;
     }
 
-    fn openHighScores(self: *App) void {
+    fn openHighScores(self: *App, return_to_statistics: bool) void {
         if (self.high_scores == null) {
             self.high_scores = .{};
+        }
+        if (self.high_scores) |*high_scores| {
+            high_scores.return_to_statistics = return_to_statistics;
         }
         self.setHighScoresMode(.survival);
         self.screen = .high_scores;
@@ -839,6 +949,28 @@ const App = struct {
     fn drawMainMenu(self: *const App) void {
         window_menu.draw(&self.menu, if (self.runtime_assets) |*assets| assets else null);
         drawStartupDiagnostics(self);
+    }
+
+    fn drawPlayGameMenu(self: *const App) void {
+        window_menu_panels.drawPlayGame(
+            &self.play_game_menu,
+            if (self.runtime_assets) |*assets| assets else null,
+            self.runtime.status,
+            self.runtime.config.player_count,
+        );
+    }
+
+    fn drawQuestsMenu(self: *const App) void {
+        window_menu_panels.drawQuests(
+            &self.quests_menu,
+            if (self.runtime_assets) |*assets| assets else null,
+            self.runtime.config,
+            self.runtime.status,
+        );
+    }
+
+    fn drawStatisticsMenu(self: *const App) void {
+        window_menu_panels.drawStatistics(&self.statistics_menu, if (self.runtime_assets) |*assets| assets else null);
     }
 
     fn drawGameplay(self: *App) void {
@@ -993,6 +1125,14 @@ const App = struct {
             window_ui.drawButton(button, idx == self.options.selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
         }
         drawAudioStatus(&self.audio);
+    }
+
+    fn drawInfoView(self: *const App) void {
+        window_menu_panels.drawInfoView(
+            &self.info_view,
+            if (self.runtime_assets) |*assets| assets else null,
+            self.runtime.status,
+        );
     }
 };
 
@@ -2458,17 +2598,25 @@ fn nextRunSeed(seed_state: *u32) u32 {
     return if (seed_state.* == 0) 1 else seed_state.*;
 }
 
-fn runConfigForMenuSelection(selection: usize, seed_state: *u32) live_runner.LiveModeConfig {
+fn runConfigForLiveMode(mode: game_ids.GameModeId, quest_level_key: ?i32, seed_state: *u32) live_runner.LiveModeConfig {
     const seed = nextRunSeed(seed_state);
-    return switch (selection) {
-        1 => .{
+    return switch (mode) {
+        .rush => .{
             .seed = seed,
             .game_mode = .rush,
         },
-        2 => .{
+        .quests => .{
             .seed = seed,
             .game_mode = .quests,
-            .quest_level_key = 101,
+            .quest_level_key = quest_level_key orelse 101,
+        },
+        .typo => .{
+            .seed = seed,
+            .game_mode = .typo,
+        },
+        .tutorial => .{
+            .seed = seed,
+            .game_mode = .tutorial,
         },
         else => .{
             .seed = seed,

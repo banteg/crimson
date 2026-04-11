@@ -164,3 +164,27 @@ pub fn measureSmallText(runtime_assets: *const window_assets.RuntimeAssets, text
     }
     return @max(best, width);
 }
+
+pub fn drawSmallTextCentered(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    text: []const u8,
+    y: f32,
+    color: rl.Color,
+) void {
+    const width = measureSmallText(runtime_assets, text);
+    const x = (@as(f32, @floatFromInt(rl.getScreenWidth())) - width) * 0.5;
+    drawSmallText(runtime_assets, text, x, y, color);
+}
+
+pub fn drawSmallTextFmt(
+    comptime fmt: []const u8,
+    runtime_assets: *const window_assets.RuntimeAssets,
+    args: anytype,
+    x: f32,
+    y: f32,
+    color: rl.Color,
+) void {
+    var buf: [256]u8 = undefined;
+    const text = std.fmt.bufPrint(&buf, fmt, args) catch return;
+    drawSmallText(runtime_assets, text, x, y, color);
+}
