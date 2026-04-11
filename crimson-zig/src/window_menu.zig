@@ -4,7 +4,6 @@ const rl = @import("raylib");
 const window_assets = @import("window_assets.zig");
 const window_ui = @import("window_ui.zig");
 
-pub const menu_demo_idle_start_ms: i32 = 23_000;
 const menu_label_width: f32 = 122.0;
 const menu_label_height: f32 = 28.0;
 const menu_label_row_height: f32 = 32.0;
@@ -29,28 +28,20 @@ const menu_scale_small: f32 = 0.8;
 const menu_scale_large: f32 = 1.2;
 const menu_scale_shift: f32 = 10.0;
 
-const label_row_play_game: i32 = 1;
-const label_row_options: i32 = 2;
-const label_row_statistics: i32 = 3;
-const label_row_quit: i32 = 6;
-const label_row_back: i32 = 7;
-
-pub const Page = enum {
-    root,
-    play_game,
-};
+pub const label_row_play_game: i32 = 1;
+pub const label_row_options: i32 = 2;
+pub const label_row_statistics: i32 = 3;
+pub const label_row_quit: i32 = 6;
+pub const label_row_back: i32 = 7;
 
 pub const Action = enum {
-    start_survival,
-    start_rush,
-    start_quest_11,
+    open_play_game,
     open_options,
-    open_high_scores,
+    open_statistics,
     quit,
 };
 
 pub const State = struct {
-    page: Page = .root,
     selection: usize = 0,
     timeline_ms: i32 = 0,
     focus_timer_ms: i32 = 0,
@@ -69,20 +60,6 @@ pub const State = struct {
     pub fn openRoot(self: *State) void {
         self.reset();
     }
-
-    fn openPlayGame(self: *State) void {
-        self.page = .play_game;
-        self.selection = 0;
-        self.hovered_index = null;
-        self.focus_timer_ms = 1000;
-    }
-
-    fn openMain(self: *State) void {
-        self.page = .root;
-        self.selection = 0;
-        self.hovered_index = null;
-        self.focus_timer_ms = 1000;
-    }
 };
 
 pub const UpdateResult = struct {
@@ -94,49 +71,21 @@ pub const UpdateResult = struct {
 const RootEntry = struct {
     slot: usize,
     row: i32,
-    action: Action,
 };
 
 const root_entries = [_]RootEntry{
-    .{ .slot = 0, .row = label_row_play_game, .action = .start_survival }, // action unused on root
-    .{ .slot = 1, .row = label_row_options, .action = .open_options },
-    .{ .slot = 2, .row = label_row_statistics, .action = .open_high_scores },
-    .{ .slot = 3, .row = label_row_quit, .action = .quit },
+    .{ .slot = 0, .row = label_row_play_game },
+    .{ .slot = 1, .row = label_row_options },
+    .{ .slot = 2, .row = label_row_statistics },
+    .{ .slot = 3, .row = label_row_quit },
 };
 
 pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
     const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
-    return switch (state.page) {
-        .root => updateRoot(state, dt_ms, runtime_assets),
-        .play_game => updatePlayGame(state),
-    };
-}
-
-pub fn draw(state: *const State, runtime_assets: ?*const window_assets.RuntimeAssets) void {
-    if (runtime_assets) |assets| {
-        drawMenuBackdrop(assets);
-        switch (state.page) {
-            .root => drawRootMenu(state, assets),
-            .play_game => drawPlayGamePanel(state, assets),
-        }
-        return;
-    }
-
-    rl.clearBackground(rl.Color.init(16, 12, 10, 255));
-    drawFallbackBackdrop();
-    switch (state.page) {
-        .root => drawFallbackRoot(state),
-        .play_game => drawFallbackPlayGame(state),
-    }
-}
-
-fn updateRoot(state: *State, dt_ms: i32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
     if (dt_ms > 0) {
         const mouse = rl.getMousePosition();
         const mouse_moved = mouse.x != state.last_mouse_pos.x or mouse.y != state.last_mouse_pos.y;
-        if (mouse_moved) {
-            state.last_mouse_pos = mouse;
-        }
+        if (mouse_moved) state.last_mouse_pos = mouse;
 
         if (rl.getKeyPressed() != .null or rl.isMouseButtonPressed(.left) or rl.isMouseButtonPressed(.right) or mouse_moved) {
             state.idle_ms = 0;
@@ -172,13 +121,13 @@ fn updateRoot(state: *State, dt_ms: i32, runtime_assets: ?*const window_assets.R
     }
 
     var result: UpdateResult = .{ .play_button_click = true };
-    switch (state.selection) {
-        0 => state.openPlayGame(),
-        1 => result.action = .open_options,
-        2 => result.action = .open_high_scores,
-        3 => result.action = .quit,
-        else => {},
-    }
+    result.action = switch (state.selection) {
+        0 => .open_play_game,
+        1 => .open_options,
+        2 => .open_statistics,
+        3 => .quit,
+        else => null,
+    };
     updateHoverAmounts(state, dt_ms);
     if (dt_ms > 0 and state.timeline_ms >= rootTimelineMaxMs() and !state.panel_open_sfx_played) {
         result.play_panel_click = true;
@@ -186,42 +135,96 @@ fn updateRoot(state: *State, dt_ms: i32, runtime_assets: ?*const window_assets.R
     return result;
 }
 
-fn updatePlayGame(state: *State) UpdateResult {
-    const buttons = playGameButtons();
-    window_ui.updateSelectionFromPointer(&state.selection, buttons[0..]);
-
-    if (rl.isKeyPressed(.escape)) {
-        state.openMain();
-        return .{ .play_button_click = true };
-    }
-    if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-        state.selection = if (state.selection == 0) buttons.len - 1 else state.selection - 1;
-    }
-    if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-        state.selection = (state.selection + 1) % buttons.len;
+pub fn draw(state: *const State, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+    if (runtime_assets) |assets| {
+        drawMenuBackdrop(assets);
+        drawSign(state.timeline_ms, assets);
+        for (root_entries, 0..) |entry, idx| {
+            drawRootEntry(state, assets, entry, idx, idx == state.selection);
+        }
+        return;
     }
 
-    if (!window_ui.buttonActivated(buttons[0..], state.selection)) return .{};
-
-    return switch (state.selection) {
-        0 => .{ .action = .start_survival, .play_button_click = true },
-        1 => .{ .action = .start_rush, .play_button_click = true },
-        2 => .{ .action = .start_quest_11, .play_button_click = true },
-        3 => blk: {
-            state.openMain();
-            break :blk .{ .play_button_click = true };
-        },
-        else => .{},
-    };
+    rl.clearBackground(rl.Color.init(16, 12, 10, 255));
+    drawFallbackBackdrop();
+    drawCenteredText("CRIMSONLAND", 104, 64, rl.Color.init(218, 80, 46, 255));
+    const buttons = fallbackRootButtons();
+    for (buttons, 0..) |button, idx| {
+        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+        window_ui.drawButton(button, idx == state.selection, hovered, null);
+    }
 }
 
-fn drawMenuBackdrop(runtime_assets: *const window_assets.RuntimeAssets) void {
+pub fn drawMenuBackdrop(runtime_assets: *const window_assets.RuntimeAssets) void {
     window_ui.drawTextureFit(
         runtime_assets.texture(.backplasma),
         rl.Rectangle.init(0.0, 0.0, @floatFromInt(rl.getScreenWidth()), @floatFromInt(rl.getScreenHeight())),
         rl.Color.init(255, 255, 255, 92),
     );
     rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), rl.Color.init(16, 11, 9, 160));
+}
+
+pub fn drawSign(timeline_ms: i32, runtime_assets: *const window_assets.RuntimeAssets) void {
+    const screen_w = rl.getScreenWidth();
+    const sign = runtime_assets.texture(.ui_sign_crimson);
+    const layout = mainMenuSignLayoutScale(screen_w);
+    const sign_pos = rl.Vector2.init(
+        @as(f32, @floatFromInt(screen_w)) + menu_sign_pos_x_pad,
+        if (screen_w > menu_scale_small_threshold) menu_sign_pos_y else menu_sign_pos_y_small,
+    );
+    const sign_w = menu_sign_width * layout.scale;
+    const sign_h = menu_sign_height * layout.scale;
+    const offset_x = menu_sign_offset_x * layout.scale + layout.shift_x;
+    const offset_y = menu_sign_offset_y * layout.scale;
+    const anim = uiElementAnim(0, 300, 0, sign_w, timeline_ms);
+    const rotation_deg = radiansToDegrees(anim.angle_rad);
+
+    rl.drawTexturePro(
+        sign,
+        rl.Rectangle.init(0.0, 0.0, @floatFromInt(sign.width), @floatFromInt(sign.height)),
+        rl.Rectangle.init(sign_pos.x, sign_pos.y, sign_w, sign_h),
+        rl.Vector2.init(-offset_x, -offset_y),
+        rotation_deg,
+        rl.Color.white,
+    );
+}
+
+pub fn drawAtlasLabelCentered(runtime_assets: *const window_assets.RuntimeAssets, row: i32, y: f32, tint: rl.Color) void {
+    const texture = runtime_assets.texture(.ui_item_texts);
+    const src = rl.Rectangle.init(0.0, @as(f32, @floatFromInt(row)) * menu_label_row_height, menu_label_width, menu_label_row_height);
+    const x = (@as(f32, @floatFromInt(rl.getScreenWidth())) - menu_label_width) * 0.5;
+    rl.drawTexturePro(
+        texture,
+        src,
+        rl.Rectangle.init(x, y, menu_label_width, menu_label_height),
+        rl.Vector2.zero(),
+        0.0,
+        tint,
+    );
+}
+
+pub fn uiElementAnim(index: usize, start_ms: i32, end_ms: i32, width: f32, timeline_ms: i32) struct { angle_rad: f32, offset_x: f32 } {
+    if (start_ms <= end_ms or width <= 0.0) return .{ .angle_rad = 0.0, .offset_x = 0.0 };
+    var angle: f32 = 0.0;
+    var offset_x: f32 = 0.0;
+    if (timeline_ms < end_ms) {
+        angle = 1.5707964;
+        offset_x = -@abs(width);
+    } else if (timeline_ms < start_ms) {
+        const p = @as(f32, @floatFromInt(timeline_ms - end_ms)) / @as(f32, @floatFromInt(start_ms - end_ms));
+        angle = 1.5707964 * (1.0 - p);
+        offset_x = (1.0 - p) * -@abs(width);
+    }
+    if (index == 0) angle = -@abs(angle);
+    return .{ .angle_rad = angle, .offset_x = offset_x };
+}
+
+pub fn menuWidescreenYShift(screen_w: f32) f32 {
+    return (screen_w / 640.0) * 150.0 - 150.0;
+}
+
+pub fn menuScale(screen_w: i32) struct { scale: f32, shift_x: f32 } {
+    return mainMenuSignLayoutScale(screen_w);
 }
 
 fn drawFallbackBackdrop() void {
@@ -232,20 +235,13 @@ fn drawFallbackBackdrop() void {
     rl.drawCircle(160, height - 80, 220.0, rl.Color.init(58, 23, 18, 90));
 }
 
-fn drawRootMenu(state: *const State, runtime_assets: *const window_assets.RuntimeAssets) void {
-    drawMainMenuSign(state, runtime_assets);
-    for (root_entries, 0..) |entry, idx| {
-        drawRootEntry(state, runtime_assets, entry, idx, idx == state.selection);
-    }
-}
-
 fn drawRootEntry(state: *const State, runtime_assets: *const window_assets.RuntimeAssets, entry: RootEntry, idx: usize, selected: bool) void {
     const item = runtime_assets.texture(.ui_menu_item);
     const labels = runtime_assets.texture(.ui_item_texts);
     const scale_info = menuItemScale(entry.slot);
     const pos_x = menuSlotPosX(entry.slot);
     const pos_y = menu_label_base_y + @as(f32, @floatFromInt(entry.slot)) * menu_label_step + menuWidescreenYShift(@floatFromInt(rl.getScreenWidth()));
-    const anim = menuUiElementAnim(entry.slot + 2, menuSlotStartMs(entry.slot), menuSlotEndMs(entry.slot), @as(f32, @floatFromInt(item.width)) * scale_info.scale, state.timeline_ms);
+    const anim = uiElementAnim(entry.slot + 2, menuSlotStartMs(entry.slot), menuSlotEndMs(entry.slot), @as(f32, @floatFromInt(item.width)) * scale_info.scale, state.timeline_ms);
     const dst = rl.Rectangle.init(pos_x, pos_y, @as(f32, @floatFromInt(item.width)) * scale_info.scale, @as(f32, @floatFromInt(item.height)) * scale_info.scale);
     const origin = rl.Vector2.init(-(menu_item_offset_x * scale_info.scale), -(menu_item_offset_y * scale_info.scale - scale_info.local_y_shift));
     const rotation_deg = radiansToDegrees(anim.angle_rad);
@@ -270,36 +266,6 @@ fn drawRootEntry(state: *const State, runtime_assets: *const window_assets.Runti
         rl.beginBlendMode(.additive);
         rl.drawTexturePro(labels, src, label_dst, label_origin, rotation_deg, rl.Color.init(255, 255, 255, label_alpha));
         rl.endBlendMode();
-    }
-}
-
-fn drawPlayGamePanel(state: *const State, runtime_assets: *const window_assets.RuntimeAssets) void {
-    drawMainMenuSign(state, runtime_assets);
-    window_ui.drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(420.0, 180.0, 430.0, 310.0), window_ui.colorWithAlpha(rl.Color.white, 0.96));
-    drawAtlasLabelCentered(runtime_assets, label_row_play_game, 228.0, window_ui.colorWithAlpha(rl.Color.white, 0.96));
-
-    const buttons = playGameButtons();
-    for (buttons, 0..) |button, idx| {
-        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-        window_ui.drawButton(button, idx == state.selection, hovered, runtime_assets);
-    }
-}
-
-fn drawFallbackRoot(state: *const State) void {
-    drawCenteredText("CRIMSONLAND", 104, 64, rl.Color.init(218, 80, 46, 255));
-    const buttons = fallbackRootButtons();
-    for (buttons, 0..) |button, idx| {
-        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-        window_ui.drawButton(button, idx == state.selection, hovered, null);
-    }
-}
-
-fn drawFallbackPlayGame(state: *const State) void {
-    drawCenteredText("PLAY GAME", 110, 46, rl.Color.init(218, 80, 46, 255));
-    const buttons = playGameButtons();
-    for (buttons, 0..) |button, idx| {
-        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-        window_ui.drawButton(button, idx == state.selection, hovered, null);
     }
 }
 
@@ -381,10 +347,6 @@ fn rootTimelineMaxMs() i32 {
     return max_ms;
 }
 
-fn menuWidescreenYShift(screen_w: f32) f32 {
-    return (screen_w / 640.0) * 150.0 - 150.0;
-}
-
 fn menuSlotPosX(slot: usize) f32 {
     return menu_label_base_x - @as(f32, @floatFromInt(slot)) * 20.0;
 }
@@ -397,22 +359,6 @@ fn menuSlotEndMs(slot: usize) i32 {
     return @intCast((slot + 2) * 100);
 }
 
-fn menuUiElementAnim(index: usize, start_ms: i32, end_ms: i32, width: f32, timeline_ms: i32) struct { angle_rad: f32, offset_x: f32 } {
-    if (start_ms <= end_ms or width <= 0.0) return .{ .angle_rad = 0.0, .offset_x = 0.0 };
-    var angle: f32 = 0.0;
-    var offset_x: f32 = 0.0;
-    if (timeline_ms < end_ms) {
-        angle = 1.5707964;
-        offset_x = -@abs(width);
-    } else if (timeline_ms < start_ms) {
-        const p = @as(f32, @floatFromInt(timeline_ms - end_ms)) / @as(f32, @floatFromInt(start_ms - end_ms));
-        angle = 1.5707964 * (1.0 - p);
-        offset_x = (1.0 - p) * -@abs(width);
-    }
-    if (index == 0) angle = -@abs(angle);
-    return .{ .angle_rad = angle, .offset_x = offset_x };
-}
-
 fn mainMenuLabelAlpha(counter_value: i32) u8 {
     return @intCast(100 + @divTrunc(counter_value * 155, 1000));
 }
@@ -423,55 +369,11 @@ fn mainMenuSignLayoutScale(screen_w: i32) struct { scale: f32, shift_x: f32 } {
     return .{ .scale = 1.0, .shift_x = 0.0 };
 }
 
-fn drawMainMenuSign(state: *const State, runtime_assets: *const window_assets.RuntimeAssets) void {
-    const screen_w = rl.getScreenWidth();
-    const sign = runtime_assets.texture(.ui_sign_crimson);
-    const layout = mainMenuSignLayoutScale(screen_w);
-    const sign_pos = rl.Vector2.init(
-        @as(f32, @floatFromInt(screen_w)) + menu_sign_pos_x_pad,
-        if (screen_w > menu_scale_small_threshold) menu_sign_pos_y else menu_sign_pos_y_small,
-    );
-    const sign_w = menu_sign_width * layout.scale;
-    const sign_h = menu_sign_height * layout.scale;
-    const offset_x = menu_sign_offset_x * layout.scale + layout.shift_x;
-    const offset_y = menu_sign_offset_y * layout.scale;
-    const anim = menuUiElementAnim(0, 300, 0, sign_w, state.timeline_ms);
-    const rotation_deg = radiansToDegrees(anim.angle_rad);
-
-    rl.drawTexturePro(
-        sign,
-        rl.Rectangle.init(0.0, 0.0, @floatFromInt(sign.width), @floatFromInt(sign.height)),
-        rl.Rectangle.init(sign_pos.x, sign_pos.y, sign_w, sign_h),
-        rl.Vector2.init(-offset_x, -offset_y),
-        rotation_deg,
-        rl.Color.white,
-    );
-}
-
 fn menuItemScale(slot: usize) struct { scale: f32, local_y_shift: f32 } {
     if (rl.getScreenWidth() < 641) {
         return .{ .scale = 0.9, .local_y_shift = @as(f32, @floatFromInt(slot)) * 11.0 };
     }
     return .{ .scale = 1.0, .local_y_shift = 0.0 };
-}
-
-fn drawAtlasLabelCentered(runtime_assets: *const window_assets.RuntimeAssets, row: i32, y: f32, tint: rl.Color) void {
-    const texture = runtime_assets.texture(.ui_item_texts);
-    const src = rl.Rectangle.init(0.0, @as(f32, @floatFromInt(row)) * menu_label_row_height, menu_label_width, menu_label_row_height);
-    const width = menu_label_width;
-    const height = menu_label_height;
-    const x = (@as(f32, @floatFromInt(rl.getScreenWidth())) - width) * 0.5;
-    rl.drawTexturePro(texture, src, rl.Rectangle.init(x, y, width, height), rl.Vector2.zero(), 0.0, tint);
-}
-
-fn playGameButtons() [4]window_ui.UiButton {
-    const center_x = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
-    return .{
-        .{ .label = "SURVIVAL", .rect = window_ui.centeredRect(center_x, 276.0, 280.0, 48.0) },
-        .{ .label = "RUSH", .rect = window_ui.centeredRect(center_x, 332.0, 280.0, 48.0) },
-        .{ .label = "QUEST 1.1", .rect = window_ui.centeredRect(center_x, 388.0, 280.0, 48.0) },
-        .{ .label = "BACK", .rect = window_ui.centeredRect(center_x, 452.0, 220.0, 48.0) },
-    };
 }
 
 fn fallbackRootButtons() [4]window_ui.UiButton {
