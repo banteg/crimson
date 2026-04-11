@@ -524,22 +524,3 @@ fn creatureFindNearestAlive(
     }
     return best_idx;
 }
-
-fn consumeExplosionBurstRng(
-    state: *state_mod.GameplayState,
-    detail_preset: i32,
-) void {
-    if (detail_preset > 3) {
-        for (0..2) |_| {
-            _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_puff_rotation) % 0x266;
-        }
-    }
-    const count: usize = if (detail_preset < 2) 1 else 3 + (if (detail_preset > 3) @as(usize, 1) else 0);
-    for (0..count) |_| {
-        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_rotation) % 0x13A;
-        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_vel_x) & 0x3F;
-        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_vel_y) & 0x3F;
-        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_scale_step);
-        _ = state.rng.randTagged(rng_callers.effect_spawn_explosion_burst_rotation_STEP);
-    }
-}

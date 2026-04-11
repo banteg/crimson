@@ -5,7 +5,6 @@ const native_math = @import("native_math.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
-const runtime_helpers = @import("helpers.zig");
 const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
@@ -444,9 +443,11 @@ pub fn applyPendingCreatureProjectiles(
     state.pending_creature_projectile_count = 0;
 }
 
-pub fn applyFreezePickupCorpseCleanupRng(
+pub fn applyFreezePickupCorpseEffects(
     state: *state_mod.GameplayState,
     creatures: *creatures_mod.CreaturePool,
+    effects: *effects_mod.EffectPool,
+    detail_preset: i32,
     freeze_corpse_at_tick_start: []const bool,
 ) void {
     for (&creatures.entries, 0..) |*creature, idx| {
@@ -459,11 +460,12 @@ pub fn applyFreezePickupCorpseCleanupRng(
         }
 
         if (idx < freeze_corpse_at_tick_start.len and freeze_corpse_at_tick_start[idx]) {
-            runtime_helpers.consumeFreezeShatterRng(
-                state,
-                rng_callers.bonus_apply_freeze_shard_angle,
-                rng_callers.bonus_apply_freeze_shatter_angle,
-            );
+            for (0..8) |_| {
+                const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_freeze_shard_angle) % 612)) * 0.01;
+                effects.spawnFreezeShard(state, creature.pos, angle, detail_preset);
+            }
+            const shatter_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_freeze_shatter_angle) % 612)) * 0.01;
+            effects.spawnFreezeShatter(state, creature.pos, shatter_angle, detail_preset);
         }
 
         creature.active = false;
@@ -1073,23 +1075,6 @@ fn appendPickupRecord(
     records.append(record) catch |err| switch (err) {
         error.OutOfSpace => {},
     };
-}
-
-fn consumeBonusPickupEffectsRng(
-    state: *state_mod.GameplayState,
-    bonus_id: BonusId,
-) void {
-    if (bonus_id != .nuke) {
-        // emit_bonus_pickup_effects -> spawn_burst(count=12, scale_step set).
-        runtime_helpers.consumeBurstRng(state, 12, false);
-    }
-}
-
-fn consumeSpawnBurstRng(
-    state: *state_mod.GameplayState,
-    count: usize,
-) void {
-    runtime_helpers.consumeBurstRng(state, count, true);
 }
 
 const quest_unlock_weapon_by_index = [_]i32{

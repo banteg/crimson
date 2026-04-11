@@ -224,9 +224,9 @@ fn runVerifyWithReplayBytes(
         tick_trace.deinit(allocator);
     };
 
-    const scaffold = blk: {
+    const run = blk: {
         if (trace_requested) {
-            const traced = replay_runner.runReplayScaffoldWithTrace(
+            const traced = replay_runner.runReplayWithTrace(
                 allocator,
                 replay,
                 &tick_trace,
@@ -263,7 +263,7 @@ fn runVerifyWithReplayBytes(
             break :blk traced;
         }
 
-        break :blk replay_runner.runReplayScaffoldWithOptions(replay, .{
+        break :blk replay_runner.runReplayWithOptions(replay, .{
             .max_ticks = request.max_ticks,
         }) catch |err| {
             return buildNotPortedOutputForReplayRunnerError(
@@ -280,14 +280,14 @@ fn runVerifyWithReplayBytes(
     const run_result: RunResult = .{
         .game_mode_id = header.game_mode_id,
         .tick_rate = header.tick_rate,
-        .ticks = @intCast(scaffold.ticks),
-        .elapsed_ms = scaffold.elapsed_ms_sim,
-        .score_xp = scaffold.player_experience,
-        .creature_kill_count = scaffold.creature_kill_count,
-        .most_used_weapon_id = scaffold.most_used_weapon_id,
-        .shots_fired = scaffold.shots_fired,
-        .shots_hit = scaffold.shots_hit,
-        .rng_state = scaffold.wave_spawn_rng_state,
+        .ticks = @intCast(run.ticks),
+        .elapsed_ms = run.elapsed_ms_sim,
+        .score_xp = run.player_experience,
+        .creature_kill_count = run.creature_kill_count,
+        .most_used_weapon_id = run.most_used_weapon_id,
+        .shots_fired = run.shots_fired,
+        .shots_hit = run.shots_hit,
+        .rng_state = run.wave_spawn_rng_state,
     };
     var header_claim_payload_storage: ?HeaderClaimPayload = null;
     defer if (header_claim_payload_storage) |payload| allocator.free(payload.mismatched_fields);
@@ -719,15 +719,15 @@ fn buildNotPortedOutputForReplayRunnerError(
     progress: ReplayRunnerProgressHint,
 ) !CommandOutput {
     const detail = switch (err) {
-        error.OutOfMemory => "replay simulation scaffold ran out of memory",
-        error.InvalidHeaderValue => "replay simulation scaffold received invalid header values",
-        error.UnsupportedGameMode => "replay simulation scaffold only supports survival/rush/quest modes",
-        error.UnsupportedPlayerCount => "replay simulation scaffold only supports 1-4 player replays",
-        error.UnsupportedInputQuantization => "replay simulation scaffold only supports f32 quantization",
-        error.UnsupportedDemoMode => "replay simulation scaffold does not support demo_mode_active=true",
+        error.OutOfMemory => "native replay run ran out of memory",
+        error.InvalidHeaderValue => "native replay run received invalid header values",
+        error.UnsupportedGameMode => "native replay run only supports survival/rush/quest modes",
+        error.UnsupportedPlayerCount => "native replay run only supports 1-4 player replays",
+        error.UnsupportedInputQuantization => "native replay run only supports f32 quantization",
+        error.UnsupportedDemoMode => "native replay run does not support demo_mode_active=true",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
         error.UnsupportedEventKind => "replay events include kinds unsupported for this mode",
-        error.UnsupportedEventPlayerIndex => "replay simulation scaffold encountered an out-of-range player_index event",
+        error.UnsupportedEventPlayerIndex => "native replay run encountered an out-of-range player_index event",
         error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
         error.UnsupportedSpawnTemplate => "replay triggered survival template spawns not yet ported in native creature runtime",

@@ -1,6 +1,5 @@
 const std = @import("std");
 const native_math = @import("native_math.zig");
-const rng_callers = @import("../rng_caller_static.zig");
 
 const state_mod = @import("state.zig");
 const runtime_math = @import("math.zig");
@@ -45,55 +44,4 @@ pub fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
 
 pub fn distanceSqRoundedF32(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     return narrowF32(distanceSq(a, b));
-}
-
-pub fn consumeBurstRng(
-    state: *state_mod.GameplayState,
-    count: usize,
-    include_scale_step: bool,
-) void {
-    for (0..count) |_| {
-        _ = state.rng.randTagged(rng_callers.effect_spawn_burst_rotation);
-        _ = state.rng.randTagged(rng_callers.effect_spawn_burst_vel_x);
-        _ = state.rng.randTagged(rng_callers.effect_spawn_burst_vel_y);
-        if (include_scale_step) {
-            _ = state.rng.randTagged(rng_callers.effect_spawn_burst_scale_step);
-        }
-    }
-}
-
-pub fn consumeAddRandomRng(state: *state_mod.GameplayState) void {
-    _ = state.rng.randTagged(rng_callers.fx_queue_add_random_gray);
-    _ = state.rng.randTagged(rng_callers.fx_queue_add_random_width);
-    _ = state.rng.randTagged(rng_callers.fx_queue_add_random_rotation);
-    _ = state.rng.randTagged(rng_callers.fx_queue_add_random_effect_id);
-}
-
-pub fn consumeFreezeShardRng(state: *state_mod.GameplayState) void {
-    _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_lifetime);
-    _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation);
-    _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_half);
-    _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation_step);
-    _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_scale_step);
-    _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_effect_id);
-}
-
-pub fn consumeFreezeShatterRng(
-    state: *state_mod.GameplayState,
-    shard_angle_caller: rng_callers.Caller,
-    shatter_angle_caller: rng_callers.Caller,
-) void {
-    for (0..8) |_| {
-        _ = state.rng.randTagged(shard_angle_caller) % 0x264;
-        consumeFreezeShardRng(state);
-    }
-    _ = state.rng.randTagged(shatter_angle_caller) % 0x264;
-    for (0..4) |_| {
-        _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_half);
-        _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_rotation_step);
-    }
-    for (0..4) |_| {
-        _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_shard_angle) % 0x264;
-        consumeFreezeShardRng(state);
-    }
 }
