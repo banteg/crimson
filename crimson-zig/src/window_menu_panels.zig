@@ -1001,7 +1001,7 @@ fn drawMenuPanelShell(timeline_ms: i32, runtime_assets: *const window_assets.Run
 
     const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
     const panel_rect = rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
-    window_ui.drawTextureFit(runtime_assets.texture(.ui_menu_panel), panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
 
     const T = @TypeOf(title_row_or_texture);
     if (T == i32) {
@@ -1017,7 +1017,7 @@ fn drawMenuPanelShellNoTitle(timeline_ms: i32, runtime_assets: *const window_ass
 
     const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
     const panel_rect = rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
-    window_ui.drawTextureFit(runtime_assets.texture(.ui_menu_panel), panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+    window_ui.drawClassicMenuPanel(runtime_assets.texture(.ui_menu_panel), panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
 }
 
 fn drawTextureLabel(runtime_assets: *const window_assets.RuntimeAssets, texture_id: window_assets.TextureId, x: f32, y: f32, w: f32, h: f32, tint: rl.Color) void {

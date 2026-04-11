@@ -741,22 +741,22 @@ fn drawPerksPanels(
 fn drawSplitPanelShell(assets: *const window_assets.RuntimeAssets, label_row: i32) void {
     window_menu.drawMenuBackdrop(assets);
     window_menu.drawSign(panel_timeline_max_ms, assets);
-    window_ui.drawTextureFit(assets.texture(.ui_menu_panel), left_panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96));
-    window_ui.drawTextureFit(assets.texture(.ui_menu_panel), right_panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+    window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), left_panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
+    window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), right_panel_rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), true);
     window_menu.drawAtlasLabelCentered(assets, label_row, 146.0, window_ui.colorWithAlpha(rl.Color.white, 0.96));
 }
 
 fn drawPanelShell(timeline_ms: i32, assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle, label_row: i32) void {
     window_menu.drawMenuBackdrop(assets);
     window_menu.drawSign(timeline_ms, assets);
-    window_ui.drawTextureFit(assets.texture(.ui_menu_panel), rect, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+    window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
     window_menu.drawAtlasLabelCentered(assets, label_row, rect.y + 42.0, window_ui.colorWithAlpha(rl.Color.white, 0.96));
 }
 
 fn drawPanelShellNoTitle(timeline_ms: i32, assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle) void {
     window_menu.drawMenuBackdrop(assets);
     window_menu.drawSign(timeline_ms, assets);
-    window_ui.drawTextureFit(assets.texture(.ui_menu_panel), rect, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+    window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), rect, window_ui.colorWithAlpha(rl.Color.white, 0.96), false);
 }
 
 fn drawAtlasTitle(assets: *const window_assets.RuntimeAssets, rect: rl.Rectangle, rel_x: f32, rel_y: f32, row: i32) void {

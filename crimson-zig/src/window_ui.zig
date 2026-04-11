@@ -20,7 +20,7 @@ pub fn centeredRect(center_x: f32, top_y: f32, width: f32, height: f32) rl.Recta
 pub fn updateSelectionFromPointer(selection: *usize, buttons: []const UiButton) void {
     const mouse = rl.getMousePosition();
     for (buttons, 0..) |button, idx| {
-        if (rl.checkCollisionPointRec(mouse, button.rect)) {
+        if (rl.checkCollisionPointRec(mouse, buttonHitRect(button))) {
             selection.* = idx;
             return;
         }
@@ -33,7 +33,7 @@ pub fn buttonActivated(buttons: []const UiButton, selection: usize) bool {
     if (!rl.isMouseButtonPressed(.left)) return false;
     const mouse = rl.getMousePosition();
     for (buttons, 0..) |button, idx| {
-        if (idx == selection and rl.checkCollisionPointRec(mouse, button.rect)) {
+        if (idx == selection and rl.checkCollisionPointRec(mouse, buttonHitRect(button))) {
             return true;
         }
     }
@@ -47,38 +47,33 @@ pub fn drawButton(
     runtime_assets: ?*const window_assets.RuntimeAssets,
 ) void {
     if (runtime_assets) |assets| {
-        const scale = button.rect.height / 32.0;
+        const scale: f32 = 1.0;
         const texture = if (button.rect.width > 120.0) assets.texture(.ui_button_md) else assets.texture(.ui_button_sm);
-        const glow_alpha: f32 = if (selected or hovered) 0.92 else 0.72;
+        const plate_rect = rl.Rectangle.init(button.rect.x, button.rect.y, button.rect.width, 32.0 * scale);
         if (selected or hovered) {
-            rl.drawRectangleRounded(
-                .{
-                    .x = button.rect.x + 12.0 * scale,
-                    .y = button.rect.y + 5.0 * scale,
-                    .width = button.rect.width - 24.0 * scale,
-                    .height = button.rect.height - 10.0 * scale,
-                },
-                0.18,
-                8,
-                rl.Color.init(128, 128, 178, @intFromFloat(glow_alpha * 120.0)),
+            rl.drawRectangle(
+                @intFromFloat(plate_rect.x + 12.0 * scale),
+                @intFromFloat(plate_rect.y + 5.0 * scale),
+                @intFromFloat(plate_rect.width - 24.0 * scale),
+                @intFromFloat(22.0 * scale),
+                rl.Color.init(128, 128, 178, 255),
             );
         }
-        const plate_alpha: f32 = if (selected or hovered) 255.0 else 230.0;
         rl.drawTexturePro(
             texture,
             rl.Rectangle.init(0.0, 0.0, @floatFromInt(texture.width), @floatFromInt(texture.height)),
-            button.rect,
+            plate_rect,
             rl.Vector2.zero(),
             0.0,
-            rl.Color.init(255, 255, 255, @intFromFloat(plate_alpha)),
+            rl.Color.white,
         );
 
         const label_width = measureSmallText(assets, button.label);
         drawSmallText(
             assets,
             button.label,
-            button.rect.x + (button.rect.width - label_width) * 0.5 + 1.0,
-            button.rect.y + 10.0,
+            plate_rect.x + (plate_rect.width - label_width) * 0.5 + 1.0 * scale,
+            plate_rect.y + 10.0 * scale,
             colorWithAlpha(rl.Color.white, if (selected or hovered) 1.0 else 0.7),
         );
         return;
@@ -95,6 +90,10 @@ pub fn drawButton(
     rl.drawText(button.label, label_x, label_y, 24, rl.Color.init(245, 236, 225, 255));
 }
 
+fn buttonHitRect(button: UiButton) rl.Rectangle {
+    return rl.Rectangle.init(button.rect.x, button.rect.y + 2.0, button.rect.width, 28.0);
+}
+
 pub fn colorWithAlpha(color: rl.Color, alpha: f32) rl.Color {
     return rl.Color.init(
         color.r,
@@ -107,6 +106,58 @@ pub fn colorWithAlpha(color: rl.Color, alpha: f32) rl.Color {
 pub fn drawTextureFit(texture: rl.Texture2D, dest: rl.Rectangle, tint: rl.Color) void {
     const src = rl.Rectangle.init(0.0, 0.0, @floatFromInt(texture.width), @floatFromInt(texture.height));
     rl.drawTexturePro(texture, src, dest, rl.Vector2.zero(), 0.0, tint);
+}
+
+const menu_panel_inset: f32 = 1.0;
+const menu_panel_src_slice_y1: f32 = 130.0;
+const menu_panel_src_slice_y2: f32 = 150.0;
+const menu_panel_dst_top_h: f32 = 138.0;
+const menu_panel_dst_bottom_h: f32 = 116.0;
+
+pub fn drawClassicMenuPanel(texture: rl.Texture2D, dst: rl.Rectangle, tint: rl.Color, flip_x: bool) void {
+    const tex_w = @as(f32, @floatFromInt(texture.width));
+    const tex_h = @as(f32, @floatFromInt(texture.height));
+    if (tex_w <= 0.0 or tex_h <= 0.0) return;
+
+    const src_x = menu_panel_inset;
+    const src_y = menu_panel_inset;
+    const src_w = @max(0.0, tex_w - menu_panel_inset * 2.0);
+    const src_h = @max(0.0, tex_h - menu_panel_inset * 2.0);
+    const scale = if (dst.width != 0.0) dst.width / 510.0 else 1.0;
+    const top_h = menu_panel_dst_top_h * scale;
+    const bottom_h = menu_panel_dst_bottom_h * scale;
+    const mid_h = dst.height - top_h - bottom_h;
+
+    const srcRect = struct {
+        fn make(rect: rl.Rectangle, use_flip_x: bool) rl.Rectangle {
+            if (!use_flip_x) return rect;
+            return rl.Rectangle.init(rect.x, rect.y, -rect.width, rect.height);
+        }
+    }.make;
+
+    if (mid_h <= 0.0) {
+        rl.drawTexturePro(
+            texture,
+            srcRect(rl.Rectangle.init(src_x, src_y, src_w, src_h), flip_x),
+            dst,
+            rl.Vector2.zero(),
+            0.0,
+            tint,
+        );
+        return;
+    }
+
+    const src_top = srcRect(rl.Rectangle.init(src_x, src_y, src_w, @max(0.0, menu_panel_src_slice_y1 - menu_panel_inset)), flip_x);
+    const src_mid = srcRect(rl.Rectangle.init(src_x, menu_panel_src_slice_y1, src_w, @max(0.0, menu_panel_src_slice_y2 - menu_panel_src_slice_y1)), flip_x);
+    const src_bot = srcRect(rl.Rectangle.init(src_x, menu_panel_src_slice_y2, src_w, @max(0.0, (tex_h - menu_panel_inset) - menu_panel_src_slice_y2)), flip_x);
+
+    const dst_top = rl.Rectangle.init(dst.x, dst.y, dst.width, top_h);
+    const dst_mid = rl.Rectangle.init(dst.x, dst.y + top_h, dst.width, mid_h);
+    const dst_bot = rl.Rectangle.init(dst.x, dst.y + top_h + mid_h, dst.width, bottom_h);
+
+    rl.drawTexturePro(texture, src_top, dst_top, rl.Vector2.zero(), 0.0, tint);
+    rl.drawTexturePro(texture, src_mid, dst_mid, rl.Vector2.zero(), 0.0, tint);
+    rl.drawTexturePro(texture, src_bot, dst_bot, rl.Vector2.zero(), 0.0, tint);
 }
 
 pub fn drawSmallText(
