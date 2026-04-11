@@ -505,11 +505,15 @@ fn drawPlayerCountWidget(state: *const PlayGameState, runtime_assets: *const win
     const rect = playerCountHeaderRect();
     const selected_index = @as(usize, @intCast(std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4)))) - 1;
     const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), rect);
-    const texture = if (state.player_list_open or hovered) runtime_assets.texture(.ui_drop_on) else runtime_assets.texture(.ui_drop_off);
+    const active = state.player_list_open or hovered;
+    const texture = if (active) runtime_assets.texture(.ui_drop_on) else runtime_assets.texture(.ui_drop_off);
 
     rl.drawRectangleRec(rect, rl.Color.white);
     rl.drawRectangle(@intFromFloat(rect.x + 1.0), @intFromFloat(rect.y + 1.0), @intFromFloat(rect.width - 2.0), @intFromFloat(rect.height - 2.0), rl.Color.black);
-    window_ui.drawSmallText(runtime_assets, player_count_labels[selected_index], rect.x + 4.0, rect.y + 1.0, if (hovered or state.player_list_open) text_color else muted_text);
+    if (active) {
+        rl.drawRectangle(@intFromFloat(rect.x), @intFromFloat(rect.y + 15.0), @intFromFloat(rect.width), 1, rl.Color.init(255, 255, 255, 128));
+    }
+    window_ui.drawSmallText(runtime_assets, player_count_labels[selected_index], rect.x + 4.0, rect.y + 1.0, rl.Color.init(255, 255, 255, if (active) 242 else 191));
     rl.drawTexturePro(
         texture,
         rl.Rectangle.init(0.0, 0.0, @floatFromInt(texture.width), @floatFromInt(texture.height)),
@@ -527,7 +531,8 @@ fn drawPlayerCountWidget(state: *const PlayGameState, runtime_assets: *const win
     for (player_count_labels, 0..) |label, idx| {
         const row_rect = playerCountRowRect(idx);
         const row_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), row_rect);
-        window_ui.drawSmallText(runtime_assets, label, row_rect.x + 4.0, row_rect.y + 1.0, if (row_hovered or idx == state.player_count_selection) text_color else muted_text);
+        const alpha: u8 = if (row_hovered) 242 else if (idx == state.player_count_selection) 245 else 153;
+        window_ui.drawSmallText(runtime_assets, label, row_rect.x + 4.0, row_rect.y + 1.0, rl.Color.init(255, 255, 255, alpha));
     }
 }
 

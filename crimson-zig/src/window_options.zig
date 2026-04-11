@@ -501,11 +501,15 @@ fn drawDropdown(
     dropdown_selection: usize,
 ) void {
     const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), rect);
-    const texture = if (open or hovered) runtime_assets.texture(.ui_drop_on) else runtime_assets.texture(.ui_drop_off);
+    const active = open or hovered;
+    const texture = if (active) runtime_assets.texture(.ui_drop_on) else runtime_assets.texture(.ui_drop_off);
     rl.drawRectangleRec(rect, rl.Color.white);
     rl.drawRectangle(@intFromFloat(rect.x + 1.0), @intFromFloat(rect.y + 1.0), @intFromFloat(rect.width - 2.0), @intFromFloat(rect.height - 2.0), rl.Color.black);
+    if (active) {
+        rl.drawRectangle(@intFromFloat(rect.x), @intFromFloat(rect.y + 15.0), @intFromFloat(rect.width), 1, rl.Color.init(255, 255, 255, 128));
+    }
     const safe_index = @min(current_index, items.len - 1);
-    window_ui.drawSmallText(runtime_assets, items[safe_index].label, rect.x + 4.0, rect.y + 1.0, if (hovered or open) text_color else muted_text);
+    window_ui.drawSmallText(runtime_assets, items[safe_index].label, rect.x + 4.0, rect.y + 1.0, rl.Color.init(255, 255, 255, if (active) 242 else 191));
     rl.drawTexturePro(texture, rl.Rectangle.init(0.0, 0.0, @floatFromInt(texture.width), @floatFromInt(texture.height)), rl.Rectangle.init(rect.x + rect.width - 17.0, rect.y, 16.0, 16.0), rl.Vector2.zero(), 0.0, rl.Color.white);
 
     if (!open) return;
@@ -516,7 +520,8 @@ fn drawDropdown(
         const row_y = rect.y + 17.0 + @as(f32, @floatFromInt(idx)) * 16.0;
         const row_rect = rl.Rectangle.init(rect.x, row_y, rect.width, 16.0);
         const row_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), row_rect);
-        window_ui.drawSmallText(runtime_assets, item.label, rect.x + 4.0, row_y + 1.0, if (row_hovered or idx == dropdown_selection) text_color else muted_text);
+        const alpha: u8 = if (row_hovered) 242 else if (idx == dropdown_selection) 245 else 153;
+        window_ui.drawSmallText(runtime_assets, item.label, rect.x + 4.0, row_y + 1.0, rl.Color.init(255, 255, 255, alpha));
     }
 }
 
