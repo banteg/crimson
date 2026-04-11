@@ -7,6 +7,7 @@ test {
     _ = cz.bonuses;
     _ = cz.creatures;
     _ = cz.effects;
+    _ = cz.terrain_fx;
     _ = cz.hash;
     _ = cz.formats;
     _ = cz.helpers;

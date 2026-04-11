@@ -6,6 +6,7 @@ const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
 
 const runtime_bootstrap = cz.bootstrap;
+const rng_callers = cz.rng_caller_static;
 const spawn_runtime = cz.spawn;
 
 const terrain_texture_size: i32 = 1024;
@@ -95,6 +96,11 @@ pub const GroundRenderer = struct {
     alpha_test_shader: ?rl.Shader = null,
     ready: bool = false,
 
+    const TerrainGenerationKind = enum {
+        unlock_random,
+        explicit,
+    };
+
     pub fn initForUnlockTerrain(
         runtime_assets: *const window_assets.RuntimeAssets,
         seed: u32,
@@ -103,7 +109,20 @@ pub const GroundRenderer = struct {
         height: i32,
     ) GroundRenderError!GroundRenderer {
         const terrain = runtime_bootstrap.previewUnlockTerrain(seed, unlock_index, width, height);
-        return initForTerrainSetup(runtime_assets, terrain, width, height);
+        const texture_ids = terrainTextureSet(terrain.terrain_slots);
+
+        var renderer: GroundRenderer = .{
+            .base = runtime_assets.texture(texture_ids.base),
+            .overlay = runtime_assets.texture(texture_ids.overlay),
+            .detail = runtime_assets.texture(texture_ids.detail),
+            .width = width,
+            .height = height,
+        };
+        errdefer renderer.deinit();
+
+        try renderer.ensureResources();
+        try renderer.generate(terrain.terrain_seed, .unlock_random);
+        return renderer;
     }
 
     pub fn initForTerrainSetup(
@@ -124,7 +143,7 @@ pub const GroundRenderer = struct {
         errdefer renderer.deinit();
 
         try renderer.ensureResources();
-        try renderer.generate(terrain.terrain_seed);
+        try renderer.generate(terrain.terrain_seed, .explicit);
         return renderer;
     }
 
@@ -229,11 +248,51 @@ pub const GroundRenderer = struct {
         return true;
     }
 
-    fn generate(self: *GroundRenderer, terrain_seed: u32) GroundRenderError!void {
+    fn generate(
+        self: *GroundRenderer,
+        terrain_seed: u32,
+        generation_kind: TerrainGenerationKind,
+    ) GroundRenderError!void {
         try self.ensureResources();
         const target = self.render_target orelse return;
 
         var rng = spawn_runtime.Crand.init(terrain_seed);
+        const caller_sets = switch (generation_kind) {
+            .unlock_random => [_][3]rng_callers.Caller{
+                .{
+                    rng_callers.terrain_generate_random_base_rotation,
+                    rng_callers.terrain_generate_random_base_y,
+                    rng_callers.terrain_generate_random_base_x,
+                },
+                .{
+                    rng_callers.terrain_generate_random_overlay_rotation,
+                    rng_callers.terrain_generate_random_overlay_y,
+                    rng_callers.terrain_generate_random_overlay_x,
+                },
+                .{
+                    rng_callers.terrain_generate_random_detail_rotation,
+                    rng_callers.terrain_generate_random_detail_y,
+                    rng_callers.terrain_generate_random_detail_x,
+                },
+            },
+            .explicit => [_][3]rng_callers.Caller{
+                .{
+                    rng_callers.terrain_generate_base_rotation,
+                    rng_callers.terrain_generate_base_y,
+                    rng_callers.terrain_generate_base_x,
+                },
+                .{
+                    rng_callers.terrain_generate_overlay_rotation,
+                    rng_callers.terrain_generate_overlay_y,
+                    rng_callers.terrain_generate_overlay_x,
+                },
+                .{
+                    rng_callers.terrain_generate_detail_rotation,
+                    rng_callers.terrain_generate_detail_y,
+                    rng_callers.terrain_generate_detail_x,
+                },
+            },
+        };
         rl.beginTextureMode(target);
         defer rl.endTextureMode();
 
@@ -245,9 +304,9 @@ pub const GroundRenderer = struct {
 
         beginTerrainRenderTargetBlend();
         defer endTerrainRenderTargetBlend();
-        self.scatterTexture(self.base, terrain_base_tint, &rng, terrain_density_base);
-        self.scatterTexture(self.overlay, terrain_overlay_tint, &rng, terrain_density_overlay);
-        self.scatterTexture(self.detail, terrain_detail_tint, &rng, terrain_density_detail);
+        self.scatterTexture(self.base, terrain_base_tint, &rng, terrain_density_base, caller_sets[0]);
+        self.scatterTexture(self.overlay, terrain_overlay_tint, &rng, terrain_density_overlay, caller_sets[1]);
+        self.scatterTexture(self.detail, terrain_detail_tint, &rng, terrain_density_detail, caller_sets[2]);
         self.ready = true;
     }
 
@@ -277,6 +336,7 @@ pub const GroundRenderer = struct {
         tint: rl.Color,
         rng: *spawn_runtime.Crand,
         density: i64,
+        callers: [3]rng_callers.Caller,
     ) void {
         const area = @as(i64, self.width) * @as(i64, self.height);
         const count = (area * density) >> terrain_density_shift;
@@ -294,9 +354,9 @@ pub const GroundRenderer = struct {
 
         var idx: i64 = 0;
         while (idx < count) : (idx += 1) {
-            const angle = @as(f32, @floatFromInt(rng.rand() % terrain_rotation_max)) * 0.01;
-            const y = @as(f32, @floatFromInt(@as(i32, @intCast(rng.rand() % @as(u32, @intCast(span_h)))) - terrain_patch_overscan));
-            const x = @as(f32, @floatFromInt(@as(i32, @intCast(rng.rand() % @as(u32, @intCast(span_w)))) - terrain_patch_overscan));
+            const angle = @as(f32, @floatFromInt(rng.randTagged(callers[0]) % terrain_rotation_max)) * 0.01;
+            const y = @as(f32, @floatFromInt(@as(i32, @intCast(rng.randTagged(callers[1]) % @as(u32, @intCast(span_h)))) - terrain_patch_overscan));
+            const x = @as(f32, @floatFromInt(@as(i32, @intCast(rng.randTagged(callers[2]) % @as(u32, @intCast(span_w)))) - terrain_patch_overscan));
             const dst = rl.Rectangle.init(
                 x + terrain_patch_size * 0.5,
                 y + terrain_patch_size * 0.5,

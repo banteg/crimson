@@ -7,6 +7,7 @@ from functools import cache
 
 import msgspec
 
+from crimson.rng_caller_static import RngCallerStatic
 from grim.raylib_api import rd, rl
 
 from .geom import Vec2
@@ -24,6 +25,42 @@ TERRAIN_DENSITY_OVERLAY = 0x23
 TERRAIN_DENSITY_DETAIL = 0x0F
 TERRAIN_DENSITY_SHIFT = 19
 TERRAIN_ROTATION_MAX = 0x13A
+
+_UNLOCK_RANDOM_TERRAIN_CALLERS: tuple[tuple[int, int, int], ...] = (
+    (
+        RngCallerStatic.TERRAIN_GENERATE_RANDOM_BASE_ROTATION,
+        RngCallerStatic.TERRAIN_GENERATE_RANDOM_BASE_Y,
+        RngCallerStatic.TERRAIN_GENERATE_RANDOM_BASE_X,
+    ),
+    (
+        RngCallerStatic.TERRAIN_GENERATE_RANDOM_OVERLAY_ROTATION,
+        RngCallerStatic.TERRAIN_GENERATE_RANDOM_OVERLAY_Y,
+        RngCallerStatic.TERRAIN_GENERATE_RANDOM_OVERLAY_X,
+    ),
+    (
+        RngCallerStatic.TERRAIN_GENERATE_RANDOM_DETAIL_ROTATION,
+        RngCallerStatic.TERRAIN_GENERATE_RANDOM_DETAIL_Y,
+        RngCallerStatic.TERRAIN_GENERATE_RANDOM_DETAIL_X,
+    ),
+)
+
+_EXPLICIT_TERRAIN_CALLERS: tuple[tuple[int, int, int], ...] = (
+    (
+        RngCallerStatic.TERRAIN_GENERATE_BASE_ROTATION,
+        RngCallerStatic.TERRAIN_GENERATE_BASE_Y,
+        RngCallerStatic.TERRAIN_GENERATE_BASE_X,
+    ),
+    (
+        RngCallerStatic.TERRAIN_GENERATE_OVERLAY_ROTATION,
+        RngCallerStatic.TERRAIN_GENERATE_OVERLAY_Y,
+        RngCallerStatic.TERRAIN_GENERATE_OVERLAY_X,
+    ),
+    (
+        RngCallerStatic.TERRAIN_GENERATE_DETAIL_ROTATION,
+        RngCallerStatic.TERRAIN_GENERATE_DETAIL_Y,
+        RngCallerStatic.TERRAIN_GENERATE_DETAIL_X,
+    ),
+)
 
 # Grim2D enables alpha test globally with:
 #   ALPHATESTENABLE=1, ALPHAFUNC=GREATER, ALPHAREF=4
@@ -153,6 +190,7 @@ class GroundRenderer(msgspec.Struct):
     render_target: rl.RenderTexture | None = None
     _render_target_ready: bool = False
     _scheduled_seed: int | None = None
+    _scheduled_generation_kind: str = "explicit"
 
     def generation_pending(self) -> bool:
         """True while a scheduled terrain generate is still pending."""
@@ -166,8 +204,9 @@ class GroundRenderer(msgspec.Struct):
         seed = self._scheduled_seed
         if seed is None:
             return
+        generation_kind = self._scheduled_generation_kind
         self._scheduled_seed = None
-        self._generate_texture(seed=seed)
+        self._generate_texture(seed=seed, generation_kind=generation_kind)
 
     def _ensure_render_target(self) -> None:
         scale = min(max(self.texture_scale, 0.5), 4.0)
@@ -184,14 +223,20 @@ class GroundRenderer(msgspec.Struct):
             self.render_target = None
         self._render_target_ready = False
 
-    def schedule_generate(self, seed: int) -> None:
+    def schedule_generate(self, seed: int, *, generation_kind: str = "explicit") -> None:
         self._scheduled_seed = seed
+        self._scheduled_generation_kind = str(generation_kind)
 
-    def _generate_texture(self, seed: int) -> None:
+    def _generate_texture(self, seed: int, *, generation_kind: str) -> None:
         self._ensure_render_target()
         if self.render_target is None:
             return
         rng = CrtRand(seed)
+        caller_sets = (
+            _UNLOCK_RANDOM_TERRAIN_CALLERS
+            if generation_kind == "unlock_random"
+            else _EXPLICIT_TERRAIN_CALLERS
+        )
         rl.begin_texture_mode(self.render_target)
         rl.clear_background(TERRAIN_CLEAR_COLOR)
         # Intentional rewrite deviation: the classic game appears to point-sample
@@ -205,9 +250,27 @@ class GroundRenderer(msgspec.Struct):
                 rd.RL_ONE_MINUS_SRC_ALPHA,
                 rd.RL_FUNC_ADD,
             ):
-                self._scatter_texture(self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE)
-                self._scatter_texture(self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY)
-                self._scatter_texture(self.overlay_detail, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL)
+                self._scatter_texture(
+                    self.texture,
+                    TERRAIN_BASE_TINT,
+                    rng,
+                    TERRAIN_DENSITY_BASE,
+                    callers=caller_sets[0],
+                )
+                self._scatter_texture(
+                    self.overlay,
+                    TERRAIN_OVERLAY_TINT,
+                    rng,
+                    TERRAIN_DENSITY_OVERLAY,
+                    callers=caller_sets[1],
+                )
+                self._scatter_texture(
+                    self.overlay_detail,
+                    TERRAIN_DETAIL_TINT,
+                    rng,
+                    TERRAIN_DENSITY_DETAIL,
+                    callers=caller_sets[2],
+                )
         rl.end_texture_mode()
         self._render_target_ready = True
 
@@ -352,6 +415,8 @@ class GroundRenderer(msgspec.Struct):
         tint: rl.Color,
         rng: CrtRand,
         density: int,
+        *,
+        callers: tuple[int, int, int],
     ) -> None:
         area = self.width * self.height
         count = (area * density) >> TERRAIN_DENSITY_SHIFT
@@ -366,10 +431,10 @@ class GroundRenderer(msgspec.Struct):
         # square (1024x1024) so this is equivalent, but keep it for parity.
         span_h = span_w
         for _ in range(count):
-            angle = ((rng.rand() % TERRAIN_ROTATION_MAX) * 0.01) % math.tau
+            angle = ((rng.rand_tagged(callers[0]) % TERRAIN_ROTATION_MAX) * 0.01) % math.tau
             # IMPORTANT: The exe consumes RNG as rotation, then Y, then X.
-            y = ((rng.rand() % span_h) - TERRAIN_PATCH_OVERSCAN) * inv_scale
-            x = ((rng.rand() % span_w) - TERRAIN_PATCH_OVERSCAN) * inv_scale
+            y = ((rng.rand_tagged(callers[1]) % span_h) - TERRAIN_PATCH_OVERSCAN) * inv_scale
+            x = ((rng.rand_tagged(callers[2]) % span_w) - TERRAIN_PATCH_OVERSCAN) * inv_scale
             # raylib's DrawTexturePro positions the quad by the *origin point*,
             # while the original engine uses x/y as the quad top-left.
             dst = rl.Rectangle(float(x + size * 0.5), float(y + size * 0.5), size, size)

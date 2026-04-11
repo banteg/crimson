@@ -12,6 +12,7 @@ const rng_callers = @import("../rng_caller_static.zig");
 const runtime_helpers = @import("helpers.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
+const terrain_fx_mod = @import("terrain_fx.zig");
 const weapon_data = @import("weapon_data.zig");
 const math = @import("math.zig");
 
@@ -137,7 +138,8 @@ pub const ProjectilePool = struct {
         world_size: f32,
     ) ProjectileTickStats {
         var effects: effects_mod.EffectPool = .{};
-        return self.updateWithEffects(state, players, creatures, bonuses, &effects, 5, dt, world_size);
+        var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+        return self.updateWithEffects(state, players, creatures, bonuses, &effects, &terrain_fx, 5, dt, world_size);
     }
 
     pub fn updateWithEffects(
@@ -147,6 +149,7 @@ pub const ProjectilePool = struct {
         creatures: *creatures_mod.CreaturePool,
         bonuses: *bonus_runtime.BonusPool,
         effects: *effects_mod.EffectPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
         detail_preset: i32,
         dt: f32,
         world_size: f32,
@@ -218,6 +221,7 @@ pub const ProjectilePool = struct {
                     players,
                     creatures,
                     bonuses,
+                    terrain_fx,
                     proj,
                     dt,
                     ion_scale,
@@ -373,6 +377,7 @@ pub const ProjectilePool = struct {
                         proj.pos,
                         creatures.entries[hit_idx.?].pos,
                         effects,
+                        terrain_fx,
                         detail_preset,
                     );
                 }
@@ -442,6 +447,7 @@ pub const ProjectilePool = struct {
                             state,
                             players,
                             bonuses,
+                            terrain_fx,
                             hit_idx.?,
                             narrowF32(damage_amount),
                             impulse,
@@ -457,6 +463,7 @@ pub const ProjectilePool = struct {
                             state,
                             players,
                             bonuses,
+                            terrain_fx,
                             hit_idx.?,
                             remaining,
                             impulse,
@@ -505,9 +512,15 @@ pub const ProjectilePool = struct {
                     proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.blade_gun))
                 {
                     if (presentation_player != null) {
-                        creatures_mod.consumeProjectileHitPresentationPostRng(
+                        emitProjectileHitPresentationPost(
                             state,
                             proj.type_id,
+                            proj.origin,
+                            proj.pos,
+                            creatures.entries[hit_idx.?].pos,
+                            effects,
+                            terrain_fx,
+                            detail_preset,
                         );
                         const hit_sfx_plan = creatures_mod.consumeHitSfxRng(
                             state,
@@ -525,9 +538,15 @@ pub const ProjectilePool = struct {
                     break;
                 }
                 if (presentation_player != null) {
-                    creatures_mod.consumeProjectileHitPresentationPostRng(
+                    emitProjectileHitPresentationPost(
                         state,
                         proj.type_id,
+                        proj.origin,
+                        proj.pos,
+                        creatures.entries[hit_idx.?].pos,
+                        effects,
+                        terrain_fx,
+                        detail_preset,
                     );
                     const hit_sfx_plan = creatures_mod.consumeHitSfxRng(
                         state,
@@ -564,6 +583,7 @@ fn applyIonLingerDamage(
     players: []state_mod.PlayerState,
     creatures: *creatures_mod.CreaturePool,
     bonus_pool: *bonus_runtime.BonusPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     proj: *Projectile,
     dt: f32,
     ion_scale: f32,
@@ -597,6 +617,7 @@ fn applyIonLingerDamage(
                 state,
                 players,
                 bonus_pool,
+                terrain_fx,
                 idx,
                 narrowF32(damage),
                 .{},
@@ -616,6 +637,7 @@ fn emitProjectileHitPresentationPre(
     hit_pos: state_mod.Vec2,
     hit_target: state_mod.Vec2,
     effects: *effects_mod.EffectPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     detail_preset: i32,
 ) void {
     const freeze_active = state.bonuses.freeze > 0.0;
@@ -640,9 +662,12 @@ fn emitProjectileHitPresentationPre(
         while (lo > -60) {
             const span: u32 = @intCast(hi - lo);
             for (0..2) |_| {
-                _ = state.rng.randTagged(rng_callers.projectile_update_bloody_mess_decal_dx_1) % span;
-                _ = state.rng.randTagged(rng_callers.projectile_update_bloody_mess_decal_dy_1) % span;
-                runtime_helpers.consumeAddRandomRng(state);
+                const dx = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_bloody_mess_decal_dx_1) % span)) + lo));
+                const dy = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_bloody_mess_decal_dy_1) % span)) + lo));
+                _ = terrain_fx.decals.addRandom(state, .{
+                    .x = hit_target.x + dx,
+                    .y = hit_target.y + dy,
+                });
             }
             lo -= 10;
             hi += 10;
@@ -655,8 +680,69 @@ fn emitProjectileHitPresentationPre(
             }
         }
     }
+}
 
-    _ = hit_target;
+fn emitProjectileHitPresentationPost(
+    state: *state_mod.GameplayState,
+    projectile_type_id: i32,
+    hit_origin: state_mod.Vec2,
+    hit_pos: state_mod.Vec2,
+    hit_target: state_mod.Vec2,
+    effects: *effects_mod.EffectPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
+    detail_preset: i32,
+) void {
+    const freeze_active = state.bonuses.freeze > 0.0;
+    const base_angle = state_mod.Vec2.sub(hit_pos, hit_origin).toAngle();
+
+    _ = state.rng.randTagged(rng_callers.projectile_update_post_hit_decal_burn);
+
+    if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) or
+        projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.fire_bullets))
+    {
+        queueLargeHitStreakDecal(state, hit_target, base_angle, effects, terrain_fx, detail_preset);
+        return;
+    }
+    if (freeze_active) return;
+
+    var streak_idx: usize = 0;
+    while (streak_idx < 3) : (streak_idx += 1) {
+        const spread = (@as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_decal_spread) % 20)) - 10))) * 0.1;
+        const angle = base_angle + spread;
+        const direction = state_mod.Vec2.fromAngle(angle).mul(20.0);
+        _ = terrain_fx.decals.addRandom(state, hit_target);
+        _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(hit_target, direction.mul(1.5)));
+        _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(hit_target, direction.mul(2.0)));
+        _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(hit_target, direction.mul(2.5)));
+    }
+}
+
+fn queueLargeHitStreakDecal(
+    state: *state_mod.GameplayState,
+    hit_target: state_mod.Vec2,
+    base_angle: f32,
+    effects: *effects_mod.EffectPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
+    detail_preset: i32,
+) void {
+    const direction = state_mod.Vec2.fromAngle(base_angle);
+    const freeze_active = state.bonuses.freeze > 0.0;
+    for (0..6) |_| {
+        var dist = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_large_streak_dist) % 100)) * 0.1;
+        if (dist > 4.0) {
+            dist = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_large_streak_dist_gt4) % 90 + 10)) * 0.1;
+        }
+        if (dist > 7.0) {
+            dist = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_large_streak_dist_gt7) % 80 + 20)) * 0.1;
+        }
+        _ = state.rng.randTagged(rng_callers.projectile_update_large_streak_burn);
+        const decal_pos = state_mod.Vec2.add(hit_target, direction.mul(dist * 20.0));
+        if (freeze_active) {
+            const freeze_angle = base_angle + @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_large_streak_freeze_angle) % 100)) * 0.01;
+            effects.spawnFreezeShard(state, decal_pos, freeze_angle, detail_preset);
+        }
+        _ = terrain_fx.decals.addRandom(state, decal_pos);
+    }
 }
 
 fn emitProjectileTypeHitEffects(

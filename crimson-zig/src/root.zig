@@ -1,4 +1,5 @@
 pub const game_ids = @import("game_ids.zig");
+pub const rng_caller_static = @import("rng_caller_static.zig");
 pub const cli = @import("cli.zig");
 pub const hash = @import("hash.zig");
 pub const quest_spawn_logic_full = @import("quest_spawn/logic_full.zig");
@@ -15,6 +16,7 @@ pub const perks = @import("runtime/perks.zig");
 pub const weapon_data = @import("runtime/weapon_data.zig");
 pub const particles = @import("runtime/particles.zig");
 pub const effects = @import("runtime/effects.zig");
+pub const terrain_fx = @import("runtime/terrain_fx.zig");
 pub const secondary_projectiles = @import("runtime/secondary_projectiles.zig");
 pub const state = @import("runtime/state.zig");
 pub const weapons = @import("runtime/weapons.zig");

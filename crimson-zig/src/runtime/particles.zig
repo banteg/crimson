@@ -9,6 +9,7 @@ const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
 const runtime_helpers = @import("helpers.zig");
 const state_mod = @import("state.zig");
+const terrain_fx_mod = @import("terrain_fx.zig");
 
 const narrowF32 = native_math.roundF32;
 
@@ -115,6 +116,7 @@ pub const ParticlePool = struct {
         creatures: *creatures_mod.CreaturePool,
         bonuses: *bonus_runtime.BonusPool,
         sprite_effects: *effects_mod.SpriteEffectPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
         dt: f32,
         world_size: f32,
     ) void {
@@ -159,6 +161,7 @@ pub const ParticlePool = struct {
                             state,
                             players,
                             bonuses,
+                            terrain_fx,
                             @intCast(target_idx_i32),
                             entry.owner,
                             dt_f32,
@@ -253,6 +256,7 @@ pub const ParticlePool = struct {
                                 state,
                                 players,
                                 bonuses,
+                                terrain_fx,
                                 target_idx,
                                 damage,
                                 .{},
@@ -275,7 +279,7 @@ pub const ParticlePool = struct {
                                 .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 0.7 },
                             );
                         }
-                        runtime_helpers.consumeAddRandomRng(state);
+                        _ = terrain_fx.decals.addRandom(state, creature.pos);
                     }
                 }
             }

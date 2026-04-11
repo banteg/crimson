@@ -12,7 +12,7 @@ const rng_callers = @import("../rng_caller_static.zig");
 const runtime_helpers = @import("helpers.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
-const weapon_data = @import("weapon_data.zig");
+const terrain_fx_mod = @import("terrain_fx.zig");
 const math = @import("math.zig");
 const timing = @import("timing.zig");
 
@@ -1830,6 +1830,7 @@ pub const CreaturePool = struct {
         dt: f32,
         world_size: f32,
         bonus_pool: *bonus_runtime.BonusPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     ) CreatureRuntimeError!void {
         if (players.len == 0) return;
         if (!(dt > 0.0)) return;
@@ -1880,7 +1881,7 @@ pub const CreaturePool = struct {
                 if (creature_lifecycle.isAlive(creature.lifecycle_stage)) {
                     creature.lifecycle_stage -= dt_f32;
                 }
-                tickDead(creature, dt_f32, &self.kill_count, state);
+                tickDead(creature, dt_f32, &self.kill_count, state, self.effects, terrain_fx);
                 continue;
             }
 
@@ -1890,6 +1891,7 @@ pub const CreaturePool = struct {
                     state,
                     players,
                     bonus_pool,
+                    terrain_fx,
                     idx,
                     self_tick_damage,
                     .{},
@@ -1899,7 +1901,7 @@ pub const CreaturePool = struct {
                 );
                 if (!(creature.hp > 0.0)) {
                     if (creature.active) {
-                        tickDead(creature, dt_f32, &self.kill_count, state);
+                        tickDead(creature, dt_f32, &self.kill_count, state, self.effects, terrain_fx);
                     }
                     continue;
                 }
@@ -1922,6 +1924,7 @@ pub const CreaturePool = struct {
                     state,
                     players,
                     bonus_pool,
+                    terrain_fx,
                     idx,
                     self_damage,
                     .{},
@@ -1931,7 +1934,7 @@ pub const CreaturePool = struct {
                 );
                 if (!(creature.hp > 0.0)) {
                     if (creature.active) {
-                        tickDead(creature, dt_f32, &self.kill_count, state);
+                        tickDead(creature, dt_f32, &self.kill_count, state, self.effects, terrain_fx);
                     }
                     continue;
                 }
@@ -1947,6 +1950,7 @@ pub const CreaturePool = struct {
                             state,
                             players,
                             bonus_pool,
+                            terrain_fx,
                             idx,
                             creature.last_hit_owner,
                             dt_f32,
@@ -1955,7 +1959,7 @@ pub const CreaturePool = struct {
                         // Plague timer kills consume one contact-SFX bank select draw.
                         consumeContactSfxRng(state, creature.type_id);
                     }
-                    runtime_helpers.consumeAddRandomRng(state);
+                    _ = terrain_fx.decals.addRandom(state, creature.pos);
                 }
             }
             if ((state.bonuses.energizer > 0.0 and creature.max_hp < 500.0) or creature.plague_infected) {
@@ -2056,7 +2060,7 @@ pub const CreaturePool = struct {
                         creature.collision_timer = plague_collision_period;
                         const pulse_damage = (100.0 - dist) * 0.3;
                         creature.hp = narrowF32(creature.hp - pulse_damage);
-                        runtime_helpers.consumeAddRandomRng(state);
+                        _ = terrain_fx.decals.addRandom(state, creature.pos);
                         if (creature.hp < 0.0) {
                             if (creature.type_id == @intFromEnum(spawn_mod.CreatureTypeId.lizard)) {
                                 creature.hp = 1.0;
@@ -2132,11 +2136,12 @@ pub const CreaturePool = struct {
                     creature.last_hit_owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
                     const prev_spawn_guard = state.bonus_spawn_guard;
                     state.bonus_spawn_guard = true;
-                    consumeDeathSideEffectsRng(
+                    emitDeathSideEffects(
                         state,
                         players,
                         bonus_pool,
                         self.effects,
+                        terrain_fx,
                         creature.pos,
                         @floatCast(world_size),
                         true,
@@ -2162,6 +2167,7 @@ pub const CreaturePool = struct {
                         state,
                         players,
                         bonus_pool,
+                        terrain_fx,
                         idx,
                         25.0,
                         .{},
@@ -2170,7 +2176,7 @@ pub const CreaturePool = struct {
                         world_size,
                     );
                     if (!(creature.hp > 0.0) and creature.active) {
-                        tickDead(creature, dt_f32, &self.kill_count, state);
+                        tickDead(creature, dt_f32, &self.kill_count, state, self.effects, terrain_fx);
                     }
                 }
                 if (player.shield_timer <= 0.0) {
@@ -2181,7 +2187,14 @@ pub const CreaturePool = struct {
                     }
                 }
                 applyPlayerContactDamage(state, player, creature.contact_damage, dt_f32);
-                runtime_helpers.consumeAddRandomRng(state);
+                const push_delta = state_mod.Vec2.sub(player.pos, creature.pos);
+                const push_len = push_delta.length();
+                if (push_len > 1e-6) {
+                    const push_dir = push_delta.mul(1.0 / push_len);
+                    _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(player.pos, push_dir.mul(3.0)));
+                } else {
+                    _ = terrain_fx.decals.addRandom(state, player.pos);
+                }
                 creature.attack_cooldown = narrowF32(creature.attack_cooldown + contact_damage_cooldown);
             }
 
@@ -2213,92 +2226,12 @@ pub const CreaturePool = struct {
         }
     }
 
-    pub fn resolvePlayerShots(
-        self: *CreaturePool,
-        state: *state_mod.GameplayState,
-        players: []state_mod.PlayerState,
-        bonus_pool: *bonus_runtime.BonusPool,
-        player_index: usize,
-        aim_target: state_mod.Vec2,
-        shot_count: i32,
-        weapon_id: i32,
-        world_size: f32,
-    ) ShotResolutionResult {
-        if (players.len == 0) return .{};
-        if (player_index >= players.len) return .{};
-        if (shot_count <= 0) return .{};
-
-        var player = &players[player_index];
-        var aim_dir = state_mod.Vec2.sub(aim_target, player.pos);
-        const aim_len_sq = aim_dir.lengthSq();
-        if (aim_len_sq > 1e-9) {
-            const inv_len = 1.0 / std.math.sqrt(aim_len_sq);
-            aim_dir = aim_dir.mul(inv_len);
-            player.aim_dir = .{
-                .x = narrowF32(aim_dir.x),
-                .y = narrowF32(aim_dir.y),
-            };
-        } else {
-            aim_dir = player.aim_dir;
-        }
-
-        var result: ShotResolutionResult = .{};
-        const weapon_enum = weapon_data.weaponIdFromInt(weapon_id);
-        const projectile_type_id: i32 = if (weapon_data.projectileTypeIdFromWeaponId(weapon_enum)) |type_id|
-            @intFromEnum(type_id)
-        else
-            weapon_id;
-        const damage_scale = weapon_data.weapon_stats.get(weapon_enum).damage_scale;
-        const owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
-        var hit_audio_game_tune_started = state.game_tune_started;
-
-        var shot_idx: i32 = 0;
-        while (shot_idx < shot_count) : (shot_idx += 1) {
-            const hit_idx = self.findRayHitCreature(player.pos, aim_dir) orelse {
-                continue;
-            };
-
-            if (perkActive(player, PerkId.poison_bullets)) {
-                _ = state.rng.randTagged(rng_callers.projectile_update_poison_bullets_gate);
-            }
-            consumeProjectileHitPresentationPreRng(state, player, projectile_type_id);
-
-            const hit_pos = self.entries[hit_idx].pos;
-            const damage = projectileHitDamage(player.pos, hit_pos, damage_scale);
-
-            result.hits += 1;
-            if (player.index >= 0 and player.index < state.shots_hit.len) {
-                state.shots_hit[@intCast(player.index)] += 1;
-            }
-
-            const xp_gained = self.applyDamage(
-                state,
-                players,
-                bonus_pool,
-                hit_idx,
-                narrowF32(damage),
-                .{},
-                owner,
-                narrowF32(1.0 / 60.0),
-                world_size,
-            );
-            consumeProjectileHitPresentationPostRng(state, projectile_type_id);
-            _ = consumeHitSfxRng(state, &hit_audio_game_tune_started, projectile_type_id);
-            if (xp_gained > 0) {
-                result.deaths += 1;
-                result.xp_awarded += xp_gained;
-            }
-        }
-        state.game_tune_started = hit_audio_game_tune_started;
-
-        return result;
-    }
-
     pub fn applyProjectileDamage(
         self: *CreaturePool,
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
         bonus_pool: *bonus_runtime.BonusPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
         creature_index: usize,
         damage: f32,
         impulse: state_mod.Vec2,
@@ -2341,6 +2274,7 @@ pub const CreaturePool = struct {
             state,
             players,
             bonus_pool,
+            terrain_fx,
             creature_index,
             damage_amount,
             impulse,
@@ -2355,6 +2289,7 @@ pub const CreaturePool = struct {
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
         bonus_pool: *bonus_runtime.BonusPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
         creature_index: usize,
         damage: f32,
         impulse: state_mod.Vec2,
@@ -2370,6 +2305,7 @@ pub const CreaturePool = struct {
             state,
             players,
             bonus_pool,
+            terrain_fx,
             creature_index,
             damage_amount,
             impulse,
@@ -2384,6 +2320,7 @@ pub const CreaturePool = struct {
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
         bonus_pool: *bonus_runtime.BonusPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
         creature_index: usize,
         damage: f32,
         impulse: state_mod.Vec2,
@@ -2400,6 +2337,7 @@ pub const CreaturePool = struct {
             state,
             players,
             bonus_pool,
+            terrain_fx,
             creature_index,
             damage_amount,
             impulse,
@@ -2414,6 +2352,7 @@ pub const CreaturePool = struct {
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
         bonus_pool: *bonus_runtime.BonusPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
         creature_index: usize,
         damage: f32,
         impulse: state_mod.Vec2,
@@ -2469,11 +2408,12 @@ pub const CreaturePool = struct {
 
         spawnSplitChildrenOnDeath(self, state, creature);
         const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
-        consumeDeathSideEffectsRng(
+        emitDeathSideEffects(
             state,
             players,
             bonus_pool,
             self.effects,
+            terrain_fx,
             creature.pos,
             world_size,
             true,
@@ -2497,6 +2437,7 @@ pub const CreaturePool = struct {
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
         bonus_pool: *bonus_runtime.BonusPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
         creature_index: usize,
         owner: owner_ref.OwnerRef,
         dt: f32,
@@ -2517,11 +2458,12 @@ pub const CreaturePool = struct {
         creature.last_hit_owner = owner;
         spawnSplitChildrenOnDeath(self, state, creature);
         const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
-        consumeDeathSideEffectsRng(
+        emitDeathSideEffects(
             state,
             players,
             bonus_pool,
             self.effects,
+            terrain_fx,
             creature.pos,
             world_size,
             false,
@@ -2545,6 +2487,7 @@ pub const CreaturePool = struct {
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
         bonus_pool: *bonus_runtime.BonusPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
         creature_index: usize,
         owner: owner_ref.OwnerRef,
         dt: f32,
@@ -2566,11 +2509,12 @@ pub const CreaturePool = struct {
 
         spawnSplitChildrenOnDeath(self, state, creature);
         const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
-        consumeDeathSideEffectsRng(
+        emitDeathSideEffects(
             state,
             players,
             bonus_pool,
             self.effects,
+            terrain_fx,
             creature.pos,
             world_size,
             true,
@@ -2579,11 +2523,6 @@ pub const CreaturePool = struct {
         const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
 
         if (dt > 0.0 and state.bonuses.freeze > 0.0) {
-            runtime_helpers.consumeFreezeShatterRng(
-                state,
-                rng_callers.creature_handle_death_freeze_shard_angle,
-                rng_callers.creature_handle_death_freeze_shatter_angle,
-            );
             self.kill_count += 1;
         }
 
@@ -2791,6 +2730,7 @@ pub const CreaturePool = struct {
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
         bonus_pool: *bonus_runtime.BonusPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
         creature_index: usize,
         damage: f32,
         impulse: state_mod.Vec2,
@@ -2837,11 +2777,12 @@ pub const CreaturePool = struct {
         };
         spawnSplitChildrenOnDeath(self, state, creature);
         const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
-        consumeDeathSideEffectsRng(
+        emitDeathSideEffects(
             state,
             players,
             bonus_pool,
             self.effects,
+            terrain_fx,
             creature.pos,
             world_size,
             true,
@@ -3197,102 +3138,6 @@ fn creatureFrozenByEvilEyes(
     return false;
 }
 
-pub fn consumeProjectileHitPresentationPreRng(
-    state: *state_mod.GameplayState,
-    player: *const state_mod.PlayerState,
-    projectile_type_id: i32,
-) void {
-    const freeze_active = state.bonuses.freeze > 0.0;
-
-    if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.blade_gun)) {
-        for (0..8) |_| {
-            _ = state.rng.randTagged(rng_callers.projectile_update_blade_gun_splatter_angle) & 0xff;
-            consumeSpawnBloodSplatterRng(state);
-        }
-    }
-
-    if (perkActive(player, PerkId.bloody_mess_quick_learner)) {
-        for (0..8) |_| {
-            _ = state.rng.randTagged(rng_callers.projectile_update_bloody_mess_spread) & 0x1f;
-            consumeSpawnBloodSplatterRng(state);
-        }
-        consumeSpawnBloodSplatterRng(state);
-
-        var lo: i32 = -30;
-        var hi: i32 = 30;
-        while (lo > -60) {
-            const span: u32 = @intCast(hi - lo);
-            for (0..2) |_| {
-                _ = state.rng.randTagged(rng_callers.projectile_update_bloody_mess_decal_dx_1) % span;
-                _ = state.rng.randTagged(rng_callers.projectile_update_bloody_mess_decal_dy_1) % span;
-                runtime_helpers.consumeAddRandomRng(state);
-            }
-            lo -= 10;
-            hi += 10;
-        }
-    } else if (!freeze_active) {
-        for (0..2) |_| {
-            consumeSpawnBloodSplatterRng(state);
-            if ((state.rng.randTagged(rng_callers.projectile_update_default_reverse_splatter_gate) & 7) == 2) {
-                consumeSpawnBloodSplatterRng(state);
-            }
-        }
-    }
-}
-
-pub fn consumeProjectileHitPresentationPostRng(
-    state: *state_mod.GameplayState,
-    projectile_type_id: i32,
-) void {
-    const freeze_active = state.bonuses.freeze > 0.0;
-
-    // Native consumes one draw before post-hit decal branching.
-    _ = state.rng.randTagged(rng_callers.projectile_update_post_hit_decal_burn);
-
-    if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) or
-        projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.fire_bullets))
-    {
-        consumeLargeHitStreakRng(state, freeze_active);
-        return;
-    }
-    if (freeze_active) return;
-
-    for (0..3) |_| {
-        _ = state.rng.randTagged(rng_callers.projectile_update_decal_spread);
-        runtime_helpers.consumeAddRandomRng(state);
-        runtime_helpers.consumeAddRandomRng(state);
-        runtime_helpers.consumeAddRandomRng(state);
-        runtime_helpers.consumeAddRandomRng(state);
-    }
-}
-
-fn consumeLargeHitStreakRng(
-    state: *state_mod.GameplayState,
-    freeze_active: bool,
-) void {
-    for (0..6) |_| {
-        var dist = @as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_large_streak_dist) % 100));
-        if (dist > 40) {
-            dist = @as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_large_streak_dist_gt4) % 0x5A + 10));
-        }
-        if (dist > 70) {
-            dist = @as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_large_streak_dist_gt7) % 0x50 + 0x14));
-        }
-        _ = state.rng.randTagged(rng_callers.projectile_update_large_streak_burn);
-        if (freeze_active) {
-            _ = state.rng.randTagged(rng_callers.projectile_update_large_streak_freeze_angle);
-            // freeze shard spawn RNG
-            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_lifetime);
-            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation);
-            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_half);
-            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation_step);
-            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_scale_step);
-            _ = state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_effect_id);
-        }
-        runtime_helpers.consumeAddRandomRng(state);
-    }
-}
-
 pub fn consumeHitSfxRng(
     state: *state_mod.GameplayState,
     game_tune_started: *bool,
@@ -3321,16 +3166,6 @@ pub const HitSfxPlan = struct {
     shock_hit: bool = false,
     bullet_hit_roll: ?u32 = null,
 };
-
-fn consumeSpawnBloodSplatterRng(state: *state_mod.GameplayState) void {
-    for (0..2) |_| {
-        _ = state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_rotation);
-        _ = state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_half);
-        _ = state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_speed_x);
-        _ = state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_speed_y);
-        _ = state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_scale_step);
-    }
-}
 
 fn spreadPlagueInfection(
     creatures: []CreatureState,
@@ -3496,24 +3331,16 @@ fn spawnSplitChildrenOnDeath(
         self.entries[child_idx] = child;
     }
 
-    if (self.effects) |effects| {
-        effects.spawnBurst(
-            state,
-            source.pos,
-            8,
-            5,
-            0.4,
-            null,
-            .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
-        );
-    } else {
-        for (0..8) |_| {
-            _ = state.rng.randTagged(rng_callers.effect_spawn_burst_rotation);
-            _ = state.rng.randTagged(rng_callers.effect_spawn_burst_vel_x);
-            _ = state.rng.randTagged(rng_callers.effect_spawn_burst_vel_y);
-            _ = state.rng.randTagged(rng_callers.effect_spawn_burst_scale_step);
-        }
-    }
+    const effects = self.effects orelse unreachable;
+    effects.spawnBurst(
+        state,
+        source.pos,
+        8,
+        5,
+        0.4,
+        null,
+        .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+    );
 }
 
 fn allocCreatureSlot(
@@ -3549,11 +3376,12 @@ fn consumeSpawnTemplateBurstRng(
     }
 }
 
-fn consumeDeathSideEffectsRng(
+fn emitDeathSideEffects(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
     bonus_pool: *bonus_runtime.BonusPool,
     effects: ?*effects_mod.EffectPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     death_pos: state_mod.Vec2,
     world_size: f32,
     plan_death_sfx: bool,
@@ -3568,36 +3396,26 @@ fn consumeDeathSideEffectsRng(
         world_size,
     );
     if (spawned_bonus) |_| {
-        if (effects) |effect_pool| {
-            effect_pool.spawnBurst(
-                state,
-                death_pos,
-                16,
-                5,
-                0.4,
-                null,
-                .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
-            );
-        } else {
-            runtime_helpers.consumeBurstRng(state, 16, true);
-        }
+        const effect_pool = effects orelse unreachable;
+        effect_pool.spawnBurst(
+            state,
+            death_pos,
+            16,
+            5,
+            0.4,
+            null,
+            .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+        );
     }
     if (state.bonuses.freeze > 0.0) {
-        if (effects) |effect_pool| {
-            for (0..8) |_| {
-                const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shard_angle) % 612)) * 0.01;
-                effect_pool.spawnFreezeShard(state, death_pos, angle, 5);
-            }
-            const shatter_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shatter_angle) % 612)) * 0.01;
-            effect_pool.spawnFreezeShatter(state, death_pos, shatter_angle, 5);
-        } else {
-            runtime_helpers.consumeFreezeShatterRng(
-                state,
-                rng_callers.creature_handle_death_freeze_shard_angle,
-                rng_callers.creature_handle_death_freeze_shatter_angle,
-            );
+        const effect_pool = effects orelse unreachable;
+        for (0..8) |_| {
+            const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shard_angle) % 612)) * 0.01;
+            effect_pool.spawnFreezeShard(state, death_pos, angle, 5);
         }
-        runtime_helpers.consumeAddRandomRng(state);
+        const shatter_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shatter_angle) % 612)) * 0.01;
+        effect_pool.spawnFreezeShatter(state, death_pos, shatter_angle, 5);
+        _ = terrain_fx.decals.addRandom(state, death_pos);
     }
     if (plan_death_sfx) {
         // plan_death_sfx_keys chooses one death sample per death.
@@ -3610,6 +3428,8 @@ fn tickDead(
     dt: f32,
     kill_count: *i32,
     state: *state_mod.GameplayState,
+    effects: ?*effects_mod.EffectPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
 ) void {
     if (!(dt > 0.0)) return;
     const hitbox = narrowF32(creature.lifecycle_stage);
@@ -3639,20 +3459,38 @@ fn tickDead(
         }
         return;
     }
+    if (state.gore_disabled == 0) {
+        const corpse_size = @max(1.0, creature.size);
+        const corpse_type_id = if (long_strip) creature.type_id else 7;
+        const corpse_ok = terrain_fx.corpses.add(
+            .{
+                .x = creature.pos.x - corpse_size * 0.5,
+                .y = creature.pos.y - corpse_size * 0.5,
+            },
+            .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+            creature.heading,
+            corpse_size,
+            corpse_type_id,
+        );
+        if (!corpse_ok) {
+            creature.lifecycle_stage = 0.001;
+            return;
+        }
+    }
     kill_count.* += 1;
     if (state.gore_disabled == 0 and
         (creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) != 0)
     {
-        const burst_sets = [_]struct { count: usize, caller: rng_callers.Caller }{
-            .{ .count = 8, .caller = rng_callers.creature_update_all_ping_pong_blood_8_angle },
-            .{ .count = 6, .caller = rng_callers.creature_update_all_ping_pong_blood_6_angle },
-            .{ .count = 5, .caller = rng_callers.creature_update_all_ping_pong_blood_5_angle },
+        const effect_pool = effects orelse unreachable;
+        const burst_sets = [_]struct { count: usize, age: f32, caller: rng_callers.Caller }{
+            .{ .count = 8, .age = 0.0, .caller = rng_callers.creature_update_all_ping_pong_blood_8_angle },
+            .{ .count = 6, .age = -0.07, .caller = rng_callers.creature_update_all_ping_pong_blood_6_angle },
+            .{ .count = 5, .age = -0.12, .caller = rng_callers.creature_update_all_ping_pong_blood_5_angle },
         };
         for (burst_sets) |entry| {
-            const count = entry.count;
-            for (0..count) |_| {
-                _ = state.rng.randTagged(entry.caller) % 0x264;
-                consumeSpawnBloodSplatterRng(state);
+            for (0..entry.count) |_| {
+                const angle = @as(f32, @floatFromInt(state.rng.randTagged(entry.caller) % 612)) * 0.01;
+                effect_pool.spawnBloodSplatter(state, creature.pos, angle, entry.age, 5, state.gore_disabled);
             }
         }
     }
@@ -3799,54 +3637,12 @@ fn expectFloatClose(expected: f32, actual: f32) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
 
-test "spawn init and shot resolution award xp on kill" {
-    var pool: CreaturePool = .{};
-    var state = state_mod.GameplayState.init(1234);
-    var bonuses: bonus_runtime.BonusPool = .{};
-    var players = [_]state_mod.PlayerState{
-        .{
-            .index = 0,
-            .pos = .{ .x = 100.0, .y = 100.0 },
-        },
-    };
-
-    _ = pool.spawnInit(.{
-        .origin_template_id = -1,
-        .pos = .{ .x = 200.0, .y = 100.0 },
-        .heading = 0.0,
-        .phase_seed = 0.0,
-        .type_id = .alien,
-        .size = 44.0,
-        .move_speed = 1.0,
-        .health = 5.0,
-        .max_health = 5.0,
-        .reward_value = 80.0,
-        .contact_damage = 4.0,
-    });
-
-    const before_xp = players[0].experience;
-    const result = pool.resolvePlayerShots(
-        &state,
-        players[0..],
-        &bonuses,
-        0,
-        .{ .x = 300.0, .y = 100.0 },
-        1,
-        @intFromEnum(game_ids.WeaponId.pistol),
-        1024.0,
-    );
-    try std.testing.expectEqual(@as(i32, 1), result.hits);
-    try std.testing.expectEqual(@as(i32, 1), result.deaths);
-    try std.testing.expect(result.xp_awarded > 0);
-    try std.testing.expect(players[0].experience > before_xp);
-    try std.testing.expectEqual(@as(i32, 1), state.shots_hit[0]);
-}
-
 test "bloody mess quick learner reward is still doubled by double experience bonus" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     state.bonuses.double_experience = 5.0;
     var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -3875,6 +3671,7 @@ test "bloody mess quick learner reward is still doubled by double experience bon
         &state,
         players[0..],
         &bonuses,
+        &terrain_fx,
         0,
         50.0,
         .{},
@@ -3948,6 +3745,7 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
 
     var state = state_mod.GameplayState.init(seed);
     var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -3960,6 +3758,7 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
         &state,
         players[0..],
         &bonuses,
+        &terrain_fx,
         0,
         10.0,
         .{},
@@ -3985,6 +3784,7 @@ test "applyDamage skips death side effects when lifecycle is already below alive
 
     var state = state_mod.GameplayState.init(1234);
     var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -3997,6 +3797,7 @@ test "applyDamage skips death side effects when lifecycle is already below alive
         &state,
         players[0..],
         &bonuses,
+        &terrain_fx,
         0,
         10.0,
         .{},
@@ -4027,6 +3828,7 @@ test "applyExplosionDamage skips first death side effects when lifecycle is belo
 
     var state = state_mod.GameplayState.init(1234);
     var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -4040,6 +3842,7 @@ test "applyExplosionDamage skips first death side effects when lifecycle is belo
         &state,
         players[0..],
         &bonuses,
+        &terrain_fx,
         0,
         10.0,
         .{},
@@ -4056,40 +3859,6 @@ test "applyExplosionDamage skips first death side effects when lifecycle is belo
     try expectFloatClose(131.687241, pool.entries[0].reward_value);
     try std.testing.expect(pool.entries[0].active);
     try std.testing.expect(!pool.entries[1].active);
-}
-
-test "projectile pre-hit rng counts include bloody spread draw per splatter" {
-    var state = state_mod.GameplayState.init(1234);
-    var player: state_mod.PlayerState = .{
-        .index = 0,
-        .pos = .{},
-    };
-    player.perk_counts.set(PerkId.bloody_mess_quick_learner, 1);
-
-    consumeProjectileHitPresentationPreRng(&state, &player, @intFromEnum(game_ids.ProjectileTypeId.pistol));
-
-    var expected_rng = spawn_mod.Crand.init(1234);
-    for (0..134) |_| {
-        _ = expected_rng.rand();
-    }
-    try std.testing.expectEqual(expected_rng.state, state.rng.state);
-}
-
-test "projectile pre-hit rng counts include blade-gun angle draws under freeze" {
-    var state = state_mod.GameplayState.init(1234);
-    state.bonuses.freeze = 1.0;
-    var player: state_mod.PlayerState = .{
-        .index = 0,
-        .pos = .{},
-    };
-
-    consumeProjectileHitPresentationPreRng(&state, &player, @intFromEnum(game_ids.ProjectileTypeId.blade_gun));
-
-    var expected_rng = spawn_mod.Crand.init(1234);
-    for (0..88) |_| {
-        _ = expected_rng.rand();
-    }
-    try std.testing.expectEqual(expected_rng.state, state.rng.state);
 }
 
 test "template spawn supports survival early-stage templates" {
@@ -6039,6 +5808,7 @@ test "barrel greaser increases projectile damage by 40 percent" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
@@ -6062,6 +5832,7 @@ test "barrel greaser increases projectile damage by 40 percent" {
         &state,
         players[0..],
         &bonuses,
+        &terrain_fx,
         0,
         10.0,
         .{},
@@ -6076,6 +5847,7 @@ test "ion gun master increases ion damage by 20 percent" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
@@ -6099,6 +5871,7 @@ test "ion gun master increases ion damage by 20 percent" {
         &state,
         players[0..],
         &bonuses,
+        &terrain_fx,
         0,
         10.0,
         .{},
@@ -6113,6 +5886,7 @@ test "uranium filled bullets doubles projectile damage" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
@@ -6136,6 +5910,7 @@ test "uranium filled bullets doubles projectile damage" {
         &state,
         players[0..],
         &bonuses,
+        &terrain_fx,
         0,
         10.0,
         .{},
@@ -6150,6 +5925,7 @@ test "split on death spawns two smaller children" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(0);
     var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
@@ -6173,6 +5949,7 @@ test "split on death spawns two smaller children" {
         &state,
         players[0..],
         &bonuses,
+        &terrain_fx,
         0,
         owner_local_player,
         0.016,
@@ -6204,6 +5981,7 @@ test "kill no corpse does not award xp for non-player owner" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
@@ -6226,6 +6004,7 @@ test "kill no corpse does not award xp for non-player owner" {
         &state,
         players[0..],
         &bonuses,
+        &terrain_fx,
         0,
         owner_ref.OwnerRef.fromCreature(0),
         0.016,
