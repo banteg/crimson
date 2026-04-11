@@ -3,6 +3,7 @@ const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
 const creatures_mod = @import("creatures.zig");
+const effects_mod = @import("effects.zig");
 const fire_recipes = @import("fire_recipes.zig");
 const owner_ref = @import("owner_ref.zig");
 const particles_mod = @import("particles.zig");
@@ -31,6 +32,16 @@ pub const WeaponRuntimeError = error{
 
 const reload_preload_underflow_eps: f32 = 1e-7;
 const movement_control_mouse_point_click: i32 = 4;
+
+const MuzzleSpriteSpec = struct {
+    speed: f32,
+    scale: f32,
+    alpha: f32,
+};
+
+const fire_bullets_muzzle_specs = [_]MuzzleSpriteSpec{
+    .{ .speed = 25.0, .scale = 1.0, .alpha = 0.413 },
+};
 
 inline fn weaponId(value: i32) WeaponId {
     return weapon_data.weaponIdFromInt(value);
@@ -63,6 +74,17 @@ pub fn preprocessPlayerForPerkTicks(
     player: *state_mod.PlayerState,
     dt: f32,
 ) bool {
+    var effects: effects_mod.EffectPool = .{};
+    return preprocessPlayerForPerkTicksWithEffects(state, player, &effects, 5, dt);
+}
+
+pub fn preprocessPlayerForPerkTicksWithEffects(
+    state: *state_mod.GameplayState,
+    player: *state_mod.PlayerState,
+    effects: *effects_mod.EffectPool,
+    detail_preset: i32,
+    dt: f32,
+) bool {
     if (!(dt > 0.0)) return false;
 
     if (player.health <= 0.0) {
@@ -74,7 +96,17 @@ pub fn preprocessPlayerForPerkTicks(
         const next_low_health_timer = narrowF32(player.low_health_timer - dt);
         player.low_health_timer = next_low_health_timer;
         if (next_low_health_timer < 0.0) {
-            consumeLowHealthPulseRng(state);
+            for (0..3) |_| {
+                effects.spawnBloodSplatter(
+                    state,
+                    player.pos,
+                    player.aim_heading,
+                    0.0,
+                    detail_preset,
+                    state.gore_disabled,
+                );
+            }
+            _ = state.rng.rand() & 1;
             player.low_health_timer = 1.0;
         }
     }
@@ -92,10 +124,40 @@ pub fn stepPlayerForTick(
     input_flags: TickInputFlags,
     dt: f32,
 ) WeaponRuntimeError!void {
+    var effects: effects_mod.EffectPool = .{};
+    var sprite_effects: effects_mod.SpriteEffectPool = .{};
+    return stepPlayerForTickWithEffects(
+        state,
+        player,
+        projectiles,
+        secondary_projectiles,
+        creatures,
+        particles,
+        &effects,
+        &sprite_effects,
+        5,
+        input_flags,
+        dt,
+    );
+}
+
+pub fn stepPlayerForTickWithEffects(
+    state: *state_mod.GameplayState,
+    player: *state_mod.PlayerState,
+    projectiles: *projectiles_mod.ProjectilePool,
+    secondary_projectiles: *secondary_projectiles_mod.SecondaryProjectilePool,
+    creatures: *creatures_mod.CreaturePool,
+    particles: *particles_mod.ParticlePool,
+    effects: *effects_mod.EffectPool,
+    sprite_effects: *effects_mod.SpriteEffectPool,
+    detail_preset: i32,
+    input_flags: TickInputFlags,
+    dt: f32,
+) WeaponRuntimeError!void {
     if (!(dt > 0.0)) return;
 
     if (!input_flags.preprocessed_player_tick) {
-        if (!preprocessPlayerForPerkTicks(state, player, dt)) return;
+        if (!preprocessPlayerForPerkTicksWithEffects(state, player, effects, detail_preset, dt)) return;
     } else if (player.health <= 0.0) {
         return;
     }
@@ -240,6 +302,9 @@ pub fn stepPlayerForTick(
             secondary_projectiles,
             creatures,
             particles,
+            effects,
+            sprite_effects,
+            detail_preset,
             force_pre_swap_fire_gate,
         );
     }
@@ -253,6 +318,32 @@ pub fn tryFireWeapon(
     creatures: *creatures_mod.CreaturePool,
     particles: *particles_mod.ParticlePool,
 ) WeaponRuntimeError!bool {
+    var effects: effects_mod.EffectPool = .{};
+    var sprite_effects: effects_mod.SpriteEffectPool = .{};
+    return tryFireWeaponWithEffects(
+        state,
+        player,
+        projectiles,
+        secondary_projectiles,
+        creatures,
+        particles,
+        &effects,
+        &sprite_effects,
+        5,
+    );
+}
+
+pub fn tryFireWeaponWithEffects(
+    state: *state_mod.GameplayState,
+    player: *state_mod.PlayerState,
+    projectiles: *projectiles_mod.ProjectilePool,
+    secondary_projectiles: *secondary_projectiles_mod.SecondaryProjectilePool,
+    creatures: *creatures_mod.CreaturePool,
+    particles: *particles_mod.ParticlePool,
+    effects: *effects_mod.EffectPool,
+    sprite_effects: *effects_mod.SpriteEffectPool,
+    detail_preset: i32,
+) WeaponRuntimeError!bool {
     return tryFireWeaponWithForce(
         state,
         player,
@@ -260,6 +351,9 @@ pub fn tryFireWeapon(
         secondary_projectiles,
         creatures,
         particles,
+        effects,
+        sprite_effects,
+        detail_preset,
         false,
     );
 }
@@ -271,6 +365,9 @@ fn tryFireWeaponWithForce(
     secondary_projectiles: *secondary_projectiles_mod.SecondaryProjectilePool,
     creatures: *creatures_mod.CreaturePool,
     particles: *particles_mod.ParticlePool,
+    effects: *effects_mod.EffectPool,
+    sprite_effects: *effects_mod.SpriteEffectPool,
+    detail_preset: i32,
     force_pre_swap_fire_gate: bool,
 ) WeaponRuntimeError!bool {
     if (player.weapon.shot_cooldown > 0.0 and !force_pre_swap_fire_gate) return false;
@@ -340,11 +437,19 @@ fn tryFireWeaponWithForce(
     const weapon_flags = weapon_data.weapon_stats.get(player.weapon.weapon_id).flags;
 
     if ((weapon_flags & 0x1) != 0) {
-        // spawn_shell_casing randoms: angle speed rotation rotation_step.
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
+        const angle_draw = state.rng.rand();
+        const speed_draw = state.rng.rand();
+        const rotation_draw = state.rng.rand();
+        const rotation_step_draw = state.rng.rand();
+        effects.spawnShellCasing(
+            detail_preset,
+            player.pos,
+            aim_heading,
+            angle_draw,
+            speed_draw,
+            rotation_draw,
+            rotation_step_draw,
+        );
     }
 
     const dist = aim_delta.length();
@@ -370,7 +475,7 @@ fn tryFireWeaponWithForce(
         player.weapon.weapon_id == WeaponId.pistol or
         player.weapon.weapon_id == WeaponId.shrinkifier_5k;
     if (!spawn_muzzle_after_projectile) {
-        consumeMuzzleSpriteRng(state, player.weapon.weapon_id, is_fire_bullets);
+        spawnNativeFireMuzzleSprites(state, sprite_effects, player.weapon.weapon_id, muzzle, aim_heading, is_fire_bullets);
     }
 
     const recipe = fire_recipes.resolveFireRecipe(
@@ -474,7 +579,7 @@ fn tryFireWeaponWithForce(
     }
 
     if (spawn_muzzle_after_projectile) {
-        consumeMuzzleSpriteRng(state, player.weapon.weapon_id, is_fire_bullets);
+        spawnNativeFireMuzzleSprites(state, sprite_effects, player.weapon.weapon_id, muzzle, aim_heading, is_fire_bullets);
     }
 
     const player_idx = player.index;
@@ -504,6 +609,11 @@ fn tryFireWeaponWithForce(
         );
     }
 
+    const muzzle_inc = if (is_fire_bullets and pellet_count == 1) fire_bullets_spread_heat else weapon_spread_heat;
+    player.muzzle_flash_alpha = @min(1.0, player.muzzle_flash_alpha);
+    player.muzzle_flash_alpha = @min(1.0, player.muzzle_flash_alpha + muzzle_inc);
+    player.muzzle_flash_alpha = @min(0.8, player.muzzle_flash_alpha);
+
     if (player.weapon.ammo <= 0.0 and (force_pre_swap_fire_gate or player.weapon.reload_timer <= 0.0)) {
         player_runtime.playerStartReload(player, state);
     }
@@ -517,9 +627,20 @@ pub fn applyPlayerPerkTicks(
     projectiles: *projectiles_mod.ProjectilePool,
     dt: f32,
 ) void {
+    var sprite_effects: effects_mod.SpriteEffectPool = .{};
+    applyPlayerPerkTicksWithEffects(state, player, projectiles, &sprite_effects, dt);
+}
+
+pub fn applyPlayerPerkTicksWithEffects(
+    state: *state_mod.GameplayState,
+    player: *state_mod.PlayerState,
+    projectiles: *projectiles_mod.ProjectilePool,
+    sprite_effects: *effects_mod.SpriteEffectPool,
+    dt: f32,
+) void {
     tickManBomb(state, player, projectiles, dt);
     tickLivingFortress(player, dt);
-    tickFireCaugh(state, player, projectiles, dt);
+    tickFireCaugh(state, player, projectiles, sprite_effects, dt);
     tickHotTempered(state, player, projectiles, dt);
 }
 
@@ -578,6 +699,7 @@ fn tickFireCaugh(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
     projectiles: *projectiles_mod.ProjectilePool,
+    sprite_effects: *effects_mod.SpriteEffectPool,
     dt: f32,
 ) void {
     if (!perks.perkActive(player, PerkId.fire_caugh)) {
@@ -621,8 +743,13 @@ fn tickFireCaugh(
         owner,
     );
 
-    // sprite_effects.spawn(...): slot scan + one rotation RNG draw in common case.
-    _ = state.rng.rand() % 0x274;
+    _ = sprite_effects.spawn(
+        state,
+        muzzle,
+        state_mod.Vec2.fromAngle(aim_heading).mul(25.0),
+        1.0,
+        .{ .r = 0.5, .g = 0.5, .b = 0.5, .a = 0.413 },
+    );
 
     player.fire_cough_timer -= state.perk_interval_fire_cough;
     state.perk_interval_fire_cough = @as(f32, @floatFromInt(state.rng.rand() % 4)) + 2.0;
@@ -749,50 +876,67 @@ fn applySpeedScaleRule(
     }
 }
 
-fn consumeMuzzleSpriteRng(
+fn spawnNativeFireMuzzleSprites(
     state: *state_mod.GameplayState,
+    sprite_effects: *effects_mod.SpriteEffectPool,
     weapon_id: WeaponId,
+    muzzle: state_mod.Vec2,
+    aim_heading: f32,
     fire_bullets_active: bool,
 ) void {
-    var count: usize = 0;
-    if (fire_bullets_active) {
-        count = 1;
-    } else {
-        count = switch (weapon_id) {
-            .pistol,
-            .assault_rifle,
-            .shotgun,
-            .sawed_off_shotgun,
-            .submachine_gun,
-            .gauss_gun,
-            .rocket_launcher,
-            .seeker_rockets,
-            .mini_rocket_swarmers,
-            .shrinkifier_5k,
-            .gauss_shotgun,
-            => 2,
-            .rocket_minigun, .jackhammer => 1,
-            else => 0,
-        };
-    }
-    for (0..count) |_| {
-        _ = state.rng.rand();
+    const specs = if (fire_bullets_active)
+        fire_bullets_muzzle_specs[0..]
+    else
+        muzzleSpriteSpecs(weapon_id);
+    for (specs) |spec| {
+        _ = sprite_effects.spawn(
+            state,
+            muzzle,
+            state_mod.Vec2.fromAngle(aim_heading).mul(spec.speed),
+            spec.scale,
+            .{ .r = 0.5, .g = 0.5, .b = 0.5, .a = spec.alpha },
+        );
     }
 }
 
-fn consumeLowHealthPulseRng(state: *state_mod.GameplayState) void {
-    // `player_update` low-health pulse: 3x `spawn_blood_splatter` (10 draws each)
-    // plus one bloodspill SFX-variant draw.
-    for (0..3) |_| {
-        for (0..2) |_| {
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-        }
-    }
-    _ = state.rng.rand() & 1;
+fn muzzleSpriteSpecs(weapon_id: WeaponId) []const MuzzleSpriteSpec {
+    return switch (weapon_id) {
+        .pistol,
+        .assault_rifle,
+        .submachine_gun,
+        .shrinkifier_5k,
+        => &.{
+            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.23 },
+            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.213 },
+        },
+        .shotgun => &.{
+            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.25 },
+            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.223 },
+        },
+        .sawed_off_shotgun => &.{
+            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.26 },
+            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.233 },
+        },
+        .gauss_gun, .gauss_shotgun => &.{
+            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.33 },
+            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.263 },
+        },
+        .rocket_launcher,
+        .mini_rocket_swarmers,
+        .rocket_minigun,
+        => &.{
+            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.34 },
+            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.283 },
+        },
+        .seeker_rockets => &.{
+            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.31 },
+            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.243 },
+        },
+        .jackhammer => &.{
+            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.223 },
+        },
+        else => &.{},
+    };
 }
 
 fn computeShotCount(

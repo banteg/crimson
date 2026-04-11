@@ -5,6 +5,7 @@ const native_math = @import("native_math.zig");
 const runtime_anim = @import("anim.zig");
 const bonus_runtime = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
+const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const runtime_helpers = @import("helpers.zig");
@@ -80,6 +81,7 @@ pub const CreaturePool = struct {
     entries: [max_creatures]CreatureState = [_]CreatureState{CreatureState{}} ** max_creatures,
     kill_count: i32 = 0,
     capture_spawn_events_authoritative: bool = false,
+    effects: ?*effects_mod.EffectPool = null,
     spawn_slots: [max_creatures]spawn_mod.SpawnSlotInit = [_]spawn_mod.SpawnSlotInit{
         .{
             .owner_creature = 0,
@@ -96,6 +98,7 @@ pub const CreaturePool = struct {
         self.entries = [_]CreatureState{CreatureState{}} ** max_creatures;
         self.kill_count = 0;
         self.capture_spawn_events_authoritative = false;
+        self.effects = null;
         self.spawn_slot_count = 0;
     }
 
@@ -1798,7 +1801,19 @@ pub const CreaturePool = struct {
                 call_pos_x > 0.0 and call_pos_x < terrain_size and
                 call_pos_y > 0.0 and call_pos_y < terrain_size)
             {
-                consumeSpawnTemplateBurstRng(rng, 8);
+                if (self.effects) |effects| {
+                    effects.spawnBurst(
+                        @constCast(game_state),
+                        .{ .x = call_pos_x, .y = call_pos_y },
+                        8,
+                        5,
+                        0.4,
+                        null,
+                        .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+                    );
+                } else {
+                    consumeSpawnTemplateBurstRng(rng, 8);
+                }
             }
         }
     }
@@ -2121,6 +2136,7 @@ pub const CreaturePool = struct {
                         state,
                         players,
                         bonus_pool,
+                        self.effects,
                         creature.pos,
                         @floatCast(world_size),
                         true,
@@ -2457,6 +2473,7 @@ pub const CreaturePool = struct {
             state,
             players,
             bonus_pool,
+            self.effects,
             creature.pos,
             world_size,
             true,
@@ -2504,6 +2521,7 @@ pub const CreaturePool = struct {
             state,
             players,
             bonus_pool,
+            self.effects,
             creature.pos,
             world_size,
             false,
@@ -2552,6 +2570,7 @@ pub const CreaturePool = struct {
             state,
             players,
             bonus_pool,
+            self.effects,
             creature.pos,
             world_size,
             true,
@@ -2805,6 +2824,7 @@ pub const CreaturePool = struct {
             state,
             players,
             bonus_pool,
+            self.effects,
             creature.pos,
             world_size,
             true,
@@ -3446,12 +3466,23 @@ fn spawnSplitChildrenOnDeath(
         self.entries[child_idx] = child;
     }
 
-    // effects.spawn_burst(count=8) -> 4 random draws per burst element.
-    for (0..8) |_| {
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
+    if (self.effects) |effects| {
+        effects.spawnBurst(
+            state,
+            source.pos,
+            8,
+            5,
+            0.4,
+            null,
+            .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+        );
+    } else {
+        for (0..8) |_| {
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+            _ = state.rng.rand();
+        }
     }
 }
 
@@ -3492,6 +3523,7 @@ fn consumeDeathSideEffectsRng(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
     bonus_pool: *bonus_runtime.BonusPool,
+    effects: ?*effects_mod.EffectPool,
     death_pos: state_mod.Vec2,
     world_size: f32,
     plan_death_sfx: bool,
@@ -3506,30 +3538,50 @@ fn consumeDeathSideEffectsRng(
         world_size,
     );
     if (spawned_bonus) |_| {
-        // effects.spawn_burst(count=16) -> 4 random draws per burst element.
-        for (0..16) |_| {
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-        }
-    }
-    if (state.bonuses.freeze > 0.0) {
-        for (0..8) |_| {
-            _ = state.rng.rand() % 0x264;
-            for (0..6) |_| {
+        if (effects) |effect_pool| {
+            effect_pool.spawnBurst(
+                state,
+                death_pos,
+                16,
+                5,
+                0.4,
+                null,
+                .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+            );
+        } else {
+            for (0..16) |_| {
+                _ = state.rng.rand();
+                _ = state.rng.rand();
+                _ = state.rng.rand();
                 _ = state.rng.rand();
             }
         }
-        _ = state.rng.rand() % 0x264;
-        for (0..4) |_| {
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-        }
-        for (0..4) |_| {
+    }
+    if (state.bonuses.freeze > 0.0) {
+        if (effects) |effect_pool| {
+            for (0..8) |_| {
+                const angle = @as(f32, @floatFromInt(state.rng.rand() % 612)) * 0.01;
+                effect_pool.spawnFreezeShard(state, death_pos, angle, 5);
+            }
+            const shatter_angle = @as(f32, @floatFromInt(state.rng.rand() % 612)) * 0.01;
+            effect_pool.spawnFreezeShatter(state, death_pos, shatter_angle, 5);
+        } else {
+            for (0..8) |_| {
+                _ = state.rng.rand() % 0x264;
+                for (0..6) |_| {
+                    _ = state.rng.rand();
+                }
+            }
             _ = state.rng.rand() % 0x264;
-            for (0..6) |_| {
+            for (0..4) |_| {
                 _ = state.rng.rand();
+                _ = state.rng.rand();
+            }
+            for (0..4) |_| {
+                _ = state.rng.rand() % 0x264;
+                for (0..6) |_| {
+                    _ = state.rng.rand();
+                }
             }
         }
         runtime_helpers.consumeAddRandomRng(state);

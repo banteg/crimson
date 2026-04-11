@@ -14,6 +14,7 @@ const live_audio = @import("audio/live_audio.zig");
 const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
 const window_boot = @import("window_boot.zig");
+const window_effects = @import("window_effects.zig");
 const window_ground = @import("window_ground.zig");
 const window_menu = @import("window_menu.zig");
 const window_menu_panels = @import("window_menu_panels.zig");
@@ -844,6 +845,7 @@ const App = struct {
             drawPlayers(runner, runtime_assets);
             drawCreatures(runner, runtime_assets);
             drawProjectiles(runner, runtime_assets);
+            drawWorldEffects(runner, runtime_assets);
             drawBonuses(runner, runtime_assets);
             camera.end();
 
@@ -1512,6 +1514,15 @@ fn drawProjectiles(runner: *const live_runner.LiveRunner, runtime_assets: ?*cons
         }
         rl.drawCircleV(toRlVec(projectile.pos), 3.0, projectile_color);
     }
+}
+
+fn drawWorldEffects(runner: *const live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+    if (runtime_assets) |assets| {
+        window_effects.drawParticlePool(.{
+            .session = &runner.session,
+            .assets = assets,
+        });
+    }
     for (runner.session.secondary_projectiles.entries) |projectile| {
         if (!projectile.active) continue;
         if (runtime_assets) |assets| {
@@ -1521,6 +1532,16 @@ fn drawProjectiles(runner: *const live_runner.LiveRunner, runtime_assets: ?*cons
             })) continue;
         }
         rl.drawCircleV(toRlVec(projectile.pos), 6.0, secondary_projectile_color);
+    }
+    if (runtime_assets) |assets| {
+        window_effects.drawSpriteEffectPool(.{
+            .session = &runner.session,
+            .assets = assets,
+        });
+        window_effects.drawEffectPool(.{
+            .session = &runner.session,
+            .assets = assets,
+        });
     }
 }
 

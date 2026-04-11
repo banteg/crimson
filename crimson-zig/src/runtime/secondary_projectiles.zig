@@ -3,6 +3,7 @@ const native_math = @import("native_math.zig");
 const bonus_runtime = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
+const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
 const runtime_helpers = @import("helpers.zig");
 const state_mod = @import("state.zig");
@@ -116,6 +117,33 @@ pub const SecondaryProjectilePool = struct {
         players: []state_mod.PlayerState,
         creatures: *creatures_mod.CreaturePool,
         bonuses: *bonus_runtime.BonusPool,
+        dt: f32,
+        world_size: f32,
+        detail_preset: i32,
+    ) void {
+        var effects: effects_mod.EffectPool = .{};
+        var sprite_effects: effects_mod.SpriteEffectPool = .{};
+        self.updatePulseGunWithEffects(
+            state,
+            players,
+            creatures,
+            bonuses,
+            &effects,
+            &sprite_effects,
+            dt,
+            world_size,
+            detail_preset,
+        );
+    }
+
+    pub fn updatePulseGunWithEffects(
+        self: *SecondaryProjectilePool,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
+        creatures: *creatures_mod.CreaturePool,
+        bonuses: *bonus_runtime.BonusPool,
+        effects: *effects_mod.EffectPool,
+        sprite_effects: *effects_mod.SpriteEffectPool,
         dt: f32,
         world_size: f32,
         detail_preset: i32,
@@ -271,8 +299,16 @@ pub const SecondaryProjectilePool = struct {
             const trail_decay = narrowF32((@abs(entry.vel.x) + @abs(entry.vel.y)) * dt_f32 * 0.01);
             entry.trail_timer = narrowF32(entry.trail_timer - trail_decay);
             if (entry.trail_timer < 0.0) {
-                // `sprite_effects.spawn` consumes one rotation RNG draw.
-                _ = state.rng.rand() % 0x274;
+                const direction = runtime_helpers.directionFromHeading(entry.angle);
+                const spawn_pos = state_mod.Vec2.sub(entry.pos, direction.mul(9.0));
+                const trail_velocity = runtime_helpers.directionFromHeading(entry.angle + native_math.native_pi).mul(90.0);
+                _ = sprite_effects.spawn(
+                    state,
+                    spawn_pos,
+                    trail_velocity,
+                    14.0,
+                    .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 0.25 },
+                );
                 entry.trail_timer = narrowF32(0.06);
             }
 
@@ -302,8 +338,8 @@ pub const SecondaryProjectilePool = struct {
 
                 if (freeze_active) {
                     for (0..4) |_| {
-                        _ = state.rng.rand() % 0x264;
-                        runtime_helpers.consumeFreezeShardRng(state);
+                        const shard_angle = @as(f32, @floatFromInt(state.rng.rand() % 612)) * 0.01;
+                        effects.spawnFreezeShard(state, entry.pos, shard_angle, detail_preset);
                     }
                 } else {
                     for (0..3) |_| {
@@ -314,7 +350,7 @@ pub const SecondaryProjectilePool = struct {
                 }
 
                 if (entry.type_id == SecondaryProjectileTypeId.rocket and detail_preset > 2) {
-                    consumeExplosionBurstRng(state, detail_preset);
+                    effects.spawnExplosionBurst(state, entry.pos, 1.0, detail_preset);
                 }
 
                 const damage: f32 = switch (entry.type_id) {
@@ -347,8 +383,8 @@ pub const SecondaryProjectilePool = struct {
 
                 if (freeze_active) {
                     for (0..8) |_| {
-                        _ = state.rng.rand() % 0x264;
-                        runtime_helpers.consumeFreezeShardRng(state);
+                        const shard_angle = @as(f32, @floatFromInt(state.rng.rand() % 612)) * 0.01;
+                        effects.spawnFreezeShard(state, entry.pos, shard_angle, detail_preset);
                     }
                 } else {
                     const extra_decals: i32 = if (det_scale == 1.0)
@@ -380,10 +416,16 @@ pub const SecondaryProjectilePool = struct {
                     }
                 }
 
-                for (0..10) |_| {
-                    _ = state.rng.rand() % 800;
-                    // Each sprite spawn consumes one rotation RNG draw.
-                    _ = state.rng.rand() % 0x274;
+                for (0..10) |sprite_idx| {
+                    const mag = @as(f32, @floatFromInt(state.rng.rand() % 800)) * 0.1;
+                    const ang = @as(f32, @floatFromInt(sprite_idx)) * (native_math.native_tau / 10.0);
+                    _ = sprite_effects.spawn(
+                        state,
+                        entry.pos,
+                        state_mod.Vec2.fromAngle(ang).mul(mag),
+                        16.0,
+                        .{ .r = 1.0, .g = 0.5, .b = 0.2, .a = 0.35 },
+                    );
                 }
 
                 _ = hit_type;

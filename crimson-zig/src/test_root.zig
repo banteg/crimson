@@ -6,6 +6,7 @@ test {
     _ = @import("audio/mod.zig");
     _ = cz.bonuses;
     _ = cz.creatures;
+    _ = cz.effects;
     _ = cz.hash;
     _ = cz.formats;
     _ = cz.helpers;

@@ -15,6 +15,9 @@ pub const AtlasRect = struct {
 };
 
 pub const EffectId = enum(i32) {
+    burst = 0x00,
+    ring = 0x01,
+    shield_ring = 0x02,
     effect_03 = 0x03,
     effect_04 = 0x04,
     effect_05 = 0x05,
@@ -23,12 +26,14 @@ pub const EffectId = enum(i32) {
     freeze_shard_0 = 0x08,
     freeze_shard_1 = 0x09,
     freeze_shard_2 = 0x0A,
+    effect_0b = 0x0B,
     explosion_burst = 0x0C,
-    shield_ring = 0x02,
     glow = 0x0D,
     freeze_shatter = 0x0E,
+    effect_0f = 0x0F,
     aura = 0x10,
     explosion_puff = 0x11,
+    casing = 0x12,
 };
 
 pub const ColorRgb = struct {
@@ -122,6 +127,8 @@ pub fn effectRectById(texture_width: i32, texture_height: i32, effect_id_raw: i3
         frame: i32,
     };
     const entry = switch (effect_id_raw) {
+        0x00 => EffectEntry{ .size_code = 0x80, .frame = 0x02 },
+        0x01 => EffectEntry{ .size_code = 0x80, .frame = 0x03 },
         0x02 => EffectEntry{ .size_code = 0x20, .frame = 0x00 },
         0x03 => EffectEntry{ .size_code = 0x20, .frame = 0x01 },
         0x04 => EffectEntry{ .size_code = 0x20, .frame = 0x02 },
@@ -131,11 +138,14 @@ pub fn effectRectById(texture_width: i32, texture_height: i32, effect_id_raw: i3
         0x08 => EffectEntry{ .size_code = 0x20, .frame = 0x08 },
         0x09 => EffectEntry{ .size_code = 0x20, .frame = 0x09 },
         0x0A => EffectEntry{ .size_code = 0x20, .frame = 0x0A },
+        0x0B => EffectEntry{ .size_code = 0x20, .frame = 0x0B },
         0x0C => EffectEntry{ .size_code = 0x40, .frame = 0x05 },
         0x0D => EffectEntry{ .size_code = 0x40, .frame = 0x03 },
         0x0E => EffectEntry{ .size_code = 0x40, .frame = 0x04 },
+        0x0F => EffectEntry{ .size_code = 0x40, .frame = 0x05 },
         0x10 => EffectEntry{ .size_code = 0x40, .frame = 0x06 },
         0x11 => EffectEntry{ .size_code = 0x40, .frame = 0x07 },
+        0x12 => EffectEntry{ .size_code = 0x10, .frame = 0x26 },
         else => return null,
     };
     const grid: i32 = switch (entry.size_code) {

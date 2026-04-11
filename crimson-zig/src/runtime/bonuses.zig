@@ -4,6 +4,7 @@ const native_math = @import("native_math.zig");
 
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
+const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
@@ -23,6 +24,7 @@ pub const BonusPickupRecord = struct {
     bonus_id: BonusId = .unused,
     amount: i32 = 0,
     player_index: i32 = -1,
+    pos: state_mod.Vec2 = .{},
 };
 pub const BonusPickupBuffer = struct {
     items: [bonus_pool_size]BonusPickupRecord = [_]BonusPickupRecord{.{}} ** bonus_pool_size,
@@ -227,6 +229,7 @@ pub const BonusPool = struct {
                     .bonus_id = entry.bonus_id,
                     .amount = entry.amount,
                     .player_index = player.index,
+                    .pos = entry.pos,
                 });
                 entry.picked = true;
                 entry.time_left = narrowF32(bonus_pickup_linger);
@@ -293,10 +296,6 @@ pub fn bonusUpdate(
             state.bonuses.freeze -= dt;
         }
     }
-
-    for (pickup_bonus_ids[0..pickup_count]) |bonus_id| {
-        consumeBonusPickupEffectsRng(state, bonus_id);
-    }
 }
 
 pub fn applyPendingBonusEffects(
@@ -305,6 +304,31 @@ pub fn applyPendingBonusEffects(
     projectiles: *projectiles_mod.ProjectilePool,
     creatures: *creatures_mod.CreaturePool,
     bonuses: *BonusPool,
+    dt: f32,
+    world_size: f32,
+    tick_index: usize,
+) void {
+    var effects: effects_mod.EffectPool = .{};
+    applyPendingBonusEffectsWithEffects(
+        state,
+        players,
+        projectiles,
+        creatures,
+        bonuses,
+        &effects,
+        dt,
+        world_size,
+        tick_index,
+    );
+}
+
+pub fn applyPendingBonusEffectsWithEffects(
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
+    projectiles: *projectiles_mod.ProjectilePool,
+    creatures: *creatures_mod.CreaturePool,
+    bonuses: *BonusPool,
+    effects: *effects_mod.EffectPool,
     dt: f32,
     world_size: f32,
     tick_index: usize,
@@ -339,6 +363,7 @@ pub fn applyPendingBonusEffects(
             projectiles,
             creatures,
             bonuses,
+            effects,
             origin,
             dt,
             world_size,
@@ -346,6 +371,44 @@ pub fn applyPendingBonusEffects(
         );
     }
     state.pending_nuke_count = 0;
+}
+
+pub fn emitBonusPickupEffects(
+    state: *state_mod.GameplayState,
+    pickups: []const BonusPickupRecord,
+    effects: *effects_mod.EffectPool,
+    detail_preset: i32,
+) void {
+    for (pickups) |pickup| {
+        if (pickup.bonus_id != .nuke) {
+            effects.spawnBurst(
+                state,
+                pickup.pos,
+                12,
+                detail_preset,
+                0.4,
+                0.1,
+                .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
+            );
+        }
+        switch (pickup.bonus_id) {
+            .reflex_boost => effects.spawnRing(
+                pickup.pos,
+                detail_preset,
+                .{ .r = 0.6, .g = 0.6, .b = 1.0, .a = 1.0 },
+                1.0,
+                45.0,
+            ),
+            .freeze => effects.spawnRing(
+                pickup.pos,
+                detail_preset,
+                .{ .r = 0.3, .g = 0.5, .b = 0.8, .a = 1.0 },
+                1.0,
+                45.0,
+            ),
+            else => {},
+        }
+    }
 }
 
 pub fn applyPendingCreatureProjectiles(
@@ -447,6 +510,7 @@ fn bonusTelekineticUpdate(
             .bonus_id = entry.bonus_id,
             .amount = entry.amount,
             .player_index = player.index,
+            .pos = entry.pos,
         });
         entry.picked = true;
         entry.time_left = narrowF32(bonus_pickup_linger);
@@ -518,6 +582,7 @@ fn applyNukeBonus(
     projectiles: *projectiles_mod.ProjectilePool,
     creatures: *creatures_mod.CreaturePool,
     bonuses: *BonusPool,
+    effects: *effects_mod.EffectPool,
     origin: state_mod.Vec2,
     dt: f32,
     world_size: f32,
@@ -552,7 +617,7 @@ fn applyNukeBonus(
         _ = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
     }
 
-    consumeSpawnBurstRng(state, 5);
+    effects.spawnExplosionBurst(state, origin, 1.0, 5);
 
     const prev_spawn_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
