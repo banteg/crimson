@@ -13,9 +13,12 @@ const local_input = cz.local_input;
 const live_audio = @import("audio/live_audio.zig");
 const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
+const window_boot = @import("window_boot.zig");
 const window_ground = @import("window_ground.zig");
+const window_menu = @import("window_menu.zig");
 const window_projectiles = @import("window_projectiles.zig");
 const window_terrain_fx = @import("window_terrain_fx.zig");
+const window_ui = @import("window_ui.zig");
 
 const bonuses_runtime = cz.bonuses;
 const game_ids = cz.game_ids;
@@ -29,42 +32,6 @@ const window_height = 720;
 const ui_button_width: f32 = 280.0;
 const ui_button_height: f32 = 56.0;
 const world_margin: f32 = 56.0;
-
-const splash_alpha_scale: f32 = 2.0;
-const logo_time_scale: f32 = 1.1;
-const logo_time_offset: f32 = 2.0;
-const logo_skip_accel: f32 = 4.0;
-const logo_skip_jump: f32 = 16.0;
-const logo_theme_trigger: f32 = 14.0;
-const logo_10_in_start: f32 = 1.0;
-const logo_10_in_end: f32 = 2.0;
-const logo_10_hold_end: f32 = 4.0;
-const logo_10_out_end: f32 = 5.0;
-const logo_ref_in_start: f32 = 7.0;
-const logo_ref_in_end: f32 = 8.0;
-const logo_ref_hold_end: f32 = 10.0;
-const logo_ref_out_end: f32 = 11.0;
-const menu_demo_idle_start_ms: i32 = 23_000;
-const menu_label_width: f32 = 122.0;
-const menu_label_height: f32 = 28.0;
-const menu_label_base_x: f32 = -60.0;
-const menu_label_base_y: f32 = 210.0;
-const menu_label_step: f32 = 60.0;
-const menu_item_offset_x: f32 = -71.0;
-const menu_item_offset_y: f32 = -59.0;
-const menu_sign_width: f32 = 571.44;
-const menu_sign_height: f32 = 141.36;
-const menu_sign_offset_x: f32 = -576.44;
-const menu_sign_offset_y: f32 = -61.0;
-const menu_sign_pos_y: f32 = 70.0;
-const menu_sign_pos_y_small: f32 = 60.0;
-const menu_sign_pos_x_pad: f32 = 4.0;
-const menu_scale_small_threshold: i32 = 640;
-const menu_scale_large_min: i32 = 801;
-const menu_scale_large_max: i32 = 1024;
-const menu_scale_small: f32 = 0.8;
-const menu_scale_large: f32 = 1.2;
-const menu_scale_shift: f32 = 10.0;
 
 const bg_color = rl.Color.init(16, 12, 10, 255);
 const panel_color = rl.Color.init(37, 24, 20, 255);
@@ -107,40 +74,9 @@ const AssetsState = enum {
     failed,
 };
 
-const UiButton = struct {
-    label: [:0]const u8,
-    rect: rl.Rectangle,
-};
-
-const BootSequenceState = struct {
-    boot_time: f32 = 0.5,
-    fade_out_ready: bool = true,
-    fade_out_done: bool = false,
-    logo_delay_ticks: i32 = 0,
-    logo_skip: bool = false,
-    logo_active: bool = false,
-    intro_started: bool = false,
-
-    fn reset(self: *BootSequenceState) void {
-        self.* = .{};
-    }
-};
-
-const MenuScreenState = struct {
-    timeline_ms: i32 = 0,
-    focus_timer_ms: i32 = 0,
-    hovered_index: ?usize = null,
-    panel_open_sfx_played: bool = false,
-    idle_ms: i32 = 0,
-    last_mouse_pos: rl.Vector2 = .{ .x = 0.0, .y = 0.0 },
-    hover_amounts: [6]i32 = [_]i32{0} ** 6,
-
-    fn reset(self: *MenuScreenState) void {
-        self.* = .{
-            .last_mouse_pos = rl.getMousePosition(),
-        };
-    }
-};
+const UiButton = window_ui.UiButton;
+const BootSequenceState = window_boot.State;
+const MenuScreenState = window_menu.State;
 
 const GameplayScreen = struct {
     runner: live_runner.LiveRunner,
@@ -322,7 +258,6 @@ const App = struct {
     screen: Screen = .boot,
     boot: BootSequenceState = .{},
     menu: MenuScreenState = .{},
-    menu_selection: usize = 0,
     results_selection: usize = 0,
     gameplay: ?GameplayScreen = null,
     results: ?ResultsScreen = null,
@@ -409,105 +344,39 @@ const App = struct {
     }
 
     fn updateBoot(self: *App, frame_dt: f32) void {
-        const dt = @min(frame_dt, 0.1);
-        if (!self.boot.fade_out_done) {
-            self.audio.ensureIntroMusic();
-            self.boot.boot_time -= dt;
-            if (self.boot.boot_time <= 0.0) {
-                self.boot.boot_time = 0.0;
-                self.boot.fade_out_done = true;
-            }
-            return;
-        }
-
-        if (self.boot.logo_delay_ticks < 5) {
-            self.boot.logo_delay_ticks += 1;
-            return;
-        }
-
-        self.boot.logo_active = true;
-        if (self.boot.boot_time > logo_theme_trigger) {
-            self.menu.reset();
+        const result = window_boot.update(&self.boot, frame_dt);
+        if (result.finished) {
+            self.menu.openRoot();
             self.screen = .main_menu;
             return;
         }
-        if (!self.boot.intro_started) {
-            self.audio.ensureIntroMusic();
-            self.boot.intro_started = true;
-        }
-        if (!self.boot.logo_skip and bootSkipTriggered()) {
-            self.boot.logo_skip = true;
-        }
-        self.boot.boot_time += dt * logo_time_scale;
-        var t = self.boot.boot_time - logo_time_offset;
-        if (self.boot.logo_skip) {
-            if (t < logo_10_in_start or (t >= logo_10_out_end and (t < logo_ref_in_start or t >= logo_ref_out_end))) {
-                t = logo_skip_jump;
-            } else {
-                t += dt * logo_skip_accel;
-            }
-            self.boot.boot_time = t + logo_time_offset;
-        }
+        self.audio.ensureIntroMusic();
     }
 
     fn updateMainMenu(self: *App, frame_dt: f32) void {
         self.audio.ensureMenuTheme();
-        const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
-        const buttons = mainMenuButtons();
-        if (dt_ms > 0) {
-            const mouse = rl.getMousePosition();
-            const mouse_moved = mouse.x != self.menu.last_mouse_pos.x or mouse.y != self.menu.last_mouse_pos.y;
-            if (mouse_moved) {
-                self.menu.last_mouse_pos = mouse;
-            }
-
-            if (rl.getKeyPressed() != .null or rl.isMouseButtonPressed(.left) or rl.isMouseButtonPressed(.right) or mouse_moved) {
-                self.menu.idle_ms = 0;
-            } else {
-                self.menu.idle_ms += dt_ms;
-            }
-
-            self.menu.timeline_ms = @min(menuMaxTimelineMs(buttons.len), self.menu.timeline_ms + dt_ms);
-            self.menu.focus_timer_ms = @max(0, self.menu.focus_timer_ms - dt_ms);
-            if (self.menu.timeline_ms >= menuMaxTimelineMs(buttons.len) and !self.menu.panel_open_sfx_played) {
-                self.audio.playUiPanelClick();
-                self.menu.panel_open_sfx_played = true;
+        const menu_update = window_menu.update(
+            &self.menu,
+            frame_dt,
+            if (self.runtime_assets) |*assets| assets else null,
+        );
+        if (menu_update.play_panel_click and !self.menu.panel_open_sfx_played) {
+            self.audio.playUiPanelClick();
+            self.menu.panel_open_sfx_played = true;
+        }
+        if (menu_update.play_button_click) {
+            self.audio.playUiButtonClick();
+        }
+        if (menu_update.action) |action| {
+            switch (action) {
+                .start_survival => self.startNewRun(runConfigForMenuSelection(0, &self.next_seed_state)),
+                .start_rush => self.startNewRun(runConfigForMenuSelection(1, &self.next_seed_state)),
+                .start_quest_11 => self.startNewRun(runConfigForMenuSelection(2, &self.next_seed_state)),
+                .open_options => self.screen = .options,
+                .open_high_scores => self.openHighScores(),
+                .quit => self.quit_requested = true,
             }
         }
-
-        self.menu.hovered_index = hoveredMainMenuIndex(buttons[0..]);
-        if (self.menu.hovered_index) |hovered_index| {
-            if (mainMenuEntryEnabled(@intCast(hovered_index), self.menu.timeline_ms)) {
-                self.menu_selection = hovered_index;
-                self.menu.focus_timer_ms = 1000;
-            }
-        }
-        const activated = mainMenuEntryEnabled(@intCast(self.menu_selection), self.menu.timeline_ms) and buttonActivated(buttons[0..], self.menu_selection);
-        if (!activated) {
-            if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-                self.menu_selection = previousEnabledMenuSelection(self.menu_selection, self.menu.timeline_ms, buttons.len);
-                self.menu.focus_timer_ms = 1000;
-            }
-            if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-                self.menu_selection = nextEnabledMenuSelection(self.menu_selection, self.menu.timeline_ms, buttons.len);
-                self.menu.focus_timer_ms = 1000;
-            }
-            updateMenuHoverAmounts(&self.menu, dt_ms, buttons.len);
-            return;
-        }
-
-        self.audio.playUiButtonClick();
-
-        switch (self.menu_selection) {
-            0 => self.startNewRun(runConfigForMenuSelection(0, &self.next_seed_state)),
-            1 => self.startNewRun(runConfigForMenuSelection(1, &self.next_seed_state)),
-            2 => self.startNewRun(runConfigForMenuSelection(2, &self.next_seed_state)),
-            3 => self.screen = .options,
-            4 => self.openHighScores(),
-            5 => self.quit_requested = true,
-            else => {},
-        }
-        updateMenuHoverAmounts(&self.menu, dt_ms, buttons.len);
     }
 
     fn updateGameplay(self: *App, frame_dt: f32) void {
@@ -559,7 +428,7 @@ const App = struct {
         }
 
         const buttons = resultsButtons();
-        updateSelectionFromPointer(&self.results_selection, buttons[0..]);
+        window_ui.updateSelectionFromPointer(&self.results_selection, buttons[0..]);
         if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
             self.results_selection = if (self.results_selection == 0) buttons.len - 1 else self.results_selection - 1;
         }
@@ -567,7 +436,7 @@ const App = struct {
             self.results_selection = (self.results_selection + 1) % buttons.len;
         }
 
-        const activated = buttonActivated(buttons[0..], self.results_selection);
+        const activated = window_ui.buttonActivated(buttons[0..], self.results_selection);
         if (!activated) return;
         self.audio.playUiButtonClick();
 
@@ -581,8 +450,7 @@ const App = struct {
                     self.gameplay = null;
                 }
                 self.results = null;
-                self.menu_selection = 0;
-                self.menu.reset();
+                self.menu.openRoot();
                 self.screen = .main_menu;
             },
             else => {},
@@ -592,7 +460,7 @@ const App = struct {
     fn updateHighScores(self: *App) void {
         if (self.high_scores) |*high_scores| {
             const buttons = highScoresButtons();
-            updateSelectionFromPointer(&high_scores.selection, buttons[0..]);
+            window_ui.updateSelectionFromPointer(&high_scores.selection, buttons[0..]);
             if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
                 high_scores.selection = if (high_scores.selection == 0) buttons.len - 1 else high_scores.selection - 1;
             }
@@ -600,7 +468,7 @@ const App = struct {
                 high_scores.selection = (high_scores.selection + 1) % buttons.len;
             }
 
-            const activated = buttonActivated(buttons[0..], high_scores.selection);
+            const activated = window_ui.buttonActivated(buttons[0..], high_scores.selection);
             if (!activated) return;
             self.audio.playUiButtonClick();
 
@@ -609,8 +477,7 @@ const App = struct {
                 1 => self.setHighScoresMode(.rush),
                 2 => self.setHighScoresMode(.quests),
                 3 => {
-                    self.menu_selection = 3;
-                    self.menu.reset();
+                    self.menu.openRoot();
                     self.screen = .main_menu;
                 },
                 else => {},
@@ -620,7 +487,7 @@ const App = struct {
 
     fn updateOptions(self: *App) void {
         const buttons = optionsButtons();
-        updateSelectionFromPointer(&self.options.selection, buttons[0..]);
+        window_ui.updateSelectionFromPointer(&self.options.selection, buttons[0..]);
         if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
             self.options.selection = if (self.options.selection == 0) buttons.len - 1 else self.options.selection - 1;
         }
@@ -628,7 +495,7 @@ const App = struct {
             self.options.selection = (self.options.selection + 1) % buttons.len;
         }
 
-        const activate = buttonActivated(buttons[0..], self.options.selection);
+        const activate = window_ui.buttonActivated(buttons[0..], self.options.selection);
         const adjust_left = rl.isKeyPressed(.left) or rl.isKeyPressed(.a);
         const adjust_right = rl.isKeyPressed(.right) or rl.isKeyPressed(.d);
         if (!(activate or adjust_left or adjust_right)) return;
@@ -685,8 +552,7 @@ const App = struct {
             },
             5 => {
                 self.audio.playUiButtonClick();
-                self.menu_selection = 3;
-                self.menu.reset();
+                self.menu.openRoot();
                 self.screen = .main_menu;
             },
             else => {},
@@ -701,7 +567,7 @@ const App = struct {
         collectNameInput(highscore);
 
         const buttons = resultsHighscoreButtons();
-        updateSelectionFromPointer(&highscore.selection, buttons[0..]);
+        window_ui.updateSelectionFromPointer(&highscore.selection, buttons[0..]);
         if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
             highscore.selection = if (highscore.selection == 0) buttons.len - 1 else highscore.selection - 1;
         }
@@ -709,7 +575,7 @@ const App = struct {
             highscore.selection = (highscore.selection + 1) % buttons.len;
         }
 
-        if (!buttonActivated(buttons[0..], highscore.selection)) return;
+        if (!window_ui.buttonActivated(buttons[0..], highscore.selection)) return;
         self.audio.playUiButtonClick();
 
         switch (highscore.selection) {
@@ -966,53 +832,13 @@ const App = struct {
     }
 
     fn drawBoot(self: *const App) void {
-        rl.clearBackground(rl.Color.black);
-        if (self.runtime_assets) |*runtime_assets| {
-            if (!self.boot.fade_out_done) {
-                drawBootSplash(runtime_assets, clamp01(self.boot.boot_time * splash_alpha_scale));
-            } else if (self.boot.logo_active) {
-                drawBootCompanyLogo(runtime_assets, self.boot.boot_time - logo_time_offset);
-            }
-        } else {
-            drawCenteredText("CRIMSON-ZIG", 144, 72, accent_color);
-            drawCenteredText("Desktop gameplay slice booting", 232, 24, text_color);
-            drawCenteredText("raylib shell + live Zig runtime + archive-backed assets", 270, 18, muted_text);
-        }
-        drawAssetsStatus(self);
-        drawAudioStatus(&self.audio);
+        window_boot.draw(&self.boot, if (self.runtime_assets) |*assets| assets else null);
+        drawStartupDiagnostics(self);
     }
 
     fn drawMainMenu(self: *const App) void {
-        if (self.runtime_assets) |*runtime_assets| {
-            rl.clearBackground(rl.Color.black);
-            drawMenuAssets(self, runtime_assets);
-        }
-        if (self.runtime_assets == null) {
-            rl.clearBackground(bg_color);
-            drawBackdrop();
-            drawCenteredText("CRIMSON-ZIG", 118, 68, accent_color);
-            drawCenteredText("Native survival / rush / quest gameplay slice", 198, 24, text_color);
-            drawCenteredText("Live Zig runtime now boots multiple real modes.", 232, 18, muted_text);
-        }
-        drawAssetsStatus(self);
-        drawAudioStatus(&self.audio);
-
-        const buttons = mainMenuButtons();
-        for (buttons, 0..) |button, idx| {
-            const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-            if (self.runtime_assets) |*assets| {
-                drawMainMenuButton(self, assets, button, idx, idx == self.menu_selection, mouse_hovered);
-            } else {
-                drawButton(button, idx == self.menu_selection, mouse_hovered, null);
-            }
-        }
-
-        if (self.runtime_assets) |*runtime_assets| {
-            drawSmallText(runtime_assets, "Enter activates selected item. Mouse works too.", 34.0, 646.0, HudTextColor.dim);
-            drawSmallText(runtime_assets, "Current menu still routes directly into the Zig gameplay shell.", 34.0, 664.0, HudTextColor.dim);
-        } else {
-            drawCenteredText("Enter starts. High scores now read real Zig .hi tables. Esc closes the window.", 620, 18, muted_text);
-        }
+        window_menu.draw(&self.menu, if (self.runtime_assets) |*assets| assets else null);
+        drawStartupDiagnostics(self);
     }
 
     fn drawGameplay(self: *App) void {
@@ -1106,7 +932,7 @@ const App = struct {
                     false
             else
                 idx == self.results_selection;
-            drawButton(button, selected, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
+            window_ui.drawButton(button, selected, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
         }
         drawAudioStatus(&self.audio);
     }
@@ -1141,7 +967,7 @@ const App = struct {
         const selected_idx = if (self.high_scores) |high_scores| high_scores.selection else 0;
         for (buttons, 0..) |button, idx| {
             const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-            drawButton(button, idx == selected_idx, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
+            window_ui.drawButton(button, idx == selected_idx, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
         }
         drawAudioStatus(&self.audio);
     }
@@ -1164,7 +990,7 @@ const App = struct {
         const buttons = optionsButtons();
         for (buttons, 0..) |button, idx| {
             const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-            drawButton(button, idx == self.options.selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
+            window_ui.drawButton(button, idx == self.options.selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
         }
         drawAudioStatus(&self.audio);
     }
@@ -1208,183 +1034,6 @@ fn drawBackdrop() void {
     rl.drawCircle(160, height - 80, 220.0, rl.Color.init(58, 23, 18, 90));
 }
 
-fn clamp01(value: f32) f32 {
-    return std.math.clamp(value, @as(f32, 0.0), @as(f32, 1.0));
-}
-
-fn bootSkipTriggered() bool {
-    if (rl.getKeyPressed() != .null) return true;
-    if (rl.isMouseButtonPressed(.left)) return true;
-    if (rl.isMouseButtonPressed(.right)) return true;
-    return false;
-}
-
-fn bootLogoAlpha(t: f32, in_start: f32, in_end: f32, hold_end: f32, out_end: f32) ?f32 {
-    if (t < in_start or t >= out_end) return null;
-    if (t < in_end) return clamp01(t - in_start);
-    if (t < hold_end) return 1.0;
-    return clamp01(1.0 - (t - hold_end));
-}
-
-fn drawBootCompanyLogo(runtime_assets: *const window_assets.RuntimeAssets, t: f32) void {
-    const LogoState = struct {
-        texture: rl.Texture2D,
-        alpha: f32,
-    };
-    const logo_state: LogoState = blk: {
-        if (bootLogoAlpha(t, logo_10_in_start, logo_10_in_end, logo_10_hold_end, logo_10_out_end)) |alpha| {
-            break :blk .{ .texture = runtime_assets.texture(.splash_10tons), .alpha = alpha };
-        }
-        if (bootLogoAlpha(t, logo_ref_in_start, logo_ref_in_end, logo_ref_hold_end, logo_ref_out_end)) |alpha| {
-            break :blk .{ .texture = runtime_assets.texture(.splash_reflexive), .alpha = alpha };
-        }
-        return;
-    };
-
-    const texture = logo_state.texture;
-    const x = (@as(f32, @floatFromInt(rl.getScreenWidth())) - @as(f32, @floatFromInt(texture.width))) * 0.5;
-    const y = (@as(f32, @floatFromInt(rl.getScreenHeight())) - @as(f32, @floatFromInt(texture.height))) * 0.5;
-    drawTextureFit(
-        texture,
-        rl.Rectangle.init(x, y, @floatFromInt(texture.width), @floatFromInt(texture.height)),
-        colorWithAlpha(rl.Color.white, logo_state.alpha),
-    );
-}
-
-fn drawBootSplash(runtime_assets: *const window_assets.RuntimeAssets, alpha: f32) void {
-    if (!(alpha > 0.0)) return;
-    const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
-    const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
-    const logo = runtime_assets.texture(.cl_logo);
-    const band_height = @as(f32, @floatFromInt(logo.height)) * 2.0;
-    const band_top = (screen_h - band_height) * 0.5 - 4.0;
-    const band_bottom = band_top + band_height;
-    const line_color = colorWithAlpha(rl.Color.init(149, 175, 198, 255), alpha * 0.7);
-    rl.drawRectangle(0, @intFromFloat(band_top), rl.getScreenWidth(), 1, line_color);
-    rl.drawRectangle(0, @intFromFloat(band_bottom), rl.getScreenWidth(), 1, line_color);
-    rl.drawRectangle(0, @intFromFloat(band_top), 1, @intFromFloat(band_height), line_color);
-    rl.drawRectangle(rl.getScreenWidth() - 1, @intFromFloat(band_top), 1, @intFromFloat(band_height), line_color);
-
-    const logo_x = (screen_w - @as(f32, @floatFromInt(logo.width))) * 0.5;
-    const logo_y = (screen_h - @as(f32, @floatFromInt(logo.height))) * 0.5;
-    drawTextureFit(logo, rl.Rectangle.init(logo_x, logo_y, @floatFromInt(logo.width), @floatFromInt(logo.height)), colorWithAlpha(rl.Color.white, alpha));
-    drawTextureFit(runtime_assets.texture(.loading), rl.Rectangle.init(screen_w * 0.5 + 128.0, screen_h * 0.5 + 16.0, @floatFromInt(runtime_assets.texture(.loading).width), @floatFromInt(runtime_assets.texture(.loading).height)), colorWithAlpha(rl.Color.white, alpha));
-    const esrb = runtime_assets.texture(.logo_esrb);
-    drawTextureFit(esrb, rl.Rectangle.init(screen_w - @as(f32, @floatFromInt(esrb.width)) - 1.0, screen_h - @as(f32, @floatFromInt(esrb.height)) - 1.0, @floatFromInt(esrb.width), @floatFromInt(esrb.height)), colorWithAlpha(rl.Color.white, alpha));
-}
-
-fn drawMenuAssets(app: *const App, runtime_assets: *const window_assets.RuntimeAssets) void {
-    drawTextureFit(
-        runtime_assets.texture(.backplasma),
-        rl.Rectangle.init(0.0, 0.0, @floatFromInt(rl.getScreenWidth()), @floatFromInt(rl.getScreenHeight())),
-        rl.Color.init(255, 255, 255, 92),
-    );
-    rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), rl.Color.init(16, 11, 9, 160));
-    drawMainMenuSign(app, runtime_assets);
-}
-
-fn menuUiElementAnim(index: usize, start_ms: i32, end_ms: i32, width: f32, timeline_ms: i32) struct { angle_rad: f32, offset_x: f32 } {
-    if (start_ms <= end_ms or width <= 0.0) return .{ .angle_rad = 0.0, .offset_x = 0.0 };
-    var angle: f32 = 0.0;
-    var offset_x: f32 = 0.0;
-    if (timeline_ms < end_ms) {
-        angle = 1.5707964;
-        offset_x = -@abs(width);
-    } else if (timeline_ms < start_ms) {
-        const p = @as(f32, @floatFromInt(timeline_ms - end_ms)) / @as(f32, @floatFromInt(start_ms - end_ms));
-        angle = 1.5707964 * (1.0 - p);
-        offset_x = (1.0 - p) * -@abs(width);
-    }
-    if (index == 0) angle = -@abs(angle);
-    return .{ .angle_rad = angle, .offset_x = offset_x };
-}
-
-fn mainMenuLabelAlpha(counter_value: i32) u8 {
-    return @intCast(100 + @divTrunc(counter_value * 155, 1000));
-}
-
-fn mainMenuSignLayoutScale(screen_w: i32) struct { scale: f32, shift_x: f32 } {
-    if (screen_w <= menu_scale_small_threshold) return .{ .scale = menu_scale_small, .shift_x = menu_scale_shift };
-    if (screen_w >= menu_scale_large_min and screen_w <= menu_scale_large_max) return .{ .scale = menu_scale_large, .shift_x = menu_scale_shift };
-    return .{ .scale = 1.0, .shift_x = 0.0 };
-}
-
-fn drawMainMenuSign(app: *const App, runtime_assets: *const window_assets.RuntimeAssets) void {
-    const screen_w = rl.getScreenWidth();
-    const sign = runtime_assets.texture(.ui_sign_crimson);
-    const layout = mainMenuSignLayoutScale(screen_w);
-    const sign_pos = rl.Vector2.init(
-        @as(f32, @floatFromInt(screen_w)) + menu_sign_pos_x_pad,
-        if (screen_w > menu_scale_small_threshold) menu_sign_pos_y else menu_sign_pos_y_small,
-    );
-    const sign_w = menu_sign_width * layout.scale;
-    const sign_h = menu_sign_height * layout.scale;
-    const offset_x = menu_sign_offset_x * layout.scale + layout.shift_x;
-    const offset_y = menu_sign_offset_y * layout.scale;
-    const anim = menuUiElementAnim(0, 300, 0, sign_w, app.menu.timeline_ms);
-    const rotation_deg = radiansToDegrees(anim.angle_rad);
-
-    rl.drawTexturePro(
-        sign,
-        rl.Rectangle.init(0.0, 0.0, @floatFromInt(sign.width), @floatFromInt(sign.height)),
-        rl.Rectangle.init(sign_pos.x, sign_pos.y, sign_w, sign_h),
-        rl.Vector2.init(-offset_x, -offset_y),
-        rotation_deg,
-        rl.Color.white,
-    );
-}
-
-fn drawMainMenuButton(app: *const App, runtime_assets: *const window_assets.RuntimeAssets, button: UiButton, idx: usize, selected: bool, hovered: bool) void {
-    const item = runtime_assets.texture(.ui_menu_item);
-    const scale_info = menuItemScale(idx);
-    const pos_x = menuSlotPosX(idx);
-    const pos_y = menu_label_base_y + @as(f32, @floatFromInt(idx)) * menu_label_step + menuWidescreenYShift(@floatFromInt(rl.getScreenWidth()));
-    const anim = menuUiElementAnim(idx + 2, menuSlotStartMs(idx), menuSlotEndMs(idx), @as(f32, @floatFromInt(item.width)) * scale_info.scale, app.menu.timeline_ms);
-    const dst = rl.Rectangle.init(pos_x, pos_y, @as(f32, @floatFromInt(item.width)) * scale_info.scale, @as(f32, @floatFromInt(item.height)) * scale_info.scale);
-    const origin = rl.Vector2.init(-(menu_item_offset_x * scale_info.scale), -(menu_item_offset_y * scale_info.scale - scale_info.local_y_shift));
-    const rotation_deg = radiansToDegrees(anim.angle_rad);
-
-    rl.drawTexturePro(
-        item,
-        rl.Rectangle.init(0.0, 0.0, @floatFromInt(item.width), @floatFromInt(item.height)),
-        dst,
-        origin,
-        rotation_deg,
-        rl.Color.white,
-    );
-
-    const hover_counter = if (selected and app.menu.focus_timer_ms > 0) app.menu.focus_timer_ms else app.menu.hover_amounts[idx];
-    const label_alpha = if (mainMenuEntryEnabled(@intCast(idx), app.menu.timeline_ms)) mainMenuLabelAlpha(hover_counter) else @as(u8, 100);
-    const text_alpha: f32 = if (selected or hovered) 1.0 else 0.7;
-    const label_width = measureSmallText(runtime_assets, button.label);
-    const label_x = button.rect.x + (button.rect.width - label_width) * 0.5 + 1.0;
-    const label_y = button.rect.y + 11.0;
-    drawSmallText(runtime_assets, button.label, label_x, label_y, rl.Color.init(255, 255, 255, @intFromFloat(@as(f32, @floatFromInt(label_alpha)) * text_alpha)));
-}
-
-fn drawAssetsStatus(app: *const App) void {
-    switch (app.assets_state) {
-        .loaded => {
-            const runtime_assets = &(app.runtime_assets orelse return);
-            drawTextFmt(
-                "assets: {d} textures / {d} archive entries from {s}",
-                .{ runtime_assets.textureCount(), runtime_assets.archive_entry_count, runtime_assets.assets_dir },
-                28,
-                688,
-                18,
-                muted_text,
-            );
-        },
-        .unavailable => drawTextSlice("assets: no crimson.paq found; using primitive fallback", 28, 688, 18, muted_text),
-        .failed => {
-            drawTextSlice("assets: load failed; using primitive fallback", 28, 668, 18, muted_text);
-            if (app.assets_message) |message| {
-                drawTextSlice(message, 28, 688, 18, rl.Color.orange);
-            }
-        },
-    }
-}
-
 fn drawAudioStatus(audio: *const live_audio.Bridge) void {
     switch (audio.load_state) {
         .loaded => {
@@ -1406,6 +1055,24 @@ fn drawAudioStatus(audio: *const live_audio.Bridge) void {
                 drawTextSlice(message, 420, 708, 18, rl.Color.orange);
             }
         },
+    }
+}
+
+fn drawStartupDiagnostics(app: *const App) void {
+    switch (app.assets_state) {
+        .loaded => {},
+        .unavailable => drawTextSlice("assets: no crimson.paq found; using primitive fallback", 28, 688, 18, muted_text),
+        .failed => {
+            drawTextSlice("assets: load failed; using primitive fallback", 28, 668, 18, muted_text);
+            if (app.assets_message) |message| {
+                drawTextSlice(message, 28, 688, 18, rl.Color.orange);
+            }
+        },
+    }
+
+    switch (app.audio.load_state) {
+        .loaded => {},
+        .unavailable, .disabled, .failed => drawAudioStatus(&app.audio),
     }
 }
 
@@ -1519,83 +1186,29 @@ fn drawTextureTiled(texture: rl.Texture2D, area: rl.Rectangle, tint: rl.Color) v
     }
 }
 
-fn menuWidescreenYShift(screen_w: f32) f32 {
-    return (screen_w / 640.0) * 150.0 - 150.0;
-}
-
-fn menuSlotPosX(slot: usize) f32 {
-    return menu_label_base_x - @as(f32, @floatFromInt(slot)) * 20.0;
-}
-
-fn menuSlotStartMs(slot: usize) i32 {
-    return @intCast((slot + 2) * 100 + 300);
-}
-
-fn menuSlotEndMs(slot: usize) i32 {
-    return @intCast((slot + 2) * 100);
-}
-
-fn menuMaxTimelineMs(slot_count: usize) i32 {
-    var max_ms: i32 = 300;
-    for (0..slot_count) |slot| {
-        max_ms = @max(max_ms, menuSlotStartMs(slot));
-    }
-    return max_ms;
-}
-
-fn menuItemScale(slot: usize) struct { scale: f32, local_y_shift: f32 } {
-    if (rl.getScreenWidth() < 641) {
-        return .{ .scale = 0.9, .local_y_shift = @as(f32, @floatFromInt(slot)) * 11.0 };
-    }
-    return .{ .scale = 1.0, .local_y_shift = 0.0 };
-}
-
-fn mainMenuItemRect(slot: usize, item_texture: ?rl.Texture2D) rl.Rectangle {
-    const y_shift = menuWidescreenYShift(@floatFromInt(rl.getScreenWidth()));
-    const item_width: f32 = if (item_texture) |item| @floatFromInt(item.width) else 325.0;
-    const item_height: f32 = if (item_texture) |item| @floatFromInt(item.height) else 54.0;
-    const scale = menuItemScale(slot);
-    const width = item_width * scale.scale;
-    const height = item_height * scale.scale;
-    const x = menuSlotPosX(slot) + menu_item_offset_x * scale.scale;
-    const y = menu_label_base_y + @as(f32, @floatFromInt(slot)) * menu_label_step + y_shift + menu_item_offset_y * scale.scale - scale.local_y_shift;
-    return rl.Rectangle.init(x, y, width, height);
-}
-
-fn mainMenuButtons() [6]UiButton {
-    return .{
-        .{ .label = "START SURVIVAL", .rect = mainMenuItemRect(0, null) },
-        .{ .label = "START RUSH", .rect = mainMenuItemRect(1, null) },
-        .{ .label = "START QUEST 1.1", .rect = mainMenuItemRect(2, null) },
-        .{ .label = "OPTIONS", .rect = mainMenuItemRect(3, null) },
-        .{ .label = "HIGH SCORES", .rect = mainMenuItemRect(4, null) },
-        .{ .label = "QUIT", .rect = mainMenuItemRect(5, null) },
-    };
-}
-
 fn resultsButtons() [2]UiButton {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     return .{
-        .{ .label = "RESTART", .rect = centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
-        .{ .label = "MAIN MENU", .rect = centeredRect(center_x, 658.0, ui_button_width, ui_button_height) },
+        .{ .label = "RESTART", .rect = window_ui.centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
+        .{ .label = "MAIN MENU", .rect = window_ui.centeredRect(center_x, 658.0, ui_button_width, ui_button_height) },
     };
 }
 
 fn resultsHighscoreButtons() [2]UiButton {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     return .{
-        .{ .label = "SAVE SCORE", .rect = centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
-        .{ .label = "SKIP", .rect = centeredRect(center_x, 658.0, ui_button_width, ui_button_height) },
+        .{ .label = "SAVE SCORE", .rect = window_ui.centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
+        .{ .label = "SKIP", .rect = window_ui.centeredRect(center_x, 658.0, ui_button_width, ui_button_height) },
     };
 }
 
 fn highScoresButtons() [4]UiButton {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     return .{
-        .{ .label = "SURVIVAL", .rect = centeredRect(center_x, 560.0, 220.0, 48.0) },
-        .{ .label = "RUSH", .rect = centeredRect(center_x, 616.0, 220.0, 48.0) },
-        .{ .label = "QUEST 1.1", .rect = centeredRect(center_x, 672.0, 220.0, 48.0) },
-        .{ .label = "BACK", .rect = centeredRect(center_x + 262.0, 672.0, 150.0, 48.0) },
+        .{ .label = "SURVIVAL", .rect = window_ui.centeredRect(center_x, 560.0, 220.0, 48.0) },
+        .{ .label = "RUSH", .rect = window_ui.centeredRect(center_x, 616.0, 220.0, 48.0) },
+        .{ .label = "QUEST 1.1", .rect = window_ui.centeredRect(center_x, 672.0, 220.0, 48.0) },
+        .{ .label = "BACK", .rect = window_ui.centeredRect(center_x + 262.0, 672.0, 150.0, 48.0) },
     };
 }
 
@@ -1608,81 +1221,6 @@ fn optionsButtons() [6]UiButton {
         .{ .label = "HARDCORE", .rect = rl.Rectangle.init(304.0, 436.0, 420.0, 44.0) },
         .{ .label = "BACK", .rect = rl.Rectangle.init(304.0, 522.0, 220.0, 48.0) },
     };
-}
-
-fn centeredRect(center_x: f32, top_y: f32, width: f32, height: f32) rl.Rectangle {
-    return .{
-        .x = center_x - width * 0.5,
-        .y = top_y,
-        .width = width,
-        .height = height,
-    };
-}
-
-fn updateSelectionFromPointer(selection: *usize, buttons: []const UiButton) void {
-    const mouse = rl.getMousePosition();
-    for (buttons, 0..) |button, idx| {
-        if (rl.checkCollisionPointRec(mouse, button.rect)) {
-            selection.* = idx;
-            return;
-        }
-    }
-}
-
-fn hoveredMainMenuIndex(buttons: []const UiButton) ?usize {
-    const mouse = rl.getMousePosition();
-    for (buttons, 0..) |button, idx| {
-        if (rl.checkCollisionPointRec(mouse, button.rect)) return idx;
-    }
-    return null;
-}
-
-fn mainMenuEntryEnabled(slot: i32, timeline_ms: i32) bool {
-    return timeline_ms >= menuSlotStartMs(@intCast(slot));
-}
-
-fn previousEnabledMenuSelection(selection: usize, timeline_ms: i32, count: usize) usize {
-    var idx = selection;
-    var attempts: usize = 0;
-    while (attempts < count) : (attempts += 1) {
-        idx = if (idx == 0) count - 1 else idx - 1;
-        if (mainMenuEntryEnabled(@intCast(idx), timeline_ms)) return idx;
-    }
-    return selection;
-}
-
-fn nextEnabledMenuSelection(selection: usize, timeline_ms: i32, count: usize) usize {
-    var idx = selection;
-    var attempts: usize = 0;
-    while (attempts < count) : (attempts += 1) {
-        idx = (idx + 1) % count;
-        if (mainMenuEntryEnabled(@intCast(idx), timeline_ms)) return idx;
-    }
-    return selection;
-}
-
-fn updateMenuHoverAmounts(menu: *MenuScreenState, dt_ms: i32, count: usize) void {
-    for (0..count) |idx| {
-        const hovered = menu.hovered_index != null and menu.hovered_index.? == idx;
-        if (hovered) {
-            menu.hover_amounts[idx] = std.math.clamp(menu.hover_amounts[idx] + dt_ms * 6, 0, 1000);
-        } else {
-            menu.hover_amounts[idx] = std.math.clamp(menu.hover_amounts[idx] - dt_ms * 2, 0, 1000);
-        }
-    }
-}
-
-fn buttonActivated(buttons: []const UiButton, selection: usize) bool {
-    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.space)) return true;
-
-    if (!rl.isMouseButtonPressed(.left)) return false;
-    const mouse = rl.getMousePosition();
-    for (buttons, 0..) |button, idx| {
-        if (idx == selection and rl.checkCollisionPointRec(mouse, button.rect)) {
-            return true;
-        }
-    }
-    return false;
 }
 
 fn collectNameInput(highscore: *ResultsHighscoreState) void {
@@ -1699,61 +1237,6 @@ fn collectNameInput(highscore: *ResultsHighscoreState) void {
         highscore.input_len -= 1;
         highscore.input[highscore.input_len] = 0;
     }
-}
-
-fn drawButton(
-    button: UiButton,
-    selected: bool,
-    hovered: bool,
-    runtime_assets: ?*const window_assets.RuntimeAssets,
-) void {
-    if (runtime_assets) |assets| {
-        const scale = button.rect.height / 32.0;
-        const texture = if (button.rect.width > 120.0) assets.texture(.ui_button_md) else assets.texture(.ui_button_sm);
-        const glow_alpha: f32 = if (selected or hovered) 0.92 else 0.72;
-        if (selected or hovered) {
-            rl.drawRectangleRounded(
-                .{
-                    .x = button.rect.x + 12.0 * scale,
-                    .y = button.rect.y + 5.0 * scale,
-                    .width = button.rect.width - 24.0 * scale,
-                    .height = button.rect.height - 10.0 * scale,
-                },
-                0.18,
-                8,
-                rl.Color.init(128, 128, 178, @intFromFloat(glow_alpha * 120.0)),
-            );
-        }
-        const plate_alpha: f32 = if (selected or hovered) 255.0 else 230.0;
-        rl.drawTexturePro(
-            texture,
-            rl.Rectangle.init(0.0, 0.0, @floatFromInt(texture.width), @floatFromInt(texture.height)),
-            button.rect,
-            rl.Vector2.zero(),
-            0.0,
-            rl.Color.init(255, 255, 255, @intFromFloat(plate_alpha)),
-        );
-
-        const label_width = measureSmallText(assets, button.label);
-        drawSmallText(
-            assets,
-            button.label,
-            button.rect.x + (button.rect.width - label_width) * 0.5 + 1.0,
-            button.rect.y + 10.0,
-            colorWithAlpha(rl.Color.white, if (selected or hovered) 1.0 else 0.7),
-        );
-        return;
-    }
-
-    const fill = if (selected or hovered) accent_color else panel_color;
-    const outline = if (selected or hovered) rl.Color.gold else panel_outline;
-    rl.drawRectangleRounded(button.rect, 0.2, 8, fill);
-    rl.drawRectangleRoundedLinesEx(button.rect, 0.2, 8, 2.0, outline);
-
-    const label_width = rl.measureText(button.label, 24);
-    const label_x = @as(i32, @intFromFloat(button.rect.x + (button.rect.width - @as(f32, @floatFromInt(label_width))) * 0.5));
-    const label_y = @as(i32, @intFromFloat(button.rect.y + (button.rect.height - 24.0) * 0.5));
-    rl.drawText(button.label, label_x, label_y, 24, text_color);
 }
 
 fn buildWorldCamera(world_size: f32, shake_offset: state_mod.Vec2) rl.Camera2D {

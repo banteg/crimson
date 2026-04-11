@@ -1,0 +1,494 @@
+const std = @import("std");
+const rl = @import("raylib");
+
+const window_assets = @import("window_assets.zig");
+const window_ui = @import("window_ui.zig");
+
+pub const menu_demo_idle_start_ms: i32 = 23_000;
+const menu_label_width: f32 = 122.0;
+const menu_label_height: f32 = 28.0;
+const menu_label_row_height: f32 = 32.0;
+const menu_label_offset_x: f32 = 271.0;
+const menu_label_offset_y: f32 = -37.0;
+const menu_label_base_x: f32 = -60.0;
+const menu_label_base_y: f32 = 210.0;
+const menu_label_step: f32 = 60.0;
+const menu_item_offset_x: f32 = -71.0;
+const menu_item_offset_y: f32 = -59.0;
+const menu_sign_width: f32 = 571.44;
+const menu_sign_height: f32 = 141.36;
+const menu_sign_offset_x: f32 = -576.44;
+const menu_sign_offset_y: f32 = -61.0;
+const menu_sign_pos_y: f32 = 70.0;
+const menu_sign_pos_y_small: f32 = 60.0;
+const menu_sign_pos_x_pad: f32 = 4.0;
+const menu_scale_small_threshold: i32 = 640;
+const menu_scale_large_min: i32 = 801;
+const menu_scale_large_max: i32 = 1024;
+const menu_scale_small: f32 = 0.8;
+const menu_scale_large: f32 = 1.2;
+const menu_scale_shift: f32 = 10.0;
+
+const label_row_play_game: i32 = 1;
+const label_row_options: i32 = 2;
+const label_row_statistics: i32 = 3;
+const label_row_quit: i32 = 6;
+const label_row_back: i32 = 7;
+
+pub const Page = enum {
+    root,
+    play_game,
+};
+
+pub const Action = enum {
+    start_survival,
+    start_rush,
+    start_quest_11,
+    open_options,
+    open_high_scores,
+    quit,
+};
+
+pub const State = struct {
+    page: Page = .root,
+    selection: usize = 0,
+    timeline_ms: i32 = 0,
+    focus_timer_ms: i32 = 0,
+    hovered_index: ?usize = null,
+    panel_open_sfx_played: bool = false,
+    idle_ms: i32 = 0,
+    last_mouse_pos: rl.Vector2 = .{ .x = 0.0, .y = 0.0 },
+    hover_amounts: [4]i32 = [_]i32{0} ** 4,
+
+    pub fn reset(self: *State) void {
+        self.* = .{
+            .last_mouse_pos = rl.getMousePosition(),
+        };
+    }
+
+    pub fn openRoot(self: *State) void {
+        self.reset();
+    }
+
+    fn openPlayGame(self: *State) void {
+        self.page = .play_game;
+        self.selection = 0;
+        self.hovered_index = null;
+        self.focus_timer_ms = 1000;
+    }
+
+    fn openMain(self: *State) void {
+        self.page = .root;
+        self.selection = 0;
+        self.hovered_index = null;
+        self.focus_timer_ms = 1000;
+    }
+};
+
+pub const UpdateResult = struct {
+    action: ?Action = null,
+    play_panel_click: bool = false,
+    play_button_click: bool = false,
+};
+
+const RootEntry = struct {
+    slot: usize,
+    row: i32,
+    action: Action,
+};
+
+const root_entries = [_]RootEntry{
+    .{ .slot = 0, .row = label_row_play_game, .action = .start_survival }, // action unused on root
+    .{ .slot = 1, .row = label_row_options, .action = .open_options },
+    .{ .slot = 2, .row = label_row_statistics, .action = .open_high_scores },
+    .{ .slot = 3, .row = label_row_quit, .action = .quit },
+};
+
+pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
+    const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
+    return switch (state.page) {
+        .root => updateRoot(state, dt_ms, runtime_assets),
+        .play_game => updatePlayGame(state),
+    };
+}
+
+pub fn draw(state: *const State, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+    if (runtime_assets) |assets| {
+        drawMenuBackdrop(assets);
+        switch (state.page) {
+            .root => drawRootMenu(state, assets),
+            .play_game => drawPlayGamePanel(state, assets),
+        }
+        return;
+    }
+
+    rl.clearBackground(rl.Color.init(16, 12, 10, 255));
+    drawFallbackBackdrop();
+    switch (state.page) {
+        .root => drawFallbackRoot(state),
+        .play_game => drawFallbackPlayGame(state),
+    }
+}
+
+fn updateRoot(state: *State, dt_ms: i32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
+    if (dt_ms > 0) {
+        const mouse = rl.getMousePosition();
+        const mouse_moved = mouse.x != state.last_mouse_pos.x or mouse.y != state.last_mouse_pos.y;
+        if (mouse_moved) {
+            state.last_mouse_pos = mouse;
+        }
+
+        if (rl.getKeyPressed() != .null or rl.isMouseButtonPressed(.left) or rl.isMouseButtonPressed(.right) or mouse_moved) {
+            state.idle_ms = 0;
+        } else {
+            state.idle_ms += dt_ms;
+        }
+
+        state.timeline_ms = @min(rootTimelineMaxMs(), state.timeline_ms + dt_ms);
+        state.focus_timer_ms = @max(0, state.focus_timer_ms - dt_ms);
+    }
+
+    state.hovered_index = hoveredRootIndex(runtime_assets);
+    if (state.hovered_index) |hovered_index| {
+        if (rootEntryEnabled(hovered_index, state.timeline_ms)) {
+            state.selection = hovered_index;
+            state.focus_timer_ms = 1000;
+        }
+    }
+
+    if (!activateRootSelection(state)) {
+        if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
+            state.selection = previousEnabledRootSelection(state.selection, state.timeline_ms);
+            state.focus_timer_ms = 1000;
+        }
+        if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
+            state.selection = nextEnabledRootSelection(state.selection, state.timeline_ms);
+            state.focus_timer_ms = 1000;
+        }
+        updateHoverAmounts(state, dt_ms);
+        return .{
+            .play_panel_click = dt_ms > 0 and state.timeline_ms >= rootTimelineMaxMs() and !state.panel_open_sfx_played,
+        };
+    }
+
+    var result: UpdateResult = .{ .play_button_click = true };
+    switch (state.selection) {
+        0 => state.openPlayGame(),
+        1 => result.action = .open_options,
+        2 => result.action = .open_high_scores,
+        3 => result.action = .quit,
+        else => {},
+    }
+    updateHoverAmounts(state, dt_ms);
+    if (dt_ms > 0 and state.timeline_ms >= rootTimelineMaxMs() and !state.panel_open_sfx_played) {
+        result.play_panel_click = true;
+    }
+    return result;
+}
+
+fn updatePlayGame(state: *State) UpdateResult {
+    const buttons = playGameButtons();
+    window_ui.updateSelectionFromPointer(&state.selection, buttons[0..]);
+
+    if (rl.isKeyPressed(.escape)) {
+        state.openMain();
+        return .{ .play_button_click = true };
+    }
+    if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
+        state.selection = if (state.selection == 0) buttons.len - 1 else state.selection - 1;
+    }
+    if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
+        state.selection = (state.selection + 1) % buttons.len;
+    }
+
+    if (!window_ui.buttonActivated(buttons[0..], state.selection)) return .{};
+
+    return switch (state.selection) {
+        0 => .{ .action = .start_survival, .play_button_click = true },
+        1 => .{ .action = .start_rush, .play_button_click = true },
+        2 => .{ .action = .start_quest_11, .play_button_click = true },
+        3 => blk: {
+            state.openMain();
+            break :blk .{ .play_button_click = true };
+        },
+        else => .{},
+    };
+}
+
+fn drawMenuBackdrop(runtime_assets: *const window_assets.RuntimeAssets) void {
+    window_ui.drawTextureFit(
+        runtime_assets.texture(.backplasma),
+        rl.Rectangle.init(0.0, 0.0, @floatFromInt(rl.getScreenWidth()), @floatFromInt(rl.getScreenHeight())),
+        rl.Color.init(255, 255, 255, 92),
+    );
+    rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), rl.Color.init(16, 11, 9, 160));
+}
+
+fn drawFallbackBackdrop() void {
+    const width = rl.getScreenWidth();
+    const height = rl.getScreenHeight();
+    rl.drawRectangleGradientV(0, 0, width, height, rl.Color.init(32, 18, 16, 255), rl.Color.init(16, 12, 10, 255));
+    rl.drawCircle(width - 180, 120, 200.0, rl.Color.init(93, 31, 22, 80));
+    rl.drawCircle(160, height - 80, 220.0, rl.Color.init(58, 23, 18, 90));
+}
+
+fn drawRootMenu(state: *const State, runtime_assets: *const window_assets.RuntimeAssets) void {
+    drawMainMenuSign(state, runtime_assets);
+    for (root_entries, 0..) |entry, idx| {
+        drawRootEntry(state, runtime_assets, entry, idx, idx == state.selection);
+    }
+}
+
+fn drawRootEntry(state: *const State, runtime_assets: *const window_assets.RuntimeAssets, entry: RootEntry, idx: usize, selected: bool) void {
+    const item = runtime_assets.texture(.ui_menu_item);
+    const labels = runtime_assets.texture(.ui_item_texts);
+    const scale_info = menuItemScale(entry.slot);
+    const pos_x = menuSlotPosX(entry.slot);
+    const pos_y = menu_label_base_y + @as(f32, @floatFromInt(entry.slot)) * menu_label_step + menuWidescreenYShift(@floatFromInt(rl.getScreenWidth()));
+    const anim = menuUiElementAnim(entry.slot + 2, menuSlotStartMs(entry.slot), menuSlotEndMs(entry.slot), @as(f32, @floatFromInt(item.width)) * scale_info.scale, state.timeline_ms);
+    const dst = rl.Rectangle.init(pos_x, pos_y, @as(f32, @floatFromInt(item.width)) * scale_info.scale, @as(f32, @floatFromInt(item.height)) * scale_info.scale);
+    const origin = rl.Vector2.init(-(menu_item_offset_x * scale_info.scale), -(menu_item_offset_y * scale_info.scale - scale_info.local_y_shift));
+    const rotation_deg = radiansToDegrees(anim.angle_rad);
+
+    rl.drawTexturePro(
+        item,
+        rl.Rectangle.init(0.0, 0.0, @floatFromInt(item.width), @floatFromInt(item.height)),
+        dst,
+        origin,
+        rotation_deg,
+        rl.Color.white,
+    );
+
+    const hover_counter = if (selected and state.focus_timer_ms > 0) state.focus_timer_ms else state.hover_amounts[idx];
+    const label_alpha = if (rootEntryEnabled(idx, state.timeline_ms)) mainMenuLabelAlpha(hover_counter) else @as(u8, 100);
+    const tint = rl.Color.init(255, 255, 255, label_alpha);
+    const src = rl.Rectangle.init(0.0, @as(f32, @floatFromInt(entry.row)) * menu_label_row_height, menu_label_width, menu_label_row_height);
+    const label_dst = rl.Rectangle.init(pos_x, pos_y, menu_label_width * scale_info.scale, menu_label_height * scale_info.scale);
+    const label_origin = rl.Vector2.init(-(menu_label_offset_x * scale_info.scale), -(menu_label_offset_y * scale_info.scale - scale_info.local_y_shift));
+    rl.drawTexturePro(labels, src, label_dst, label_origin, rotation_deg, tint);
+    if (rootEntryEnabled(idx, state.timeline_ms)) {
+        rl.beginBlendMode(.additive);
+        rl.drawTexturePro(labels, src, label_dst, label_origin, rotation_deg, rl.Color.init(255, 255, 255, label_alpha));
+        rl.endBlendMode();
+    }
+}
+
+fn drawPlayGamePanel(state: *const State, runtime_assets: *const window_assets.RuntimeAssets) void {
+    drawMainMenuSign(state, runtime_assets);
+    window_ui.drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(420.0, 180.0, 430.0, 310.0), window_ui.colorWithAlpha(rl.Color.white, 0.96));
+    drawAtlasLabelCentered(runtime_assets, label_row_play_game, 228.0, window_ui.colorWithAlpha(rl.Color.white, 0.96));
+
+    const buttons = playGameButtons();
+    for (buttons, 0..) |button, idx| {
+        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+        window_ui.drawButton(button, idx == state.selection, hovered, runtime_assets);
+    }
+}
+
+fn drawFallbackRoot(state: *const State) void {
+    drawCenteredText("CRIMSONLAND", 104, 64, rl.Color.init(218, 80, 46, 255));
+    const buttons = fallbackRootButtons();
+    for (buttons, 0..) |button, idx| {
+        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+        window_ui.drawButton(button, idx == state.selection, hovered, null);
+    }
+}
+
+fn drawFallbackPlayGame(state: *const State) void {
+    drawCenteredText("PLAY GAME", 110, 46, rl.Color.init(218, 80, 46, 255));
+    const buttons = playGameButtons();
+    for (buttons, 0..) |button, idx| {
+        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+        window_ui.drawButton(button, idx == state.selection, hovered, null);
+    }
+}
+
+fn hoveredRootIndex(runtime_assets: ?*const window_assets.RuntimeAssets) ?usize {
+    const mouse = rl.getMousePosition();
+    if (runtime_assets) |assets| {
+        const item = assets.texture(.ui_menu_item);
+        for (root_entries, 0..) |entry, idx| {
+            if (rl.checkCollisionPointRec(mouse, rootButtonRect(entry.slot, item))) return idx;
+        }
+        return null;
+    }
+
+    const buttons = fallbackRootButtons();
+    for (buttons, 0..) |button, idx| {
+        if (rl.checkCollisionPointRec(mouse, button.rect)) return idx;
+    }
+    return null;
+}
+
+fn activateRootSelection(state: *State) bool {
+    if (!rootEntryEnabled(state.selection, state.timeline_ms)) return false;
+    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.space)) return true;
+
+    if (!rl.isMouseButtonPressed(.left)) return false;
+    const hovered = state.hovered_index orelse return false;
+    return hovered == state.selection;
+}
+
+fn rootButtonRect(slot: usize, item_texture: rl.Texture2D) rl.Rectangle {
+    const scale = menuItemScale(slot);
+    const width = @as(f32, @floatFromInt(item_texture.width)) * scale.scale;
+    const height = @as(f32, @floatFromInt(item_texture.height)) * scale.scale;
+    const x = menuSlotPosX(slot) + menu_item_offset_x * scale.scale;
+    const y = menu_label_base_y + @as(f32, @floatFromInt(slot)) * menu_label_step + menuWidescreenYShift(@floatFromInt(rl.getScreenWidth())) + menu_item_offset_y * scale.scale - scale.local_y_shift;
+    return rl.Rectangle.init(x, y, width, height);
+}
+
+fn rootEntryEnabled(slot: usize, timeline_ms: i32) bool {
+    return timeline_ms >= menuSlotStartMs(slot);
+}
+
+fn previousEnabledRootSelection(selection: usize, timeline_ms: i32) usize {
+    var idx = selection;
+    var attempts: usize = 0;
+    while (attempts < root_entries.len) : (attempts += 1) {
+        idx = if (idx == 0) root_entries.len - 1 else idx - 1;
+        if (rootEntryEnabled(idx, timeline_ms)) return idx;
+    }
+    return selection;
+}
+
+fn nextEnabledRootSelection(selection: usize, timeline_ms: i32) usize {
+    var idx = selection;
+    var attempts: usize = 0;
+    while (attempts < root_entries.len) : (attempts += 1) {
+        idx = (idx + 1) % root_entries.len;
+        if (rootEntryEnabled(idx, timeline_ms)) return idx;
+    }
+    return selection;
+}
+
+fn updateHoverAmounts(state: *State, dt_ms: i32) void {
+    for (0..root_entries.len) |idx| {
+        const hovered = state.hovered_index != null and state.hovered_index.? == idx;
+        if (hovered) {
+            state.hover_amounts[idx] = std.math.clamp(state.hover_amounts[idx] + dt_ms * 6, 0, 1000);
+        } else {
+            state.hover_amounts[idx] = std.math.clamp(state.hover_amounts[idx] - dt_ms * 2, 0, 1000);
+        }
+    }
+}
+
+fn rootTimelineMaxMs() i32 {
+    var max_ms: i32 = 300;
+    for (root_entries) |entry| {
+        max_ms = @max(max_ms, menuSlotStartMs(entry.slot));
+    }
+    return max_ms;
+}
+
+fn menuWidescreenYShift(screen_w: f32) f32 {
+    return (screen_w / 640.0) * 150.0 - 150.0;
+}
+
+fn menuSlotPosX(slot: usize) f32 {
+    return menu_label_base_x - @as(f32, @floatFromInt(slot)) * 20.0;
+}
+
+fn menuSlotStartMs(slot: usize) i32 {
+    return @intCast((slot + 2) * 100 + 300);
+}
+
+fn menuSlotEndMs(slot: usize) i32 {
+    return @intCast((slot + 2) * 100);
+}
+
+fn menuUiElementAnim(index: usize, start_ms: i32, end_ms: i32, width: f32, timeline_ms: i32) struct { angle_rad: f32, offset_x: f32 } {
+    if (start_ms <= end_ms or width <= 0.0) return .{ .angle_rad = 0.0, .offset_x = 0.0 };
+    var angle: f32 = 0.0;
+    var offset_x: f32 = 0.0;
+    if (timeline_ms < end_ms) {
+        angle = 1.5707964;
+        offset_x = -@abs(width);
+    } else if (timeline_ms < start_ms) {
+        const p = @as(f32, @floatFromInt(timeline_ms - end_ms)) / @as(f32, @floatFromInt(start_ms - end_ms));
+        angle = 1.5707964 * (1.0 - p);
+        offset_x = (1.0 - p) * -@abs(width);
+    }
+    if (index == 0) angle = -@abs(angle);
+    return .{ .angle_rad = angle, .offset_x = offset_x };
+}
+
+fn mainMenuLabelAlpha(counter_value: i32) u8 {
+    return @intCast(100 + @divTrunc(counter_value * 155, 1000));
+}
+
+fn mainMenuSignLayoutScale(screen_w: i32) struct { scale: f32, shift_x: f32 } {
+    if (screen_w <= menu_scale_small_threshold) return .{ .scale = menu_scale_small, .shift_x = menu_scale_shift };
+    if (screen_w >= menu_scale_large_min and screen_w <= menu_scale_large_max) return .{ .scale = menu_scale_large, .shift_x = menu_scale_shift };
+    return .{ .scale = 1.0, .shift_x = 0.0 };
+}
+
+fn drawMainMenuSign(state: *const State, runtime_assets: *const window_assets.RuntimeAssets) void {
+    const screen_w = rl.getScreenWidth();
+    const sign = runtime_assets.texture(.ui_sign_crimson);
+    const layout = mainMenuSignLayoutScale(screen_w);
+    const sign_pos = rl.Vector2.init(
+        @as(f32, @floatFromInt(screen_w)) + menu_sign_pos_x_pad,
+        if (screen_w > menu_scale_small_threshold) menu_sign_pos_y else menu_sign_pos_y_small,
+    );
+    const sign_w = menu_sign_width * layout.scale;
+    const sign_h = menu_sign_height * layout.scale;
+    const offset_x = menu_sign_offset_x * layout.scale + layout.shift_x;
+    const offset_y = menu_sign_offset_y * layout.scale;
+    const anim = menuUiElementAnim(0, 300, 0, sign_w, state.timeline_ms);
+    const rotation_deg = radiansToDegrees(anim.angle_rad);
+
+    rl.drawTexturePro(
+        sign,
+        rl.Rectangle.init(0.0, 0.0, @floatFromInt(sign.width), @floatFromInt(sign.height)),
+        rl.Rectangle.init(sign_pos.x, sign_pos.y, sign_w, sign_h),
+        rl.Vector2.init(-offset_x, -offset_y),
+        rotation_deg,
+        rl.Color.white,
+    );
+}
+
+fn menuItemScale(slot: usize) struct { scale: f32, local_y_shift: f32 } {
+    if (rl.getScreenWidth() < 641) {
+        return .{ .scale = 0.9, .local_y_shift = @as(f32, @floatFromInt(slot)) * 11.0 };
+    }
+    return .{ .scale = 1.0, .local_y_shift = 0.0 };
+}
+
+fn drawAtlasLabelCentered(runtime_assets: *const window_assets.RuntimeAssets, row: i32, y: f32, tint: rl.Color) void {
+    const texture = runtime_assets.texture(.ui_item_texts);
+    const src = rl.Rectangle.init(0.0, @as(f32, @floatFromInt(row)) * menu_label_row_height, menu_label_width, menu_label_row_height);
+    const width = menu_label_width;
+    const height = menu_label_height;
+    const x = (@as(f32, @floatFromInt(rl.getScreenWidth())) - width) * 0.5;
+    rl.drawTexturePro(texture, src, rl.Rectangle.init(x, y, width, height), rl.Vector2.zero(), 0.0, tint);
+}
+
+fn playGameButtons() [4]window_ui.UiButton {
+    const center_x = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
+    return .{
+        .{ .label = "SURVIVAL", .rect = window_ui.centeredRect(center_x, 276.0, 280.0, 48.0) },
+        .{ .label = "RUSH", .rect = window_ui.centeredRect(center_x, 332.0, 280.0, 48.0) },
+        .{ .label = "QUEST 1.1", .rect = window_ui.centeredRect(center_x, 388.0, 280.0, 48.0) },
+        .{ .label = "BACK", .rect = window_ui.centeredRect(center_x, 452.0, 220.0, 48.0) },
+    };
+}
+
+fn fallbackRootButtons() [4]window_ui.UiButton {
+    const center_x = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
+    return .{
+        .{ .label = "PLAY GAME", .rect = window_ui.centeredRect(center_x, 280.0, 300.0, 52.0) },
+        .{ .label = "OPTIONS", .rect = window_ui.centeredRect(center_x, 344.0, 300.0, 52.0) },
+        .{ .label = "STATISTICS", .rect = window_ui.centeredRect(center_x, 408.0, 300.0, 52.0) },
+        .{ .label = "QUIT", .rect = window_ui.centeredRect(center_x, 472.0, 300.0, 52.0) },
+    };
+}
+
+fn radiansToDegrees(radians: f32) f32 {
+    return radians * (180.0 / std.math.pi);
+}
+
+fn drawCenteredText(text: [:0]const u8, y: i32, font_size: i32, color: rl.Color) void {
+    const width = rl.measureText(text, font_size);
+    rl.drawText(text, @divTrunc(rl.getScreenWidth() - width, 2), y, font_size, color);
+}
