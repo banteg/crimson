@@ -119,6 +119,7 @@ const WeaponsScreen = struct {
 const PerksScreen = struct {
     selection: usize = 0,
     scroll: usize = 0,
+    hovered: ?usize = null,
 
     fn reset(self: *PerksScreen) void {
         self.* = .{};
@@ -379,7 +380,7 @@ fn updateWeapons(state: *State, frame_dt: f32, config: formats.crimson_cfg.Crims
         screen.selection = total - 1;
     }
 
-    if (rl.isKeyPressed(.escape) or backButtonActivated(backOnlyButton()[0])) {
+    if (rl.isKeyPressed(.escape) or backButtonActivated(weaponBackButton()[0])) {
         state.view = .hub;
         state.hub.reset();
         return .{ .play_button_click = true };
@@ -417,15 +418,17 @@ fn updatePerks(state: *State, frame_dt: f32, status: formats.game_cfg.Status) Up
     var perk_ids: [state_mod.perk_count_size]game_ids.PerkId = undefined;
     const total = buildPerkList(&perk_ids, status);
     const screen = &state.perks;
+    screen.hovered = null;
 
     if (total == 0) {
         screen.selection = 0;
         screen.scroll = 0;
+        screen.hovered = null;
     } else if (screen.selection >= total) {
         screen.selection = total - 1;
     }
 
-    if (rl.isKeyPressed(.escape) or backButtonActivated(backOnlyButton()[0])) {
+    if (rl.isKeyPressed(.escape) or backButtonActivated(perkBackButton()[0])) {
         state.view = .hub;
         state.hub.reset();
         return .{ .play_button_click = true };
@@ -452,7 +455,10 @@ fn updatePerks(state: *State, frame_dt: f32, status: formats.game_cfg.Status) Up
         if (screen.selection >= screen.scroll + 10) screen.scroll = screen.selection - 9;
     }
     if (hoveredListRow(perkListRect(), total, screen.scroll)) |row| {
-        screen.selection = row;
+        screen.hovered = row;
+        if (rl.isMouseButtonPressed(.left)) {
+            screen.selection = row;
+        }
     }
 
     return .{};
@@ -643,41 +649,49 @@ fn drawHighScoreRightPanel(
     window_ui.drawSmallText(assets, "Show scores:", right_panel_rect.x + 44.0, right_panel_rect.y + 106.0, text_color);
     window_ui.drawSmallText(assets, "Selected score list:", right_panel_rect.x + 44.0, right_panel_rect.y + 150.0, text_color);
 
-    drawDropdown(
-        assets,
-        playerCountWidgetRect(),
-        playerCountLabels()[0..],
-        @as(usize, @intCast(std.math.clamp(config.player_count, @as(u32, 1), @as(u32, 4)))) - 1,
-        state.dropdown_open == .player_count,
-    );
-
     var mode_labels_buf: [4][]const u8 = undefined;
     const mode_labels = highScoreModeLabels(&mode_labels_buf, status);
-    drawDropdown(
-        assets,
-        gameModeWidgetRect(),
-        mode_labels,
-        highScoreModeLabelIndex(state.mode, status),
-        state.dropdown_open == .game_mode,
-    );
-
-    drawDropdown(
-        assets,
-        dateModeWidgetRect(),
-        scoreDateModeLabels()[0..],
-        @min(config.highscore_date_mode, 3),
-        state.dropdown_open == .date_mode,
-    );
-
     var saved_names: [formats.crimson_cfg.saved_name_slot_count][]const u8 = undefined;
     for (0..saved_names.len) |idx| saved_names[idx] = formats.crimson_cfg.savedNameLabel(&config, idx);
-    drawDropdown(
-        assets,
-        scoreListWidgetRect(),
-        saved_names[0..],
-        formats.crimson_cfg.selectedSavedNameSlot(&config),
-        state.dropdown_open == .score_list,
-    );
+    const dropdowns = [_]struct {
+        kind: DropdownKind,
+        rect: rl.Rectangle,
+        items: []const []const u8,
+        selected: usize,
+    }{
+        .{
+            .kind = .player_count,
+            .rect = playerCountWidgetRect(),
+            .items = playerCountLabels()[0..],
+            .selected = @as(usize, @intCast(std.math.clamp(config.player_count, @as(u32, 1), @as(u32, 4)))) - 1,
+        },
+        .{
+            .kind = .game_mode,
+            .rect = gameModeWidgetRect(),
+            .items = mode_labels,
+            .selected = highScoreModeLabelIndex(state.mode, status),
+        },
+        .{
+            .kind = .date_mode,
+            .rect = dateModeWidgetRect(),
+            .items = scoreDateModeLabels()[0..],
+            .selected = @min(config.highscore_date_mode, 3),
+        },
+        .{
+            .kind = .score_list,
+            .rect = scoreListWidgetRect(),
+            .items = saved_names[0..],
+            .selected = formats.crimson_cfg.selectedSavedNameSlot(&config),
+        },
+    };
+    for (dropdowns) |dropdown| {
+        if (state.dropdown_open == dropdown.kind) continue;
+        drawDropdown(assets, dropdown.rect, dropdown.items, dropdown.selected, false);
+    }
+    for (dropdowns) |dropdown| {
+        if (state.dropdown_open != dropdown.kind) continue;
+        drawDropdown(assets, dropdown.rect, dropdown.items, dropdown.selected, true);
+    }
 }
 
 fn drawWeaponsPanels(
@@ -692,7 +706,8 @@ fn drawWeaponsPanels(
 
     var weapon_ids: [state_mod.weapon_count_size]game_ids.WeaponId = undefined;
     const total = buildWeaponList(&weapon_ids, config, status);
-    window_ui.drawSmallTextFmt("{d} weapons in database", assets, .{total}, left_panel_rect.x + 210.0, left_panel_rect.y + 80.0, muted_text);
+    const weapon_label = if (total == 1) "weapon" else "weapons";
+    window_ui.drawSmallTextFmt("{d} {s} in database", assets, .{ total, weapon_label }, left_panel_rect.x + 210.0, left_panel_rect.y + 80.0, muted_text);
     window_ui.drawSmallText(assets, "Weapon", left_panel_rect.x + 210.0, left_panel_rect.y + 108.0, text_color);
     drawListFrame(weaponListRect());
 
@@ -704,7 +719,7 @@ fn drawWeaponsPanels(
         window_ui.drawSmallText(assets, game_ids.weaponDisplayName(weapon_id, false), left_panel_rect.x + 218.0, left_panel_rect.y + 130.0 + @as(f32, @floatFromInt(row)) * 16.0, color);
     }
 
-    const back = backOnlyButton()[0];
+    const back = weaponBackButton()[0];
     const back_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), back.rect);
     window_ui.drawButton(back, false, back_hovered, assets);
 
@@ -755,7 +770,8 @@ fn drawPerksPanels(
 
     var perk_ids: [state_mod.perk_count_size]game_ids.PerkId = undefined;
     const total = buildPerkList(&perk_ids, status);
-    window_ui.drawSmallTextFmt("{d} perks in database", assets, .{total}, left_panel_rect.x + 210.0, left_panel_rect.y + 78.0, muted_text);
+    const perk_label = if (total == 1) "perk" else "perks";
+    window_ui.drawSmallTextFmt("{d} {s} in database", assets, .{ total, perk_label }, left_panel_rect.x + 210.0, left_panel_rect.y + 78.0, muted_text);
     window_ui.drawSmallText(assets, "Perks", left_panel_rect.x + 210.0, left_panel_rect.y + 106.0, text_color);
     drawListFrame(perkListRect());
 
@@ -763,22 +779,24 @@ fn drawPerksPanels(
     const end = @min(start + 10, total);
     for (perk_ids[start..end], 0..) |perk_id, row| {
         const list_index = start + row;
-        const color = if (list_index == state.selection) text_color else muted_text;
+        const alpha: f32 = if (state.hovered != null and state.hovered.? == list_index) 1.0 else if (list_index == state.selection) 0.9 else 0.7;
         window_ui.drawSmallText(
             assets,
             game_ids.perkDisplayName(perk_id, violence_disabled, preserve_bugs),
             left_panel_rect.x + 218.0,
             left_panel_rect.y + 128.0 + @as(f32, @floatFromInt(row)) * 16.0,
-            color,
+            rl.Color.init(255, 255, 255, @intFromFloat(255.0 * alpha)),
         );
     }
+    if (total > 10) drawPerkScrollbar(total, start);
 
-    const back = backOnlyButton()[0];
+    const back = perkBackButton()[0];
     const back_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), back.rect);
     window_ui.drawButton(back, false, back_hovered, assets);
 
     if (total == 0) return;
-    const perk_id = perk_ids[@min(state.selection, total - 1)];
+    const detail_index = @min(state.hovered orelse state.selection, total - 1);
+    const perk_id = perk_ids[detail_index];
     const detail_x = right_panel_rect.x + 34.0;
     window_ui.drawSmallTextFmt("perk #{d}", assets, .{@intFromEnum(perk_id)}, detail_x + 190.0, right_panel_rect.y + 32.0, muted_text);
     const name = game_ids.perkDisplayName(perk_id, violence_disabled, preserve_bugs);
@@ -853,6 +871,18 @@ fn backOnlyButton() [1]window_ui.UiButton {
     };
 }
 
+fn weaponBackButton() [1]window_ui.UiButton {
+    return .{
+        window_ui.buttonAt("Back", left_panel_rect.x + 368.0, left_panel_rect.y + 313.0, false),
+    };
+}
+
+fn perkBackButton() [1]window_ui.UiButton {
+    return .{
+        window_ui.buttonAt("Back", left_panel_rect.x + 356.0, left_panel_rect.y + 315.0, false),
+    };
+}
+
 fn scoreFrameRect() rl.Rectangle {
     return rl.Rectangle.init(left_panel_rect.x + 210.0, left_panel_rect.y + 101.0, 250.0, 164.0);
 }
@@ -868,6 +898,18 @@ fn perkListRect() rl.Rectangle {
 fn drawListFrame(rect: rl.Rectangle) void {
     rl.drawRectangle(@intFromFloat(rect.x), @intFromFloat(rect.y), @intFromFloat(rect.width), @intFromFloat(rect.height), rl.Color.white);
     rl.drawRectangle(@intFromFloat(rect.x + 1.0), @intFromFloat(rect.y + 1.0), @intFromFloat(rect.width - 2.0), @intFromFloat(rect.height - 2.0), rl.Color.black);
+}
+
+fn drawPerkScrollbar(total: usize, start: usize) void {
+    const track_x = left_panel_rect.x + 452.0;
+    const track_y = left_panel_rect.y + 126.0;
+    const track_h = 164.0;
+    const scroll_span = @max(total, 10) - 10;
+    const thumb_h = @min((10.0 / @as(f32, @floatFromInt(total))) * track_h, track_h - 3.0);
+    const thumb_top = track_y + 1.0 + ((track_h - 3.0 - thumb_h) / @as(f32, @floatFromInt(@max(scroll_span, 1)))) * @as(f32, @floatFromInt(start));
+    rl.drawRectangle(@intFromFloat(track_x), @intFromFloat(track_y), 1, @intFromFloat(track_h), rl.Color.white);
+    rl.drawRectangle(@intFromFloat(track_x + 1.0), @intFromFloat(thumb_top), 8, @intFromFloat(thumb_h + 1.0), rl.Color.init(255, 255, 255, 204));
+    rl.drawRectangle(@intFromFloat(track_x + 2.0), @intFromFloat(thumb_top + 1.0), 6, @intFromFloat(@max(1.0, thumb_h - 1.0)), rl.Color.init(51, 204, 255, 51));
 }
 
 fn drawUnderline(x: f32, y: f32, width: f32) void {
@@ -1105,12 +1147,16 @@ fn drawDropdown(
 ) void {
     const selected_index = @min(selected_index_raw, if (items.len == 0) @as(usize, 0) else items.len - 1);
     const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), rect);
-    const texture = if (is_open or hovered) assets.texture(.ui_drop_on) else assets.texture(.ui_drop_off);
+    const active = is_open or hovered;
+    const texture = if (active) assets.texture(.ui_drop_on) else assets.texture(.ui_drop_off);
 
     rl.drawRectangleRec(rect, rl.Color.white);
     rl.drawRectangle(@intFromFloat(rect.x + 1.0), @intFromFloat(rect.y + 1.0), @intFromFloat(rect.width - 2.0), @intFromFloat(rect.height - 2.0), rl.Color.black);
+    if (active) {
+        rl.drawRectangle(@intFromFloat(rect.x), @intFromFloat(rect.y + 15.0), @intFromFloat(rect.width), 1, rl.Color.init(255, 255, 255, 128));
+    }
     if (items.len != 0) {
-        window_ui.drawSmallText(assets, items[selected_index], rect.x + 4.0, rect.y + 1.0, if (hovered or is_open) text_color else muted_text);
+        window_ui.drawSmallText(assets, items[selected_index], rect.x + 4.0, rect.y + 1.0, rl.Color.init(255, 255, 255, if (active) 242 else 191));
     }
     rl.drawTexturePro(
         texture,
@@ -1128,7 +1174,8 @@ fn drawDropdown(
     for (items, 0..) |item, idx| {
         const row_rect = rl.Rectangle.init(rect.x, rect.y + 17.0 + @as(f32, @floatFromInt(idx)) * 16.0, rect.width, 16.0);
         const row_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), row_rect);
-        window_ui.drawSmallText(assets, item, row_rect.x + 4.0, row_rect.y + 1.0, if (row_hovered or idx == selected_index) text_color else muted_text);
+        const alpha: u8 = if (row_hovered) 242 else if (idx == selected_index) 245 else 153;
+        window_ui.drawSmallText(assets, item, row_rect.x + 4.0, row_rect.y + 1.0, rl.Color.init(255, 255, 255, alpha));
     }
 }
 
