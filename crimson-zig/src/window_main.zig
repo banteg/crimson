@@ -26,10 +26,45 @@ const state_mod = cz.state;
 
 const window_width = 1280;
 const window_height = 720;
-const boot_duration_seconds: f32 = 0.45;
 const ui_button_width: f32 = 280.0;
 const ui_button_height: f32 = 56.0;
 const world_margin: f32 = 56.0;
+
+const splash_alpha_scale: f32 = 2.0;
+const logo_time_scale: f32 = 1.1;
+const logo_time_offset: f32 = 2.0;
+const logo_skip_accel: f32 = 4.0;
+const logo_skip_jump: f32 = 16.0;
+const logo_theme_trigger: f32 = 14.0;
+const logo_10_in_start: f32 = 1.0;
+const logo_10_in_end: f32 = 2.0;
+const logo_10_hold_end: f32 = 4.0;
+const logo_10_out_end: f32 = 5.0;
+const logo_ref_in_start: f32 = 7.0;
+const logo_ref_in_end: f32 = 8.0;
+const logo_ref_hold_end: f32 = 10.0;
+const logo_ref_out_end: f32 = 11.0;
+const menu_demo_idle_start_ms: i32 = 23_000;
+const menu_label_width: f32 = 122.0;
+const menu_label_height: f32 = 28.0;
+const menu_label_base_x: f32 = -60.0;
+const menu_label_base_y: f32 = 210.0;
+const menu_label_step: f32 = 60.0;
+const menu_item_offset_x: f32 = -71.0;
+const menu_item_offset_y: f32 = -59.0;
+const menu_sign_width: f32 = 571.44;
+const menu_sign_height: f32 = 141.36;
+const menu_sign_offset_x: f32 = -576.44;
+const menu_sign_offset_y: f32 = -61.0;
+const menu_sign_pos_y: f32 = 70.0;
+const menu_sign_pos_y_small: f32 = 60.0;
+const menu_sign_pos_x_pad: f32 = 4.0;
+const menu_scale_small_threshold: i32 = 640;
+const menu_scale_large_min: i32 = 801;
+const menu_scale_large_max: i32 = 1024;
+const menu_scale_small: f32 = 0.8;
+const menu_scale_large: f32 = 1.2;
+const menu_scale_shift: f32 = 10.0;
 
 const bg_color = rl.Color.init(16, 12, 10, 255);
 const panel_color = rl.Color.init(37, 24, 20, 255);
@@ -75,6 +110,36 @@ const AssetsState = enum {
 const UiButton = struct {
     label: [:0]const u8,
     rect: rl.Rectangle,
+};
+
+const BootSequenceState = struct {
+    boot_time: f32 = 0.5,
+    fade_out_ready: bool = true,
+    fade_out_done: bool = false,
+    logo_delay_ticks: i32 = 0,
+    logo_skip: bool = false,
+    logo_active: bool = false,
+    intro_started: bool = false,
+
+    fn reset(self: *BootSequenceState) void {
+        self.* = .{};
+    }
+};
+
+const MenuScreenState = struct {
+    timeline_ms: i32 = 0,
+    focus_timer_ms: i32 = 0,
+    hovered_index: ?usize = null,
+    panel_open_sfx_played: bool = false,
+    idle_ms: i32 = 0,
+    last_mouse_pos: rl.Vector2 = .{ .x = 0.0, .y = 0.0 },
+    hover_amounts: [6]i32 = [_]i32{0} ** 6,
+
+    fn reset(self: *MenuScreenState) void {
+        self.* = .{
+            .last_mouse_pos = rl.getMousePosition(),
+        };
+    }
 };
 
 const GameplayScreen = struct {
@@ -255,7 +320,8 @@ const App = struct {
     allocator: std.mem.Allocator,
     runtime: app_runtime.DesktopRuntime,
     screen: Screen = .boot,
-    boot_elapsed: f32 = 0.0,
+    boot: BootSequenceState = .{},
+    menu: MenuScreenState = .{},
     menu_selection: usize = 0,
     results_selection: usize = 0,
     gameplay: ?GameplayScreen = null,
@@ -275,6 +341,8 @@ const App = struct {
             .runtime = runtime,
             .audio = live_audio.Bridge.init(allocator, audio_mod.audioConfigFromCrimsonCfg(runtime.config), null),
         };
+        app.boot.reset();
+        app.menu.reset();
         app.loadAssets();
         return app;
     }
@@ -320,7 +388,7 @@ const App = struct {
     fn update(self: *App, frame_dt: f32) void {
         switch (self.screen) {
             .boot => self.updateBoot(frame_dt),
-            .main_menu => self.updateMainMenu(),
+            .main_menu => self.updateMainMenu(frame_dt),
             .gameplay => self.updateGameplay(frame_dt),
             .results => self.updateResults(),
             .high_scores => self.updateHighScores(),
@@ -341,26 +409,93 @@ const App = struct {
     }
 
     fn updateBoot(self: *App, frame_dt: f32) void {
-        self.audio.ensureIntroMusic();
-        self.boot_elapsed += frame_dt;
-        if (self.boot_elapsed >= boot_duration_seconds) {
+        const dt = @min(frame_dt, 0.1);
+        if (!self.boot.fade_out_done) {
+            self.audio.ensureIntroMusic();
+            self.boot.boot_time -= dt;
+            if (self.boot.boot_time <= 0.0) {
+                self.boot.boot_time = 0.0;
+                self.boot.fade_out_done = true;
+            }
+            return;
+        }
+
+        if (self.boot.logo_delay_ticks < 5) {
+            self.boot.logo_delay_ticks += 1;
+            return;
+        }
+
+        self.boot.logo_active = true;
+        if (self.boot.boot_time > logo_theme_trigger) {
+            self.menu.reset();
             self.screen = .main_menu;
+            return;
+        }
+        if (!self.boot.intro_started) {
+            self.audio.ensureIntroMusic();
+            self.boot.intro_started = true;
+        }
+        if (!self.boot.logo_skip and bootSkipTriggered()) {
+            self.boot.logo_skip = true;
+        }
+        self.boot.boot_time += dt * logo_time_scale;
+        var t = self.boot.boot_time - logo_time_offset;
+        if (self.boot.logo_skip) {
+            if (t < logo_10_in_start or (t >= logo_10_out_end and (t < logo_ref_in_start or t >= logo_ref_out_end))) {
+                t = logo_skip_jump;
+            } else {
+                t += dt * logo_skip_accel;
+            }
+            self.boot.boot_time = t + logo_time_offset;
         }
     }
 
-    fn updateMainMenu(self: *App) void {
+    fn updateMainMenu(self: *App, frame_dt: f32) void {
         self.audio.ensureMenuTheme();
+        const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
         const buttons = mainMenuButtons();
-        updateSelectionFromPointer(&self.menu_selection, buttons[0..]);
-        if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-            self.menu_selection = if (self.menu_selection == 0) buttons.len - 1 else self.menu_selection - 1;
-        }
-        if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-            self.menu_selection = (self.menu_selection + 1) % buttons.len;
+        if (dt_ms > 0) {
+            const mouse = rl.getMousePosition();
+            const mouse_moved = mouse.x != self.menu.last_mouse_pos.x or mouse.y != self.menu.last_mouse_pos.y;
+            if (mouse_moved) {
+                self.menu.last_mouse_pos = mouse;
+            }
+
+            if (rl.getKeyPressed() != .null or rl.isMouseButtonPressed(.left) or rl.isMouseButtonPressed(.right) or mouse_moved) {
+                self.menu.idle_ms = 0;
+            } else {
+                self.menu.idle_ms += dt_ms;
+            }
+
+            self.menu.timeline_ms = @min(menuMaxTimelineMs(buttons.len), self.menu.timeline_ms + dt_ms);
+            self.menu.focus_timer_ms = @max(0, self.menu.focus_timer_ms - dt_ms);
+            if (self.menu.timeline_ms >= menuMaxTimelineMs(buttons.len) and !self.menu.panel_open_sfx_played) {
+                self.audio.playUiPanelClick();
+                self.menu.panel_open_sfx_played = true;
+            }
         }
 
-        const activated = buttonActivated(buttons[0..], self.menu_selection);
-        if (!activated) return;
+        self.menu.hovered_index = hoveredMainMenuIndex(buttons[0..]);
+        if (self.menu.hovered_index) |hovered_index| {
+            if (mainMenuEntryEnabled(@intCast(hovered_index), self.menu.timeline_ms)) {
+                self.menu_selection = hovered_index;
+                self.menu.focus_timer_ms = 1000;
+            }
+        }
+        const activated = mainMenuEntryEnabled(@intCast(self.menu_selection), self.menu.timeline_ms) and buttonActivated(buttons[0..], self.menu_selection);
+        if (!activated) {
+            if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
+                self.menu_selection = previousEnabledMenuSelection(self.menu_selection, self.menu.timeline_ms, buttons.len);
+                self.menu.focus_timer_ms = 1000;
+            }
+            if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
+                self.menu_selection = nextEnabledMenuSelection(self.menu_selection, self.menu.timeline_ms, buttons.len);
+                self.menu.focus_timer_ms = 1000;
+            }
+            updateMenuHoverAmounts(&self.menu, dt_ms, buttons.len);
+            return;
+        }
+
         self.audio.playUiButtonClick();
 
         switch (self.menu_selection) {
@@ -372,6 +507,7 @@ const App = struct {
             5 => self.quit_requested = true,
             else => {},
         }
+        updateMenuHoverAmounts(&self.menu, dt_ms, buttons.len);
     }
 
     fn updateGameplay(self: *App, frame_dt: f32) void {
@@ -446,6 +582,7 @@ const App = struct {
                 }
                 self.results = null;
                 self.menu_selection = 0;
+                self.menu.reset();
                 self.screen = .main_menu;
             },
             else => {},
@@ -473,6 +610,7 @@ const App = struct {
                 2 => self.setHighScoresMode(.quests),
                 3 => {
                     self.menu_selection = 3;
+                    self.menu.reset();
                     self.screen = .main_menu;
                 },
                 else => {},
@@ -548,6 +686,7 @@ const App = struct {
             5 => {
                 self.audio.playUiButtonClick();
                 self.menu_selection = 3;
+                self.menu.reset();
                 self.screen = .main_menu;
             },
             else => {},
@@ -827,27 +966,30 @@ const App = struct {
     }
 
     fn drawBoot(self: *const App) void {
-        rl.clearBackground(bgColorLerp(bootProgress(self.boot_elapsed)));
-        drawBackdrop();
+        rl.clearBackground(rl.Color.black);
         if (self.runtime_assets) |*runtime_assets| {
-            drawBootAssets(runtime_assets, bootProgress(self.boot_elapsed));
+            if (!self.boot.fade_out_done) {
+                drawBootSplash(runtime_assets, clamp01(self.boot.boot_time * splash_alpha_scale));
+            } else if (self.boot.logo_active) {
+                drawBootCompanyLogo(runtime_assets, self.boot.boot_time - logo_time_offset);
+            }
+        } else {
+            drawCenteredText("CRIMSON-ZIG", 144, 72, accent_color);
+            drawCenteredText("Desktop gameplay slice booting", 232, 24, text_color);
+            drawCenteredText("raylib shell + live Zig runtime + archive-backed assets", 270, 18, muted_text);
         }
-        drawCenteredText("CRIMSON-ZIG", 144, 72, accent_color);
-        drawCenteredText("Desktop gameplay slice booting", 232, 24, text_color);
-        drawCenteredText("raylib shell + live Zig runtime + archive-backed assets", 270, 18, muted_text);
         drawAssetsStatus(self);
         drawAudioStatus(&self.audio);
     }
 
     fn drawMainMenu(self: *const App) void {
-        rl.clearBackground(bg_color);
-        drawBackdrop();
         if (self.runtime_assets) |*runtime_assets| {
-            drawMenuAssets(runtime_assets);
-            drawSmallTextCentered(runtime_assets, "NATIVE SURVIVAL / RUSH / QUEST GAMEPLAY SLICE", 204.0, HudTextColor.primary);
-            drawSmallTextCentered(runtime_assets, "LIVE ZIG RUNTIME NOW BOOTS MULTIPLE REAL MODES.", 234.0, HudTextColor.dim);
+            rl.clearBackground(rl.Color.black);
+            drawMenuAssets(self, runtime_assets);
         }
         if (self.runtime_assets == null) {
+            rl.clearBackground(bg_color);
+            drawBackdrop();
             drawCenteredText("CRIMSON-ZIG", 118, 68, accent_color);
             drawCenteredText("Native survival / rush / quest gameplay slice", 198, 24, text_color);
             drawCenteredText("Live Zig runtime now boots multiple real modes.", 232, 18, muted_text);
@@ -858,11 +1000,16 @@ const App = struct {
         const buttons = mainMenuButtons();
         for (buttons, 0..) |button, idx| {
             const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-            drawButton(button, idx == self.menu_selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
+            if (self.runtime_assets) |*assets| {
+                drawMainMenuButton(self, assets, button, idx, idx == self.menu_selection, mouse_hovered);
+            } else {
+                drawButton(button, idx == self.menu_selection, mouse_hovered, null);
+            }
         }
 
         if (self.runtime_assets) |*runtime_assets| {
-            drawSmallTextCentered(runtime_assets, "ENTER STARTS. HIGH SCORES NOW READ REAL ZIG `.HI` TABLES. ESC CLOSES THE WINDOW.", 624.0, HudTextColor.dim);
+            drawSmallText(runtime_assets, "Enter activates selected item. Mouse works too.", 34.0, 646.0, HudTextColor.dim);
+            drawSmallText(runtime_assets, "Current menu still routes directly into the Zig gameplay shell.", 34.0, 664.0, HudTextColor.dim);
         } else {
             drawCenteredText("Enter starts. High scores now read real Zig .hi tables. Esc closes the window.", 620, 18, muted_text);
         }
@@ -1053,19 +1200,6 @@ pub fn main() !void {
     try app.saveAllIfDirty();
 }
 
-fn bootProgress(boot_elapsed: f32) f32 {
-    return std.math.clamp(boot_elapsed / boot_duration_seconds, @as(f32, 0.0), @as(f32, 1.0));
-}
-
-fn bgColorLerp(progress: f32) rl.Color {
-    return rl.Color.init(
-        @intFromFloat(8.0 + progress * 8.0),
-        @intFromFloat(5.0 + progress * 7.0),
-        @intFromFloat(5.0 + progress * 5.0),
-        255,
-    );
-}
-
 fn drawBackdrop() void {
     const width = rl.getScreenWidth();
     const height = rl.getScreenHeight();
@@ -1074,32 +1208,158 @@ fn drawBackdrop() void {
     rl.drawCircle(160, height - 80, 220.0, rl.Color.init(58, 23, 18, 90));
 }
 
-fn drawBootAssets(runtime_assets: *const window_assets.RuntimeAssets, progress: f32) void {
-    const left_rect = rl.Rectangle.init(98.0, 112.0, 320.0, 180.0);
-    const right_rect = rl.Rectangle.init(862.0, 112.0, 320.0, 180.0);
-    const alpha = @as(u8, @intFromFloat(64.0 + progress * 160.0));
-
-    drawTextureFit(runtime_assets.texture(.splash_10tons), left_rect, rl.Color.init(255, 255, 255, alpha));
-    drawTextureFit(runtime_assets.texture(.splash_reflexive), right_rect, rl.Color.init(255, 255, 255, alpha));
-    drawTextureFit(runtime_assets.texture(.loading), rl.Rectangle.init(520.0, 330.0, 240.0, 72.0), rl.Color.init(255, 255, 255, alpha));
+fn clamp01(value: f32) f32 {
+    return std.math.clamp(value, @as(f32, 0.0), @as(f32, 1.0));
 }
 
-fn drawMenuAssets(runtime_assets: *const window_assets.RuntimeAssets) void {
+fn bootSkipTriggered() bool {
+    if (rl.getKeyPressed() != .null) return true;
+    if (rl.isMouseButtonPressed(.left)) return true;
+    if (rl.isMouseButtonPressed(.right)) return true;
+    return false;
+}
+
+fn bootLogoAlpha(t: f32, in_start: f32, in_end: f32, hold_end: f32, out_end: f32) ?f32 {
+    if (t < in_start or t >= out_end) return null;
+    if (t < in_end) return clamp01(t - in_start);
+    if (t < hold_end) return 1.0;
+    return clamp01(1.0 - (t - hold_end));
+}
+
+fn drawBootCompanyLogo(runtime_assets: *const window_assets.RuntimeAssets, t: f32) void {
+    const LogoState = struct {
+        texture: rl.Texture2D,
+        alpha: f32,
+    };
+    const logo_state: LogoState = blk: {
+        if (bootLogoAlpha(t, logo_10_in_start, logo_10_in_end, logo_10_hold_end, logo_10_out_end)) |alpha| {
+            break :blk .{ .texture = runtime_assets.texture(.splash_10tons), .alpha = alpha };
+        }
+        if (bootLogoAlpha(t, logo_ref_in_start, logo_ref_in_end, logo_ref_hold_end, logo_ref_out_end)) |alpha| {
+            break :blk .{ .texture = runtime_assets.texture(.splash_reflexive), .alpha = alpha };
+        }
+        return;
+    };
+
+    const texture = logo_state.texture;
+    const x = (@as(f32, @floatFromInt(rl.getScreenWidth())) - @as(f32, @floatFromInt(texture.width))) * 0.5;
+    const y = (@as(f32, @floatFromInt(rl.getScreenHeight())) - @as(f32, @floatFromInt(texture.height))) * 0.5;
+    drawTextureFit(
+        texture,
+        rl.Rectangle.init(x, y, @floatFromInt(texture.width), @floatFromInt(texture.height)),
+        colorWithAlpha(rl.Color.white, logo_state.alpha),
+    );
+}
+
+fn drawBootSplash(runtime_assets: *const window_assets.RuntimeAssets, alpha: f32) void {
+    if (!(alpha > 0.0)) return;
+    const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
+    const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
+    const logo = runtime_assets.texture(.cl_logo);
+    const band_height = @as(f32, @floatFromInt(logo.height)) * 2.0;
+    const band_top = (screen_h - band_height) * 0.5 - 4.0;
+    const band_bottom = band_top + band_height;
+    const line_color = colorWithAlpha(rl.Color.init(149, 175, 198, 255), alpha * 0.7);
+    rl.drawRectangle(0, @intFromFloat(band_top), rl.getScreenWidth(), 1, line_color);
+    rl.drawRectangle(0, @intFromFloat(band_bottom), rl.getScreenWidth(), 1, line_color);
+    rl.drawRectangle(0, @intFromFloat(band_top), 1, @intFromFloat(band_height), line_color);
+    rl.drawRectangle(rl.getScreenWidth() - 1, @intFromFloat(band_top), 1, @intFromFloat(band_height), line_color);
+
+    const logo_x = (screen_w - @as(f32, @floatFromInt(logo.width))) * 0.5;
+    const logo_y = (screen_h - @as(f32, @floatFromInt(logo.height))) * 0.5;
+    drawTextureFit(logo, rl.Rectangle.init(logo_x, logo_y, @floatFromInt(logo.width), @floatFromInt(logo.height)), colorWithAlpha(rl.Color.white, alpha));
+    drawTextureFit(runtime_assets.texture(.loading), rl.Rectangle.init(screen_w * 0.5 + 128.0, screen_h * 0.5 + 16.0, @floatFromInt(runtime_assets.texture(.loading).width), @floatFromInt(runtime_assets.texture(.loading).height)), colorWithAlpha(rl.Color.white, alpha));
+    const esrb = runtime_assets.texture(.logo_esrb);
+    drawTextureFit(esrb, rl.Rectangle.init(screen_w - @as(f32, @floatFromInt(esrb.width)) - 1.0, screen_h - @as(f32, @floatFromInt(esrb.height)) - 1.0, @floatFromInt(esrb.width), @floatFromInt(esrb.height)), colorWithAlpha(rl.Color.white, alpha));
+}
+
+fn drawMenuAssets(app: *const App, runtime_assets: *const window_assets.RuntimeAssets) void {
     drawTextureFit(
         runtime_assets.texture(.backplasma),
         rl.Rectangle.init(0.0, 0.0, @floatFromInt(rl.getScreenWidth()), @floatFromInt(rl.getScreenHeight())),
         rl.Color.init(255, 255, 255, 92),
     );
     rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), rl.Color.init(16, 11, 9, 160));
-    drawTextureCentered(
-        runtime_assets.texture(.ui_sign_crimson),
-        rl.Vector2.init(@as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5, 120.0),
-        446.0,
-        110.0,
-        rl.Color.init(255, 255, 255, 232),
+    drawMainMenuSign(app, runtime_assets);
+}
+
+fn menuUiElementAnim(index: usize, start_ms: i32, end_ms: i32, width: f32, timeline_ms: i32) struct { angle_rad: f32, offset_x: f32 } {
+    if (start_ms <= end_ms or width <= 0.0) return .{ .angle_rad = 0.0, .offset_x = 0.0 };
+    var angle: f32 = 0.0;
+    var offset_x: f32 = 0.0;
+    if (timeline_ms < end_ms) {
+        angle = 1.5707964;
+        offset_x = -@abs(width);
+    } else if (timeline_ms < start_ms) {
+        const p = @as(f32, @floatFromInt(timeline_ms - end_ms)) / @as(f32, @floatFromInt(start_ms - end_ms));
+        angle = 1.5707964 * (1.0 - p);
+        offset_x = (1.0 - p) * -@abs(width);
+    }
+    if (index == 0) angle = -@abs(angle);
+    return .{ .angle_rad = angle, .offset_x = offset_x };
+}
+
+fn mainMenuLabelAlpha(counter_value: i32) u8 {
+    return @intCast(100 + @divTrunc(counter_value * 155, 1000));
+}
+
+fn mainMenuSignLayoutScale(screen_w: i32) struct { scale: f32, shift_x: f32 } {
+    if (screen_w <= menu_scale_small_threshold) return .{ .scale = menu_scale_small, .shift_x = menu_scale_shift };
+    if (screen_w >= menu_scale_large_min and screen_w <= menu_scale_large_max) return .{ .scale = menu_scale_large, .shift_x = menu_scale_shift };
+    return .{ .scale = 1.0, .shift_x = 0.0 };
+}
+
+fn drawMainMenuSign(app: *const App, runtime_assets: *const window_assets.RuntimeAssets) void {
+    const screen_w = rl.getScreenWidth();
+    const sign = runtime_assets.texture(.ui_sign_crimson);
+    const layout = mainMenuSignLayoutScale(screen_w);
+    const sign_pos = rl.Vector2.init(
+        @as(f32, @floatFromInt(screen_w)) + menu_sign_pos_x_pad,
+        if (screen_w > menu_scale_small_threshold) menu_sign_pos_y else menu_sign_pos_y_small,
     );
-    drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(388.0, 242.0, 504.0, 252.0), rl.Color.init(255, 255, 255, 220));
-    drawTextureFit(runtime_assets.texture(.logo_esrb), rl.Rectangle.init(42.0, 44.0, 112.0, 150.0), rl.Color.init(255, 255, 255, 190));
+    const sign_w = menu_sign_width * layout.scale;
+    const sign_h = menu_sign_height * layout.scale;
+    const offset_x = menu_sign_offset_x * layout.scale + layout.shift_x;
+    const offset_y = menu_sign_offset_y * layout.scale;
+    const anim = menuUiElementAnim(0, 300, 0, sign_w, app.menu.timeline_ms);
+    const rotation_deg = radiansToDegrees(anim.angle_rad);
+
+    rl.drawTexturePro(
+        sign,
+        rl.Rectangle.init(0.0, 0.0, @floatFromInt(sign.width), @floatFromInt(sign.height)),
+        rl.Rectangle.init(sign_pos.x, sign_pos.y, sign_w, sign_h),
+        rl.Vector2.init(-offset_x, -offset_y),
+        rotation_deg,
+        rl.Color.white,
+    );
+}
+
+fn drawMainMenuButton(app: *const App, runtime_assets: *const window_assets.RuntimeAssets, button: UiButton, idx: usize, selected: bool, hovered: bool) void {
+    const item = runtime_assets.texture(.ui_menu_item);
+    const scale_info = menuItemScale(idx);
+    const pos_x = menuSlotPosX(idx);
+    const pos_y = menu_label_base_y + @as(f32, @floatFromInt(idx)) * menu_label_step + menuWidescreenYShift(@floatFromInt(rl.getScreenWidth()));
+    const anim = menuUiElementAnim(idx + 2, menuSlotStartMs(idx), menuSlotEndMs(idx), @as(f32, @floatFromInt(item.width)) * scale_info.scale, app.menu.timeline_ms);
+    const dst = rl.Rectangle.init(pos_x, pos_y, @as(f32, @floatFromInt(item.width)) * scale_info.scale, @as(f32, @floatFromInt(item.height)) * scale_info.scale);
+    const origin = rl.Vector2.init(-(menu_item_offset_x * scale_info.scale), -(menu_item_offset_y * scale_info.scale - scale_info.local_y_shift));
+    const rotation_deg = radiansToDegrees(anim.angle_rad);
+
+    rl.drawTexturePro(
+        item,
+        rl.Rectangle.init(0.0, 0.0, @floatFromInt(item.width), @floatFromInt(item.height)),
+        dst,
+        origin,
+        rotation_deg,
+        rl.Color.white,
+    );
+
+    const hover_counter = if (selected and app.menu.focus_timer_ms > 0) app.menu.focus_timer_ms else app.menu.hover_amounts[idx];
+    const label_alpha = if (mainMenuEntryEnabled(@intCast(idx), app.menu.timeline_ms)) mainMenuLabelAlpha(hover_counter) else @as(u8, 100);
+    const text_alpha: f32 = if (selected or hovered) 1.0 else 0.7;
+    const label_width = measureSmallText(runtime_assets, button.label);
+    const label_x = button.rect.x + (button.rect.width - label_width) * 0.5 + 1.0;
+    const label_y = button.rect.y + 11.0;
+    drawSmallText(runtime_assets, button.label, label_x, label_y, rl.Color.init(255, 255, 255, @intFromFloat(@as(f32, @floatFromInt(label_alpha)) * text_alpha)));
 }
 
 fn drawAssetsStatus(app: *const App) void {
@@ -1259,15 +1519,57 @@ fn drawTextureTiled(texture: rl.Texture2D, area: rl.Rectangle, tint: rl.Color) v
     }
 }
 
+fn menuWidescreenYShift(screen_w: f32) f32 {
+    return (screen_w / 640.0) * 150.0 - 150.0;
+}
+
+fn menuSlotPosX(slot: usize) f32 {
+    return menu_label_base_x - @as(f32, @floatFromInt(slot)) * 20.0;
+}
+
+fn menuSlotStartMs(slot: usize) i32 {
+    return @intCast((slot + 2) * 100 + 300);
+}
+
+fn menuSlotEndMs(slot: usize) i32 {
+    return @intCast((slot + 2) * 100);
+}
+
+fn menuMaxTimelineMs(slot_count: usize) i32 {
+    var max_ms: i32 = 300;
+    for (0..slot_count) |slot| {
+        max_ms = @max(max_ms, menuSlotStartMs(slot));
+    }
+    return max_ms;
+}
+
+fn menuItemScale(slot: usize) struct { scale: f32, local_y_shift: f32 } {
+    if (rl.getScreenWidth() < 641) {
+        return .{ .scale = 0.9, .local_y_shift = @as(f32, @floatFromInt(slot)) * 11.0 };
+    }
+    return .{ .scale = 1.0, .local_y_shift = 0.0 };
+}
+
+fn mainMenuItemRect(slot: usize, item_texture: ?rl.Texture2D) rl.Rectangle {
+    const y_shift = menuWidescreenYShift(@floatFromInt(rl.getScreenWidth()));
+    const item_width: f32 = if (item_texture) |item| @floatFromInt(item.width) else 325.0;
+    const item_height: f32 = if (item_texture) |item| @floatFromInt(item.height) else 54.0;
+    const scale = menuItemScale(slot);
+    const width = item_width * scale.scale;
+    const height = item_height * scale.scale;
+    const x = menuSlotPosX(slot) + menu_item_offset_x * scale.scale;
+    const y = menu_label_base_y + @as(f32, @floatFromInt(slot)) * menu_label_step + y_shift + menu_item_offset_y * scale.scale - scale.local_y_shift;
+    return rl.Rectangle.init(x, y, width, height);
+}
+
 fn mainMenuButtons() [6]UiButton {
-    const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     return .{
-        .{ .label = "START SURVIVAL", .rect = centeredRect(center_x, 214.0, ui_button_width, 48.0) },
-        .{ .label = "START RUSH", .rect = centeredRect(center_x, 272.0, ui_button_width, 48.0) },
-        .{ .label = "START QUEST 1.1", .rect = centeredRect(center_x, 330.0, ui_button_width, 48.0) },
-        .{ .label = "OPTIONS", .rect = centeredRect(center_x, 388.0, ui_button_width, 48.0) },
-        .{ .label = "HIGH SCORES", .rect = centeredRect(center_x, 446.0, ui_button_width, 48.0) },
-        .{ .label = "QUIT", .rect = centeredRect(center_x, 504.0, ui_button_width, 48.0) },
+        .{ .label = "START SURVIVAL", .rect = mainMenuItemRect(0, null) },
+        .{ .label = "START RUSH", .rect = mainMenuItemRect(1, null) },
+        .{ .label = "START QUEST 1.1", .rect = mainMenuItemRect(2, null) },
+        .{ .label = "OPTIONS", .rect = mainMenuItemRect(3, null) },
+        .{ .label = "HIGH SCORES", .rect = mainMenuItemRect(4, null) },
+        .{ .label = "QUIT", .rect = mainMenuItemRect(5, null) },
     };
 }
 
@@ -1323,6 +1625,49 @@ fn updateSelectionFromPointer(selection: *usize, buttons: []const UiButton) void
         if (rl.checkCollisionPointRec(mouse, button.rect)) {
             selection.* = idx;
             return;
+        }
+    }
+}
+
+fn hoveredMainMenuIndex(buttons: []const UiButton) ?usize {
+    const mouse = rl.getMousePosition();
+    for (buttons, 0..) |button, idx| {
+        if (rl.checkCollisionPointRec(mouse, button.rect)) return idx;
+    }
+    return null;
+}
+
+fn mainMenuEntryEnabled(slot: i32, timeline_ms: i32) bool {
+    return timeline_ms >= menuSlotStartMs(@intCast(slot));
+}
+
+fn previousEnabledMenuSelection(selection: usize, timeline_ms: i32, count: usize) usize {
+    var idx = selection;
+    var attempts: usize = 0;
+    while (attempts < count) : (attempts += 1) {
+        idx = if (idx == 0) count - 1 else idx - 1;
+        if (mainMenuEntryEnabled(@intCast(idx), timeline_ms)) return idx;
+    }
+    return selection;
+}
+
+fn nextEnabledMenuSelection(selection: usize, timeline_ms: i32, count: usize) usize {
+    var idx = selection;
+    var attempts: usize = 0;
+    while (attempts < count) : (attempts += 1) {
+        idx = (idx + 1) % count;
+        if (mainMenuEntryEnabled(@intCast(idx), timeline_ms)) return idx;
+    }
+    return selection;
+}
+
+fn updateMenuHoverAmounts(menu: *MenuScreenState, dt_ms: i32, count: usize) void {
+    for (0..count) |idx| {
+        const hovered = menu.hovered_index != null and menu.hovered_index.? == idx;
+        if (hovered) {
+            menu.hover_amounts[idx] = std.math.clamp(menu.hover_amounts[idx] + dt_ms * 6, 0, 1000);
+        } else {
+            menu.hover_amounts[idx] = std.math.clamp(menu.hover_amounts[idx] - dt_ms * 2, 0, 1000);
         }
     }
 }
