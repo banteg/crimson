@@ -80,10 +80,6 @@ pub fn draw(state: *const State, runtime_assets: ?*const window_assets.RuntimeAs
         } else if (state.logo_active) {
             drawCompanyLogo(assets, state.boot_time - logo_time_offset);
         }
-    } else {
-        drawCenteredText("CRIMSON-ZIG", 144, 72, rl.Color.init(218, 80, 46, 255));
-        drawCenteredText("Desktop gameplay slice booting", 232, 24, rl.Color.init(245, 236, 225, 255));
-        drawCenteredText("raylib shell + live Zig runtime + archive-backed assets", 270, 18, rl.Color.init(171, 150, 132, 255));
     }
 }
 
@@ -151,9 +147,4 @@ fn drawSplash(runtime_assets: *const window_assets.RuntimeAssets, alpha: f32) vo
     window_ui.drawTextureFit(loading, rl.Rectangle.init(screen_w * 0.5 + 128.0, screen_h * 0.5 + 16.0, @floatFromInt(loading.width), @floatFromInt(loading.height)), window_ui.colorWithAlpha(rl.Color.white, alpha));
     const esrb = runtime_assets.texture(.logo_esrb);
     window_ui.drawTextureFit(esrb, rl.Rectangle.init(screen_w - @as(f32, @floatFromInt(esrb.width)) - 1.0, screen_h - @as(f32, @floatFromInt(esrb.height)) - 1.0, @floatFromInt(esrb.width), @floatFromInt(esrb.height)), window_ui.colorWithAlpha(rl.Color.white, alpha));
-}
-
-fn drawCenteredText(text: [:0]const u8, y: i32, font_size: i32, color: rl.Color) void {
-    const width = rl.measureText(text, font_size);
-    rl.drawText(text, @divTrunc(rl.getScreenWidth() - width, 2), y, font_size, color);
 }

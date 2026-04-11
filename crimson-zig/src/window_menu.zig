@@ -99,6 +99,12 @@ pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_asset
         state.focus_timer_ms = @max(0, state.focus_timer_ms - dt_ms);
     }
 
+    if (runtime_assets == null) {
+        state.hovered_index = null;
+        updateHoverAmounts(state, dt_ms);
+        return .{};
+    }
+
     state.hovered_index = hoveredRootIndex(runtime_assets);
     if (state.hovered_index) |hovered_index| {
         if (rootEntryEnabled(hovered_index, state.timeline_ms)) {
@@ -138,22 +144,15 @@ pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_asset
 }
 
 pub fn draw(state: *const State, runtime_assets: ?*const window_assets.RuntimeAssets) void {
-    if (runtime_assets) |assets| {
-        drawMenuBackdrop(assets);
-        drawSign(state.timeline_ms, assets);
-        for (root_entries, 0..) |entry, idx| {
-            drawRootEntry(state, assets, entry, idx, idx == state.selection);
-        }
+    const assets = runtime_assets orelse {
+        rl.clearBackground(rl.Color.black);
         return;
-    }
+    };
 
-    rl.clearBackground(rl.Color.init(16, 12, 10, 255));
-    drawFallbackBackdrop();
-    drawCenteredText("CRIMSONLAND", 104, 64, rl.Color.init(218, 80, 46, 255));
-    const buttons = fallbackRootButtons();
-    for (buttons, 0..) |button, idx| {
-        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-        window_ui.drawButton(button, idx == state.selection, hovered, null);
+    drawMenuBackdrop(assets);
+    drawSign(state.timeline_ms, assets);
+    for (root_entries, 0..) |entry, idx| {
+        drawRootEntry(state, assets, entry, idx, idx == state.selection);
     }
 }
 
@@ -283,14 +282,6 @@ pub fn drawPanelBackEntry(runtime_assets: *const window_assets.RuntimeAssets, ti
     rl.endBlendMode();
 }
 
-fn drawFallbackBackdrop() void {
-    const width = rl.getScreenWidth();
-    const height = rl.getScreenHeight();
-    rl.drawRectangleGradientV(0, 0, width, height, rl.Color.init(32, 18, 16, 255), rl.Color.init(16, 12, 10, 255));
-    rl.drawCircle(width - 180, 120, 200.0, rl.Color.init(93, 31, 22, 80));
-    rl.drawCircle(160, height - 80, 220.0, rl.Color.init(58, 23, 18, 90));
-}
-
 fn drawRootEntry(state: *const State, runtime_assets: *const window_assets.RuntimeAssets, entry: RootEntry, idx: usize, selected: bool) void {
     const item = runtime_assets.texture(.ui_menu_item);
     const labels = runtime_assets.texture(.ui_item_texts);
@@ -327,17 +318,10 @@ fn drawRootEntry(state: *const State, runtime_assets: *const window_assets.Runti
 
 fn hoveredRootIndex(runtime_assets: ?*const window_assets.RuntimeAssets) ?usize {
     const mouse = rl.getMousePosition();
-    if (runtime_assets) |assets| {
-        const item = assets.texture(.ui_menu_item);
-        for (root_entries, 0..) |entry, idx| {
-            if (rl.checkCollisionPointRec(mouse, rootButtonRect(entry.slot, item))) return idx;
-        }
-        return null;
-    }
-
-    const buttons = fallbackRootButtons();
-    for (buttons, 0..) |button, idx| {
-        if (rl.checkCollisionPointRec(mouse, button.rect)) return idx;
+    const assets = runtime_assets orelse return null;
+    const item = assets.texture(.ui_menu_item);
+    for (root_entries, 0..) |entry, idx| {
+        if (rl.checkCollisionPointRec(mouse, rootButtonRect(entry.slot, item))) return idx;
     }
     return null;
 }
@@ -432,21 +416,6 @@ fn menuItemScale(slot: usize) struct { scale: f32, local_y_shift: f32 } {
     return .{ .scale = 1.0, .local_y_shift = 0.0 };
 }
 
-fn fallbackRootButtons() [4]window_ui.UiButton {
-    const center_x = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
-    return .{
-        .{ .label = "PLAY GAME", .rect = window_ui.centeredRect(center_x, 280.0, 300.0, 52.0) },
-        .{ .label = "OPTIONS", .rect = window_ui.centeredRect(center_x, 344.0, 300.0, 52.0) },
-        .{ .label = "STATISTICS", .rect = window_ui.centeredRect(center_x, 408.0, 300.0, 52.0) },
-        .{ .label = "QUIT", .rect = window_ui.centeredRect(center_x, 472.0, 300.0, 52.0) },
-    };
-}
-
 fn radiansToDegrees(radians: f32) f32 {
     return radians * (180.0 / std.math.pi);
-}
-
-fn drawCenteredText(text: [:0]const u8, y: i32, font_size: i32, color: rl.Color) void {
-    const width = rl.measureText(text, font_size);
-    rl.drawText(text, @divTrunc(rl.getScreenWidth() - width, 2), y, font_size, color);
 }

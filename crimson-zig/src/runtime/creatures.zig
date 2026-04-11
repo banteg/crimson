@@ -9,7 +9,6 @@ const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const rng_callers = @import("../rng_caller_static.zig");
-const runtime_helpers = @import("helpers.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
 const terrain_fx_mod = @import("terrain_fx.zig");
@@ -2132,7 +2131,16 @@ pub const CreaturePool = struct {
                 };
 
                 if (state.bonuses.energizer > 0.0 and creature.max_hp < 380.0) {
-                    runtime_helpers.consumeBurstRng(state, 6, true);
+                    const effects = self.effects orelse unreachable;
+                    effects.spawnBurst(
+                        state,
+                        creature.pos,
+                        6,
+                        5,
+                        0.4,
+                        null,
+                        .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+                    );
                     creature.last_hit_owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
                     const prev_spawn_guard = state.bonus_spawn_guard;
                     state.bonus_spawn_guard = true;

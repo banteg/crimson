@@ -993,9 +993,9 @@ fn drawAudioStatus(audio: *const live_audio.Bridge) void {
 fn drawStartupDiagnostics(app: *const App) void {
     switch (app.assets_state) {
         .loaded => {},
-        .unavailable => drawTextSlice("assets: no crimson.paq found; using primitive fallback", 28, 688, 18, muted_text),
+        .unavailable => drawTextSlice("assets: no crimson.paq found; desktop runtime cannot start", 28, 688, 18, muted_text),
         .failed => {
-            drawTextSlice("assets: load failed; using primitive fallback", 28, 668, 18, muted_text);
+            drawTextSlice("assets: load failed; desktop runtime cannot start", 28, 668, 18, muted_text);
             if (app.assets_message) |message| {
                 drawTextSlice(message, 28, 688, 18, rl.Color.orange);
             }

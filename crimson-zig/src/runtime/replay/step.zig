@@ -593,9 +593,11 @@ pub fn stepTick(
         context.detail_preset,
     );
     if (context.state.debug_last_picked_bonus_id == game_ids.BonusId.freeze) {
-        bonus_runtime.applyFreezePickupCorpseCleanupRng(
+        bonus_runtime.applyFreezePickupCorpseEffects(
             &context.state,
             &context.creatures,
+            &context.effects,
+            context.detail_preset,
             freeze_corpse_at_tick_start[0..],
         );
     }
