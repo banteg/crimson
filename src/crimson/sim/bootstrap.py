@@ -97,7 +97,7 @@ def _advance_random_terrain_prelude_rng(rng: CrandLike) -> None:
     # unlock-gated variant rolls. The values are not used by the rewrite, but
     # the state advance is required for parity.
     for caller in _UNLOCK_RANDOM_TERRAIN_PRELUDE_CALLERS:
-        rng.rand(caller=caller)
+        rng.rand_tagged(caller)
 
 
 def _advance_terrain_stamping_rng(
@@ -120,9 +120,9 @@ def _advance_terrain_stamping_rng(
     ):
         count = (area * density) >> TERRAIN_DENSITY_SHIFT
         for _ in range(count):
-            rng.rand(caller=callers[0])
-            rng.rand(caller=callers[1])
-            rng.rand(caller=callers[2])
+            rng.rand_tagged(callers[0])
+            rng.rand_tagged(callers[1])
+            rng.rand_tagged(callers[2])
 
 
 def advance_unlock_terrain(

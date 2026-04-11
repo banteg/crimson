@@ -13,9 +13,7 @@ def update_regeneration(ctx: PerksUpdateEffectsCtx) -> None:
     if not perk_active(ctx.players[0], PerkId.REGENERATION):
         return
     if (
-        ctx.state.rng.rand(
-            caller=RngCallerStatic.PERKS_UPDATE_EFFECTS_REGENERATION_GATE,
-        )
+        ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_REGENERATION_GATE)
         & 1
     ) == 0:
         return

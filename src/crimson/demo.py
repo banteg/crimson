@@ -512,18 +512,14 @@ class DemoView:
         for idx in range(20):
             x = float(
                 int(
-                    rng.rand(
-                        caller=RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP1_X,
-                    )
+                    rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP1_X)
                     % 200,
                 )
                 + 32,
             )
             y = float(
                 int(
-                    rng.rand(
-                        caller=RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP1_Y,
-                    )
+                    rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP1_Y)
                     % 899,
                 )
                 + 64,
@@ -533,18 +529,14 @@ class DemoView:
                 spawn_pos = Vec2(
                     float(
                         int(
-                            rng.rand(
-                                caller=RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP2_X,
-                            )
+                            rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP2_X)
                             % 30,
                         )
                         + 32,
                     ),
                     float(
                         int(
-                            rng.rand(
-                                caller=RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP2_Y,
-                            )
+                            rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP2_Y)
                             % 899,
                         )
                         + 64,
@@ -582,18 +574,14 @@ class DemoView:
         for idx in range(20):
             x = float(
                 int(
-                    rng.rand(
-                        caller=RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_BIG_X,
-                    )
+                    rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_BIG_X)
                     % 200,
                 )
                 + 32,
             )
             y = float(
                 int(
-                    rng.rand(
-                        caller=RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_BIG_Y,
-                    )
+                    rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_BIG_Y)
                     % 899,
                 )
                 + 64,
@@ -603,18 +591,14 @@ class DemoView:
                 spawn_pos = Vec2(
                     float(
                         int(
-                            rng.rand(
-                                caller=RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_SMALL_X,
-                            )
+                            rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_SMALL_X)
                             % 30,
                         )
                         + 32,
                     ),
                     float(
                         int(
-                            rng.rand(
-                                caller=RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_SMALL_Y,
-                            )
+                            rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_SMALL_Y)
                             % 899,
                         )
                         + 64,

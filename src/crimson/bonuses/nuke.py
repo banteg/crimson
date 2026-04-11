@@ -20,10 +20,10 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
     origin = ctx.origin_pos
     rng = ctx.state.rng
 
-    bullet_count = int(rng.rand(caller=RngCallerStatic.BONUS_APPLY_NUKE_BULLET_COUNT)) & 3
+    bullet_count = int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_BULLET_COUNT)) & 3
     bullet_count += 4
     for _ in range(bullet_count):
-        angle = float(int(rng.rand(caller=RngCallerStatic.BONUS_APPLY_NUKE_PISTOL_ANGLE)) % 628) * 0.01
+        angle = float(int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_PISTOL_ANGLE)) % 628) * 0.01
         proj_id = projectile_spawn(
             ctx.state,
             players=ctx.players,
@@ -35,11 +35,11 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
         )
         if proj_id != -1:
             speed_scale = (
-                float(int(rng.rand(caller=RngCallerStatic.BONUS_APPLY_NUKE_PISTOL_SPEED_SCALE)) % 50) * 0.01 + 0.5
+                float(int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_PISTOL_SPEED_SCALE)) % 50) * 0.01 + 0.5
             )
             ctx.state.projectiles.entries[proj_id].speed_scale *= float(speed_scale)
 
-    gauss_angle_1 = float(int(rng.rand(caller=RngCallerStatic.BONUS_APPLY_NUKE_GAUSS_ANGLE_1)) % 628) * 0.01
+    gauss_angle_1 = float(int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_GAUSS_ANGLE_1)) % 628) * 0.01
     projectile_spawn(
         ctx.state,
         players=ctx.players,
@@ -49,7 +49,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
         owner=OwnerRef.from_local_player(0),
         owner_player_index=ctx.player.index,
     )
-    gauss_angle_2 = float(int(rng.rand(caller=RngCallerStatic.BONUS_APPLY_NUKE_GAUSS_ANGLE_2)) % 628) * 0.01
+    gauss_angle_2 = float(int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_GAUSS_ANGLE_2)) % 628) * 0.01
     projectile_spawn(
         ctx.state,
         players=ctx.players,

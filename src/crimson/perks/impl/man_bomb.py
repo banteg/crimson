@@ -28,7 +28,7 @@ def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
                 else RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE
             )
             angle = (
-                (float(ctx.state.rng.rand(caller=caller) % 50) * 0.01)
+                (float(ctx.state.rng.rand_tagged(caller) % 50) * 0.01)
                 + float(idx) * (math.pi / 4.0)
                 - 0.25
             )

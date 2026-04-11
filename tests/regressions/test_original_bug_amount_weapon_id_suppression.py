@@ -15,13 +15,19 @@ class _SeqRng(Crand):
         self._values = [int(v) for v in values] or [0]
         self._idx = 0
 
-    def rand(self, *, caller: int | None = None) -> int:
-        _ = caller
+    def _next(self) -> int:
         if self._idx >= len(self._values):
             return int(self._values[-1])
         value = int(self._values[self._idx])
         self._idx += 1
         return value
+
+    def rand(self) -> int:
+        return self._next()
+
+    def rand_tagged(self, caller: int) -> int:
+        _ = caller
+        return self._next()
 
 
 def test_original_amount_weapon_id_suppression_bug_is_fixed_by_default() -> None:

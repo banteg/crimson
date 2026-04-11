@@ -10,9 +10,7 @@ def apply_bandage(ctx: PerkApplyCtx) -> None:
     for player in ctx.players:
         if player.health > 0.0:
             amount = float(
-                ctx.state.rng.rand(
-                    caller=RngCallerStatic.PERK_APPLY_BANDAGE_HEAL,
-                )
+                ctx.state.rng.rand_tagged(RngCallerStatic.PERK_APPLY_BANDAGE_HEAL)
                 % 50
                 + 1,
             )

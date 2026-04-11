@@ -61,7 +61,7 @@ def choose_unlock_terrain_slots(
 ) -> TerrainSlotTriplet:
     # Keep the thresholds descending to preserve the native chained 1/8 roll order.
     for threshold, slots, caller in _UNLOCK_TERRAIN_RULES:
-        if unlock_index >= threshold and (rng.rand(caller=caller) & 7) == 3:
+        if unlock_index >= threshold and (rng.rand_tagged(caller) & 7) == 3:
             return slots
     return DEFAULT_TERRAIN_SLOTS
 

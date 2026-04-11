@@ -6,12 +6,13 @@ from dataclasses import dataclass
 from typing import Protocol, TypeAlias, runtime_checkable
 
 # Exact static caller address when known.
-CallerStatic: TypeAlias = int | None
+CallerStatic: TypeAlias = int
+RecordedCallerStatic: TypeAlias = CallerStatic | None
 
 CRT_RAND_MULT = 214013
 CRT_RAND_INC = 2531011
 
-RngTraceSink = Callable[[int, int, int, CallerStatic], None]
+RngTraceSink = Callable[[int, int, int, RecordedCallerStatic], None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,7 +20,7 @@ class RngDrawRecord:
     state_before: int
     state_after: int
     value: int
-    caller: CallerStatic
+    caller: RecordedCallerStatic
 
 
 class MissingRngCallerError(ValueError):
@@ -35,7 +36,9 @@ class CrandLike(Protocol):
 
     def srand(self, seed: int) -> None: ...
 
-    def rand(self, *, caller: CallerStatic = None) -> int: ...
+    def rand(self) -> int: ...
+
+    def rand_tagged(self, caller: CallerStatic) -> int: ...
 
     def advance(self, draws: int) -> None: ...
 
@@ -90,7 +93,7 @@ class CrtRand:
         self._trace_sink = sink
         self._trace_require_caller = bool(require_caller)
 
-    def rand(self, *, caller: CallerStatic = None) -> int:
+    def _draw(self, caller: CallerStatic | None) -> int:
         state_before = self._state
         self._state = (self._state * CRT_RAND_MULT + CRT_RAND_INC) & 0xFFFFFFFF
         value = (self._state >> 16) & 0x7FFF
@@ -102,6 +105,12 @@ class CrtRand:
                 raise MissingRngCallerError("strict RNG trace requires caller")
             trace_sink(int(state_before), int(self._state), int(value), caller)
         return value
+
+    def rand(self) -> int:
+        return self._draw(None)
+
+    def rand_tagged(self, caller: CallerStatic) -> int:
+        return self._draw(int(caller))
 
 
 class Crand(CrtRand):
@@ -142,7 +151,7 @@ class RecordingCrand:
         self._shared.base.srand(int(seed))
         self._shared.records.clear()
 
-    def rand(self, *, caller: CallerStatic = None) -> int:
+    def rand(self) -> int:
         state_before = int(self._shared.base.state)
         value = self._shared.base.rand()
         state_after = int(self._shared.base.state)
@@ -151,7 +160,21 @@ class RecordingCrand:
                 state_before=state_before,
                 state_after=state_after,
                 value=value,
-                caller=caller,
+                caller=None,
+            ),
+        )
+        return value
+
+    def rand_tagged(self, caller: CallerStatic) -> int:
+        state_before = int(self._shared.base.state)
+        value = self._shared.base.rand_tagged(int(caller))
+        state_after = int(self._shared.base.state)
+        self._shared.records.append(
+            RngDrawRecord(
+                state_before=state_before,
+                state_after=state_after,
+                value=value,
+                caller=int(caller),
             ),
         )
         return value

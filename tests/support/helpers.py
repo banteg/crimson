@@ -64,7 +64,7 @@ class ScriptedCrand:
         self._shared.index = 0
         self._shared.records.clear()
 
-    def rand(self, *, caller: CallerStatic = None) -> int:
+    def _next_value(self, caller: CallerStatic | None) -> int:
         state_before = int(self._shared.state)
         values = self._shared.values
         index = int(self._shared.index)
@@ -92,6 +92,12 @@ class ScriptedCrand:
             ),
         )
         return int(value)
+
+    def rand(self) -> int:
+        return self._next_value(None)
+
+    def rand_tagged(self, caller: CallerStatic) -> int:
+        return self._next_value(int(caller))
 
     def advance(self, draws: int) -> None:
         steps = int(draws)

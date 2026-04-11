@@ -69,7 +69,7 @@ def creature_ai7_tick_link_timer(
         if creature.link_index >= 0:
             creature.ai_mode = CreatureAiMode.HOLD_TIMER
             creature.link_index = (
-                rng.rand(caller=RngCallerStatic.CREATURE_UPDATE_ALL_AI7_LINK_TIMER_HOLD)
+                rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_AI7_LINK_TIMER_HOLD)
                 & 0x1FF
             ) + 500
         return
@@ -77,7 +77,7 @@ def creature_ai7_tick_link_timer(
     creature.link_index -= dt_ms
     if creature.link_index < 1:
         creature.link_index = -700 - (
-            rng.rand(caller=RngCallerStatic.CREATURE_UPDATE_ALL_AI7_LINK_TIMER_RESET)
+            rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_AI7_LINK_TIMER_RESET)
             & 0x3FF
         )
 

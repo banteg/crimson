@@ -926,8 +926,7 @@ class _StubRand:
         self._state = int(seed)
         self._idx = 0
 
-    def rand(self, *, caller: int | None = None) -> int:
-        _ = caller
+    def _next(self) -> int:
         if self._idx >= len(self.values):
             value = 0
         else:
@@ -935,6 +934,13 @@ class _StubRand:
         self._idx += 1
         self._state = int(value) & 0xFFFFFFFF
         return value
+
+    def rand(self) -> int:
+        return self._next()
+
+    def rand_tagged(self, caller: int) -> int:
+        _ = caller
+        return self._next()
 
     def advance(self, draws: int) -> None:
         steps = int(draws)

@@ -210,7 +210,7 @@ class BonusPool:
         if entry.bonus_id == BonusId.WEAPON:
             entry.amount = int(weapon_pick_random_available(state))
         elif entry.bonus_id == BonusId.POINTS:
-            entry.amount = 1000 if (rng.rand(caller=RngCallerStatic.BONUS_SPAWN_AT_POS_POINTS_AMOUNT) & 7) < 3 else 500
+            entry.amount = 1000 if (rng.rand_tagged(RngCallerStatic.BONUS_SPAWN_AT_POS_POINTS_AMOUNT) & 7) < 3 else 500
         else:
             meta = BONUS_BY_ID.get(entry.bonus_id)
             entry.amount = int(meta.native_amount or 0) if meta is not None else 0
@@ -243,7 +243,7 @@ class BonusPool:
         rng = state.rng
         # Native special-case: while any player has Pistol, 3/4 chance to force a Weapon drop.
         if players and any(player.weapon.weapon_id == WeaponId.PISTOL for player in players):
-            if (rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_PISTOL_FORCE_WEAPON) & 3) < 3:
+            if (rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_PISTOL_FORCE_WEAPON) & 3) < 3:
                 entry = self.spawn_at_pos(
                     pos,
                     state=state,
@@ -275,7 +275,7 @@ class BonusPool:
                 self._spawn_on_kill_burst(entry=entry, state=state, detail_preset=detail_preset)
                 return entry
 
-        base_roll = rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BASE_GATE)
+        base_roll = rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BASE_GATE)
         if base_roll % 9 != 1:
             allow_without_magnet = False
             if players:
@@ -286,7 +286,7 @@ class BonusPool:
                     has_pistol = any(player.weapon.weapon_id == WeaponId.PISTOL for player in players)
                 if has_pistol:
                     allow_without_magnet = (
-                        rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_PISTOL_ALLOW_WITHOUT_MAGNET)
+                        rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_PISTOL_ALLOW_WITHOUT_MAGNET)
                         % 5
                         == 1
                     )
@@ -300,7 +300,7 @@ class BonusPool:
                         has_bonus_magnet = any(perk_active(player, PerkId.BONUS_MAGNET) for player in players)
                 if not has_bonus_magnet:
                     return None
-                if rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BONUS_MAGNET) % 10 != 2:
+                if rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BONUS_MAGNET) % 10 != 2:
                     return None
 
         entry = self.spawn_at_pos(
@@ -354,10 +354,10 @@ class BonusPool:
         for _ in range(16):
             state.effects.spawn_burst_particle(
                 pos=entry.pos,
-                rotation_draw=rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_ROTATION),
-                vel_x_draw=rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_VEL_X),
-                vel_y_draw=rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_VEL_Y),
-                scale_step_draw=rng.rand(caller=RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_SCALE_STEP),
+                rotation_draw=rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_ROTATION),
+                vel_x_draw=rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_VEL_X),
+                vel_y_draw=rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_VEL_Y),
+                scale_step_draw=rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_SCALE_STEP),
                 detail_preset=detail_preset,
             )
 

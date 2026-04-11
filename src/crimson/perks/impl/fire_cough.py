@@ -34,13 +34,9 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     aim = ctx.player.aim
     dist = (aim - origin_pos).length()
     max_offset = dist * float(ctx.player.spread_heat) * 0.5
-    dir_roll = ctx.state.rng.rand(
-        caller=RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_DIR,
-    )
+    dir_roll = ctx.state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_DIR)
     dir_angle = float(dir_roll & 0x1FF) * (math.tau / 512.0)
-    mag_roll = ctx.state.rng.rand(
-        caller=RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_MAG,
-    )
+    mag_roll = ctx.state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_MAG)
     mag = float(mag_roll & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
     jitter = aim + Vec2.from_angle(dir_angle) * offset
@@ -59,9 +55,7 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     ctx.state.sprite_effects.spawn(pos=muzzle, vel=vel, scale=1.0, color=RGBA(0.5, 0.5, 0.5, 0.413))
 
     ctx.player.fire_cough_timer -= ctx.state.perk_intervals.fire_cough
-    interval_roll = ctx.state.rng.rand(
-        caller=RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET,
-    )
+    interval_roll = ctx.state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET)
     ctx.state.perk_intervals.fire_cough = float(interval_roll % 4) + 2.0
 
 

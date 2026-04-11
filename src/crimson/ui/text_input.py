@@ -53,7 +53,7 @@ def update_name_entry_text(
         if play_sfx is not None:
             play_sfx(
                 SfxId.UI_TYPECLICK_01
-                if (rng.rand(caller=RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK) & 1) == 0
+                if (rng.rand_tagged(RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK) & 1) == 0
                 else SfxId.UI_TYPECLICK_02,
             )
     if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE) and caret > 0:
@@ -62,7 +62,7 @@ def update_name_entry_text(
         if play_sfx is not None:
             play_sfx(
                 SfxId.UI_TYPECLICK_01
-                if (rng.rand(caller=RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK) & 1) == 0
+                if (rng.rand_tagged(RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK) & 1) == 0
                 else SfxId.UI_TYPECLICK_02,
             )
     if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):

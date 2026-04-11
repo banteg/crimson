@@ -41,11 +41,17 @@ class _RngStub(Crand):
         super().__init__(0)
         self._values = list(values)
 
-    def rand(self, *, caller: int | None = None) -> int:
-        _ = caller
+    def _next(self) -> int:
         if not self._values:
             return 0
         return int(self._values.pop(0))
+
+    def rand(self) -> int:
+        return self._next()
+
+    def rand_tagged(self, caller: int) -> int:
+        _ = caller
+        return self._next()
 
 
 class _AdoptMenuGroundView:

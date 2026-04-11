@@ -25,7 +25,7 @@ def _require_single_player_typo(command) -> None:
 
 
 def _typeclick_sfx(world: WorldState, *, caller: RngCallerStatic) -> SfxId:
-    if (world.state.rng.rand(caller=caller) & 1) == 0:
+    if (world.state.rng.rand_tagged(caller) & 1) == 0:
         return SfxId.UI_TYPECLICK_01
     return SfxId.UI_TYPECLICK_02
 
@@ -86,8 +86,8 @@ def typo_mid_step(ctx: MidStepContext) -> None:
     )
     typo.spawn_cooldown_ms = int(cooldown)
     for call in spawns:
-        heading = float(ctx.world.state.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING) % 314) * 0.01
-        size = float(ctx.world.state.rng.rand(caller=RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE) % 20 + 47)
+        heading = float(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING) % 314) * 0.01
+        size = float(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE) % 20 + 47)
         flags = CreatureFlags(0)
         move_speed = 1.7
         if int(call.type_id) in (int(CreatureTypeId.SPIDER_SP1), int(CreatureTypeId.SPIDER_SP2)):
