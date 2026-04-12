@@ -27,9 +27,7 @@ const WeaponId = game_ids.WeaponId;
 const ProjectileTypeId = game_ids.ProjectileTypeId;
 const PerkId = perks.PerkId;
 
-pub const WeaponRuntimeError = error{
-    UnsupportedWeaponFirePath,
-};
+pub const WeaponRuntimeError = error{};
 
 const reload_preload_underflow_eps: f32 = 1e-7;
 const movement_control_mouse_point_click: i32 = 4;
@@ -491,7 +489,7 @@ fn tryFireWeaponWithForce(
 
     switch (recipe.mode) {
         .primary_pellets => |mode| {
-            const type_id = mode.type_id orelse return error.UnsupportedWeaponFirePath;
+            const type_id = mode.type_id;
             const type_id_i32 = @intFromEnum(type_id);
             const pellets = @max(0, mode.count);
             shot_count = pellets;

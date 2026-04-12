@@ -36,10 +36,10 @@ pub const SecondaryTargetingPolicy = enum {
 };
 
 pub const PrimaryPelletsMode = struct {
-    type_id: ?ProjectileTypeId = null,
-    count: i32 = 0,
-    jitter: PelletJitterRule = .none,
-    speed_scale: SpeedScaleRule = .none,
+    type_id: ProjectileTypeId,
+    count: i32,
+    jitter: PelletJitterRule,
+    speed_scale: SpeedScaleRule,
 };
 
 pub const SecondaryShotMode = struct {
@@ -244,7 +244,7 @@ pub fn resolveFireRecipe(
             break :blk .{
                 .mode = .{
                     .primary_pellets = .{
-                        .type_id = weapon_data.projectileTypeIdFromWeaponId(weapon_id),
+                        .type_id = weapon_data.projectileTypeIdFromWeaponId(weapon_id) orelse unreachable,
                         .count = pellets,
                         .jitter = jitter,
                         .speed_scale = speed_scale,

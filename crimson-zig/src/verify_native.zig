@@ -731,7 +731,6 @@ fn buildNotPortedOutputForReplayRunnerError(
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
         error.UnsupportedSpawnTemplate => "replay triggered a survival template path unsupported by the current native creature runtime",
         error.UnsupportedQuestSpawnTable => "quest replay requires a quest spawn table variant unsupported by the current native runtime",
-        error.UnsupportedWeaponFirePath => "replay triggered a weapon fire path unsupported by the current native projectile runtime",
         error.MissingRngCallerTag => "native replay trace hit an untagged gameplay RNG draw",
     };
 
@@ -1312,20 +1311,6 @@ test "replay codec unsupported event kind remains not ported output" {
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification hit a native unsupported path:") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay events include kinds unsupported by the current native runtime") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification failed:") == null);
-}
-
-test "survival sim not ported output maps unsupported weapon fire path" {
-    const allocator = std.testing.allocator;
-    const output = try buildNotPortedOutputForReplayRunnerError(
-        allocator,
-        error.UnsupportedWeaponFirePath,
-        .{},
-    );
-    defer allocator.free(output.stdout);
-    defer allocator.free(output.stderr);
-
-    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "weapon fire path unsupported by the current native projectile runtime") != null);
 }
 
 test "survival sim not ported output includes replay progress hints" {

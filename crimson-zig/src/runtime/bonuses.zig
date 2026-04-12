@@ -224,8 +224,6 @@ pub const BonusPool = struct {
                 if (distanceSq(entry.pos, player.pos) >= pickup_sq) continue;
 
                 try applyBonus(state, player, players, entry.bonus_id, entry.amount, entry.pos);
-                state.debug_last_picked_bonus_id = entry.bonus_id;
-                state.debug_last_picked_bonus_amount = entry.amount;
                 appendPickupBonusId(pickup_bonus_ids, pickup_count, entry.bonus_id);
                 appendPickupRecord(pickup_records, .{
                     .bonus_id = entry.bonus_id,
@@ -275,8 +273,6 @@ pub fn bonusUpdate(
     dt: f32,
     pickup_records: ?*BonusPickupBuffer,
 ) BonusRuntimeError!void {
-    state.debug_last_picked_bonus_id = .unused;
-    state.debug_last_picked_bonus_amount = 0;
     if (pickup_records) |records| records.* = BonusPickupBuffer{};
 
     var pickup_bonus_ids = [_]BonusId{.unused} ** bonus_pool_size;
@@ -309,7 +305,6 @@ pub fn applyPendingBonusEffects(
     terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     dt: f32,
     world_size: f32,
-    tick_index: usize,
 ) void {
     var effects: effects_mod.EffectPool = .{};
     applyPendingBonusEffectsWithEffects(
@@ -322,7 +317,6 @@ pub fn applyPendingBonusEffects(
         terrain_fx,
         dt,
         world_size,
-        tick_index,
     );
 }
 
@@ -336,12 +330,7 @@ pub fn applyPendingBonusEffectsWithEffects(
     terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     dt: f32,
     world_size: f32,
-    tick_index: usize,
 ) void {
-    state.debug_nuke_kills_last = 0;
-    state.debug_nuke_tick_last = -1;
-    state.debug_nuke_kill_index_sum = 0;
-
     const pending_fireblast_count_i32 = @min(state.pending_fireblast_count, @as(i32, @intCast(state.pending_fireblast_origins.len)));
     var pending_fireblast_idx: i32 = 0;
     while (pending_fireblast_idx < pending_fireblast_count_i32) : (pending_fireblast_idx += 1) {
@@ -373,7 +362,6 @@ pub fn applyPendingBonusEffectsWithEffects(
             origin,
             dt,
             world_size,
-            tick_index,
         );
     }
     state.pending_nuke_count = 0;
@@ -584,7 +572,6 @@ fn applyNukeBonus(
     origin: state_mod.Vec2,
     dt: f32,
     world_size: f32,
-    tick_index: usize,
 ) void {
     if (players.len == 0) return;
     const player = &players[0];
@@ -643,13 +630,8 @@ fn applyNukeBonus(
             world_size,
             null,
         );
-        if (xp > 0) {
-            state.debug_nuke_kill_index_sum += @intCast(idx);
-            nuke_kill_count += 1;
-        }
+        if (xp > 0) nuke_kill_count += 1;
     }
-    state.debug_nuke_kills_last = nuke_kill_count;
-    state.debug_nuke_tick_last = @intCast(tick_index);
 }
 
 fn bonusFindAimHoverEntry(
@@ -1681,6 +1663,7 @@ test "pending fireblast spawns sixteen plasma rifle projectiles" {
     var projectiles: projectiles_mod.ProjectilePool = .{};
     var creatures: creatures_mod.CreaturePool = .{};
     var bonuses: BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
 
     state.pending_fireblast_origins[0] = players[0].pos;
     state.pending_fireblast_count = 1;
@@ -1691,9 +1674,9 @@ test "pending fireblast spawns sixteen plasma rifle projectiles" {
         &projectiles,
         &creatures,
         &bonuses,
+        &terrain_fx,
         0.016,
         1024.0,
-        1,
     );
 
     var active_count: i32 = 0;
@@ -1714,6 +1697,7 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
     var projectiles: projectiles_mod.ProjectilePool = .{};
     var creatures: creatures_mod.CreaturePool = .{};
     var bonuses: BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
 
     state.pending_nuke_origins[0] = players[0].pos;
     state.pending_nuke_count = 1;
@@ -1724,9 +1708,9 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
         &projectiles,
         &creatures,
         &bonuses,
+        &terrain_fx,
         0.016,
         1024.0,
-        1,
     );
 
     var pistol_count: i32 = 0;

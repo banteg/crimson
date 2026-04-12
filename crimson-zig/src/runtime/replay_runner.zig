@@ -74,7 +74,6 @@ pub const ReplayRunnerError = error{
     MissingRngCallerTag,
     UnsupportedSpawnTemplate,
     UnsupportedQuestSpawnTable,
-    UnsupportedWeaponFirePath,
 };
 
 fn parseCaptureCreatureAiMode(value: i32) ReplayRunnerError!spawn_mod.CreatureAiMode {

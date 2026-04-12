@@ -615,7 +615,6 @@ pub fn stepTick(
         &context.terrain_fx,
         dt_after_player,
         context.world_size,
-        tick_index,
     );
     frame.rng_after_bonus_update = context.state.rng.state;
     if (context.game_mode == .survival) {

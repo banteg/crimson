@@ -336,7 +336,6 @@ fn buildInfoFailedOutputForReplayInfoError(
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
         error.UnsupportedSpawnTemplate => "replay triggered a survival template path unsupported by the current native creature runtime",
         error.UnsupportedQuestSpawnTable => "quest replay requires a quest spawn table variant unsupported by the current native runtime",
-        error.UnsupportedWeaponFirePath => "replay triggered a weapon fire path unsupported by the current native projectile runtime",
         error.MissingRngCallerTag => "native replay trace hit an untagged gameplay RNG draw",
     };
     return buildInfoFailedOutput(allocator, detail);
