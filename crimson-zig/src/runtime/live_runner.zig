@@ -195,7 +195,7 @@ pub const LiveRunner = struct {
             .quests => blk: {
                 quest_level_key = config.quest_level_key;
                 const terrain_slots = runtime_bootstrap.terrainSlotsForQuestLevelKey(config.quest_level_key) orelse
-                    return error.UnsupportedQuestSpawnTable;
+                    return error.InvalidQuestSpawnTable;
                 const built = quest_spawn_logic.buildQuestSpawnTable(
                     config.quest_level_key,
                     config.player_count,
@@ -203,8 +203,8 @@ pub const LiveRunner = struct {
                     config.world_size,
                     quest_spawn_entries_storage[0..],
                 ) catch |err| switch (err) {
-                    error.UnsupportedQuestSpawnTable => return error.UnsupportedQuestSpawnTable,
-                    error.OutOfSpace => return error.UnsupportedQuestSpawnTable,
+                    error.InvalidQuestSpawnTable => return error.InvalidQuestSpawnTable,
+                    error.OutOfSpace => return error.InvalidQuestSpawnTable,
                 };
                 const quest_entries = quest_spawn_entries_storage[0..built.entries.len];
                 if (config.hardcore) {

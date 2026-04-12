@@ -72,8 +72,8 @@ pub const ReplayRunnerError = error{
     UnsupportedEventPlayerIndex,
     InvalidPerkPickEvent,
     MissingRngCallerTag,
-    UnsupportedSpawnTemplate,
-    UnsupportedQuestSpawnTable,
+    InvalidSpawnTemplate,
+    InvalidQuestSpawnTable,
 };
 
 fn parseCaptureCreatureAiMode(value: i32) ReplayRunnerError!spawn_mod.CreatureAiMode {
@@ -203,7 +203,7 @@ pub fn runReplayWithTrace(
         error.InvalidWorldSize => return error.InvalidHeaderValue,
         error.InvalidTickRate => return error.InvalidHeaderValue,
         error.UnsupportedGameMode => return error.UnsupportedGameMode,
-        error.UnsupportedQuestSpawnTable => return error.UnsupportedQuestSpawnTable,
+        error.InvalidQuestSpawnTable => return error.InvalidQuestSpawnTable,
     };
 
     const ticks_to_simulate: usize = if (options.max_ticks) |max_ticks|
@@ -596,7 +596,7 @@ fn applyCaptureCreatureSpawnEvent(
             },
             &state.rng,
         ) catch |err| switch (err) {
-            error.UnsupportedSpawnTemplate => return error.UnsupportedSpawnTemplate,
+            error.InvalidSpawnTemplate => return error.InvalidSpawnTemplate,
         };
         for (creatures.entries, 0..) |entry, idx| {
             if (!active_before[idx] and entry.active) {
@@ -1837,7 +1837,7 @@ test "quest run rejects unknown quest level when no spawn entries are provided" 
     });
     defer replay.deinit(allocator);
 
-    try std.testing.expectError(error.UnsupportedQuestSpawnTable, runReplay(replay));
+    try std.testing.expectError(error.InvalidQuestSpawnTable, runReplay(replay));
 }
 
 test "quest run supports player counts 1 through 4 across static and dynamic levels" {
@@ -2304,7 +2304,7 @@ test "quest run rejects oversized quest spawn override table" {
     }
 
     try std.testing.expectError(
-        error.UnsupportedQuestSpawnTable,
+        error.InvalidQuestSpawnTable,
         runReplayWithOptions(replay, .{
             .quest_spawn_entries = oversized,
         }),

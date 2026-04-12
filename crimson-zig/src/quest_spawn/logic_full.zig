@@ -25,8 +25,8 @@ pub fn buildQuestSpawnTable(
     world_size: f32,
     out_entries: []spawn_runtime.QuestSpawnEntry,
 ) QuestSpawnBuildError!QuestSpawnBuildResult {
-    if (player_count < 1 or player_count > 4) return error.UnsupportedQuestSpawnTable;
-    const descriptor = lookupLevelBuilder(level_key) orelse return error.UnsupportedQuestSpawnTable;
+    if (player_count < 1 or player_count > 4) return error.InvalidQuestSpawnTable;
+    const descriptor = lookupLevelBuilder(level_key) orelse return error.InvalidQuestSpawnTable;
 
     const ctx: BuildContext = .{
         .width = world_size,
@@ -230,7 +230,7 @@ test "append radial spawns rejects non-positive radius step" {
     var len: usize = 0;
 
     try std.testing.expectError(
-        error.UnsupportedQuestSpawnTable,
+        error.InvalidQuestSpawnTable,
         common.appendRadialSpawns(
             out_entries[0..],
             &len,
@@ -253,7 +253,7 @@ test "append radial spawns rejects inverted radius range" {
     var len: usize = 0;
 
     try std.testing.expectError(
-        error.UnsupportedQuestSpawnTable,
+        error.InvalidQuestSpawnTable,
         common.appendRadialSpawns(
             out_entries[0..],
             &len,

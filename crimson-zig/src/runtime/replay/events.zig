@@ -24,7 +24,7 @@ pub const EventError = error{
     UnsupportedEventKind,
     UnsupportedEventPlayerIndex,
     InvalidPerkPickEvent,
-    UnsupportedSpawnTemplate,
+    InvalidSpawnTemplate,
 };
 
 pub const EventOutcomeSignal = enum {

@@ -25,7 +25,7 @@ const max_test_quest_spawn_entries: usize = 1024;
 
 pub const CaptureStateError = error{
     InvalidCaptureEnumValue,
-    UnsupportedSpawnTemplate,
+    InvalidSpawnTemplate,
 };
 
 pub fn parseQuestLevel(value: []const u8) ?ParsedQuestLevel {
@@ -267,7 +267,7 @@ pub fn applyCaptureCreatureSpawnEvent(
             },
             &state.rng,
         ) catch |err| switch (err) {
-            error.UnsupportedSpawnTemplate => return error.UnsupportedSpawnTemplate,
+            error.InvalidSpawnTemplate => return error.InvalidSpawnTemplate,
         };
         for (creatures.entries, 0..) |entry, idx| {
             if (!active_before[idx] and entry.active) {

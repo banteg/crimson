@@ -30,7 +30,7 @@ const native_pi: f32 = native_math.native_pi;
 const native_tau: f32 = native_math.native_tau;
 
 pub const CreatureRuntimeError = error{
-    UnsupportedSpawnTemplate,
+    InvalidSpawnTemplate,
 };
 
 pub fn packBonusOnDeathArgs(bonus_id: game_ids.BonusId, amount_override: i32) i32 {
@@ -1825,7 +1825,7 @@ pub const CreaturePool = struct {
                 _ = idx;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
-            else => return error.UnsupportedSpawnTemplate,
+            else => return error.InvalidSpawnTemplate,
         }
 
         if (findSpawnTemplatePrimaryIndex(self, &was_active)) |primary_idx| {
@@ -5101,12 +5101,12 @@ test "template spawn supports quest spawner templates and slot ticks" {
     }
 }
 
-test "template spawn rejects unsupported template ids" {
+test "template spawn rejects invalid template ids" {
     var pool: CreaturePool = .{};
     var rng = spawn_mod.Crand.init(1);
 
     try std.testing.expectError(
-        error.UnsupportedSpawnTemplate,
+        error.InvalidSpawnTemplate,
         pool.spawnTemplateCall(
             .{
                 .template_id = 0x44,
@@ -5138,7 +5138,7 @@ test "runtime-context template spawn enqueues presentation burst" {
     try std.testing.expectEqual(effects_mod.effect_pool_size - @as(usize, 8), effects.free_len);
 }
 
-test "creature update fails on unsupported spawn slot child template" {
+test "creature update fails on invalid spawn slot child template" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     var bonuses: bonus_runtime.BonusPool = .{};
@@ -5162,7 +5162,7 @@ test "creature update fails on unsupported spawn slot child template" {
     };
 
     try std.testing.expectError(
-        error.UnsupportedSpawnTemplate,
+        error.InvalidSpawnTemplate,
         pool.update(&state, players[0..], 0.1, 1024.0, &bonuses),
     );
 }
@@ -5174,7 +5174,7 @@ test "template spawn supports all documented template ids except unused 0x02" {
         var rng = spawn_mod.Crand.init(0xBEEF);
         if (template_id == 0x02) {
             try std.testing.expectError(
-                error.UnsupportedSpawnTemplate,
+                error.InvalidSpawnTemplate,
                 pool.spawnTemplateCall(
                     .{
                         .template_id = template_id,

@@ -148,12 +148,12 @@ pub fn buildReplaySession(
     if (game_mode == .quests) {
         if (options.quest_spawn_entries) |entries| {
             if (entries.len > quest_spawn_entries_storage.len) {
-                return error.UnsupportedQuestSpawnTable;
+                return error.InvalidQuestSpawnTable;
             }
             @memcpy(quest_spawn_entries_storage[0..entries.len], entries);
             quest_spawn_entries = quest_spawn_entries_storage[0..entries.len];
         } else {
-            const level_key = runtime_bootstrap.resolveQuestLevelKey(header) orelse return error.UnsupportedQuestSpawnTable;
+            const level_key = runtime_bootstrap.resolveQuestLevelKey(header) orelse return error.InvalidQuestSpawnTable;
             const built = quest_spawn_logic.buildQuestSpawnTable(
                 level_key,
                 header.player_count,
@@ -161,15 +161,15 @@ pub fn buildReplaySession(
                 header.world_size,
                 quest_spawn_entries_storage[0..],
             ) catch |build_err| switch (build_err) {
-                error.UnsupportedQuestSpawnTable => return error.UnsupportedQuestSpawnTable,
-                error.OutOfSpace => return error.UnsupportedQuestSpawnTable,
+                error.InvalidQuestSpawnTable => return error.InvalidQuestSpawnTable,
+                error.OutOfSpace => return error.InvalidQuestSpawnTable,
             };
             quest_spawn_entries = quest_spawn_entries_storage[0..built.entries.len];
             if (options.quest_start_weapon_id == null) {
                 quest_start_weapon_id_for_reset = @intFromEnum(built.start_weapon_id);
             }
             if (quest_spawn_entries.len == 0) {
-                return error.UnsupportedQuestSpawnTable;
+                return error.InvalidQuestSpawnTable;
             }
         }
 

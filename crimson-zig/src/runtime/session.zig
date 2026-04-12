@@ -20,7 +20,7 @@ pub const DeterministicSessionError = error{
     InvalidWorldSize,
     InvalidTickRate,
     UnsupportedGameMode,
-    UnsupportedQuestSpawnTable,
+    InvalidQuestSpawnTable,
 };
 
 pub const SessionConfig = struct {
@@ -313,7 +313,7 @@ pub const DeterministicSession = struct {
         entries: []const spawn_mod.QuestSpawnEntry,
     ) DeterministicSessionError!void {
         if (entries.len > self.quest_spawn_entries_storage.len) {
-            return error.UnsupportedQuestSpawnTable;
+            return error.InvalidQuestSpawnTable;
         }
         @memcpy(self.quest_spawn_entries_storage[0..entries.len], entries);
         self.reset_quest_spawn_entries_len = entries.len;
