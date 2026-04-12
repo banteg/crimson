@@ -34,6 +34,8 @@ const runtime_perks = cz.perks;
 const runtime_session = cz.session;
 const state_mod = cz.state;
 const terrain_fx_mod = cz.terrain_fx;
+const tutorial_runtime = cz.tutorial_runtime;
+const typo_names = cz.typo_names;
 
 const window_width = 1024;
 const window_height = 768;
@@ -768,6 +770,20 @@ const App = struct {
             self.setScreen(.results);
             return;
         };
+        if (configured_run.game_mode == .typo) {
+            loadTypoSourcesIntoState(self.allocator, self.runtime.base_dir, &runner.session.state) catch |err| {
+                self.results = .{
+                    .reason = .runtime_error,
+                    .run_config = configured_run,
+                    .summary = zeroSessionSummary(),
+                    .player_health = 0.0,
+                    .runtime_error = @errorName(err),
+                };
+                self.results_selection = 0;
+                self.setScreen(.results);
+                return;
+            };
+        }
         const last_update = runner.stepFrame(0.0, .{}) catch unreachable;
         if (self.gameplay) |*gameplay| {
             gameplay.deinit();
@@ -854,13 +870,22 @@ const App = struct {
         }
 
         const player = runner.player0Const() orelse return null;
+        const shot_options: persistence.highscore_record_builder.BuildRecordOptions = switch (runner.session.game_mode) {
+            .typo => .{
+                .shots_fired = runner.session.state.typo.typing.submit_count,
+                .shots_hit = runner.session.state.typo.typing.match_count,
+                .clamp_shots_hit = false,
+            },
+            else => .{},
+        };
+
         const record = persistence.highscore_record_builder.buildHighscoreRecordForGameOver(
             runner.session.state,
             player.*,
             @intCast(runner.summary().elapsed_ms_sim),
             @intCast(runner.session.creatures.kill_count),
             runner.session.game_mode,
-            .{},
+            shot_options,
         );
 
         const score_path = persistence.highscores.scoresPathForMode(
@@ -967,6 +992,9 @@ const App = struct {
             camera.end();
 
             if (runtime_assets) |assets| {
+                if (runner.session.game_mode == .typo) {
+                    drawTypoNameLabels(runner, assets, transform, entity_alpha);
+                }
                 drawBonusHoverLabels(runner, assets, transform, entity_alpha);
                 if (!gameplay.perk_ui.active()) {
                     drawDirectionArrows(runner, assets, &self.runtime.config, transform, entity_alpha);
@@ -981,6 +1009,11 @@ const App = struct {
             } else {
                 drawGameplayHud(gameplay, runtime_assets);
                 if (runtime_assets) |assets| {
+                    if (runner.session.game_mode == .typo) {
+                        drawTypoTypingBox(gameplay, assets);
+                    } else if (runner.session.game_mode == .tutorial) {
+                        drawTutorialOverlay(gameplay, assets);
+                    }
                     window_perk_menu.drawPrompt(&gameplay.perk_ui, assets, &self.runtime.config, runner.perkPendingCount());
                 }
             }
@@ -1229,6 +1262,98 @@ fn collectNameInput(highscore: *ResultsHighscoreState) void {
     }
 }
 
+fn collectTypoDictionaryWords(
+    allocator: std.mem.Allocator,
+    path: []const u8,
+    out: *std.ArrayList([]const u8),
+) !?[]u8 {
+    const bytes = std.fs.cwd().readFileAlloc(allocator, path, std.math.maxInt(usize)) catch |err| switch (err) {
+        error.FileNotFound => return null,
+        else => return err,
+    };
+    errdefer allocator.free(bytes);
+
+    var seen = std.StringHashMap(void).init(allocator);
+    defer seen.deinit();
+
+    var lines = std.mem.splitScalar(u8, bytes, '\n');
+    while (lines.next()) |raw_line| {
+        const comment_cut = std.mem.indexOfScalar(u8, raw_line, '#') orelse raw_line.len;
+        const text = std.mem.trim(u8, raw_line[0..comment_cut], &std.ascii.whitespace);
+        if (text.len == 0 or text.len >= typo_names.name_max_chars) continue;
+        const gop = try seen.getOrPut(text);
+        if (gop.found_existing) continue;
+        gop.value_ptr.* = {};
+        try out.append(allocator, text);
+    }
+
+    return bytes;
+}
+
+fn isTypoHighscoreNameChar(ch: u8) bool {
+    return std.ascii.isAlphabetic(ch) or ch == '.';
+}
+
+fn collectTypoHighscoreNames(
+    allocator: std.mem.Allocator,
+    base_dir: []const u8,
+    out: *std.ArrayList([]const u8),
+) !void {
+    const score_path = try persistence.highscores.scoresPathForMode(
+        allocator,
+        base_dir,
+        @intFromEnum(game_ids.GameModeId.typo),
+        .{},
+    );
+    defer allocator.free(score_path);
+
+    const table = try persistence.highscores.readHighscoreTable(
+        allocator,
+        score_path,
+        @intFromEnum(game_ids.GameModeId.typo),
+    );
+    defer table.deinit(allocator);
+
+    var seen = std.StringHashMap(void).init(allocator);
+    defer seen.deinit();
+
+    for (table.items) |record| {
+        const name = record.name();
+        if (name.len == 0) continue;
+        var valid = true;
+        for (name) |ch| {
+            if (!isTypoHighscoreNameChar(ch)) {
+                valid = false;
+                break;
+            }
+        }
+        if (!valid) continue;
+        const gop = try seen.getOrPut(name);
+        if (gop.found_existing) continue;
+        gop.value_ptr.* = {};
+        try out.append(allocator, name);
+    }
+}
+
+fn loadTypoSourcesIntoState(
+    allocator: std.mem.Allocator,
+    base_dir: []const u8,
+    typo: *state_mod.GameplayState,
+) !void {
+    var dictionary_words: std.ArrayList([]const u8) = .empty;
+    defer dictionary_words.deinit(allocator);
+    var highscore_names: std.ArrayList([]const u8) = .empty;
+    defer highscore_names.deinit(allocator);
+
+    const dictionary_path = try std.fs.path.join(allocator, &.{ base_dir, "typo_dictionary.txt" });
+    defer allocator.free(dictionary_path);
+    const dictionary_backing = try collectTypoDictionaryWords(allocator, dictionary_path, &dictionary_words);
+    defer if (dictionary_backing) |bytes| allocator.free(bytes);
+
+    try collectTypoHighscoreNames(allocator, base_dir, &highscore_names);
+    typo.typo.reset(dictionary_words.items, highscore_names.items);
+}
+
 fn buildWorldCamera(
     world_size: f32,
     config: *const formats.crimson_cfg.CrimsonCfg,
@@ -1299,7 +1424,7 @@ fn collectGameplayInput(
         .y = @as(f32, @floatFromInt(rl.getScreenHeight())) * 0.5,
     };
 
-    const frame_input: live_runner.FrameInput = .{
+    var frame_input: live_runner.FrameInput = .{
         .player = interpreter.buildPlayerInput(
             input_codes.RaylibInputSampler{},
             0,
@@ -1319,6 +1444,17 @@ fn collectGameplayInput(
             runner.session.creatures.entries[0..],
         ),
     };
+
+    if (runner.session.game_mode == .typo) {
+        frame_input.typo_submit = rl.isKeyPressed(.enter) or rl.isKeyPressed(.kp_enter);
+        frame_input.typo_backspace = rl.isKeyPressed(.backspace) or rl.isKeyPressedRepeat(.backspace);
+        if (!frame_input.typo_backspace) {
+            const codepoint = rl.getCharPressed();
+            if (codepoint >= 0x20 and codepoint <= 0xFF and codepoint != 13 and codepoint != 8) {
+                frame_input.typo_char = @intCast(codepoint);
+            }
+        }
+    }
 
     return frame_input;
 }
@@ -2443,6 +2579,127 @@ fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const wind
     drawTextFmt("weapon {s}  ammo {d:.1}", .{ weaponName(update.player_weapon_id), player.weapon.ammo }, 36, 62, 22, text_color);
     drawTextFmt("shots {d}  hits {d}  creatures {d}", .{ update.shots_fired, update.shots_hit, update.creature_active_count }, 36, 90, 20, muted_text);
     drawTextFmt("elapsed {d}ms  pickups {d}  pending perks {d}", .{ update.elapsed_ms_sim, update.bonus_active_count, runner.perkPendingCount() }, 36, 116, 20, muted_text);
+}
+
+fn drawTypoNameLabels(
+    runner: *const live_runner.LiveRunner,
+    assets: *const window_assets.RuntimeAssets,
+    transform: window_viewport.ViewTransform,
+    entity_alpha: f32,
+) void {
+    for (runner.session.creatures.entries, 0..) |creature, idx| {
+        if (!creature.active) continue;
+        const label = runner.session.state.typo.names.nameSlice(idx);
+        if (label.len == 0) continue;
+
+        var label_alpha = entity_alpha;
+        if (creature.lifecycle_stage < 0.0) {
+            label_alpha *= std.math.clamp((creature.lifecycle_stage + 10.0) * 0.1, @as(f32, 0.0), @as(f32, 1.0));
+        }
+        if (!(label_alpha > 1e-3)) continue;
+
+        const screen_x = (creature.pos.x + transform.camera.x) * transform.view_scale.x;
+        const screen_y = (creature.pos.y + transform.camera.y) * transform.view_scale.y;
+        const text_w = measureSmallText(assets, label);
+        const x = screen_x - text_w * 0.5;
+        const y = screen_y - 50.0;
+
+        rl.drawRectangleRec(
+            .{
+                .x = x - 4.0,
+                .y = y,
+                .width = text_w + 8.0,
+                .height = 15.0,
+            },
+            colorWithAlpha(rl.Color.black, label_alpha * 0.67),
+        );
+        drawSmallText(assets, label, x, y, colorWithAlpha(rl.Color.white, label_alpha));
+    }
+}
+
+fn drawTypoTypingBox(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets) void {
+    const screen_h: f32 = @floatFromInt(rl.getScreenHeight());
+    const panel_y = screen_h - 144.0;
+    const text_y = screen_h - 127.0;
+
+    drawTextureFit(
+        assets.texture(.ui_ind_panel),
+        rl.Rectangle.init(-1.0, panel_y, 182.0, 53.0),
+        colorWithAlpha(rl.Color.white, 0.7),
+    );
+
+    const text = gameplay.runner.session.state.typo.typing.slice();
+    drawSmallTextFmt(">{s}", assets, .{text}, 6.0, text_y, rl.Color.white);
+
+    const cursor_dim = std.math.sin(gameplay.render_time_s * 4.0) > 0.0;
+    const cursor_alpha: f32 = if (cursor_dim) 0.4 else 1.0;
+    const cursor_x = measureSmallText(assets, text) + 14.0;
+    drawSmallText(assets, "_", cursor_x, text_y, colorWithAlpha(rl.Color.white, cursor_alpha));
+}
+
+fn drawTutorialOverlay(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets) void {
+    const overlay = gameplay.runner.session.state.tutorial_overlay;
+    if (overlay.prompt_stage_index >= 0 and overlay.prompt_alpha > 1e-3) {
+        drawTutorialPanel(
+            assets,
+            tutorial_runtime.promptText(overlay.prompt_stage_index),
+            64.0,
+            overlay.prompt_alpha,
+        );
+    }
+    if (overlay.hint_index >= 0 and overlay.hint_alpha > 1e-3) {
+        drawTutorialPanel(
+            assets,
+            tutorial_runtime.hintText(overlay.hint_index, gameplay.runner.session.state.tutorial.preserve_bugs),
+            148.0,
+            overlay.hint_alpha,
+        );
+    }
+}
+
+fn drawTutorialPanel(
+    assets: *const window_assets.RuntimeAssets,
+    text: []const u8,
+    top_y: f32,
+    alpha: f32,
+) void {
+    if (text.len == 0 or !(alpha > 1e-3)) return;
+
+    var lines = std.mem.splitScalar(u8, text, '\n');
+    var max_w: f32 = 0.0;
+    var line_count: usize = 0;
+    while (lines.next()) |line| {
+        max_w = @max(max_w, measureSmallText(assets, line));
+        line_count += 1;
+    }
+
+    const line_h: f32 = 14.0;
+    const pad_x: f32 = 20.0;
+    const pad_y: f32 = 8.0;
+    const width = max_w + pad_x * 2.0;
+    const height = @as(f32, @floatFromInt(line_count)) * line_h + pad_y * 2.0;
+    const left = (@as(f32, @floatFromInt(rl.getScreenWidth())) - width) * 0.5;
+
+    rl.drawRectangle(
+        @intFromFloat(left),
+        @intFromFloat(top_y),
+        @intFromFloat(width),
+        @intFromFloat(height),
+        colorWithAlpha(rl.Color.black, alpha * 0.8),
+    );
+    rl.drawRectangleLines(
+        @intFromFloat(left),
+        @intFromFloat(top_y),
+        @intFromFloat(width),
+        @intFromFloat(height),
+        colorWithAlpha(rl.Color.white, alpha),
+    );
+
+    lines = std.mem.splitScalar(u8, text, '\n');
+    var y = top_y + pad_y;
+    while (lines.next()) |line| : (y += line_h) {
+        drawSmallText(assets, line, left + pad_x, y, colorWithAlpha(rl.Color.white, alpha * 0.9));
+    }
 }
 
 fn zeroSessionSummary() runtime_session.SessionSummary {
