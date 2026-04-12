@@ -259,19 +259,6 @@ pub fn drawMenu(
     drawButton(runtime_assets, state.cancel_button, layout.cancel_pos);
 }
 
-pub fn drawCursor(runtime_assets: *const window_assets.RuntimeAssets) void {
-    const texture = runtime_assets.texture(.ui_cursor);
-    const mouse = rl.getMousePosition();
-    rl.drawTexturePro(
-        texture,
-        rl.Rectangle.init(0.0, 0.0, @floatFromInt(texture.width), @floatFromInt(texture.height)),
-        rl.Rectangle.init(mouse.x, mouse.y, 32.0, 32.0),
-        rl.Vector2.zero(),
-        0.0,
-        rl.Color.white,
-    );
-}
-
 fn updateMenuInput(
     state: *State,
     runtime_assets: ?*const window_assets.RuntimeAssets,
