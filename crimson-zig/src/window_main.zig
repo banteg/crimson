@@ -19,6 +19,7 @@ const window_ground = @import("window_ground.zig");
 const window_menu = @import("window_menu.zig");
 const window_menu_panels = @import("window_menu_panels.zig");
 const window_options = @import("window_options.zig");
+const window_perk_menu = @import("window_perk_menu.zig");
 const window_projectiles = @import("window_projectiles.zig");
 const window_statistics = @import("window_statistics.zig");
 const window_terrain_fx = @import("window_terrain_fx.zig");
@@ -90,6 +91,7 @@ const GameplayScreen = struct {
     run_config: live_runner.LiveModeConfig,
     last_update: live_runner.FrameUpdate,
     input_interpreter: local_input.LocalInputInterpreter = .{},
+    perk_ui: window_perk_menu.State = .{},
     hud_state: HudRuntimeState = .{},
     ground: ?window_ground.GroundRenderer = null,
 
@@ -133,10 +135,10 @@ const HudRuntimeState = struct {
         if (smoothed == target) return smoothed;
 
         const frame_dt_ms = @max(frame_dt_ms_raw, 0.0);
-        var step = @max(@as(i32, 1), @as(i32, @intFromFloat(frame_dt_ms)) / 2);
-        const diff = @abs(smoothed - target);
+        var step = @max(@as(i32, 1), @divTrunc(@as(i32, @intFromFloat(frame_dt_ms)), 2));
+        const diff: i32 = @intCast(@abs(smoothed - target));
         if (diff > 1000) {
-            step *= @divTrunc(diff, 100);
+            step *= @max(@as(i32, 1), @divTrunc(diff, 100));
         }
 
         if (smoothed < target) {
@@ -152,6 +154,9 @@ const HudRuntimeState = struct {
     }
 
     fn update(self: *HudRuntimeState, frame_dt: f32, session: *const runtime_session.DeterministicSession) void {
+        const xp_target = if (session.playersConst().len > 0) session.playersConst()[0].experience else 0;
+        _ = self.smoothXp(xp_target, @max(frame_dt, 0.0) * 1000.0);
+
         var desired_specs: [16]HudBonusSpec = undefined;
         var desired_count: usize = 0;
         collectHudBonusSpecs(session, desired_specs[0..], &desired_count);
@@ -449,7 +454,7 @@ const App = struct {
 
     fn updateGameplay(self: *App, frame_dt: f32) void {
         if (self.gameplay) |*gameplay| {
-            if (rl.isKeyPressed(.escape)) {
+            if (!gameplay.perk_ui.active() and rl.isKeyPressed(.escape)) {
                 self.finishRun(gameplay, .abandoned, null);
                 return;
             }
@@ -459,8 +464,21 @@ const App = struct {
                 gameplay.runner.session.state.camera_shake_offset,
             );
             self.runtime.recordGameplayFrame(frame_dt);
-            const input = collectGameplayInput(&gameplay.input_interpreter, &gameplay.runner, camera, &self.runtime, frame_dt);
-            if (input.perk_choice_index != null) {
+            var input = collectGameplayInput(&gameplay.input_interpreter, &gameplay.runner, camera, &self.runtime, frame_dt);
+            const perk_ui_update = window_perk_menu.update(
+                &gameplay.perk_ui,
+                frame_dt,
+                if (self.runtime_assets) |*assets| assets else null,
+                &self.runtime.config,
+                &gameplay.runner,
+                !gameplay.runner.allPlayersDead(),
+            );
+            input.perk_choice_index = perk_ui_update.perk_choice_index;
+            input.perk_menu_active = perk_ui_update.menu_active;
+            if (perk_ui_update.play_panel_click) {
+                self.audio.playUiPanelClick();
+            }
+            if (perk_ui_update.play_button_click) {
                 self.audio.playUiButtonClick();
             }
             gameplay.last_update = gameplay.runner.stepFrame(frame_dt, input) catch |err| {
@@ -843,9 +861,16 @@ const App = struct {
             drawBonuses(runner, runtime_assets);
             camera.end();
 
-            drawGameplayHud(gameplay, runtime_assets);
-            if (gameplay.last_update.paused_for_perk_pick) {
-                drawPerkOverlay(gameplay, runtime_assets);
+            if (gameplay.perk_ui.active()) {
+                if (runtime_assets) |assets| {
+                    window_perk_menu.drawMenu(&gameplay.perk_ui, assets, &self.runtime.config, runner);
+                    window_perk_menu.drawCursor(assets);
+                }
+            } else {
+                drawGameplayHud(gameplay, runtime_assets);
+                if (runtime_assets) |assets| {
+                    window_perk_menu.drawPrompt(&gameplay.perk_ui, assets, &self.runtime.config, runner.perkPendingCount());
+                }
             }
         }
     }
@@ -1181,7 +1206,7 @@ fn collectGameplayInput(
         .y = @as(f32, @floatFromInt(rl.getScreenHeight())) * 0.5,
     };
 
-    var frame_input: live_runner.FrameInput = .{
+    const frame_input: live_runner.FrameInput = .{
         .player = interpreter.buildPlayerInput(
             input_codes.RaylibInputSampler{},
             0,
@@ -1201,16 +1226,6 @@ fn collectGameplayInput(
             runner.session.creatures.entries[0..],
         ),
     };
-
-    if (runner.perkPendingCount() > 0) {
-        if (rl.isKeyPressed(.one)) frame_input.perk_choice_index = 0;
-        if (rl.isKeyPressed(.two)) frame_input.perk_choice_index = 1;
-        if (rl.isKeyPressed(.three)) frame_input.perk_choice_index = 2;
-        if (rl.isKeyPressed(.four)) frame_input.perk_choice_index = 3;
-        if (rl.isKeyPressed(.five)) frame_input.perk_choice_index = 4;
-        if (rl.isKeyPressed(.six)) frame_input.perk_choice_index = 5;
-        if (rl.isKeyPressed(.seven)) frame_input.perk_choice_index = 6;
-    }
 
     return frame_input;
 }
@@ -2164,57 +2179,6 @@ fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const wind
     drawTextFmt("weapon {s}  ammo {d:.1}", .{ weaponName(update.player_weapon_id), player.weapon.ammo }, 36, 62, 22, text_color);
     drawTextFmt("shots {d}  hits {d}  creatures {d}", .{ update.shots_fired, update.shots_hit, update.creature_active_count }, 36, 90, 20, muted_text);
     drawTextFmt("elapsed {d}ms  pickups {d}  pending perks {d}", .{ update.elapsed_ms_sim, update.bonus_active_count, runner.perkPendingCount() }, 36, 116, 20, muted_text);
-}
-
-fn drawPerkOverlay(gameplay: *GameplayScreen, runtime_assets: ?*const window_assets.RuntimeAssets) void {
-    rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), overlay_color);
-    const runner = &gameplay.runner;
-    if (runtime_assets) |assets| {
-        drawTextureFit(assets.texture(.ui_menu_panel), rl.Rectangle.init(258.0, 140.0, 764.0, 378.0), colorWithAlpha(rl.Color.white, 0.96));
-        drawTextureFit(assets.texture(.ui_text_level_up), rl.Rectangle.init(456.0, 152.0, 364.0, 40.0), colorWithAlpha(rl.Color.white, 0.96));
-        drawTextureFit(assets.texture(.ui_text_pick_a_perk), rl.Rectangle.init(424.0, 190.0, 430.0, 40.0), colorWithAlpha(rl.Color.white, 0.96));
-
-        const choices = runner.currentPerkChoices();
-        for (choices, 0..) |perk_id, idx| {
-            const row_y = 246.0 + @as(f32, @floatFromInt(idx)) * 19.0;
-            drawSmallTextFmt("{d}.", assets, .{idx + 1}, 346.0, row_y, if (idx == 0) HudTextColor.accent else HudTextColor.primary);
-            drawSmallText(assets, game_ids.perkDisplayName(perk_id, gameplay.run_config.gore_disabled, gameplay.runner.session.state.preserve_bugs), 374.0, row_y, if (idx == 0) HudTextColor.accent else HudTextColor.primary);
-        }
-        drawSmallText(assets, "Press 1-7 to select", 352.0, 438.0, HudTextColor.dim);
-        drawSmallText(assets, "Gameplay is paused", 352.0, 456.0, HudTextColor.dim);
-        return;
-    }
-
-    rl.drawRectangleRounded(
-        .{
-            .x = 280.0,
-            .y = 170.0,
-            .width = 720.0,
-            .height = 320.0,
-        },
-        0.08,
-        8,
-        panel_color,
-    );
-    rl.drawRectangleRoundedLinesEx(
-        .{
-            .x = 280.0,
-            .y = 170.0,
-            .width = 720.0,
-            .height = 320.0,
-        },
-        0.08,
-        8,
-        2.0,
-        panel_outline,
-    );
-    drawCenteredText("Perk pick pending", 200, 30, accent_color);
-    drawCenteredText("Gameplay pauses until you choose a perk.", 238, 18, text_color);
-
-    const choices = runner.currentPerkChoices();
-    for (choices, 0..) |perk_id, idx| {
-        drawTextFmt("{d}. {s}", .{ idx + 1, @tagName(perk_id) }, 340, 286 + @as(i32, @intCast(idx)) * 28, 20, text_color);
-    }
 }
 
 fn zeroSessionSummary() runtime_session.SessionSummary {

@@ -204,6 +204,37 @@ pub fn perkChoiceCount(player: *const state_mod.PlayerState) i32 {
     return 5;
 }
 
+pub fn perkSelectionPreparedChoices(
+    players: []state_mod.PlayerState,
+    perk_selection: *const state_mod.PerkSelectionState,
+) []const PerkId {
+    if (players.len == 0) return &.{};
+    if (perk_selection.choices_dirty or perk_selection.choice_count == 0) return &.{};
+    const visible_count: usize = @intCast(std.math.clamp(
+        perkChoiceCount(&players[0]),
+        1,
+        @as(i32, @intCast(perk_selection.choice_count)),
+    ));
+    return perk_selection.choices[0..visible_count];
+}
+
+pub fn perkSelectionOpenChoices(
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
+    game_mode: GameModeId,
+    player_count: i32,
+    quest_unlock_index: i32,
+) []const PerkId {
+    _ = perkSelectionCurrentChoices(
+        state,
+        players,
+        game_mode,
+        player_count,
+        quest_unlock_index,
+    );
+    return perkSelectionPreparedChoices(players, &state.perk_selection);
+}
+
 pub fn perkSelectionCurrentChoices(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
