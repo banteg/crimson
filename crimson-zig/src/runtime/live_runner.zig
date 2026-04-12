@@ -52,8 +52,6 @@ pub const ShotAudioEvent = struct {
     fire_bullets_active: bool,
 };
 
-pub const RuntimeSfxId = state_mod.RuntimeSfxId;
-
 pub const FrameAudioEvents = struct {
     shot_events: [8]ShotAudioEvent = [_]ShotAudioEvent{.{
         .weapon_id = 0,
@@ -64,7 +62,7 @@ pub const FrameAudioEvents = struct {
     reload_event_count: usize = 0,
     hit_events: [4]creatures.HitSfxPlan = [_]creatures.HitSfxPlan{.{}} ** 4,
     hit_event_count: usize = 0,
-    sfx_events: [state_mod.runtime_sfx_queue_max]RuntimeSfxId = [_]RuntimeSfxId{.ui_bonus} ** state_mod.runtime_sfx_queue_max,
+    sfx_events: [state_mod.runtime_sfx_queue_max]state_mod.SfxId = [_]state_mod.SfxId{.ui_bonus} ** state_mod.runtime_sfx_queue_max,
     sfx_event_count: usize = 0,
     trigger_game_tune: bool = false,
     perk_menu_opened: bool = false,
@@ -95,13 +93,13 @@ pub const FrameAudioEvents = struct {
         }
     }
 
-    fn appendSfx(self: *FrameAudioEvents, sfx_id: RuntimeSfxId) void {
+    fn appendSfx(self: *FrameAudioEvents, sfx_id: state_mod.SfxId) void {
         if (self.sfx_event_count >= self.sfx_events.len) return;
         self.sfx_events[self.sfx_event_count] = sfx_id;
         self.sfx_event_count += 1;
     }
 
-    fn appendRuntimeSfx(self: *FrameAudioEvents, sfx_events: []const RuntimeSfxId) void {
+    fn appendRuntimeSfx(self: *FrameAudioEvents, sfx_events: []const state_mod.SfxId) void {
         for (sfx_events) |sfx_id| {
             self.appendSfx(sfx_id);
         }
@@ -562,7 +560,7 @@ test "live runner emits ui bonus pickup sfx" {
 
     const update = try runner.stepFrame(runner.session.dt_nominal, .{});
     try std.testing.expectEqual(@as(usize, 1), update.audio.sfx_event_count);
-    try std.testing.expectEqual(RuntimeSfxId.ui_bonus, update.audio.sfx_events[0]);
+    try std.testing.expectEqual(state_mod.SfxId.ui_bonus, update.audio.sfx_events[0]);
 }
 
 test "live runner emits bonus-specific apply sfx after pickup" {
@@ -579,6 +577,6 @@ test "live runner emits bonus-specific apply sfx after pickup" {
 
     const update = try runner.stepFrame(runner.session.dt_nominal, .{});
     try std.testing.expectEqual(@as(usize, 2), update.audio.sfx_event_count);
-    try std.testing.expectEqual(RuntimeSfxId.ui_bonus, update.audio.sfx_events[0]);
-    try std.testing.expectEqual(RuntimeSfxId.explosion_medium, update.audio.sfx_events[1]);
+    try std.testing.expectEqual(state_mod.SfxId.ui_bonus, update.audio.sfx_events[0]);
+    try std.testing.expectEqual(state_mod.SfxId.explosion_medium, update.audio.sfx_events[1]);
 }
