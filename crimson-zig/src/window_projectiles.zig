@@ -94,25 +94,9 @@ fn drawBulletTrail(projectile: cz.projectiles.Projectile, ctx: DrawCtx) bool {
     const end = toRlVec(projectile.pos);
     const segment = vecSub(end, start);
     const distance = vecLength(segment);
-    const rotation = radiansToDegrees(std.math.atan2(segment.y, segment.x));
     const alpha = std.math.clamp(projectile.life_timer, @as(f32, 0.0), @as(f32, 1.0));
 
-    if (distance > 1e-3) {
-        const trail_color = if (projectile.type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun))
-            rl.Color.init(51, 128, 255, 255)
-        else
-            rl.Color.init(128, 128, 128, 255);
-        rl.beginBlendMode(.additive);
-        drawTextureCenteredRotated(
-            ctx.assets.texture(.bullet_trail),
-            .{ .x = (start.x + end.x) * 0.5, .y = (start.y + end.y) * 0.5 },
-            distance,
-            4.0,
-            rotation,
-            colorWithAlpha(trail_color, alpha),
-        );
-        rl.endBlendMode();
-    }
+    drawBulletTrailQuad(projectile.type_id, start, end, distance, projectile.angle, alpha, ctx.assets.texture(.bullet_trail));
 
     if (projectile.life_timer >= 0.39) {
         const size = window_atlas.bulletSpriteSize(projectile.type_id);
@@ -484,7 +468,7 @@ fn drawSecondaryDetonation(
     if (projectile.type_id != .detonation) return false;
 
     const t = std.math.clamp(projectile.detonation_t, @as(f32, 0.0), @as(f32, 1.0));
-    const fade = (1.0 - t) * secondaryAlpha(projectile);
+    const fade = 1.0 - t;
     if (fade <= 1e-3 or projectile.detonation_scale <= 1e-6) return true;
 
     if (window_atlas.effectRect(ctx.assets.texture(.particles).width, ctx.assets.texture(.particles).height, .glow)) |src_rect| {
@@ -601,6 +585,62 @@ fn drawTextureCenteredRotated(texture: rl.Texture2D, center: rl.Vector2, width: 
     const src = rl.Rectangle.init(0.0, 0.0, @floatFromInt(texture.width), @floatFromInt(texture.height));
     const dest = rl.Rectangle.init(center.x, center.y, width, height);
     rl.drawTexturePro(texture, src, dest, rl.Vector2.init(width * 0.5, height * 0.5), rotation_deg, tint);
+}
+
+fn drawBulletTrailQuad(
+    type_id: i32,
+    start: rl.Vector2,
+    end: rl.Vector2,
+    distance: f32,
+    angle: f32,
+    alpha: f32,
+    texture: rl.Texture2D,
+) void {
+    if (!(alpha > 1e-3)) return;
+
+    const side_mul: f32 = switch (type_id) {
+        @intFromEnum(game_ids.ProjectileTypeId.pistol),
+        @intFromEnum(game_ids.ProjectileTypeId.assault_rifle),
+        => 1.2,
+        @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) => 1.1,
+        else => 0.7,
+    };
+    const half = 1.5 * side_mul;
+    const side = if (distance > 1e-6) blk: {
+        const inv_len = 1.0 / distance;
+        break :blk rl.Vector2.init(-(end.y - start.y) * inv_len, (end.x - start.x) * inv_len);
+    } else rl.Vector2.init(-std.math.sin(angle), std.math.cos(angle));
+
+    const side_offset = rl.Vector2.init(side.x * half, side.y * half);
+    const p0 = rl.Vector2.init(start.x - side_offset.x, start.y - side_offset.y);
+    const p1 = rl.Vector2.init(start.x + side_offset.x, start.y + side_offset.y);
+    const p2 = rl.Vector2.init(end.x + side_offset.x, end.y + side_offset.y);
+    const p3 = rl.Vector2.init(end.x - side_offset.x, end.y - side_offset.y);
+
+    const head = if (type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun))
+        colorWithAlpha(rl.Color.init(51, 128, 255, 255), alpha)
+    else
+        colorWithAlpha(rl.Color.init(128, 128, 128, 255), alpha);
+    const tail = rl.Color.init(128, 128, 128, 0);
+
+    rl.beginBlendMode(.additive);
+    rl.gl.rlSetTexture(texture.id);
+    rl.gl.rlBegin(rl.gl.rl_quads);
+    rl.gl.rlColor4ub(tail.r, tail.g, tail.b, tail.a);
+    rl.gl.rlTexCoord2f(0.0, 0.0);
+    rl.gl.rlVertex2f(p0.x, p0.y);
+    rl.gl.rlColor4ub(tail.r, tail.g, tail.b, tail.a);
+    rl.gl.rlTexCoord2f(1.0, 0.0);
+    rl.gl.rlVertex2f(p1.x, p1.y);
+    rl.gl.rlColor4ub(head.r, head.g, head.b, head.a);
+    rl.gl.rlTexCoord2f(1.0, 0.5);
+    rl.gl.rlVertex2f(p2.x, p2.y);
+    rl.gl.rlColor4ub(head.r, head.g, head.b, head.a);
+    rl.gl.rlTexCoord2f(0.0, 0.5);
+    rl.gl.rlVertex2f(p3.x, p3.y);
+    rl.gl.rlEnd();
+    rl.gl.rlSetTexture(0);
+    rl.endBlendMode();
 }
 
 fn drawTextureRegionCenteredRotated(

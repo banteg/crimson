@@ -135,10 +135,10 @@ const HudRuntimeState = struct {
         if (smoothed == target) return smoothed;
 
         const frame_dt_ms = @max(frame_dt_ms_raw, 0.0);
-        var step = @max(@as(i32, 1), @as(i32, @intFromFloat(frame_dt_ms)) / 2);
-        const diff = @abs(smoothed - target);
+        var step = @max(@as(i32, 1), @divTrunc(@as(i32, @intFromFloat(frame_dt_ms)), 2));
+        const diff: i32 = @intCast(@abs(smoothed - target));
         if (diff > 1000) {
-            step *= @divTrunc(diff, 100);
+            step *= @max(@as(i32, 1), @divTrunc(diff, 100));
         }
 
         if (smoothed < target) {
@@ -154,6 +154,9 @@ const HudRuntimeState = struct {
     }
 
     fn update(self: *HudRuntimeState, frame_dt: f32, session: *const runtime_session.DeterministicSession) void {
+        const xp_target = if (session.playersConst().len > 0) session.playersConst()[0].experience else 0;
+        _ = self.smoothXp(xp_target, @max(frame_dt, 0.0) * 1000.0);
+
         var desired_specs: [16]HudBonusSpec = undefined;
         var desired_count: usize = 0;
         collectHudBonusSpecs(session, desired_specs[0..], &desired_count);

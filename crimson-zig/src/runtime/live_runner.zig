@@ -321,7 +321,7 @@ pub const LiveRunner = struct {
     pub fn preparedPerkChoices(self: *LiveRunner) []const game_ids.PerkId {
         return perks.perkSelectionPreparedChoices(
             self.session.players(),
-            self.session.state.perk_selection,
+            &self.session.state.perk_selection,
         );
     }
 

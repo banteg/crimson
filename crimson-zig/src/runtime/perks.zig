@@ -206,7 +206,7 @@ pub fn perkChoiceCount(player: *const state_mod.PlayerState) i32 {
 
 pub fn perkSelectionPreparedChoices(
     players: []state_mod.PlayerState,
-    perk_selection: state_mod.PerkSelectionState,
+    perk_selection: *const state_mod.PerkSelectionState,
 ) []const PerkId {
     if (players.len == 0) return &.{};
     if (perk_selection.choices_dirty or perk_selection.choice_count == 0) return &.{};
@@ -232,7 +232,7 @@ pub fn perkSelectionOpenChoices(
         player_count,
         quest_unlock_index,
     );
-    return perkSelectionPreparedChoices(players, state.perk_selection);
+    return perkSelectionPreparedChoices(players, &state.perk_selection);
 }
 
 pub fn perkSelectionCurrentChoices(
