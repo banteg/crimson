@@ -137,6 +137,10 @@ pub const Bridge = struct {
             }
         }
 
+        for (frame_audio.sfx_events[0..frame_audio.sfx_event_count]) |sfx_id| {
+            audio_mod.playSfx(state, runtimeSfxId(sfx_id), reflex_boost_timer);
+        }
+
         if (frame_audio.perk_menu_opened) {
             audio_mod.playSfx(state, .ui_levelup, 0.0);
         }
@@ -191,6 +195,16 @@ pub const Bridge = struct {
 fn weaponIdFromInt(value: i32) ?game_ids.WeaponId {
     if (value < 0 or value >= weapon_data.weapon_count_size) return null;
     return @enumFromInt(value);
+}
+
+fn runtimeSfxId(value: live_runner.RuntimeSfxId) sfx_map.SfxId {
+    return switch (value) {
+        .ui_bonus => .ui_bonus,
+        .shock_hit_01 => .shock_hit_01,
+        .explosion_medium => .explosion_medium,
+        .explosion_large => .explosion_large,
+        .shockwave => .shockwave,
+    };
 }
 
 fn weaponFireSfx(weapon_id: game_ids.WeaponId) ?sfx_map.SfxId {
