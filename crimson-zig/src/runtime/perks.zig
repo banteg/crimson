@@ -692,6 +692,7 @@ pub fn applyJinxedEffects(
         creatures.entries[idx].lifecycle_stage - dt * 20.0,
     );
     awardExperienceFromReward(state, &players[0], creatures.entries[idx].reward_value);
+    state.sfx_queue.append(.trooper_inpain_01);
 }
 
 pub fn applyFinalRevengeOnDeathTransition(
@@ -767,6 +768,8 @@ pub fn applyFinalRevengeOnDeathTransitionWithEffects(
             null,
         );
     }
+    state.sfx_queue.append(.explosion_large);
+    state.sfx_queue.append(.shockwave);
 }
 
 pub fn creatureFindInRadius(

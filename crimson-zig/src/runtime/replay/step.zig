@@ -97,6 +97,7 @@ pub const StepResult = struct {
     rng_after_bonus_update: u32,
     projectile_tick_stats: projectiles_mod.ProjectileTickStats,
     bonus_pickups: bonus_runtime.BonusPickupBuffer,
+    sfx_events: state_mod.RuntimeSfxBuffer,
     terrain_fx: terrain_fx_mod.TerrainFxBatch,
     rng_end: u32,
     pending_capture_state_reset: bool,
@@ -172,6 +173,7 @@ pub fn stepTick(
     };
 
     callPhaseHook(options.hooks, context, .pre_reset, &frame);
+    context.state.sfx_queue.clear();
     if (context.pending_capture_state_reset) {
         capture_state.applyCaptureStateReset(
             &context.state,
@@ -677,6 +679,7 @@ pub fn stepTick(
         .rng_after_bonus_update = frame.rng_after_bonus_update,
         .projectile_tick_stats = frame.projectile_tick_stats,
         .bonus_pickups = context.tick_bonus_pickups,
+        .sfx_events = context.state.sfx_queue.take(),
         .terrain_fx = context.terrain_fx.takeBatch(),
         .rng_end = context.state.rng.state,
         .pending_capture_state_reset = context.pending_capture_state_reset,

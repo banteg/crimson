@@ -13,6 +13,9 @@ const state_mod = cz.state;
 pub const DrawCtx = struct {
     session: *const runtime_session.DeterministicSession,
     assets: *const window_assets.RuntimeAssets,
+    entity_alpha: f32 = 1.0,
+    fx_detail_1: bool = true,
+    fx_detail_2: bool = true,
 };
 
 pub fn drawParticlePool(ctx: DrawCtx) void {
@@ -22,18 +25,20 @@ pub fn drawParticlePool(ctx: DrawCtx) void {
     const src_style_8 = window_atlas.effectRectById(texture.width, texture.height, @intFromEnum(window_atlas.EffectId.shield_ring)) orelse return;
 
     rl.beginBlendMode(.additive);
-    for (ctx.session.particles.entries, 0..) |entry, idx| {
-        if (!entry.active or entry.style_id == .bubblegun or (idx & 1) != 0) continue;
-        const radius = @max((std.math.sin((1.0 - entry.intensity) * std.math.pi / 2.0) + 0.1) * 55.0 + 4.0, 16.0);
-        drawTextureRegionCenteredRotated(
-            texture,
-            src_large,
-            toRlVec(entry.pos),
-            radius * 2.0,
-            radius * 2.0,
-            0.0,
-            colorWithAlpha(rl.Color.white, 0.065),
-        );
+    if (ctx.fx_detail_1) {
+        for (ctx.session.particles.entries, 0..) |entry, idx| {
+            if (!entry.active or entry.style_id == .bubblegun or (idx & 1) != 0) continue;
+            const radius = @max((std.math.sin((1.0 - entry.intensity) * std.math.pi / 2.0) + 0.1) * 55.0 + 4.0, 16.0);
+            drawTextureRegionCenteredRotated(
+                texture,
+                src_large,
+                toRlVec(entry.pos),
+                radius * 2.0,
+                radius * 2.0,
+                0.0,
+                colorWithAlpha(rl.Color.white, 0.065 * ctx.entity_alpha),
+            );
+        }
     }
 
     for (ctx.session.particles.entries) |entry| {
@@ -48,7 +53,7 @@ pub fn drawParticlePool(ctx: DrawCtx) void {
             radius * 2.0,
             radius * 2.0,
             radiansToDegrees(entry.spin),
-            rlColorFromRgbAlpha(entry.scale_x, entry.scale_y, entry.scale_z, entry.age),
+            rlColorFromRgbAlpha(entry.scale_x, entry.scale_y, entry.scale_z, entry.age * ctx.entity_alpha),
         );
     }
 
@@ -64,13 +69,14 @@ pub fn drawParticlePool(ctx: DrawCtx) void {
             half_w * 2.0,
             half_h * 2.0,
             0.0,
-            colorWithAlpha(rl.Color.white, entry.age),
+            colorWithAlpha(rl.Color.white, entry.age * ctx.entity_alpha),
         );
     }
     rl.endBlendMode();
 }
 
 pub fn drawSpriteEffectPool(ctx: DrawCtx) void {
+    if (!ctx.fx_detail_2) return;
     const texture = ctx.assets.texture(.particles);
     const src = window_atlas.atlasRect(texture.width, texture.height, 4, 7);
 
@@ -84,7 +90,7 @@ pub fn drawSpriteEffectPool(ctx: DrawCtx) void {
             entry.scale,
             entry.scale,
             radiansToDegrees(entry.rotation),
-            rlColorFromEffect(entry.color),
+            rlColorFromRgbAlpha(entry.color.r, entry.color.g, entry.color.b, entry.color.a * ctx.entity_alpha),
         );
     }
     rl.endBlendMode();
@@ -96,19 +102,19 @@ pub fn drawEffectPool(ctx: DrawCtx) void {
     rl.beginBlendMode(.alpha);
     for (ctx.session.effects.entries) |entry| {
         if (entry.flags == 0 or entry.age < 0.0 or (entry.flags & 0x40) == 0) continue;
-        drawEffectEntry(texture, entry);
+        drawEffectEntryScaled(texture, entry, ctx.entity_alpha);
     }
     rl.endBlendMode();
 
     rl.beginBlendMode(.additive);
     for (ctx.session.effects.entries) |entry| {
         if (entry.flags == 0 or entry.age < 0.0 or (entry.flags & 0x40) != 0) continue;
-        drawEffectEntry(texture, entry);
+        drawEffectEntryScaled(texture, entry, ctx.entity_alpha);
     }
     rl.endBlendMode();
 }
 
-fn drawEffectEntry(texture: rl.Texture, entry: effects_runtime.EffectEntry) void {
+fn drawEffectEntryScaled(texture: rl.Texture, entry: effects_runtime.EffectEntry, entity_alpha: f32) void {
     const src = window_atlas.effectRectById(texture.width, texture.height, entry.effect_id) orelse return;
     drawTextureRegionCenteredRotated(
         texture,
@@ -117,12 +123,8 @@ fn drawEffectEntry(texture: rl.Texture, entry: effects_runtime.EffectEntry) void
         entry.half_width * 2.0 * entry.scale,
         entry.half_height * 2.0 * entry.scale,
         radiansToDegrees(entry.rotation),
-        rlColorFromEffect(entry.color),
+        rlColorFromRgbAlpha(entry.color.r, entry.color.g, entry.color.b, entry.color.a * entity_alpha),
     );
-}
-
-fn rlColorFromEffect(color: effects_runtime.Color) rl.Color {
-    return rlColorFromRgbAlpha(color.r, color.g, color.b, color.a);
 }
 
 fn rlColorFromRgbAlpha(r: f32, g: f32, b: f32, a: f32) rl.Color {

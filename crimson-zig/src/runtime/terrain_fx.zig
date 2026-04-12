@@ -120,7 +120,7 @@ pub const FxQueueRotated = struct {
                 .r = color.r,
                 .g = color.g,
                 .b = color.b,
-                .a = color.a * 0.8,
+                .a = color.a,
             },
             .rotation = rotation,
             .scale = scale,

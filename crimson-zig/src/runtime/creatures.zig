@@ -3621,9 +3621,15 @@ pub fn applyPlayerContactDamage(
     }
 
     if (player.health >= 0.0) {
-        _ = state.rng.randTagged(rng_callers.player_take_damage_pain_sfx) % 3;
+        const pain_roll = state.rng.randTagged(rng_callers.player_take_damage_pain_sfx) % 3;
+        state.sfx_queue.append(switch (pain_roll) {
+            0 => .trooper_inpain_01,
+            1 => .trooper_inpain_02,
+            else => .trooper_inpain_03,
+        });
     } else if (!perkActive(player, PerkId.final_revenge)) {
-        _ = state.rng.randTagged(rng_callers.player_take_damage_death_sfx) & 1;
+        const death_roll = state.rng.randTagged(rng_callers.player_take_damage_death_sfx) & 1;
+        state.sfx_queue.append(if (death_roll == 0) .trooper_die_01 else .trooper_die_02);
     }
 
     if (!dodged) {

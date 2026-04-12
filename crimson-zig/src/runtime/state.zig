@@ -148,6 +148,107 @@ pub const BonusTimers = struct {
     freeze: f32 = 0.0,
 };
 
+pub const SfxId = enum {
+    trooper_inpain_01,
+    trooper_inpain_02,
+    trooper_inpain_03,
+    trooper_die_01,
+    trooper_die_02,
+    trooper_die_03,
+    zombie_die_01,
+    zombie_die_02,
+    zombie_die_03,
+    zombie_die_04,
+    zombie_attack_01,
+    zombie_attack_02,
+    alien_die_01,
+    alien_die_02,
+    alien_die_03,
+    alien_die_04,
+    alien_attack_01,
+    alien_attack_02,
+    lizard_die_01,
+    lizard_die_02,
+    lizard_die_03,
+    lizard_die_04,
+    lizard_attack_01,
+    lizard_attack_02,
+    spider_die_01,
+    spider_die_02,
+    spider_die_03,
+    spider_die_04,
+    spider_attack_01,
+    spider_attack_02,
+    pistol_fire,
+    pistol_reload,
+    shotgun_fire,
+    shotgun_reload,
+    autorifle_fire,
+    autorifle_reload,
+    gauss_fire,
+    hrpm_fire,
+    shock_fire,
+    plasmaminigun_fire,
+    plasmashotgun_fire,
+    pulse_fire,
+    flamer_fire_01,
+    flamer_fire_02,
+    shock_reload,
+    shock_fire_alt,
+    shockminigun_fire,
+    rocket_fire,
+    rocketmini_fire,
+    autorifle_reload_alt,
+    bullet_hit_01,
+    bullet_hit_02,
+    bullet_hit_03,
+    bullet_hit_04,
+    bullet_hit_05,
+    bullet_hit_06,
+    shock_hit_01,
+    explosion_small,
+    explosion_medium,
+    explosion_large,
+    shockwave,
+    questhit,
+    ui_bonus,
+    ui_buttonclick,
+    ui_panelclick,
+    ui_levelup,
+    ui_typeclick_01,
+    ui_typeclick_02,
+    ui_typeenter,
+    ui_clink_01,
+    bloodspill_01,
+    bloodspill_02,
+};
+
+pub const runtime_sfx_queue_max: usize = 32;
+pub const RuntimeSfxBuffer = struct {
+    items: [runtime_sfx_queue_max]SfxId = [_]SfxId{.ui_bonus} ** runtime_sfx_queue_max,
+    len: usize = 0,
+
+    pub fn append(self: *RuntimeSfxBuffer, sfx_id: SfxId) void {
+        if (self.len >= self.items.len) return;
+        self.items[self.len] = sfx_id;
+        self.len += 1;
+    }
+
+    pub fn clear(self: *RuntimeSfxBuffer) void {
+        self.len = 0;
+    }
+
+    pub fn constSlice(self: *const RuntimeSfxBuffer) []const SfxId {
+        return self.items[0..self.len];
+    }
+
+    pub fn take(self: *RuntimeSfxBuffer) RuntimeSfxBuffer {
+        const snapshot = self.*;
+        self.clear();
+        return snapshot;
+    }
+};
+
 pub const PendingCreatureProjectile = struct {
     type_id: i32 = 0,
     owner: owner_ref.OwnerRef = .{ .none = {} },
@@ -159,6 +260,7 @@ pub const GameplayState = struct {
     rng: spawn_mod.Crand,
     gore_disabled: i32 = 0,
     bonuses: BonusTimers = .{},
+    sfx_queue: RuntimeSfxBuffer = .{},
     plaguebearer_infection_count: i32 = 0,
     time_scale_active: bool = false,
     perk_selection: PerkSelectionState = .{},

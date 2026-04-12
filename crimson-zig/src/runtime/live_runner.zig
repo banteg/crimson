@@ -2,7 +2,6 @@ const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 
-const bonuses_runtime = @import("bonuses.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
 const projectiles = @import("projectiles.zig");
@@ -53,14 +52,6 @@ pub const ShotAudioEvent = struct {
     fire_bullets_active: bool,
 };
 
-pub const RuntimeSfxId = enum(u8) {
-    ui_bonus,
-    shock_hit_01,
-    explosion_medium,
-    explosion_large,
-    shockwave,
-};
-
 pub const FrameAudioEvents = struct {
     shot_events: [8]ShotAudioEvent = [_]ShotAudioEvent{.{
         .weapon_id = 0,
@@ -71,7 +62,7 @@ pub const FrameAudioEvents = struct {
     reload_event_count: usize = 0,
     hit_events: [4]creatures.HitSfxPlan = [_]creatures.HitSfxPlan{.{}} ** 4,
     hit_event_count: usize = 0,
-    sfx_events: [16]RuntimeSfxId = [_]RuntimeSfxId{.ui_bonus} ** 16,
+    sfx_events: [state_mod.runtime_sfx_queue_max]state_mod.SfxId = [_]state_mod.SfxId{.ui_bonus} ** state_mod.runtime_sfx_queue_max,
     sfx_event_count: usize = 0,
     trigger_game_tune: bool = false,
     perk_menu_opened: bool = false,
@@ -102,25 +93,15 @@ pub const FrameAudioEvents = struct {
         }
     }
 
-    fn appendSfx(self: *FrameAudioEvents, sfx_id: RuntimeSfxId) void {
+    fn appendSfx(self: *FrameAudioEvents, sfx_id: state_mod.SfxId) void {
         if (self.sfx_event_count >= self.sfx_events.len) return;
         self.sfx_events[self.sfx_event_count] = sfx_id;
         self.sfx_event_count += 1;
     }
 
-    fn appendBonusPickupSfx(self: *FrameAudioEvents, pickups: []const bonuses_runtime.BonusPickupRecord) void {
-        for (pickups) |pickup| {
-            self.appendSfx(.ui_bonus);
-            switch (pickup.bonus_id) {
-                .freeze => self.appendSfx(.shockwave),
-                .shock_chain => self.appendSfx(.shock_hit_01),
-                .fireblast => self.appendSfx(.explosion_medium),
-                .nuke => {
-                    self.appendSfx(.explosion_large);
-                    self.appendSfx(.shockwave);
-                },
-                else => {},
-            }
+    fn appendRuntimeSfx(self: *FrameAudioEvents, sfx_events: []const state_mod.SfxId) void {
+        for (sfx_events) |sfx_id| {
+            self.appendSfx(sfx_id);
         }
     }
 };
@@ -317,7 +298,7 @@ pub const LiveRunner = struct {
                 frame_audio.perk_menu_opened = true;
             }
             frame_audio.appendHitPlans(step_result.projectile_tick_stats);
-            frame_audio.appendBonusPickupSfx(step_result.bonus_pickups.constSlice());
+            frame_audio.appendRuntimeSfx(step_result.sfx_events.constSlice());
             frame_audio.quest_play_hit_sfx = frame_audio.quest_play_hit_sfx or
                 (!before_quest_hit_sfx and self.session.quest_play_hit_sfx);
             frame_audio.quest_play_completion_music = frame_audio.quest_play_completion_music or
@@ -579,7 +560,7 @@ test "live runner emits ui bonus pickup sfx" {
 
     const update = try runner.stepFrame(runner.session.dt_nominal, .{});
     try std.testing.expectEqual(@as(usize, 1), update.audio.sfx_event_count);
-    try std.testing.expectEqual(RuntimeSfxId.ui_bonus, update.audio.sfx_events[0]);
+    try std.testing.expectEqual(state_mod.SfxId.ui_bonus, update.audio.sfx_events[0]);
 }
 
 test "live runner emits bonus-specific apply sfx after pickup" {
@@ -596,6 +577,6 @@ test "live runner emits bonus-specific apply sfx after pickup" {
 
     const update = try runner.stepFrame(runner.session.dt_nominal, .{});
     try std.testing.expectEqual(@as(usize, 2), update.audio.sfx_event_count);
-    try std.testing.expectEqual(RuntimeSfxId.ui_bonus, update.audio.sfx_events[0]);
-    try std.testing.expectEqual(RuntimeSfxId.explosion_medium, update.audio.sfx_events[1]);
+    try std.testing.expectEqual(state_mod.SfxId.ui_bonus, update.audio.sfx_events[0]);
+    try std.testing.expectEqual(state_mod.SfxId.explosion_medium, update.audio.sfx_events[1]);
 }

@@ -789,6 +789,9 @@ fn emitProjectileTypeHitEffects(
         @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
         @intFromEnum(game_ids.ProjectileTypeId.ion_cannon),
         => {
+            if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_cannon)) {
+                state.sfx_queue.append(.shockwave);
+            }
             const ring_scale: f32 = switch (projectile_type_id) {
                 @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) => 1.5,
                 @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) => 1.2,
@@ -843,6 +846,8 @@ fn emitProjectileTypeHitEffects(
             }
         },
         @intFromEnum(game_ids.ProjectileTypeId.plasma_cannon) => {
+            state.sfx_queue.append(.explosion_medium);
+            state.sfx_queue.append(.shockwave);
             spawnProjectileImpactRing(
                 effects,
                 pos,
