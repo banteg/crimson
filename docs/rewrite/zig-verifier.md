@@ -7,7 +7,7 @@ tags:
 
 # Zig native port status (`crimson-zig/`)
 
-Last reviewed: **2026-04-10**
+Last reviewed: **2026-04-12**
 
 Scope target: a full native Zig port of Crimson systems, content, codecs, and
 product surfaces.
@@ -73,8 +73,9 @@ behavior for unsupported native paths.
 - Replay compatibility is still under active expansion using differential captures;
   parity is strong on the current working set but not yet claimed for all unseen
   Survival captures or all preserve-bugs-era captures.
-- Menus, live presentation, and broader game-product surfaces are still earlier
-  in the Zig port than the replay/runtime core.
+- Menus, live presentation, and broader game-product surfaces are now real
+  native Zig surfaces, but the remaining parity debt has shifted toward mode
+  breadth, replay envelope breadth, and final product-shell fidelity.
 
 ## Current replay parity snapshot (2026-02-25)
 

@@ -30,10 +30,7 @@ const SimulationContext = session_mod.DeterministicSession;
 pub const StepError = events.EventError ||
     creatures_mod.CreatureRuntimeError ||
     bonus_runtime.BonusRuntimeError ||
-    weapons_runtime.WeaponRuntimeError ||
-    error{
-        UnsupportedDemoMode,
-    };
+    weapons_runtime.WeaponRuntimeError;
 
 pub const TickPhase = enum {
     pre_reset,
@@ -163,10 +160,7 @@ pub fn stepTick(
 ) (events.EventError ||
     creatures_mod.CreatureRuntimeError ||
     bonus_runtime.BonusRuntimeError ||
-    weapons_runtime.WeaponRuntimeError ||
-    error{
-        UnsupportedDemoMode,
-    })!StepResult {
+    weapons_runtime.WeaponRuntimeError)!StepResult {
     var frame: StepFrame = .{
         .tick_index = tick_index,
         .dt = narrowF32(dt),
@@ -217,7 +211,6 @@ pub fn stepTick(
         perk_event_dt,
         &frame.menu_open_seen_this_tick,
     );
-    try ensureSupportedReplayFeatureFlags(&context.state);
     callPhaseHook(options.hooks, context, .post_pre_events, &frame);
 
     var players = context.players();
@@ -652,7 +645,6 @@ pub fn stepTick(
                 perk_event_dt,
                 &frame.menu_open_seen_this_tick,
             );
-            try ensureSupportedReplayFeatureFlags(&context.state);
         }
         callPhaseHook(options.hooks, context, .post_post_events, &frame);
     }
@@ -704,14 +696,6 @@ pub fn stepTick(
     context.tick_index = tick_index + 1;
     callPhaseHook(options.hooks, context, .finalize, &frame);
     return result;
-}
-
-fn ensureSupportedReplayFeatureFlags(
-    state: *const state_mod.GameplayState,
-) StepError!void {
-    if (state.demo_mode_active) {
-        return error.UnsupportedDemoMode;
-    }
 }
 
 fn callPhaseHook(

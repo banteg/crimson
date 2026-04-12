@@ -204,7 +204,6 @@ pub fn collect(
     if (header.player_count <= 0 or header.player_count > state_mod.max_players) {
         return error.UnsupportedPlayerCount;
     }
-    try ensureSupportedReplayFeatureFlags(false);
     if (!std.mem.eql(u8, header.input_quantization, "f32")) {
         return error.UnsupportedInputQuantization;
     }
@@ -363,7 +362,6 @@ pub fn collect(
             if (outcome.signal == .request_capture_state_reset) {
                 context.pending_capture_state_reset = true;
             }
-            try ensureSupportedReplayFeatureFlags(context.state.demo_mode_active);
         }
         if (context.event_index != events.len) return error.UnsupportedEventOrdering;
     }
@@ -673,8 +671,4 @@ fn makeEvent(
         .detail = detail,
         .data = data,
     };
-}
-
-fn ensureSupportedReplayFeatureFlags(demo_mode_active: bool) ReplayInfoError!void {
-    if (demo_mode_active) return error.UnsupportedDemoMode;
 }

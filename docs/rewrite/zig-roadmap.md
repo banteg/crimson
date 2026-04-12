@@ -11,7 +11,7 @@ This page scopes the remaining work to move `crimson-zig/` from its current
 state, where replay/runtime tooling is the strongest surface, toward the actual
 goal: a full native Zig port of Crimson systems, content, and product surfaces.
 
-Last reviewed: **2026-04-10**
+Last reviewed: **2026-04-12**
 
 ## Current baseline
 
@@ -21,12 +21,12 @@ Today the Zig tree has three clearly real foundations:
 - replay/tooling surfaces (`replay verify`, `replay info`, CDT traces),
 - codec and packaging work (`paq`, `jaz`, `crimson.cfg`, `game.cfg`).
 
-It also has two intentionally early placeholders:
+It also has two surfaces at very different maturity levels:
 
-- native window bootstrap:
+- native window/application shell:
   [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig)
-  now boots a simple desktop menu -> survival run -> results slice with
-  primitive gameplay rendering plus archive-backed menu/bootstrap asset loading,
+  now owns a real boot/logo flow, menu stacks, live desktop gameplay, results,
+  high-score entry, archive-backed rendering, audio, and cfg/status persistence,
 - wasm runtime ABI:
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig)
   now executes byte-input replay verify calls, but still exposes only a narrow
@@ -155,13 +155,14 @@ Remaining work:
   - game over / results / high score entry.
 - Replace the current placeholder window target with a real renderer loop.
 
-Current evidence that this workstream is still early:
+Current evidence that this workstream is still incomplete:
 
-- the desktop slice still uses primitive shapes/text for live gameplay instead
-  of the real asset stack:
-  [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig)
-- current asset use is shallow: boot/menu surfaces consume textures, but the
-  world renderer, terrain pipeline, HUD widgets, and product UI still do not.
+- mode/runtime breadth still lags the Python port (`tutorial`, `typo`, and
+  fuller replay/demo envelopes),
+- some product surfaces are still thinner than Python even though they are no
+  longer placeholder-level,
+- the WASM/browser surface still exposes replay-oriented functionality instead
+  of a broader native/runtime API.
 
 Definition of done for this workstream:
 
