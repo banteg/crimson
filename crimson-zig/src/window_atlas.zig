@@ -155,7 +155,13 @@ pub fn effectRectById(texture_width: i32, texture_height: i32, effect_id_raw: i3
         0x80 => 2,
         else => return null,
     };
-    return atlasRect(texture_width, texture_height, grid, entry.frame);
+    const rect = atlasRect(texture_width, texture_height, grid, entry.frame);
+    return .{
+        .x = rect.x,
+        .y = rect.y,
+        .width = @max(0.0, rect.width - 2.0),
+        .height = @max(0.0, rect.height - 2.0),
+    };
 }
 
 pub fn bonusIconRect(texture_width: i32, texture_height: i32, icon_id: i32) AtlasRect {

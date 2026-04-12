@@ -88,6 +88,8 @@ pub fn preprocessPlayerForPerkTicksWithEffects(
 ) bool {
     if (!(dt > 0.0)) return false;
 
+    player.muzzle_flash_alpha = @max(0.0, narrowF32(player.muzzle_flash_alpha - dt * 2.0));
+
     if (player.health <= 0.0) {
         player.death_timer = narrowF32(player.death_timer - dt * 20.0);
         return false;
