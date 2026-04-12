@@ -1849,6 +1849,7 @@ pub const CreaturePool = struct {
     ) CreatureRuntimeError!void {
         if (players.len == 0) return;
         if (!(dt > 0.0)) return;
+        const effect_pool = self.effects orelse unreachable;
         const dt_f32 = dt;
 
         if (!self.capture_spawn_events_authoritative) {
@@ -1896,7 +1897,7 @@ pub const CreaturePool = struct {
                 if (creature_lifecycle.isAlive(creature.lifecycle_stage)) {
                     creature.lifecycle_stage -= dt_f32;
                 }
-                tickDead(creature, dt_f32, &self.kill_count, state, self.effects, terrain_fx);
+                tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
                 continue;
             }
 
@@ -1916,7 +1917,7 @@ pub const CreaturePool = struct {
                 );
                 if (!(creature.hp > 0.0)) {
                     if (creature.active) {
-                        tickDead(creature, dt_f32, &self.kill_count, state, self.effects, terrain_fx);
+                        tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
                     }
                     continue;
                 }
@@ -1949,7 +1950,7 @@ pub const CreaturePool = struct {
                 );
                 if (!(creature.hp > 0.0)) {
                     if (creature.active) {
-                        tickDead(creature, dt_f32, &self.kill_count, state, self.effects, terrain_fx);
+                        tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
                     }
                     continue;
                 }
@@ -2147,8 +2148,7 @@ pub const CreaturePool = struct {
                 };
 
                 if (state.bonuses.energizer > 0.0 and creature.max_hp < 380.0) {
-                    const effects = self.effects orelse unreachable;
-                    effects.spawnBurst(
+                    effect_pool.spawnBurst(
                         state,
                         creature.pos,
                         6,
@@ -2164,7 +2164,7 @@ pub const CreaturePool = struct {
                         state,
                         players,
                         bonus_pool,
-                        self.effects,
+                        effect_pool,
                         terrain_fx,
                         creature.flags,
                         creature.link_index,
@@ -2202,7 +2202,7 @@ pub const CreaturePool = struct {
                         world_size,
                     );
                     if (!(creature.hp > 0.0) and creature.active) {
-                        tickDead(creature, dt_f32, &self.kill_count, state, self.effects, terrain_fx);
+                        tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
                     }
                 }
                 if (player.shield_timer <= 0.0) {
@@ -2438,7 +2438,7 @@ pub const CreaturePool = struct {
             state,
             players,
             bonus_pool,
-            self.effects,
+            self.effects orelse unreachable,
             terrain_fx,
             creature.flags,
             creature.link_index,
@@ -2490,7 +2490,7 @@ pub const CreaturePool = struct {
             state,
             players,
             bonus_pool,
-            self.effects,
+            self.effects orelse unreachable,
             terrain_fx,
             creature.flags,
             creature.link_index,
@@ -2543,7 +2543,7 @@ pub const CreaturePool = struct {
             state,
             players,
             bonus_pool,
-            self.effects,
+            self.effects orelse unreachable,
             terrain_fx,
             creature.flags,
             creature.link_index,
@@ -2813,7 +2813,7 @@ pub const CreaturePool = struct {
             state,
             players,
             bonus_pool,
-            self.effects,
+            self.effects orelse unreachable,
             terrain_fx,
             creature.flags,
             creature.link_index,
@@ -3402,7 +3402,7 @@ fn emitDeathSideEffects(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
     bonus_pool: *bonus_runtime.BonusPool,
-    effects: ?*effects_mod.EffectPool,
+    effects: *effects_mod.EffectPool,
     terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     creature_flags: u32,
     creature_link_index: i32,
@@ -3434,8 +3434,7 @@ fn emitDeathSideEffects(
         world_size,
     );
     if (spawned_bonus) |_| {
-        const effect_pool = effects orelse unreachable;
-        effect_pool.spawnBurst(
+        effects.spawnBurst(
             state,
             death_pos,
             16,
@@ -3446,13 +3445,12 @@ fn emitDeathSideEffects(
         );
     }
     if (state.bonuses.freeze > 0.0) {
-        const effect_pool = effects orelse unreachable;
         for (0..8) |_| {
             const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shard_angle) % 612)) * 0.01;
-            effect_pool.spawnFreezeShard(state, death_pos, angle, 5);
+            effects.spawnFreezeShard(state, death_pos, angle, 5);
         }
         const shatter_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shatter_angle) % 612)) * 0.01;
-        effect_pool.spawnFreezeShatter(state, death_pos, shatter_angle, 5);
+        effects.spawnFreezeShatter(state, death_pos, shatter_angle, 5);
         _ = terrain_fx.decals.addRandom(state, death_pos);
     }
     if (plan_death_sfx) {
@@ -3466,7 +3464,7 @@ fn tickDead(
     dt: f32,
     kill_count: *i32,
     state: *state_mod.GameplayState,
-    effects: ?*effects_mod.EffectPool,
+    effects: *effects_mod.EffectPool,
     terrain_fx: *terrain_fx_mod.TerrainFxScratch,
 ) void {
     if (!(dt > 0.0)) return;
@@ -3519,7 +3517,6 @@ fn tickDead(
     if (state.gore_disabled == 0 and
         (creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) != 0)
     {
-        const effect_pool = effects orelse unreachable;
         const burst_sets = [_]struct { count: usize, age: f32, caller: rng_callers.Caller }{
             .{ .count = 8, .age = 0.0, .caller = rng_callers.creature_update_all_ping_pong_blood_8_angle },
             .{ .count = 6, .age = -0.07, .caller = rng_callers.creature_update_all_ping_pong_blood_6_angle },
@@ -3528,7 +3525,7 @@ fn tickDead(
         for (burst_sets) |entry| {
             for (0..entry.count) |_| {
                 const angle = @as(f32, @floatFromInt(state.rng.randTagged(entry.caller) % 612)) * 0.01;
-                effect_pool.spawnBloodSplatter(state, creature.pos, angle, entry.age, 5, state.gore_disabled);
+                effects.spawnBloodSplatter(state, creature.pos, angle, entry.age, 5, state.gore_disabled);
             }
         }
     }
