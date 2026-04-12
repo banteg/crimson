@@ -29,5 +29,6 @@ test {
     _ = cz.weapon_data;
     _ = cz.weapons;
     _ = cz.window_atlas;
+    _ = @import("window_cursor.zig");
     _ = @import("window_statistics.zig");
 }

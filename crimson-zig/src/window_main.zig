@@ -14,6 +14,7 @@ const live_audio = @import("audio/live_audio.zig");
 const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
 const window_boot = @import("window_boot.zig");
+const window_cursor = @import("window_cursor.zig");
 const window_effects = @import("window_effects.zig");
 const window_ground = @import("window_ground.zig");
 const window_menu = @import("window_menu.zig");
@@ -256,6 +257,7 @@ const App = struct {
     assets_state: AssetsState = .unavailable,
     assets_message: ?[]u8 = null,
     next_seed_state: u32 = 0xC0FFEE,
+    cursor_pulse_time: f32 = 0.0,
     quit_requested: bool = false,
 
     fn init(allocator: std.mem.Allocator, runtime: app_runtime.DesktopRuntime) App {
@@ -306,6 +308,7 @@ const App = struct {
     }
 
     fn update(self: *App, frame_dt: f32) void {
+        self.tickCursorPulse(frame_dt);
         switch (self.screen) {
             .boot => self.updateBoot(frame_dt),
             .main_menu => self.updateMainMenu(frame_dt),
@@ -332,13 +335,41 @@ const App = struct {
             .options => self.drawOptions(),
             .controls => self.drawControls(),
         }
+        self.drawUiCursor();
+    }
+
+    fn setScreen(self: *App, screen: Screen) void {
+        if (self.screen != screen) self.cursor_pulse_time = 0.0;
+        self.screen = screen;
+    }
+
+    fn tickCursorPulse(self: *App, frame_dt: f32) void {
+        if (self.screen == .boot) return;
+        self.cursor_pulse_time += @min(@max(frame_dt, 0.0), 0.1) * 1.1;
+    }
+
+    fn drawUiCursor(self: *const App) void {
+        const assets = if (self.runtime_assets) |*runtime_assets| runtime_assets else return;
+        switch (self.screen) {
+            .boot => {},
+            .main_menu, .play_game_menu, .quests_menu, .statistics_menu, .results, .options, .controls => {
+                window_cursor.drawMenuCursor(assets, self.cursor_pulse_time);
+            },
+            .gameplay => {
+                if (self.gameplay) |gameplay| {
+                    if (gameplay.perk_ui.active()) {
+                        window_cursor.drawMenuCursor(assets, self.cursor_pulse_time);
+                    }
+                }
+            },
+        }
     }
 
     fn updateBoot(self: *App, frame_dt: f32) void {
         const result = window_boot.update(&self.boot, frame_dt);
         if (result.finished) {
             self.menu.openRoot();
-            self.screen = .main_menu;
+            self.setScreen(.main_menu);
             return;
         }
         self.audio.ensureIntroMusic();
@@ -362,15 +393,15 @@ const App = struct {
             switch (action) {
                 .open_play_game => {
                     self.play_game_menu.reset();
-                    self.screen = .play_game_menu;
+                    self.setScreen(.play_game_menu);
                 },
                 .open_options => {
                     self.options.reset();
-                    self.screen = .options;
+                    self.setScreen(.options);
                 },
                 .open_statistics => {
                     window_statistics.openRoot(&self.statistics_menu, self.allocator);
-                    self.screen = .statistics_menu;
+                    self.setScreen(.statistics_menu);
                 },
                 .quit => self.quit_requested = true,
             }
@@ -393,11 +424,11 @@ const App = struct {
             .start_tutorial => self.startNewRun(runConfigForLiveMode(.tutorial, null, &self.next_seed_state)),
             .open_quests => {
                 self.quests_menu.reset();
-                self.screen = .quests_menu;
+                self.setScreen(.quests_menu);
             },
             .back_to_menu => {
                 self.menu.openRoot();
-                self.screen = .main_menu;
+                self.setScreen(.main_menu);
             },
         };
     }
@@ -413,7 +444,7 @@ const App = struct {
         if (quest_update.play_button_click) self.audio.playUiButtonClick();
         if (quest_update.back_to_play_game) {
             self.play_game_menu.reset();
-            self.screen = .play_game_menu;
+            self.setScreen(.play_game_menu);
             return;
         }
         if (quest_update.start_level_key) |level_key| {
@@ -443,11 +474,11 @@ const App = struct {
             .none => {},
             .open_play_game => {
                 self.play_game_menu.reset();
-                self.screen = .play_game_menu;
+                self.setScreen(.play_game_menu);
             },
             .back_to_menu => {
                 self.menu.openRoot();
-                self.screen = .main_menu;
+                self.setScreen(.main_menu);
             },
         }
     }
@@ -537,7 +568,7 @@ const App = struct {
                 }
                 self.results = null;
                 self.menu.openRoot();
-                self.screen = .main_menu;
+                self.setScreen(.main_menu);
             },
             else => {},
         }
@@ -557,11 +588,11 @@ const App = struct {
             .none => {},
             .open_controls => {
                 self.controls.reset();
-                self.screen = .controls;
+                self.setScreen(.controls);
             },
             .back_to_menu => {
                 self.menu.openRoot();
-                self.screen = .main_menu;
+                self.setScreen(.main_menu);
             },
         }
     }
@@ -577,7 +608,7 @@ const App = struct {
         if (controls_update.play_button_click) self.audio.playUiButtonClick();
         switch (controls_update.action) {
             .none => {},
-            .back_to_options => self.screen = .options,
+            .back_to_options => self.setScreen(.options),
         }
     }
 
@@ -684,7 +715,7 @@ const App = struct {
                 .runtime_error = @errorName(err),
             };
             self.results_selection = 0;
-            self.screen = .results;
+            self.setScreen(.results);
             return;
         };
         const last_update = runner.stepFrame(0.0, .{}) catch unreachable;
@@ -714,7 +745,7 @@ const App = struct {
         }
         self.gameplay = gameplay;
         self.results = null;
-        self.screen = .gameplay;
+        self.setScreen(.gameplay);
     }
 
     fn reloadAudioConfig(self: *App) void {
@@ -747,7 +778,7 @@ const App = struct {
         gameplay.deinit();
         self.gameplay = null;
         self.results_selection = 0;
-        self.screen = .results;
+        self.setScreen(.results);
     }
 
     fn buildResultsHighscore(
@@ -859,12 +890,14 @@ const App = struct {
             drawProjectiles(runner, runtime_assets);
             drawWorldEffects(runner, runtime_assets);
             drawBonuses(runner, runtime_assets);
+            if (!gameplay.perk_ui.active()) {
+                drawAimEnhancements(runner, runtime_assets, camera.zoom);
+            }
             camera.end();
 
             if (gameplay.perk_ui.active()) {
                 if (runtime_assets) |assets| {
                     window_perk_menu.drawMenu(&gameplay.perk_ui, assets, &self.runtime.config, runner);
-                    window_perk_menu.drawCursor(assets);
                 }
             } else {
                 drawGameplayHud(gameplay, runtime_assets);
@@ -964,6 +997,8 @@ pub fn main() !void {
     });
     rl.initWindow(runtime.windowWidth(window_width), runtime.windowHeight(window_height), "crimson-zig");
     defer rl.closeWindow();
+    rl.hideCursor();
+    defer rl.showCursor();
 
     rl.setTargetFPS(60);
 
@@ -1627,6 +1662,18 @@ fn drawBonuses(runner: *const live_runner.LiveRunner, runtime_assets: ?*const wi
             },
             bonus_color,
         );
+    }
+}
+
+fn drawAimEnhancements(
+    runner: *const live_runner.LiveRunner,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
+    zoom: f32,
+) void {
+    const assets = runtime_assets orelse return;
+    const alpha: f32 = 1.0;
+    for (runner.session.playersConst()) |player| {
+        window_cursor.drawAimEnhancements(assets, player, zoom, alpha);
     }
 }
 
