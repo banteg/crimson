@@ -13,6 +13,7 @@ const diagnostic_trace_mod = @import("diagnostic_trace.zig");
 
 const bonus_runtime = @import("../bonuses.zig");
 const creatures_mod = @import("../creatures.zig");
+const effects_mod = @import("../effects.zig");
 const perks = @import("../perks.zig");
 const player_runtime = @import("../player.zig");
 const projectiles_mod = @import("../projectiles.zig");
@@ -95,6 +96,7 @@ pub const StepResult = struct {
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
     projectile_tick_stats: projectiles_mod.ProjectileTickStats,
+    bonus_pickups: bonus_runtime.BonusPickupBuffer,
     terrain_fx: terrain_fx_mod.TerrainFxBatch,
     rng_end: u32,
     pending_capture_state_reset: bool,
@@ -592,7 +594,14 @@ pub fn stepTick(
         &context.effects,
         context.detail_preset,
     );
-    if (context.state.debug_last_picked_bonus_id == game_ids.BonusId.freeze) {
+    var freeze_pickup_seen = false;
+    for (context.tick_bonus_pickups.constSlice()) |pickup| {
+        if (pickup.bonus_id == .freeze) {
+            freeze_pickup_seen = true;
+            break;
+        }
+    }
+    if (freeze_pickup_seen) {
         bonus_runtime.applyFreezePickupCorpseEffects(
             &context.state,
             &context.creatures,
@@ -667,6 +676,7 @@ pub fn stepTick(
         .rng_after_spawns = frame.rng_after_spawns,
         .rng_after_bonus_update = frame.rng_after_bonus_update,
         .projectile_tick_stats = frame.projectile_tick_stats,
+        .bonus_pickups = context.tick_bonus_pickups,
         .terrain_fx = context.terrain_fx.takeBatch(),
         .rng_end = context.state.rng.state,
         .pending_capture_state_reset = context.pending_capture_state_reset,
@@ -975,4 +985,62 @@ test "step tick accepts preserve bugs and keeps player zero perk targeting" {
 
     try std.testing.expectApproxEqAbs(@as(f32, 90.4), players[0].health, 1e-5);
     try std.testing.expectApproxEqAbs(@as(f32, 80.0), players[1].health, 1e-6);
+}
+
+test "step tick applies freeze corpse effects when freeze is not last pickup" {
+    const header = testHeader();
+    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    context.rebindQuestSpawnEntries();
+
+    const player_pos = context.players()[0].pos;
+    context.creatures.entries[0] = .{
+        .active = true,
+        .type_id = 0,
+        .pos = player_pos,
+        .hp = 0.0,
+        .max_hp = 10.0,
+        .size = 48.0,
+        .lifecycle_stage = 0.0,
+    };
+    context.bonuses.entries[0] = .{
+        .bonus_id = .freeze,
+        .picked = false,
+        .time_left = 5.0,
+        .time_max = 5.0,
+        .pos = player_pos,
+        .amount = 5,
+    };
+    context.bonuses.entries[1] = .{
+        .bonus_id = .points,
+        .picked = false,
+        .time_left = 5.0,
+        .time_max = 5.0,
+        .pos = player_pos,
+        .amount = 100,
+    };
+
+    const result = try stepTick(
+        &context,
+        0,
+        &[_]player_runtime.GameInput{.{}},
+        &.{},
+        context.dt_nominal,
+        .{},
+    );
+
+    try std.testing.expectEqual(@as(usize, 2), result.bonus_pickups.len);
+    try std.testing.expect(!context.creatures.entries[0].active);
+
+    var freeze_fx_count: usize = 0;
+    for (context.effects.entries) |entry| {
+        if (entry.flags == 0) continue;
+        if (entry.effect_id == @intFromEnum(effects_mod.EffectId.freeze_shatter) or
+            entry.effect_id == @intFromEnum(effects_mod.EffectId.freeze_shard_0) or
+            entry.effect_id == @intFromEnum(effects_mod.EffectId.freeze_shard_1) or
+            entry.effect_id == @intFromEnum(effects_mod.EffectId.freeze_shard_2))
+        {
+            freeze_fx_count += 1;
+        }
+    }
+    try std.testing.expect(freeze_fx_count > 0);
 }
