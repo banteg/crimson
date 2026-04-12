@@ -656,7 +656,7 @@ fn buildNotPortedOutput(
     defer stderr_buf.deinit(allocator);
 
     var writer = stderr_buf.writer(allocator);
-    try writer.print("replay verification path not yet ported: {s}\n", .{detail});
+    try writer.print("replay verification hit a native unsupported path: {s}\n", .{detail});
 
     const stderr = try stderr_buf.toOwnedSlice(allocator);
     errdefer allocator.free(stderr);
@@ -704,7 +704,7 @@ fn buildNotPortedOutputForReplayCodecError(
         error.InvalidGzipPayload => return buildVerifyFailedOutput(allocator, "unable to inflate replay gzip payload"),
         error.InvalidZstdPayload => return buildVerifyFailedOutput(allocator, "unable to inflate replay zstd payload"),
         error.UnsupportedReplayFormatVersion => return buildNotPortedOutput(allocator, "replay format version is not supported"),
-        error.UnsupportedEventKind => return buildNotPortedOutput(allocator, "replay events include kinds not yet ported"),
+        error.UnsupportedEventKind => return buildNotPortedOutput(allocator, "replay events include kinds unsupported by the current native runtime"),
         error.UnsupportedBootstrapKind => return buildNotPortedOutput(allocator, "replay bootstrap kind is not supported"),
         error.UnsupportedInputQuantization => return buildNotPortedOutput(allocator, "replay input quantization is not supported"),
         error.BootstrapSeedMismatch => return buildNotPortedOutput(allocator, "replay bootstrap seed does not match canonical terrain bootstrap draws"),
@@ -724,15 +724,13 @@ fn buildNotPortedOutputForReplayRunnerError(
         error.UnsupportedGameMode => "native replay run only supports survival/rush/quest modes",
         error.UnsupportedPlayerCount => "native replay run only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "native replay run only supports f32 quantization",
-        error.UnsupportedDemoMode => "native replay run does not support demo_mode_active=true",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
         error.UnsupportedEventKind => "replay events include kinds unsupported for this mode",
         error.UnsupportedEventPlayerIndex => "native replay run encountered an out-of-range player_index event",
         error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
-        error.UnsupportedSpawnTemplate => "replay triggered survival template spawns not yet ported in native creature runtime",
-        error.UnsupportedQuestSpawnTable => "quest replay requires a quest spawn table variant not yet ported in native runtime",
-        error.UnsupportedWeaponFirePath => "replay triggered weapon fire path not yet ported in native projectile runtime",
+        error.UnsupportedSpawnTemplate => "replay triggered a survival template path unsupported by the current native creature runtime",
+        error.UnsupportedQuestSpawnTable => "quest replay requires a quest spawn table variant unsupported by the current native runtime",
         error.MissingRngCallerTag => "native replay trace hit an untagged gameplay RNG draw",
     };
 
@@ -740,7 +738,7 @@ fn buildNotPortedOutputForReplayRunnerError(
     defer stderr_buf.deinit(allocator);
 
     var writer = stderr_buf.writer(allocator);
-    try writer.print("replay verification path not yet ported: {s}", .{detail});
+    try writer.print("replay verification hit a native unsupported path: {s}", .{detail});
     if (progress.processed_ticks) |processed_ticks| {
         try writer.print(
             " (progress: ticks_processed={d}/{d}, event_count={d})\n",
@@ -1300,7 +1298,7 @@ test "replay codec malformed payload errors map to verify failed output" {
         try std.testing.expectEqual(@as(i32, 1), output.exit_code);
         try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification failed:") != null);
         try std.testing.expect(std.mem.indexOf(u8, output.stderr, case_item.detail) != null);
-        try std.testing.expect(std.mem.indexOf(u8, output.stderr, "path not yet ported") == null);
+        try std.testing.expect(std.mem.indexOf(u8, output.stderr, "native unsupported path") == null);
     }
 }
 
@@ -1310,37 +1308,9 @@ test "replay codec unsupported event kind remains not ported output" {
     defer output.deinit(allocator);
 
     try std.testing.expectEqual(@as(i32, 1), output.exit_code);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification path not yet ported:") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay events include kinds not yet ported") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification hit a native unsupported path:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay events include kinds unsupported by the current native runtime") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification failed:") == null);
-}
-
-test "survival sim not ported output maps unsupported weapon fire path" {
-    const allocator = std.testing.allocator;
-    const output = try buildNotPortedOutputForReplayRunnerError(
-        allocator,
-        error.UnsupportedWeaponFirePath,
-        .{},
-    );
-    defer allocator.free(output.stdout);
-    defer allocator.free(output.stderr);
-
-    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "weapon fire path not yet ported") != null);
-}
-
-test "survival sim not ported output maps unsupported demo mode path" {
-    const allocator = std.testing.allocator;
-    const output = try buildNotPortedOutputForReplayRunnerError(
-        allocator,
-        error.UnsupportedDemoMode,
-        .{},
-    );
-    defer allocator.free(output.stdout);
-    defer allocator.free(output.stderr);
-
-    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "does not support demo_mode_active=true") != null);
 }
 
 test "survival sim not ported output includes replay progress hints" {

@@ -81,6 +81,10 @@ pub const Bridge = struct {
         self.playMusic("crimson_theme");
     }
 
+    pub fn ensureStatisticsTheme(self: *Bridge) void {
+        self.playMusic("shortie_monk");
+    }
+
     pub fn stopGameplayMusic(self: *Bridge) void {
         if (self.state) |*state| {
             audio_mod.stopMusic(state);

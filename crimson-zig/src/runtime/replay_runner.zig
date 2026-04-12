@@ -67,7 +67,6 @@ pub const ReplayRunnerError = error{
     UnsupportedGameMode,
     UnsupportedPlayerCount,
     UnsupportedInputQuantization,
-    UnsupportedDemoMode,
     UnsupportedEventOrdering,
     UnsupportedEventKind,
     UnsupportedEventPlayerIndex,
@@ -75,7 +74,6 @@ pub const ReplayRunnerError = error{
     MissingRngCallerTag,
     UnsupportedSpawnTemplate,
     UnsupportedQuestSpawnTable,
-    UnsupportedWeaponFirePath,
 };
 
 fn parseCaptureCreatureAiMode(value: i32) ReplayRunnerError!spawn_mod.CreatureAiMode {
@@ -147,12 +145,6 @@ pub const ReplayRunOptions = struct {
     quest_start_weapon_id: ?i32 = null,
 };
 
-fn ensureSupportedReplayFeatureFlags(
-    demo_mode_active: bool,
-) ReplayRunnerError!void {
-    if (demo_mode_active) return error.UnsupportedDemoMode;
-}
-
 pub fn runReplay(
     replay: replay_codec.Replay,
 ) ReplayRunnerError!ReplayRunResult {
@@ -184,7 +176,6 @@ pub fn runReplayWithTrace(
     if (header.player_count <= 0 or header.player_count > state_mod.max_players) {
         return error.UnsupportedPlayerCount;
     }
-    try ensureSupportedReplayFeatureFlags(false);
     if (!std.mem.eql(u8, header.input_quantization, "f32")) {
         return error.UnsupportedInputQuantization;
     }
@@ -339,7 +330,6 @@ pub fn runReplayWithTrace(
             if (outcome.signal == .request_capture_state_reset) {
                 context.pending_capture_state_reset = true;
             }
-            try ensureSupportedReplayFeatureFlags(context.state.demo_mode_active);
         }
         if (context.event_index != events.len) return error.UnsupportedEventOrdering;
     }
@@ -650,14 +640,6 @@ fn applyCaptureCreatureSpawnEvent(
         if (row.has_flags) entry.flags = @intCast(@max(0, flags_i32));
         if (row.has_type_id) entry.type_id = row.type_id;
     }
-}
-
-test "replay run rejects unsupported demo/preserve feature flags" {
-    try std.testing.expectError(
-        error.UnsupportedDemoMode,
-        ensureSupportedReplayFeatureFlags(true),
-    );
-    try ensureSupportedReplayFeatureFlags(false);
 }
 
 test "survival run accepts preserve bugs replay headers" {

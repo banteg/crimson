@@ -46,14 +46,14 @@ This wave is intentionally codec-only:
   - full deterministic run-result generation on supported native paths.
 - Replay-side validation remains a primary parity harness, but it is now a consumer of shared runtime code rather than the whole point of the workspace.
 - Native CLI still hard-fails for unsupported or unported native paths instead of falling back.
-- `zig build run-window` now boots a real desktop gameplay slice:
-  boot screen -> main menu -> live 1-player Survival / Rush / Quest 1.1 runs -> results.
+- `zig build run-window` now boots a real desktop shell:
+  boot/logo flow -> main menu -> play-game/options/statistics stacks -> live gameplay -> results/high-score entry.
 - `zig build run-window` now looks for runtime assets using the same default
   runtime-dir policy as Python first:
   `CRIMSON_ASSETS_DIR`, then `CRIMSON_RUNTIME_DIR` / `CRIMSON_BASE_DIR`, then
   the per-user platform data dir (`platformdirs`-compatible layout), with
   `./artifacts/assets` and the current directory left as checkout-local
-  fallback. It loads `.jaz`, `.tga`, `.jpg/.jpeg`, and `load/smallFnt.dat`.
+  search fallbacks. It loads `.jaz`, `.tga`, `.jpg/.jpeg`, and `load/smallFnt.dat`.
 - The desktop slice now also uses the same runtime-dir policy for `music.paq`,
   `sfx.paq`, and `crimson.cfg`, with:
   - archive-backed music + sfx loading in Zig,
@@ -104,11 +104,10 @@ zig build wasm
   mutations on run end / app exit.
 - `zig build web-window` builds an HTML+WASM placeholder window for browser use.
 - `zig build run-web-window` serves the web build through `emrun` (`--no_browser`).
-- The desktop target is currently a menu-to-gameplay live mode slice with a
-  mixed renderer: gameplay world surfaces now use archive-backed textures when
-  `crimson.paq` is available, with primitive fallback where exact sprite atlas
-  mapping is still incomplete. Quest mode currently boots a fixed `1.1` run
-  from the main menu until the wider quest-select UI is ported.
+- The desktop target now uses archive-backed world/UI/audio assets across the
+  normal shell and gameplay flow. The largest remaining desktop gaps are
+  product-surface completeness and mode/runtime coverage, not placeholder
+  rendering.
 - `zig build wasm` remains the freestanding ABI module (`wasm32-freestanding`) and
   is intentionally separate from the raylib web target (`wasm32-emscripten`).
 

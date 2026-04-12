@@ -376,6 +376,11 @@ const App = struct {
 
     fn setScreen(self: *App, screen: Screen) void {
         if (self.screen != screen) self.cursor_pulse_time = 0.0;
+        if (self.screen != screen) {
+            self.runtime.saveAllIfDirty() catch |err| {
+                std.log.err("saveAllIfDirty failed during screen transition: {s}", .{@errorName(err)});
+            };
+        }
         self.screen = screen;
     }
 
@@ -489,7 +494,7 @@ const App = struct {
     }
 
     fn updateStatisticsMenu(self: *App, frame_dt: f32) void {
-        self.audio.ensureMenuTheme();
+        self.audio.ensureStatisticsTheme();
         const statistics_update = window_statistics.update(
             &self.statistics_menu,
             self.allocator,
@@ -891,12 +896,10 @@ const App = struct {
 
     fn drawBoot(self: *const App) void {
         window_boot.draw(&self.boot, if (self.runtime_assets) |*assets| assets else null);
-        drawStartupDiagnostics(self);
     }
 
     fn drawMainMenu(self: *const App) void {
         window_menu.draw(&self.menu, if (self.runtime_assets) |*assets| assets else null);
-        drawStartupDiagnostics(self);
     }
 
     fn drawPlayGameMenu(self: *const App) void {
@@ -1014,23 +1017,6 @@ const App = struct {
                 if (results.highscore) |highscore| {
                     drawResultsHighscore(runtime_assets, &highscore);
                 }
-            } else {
-                drawCenteredText(resultsTitle(results.reason), 124, 64, accent_color);
-                drawCenteredText(resultsSubtitle(results.reason), 188, 22, text_color);
-
-                drawTextFmt("elapsed_ms: {d}", .{results.summary.elapsed_ms_sim}, 460, 280, 24, text_color);
-                drawTextFmt("xp: {d}", .{results.summary.player_experience}, 460, 316, 24, text_color);
-                drawTextFmt("level: {d}", .{results.summary.player_level}, 460, 352, 24, text_color);
-                drawTextFmt("fire inputs: {d} / reloads: {d}", .{ results.summary.fire_pressed_count, results.summary.reload_pressed_count }, 460, 388, 24, text_color);
-                drawTextFmt("spawns: stage={d} wave={d}", .{ results.summary.stage_spawn_count, results.summary.wave_spawn_count }, 460, 424, 24, text_color);
-                drawTextFmt("weapon_id: {d}  hp: {d:.1}", .{ results.summary.player_weapon_id, results.player_health }, 460, 460, 24, text_color);
-
-                if (results.runtime_error) |runtime_error| {
-                    drawTextSlice(runtime_error, 460, 520, 20, rl.Color.orange);
-                }
-                if (results.highscore) |highscore| {
-                    drawResultsHighscoreFallback(&highscore);
-                }
             }
         }
 
@@ -1050,7 +1036,6 @@ const App = struct {
                 idx == self.results_selection;
             window_ui.drawButton(button, selected, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
         }
-        drawAudioStatus(&self.audio);
     }
 
     fn drawOptions(self: *const App) void {
@@ -1100,48 +1085,6 @@ fn drawBackdrop() void {
     rl.drawRectangleGradientV(0, 0, width, height, rl.Color.init(32, 18, 16, 255), bg_color);
     rl.drawCircle(width - 180, 120, 200.0, rl.Color.init(93, 31, 22, 80));
     rl.drawCircle(160, height - 80, 220.0, rl.Color.init(58, 23, 18, 90));
-}
-
-fn drawAudioStatus(audio: *const live_audio.Bridge) void {
-    switch (audio.load_state) {
-        .loaded => {
-            const assets_dir = audio.assetsDir() orelse return;
-            drawTextFmt(
-                "audio: {d} music / {d} queued tunes / {d} sfx samples from {s}",
-                .{ audio.musicTrackCount(), audio.queuedGameTuneCount(), audio.sfxSampleCount(), assets_dir },
-                28,
-                708,
-                18,
-                muted_text,
-            );
-        },
-        .unavailable => drawTextSlice("audio: music.paq or sfx.paq missing; running silent", 28, 708, 18, muted_text),
-        .disabled => drawTextSlice("audio: disabled by crimson.cfg", 28, 708, 18, muted_text),
-        .failed => {
-            drawTextSlice("audio: init failed; running silent", 28, 708, 18, muted_text);
-            if (audio.message) |message| {
-                drawTextSlice(message, 420, 708, 18, rl.Color.orange);
-            }
-        },
-    }
-}
-
-fn drawStartupDiagnostics(app: *const App) void {
-    switch (app.assets_state) {
-        .loaded => {},
-        .unavailable => drawTextSlice("assets: no crimson.paq found; desktop runtime cannot start", 28, 688, 18, muted_text),
-        .failed => {
-            drawTextSlice("assets: load failed; desktop runtime cannot start", 28, 668, 18, muted_text);
-            if (app.assets_message) |message| {
-                drawTextSlice(message, 28, 688, 18, rl.Color.orange);
-            }
-        },
-    }
-
-    switch (app.audio.load_state) {
-        .loaded => {},
-        .unavailable, .disabled, .failed => drawAudioStatus(&app.audio),
-    }
 }
 
 fn drawTextureFit(texture: rl.Texture2D, dest: rl.Rectangle, tint: rl.Color) void {
@@ -2013,27 +1956,6 @@ fn drawResultsHighscore(
     }
 }
 
-fn drawResultsHighscoreFallback(highscore: *const ResultsHighscoreState) void {
-    if (highscore.promptActive()) {
-        drawCenteredText("NEW HIGH SCORE", 514, 24, rl.Color.gold);
-        drawCenteredTextFmt("rank #{d}", .{highscore.rank_index + 1}, 546, 20, text_color);
-        drawCenteredText("Enter your name to save this run.", 574, 18, muted_text);
-        rl.drawRectangleRounded(.{ .x = 392.0, .y = 604.0, .width = 496.0, .height = 34.0 }, 0.15, 8, panel_color);
-        rl.drawRectangleRoundedLinesEx(.{ .x = 392.0, .y = 604.0, .width = 496.0, .height = 34.0 }, 0.15, 8, 2.0, panel_outline);
-
-        const caret_visible = @mod(@as(i32, @intFromFloat(rl.getTime() * 2.5)), 2) == 0;
-        const shown_name = if (highscore.input_len == 0 and caret_visible) "_" else highscore.inputSlice();
-        drawTextSlice(shown_name, 410, 612, 22, text_color);
-
-        if (highscore.save_error) |save_error| {
-            drawTextSlice(save_error, 410, 648, 18, rl.Color.orange);
-        }
-    } else {
-        drawCenteredText("SCORE SAVED", 514, 24, rl.Color.gold);
-        drawCenteredTextFmt("rank #{d}  name {s}", .{ highscore.rank_index + 1, highscore.record.name() }, 546, 18, text_color);
-    }
-}
-
 const HudTextColor = struct {
     const primary = rl.Color.init(220, 220, 220, 255);
     const dim = rl.Color.init(170, 170, 180, 255);
@@ -2589,7 +2511,7 @@ fn resultsSubtitle(reason: ResultsReason) [:0]const u8 {
         .dead => "All players are down.",
         .completed => "Quest objectives cleared.",
         .abandoned => "Run returned to menu before completion.",
-        .runtime_error => "Runtime hit an unported or invalid path.",
+        .runtime_error => "Runtime could not complete the run.",
     };
 }
 
