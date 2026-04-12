@@ -25,18 +25,18 @@ pub fn drawMenuCursor(runtime_assets: *const window_assets.RuntimeAssets, pulse_
 pub fn drawAimIndicators(
     runtime_assets: *const window_assets.RuntimeAssets,
     player: state_mod.PlayerState,
-    zoom: f32,
+    aim_screen: rl.Vector2,
+    scale: f32,
     entity_alpha: f32,
 ) void {
     if (player.health <= 0.0) return;
-    if (!(zoom > 0.0)) return;
+    if (!(scale > 0.0)) return;
     if (!(entity_alpha > 1e-3)) return;
 
-    const aim = rl.Vector2.init(player.aim.x, player.aim.y);
     const dist = state_mod.Vec2.sub(player.aim, player.pos).length();
     const radius = @max(6.0, dist * player.spread_heat * 0.5);
-    const screen_radius = @max(1.0, radius * zoom);
-    drawAimCircle(aim, screen_radius / zoom, entity_alpha);
+    const screen_radius = @max(1.0, radius * scale);
+    drawAimCircle(aim_screen, screen_radius, entity_alpha);
 
     const reload_timer = player.weapon.reload_timer;
     const reload_timer_max = player.weapon.reload_timer_max;
@@ -44,20 +44,18 @@ pub fn drawAimIndicators(
         const progress = reload_timer / reload_timer_max;
         if (progress > 0.0) {
             const ms: i32 = @intFromFloat(progress * 60000.0);
-            drawClockGauge(runtime_assets, aim, ms, 1.0 / zoom, entity_alpha);
+            drawClockGauge(runtime_assets, aim_screen, ms, scale, entity_alpha);
         }
     }
 }
 
 pub fn drawAimReticle(
     runtime_assets: *const window_assets.RuntimeAssets,
-    player: state_mod.PlayerState,
-    zoom: f32,
+    aim_screen: rl.Vector2,
+    scale: f32,
 ) void {
-    if (player.health <= 0.0) return;
-    if (!(zoom > 0.0)) return;
-    const aim = rl.Vector2.init(player.aim.x, player.aim.y);
-    drawAimCursor(runtime_assets, aim, 1.0 / zoom);
+    if (!(scale > 0.0)) return;
+    drawAimCursor(runtime_assets, aim_screen, scale);
 }
 
 fn drawCursorGlow(runtime_assets: *const window_assets.RuntimeAssets, pos: rl.Vector2, pulse_time: f32) void {

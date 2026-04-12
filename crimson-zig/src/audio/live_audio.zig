@@ -99,6 +99,18 @@ pub const Bridge = struct {
         self.playSfx(.ui_levelup, 0.0);
     }
 
+    pub fn playUiTypeEnter(self: *Bridge) void {
+        self.playSfx(.ui_typeenter, 0.0);
+    }
+
+    pub fn playUiClink(self: *Bridge) void {
+        self.playSfx(.ui_clink_01, 0.0);
+    }
+
+    pub fn playShockHit(self: *Bridge) void {
+        self.playSfx(.shock_hit_01, 0.0);
+    }
+
     pub fn handleFrameAudio(self: *Bridge, frame_audio: live_runner.FrameAudioEvents, reflex_boost_timer: f32) void {
         const state = &(self.state orelse return);
         if (!state.ready) return;
@@ -142,7 +154,7 @@ pub const Bridge = struct {
         }
 
         if (frame_audio.perk_menu_opened) {
-            audio_mod.playSfx(state, .ui_levelup, 0.0);
+            audio_mod.playSfx(state, .ui_levelup, reflex_boost_timer);
         }
         if (frame_audio.quest_play_hit_sfx) {
             audio_mod.playSfx(state, .questhit, reflex_boost_timer);
@@ -199,11 +211,24 @@ fn weaponIdFromInt(value: i32) ?game_ids.WeaponId {
 
 fn runtimeSfxId(value: live_runner.RuntimeSfxId) sfx_map.SfxId {
     return switch (value) {
+        .trooper_inpain_01 => .trooper_inpain_01,
+        .trooper_inpain_02 => .trooper_inpain_02,
+        .trooper_inpain_03 => .trooper_inpain_03,
+        .trooper_die_01 => .trooper_die_01,
+        .trooper_die_02 => .trooper_die_02,
+        .autorifle_fire => .autorifle_fire,
+        .plasmaminigun_fire => .plasmaminigun_fire,
         .ui_bonus => .ui_bonus,
+        .ui_levelup => .ui_levelup,
+        .ui_typeenter => .ui_typeenter,
+        .ui_clink_01 => .ui_clink_01,
         .shock_hit_01 => .shock_hit_01,
+        .explosion_small => .explosion_small,
         .explosion_medium => .explosion_medium,
         .explosion_large => .explosion_large,
         .shockwave => .shockwave,
+        .bloodspill_01 => .bloodspill_01,
+        .bloodspill_02 => .bloodspill_02,
     };
 }
 

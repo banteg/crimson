@@ -148,6 +148,53 @@ pub const BonusTimers = struct {
     freeze: f32 = 0.0,
 };
 
+pub const RuntimeSfxId = enum(u8) {
+    trooper_inpain_01,
+    trooper_inpain_02,
+    trooper_inpain_03,
+    trooper_die_01,
+    trooper_die_02,
+    autorifle_fire,
+    plasmaminigun_fire,
+    shock_hit_01,
+    explosion_small,
+    explosion_medium,
+    explosion_large,
+    shockwave,
+    ui_bonus,
+    ui_levelup,
+    ui_typeenter,
+    ui_clink_01,
+    bloodspill_01,
+    bloodspill_02,
+};
+
+pub const runtime_sfx_queue_max: usize = 32;
+pub const RuntimeSfxBuffer = struct {
+    items: [runtime_sfx_queue_max]RuntimeSfxId = [_]RuntimeSfxId{.ui_bonus} ** runtime_sfx_queue_max,
+    len: usize = 0,
+
+    pub fn append(self: *RuntimeSfxBuffer, sfx_id: RuntimeSfxId) void {
+        if (self.len >= self.items.len) return;
+        self.items[self.len] = sfx_id;
+        self.len += 1;
+    }
+
+    pub fn clear(self: *RuntimeSfxBuffer) void {
+        self.len = 0;
+    }
+
+    pub fn constSlice(self: *const RuntimeSfxBuffer) []const RuntimeSfxId {
+        return self.items[0..self.len];
+    }
+
+    pub fn take(self: *RuntimeSfxBuffer) RuntimeSfxBuffer {
+        const snapshot = self.*;
+        self.clear();
+        return snapshot;
+    }
+};
+
 pub const PendingCreatureProjectile = struct {
     type_id: i32 = 0,
     owner: owner_ref.OwnerRef = .{ .none = {} },
@@ -159,6 +206,7 @@ pub const GameplayState = struct {
     rng: spawn_mod.Crand,
     gore_disabled: i32 = 0,
     bonuses: BonusTimers = .{},
+    sfx_queue: RuntimeSfxBuffer = .{},
     plaguebearer_infection_count: i32 = 0,
     time_scale_active: bool = false,
     perk_selection: PerkSelectionState = .{},

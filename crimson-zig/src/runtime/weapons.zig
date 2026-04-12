@@ -109,7 +109,8 @@ pub fn preprocessPlayerForPerkTicksWithEffects(
                     state.gore_disabled,
                 );
             }
-            _ = state.rng.randTagged(rng_callers.player_update_low_health_bloodspill) & 1;
+            const bloodspill_roll = state.rng.randTagged(rng_callers.player_update_low_health_bloodspill) & 1;
+            state.sfx_queue.append(if (bloodspill_roll == 0) .bloodspill_01 else .bloodspill_02);
             player.low_health_timer = 1.0;
         }
     }
@@ -683,6 +684,7 @@ fn tickManBomb(
             owner,
         );
     }
+    state.sfx_queue.append(.explosion_small);
     player.man_bomb_timer -= state.perk_interval_man_bomb;
     state.perk_interval_man_bomb = 4.0;
 }
@@ -717,6 +719,8 @@ fn tickFireCaugh(
         owner_ref.OwnerRef.fromLocalPlayer(0)
     else
         owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
+    state.sfx_queue.append(.autorifle_fire);
+    state.sfx_queue.append(.plasmaminigun_fire);
     const aim_heading = player.aim_heading;
     const origin_pos = player.pos;
     const muzzle = state_mod.Vec2.add(
@@ -792,6 +796,7 @@ fn tickHotTempered(
             owner,
         );
     }
+    state.sfx_queue.append(.explosion_small);
 
     player.hot_tempered_timer -= state.perk_interval_hot_tempered;
     state.perk_interval_hot_tempered = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.player_update_hot_tempered_interval_reset) % 8)) + 2.0;

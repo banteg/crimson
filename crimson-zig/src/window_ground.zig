@@ -92,6 +92,8 @@ pub const GroundRenderer = struct {
     detail: rl.Texture2D,
     width: i32 = terrain_texture_size,
     height: i32 = terrain_texture_size,
+    texture_scale: f32 = 1.0,
+    texture_failed: bool = false,
     render_target: ?rl.RenderTexture2D = null,
     alpha_test_shader: ?rl.Shader = null,
     ready: bool = false,
@@ -107,6 +109,7 @@ pub const GroundRenderer = struct {
         unlock_index: i32,
         width: i32,
         height: i32,
+        texture_scale: f32,
     ) GroundRenderError!GroundRenderer {
         const terrain = runtime_bootstrap.previewUnlockTerrain(seed, unlock_index, width, height);
         const texture_ids = terrainTextureSet(terrain.terrain_slots);
@@ -117,6 +120,7 @@ pub const GroundRenderer = struct {
             .detail = runtime_assets.texture(texture_ids.detail),
             .width = width,
             .height = height,
+            .texture_scale = texture_scale,
         };
         errdefer renderer.deinit();
 
@@ -130,6 +134,7 @@ pub const GroundRenderer = struct {
         terrain: runtime_bootstrap.TerrainSetup,
         width: i32,
         height: i32,
+        texture_scale: f32,
     ) GroundRenderError!GroundRenderer {
         const texture_ids = terrainTextureSet(terrain.terrain_slots);
 
@@ -139,6 +144,7 @@ pub const GroundRenderer = struct {
             .detail = runtime_assets.texture(texture_ids.detail),
             .width = width,
             .height = height,
+            .texture_scale = texture_scale,
         };
         errdefer renderer.deinit();
 
@@ -193,6 +199,7 @@ pub const GroundRenderer = struct {
     pub fn bakeDecals(self: *GroundRenderer, decals: []const GroundDecal) bool {
         if (decals.len == 0 or !self.ready) return false;
         const target = self.render_target orelse return false;
+        const inv_scale = 1.0 / self.normalizedTextureScale();
 
         rl.beginTextureMode(target);
         defer rl.endTextureMode();
@@ -206,8 +213,10 @@ pub const GroundRenderer = struct {
         defer endTerrainRenderTargetBlend();
 
         for (decals) |decal| {
-            const dst = rl.Rectangle.init(decal.pos.x, decal.pos.y, decal.width, decal.height);
-            const origin = rl.Vector2.init(decal.width * 0.5, decal.height * 0.5);
+            const width = decal.width * inv_scale;
+            const height = decal.height * inv_scale;
+            const dst = rl.Rectangle.init(decal.pos.x * inv_scale, decal.pos.y * inv_scale, width, height);
+            const origin = rl.Vector2.init(width * 0.5, height * 0.5);
             rl.drawTexturePro(
                 decal.texture,
                 atlasRectToRl(decal.src),
@@ -230,8 +239,9 @@ pub const GroundRenderer = struct {
         if (decals.len == 0 or !self.ready) return false;
         const target = self.render_target orelse return false;
 
-        const inv_scale: f32 = 1.0;
-        const offset = 2.0 / @as(f32, @floatFromInt(@max(self.width, 1)));
+        const scale = self.normalizedTextureScale();
+        const inv_scale: f32 = 1.0 / scale;
+        const offset = 2.0 * scale / @as(f32, @floatFromInt(@max(self.width, 1)));
 
         rl.beginTextureMode(target);
         defer rl.endTextureMode();
@@ -315,19 +325,23 @@ pub const GroundRenderer = struct {
             self.alpha_test_shader = try rl.loadShaderFromMemory(alpha_test_vs, alpha_test_fs);
         }
 
+        const normalized_scale = self.normalizedTextureScale();
+        const render_size = self.renderTargetSizeFor(normalized_scale);
         if (self.render_target) |target| {
-            if (target.texture.width == self.width and target.texture.height == self.height) {
+            if (target.texture.width == render_size.width and target.texture.height == render_size.height) {
+                self.texture_failed = false;
                 return;
             }
             rl.unloadRenderTexture(target);
             self.render_target = null;
         }
 
-        const render_target = try rl.loadRenderTexture(self.width, self.height);
+        const render_target = try rl.loadRenderTexture(render_size.width, render_size.height);
         rl.setTextureFilter(render_target.texture, .bilinear);
         rl.setTextureWrap(render_target.texture, .clamp);
         self.render_target = render_target;
         self.ready = false;
+        self.texture_failed = false;
     }
 
     fn scatterTexture(
@@ -342,26 +356,27 @@ pub const GroundRenderer = struct {
         const count = (area * density) >> terrain_density_shift;
         if (count <= 0) return;
 
+        const size = terrain_patch_size * (1.0 / self.normalizedTextureScale());
         const src = rl.Rectangle.init(
             0.0,
             0.0,
             @floatFromInt(texture.width),
             @floatFromInt(texture.height),
         );
-        const origin = rl.Vector2.init(terrain_patch_size * 0.5, terrain_patch_size * 0.5);
+        const origin = rl.Vector2.init(size * 0.5, size * 0.5);
         const span_w = self.width + terrain_patch_overscan * 2;
         const span_h = span_w;
 
         var idx: i64 = 0;
         while (idx < count) : (idx += 1) {
             const angle = @as(f32, @floatFromInt(rng.randTagged(callers[0]) % terrain_rotation_max)) * 0.01;
-            const y = @as(f32, @floatFromInt(@as(i32, @intCast(rng.randTagged(callers[1]) % @as(u32, @intCast(span_h)))) - terrain_patch_overscan));
-            const x = @as(f32, @floatFromInt(@as(i32, @intCast(rng.randTagged(callers[2]) % @as(u32, @intCast(span_w)))) - terrain_patch_overscan));
+            const y = @as(f32, @floatFromInt(@as(i32, @intCast(rng.randTagged(callers[1]) % @as(u32, @intCast(span_h)))) - terrain_patch_overscan)) * (1.0 / self.normalizedTextureScale());
+            const x = @as(f32, @floatFromInt(@as(i32, @intCast(rng.randTagged(callers[2]) % @as(u32, @intCast(span_w)))) - terrain_patch_overscan)) * (1.0 / self.normalizedTextureScale());
             const dst = rl.Rectangle.init(
-                x + terrain_patch_size * 0.5,
-                y + terrain_patch_size * 0.5,
-                terrain_patch_size,
-                terrain_patch_size,
+                x + size * 0.5,
+                y + size * 0.5,
+                size,
+                size,
             );
             rl.drawTexturePro(
                 texture,
@@ -372,6 +387,35 @@ pub const GroundRenderer = struct {
                 tint,
             );
         }
+    }
+
+    pub fn renderTargetReady(self: *const GroundRenderer) bool {
+        return self.render_target != null and self.ready;
+    }
+
+    fn normalizedTextureScale(self: *const GroundRenderer) f32 {
+        var scale = std.math.clamp(self.texture_scale, @as(f32, 0.5), @as(f32, 4.0));
+        if (self.renderPixelRatio() == 2.0) {
+            scale *= 0.5;
+        }
+        return scale;
+    }
+
+    fn renderPixelRatio(_: *const GroundRenderer) f32 {
+        const screen_w = rl.getScreenWidth();
+        const screen_h = rl.getScreenHeight();
+        const render_w = rl.getRenderWidth();
+        const render_h = rl.getRenderHeight();
+        if (render_w == screen_w * 2 and render_h == screen_h * 2) return 2.0;
+        return 1.0;
+    }
+
+    fn renderTargetSizeFor(self: *const GroundRenderer, scale: f32) struct { width: i32, height: i32 } {
+        const pixel_scale = self.renderPixelRatio();
+        return .{
+            .width = @max(1, @as(i32, @intFromFloat((@as(f32, @floatFromInt(self.width)) * pixel_scale) / scale))),
+            .height = @max(1, @as(i32, @intFromFloat((@as(f32, @floatFromInt(self.height)) * pixel_scale) / scale))),
+        };
     }
 };
 

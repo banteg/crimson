@@ -33,6 +33,7 @@ const live_runner = cz.live_runner;
 const runtime_perks = cz.perks;
 const runtime_session = cz.session;
 const state_mod = cz.state;
+const terrain_fx_mod = cz.terrain_fx;
 
 const window_width = 1024;
 const window_height = 768;
@@ -93,6 +94,9 @@ const GameplayScreen = struct {
     hud_state: HudRuntimeState = .{},
     ground: ?window_ground.GroundRenderer = null,
     camera: state_mod.Vec2 = .{ .x = -1.0, .y = -1.0 },
+    render_time_s: f32 = 0.0,
+    pending_terrain_fx: [16]terrain_fx_mod.TerrainFxBatch = [_]terrain_fx_mod.TerrainFxBatch{.{}} ** 16,
+    pending_terrain_fx_count: usize = 0,
 
     fn deinit(self: *GameplayScreen) void {
         if (self.ground) |*ground| {
@@ -100,6 +104,33 @@ const GameplayScreen = struct {
             self.ground = null;
         }
         self.* = undefined;
+    }
+
+    fn queueTerrainFxBatch(self: *GameplayScreen, batch: terrain_fx_mod.TerrainFxBatch) void {
+        if (batch.isEmpty()) return;
+        if (self.pending_terrain_fx_count < self.pending_terrain_fx.len) {
+            self.pending_terrain_fx[self.pending_terrain_fx_count] = batch;
+            self.pending_terrain_fx_count += 1;
+            return;
+        }
+        var idx: usize = 1;
+        while (idx < self.pending_terrain_fx.len) : (idx += 1) {
+            self.pending_terrain_fx[idx - 1] = self.pending_terrain_fx[idx];
+        }
+        self.pending_terrain_fx[self.pending_terrain_fx.len - 1] = batch;
+    }
+
+    fn flushPendingTerrainFx(self: *GameplayScreen, assets: *const window_assets.RuntimeAssets) void {
+        const ground = &(self.ground orelse return);
+        if (!ground.renderTargetReady()) return;
+
+        var kept: usize = 0;
+        for (self.pending_terrain_fx[0..self.pending_terrain_fx_count]) |batch| {
+            if (window_terrain_fx.bakeTerrainFxBatch(ground, &batch, assets)) continue;
+            self.pending_terrain_fx[kept] = batch;
+            kept += 1;
+        }
+        self.pending_terrain_fx_count = kept;
     }
 };
 
@@ -190,7 +221,14 @@ const HudRuntimeState = struct {
             slot.timer_value = 0.0;
             slot.timer_value_alt = 0.0;
             slot.slide_x -= @max(frame_dt, 0.0) * 320.0;
-            if (slot.slide_x < -184.0) {
+            var later_active = false;
+            for (self.bonus_slots[idx + 1 ..]) |other| {
+                if (other.active) {
+                    later_active = true;
+                    break;
+                }
+            }
+            if (slot.slide_x < -184.0 and !later_active) {
                 slot.* = .{};
             }
         }
@@ -483,6 +521,7 @@ const App = struct {
 
     fn updateGameplay(self: *App, frame_dt: f32) void {
         if (self.gameplay) |*gameplay| {
+            gameplay.render_time_s += @max(frame_dt, 0.0);
             if (!gameplay.perk_ui.active() and rl.isKeyPressed(.escape)) {
                 self.finishRun(gameplay, .abandoned, null);
                 return;
@@ -523,10 +562,9 @@ const App = struct {
             );
             gameplay.hud_state.update(frame_dt, &gameplay.runner.session);
             self.audio.handleFrameAudio(gameplay.last_update.audio, gameplay.runner.session.state.bonuses.reflex_boost);
+            gameplay.queueTerrainFxBatch(gameplay.last_update.terrain_fx);
             if (self.runtime_assets) |*runtime_assets| {
-                if (gameplay.ground) |*ground| {
-                    window_terrain_fx.bakeTerrainFxBatch(ground, &gameplay.last_update.terrain_fx, runtime_assets);
-                }
+                gameplay.flushPendingTerrainFx(runtime_assets);
             }
 
             if (gameplay.runner.session.game_mode == .quests and gameplay.runner.session.quest_completed) {
@@ -655,6 +693,7 @@ const App = struct {
         const trimmed = highscore.trimmedInputSlice();
         if (trimmed.len == 0) {
             highscore.save_error = "name required";
+            self.audio.playShockHit();
             return;
         }
 
@@ -697,6 +736,7 @@ const App = struct {
         highscore.saved = true;
         highscore.save_error = null;
         self.results_selection = 0;
+        self.audio.playUiTypeEnter();
     }
 
     fn startNewRun(self: *App, run_config: live_runner.LiveModeConfig) void {
@@ -748,10 +788,12 @@ const App = struct {
                 gameplay.runner.terrain_setup,
                 gameplay.runner.session.terrain_size,
                 gameplay.runner.session.terrain_size,
+                self.runtime.config.texture_scale,
             ) catch null;
-            if (gameplay.ground) |*ground| {
-                window_terrain_fx.bakeTerrainFxBatch(ground, &gameplay.last_update.terrain_fx, runtime_assets);
-            }
+        }
+        gameplay.queueTerrainFxBatch(gameplay.last_update.terrain_fx);
+        if (self.runtime_assets) |*runtime_assets| {
+            gameplay.flushPendingTerrainFx(runtime_assets);
         }
         self.gameplay = gameplay;
         self.results = null;
@@ -785,6 +827,9 @@ const App = struct {
             .runtime_error = runtime_error orelse save_error,
             .highscore = highscore,
         };
+        if (highscore != null) {
+            self.audio.playUiClink();
+        }
         gameplay.deinit();
         self.gameplay = null;
         self.results_selection = 0;
@@ -887,6 +932,19 @@ const App = struct {
         if (self.gameplay) |*gameplay| {
             const runner = &gameplay.runner;
             const runtime_assets: ?*const window_assets.RuntimeAssets = if (self.runtime_assets) |*loaded_assets| loaded_assets else null;
+            const transform = window_viewport.viewTransform(
+                runner.session.world_size,
+                &self.runtime.config,
+                state_mod.Vec2.add(gameplay.camera, runner.session.state.camera_shake_offset),
+                .{
+                    .x = @floatFromInt(rl.getScreenWidth()),
+                    .y = @floatFromInt(rl.getScreenHeight()),
+                },
+            );
+            const entity_alpha: f32 = 1.0;
+            const fx_detail_0 = self.runtime.config.fx_detail_0 != 0;
+            const fx_detail_1 = self.runtime.config.fx_detail_1 != 0;
+            const fx_detail_2 = self.runtime.config.fx_detail_2 != 0;
             const camera = buildWorldCamera(
                 runner.session.world_size,
                 &self.runtime.config,
@@ -896,15 +954,22 @@ const App = struct {
 
             camera.begin();
             drawWorld(runner, runtime_assets, if (gameplay.ground) |*ground| ground else null);
-            drawPlayers(runner, runtime_assets);
-            drawCreatures(runner, runtime_assets);
-            drawProjectiles(runner, runtime_assets);
-            drawWorldEffects(runner, runtime_assets);
-            drawBonuses(runner, runtime_assets);
-            if (!gameplay.perk_ui.active()) {
-                drawAimEnhancements(runner, runtime_assets, camera.zoom);
-            }
+            drawPlayers(runner, runtime_assets, gameplay.render_time_s, entity_alpha, false);
+            drawCreatures(runner, runtime_assets, entity_alpha, fx_detail_0);
+            drawFreezeOverlay(runner, runtime_assets, entity_alpha);
+            drawPlayers(runner, runtime_assets, gameplay.render_time_s, entity_alpha, true);
+            drawProjectiles(runner, runtime_assets, gameplay.render_time_s, entity_alpha, fx_detail_1);
+            drawWorldEffects(runner, runtime_assets, entity_alpha, fx_detail_1, fx_detail_2);
+            drawBonuses(runner, runtime_assets, gameplay.render_time_s, entity_alpha);
             camera.end();
+
+            if (runtime_assets) |assets| {
+                drawBonusHoverLabels(runner, assets, transform, entity_alpha);
+                if (!gameplay.perk_ui.active()) {
+                    drawDirectionArrows(runner, assets, &self.runtime.config, transform, entity_alpha);
+                    drawAimEnhancements(runner, assets, transform, entity_alpha);
+                }
+            }
 
             if (gameplay.perk_ui.active()) {
                 if (runtime_assets) |assets| {
@@ -1354,19 +1419,27 @@ fn drawWorld(
     }
 }
 
-fn drawPlayers(runner: *const live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+fn drawPlayers(
+    runner: *const live_runner.LiveRunner,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
+    render_time_s: f32,
+    entity_alpha: f32,
+    alive: bool,
+) void {
     for (runner.session.playersConst()) |player| {
+        if (alive and player.health <= 0.0) continue;
+        if (!alive and player.health > 0.0) continue;
         const center = toRlVec(player.pos);
         const radius = @max(10.0, player.size * 0.28);
-        const color = if (player.health > 0.0) player_color else dead_player_color;
+        const color = colorWithAlpha(if (player.health > 0.0) player_color else dead_player_color, entity_alpha);
 
         if (runtime_assets) |assets| {
             const trooper_texture = assets.texture(.trooper);
             const cell = @as(f32, @floatFromInt(trooper_texture.width)) / 8.0;
             if (cell > 0.0) {
                 const base_scale = player.size / cell;
-                const shadow_tint = colorWithAlpha(rl.Color.black, 90.0 / 255.0);
-                const elapsed_s = runner.session.elapsed_ms_sim * 0.001;
+                const shadow_tint = colorWithAlpha(rl.Color.black, (90.0 / 255.0) * entity_alpha);
+                const elapsed_s = render_time_s;
 
                 if (player.health > 0.0) {
                     if (runtime_perks.perkActive(&player, .radioactive)) {
@@ -1381,7 +1454,7 @@ fn drawPlayers(runner: *const live_runner.LiveRunner, runtime_assets: ?*const wi
                                     100.0,
                                     100.0,
                                     0.0,
-                                    colorWithAlpha(rl.Color.init(77, 153, 77, 255), aura_alpha),
+                                    colorWithAlpha(rl.Color.init(77, 153, 77, 255), aura_alpha * entity_alpha),
                                 );
                                 rl.endBlendMode();
                             }
@@ -1414,8 +1487,8 @@ fn drawPlayers(runner: *const live_runner.LiveRunner, runtime_assets: ?*const wi
                         player.aim_heading,
                         shadow_tint,
                     );
-                    drawAtlasFrameCenteredRotated(trooper_texture, 8, leg_frame, center, base_scale, player.heading, rl.Color.white);
-                    drawAtlasFrameCenteredRotated(trooper_texture, 8, torso_frame, torso_draw_center, base_scale, player.aim_heading, rl.Color.white);
+                    drawAtlasFrameCenteredRotated(trooper_texture, 8, leg_frame, center, base_scale, player.heading, colorWithAlpha(rl.Color.white, entity_alpha));
+                    drawAtlasFrameCenteredRotated(trooper_texture, 8, torso_frame, torso_draw_center, base_scale, player.aim_heading, colorWithAlpha(rl.Color.white, entity_alpha));
 
                     if (player.shield_timer > 1e-3) {
                         if (window_atlas.effectRect(assets.texture(.particles).width, assets.texture(.particles).height, .shield_ring)) |src_rect| {
@@ -1439,7 +1512,7 @@ fn drawPlayers(runner: *const live_runner.LiveRunner, runtime_assets: ?*const wi
                                     size_1,
                                     size_1,
                                     radiansToDegrees(elapsed_s * 2.0),
-                                    colorWithAlpha(rl.Color.init(91, 180, 255, 255), strength * 0.4),
+                                    colorWithAlpha(rl.Color.init(91, 180, 255, 255), strength * 0.4 * entity_alpha),
                                 );
                                 drawTextureRegionCenteredRotated(
                                     assets.texture(.particles),
@@ -1448,7 +1521,7 @@ fn drawPlayers(runner: *const live_runner.LiveRunner, runtime_assets: ?*const wi
                                     size_2,
                                     size_2,
                                     radiansToDegrees(elapsed_s * -2.0),
-                                    colorWithAlpha(rl.Color.init(91, 180, 255, 255), strength * 0.3),
+                                    colorWithAlpha(rl.Color.init(91, 180, 255, 255), strength * 0.3 * entity_alpha),
                                 );
                                 rl.endBlendMode();
                             }
@@ -1472,7 +1545,7 @@ fn drawPlayers(runner: *const live_runner.LiveRunner, runtime_assets: ?*const wi
                                     flash_size,
                                     flash_size,
                                     radiansToDegrees(player.aim_heading),
-                                    colorWithAlpha(rl.Color.white, flash_alpha),
+                                    colorWithAlpha(rl.Color.white, flash_alpha * entity_alpha),
                                 );
                                 rl.endBlendMode();
                             }
@@ -1495,7 +1568,7 @@ fn drawPlayers(runner: *const live_runner.LiveRunner, runtime_assets: ?*const wi
                     player.aim_heading,
                     shadow_tint,
                 );
-                drawAtlasFrameCenteredRotated(trooper_texture, 8, dead_frame, center, base_scale, player.aim_heading, dead_player_color);
+                drawAtlasFrameCenteredRotated(trooper_texture, 8, dead_frame, center, base_scale, player.aim_heading, colorWithAlpha(dead_player_color, entity_alpha));
                 continue;
             }
         } else {
@@ -1506,7 +1579,12 @@ fn drawPlayers(runner: *const live_runner.LiveRunner, runtime_assets: ?*const wi
     }
 }
 
-fn drawCreatures(runner: *const live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+fn drawCreatures(
+    runner: *const live_runner.LiveRunner,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
+    entity_alpha: f32,
+    fx_detail_0: bool,
+) void {
     const monster_vision_active = if (runner.player0Const()) |player|
         runtime_perks.perkActive(player, .monster_vision)
     else
@@ -1541,7 +1619,7 @@ fn drawCreatures(runner: *const live_runner.LiveRunner, runtime_assets: ?*const 
                         tint = colorWithAlpha(tint, @max(0.0, 1.0 + creature.lifecycle_stage * 0.1));
                     }
                     const shadow_enabled = !monster_vision_active;
-                    if (shadow_enabled) {
+                    if (shadow_enabled and fx_detail_0) {
                         const is_long = runtime_anim.creatureAnimIsLongStrip(creature.flags);
                         var shadow_alpha: f32 = 0.4;
                         if (creature.lifecycle_stage < 0.0) {
@@ -1572,34 +1650,79 @@ fn drawCreatures(runner: *const live_runner.LiveRunner, runtime_assets: ?*const 
                         toRlVec(creature.pos),
                         base_scale,
                         creature.heading - std.math.pi / 2.0,
-                        tint,
+                        colorWithAlpha(tint, entity_alpha),
                     );
                     continue;
                 }
             }
         }
-        rl.drawCircleV(toRlVec(creature.pos), radius, color);
+        rl.drawCircleV(toRlVec(creature.pos), radius, colorWithAlpha(color, entity_alpha));
     }
 }
 
-fn drawProjectiles(runner: *const live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+fn drawFreezeOverlay(runner: *const live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets, entity_alpha: f32) void {
+    const assets = runtime_assets orelse return;
+    const freeze_timer = runner.session.state.bonuses.freeze;
+    if (!(freeze_timer > 0.0)) return;
+    const src_rect = window_atlas.effectRect(assets.texture(.particles).width, assets.texture(.particles).height, .freeze_shatter) orelse return;
+    const fade: f32 = if (freeze_timer >= 1.0) 1.0 else std.math.clamp(freeze_timer, @as(f32, 0.0), @as(f32, 1.0));
+    const alpha = std.math.clamp(fade * entity_alpha * 0.7, @as(f32, 0.0), @as(f32, 1.0));
+    if (!(alpha > 1e-3)) return;
+
+    rl.beginBlendMode(.alpha);
+    defer rl.endBlendMode();
+    for (runner.session.creatures.entries, 0..) |creature, idx| {
+        if (!creature.active) continue;
+        const size = creature.size;
+        if (!(size > 1e-3)) continue;
+        drawTextureRegionCenteredRotated(
+            assets.texture(.particles),
+            src_rect,
+            toRlVec(creature.pos),
+            size,
+            size,
+            radiansToDegrees(@as(f32, @floatFromInt(idx)) * 0.01 + creature.heading),
+            colorWithAlpha(rl.Color.white, alpha),
+        );
+    }
+}
+
+fn drawProjectiles(
+    runner: *const live_runner.LiveRunner,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
+    render_time_s: f32,
+    entity_alpha: f32,
+    fx_detail_1: bool,
+) void {
     for (runner.session.projectiles.entries, 0..) |projectile, proj_index| {
         if (!projectile.active) continue;
         if (runtime_assets) |assets| {
             if (window_projectiles.drawMainProjectile(projectile, proj_index, .{
                 .session = &runner.session,
                 .assets = assets,
+                .render_time_s = render_time_s,
+                .entity_alpha = entity_alpha,
+                .fx_detail_1 = fx_detail_1,
             })) continue;
         }
-        rl.drawCircleV(toRlVec(projectile.pos), 3.0, projectile_color);
+        rl.drawCircleV(toRlVec(projectile.pos), 3.0, colorWithAlpha(projectile_color, entity_alpha));
     }
 }
 
-fn drawWorldEffects(runner: *const live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+fn drawWorldEffects(
+    runner: *const live_runner.LiveRunner,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
+    entity_alpha: f32,
+    fx_detail_1: bool,
+    fx_detail_2: bool,
+) void {
     if (runtime_assets) |assets| {
         window_effects.drawParticlePool(.{
             .session = &runner.session,
             .assets = assets,
+            .entity_alpha = entity_alpha,
+            .fx_detail_1 = fx_detail_1,
+            .fx_detail_2 = fx_detail_2,
         });
     }
     for (runner.session.secondary_projectiles.entries) |projectile| {
@@ -1608,31 +1731,44 @@ fn drawWorldEffects(runner: *const live_runner.LiveRunner, runtime_assets: ?*con
             if (window_projectiles.drawSecondaryProjectile(projectile, .{
                 .session = &runner.session,
                 .assets = assets,
+                .entity_alpha = entity_alpha,
+                .fx_detail_1 = fx_detail_1,
             })) continue;
         }
-        rl.drawCircleV(toRlVec(projectile.pos), 6.0, secondary_projectile_color);
+        rl.drawCircleV(toRlVec(projectile.pos), 6.0, colorWithAlpha(secondary_projectile_color, entity_alpha));
     }
     if (runtime_assets) |assets| {
         window_effects.drawSpriteEffectPool(.{
             .session = &runner.session,
             .assets = assets,
+            .entity_alpha = entity_alpha,
+            .fx_detail_1 = fx_detail_1,
+            .fx_detail_2 = fx_detail_2,
         });
         window_effects.drawEffectPool(.{
             .session = &runner.session,
             .assets = assets,
+            .entity_alpha = entity_alpha,
+            .fx_detail_1 = fx_detail_1,
+            .fx_detail_2 = fx_detail_2,
         });
     }
 }
 
-fn drawBonuses(runner: *const live_runner.LiveRunner, runtime_assets: ?*const window_assets.RuntimeAssets) void {
-    const bonus_phase = runner.session.elapsed_ms_sim * 0.001 * 1.3;
+fn drawBonuses(
+    runner: *const live_runner.LiveRunner,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
+    render_time_s: f32,
+    entity_alpha: f32,
+) void {
+    const bonus_phase = render_time_s * 1.3;
     for (runner.session.bonuses.entries, 0..) |entry, idx| {
         if (entry.bonus_id == .unused) continue;
         if (runtime_assets) |assets| {
             const bonuses_texture = assets.texture(.bonuses);
             const bubble_src = window_atlas.bonusIconRect(bonuses_texture.width, bonuses_texture.height, 0);
             const fade = window_atlas.bonusFade(entry.time_left, entry.time_max);
-            const bubble_alpha = fade * 0.9;
+            const bubble_alpha = fade * 0.9 * entity_alpha;
             const center = toRlVec(entry.pos);
             drawTextureRegionCenteredRotated(
                 bonuses_texture,
@@ -1681,7 +1817,7 @@ fn drawBonuses(runner: *const live_runner.LiveRunner, runtime_assets: ?*const wi
                         center,
                         32.0 * icon_scale,
                         32.0 * icon_scale,
-                        radiansToDegrees(std.math.sin(idx_f - runner.session.elapsed_ms_sim * 0.003) * 0.2),
+                        radiansToDegrees(std.math.sin(idx_f - render_time_s * 3.0) * 0.2),
                         colorWithAlpha(rl.Color.white, bubble_alpha),
                     );
                 }
@@ -1695,24 +1831,124 @@ fn drawBonuses(runner: *const live_runner.LiveRunner, runtime_assets: ?*const wi
                 .width = 16.0,
                 .height = 16.0,
             },
-            bonus_color,
+            colorWithAlpha(bonus_color, entity_alpha),
         );
     }
 }
 
 fn drawAimEnhancements(
     runner: *const live_runner.LiveRunner,
-    runtime_assets: ?*const window_assets.RuntimeAssets,
-    zoom: f32,
+    runtime_assets: *const window_assets.RuntimeAssets,
+    transform: window_viewport.ViewTransform,
+    entity_alpha: f32,
 ) void {
-    const assets = runtime_assets orelse return;
-    const alpha: f32 = 1.0;
+    const scale = window_viewport.viewScaleAvg(transform.view_scale);
     for (runner.session.playersConst()) |player| {
-        window_cursor.drawAimIndicators(assets, player, zoom, alpha);
+        if (player.health <= 0.0) continue;
+        const aim_screen = worldToScreen(player.aim, transform);
+        window_cursor.drawAimIndicators(runtime_assets, player, aim_screen, scale, entity_alpha);
     }
     for (runner.session.playersConst()) |player| {
-        window_cursor.drawAimReticle(assets, player, zoom);
+        if (player.health <= 0.0) continue;
+        const aim_screen = worldToScreen(player.aim, transform);
+        window_cursor.drawAimReticle(runtime_assets, aim_screen, scale);
     }
+}
+
+fn drawDirectionArrows(
+    runner: *const live_runner.LiveRunner,
+    runtime_assets: *const window_assets.RuntimeAssets,
+    config: *const formats.crimson_cfg.CrimsonCfg,
+    transform: window_viewport.ViewTransform,
+    entity_alpha: f32,
+) void {
+    const arrow = runtime_assets.texture(.arrow);
+    const scale = window_viewport.viewScaleAvg(transform.view_scale);
+    const width = @max(1.0, @as(f32, @floatFromInt(arrow.width)) * scale);
+    const height = @max(1.0, @as(f32, @floatFromInt(arrow.height)) * scale);
+    const src = rl.Rectangle.init(0.0, 0.0, @floatFromInt(arrow.width), @floatFromInt(arrow.height));
+    const origin = rl.Vector2.init(width * 0.5, height * 0.5);
+
+    for (runner.session.playersConst(), 0..) |player, idx| {
+        if (player.health <= 0.0) continue;
+        if (!formats.crimson_cfg.playerShowDirectionArrow(config, idx)) continue;
+        const marker = state_mod.Vec2.add(player.pos, state_mod.Vec2.fromAngle(player.heading).mul(60.0));
+        const pos = worldToScreen(marker, transform);
+        const tint = directionArrowTint(runner.session.player_count, idx, entity_alpha);
+        rl.drawTexturePro(
+            arrow,
+            src,
+            rl.Rectangle.init(pos.x, pos.y, width, height),
+            origin,
+            radiansToDegrees(player.heading),
+            tint,
+        );
+    }
+}
+
+fn drawBonusHoverLabels(
+    runner: *const live_runner.LiveRunner,
+    runtime_assets: *const window_assets.RuntimeAssets,
+    transform: window_viewport.ViewTransform,
+    entity_alpha: f32,
+) void {
+    const shadow = rl.Color.init(0, 0, 0, @intFromFloat(180.0 * entity_alpha + 0.5));
+    const color = rl.Color.init(230, 230, 230, @intFromFloat(255.0 * entity_alpha + 0.5));
+    const screen_w: f32 = @floatFromInt(rl.getScreenWidth());
+
+    for (runner.session.playersConst()) |player| {
+        if (player.health <= 0.0) continue;
+        if (player.bonus_aim_hover_index < 0 or player.bonus_aim_hover_index >= runner.session.bonuses.entries.len) continue;
+        const entry = runner.session.bonuses.entries[@intCast(player.bonus_aim_hover_index)];
+        if (entry.bonus_id == .unused) continue;
+
+        var buf: [96]u8 = undefined;
+        const label = bonusHoverLabel(entry, runner.session.state.preserve_bugs, &buf) orelse continue;
+        var pos = worldToScreen(player.aim, transform);
+        pos.x += 16.0;
+        pos.y -= 7.0;
+        const text_w = measureSmallText(runtime_assets, label);
+        if (pos.x + text_w > screen_w) {
+            pos.x = @max(0.0, screen_w - text_w);
+        }
+        drawSmallText(runtime_assets, label, pos.x + 1.0, pos.y + 1.0, shadow);
+        drawSmallText(runtime_assets, label, pos.x, pos.y, color);
+    }
+}
+
+fn worldToScreen(pos: state_mod.Vec2, transform: window_viewport.ViewTransform) rl.Vector2 {
+    return .{
+        .x = (pos.x + transform.camera.x) * transform.view_scale.x,
+        .y = (pos.y + transform.camera.y) * transform.view_scale.y,
+    };
+}
+
+fn directionArrowTint(player_count: i32, player_index: usize, alpha: f32) rl.Color {
+    if (player_count == 2) {
+        return if (player_index == 0)
+            rl.Color.init(204, 230, 255, @intFromFloat(153.0 * alpha + 0.5))
+        else
+            rl.Color.init(255, 230, 204, @intFromFloat(153.0 * alpha + 0.5));
+    }
+    return rl.Color.init(255, 255, 255, @intFromFloat(77.0 * alpha + 0.5));
+}
+
+fn bonusHoverLabel(
+    entry: bonuses_runtime.BonusEntry,
+    preserve_bugs: bool,
+    buf: *[96]u8,
+) ?[]const u8 {
+    return switch (entry.bonus_id) {
+        .weapon => blk: {
+            const weapon_id = std.meta.intToEnum(game_ids.WeaponId, entry.amount) catch break :blk null;
+            break :blk game_ids.weaponDisplayName(weapon_id, preserve_bugs);
+        },
+        .points => std.fmt.bufPrint(buf, "{s}: {d}", .{
+            game_ids.bonusDisplayName(.points, preserve_bugs),
+            entry.amount,
+        }) catch null,
+        else => game_ids.bonusDisplayName(entry.bonus_id, preserve_bugs),
+    };
 }
 
 const TerrainTextureSet = struct {

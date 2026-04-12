@@ -12,8 +12,8 @@ pub fn bakeTerrainFxBatch(
     ground: *window_ground.GroundRenderer,
     batch: *const terrain_fx_mod.TerrainFxBatch,
     assets: *const window_assets.RuntimeAssets,
-) void {
-    if (batch.isEmpty()) return;
+) bool {
+    if (batch.isEmpty()) return true;
 
     var decals: [terrain_fx_mod.fx_queue_max_count]window_ground.GroundDecal = undefined;
     var decal_count: usize = 0;
@@ -45,8 +45,9 @@ pub fn bakeTerrainFxBatch(
         corpse_count += 1;
     }
 
-    _ = ground.bakeDecals(decals[0..decal_count]);
-    _ = ground.bakeCorpseDecals(assets.texture(.bodyset), corpses[0..corpse_count]);
+    const decals_ok = if (decal_count > 0) ground.bakeDecals(decals[0..decal_count]) else true;
+    const corpses_ok = if (corpse_count > 0) ground.bakeCorpseDecals(assets.texture(.bodyset), corpses[0..corpse_count]) else true;
+    return decals_ok and corpses_ok;
 }
 
 fn rlColor(color: terrain_fx_mod.Color) rl.Color {

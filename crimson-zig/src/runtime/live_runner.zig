@@ -2,7 +2,6 @@ const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 
-const bonuses_runtime = @import("bonuses.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
 const projectiles = @import("projectiles.zig");
@@ -53,13 +52,7 @@ pub const ShotAudioEvent = struct {
     fire_bullets_active: bool,
 };
 
-pub const RuntimeSfxId = enum(u8) {
-    ui_bonus,
-    shock_hit_01,
-    explosion_medium,
-    explosion_large,
-    shockwave,
-};
+pub const RuntimeSfxId = state_mod.RuntimeSfxId;
 
 pub const FrameAudioEvents = struct {
     shot_events: [8]ShotAudioEvent = [_]ShotAudioEvent{.{
@@ -71,7 +64,7 @@ pub const FrameAudioEvents = struct {
     reload_event_count: usize = 0,
     hit_events: [4]creatures.HitSfxPlan = [_]creatures.HitSfxPlan{.{}} ** 4,
     hit_event_count: usize = 0,
-    sfx_events: [16]RuntimeSfxId = [_]RuntimeSfxId{.ui_bonus} ** 16,
+    sfx_events: [state_mod.runtime_sfx_queue_max]RuntimeSfxId = [_]RuntimeSfxId{.ui_bonus} ** state_mod.runtime_sfx_queue_max,
     sfx_event_count: usize = 0,
     trigger_game_tune: bool = false,
     perk_menu_opened: bool = false,
@@ -108,19 +101,9 @@ pub const FrameAudioEvents = struct {
         self.sfx_event_count += 1;
     }
 
-    fn appendBonusPickupSfx(self: *FrameAudioEvents, pickups: []const bonuses_runtime.BonusPickupRecord) void {
-        for (pickups) |pickup| {
-            self.appendSfx(.ui_bonus);
-            switch (pickup.bonus_id) {
-                .freeze => self.appendSfx(.shockwave),
-                .shock_chain => self.appendSfx(.shock_hit_01),
-                .fireblast => self.appendSfx(.explosion_medium),
-                .nuke => {
-                    self.appendSfx(.explosion_large);
-                    self.appendSfx(.shockwave);
-                },
-                else => {},
-            }
+    fn appendRuntimeSfx(self: *FrameAudioEvents, sfx_events: []const RuntimeSfxId) void {
+        for (sfx_events) |sfx_id| {
+            self.appendSfx(sfx_id);
         }
     }
 };
@@ -317,7 +300,7 @@ pub const LiveRunner = struct {
                 frame_audio.perk_menu_opened = true;
             }
             frame_audio.appendHitPlans(step_result.projectile_tick_stats);
-            frame_audio.appendBonusPickupSfx(step_result.bonus_pickups.constSlice());
+            frame_audio.appendRuntimeSfx(step_result.sfx_events.constSlice());
             frame_audio.quest_play_hit_sfx = frame_audio.quest_play_hit_sfx or
                 (!before_quest_hit_sfx and self.session.quest_play_hit_sfx);
             frame_audio.quest_play_completion_music = frame_audio.quest_play_completion_music or

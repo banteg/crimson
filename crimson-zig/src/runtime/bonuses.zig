@@ -683,6 +683,7 @@ fn applyBonus(
     }
 
     const economist_multiplier: f32 = if (perkActive(player.*, PerkId.bonus_economist)) 1.5 else 1.0;
+    state.sfx_queue.append(.ui_bonus);
 
     switch (bonus_id) {
         .points => {
@@ -720,6 +721,7 @@ fn applyBonus(
         },
         .freeze => {
             state.bonuses.freeze = narrowF32(state.bonuses.freeze + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
+            state.sfx_queue.append(.shockwave);
         },
         .medikit => {
             if (player.health < 100.0) {
@@ -751,6 +753,8 @@ fn applyBonus(
                 state.pending_nuke_origins[slot] = origin_pos orelse player.pos;
                 state.pending_nuke_count += 1;
             }
+            state.sfx_queue.append(.explosion_large);
+            state.sfx_queue.append(.shockwave);
         },
         .shock_chain => {
             if (state.pending_shock_chain_count < state.pending_shock_chain_origins.len) {
@@ -758,6 +762,7 @@ fn applyBonus(
                 state.pending_shock_chain_origins[slot] = origin_pos orelse player.pos;
                 state.pending_shock_chain_count += 1;
             }
+            state.sfx_queue.append(.shock_hit_01);
         },
         .fireblast => {
             if (state.pending_fireblast_count < state.pending_fireblast_origins.len) {
@@ -765,6 +770,7 @@ fn applyBonus(
                 state.pending_fireblast_origins[slot] = origin_pos orelse player.pos;
                 state.pending_fireblast_count += 1;
             }
+            state.sfx_queue.append(.explosion_medium);
         },
         .unused => {},
     }

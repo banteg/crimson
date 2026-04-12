@@ -412,6 +412,7 @@ pub const SecondaryProjectilePool = struct {
                 entry.detonation_t = 0.0;
                 entry.detonation_scale = narrowF32(det_scale);
                 entry.trail_timer = 0.0;
+                state.sfx_queue.append(.explosion_medium);
 
                 if (freeze_active) {
                     const freeze_angle_caller: rng_callers.Caller = switch (entry.type_id) {
@@ -491,6 +492,7 @@ pub const SecondaryProjectilePool = struct {
                 entry.detonation_t = 0.0;
                 entry.detonation_scale = 0.5;
                 entry.trail_timer = 0.0;
+                state.sfx_queue.append(.explosion_medium);
             }
         }
     }
