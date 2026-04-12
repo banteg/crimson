@@ -9,103 +9,84 @@ tags:
 
 Last reviewed: **2026-04-12**
 
-Scope target: a full native Zig port of Crimson systems, content, codecs, and
-product surfaces.
+Scope target: a full native Zig port of Crimson systems, content, codecs,
+runtime, and product shell.
 
-For the staged remaining-work breakdown, see
-[`docs/rewrite/zig-roadmap.md`](zig-roadmap.md).
+For the broader remaining-work breakdown, see
+[`zig-roadmap.md`](zig-roadmap.md).
 
-Replay tooling is currently the most mature public entrypoint in the Zig tree,
-not the definition of the project. Today that means fast, headless,
-deterministic replay verification/info for **1-4 player Survival/Rush/Quest** and
-**1-player Typ-o/Tutorial**
-replays, including preserve-bugs compatibility mode, with explicit hard-fail
-behavior for unsupported native paths.
+## Current status
 
-## Ported in Zig (current)
+The Zig tree is no longer best described as “the verifier port”.
 
-- Native runtime work is aimed at full gameplay/content parity, not a verifier-only fork.
-- Native architecture is being shaped to mirror the Python/runtime split where it
-  makes sense, so replay tooling consumes shared gameplay/runtime modules instead
-  of owning a separate simulation fork.
-- Shared deterministic session/state ownership now lives in
-  `crimson-zig/src/runtime/session.zig` plus `session_builders.zig`; replay
-  commands use compatibility wrappers around that runtime-facing layer.
-- The Zig builder layer now exposes explicit mode-oriented session constructors
-  (`buildSurvivalSession`, `buildRushSession`, `buildQuestSession`) to mirror the
-  Python rewrite structure instead of only offering replay-specialized startup.
-- Replay ingestion from `.crd` bytes (msgpack decode path in-tree).
-- Deterministic Survival/Rush/Quest/Typ-o/Tutorial sim scaffold + runtime loops for:
-  - player/weapon runtime (reload/fire/ammo counters, level/XP progression),
-  - survival/quest spawn systems,
-  - creature updates,
-  - primary/secondary projectile runtime,
-  - bonus/perk runtime integration,
-  - run-result assembly (`ticks`, `elapsed_ms`, `score_xp`, kills, weapon usage, RNG state).
-- Native checkpoint/trace plumbing and raylib/bootstrap targets are in-tree as
-  part of the same port effort.
-- Verification is fully self-contained from replay bytes (no checkpoint/high-score
-  sidecars).
-- Deterministic Rush spawn runtime path (`tick_rush_mode_spawns`) ported in Zig.
-- Deterministic Quest spawn tables and runtime progression hooks ported in Zig.
-  - Quest spawn builder logic is full-version-only in Zig (no shareware-gated branch path).
-- Multiplayer gameplay logic and perk gating parity achieved.
-- CLI surface: `crimson-zig replay verify <replay>` with human/json outputs,
-  intrinsic replay-header claimed-stats checking, plus replay SHA-256 reporting.
-- Wasm target build + export ABI for worker-side integration.
-- Unsupported/not-yet-ported native paths hard-fail instead of silently accepting.
+What exists today:
 
-## Runtime ownership model (Zig rewrite)
+- shared deterministic runtime/session ownership under
+  `crimson-zig/src/runtime/`,
+- native replay verification/info tooling,
+- a real raylib desktop app target,
+- archive/config/status codecs,
+- archive-backed rendering/audio,
+- live native gameplay for Survival, Rush, Quests, Typ-o, and Tutorial,
+- a freestanding WASM replay-verification ABI.
 
-- Internal gameplay runtime uses a typed owner union (`OwnerRef`) instead of raw
-  magic owner IDs.
-  - `OwnerRef.player{index, local_host}`
-  - `OwnerRef.creature{index}`
-  - `OwnerRef.none`
-- Legacy owner-id encoding (`-100`, `-1-n`, `>=0`) is treated as an interop
-  format only, not the internal simulation representation.
-- Any required legacy serialization/trace surface is emitted by explicit
-  conversion (`OwnerRef.toLegacy()`) at boundaries.
+Replay tooling is still the most mature headless/public surface, but it now
+consumes the same shared runtime used by the native desktop application.
 
-## Not fully ported / known parity gaps
+## Ported in Zig
 
-- The most complete native fast path is still **1-4 player Survival/Rush/Quest**
-  plus **1-player Typ-o/Tutorial**
-  replay execution.
-- Replay compatibility is still under active expansion using differential captures;
-  parity is strong on the current working set but not yet claimed for all unseen
-  Survival captures or all preserve-bugs-era captures.
-- Menus, live presentation, and broader game-product surfaces are now real
-  native Zig surfaces, but the remaining parity debt has shifted toward mode
-  breadth, replay envelope breadth, and final product-shell fidelity.
+- `.crd` replay ingestion and native simulation in Zig
+- shared deterministic session builders
+- native replay `verify` and `info`
+- CDT/debug trace plumbing
+- typed RNG caller tagging for verifier/runtime draws
+- native config/status ownership for `crimson.cfg` and `game.cfg`
+- real boot/menu/gameplay/pause/results/statistics/options shell
+- archive-backed world/UI asset loading
+- archive-backed audio loading and gameplay/menu audio routing
+- transient world FX, terrain baking, sprite/atlas rendering, and HUD/cursor
+  presentation
 
-## Current replay parity snapshot (2026-02-25)
+## Supported native replay/runtime modes
 
-- Older-version captures are no longer used as acceptance inputs for the latest
-  ruleset verifier status.
-- `survival_20260224_113737_score4032.crd`
-  - Python and Zig both `ok` with exact summary match:
-    - `ticks=34808 elapsed_ms=532112 score_xp=4032 kills=1498 most_used_weapon_id=20 shots_fired=10241 shots_hit=3035 rng_state=2592828730`
-- `survival_20260224_223838_score134360.crd`
-  - Python and Zig both `ok` with exact summary match:
-    - `ticks=32213 elapsed_ms=448469 score_xp=134360 kills=1231 most_used_weapon_id=20 shots_fired=1718 shots_hit=1030 rng_state=4205621066`
-  - Differential harness (`--skip-build`) reports exact tick parity:
-    - `match: ticks=32213`
+Current supported native replay/runtime modes:
 
-## Performance snapshot (2026-02-25)
+- Survival
+- Rush
+- Quests
+- Typ-o
+- Tutorial
 
-`hyperfine './crimson-zig/zig-out/bin/crimson-zig replay verify survival_20260224_223838_score134360.crd' 'uv run crimson replay verify survival_20260224_223838_score134360.crd'`
+Current supported replay-tooling behavior:
 
-```text
-Benchmark 1: ./crimson-zig/zig-out/bin/crimson-zig replay verify survival_20260224_223838_score134360.crd
-  Time (mean ± σ):     564.1 ms ±  10.0 ms    [User: 555.5 ms, System: 2.5 ms]
-  Range (min … max):   555.0 ms … 588.7 ms    10 runs
+- preserve-bugs compatibility mode
+- replay RNG tracing via `--trace-rng`
+- current Python-readable trace export contracts
+- invalid spawn-template / quest-table inputs reported as invalid replay/session
+  data rather than stale “unsupported path” wording
 
-Benchmark 2: uv run crimson replay verify survival_20260224_223838_score134360.crd
-  Time (mean ± σ):     31.599 s ±  0.550 s    [User: 31.268 s, System: 0.115 s]
-  Range (min … max):   30.912 s … 32.871 s    10 runs
+## Current native architecture
 
-Summary
-  ./crimson-zig/zig-out/bin/crimson-zig replay verify survival_20260224_223838_score134360.crd ran
-   56.02 ± 1.39 times faster than uv run crimson replay verify survival_20260224_223838_score134360.crd
-```
+Important architectural state:
+
+- replay tooling no longer owns a separate simulation fork,
+- deterministic runtime is shared between replay and live desktop execution,
+- session construction is mode-oriented through
+  `runtime/session_builders.zig`,
+- live gameplay is driven through the same runtime core by
+  `runtime/live_runner.zig`.
+
+This is the main reason the older “verifier-only” framing is now wrong.
+
+## Remaining gaps
+
+The important remaining gaps are now:
+
+- replay/verifier breadth still lags Python,
+- some product-shell flows are still thinner than Python,
+- demo/trial shell behavior is still missing in Zig,
+- WASM still exposes a narrow replay/runtime surface,
+- network/LAN parity is still deferred.
+
+The biggest remaining technical risk is not basic gameplay ownership. It is
+closing the remaining replay/tooling and product-shell breadth gaps cleanly.
