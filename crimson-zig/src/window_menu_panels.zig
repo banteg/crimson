@@ -4,6 +4,7 @@ const rl = @import("raylib");
 const cz = @import("crimson_zig");
 const formats = cz.formats;
 const game_ids = cz.game_ids;
+const quest_status = @import("quest_status.zig");
 
 const window_assets = @import("window_assets.zig");
 const window_menu = @import("window_menu.zig");
@@ -829,12 +830,12 @@ const QuestCountPair = struct {
 };
 
 fn questCounts(status: formats.game_cfg.Status, stage: i32, row: usize) QuestCountPair {
-    const global_index = @as(usize, @intCast((stage - 1) * 10 + @as(i32, @intCast(row))));
-    const games_idx = global_index;
-    const completed_idx = global_index + 40;
+    const level_key = stage * 100 + @as(i32, @intCast(row)) + 1;
+    const games_idx = quest_status.trackedQuestGamesCounterIndex(level_key);
+    const completed_idx = quest_status.trackedQuestCompletedCounterIndex(level_key);
     return .{
-        .completed = if (completed_idx < status.quest_play_counts.len) status.quest_play_counts[completed_idx] else 0,
-        .games = if (games_idx < status.quest_play_counts.len) status.quest_play_counts[games_idx] else 0,
+        .completed = if (completed_idx) |idx| status.quest_play_counts[idx] else 0,
+        .games = if (games_idx) |idx| status.quest_play_counts[idx] else 0,
     };
 }
 

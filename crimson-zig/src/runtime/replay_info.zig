@@ -225,7 +225,7 @@ pub fn collect(
         error.InvalidWorldSize => return error.InvalidHeaderValue,
         error.InvalidTickRate => return error.InvalidHeaderValue,
         error.UnsupportedGameMode => return error.UnsupportedGameMode,
-        error.UnsupportedQuestSpawnTable => return error.UnsupportedQuestSpawnTable,
+        error.InvalidQuestSpawnTable => return error.InvalidQuestSpawnTable,
     };
 
     const ticks_to_simulate: usize = if (options.max_ticks) |max_ticks|

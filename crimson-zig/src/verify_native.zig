@@ -31,6 +31,7 @@ const VerifyRequest = struct {
     json_out: ?[]const u8 = null,
     base_dir: ?[]const u8 = null,
     max_ticks: ?usize = null,
+    trace_rng: bool = false,
     debug_trace_msgpack: ?[]const u8 = null,
     debug_trace_cdt: ?[]const u8 = null,
     debug_trace_cdt_chunk_ticks: i32 = 256,
@@ -212,7 +213,7 @@ fn runVerifyWithReplayBytes(
     replay_codec.validateReplayBootstrap(header) catch |err| {
         return buildNotPortedOutputForReplayCodecError(allocator, err);
     };
-    const trace_requested = request.debug_trace_msgpack != null or request.debug_trace_cdt != null;
+    const trace_requested = request.trace_rng or request.debug_trace_msgpack != null or request.debug_trace_cdt != null;
     const ticks_to_simulate: usize = if (request.max_ticks) |max_ticks|
         @min(max_ticks, replay.tickCount())
     else
@@ -656,7 +657,7 @@ fn buildNotPortedOutput(
     defer stderr_buf.deinit(allocator);
 
     var writer = stderr_buf.writer(allocator);
-    try writer.print("replay verification hit a native unsupported path: {s}\n", .{detail});
+    try writer.print("replay verification hit a native runtime limitation: {s}\n", .{detail});
 
     const stderr = try stderr_buf.toOwnedSlice(allocator);
     errdefer allocator.free(stderr);
@@ -732,8 +733,8 @@ fn buildNotPortedOutputForReplayRunnerError(
         error.UnsupportedEventPlayerIndex => "native replay run encountered an out-of-range player_index event",
         error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
-        error.UnsupportedSpawnTemplate => "replay triggered a survival template path unsupported by the current native creature runtime",
-        error.UnsupportedQuestSpawnTable => "quest replay requires a quest spawn table variant unsupported by the current native runtime",
+        error.InvalidSpawnTemplate => "replay capture payload references an invalid creature spawn template",
+        error.InvalidQuestSpawnTable => "quest replay/session payload resolves to an invalid quest spawn table",
         error.MissingRngCallerTag => "native replay trace hit an untagged gameplay RNG draw",
     };
 
@@ -741,7 +742,7 @@ fn buildNotPortedOutputForReplayRunnerError(
     defer stderr_buf.deinit(allocator);
 
     var writer = stderr_buf.writer(allocator);
-    try writer.print("replay verification hit a native unsupported path: {s}", .{detail});
+    try writer.print("replay verification failed in the native runtime: {s}", .{detail});
     if (progress.processed_ticks) |processed_ticks| {
         try writer.print(
             " (progress: ticks_processed={d}/{d}, event_count={d})\n",
@@ -785,7 +786,8 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
             return .{ .unsupported = "--lenient-events" };
         }
         if (std.mem.eql(u8, arg, "--trace-rng")) {
-            return .{ .unsupported = "--trace-rng" };
+            request.trace_rng = true;
+            continue;
         }
         if (std.mem.eql(u8, arg, "--max-ticks")) {
             if (idx + 1 >= args.len) return .{ .invalid = "missing value for --max-ticks" };
@@ -1124,14 +1126,14 @@ test "parse native subset rejects invalid cdt chunk ticks value" {
     }
 }
 
-test "parse native subset reports unsupported options" {
+test "parse native subset accepts trace rng option" {
     const parsed = parseNativeSubset(&.{
         "survival_20260224_041009_score76661.crd",
         "--trace-rng",
     });
     switch (parsed) {
-        .unsupported => |detail| try std.testing.expectEqualStrings("--trace-rng", detail),
-        else => return error.TestExpectedUnsupportedOption,
+        .ok => |request| try std.testing.expect(request.trace_rng),
+        else => return error.TestExpectedValidOption,
     }
 }
 
@@ -1301,7 +1303,7 @@ test "replay codec malformed payload errors map to verify failed output" {
         try std.testing.expectEqual(@as(i32, 1), output.exit_code);
         try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification failed:") != null);
         try std.testing.expect(std.mem.indexOf(u8, output.stderr, case_item.detail) != null);
-        try std.testing.expect(std.mem.indexOf(u8, output.stderr, "native unsupported path") == null);
+        try std.testing.expect(std.mem.indexOf(u8, output.stderr, "native runtime limitation") == null);
     }
 }
 
@@ -1311,7 +1313,7 @@ test "replay codec unsupported event kind remains not ported output" {
     defer output.deinit(allocator);
 
     try std.testing.expectEqual(@as(i32, 1), output.exit_code);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification hit a native unsupported path:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification hit a native runtime limitation:") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay events include kinds unsupported by the current native runtime") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification failed:") == null);
 }

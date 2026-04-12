@@ -5,7 +5,7 @@ const math_runtime = @import("../runtime/math.zig");
 const spawn_runtime = @import("../runtime/spawn.zig");
 
 pub const QuestSpawnBuildError = error{
-    UnsupportedQuestSpawnTable,
+    InvalidQuestSpawnTable,
     OutOfSpace,
 };
 
@@ -257,7 +257,7 @@ pub fn appendRadialSpawns(
     trigger_ms: i32,
     count: i32,
 ) QuestSpawnBuildError!void {
-    if (radius_step <= 0.0 or radius_end < radius_start) return error.UnsupportedQuestSpawnTable;
+    if (radius_step <= 0.0 or radius_end < radius_start) return error.InvalidQuestSpawnTable;
     const direction = vecFromAngle(angle);
     var radius = radius_start;
     while (radius < radius_end) : (radius += radius_step) {

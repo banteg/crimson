@@ -334,8 +334,8 @@ fn buildInfoFailedOutputForReplayInfoError(
         error.UnsupportedEventPlayerIndex => "replay info collector encountered an out-of-range player_index event",
         error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
-        error.UnsupportedSpawnTemplate => "replay triggered a survival template path unsupported by the current native creature runtime",
-        error.UnsupportedQuestSpawnTable => "quest replay requires a quest spawn table variant unsupported by the current native runtime",
+        error.InvalidSpawnTemplate => "replay capture payload references an invalid creature spawn template",
+        error.InvalidQuestSpawnTable => "quest replay/session payload resolves to an invalid quest spawn table",
         error.MissingRngCallerTag => "native replay trace hit an untagged gameplay RNG draw",
     };
     return buildInfoFailedOutput(allocator, detail);

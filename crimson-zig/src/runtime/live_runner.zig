@@ -36,6 +36,7 @@ pub const LiveModeConfig = struct {
     hardcore: bool = false,
     preserve_bugs: bool = false,
     demo_mode_active: bool = false,
+    quest_fail_retry_count: i32 = 0,
     status_quest_unlock_index: i32 = 0,
     status_quest_unlock_index_full: i32 = 0,
     status_weapon_usage_counts: [state_mod.weapon_count_size]u32 = [_]u32{0} ** state_mod.weapon_count_size,
@@ -162,6 +163,7 @@ pub const LiveRunner = struct {
             .hardcore = config.hardcore,
             .preserve_bugs = config.preserve_bugs,
             .demo_mode_active = config.demo_mode_active,
+            .quest_fail_retry_count = config.quest_fail_retry_count,
             .status_quest_unlock_index = config.status_quest_unlock_index,
             .status_quest_unlock_index_full = config.status_quest_unlock_index_full,
             .status_weapon_usage_counts = config.status_weapon_usage_counts,
@@ -193,7 +195,7 @@ pub const LiveRunner = struct {
             .quests => blk: {
                 quest_level_key = config.quest_level_key;
                 const terrain_slots = runtime_bootstrap.terrainSlotsForQuestLevelKey(config.quest_level_key) orelse
-                    return error.UnsupportedQuestSpawnTable;
+                    return error.InvalidQuestSpawnTable;
                 const built = quest_spawn_logic.buildQuestSpawnTable(
                     config.quest_level_key,
                     config.player_count,
@@ -201,8 +203,8 @@ pub const LiveRunner = struct {
                     config.world_size,
                     quest_spawn_entries_storage[0..],
                 ) catch |err| switch (err) {
-                    error.UnsupportedQuestSpawnTable => return error.UnsupportedQuestSpawnTable,
-                    error.OutOfSpace => return error.UnsupportedQuestSpawnTable,
+                    error.InvalidQuestSpawnTable => return error.InvalidQuestSpawnTable,
+                    error.OutOfSpace => return error.InvalidQuestSpawnTable,
                 };
                 const quest_entries = quest_spawn_entries_storage[0..built.entries.len];
                 if (config.hardcore) {

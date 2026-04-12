@@ -7,373 +7,166 @@ tags:
 
 # Zig port roadmap (`crimson-zig/`)
 
-This page scopes the remaining work to move `crimson-zig/` from its current
-state, where replay/runtime tooling is the strongest surface, toward the actual
-goal: a full native Zig port of Crimson systems, content, and product surfaces.
-
 Last reviewed: **2026-04-12**
+
+This page now tracks the remaining work after the Zig port crossed the
+“desktop playable slice” threshold. The current tree already contains a real
+native app, shared deterministic runtime, replay tooling, asset/audio loading,
+and substantial shell/product behavior. The remaining work is mostly closure,
+breadth, and product parity.
 
 ## Current baseline
 
-Today the Zig tree has three clearly real foundations:
+Today `crimson-zig/` already has:
 
-- deterministic runtime/simulation modules for the replay-supported modes,
-- replay/tooling surfaces (`replay verify`, `replay info`, CDT traces),
-- codec and packaging work (`paq`, `jaz`, `crimson.cfg`, `game.cfg`).
-
-It also has two surfaces at very different maturity levels:
-
-- native window/application shell:
-  [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig)
-  now owns a real boot/logo flow, menu stacks, live desktop gameplay, results,
-  high-score entry, archive-backed rendering, audio, and cfg/status persistence,
-- wasm runtime ABI:
-  [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig)
-  now executes byte-input replay verify calls, but still exposes only a narrow
-  replay-oriented surface.
-
-And the CLI is still narrow:
-
-- [`crimson-zig/src/cli.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/cli.zig)
-  exposes only `replay verify` and `replay info`.
-
-That means the remaining scope is not one backlog. It is at least four distinct
-programs:
-
-1. finish the deterministic gameplay/runtime core,
-2. turn that runtime into a live playable application shell,
-3. port the asset/render/audio/UI stack,
-4. widen platform and tooling surfaces beyond replay-only entrypoints.
-
-## Scope by workstream
-
-### 1. Core deterministic sim parity
-
-This is the closest workstream to the current Zig tree.
-
-Remaining work:
-
-- Eliminate runtime bail-outs that still report unported gameplay branches.
-  - weapon fire fallbacks:
-    [`crimson-zig/src/runtime/weapons.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/weapons.zig)
-  - creature template fallbacks:
-    [`crimson-zig/src/runtime/creatures.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/creatures.zig)
-  - perk/bonus apply fallbacks surfaced through replay event application:
-    [`crimson-zig/src/runtime/perks.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/perks.zig),
-    [`crimson-zig/src/runtime/bonuses.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/bonuses.zig),
-    [`crimson-zig/src/runtime/replay/events.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/replay/events.zig)
-- Expand supported gameplay modes beyond the current replay-centered
-  Survival/Rush/Quest fast path, plus 1-player Typ-o/Tutorial.
-  - Tutorial, Typ-o, and demo flows still need true Zig session/runtime support,
-    not just “unsupported” rejection paths.
-- Widen replay envelope support where the native CLI still rejects inputs.
-  - older rulesets except preserve-bugs envelopes,
-  - event kinds/bootstrap kinds that are not yet accepted by
-    [`crimson-zig/src/replay_codec.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/replay_codec.zig)
-    and
-    [`crimson-zig/src/verify_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/verify_native.zig)
-- Keep pulling the Zig runtime shape toward the Python reference architecture.
-  - current progress: shared session shell +
-    explicit mode builders in
-    [`crimson-zig/src/runtime/session.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/session.zig)
-    and
-    [`crimson-zig/src/runtime/session_builders.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/session_builders.zig)
-  - remaining: more complete mode-specific hooks and a less replay-specific
-    deterministic step boundary.
-
-Definition of done for this workstream:
-
-- replay/runtime core can execute the full supported ruleset set without
-  “not yet ported” exits on ordinary captures,
-- non-replay deterministic sessions exist for all gameplay modes we intend to
-  ship in Zig,
-- differential capture tooling shows stable parity across a broader corpus than
-  the current replay acceptance set.
-
-### 2. Live world runtime shell
-
-The Zig runtime can simulate, but it does not yet own a real live game shell.
-Python still owns the concepts that turn a deterministic session into an actual
-running game product.
-
-Remaining work:
-
-- Introduce a Zig `World` / live-run shell that owns:
-  - active players/creatures/projectiles/bonuses/effects,
-  - mode/session lifecycle,
-  - frame timing and input ingestion,
-  - save/status plumbing,
-  - audio/render-facing event boundaries.
-- Mirror the Python split between:
-  - deterministic session stepping,
-  - presentation planning,
-  - mode orchestration,
-  - boot/menu/game transitions.
-- Separate “headless replay runner” concerns from “live game runner” concerns so
-  replay becomes a driver over the same world/session code, not its parent.
-
-Closest Python references:
-
-- [`src/crimson/sim/sessions.py`](/Users/banteg/dev/banteg/crimson/src/crimson/sim/sessions.py)
-- [`src/crimson/sim/session_builders.py`](/Users/banteg/dev/banteg/crimson/src/crimson/sim/session_builders.py)
-- [`src/crimson/game/runtime.py`](/Users/banteg/dev/banteg/crimson/src/crimson/game/runtime.py)
-- [`src/crimson/game/loop_view.py`](/Users/banteg/dev/banteg/crimson/src/crimson/game/loop_view.py)
-
-Definition of done for this workstream:
-
-- Zig can boot a gameplay session natively from config/status/input without going
-  through replay artifacts,
-- replay, sandbox, and live game flows share the same lower-level world/session
-  machinery.
-
-### 3. Assets, rendering, and presentation
-
-This is one of the biggest missing chunks. The Zig tree has codec foundations and
-placeholder window targets, but not a real presentation pipeline.
-
-Remaining work:
-
-- Convert newly loaded archive textures into renderer-usable asset objects.
-  - current progress:
-    [`crimson-zig/src/window_assets.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_assets.zig)
-    now loads `crimson.paq`, normalizes entry paths, expands JAZ alpha into
-    RGBA textures, and supports `.tga` / `.jpg` / `.jpeg` image assets plus
-    `load/smallFnt.dat`
-  - remaining: sprite atlas/frame metadata, terrain materials, font builders,
-    and broader non-window consumers of that asset layer
-- Port the terrain renderer and decal/effects presentation model.
-- Port gameplay rendering:
-  - players,
-  - creatures,
-  - primary/secondary projectiles,
-  - pickups/bonuses,
-  - muzzle flashes, blood, corpse/freezer FX, shock/fire/nuke overlays.
-- Port HUD and in-game overlays:
-  - health/ammo/xp,
-  - perk menus,
-  - quest/tutorial overlays,
-  - game over / results / high score entry.
-- Replace the current placeholder window target with a real renderer loop.
-
-Current evidence that this workstream is still incomplete:
-
-- mode/runtime breadth still lags the Python port (`tutorial`, `typo`, and
-  fuller replay/demo envelopes),
-- some product surfaces are still thinner than Python even though they are no
-  longer placeholder-level,
-- the WASM/browser surface still exposes replay-oriented functionality instead
-  of a broader native/runtime API.
-
-Definition of done for this workstream:
-
-- `zig build run-window` becomes a real playable/rendered app surface,
-- asset loading and render output are no longer stub/placeholder-level.
-
-### 4. Boot flow, menus, and product UI
-
-The Python rewrite already owns a large amount of non-gameplay product behavior.
-Almost none of that is present in Zig yet.
-
-Remaining work:
-
-- Boot stages:
-  splash, company logos, intro/theme handoff, config initialization.
-- Main menu and panel system:
-  Play Game, Options, Stats, Credits, Mods-shell, panel transitions.
-- Quest select, demo/attract flow, and trial/purchase shell behavior where still
-  in scope.
-- High score entry/results/game over flows.
-- Debug views/sandboxes that are currently useful in Python development.
-
-Closest Python references:
-
-- [`src/crimson/screens/`](/Users/banteg/dev/banteg/crimson/src/crimson/screens)
-- [`src/crimson/ui/`](/Users/banteg/dev/banteg/crimson/src/crimson/ui)
-- [`src/crimson/game/`](/Users/banteg/dev/banteg/crimson/src/crimson/game)
-
-Definition of done for this workstream:
-
-- Zig has a native boot-to-menu-to-gameplay-to-results loop,
-- the replay CLI is no longer the dominant user-facing story of the workspace.
-
-### 5. Audio
-
-Audio now has a real desktop/runtime foothold, but it is not done.
-
-Current progress:
-
-- [`crimson-zig/src/audio/audio.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/audio/audio.zig),
-  [`crimson-zig/src/audio/music.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/audio/music.zig),
-  [`crimson-zig/src/audio/sfx.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/audio/sfx.zig),
+- shared deterministic runtime/session ownership in
+  [`crimson-zig/src/runtime/session.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/session.zig)
   and
-  [`crimson-zig/src/audio/live_audio.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/audio/live_audio.zig)
-  now mirror the Python split between device/audio orchestration, music state,
-  sfx state, and gameplay/menu routing.
-- `music.paq`, `sfx.paq`, `music/game_tunes.txt`, and `crimson.cfg` are now
-  consumed by the desktop Zig slice.
-- the desktop app now has native intro/menu music, first-hit game-tune
-  triggering, cfg-driven volume/enable behavior, and gameplay/menu/perk ui sfx.
+  [`crimson-zig/src/runtime/session_builders.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/session_builders.zig),
+- native replay tooling in
+  [`crimson-zig/src/verify_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/verify_native.zig)
+  and
+  [`crimson-zig/src/replay_info_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/replay_info_native.zig),
+- a real raylib desktop application in
+  [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig),
+- archive/config/status codecs under
+  [`crimson-zig/src/formats/`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/formats),
+- native audio modules under
+  [`crimson-zig/src/audio/`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/audio),
+- a freestanding WASM replay-verification ABI in
+  [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig).
+
+Current live/native gameplay coverage:
+
+- Survival
+- Rush
+- Quests
+- Typ-o
+- Tutorial
+
+The earlier “missing the game” framing is obsolete. The remaining roadmap is
+about finishing the port cleanly.
+
+## Remaining workstreams
+
+### 1. Replay and verifier breadth
+
+This is still the most important technical gap after the desktop shell.
 
 Remaining work:
 
-- widen gameplay event parity beyond the current desktop slice:
-  - creature pain/death/attack sfx,
-  - bonus/perk-triggered sfx outside the currently surfaced frame events,
-  - fuller quest/tutorial/demo audio routing.
-- port the remaining product-shell audio behavior:
-  - panels/options/high-score entry/results flows,
-  - pause/game over/victory transition muting details,
-  - console-driven tune loading commands on the native shell side.
-- validate audio parity more deeply against the Python/native reference:
-  - game-tune queue mutation,
-  - per-mode music behavior,
-  - any remaining edge cases around exclusive fading and reflex pitch scaling.
+- widen replay envelope support in
+  [`crimson-zig/src/replay_codec.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/replay_codec.zig),
+  [`crimson-zig/src/runtime/replay_runner.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/replay_runner.zig),
+  [`crimson-zig/src/runtime/replay_info.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/replay_info.zig),
+  and
+  [`crimson-zig/src/runtime/replay/events.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/replay/events.zig),
+- keep burning down real remaining `Unsupported*` replay/event surfaces that are
+  still justified,
+- expand native tooling beyond `replay verify` and `replay info`,
+- widen the WASM surface beyond byte-input replay verification.
 
-Closest Python references:
+Definition of done:
 
-- [`src/grim/audio.py`](/Users/banteg/dev/banteg/crimson/src/grim/audio.py)
-- [`src/grim/music.py`](/Users/banteg/dev/banteg/crimson/src/grim/music.py)
-- [`src/crimson/audio_router.py`](/Users/banteg/dev/banteg/crimson/src/crimson/audio_router.py)
+- native replay tooling accepts the same practical corpus/classes as Python for
+  supported rulesets,
+- remaining invalid-input errors are clearly invalid-input errors, not stale
+  “not ported” wording,
+- the Zig CLI is no longer only a replay verifier with one extra command.
 
-Definition of done for this workstream:
+### 2. Product-shell parity
 
-- gameplay and menu audio are native in Zig,
-- audio-triggered parity checks are part of live-run validation, not only replay
-  summary validation.
-
-### 6. Persistence, config, and local product data
-
-The Zig tree has important codec groundwork here, but not the full application
-integration.
-
-Current progress:
-
-- [`crimson-zig/src/app_runtime.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/app_runtime.zig)
-  now gives the desktop slice a native owner for runtime-dir `crimson.cfg` and
-  `game.cfg`.
-- Missing `crimson.cfg` / `game.cfg` files are now created in Zig using the
-  existing codecs and Python-matching defaults.
-- [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig)
-  now reads `crimson.cfg` for current window/audio/gameplay defaults and writes
-  back `game.cfg` play counters, playtime, unlock indices, and weapon-usage
-  state from live runs.
+The desktop app is real, but some shells are still thinner than Python.
 
 Remaining work:
 
-- widen beyond the current Survival desktop slice:
-  Rush/Quest/Tutorial/Typ-o save semantics, quest counters, highscores,
-  and broader state ownership,
-- support in-product config editing rather than config-as-fixture only,
-- expose useful CLI/admin surfaces for inspecting and repairing local state.
+- finish results/high-score/product flow parity in
+  [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig),
+- keep tightening menu/statistics/options descendants in
+  [`crimson-zig/src/window_menu.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_menu.zig),
+  [`crimson-zig/src/window_menu_panels.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_menu_panels.zig),
+  [`crimson-zig/src/window_statistics.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_statistics.zig),
+  and
+  [`crimson-zig/src/window_options.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_options.zig),
+- port the demo/trial overlay and purchase-shell behavior that Python already
+  has,
+- keep removing any remaining fallback/scaffold UI logic from the desktop path.
 
-Current foundations:
+Definition of done:
 
-- [`crimson-zig/src/formats/crimson_cfg.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/formats/crimson_cfg.zig)
-- [`crimson-zig/src/formats/game_cfg.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/formats/game_cfg.zig)
+- boot -> menu -> gameplay -> pause -> results -> stats/options flows behave
+  like the Python product shell,
+- the remaining differences are deliberate scope decisions, not stale
+  placeholders.
 
-Definition of done for this workstream:
+### 3. Native tooling and developer surfaces
 
-- a Zig player can boot, play, unlock, save, and re-open with native state
-  persistence.
-
-### 7. Wasm and platform embedding
-
-The build targets exist, but the runtime surface is still thin.
-
-Remaining work:
-
-- widen the ABI beyond replay-only behavior,
-- decide whether browser/web-worker embedding targets:
-  - replay verification,
-  - inspector/debug UI,
-  - or a playable web build.
-- reconcile the freestanding ABI target with the emscripten/raylib web target so
-  they point at the same long-term product story.
-
-Current evidence:
-
-- [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig)
-- [`crimson-zig/build.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/build.zig)
-
-Definition of done for this workstream:
-
-- wasm exports are useful runtime APIs, not an error-reporting shim.
-
-### 8. Networking
-
-This is explicitly later-stage work, but it belongs in full-port scoping.
+Python still has broader non-gameplay tooling than Zig.
 
 Remaining work:
 
-- decide whether Zig will eventually own rollback and/or lockstep runtime,
-- if yes, port:
-  - session settings,
-  - transport/protocol layers,
-  - rollback state snapshots/resync,
-  - relay integration,
-  - network UI/lobby/product flows.
+- expand Zig CLI coverage where it materially helps development:
+  - replay-oriented tools beyond verify/info,
+  - useful debug/support commands where they make sense natively,
+- keep trace/debug surfaces aligned with current Python contracts,
+- refresh developer docs when tooling behavior changes.
 
-Closest Python references:
+Definition of done:
 
+- Zig-native tooling is useful beyond the verifier path,
+- the documented command surface matches what is actually supported.
+
+### 4. Presentation and polish follow-through
+
+Rendering/audio are no longer placeholders, but parity polish remains.
+
+Remaining work:
+
+- continue tightening world/UI/details where Python is still visibly ahead,
+- keep product-shell audio parity moving with shell parity,
+- validate remaining mode-specific overlays and result flows,
+- keep removing split-brain/fallback presentation code when runtime-owned data
+  already exists.
+
+Definition of done:
+
+- remaining visual/audio mismatches are minor polish, not missing systems or
+  duplicate architectures.
+
+### 5. Network/LAN parity
+
+This remains a real missing system, but it is currently deferred.
+
+Scope when resumed:
+
+- Play Game network entrypoints,
+- session/lobby shell,
+- native LAN/runtime behavior.
+
+Reference Python surfaces:
+
+- [`src/crimson/screens/panels/network_session.py`](/Users/banteg/dev/banteg/crimson/src/crimson/screens/panels/network_session.py)
+- [`src/crimson/screens/panels/network_lobby.py`](/Users/banteg/dev/banteg/crimson/src/crimson/screens/panels/network_lobby.py)
 - [`src/crimson/net/`](/Users/banteg/dev/banteg/crimson/src/crimson/net)
 
-Definition of done for this workstream:
+## Current priority order
 
-- either networking is declared intentionally out of near-term Zig scope, or a
-  concrete port plan exists with live protocol/runtime coverage.
+If the goal is to finish the Zig port cleanly, the current order should be:
 
-## Suggested staging
+1. replay/verifier breadth and remaining justified runtime closures
+2. product-shell parity, especially results and demo/trial shell
+3. native tooling breadth
+4. remaining presentation/audio polish
+5. network/LAN parity
 
-This is the sequencing that best matches the current state of the Zig tree.
+## What is no longer a roadmap item
 
-### Phase 1: finish the runtime core
+These were earlier concerns but are no longer the right headline risks:
 
-- remove unsupported replay/runtime branches,
-- add full mode session builders/hooks for Tutorial/Typ-o/demo where in scope,
-- widen replay acceptance and differential coverage.
+- “Zig only has replay verifier architecture”
+- “Zig has no real desktop game shell”
+- “spawn template coverage is broadly missing”
+- “quest spawn tables are mostly unported”
 
-### Phase 2: make Zig able to run a live gameplay session
-
-- native config/status boot,
-- live input ingestion,
-- world/session lifecycle outside replay,
-- non-placeholder window loop with gameplay stepping.
-
-### Phase 3: port presentation and audio
-
-- asset loading,
-- terrain/sprite/effects rendering,
-- HUD/perk/menu overlays,
-- music/sfx routing.
-
-### Phase 4: port the product shell
-
-- boot/logo/menu/panels/results/highscore flows,
-- debug views and developer tooling surfaces,
-- persistence integrated end to end.
-
-### Phase 5: widen platform targets
-
-- useful wasm runtime ABI,
-- web embedding strategy,
-- optional network/runtime ownership expansion.
-
-## Short version
-
-The Zig port is still early because it has only completed the lowest and most
-deterministic slice of the stack well: replay/runtime core + codecs.
-
-The largest remaining work is not “more verifier fixes.” It is:
-
-1. finishing unsupported gameplay branches inside the runtime,
-2. building a true live game shell around that runtime,
-3. porting rendering/audio/UI/persistence,
-4. deciding how far the Zig tree will go on wasm and networking.
-
-If we want the next few PRs to have the highest leverage, they should keep
-moving the tree in this order:
-
-1. replay/runtime parity closures,
-2. live session startup,
-3. real renderer/audio integration,
-4. menu/product surfaces.
+Those areas now have real coverage in the current tree. The remaining work is
+closure and parity, not first-time implementation of those foundations.

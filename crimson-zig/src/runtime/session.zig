@@ -20,7 +20,7 @@ pub const DeterministicSessionError = error{
     InvalidWorldSize,
     InvalidTickRate,
     UnsupportedGameMode,
-    UnsupportedQuestSpawnTable,
+    InvalidQuestSpawnTable,
 };
 
 pub const SessionConfig = struct {
@@ -33,6 +33,7 @@ pub const SessionConfig = struct {
     gore_disabled: i32 = 0,
     hardcore: bool = false,
     preserve_bugs: bool = false,
+    quest_fail_retry_count: i32 = 0,
     status_quest_unlock_index: i32 = 0,
     status_quest_unlock_index_full: i32 = 0,
     status_weapon_usage_counts: [state_mod.weapon_count_size]u32 = [_]u32{0} ** state_mod.weapon_count_size,
@@ -55,6 +56,7 @@ pub const SessionConfig = struct {
             .gore_disabled = header.gore_disabled,
             .hardcore = header.hardcore,
             .preserve_bugs = header.preserve_bugs,
+            .quest_fail_retry_count = header.difficulty_level,
             .status_quest_unlock_index = header.status.quest_unlock_index,
             .status_quest_unlock_index_full = header.status.quest_unlock_index_full,
         };
@@ -209,6 +211,7 @@ pub const DeterministicSession = struct {
         session.state.hardcore = config.hardcore;
         session.state.preserve_bugs = config.preserve_bugs;
         session.state.demo_mode_active = config.demo_mode_active;
+        session.state.quest_fail_retry_count = config.quest_fail_retry_count;
         session.state.status_quest_unlock_index = config.status_quest_unlock_index;
         session.state.status_quest_unlock_index_full = config.status_quest_unlock_index_full;
         session.state.quest_stage_major = config.quest_stage_major;
@@ -219,6 +222,10 @@ pub const DeterministicSession = struct {
             const weapon_id: game_ids.WeaponId = @enumFromInt(idx);
             session.state.status_weapon_usage_counts.set(weapon_id, count);
         }
+
+        session.creatures.hardcore = config.hardcore;
+        session.creatures.demo_mode_active = config.demo_mode_active;
+        session.creatures.quest_fail_retry_count = config.quest_fail_retry_count;
 
         player_runtime.resetPlayers(session.players(), config.world_size, null);
         session.creatures.capture_spawn_events_authoritative = options.capture_spawn_events_authoritative;
@@ -306,7 +313,7 @@ pub const DeterministicSession = struct {
         entries: []const spawn_mod.QuestSpawnEntry,
     ) DeterministicSessionError!void {
         if (entries.len > self.quest_spawn_entries_storage.len) {
-            return error.UnsupportedQuestSpawnTable;
+            return error.InvalidQuestSpawnTable;
         }
         @memcpy(self.quest_spawn_entries_storage[0..entries.len], entries);
         self.reset_quest_spawn_entries_len = entries.len;

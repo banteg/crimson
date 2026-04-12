@@ -2,122 +2,151 @@
 
 Standalone Zig workspace for the native Crimson port.
 
-## Scope (current)
+## What it is now
 
-- Direction: full native port of Crimson runtime and supporting codecs/tooling.
-- Current most mature CLI surfaces: `crimson-zig replay verify ...` and `crimson-zig replay info ...`
-- Current JSON contracts mirror the Python replay CLI for verify/info payloads.
-- Current native targets include headless replay tooling, runtime modules, codec libraries,
-  a raylib desktop app target, and a freestanding WASM ABI target.
-- Shared runtime/session seams now live under `src/runtime/session.zig` and
-  `src/runtime/session_builders.zig`, so replay tooling sits on top of the same
-  deterministic session shell we intend to use for broader native surfaces.
-- `runtime/session_builders.zig` now mirrors the Python `build_*_session(...)`
-  split with explicit Survival/Rush/Quest builders, not just replay startup glue.
+`crimson-zig/` is no longer a replay-verifier side project. It already contains:
 
-## Format codecs (library-only)
+- a shared deterministic runtime under `src/runtime/`,
+- native replay tooling (`replay verify`, `replay info`),
+- a real raylib desktop app target,
+- archive/codec support for `crimson.paq`, `music.paq`, `sfx.paq`, `crimson.cfg`, and `game.cfg`,
+- a freestanding WASM replay-verification ABI.
 
-The `crimson_zig.formats` module now includes deterministic byte-level codecs for:
+The desktop target now owns a real boot-to-menu-to-gameplay loop:
 
-- `formats.paq`: PAQ archive decode/encode (`paq\\0`, sequential entries).
-- `formats.jaz`: JAZ parse + zlib inflate + payload split (`jpeg_bytes` + `alpha_rle_bytes`).
-- `formats.crimson_cfg`: fixed-size `crimson.cfg` decode/encode (`0x480` bytes).
-- `formats.game_cfg`: `game.cfg` blob/file encode/decode, checksum, and status-struct parse/build.
+- boot/logo flow,
+- root/play-game/options/statistics/pause/results shells,
+- live Survival, Rush, Quests, Typ-o, and Tutorial,
+- archive-backed rendering/audio,
+- native config/status loading and saveback,
+- high-score entry and statistics surfaces.
 
-This wave is intentionally codec-only:
+The strongest public tooling surface is still replay verification, but the
+workspace direction is a full native port, not a verifier-only fork.
 
-- no new CLI commands yet,
-- no `ensure_*`/repair helpers,
-- core `formats.jaz` still returns split payload components, while the desktop
-  raylib asset loader now expands JAZ JPEG+alpha payloads into RGBA textures.
+## Current gaps
 
-## Current native state
+The biggest remaining Zig work is no longer basic rendering or menu existence.
+It is mostly closure work:
 
-- `crimson-zig` is the native-port workspace, not a replay-verifier workspace.
-  - Replay verification/info are the most complete user-facing entrypoints today.
-  - Runtime, codecs, startup/bootstrap, and window targets are being ported as parts of one native implementation.
-- Replay session construction now routes through the shared deterministic session
-  layer (`runtime/session*.zig`) rather than keeping the mutable loop shell under
-  `runtime/replay/`.
-- Native CLI currently executes **1-4 player survival/rush/quest** replay paths and **1-player Typ-o/Tutorial** replay paths, including preserve-bugs compatibility mode, using:
-  - replay msgpack+gzip decoding in Zig (via `msgpack.zig`, full header/inputs/events model),
-  - native deterministic simulation pass in Zig (canonical event ordering + input/event counters),
-  - canonical terrain bootstrap RNG validation,
-  - full deterministic run-result generation on supported native paths.
-- Replay-side validation remains a primary parity harness, but it is now a consumer of shared runtime code rather than the whole point of the workspace.
-- Native CLI still hard-fails for unsupported or unported native paths instead of falling back.
-- `zig build run-window` now boots a real desktop shell:
-  boot/logo flow -> main menu -> play-game/options/statistics stacks -> live gameplay -> results/high-score entry.
-- `zig build run-window` now looks for runtime assets using the same default
-  runtime-dir policy as Python first:
-  `CRIMSON_ASSETS_DIR`, then `CRIMSON_RUNTIME_DIR` / `CRIMSON_BASE_DIR`, then
-  the per-user platform data dir (`platformdirs`-compatible layout), with
-  `./artifacts/assets` and the current directory left as checkout-local
-  search fallbacks. It loads `.jaz`, `.tga`, `.jpg/.jpeg`, and `load/smallFnt.dat`.
-- The desktop slice now also uses the same runtime-dir policy for `music.paq`,
-  `sfx.paq`, and `crimson.cfg`, with:
-  - archive-backed music + sfx loading in Zig,
-  - `music/game_tunes.txt` playlist loading,
-  - menu theme + intro playback,
-  - first-hit Survival game-tune trigger,
-  - cfg-driven music/sfx enable and volume behavior.
-- The desktop slice now also owns real runtime config/status files under the
-  Python-compatible runtime dir:
-  - missing `crimson.cfg` and `game.cfg` are created from Zig using the same
-    native defaults/codecs,
-  - window size/fullscreen and current Survival runtime defaults are read from
-    `crimson.cfg`,
-  - `game.cfg` mode-play counters, weapon usage counts, unlock indices, and
-    global playtime counters are now mutated and saved back out by the Zig app.
-- For the current 1-player desktop slice, player 1 movement/fire plus global
-  reload bindings now come from the encoded `crimson.cfg` control blocks rather
-  than hardcoded `WASD` / `Mouse1` / `R`.
-- The freestanding WASM ABI now runs the same replay verification core for
-  byte-input payloads, with JSON output and JSON error reporting via
-  `crimson_last_error_json`.
-- A staged scope of the remaining port work lives in
-  [`docs/rewrite/zig-roadmap.md`](/Users/banteg/dev/banteg/crimson/docs/rewrite/zig-roadmap.md).
+- replay/tooling breadth still lags Python,
+- some product-shell flows are still thinner than Python,
+- the demo/trial product shell is still missing in Zig,
+- WASM is still a narrow replay/runtime ABI,
+- network/LAN parity is still deferred.
 
-## Build
+For the staged remaining-work breakdown, see
+[`docs/rewrite/zig-roadmap.md`](/Users/banteg/dev/banteg/crimson/docs/rewrite/zig-roadmap.md).
+
+## Codecs and assets
+
+`crimson_zig.formats` includes deterministic codecs for:
+
+- `formats.paq`
+- `formats.jaz`
+- `formats.tga`
+- `formats.crimson_cfg`
+- `formats.game_cfg`
+
+The desktop asset layer in
+[`src/window_assets.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_assets.zig)
+now loads:
+
+- `.jaz`
+- `.tga`
+- `.jpg` / `.jpeg`
+- `load/smallFnt.dat`
+
+Runtime assets are resolved with the same priority as the Python port:
+
+1. `CRIMSON_ASSETS_DIR`
+2. `CRIMSON_RUNTIME_DIR`
+3. `CRIMSON_BASE_DIR`
+4. the platformdirs-compatible runtime dir
+5. checkout-local fallbacks such as `./artifacts/assets`
+
+The same runtime-dir policy is used for `crimson.cfg`, `game.cfg`,
+`music.paq`, `sfx.paq`, and `music/game_tunes.txt`.
+
+## Build and run
 
 ```bash
+cd crimson-zig
 zig build
-zig build run -- replay verify survival_20260224_041009_score76661.crd --format json
-zig build run-window
-zig build web-window
-zig build asset-smoke
 zig build test
+zig build window
+zig build run-window
 zig build wasm
+zig build asset-smoke
+zig build run -- replay verify <replay.crd> --format json
+zig build run -- replay info <replay.crd> --format json
 ```
 
-## Raylib bootstrap
+Useful targets:
 
-- `zig build run-window` opens the current desktop playable slice using `raylib-zig`.
-- `zig build window` compiles that target without running it.
-- `zig build asset-smoke` runs a local decode smoke pass over `crimson.paq` and
-  runtime-mapped texture entries, printing exact failing asset paths.
-- `zig build run-window` now initializes audio from `music.paq` / `sfx.paq`
-  when they are present in the resolved runtime dir, and falls back to silent
-  execution when audio archives are missing or disabled in `crimson.cfg`.
-- `zig build run-window` now creates/loads `crimson.cfg` + `game.cfg` in the
-  resolved runtime dir before booting the window target, and writes back status
-  mutations on run end / app exit.
-- `zig build web-window` builds an HTML+WASM placeholder window for browser use.
-- `zig build run-web-window` serves the web build through `emrun` (`--no_browser`).
-- The desktop target now uses archive-backed world/UI/audio assets across the
-  normal shell and gameplay flow. The largest remaining desktop gaps are
-  product-surface completeness and mode/runtime coverage, not placeholder
-  rendering.
-- `zig build wasm` remains the freestanding ABI module (`wasm32-freestanding`) and
-  is intentionally separate from the raylib web target (`wasm32-emscripten`).
+- `zig build window`
+  Builds the native raylib app without launching it.
+- `zig build run-window`
+  Launches the desktop app.
+- `zig build asset-smoke`
+  Runs a local decode smoke pass over archive-backed assets and reports exact
+  failing entries.
+- `zig build wasm`
+  Builds the freestanding replay/runtime ABI target.
+- `zig build web-window`
+  Builds the emscripten/raylib browser target.
+
+## Desktop shell status
+
+The native desktop target is implemented in
+[`src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig)
+with supporting modules for boot, menus, pause, statistics, options, cursors,
+HUD, world rendering, terrain FX, projectiles, perk menus, and audio.
+
+Current notable behaviors:
+
+- window size is read from `crimson.cfg`,
+- the OS cursor is hidden and replaced by native menu/aim cursors,
+- world rendering uses archive-backed terrain/sprites/effects,
+- gameplay audio and product-shell audio are routed through native Zig audio
+  modules,
+- `game.cfg` is updated for play counters, quest counters, unlock indices,
+  weapon usage, and playtime,
+- replay/runtime RNG tracing now uses static caller tags instead of the old
+  untagged verifier behavior.
+
+## Replay tooling
+
+The native CLI currently exposes:
+
+- `crimson-zig replay verify <replay.crd>`
+- `crimson-zig replay info <replay.crd>`
+
+Supported native replay/runtime modes today:
+
+- Survival
+- Rush
+- Quests
+- Typ-o
+- Tutorial
+
+The native verifier/info stack now:
+
+- decodes `.crd` payloads in Zig,
+- runs the shared deterministic runtime,
+- supports `--trace-rng`,
+- emits Python-readable trace payloads,
+- reports invalid spawn-template / quest-table inputs as invalid replay/session
+  data rather than vague “unsupported path” failures.
 
 ## WASM exports
+
+Current freestanding exports:
 
 - `crimson_alloc(size) -> ptr`
 - `crimson_free(ptr, size) -> void`
 - `crimson_verify_replay_json(replay_ptr, replay_len, opts_ptr, opts_len, out_ptr, out_len) -> i32`
 - `crimson_last_error_json(out_ptr, out_len) -> i32`
-- `crimson_verify_replay_json` returns copied JSON length on success, negative
-  required output length when `out_ptr/out_len` is too small, and `-1` on
-  verification/option errors.
-- `opts_ptr/opts_len` currently accepts a JSON object with optional `max_ticks`.
+
+`crimson_verify_replay_json` accepts an optional JSON options object with
+`max_ticks`.
