@@ -1824,19 +1824,16 @@ pub const CreaturePool = struct {
                 call_pos_x > 0.0 and call_pos_x < terrain_size and
                 call_pos_y > 0.0 and call_pos_y < terrain_size)
             {
-                if (self.effects) |effects| {
-                    effects.spawnBurst(
-                        @constCast(game_state),
-                        .{ .x = call_pos_x, .y = call_pos_y },
-                        8,
-                        5,
-                        0.4,
-                        null,
-                        .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
-                    );
-                } else {
-                    consumeSpawnTemplateBurstRng(rng, 8);
-                }
+                const effects = self.effects orelse unreachable;
+                effects.spawnBurst(
+                    @constCast(game_state),
+                    .{ .x = call_pos_x, .y = call_pos_y },
+                    8,
+                    5,
+                    0.4,
+                    null,
+                    .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+                );
             }
         }
     }
@@ -3399,18 +3396,6 @@ fn allocCreatureSlot(
         }
     }
     return slot;
-}
-
-fn consumeSpawnTemplateBurstRng(
-    rng: *spawn_mod.Crand,
-    count: usize,
-) void {
-    for (0..count) |_| {
-        _ = rng.randTagged(rng_callers.effect_spawn_burst_rotation);
-        _ = rng.randTagged(rng_callers.effect_spawn_burst_vel_x);
-        _ = rng.randTagged(rng_callers.effect_spawn_burst_vel_y);
-        _ = rng.randTagged(rng_callers.effect_spawn_burst_scale_step);
-    }
 }
 
 fn emitDeathSideEffects(
@@ -5028,6 +5013,26 @@ test "template spawn rejects unsupported template ids" {
             &rng,
         ),
     );
+}
+
+test "runtime-context template spawn enqueues presentation burst" {
+    var pool: CreaturePool = .{};
+    var effects: effects_mod.EffectPool = .{};
+    var state = state_mod.GameplayState.init(1);
+    pool.effects = &effects;
+
+    try pool.spawnTemplateCallWithRuntimeContext(
+        .{
+            .template_id = 0x24,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+        },
+        &state.rng,
+        &state,
+        1024.0,
+    );
+
+    try std.testing.expectEqual(effects_mod.effect_pool_size - @as(usize, 8), effects.free_len);
 }
 
 test "creature update fails on unsupported spawn slot child template" {
