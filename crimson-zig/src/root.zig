@@ -32,6 +32,7 @@ pub const typo_names = @import("typo/names.zig");
 pub const formats = @import("formats/mod.zig");
 pub const persistence = @import("persistence/mod.zig");
 pub const local_input = @import("local_input.zig");
+pub const demo_trial = @import("demo_trial.zig");
 pub const window_atlas = @import("window_atlas.zig");
 
 pub const version = "0.1.0-dev";

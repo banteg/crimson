@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const rl = @import("raylib");
 
 const cz = @import("crimson_zig");
@@ -8,6 +9,7 @@ const runtime_anim = cz.anim;
 const weapon_data = cz.weapon_data;
 const app_runtime = @import("app_runtime.zig");
 const audio_mod = @import("audio/audio.zig");
+const demo_trial = cz.demo_trial;
 const input_codes = @import("input_codes.zig");
 const local_input = cz.local_input;
 const live_audio = @import("audio/live_audio.zig");
@@ -16,6 +18,7 @@ const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
 const window_boot = @import("window_boot.zig");
 const window_cursor = @import("window_cursor.zig");
+const window_demo_trial = @import("window_demo_trial.zig");
 const window_effects = @import("window_effects.zig");
 const window_ground = @import("window_ground.zig");
 const window_menu = @import("window_menu.zig");
@@ -310,13 +313,18 @@ const App = struct {
     assets_message: ?[]u8 = null,
     next_seed_state: u32 = 0xC0FFEE,
     cursor_pulse_time: f32 = 0.0,
+    demo_enabled: bool = false,
+    demo_trial_elapsed_ms: i32 = 0,
+    demo_trial_info: demo_trial.OverlayInfo = .{},
+    demo_trial_ui: window_demo_trial.State = .{},
     quit_requested: bool = false,
 
-    fn init(allocator: std.mem.Allocator, runtime: app_runtime.DesktopRuntime) App {
+    fn init(allocator: std.mem.Allocator, runtime: app_runtime.DesktopRuntime, demo_enabled: bool) App {
         var app: App = .{
             .allocator = allocator,
             .runtime = runtime,
             .audio = live_audio.Bridge.init(allocator, audio_mod.audioConfigFromCrimsonCfg(runtime.config), null),
+            .demo_enabled = demo_enabled,
         };
         app.boot.reset();
         app.menu.reset();
@@ -465,7 +473,7 @@ const App = struct {
     }
 
     fn updateMainMenu(self: *App, frame_dt: f32) void {
-        self.audio.ensureMenuTheme();
+        self.audio.ensureMenuThemeForDemo(self.demo_enabled);
         const menu_update = window_menu.update(
             &self.menu,
             frame_dt,
@@ -508,8 +516,8 @@ const App = struct {
     }
 
     fn updatePlayGameMenu(self: *App, frame_dt: f32) void {
-        self.audio.ensureMenuTheme();
-        const play_game_update = window_menu_panels.updatePlayGame(&self.play_game_menu, frame_dt, &self.runtime.config, self.runtime.status, if (self.runtime_assets) |*assets| assets else null);
+        self.audio.ensureMenuThemeForDemo(self.demo_enabled);
+        const play_game_update = window_menu_panels.updatePlayGame(&self.play_game_menu, frame_dt, &self.runtime.config, self.runtime.status, if (self.runtime_assets) |*assets| assets else null, self.demo_enabled);
         if (play_game_update.config_dirty) self.runtime.config_dirty = true;
         if (play_game_update.play_panel_click and !self.play_game_menu.panel.panel_open_sfx_played) {
             self.audio.playUiPanelClick();
@@ -533,8 +541,8 @@ const App = struct {
     }
 
     fn updateQuestsMenu(self: *App, frame_dt: f32) void {
-        self.audio.ensureMenuTheme();
-        const quest_update = window_menu_panels.updateQuests(&self.quests_menu, frame_dt, &self.runtime.config, self.runtime.status);
+        self.audio.ensureMenuThemeForDemo(self.demo_enabled);
+        const quest_update = window_menu_panels.updateQuests(&self.quests_menu, frame_dt, &self.runtime.config, self.runtime.status, self.demo_enabled);
         if (quest_update.config_dirty) self.runtime.config_dirty = true;
         if (quest_update.play_panel_click and !self.quests_menu.panel.panel_open_sfx_played) {
             self.audio.playUiPanelClick();
@@ -585,6 +593,43 @@ const App = struct {
     fn updateGameplay(self: *App, frame_dt: f32) void {
         if (self.gameplay) |*gameplay| {
             gameplay.render_time_s += @max(frame_dt, 0.0);
+            const dt_ms = @as(i32, @intFromFloat(@min(@max(frame_dt, 0.0), 0.1) * 1000.0));
+            if (self.demo_enabled) {
+                const current_demo_info = self.currentDemoTrialInfo(gameplay);
+                const timer_tick = demo_trial.tickDemoTrialTimers(
+                    true,
+                    gameplay.runner.session.game_mode,
+                    current_demo_info.visible,
+                    self.runtime.status.game_sequence_id,
+                    self.demo_trial_elapsed_ms,
+                    dt_ms,
+                );
+                if (timer_tick.global_playtime_ms != self.runtime.status.game_sequence_id) {
+                    self.runtime.status.game_sequence_id = timer_tick.global_playtime_ms;
+                    self.runtime.status_dirty = true;
+                }
+                self.demo_trial_elapsed_ms = timer_tick.quest_grace_elapsed_ms;
+                self.demo_trial_info = self.currentDemoTrialInfo(gameplay);
+
+                if (self.demo_trial_info.visible) {
+                    switch (window_demo_trial.update(&self.demo_trial_ui, dt_ms)) {
+                        .none => {},
+                        .maybe_later => {
+                            self.closeGameplayToMenu(gameplay);
+                            return;
+                        },
+                        .purchase => {
+                            _ = openDemoPurchaseUrl(self.allocator);
+                            self.quit_requested = true;
+                            return;
+                        },
+                    }
+                    return;
+                }
+            } else {
+                self.demo_trial_info = .{};
+            }
+
             if (!gameplay.perk_ui.active() and rl.isKeyPressed(.escape)) {
                 gameplay.pause_menu.reset();
                 self.setScreen(.pause);
@@ -597,7 +642,9 @@ const App = struct {
                 gameplay.camera,
                 gameplay.runner.session.state.camera_shake_offset,
             );
-            self.runtime.recordGameplayFrame(frame_dt);
+            if (!self.demo_enabled) {
+                self.runtime.recordGameplayFrame(frame_dt);
+            }
             var input = collectGameplayInput(&gameplay.input_interpreter, &gameplay.runner, camera, &self.runtime, frame_dt);
             if (gameplay.runner.session.game_mode == .tutorial and
                 gameplay.runner.perkPendingCount() > 0 and
@@ -696,7 +743,7 @@ const App = struct {
     }
 
     fn updateModsMenu(self: *App, frame_dt: f32) void {
-        self.audio.ensureMenuTheme();
+        self.audio.ensureMenuThemeForDemo(self.demo_enabled);
         const panel_update = window_misc_panels.updateMods(&self.mods_menu, frame_dt, if (self.runtime_assets) |*assets| assets else null);
         if (panel_update.play_panel_click and !self.mods_menu.panel.panel_open_sfx_played) {
             self.audio.playUiPanelClick();
@@ -710,7 +757,7 @@ const App = struct {
     }
 
     fn updateOtherGamesMenu(self: *App, frame_dt: f32) void {
-        self.audio.ensureMenuTheme();
+        self.audio.ensureMenuThemeForDemo(self.demo_enabled);
         const panel_update = window_misc_panels.updateOtherGames(&self.other_games_menu, frame_dt, if (self.runtime_assets) |*assets| assets else null);
         if (panel_update.play_panel_click and !self.other_games_menu.panel.panel_open_sfx_played) {
             self.audio.playUiPanelClick();
@@ -813,6 +860,26 @@ const App = struct {
         }
     }
 
+    fn currentDemoTrialInfo(self: *const App, gameplay: *const GameplayScreen) demo_trial.OverlayInfo {
+        return demo_trial.demoTrialOverlayInfo(
+            self.demo_enabled,
+            gameplay.runner.session.game_mode,
+            self.runtime.status.game_sequence_id,
+            self.demo_trial_elapsed_ms,
+            gameplay.run_config.quest_level_key,
+        );
+    }
+
+    fn closeGameplayToMenu(self: *App, gameplay: *GameplayScreen) void {
+        self.audio.stopGameplayMusic();
+        gameplay.deinit();
+        self.gameplay = null;
+        self.demo_trial_info = .{};
+        self.demo_trial_ui.reset();
+        self.menu.openRoot();
+        self.setScreen(.main_menu);
+    }
+
     fn openResultsHighScores(self: *App, results: *const ResultsScreen) void {
         self.runtime.config.game_mode = @intCast(@intFromEnum(results.run_config.game_mode));
         self.runtime.config_dirty = true;
@@ -831,7 +898,7 @@ const App = struct {
     }
 
     fn updateOptions(self: *App, frame_dt: f32) void {
-        self.audio.ensureMenuTheme();
+        self.audio.ensureMenuThemeForDemo(self.demo_enabled);
         const options_update = window_options.updateOptions(&self.options, frame_dt, &self.runtime.config, if (self.runtime_assets) |*assets| assets else null);
         if (options_update.config_dirty) self.runtime.config_dirty = true;
         if (options_update.reload_audio) self.reloadAudioConfig();
@@ -854,7 +921,7 @@ const App = struct {
     }
 
     fn updateControls(self: *App, frame_dt: f32) void {
-        self.audio.ensureMenuTheme();
+        self.audio.ensureMenuThemeForDemo(self.demo_enabled);
         const controls_update = window_options.updateControls(&self.controls, frame_dt, &self.runtime.config, if (self.runtime_assets) |*assets| assets else null);
         if (controls_update.config_dirty) self.runtime.config_dirty = true;
         if (controls_update.play_panel_click and !self.controls.panel_open_sfx_played) {
@@ -962,6 +1029,7 @@ const App = struct {
         configured_run.status_quest_unlock_index = @intCast(self.runtime.status.quest_unlock_index);
         configured_run.status_quest_unlock_index_full = @intCast(self.runtime.status.quest_unlock_index_full);
         configured_run.status_weapon_usage_counts = statusWeaponUsageCounts(self.runtime.status);
+        configured_run.demo_mode_active = self.demo_enabled and (configured_run.game_mode == .quests or configured_run.game_mode == .tutorial);
 
         self.runtime.recordModeStart(configured_run.game_mode);
         if (configured_run.game_mode == .quests) {
@@ -1191,6 +1259,7 @@ const App = struct {
             if (self.runtime_assets) |*assets| assets else null,
             self.runtime.status,
             self.runtime.config.player_count,
+            self.demo_enabled,
         );
     }
 
@@ -1281,6 +1350,12 @@ const App = struct {
                         drawTutorialOverlay(gameplay, assets);
                     }
                     window_perk_menu.drawPrompt(&gameplay.perk_ui, assets, &self.runtime.config, runner.perkPendingCount());
+                }
+            }
+
+            if (self.demo_trial_info.visible) {
+                if (runtime_assets) |assets| {
+                    window_demo_trial.draw(&self.demo_trial_ui, assets, self.demo_trial_info);
                 }
             }
         }
@@ -1386,10 +1461,15 @@ const App = struct {
     }
 };
 
+const WindowArgs = struct {
+    demo_enabled: bool = false,
+};
+
 pub fn main() !void {
     var gpa: std.heap.GeneralPurposeAllocator(.{}) = .{};
     defer _ = gpa.deinit();
 
+    const args = try parseWindowArgs(gpa.allocator());
     var runtime = try app_runtime.DesktopRuntime.init(gpa.allocator());
 
     rl.setConfigFlags(.{
@@ -1402,7 +1482,7 @@ pub fn main() !void {
 
     rl.setTargetFPS(60);
 
-    var app = App.init(gpa.allocator(), runtime);
+    var app = App.init(gpa.allocator(), runtime, args.demo_enabled);
     defer app.deinit();
 
     while (!rl.windowShouldClose() and !app.quit_requested) {
@@ -1416,6 +1496,40 @@ pub fn main() !void {
     }
 
     try app.saveAllIfDirty();
+}
+
+fn parseWindowArgs(allocator: std.mem.Allocator) !WindowArgs {
+    const args = try std.process.argsAlloc(allocator);
+    defer std.process.argsFree(allocator, args);
+
+    var parsed: WindowArgs = .{};
+    for (args[1..]) |arg| {
+        if (std.mem.eql(u8, arg, "--demo")) {
+            parsed.demo_enabled = true;
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--help")) {
+            std.debug.print("usage: crimson-zig-window [--demo]\n", .{});
+            std.process.exit(0);
+        }
+        return error.InvalidArgs;
+    }
+    return parsed;
+}
+
+fn openDemoPurchaseUrl(allocator: std.mem.Allocator) bool {
+    const argv: []const []const u8 = switch (builtin.os.tag) {
+        .macos => &.{ "open", window_demo_trial.demo_purchase_url },
+        .linux => &.{ "xdg-open", window_demo_trial.demo_purchase_url },
+        .windows => &.{ "rundll32", "url.dll,FileProtocolHandler", window_demo_trial.demo_purchase_url },
+        else => return false,
+    };
+    var child = std.process.Child.init(argv, allocator);
+    child.stdin_behavior = .Ignore;
+    child.stdout_behavior = .Ignore;
+    child.stderr_behavior = .Ignore;
+    child.spawn() catch return false;
+    return true;
 }
 
 fn drawBackdrop() void {

@@ -76,6 +76,9 @@ pub fn build(b: *std.Build) void {
     const run_window_step = b.step("run-window", "Run raylib desktop playable slice");
     const run_window_cmd = b.addRunArtifact(window_exe);
     run_window_step.dependOn(&run_window_cmd.step);
+    if (b.args) |args| {
+        run_window_cmd.addArgs(args);
+    }
 
     const asset_smoke_exe = b.addExecutable(.{
         .name = "crimson-zig-asset-smoke",

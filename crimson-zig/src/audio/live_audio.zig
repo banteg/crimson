@@ -81,6 +81,10 @@ pub const Bridge = struct {
         self.playMusic("crimson_theme");
     }
 
+    pub fn ensureMenuThemeForDemo(self: *Bridge, demo_enabled: bool) void {
+        self.playMusic(if (demo_enabled) "crimsonquest" else "crimson_theme");
+    }
+
     pub fn ensureStatisticsTheme(self: *Bridge) void {
         self.playMusic("shortie_monk");
     }

@@ -8,6 +8,7 @@ test {
     _ = cz.creatures;
     _ = cz.effects;
     _ = cz.terrain_fx;
+    _ = cz.demo_trial;
     _ = cz.hash;
     _ = cz.formats;
     _ = cz.helpers;
@@ -30,5 +31,6 @@ test {
     _ = cz.weapons;
     _ = cz.window_atlas;
     _ = @import("window_cursor.zig");
+    _ = @import("window_demo_trial.zig");
     _ = @import("window_statistics.zig");
 }
