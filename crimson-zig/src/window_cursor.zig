@@ -22,7 +22,7 @@ pub fn drawMenuCursor(runtime_assets: *const window_assets.RuntimeAssets, pulse_
     );
 }
 
-pub fn drawAimEnhancements(
+pub fn drawAimIndicators(
     runtime_assets: *const window_assets.RuntimeAssets,
     player: state_mod.PlayerState,
     zoom: f32,
@@ -47,7 +47,16 @@ pub fn drawAimEnhancements(
             drawClockGauge(runtime_assets, aim, ms, 1.0 / zoom, entity_alpha);
         }
     }
+}
 
+pub fn drawAimReticle(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    player: state_mod.PlayerState,
+    zoom: f32,
+) void {
+    if (player.health <= 0.0) return;
+    if (!(zoom > 0.0)) return;
+    const aim = rl.Vector2.init(player.aim.x, player.aim.y);
     drawAimCursor(runtime_assets, aim, 1.0 / zoom);
 }
 

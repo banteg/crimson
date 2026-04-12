@@ -1673,7 +1673,10 @@ fn drawAimEnhancements(
     const assets = runtime_assets orelse return;
     const alpha: f32 = 1.0;
     for (runner.session.playersConst()) |player| {
-        window_cursor.drawAimEnhancements(assets, player, zoom, alpha);
+        window_cursor.drawAimIndicators(assets, player, zoom, alpha);
+    }
+    for (runner.session.playersConst()) |player| {
+        window_cursor.drawAimReticle(assets, player, zoom);
     }
 }
 

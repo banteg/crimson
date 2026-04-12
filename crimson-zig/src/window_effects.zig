@@ -72,7 +72,7 @@ pub fn drawParticlePool(ctx: DrawCtx) void {
 
 pub fn drawSpriteEffectPool(ctx: DrawCtx) void {
     const texture = ctx.assets.texture(.particles);
-    const src = window_atlas.effectRectById(texture.width, texture.height, @intFromEnum(window_atlas.EffectId.explosion_puff)) orelse return;
+    const src = window_atlas.atlasRect(texture.width, texture.height, 4, 7);
 
     rl.beginBlendMode(.alpha);
     for (ctx.session.sprite_effects.entries) |entry| {
