@@ -34,6 +34,8 @@ const runtime_perks = cz.perks;
 const runtime_session = cz.session;
 const state_mod = cz.state;
 const terrain_fx_mod = cz.terrain_fx;
+const tutorial_runtime = cz.tutorial_runtime;
+const typo_names = cz.typo_names;
 
 const window_width = 1024;
 const window_height = 768;
@@ -95,6 +97,7 @@ const GameplayScreen = struct {
     ground: ?window_ground.GroundRenderer = null,
     camera: state_mod.Vec2 = .{ .x = -1.0, .y = -1.0 },
     render_time_s: f32 = 0.0,
+    tutorial_prompt_selection: usize = 0,
     pending_terrain_fx: [16]terrain_fx_mod.TerrainFxBatch = [_]terrain_fx_mod.TerrainFxBatch{.{}} ** 16,
     pending_terrain_fx_count: usize = 0,
 
@@ -540,6 +543,15 @@ const App = struct {
             );
             self.runtime.recordGameplayFrame(frame_dt);
             var input = collectGameplayInput(&gameplay.input_interpreter, &gameplay.runner, camera, &self.runtime, frame_dt);
+            if (gameplay.runner.session.game_mode == .tutorial and
+                gameplay.runner.perkPendingCount() > 0 and
+                gameplay.runner.session.state.tutorial.stage_index == 6 and
+                !gameplay.perk_ui.active())
+            {
+                gameplay.perk_ui.menu_open = true;
+                gameplay.perk_ui.selected_index = 0;
+                self.audio.playUiPanelClick();
+            }
             const perk_ui_update = window_perk_menu.update(
                 &gameplay.perk_ui,
                 frame_dt,
@@ -570,6 +582,22 @@ const App = struct {
             gameplay.queueTerrainFxBatch(gameplay.last_update.terrain_fx);
             if (self.runtime_assets) |*runtime_assets| {
                 gameplay.flushPendingTerrainFx(runtime_assets);
+            }
+
+            if (gameplay.runner.session.game_mode == .tutorial) {
+                switch (updateTutorialPromptButtons(self, gameplay)) {
+                    .none => {},
+                    .close_to_menu => {
+                        self.closeTutorialRun(gameplay);
+                        return;
+                    },
+                    .restart => {
+                        const run_config = gameplay.run_config;
+                        self.closeTutorialGameplay(gameplay);
+                        self.startNewRun(run_config);
+                        return;
+                    },
+                }
             }
 
             if (gameplay.runner.session.game_mode == .quests and gameplay.runner.session.quest_completed) {
@@ -768,6 +796,20 @@ const App = struct {
             self.setScreen(.results);
             return;
         };
+        if (configured_run.game_mode == .typo) {
+            loadTypoSourcesIntoState(self.allocator, self.runtime.base_dir, &runner.session.state) catch |err| {
+                self.results = .{
+                    .reason = .runtime_error,
+                    .run_config = configured_run,
+                    .summary = zeroSessionSummary(),
+                    .player_health = 0.0,
+                    .runtime_error = @errorName(err),
+                };
+                self.results_selection = 0;
+                self.setScreen(.results);
+                return;
+            };
+        }
         const last_update = runner.stepFrame(0.0, .{}) catch unreachable;
         if (self.gameplay) |*gameplay| {
             gameplay.deinit();
@@ -841,6 +883,23 @@ const App = struct {
         self.setScreen(.results);
     }
 
+    fn closeTutorialGameplay(self: *App, gameplay: *GameplayScreen) void {
+        self.audio.stopGameplayMusic();
+        self.runtime.absorbSessionState(&gameplay.runner.session);
+        self.runtime.saveStatusIfDirty() catch |err| {
+            std.log.err("saveStatusIfDirty failed during tutorial close: {s}", .{@errorName(err)});
+        };
+        gameplay.deinit();
+        self.gameplay = null;
+        self.results = null;
+    }
+
+    fn closeTutorialRun(self: *App, gameplay: *GameplayScreen) void {
+        self.closeTutorialGameplay(gameplay);
+        self.menu.openRoot();
+        self.setScreen(.main_menu);
+    }
+
     fn buildResultsHighscore(
         self: *App,
         runner: *const live_runner.LiveRunner,
@@ -854,13 +913,22 @@ const App = struct {
         }
 
         const player = runner.player0Const() orelse return null;
+        const shot_options: persistence.highscore_record_builder.BuildRecordOptions = switch (runner.session.game_mode) {
+            .typo => .{
+                .shots_fired = runner.session.state.typo.typing.submit_count,
+                .shots_hit = runner.session.state.typo.typing.match_count,
+                .clamp_shots_hit = false,
+            },
+            else => .{},
+        };
+
         const record = persistence.highscore_record_builder.buildHighscoreRecordForGameOver(
             runner.session.state,
             player.*,
             @intCast(runner.summary().elapsed_ms_sim),
             @intCast(runner.session.creatures.kill_count),
             runner.session.game_mode,
-            .{},
+            shot_options,
         );
 
         const score_path = persistence.highscores.scoresPathForMode(
@@ -967,6 +1035,9 @@ const App = struct {
             camera.end();
 
             if (runtime_assets) |assets| {
+                if (runner.session.game_mode == .typo) {
+                    drawTypoNameLabels(runner, assets, transform, entity_alpha);
+                }
                 drawBonusHoverLabels(runner, assets, transform, entity_alpha);
                 if (!gameplay.perk_ui.active()) {
                     drawDirectionArrows(runner, assets, &self.runtime.config, transform, entity_alpha);
@@ -981,6 +1052,11 @@ const App = struct {
             } else {
                 drawGameplayHud(gameplay, runtime_assets);
                 if (runtime_assets) |assets| {
+                    if (runner.session.game_mode == .typo) {
+                        drawTypoTypingBox(gameplay, assets);
+                    } else if (runner.session.game_mode == .tutorial) {
+                        drawTutorialOverlay(gameplay, assets);
+                    }
                     window_perk_menu.drawPrompt(&gameplay.perk_ui, assets, &self.runtime.config, runner.perkPendingCount());
                 }
             }
@@ -1229,6 +1305,98 @@ fn collectNameInput(highscore: *ResultsHighscoreState) void {
     }
 }
 
+fn collectTypoDictionaryWords(
+    allocator: std.mem.Allocator,
+    path: []const u8,
+    out: *std.ArrayList([]const u8),
+) !?[]u8 {
+    const bytes = std.fs.cwd().readFileAlloc(allocator, path, std.math.maxInt(usize)) catch |err| switch (err) {
+        error.FileNotFound => return null,
+        else => return err,
+    };
+    errdefer allocator.free(bytes);
+
+    var seen = std.StringHashMap(void).init(allocator);
+    defer seen.deinit();
+
+    var lines = std.mem.splitScalar(u8, bytes, '\n');
+    while (lines.next()) |raw_line| {
+        const comment_cut = std.mem.indexOfScalar(u8, raw_line, '#') orelse raw_line.len;
+        const text = std.mem.trim(u8, raw_line[0..comment_cut], &std.ascii.whitespace);
+        if (text.len == 0 or text.len >= typo_names.name_max_chars) continue;
+        const gop = try seen.getOrPut(text);
+        if (gop.found_existing) continue;
+        gop.value_ptr.* = {};
+        try out.append(allocator, text);
+    }
+
+    return bytes;
+}
+
+fn isTypoHighscoreNameChar(ch: u8) bool {
+    return std.ascii.isAlphabetic(ch) or ch == '.';
+}
+
+fn collectTypoHighscoreNames(
+    allocator: std.mem.Allocator,
+    base_dir: []const u8,
+    out: *std.ArrayList([]const u8),
+) !void {
+    const score_path = try persistence.highscores.scoresPathForMode(
+        allocator,
+        base_dir,
+        @intFromEnum(game_ids.GameModeId.typo),
+        .{},
+    );
+    defer allocator.free(score_path);
+
+    const table = try persistence.highscores.readHighscoreTable(
+        allocator,
+        score_path,
+        @intFromEnum(game_ids.GameModeId.typo),
+    );
+    defer table.deinit(allocator);
+
+    var seen = std.StringHashMap(void).init(allocator);
+    defer seen.deinit();
+
+    for (table.items) |record| {
+        const name = record.name();
+        if (name.len == 0) continue;
+        var valid = true;
+        for (name) |ch| {
+            if (!isTypoHighscoreNameChar(ch)) {
+                valid = false;
+                break;
+            }
+        }
+        if (!valid) continue;
+        const gop = try seen.getOrPut(name);
+        if (gop.found_existing) continue;
+        gop.value_ptr.* = {};
+        try out.append(allocator, name);
+    }
+}
+
+fn loadTypoSourcesIntoState(
+    allocator: std.mem.Allocator,
+    base_dir: []const u8,
+    typo: *state_mod.GameplayState,
+) !void {
+    var dictionary_words: std.ArrayList([]const u8) = .empty;
+    defer dictionary_words.deinit(allocator);
+    var highscore_names: std.ArrayList([]const u8) = .empty;
+    defer highscore_names.deinit(allocator);
+
+    const dictionary_path = try std.fs.path.join(allocator, &.{ base_dir, "typo_dictionary.txt" });
+    defer allocator.free(dictionary_path);
+    const dictionary_backing = try collectTypoDictionaryWords(allocator, dictionary_path, &dictionary_words);
+    defer if (dictionary_backing) |bytes| allocator.free(bytes);
+
+    try collectTypoHighscoreNames(allocator, base_dir, &highscore_names);
+    typo.typo.reset(dictionary_words.items, highscore_names.items);
+}
+
 fn buildWorldCamera(
     world_size: f32,
     config: *const formats.crimson_cfg.CrimsonCfg,
@@ -1299,7 +1467,7 @@ fn collectGameplayInput(
         .y = @as(f32, @floatFromInt(rl.getScreenHeight())) * 0.5,
     };
 
-    const frame_input: live_runner.FrameInput = .{
+    var frame_input: live_runner.FrameInput = .{
         .player = interpreter.buildPlayerInput(
             input_codes.RaylibInputSampler{},
             0,
@@ -1319,6 +1487,17 @@ fn collectGameplayInput(
             runner.session.creatures.entries[0..],
         ),
     };
+
+    if (runner.session.game_mode == .typo) {
+        frame_input.typo_submit = rl.isKeyPressed(.enter) or rl.isKeyPressed(.kp_enter);
+        frame_input.typo_backspace = rl.isKeyPressed(.backspace) or rl.isKeyPressedRepeat(.backspace);
+        if (!frame_input.typo_backspace) {
+            const codepoint = rl.getCharPressed();
+            if (codepoint >= 0x20 and codepoint <= 0xFF and codepoint != 13 and codepoint != 8) {
+                frame_input.typo_char = @intCast(codepoint);
+            }
+        }
+    }
 
     return frame_input;
 }
@@ -2443,6 +2622,224 @@ fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const wind
     drawTextFmt("weapon {s}  ammo {d:.1}", .{ weaponName(update.player_weapon_id), player.weapon.ammo }, 36, 62, 22, text_color);
     drawTextFmt("shots {d}  hits {d}  creatures {d}", .{ update.shots_fired, update.shots_hit, update.creature_active_count }, 36, 90, 20, muted_text);
     drawTextFmt("elapsed {d}ms  pickups {d}  pending perks {d}", .{ update.elapsed_ms_sim, update.bonus_active_count, runner.perkPendingCount() }, 36, 116, 20, muted_text);
+}
+
+fn drawTypoNameLabels(
+    runner: *const live_runner.LiveRunner,
+    assets: *const window_assets.RuntimeAssets,
+    transform: window_viewport.ViewTransform,
+    entity_alpha: f32,
+) void {
+    for (runner.session.creatures.entries, 0..) |creature, idx| {
+        if (!creature.active) continue;
+        const label = runner.session.state.typo.names.nameSlice(idx);
+        if (label.len == 0) continue;
+
+        var label_alpha = entity_alpha;
+        if (creature.lifecycle_stage < 0.0) {
+            label_alpha *= std.math.clamp((creature.lifecycle_stage + 10.0) * 0.1, @as(f32, 0.0), @as(f32, 1.0));
+        }
+        if (!(label_alpha > 1e-3)) continue;
+
+        const screen_x = (creature.pos.x + transform.camera.x) * transform.view_scale.x;
+        const screen_y = (creature.pos.y + transform.camera.y) * transform.view_scale.y;
+        const text_w = measureSmallText(assets, label);
+        const x = screen_x - text_w * 0.5;
+        const y = screen_y - 50.0;
+
+        rl.drawRectangleRec(
+            .{
+                .x = x - 4.0,
+                .y = y,
+                .width = text_w + 8.0,
+                .height = 15.0,
+            },
+            colorWithAlpha(rl.Color.black, label_alpha * 0.67),
+        );
+        drawSmallText(assets, label, x, y, colorWithAlpha(rl.Color.white, label_alpha));
+    }
+}
+
+fn drawTypoTypingBox(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets) void {
+    const screen_h: f32 = @floatFromInt(rl.getScreenHeight());
+    const panel_y = screen_h - 144.0;
+    const text_y = screen_h - 127.0;
+
+    drawTextureFit(
+        assets.texture(.ui_ind_panel),
+        rl.Rectangle.init(-1.0, panel_y, 182.0, 53.0),
+        colorWithAlpha(rl.Color.white, 0.7),
+    );
+
+    const text = gameplay.runner.session.state.typo.typing.slice();
+    drawSmallTextFmt(">{s}", assets, .{text}, 6.0, text_y, rl.Color.white);
+
+    const cursor_dim = std.math.sin(gameplay.render_time_s * 4.0) > 0.0;
+    const cursor_alpha: f32 = if (cursor_dim) 0.4 else 1.0;
+    const cursor_x = measureSmallText(assets, text) + 14.0;
+    drawSmallText(assets, "_", cursor_x, text_y, colorWithAlpha(rl.Color.white, cursor_alpha));
+}
+
+fn drawTutorialOverlay(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets) void {
+    const overlay = gameplay.runner.session.state.tutorial_overlay;
+    if (overlay.prompt_stage_index >= 0 and overlay.prompt_alpha > 1e-3) {
+        drawTutorialPanel(
+            assets,
+            tutorial_runtime.promptText(overlay.prompt_stage_index),
+            64.0,
+            overlay.prompt_alpha,
+        );
+    }
+    if (overlay.hint_index >= 0 and overlay.hint_alpha > 1e-3) {
+        drawTutorialPanel(
+            assets,
+            tutorial_runtime.hintText(overlay.hint_index, gameplay.runner.session.state.tutorial.preserve_bugs),
+            148.0,
+            overlay.hint_alpha,
+        );
+    }
+
+    drawTutorialPromptButtons(gameplay, assets);
+}
+
+fn tutorialPanelRect(
+    assets: *const window_assets.RuntimeAssets,
+    text: []const u8,
+    top_y: f32,
+) ?rl.Rectangle {
+    if (text.len == 0) return null;
+    var lines = std.mem.splitScalar(u8, text, '\n');
+    var max_w: f32 = 0.0;
+    var line_count: usize = 0;
+    while (lines.next()) |line| {
+        max_w = @max(max_w, measureSmallText(assets, line));
+        line_count += 1;
+    }
+
+    const line_h: f32 = 14.0;
+    const pad_x: f32 = 20.0;
+    const pad_y: f32 = 8.0;
+    const width = max_w + pad_x * 2.0;
+    const height = @as(f32, @floatFromInt(line_count)) * line_h + pad_y * 2.0;
+    const left = (@as(f32, @floatFromInt(rl.getScreenWidth())) - width) * 0.5;
+    return rl.Rectangle.init(left, top_y, width, height);
+}
+
+fn drawTutorialPanel(
+    assets: *const window_assets.RuntimeAssets,
+    text: []const u8,
+    top_y: f32,
+    alpha: f32,
+) void {
+    if (text.len == 0 or !(alpha > 1e-3)) return;
+
+    const rect = tutorialPanelRect(assets, text, top_y) orelse return;
+    rl.drawRectangle(
+        @intFromFloat(rect.x),
+        @intFromFloat(rect.y),
+        @intFromFloat(rect.width),
+        @intFromFloat(rect.height),
+        colorWithAlpha(rl.Color.black, alpha * 0.8),
+    );
+    rl.drawRectangleLines(
+        @intFromFloat(rect.x),
+        @intFromFloat(rect.y),
+        @intFromFloat(rect.width),
+        @intFromFloat(rect.height),
+        colorWithAlpha(rl.Color.white, alpha),
+    );
+
+    const pad_x: f32 = 20.0;
+    const pad_y: f32 = 8.0;
+    const line_h: f32 = 14.0;
+    var lines = std.mem.splitScalar(u8, text, '\n');
+    var y = rect.y + pad_y;
+    while (lines.next()) |line| : (y += line_h) {
+        drawSmallText(assets, line, rect.x + pad_x, y, colorWithAlpha(rl.Color.white, alpha * 0.9));
+    }
+}
+
+const TutorialPromptAction = enum {
+    none,
+    close_to_menu,
+    restart,
+};
+
+fn tutorialSkipButton() UiButton {
+    return window_ui.buttonAt("Skip tutorial", 10.0, @as(f32, @floatFromInt(rl.getScreenHeight())) - 50.0, true);
+}
+
+fn tutorialCompleteButtons(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets) [2]UiButton {
+    const text = tutorial_runtime.promptText(gameplay.runner.session.state.tutorial_overlay.prompt_stage_index);
+    const rect = tutorialPanelRect(assets, text, 64.0) orelse rl.Rectangle.init(0.0, 64.0, 320.0, 40.0);
+    const gap: f32 = 18.0;
+    const top_y = rect.y + rect.height + 10.0;
+    const play_w = window_ui.buttonWidth("Play a game", true);
+    const repeat_w = window_ui.buttonWidth("Repeat tutorial", true);
+    return .{
+        .{
+            .label = "Play a game",
+            .rect = rl.Rectangle.init(rect.x + 10.0, top_y, play_w, window_ui.button_plate_height),
+        },
+        .{
+            .label = "Repeat tutorial",
+            .rect = rl.Rectangle.init(rect.x + 10.0 + play_w + gap, top_y, repeat_w, window_ui.button_plate_height),
+        },
+    };
+}
+
+fn updateTutorialPromptButtons(self: *App, gameplay: *GameplayScreen) TutorialPromptAction {
+    const overlay = gameplay.runner.session.state.tutorial_overlay;
+    const tutorial = gameplay.runner.session.state.tutorial;
+    if (overlay.prompt_stage_index < 0 or overlay.prompt_alpha <= 1e-3) return .none;
+
+    if (tutorial.stage_index == 8) {
+        const assets = if (self.runtime_assets) |*runtime_assets| runtime_assets else return .none;
+        const buttons = tutorialCompleteButtons(gameplay, assets);
+        window_ui.updateSelectionFromPointer(&gameplay.tutorial_prompt_selection, buttons[0..]);
+        if (rl.isKeyPressed(.left) or rl.isKeyPressed(.a)) {
+            gameplay.tutorial_prompt_selection = if (gameplay.tutorial_prompt_selection == 0) buttons.len - 1 else gameplay.tutorial_prompt_selection - 1;
+        }
+        if (rl.isKeyPressed(.right) or rl.isKeyPressed(.d)) {
+            gameplay.tutorial_prompt_selection = (gameplay.tutorial_prompt_selection + 1) % buttons.len;
+        }
+        if (!window_ui.buttonActivated(buttons[0..], gameplay.tutorial_prompt_selection)) return .none;
+        self.audio.playUiButtonClick();
+        return if (gameplay.tutorial_prompt_selection == 0) .close_to_menu else .restart;
+    }
+
+    const skip_alpha = std.math.clamp(@as(f32, @floatFromInt(tutorial.stage_timer_ms - 1000)) * 0.001, @as(f32, 0.0), @as(f32, 1.0));
+    if (skip_alpha <= 1e-3) return .none;
+    const button = tutorialSkipButton();
+    gameplay.tutorial_prompt_selection = 0;
+    if (!window_ui.buttonActivated(&.{button}, 0)) return .none;
+    self.audio.playUiButtonClick();
+    return .close_to_menu;
+}
+
+fn drawTutorialPromptButtons(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets) void {
+    const overlay = gameplay.runner.session.state.tutorial_overlay;
+    if (overlay.prompt_stage_index < 0 or overlay.prompt_alpha <= 1e-3) return;
+
+    if (gameplay.runner.session.state.tutorial.stage_index == 8) {
+        const buttons = tutorialCompleteButtons(gameplay, assets);
+        for (buttons, 0..) |button, idx| {
+            const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+            window_ui.drawButton(
+                button,
+                idx == gameplay.tutorial_prompt_selection,
+                hovered,
+                assets,
+            );
+        }
+        return;
+    }
+
+    const skip_alpha = std.math.clamp(@as(f32, @floatFromInt(gameplay.runner.session.state.tutorial.stage_timer_ms - 1000)) * 0.001, @as(f32, 0.0), @as(f32, 1.0));
+    if (skip_alpha <= 1e-3) return;
+    const button = tutorialSkipButton();
+    const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+    window_ui.drawButton(button, false, hovered, assets);
 }
 
 fn zeroSessionSummary() runtime_session.SessionSummary {

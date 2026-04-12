@@ -22,6 +22,8 @@ const spawn_mod = @import("../spawn.zig");
 const state_mod = @import("../state.zig");
 const survival_progression = @import("../survival_progression.zig");
 const terrain_fx_mod = @import("../terrain_fx.zig");
+const tutorial_runtime = @import("../../tutorial/runtime.zig");
+const typo_runtime = @import("../../typo/runtime.zig");
 const weapons_runtime = @import("../weapons.zig");
 
 const narrowF32 = native_math.roundF32;
@@ -298,6 +300,16 @@ pub fn stepTick(
     callPhaseHook(options.hooks, context, .post_effects, &frame);
 
     callPhaseHook(options.hooks, context, .pre_core_simulation, &frame);
+    if (context.game_mode == .typo) {
+        typo_runtime.midStep(
+            &context.state,
+            players,
+            &context.creatures,
+            elapsed_before_ms,
+            dt_sim_ms,
+            context.world_size,
+        );
+    }
     try context.creatures.update(
         &context.state,
         players,
@@ -369,6 +381,10 @@ pub fn stepTick(
     callPhaseHook(options.hooks, context, .pre_player_movement, &frame);
     if (context.game_mode == .rush) {
         runtime_bootstrap.enforceRushLoadout(players);
+    } else if (context.game_mode == .typo) {
+        typo_runtime.beforeStep(&context.state, players);
+    } else if (context.game_mode == .tutorial) {
+        tutorial_runtime.beforeStep(&context.state, &context.creatures);
     }
     var player_preprocessed_alive = [_]bool{false} ** state_mod.max_players;
     for (players, 0..) |*player, player_idx| {
@@ -389,11 +405,17 @@ pub fn stepTick(
             frame.dt_sim,
         );
     }
-    for (tick_inputs[0..players_for_inputs], players[0..players_for_inputs], 0..) |input, *player, player_idx| {
+    for (tick_inputs[0..players_for_inputs], players[0..players_for_inputs], 0..) |raw_input, *player, player_idx| {
         if (!player_preprocessed_alive[player_idx]) {
             continue;
         }
         const health_before_player_step = player.health;
+        const input = if (context.game_mode == .typo and player_idx == 0)
+            typo_runtime.transformPrimaryInput(&context.state, raw_input)
+        else if (context.game_mode == .tutorial and player_idx == 0)
+            tutorial_runtime.transformPrimaryInput(&context.state, raw_input)
+        else
+            raw_input;
         const flags = input.flags;
         const move_mode_for_tick = movement.resolveMoveModeForUpdate(flags);
 
@@ -571,7 +593,7 @@ pub fn stepTick(
         context.state.bonuses.reflex_boost,
     );
     cameraShakeUpdate(&context.state, dt_after_player);
-    if (context.game_mode != .rush) {
+    if (context.perk_progression_enabled) {
         _ = survival_progression.survivalProgressionUpdate(&context.state, players);
     }
     context.state.time_scale_active = context.state.bonuses.reflex_boost > 0.0;
@@ -619,6 +641,19 @@ pub fn stepTick(
     frame.rng_after_bonus_update = context.state.rng.state;
     if (context.game_mode == .survival) {
         survival_progression.survivalEnforceRewardWeaponGuard(context.state, players);
+    } else if (context.game_mode == .typo) {
+        typo_runtime.postStep(&context.state);
+    } else if (context.game_mode == .tutorial) {
+        try tutorial_runtime.postStep(
+            &context.state,
+            players,
+            &context.creatures,
+            &context.bonuses,
+            &context.effects,
+            frame.dt_sim_ms_i32,
+            context.world_size,
+            context.detail_preset,
+        );
     }
     callPhaseHook(options.hooks, context, .post_bonus_effects, &frame);
 

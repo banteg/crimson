@@ -185,6 +185,42 @@ pub const BonusPool = struct {
         return entry;
     }
 
+    pub fn spawnAt(
+        self: *BonusPool,
+        pos: state_mod.Vec2,
+        bonus_id: BonusId,
+        duration_override: i32,
+        state: *state_mod.GameplayState,
+        world_size: f32,
+    ) ?*BonusEntry {
+        _ = state;
+        if (pos.x < bonus_spawn_margin or pos.y < bonus_spawn_margin or
+            pos.x > world_size - bonus_spawn_margin or pos.y > world_size - bonus_spawn_margin)
+        {
+            return null;
+        }
+
+        var slot = allocSlotOrSentinel(self);
+        const min_dist_sq = bonus_spawn_min_distance * bonus_spawn_min_distance;
+        for (self.entries) |active| {
+            if (active.bonus_id == .unused) continue;
+            if (distanceSq(pos, active.pos) < min_dist_sq) {
+                slot = .sentinel;
+                break;
+            }
+        }
+
+        var entry = slotPtr(self, slot);
+        entry.bonus_id = bonus_id;
+        entry.picked = false;
+        entry.pos = pos;
+        entry.time_left = narrowF32(bonus_time_max);
+        entry.time_max = narrowF32(bonus_time_max);
+        entry.amount = if (duration_override >= 0) duration_override else defaultBonusAmount(bonus_id);
+
+        return if (slot == .sentinel) null else entry;
+    }
+
     pub fn update(
         self: *BonusPool,
         state: *state_mod.GameplayState,

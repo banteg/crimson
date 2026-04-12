@@ -7,6 +7,7 @@ const player_runtime = @import("player.zig");
 const quest_spawn_logic = @import("../quest_spawn/logic_full.zig");
 const runtime_session = @import("session.zig");
 const spawn_mod = @import("spawn.zig");
+const tutorial_state = @import("../tutorial/state.zig");
 const weapon_data = @import("weapon_data.zig");
 
 pub const BuildSessionOptions = runtime_session.SessionInitOptions;
@@ -15,6 +16,12 @@ pub const BuildQuestSessionOptions = struct {
     session_options: BuildSessionOptions = .{},
     quest_spawn_entries: []const spawn_mod.QuestSpawnEntry,
     quest_start_weapon_id: i32 = @intFromEnum(game_ids.WeaponId.pistol),
+};
+
+pub const BuildTypoSessionOptions = struct {
+    session_options: BuildSessionOptions = .{},
+    dictionary_words: []const []const u8 = &.{},
+    highscore_names: []const []const u8 = &.{},
 };
 
 pub const BuildReplaySessionOptions = struct {
@@ -92,6 +99,40 @@ pub fn buildQuestSession(
     return session;
 }
 
+pub fn buildTypoSession(
+    config: runtime_session.SessionConfig,
+    options: BuildTypoSessionOptions,
+) runtime_session.DeterministicSessionError!runtime_session.DeterministicSession {
+    if (config.game_mode != .typo) {
+        return error.UnsupportedGameMode;
+    }
+    if (config.player_count != 1) {
+        return error.InvalidPlayerCount;
+    }
+    var session = try runtime_session.DeterministicSession.init(config, options.session_options);
+    session.state.typo.reset(options.dictionary_words, options.highscore_names);
+    return session;
+}
+
+pub fn buildTutorialSession(
+    config: runtime_session.SessionConfig,
+    options: BuildSessionOptions,
+) runtime_session.DeterministicSessionError!runtime_session.DeterministicSession {
+    if (config.game_mode != .tutorial) {
+        return error.UnsupportedGameMode;
+    }
+    if (config.player_count != 1) {
+        return error.InvalidPlayerCount;
+    }
+    var session = try runtime_session.DeterministicSession.init(config, options);
+    tutorial_state.resetTutorialState(
+        &session.state.tutorial,
+        &session.state.tutorial_overlay,
+        config.preserve_bugs,
+    );
+    return session;
+}
+
 pub fn buildReplaySession(
     game_mode: game_ids.GameModeId,
     header: replay_codec.ReplayHeader,
@@ -152,6 +193,15 @@ pub fn buildReplaySession(
     return switch (game_mode) {
         .survival => buildSurvivalSession(config, session_options),
         .rush => buildRushSession(config, session_options),
+        .typo => buildTypoSession(
+            config,
+            .{
+                .session_options = session_options,
+                .dictionary_words = header.typo_dictionary_words,
+                .highscore_names = header.typo_highscore_names,
+            },
+        ),
+        .tutorial => buildTutorialSession(config, session_options),
         .quests => buildQuestSession(
             config,
             .{
@@ -166,7 +216,6 @@ pub fn buildReplaySession(
                 .quest_start_weapon_id = quest_start_weapon_id_for_reset,
             },
         ),
-        else => error.UnsupportedGameMode,
     };
 }
 
@@ -208,4 +257,16 @@ test "build quest session assigns requested start weapon and spawn table" {
     try std.testing.expectEqual(game_ids.WeaponId.shotgun, player.weapon.weapon_id);
     try std.testing.expectEqual(@as(usize, 1), session.quest_spawn_entries.len);
     try std.testing.expectEqual(entries[0].spawn_id, session.quest_spawn_entries[0].spawn_id);
+}
+
+test "build typo session copies replay dictionary sources" {
+    var session = try buildTypoSession(
+        testConfig(.typo),
+        .{
+            .dictionary_words = &.{"amber"},
+            .highscore_names = &.{"Alpha"},
+        },
+    );
+    try std.testing.expectEqualStrings("amber", session.state.typo.dictionaryWordSlice(0));
+    try std.testing.expectEqualStrings("Alpha", session.state.typo.highscoreNameSlice(0));
 }

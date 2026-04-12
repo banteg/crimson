@@ -63,7 +63,7 @@ Remaining work:
     [`crimson-zig/src/runtime/bonuses.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/bonuses.zig),
     [`crimson-zig/src/runtime/replay/events.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/replay/events.zig)
 - Expand supported gameplay modes beyond the current replay-centered
-  Survival/Rush/Quest fast path.
+  Survival/Rush/Quest fast path, plus 1-player Typ-o/Tutorial.
   - Tutorial, Typ-o, and demo flows still need true Zig session/runtime support,
     not just “unsupported” rejection paths.
 - Widen replay envelope support where the native CLI still rejects inputs.

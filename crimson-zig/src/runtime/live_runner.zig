@@ -15,6 +15,7 @@ const state_mod = @import("state.zig");
 const creatures = @import("creatures.zig");
 const survival_progression = @import("survival_progression.zig");
 const terrain_fx_mod = @import("terrain_fx.zig");
+const typo_runtime = @import("../typo/runtime.zig");
 
 pub const LiveRunnerError = runtime_session.DeterministicSessionError ||
     replay_step.StepError ||
@@ -34,6 +35,7 @@ pub const LiveModeConfig = struct {
     gore_disabled: i32 = 0,
     hardcore: bool = false,
     preserve_bugs: bool = false,
+    demo_mode_active: bool = false,
     status_quest_unlock_index: i32 = 0,
     status_quest_unlock_index_full: i32 = 0,
     status_weapon_usage_counts: [state_mod.weapon_count_size]u32 = [_]u32{0} ** state_mod.weapon_count_size,
@@ -45,6 +47,9 @@ pub const FrameInput = struct {
     player: player_runtime.GameInput = defaultGameInput(),
     perk_choice_index: ?i32 = null,
     perk_menu_active: bool = false,
+    typo_char: ?u8 = null,
+    typo_backspace: bool = false,
+    typo_submit: bool = false,
 };
 
 pub const ShotAudioEvent = struct {
@@ -156,6 +161,7 @@ pub const LiveRunner = struct {
             .gore_disabled = config.gore_disabled,
             .hardcore = config.hardcore,
             .preserve_bugs = config.preserve_bugs,
+            .demo_mode_active = config.demo_mode_active,
             .status_quest_unlock_index = config.status_quest_unlock_index,
             .status_quest_unlock_index_full = config.status_quest_unlock_index_full,
             .status_weapon_usage_counts = config.status_weapon_usage_counts,
@@ -240,7 +246,24 @@ pub const LiveRunner = struct {
                     },
                 );
             },
-            else => return error.UnsupportedGameMode,
+            .typo => blk: {
+                terrain_setup = runtime_bootstrap.previewUnlockTerrain(
+                    config.seed,
+                    config.status_quest_unlock_index,
+                    terrain_size,
+                    terrain_size,
+                );
+                break :blk try session_builders.buildTypoSession(base_config, .{});
+            },
+            .tutorial => blk: {
+                terrain_setup = runtime_bootstrap.previewUnlockTerrain(
+                    config.seed,
+                    config.status_quest_unlock_index,
+                    terrain_size,
+                    terrain_size,
+                );
+                break :blk try session_builders.buildTutorialSession(base_config, .{});
+            },
         };
 
         return .{
@@ -253,6 +276,16 @@ pub const LiveRunner = struct {
 
     pub fn stepFrame(self: *LiveRunner, frame_dt: f32, input: FrameInput) LiveRunnerError!FrameUpdate {
         const clamped_dt = std.math.clamp(frame_dt, @as(f32, 0.0), max_frame_dt);
+        if (self.session.game_mode == .typo) {
+            if (input.typo_backspace) {
+                typo_runtime.applyBackspaceCommand(&self.session.state);
+            } else if (input.typo_char) |ch| {
+                typo_runtime.applyCharCommand(&self.session.state, ch);
+            }
+            if (input.typo_submit) {
+                typo_runtime.applySubmitCommand(&self.session.state, &self.session.creatures);
+            }
+        }
         if (input.perk_choice_index) |choice_index| {
             _ = try self.pickPerk(choice_index, clamped_dt);
         }
@@ -422,10 +455,26 @@ pub const LiveRunner = struct {
     ) FrameUpdate {
         const run_summary = self.session.finalize();
         const player_health = if (self.player0Const()) |player| player.health else 0.0;
-        var shots_hit_total: i32 = 0;
-        for (self.session.state.shots_hit) |shots_hit| {
-            shots_hit_total += shots_hit;
-        }
+        const ShotCounts = struct {
+            fired: i32,
+            hit: i32,
+        };
+        const shot_counts: ShotCounts = switch (self.session.game_mode) {
+            .typo => .{
+                .fired = self.session.state.typo.typing.submit_count,
+                .hit = self.session.state.typo.typing.match_count,
+            },
+            else => blk: {
+                var shots_hit_total: i32 = 0;
+                for (self.session.state.shots_hit) |shots_hit| {
+                    shots_hit_total += shots_hit;
+                }
+                break :blk .{
+                    .fired = self.session.state.shots_fired_total,
+                    .hit = shots_hit_total,
+                };
+            },
+        };
         return .{
             .ticks_advanced = ticks_advanced,
             .paused_for_perk_pick = paused_for_perk_pick,
@@ -437,8 +486,8 @@ pub const LiveRunner = struct {
             .creature_active_count = run_summary.creature_active_count,
             .bonus_active_count = self.session.bonuses.activeCount(),
             .elapsed_ms_sim = run_summary.elapsed_ms_sim,
-            .shots_fired = self.session.state.shots_fired_total,
-            .shots_hit = shots_hit_total,
+            .shots_fired = shot_counts.fired,
+            .shots_hit = shot_counts.hit,
             .audio = audio,
             .terrain_fx = terrain_fx,
         };
@@ -474,6 +523,31 @@ test "live runner bootstraps quest session from level key" {
     try std.testing.expectEqual(@as(i32, 5), runner.session.state.quest_stage_minor);
     try std.testing.expectEqual(game_ids.WeaponId.gauss_gun, runner.session.players()[0].weapon.weapon_id);
     try std.testing.expectEqualDeep(@as(runtime_bootstrap.TerrainSlotTriplet, .{ 2, 3, 2 }), runner.terrain_setup.terrain_slots);
+}
+
+test "live runner bootstraps typo session" {
+    var runner = try LiveRunner.init(.{
+        .game_mode = .typo,
+    });
+    try std.testing.expectEqual(game_ids.GameModeId.typo, runner.session.game_mode);
+    try std.testing.expectEqual(@as(usize, 1), runner.session.players().len);
+}
+
+test "live runner typo commands update shot summary counts" {
+    var runner = try LiveRunner.init(.{
+        .game_mode = .typo,
+    });
+
+    runner.session.state.typo.names.names[0][0] = 'a';
+    runner.session.state.typo.names.names[0][1] = 0;
+    runner.session.creatures.entries[0].active = true;
+    runner.session.creatures.entries[0].hp = 1.0;
+    runner.session.creatures.entries[0].pos = .{ .x = 100.0, .y = 120.0 };
+
+    _ = try runner.stepFrame(0.0, .{ .typo_char = 'a' });
+    const update = try runner.stepFrame(0.0, .{ .typo_submit = true });
+    try std.testing.expectEqual(@as(i32, 1), update.shots_fired);
+    try std.testing.expectEqual(@as(i32, 1), update.shots_hit);
 }
 
 test "live survival runner advances fixed ticks from frame time" {

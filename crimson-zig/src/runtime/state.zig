@@ -2,6 +2,8 @@ const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const owner_ref = @import("owner_ref.zig");
 const math = @import("math.zig");
+const tutorial_state = @import("../tutorial/state.zig");
+const typo_state = @import("../typo/state.zig");
 
 const spawn_mod = @import("spawn.zig");
 
@@ -270,6 +272,9 @@ pub const GameplayState = struct {
     preserve_bugs: bool = false,
     game_mode: GameModeId = .survival,
     friendly_fire_enabled: bool = false,
+    tutorial: tutorial_state.TutorialState = .{},
+    tutorial_overlay: tutorial_state.TutorialOverlayState = .{},
+    typo: typo_state.TypoState = .{},
     lean_mean_exp_timer: f32 = 0.25,
     jinxed_timer: f32 = 0.0,
     perk_interval_man_bomb: f32 = 4.0,

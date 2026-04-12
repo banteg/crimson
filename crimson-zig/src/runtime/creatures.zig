@@ -33,6 +33,24 @@ pub const CreatureRuntimeError = error{
     UnsupportedSpawnTemplate,
 };
 
+pub fn packBonusOnDeathArgs(bonus_id: game_ids.BonusId, amount_override: i32) i32 {
+    const low: u32 = @intCast(@intFromEnum(bonus_id) & 0xFFFF);
+    const high: u32 = @as(u16, @bitCast(@as(i16, @intCast(amount_override))));
+    return @bitCast((high << 16) | low);
+}
+
+fn unpackBonusOnDeathArgs(link_index: i32) ?struct { bonus_id: game_ids.BonusId, amount_override: i32 } {
+    const raw: u32 = @bitCast(link_index);
+    const raw_bonus: i32 = @intCast(raw & 0xFFFF);
+    const bonus_id = std.meta.intToEnum(game_ids.BonusId, raw_bonus) catch return null;
+    const raw_amount_u16: u16 = @intCast((raw >> 16) & 0xFFFF);
+    const amount_override: i32 = @as(i16, @bitCast(raw_amount_u16));
+    return .{
+        .bonus_id = bonus_id,
+        .amount_override = amount_override,
+    };
+}
+
 pub const CreatureState = struct {
     active: bool = false,
     type_id: i32 = 0,
@@ -883,7 +901,7 @@ pub const CreaturePool = struct {
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x27 => {
-                _ = self.spawnFromStatsWithFlags(
+                const idx = self.spawnFromStatsWithFlags(
                     rng,
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
@@ -898,6 +916,7 @@ pub const CreaturePool = struct {
                     spawn_mod.CreatureFlags.bonus_on_death,
                     true,
                 );
+                self.entries[idx].link_index = packBonusOnDeathArgs(.weapon, 5);
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x28 => {
@@ -2150,6 +2169,8 @@ pub const CreaturePool = struct {
                         bonus_pool,
                         self.effects,
                         terrain_fx,
+                        creature.flags,
+                        creature.link_index,
                         creature.pos,
                         @floatCast(world_size),
                         true,
@@ -2422,6 +2443,8 @@ pub const CreaturePool = struct {
             bonus_pool,
             self.effects,
             terrain_fx,
+            creature.flags,
+            creature.link_index,
             creature.pos,
             world_size,
             true,
@@ -2472,6 +2495,8 @@ pub const CreaturePool = struct {
             bonus_pool,
             self.effects,
             terrain_fx,
+            creature.flags,
+            creature.link_index,
             creature.pos,
             world_size,
             false,
@@ -2523,6 +2548,8 @@ pub const CreaturePool = struct {
             bonus_pool,
             self.effects,
             terrain_fx,
+            creature.flags,
+            creature.link_index,
             creature.pos,
             world_size,
             true,
@@ -2791,6 +2818,8 @@ pub const CreaturePool = struct {
             bonus_pool,
             self.effects,
             terrain_fx,
+            creature.flags,
+            creature.link_index,
             creature.pos,
             world_size,
             true,
@@ -3390,10 +3419,26 @@ fn emitDeathSideEffects(
     bonus_pool: *bonus_runtime.BonusPool,
     effects: ?*effects_mod.EffectPool,
     terrain_fx: *terrain_fx_mod.TerrainFxScratch,
+    creature_flags: u32,
+    creature_link_index: i32,
     death_pos: state_mod.Vec2,
     world_size: f32,
     plan_death_sfx: bool,
 ) void {
+    if ((creature_flags & spawn_mod.CreatureFlags.bonus_on_death) != 0) {
+        if (unpackBonusOnDeathArgs(creature_link_index)) |drop| {
+            _ = bonus_pool.spawnAt(
+                .{
+                    .x = narrowF32(death_pos.x),
+                    .y = narrowF32(death_pos.y),
+                },
+                drop.bonus_id,
+                drop.amount_override,
+                state,
+                world_size,
+            );
+        }
+    }
     const spawned_bonus = bonus_pool.trySpawnOnKill(
         .{
             .x = narrowF32(death_pos.x),

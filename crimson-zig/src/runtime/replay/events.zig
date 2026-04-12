@@ -7,6 +7,7 @@ const creatures_mod = @import("../creatures.zig");
 const perks = @import("../perks.zig");
 const spawn_mod = @import("../spawn.zig");
 const state_mod = @import("../state.zig");
+const typo_runtime = @import("../../typo/runtime.zig");
 
 const GameModeId = game_ids.GameModeId;
 const PerkId = perks.PerkId;
@@ -121,6 +122,39 @@ pub fn applyReplayEvent(
                 return error.InvalidPerkPickEvent;
             }
             outcome.perk_pick_count_delta = 1;
+            return outcome;
+        },
+        .typo_char => |command| {
+            if (options.game_mode != .typo) {
+                if (options.strict_events) return error.UnsupportedEventKind;
+                return outcome;
+            }
+            if (command.player_index < 0 or command.player_index >= @as(i32, @intCast(players.len))) {
+                return error.UnsupportedEventPlayerIndex;
+            }
+            typo_runtime.applyCharCommand(state, command.ch);
+            return outcome;
+        },
+        .typo_backspace => |command| {
+            if (options.game_mode != .typo) {
+                if (options.strict_events) return error.UnsupportedEventKind;
+                return outcome;
+            }
+            if (command.player_index < 0 or command.player_index >= @as(i32, @intCast(players.len))) {
+                return error.UnsupportedEventPlayerIndex;
+            }
+            typo_runtime.applyBackspaceCommand(state);
+            return outcome;
+        },
+        .typo_submit => |command| {
+            if (options.game_mode != .typo) {
+                if (options.strict_events) return error.UnsupportedEventKind;
+                return outcome;
+            }
+            if (command.player_index < 0 or command.player_index >= @as(i32, @intCast(players.len))) {
+                return error.UnsupportedEventPlayerIndex;
+            }
+            typo_runtime.applySubmitCommand(state, creatures);
             return outcome;
         },
         .capture_bootstrap => |bootstrap| {
@@ -287,6 +321,55 @@ test "capture state transition event returns reset request through event outcome
         },
     );
     try std.testing.expectEqual(EventOutcomeSignal.request_capture_state_reset, outcome.signal);
+}
+
+test "typo replay commands apply in typo mode and reject in other modes" {
+    var state = state_mod.GameplayState.init(42);
+    var creatures: creatures_mod.CreaturePool = .{};
+    var players_storage: [state_mod.max_players]state_mod.PlayerState = undefined;
+    const players = players_storage[0..1];
+    players[0] = .{};
+    var quest_spawn_timeline_ms: f32 = 0.0;
+    var quest_no_creatures_timer_ms: f32 = 0.0;
+    var quest_completion_transition_ms: f32 = -1.0;
+
+    _ = try applyReplayEvent(
+        .{ .typo_char = .{ .tick_index = 0, .player_index = 0, .ch = 'a' } },
+        &state,
+        players,
+        &creatures,
+        1.0 / 60.0,
+        &quest_spawn_timeline_ms,
+        &quest_no_creatures_timer_ms,
+        &quest_completion_transition_ms,
+        .{
+            .game_mode = .typo,
+            .player_count = 1,
+            .quest_unlock_index = 0,
+            .strict_events = true,
+        },
+    );
+    try std.testing.expectEqualStrings("a", state.typo.typing.slice());
+
+    try std.testing.expectError(
+        error.UnsupportedEventKind,
+        applyReplayEvent(
+            .{ .typo_submit = .{ .tick_index = 0, .player_index = 0 } },
+            &state,
+            players,
+            &creatures,
+            1.0 / 60.0,
+            &quest_spawn_timeline_ms,
+            &quest_no_creatures_timer_ms,
+            &quest_completion_transition_ms,
+            .{
+                .game_mode = .survival,
+                .player_count = 1,
+                .quest_unlock_index = 0,
+                .strict_events = true,
+            },
+        ),
+    );
 }
 
 test "lifeline 50-50 replay perk effect deactivates every other eligible creature slot" {

@@ -326,7 +326,7 @@ fn buildInfoFailedOutputForReplayInfoError(
     const detail = switch (err) {
         error.OutOfMemory => "replay info collector ran out of memory",
         error.InvalidHeaderValue => "replay info collector received invalid header values",
-        error.UnsupportedGameMode => "replay info collector only supports survival/rush/quest modes",
+        error.UnsupportedGameMode => "replay info collector only supports survival/rush/quest/typo/tutorial modes",
         error.UnsupportedPlayerCount => "replay info collector only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "replay info collector only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
@@ -439,6 +439,8 @@ fn replayModeLabel(game_mode_id: i32) []const u8 {
         1 => "survival",
         2 => "rush",
         3 => "quests",
+        4 => "typo",
+        8 => "tutorial",
         else => "unknown",
     };
 }
@@ -447,8 +449,11 @@ fn unsupportedReplayHeaderDetail(
     header: replay_codec.ReplayHeader,
     tick_count: usize,
 ) ?[]const u8 {
-    if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3) {
-        return "only survival/rush/quest replays are currently ported";
+    if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3 and header.game_mode_id != 4 and header.game_mode_id != 8) {
+        return "only survival/rush/quest/typo/tutorial replays are currently ported";
+    }
+    if ((header.game_mode_id == 4 or header.game_mode_id == 8) and header.player_count != 1) {
+        return "typo and tutorial replays require player_count == 1";
     }
     if (header.player_count < 1 or header.player_count > 4) {
         return "only 1-4 player replays are currently ported";

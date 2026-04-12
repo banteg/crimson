@@ -39,7 +39,7 @@ This wave is intentionally codec-only:
 - Replay session construction now routes through the shared deterministic session
   layer (`runtime/session*.zig`) rather than keeping the mutable loop shell under
   `runtime/replay/`.
-- Native CLI currently executes **1-4 player survival/rush/quest** replay paths, including preserve-bugs compatibility mode, using:
+- Native CLI currently executes **1-4 player survival/rush/quest** replay paths and **1-player Typ-o/Tutorial** replay paths, including preserve-bugs compatibility mode, using:
   - replay msgpack+gzip decoding in Zig (via `msgpack.zig`, full header/inputs/events model),
   - native deterministic simulation pass in Zig (canonical event ordering + input/event counters),
   - canonical terrain bootstrap RNG validation,
