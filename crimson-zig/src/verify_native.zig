@@ -31,6 +31,7 @@ const VerifyRequest = struct {
     json_out: ?[]const u8 = null,
     base_dir: ?[]const u8 = null,
     max_ticks: ?usize = null,
+    trace_rng: bool = false,
     debug_trace_msgpack: ?[]const u8 = null,
     debug_trace_cdt: ?[]const u8 = null,
     debug_trace_cdt_chunk_ticks: i32 = 256,
@@ -212,7 +213,7 @@ fn runVerifyWithReplayBytes(
     replay_codec.validateReplayBootstrap(header) catch |err| {
         return buildNotPortedOutputForReplayCodecError(allocator, err);
     };
-    const trace_requested = request.debug_trace_msgpack != null or request.debug_trace_cdt != null;
+    const trace_requested = request.trace_rng or request.debug_trace_msgpack != null or request.debug_trace_cdt != null;
     const ticks_to_simulate: usize = if (request.max_ticks) |max_ticks|
         @min(max_ticks, replay.tickCount())
     else
@@ -785,7 +786,8 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
             return .{ .unsupported = "--lenient-events" };
         }
         if (std.mem.eql(u8, arg, "--trace-rng")) {
-            return .{ .unsupported = "--trace-rng" };
+            request.trace_rng = true;
+            continue;
         }
         if (std.mem.eql(u8, arg, "--max-ticks")) {
             if (idx + 1 >= args.len) return .{ .invalid = "missing value for --max-ticks" };
@@ -1124,14 +1126,14 @@ test "parse native subset rejects invalid cdt chunk ticks value" {
     }
 }
 
-test "parse native subset reports unsupported options" {
+test "parse native subset accepts trace rng option" {
     const parsed = parseNativeSubset(&.{
         "survival_20260224_041009_score76661.crd",
         "--trace-rng",
     });
     switch (parsed) {
-        .unsupported => |detail| try std.testing.expectEqualStrings("--trace-rng", detail),
-        else => return error.TestExpectedUnsupportedOption,
+        .ok => |request| try std.testing.expect(request.trace_rng),
+        else => return error.TestExpectedValidOption,
     }
 }
 

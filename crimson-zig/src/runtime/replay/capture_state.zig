@@ -340,6 +340,8 @@ pub fn applyCaptureStateReset(
     const status_weapon_usage_counts = state.status_weapon_usage_counts;
     const game_mode = state.game_mode;
     const hardcore = state.hardcore;
+    const demo_mode_active = state.demo_mode_active;
+    const quest_fail_retry_count = state.quest_fail_retry_count;
     const quest_stage_major = state.quest_stage_major;
     const quest_stage_minor = state.quest_stage_minor;
     const perk_pending_count = state.perk_selection.pending_count;
@@ -360,6 +362,8 @@ pub fn applyCaptureStateReset(
     state.gore_disabled = gore_disabled;
     state.game_mode = game_mode;
     state.hardcore = hardcore;
+    state.demo_mode_active = demo_mode_active;
+    state.quest_fail_retry_count = quest_fail_retry_count;
     state.quest_stage_major = quest_stage_major;
     state.quest_stage_minor = quest_stage_minor;
     state.perk_selection.pending_count = perk_pending_count;
@@ -383,6 +387,9 @@ pub fn applyCaptureStateReset(
     }
 
     creatures.reset();
+    creatures.hardcore = hardcore;
+    creatures.demo_mode_active = demo_mode_active;
+    creatures.quest_fail_retry_count = quest_fail_retry_count;
     creatures.effects = effects;
     effects.reset();
     sprite_effects.reset();

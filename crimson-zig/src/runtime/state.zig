@@ -282,6 +282,7 @@ pub const GameplayState = struct {
     perk_interval_hot_tempered: f32 = 2.0,
     quest_stage_major: i32 = 0,
     quest_stage_minor: i32 = 0,
+    quest_fail_retry_count: i32 = 0,
     status_quest_unlock_index: i32 = 0,
     status_quest_unlock_index_full: i32 = 0,
     status_weapon_usage_counts: WeaponUsageCounts = WeaponUsageCounts.initFill(0),

@@ -11,6 +11,7 @@ const audio_mod = @import("audio/audio.zig");
 const input_codes = @import("input_codes.zig");
 const local_input = cz.local_input;
 const live_audio = @import("audio/live_audio.zig");
+const quest_results = @import("quest_results.zig");
 const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
 const window_boot = @import("window_boot.zig");
@@ -19,7 +20,9 @@ const window_effects = @import("window_effects.zig");
 const window_ground = @import("window_ground.zig");
 const window_menu = @import("window_menu.zig");
 const window_menu_panels = @import("window_menu_panels.zig");
+const window_misc_panels = @import("window_misc_panels.zig");
 const window_options = @import("window_options.zig");
+const window_pause_menu = @import("window_pause_menu.zig");
 const window_perk_menu = @import("window_perk_menu.zig");
 const window_projectiles = @import("window_projectiles.zig");
 const window_statistics = @import("window_statistics.zig");
@@ -64,7 +67,10 @@ const Screen = enum {
     play_game_menu,
     quests_menu,
     statistics_menu,
+    mods_menu,
+    other_games_menu,
     gameplay,
+    pause,
     results,
     options,
     controls,
@@ -100,6 +106,7 @@ const GameplayScreen = struct {
     tutorial_prompt_selection: usize = 0,
     pending_terrain_fx: [16]terrain_fx_mod.TerrainFxBatch = [_]terrain_fx_mod.TerrainFxBatch{.{}} ** 16,
     pending_terrain_fx_count: usize = 0,
+    pause_menu: window_pause_menu.State = .{},
 
     fn deinit(self: *GameplayScreen) void {
         if (self.ground) |*ground| {
@@ -242,9 +249,11 @@ const ResultsScreen = struct {
     reason: ResultsReason,
     run_config: live_runner.LiveModeConfig,
     summary: runtime_session.SessionSummary,
-    player_health: f32,
+    player_health_values: [state_mod.max_players]f32 = [_]f32{0.0} ** state_mod.max_players,
+    player_health_count: usize = 0,
     runtime_error: ?[]const u8 = null,
     highscore: ?ResultsHighscoreState = null,
+    quest_final_time: ?quest_results.QuestFinalTime = null,
 };
 
 const ResultsHighscoreState = struct {
@@ -287,10 +296,14 @@ const App = struct {
     play_game_menu: window_menu_panels.PlayGameState = .{},
     quests_menu: window_menu_panels.QuestState = .{},
     statistics_menu: window_statistics.State = .{},
+    mods_menu: window_misc_panels.ModsState = .{},
+    other_games_menu: window_misc_panels.OtherGamesState = .{},
     gameplay: ?GameplayScreen = null,
     results: ?ResultsScreen = null,
     options: window_options.OptionsState = .{},
     controls: window_options.ControlsState = .{},
+    options_back_to: Screen = .main_menu,
+    controls_back_to: Screen = .options,
     runtime_assets: ?window_assets.RuntimeAssets = null,
     audio: live_audio.Bridge,
     assets_state: AssetsState = .unavailable,
@@ -346,6 +359,32 @@ const App = struct {
         self.assets_state = if (self.runtime_assets != null) .loaded else .unavailable;
     }
 
+    fn rootMenuFlags(self: *const App) window_menu.Flags {
+        return .{
+            .mods_available = self.modsAvailable(),
+            .other_games_enabled = self.otherGamesEnabled(),
+        };
+    }
+
+    fn modsAvailable(self: *const App) bool {
+        var mods_path_buf: [std.fs.max_path_bytes]u8 = undefined;
+        const mods_path = std.fmt.bufPrint(&mods_path_buf, "{s}/mods", .{self.runtime.base_dir}) catch return false;
+        var dir = std.fs.openDirAbsolute(mods_path, .{ .iterate = true }) catch return false;
+        defer dir.close();
+
+        var iter = dir.iterate();
+        while (iter.next() catch null) |entry| {
+            if (entry.kind == .file and std.ascii.endsWithIgnoreCase(entry.name, ".dll")) return true;
+        }
+        return false;
+    }
+
+    fn otherGamesEnabled(self: *const App) bool {
+        _ = self;
+        const raw = std.posix.getenv("CRIMSON_GRIM_CONFIG_VAR_100") orelse return false;
+        return raw[0] != 0;
+    }
+
     fn update(self: *App, frame_dt: f32) void {
         self.tickCursorPulse(frame_dt);
         switch (self.screen) {
@@ -354,7 +393,10 @@ const App = struct {
             .play_game_menu => self.updatePlayGameMenu(frame_dt),
             .quests_menu => self.updateQuestsMenu(frame_dt),
             .statistics_menu => self.updateStatisticsMenu(frame_dt),
+            .mods_menu => self.updateModsMenu(frame_dt),
+            .other_games_menu => self.updateOtherGamesMenu(frame_dt),
             .gameplay => self.updateGameplay(frame_dt),
+            .pause => self.updatePause(frame_dt),
             .results => self.updateResults(),
             .options => self.updateOptions(frame_dt),
             .controls => self.updateControls(frame_dt),
@@ -369,7 +411,10 @@ const App = struct {
             .play_game_menu => self.drawPlayGameMenu(),
             .quests_menu => self.drawQuestsMenu(),
             .statistics_menu => self.drawStatisticsMenu(),
+            .mods_menu => self.drawModsMenu(),
+            .other_games_menu => self.drawOtherGamesMenu(),
             .gameplay => self.drawGameplay(),
+            .pause => self.drawPause(),
             .results => self.drawResults(),
             .options => self.drawOptions(),
             .controls => self.drawControls(),
@@ -396,7 +441,7 @@ const App = struct {
         const assets = if (self.runtime_assets) |*runtime_assets| runtime_assets else return;
         switch (self.screen) {
             .boot => {},
-            .main_menu, .play_game_menu, .quests_menu, .statistics_menu, .results, .options, .controls => {
+            .main_menu, .play_game_menu, .quests_menu, .statistics_menu, .mods_menu, .other_games_menu, .pause, .results, .options, .controls => {
                 window_cursor.drawMenuCursor(assets, self.cursor_pulse_time);
             },
             .gameplay => {
@@ -425,6 +470,7 @@ const App = struct {
             &self.menu,
             frame_dt,
             if (self.runtime_assets) |*assets| assets else null,
+            self.rootMenuFlags(),
         );
         if (menu_update.play_panel_click and !self.menu.panel_open_sfx_played) {
             self.audio.playUiPanelClick();
@@ -441,11 +487,20 @@ const App = struct {
                 },
                 .open_options => {
                     self.options.reset();
+                    self.options_back_to = .main_menu;
                     self.setScreen(.options);
                 },
                 .open_statistics => {
                     window_statistics.openRoot(&self.statistics_menu, self.allocator);
                     self.setScreen(.statistics_menu);
+                },
+                .open_mods => {
+                    self.mods_menu.reset(self.runtime.base_dir);
+                    self.setScreen(.mods_menu);
+                },
+                .open_other_games => {
+                    self.other_games_menu.reset();
+                    self.setScreen(.other_games_menu);
                 },
                 .quit => self.quit_requested = true,
             }
@@ -531,7 +586,8 @@ const App = struct {
         if (self.gameplay) |*gameplay| {
             gameplay.render_time_s += @max(frame_dt, 0.0);
             if (!gameplay.perk_ui.active() and rl.isKeyPressed(.escape)) {
-                self.finishRun(gameplay, .abandoned, null);
+                gameplay.pause_menu.reset();
+                self.setScreen(.pause);
                 return;
             }
 
@@ -610,6 +666,63 @@ const App = struct {
         }
     }
 
+    fn updatePause(self: *App, frame_dt: f32) void {
+        if (self.gameplay) |*gameplay| {
+            const pause_update = window_pause_menu.update(
+                &gameplay.pause_menu,
+                frame_dt,
+                if (self.runtime_assets) |*assets| assets else null,
+            );
+            if (pause_update.play_panel_click and !gameplay.pause_menu.panel_open_sfx_played) {
+                self.audio.playUiPanelClick();
+                gameplay.pause_menu.panel_open_sfx_played = true;
+            }
+            if (pause_update.play_button_click) self.audio.playUiButtonClick();
+            if (pause_update.action) |action| switch (action) {
+                .back_to_previous => self.setScreen(.gameplay),
+                .open_options => {
+                    self.options.reset();
+                    self.options_back_to = .pause;
+                    self.setScreen(.options);
+                },
+                .back_to_menu => {
+                    gameplay.deinit();
+                    self.gameplay = null;
+                    self.menu.openRoot();
+                    self.setScreen(.main_menu);
+                },
+            };
+        }
+    }
+
+    fn updateModsMenu(self: *App, frame_dt: f32) void {
+        self.audio.ensureMenuTheme();
+        const panel_update = window_misc_panels.updateMods(&self.mods_menu, frame_dt, if (self.runtime_assets) |*assets| assets else null);
+        if (panel_update.play_panel_click and !self.mods_menu.panel.panel_open_sfx_played) {
+            self.audio.playUiPanelClick();
+            self.mods_menu.panel.panel_open_sfx_played = true;
+        }
+        if (panel_update.play_button_click) self.audio.playUiButtonClick();
+        if (panel_update.action == .back_to_menu) {
+            self.menu.openRoot();
+            self.setScreen(.main_menu);
+        }
+    }
+
+    fn updateOtherGamesMenu(self: *App, frame_dt: f32) void {
+        self.audio.ensureMenuTheme();
+        const panel_update = window_misc_panels.updateOtherGames(&self.other_games_menu, frame_dt, if (self.runtime_assets) |*assets| assets else null);
+        if (panel_update.play_panel_click and !self.other_games_menu.panel.panel_open_sfx_played) {
+            self.audio.playUiPanelClick();
+            self.other_games_menu.panel.panel_open_sfx_played = true;
+        }
+        if (panel_update.play_button_click) self.audio.playUiButtonClick();
+        if (panel_update.action == .back_to_menu) {
+            self.menu.openRoot();
+            self.setScreen(.main_menu);
+        }
+    }
+
     fn updateResults(self: *App) void {
         if (self.results) |*results| {
             if (results.highscore) |*highscore| {
@@ -618,36 +731,103 @@ const App = struct {
                     return;
                 }
             }
-        }
+            const buttons = resultsButtonsFor(results);
+            window_ui.updateSelectionFromPointer(&self.results_selection, buttons.items[0..buttons.len]);
+            if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
+                self.results_selection = if (self.results_selection == 0) buttons.len - 1 else self.results_selection - 1;
+            }
+            if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
+                self.results_selection = (self.results_selection + 1) % buttons.len;
+            }
 
-        const buttons = resultsButtons();
-        window_ui.updateSelectionFromPointer(&self.results_selection, buttons[0..]);
-        if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-            self.results_selection = if (self.results_selection == 0) buttons.len - 1 else self.results_selection - 1;
-        }
-        if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-            self.results_selection = (self.results_selection + 1) % buttons.len;
-        }
+            const activated = window_ui.buttonActivated(buttons.items[0..buttons.len], self.results_selection);
+            if (!activated) return;
+            self.audio.playUiButtonClick();
 
-        const activated = window_ui.buttonActivated(buttons[0..], self.results_selection);
-        if (!activated) return;
-        self.audio.playUiButtonClick();
-
-        switch (self.results_selection) {
-            0 => if (self.results) |results| {
-                self.startNewRun(results.run_config);
-            },
-            1 => {
-                if (self.gameplay) |*gameplay| {
-                    gameplay.deinit();
-                    self.gameplay = null;
-                }
-                self.results = null;
-                self.menu.openRoot();
-                self.setScreen(.main_menu);
-            },
-            else => {},
+            switch (results.run_config.game_mode) {
+                .quests => switch (results.reason) {
+                    .completed => switch (self.results_selection) {
+                        0 => if (nextQuestLevelKey(results.run_config.quest_level_key)) |next_level_key| {
+                            var next_run = results.run_config;
+                            next_run.quest_level_key = next_level_key;
+                            next_run.quest_fail_retry_count = 0;
+                            self.startNewRun(next_run);
+                        } else {
+                            self.results = null;
+                            self.menu.openRoot();
+                            self.setScreen(.main_menu);
+                        },
+                        1 => {
+                            var next_run = results.run_config;
+                            next_run.quest_fail_retry_count = 0;
+                            self.startNewRun(next_run);
+                        },
+                        2 => self.openResultsHighScores(results),
+                        3 => {
+                            self.results = null;
+                            self.menu.openRoot();
+                            self.setScreen(.main_menu);
+                        },
+                        else => {},
+                    },
+                    .dead => switch (self.results_selection) {
+                        0 => {
+                            var next_run = results.run_config;
+                            next_run.quest_fail_retry_count +%= 1;
+                            self.startNewRun(next_run);
+                        },
+                        1 => {
+                            self.results = null;
+                            self.quests_menu.reset();
+                            self.setScreen(.quests_menu);
+                        },
+                        2 => {
+                            self.results = null;
+                            self.menu.openRoot();
+                            self.setScreen(.main_menu);
+                        },
+                        else => {},
+                    },
+                    .runtime_error, .abandoned => switch (self.results_selection) {
+                        0 => self.startNewRun(results.run_config),
+                        1 => {
+                            self.results = null;
+                            self.menu.openRoot();
+                            self.setScreen(.main_menu);
+                        },
+                        else => {},
+                    },
+                },
+                else => switch (self.results_selection) {
+                    0 => self.startNewRun(results.run_config),
+                    1 => self.openResultsHighScores(results),
+                    2 => {
+                        self.results = null;
+                        self.menu.openRoot();
+                        self.setScreen(.main_menu);
+                    },
+                    else => {},
+                },
+            }
+            return;
         }
+    }
+
+    fn openResultsHighScores(self: *App, results: *const ResultsScreen) void {
+        self.runtime.config.game_mode = @intCast(@intFromEnum(results.run_config.game_mode));
+        self.runtime.config_dirty = true;
+        window_statistics.openHighScores(
+            &self.statistics_menu,
+            self.allocator,
+            self.runtime.base_dir,
+            self.runtime.config,
+            self.runtime.status,
+        );
+        if (results.run_config.game_mode == .quests) {
+            self.statistics_menu.high_scores.mode = .quests;
+            self.statistics_menu.high_scores.quest_level_key = results.run_config.quest_level_key;
+        }
+        self.setScreen(.statistics_menu);
     }
 
     fn updateOptions(self: *App, frame_dt: f32) void {
@@ -664,11 +844,11 @@ const App = struct {
             .none => {},
             .open_controls => {
                 self.controls.reset();
+                self.controls_back_to = .options;
                 self.setScreen(.controls);
             },
             .back_to_menu => {
-                self.menu.openRoot();
-                self.setScreen(.main_menu);
+                self.setScreen(self.options_back_to);
             },
         }
     }
@@ -684,7 +864,7 @@ const App = struct {
         if (controls_update.play_button_click) self.audio.playUiButtonClick();
         switch (controls_update.action) {
             .none => {},
-            .back_to_options => self.setScreen(.options),
+            .back_to_options => self.setScreen(self.controls_back_to),
         }
     }
 
@@ -784,12 +964,16 @@ const App = struct {
         configured_run.status_weapon_usage_counts = statusWeaponUsageCounts(self.runtime.status);
 
         self.runtime.recordModeStart(configured_run.game_mode);
+        if (configured_run.game_mode == .quests) {
+            self.runtime.recordQuestStart(configured_run.quest_level_key);
+        }
         var runner = live_runner.LiveRunner.init(configured_run) catch |err| {
             self.results = .{
                 .reason = .runtime_error,
                 .run_config = configured_run,
                 .summary = zeroSessionSummary(),
-                .player_health = 0.0,
+                .player_health_values = [_]f32{0.0} ** state_mod.max_players,
+                .player_health_count = 0,
                 .runtime_error = @errorName(err),
             };
             self.results_selection = 0;
@@ -802,7 +986,8 @@ const App = struct {
                     .reason = .runtime_error,
                     .run_config = configured_run,
                     .summary = zeroSessionSummary(),
-                    .player_health = 0.0,
+                    .player_health_values = [_]f32{0.0} ** state_mod.max_players,
+                    .player_health_count = 0,
                     .runtime_error = @errorName(err),
                 };
                 self.results_selection = 0;
@@ -859,20 +1044,39 @@ const App = struct {
     fn finishRun(self: *App, gameplay: *GameplayScreen, reason: ResultsReason, runtime_error: ?[]const u8) void {
         self.audio.stopGameplayMusic();
         const runner = &gameplay.runner;
+        const level_key = runner.quest_level_key;
         self.runtime.absorbSessionState(&runner.session);
-        const player_health = if (runner.player0Const()) |player| player.health else 0.0;
+        var player_health_values: [state_mod.max_players]f32 = [_]f32{0.0} ** state_mod.max_players;
+        const player_health_count = collectPlayerHealthValues(&player_health_values, &runner.session);
+        if (reason == .completed and runner.session.game_mode == .quests) {
+            if (level_key) |resolved| self.runtime.recordQuestCompletion(resolved);
+        }
         const save_error: ?[]const u8 = save_err: {
             self.runtime.saveStatusIfDirty() catch |err| break :save_err @errorName(err);
             break :save_err null;
         };
-        const highscore = self.buildResultsHighscore(runner, reason, runtime_error orelse save_error);
+        const highscore = self.buildResultsHighscore(
+            runner,
+            reason,
+            runtime_error orelse save_error,
+            player_health_values[0..player_health_count],
+        );
         self.results = .{
             .reason = reason,
             .run_config = gameplay.run_config,
             .summary = runner.summary(),
-            .player_health = player_health,
+            .player_health_values = player_health_values,
+            .player_health_count = player_health_count,
             .runtime_error = runtime_error orelse save_error,
             .highscore = highscore,
+            .quest_final_time = if (runner.session.game_mode == .quests)
+                quest_results.computeQuestFinalTime(
+                    @intCast(runner.summary().elapsed_ms_sim),
+                    player_health_values[0..player_health_count],
+                    runner.perkPendingCount(),
+                )
+            else
+                null,
         };
         if (highscore != null) {
             self.audio.playUiClink();
@@ -905,12 +1109,14 @@ const App = struct {
         runner: *const live_runner.LiveRunner,
         reason: ResultsReason,
         runtime_error: ?[]const u8,
+        player_health_values: []const f32,
     ) ?ResultsHighscoreState {
         if (runtime_error != null) return null;
         switch (reason) {
             .dead, .completed => {},
             .abandoned, .runtime_error => return null,
         }
+        if (runner.session.game_mode == .quests and reason == .dead) return null;
 
         const player = runner.player0Const() orelse return null;
         const shot_options: persistence.highscore_record_builder.BuildRecordOptions = switch (runner.session.game_mode) {
@@ -922,10 +1128,19 @@ const App = struct {
             else => .{},
         };
 
+        const elapsed_ms = if (runner.session.game_mode == .quests)
+            quest_results.computeQuestFinalTime(
+                @intCast(runner.summary().elapsed_ms_sim),
+                player_health_values,
+                runner.perkPendingCount(),
+            ).final_time_ms
+        else
+            @as(i32, @intCast(runner.summary().elapsed_ms_sim));
+
         const record = persistence.highscore_record_builder.buildHighscoreRecordForGameOver(
             runner.session.state,
             player.*,
-            @intCast(runner.summary().elapsed_ms_sim),
+            elapsed_ms,
             @intCast(runner.session.creatures.kill_count),
             runner.session.game_mode,
             shot_options,
@@ -967,7 +1182,7 @@ const App = struct {
     }
 
     fn drawMainMenu(self: *const App) void {
-        window_menu.draw(&self.menu, if (self.runtime_assets) |*assets| assets else null);
+        window_menu.draw(&self.menu, if (self.runtime_assets) |*assets| assets else null, self.rootMenuFlags());
     }
 
     fn drawPlayGameMenu(self: *const App) void {
@@ -995,6 +1210,14 @@ const App = struct {
             self.runtime.config,
             self.runtime.status,
         );
+    }
+
+    fn drawModsMenu(self: *const App) void {
+        window_misc_panels.drawMods(&self.mods_menu, if (self.runtime_assets) |*assets| assets else null);
+    }
+
+    fn drawOtherGamesMenu(self: *const App) void {
+        window_misc_panels.drawOtherGames(&self.other_games_menu, if (self.runtime_assets) |*assets| assets else null);
     }
 
     fn drawGameplay(self: *App) void {
@@ -1063,6 +1286,13 @@ const App = struct {
         }
     }
 
+    fn drawPause(self: *App) void {
+        self.drawGameplay();
+        if (self.gameplay) |gameplay| {
+            window_pause_menu.draw(&gameplay.pause_menu, if (self.runtime_assets) |*assets| assets else null);
+        }
+    }
+
     fn drawResults(self: *const App) void {
         rl.clearBackground(bg_color);
         drawBackdrop();
@@ -1081,11 +1311,23 @@ const App = struct {
                 drawSmallText(runtime_assets, "LEVEL", 370.0, 314.0, HudTextColor.dim);
                 drawSmallText(runtime_assets, "WEAPON", 370.0, 342.0, HudTextColor.dim);
                 drawSmallText(runtime_assets, "HP", 370.0, 370.0, HudTextColor.dim);
-                drawSmallTextFmt("{d} ms", runtime_assets, .{results.summary.elapsed_ms_sim}, 510.0, 258.0, HudTextColor.primary);
+                const elapsed_ms = if (results.quest_final_time) |breakdown| breakdown.final_time_ms else @as(i32, @intCast(results.summary.elapsed_ms_sim));
+                drawSmallTextFmt("{d} ms", runtime_assets, .{elapsed_ms}, 510.0, 258.0, HudTextColor.primary);
                 drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_experience}, 510.0, 286.0, HudTextColor.primary);
                 drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_level}, 510.0, 314.0, HudTextColor.primary);
                 drawSmallText(runtime_assets, weaponName(results.summary.player_weapon_id), 510.0, 342.0, HudTextColor.primary);
-                drawSmallTextFmt("{d:.1}", runtime_assets, .{results.player_health}, 510.0, 370.0, HudTextColor.primary);
+                const player_health = if (results.player_health_count > 0) results.player_health_values[0] else 0.0;
+                drawSmallTextFmt("{d:.1}", runtime_assets, .{player_health}, 510.0, 370.0, HudTextColor.primary);
+                if (results.quest_final_time) |breakdown| {
+                    drawSmallText(runtime_assets, "BASE", 690.0, 258.0, HudTextColor.dim);
+                    drawSmallText(runtime_assets, "LIFE BONUS", 690.0, 286.0, HudTextColor.dim);
+                    drawSmallText(runtime_assets, "PERK BONUS", 690.0, 314.0, HudTextColor.dim);
+                    drawSmallText(runtime_assets, "FINAL", 690.0, 342.0, HudTextColor.dim);
+                    drawSmallTextFmt("{d} ms", runtime_assets, .{breakdown.base_time_ms}, 846.0, 258.0, HudTextColor.primary);
+                    drawSmallTextFmt("-{d} ms", runtime_assets, .{breakdown.life_bonus_ms}, 846.0, 286.0, HudTextColor.primary);
+                    drawSmallTextFmt("-{d} ms", runtime_assets, .{breakdown.unpicked_perk_bonus_ms}, 846.0, 314.0, HudTextColor.primary);
+                    drawSmallTextFmt("{d} ms", runtime_assets, .{breakdown.final_time_ms}, 846.0, 342.0, HudTextColor.accent);
+                }
 
                 if (results.runtime_error) |runtime_error| {
                     drawSmallText(runtime_assets, runtime_error, 330.0, 430.0, rl.Color.orange);
@@ -1100,8 +1342,23 @@ const App = struct {
             if (results.highscore) |highscore| highscore.promptActive() else false
         else
             false;
-        const buttons = if (prompt_active) resultsHighscoreButtons() else resultsButtons();
-        for (buttons, 0..) |button, idx| {
+        const buttons = if (prompt_active)
+            ResultsButtons{ .items = .{
+                resultsHighscoreButtons()[0],
+                resultsHighscoreButtons()[1],
+                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+            }, .len = 2 }
+        else if (self.results) |results|
+            resultsButtonsFor(&results)
+        else
+            ResultsButtons{ .items = .{
+                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+            }, .len = 0 };
+        for (buttons.items[0..buttons.len], 0..) |button, idx| {
             const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
             const selected = if (prompt_active)
                 if (self.results) |results|
@@ -1115,10 +1372,16 @@ const App = struct {
     }
 
     fn drawOptions(self: *const App) void {
+        if (self.options_back_to == .pause and self.gameplay != null) {
+            @constCast(self).drawGameplay();
+        }
         window_options.drawOptions(&self.options, if (self.runtime_assets) |*assets| assets else null, self.runtime.config);
     }
 
     fn drawControls(self: *const App) void {
+        if ((self.controls_back_to == .pause or self.options_back_to == .pause) and self.gameplay != null) {
+            @constCast(self).drawGameplay();
+        }
         window_options.drawControls(&self.controls, if (self.runtime_assets) |*assets| assets else null, self.runtime.config);
     }
 };
@@ -1273,11 +1536,43 @@ fn drawTextureTiled(texture: rl.Texture2D, area: rl.Rectangle, tint: rl.Color) v
     }
 }
 
-fn resultsButtons() [2]UiButton {
+const ResultsButtons = struct {
+    items: [4]UiButton,
+    len: usize,
+};
+
+fn resultsButtonsFor(results: *const ResultsScreen) ResultsButtons {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
+    if (results.run_config.game_mode == .quests and results.reason == .completed) {
+        return .{
+            .items = .{
+                .{ .label = "PLAY NEXT", .rect = window_ui.centeredRect(center_x, 514.0, ui_button_width, ui_button_height) },
+                .{ .label = "PLAY AGAIN", .rect = window_ui.centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
+                .{ .label = "HIGH SCORES", .rect = window_ui.centeredRect(center_x, 658.0, ui_button_width, ui_button_height) },
+                .{ .label = "MAIN MENU", .rect = window_ui.centeredRect(center_x, 730.0, ui_button_width, ui_button_height) },
+            },
+            .len = 4,
+        };
+    }
+    if (results.run_config.game_mode == .quests and results.reason == .dead) {
+        return .{
+            .items = .{
+                .{ .label = "PLAY AGAIN", .rect = window_ui.centeredRect(center_x, 550.0, ui_button_width, ui_button_height) },
+                .{ .label = "PLAY ANOTHER", .rect = window_ui.centeredRect(center_x, 622.0, ui_button_width, ui_button_height) },
+                .{ .label = "MAIN MENU", .rect = window_ui.centeredRect(center_x, 694.0, ui_button_width, ui_button_height) },
+                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+            },
+            .len = 3,
+        };
+    }
     return .{
-        .{ .label = "RESTART", .rect = window_ui.centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
-        .{ .label = "MAIN MENU", .rect = window_ui.centeredRect(center_x, 658.0, ui_button_width, ui_button_height) },
+        .items = .{
+            .{ .label = "PLAY AGAIN", .rect = window_ui.centeredRect(center_x, 550.0, ui_button_width, ui_button_height) },
+            .{ .label = "HIGH SCORES", .rect = window_ui.centeredRect(center_x, 622.0, ui_button_width, ui_button_height) },
+            .{ .label = "MAIN MENU", .rect = window_ui.centeredRect(center_x, 694.0, ui_button_width, ui_button_height) },
+            .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+        },
+        .len = 3,
     };
 }
 
@@ -1500,6 +1795,19 @@ fn collectGameplayInput(
     }
 
     return frame_input;
+}
+
+fn collectPlayerHealthValues(
+    out: *[state_mod.max_players]f32,
+    session: *const runtime_session.DeterministicSession,
+) usize {
+    var count: usize = 0;
+    for (session.playersConst()) |player| {
+        if (count >= out.len) break;
+        out[count] = player.health;
+        count += 1;
+    }
+    return count;
 }
 
 fn boolAxis(negative: bool, positive: bool) f32 {
@@ -2865,6 +3173,15 @@ fn zeroSessionSummary() runtime_session.SessionSummary {
 fn nextRunSeed(seed_state: *u32) u32 {
     seed_state.* = seed_state.* *% 1664525 +% 1013904223;
     return if (seed_state.* == 0) 1 else seed_state.*;
+}
+
+fn nextQuestLevelKey(level_key: i32) ?i32 {
+    const stage = @divTrunc(level_key, 100);
+    const minor = @mod(level_key, 100);
+    if (stage < 1 or stage > 5 or minor < 1 or minor > 10) return null;
+    if (stage == 5 and minor == 10) return null;
+    if (minor < 10) return stage * 100 + minor + 1;
+    return (stage + 1) * 100 + 1;
 }
 
 fn runConfigForLiveMode(mode: game_ids.GameModeId, quest_level_key: ?i32, seed_state: *u32) live_runner.LiveModeConfig {

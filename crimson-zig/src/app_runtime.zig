@@ -3,6 +3,7 @@ const std = @import("std");
 const cz = @import("crimson_zig");
 const game_ids = cz.game_ids;
 const formats = cz.formats;
+const quest_status = @import("quest_status.zig");
 const runtime_paths = @import("runtime_paths.zig");
 const runtime_session = cz.session;
 
@@ -89,6 +90,18 @@ pub const DesktopRuntime = struct {
             .typo => self.status.mode_play_typo +%= 1,
             else => self.status.mode_play_other +%= 1,
         }
+        self.status_dirty = true;
+    }
+
+    pub fn recordQuestStart(self: *DesktopRuntime, level_key: i32) void {
+        const idx = quest_status.trackedQuestGamesCounterIndex(level_key) orelse return;
+        self.status.quest_play_counts[idx] +%= 1;
+        self.status_dirty = true;
+    }
+
+    pub fn recordQuestCompletion(self: *DesktopRuntime, level_key: i32) void {
+        const idx = quest_status.trackedQuestCompletedCounterIndex(level_key) orelse return;
+        self.status.quest_play_counts[idx] +%= 1;
         self.status_dirty = true;
     }
 
@@ -216,6 +229,28 @@ test "desktop runtime creates default config and status files" {
     try std.testing.expectEqual(@as(u32, 768), cfg.screen_height);
     try std.testing.expectEqual(@as(u16, 0), status.quest_unlock_index);
     try std.testing.expectEqual(@as(u32, 0), status.game_sequence_id);
+}
+
+test "desktop runtime records tracked quest counters" {
+    var runtime: DesktopRuntime = .{
+        .allocator = std.testing.allocator,
+        .base_dir = &.{},
+        .config_path = &.{},
+        .status_path = &.{},
+        .config = formats.crimson_cfg.defaultConfig(),
+        .status = std.mem.zeroes(formats.game_cfg.Status),
+    };
+
+    runtime.recordQuestStart(101);
+    runtime.recordQuestCompletion(101);
+    runtime.recordQuestStart(510);
+    runtime.recordQuestCompletion(510);
+
+    try std.testing.expectEqual(@as(u32, 1), runtime.status.quest_play_counts[11]);
+    try std.testing.expectEqual(@as(u32, 1), runtime.status.quest_play_counts[51]);
+    try std.testing.expectEqual(@as(u32, 0), runtime.status.quest_play_counts[50]);
+    try std.testing.expectEqual(@as(u32, 0), runtime.status.quest_play_counts[90]);
+    try std.testing.expect(runtime.status_dirty);
 }
 
 test "desktop runtime status absorb mirrors session unlock and usage state" {

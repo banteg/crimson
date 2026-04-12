@@ -99,6 +99,9 @@ pub const CreaturePool = struct {
     entries: [max_creatures]CreatureState = [_]CreatureState{CreatureState{}} ** max_creatures,
     kill_count: i32 = 0,
     capture_spawn_events_authoritative: bool = false,
+    hardcore: bool = false,
+    demo_mode_active: bool = false,
+    quest_fail_retry_count: i32 = 0,
     effects: ?*effects_mod.EffectPool = null,
     spawn_slots: [max_creatures]spawn_mod.SpawnSlotInit = [_]spawn_mod.SpawnSlotInit{
         .{
@@ -116,6 +119,9 @@ pub const CreaturePool = struct {
         self.entries = [_]CreatureState{CreatureState{}} ** max_creatures;
         self.kill_count = 0;
         self.capture_spawn_events_authoritative = false;
+        self.hardcore = false;
+        self.demo_mode_active = false;
+        self.quest_fail_retry_count = 0;
         self.effects = null;
         self.spawn_slot_count = 0;
     }
@@ -205,6 +211,12 @@ pub const CreaturePool = struct {
         state: ?*const state_mod.GameplayState,
         terrain_size: f32,
     ) CreatureRuntimeError!void {
+        var was_active: [max_creatures]bool = undefined;
+        for (self.entries, 0..) |creature, idx| {
+            was_active[idx] = creature.active;
+        }
+        const spawn_slot_count_before = self.spawn_slot_count;
+
         switch (call.template_id) {
             @intFromEnum(spawn_mod.SpawnId.formation_ring_alien_8_12) => {
                 // Parent.
@@ -1816,6 +1828,21 @@ pub const CreaturePool = struct {
             else => return error.UnsupportedSpawnTemplate,
         }
 
+        if (findSpawnTemplatePrimaryIndex(self, &was_active)) |primary_idx| {
+            const maybe_slot_idx = blk: {
+                const link_index = self.entries[primary_idx].link_index;
+                if (link_index < 0) break :blk null;
+                const slot_idx: usize = @intCast(link_index);
+                if (slot_idx < spawn_slot_count_before or slot_idx >= self.spawn_slot_count) break :blk null;
+                break :blk slot_idx;
+            };
+            applySpawnDifficultyAdjustments(
+                self,
+                &self.entries[primary_idx],
+                if (maybe_slot_idx) |slot_idx| &self.spawn_slots[slot_idx] else null,
+            );
+        }
+
         if (state) |game_state| {
             const call_pos_x = narrowF32(call.pos.x);
             const call_pos_y = narrowF32(call.pos.y);
@@ -1836,6 +1863,13 @@ pub const CreaturePool = struct {
                 );
             }
         }
+    }
+
+    fn findSpawnTemplatePrimaryIndex(self: *const CreaturePool, was_active: *const [max_creatures]bool) ?usize {
+        for (self.entries, 0..) |creature, idx| {
+            if (!was_active[idx] and creature.active) return idx;
+        }
+        return null;
     }
 
     pub fn update(
@@ -2650,6 +2684,78 @@ pub const CreaturePool = struct {
         };
         self.spawn_slot_count += 1;
         return @intCast(slot_idx);
+    }
+
+    fn applySpawnDifficultyAdjustments(
+        self: *const CreaturePool,
+        creature: *CreatureState,
+        spawn_slot: ?*spawn_mod.SpawnSlotInit,
+    ) void {
+        if (!self.hardcore) {
+            if (spawn_slot) |slot| {
+                if ((creature.flags & 0x04) != 0) {
+                    slot.interval = narrowF32(slot.interval + 0.2);
+                }
+            }
+
+            if (self.quest_fail_retry_count > 0) {
+                const d = self.quest_fail_retry_count;
+                switch (d) {
+                    1 => {
+                        creature.reward_value = narrowF32(creature.reward_value * 0.9);
+                        creature.move_speed = narrowF32(creature.move_speed * 0.95);
+                        creature.contact_damage = narrowF32(creature.contact_damage * 0.95);
+                        creature.hp = narrowF32(creature.hp * 0.95);
+                        creature.max_hp = narrowF32(creature.max_hp * 0.95);
+                    },
+                    2 => {
+                        creature.reward_value = narrowF32(creature.reward_value * 0.85);
+                        creature.move_speed = narrowF32(creature.move_speed * 0.9);
+                        creature.contact_damage = narrowF32(creature.contact_damage * 0.9);
+                        creature.hp = narrowF32(creature.hp * 0.9);
+                        creature.max_hp = narrowF32(creature.max_hp * 0.9);
+                    },
+                    3 => {
+                        creature.reward_value = narrowF32(creature.reward_value * 0.85);
+                        creature.move_speed = narrowF32(creature.move_speed * 0.8);
+                        creature.contact_damage = narrowF32(creature.contact_damage * 0.8);
+                        creature.hp = narrowF32(creature.hp * 0.8);
+                        creature.max_hp = narrowF32(creature.max_hp * 0.8);
+                    },
+                    4 => {
+                        creature.reward_value = narrowF32(creature.reward_value * 0.8);
+                        creature.move_speed = narrowF32(creature.move_speed * 0.7);
+                        creature.contact_damage = narrowF32(creature.contact_damage * 0.7);
+                        creature.hp = narrowF32(creature.hp * 0.7);
+                        creature.max_hp = narrowF32(creature.max_hp * 0.7);
+                    },
+                    else => {
+                        creature.reward_value = narrowF32(creature.reward_value * 0.8);
+                        creature.move_speed = narrowF32(creature.move_speed * 0.6);
+                        creature.contact_damage = narrowF32(creature.contact_damage * 0.5);
+                        creature.hp = narrowF32(creature.hp * 0.5);
+                        creature.max_hp = narrowF32(creature.max_hp * 0.5);
+                    },
+                }
+                if (spawn_slot) |slot| {
+                    if ((creature.flags & 0x04) != 0) {
+                        slot.interval = narrowF32(slot.interval + @min(3.0, @as(f32, @floatFromInt(d)) * 0.35));
+                    }
+                }
+            }
+            return;
+        }
+
+        creature.move_speed = narrowF32(creature.move_speed * 1.05);
+        creature.contact_damage = narrowF32(creature.contact_damage * 1.4);
+        creature.hp = narrowF32(creature.hp * 1.2);
+        creature.max_hp = narrowF32(creature.max_hp * 1.2);
+
+        if (spawn_slot) |slot| {
+            if ((creature.flags & 0x04) != 0) {
+                slot.interval = @max(0.1, narrowF32(slot.interval - 0.2));
+            }
+        }
     }
 
     fn spawnBasicRandomTemplate(
