@@ -97,6 +97,7 @@ const GameplayScreen = struct {
     ground: ?window_ground.GroundRenderer = null,
     camera: state_mod.Vec2 = .{ .x = -1.0, .y = -1.0 },
     render_time_s: f32 = 0.0,
+    tutorial_prompt_selection: usize = 0,
     pending_terrain_fx: [16]terrain_fx_mod.TerrainFxBatch = [_]terrain_fx_mod.TerrainFxBatch{.{}} ** 16,
     pending_terrain_fx_count: usize = 0,
 
@@ -542,6 +543,15 @@ const App = struct {
             );
             self.runtime.recordGameplayFrame(frame_dt);
             var input = collectGameplayInput(&gameplay.input_interpreter, &gameplay.runner, camera, &self.runtime, frame_dt);
+            if (gameplay.runner.session.game_mode == .tutorial and
+                gameplay.runner.perkPendingCount() > 0 and
+                gameplay.runner.session.state.tutorial.stage_index == 6 and
+                !gameplay.perk_ui.active())
+            {
+                gameplay.perk_ui.menu_open = true;
+                gameplay.perk_ui.selected_index = 0;
+                self.audio.playUiPanelClick();
+            }
             const perk_ui_update = window_perk_menu.update(
                 &gameplay.perk_ui,
                 frame_dt,
@@ -572,6 +582,22 @@ const App = struct {
             gameplay.queueTerrainFxBatch(gameplay.last_update.terrain_fx);
             if (self.runtime_assets) |*runtime_assets| {
                 gameplay.flushPendingTerrainFx(runtime_assets);
+            }
+
+            if (gameplay.runner.session.game_mode == .tutorial) {
+                switch (updateTutorialPromptButtons(self, gameplay)) {
+                    .none => {},
+                    .close_to_menu => {
+                        self.closeTutorialRun(gameplay);
+                        return;
+                    },
+                    .restart => {
+                        const run_config = gameplay.run_config;
+                        self.closeTutorialGameplay(gameplay);
+                        self.startNewRun(run_config);
+                        return;
+                    },
+                }
             }
 
             if (gameplay.runner.session.game_mode == .quests and gameplay.runner.session.quest_completed) {
@@ -855,6 +881,23 @@ const App = struct {
         self.gameplay = null;
         self.results_selection = 0;
         self.setScreen(.results);
+    }
+
+    fn closeTutorialGameplay(self: *App, gameplay: *GameplayScreen) void {
+        self.audio.stopGameplayMusic();
+        self.runtime.absorbSessionState(&gameplay.runner.session);
+        self.runtime.saveStatusIfDirty() catch |err| {
+            std.log.err("saveStatusIfDirty failed during tutorial close: {s}", .{@errorName(err)});
+        };
+        gameplay.deinit();
+        self.gameplay = null;
+        self.results = null;
+    }
+
+    fn closeTutorialRun(self: *App, gameplay: *GameplayScreen) void {
+        self.closeTutorialGameplay(gameplay);
+        self.menu.openRoot();
+        self.setScreen(.main_menu);
     }
 
     fn buildResultsHighscore(
@@ -2655,16 +2698,16 @@ fn drawTutorialOverlay(gameplay: *const GameplayScreen, assets: *const window_as
             overlay.hint_alpha,
         );
     }
+
+    drawTutorialPromptButtons(gameplay, assets);
 }
 
-fn drawTutorialPanel(
+fn tutorialPanelRect(
     assets: *const window_assets.RuntimeAssets,
     text: []const u8,
     top_y: f32,
-    alpha: f32,
-) void {
-    if (text.len == 0 or !(alpha > 1e-3)) return;
-
+) ?rl.Rectangle {
+    if (text.len == 0) return null;
     var lines = std.mem.splitScalar(u8, text, '\n');
     var max_w: f32 = 0.0;
     var line_count: usize = 0;
@@ -2679,27 +2722,124 @@ fn drawTutorialPanel(
     const width = max_w + pad_x * 2.0;
     const height = @as(f32, @floatFromInt(line_count)) * line_h + pad_y * 2.0;
     const left = (@as(f32, @floatFromInt(rl.getScreenWidth())) - width) * 0.5;
+    return rl.Rectangle.init(left, top_y, width, height);
+}
 
+fn drawTutorialPanel(
+    assets: *const window_assets.RuntimeAssets,
+    text: []const u8,
+    top_y: f32,
+    alpha: f32,
+) void {
+    if (text.len == 0 or !(alpha > 1e-3)) return;
+
+    const rect = tutorialPanelRect(assets, text, top_y) orelse return;
     rl.drawRectangle(
-        @intFromFloat(left),
-        @intFromFloat(top_y),
-        @intFromFloat(width),
-        @intFromFloat(height),
+        @intFromFloat(rect.x),
+        @intFromFloat(rect.y),
+        @intFromFloat(rect.width),
+        @intFromFloat(rect.height),
         colorWithAlpha(rl.Color.black, alpha * 0.8),
     );
     rl.drawRectangleLines(
-        @intFromFloat(left),
-        @intFromFloat(top_y),
-        @intFromFloat(width),
-        @intFromFloat(height),
+        @intFromFloat(rect.x),
+        @intFromFloat(rect.y),
+        @intFromFloat(rect.width),
+        @intFromFloat(rect.height),
         colorWithAlpha(rl.Color.white, alpha),
     );
 
-    lines = std.mem.splitScalar(u8, text, '\n');
-    var y = top_y + pad_y;
+    const pad_x: f32 = 20.0;
+    const pad_y: f32 = 8.0;
+    const line_h: f32 = 14.0;
+    var lines = std.mem.splitScalar(u8, text, '\n');
+    var y = rect.y + pad_y;
     while (lines.next()) |line| : (y += line_h) {
-        drawSmallText(assets, line, left + pad_x, y, colorWithAlpha(rl.Color.white, alpha * 0.9));
+        drawSmallText(assets, line, rect.x + pad_x, y, colorWithAlpha(rl.Color.white, alpha * 0.9));
     }
+}
+
+const TutorialPromptAction = enum {
+    none,
+    close_to_menu,
+    restart,
+};
+
+fn tutorialSkipButton() UiButton {
+    return window_ui.buttonAt("Skip tutorial", 10.0, @as(f32, @floatFromInt(rl.getScreenHeight())) - 50.0, true);
+}
+
+fn tutorialCompleteButtons(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets) [2]UiButton {
+    const text = tutorial_runtime.promptText(gameplay.runner.session.state.tutorial_overlay.prompt_stage_index);
+    const rect = tutorialPanelRect(assets, text, 64.0) orelse rl.Rectangle.init(0.0, 64.0, 320.0, 40.0);
+    const gap: f32 = 18.0;
+    const top_y = rect.y + rect.height + 10.0;
+    const play_w = window_ui.buttonWidth("Play a game", true);
+    const repeat_w = window_ui.buttonWidth("Repeat tutorial", true);
+    return .{
+        .{
+            .label = "Play a game",
+            .rect = rl.Rectangle.init(rect.x + 10.0, top_y, play_w, window_ui.button_plate_height),
+        },
+        .{
+            .label = "Repeat tutorial",
+            .rect = rl.Rectangle.init(rect.x + 10.0 + play_w + gap, top_y, repeat_w, window_ui.button_plate_height),
+        },
+    };
+}
+
+fn updateTutorialPromptButtons(self: *App, gameplay: *GameplayScreen) TutorialPromptAction {
+    const overlay = gameplay.runner.session.state.tutorial_overlay;
+    const tutorial = gameplay.runner.session.state.tutorial;
+    if (overlay.prompt_stage_index < 0 or overlay.prompt_alpha <= 1e-3) return .none;
+
+    if (tutorial.stage_index == 8) {
+        const assets = if (self.runtime_assets) |*runtime_assets| runtime_assets else return .none;
+        const buttons = tutorialCompleteButtons(gameplay, assets);
+        window_ui.updateSelectionFromPointer(&gameplay.tutorial_prompt_selection, buttons[0..]);
+        if (rl.isKeyPressed(.left) or rl.isKeyPressed(.a)) {
+            gameplay.tutorial_prompt_selection = if (gameplay.tutorial_prompt_selection == 0) buttons.len - 1 else gameplay.tutorial_prompt_selection - 1;
+        }
+        if (rl.isKeyPressed(.right) or rl.isKeyPressed(.d)) {
+            gameplay.tutorial_prompt_selection = (gameplay.tutorial_prompt_selection + 1) % buttons.len;
+        }
+        if (!window_ui.buttonActivated(buttons[0..], gameplay.tutorial_prompt_selection)) return .none;
+        self.audio.playUiButtonClick();
+        return if (gameplay.tutorial_prompt_selection == 0) .close_to_menu else .restart;
+    }
+
+    const skip_alpha = std.math.clamp(@as(f32, @floatFromInt(tutorial.stage_timer_ms - 1000)) * 0.001, @as(f32, 0.0), @as(f32, 1.0));
+    if (skip_alpha <= 1e-3) return .none;
+    const button = tutorialSkipButton();
+    gameplay.tutorial_prompt_selection = 0;
+    if (!window_ui.buttonActivated(&.{button}, 0)) return .none;
+    self.audio.playUiButtonClick();
+    return .close_to_menu;
+}
+
+fn drawTutorialPromptButtons(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets) void {
+    const overlay = gameplay.runner.session.state.tutorial_overlay;
+    if (overlay.prompt_stage_index < 0 or overlay.prompt_alpha <= 1e-3) return;
+
+    if (gameplay.runner.session.state.tutorial.stage_index == 8) {
+        const buttons = tutorialCompleteButtons(gameplay, assets);
+        for (buttons, 0..) |button, idx| {
+            const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+            window_ui.drawButton(
+                button,
+                idx == gameplay.tutorial_prompt_selection,
+                hovered,
+                assets,
+            );
+        }
+        return;
+    }
+
+    const skip_alpha = std.math.clamp(@as(f32, @floatFromInt(gameplay.runner.session.state.tutorial.stage_timer_ms - 1000)) * 0.001, @as(f32, 0.0), @as(f32, 1.0));
+    if (skip_alpha <= 1e-3) return;
+    const button = tutorialSkipButton();
+    const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+    window_ui.drawButton(button, false, hovered, assets);
 }
 
 fn zeroSessionSummary() runtime_session.SessionSummary {

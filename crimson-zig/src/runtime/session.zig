@@ -38,6 +38,7 @@ pub const SessionConfig = struct {
     status_weapon_usage_counts: [state_mod.weapon_count_size]u32 = [_]u32{0} ** state_mod.weapon_count_size,
     quest_stage_major: i32 = 0,
     quest_stage_minor: i32 = 0,
+    demo_mode_active: bool = false,
 
     pub fn fromReplayHeader(header: replay_codec.ReplayHeader) DeterministicSessionError!SessionConfig {
         const game_mode = std.meta.intToEnum(game_ids.GameModeId, header.game_mode_id) catch {
@@ -207,6 +208,7 @@ pub const DeterministicSession = struct {
         session.state.game_mode = config.game_mode;
         session.state.hardcore = config.hardcore;
         session.state.preserve_bugs = config.preserve_bugs;
+        session.state.demo_mode_active = config.demo_mode_active;
         session.state.status_quest_unlock_index = config.status_quest_unlock_index;
         session.state.status_quest_unlock_index_full = config.status_quest_unlock_index_full;
         session.state.quest_stage_major = config.quest_stage_major;

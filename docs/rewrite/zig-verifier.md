@@ -17,7 +17,8 @@ For the staged remaining-work breakdown, see
 
 Replay tooling is currently the most mature public entrypoint in the Zig tree,
 not the definition of the project. Today that means fast, headless,
-deterministic replay verification/info for **1-4 player Survival/Rush/Quest**
+deterministic replay verification/info for **1-4 player Survival/Rush/Quest** and
+**1-player Typ-o/Tutorial**
 replays, including preserve-bugs compatibility mode, with explicit hard-fail
 behavior for unsupported native paths.
 
@@ -34,7 +35,7 @@ behavior for unsupported native paths.
   (`buildSurvivalSession`, `buildRushSession`, `buildQuestSession`) to mirror the
   Python rewrite structure instead of only offering replay-specialized startup.
 - Replay ingestion from `.crd` bytes (msgpack decode path in-tree).
-- Deterministic Survival/Rush/Quest sim scaffold + runtime loops for:
+- Deterministic Survival/Rush/Quest/Typ-o/Tutorial sim scaffold + runtime loops for:
   - player/weapon runtime (reload/fire/ammo counters, level/XP progression),
   - survival/quest spawn systems,
   - creature updates,
@@ -69,6 +70,7 @@ behavior for unsupported native paths.
 ## Not fully ported / known parity gaps
 
 - The most complete native fast path is still **1-4 player Survival/Rush/Quest**
+  plus **1-player Typ-o/Tutorial**
   replay execution.
 - Replay compatibility is still under active expansion using differential captures;
   parity is strong on the current working set but not yet claimed for all unseen

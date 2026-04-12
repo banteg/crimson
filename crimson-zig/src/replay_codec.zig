@@ -1,6 +1,7 @@
 const std = @import("std");
 const msgpack = @import("msgpack");
 const rng_callers = @import("rng_caller_static.zig");
+const game_ids = @import("game_ids.zig");
 
 pub const replay_format_version: i32 = 8;
 pub const weapon_usage_count: usize = 53;
@@ -76,6 +77,8 @@ pub const ReplayHeader = struct {
     seed: u32,
     replay_format_version: i32,
     quest_level: []u8,
+    typo_dictionary_words: []const []const u8 = &.{},
+    typo_highscore_names: []const []const u8 = &.{},
     bootstrap_kind: []u8,
     bootstrap_seed: u32,
     game_version: []u8,
@@ -93,11 +96,42 @@ pub const ReplayHeader = struct {
 
     pub fn deinit(self: ReplayHeader, allocator: std.mem.Allocator) void {
         allocator.free(self.quest_level);
+        freeStringSliceList(allocator, self.typo_dictionary_words);
+        freeStringSliceList(allocator, self.typo_highscore_names);
         allocator.free(self.bootstrap_kind);
         allocator.free(self.game_version);
         allocator.free(self.input_quantization);
     }
 };
+
+fn dupStringSliceList(
+    allocator: std.mem.Allocator,
+    values: []const []const u8,
+) ReplayCodecError![]const []const u8 {
+    if (values.len == 0) return &.{};
+
+    const out = allocator.alloc([]const u8, values.len) catch return error.OutOfMemory;
+    var built: usize = 0;
+    errdefer {
+        for (out[0..built]) |entry| allocator.free(entry);
+        allocator.free(out);
+    }
+
+    for (values, 0..) |value, idx| {
+        out[idx] = allocator.dupe(u8, value) catch return error.OutOfMemory;
+        built += 1;
+    }
+    return out;
+}
+
+fn freeStringSliceList(
+    allocator: std.mem.Allocator,
+    values: []const []const u8,
+) void {
+    if (values.len == 0) return;
+    for (values) |value| allocator.free(value);
+    allocator.free(values);
+}
 
 pub const ReplayPlayerInput = struct {
     move_x: f32,
@@ -155,6 +189,22 @@ pub const PerkPickEvent = struct {
 };
 
 pub const PerkMenuOpenEvent = struct {
+    tick_index: usize,
+    player_index: i32,
+};
+
+pub const TypoCharEvent = struct {
+    tick_index: usize,
+    player_index: i32,
+    ch: u8,
+};
+
+pub const TypoBackspaceEvent = struct {
+    tick_index: usize,
+    player_index: i32,
+};
+
+pub const TypoSubmitEvent = struct {
     tick_index: usize,
     player_index: i32,
 };
@@ -321,6 +371,9 @@ pub const CaptureStateTransitionEvent = struct {
 pub const ReplayEvent = union(enum) {
     perk_pick: PerkPickEvent,
     perk_menu_open: PerkMenuOpenEvent,
+    typo_char: TypoCharEvent,
+    typo_backspace: TypoBackspaceEvent,
+    typo_submit: TypoSubmitEvent,
     capture_bootstrap: CaptureBootstrapEvent,
     capture_perk_apply: CapturePerkApplyEvent,
     capture_perk_pending: CapturePerkPendingEvent,
@@ -331,6 +384,9 @@ pub const ReplayEvent = union(enum) {
         return switch (self) {
             .perk_pick => |event| event.tick_index,
             .perk_menu_open => |event| event.tick_index,
+            .typo_char => |event| event.tick_index,
+            .typo_backspace => |event| event.tick_index,
+            .typo_submit => |event| event.tick_index,
             .capture_bootstrap => |event| event.tick_index,
             .capture_perk_apply => |event| event.tick_index,
             .capture_perk_pending => |event| event.tick_index,
@@ -377,6 +433,7 @@ pub const Replay = struct {
             switch (event) {
                 .perk_pick => summary.perk_pick_count += 1,
                 .perk_menu_open => summary.perk_menu_open_count += 1,
+                .typo_char, .typo_backspace, .typo_submit => {},
                 .capture_bootstrap => summary.capture_bootstrap_count += 1,
                 .capture_perk_apply => summary.capture_perk_apply_count += 1,
                 .capture_perk_pending => summary.capture_perk_pending_count += 1,
@@ -1112,6 +1169,7 @@ fn parseCurrentEventSummary(
             switch (event) {
                 .perk_pick => summary.perk_pick_count += 1,
                 .perk_menu_open => summary.perk_menu_open_count += 1,
+                .typo_char, .typo_backspace, .typo_submit => {},
                 .capture_bootstrap => summary.capture_bootstrap_count += 1,
                 .capture_perk_apply => summary.capture_perk_apply_count += 1,
                 .capture_perk_pending => summary.capture_perk_pending_count += 1,
@@ -1201,6 +1259,27 @@ fn parseCurrentCommand(
             .tick_index = tick_index,
             .player_index = command.player_index,
             .choice_index = command.choice_index orelse return error.UnsupportedEventShape,
+        } };
+    }
+    if (std.mem.eql(u8, command.type, "typo_char")) {
+        const raw = command.ch orelse return error.UnsupportedEventShape;
+        if (raw.len != 1) return error.UnsupportedEventShape;
+        return .{ .typo_char = .{
+            .tick_index = tick_index,
+            .player_index = command.player_index,
+            .ch = raw[0],
+        } };
+    }
+    if (std.mem.eql(u8, command.type, "typo_backspace")) {
+        return .{ .typo_backspace = .{
+            .tick_index = tick_index,
+            .player_index = command.player_index,
+        } };
+    }
+    if (std.mem.eql(u8, command.type, "typo_submit")) {
+        return .{ .typo_submit = .{
+            .tick_index = tick_index,
+            .player_index = command.player_index,
         } };
     }
     return error.UnsupportedEventKind;
@@ -1653,6 +1732,8 @@ fn buildHeader(
         .seed = seed,
         .replay_format_version = format_version,
         .quest_level = allocator.dupe(u8, wire.quest_level) catch return error.OutOfMemory,
+        .typo_dictionary_words = &.{},
+        .typo_highscore_names = &.{},
         .bootstrap_kind = allocator.dupe(u8, wire.bootstrap_kind) catch return error.OutOfMemory,
         .bootstrap_seed = bootstrap_seed,
         .game_version = allocator.dupe(u8, wire.game_version) catch return error.OutOfMemory,
@@ -1735,6 +1816,8 @@ fn buildHeaderCurrent(
         .seed = wire.seed,
         .replay_format_version = wire.replay_format_version,
         .quest_level = quest_level,
+        .typo_dictionary_words = try dupStringSliceList(allocator, wire.typo_dictionary_words),
+        .typo_highscore_names = try dupStringSliceList(allocator, wire.typo_highscore_names),
         .bootstrap_kind = allocator.dupe(u8, "none") catch return error.OutOfMemory,
         .bootstrap_seed = 0,
         .game_version = allocator.dupe(u8, wire.game_version) catch return error.OutOfMemory,
@@ -2040,6 +2123,71 @@ test "parse replay event rejects invalid perk pick indexes" {
         },
     };
     try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
+}
+
+test "parse current replay preserves typo metadata and commands" {
+    const allocator = std.testing.allocator;
+
+    const tick_inputs = [_]ReplayInputWire{
+        .{
+            .move_x = 0.0,
+            .move_y = 0.0,
+            .aim_x = 0.0,
+            .aim_y = 0.0,
+            .flags = 0,
+        },
+    };
+    const ticks = [_]ReplayTickCurrentWire{
+        .{
+            .dt = 1.0 / 60.0,
+            .inputs = tick_inputs[0..],
+            .commands = &.{
+                .{
+                    .type = "typo_char",
+                    .player_index = 0,
+                    .ch = "a",
+                },
+                .{
+                    .type = "typo_submit",
+                    .player_index = 0,
+                },
+            },
+        },
+    };
+
+    const wire: ReplayCurrentWire = .{
+        .header = .{
+            .game_mode_id = @intFromEnum(game_ids.GameModeId.typo),
+            .seed = 7,
+            .replay_format_version = replay_format_version,
+            .typo_dictionary_words = &.{ "amber", "basil" },
+            .typo_highscore_names = &.{"ALPHA"},
+            .game_version = "0.9.0",
+            .tick_rate = 60,
+            .player_count = 1,
+            .status = .{
+                .weapon_usage_counts = &([_]u32{0} ** weapon_usage_count),
+            },
+            .claimed_stats = .{},
+            .input_quantization = "f32",
+        },
+        .ticks = ticks[0..],
+    };
+
+    var writer: std.Io.Writer.Allocating = .init(allocator);
+    defer writer.deinit();
+    try msgpack.encode(wire, &writer.writer);
+
+    const replay = try parseReplay(allocator, writer.written());
+    defer replay.deinit(allocator);
+
+    try std.testing.expectEqual(@as(i32, @intFromEnum(game_ids.GameModeId.typo)), replay.header.game_mode_id);
+    try std.testing.expectEqualStrings("amber", replay.header.typo_dictionary_words[0]);
+    try std.testing.expectEqualStrings("ALPHA", replay.header.typo_highscore_names[0]);
+    try std.testing.expectEqual(@as(usize, 2), replay.events.len);
+    try std.testing.expect(replay.events[0] == .typo_char);
+    try std.testing.expectEqual(@as(u8, 'a'), replay.events[0].typo_char.ch);
+    try std.testing.expect(replay.events[1] == .typo_submit);
 }
 
 test "build header rejects world_size above i32 range" {

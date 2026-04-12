@@ -673,8 +673,11 @@ fn unsupportedReplayHeaderDetail(
     header: replay_codec.ReplayHeader,
     tick_count: usize,
 ) ?[]const u8 {
-    if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3) {
-        return "only survival/rush/quest replays are currently ported";
+    if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3 and header.game_mode_id != 4 and header.game_mode_id != 8) {
+        return "only survival/rush/quest/typo/tutorial replays are currently ported";
+    }
+    if ((header.game_mode_id == 4 or header.game_mode_id == 8) and header.player_count != 1) {
+        return "typo and tutorial replays require player_count == 1";
     }
     if (header.player_count < 1 or header.player_count > 4) {
         return "only 1-4 player replays are currently ported";
@@ -721,7 +724,7 @@ fn buildNotPortedOutputForReplayRunnerError(
     const detail = switch (err) {
         error.OutOfMemory => "native replay run ran out of memory",
         error.InvalidHeaderValue => "native replay run received invalid header values",
-        error.UnsupportedGameMode => "native replay run only supports survival/rush/quest modes",
+        error.UnsupportedGameMode => "native replay run only supports survival/rush/quest/typo/tutorial modes",
         error.UnsupportedPlayerCount => "native replay run only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "native replay run only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
@@ -1367,7 +1370,7 @@ test "unsupported replay header detail rejects unsupported game mode" {
     header.game_mode_id = 9;
 
     const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
-    try std.testing.expectEqualStrings("only survival/rush/quest replays are currently ported", detail);
+    try std.testing.expectEqualStrings("only survival/rush/quest/typo/tutorial replays are currently ported", detail);
 }
 
 test "unsupported replay header detail rejects unsupported player count" {
