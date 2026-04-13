@@ -214,7 +214,7 @@ const quest_list_hover_top_pad: f32 = 2.0;
 const quest_list_hover_bottom_pad: f32 = 18.0;
 const quest_hardcore_unlock_index: u32 = 40;
 
-pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, runtime_assets: ?*const window_assets.RuntimeAssets) PlayGameResult {
+pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, runtime_assets: ?*const window_assets.RuntimeAssets, demo_enabled: bool) PlayGameResult {
     const dt_ms = frameDeltaMs(frame_dt);
     if (state.closing) {
         if (dt_ms > 0) state.panel.timeline_ms -= dt_ms;
@@ -237,11 +237,11 @@ pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.cri
     }
 
     if (state.player_list_open) {
-        return updatePlayGamePlayerList(state, config, status, dt_ms, state.panel.timeline_ms);
+        return updatePlayGamePlayerList(state, config, status, dt_ms, state.panel.timeline_ms, demo_enabled);
     }
 
-    const entries = playGameEntries(config, status);
-    const layout = playGameLayout(config, status, state.panel.timeline_ms);
+    const entries = playGameEntries(config, status, demo_enabled);
+    const layout = playGameLayout(config, status, state.panel.timeline_ms, demo_enabled);
     const hovered = hoveredPlayGameEntry(entries[0..], layout);
     updatePlayGameTooltipTimers(state, entries[0..], hovered, dt_ms);
     const back_hovered = if (runtime_assets) |assets|
@@ -282,9 +282,9 @@ pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.cri
     };
 }
 
-fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, dt_ms: i32, timeline_ms: i32) PlayGameResult {
+fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, dt_ms: i32, timeline_ms: i32, demo_enabled: bool) PlayGameResult {
     _ = dt_ms;
-    const layout = playGameLayout(config, status, timeline_ms);
+    const layout = playGameLayout(config, status, timeline_ms, demo_enabled);
     if (rl.isKeyPressed(.escape)) {
         state.player_list_open = false;
         return .{};
@@ -318,20 +318,20 @@ fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.
     return .{};
 }
 
-pub fn drawPlayGame(state: *const PlayGameState, runtime_assets: ?*const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32) void {
+pub fn drawPlayGame(state: *const PlayGameState, runtime_assets: ?*const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32, demo_enabled: bool) void {
     if (runtime_assets) |assets| {
-        drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, playGameLayoutFromPlayerCount(player_count_raw, status, state.panel.timeline_ms).panel_rect);
-        drawPlayGameContent(state, assets, status, player_count_raw);
+        drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, playGameLayoutFromPlayerCount(player_count_raw, status, state.panel.timeline_ms, demo_enabled).panel_rect);
+        drawPlayGameContent(state, assets, status, player_count_raw, demo_enabled);
         window_menu.drawPanelBackEntry(assets, state.panel.timeline_ms, state.back_hover_amount);
         return;
     }
     rl.clearBackground(panel_color);
 }
 
-fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32) void {
+fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32, demo_enabled: bool) void {
     const clamped_player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
-    const layout = playGameLayoutFromPlayerCount(clamped_player_count, status, state.panel.timeline_ms);
-    const entries = playGameEntriesFromPlayerCount(clamped_player_count, status);
+    const layout = playGameLayoutFromPlayerCount(clamped_player_count, status, state.panel.timeline_ms, demo_enabled);
+    const entries = playGameEntriesFromPlayerCount(clamped_player_count, status, demo_enabled);
     const show_counts = rl.isKeyDown(.f1);
 
     drawAtlasLabelAt(runtime_assets, layout.title_pos.x, layout.title_pos.y, window_menu.label_row_play_game, rl.Color.white);
@@ -351,14 +351,14 @@ fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const windo
     drawPlayGameTooltips(state, runtime_assets, entries[0..], layout);
 }
 
-fn playGameEntries(config: *const formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) []const PlayGameEntry {
-    return playGameEntriesFromPlayerCount(config.player_count, status);
+fn playGameEntries(config: *const formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, demo_enabled: bool) []const PlayGameEntry {
+    return playGameEntriesFromPlayerCount(config.player_count, status, demo_enabled);
 }
 
-fn playGameEntriesFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status) []const PlayGameEntry {
+fn playGameEntriesFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status, demo_enabled: bool) []const PlayGameEntry {
     const player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
     const main_total = questTotalPlayed(status) + status.mode_play_rush + status.mode_play_survival;
-    const has_typo = player_count == 1 and status.quest_unlock_index >= 40;
+    const has_typo = !demo_enabled and player_count == 1 and status.quest_unlock_index >= 40;
     const tutorial_first = player_count == 1 and main_total == 0;
     if (player_count != 1) return play_game_entries_multi[0..];
     if (has_typo and tutorial_first) return play_game_entries_single_typo_tutorial_first[0..];
@@ -367,12 +367,12 @@ fn playGameEntriesFromPlayerCount(player_count_raw: u32, status: formats.game_cf
     return play_game_entries_single[0..];
 }
 
-fn playGameLayout(config: *const formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, timeline_ms: i32) PlayGameLayout {
-    return playGameLayoutFromPlayerCount(config.player_count, status, timeline_ms);
+fn playGameLayout(config: *const formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, timeline_ms: i32, demo_enabled: bool) PlayGameLayout {
+    return playGameLayoutFromPlayerCount(config.player_count, status, timeline_ms, demo_enabled);
 }
 
-fn playGameLayoutFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status, timeline_ms: i32) PlayGameLayout {
-    const entries = playGameEntriesFromPlayerCount(player_count_raw, status);
+fn playGameLayoutFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status, timeline_ms: i32, demo_enabled: bool) PlayGameLayout {
+    const entries = playGameEntriesFromPlayerCount(player_count_raw, status, demo_enabled);
     const player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
     const tight_spacing = player_count == 1 and status.quest_unlock_index >= 40;
     const y_step: f32 = if (tight_spacing) 28.0 else 32.0;
@@ -572,8 +572,9 @@ pub const QuestResult = struct {
     config_dirty: bool = false,
 };
 
-pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) QuestResult {
+pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, demo_enabled: bool) QuestResult {
     const dt_ms = frameDeltaMs(frame_dt);
+    var config_dirty = false;
     if (state.closing) {
         if (dt_ms > 0) state.panel.timeline_ms -= dt_ms;
         if (state.panel.timeline_ms < 0) {
@@ -591,6 +592,10 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
         return .{};
     }
     if (dt_ms > 0) state.panel.timeline_ms = @min(panel_timeline_max_ms, state.panel.timeline_ms + dt_ms);
+    if (demo_enabled and config.hardcore_flag != 0) {
+        config.hardcore_flag = 0;
+        config_dirty = true;
+    }
     if (rl.isKeyPressed(.escape)) {
         beginCloseQuestBack(state);
         return .{ .play_button_click = true };
@@ -617,6 +622,7 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
         const hardcore_rect = hardcoreCheckRect(layout);
         if (rl.checkCollisionPointRec(rl.getMousePosition(), hardcore_rect) and rl.isMouseButtonPressed(.left)) {
             config.hardcore_flag = if (config.hardcore_flag == 0) 1 else 0;
+            if (demo_enabled) config.hardcore_flag = 0;
             return .{ .play_button_click = true, .config_dirty = true };
         }
     }
@@ -634,6 +640,7 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
 
     return .{
         .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
+        .config_dirty = config_dirty,
     };
 }
 
