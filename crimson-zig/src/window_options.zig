@@ -176,7 +176,7 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
         result.play_button_click = true;
     }
     if (updateOptionSlider(state, .detail, optionSliderRect(panel_rect, 265.0, 158.0, 5), 1, 5, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))), mouse, click, mouse_down)) |value| {
-        config.detail_preset = @intCast(std.math.clamp(value, @as(i32, 1), @as(i32, 5)));
+        _ = formats.crimson_cfg.applyDetailPreset(config, value);
         result.config_dirty = true;
         result.play_button_click = true;
     }
