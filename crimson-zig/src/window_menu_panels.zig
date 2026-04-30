@@ -335,7 +335,10 @@ fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const windo
     const show_counts = rl.isKeyDown(.f1);
 
     drawAtlasLabelAt(runtime_assets, layout.title_pos.x, layout.title_pos.y, window_menu.label_row_play_game, rl.Color.white);
-    drawPlayerCountWidget(state, runtime_assets, layout, player_count_raw);
+
+    if (show_counts) {
+        window_ui.drawSmallText(runtime_assets, "times played:", layout.base_pos.x + 132.0, layout.base_pos.y + 16.0, text_color);
+    }
 
     var y = layout.base_pos.y + layout.y_start;
     for (entries) |entry| {
@@ -348,6 +351,7 @@ fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const windo
         y += layout.y_step;
     }
 
+    drawPlayerCountWidget(state, runtime_assets, layout, player_count_raw);
     drawPlayGameTooltips(state, runtime_assets, entries[0..], layout);
 }
 
