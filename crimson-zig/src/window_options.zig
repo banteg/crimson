@@ -161,26 +161,26 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
         .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
     };
 
-    if (updateOptionSlider(state, .sfx, optionSliderRect(panel_rect, 265.0, 86.0, 10), 10, mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .sfx, optionSliderRect(panel_rect, 265.0, 86.0, 10), 0, 10, if (config.sound_disable != 0) 0 else volumeSliderValue(config.sfx_volume), mouse, click, mouse_down)) |value| {
         config.sfx_volume = @as(f32, @floatFromInt(value)) * 0.1;
         config.sound_disable = @intFromBool(value == 0);
         result.config_dirty = true;
         result.reload_audio = true;
         result.play_button_click = true;
     }
-    if (updateOptionSlider(state, .music, optionSliderRect(panel_rect, 265.0, 122.0, 10), 10, mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .music, optionSliderRect(panel_rect, 265.0, 122.0, 10), 0, 10, if (config.music_disable != 0) 0 else volumeSliderValue(config.music_volume), mouse, click, mouse_down)) |value| {
         config.music_volume = @as(f32, @floatFromInt(value)) * 0.1;
         config.music_disable = @intFromBool(value == 0);
         result.config_dirty = true;
         result.reload_audio = true;
         result.play_button_click = true;
     }
-    if (updateOptionSlider(state, .detail, optionSliderRect(panel_rect, 265.0, 158.0, 5), 5, mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .detail, optionSliderRect(panel_rect, 265.0, 158.0, 5), 1, 5, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))), mouse, click, mouse_down)) |value| {
         config.detail_preset = @intCast(std.math.clamp(value, @as(i32, 1), @as(i32, 5)));
         result.config_dirty = true;
         result.play_button_click = true;
     }
-    if (updateOptionSlider(state, .mouse, optionSliderRect(panel_rect, 265.0, 194.0, 10), 10, mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .mouse, optionSliderRect(panel_rect, 265.0, 194.0, 10), 1, 10, volumeSliderValue(config.mouse_sensitivity), mouse, click, mouse_down)) |value| {
         config.mouse_sensitivity = std.math.clamp(@as(f32, @floatFromInt(value)) * 0.1, @as(f32, 0.1), @as(f32, 1.0));
         result.config_dirty = true;
         result.play_button_click = true;
@@ -439,21 +439,33 @@ fn updateOptionSlider(
     state: *OptionsState,
     slider: OptionSlider,
     rect: rl.Rectangle,
-    count: i32,
+    min_value: i32,
+    max_value: i32,
+    current_value: i32,
     mouse: rl.Vector2,
     click: bool,
     mouse_down: bool,
 ) ?i32 {
     const hovered = rectContains(rect, mouse);
+    if (hovered and rl.isKeyPressed(.left)) return adjustOptionSliderValue(current_value, min_value, max_value, -1);
+    if (hovered and rl.isKeyPressed(.right)) return adjustOptionSliderValue(current_value, min_value, max_value, 1);
     if (hovered and click) state.active_slider = slider;
     if (state.active_slider == slider and mouse_down) {
         const relative = mouse.x - (rect.x + 3.0);
         var idx = @as(i32, @intFromFloat(@floor(relative / 16.0))) + 1;
-        idx = std.math.clamp(idx, @as(i32, 1), count);
+        idx = std.math.clamp(idx, min_value, max_value);
         return idx;
     }
     if (state.active_slider == slider and !mouse_down) state.active_slider = .none;
     return null;
+}
+
+fn adjustOptionSliderValue(current_value: i32, min_value: i32, max_value: i32, delta: i32) i32 {
+    return std.math.clamp(current_value + delta, min_value, max_value);
+}
+
+fn volumeSliderValue(value: f32) i32 {
+    return @intFromFloat(std.math.clamp(value, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5);
 }
 
 fn rectContains(rect: rl.Rectangle, point: rl.Vector2) bool {
@@ -1048,4 +1060,17 @@ test "options panel slider labels do not duplicate checkbox label" {
     for (option_slider_labels) |label| {
         try std.testing.expect(!std.mem.eql(u8, label, "UI Info texts"));
     }
+}
+
+test "option slider keyboard adjustment clamps to slider bounds" {
+    try std.testing.expectEqual(@as(i32, 0), adjustOptionSliderValue(0, 0, 10, -1));
+    try std.testing.expectEqual(@as(i32, 1), adjustOptionSliderValue(0, 0, 10, 1));
+    try std.testing.expectEqual(@as(i32, 10), adjustOptionSliderValue(10, 0, 10, 1));
+    try std.testing.expectEqual(@as(i32, 1), adjustOptionSliderValue(1, 1, 5, -1));
+}
+
+test "volume slider value rounds and clamps normalized volumes" {
+    try std.testing.expectEqual(@as(i32, 0), volumeSliderValue(-0.5));
+    try std.testing.expectEqual(@as(i32, 3), volumeSliderValue(0.26));
+    try std.testing.expectEqual(@as(i32, 10), volumeSliderValue(1.5));
 }
