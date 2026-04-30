@@ -11,10 +11,12 @@ import msgspec
 
 from grim.rand import RecordedCallerStatic
 
+from ..math_parity import f32
 from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
 from ..replay.types import Replay
+from ..sim.step_pipeline import time_scale_reflex_boost_factor
 from ..sim.timing import ftol_ms_i32
 from ..sim.world_state import WorldState
 from .canonical_channels import (
@@ -30,23 +32,26 @@ from .canonical_channels import (
     SnapshotPlayer,
     SnapshotVec2,
     SnapshotWeapon,
+    TimingSampleRow,
     bonus_timer_ms,
 )
 from .payloads import BuiltinObject
 from .schema import (
     TRACE_FORMAT_VERSION,
-    TRACE_REQUIRED_CHANNELS,
     TRACE_SCHEMA_VERSION,
     ReplayTickChannels,
     TickRecord,
     TraceMeta,
-    channel_versions_for,
+    TraceProducer,
+    TraceSource,
+    TraceTickRange,
 )
 from .trace import TraceError, TraceReader, TraceSummary, write_trace
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _ZIG_ROOT = _REPO_ROOT / "crimson-zig"
 _ZIG_BIN = _ZIG_ROOT / "zig-out" / "bin" / "crimson-zig"
+_TRACE_CHUNK_TICKS = 256
 
 
 class _EntityGenerationState(msgspec.Struct):
@@ -79,6 +84,27 @@ def _fingerprint(path: Path) -> BuiltinObject:
         "size": stat.st_size,
         "mtime_ns": stat.st_mtime_ns,
     }
+
+
+def _builtin_text(payload: BuiltinObject, key: str, default: str = "") -> str:
+    value = payload.get(key)
+    if value is None:
+        return default
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (bool, int, float)):
+        return str(value)
+    return default
+
+
+def _builtin_int(payload: BuiltinObject, key: str, default: int = 0) -> int:
+    value = payload.get(key)
+    if isinstance(value, (bool, int, float, str)):
+        try:
+            return int(value)
+        except ValueError:
+            return default
+    return default
 
 
 def _rng_stream_from_draws(draws: list[tuple[int, int, int, RecordedCallerStatic]]) -> list[RngStreamRow]:
@@ -270,43 +296,78 @@ def _build_replay_fingerprint(*, replay_path: Path, replay: Replay) -> BuiltinOb
     return replay_fingerprint
 
 
+def _source_from_replay_fingerprint(fingerprint: BuiltinObject) -> TraceSource:
+    return TraceSource(
+        path=_builtin_text(fingerprint, "path"),
+        sha256=_builtin_text(fingerprint, "sha256"),
+        size=_builtin_int(fingerprint, "size"),
+        mtime_ns=_builtin_int(fingerprint, "mtime_ns"),
+        tick_rate=_builtin_int(fingerprint, "tick_rate"),
+        seed=_builtin_int(fingerprint, "seed"),
+        mode_id=_builtin_int(fingerprint, "mode_id"),
+        quest_level=_builtin_text(fingerprint, "quest_level"),
+    )
+
+
+def _timing_samples_for_tick(
+    *,
+    tick_index: int,
+    dt: float,
+    dt_ms_i32: int,
+    world: WorldState,
+) -> list[TimingSampleRow]:
+    active = bool(world.state.time_scale_active)
+    reflex_boost_timer = float(world.state.bonuses.reflex_boost)
+    return [
+        TimingSampleRow(
+            tick_index=int(tick_index),
+            gameplay_frame=int(tick_index),
+            phase="gpur_enter",
+            write_kind="snapshot",
+            frame_dt_f32=float(f32(float(dt))),
+            frame_dt_ms_i32=int(dt_ms_i32),
+            frame_dt_ms_f32=float(dt_ms_i32),
+            time_scale_active_entry=active,
+            time_scale_active_current=active,
+            time_scale_factor=float(
+                time_scale_reflex_boost_factor(
+                    reflex_boost_timer=reflex_boost_timer,
+                    time_scale_active=active,
+                ),
+            ),
+            bonus_reflex_boost_timer=reflex_boost_timer,
+            mode_fn="gameplay_update_and_render",
+            player_index=None,
+        ),
+    ]
+
+
 def _build_trace_meta(
     *,
     replay_path: Path,
     replay: Replay,
     tick_rows: list[TickRecord],
-    channels_seen: set[str],
     impl: Literal["python", "zig"],
-    config_extra: BuiltinObject | None = None,
 ) -> TraceMeta:
     tick_start = min((row.tick_index for row in tick_rows), default=-1)
     tick_end = max((row.tick_index for row in tick_rows), default=-1)
     replay_fingerprint = _build_replay_fingerprint(replay_path=replay_path, replay=replay)
-    channels_sorted = sorted(channels_seen)
-    config = {
-        "impl": str(impl),
-    }
-    if config_extra is not None:
-        config.update(config_extra)
     return TraceMeta(
         trace_format_version=TRACE_FORMAT_VERSION,
         trace_schema_version=TRACE_SCHEMA_VERSION,
         created_utc=datetime.now(tz=UTC).isoformat(),
-        producer={
-            "impl": str(impl),
-            "impl_version": "",
-            "platform": str(platform.system()),
-            "arch": str(platform.machine()),
-        },
-        source=replay_fingerprint,
-        channels=channels_sorted,
-        channel_versions=channel_versions_for(channels_sorted),
-        tick_range={
-            "start_tick": tick_start,
-            "end_tick": tick_end,
-            "tick_count": len(tick_rows),
-        },
-        config=config,
+        producer=TraceProducer(
+            impl=str(impl),
+            impl_version="",
+            platform=str(platform.system()),
+            arch=str(platform.machine()),
+        ),
+        source=_source_from_replay_fingerprint(replay_fingerprint),
+        tick_range=TraceTickRange(
+            start_tick=tick_start,
+            end_tick=tick_end,
+            tick_count=len(tick_rows),
+        ),
         status=replay.header.status,
     )
 
@@ -315,7 +376,6 @@ def _record_replay_to_trace_python(
     *,
     replay_path: Path,
     out_path: Path,
-    chunk_ticks: int,
 ) -> TraceSummary:
     replay = load_replay_file(replay_path)
 
@@ -326,6 +386,7 @@ def _record_replay_to_trace_python(
     entity_samples_by_tick: dict[int, EntitySamplesSnapshot] = {}
     sim_state_by_tick: dict[int, SimStateSnapshot] = {}
     rng_stream_by_tick: dict[int, list[RngStreamRow]] = {}
+    timing_samples_by_tick: dict[int, list[TimingSampleRow]] = {}
     creature_state = _EntityGenerationState()
     projectile_state = _EntityGenerationState()
     secondary_state = _EntityGenerationState()
@@ -343,6 +404,17 @@ def _record_replay_to_trace_python(
 
     def _tick_rng_trace_observer(tick_index: int, draws: list[tuple[int, int, int, RecordedCallerStatic]]) -> None:
         rng_stream_by_tick[int(tick_index)] = _rng_stream_from_draws(draws)
+
+    def _before_tick(tick_index: int, world: WorldState, dt: float) -> None:
+        dt_ms_i32 = int(ftol_ms_i32(dt))
+        if dt_ms_i32 < 0:
+            raise ValueError(f"invalid replay dt_ms_i32 at tick {tick_index}: {dt_ms_i32}")
+        timing_samples_by_tick[int(tick_index)] = _timing_samples_for_tick(
+            tick_index=int(tick_index),
+            dt=float(dt),
+            dt_ms_i32=dt_ms_i32,
+            world=world,
+        )
 
     driver = build_verify_playback_driver(
         replay,
@@ -365,13 +437,13 @@ def _record_replay_to_trace_python(
 
     driver.run(
         hooks=PlaybackWalkHooks(
+            before_tick=_before_tick,
             after_tick=_after_tick,
             on_rng_trace=_on_rng_trace,
         ),
     )
 
     tick_rows: list[TickRecord] = []
-    channels_seen: set[str] = set()
     replay_dt_rows = [ftol_ms_i32(tick.dt) for tick in replay.ticks]
     for checkpoint in sorted(checkpoints, key=lambda row: row.tick_index):
         tick_index = int(checkpoint.tick_index)
@@ -381,6 +453,8 @@ def _record_replay_to_trace_python(
             raise ValueError(f"missing entity_samples snapshot for tick {tick_index}")
         if tick_index not in sim_state_by_tick:
             raise ValueError(f"missing sim_state snapshot for tick {tick_index}")
+        if tick_index not in timing_samples_by_tick:
+            raise ValueError(f"missing timing_samples snapshot for tick {tick_index}")
 
         entity_samples_obj = entity_samples_by_tick[tick_index]
         sim_state_obj = sim_state_by_tick[tick_index]
@@ -391,7 +465,7 @@ def _record_replay_to_trace_python(
             sim_state=sim_state_obj,
             entity_samples=entity_samples_obj,
             rng_stream=rng_stream,
-            timing_samples=[],
+            timing_samples=list(timing_samples_by_tick[tick_index]),
         )
 
         if not (0 <= tick_index < len(replay_dt_rows)):
@@ -400,14 +474,12 @@ def _record_replay_to_trace_python(
         if tick_dt_ms_i32 < 0:
             raise ValueError(f"invalid replay dt_ms_i32 at tick {tick_index}: {tick_dt_ms_i32}")
 
-        channels_seen.update(TRACE_REQUIRED_CHANNELS)
         tick_rows.append(
             TickRecord(
                 tick_index=tick_index,
                 elapsed_ms=int(checkpoint.elapsed_ms),
                 dt_ms_i32=tick_dt_ms_i32,
                 mode_id=int(replay.header.game_mode_id),
-                phase_markers=[],
                 channels=channels,
             ),
         )
@@ -416,15 +488,13 @@ def _record_replay_to_trace_python(
         replay_path=replay_path,
         replay=replay,
         tick_rows=tick_rows,
-        channels_seen=channels_seen,
         impl="python",
-        config_extra=None,
     )
     return write_trace(
         out_path,
         meta=meta,
         ticks=tick_rows,
-        chunk_ticks=max(1, chunk_ticks),
+        chunk_ticks=_TRACE_CHUNK_TICKS,
     )
 
 
@@ -456,7 +526,6 @@ def _record_replay_to_trace_zig(
     *,
     replay_path: Path,
     out_path: Path,
-    chunk_ticks: int,
 ) -> tuple[TraceSummary, list[str]]:
     replay = load_replay_file(replay_path)
     if int(replay.header.player_count) != 1:
@@ -480,8 +549,6 @@ def _record_replay_to_trace_zig(
         str(replay_path),
         "--debug-trace-cdt",
         str(out_path),
-        "--debug-trace-cdt-chunk-ticks",
-        str(max(1, int(chunk_ticks))),
         "--format",
         "json",
     ]
@@ -520,7 +587,6 @@ def record_replay_to_trace(
     replay_path: Path,
     out_path: Path,
     impl: Literal["python", "zig"] = "python",
-    chunk_ticks: int = 256,
     warnings_out: list[str] | None = None,
 ) -> TraceSummary:
     replay_path = Path(replay_path)
@@ -531,14 +597,12 @@ def record_replay_to_trace(
         summary = _record_replay_to_trace_python(
             replay_path=replay_path,
             out_path=out_path,
-            chunk_ticks=chunk_ticks,
         )
         return summary
     if str(impl) == "zig":
         summary, warnings = _record_replay_to_trace_zig(
             replay_path=replay_path,
             out_path=out_path,
-            chunk_ticks=chunk_ticks,
         )
         warnings_out.extend(warnings)
         return summary

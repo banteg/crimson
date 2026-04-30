@@ -17,12 +17,13 @@ from crimson.dbg.canonical_channels import (
 )
 from crimson.dbg.schema import (
     TRACE_FORMAT_VERSION,
-    TRACE_REQUIRED_CHANNELS,
     TRACE_SCHEMA_VERSION,
     ReplayTickChannels,
     TickRecord,
     TraceMeta,
-    channel_versions_for,
+    TraceProducer,
+    TraceSource,
+    TraceTickRange,
 )
 from crimson.dbg.trace import TraceError, TraceReader, write_trace
 from crimson.persistence.save_status import GameStatusData
@@ -34,12 +35,9 @@ def _meta() -> TraceMeta:
         trace_format_version=int(TRACE_FORMAT_VERSION),
         trace_schema_version=int(TRACE_SCHEMA_VERSION),
         created_utc="2026-02-24T00:00:00+00:00",
-        producer={"impl": "python", "impl_version": "test", "platform": "darwin", "arch": "x86_64"},
-        source={"kind": "unit_test", "sha256": "0" * 64},
-        channels=[*TRACE_REQUIRED_CHANNELS],
-        channel_versions=channel_versions_for(TRACE_REQUIRED_CHANNELS),
-        tick_range={"start_tick": 0, "end_tick": 2, "tick_count": 3},
-        config={},
+        producer=TraceProducer(impl="python", impl_version="test", platform="darwin", arch="x86_64"),
+        source=TraceSource(kind="unit_test", sha256="0" * 64),
+        tick_range=TraceTickRange(start_tick=0, end_tick=2, tick_count=3),
         status=GameStatusData(),
     )
 
@@ -143,7 +141,6 @@ def _row(*, tick_index: int, elapsed_ms: int, score_xp: int) -> TickRecord:
         dt_ms_i32=16,
         mode_id=1,
         channels=_channels(tick_index=int(tick_index), elapsed_ms=int(elapsed_ms), score_xp=int(score_xp)),
-        phase_markers=[],
     )
 
 
@@ -169,23 +166,20 @@ def test_trace_roundtrip_random_access(tmp_path: Path) -> None:
         assert [row.tick_index for row in window] == [1, 2]
 
 
-def test_trace_meta_decodes_with_unknown_fields() -> None:
+def test_trace_meta_rejects_unknown_fields() -> None:
     payload = msgspec.msgpack.encode(
         {
             "trace_format_version": TRACE_FORMAT_VERSION,
             "trace_schema_version": TRACE_SCHEMA_VERSION,
             "created_utc": "2026-02-24T00:00:00+00:00",
-            "producer": {"impl": "python"},
-            "source": {"kind": "unit_test"},
-            "channels": ["checkpoint"],
-            "channel_versions": {"checkpoint": 1},
+            "producer": {"impl": "python", "impl_version": "", "platform": "darwin", "arch": "x86_64"},
+            "source": {"kind": "unit_test", "sha256": "0" * 64},
             "tick_range": {"start_tick": 0, "end_tick": 0, "tick_count": 1},
-            "config": {},
             "future_field": {"nested": True},
         },
     )
-    meta = msgspec.msgpack.decode(payload, type=TraceMeta)
-    assert meta.trace_schema_version == TRACE_SCHEMA_VERSION
+    with pytest.raises(msgspec.ValidationError, match="future_field"):
+        msgspec.msgpack.decode(payload, type=TraceMeta)
 
 
 def test_tick_record_decodes_with_unknown_fields() -> None:
@@ -195,7 +189,6 @@ def test_tick_record_decodes_with_unknown_fields() -> None:
             "elapsed_ms": 112,
             "dt_ms_i32": 16,
             "mode_id": 2,
-            "phase_markers": ["pre", "post"],
             "channels": msgspec.to_builtins(_channels(tick_index=7, elapsed_ms=112, score_xp=42)),
             "future_tick_field": "ignored",
         },
@@ -213,12 +206,9 @@ def test_trace_reader_rejects_old_schema_version(tmp_path: Path) -> None:
         trace_format_version=int(TRACE_FORMAT_VERSION),
         trace_schema_version=1,
         created_utc="2026-02-24T00:00:00+00:00",
-        producer={"impl": "python", "impl_version": "test", "platform": "darwin", "arch": "x86_64"},
-        source={"kind": "unit_test", "sha256": "1" * 64},
-        channels=[*TRACE_REQUIRED_CHANNELS],
-        channel_versions=channel_versions_for(TRACE_REQUIRED_CHANNELS),
-        tick_range={"start_tick": 0, "end_tick": 0, "tick_count": 1},
-        config={},
+        producer=TraceProducer(impl="python", impl_version="test", platform="darwin", arch="x86_64"),
+        source=TraceSource(kind="unit_test", sha256="1" * 64),
+        tick_range=TraceTickRange(start_tick=0, end_tick=0, tick_count=1),
     )
     rows = [_row(tick_index=0, elapsed_ms=0, score_xp=0)]
     write_trace(out_path, meta=meta, ticks=rows, chunk_ticks=1)
@@ -234,12 +224,9 @@ def test_trace_reader_rejects_unknown_schema_version(tmp_path: Path) -> None:
         trace_format_version=int(TRACE_FORMAT_VERSION),
         trace_schema_version=99,
         created_utc="2026-02-24T00:00:00+00:00",
-        producer={"impl": "python", "impl_version": "test", "platform": "darwin", "arch": "x86_64"},
-        source={"kind": "unit_test", "sha256": "2" * 64},
-        channels=[*TRACE_REQUIRED_CHANNELS],
-        channel_versions=channel_versions_for(TRACE_REQUIRED_CHANNELS),
-        tick_range={"start_tick": 0, "end_tick": 0, "tick_count": 1},
-        config={},
+        producer=TraceProducer(impl="python", impl_version="test", platform="darwin", arch="x86_64"),
+        source=TraceSource(kind="unit_test", sha256="2" * 64),
+        tick_range=TraceTickRange(start_tick=0, end_tick=0, tick_count=1),
     )
     rows = [_row(tick_index=0, elapsed_ms=0, score_xp=0)]
     write_trace(out_path, meta=meta, ticks=rows, chunk_ticks=1)

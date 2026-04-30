@@ -48,12 +48,6 @@ def _build_parser() -> argparse.ArgumentParser:
         help="directory for finalized .cdt/.crd files (default: raw capture parent)",
     )
     parser.add_argument(
-        "--chunk-ticks",
-        type=int,
-        default=256,
-        help="ticks per compressed CDT block during finalize (default: 256)",
-    )
-    parser.add_argument(
         "--keep-raw",
         action="store_true",
         help="keep raw JSONL file after successful finalize",
@@ -184,7 +178,6 @@ def main(argv: list[str] | None = None) -> int:
         result = finalize_frida_jsonl_to_traces(
             raw_path,
             output_dir=(None if args.output_dir is None else Path(args.output_dir)),
-            chunk_ticks=max(1, int(args.chunk_ticks)),
             delete_raw=(not bool(args.keep_raw)),
         )
     except FridaFinalizeError as exc:

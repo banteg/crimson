@@ -32,7 +32,6 @@ uv run scripts/frida/gameplay_diff_capture_host.py \
 Optional flags:
 
 - `--raw-path <path>`: override JSONL path (otherwise host uses script stats `out_path`)
-- `--chunk-ticks <n>`: `.cdt` chunk size during finalize (default `256`)
 - `--keep-raw`: keep JSONL after successful finalize
 
 ## Direct attach

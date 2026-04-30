@@ -17,10 +17,9 @@ from .schema import (
     CHUNK_KIND_TICK,
     CHUNK_KINDS,
     DEFAULT_CHUNK_FLAGS,
-    SUPPORTED_TRACE_SCHEMA_VERSIONS,
     TRACE_FORMAT_VERSION,
     TRACE_MAGIC,
-    TRACE_REQUIRED_CHANNELS,
+    TRACE_SCHEMA_VERSION,
     TRAILER_MAGIC,
     TickBlock,
     TickBlockIndexEntry,
@@ -128,7 +127,6 @@ def _write_trace_from_iter(
         )
 
         tick_indices: list[TickBlockIndexEntry] = []
-        channel_counts: dict[str, int] = {}
         first_tick: int | None = None
         last_tick: int | None = None
         tick_count = 0
@@ -162,8 +160,6 @@ def _write_trace_from_iter(
                     )
                 last_tick = row_tick
                 tick_count += 1
-                for channel_name in TRACE_REQUIRED_CHANNELS:
-                    channel_counts[channel_name] = channel_counts.get(channel_name, 0) + 1
             current_block.clear()
 
         for tick in ticks:
@@ -177,12 +173,10 @@ def _write_trace_from_iter(
         if first_tick is None or last_tick is None:
             raise TraceError("trace footer tick bounds are missing")
         footer = TraceFooter(
-            trace_format_version=TRACE_FORMAT_VERSION,
             tick_blocks=tick_indices,
             tick_count=int(tick_count),
             first_tick=int(first_tick),
             last_tick=int(last_tick),
-            channel_counts={key: value for key, value in sorted(channel_counts.items())},
         )
         footer_payload = _ENCODER.encode(footer)
         footer_index = _write_chunk(
@@ -261,10 +255,9 @@ def _load_meta_at_offset(stream: io.BufferedReader, *, offset: int) -> TraceMeta
     if kind != CHUNK_KIND_META:
         raise TraceError("invalid trace meta chunk")
     meta = _META_DECODER.decode(payload)
-    if int(meta.trace_schema_version) not in SUPPORTED_TRACE_SCHEMA_VERSIONS:
-        supported = ", ".join(str(version) for version in sorted(SUPPORTED_TRACE_SCHEMA_VERSIONS))
+    if int(meta.trace_schema_version) != int(TRACE_SCHEMA_VERSION):
         raise TraceError(
-            f"unsupported trace schema version: {meta.trace_schema_version} (supported: {supported})",
+            f"unsupported trace schema version: {meta.trace_schema_version} (expected: {int(TRACE_SCHEMA_VERSION)})",
         )
     return meta
 

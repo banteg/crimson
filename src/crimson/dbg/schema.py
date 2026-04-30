@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
-from typing import Any
-
 import msgspec
 
 from ..persistence.save_status import GameStatusData
@@ -11,8 +8,7 @@ from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSna
 
 TRACE_MAGIC = b"crimson_debug_trace_v1\n"
 TRACE_FORMAT_VERSION = 1
-TRACE_SCHEMA_VERSION = 10
-SUPPORTED_TRACE_SCHEMA_VERSIONS = frozenset((TRACE_SCHEMA_VERSION,))
+TRACE_SCHEMA_VERSION = 12
 
 TRACE_REQUIRED_CHANNELS = (
     "checkpoint",
@@ -21,8 +17,6 @@ TRACE_REQUIRED_CHANNELS = (
     "rng_stream",
     "timing_samples",
 )
-
-_DEFAULT_CHANNEL_VERSION = 1
 
 _CHUNK_KIND_META = b"META"
 _CHUNK_KIND_TICK = b"TICK"
@@ -40,16 +34,44 @@ CHUNK_FLAG_MSGPACK = 1 << 1
 DEFAULT_CHUNK_FLAGS = int(CHUNK_FLAG_ZSTD | CHUNK_FLAG_MSGPACK)
 
 
-class TraceMeta(msgspec.Struct):
+class TraceProducer(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    impl: str
+    impl_version: str = ""
+    platform: str = ""
+    arch: str = ""
+
+
+class TraceSource(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    path: str | None = None
+    sha256: str | None = None
+    size: int | None = None
+    mtime_ns: int | None = None
+    kind: str | None = None
+    tick_rate: int | None = None
+    seed: int | None = None
+    mode_id: int | None = None
+    quest_level: str | None = None
+    run_id: int | None = None
+    quest_stage_major: int | None = None
+    quest_stage_minor: int | None = None
+    global_tick_first: int | None = None
+    global_tick_last: int | None = None
+    run_start_seed_source: str | None = None
+
+
+class TraceTickRange(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    start_tick: int
+    end_tick: int
+    tick_count: int
+
+
+class TraceMeta(msgspec.Struct, forbid_unknown_fields=True):
     trace_format_version: int
     trace_schema_version: int
     created_utc: str
-    producer: dict[str, Any]
-    source: dict[str, Any]
-    channels: list[str]
-    channel_versions: dict[str, int]
-    tick_range: dict[str, int]
-    config: dict[str, Any]
+    producer: TraceProducer
+    source: TraceSource
+    tick_range: TraceTickRange
     status: GameStatusData | None = None
 
 
@@ -67,7 +89,6 @@ class TickRecord(msgspec.Struct):
     dt_ms_i32: int
     mode_id: int
     channels: ReplayTickChannels
-    phase_markers: list[str] = msgspec.field(default_factory=list)
 
 
 class TickBlock(msgspec.Struct):
@@ -86,13 +107,7 @@ class TickBlockIndexEntry(msgspec.Struct):
 
 
 class TraceFooter(msgspec.Struct):
-    trace_format_version: int
     tick_blocks: list[TickBlockIndexEntry]
     tick_count: int
     first_tick: int
     last_tick: int
-    channel_counts: dict[str, int]
-
-
-def channel_versions_for(channels: Iterable[str]) -> dict[str, int]:
-    return {str(channel): int(_DEFAULT_CHANNEL_VERSION) for channel in channels}

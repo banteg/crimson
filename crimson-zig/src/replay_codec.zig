@@ -878,7 +878,7 @@ pub fn inflateZstdPayload(
     max_output_bytes: usize,
 ) ReplayCodecError![]u8 {
     var input: std.Io.Reader = .fixed(compressed);
-    var window: [std.compress.zstd.default_window_len]u8 = undefined;
+    var window: [std.compress.zstd.default_window_len + std.compress.zstd.block_size_max]u8 = undefined;
     var decompress: std.compress.zstd.Decompress = .init(&input, &window, .{ .verify_checksum = false });
 
     var out: std.ArrayList(u8) = .empty;

@@ -12,11 +12,16 @@ It is rewrite tooling format, not an original Crimsonland asset/container format
 This spec describes the current on-disk contract implemented by `src/crimson/dbg/schema.py`
 and `src/crimson/dbg/trace.py`.
 
+For cross-producer alignment details, see
+[`trace-format-alignment.md`](trace-format-alignment.md).
+
 ## Versioning
 
 - `trace_format_version`: container/envelope version (`1` currently)
-- `trace_schema_version`: channel payload schema version (`7` currently)
+- `trace_schema_version`: channel payload schema version (`12` currently)
 - container and schema versions are independent
+- Zig's runtime replay trace structs are internal collection types; CDT is the
+  shared on-disk debug trace format
 
 ## File layout
 
@@ -60,12 +65,17 @@ Payload encoding:
 - `elapsed_ms`
 - `dt_ms_i32`
 - `mode_id`
-- `phase_markers`
 - `channels` (`ReplayTickChannels`)
 
 Tick rows are required to be non-decreasing by `tick_index`.
 
-## Channel contract (schema v7)
+`TraceMeta` uses typed metadata structs for `producer`, `source`, and
+`tick_range`. Unknown metadata fields are rejected. Producer-private settings
+stay in producer-private logs instead of the shared CDT metadata.
+
+`TraceFooter` stores the tick block index and total tick window.
+
+## Channel contract (schema v12)
 
 Required channels in both compared traces:
 
@@ -84,8 +94,38 @@ and `src/crimson/dbg/canonical_channels.py`:
 - `rng_stream` -> `list[RngStreamRow]`
 - `timing_samples` -> `list[TimingSampleRow]`
 
-`phase_markers` remain `list[str]` in the durable trace contract.
-Raw Frida capture may hold richer structured phase-marker payloads, but finalize flattens them to names in the trace row.
+`rng_stream` rows contain:
+
+- `tick_call_index`
+- `value_15`
+- `state_before_u32`
+- `state_after_u32`
+- `caller`
+
+`caller` is the optional static caller address used for parity diagnostics. It is
+stored as an integer and rendered as hex only in human-facing diff output. Frida
+raw JSONL still uses producer-private field names such as `caller_static`, but
+finalization canonicalizes them into this durable `caller` field.
+
+`timing_samples` rows contain phase-level timing evidence. Frida captures,
+Python replay traces, and Zig replay traces all emit a non-empty row set with a
+`gpur_enter` sample for supported replay ticks. The shared minimum row records
+the tick index, gameplay frame, `frame_dt_f32`, `frame_dt_ms_i32`,
+`frame_dt_ms_f32`, time-scale state, reflex boost timer, and
+`mode_fn = "gameplay_update_and_render"`.
+
+## Producers
+
+The intended comparison set is:
+
+1. Original game capture, produced by Frida JSONL and finalized by
+   `src/crimson/dbg/frida_finalize.py`.
+2. Python replay trace, produced by `src/crimson/dbg/record.py`.
+3. Zig replay trace, produced by `crimson-zig/src/cdt_trace.zig`.
+
+All three producers should emit the same required channels and the same durable
+row semantics. Producer-private fields are allowed before finalization, but the
+`.cdt` payload must stay canonical.
 
 ## Diff contract
 

@@ -199,6 +199,8 @@ def tick_summary_from_row(row: TickRecord) -> BuiltinObject:
     event_count_total = sum(event_counts.values())
     event_types_sorted = sorted(event_counts.items(), key=lambda item: (-item[1], item[0]))
     top_event_types = [f"{name}:{count}" for name, count in event_types_sorted[:8]]
+    rng_stream_count = len(row.channels.rng_stream)
+    timing_samples_count = len(row.channels.timing_samples)
 
     return to_builtin_object(
         {
@@ -206,9 +208,10 @@ def tick_summary_from_row(row: TickRecord) -> BuiltinObject:
             "elapsed_ms": row.elapsed_ms,
             "dt_ms_i32": row.dt_ms_i32,
             "mode_id": row.mode_id,
-            "phase_markers": list(row.phase_markers),
             "checkpoint": checkpoint,
             "entity_counts": entity_counts,
+            "rng_stream_count": rng_stream_count,
+            "timing_samples_count": timing_samples_count,
             "event_count_total": event_count_total,
             "top_event_types": top_event_types,
         },

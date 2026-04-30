@@ -32,11 +32,9 @@ def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Pa
         *,
         replay_path: Path,
         out_path: Path,
-        chunk_ticks: int,
     ) -> object:
         captured["replay_path"] = replay_path
         captured["out_path"] = out_path
-        captured["chunk_ticks"] = chunk_ticks
         return sentinel
 
     monkeypatch.setattr(dbg_record, "_record_replay_to_trace_python", _fake_python)
@@ -51,7 +49,6 @@ def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Pa
         replay_path=replay_path,
         out_path=out_path,
         impl="python",
-        chunk_ticks=32,
         warnings_out=warnings,
     )
 
@@ -59,7 +56,6 @@ def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Pa
     assert warnings == []
     assert captured["replay_path"] == replay_path
     assert captured["out_path"] == out_path
-    assert captured["chunk_ticks"] == 32
 
 
 def test_record_replay_to_trace_dispatches_zig_impl_and_collects_warnings(monkeypatch, tmp_path: Path) -> None:
@@ -72,11 +68,9 @@ def test_record_replay_to_trace_dispatches_zig_impl_and_collects_warnings(monkey
         *,
         replay_path: Path,
         out_path: Path,
-        chunk_ticks: int,
     ) -> tuple[object, list[str]]:
         captured["replay_path"] = replay_path
         captured["out_path"] = out_path
-        captured["chunk_ticks"] = chunk_ticks
         return sentinel, ["warning: first", "warning: second"]
 
     monkeypatch.setattr(
@@ -91,7 +85,6 @@ def test_record_replay_to_trace_dispatches_zig_impl_and_collects_warnings(monkey
         replay_path=replay_path,
         out_path=out_path,
         impl="zig",
-        chunk_ticks=64,
         warnings_out=warnings,
     )
 
@@ -99,7 +92,6 @@ def test_record_replay_to_trace_dispatches_zig_impl_and_collects_warnings(monkey
     assert warnings == ["warning: existing", "warning: first", "warning: second"]
     assert captured["replay_path"] == replay_path
     assert captured["out_path"] == out_path
-    assert captured["chunk_ticks"] == 64
 
 
 def test_record_replay_to_trace_python_writes_unattributed_rows(
@@ -134,8 +126,16 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
 
         def run(self, *, hooks):
             tick_result = SimpleNamespace(source_tick=SimpleNamespace(tick_index=0))
+            world = SimpleNamespace(
+                state=SimpleNamespace(
+                    time_scale_active=False,
+                    bonuses=SimpleNamespace(reflex_boost=0.0),
+                ),
+            )
+            if hooks.before_tick is not None:
+                hooks.before_tick(0, world, 0.016)
             if hooks.after_tick is not None:
-                hooks.after_tick(tick_result, SimpleNamespace())
+                hooks.after_tick(tick_result, world)
                 if hooks.on_rng_trace is not None:
                     hooks.on_rng_trace(
                         tick_result,
@@ -180,7 +180,6 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
     summary = dbg_record._record_replay_to_trace_python(
         replay_path=replay_path,
         out_path=tmp_path / "sample.cdt",
-        chunk_ticks=1,
     )
 
     assert summary.meta.trace_schema_version == TRACE_SCHEMA_VERSION
@@ -189,6 +188,8 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
     assert meta.status == replay.header.status
     assert footer.tick_count == 1
     assert ticks[0].channels.rng_stream[0].caller is None
+    assert len(ticks[0].channels.timing_samples) == 1
+    assert ticks[0].channels.timing_samples[0].phase == "gpur_enter"
 
 
 def test_record_replay_to_trace_zig_emits_python_readable_trace(tmp_path: Path) -> None:
@@ -252,8 +253,6 @@ def test_record_replay_to_trace_zig_emits_python_readable_trace(tmp_path: Path) 
             str(replay_path),
             "--debug-trace-cdt",
             str(out_path),
-            "--debug-trace-cdt-chunk-ticks",
-            "64",
             "--format",
             "json",
         ],

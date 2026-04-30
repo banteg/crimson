@@ -11,7 +11,7 @@ from crimson.dbg.trace import load_trace
 from crimson.replay.codec import load_replay_file
 from crimson.replay.types import WEAPON_USAGE_COUNT
 
-CAPTURE_FORMAT_VERSION = 11
+CAPTURE_FORMAT_VERSION = 12
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> Path:
@@ -34,7 +34,6 @@ def _session_fingerprint_stub() -> dict[str, object]:
 def _session_config_stub() -> dict[str, object]:
     return {
         "out_path": "C:\\share\\frida\\gameplay_diff_capture.jsonl",
-        "jsonl_schema_version": 1,
         "capture_profile": "exhaustive_default",
         "config_env_overrides": [],
         "log_mode": "truncate",
@@ -84,7 +83,6 @@ def _session_config_stub() -> dict[str, object]:
 def _session_start_row(*, capture_format_version: int = CAPTURE_FORMAT_VERSION) -> dict[str, object]:
     return {
         "event": "session_start",
-        "schema_version": 1,
         "capture_format_version": int(capture_format_version),
         "session_id": "session-test",
         "out_path": "C:\\share\\frida\\gameplay_diff_capture.jsonl",
@@ -232,7 +230,6 @@ def _rng_stream_row_stub(
         "state_before_u32": int(state_before_u32),
         "state_after_u32": int(state_after_u32),
         "caller_static": caller_static,
-        "branch_id": caller_static,
     }
 
 
@@ -372,7 +369,6 @@ def _tick_row(
         "mode_id": int(mode_id),
         "quest_stage_major": int(quest_stage_major),
         "quest_stage_minor": int(quest_stage_minor),
-        "phase_markers": [],
         "replay_inputs": _replay_inputs_stub(player_count=player_count),
         "channels": _channels_stub(
             tick_index=int(tick_index),
@@ -433,7 +429,6 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                 "dt_ms_i32": 16,
                 "dt": 0.016,
                 "mode_id": 1,
-                "phase_markers": ["a"],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": _channels_stub(
                     tick_index=100,
@@ -462,7 +457,6 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                 "dt_ms_i32": 16,
                 "dt": 0.016,
                 "mode_id": 1,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": _channels_stub(
                     tick_index=101,
@@ -494,11 +488,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
 
     meta, ticks, footer = load_trace(out_trace.out_path)
     assert footer.tick_count == 2
-    assert meta.producer["impl"] == "frida_original"
-    assert "checkpoint" in meta.channels
-    assert "sim_state" in meta.channels
-    assert "entity_samples" in meta.channels
-    assert "rng_stream" in meta.channels
+    assert meta.producer.impl == "frida_original"
     assert ticks[0].channels.checkpoint.tick_index == 0
     assert ticks[1].channels.checkpoint.tick_index == 1
 
@@ -538,7 +528,6 @@ def test_finalize_frida_jsonl_to_traces_canonicalizes_rng_caller(tmp_path: Path)
 
     _meta, ticks, _footer = load_trace(result.traces[0].out_path)
     assert ticks[0].channels.rng_stream[0].caller == 0x00430B88
-    assert not hasattr(ticks[0].channels.rng_stream[0], "branch_id")
 
 
 def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_closed(tmp_path: Path) -> None:
@@ -554,7 +543,6 @@ def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_clos
                 "dt_ms_i32": 16,
                 "dt": 0.016,
                 "mode_id": 1,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": _channels_stub(tick_index=0, elapsed_ms=0, mode_id=1),
             },
@@ -581,7 +569,6 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
                 "dt_ms_i32": 33,
                 "dt": 0.033,
                 "mode_id": 2,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": _channels_stub(tick_index=0, elapsed_ms=33, mode_id=2, dt_ms_i32=33, dt=0.033),
             },
@@ -617,7 +604,6 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "mode_id": 3,
                 "quest_stage_major": 1,
                 "quest_stage_minor": 5,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": _channels_stub(
                     tick_index=0,
@@ -638,7 +624,6 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "mode_id": 2,
                 "quest_stage_major": 1,
                 "quest_stage_minor": 5,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": _channels_stub(
                     tick_index=1,
@@ -659,7 +644,6 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "mode_id": 1,
                 "quest_stage_major": 1,
                 "quest_stage_minor": 5,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": _channels_stub(
                     tick_index=2,
@@ -705,7 +689,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_rng_marks_channel(tmp_pat
                 "dt_ms_i32": 16,
                 "dt": 0.016,
                 "mode_id": 1,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": {
                     **_channels_stub(tick_index=123, elapsed_ms=0, mode_id=1),
@@ -818,7 +801,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
                 "dt_ms_i32": 16,
                 "dt": 0.016,
                 "mode_id": 3,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": _channels_stub(tick_index=0, elapsed_ms=16, mode_id=3),
             },
@@ -827,7 +809,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 11"):
+    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 12"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -846,7 +828,6 @@ def test_finalize_frida_jsonl_to_traces_keeps_large_first_tick_elapsed(tmp_path:
                 "mode_id": 3,
                 "quest_stage_major": 1,
                 "quest_stage_minor": 1,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": _channels_stub(
                     tick_index=0,
@@ -883,7 +864,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_required_canonical_chann
                 "dt_ms_i32": 16,
                 "dt": 0.016,
                 "mode_id": 3,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": channels,
             },
@@ -913,7 +893,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_extra_non_canonical_channel(
                 "dt_ms_i32": 16,
                 "dt": 0.016,
                 "mode_id": 3,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": channels,
             },
@@ -1016,7 +995,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_timing_samples_field(tmp
                 "mode_id": 3,
                 "quest_stage_major": 1,
                 "quest_stage_minor": 1,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": channels,
             },
@@ -1051,7 +1029,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_empty_checkpoint_players(tmp_pat
                 "mode_id": 3,
                 "quest_stage_major": 1,
                 "quest_stage_minor": 1,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": channels,
             },
@@ -1086,7 +1063,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_invalid_checkpoint_rng_state(tmp
                 "mode_id": 3,
                 "quest_stage_major": 1,
                 "quest_stage_minor": 1,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": channels,
             },
@@ -1120,7 +1096,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_empty_timing_samples(tmp_path: P
                 "mode_id": 3,
                 "quest_stage_major": 1,
                 "quest_stage_minor": 1,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": channels,
             },
@@ -1261,7 +1236,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_sim_state_player_count_mismatch(
                 "mode_id": 3,
                 "quest_stage_major": 1,
                 "quest_stage_minor": 1,
-                "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": channels,
             },
