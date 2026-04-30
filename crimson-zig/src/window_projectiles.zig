@@ -596,7 +596,7 @@ fn drawPlagueQuad(texture: rl.Texture2D, center: rl.Vector2, desired_size: f32, 
 }
 
 fn isIonType(type_id_raw: i32) bool {
-    const type_id = std.meta.intToEnum(game_ids.ProjectileTypeId, type_id_raw) catch return false;
+    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return false;
     return switch (type_id) {
         .ion_rifle, .ion_minigun, .ion_cannon => true,
         else => false,

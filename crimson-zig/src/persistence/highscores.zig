@@ -1,3 +1,4 @@
+const builtin = @import("builtin");
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 
@@ -16,7 +17,7 @@ pub const DateStamp = struct {
 
 pub const HighScoreError = error{
     InvalidSize,
-} || std.mem.Allocator.Error || std.fs.File.OpenError || std.fs.File.ReadError || std.fs.File.WriteError || std.fs.Dir.MakeError;
+} || std.mem.Allocator.Error || std.Io.Dir.ReadFileAllocError || std.Io.Dir.WriteFileError || std.Io.Dir.CreateDirPathError;
 
 pub const RecordList = struct {
     items: []HighScoreRecord,
@@ -100,7 +101,7 @@ pub const HighScoreRecord = struct {
     }
 
     pub fn gameModeId(self: *const HighScoreRecord) ?game_ids.GameModeId {
-        return std.meta.intToEnum(game_ids.GameModeId, self.gameModeRaw()) catch null;
+        return std.enums.fromInt(game_ids.GameModeId, self.gameModeRaw()) orelse null;
     }
 
     pub fn setGameModeRaw(self: *HighScoreRecord, value: i32) void {
@@ -128,7 +129,7 @@ pub const HighScoreRecord = struct {
     }
 
     pub fn mostUsedWeaponId(self: *const HighScoreRecord) game_ids.WeaponId {
-        return std.meta.intToEnum(game_ids.WeaponId, self.data[0x2B]) catch .none;
+        return std.enums.fromInt(game_ids.WeaponId, self.data[0x2B]) orelse .none;
     }
 
     pub fn setMostUsedWeaponId(self: *HighScoreRecord, value: game_ids.WeaponId) void {
@@ -228,7 +229,8 @@ pub fn readHighscoreRecords(
     allocator: std.mem.Allocator,
     path: []const u8,
 ) HighScoreError!RecordList {
-    const bytes = std.fs.cwd().readFileAlloc(allocator, path, std.math.maxInt(usize)) catch |err| switch (err) {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    const bytes = std.Io.Dir.cwd().readFileAlloc(io, path, allocator, .unlimited) catch |err| switch (err) {
         error.FileNotFound => return .{ .items = try allocator.alloc(HighScoreRecord, 0) },
         else => return err,
     };
@@ -255,8 +257,9 @@ pub fn writeHighscoreRecords(
     records: []const HighScoreRecord,
     now: ?DateStamp,
 ) HighScoreError!void {
+    const io = std.Io.Threaded.global_single_threaded.io();
     if (std.fs.path.dirname(path)) |dir_path| {
-        try std.fs.cwd().makePath(dir_path);
+        try std.Io.Dir.cwd().createDirPath(io, dir_path);
     }
 
     var bytes: std.ArrayList(u8) = .empty;
@@ -273,7 +276,7 @@ pub fn writeHighscoreRecords(
         try appendU32(allocator, &bytes, checksum);
     }
 
-    try std.fs.cwd().writeFile(.{
+    try std.Io.Dir.cwd().writeFile(io, .{
         .sub_path = path,
         .data = bytes.items,
     });
@@ -365,7 +368,7 @@ pub fn sortHighscores(records: []HighScoreRecord, game_mode_id_raw: i32) void {
 }
 
 fn normalizeGameMode(game_mode_id_raw: i32) ?game_ids.GameModeId {
-    return std.meta.intToEnum(game_ids.GameModeId, game_mode_id_raw) catch null;
+    return std.enums.fromInt(game_ids.GameModeId, game_mode_id_raw) orelse null;
 }
 
 fn highscoreLessThan(game_mode_id_raw: i32, lhs: HighScoreRecord, rhs: HighScoreRecord) bool {
@@ -466,7 +469,7 @@ fn writeU32(bytes: []u8, value: u32) void {
 }
 
 fn currentDateStampUtc() DateStamp {
-    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(@max(std.time.timestamp(), 0)) };
+    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = currentEpochSeconds() };
     const epoch_day = epoch_seconds.getEpochDay();
     const year_day = epoch_day.calculateYearDay();
     const month_day = year_day.calculateMonthDay();
@@ -476,6 +479,13 @@ fn currentDateStampUtc() DateStamp {
         .month = @intCast(@intFromEnum(month_day.month) + 1),
         .day = @intCast(month_day.day_index + 1),
     };
+}
+
+fn currentEpochSeconds() u64 {
+    if (builtin.os.tag == .freestanding) return 0;
+    const io = std.Io.Threaded.global_single_threaded.io();
+    const timestamp = std.Io.Timestamp.now(io, .real);
+    return @intCast(@max(timestamp.toSeconds(), 0));
 }
 
 test "record name and field accessors roundtrip" {
@@ -595,7 +605,7 @@ test "write and read highscore records preserve valid records" {
     var tmp = std.testing.tmpDir(.{});
     defer tmp.cleanup();
 
-    const base_dir = try tmp.dir.realpathAlloc(allocator, ".");
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
     defer allocator.free(base_dir);
 
     const path = try scoresPathForMode(allocator, base_dir, @intFromEnum(game_ids.GameModeId.survival), .{});
@@ -629,7 +639,7 @@ test "upsert keeps quest tables sorted ascending with zero times last" {
     var tmp = std.testing.tmpDir(.{});
     defer tmp.cleanup();
 
-    const base_dir = try tmp.dir.realpathAlloc(allocator, ".");
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
     defer allocator.free(base_dir);
 
     const path = try scoresPathForMode(allocator, base_dir, @intFromEnum(game_ids.GameModeId.quests), .{

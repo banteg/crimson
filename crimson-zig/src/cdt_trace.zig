@@ -49,7 +49,7 @@ const TraceDomainError = error{
     NumericOverflow,
 };
 
-const TraceFsError = std.fs.Dir.MakeError || std.fs.Dir.StatFileError || std.fs.File.OpenError || std.fs.File.WriteError || std.fs.File.StatError;
+const TraceFsError = std.Io.Dir.CreateDirPathError || std.Io.Dir.StatFileError || std.Io.File.OpenError || std.Io.File.Writer.Error || std.Io.File.StatError;
 const TraceWriterError = std.Io.Writer.Error;
 const TraceAllocError = std.mem.Allocator.Error;
 const TraceMsgpackError = error{
@@ -432,16 +432,17 @@ pub fn writeReplayTickTraceCdt(
 ) TraceWriteError!void {
     if (rows.len == 0) return error.EmptyTrace;
 
+    const io = std.Io.Threaded.global_single_threaded.io();
     if (std.fs.path.dirname(trace_path)) |dir| {
-        if (dir.len > 0) try std.fs.cwd().makePath(dir);
+        if (dir.len > 0) try std.Io.Dir.cwd().createDirPath(io, dir);
     }
-    const file = try std.fs.cwd().createFile(trace_path, .{
+    const file = try std.Io.Dir.cwd().createFile(io, trace_path, .{
         .truncate = true,
     });
-    defer file.close();
+    defer file.close(io);
 
     var out_buffer: [16384]u8 = undefined;
-    var writer = file.writer(&out_buffer);
+    var writer = file.writer(io, &out_buffer);
     const out = &writer.interface;
     var file_offset: usize = 0;
 
@@ -452,8 +453,8 @@ pub fn writeReplayTickTraceCdt(
     var replay_sha256: [64]u8 = undefined;
     hash.sha256HexLower(replay_bytes, &replay_sha256);
 
-    const stat = try std.fs.cwd().statFile(replay_path);
-    const mtime_ns = castI64Clamp(stat.mtime);
+    const stat = try std.Io.Dir.cwd().statFile(io, replay_path, .{});
+    const mtime_ns = castI64Clamp(stat.mtime.nanoseconds);
 
     const meta: TraceMeta = .{
         .created_utc = "1970-01-01T00:00:00+00:00",

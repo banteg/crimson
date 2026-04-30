@@ -54,7 +54,7 @@ fn printUsage() !void {
 
 fn writeStdout(bytes: []const u8) !void {
     var buffer: [4096]u8 = undefined;
-    var writer = std.fs.File.stdout().writer(&buffer);
+    var writer = std.Io.File.stdout().writer(std.Io.Threaded.global_single_threaded.io(), &buffer);
     const out = &writer.interface;
     try out.writeAll(bytes);
     try out.flush();
@@ -62,7 +62,7 @@ fn writeStdout(bytes: []const u8) !void {
 
 fn writeStderr(bytes: []const u8) !void {
     var buffer: [4096]u8 = undefined;
-    var writer = std.fs.File.stderr().writer(&buffer);
+    var writer = std.Io.File.stderr().writer(std.Io.Threaded.global_single_threaded.io(), &buffer);
     const err = &writer.interface;
     try err.writeAll(bytes);
     try err.flush();

@@ -42,7 +42,7 @@ pub fn packBonusOnDeathArgs(bonus_id: game_ids.BonusId, amount_override: i32) i3
 fn unpackBonusOnDeathArgs(link_index: i32) ?struct { bonus_id: game_ids.BonusId, amount_override: i32 } {
     const raw: u32 = @bitCast(link_index);
     const raw_bonus: i32 = @intCast(raw & 0xFFFF);
-    const bonus_id = std.meta.intToEnum(game_ids.BonusId, raw_bonus) catch return null;
+    const bonus_id = std.enums.fromInt(game_ids.BonusId, raw_bonus) orelse return null;
     const raw_amount_u16: u16 = @intCast((raw >> 16) & 0xFFFF);
     const amount_override: i32 = @as(i16, @bitCast(raw_amount_u16));
     return .{

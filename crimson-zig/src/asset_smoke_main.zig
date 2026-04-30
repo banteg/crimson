@@ -1,6 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 
+const runtime_paths = @import("crimson_zig").runtime_paths;
 const window_assets = @import("window_assets.zig");
 
 const SmokeStats = struct {
@@ -16,15 +17,12 @@ const SmokeStats = struct {
     failures: usize = 0,
 };
 
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
+    runtime_paths.useEnviron(init.environ_map);
     rl.setTraceLogLevel(.err);
 
-    var gpa: std.heap.GeneralPurposeAllocator(.{}) = .{};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
-
-    const args = try std.process.argsAlloc(allocator);
-    defer std.process.argsFree(allocator, args);
+    const allocator = init.gpa;
+    const args = try init.minimal.args.toSlice(init.arena.allocator());
 
     if (args.len >= 2 and (std.mem.eql(u8, args[1], "--help") or std.mem.eql(u8, args[1], "-h"))) {
         try printUsage();
@@ -48,7 +46,7 @@ pub fn main() !void {
     const stats = try runSmoke(allocator, assets_dir);
 
     var out_buf: [4096]u8 = undefined;
-    var out_writer = std.fs.File.stdout().writer(&out_buf);
+    var out_writer = std.Io.File.stdout().writer(std.Io.Threaded.global_single_threaded.io(), &out_buf);
     const out = &out_writer.interface;
     try out.print(
         "asset-smoke: {s}\narchive_entries={d} decoded={d} jaz={d} tga={d} jpg={d} jpeg={d} dat={d} skipped={d} runtime_specs={d} failures={d}\n",
@@ -155,7 +153,7 @@ fn decodeImage(allocator: std.mem.Allocator, rel_path: []const u8, payload: []co
 
 fn printFailure(rel_path: []const u8, err: anyerror) !void {
     var err_buf: [1024]u8 = undefined;
-    var err_writer = std.fs.File.stderr().writer(&err_buf);
+    var err_writer = std.Io.File.stderr().writer(std.Io.Threaded.global_single_threaded.io(), &err_buf);
     const stderr = &err_writer.interface;
     try stderr.print("asset-smoke failure: {s}: {s}\n", .{ rel_path, @errorName(err) });
     try stderr.flush();
@@ -174,7 +172,7 @@ fn printUsage() !void {
 
 fn writeStdout(bytes: []const u8) !void {
     var buffer: [1024]u8 = undefined;
-    var writer = std.fs.File.stdout().writer(&buffer);
+    var writer = std.Io.File.stdout().writer(std.Io.Threaded.global_single_threaded.io(), &buffer);
     const out = &writer.interface;
     try out.writeAll(bytes);
     try out.flush();
@@ -182,7 +180,7 @@ fn writeStdout(bytes: []const u8) !void {
 
 fn writeStderr(bytes: []const u8) !void {
     var buffer: [1024]u8 = undefined;
-    var writer = std.fs.File.stderr().writer(&buffer);
+    var writer = std.Io.File.stderr().writer(std.Io.Threaded.global_single_threaded.io(), &buffer);
     const err = &writer.interface;
     try err.writeAll(bytes);
     try err.flush();

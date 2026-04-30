@@ -6,8 +6,7 @@ pub const RuntimeArchiveError = formats.paq.PaqError || std.mem.Allocator.Error 
 };
 
 pub const OpenArchiveError = RuntimeArchiveError ||
-    std.fs.File.OpenError ||
-    std.fs.File.ReadError;
+    std.Io.Dir.ReadFileAllocError;
 
 pub const Archive = struct {
     allocator: std.mem.Allocator,
@@ -76,10 +75,9 @@ pub const Archive = struct {
 pub fn readFileAlloc(
     allocator: std.mem.Allocator,
     path: []const u8,
-) (std.mem.Allocator.Error || std.fs.File.OpenError || std.fs.File.ReadError)![]u8 {
-    const file = try std.fs.cwd().openFile(path, .{});
-    defer file.close();
-    return file.readToEndAlloc(allocator, std.math.maxInt(usize));
+) std.Io.Dir.ReadFileAllocError![]u8 {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    return std.Io.Dir.cwd().readFileAlloc(io, path, allocator, .unlimited);
 }
 
 fn normalizeArchiveEntryNameOwned(

@@ -1,3 +1,4 @@
+const builtin = @import("builtin");
 const std = @import("std");
 const rl = @import("raylib");
 
@@ -1503,7 +1504,7 @@ fn highScoreTitle(mode: game_ids.GameModeId) []const u8 {
 }
 
 fn highScoreModeFromConfig(config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) game_ids.GameModeId {
-    const mode = std.meta.intToEnum(game_ids.GameModeId, @as(i32, @intCast(config.game_mode))) catch .survival;
+    const mode = std.enums.fromInt(game_ids.GameModeId, @as(i32, @intCast(config.game_mode))) orelse .survival;
     if (mode == .typo and status.quest_unlock_index < 40) return .survival;
     return switch (mode) {
         .survival, .rush, .quests, .typo => mode,
@@ -1610,7 +1611,7 @@ fn passesDateFilter(record: persistence.highscores.HighScoreRecord, date_mode_ra
 }
 
 fn currentDateStampUtc() persistence.highscores.DateStamp {
-    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(@max(std.time.timestamp(), 0)) };
+    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = currentEpochSeconds() };
     const epoch_day = epoch_seconds.getEpochDay();
     const year_day = epoch_day.calculateYearDay();
     const month_day = year_day.calculateMonthDay();
@@ -1619,6 +1620,13 @@ fn currentDateStampUtc() persistence.highscores.DateStamp {
         .month = @intCast(@intFromEnum(month_day.month) + 1),
         .day = @intCast(month_day.day_index + 1),
     };
+}
+
+fn currentEpochSeconds() u64 {
+    if (builtin.os.tag == .freestanding) return 0;
+    const io = std.Io.Threaded.global_single_threaded.io();
+    const timestamp = std.Io.Timestamp.now(io, .real);
+    return @intCast(@max(timestamp.toSeconds(), 0));
 }
 
 fn buildWeaponList(

@@ -2,6 +2,7 @@ const std = @import("std");
 
 const replay_codec = @import("replay_codec.zig");
 const replay_info_mod = @import("runtime/replay_info.zig");
+const runtime_paths = @import("runtime_paths.zig");
 const verify_native = @import("verify_native.zig");
 
 const replay_info_schema_version: i32 = 2;
@@ -96,10 +97,12 @@ fn runNativeInfo(
         return buildInfoFailedOutput(allocator, "only .crd replay files are currently supported");
     }
 
-    const replay_bytes = std.fs.cwd().readFileAlloc(
-        allocator,
+    const io = std.Io.Threaded.global_single_threaded.io();
+    const replay_bytes = std.Io.Dir.cwd().readFileAlloc(
+        io,
         resolution.resolved_path,
-        replay_codec.max_replay_payload_bytes,
+        allocator,
+        .limited(replay_codec.max_replay_payload_bytes),
     ) catch |err| {
         return buildInfoFailedOutput(allocator, @errorName(err));
     };
@@ -200,9 +203,9 @@ fn runNativeInfo(
         };
     }
 
-    var stdout_buf: std.ArrayList(u8) = .empty;
-    defer stdout_buf.deinit(allocator);
-    var writer = stdout_buf.writer(allocator);
+    var stdout_buf: std.Io.Writer.Allocating = .init(allocator);
+    defer stdout_buf.deinit();
+    const writer = &stdout_buf.writer;
 
     if (request.output_format == .json) {
         try writer.writeAll(payload_json);
@@ -239,7 +242,7 @@ fn runNativeInfo(
     }
 
     return .{
-        .stdout = try stdout_buf.toOwnedSlice(allocator),
+        .stdout = try stdout_buf.toOwnedSlice(),
         .stderr = try allocator.dupe(u8, ""),
         .exit_code = 0,
     };
@@ -249,10 +252,9 @@ fn buildReplayNotFoundOutput(
     allocator: std.mem.Allocator,
     resolution: ReplayResolution,
 ) !CommandOutput {
-    var stderr_buf: std.ArrayList(u8) = .empty;
-    defer stderr_buf.deinit(allocator);
-
-    var writer = stderr_buf.writer(allocator);
+    var stderr_buf: std.Io.Writer.Allocating = .init(allocator);
+    defer stderr_buf.deinit();
+    const writer = &stderr_buf.writer;
     try writer.print("replay file not found: {s}", .{resolution.tried_primary});
     if (resolution.tried_secondary) |secondary| {
         try writer.print(" (also tried: {s})", .{secondary});
@@ -261,7 +263,7 @@ fn buildReplayNotFoundOutput(
 
     return .{
         .stdout = try allocator.dupe(u8, ""),
-        .stderr = try stderr_buf.toOwnedSlice(allocator),
+        .stderr = try stderr_buf.toOwnedSlice(),
         .exit_code = 1,
     };
 }
@@ -270,13 +272,13 @@ fn buildInvalidInfoArgsOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
 ) !CommandOutput {
-    var stderr_buf: std.ArrayList(u8) = .empty;
-    defer stderr_buf.deinit(allocator);
-    var writer = stderr_buf.writer(allocator);
+    var stderr_buf: std.Io.Writer.Allocating = .init(allocator);
+    defer stderr_buf.deinit();
+    const writer = &stderr_buf.writer;
     try writer.print("invalid replay info args: {s}\n", .{detail});
     return .{
         .stdout = try allocator.dupe(u8, ""),
-        .stderr = try stderr_buf.toOwnedSlice(allocator),
+        .stderr = try stderr_buf.toOwnedSlice(),
         .exit_code = 1,
     };
 }
@@ -285,13 +287,13 @@ fn buildInfoFailedOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
 ) !CommandOutput {
-    var stderr_buf: std.ArrayList(u8) = .empty;
-    defer stderr_buf.deinit(allocator);
-    var writer = stderr_buf.writer(allocator);
+    var stderr_buf: std.Io.Writer.Allocating = .init(allocator);
+    defer stderr_buf.deinit();
+    const writer = &stderr_buf.writer;
     try writer.print("replay info failed: {s}\n", .{detail});
     return .{
         .stdout = try allocator.dupe(u8, ""),
-        .stderr = try stderr_buf.toOwnedSlice(allocator),
+        .stderr = try stderr_buf.toOwnedSlice(),
         .exit_code = 1,
     };
 }
@@ -509,11 +511,7 @@ fn resolveReplayPath(
 }
 
 fn defaultRuntimeDir(allocator: std.mem.Allocator) ![]u8 {
-    if (std.posix.getenv("CRIMSON_RUNTIME_DIR")) |value| {
-        return allocator.dupe(u8, std.mem.sliceTo(value, 0));
-    }
-    const home = std.posix.getenv("HOME") orelse return error.EnvironmentVariableNotFound;
-    return std.fs.path.join(allocator, &.{ std.mem.sliceTo(home, 0), "Library", "Application Support", "crimson" });
+    return (try runtime_paths.defaultRuntimeDir(allocator)) orelse allocator.dupe(u8, ".");
 }
 
 fn isSingleSegmentPath(path: []const u8) bool {
@@ -522,7 +520,8 @@ fn isSingleSegmentPath(path: []const u8) bool {
 }
 
 fn isFile(path: []const u8) !bool {
-    std.fs.cwd().access(path, .{}) catch |err| switch (err) {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    std.Io.Dir.cwd().access(io, path, .{}) catch |err| switch (err) {
         error.FileNotFound => return false,
         else => return err,
     };
@@ -530,10 +529,11 @@ fn isFile(path: []const u8) !bool {
 }
 
 fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
+    const io = std.Io.Threaded.global_single_threaded.io();
     if (std.fs.path.dirname(path)) |dir| {
-        if (dir.len > 0) try std.fs.cwd().makePath(dir);
+        if (dir.len > 0) try std.Io.Dir.cwd().createDirPath(io, dir);
     }
-    try std.fs.cwd().writeFile(.{
+    try std.Io.Dir.cwd().writeFile(io, .{
         .sub_path = path,
         .data = bytes,
     });

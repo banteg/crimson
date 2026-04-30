@@ -4,19 +4,18 @@ const cz = @import("crimson_zig");
 const game_ids = cz.game_ids;
 const formats = cz.formats;
 const quest_status = @import("quest_status.zig");
-const runtime_paths = @import("runtime_paths.zig");
+const runtime_paths = cz.runtime_paths;
 const runtime_session = cz.session;
 
 pub const game_cfg_name = "game.cfg";
 pub const crimson_cfg_name = "crimson.cfg";
 
 pub const DesktopRuntimeError = std.mem.Allocator.Error ||
-    std.process.GetEnvVarOwnedError ||
-    std.fs.Dir.AccessError ||
-    std.fs.Dir.MakeError ||
-    std.fs.File.OpenError ||
-    std.fs.File.ReadError ||
-    std.fs.File.WriteError ||
+    std.process.Environ.GetAllocError ||
+    std.Io.Dir.AccessError ||
+    std.Io.Dir.CreateDirPathError ||
+    std.Io.Dir.ReadFileAllocError ||
+    std.Io.Dir.WriteFileError ||
     formats.crimson_cfg.CrimsonCfgError ||
     formats.game_cfg.GameCfgError ||
     error{
@@ -37,7 +36,8 @@ pub const DesktopRuntime = struct {
     pub fn init(allocator: std.mem.Allocator) DesktopRuntimeError!DesktopRuntime {
         const base_dir = (try runtime_paths.defaultRuntimeDir(allocator)) orelse return error.MissingRuntimeDir;
         errdefer allocator.free(base_dir);
-        try std.fs.cwd().makePath(base_dir);
+        const io = std.Io.Threaded.global_single_threaded.io();
+        try std.Io.Dir.cwd().createDirPath(io, base_dir);
 
         const config_path = try std.fs.path.join(allocator, &.{ base_dir, crimson_cfg_name });
         errdefer allocator.free(config_path);
@@ -151,7 +151,8 @@ fn loadOrCreateConfig(
     allocator: std.mem.Allocator,
     path: []const u8,
 ) DesktopRuntimeError!formats.crimson_cfg.CrimsonCfg {
-    const bytes = std.fs.cwd().readFileAlloc(allocator, path, std.math.maxInt(usize)) catch |err| switch (err) {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    const bytes = std.Io.Dir.cwd().readFileAlloc(io, path, allocator, .unlimited) catch |err| switch (err) {
         error.FileNotFound => {
             const cfg = formats.crimson_cfg.defaultConfig();
             try writeConfig(path, cfg);
@@ -166,7 +167,8 @@ fn loadOrCreateConfig(
 
 fn writeConfig(path: []const u8, cfg: formats.crimson_cfg.CrimsonCfg) DesktopRuntimeError!void {
     const bytes = formats.crimson_cfg.encode(cfg);
-    try std.fs.cwd().writeFile(.{
+    const io = std.Io.Threaded.global_single_threaded.io();
+    try std.Io.Dir.cwd().writeFile(io, .{
         .sub_path = path,
         .data = bytes[0..],
     });
@@ -176,7 +178,8 @@ fn loadOrCreateStatus(
     allocator: std.mem.Allocator,
     path: []const u8,
 ) DesktopRuntimeError!formats.game_cfg.Status {
-    const bytes = std.fs.cwd().readFileAlloc(allocator, path, std.math.maxInt(usize)) catch |err| switch (err) {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    const bytes = std.Io.Dir.cwd().readFileAlloc(io, path, allocator, .unlimited) catch |err| switch (err) {
         error.FileNotFound => {
             const status = std.mem.zeroes(formats.game_cfg.Status);
             try writeStatus(path, status);
@@ -194,7 +197,8 @@ fn loadOrCreateStatus(
 fn writeStatus(path: []const u8, status: formats.game_cfg.Status) DesktopRuntimeError!void {
     const decoded = formats.game_cfg.buildStatusBlob(status);
     const bytes = try formats.game_cfg.buildFile(decoded[0..]);
-    try std.fs.cwd().writeFile(.{
+    const io = std.Io.Threaded.global_single_threaded.io();
+    try std.Io.Dir.cwd().writeFile(io, .{
         .sub_path = path,
         .data = bytes[0..],
     });
@@ -214,7 +218,7 @@ test "desktop runtime creates default config and status files" {
     var tmp = std.testing.tmpDir(.{});
     defer tmp.cleanup();
 
-    const base_dir = try tmp.dir.realpathAlloc(allocator, ".");
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
     defer allocator.free(base_dir);
 
     const config_path = try std.fs.path.join(allocator, &.{ base_dir, crimson_cfg_name });

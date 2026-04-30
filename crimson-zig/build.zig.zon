@@ -25,7 +25,7 @@
     .fingerprint = 0x44e2fe97385bb154, // Changing this has security and trust implications.
     // Tracks the earliest Zig version that the package considers to be a
     // supported use case.
-    .minimum_zig_version = "0.15.2",
+    .minimum_zig_version = "0.16.0",
     // This field is optional.
     // Each dependency must either provide a `url` and `hash`, or a `path`.
     // `zig build --fetch` can be used to fetch all dependencies of a package, recursively.
@@ -33,12 +33,11 @@
     // internet connectivity.
     .dependencies = .{
         .msgpack = .{
-            .url = "git+https://github.com/lalinsky/msgpack.zig?ref=v0.6.0#ca0f1533bb260490c6b69399e089bf4fabaa672a",
-            .hash = "msgpack-0.6.0-ZOu9PJHnAQBHstHnnktRxFW3MUlRkSFdaUuLrecSuYOe",
+            .path = "vendor/msgpack",
         },
         .raylib_zig = .{
-            .url = "git+https://github.com/raylib-zig/raylib-zig?ref=devel#cd71c85d571027ac8033357f83b124ee051825b3",
-            .hash = "raylib_zig-5.6.0-dev-KE8REENOBQC-m5nK7M2b5aKSIubJPbPLUYcRhT7aT3RN",
+            .url = "git+https://github.com/raylib-zig/raylib-zig?ref=devel#58f3c0fa328fc9ff48d17c2c3771ab9c5114aaa6",
+            .hash = "raylib_zig-6.0.0-KE8REMNkBQCpxwqT9ubVNf5aEOcWRUVIaH2sgt_sDDoZ",
         },
         .emsdk = .{
             .url = "git+https://github.com/emscripten-core/emsdk#4.0.9",
@@ -53,6 +52,7 @@
         "build.zig",
         "build.zig.zon",
         "src",
+        "vendor/msgpack",
         // For example...
         //"LICENSE",
         //"README.md",

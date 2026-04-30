@@ -6,6 +6,7 @@ const cdt_trace = @import("cdt_trace.zig");
 const replay_codec = @import("replay_codec.zig");
 const diagnostic_trace = @import("runtime/replay/diagnostic_trace.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
+const runtime_paths = @import("runtime_paths.zig");
 
 const replay_schema_version: i32 = 2;
 
@@ -158,10 +159,12 @@ fn runNativeVerify(
         return buildNotPortedOutput(allocator, "only .crd replay files are currently supported");
     }
 
-    const replay_bytes = std.fs.cwd().readFileAlloc(
-        allocator,
+    const io = std.Io.Threaded.global_single_threaded.io();
+    const replay_bytes = std.Io.Dir.cwd().readFileAlloc(
+        io,
         resolution.resolved_path,
-        replay_codec.max_replay_payload_bytes,
+        allocator,
+        .limited(replay_codec.max_replay_payload_bytes),
     ) catch |err| {
         return buildVerifyFailedOutput(allocator, @errorName(err));
     };
@@ -336,9 +339,9 @@ fn runVerifyWithReplayBytes(
         };
     }
 
-    var stdout_buf: std.ArrayList(u8) = .empty;
-    defer stdout_buf.deinit(allocator);
-    var writer = stdout_buf.writer(allocator);
+    var stdout_buf: std.Io.Writer.Allocating = .init(allocator);
+    defer stdout_buf.deinit();
+    const writer = &stdout_buf.writer;
 
     if (request.json_out) |json_out_path| {
         if (request.output_format == .human) {
@@ -385,7 +388,7 @@ fn runVerifyWithReplayBytes(
     }
 
     return .{
-        .stdout = try stdout_buf.toOwnedSlice(allocator),
+        .stdout = try stdout_buf.toOwnedSlice(),
         .stderr = try allocator.dupe(u8, ""),
         .exit_code = exit_code,
     };
@@ -400,16 +403,17 @@ fn writeReplayTickTraceMsgpack(
         return error.UnsupportedTarget;
     }
 
+    const io = std.Io.Threaded.global_single_threaded.io();
     if (std.fs.path.dirname(trace_path)) |dir| {
-        if (dir.len > 0) try std.fs.cwd().makePath(dir);
+        if (dir.len > 0) try std.Io.Dir.cwd().createDirPath(io, dir);
     }
-    const file = try std.fs.cwd().createFile(trace_path, .{
+    const file = try std.Io.Dir.cwd().createFile(io, trace_path, .{
         .truncate = true,
     });
-    defer file.close();
+    defer file.close(io);
 
     var buffer: [4096]u8 = undefined;
-    var writer = file.writer(&buffer);
+    var writer = file.writer(io, &buffer);
     const out = &writer.interface;
     try out.writeAll(diagnostic_trace.replay_tick_trace_msgpack_magic);
     for (trace) |entry| {
@@ -552,10 +556,11 @@ fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
         return error.UnsupportedTarget;
     }
 
+    const io = std.Io.Threaded.global_single_threaded.io();
     if (std.fs.path.dirname(path)) |dir| {
-        if (dir.len > 0) try std.fs.cwd().makePath(dir);
+        if (dir.len > 0) try std.Io.Dir.cwd().createDirPath(io, dir);
     }
-    try std.fs.cwd().writeFile(.{
+    try std.Io.Dir.cwd().writeFile(io, .{
         .sub_path = path,
         .data = bytes,
     });
@@ -565,17 +570,16 @@ fn buildReplayNotFoundOutput(
     allocator: std.mem.Allocator,
     resolution: ReplayResolution,
 ) !CommandOutput {
-    var stderr_buf: std.ArrayList(u8) = .empty;
-    defer stderr_buf.deinit(allocator);
-
-    var writer = stderr_buf.writer(allocator);
+    var stderr_buf: std.Io.Writer.Allocating = .init(allocator);
+    defer stderr_buf.deinit();
+    const writer = &stderr_buf.writer;
     try writer.print("replay file not found: {s}", .{resolution.tried_primary});
     if (resolution.tried_secondary) |secondary| {
         try writer.print(" (also tried: {s})", .{secondary});
     }
     try writer.writeByte('\n');
 
-    const stderr = try stderr_buf.toOwnedSlice(allocator);
+    const stderr = try stderr_buf.toOwnedSlice();
     errdefer allocator.free(stderr);
     const stdout = try allocator.dupe(u8, "");
 
@@ -590,13 +594,12 @@ fn buildVerifyFailedOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
 ) !CommandOutput {
-    var stderr_buf: std.ArrayList(u8) = .empty;
-    defer stderr_buf.deinit(allocator);
-
-    var writer = stderr_buf.writer(allocator);
+    var stderr_buf: std.Io.Writer.Allocating = .init(allocator);
+    defer stderr_buf.deinit();
+    const writer = &stderr_buf.writer;
     try writer.print("replay verification failed: {s}\n", .{detail});
 
-    const stderr = try stderr_buf.toOwnedSlice(allocator);
+    const stderr = try stderr_buf.toOwnedSlice();
     errdefer allocator.free(stderr);
     const stdout = try allocator.dupe(u8, "");
 
@@ -611,13 +614,12 @@ fn buildInvalidVerifyArgsOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
 ) !CommandOutput {
-    var stderr_buf: std.ArrayList(u8) = .empty;
-    defer stderr_buf.deinit(allocator);
-
-    var writer = stderr_buf.writer(allocator);
+    var stderr_buf: std.Io.Writer.Allocating = .init(allocator);
+    defer stderr_buf.deinit();
+    const writer = &stderr_buf.writer;
     try writer.print("invalid replay verify args: {s}\n", .{detail});
 
-    const stderr = try stderr_buf.toOwnedSlice(allocator);
+    const stderr = try stderr_buf.toOwnedSlice();
     errdefer allocator.free(stderr);
     const stdout = try allocator.dupe(u8, "");
 
@@ -632,13 +634,12 @@ fn buildUnsupportedVerifyOptionOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
 ) !CommandOutput {
-    var stderr_buf: std.ArrayList(u8) = .empty;
-    defer stderr_buf.deinit(allocator);
-
-    var writer = stderr_buf.writer(allocator);
+    var stderr_buf: std.Io.Writer.Allocating = .init(allocator);
+    defer stderr_buf.deinit();
+    const writer = &stderr_buf.writer;
     try writer.print("unsupported replay verify option in native verifier: {s}\n", .{detail});
 
-    const stderr = try stderr_buf.toOwnedSlice(allocator);
+    const stderr = try stderr_buf.toOwnedSlice();
     errdefer allocator.free(stderr);
     const stdout = try allocator.dupe(u8, "");
 
@@ -653,13 +654,12 @@ fn buildNotPortedOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
 ) !CommandOutput {
-    var stderr_buf: std.ArrayList(u8) = .empty;
-    defer stderr_buf.deinit(allocator);
-
-    var writer = stderr_buf.writer(allocator);
+    var stderr_buf: std.Io.Writer.Allocating = .init(allocator);
+    defer stderr_buf.deinit();
+    const writer = &stderr_buf.writer;
     try writer.print("replay verification hit a native runtime limitation: {s}\n", .{detail});
 
-    const stderr = try stderr_buf.toOwnedSlice(allocator);
+    const stderr = try stderr_buf.toOwnedSlice();
     errdefer allocator.free(stderr);
     const stdout = try allocator.dupe(u8, "");
 
@@ -738,10 +738,9 @@ fn buildNotPortedOutputForReplayRunnerError(
         error.MissingRngCallerTag => "native replay trace hit an untagged gameplay RNG draw",
     };
 
-    var stderr_buf: std.ArrayList(u8) = .empty;
-    defer stderr_buf.deinit(allocator);
-
-    var writer = stderr_buf.writer(allocator);
+    var stderr_buf: std.Io.Writer.Allocating = .init(allocator);
+    defer stderr_buf.deinit();
+    const writer = &stderr_buf.writer;
     try writer.print("replay verification failed in the native runtime: {s}", .{detail});
     if (progress.processed_ticks) |processed_ticks| {
         try writer.print(
@@ -757,7 +756,7 @@ fn buildNotPortedOutputForReplayRunnerError(
         try writer.writeByte('\n');
     }
 
-    const stderr = try stderr_buf.toOwnedSlice(allocator);
+    const stderr = try stderr_buf.toOwnedSlice();
     errdefer allocator.free(stderr);
     const stdout = try allocator.dupe(u8, "");
 
@@ -973,11 +972,12 @@ fn isFile(path: []const u8) !bool {
         return error.UnsupportedTarget;
     }
 
-    const file = std.fs.cwd().openFile(path, .{}) catch |err| switch (err) {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    const file = std.Io.Dir.cwd().openFile(io, path, .{}) catch |err| switch (err) {
         error.FileNotFound, error.NotDir, error.IsDir => return false,
         else => return err,
     };
-    defer file.close();
+    defer file.close(io);
     return true;
 }
 
@@ -985,49 +985,7 @@ fn defaultRuntimeDir(allocator: std.mem.Allocator) ![]u8 {
     if (builtin.os.tag == .freestanding) {
         return error.UnsupportedTarget;
     }
-
-    if (std.process.getEnvVarOwned(allocator, "CRIMSON_RUNTIME_DIR")) |path| {
-        return path;
-    } else |err| switch (err) {
-        error.EnvironmentVariableNotFound => {},
-        else => return err,
-    }
-
-    if (std.process.getEnvVarOwned(allocator, "CRIMSON_BASE_DIR")) |path| {
-        return path;
-    } else |err| switch (err) {
-        error.EnvironmentVariableNotFound => {},
-        else => return err,
-    }
-
-    return switch (builtin.os.tag) {
-        .macos => blk: {
-            const home = std.process.getEnvVarOwned(allocator, "HOME") catch {
-                break :blk allocator.dupe(u8, ".");
-            };
-            defer allocator.free(home);
-            break :blk std.fs.path.join(allocator, &.{ home, "Library", "Application Support", "banteg", "crimsonland" });
-        },
-        .windows => blk: {
-            const appdata = std.process.getEnvVarOwned(allocator, "APPDATA") catch {
-                break :blk allocator.dupe(u8, ".");
-            };
-            defer allocator.free(appdata);
-            break :blk std.fs.path.join(allocator, &.{ appdata, "banteg", "crimsonland" });
-        },
-        else => blk: {
-            if (std.process.getEnvVarOwned(allocator, "XDG_DATA_HOME")) |xdg_data_home| {
-                defer allocator.free(xdg_data_home);
-                break :blk std.fs.path.join(allocator, &.{ xdg_data_home, "banteg", "crimsonland" });
-            } else |_| {}
-
-            const home = std.process.getEnvVarOwned(allocator, "HOME") catch {
-                break :blk allocator.dupe(u8, ".");
-            };
-            defer allocator.free(home);
-            break :blk std.fs.path.join(allocator, &.{ home, ".local", "share", "banteg", "crimsonland" });
-        },
-    };
+    return (try runtime_paths.defaultRuntimeDir(allocator)) orelse allocator.dupe(u8, ".");
 }
 
 test "parse native subset for reference verify options" {

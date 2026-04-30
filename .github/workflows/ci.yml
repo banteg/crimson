@@ -87,7 +87,7 @@ jobs:
         if: matrix.use_zig
         uses: mlugg/setup-zig@v2
         with:
-          version: "0.15.2"
+          version: "0.16.0"
 
       - name: Install Zig system libraries
         if: matrix.use_zig

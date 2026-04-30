@@ -1,7 +1,7 @@
 const std = @import("std");
-const zemscripten = @import("zemscripten");
 
 pub fn build(b: *std.Build) void {
+    const zemscripten = b.lazyImport(@This(), "zemscripten").?;
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     const msgpack_dep = b.dependency("msgpack", .{
@@ -48,7 +48,7 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    window_exe.linkLibrary(raylib_artifact);
+    window_exe.root_module.linkLibrary(raylib_artifact);
     const window_step = b.step("window", "Build raylib desktop playable slice");
     window_step.dependOn(&window_exe.step);
 
@@ -123,7 +123,7 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    web_window_lib.linkLibrary(web_raylib_artifact);
+    web_window_lib.root_module.linkLibrary(web_raylib_artifact);
 
     const emsdk_dep = b.dependency("emsdk", .{});
     const emscripten_sysroot_include = emsdk_dep.path("upstream/emscripten/cache/sysroot/include");

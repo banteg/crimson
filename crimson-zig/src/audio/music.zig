@@ -8,7 +8,7 @@ const music_max_dt: f32 = 0.1;
 const music_fade_in_per_sec: f32 = 1.0;
 const music_fade_out_per_sec: f32 = 0.5;
 
-pub const LoadMusicError = runtime_archive.OpenArchiveError || std.mem.Allocator.Error || std.fs.Dir.AccessError || rl.RaylibError;
+pub const LoadMusicError = runtime_archive.OpenArchiveError || std.mem.Allocator.Error || std.Io.Dir.AccessError || rl.RaylibError;
 
 pub const TrackPlayback = struct {
     volume: f32 = 0.0,
@@ -247,7 +247,8 @@ pub const MusicState = struct {
         const full_path = try std.fs.path.join(self.allocator, &.{ self.assets_dir, normalized });
         defer self.allocator.free(full_path);
 
-        if (std.fs.cwd().access(full_path, .{})) {
+        const io = std.Io.Threaded.global_single_threaded.io();
+        if (std.Io.Dir.cwd().access(io, full_path, .{})) {
             const path_z = try self.allocator.dupeZ(u8, full_path);
             defer self.allocator.free(path_z);
             const stream = try rl.loadMusicStream(path_z);

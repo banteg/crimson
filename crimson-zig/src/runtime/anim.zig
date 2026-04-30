@@ -45,13 +45,13 @@ pub const creature_anim_info = std.EnumArray(spawn_mod.CreatureTypeId, CreatureA
 });
 
 pub fn creatureAnimInfoForRawTypeId(type_id_raw: i32) ?CreatureAnimInfo {
-    const type_id = std.meta.intToEnum(spawn_mod.CreatureTypeId, type_id_raw) catch return null;
+    const type_id = std.enums.fromInt(spawn_mod.CreatureTypeId, type_id_raw) orelse return null;
     return creature_anim_info.get(type_id);
 }
 
 pub fn creatureCorpseFrameForType(type_id_raw: i32) i32 {
     if (type_id_raw == 7) return 6;
-    const type_id = std.meta.intToEnum(spawn_mod.CreatureTypeId, type_id_raw) catch return type_id_raw & 0xF;
+    const type_id = std.enums.fromInt(spawn_mod.CreatureTypeId, type_id_raw) orelse return type_id_raw & 0xF;
     return creature_corpse_frames.get(type_id);
 }
 

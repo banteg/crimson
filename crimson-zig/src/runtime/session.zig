@@ -42,7 +42,7 @@ pub const SessionConfig = struct {
     demo_mode_active: bool = false,
 
     pub fn fromReplayHeader(header: replay_codec.ReplayHeader) DeterministicSessionError!SessionConfig {
-        const game_mode = std.meta.intToEnum(game_ids.GameModeId, header.game_mode_id) catch {
+        const game_mode = std.enums.fromInt(game_ids.GameModeId, header.game_mode_id) orelse {
             return error.UnsupportedGameMode;
         };
 

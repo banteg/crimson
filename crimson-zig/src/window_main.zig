@@ -14,6 +14,7 @@ const input_codes = @import("input_codes.zig");
 const local_input = cz.local_input;
 const live_audio = @import("audio/live_audio.zig");
 const quest_results = @import("quest_results.zig");
+const runtime_paths = cz.runtime_paths;
 const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
 const window_boot = @import("window_boot.zig");
@@ -377,20 +378,21 @@ const App = struct {
     fn modsAvailable(self: *const App) bool {
         var mods_path_buf: [std.fs.max_path_bytes]u8 = undefined;
         const mods_path = std.fmt.bufPrint(&mods_path_buf, "{s}/mods", .{self.runtime.base_dir}) catch return false;
-        var dir = std.fs.openDirAbsolute(mods_path, .{ .iterate = true }) catch return false;
-        defer dir.close();
+        const io = std.Io.Threaded.global_single_threaded.io();
+        var dir = std.Io.Dir.openDirAbsolute(io, mods_path, .{ .iterate = true }) catch return false;
+        defer dir.close(io);
 
         var iter = dir.iterate();
-        while (iter.next() catch null) |entry| {
+        while (iter.next(io) catch null) |entry| {
             if (entry.kind == .file and std.ascii.endsWithIgnoreCase(entry.name, ".dll")) return true;
         }
         return false;
     }
 
     fn otherGamesEnabled(self: *const App) bool {
-        _ = self;
-        const raw = std.posix.getenv("CRIMSON_GRIM_CONFIG_VAR_100") orelse return false;
-        return raw[0] != 0;
+        const raw = runtime_paths.envVarOwned(self.allocator, "CRIMSON_GRIM_CONFIG_VAR_100") catch return false;
+        defer self.allocator.free(raw);
+        return raw.len != 0;
     }
 
     fn update(self: *App, frame_dt: f32) void {
@@ -1465,12 +1467,13 @@ const WindowArgs = struct {
     demo_enabled: bool = false,
 };
 
-pub fn main() !void {
-    var gpa: std.heap.GeneralPurposeAllocator(.{}) = .{};
-    defer _ = gpa.deinit();
+pub fn main(init: std.process.Init) !void {
+    runtime_paths.useEnviron(init.environ_map);
 
-    const args = try parseWindowArgs(gpa.allocator());
-    var runtime = try app_runtime.DesktopRuntime.init(gpa.allocator());
+    const allocator = init.gpa;
+    const argv = try init.minimal.args.toSlice(init.arena.allocator());
+    const args = try parseWindowArgs(argv);
+    var runtime = try app_runtime.DesktopRuntime.init(allocator);
 
     rl.setConfigFlags(.{
         .fullscreen_mode = runtime.config.windowed_flag == 0,
@@ -1482,7 +1485,7 @@ pub fn main() !void {
 
     rl.setTargetFPS(60);
 
-    var app = App.init(gpa.allocator(), runtime, args.demo_enabled);
+    var app = App.init(allocator, runtime, args.demo_enabled);
     defer app.deinit();
 
     while (!rl.windowShouldClose() and !app.quit_requested) {
@@ -1498,10 +1501,7 @@ pub fn main() !void {
     try app.saveAllIfDirty();
 }
 
-fn parseWindowArgs(allocator: std.mem.Allocator) !WindowArgs {
-    const args = try std.process.argsAlloc(allocator);
-    defer std.process.argsFree(allocator, args);
-
+fn parseWindowArgs(args: []const []const u8) !WindowArgs {
     var parsed: WindowArgs = .{};
     for (args[1..]) |arg| {
         if (std.mem.eql(u8, arg, "--demo")) {
@@ -1518,17 +1518,21 @@ fn parseWindowArgs(allocator: std.mem.Allocator) !WindowArgs {
 }
 
 fn openDemoPurchaseUrl(allocator: std.mem.Allocator) bool {
+    _ = allocator;
     const argv: []const []const u8 = switch (builtin.os.tag) {
         .macos => &.{ "open", window_demo_trial.demo_purchase_url },
         .linux => &.{ "xdg-open", window_demo_trial.demo_purchase_url },
         .windows => &.{ "rundll32", "url.dll,FileProtocolHandler", window_demo_trial.demo_purchase_url },
         else => return false,
     };
-    var child = std.process.Child.init(argv, allocator);
-    child.stdin_behavior = .Ignore;
-    child.stdout_behavior = .Ignore;
-    child.stderr_behavior = .Ignore;
-    child.spawn() catch return false;
+    const io = std.Io.Threaded.global_single_threaded.io();
+    var child = std.process.spawn(io, .{
+        .argv = argv,
+        .stdin = .ignore,
+        .stdout = .ignore,
+        .stderr = .ignore,
+    }) catch return false;
+    _ = child.wait(io) catch return false;
     return true;
 }
 
@@ -1719,7 +1723,8 @@ fn collectTypoDictionaryWords(
     path: []const u8,
     out: *std.ArrayList([]const u8),
 ) !?[]u8 {
-    const bytes = std.fs.cwd().readFileAlloc(allocator, path, std.math.maxInt(usize)) catch |err| switch (err) {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    const bytes = std.Io.Dir.cwd().readFileAlloc(io, path, allocator, .unlimited) catch |err| switch (err) {
         error.FileNotFound => return null,
         else => return err,
     };
@@ -2325,7 +2330,7 @@ fn drawBonuses(
             );
 
             if (entry.bonus_id == .weapon) {
-                const weapon_id = std.meta.intToEnum(game_ids.WeaponId, entry.amount) catch {
+                const weapon_id = std.enums.fromInt(game_ids.WeaponId, entry.amount) orelse {
                     continue;
                 };
                 const icon_index = weapon_data.weaponIconIndex(weapon_id);
@@ -2484,7 +2489,7 @@ fn bonusHoverLabel(
 ) ?[]const u8 {
     return switch (entry.bonus_id) {
         .weapon => blk: {
-            const weapon_id = std.meta.intToEnum(game_ids.WeaponId, entry.amount) catch break :blk null;
+            const weapon_id = std.enums.fromInt(game_ids.WeaponId, entry.amount) orelse break :blk null;
             break :blk game_ids.weaponDisplayName(weapon_id, preserve_bugs);
         },
         .points => std.fmt.bufPrint(buf, "{s}: {d}", .{
@@ -2985,7 +2990,7 @@ fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const wind
         }
 
         if (flags.show_weapon) {
-            const weapon_id = std.meta.intToEnum(game_ids.WeaponId, update.player_weapon_id) catch .pistol;
+            const weapon_id = std.enums.fromInt(game_ids.WeaponId, update.player_weapon_id) orelse .pistol;
             const icon_index = weapon_data.weaponIconIndex(weapon_id);
             if (icon_index >= 0) {
                 drawTextureRegionCenteredRotated(
@@ -3344,7 +3349,7 @@ fn resultsSubtitle(reason: ResultsReason) [:0]const u8 {
 }
 
 fn weaponName(weapon_id_raw: i32) []const u8 {
-    const weapon_id = std.meta.intToEnum(game_ids.WeaponId, weapon_id_raw) catch return "unknown";
+    const weapon_id = std.enums.fromInt(game_ids.WeaponId, weapon_id_raw) orelse return "unknown";
     return @tagName(weapon_id);
 }
 

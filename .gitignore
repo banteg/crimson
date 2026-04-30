@@ -26,6 +26,7 @@ htmlcov/
 screenshots/
 zig-cache/
 .zig-cache/
+zig-pkg/
 zig-out/
 /tools/zig/
 .DS_Store

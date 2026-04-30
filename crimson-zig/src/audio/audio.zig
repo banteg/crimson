@@ -2,7 +2,7 @@ const std = @import("std");
 const rl = @import("raylib");
 
 const formats = @import("crimson_zig").formats;
-const runtime_paths = @import("../runtime_paths.zig");
+const runtime_paths = @import("crimson_zig").runtime_paths;
 const music = @import("music.zig");
 const sfx = @import("sfx.zig");
 const sfx_map = @import("sfx_map.zig");
@@ -37,10 +37,9 @@ pub const AudioState = struct {
 };
 
 pub const LoadRuntimeAudioError = std.mem.Allocator.Error ||
-    std.fs.Dir.AccessError ||
-    std.fs.File.OpenError ||
-    std.fs.File.ReadError ||
-    std.process.GetEnvVarOwnedError ||
+    std.Io.Dir.AccessError ||
+    std.Io.Dir.ReadFileAllocError ||
+    std.process.Environ.GetAllocError ||
     formats.crimson_cfg.CrimsonCfgError ||
     music.LoadMusicError ||
     sfx.LoadSfxError;
@@ -160,11 +159,11 @@ fn initAudioState(
 }
 
 fn resolveAudioAssetsDir(allocator: std.mem.Allocator) LoadRuntimeAudioError!?[]u8 {
-    if (std.process.getEnvVarOwned(allocator, "CRIMSON_ASSETS_DIR")) |dir| {
+    if (runtime_paths.envVarOwned(allocator, "CRIMSON_ASSETS_DIR")) |dir| {
         if (try dirHasAudioArchives(allocator, dir)) return dir;
         allocator.free(dir);
     } else |err| switch (err) {
-        error.EnvironmentVariableNotFound => {},
+        error.EnvironmentVariableMissing => {},
         else => return err,
     }
 
@@ -214,8 +213,9 @@ fn loadAudioConfig(allocator: std.mem.Allocator) LoadRuntimeAudioError!AudioConf
 fn runtimeArchiveReadConfig(
     allocator: std.mem.Allocator,
     path: []const u8,
-) (std.mem.Allocator.Error || std.fs.File.OpenError || std.fs.File.ReadError)![]u8 {
-    return std.fs.cwd().readFileAlloc(allocator, path, std.math.maxInt(usize));
+) std.Io.Dir.ReadFileAllocError![]u8 {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    return std.Io.Dir.cwd().readFileAlloc(io, path, allocator, .unlimited);
 }
 
 fn clampVolume(volume: f32) f32 {

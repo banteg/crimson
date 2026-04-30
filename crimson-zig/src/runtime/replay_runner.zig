@@ -170,7 +170,7 @@ pub fn runReplayWithTrace(
     options: ReplayRunOptions,
 ) ReplayRunnerError!ReplayRunResult {
     const header = replay.header;
-    const game_mode = std.meta.intToEnum(GameModeId, header.game_mode_id) catch {
+    const game_mode = std.enums.fromInt(GameModeId, header.game_mode_id) orelse {
         return error.UnsupportedGameMode;
     };
     if (header.player_count <= 0 or header.player_count > state_mod.max_players) {

@@ -81,7 +81,7 @@ export fn crimson_verify_replay_json(
     defer output.deinit(std.heap.page_allocator);
 
     if (output.exit_code == 1 and output.stdout.len == 0 and output.stderr.len > 0) {
-        setErrorMessage(std.heap.page_allocator, std.mem.trimRight(u8, output.stderr, "\n"));
+        setErrorMessage(std.heap.page_allocator, std.mem.trimEnd(u8, output.stderr, "\n"));
         return -1;
     }
 

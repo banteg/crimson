@@ -181,7 +181,7 @@ pub fn applyReplayEvent(
                 }
                 rng_state_before = state.rng.state;
             }
-            const perk_id = std.meta.intToEnum(PerkId, capture_perk_apply.perk_id) catch {
+            const perk_id = std.enums.fromInt(PerkId, capture_perk_apply.perk_id) orelse {
                 if (options.strict_events) return error.UnsupportedEventKind;
                 return outcome;
             };

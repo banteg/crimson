@@ -108,7 +108,7 @@ fn drawBodyLines(
         .quest_tier_limit => {
             if (info.show_remaining_line) {
                 drawLine(assets, body_x, panel.y + 74.0, quest_completed_text, body_color);
-                drawFmtLine(assets, body_x, panel.y + 92.0, quest_limit_remaining_text, remaining, body_color);
+                drawFmtLine(quest_limit_remaining_text, assets, body_x, panel.y + 92.0, remaining, body_color);
                 drawLine(assets, body_x, panel.y + 124.0, upgrade_all_features_text, body_color);
                 drawLine(assets, body_x, panel.y + 142.0, upgrade_please_text, body_color);
                 drawLine(assets, body_x, panel.y + 164.0, upgrade_features_line_text, body_color);
@@ -125,7 +125,7 @@ fn drawBodyLines(
         },
         .quest_grace_left => {
             drawLine(assets, body_x, panel.y + 73.0, quest_grace_used_up_text, body_color);
-            drawFmtLine(assets, body_x, panel.y + 89.0, quest_grace_remaining_text, remaining, body_color);
+            drawFmtLine(quest_grace_remaining_text, assets, body_x, panel.y + 89.0, remaining, body_color);
             drawLine(assets, body_x, panel.y + 111.0, upgrade_all_features_text, body_color);
             drawLine(assets, body_x, panel.y + 127.0, upgrade_process_text, body_color);
             drawLine(assets, body_x, panel.y + 143.0, upgrade_process_cont_text, body_color);

@@ -66,7 +66,8 @@ pub const ModsState = struct {
             return;
         };
 
-        var dir = std.fs.openDirAbsolute(mods_path, .{ .iterate = true }) catch {
+        const io = std.Io.Threaded.global_single_threaded.io();
+        var dir = std.Io.Dir.openDirAbsolute(io, mods_path, .{ .iterate = true }) catch {
             self.appendLine("No mod DLLs found.", .{});
             self.appendLine("", .{});
             self.appendLine("Expected location:", .{});
@@ -75,13 +76,13 @@ pub const ModsState = struct {
             self.appendLine("Mod loading is not implemented yet.", .{});
             return;
         };
-        defer dir.close();
+        defer dir.close(io);
 
         var iter = dir.iterate();
         var dll_count: usize = 0;
         var dll_names: [10][128]u8 = undefined;
         var dll_name_lens: [10]usize = [_]usize{0} ** 10;
-        while (iter.next() catch null) |entry| {
+        while (iter.next(io) catch null) |entry| {
             if (entry.kind != .file) continue;
             if (!std.ascii.endsWithIgnoreCase(entry.name, ".dll")) continue;
             if (dll_count < dll_names.len) {

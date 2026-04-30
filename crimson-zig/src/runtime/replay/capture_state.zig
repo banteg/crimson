@@ -172,14 +172,14 @@ pub fn applyCaptureBootstrapEvent(
     state.perk_selection.choices_dirty = bootstrap.perk_choices_dirty;
     for (0..state.perk_selection.choices.len) |idx| {
         state.perk_selection.choices[idx] =
-            std.meta.intToEnum(game_ids.PerkId, bootstrap.perk_choices[idx]) catch return error.InvalidCaptureEnumValue;
+            std.enums.fromInt(game_ids.PerkId, bootstrap.perk_choices[idx]) orelse return error.InvalidCaptureEnumValue;
     }
     for (players, 0..) |*player, player_idx| {
         player.perk_counts = std.EnumArray(game_ids.PerkId, i32).initFill(0);
         const perk_counts = bootstrap.player_perk_counts[player_idx];
         for (0..perk_counts.pair_count) |pair_idx| {
             const pair = perk_counts.pairs[pair_idx];
-            const perk_id = std.meta.intToEnum(game_ids.PerkId, pair.perk_id) catch return error.InvalidCaptureEnumValue;
+            const perk_id = std.enums.fromInt(game_ids.PerkId, pair.perk_id) orelse return error.InvalidCaptureEnumValue;
             player.perk_counts.set(perk_id, pair.count);
         }
     }

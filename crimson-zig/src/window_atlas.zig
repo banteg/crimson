@@ -186,7 +186,7 @@ pub fn creatureSizeScale(size: f32) f32 {
 
 pub fn creatureRenderFrame(creature: creatures_runtime.CreatureState) ?CreatureRenderFrame {
     const info = runtime_anim.creatureAnimInfoForRawTypeId(creature.type_id) orelse return null;
-    const creature_type = std.meta.intToEnum(spawn_runtime.CreatureTypeId, creature.type_id) catch return null;
+    const creature_type = std.enums.fromInt(spawn_runtime.CreatureTypeId, creature.type_id) orelse return null;
     var phase = creature.anim_phase;
     if (runtime_anim.creatureAnimIsLongStrip(creature.flags)) {
         if (creature.lifecycle_stage < 0.0) {
@@ -237,7 +237,7 @@ pub fn bonusIconId(entry: bonuses_runtime.BonusEntry) ?i32 {
 }
 
 pub fn projectileKnownFrame(type_id_raw: i32) ?KnownProjectileFrame {
-    const type_id = std.meta.intToEnum(game_ids.ProjectileTypeId, type_id_raw) catch return null;
+    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return null;
     return switch (type_id) {
         .pulse_gun => .{ .grid = 2, .frame = 0 },
         .splitter_gun => .{ .grid = 4, .frame = 3 },
@@ -248,7 +248,7 @@ pub fn projectileKnownFrame(type_id_raw: i32) ?KnownProjectileFrame {
 }
 
 pub fn knownProjectileRgb(type_id_raw: i32) ColorRgb {
-    const type_id = std.meta.intToEnum(game_ids.ProjectileTypeId, type_id_raw) catch return .{ .r = 240, .g = 220, .b = 160 };
+    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return .{ .r = 240, .g = 220, .b = 160 };
     return switch (type_id) {
         .ion_rifle, .ion_minigun, .ion_cannon => .{ .r = 120, .g = 200, .b = 255 },
         .fire_bullets => .{ .r = 255, .g = 170, .b = 90 },
@@ -264,7 +264,7 @@ pub fn isBulletTrailType(type_id_raw: i32) bool {
 }
 
 pub fn bulletSpriteSize(type_id_raw: i32) f32 {
-    const type_id = std.meta.intToEnum(game_ids.ProjectileTypeId, type_id_raw) catch return 4.0;
+    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return 4.0;
     return switch (type_id) {
         .assault_rifle => 6.0,
         .submachine_gun => 8.0,
@@ -273,7 +273,7 @@ pub fn bulletSpriteSize(type_id_raw: i32) f32 {
 }
 
 pub fn isBeamType(type_id_raw: i32) bool {
-    const type_id = std.meta.intToEnum(game_ids.ProjectileTypeId, type_id_raw) catch return false;
+    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return false;
     return switch (type_id) {
         .ion_rifle, .ion_minigun, .ion_cannon, .fire_bullets => true,
         else => false,
@@ -281,7 +281,7 @@ pub fn isBeamType(type_id_raw: i32) bool {
 }
 
 pub fn beamEffectScale(type_id_raw: i32) f32 {
-    const type_id = std.meta.intToEnum(game_ids.ProjectileTypeId, type_id_raw) catch return 0.8;
+    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return 0.8;
     return switch (type_id) {
         .ion_minigun => 1.05,
         .ion_rifle => 2.2,
@@ -291,7 +291,7 @@ pub fn beamEffectScale(type_id_raw: i32) f32 {
 }
 
 pub fn isPlasmaParticleType(type_id_raw: i32) bool {
-    const type_id = std.meta.intToEnum(game_ids.ProjectileTypeId, type_id_raw) catch return false;
+    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return false;
     return switch (type_id) {
         .plasma_rifle, .plasma_minigun, .spider_plasma, .plasma_cannon, .shrinkifier => true,
         else => false,
@@ -299,7 +299,7 @@ pub fn isPlasmaParticleType(type_id_raw: i32) bool {
 }
 
 pub fn plasmaRenderConfig(type_id_raw: i32) PlasmaRenderConfig {
-    const type_id = std.meta.intToEnum(game_ids.ProjectileTypeId, type_id_raw) catch return default_plasma_render_config;
+    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return default_plasma_render_config;
     return switch (type_id) {
         .plasma_rifle => .{
             .rgb = .{ .r = 1.0, .g = 1.0, .b = 1.0 },

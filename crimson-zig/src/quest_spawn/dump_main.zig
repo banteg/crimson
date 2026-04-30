@@ -17,13 +17,8 @@ const usage =
     \\
 ;
 
-pub fn main() !void {
-    var gpa_state: std.heap.GeneralPurposeAllocator(.{}) = .{};
-    defer _ = gpa_state.deinit();
-    const allocator = gpa_state.allocator();
-
-    const args = try std.process.argsAlloc(allocator);
-    defer std.process.argsFree(allocator, args);
+pub fn main(init: std.process.Init) !void {
+    const args = try init.minimal.args.toSlice(init.arena.allocator());
 
     if (args.len < 5 or args.len > 6) {
         try writeStderr(usage);
@@ -71,7 +66,7 @@ pub fn main() !void {
     };
 
     var out_buffer: [8192]u8 = undefined;
-    var writer = std.fs.File.stdout().writer(&out_buffer);
+    var writer = std.Io.File.stdout().writer(std.Io.Threaded.global_single_threaded.io(), &out_buffer);
     const out = &writer.interface;
     try out.print("{{\"start_weapon_id\":{d},\"entries\":[", .{@intFromEnum(result.start_weapon_id)});
     for (result.entries, 0..) |entry, idx| {
@@ -114,7 +109,7 @@ fn buildByImpl(
 
 fn writeStderr(bytes: []const u8) !void {
     var buffer: [4096]u8 = undefined;
-    var writer = std.fs.File.stderr().writer(&buffer);
+    var writer = std.Io.File.stderr().writer(std.Io.Threaded.global_single_threaded.io(), &buffer);
     const err = &writer.interface;
     try err.writeAll(bytes);
     try err.flush();

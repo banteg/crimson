@@ -4,7 +4,7 @@ const rl = @import("raylib");
 const cz = @import("crimson_zig");
 const formats = cz.formats;
 const runtime_archive = @import("runtime_archive.zig");
-const runtime_paths = @import("runtime_paths.zig");
+const runtime_paths = cz.runtime_paths;
 
 pub const paq_name = "crimson.paq";
 pub const small_font_widths_path = "load/smallFnt.dat";
@@ -106,10 +106,9 @@ pub const DecodeImageError = formats.jaz.JazError || formats.tga.TgaError || std
 
 pub const LoadRuntimeAssetsError = AssetArchiveError ||
     DecodeImageError ||
-    std.fs.Dir.AccessError ||
-    std.fs.File.OpenError ||
-    std.fs.File.ReadError ||
-    std.process.GetEnvVarOwnedError ||
+    std.Io.Dir.AccessError ||
+    std.Io.Dir.ReadFileAllocError ||
+    std.process.Environ.GetAllocError ||
     error{
         MissingTextureAsset,
         MissingFontWidths,
