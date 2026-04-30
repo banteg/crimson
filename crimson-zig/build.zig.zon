@@ -33,6 +33,7 @@
     // internet connectivity.
     .dependencies = .{
         .msgpack = .{
+            // TODO: Switch back to upstream after https://github.com/lalinsky/msgpack.zig/pull/12 lands in a release.
             .path = "vendor/msgpack",
         },
         .raylib_zig = .{
