@@ -54,12 +54,10 @@ pub fn tickDemoTrialTimers(
         };
     }
 
-    var used_ms: i32 = @intCast(global_playtime_ms);
-    if (used_ms < 0) used_ms = 0;
+    var used_ms = clampedDemoPlaytimeMs(global_playtime_ms);
     var grace_ms: i32 = quest_grace_elapsed_ms;
     if (grace_ms < 0) grace_ms = 0;
     if (used_ms >= demo_total_play_time_ms and grace_ms < 1) grace_ms = 1;
-    if (used_ms > demo_total_play_time_ms) used_ms = demo_total_play_time_ms;
 
     const delta_ms = @max(dt_ms, 0);
     if (overlay_visible or delta_ms <= 0) {
@@ -90,7 +88,7 @@ pub fn demoTrialOverlayInfo(
 ) OverlayInfo {
     if (!demo_build or game_mode_id == .tutorial) return .{};
 
-    const used_ms: i32 = @intCast(global_playtime_ms);
+    const used_ms = clampedDemoPlaytimeMs(global_playtime_ms);
     const grace_ms = @max(quest_grace_elapsed_ms, 0);
     const global_remaining_ms = @max(@as(i32, 0), demo_total_play_time_ms - used_ms);
     const grace_remaining_ms = @max(@as(i32, 0), demo_quest_grace_time_ms - grace_ms);
@@ -154,6 +152,10 @@ pub fn demoTrialOverlayInfo(
     };
 }
 
+fn clampedDemoPlaytimeMs(global_playtime_ms: u32) i32 {
+    return @intCast(@min(global_playtime_ms, demo_total_play_time_ms));
+}
+
 fn addClampedI32(left: i32, right: i32) i32 {
     const result = @as(i64, left) + @as(i64, right);
     if (result > std.math.maxInt(i32)) return std.math.maxInt(i32);
@@ -184,4 +186,16 @@ test "demo trial timers saturate oversized frame deltas" {
     const result = tickDemoTrialTimers(true, .quests, false, std.math.maxInt(u32), std.math.maxInt(i32) - 1, std.math.maxInt(i32));
     try std.testing.expectEqual(@as(u32, @intCast(demo_total_play_time_ms)), result.global_playtime_ms);
     try std.testing.expectEqual(@as(i32, std.math.maxInt(i32)), result.quest_grace_elapsed_ms);
+}
+
+test "demo trial timers clamp oversized saved playtime" {
+    const result = tickDemoTrialTimers(true, .survival, false, std.math.maxInt(u32), 0, 500);
+    try std.testing.expectEqual(@as(u32, @intCast(demo_total_play_time_ms)), result.global_playtime_ms);
+    try std.testing.expectEqual(@as(i32, 1), result.quest_grace_elapsed_ms);
+}
+
+test "demo trial overlay clamps oversized saved playtime" {
+    const info = demoTrialOverlayInfo(true, .survival, std.math.maxInt(u32), 0, null);
+    try std.testing.expect(info.visible);
+    try std.testing.expectEqual(OverlayKind.time_up, info.kind);
 }
