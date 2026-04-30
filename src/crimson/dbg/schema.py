@@ -11,7 +11,7 @@ from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSna
 
 TRACE_MAGIC = b"crimson_debug_trace_v1\n"
 TRACE_FORMAT_VERSION = 1
-TRACE_SCHEMA_VERSION = 10
+TRACE_SCHEMA_VERSION = 11
 SUPPORTED_TRACE_SCHEMA_VERSIONS = frozenset((TRACE_SCHEMA_VERSION,))
 
 TRACE_REQUIRED_CHANNELS = (
@@ -115,7 +115,6 @@ class TickRecord(msgspec.Struct):
     dt_ms_i32: int
     mode_id: int
     channels: ReplayTickChannels
-    phase_markers: list[str] = msgspec.field(default_factory=list)
 
 
 class TickBlock(msgspec.Struct):
@@ -139,7 +138,8 @@ class TraceFooter(msgspec.Struct):
     tick_count: int
     first_tick: int
     last_tick: int
-    channel_counts: dict[str, int]
+    channel_tick_counts: dict[str, int]
+    channel_row_counts: dict[str, int]
 
 
 def channel_versions_for(channels: Iterable[str]) -> TraceChannelVersions:

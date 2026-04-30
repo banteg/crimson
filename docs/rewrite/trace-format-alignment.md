@@ -22,10 +22,10 @@ original, Python, and Zig traces without producer-specific interpretation.
 ## Current contract
 
 The on-disk container is `trace_format_version = 1`. The active payload schema is
-`trace_schema_version = 10`.
+`trace_schema_version = 11`.
 
-This is the shared `.cdt` schema, not the local Zig replay diagnostic trace
-schema in `crimson-zig/src/runtime/replay/diagnostic_trace.zig`.
+This is the shared `.cdt` schema. Zig's runtime replay trace structs are internal
+collection types and no longer define a separate on-disk msgpack trace format.
 
 Each tick has:
 
@@ -33,7 +33,6 @@ Each tick has:
 - `elapsed_ms`
 - `dt_ms_i32`
 - `mode_id`
-- `phase_markers`
 - `channels`
 
 Required channels are:
@@ -81,10 +80,11 @@ Frida JSONL is an owned producer-private wire format. It may keep capture-side
 field names and diagnostic bags, but `frida_finalize.py` is the boundary that
 must produce canonical `.cdt` rows.
 
+- current raw capture format is `capture_format_version = 12`
 - lifecycle rows are strict and typed
 - tick channels are decoded with `msgspec` and unknown fields are rejected
 - `caller_static` is normalized into durable RNG `caller`
-- `branch_id` is dropped from the durable RNG row
+- raw `branch_id` is no longer accepted
 - timing samples are validated as replay-grade evidence
 - Frida session config is kept under `TraceConfig.frida`, not mixed into the
   shared metadata shape
@@ -104,9 +104,9 @@ rows from the replay driver.
 ### Zig replay recorder
 
 Zig replay recording is no longer a verifier-only side path. Its `.cdt` writer
-targets schema 10 and serializes the same required channels.
+targets schema 11 and serializes the same required channels.
 
-- Zig writes schema 10 `.cdt` traces
+- Zig writes schema 11 `.cdt` traces
 - RNG rows come from direct traced draws, not post-hoc lifecycle reconstruction
 - RNG rows include optional static caller addresses
 - timing rows are emitted and have coverage tests
@@ -141,14 +141,12 @@ channels that are present but empty across the selected trace window.
 
 ## Phase model
 
-Durable traces currently keep `phase_markers: list[str]`. Frida raw capture can
-hold richer structured marker payloads, but finalization flattens them. Python
-and Zig do not provide a shared structured phase model.
+Schema 11 removes durable `phase_markers`. They were low-authority labels and
+the actual debugging workflow now uses timing rows plus RNG caller rows for
+intra-tick localization.
 
-Decision for schema 10: keep phase markers as labels only. They are low-authority
-hints, while RNG caller rows and timing samples are the durable comparison tools.
-Add typed phase anchors only if a current parity investigation needs intra-tick
-localization that those channels cannot explain.
+Add typed phase anchors only if a current parity investigation needs localization
+that those channels cannot explain.
 
 If phase anchors are added later:
 
@@ -156,21 +154,14 @@ If phase anchors are added later:
 - require Frida, Python, and Zig producer support in the same schema bump
 - update `diff` and `focus` to explain how anchors affect mismatch reporting
 
-## Next-version cleanup notes
+## Schema 11 cleanup
 
-These are intentionally not part of schema 10 alignment, but they look stale or
-low-value enough to discuss before the next schema bump:
+The schema 11 bump folds the stale cleanup items into the shared contract:
 
-- `phase_markers` may be removable if timing rows and RNG caller rows keep
-  covering the actual debugging workflow.
-- `crimson-zig/src/runtime/replay/diagnostic_trace.zig` still has its own local
-  schema version. Keep it only if the per-tick diagnostic trace remains useful
-  outside `.cdt` generation.
-- `TraceFooter.channel_counts` counts channel presence per tick, not row counts.
-  Health now reports row coverage separately; the footer field may be redundant
-  or should be renamed in a future format bump.
-- `ok_for_movement_root_cause` in health output is older wording. The checks now
-  cover broader parity readiness, not only movement root-cause analysis.
-- Frida raw `branch_id` is only a capture-side alias for caller diagnostics. It
-  should stay out of durable traces and may be removable from capture once
-  existing raw logs no longer need finalization.
+- `TickRecord.phase_markers` was removed
+- Frida raw `branch_id` is rejected instead of carried as a capture alias
+- Zig's old `--debug-trace-msgpack` path was removed; use `--debug-trace-cdt`
+- `TraceFooter.channel_counts` was split into `channel_tick_counts` and
+  `channel_row_counts`
+- `dbg health` reports `ok_for_parity_analysis` and prints
+  `parity_analysis_ready`

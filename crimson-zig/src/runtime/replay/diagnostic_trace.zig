@@ -7,9 +7,6 @@ const projectiles_mod = @import("../projectiles.zig");
 const secondary_projectiles_mod = @import("../secondary_projectiles.zig");
 const state_mod = @import("../state.zig");
 
-pub const replay_tick_trace_schema_version: i32 = 7;
-pub const replay_tick_trace_msgpack_magic = "crimson_replay_tick_trace_msgpack_v4\n";
-
 pub const ReplayTickTiming = struct {
     elapsed_ms: i64,
 };
@@ -119,7 +116,6 @@ pub const ReplayTickEntitySamples = struct {
 };
 
 pub const ReplayTickTrace = struct {
-    schema_version: i32 = replay_tick_trace_schema_version,
     tick_index: usize,
     timing: ReplayTickTiming,
     rng: ReplayTickRng,
@@ -151,7 +147,6 @@ pub fn buildReplayTickTrace(
     timing_samples: []const ReplayTickTimingSample,
 ) ReplayTickTrace {
     return .{
-        .schema_version = replay_tick_trace_schema_version,
         .tick_index = tick_index,
         .timing = .{
             .elapsed_ms = @intFromFloat(@round(elapsed_ms_sim)),

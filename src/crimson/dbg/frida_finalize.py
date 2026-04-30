@@ -47,7 +47,7 @@ _FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
-_SUPPORTED_CAPTURE_FORMAT_VERSION = 11
+_SUPPORTED_CAPTURE_FORMAT_VERSION = 12
 _SUPPORTED_JSONL_SCHEMA_VERSION = 1
 _RUN_START_REASONS = frozenset(("run_start", "first_tick", "quest_attempt", "mode_or_stage_change"))
 _RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change", "shutdown"))
@@ -72,7 +72,6 @@ class _CaptureRngStreamRow(msgspec.Struct, frozen=True, forbid_unknown_fields=Tr
     state_before_u32: int
     state_after_u32: int
     caller_static: str | None = None
-    branch_id: str | None = None
 
 
 class _CaptureSnapshotGameplay(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -204,7 +203,6 @@ class _TickRow(
     tick_index_global: int | None = None
     quest_stage_major: int = -1
     quest_stage_minor: int = -1
-    phase_markers: list[str] = msgspec.field(default_factory=list)
     replay_inputs: list[tuple[float, float, float, float, int]] = msgspec.field(default_factory=list)
 
 
@@ -852,7 +850,6 @@ def finalize_frida_jsonl_to_traces(
                             elapsed_ms=int(tick_row.elapsed_ms),
                             dt_ms_i32=int(tick_row.dt_ms_i32),
                             mode_id=int(tick_row.mode_id),
-                            phase_markers=list(tick_row.phase_markers),
                             channels=channels,
                         )
                         payload = _TICK_ENCODER.encode(tick)

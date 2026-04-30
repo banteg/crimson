@@ -128,7 +128,8 @@ def _write_trace_from_iter(
         )
 
         tick_indices: list[TickBlockIndexEntry] = []
-        channel_counts: dict[str, int] = {}
+        channel_tick_counts: dict[str, int] = {}
+        channel_row_counts: dict[str, int] = {}
         first_tick: int | None = None
         last_tick: int | None = None
         tick_count = 0
@@ -163,7 +164,22 @@ def _write_trace_from_iter(
                 last_tick = row_tick
                 tick_count += 1
                 for channel_name in TRACE_REQUIRED_CHANNELS:
-                    channel_counts[channel_name] = channel_counts.get(channel_name, 0) + 1
+                    channel_tick_counts[channel_name] = channel_tick_counts.get(channel_name, 0) + 1
+                channel_row_counts["checkpoint"] = channel_row_counts.get("checkpoint", 0) + 1
+                channel_row_counts["sim_state"] = channel_row_counts.get("sim_state", 0) + 1
+                entity_samples = row.channels.entity_samples
+                channel_row_counts["entity_samples"] = channel_row_counts.get("entity_samples", 0) + (
+                    len(entity_samples.creatures)
+                    + len(entity_samples.projectiles)
+                    + len(entity_samples.secondary_projectiles)
+                    + len(entity_samples.bonuses)
+                )
+                channel_row_counts["rng_stream"] = channel_row_counts.get("rng_stream", 0) + len(
+                    row.channels.rng_stream,
+                )
+                channel_row_counts["timing_samples"] = channel_row_counts.get("timing_samples", 0) + len(
+                    row.channels.timing_samples,
+                )
             current_block.clear()
 
         for tick in ticks:
@@ -182,7 +198,8 @@ def _write_trace_from_iter(
             tick_count=int(tick_count),
             first_tick=int(first_tick),
             last_tick=int(last_tick),
-            channel_counts={key: value for key, value in sorted(channel_counts.items())},
+            channel_tick_counts={key: value for key, value in sorted(channel_tick_counts.items())},
+            channel_row_counts={key: value for key, value in sorted(channel_row_counts.items())},
         )
         footer_payload = _ENCODER.encode(footer)
         footer_index = _write_chunk(

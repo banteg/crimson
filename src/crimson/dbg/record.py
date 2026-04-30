@@ -510,7 +510,6 @@ def _record_replay_to_trace_python(
                 elapsed_ms=int(checkpoint.elapsed_ms),
                 dt_ms_i32=tick_dt_ms_i32,
                 mode_id=int(replay.header.game_mode_id),
-                phase_markers=[],
                 channels=channels,
             ),
         )

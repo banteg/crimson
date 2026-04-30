@@ -92,7 +92,7 @@ def cmd_dbg_health(
     channels = builtin_object_or_empty(summary.get("channels_present"))
     issues_obj = summary.get("issues")
     issues = [str(item) for item in issues_obj] if isinstance(issues_obj, list) else []
-    ok = bool(summary.get("ok_for_movement_root_cause"))
+    ok = bool(summary.get("ok_for_parity_analysis"))
 
     typer.echo(f"trace={trace_file}")
     typer.echo(f"trace_format_version={summary.get('trace_format_version')}")
@@ -121,7 +121,7 @@ def cmd_dbg_health(
     )
     for key in metric_keys:
         typer.echo(f"{key}={metrics.get(key)}")
-    typer.echo(f"movement_root_cause_ready={ok}")
+    typer.echo(f"parity_analysis_ready={ok}")
     for issue in issues:
         typer.echo(f"issue={issue}")
 

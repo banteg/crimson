@@ -35,7 +35,7 @@ def test_dbg_health_on_recorded_trace(tmp_path: Path) -> None:
         ["dbg", "health", str(trace_path)],
     )
     assert health_result.exit_code == 0, health_result.output
-    assert "movement_root_cause_ready=" in health_result.output
+    assert "parity_analysis_ready=" in health_result.output
     assert "timing_samples_rows=" in health_result.output
 
 

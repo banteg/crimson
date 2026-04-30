@@ -10,7 +10,7 @@ const state_mod = @import("runtime/state.zig");
 
 const trace_magic = "crimson_debug_trace_v1\n";
 const trace_format_version: u32 = 1;
-const trace_schema_version: i32 = 10;
+const trace_schema_version: i32 = 11;
 
 const chunk_kind_meta = "META";
 const chunk_kind_tick = "TICK";
@@ -143,7 +143,8 @@ const TraceFooter = struct {
     tick_count: i32,
     first_tick: i32,
     last_tick: i32,
-    channel_counts: ChannelCounts,
+    channel_tick_counts: ChannelCounts,
+    channel_row_counts: ChannelCounts,
 };
 
 const SnapshotVec2 = struct {
@@ -364,7 +365,6 @@ const TickRecord = struct {
     elapsed_ms: i64,
     dt_ms_i32: i32,
     mode_id: i32,
-    phase_markers: []const []const u8 = empty_strings,
     channels: TickChannels,
 };
 
@@ -524,6 +524,13 @@ pub fn writeReplayTickTraceCdt(
     const chunk_ticks = if (options.chunk_ticks == 0) 1 else options.chunk_ticks;
     var elapsed_ms_accum: i64 = 0;
     var tick_rng_start_state: u32 = replay.header.seed;
+    var channel_row_counts: ChannelCounts = .{
+        .checkpoint = 0,
+        .sim_state = 0,
+        .entity_samples = 0,
+        .rng_stream = 0,
+        .timing_samples = 0,
+    };
 
     var last_tick_seen: ?i32 = null;
     for (rows) |row| {
@@ -544,6 +551,16 @@ pub fn writeReplayTickTraceCdt(
         );
         try tick_records.append(allocator, record);
         tick_rng_start_state = row.rng.rng_state;
+        channel_row_counts.checkpoint += 1;
+        channel_row_counts.sim_state += 1;
+        channel_row_counts.entity_samples += try castI32(
+            row.entities.creatures.len +
+                row.entities.projectiles.len +
+                row.entities.secondary_projectiles.len +
+                row.entities.bonuses.len,
+        );
+        channel_row_counts.rng_stream += try castI32(row.rng_rows.len);
+        channel_row_counts.timing_samples += try castI32(row.timing_samples.len);
 
         const tick_i32 = record.tick_index;
         if (last_tick_seen) |last_tick| {
@@ -569,7 +586,7 @@ pub fn writeReplayTickTraceCdt(
         tick_records.clearRetainingCapacity();
     }
 
-    const channel_counts: ChannelCounts = .{
+    const channel_tick_counts: ChannelCounts = .{
         .checkpoint = tick_count,
         .sim_state = tick_count,
         .entity_samples = tick_count,
@@ -581,7 +598,8 @@ pub fn writeReplayTickTraceCdt(
         .tick_count = tick_count,
         .first_tick = tick_start,
         .last_tick = tick_end,
-        .channel_counts = channel_counts,
+        .channel_tick_counts = channel_tick_counts,
+        .channel_row_counts = channel_row_counts,
     };
     const footer_payload = try encodeMsgpackOwned(allocator, footer);
     defer allocator.free(footer_payload);

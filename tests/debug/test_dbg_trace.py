@@ -147,7 +147,6 @@ def _row(*, tick_index: int, elapsed_ms: int, score_xp: int) -> TickRecord:
         dt_ms_i32=16,
         mode_id=1,
         channels=_channels(tick_index=int(tick_index), elapsed_ms=int(elapsed_ms), score_xp=int(score_xp)),
-        phase_markers=[],
     )
 
 
@@ -161,6 +160,9 @@ def test_trace_roundtrip_random_access(tmp_path: Path) -> None:
     summary = write_trace(out_path, meta=_meta(), ticks=rows, chunk_ticks=2)
 
     assert summary.footer.tick_count == 3
+    assert summary.footer.channel_tick_counts["checkpoint"] == 3
+    assert summary.footer.channel_row_counts["rng_stream"] == 3
+    assert summary.footer.channel_row_counts["timing_samples"] == 0
     assert out_path.exists()
 
     with TraceReader(out_path) as reader:
@@ -205,7 +207,6 @@ def test_tick_record_decodes_with_unknown_fields() -> None:
             "elapsed_ms": 112,
             "dt_ms_i32": 16,
             "mode_id": 2,
-            "phase_markers": ["pre", "post"],
             "channels": msgspec.to_builtins(_channels(tick_index=7, elapsed_ms=112, score_xp=42)),
             "future_tick_field": "ignored",
         },

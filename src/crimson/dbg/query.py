@@ -208,7 +208,6 @@ def tick_summary_from_row(row: TickRecord) -> BuiltinObject:
             "elapsed_ms": row.elapsed_ms,
             "dt_ms_i32": row.dt_ms_i32,
             "mode_id": row.mode_id,
-            "phase_markers": list(row.phase_markers),
             "checkpoint": checkpoint,
             "entity_counts": entity_counts,
             "rng_stream_count": rng_stream_count,

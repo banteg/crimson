@@ -106,7 +106,7 @@ def summarize_trace_health(
                     "timing_samples_rows": int(timing_samples_rows),
                 },
                 "issues": issues,
-                "ok_for_movement_root_cause": len(issues) == 0,
+                "ok_for_parity_analysis": len(issues) == 0,
             },
             field="trace_health",
         )

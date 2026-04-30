@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 11;
+const CAPTURE_FORMAT_VERSION = 12;
 const FRIDA_JSONL_SCHEMA_VERSION = 1;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
@@ -1126,20 +1126,6 @@ function ensureRunForTick(tickObj) {
   return true;
 }
 
-function phaseMarkerNames(markers) {
-  if (!Array.isArray(markers)) return [];
-  const out = [];
-  for (let i = 0; i < markers.length; i++) {
-    const marker = markers[i];
-    if (marker && typeof marker.type === "string") {
-      out.push(String(marker.type));
-      continue;
-    }
-    out.push(String(marker));
-  }
-  return out;
-}
-
 function failCaptureContract(detail) {
   const error = new Error(String(detail || "capture_contract_error"));
   error.name = "CaptureContractError";
@@ -1685,7 +1671,6 @@ function rngStreamFromTick(tickObj) {
       state_before_u32: stateBefore,
       state_after_u32: stateAfter,
       caller_static: row.caller_static == null ? null : String(row.caller_static),
-      branch_id: row.branch_id == null ? null : String(row.branch_id),
     });
   }
   return out;
@@ -1809,7 +1794,6 @@ function buildTraceTickRow(tickObj) {
       mode_id: modeId,
       quest_stage_major: tickQuestMajor(tickObj),
       quest_stage_minor: tickQuestMinor(tickObj),
-      phase_markers: phaseMarkerNames(tickObj.phase_markers),
       replay_inputs: replayInputs,
       channels: {
         checkpoint: checkpoint,
@@ -3416,13 +3400,6 @@ function makeTickContext() {
     timing_entry_active: timingEntryActive,
     timing_entry_factor: timingEntryFactor,
     timing_samples: [],
-    phase_markers: [
-      {
-        kind: "state_enter",
-        state_id: outState.currentStateId,
-        state_pending: outState.currentStatePending,
-      },
-    ],
     sfx_ids: [],
     fire_by_player: {},
     player_fire_direct_by_player: {},
@@ -3539,12 +3516,6 @@ function addTickEvent(kind, payload, commandToken) {
 function emitRawEvent(obj) {
   if (!obj || !shouldEmitRawEvent()) return;
   writeLine(obj);
-}
-
-function addPhaseMarker(kind, payload) {
-  const tick = outState.currentTick;
-  if (!tick) return;
-  pushHead(tick.phase_markers, Object.assign({ kind: kind }, payload || {}));
 }
 
 function _timeScaleActiveFromBonusTimer(timerValue) {
@@ -3737,31 +3708,6 @@ function buildCaptureEventHeads(eventHeadsByKind) {
   return out;
 }
 
-function buildCapturePhaseMarkers(markers) {
-  const out = [];
-  if (!Array.isArray(markers)) return out;
-  for (let i = 0; i < markers.length; i++) {
-    const marker = asObject(markers[i]);
-    const kind = String(marker.kind || "");
-    if (!kind) continue;
-    if (kind === "state_enter") {
-      out.push({
-        type: "state_enter",
-        state_id: marker.state_id == null ? null : marker.state_id,
-        state_pending: marker.state_pending == null ? null : marker.state_pending,
-      });
-      continue;
-    }
-    const data = {};
-    for (const key in marker) {
-      if (key === "kind") continue;
-      data[key] = marker[key];
-    }
-    out.push({ type: kind, data: data });
-  }
-  return out;
-}
-
 function pushInputContext(threadId, ctx) {
   let stack = inputContextByTid[threadId];
   if (!stack) {
@@ -3892,7 +3838,6 @@ function emitRngRollEvent(rollRow) {
     value_i32: rollRow.value,
     value_u32: rollRow.value_u32,
     value_15: rollRow.value_15,
-    branch_id: rollRow.branch_id,
     caller: rollRow.caller,
     caller_static: rollRow.caller_static,
     state_before_u32: rollRow.state_before_u32,
@@ -3947,7 +3892,6 @@ function registerRngRoll(value, callerStaticHex, callerLabel) {
     value: valueI32,
     value_u32: valueI32 == null ? null : valueI32 >>> 0,
     value_15: valueI32 == null ? null : valueI32 & 0x7fff,
-    branch_id: callerStaticHex || null,
     caller: callerLabel || null,
     caller_static: callerStaticHex || null,
     state_before_u32: stateBeforeU32,
@@ -4149,23 +4093,6 @@ function finalizeTick() {
     scoreXp += afterPlayers[i].experience == null ? 0 : afterPlayers[i].experience;
   }
 
-  if (tick.state_id_enter !== outState.currentStateId) {
-    addPhaseMarker("state_leave", {
-      from: tick.state_id_enter,
-      to: outState.currentStateId,
-      pending_to: outState.currentStatePending,
-    });
-  }
-  if (tick.mode_hint) {
-    addPhaseMarker("mode_hint", { mode_fn: tick.mode_hint });
-  }
-  if ((tick.input_queries.primary_edge.true_calls || 0) > 0) {
-    addPhaseMarker("input_primary_edge", { true_calls: tick.input_queries.primary_edge.true_calls });
-  }
-  if (tick.rng.calls > 0) {
-    addPhaseMarker("rng_activity", { calls: tick.rng.calls });
-  }
-
   const beforeCreatureCount =
     beforeGlobals.creature_active_count == null ? null : beforeGlobals.creature_active_count;
   const afterCreatureCount =
@@ -4184,23 +4111,7 @@ function finalizeTick() {
     beforeCreatureCount != null && afterCreatureCount != null
       ? afterCreatureCount - beforeCreatureCount
       : null;
-  const spawnHookEventCount =
-    (tick.event_counts.creature_spawn || 0) + (tick.event_counts.creature_spawn_low || 0);
   const deathHookEventCount = tick.event_counts.creature_death || 0;
-  if (creatureCountDeltaInTick != null && creatureCountDeltaInTick > 0 && spawnHookEventCount <= 0) {
-    addPhaseMarker("creature_count_increase_without_spawn_hook", {
-      before: beforeCreatureCount,
-      after: afterCreatureCount,
-      delta: creatureCountDeltaInTick,
-    });
-  }
-  if (creatureCountDeltaInTick != null && creatureCountDeltaInTick < 0 && deathHookEventCount <= 0) {
-    addPhaseMarker("creature_count_drop_without_death_hook", {
-      before: beforeCreatureCount,
-      after: afterCreatureCount,
-      delta: creatureCountDeltaInTick,
-    });
-  }
 
   let creatureLifecycle = null;
   if (CONFIG.enableCreatureLifecycleDigest) {
@@ -4209,14 +4120,6 @@ function finalizeTick() {
     creatureLifecycle = diffCreatureDigest(beforeDigest, afterDigest);
     outState.lastCreatureDigest = afterDigest;
     if (creatureLifecycle) {
-      const lifecycleDelta =
-        (creatureLifecycle.added_total || 0) - (creatureLifecycle.removed_total || 0);
-      if (lifecycleDelta !== 0 && creatureCountDeltaInTick != null && lifecycleDelta !== creatureCountDeltaInTick) {
-        addPhaseMarker("creature_lifecycle_delta_mismatch", {
-          count_delta: creatureCountDeltaInTick,
-          lifecycle_delta: lifecycleDelta,
-        });
-      }
       if ((creatureLifecycle.added_total || 0) > 0 || (creatureLifecycle.removed_total || 0) > 0) {
         addTickEvent(
           "creature_lifecycle",
@@ -4436,7 +4339,6 @@ function finalizeTick() {
     event_counts: tick.event_counts,
     event_overflow: tick.overflow,
     event_heads: buildCaptureEventHeads(tick.event_heads),
-    phase_markers: buildCapturePhaseMarkers(tick.phase_markers),
     timing_samples: timingSamplesFromTick({
       tick_index: tick.tick_index,
       gameplay_frame: tick.gameplay_frame,
@@ -4563,7 +4465,6 @@ function installHooks() {
         payload,
         "gs:" + payload.before.id + "->" + payload.target_state
       );
-      addPhaseMarker("state_set_call", { target_state: payload.target_state });
       emitRawEvent(Object.assign({ event: "game_state_set" }, payload));
     },
   });
@@ -4596,7 +4497,6 @@ function installHooks() {
             quest_spawn_stall_timer_ms: beforeGlobals.quest_spawn_stall_timer_ms,
           },
         };
-        if (!tick.mode_hint) addPhaseMarker("mode_enter", { mode_fn: name });
         tick.mode_hint = tick.mode_hint || name;
         addTickEvent("mode_tick", { mode_fn: name }, "m:" + name);
       },

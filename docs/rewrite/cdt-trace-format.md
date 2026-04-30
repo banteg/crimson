@@ -12,16 +12,16 @@ It is rewrite tooling format, not an original Crimsonland asset/container format
 This spec describes the current on-disk contract implemented by `src/crimson/dbg/schema.py`
 and `src/crimson/dbg/trace.py`.
 
-For the remaining cross-producer cleanup work, see
+For cross-producer alignment details, see
 [`trace-format-alignment.md`](trace-format-alignment.md).
 
 ## Versioning
 
 - `trace_format_version`: container/envelope version (`1` currently)
-- `trace_schema_version`: channel payload schema version (`10` currently)
+- `trace_schema_version`: channel payload schema version (`11` currently)
 - container and schema versions are independent
-- this `.cdt` schema is distinct from Zig's local replay diagnostic trace
-  schema in `crimson-zig/src/runtime/replay/diagnostic_trace.zig`
+- Zig's runtime replay trace structs are internal collection types; CDT is the
+  shared on-disk debug trace format
 
 ## File layout
 
@@ -65,7 +65,6 @@ Payload encoding:
 - `elapsed_ms`
 - `dt_ms_i32`
 - `mode_id`
-- `phase_markers`
 - `channels` (`ReplayTickChannels`)
 
 Tick rows are required to be non-decreasing by `tick_index`.
@@ -75,7 +74,11 @@ Tick rows are required to be non-decreasing by `tick_index`.
 rejected. Frida raw capture settings live only under `config.frida` because they
 are producer-private diagnostics.
 
-## Channel contract (schema v10)
+`TraceFooter` stores the tick block index, total tick window, channel presence
+counts in `channel_tick_counts`, and concrete emitted row counts in
+`channel_row_counts`.
+
+## Channel contract (schema v11)
 
 Required channels in both compared traces:
 
@@ -113,9 +116,6 @@ Python replay traces, and Zig replay traces all emit a non-empty row set with a
 the tick index, gameplay frame, `frame_dt_f32`, `frame_dt_ms_i32`,
 `frame_dt_ms_f32`, time-scale state, reflex boost timer, and
 `mode_fn = "gameplay_update_and_render"`.
-
-`phase_markers` remain `list[str]` in the durable trace contract.
-Raw Frida capture may hold richer structured phase-marker payloads, but finalize flattens them to names in the trace row.
 
 ## Producers
 
