@@ -22,7 +22,7 @@ original, Python, and Zig traces without producer-specific interpretation.
 ## Current contract
 
 The on-disk container is `trace_format_version = 1`. The active payload schema is
-`trace_schema_version = 11`.
+`trace_schema_version = 12`.
 
 This is the shared `.cdt` schema. Zig's runtime replay trace structs are internal
 collection types and no longer define a separate on-disk msgpack trace format.
@@ -50,13 +50,11 @@ Zig mirrors the same schema in `crimson-zig/src/cdt_trace.zig`.
 
 - `TraceProducer`
 - `TraceSource`
-- `TraceChannelVersions`
 - `TraceTickRange`
-- `TraceConfig`
 
-Unknown metadata fields are rejected. Producer-private config is allowed only in
-the named Frida extension bag, because raw capture settings are diagnostics and
-not part of the shared comparison contract.
+Unknown metadata fields are rejected. Producer-private config stays in
+producer-private logs because it is diagnostic context, not part of the shared
+comparison contract.
 
 ## Why this format exists
 
@@ -86,8 +84,7 @@ must produce canonical `.cdt` rows.
 - `caller_static` is normalized into durable RNG `caller`
 - raw `branch_id` is no longer accepted
 - timing samples are validated as replay-grade evidence
-- Frida session config is kept under `TraceConfig.frida`, not mixed into the
-  shared metadata shape
+- Frida session config stays in the raw JSONL stream, not in shared CDT metadata
 
 ### Python replay recorder
 
@@ -104,9 +101,9 @@ rows from the replay driver.
 ### Zig replay recorder
 
 Zig replay recording is no longer a verifier-only side path. Its `.cdt` writer
-targets schema 11 and serializes the same required channels.
+targets schema 12 and serializes the same required channels.
 
-- Zig writes schema 11 `.cdt` traces
+- Zig writes schema 12 `.cdt` traces
 - RNG rows come from direct traced draws, not post-hoc lifecycle reconstruction
 - RNG rows include optional static caller addresses
 - timing rows are emitted and have coverage tests
@@ -165,3 +162,18 @@ The schema 11 bump folds the stale cleanup items into the shared contract:
   `channel_row_counts`
 - `dbg health` reports `ok_for_parity_analysis` and prints
   `parity_analysis_ready`
+
+## Schema 12 cleanup
+
+Schema 12 collapses owned-producer metadata that had no independent consumer:
+
+- `TraceMeta.channels` and `TraceMeta.channel_versions` were removed because
+  the schema always requires the same channel set
+- `TraceMeta.config` was removed because producer-private config belongs in raw
+  producer logs
+- footer channel count summaries were removed because `dbg health` recomputes
+  row coverage from ticks
+- raw Frida JSONL dropped its separate `schema_version` and now uses only
+  `capture_format_version = 12`
+- public trace chunk-size options were removed; CDT chunking is fixed at the
+  writer boundary

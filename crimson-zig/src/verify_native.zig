@@ -32,7 +32,6 @@ const VerifyRequest = struct {
     max_ticks: ?usize = null,
     trace_rng: bool = false,
     debug_trace_cdt: ?[]const u8 = null,
-    debug_trace_cdt_chunk_ticks: i32 = 256,
 };
 
 const ReplayRunnerProgressHint = struct {
@@ -242,12 +241,6 @@ fn runVerifyWithReplayBytes(
                     replay_bytes,
                     replay,
                     tick_trace.items,
-                    .{
-                        .strict_events = true,
-                        .chunk_ticks = @intCast(request.debug_trace_cdt_chunk_ticks),
-                        .verify_exit_code = 1,
-                        .verify_stderr_present = true,
-                    },
                 ) catch |trace_err| {
                     return buildVerifyFailedOutput(allocator, @errorName(trace_err));
                 };
@@ -310,12 +303,6 @@ fn runVerifyWithReplayBytes(
             replay_bytes,
             replay,
             tick_trace.items,
-            .{
-                .strict_events = true,
-                .chunk_ticks = @intCast(request.debug_trace_cdt_chunk_ticks),
-                .verify_exit_code = @intCast(exit_code),
-                .verify_stderr_present = false,
-            },
         ) catch |trace_err| {
             return buildVerifyFailedOutput(allocator, @errorName(trace_err));
         };
@@ -398,7 +385,6 @@ fn writeRequestedDebugTraceOutputs(
     replay_bytes: []const u8,
     replay: replay_codec.Replay,
     tick_trace: []const replay_runner.ReplayTickTrace,
-    cdt_options: cdt_trace.WriteOptions,
 ) !void {
     if (builtin.os.tag == .freestanding) {
         return error.UnsupportedTarget;
@@ -412,7 +398,6 @@ fn writeRequestedDebugTraceOutputs(
             replay_bytes,
             replay,
             tick_trace,
-            cdt_options,
         );
     }
 }
@@ -770,22 +755,6 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
             request.debug_trace_cdt = arg["--debug-trace-cdt=".len..];
             continue;
         }
-        if (std.mem.eql(u8, arg, "--debug-trace-cdt-chunk-ticks")) {
-            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --debug-trace-cdt-chunk-ticks" };
-            idx += 1;
-            const parsed = std.fmt.parseInt(i32, args[idx], 10) catch return .{ .invalid = "invalid --debug-trace-cdt-chunk-ticks value" };
-            if (parsed <= 0) return .{ .invalid = "invalid --debug-trace-cdt-chunk-ticks value" };
-            request.debug_trace_cdt_chunk_ticks = parsed;
-            continue;
-        }
-        if (std.mem.startsWith(u8, arg, "--debug-trace-cdt-chunk-ticks=")) {
-            const raw = arg["--debug-trace-cdt-chunk-ticks=".len..];
-            const parsed = std.fmt.parseInt(i32, raw, 10) catch return .{ .invalid = "invalid --debug-trace-cdt-chunk-ticks value" };
-            if (parsed <= 0) return .{ .invalid = "invalid --debug-trace-cdt-chunk-ticks value" };
-            request.debug_trace_cdt_chunk_ticks = parsed;
-            continue;
-        }
-
         if (std.mem.eql(u8, arg, "--format")) {
             if (idx + 1 >= args.len) return .{ .invalid = "missing value for --format" };
             idx += 1;
@@ -969,22 +938,6 @@ test "parse native subset accepts debug trace cdt option" {
     try std.testing.expectEqualStrings("trace.cdt", req.debug_trace_cdt.?);
 }
 
-test "parse native subset accepts debug trace cdt chunk ticks option" {
-    const parsed = parseNativeSubset(&.{
-        "survival_20260224_041009_score76661.crd",
-        "--debug-trace-cdt=trace.cdt",
-        "--debug-trace-cdt-chunk-ticks",
-        "32",
-    });
-    const req = switch (parsed) {
-        .ok => |request| request,
-        else => return error.TestExpectedNativeRequest,
-    };
-    try std.testing.expect(req.debug_trace_cdt != null);
-    try std.testing.expectEqualStrings("trace.cdt", req.debug_trace_cdt.?);
-    try std.testing.expectEqual(@as(i32, 32), req.debug_trace_cdt_chunk_ticks);
-}
-
 test "parse native subset reports missing debug trace cdt argument" {
     const parsed = parseNativeSubset(&.{
         "survival_20260224_041009_score76661.crd",
@@ -992,17 +945,6 @@ test "parse native subset reports missing debug trace cdt argument" {
     });
     switch (parsed) {
         .invalid => |detail| try std.testing.expectEqualStrings("missing value for --debug-trace-cdt", detail),
-        else => return error.TestExpectedInvalidOption,
-    }
-}
-
-test "parse native subset rejects invalid cdt chunk ticks value" {
-    const parsed = parseNativeSubset(&.{
-        "survival_20260224_041009_score76661.crd",
-        "--debug-trace-cdt-chunk-ticks=0",
-    });
-    switch (parsed) {
-        .invalid => |detail| try std.testing.expectEqualStrings("invalid --debug-trace-cdt-chunk-ticks value", detail),
         else => return error.TestExpectedInvalidOption,
     }
 }

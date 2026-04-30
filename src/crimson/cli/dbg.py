@@ -33,7 +33,6 @@ def cmd_dbg_record(
         "--impl",
         help="recording backend implementation",
     ),
-    chunk_ticks: int = typer.Option(256, "--chunk-ticks", min=1, help="ticks per compressed CDT block"),
 ) -> None:
     """Run replay simulation and record a CDT trace."""
     from ..dbg.record import record_replay_to_trace
@@ -46,7 +45,6 @@ def cmd_dbg_record(
             replay_path=Path(replay_file),
             out_path=Path(out),
             impl=impl,
-            chunk_ticks=chunk_ticks,
             warnings_out=warnings_out,
         )
     except (TraceError, ValueError, ReplayRunnerError) as exc:
@@ -63,7 +61,9 @@ def cmd_dbg_record(
         f"end={tick_range.end_tick} "
         f"count={tick_range.tick_count}",
     )
-    typer.echo("channels=" + ",".join(summary.meta.channels))
+    from ..dbg.schema import TRACE_REQUIRED_CHANNELS
+
+    typer.echo("channels=" + ",".join(TRACE_REQUIRED_CHANNELS))
 
 
 @dbg_app.command("health")

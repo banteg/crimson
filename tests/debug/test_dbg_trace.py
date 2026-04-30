@@ -17,16 +17,13 @@ from crimson.dbg.canonical_channels import (
 )
 from crimson.dbg.schema import (
     TRACE_FORMAT_VERSION,
-    TRACE_REQUIRED_CHANNELS,
     TRACE_SCHEMA_VERSION,
     ReplayTickChannels,
     TickRecord,
-    TraceConfig,
     TraceMeta,
     TraceProducer,
     TraceSource,
     TraceTickRange,
-    channel_versions_for,
 )
 from crimson.dbg.trace import TraceError, TraceReader, write_trace
 from crimson.persistence.save_status import GameStatusData
@@ -40,10 +37,7 @@ def _meta() -> TraceMeta:
         created_utc="2026-02-24T00:00:00+00:00",
         producer=TraceProducer(impl="python", impl_version="test", platform="darwin", arch="x86_64"),
         source=TraceSource(kind="unit_test", sha256="0" * 64),
-        channels=[*TRACE_REQUIRED_CHANNELS],
-        channel_versions=channel_versions_for(TRACE_REQUIRED_CHANNELS),
         tick_range=TraceTickRange(start_tick=0, end_tick=2, tick_count=3),
-        config=TraceConfig(),
         status=GameStatusData(),
     )
 
@@ -160,9 +154,6 @@ def test_trace_roundtrip_random_access(tmp_path: Path) -> None:
     summary = write_trace(out_path, meta=_meta(), ticks=rows, chunk_ticks=2)
 
     assert summary.footer.tick_count == 3
-    assert summary.footer.channel_tick_counts["checkpoint"] == 3
-    assert summary.footer.channel_row_counts["rng_stream"] == 3
-    assert summary.footer.channel_row_counts["timing_samples"] == 0
     assert out_path.exists()
 
     with TraceReader(out_path) as reader:
@@ -183,16 +174,7 @@ def test_trace_meta_rejects_unknown_fields() -> None:
             "created_utc": "2026-02-24T00:00:00+00:00",
             "producer": {"impl": "python", "impl_version": "", "platform": "darwin", "arch": "x86_64"},
             "source": {"kind": "unit_test", "sha256": "0" * 64},
-            "channels": ["checkpoint"],
-            "channel_versions": {
-                "checkpoint": 1,
-                "sim_state": 1,
-                "entity_samples": 1,
-                "rng_stream": 1,
-                "timing_samples": 1,
-            },
             "tick_range": {"start_tick": 0, "end_tick": 0, "tick_count": 1},
-            "config": {},
             "future_field": {"nested": True},
         },
     )
@@ -226,10 +208,7 @@ def test_trace_reader_rejects_old_schema_version(tmp_path: Path) -> None:
         created_utc="2026-02-24T00:00:00+00:00",
         producer=TraceProducer(impl="python", impl_version="test", platform="darwin", arch="x86_64"),
         source=TraceSource(kind="unit_test", sha256="1" * 64),
-        channels=[*TRACE_REQUIRED_CHANNELS],
-        channel_versions=channel_versions_for(TRACE_REQUIRED_CHANNELS),
         tick_range=TraceTickRange(start_tick=0, end_tick=0, tick_count=1),
-        config=TraceConfig(),
     )
     rows = [_row(tick_index=0, elapsed_ms=0, score_xp=0)]
     write_trace(out_path, meta=meta, ticks=rows, chunk_ticks=1)
@@ -247,10 +226,7 @@ def test_trace_reader_rejects_unknown_schema_version(tmp_path: Path) -> None:
         created_utc="2026-02-24T00:00:00+00:00",
         producer=TraceProducer(impl="python", impl_version="test", platform="darwin", arch="x86_64"),
         source=TraceSource(kind="unit_test", sha256="2" * 64),
-        channels=[*TRACE_REQUIRED_CHANNELS],
-        channel_versions=channel_versions_for(TRACE_REQUIRED_CHANNELS),
         tick_range=TraceTickRange(start_tick=0, end_tick=0, tick_count=1),
-        config=TraceConfig(),
     )
     rows = [_row(tick_index=0, elapsed_ms=0, score_xp=0)]
     write_trace(out_path, meta=meta, ticks=rows, chunk_ticks=1)

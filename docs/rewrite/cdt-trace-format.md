@@ -18,7 +18,7 @@ For cross-producer alignment details, see
 ## Versioning
 
 - `trace_format_version`: container/envelope version (`1` currently)
-- `trace_schema_version`: channel payload schema version (`11` currently)
+- `trace_schema_version`: channel payload schema version (`12` currently)
 - container and schema versions are independent
 - Zig's runtime replay trace structs are internal collection types; CDT is the
   shared on-disk debug trace format
@@ -69,16 +69,13 @@ Payload encoding:
 
 Tick rows are required to be non-decreasing by `tick_index`.
 
-`TraceMeta` uses typed metadata structs for `producer`, `source`,
-`channel_versions`, `tick_range`, and `config`. Unknown metadata fields are
-rejected. Frida raw capture settings live only under `config.frida` because they
-are producer-private diagnostics.
+`TraceMeta` uses typed metadata structs for `producer`, `source`, and
+`tick_range`. Unknown metadata fields are rejected. Producer-private settings
+stay in producer-private logs instead of the shared CDT metadata.
 
-`TraceFooter` stores the tick block index, total tick window, channel presence
-counts in `channel_tick_counts`, and concrete emitted row counts in
-`channel_row_counts`.
+`TraceFooter` stores the tick block index and total tick window.
 
-## Channel contract (schema v11)
+## Channel contract (schema v12)
 
 Required channels in both compared traces:
 

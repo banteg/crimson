@@ -14,10 +14,7 @@ from .channel_helpers import (
 )
 from .checkpoint_diff import checkpoint_deepdiff
 from .payloads import BuiltinObject, to_builtin_object
-from .schema import (
-    TRACE_REQUIRED_CHANNELS,
-    TickRecord,
-)
+from .schema import TickRecord
 from .trace import TraceError, TraceReader
 
 
@@ -204,26 +201,6 @@ def diff_traces(
     tick_end: int | None = None,
 ) -> TraceDiffReport:
     with TraceReader(Path(expected_trace_path)) as expected_trace, TraceReader(Path(actual_trace_path)) as actual_trace:
-        expected_channels = {str(channel) for channel in expected_trace.meta.channels}
-        actual_channels = {str(channel) for channel in actual_trace.meta.channels}
-        for required_channel in TRACE_REQUIRED_CHANNELS:
-            channel_name = str(required_channel)
-            if channel_name not in expected_channels or channel_name not in actual_channels:
-                return TraceDiffReport(
-                    ok=False,
-                    checked_count=0,
-                    tick_start=tick_start,
-                    tick_end=tick_end,
-                    mismatch=TraceMismatch(
-                        kind="missing_channel",
-                        tick_index=-1,
-                        detail={
-                            "channel": channel_name,
-                            "expected_has": channel_name in expected_channels,
-                            "actual_has": channel_name in actual_channels,
-                        },
-                    ),
-                )
         pairs = _load_pairs(
             expected_trace=expected_trace,
             actual_trace=actual_trace,

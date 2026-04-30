@@ -10,7 +10,8 @@ const state_mod = @import("runtime/state.zig");
 
 const trace_magic = "crimson_debug_trace_v1\n";
 const trace_format_version: u32 = 1;
-const trace_schema_version: i32 = 11;
+const trace_schema_version: i32 = 12;
+const trace_chunk_ticks: usize = 256;
 
 const chunk_kind_meta = "META";
 const chunk_kind_tick = "TICK";
@@ -19,14 +20,6 @@ const trailer_magic = "CDTFTR1\n";
 
 const chunk_flag_msgpack: u32 = 1 << 1;
 const chunk_header_len: usize = 4 + 4 + 4 + 4 + 4 + 4 + 8;
-
-const channels_list = [_][]const u8{
-    "checkpoint",
-    "sim_state",
-    "entity_samples",
-    "rng_stream",
-    "timing_samples",
-};
 
 const empty_strings: []const []const u8 = &.{};
 const quest_reload_sfx_head: []const []const u8 = &.{"sfx_pistol_reload"};
@@ -60,21 +53,6 @@ const TraceMsgpackError = error{
 
 pub const TraceWriteError = TraceDomainError || TraceFsError || TraceWriterError || TraceAllocError || TraceMsgpackError;
 
-pub const WriteOptions = struct {
-    strict_events: bool = true,
-    chunk_ticks: usize = 256,
-    verify_exit_code: i32 = 0,
-    verify_stderr_present: bool = false,
-};
-
-const ChannelVersions = struct {
-    checkpoint: i32 = 1,
-    sim_state: i32 = 1,
-    entity_samples: i32 = 1,
-    rng_stream: i32 = 1,
-    timing_samples: i32 = 1,
-};
-
 const TickRange = struct {
     start_tick: i32,
     end_tick: i32,
@@ -99,24 +77,13 @@ const Source = struct {
     quest_level: []const u8,
 };
 
-const TraceConfig = struct {
-    strict_events: bool,
-    impl: []const u8 = "zig",
-    zig_build_policy: []const u8 = "always",
-    zig_exit_code: i32,
-    zig_stderr_present: bool,
-};
-
 const TraceMeta = struct {
     trace_format_version: i32 = @intCast(trace_format_version),
     trace_schema_version: i32 = trace_schema_version,
     created_utc: []const u8,
     producer: Producer,
     source: Source,
-    channels: []const []const u8 = channels_list[0..],
-    channel_versions: ChannelVersions = .{},
     tick_range: TickRange,
-    config: TraceConfig,
     status: replay_codec.ReplayStatus = .{},
 };
 
@@ -129,22 +96,11 @@ const TickBlockIndexEntry = struct {
     checksum: u64,
 };
 
-const ChannelCounts = struct {
-    checkpoint: i32,
-    sim_state: i32,
-    entity_samples: i32,
-    rng_stream: i32,
-    timing_samples: i32,
-};
-
 const TraceFooter = struct {
-    trace_format_version: i32 = @intCast(trace_format_version),
     tick_blocks: []const TickBlockIndexEntry,
     tick_count: i32,
     first_tick: i32,
     last_tick: i32,
-    channel_tick_counts: ChannelCounts,
-    channel_row_counts: ChannelCounts,
 };
 
 const SnapshotVec2 = struct {
@@ -428,7 +384,6 @@ pub fn writeReplayTickTraceCdt(
     replay_bytes: []const u8,
     replay: replay_codec.Replay,
     rows: []const replay_runner.ReplayTickTrace,
-    options: WriteOptions,
 ) TraceWriteError!void {
     if (rows.len == 0) return error.EmptyTrace;
 
@@ -477,11 +432,6 @@ pub fn writeReplayTickTraceCdt(
             .end_tick = tick_end,
             .tick_count = tick_count,
         },
-        .config = .{
-            .strict_events = options.strict_events,
-            .zig_exit_code = options.verify_exit_code,
-            .zig_stderr_present = options.verify_stderr_present,
-        },
         .status = replay.header.status,
     };
 
@@ -521,16 +471,8 @@ pub fn writeReplayTickTraceCdt(
         tick_records.deinit(allocator);
     }
 
-    const chunk_ticks = if (options.chunk_ticks == 0) 1 else options.chunk_ticks;
     var elapsed_ms_accum: i64 = 0;
     var tick_rng_start_state: u32 = replay.header.seed;
-    var channel_row_counts: ChannelCounts = .{
-        .checkpoint = 0,
-        .sim_state = 0,
-        .entity_samples = 0,
-        .rng_stream = 0,
-        .timing_samples = 0,
-    };
 
     var last_tick_seen: ?i32 = null;
     for (rows) |row| {
@@ -551,16 +493,6 @@ pub fn writeReplayTickTraceCdt(
         );
         try tick_records.append(allocator, record);
         tick_rng_start_state = row.rng.rng_state;
-        channel_row_counts.checkpoint += 1;
-        channel_row_counts.sim_state += 1;
-        channel_row_counts.entity_samples += try castI32(
-            row.entities.creatures.len +
-                row.entities.projectiles.len +
-                row.entities.secondary_projectiles.len +
-                row.entities.bonuses.len,
-        );
-        channel_row_counts.rng_stream += try castI32(row.rng_rows.len);
-        channel_row_counts.timing_samples += try castI32(row.timing_samples.len);
 
         const tick_i32 = record.tick_index;
         if (last_tick_seen) |last_tick| {
@@ -568,7 +500,7 @@ pub fn writeReplayTickTraceCdt(
         }
         last_tick_seen = tick_i32;
 
-        if (tick_records.items.len >= chunk_ticks) {
+        if (tick_records.items.len >= trace_chunk_ticks) {
             const entry = try flushTickBlock(allocator, out, &file_offset, tick_records.items);
             try tick_blocks.append(allocator, entry);
             for (tick_records.items) |*tick_record| {
@@ -586,20 +518,11 @@ pub fn writeReplayTickTraceCdt(
         tick_records.clearRetainingCapacity();
     }
 
-    const channel_tick_counts: ChannelCounts = .{
-        .checkpoint = tick_count,
-        .sim_state = tick_count,
-        .entity_samples = tick_count,
-        .rng_stream = tick_count,
-        .timing_samples = tick_count,
-    };
     const footer: TraceFooter = .{
         .tick_blocks = tick_blocks.items,
         .tick_count = tick_count,
         .first_tick = tick_start,
         .last_tick = tick_end,
-        .channel_tick_counts = channel_tick_counts,
-        .channel_row_counts = channel_row_counts,
     };
     const footer_payload = try encodeMsgpackOwned(allocator, footer);
     defer allocator.free(footer_payload);

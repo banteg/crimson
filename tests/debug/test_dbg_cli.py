@@ -8,7 +8,7 @@ from typer.testing import CliRunner
 
 import crimson.dbg.diff as dbg_diff
 from crimson.cli import app
-from crimson.dbg.schema import TickRecord
+from crimson.dbg.schema import TRACE_REQUIRED_CHANNELS, TickRecord
 from crimson.dbg.trace import TraceReader, load_trace, write_trace
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay
@@ -129,18 +129,15 @@ def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatc
         replay_path: Path,
         out_path: Path,
         impl: str,
-        chunk_ticks: int,
         warnings_out: list[str],
     ) -> object:
         captured["replay_path"] = replay_path
         captured["out_path"] = out_path
         captured["impl"] = impl
-        captured["chunk_ticks"] = chunk_ticks
         warnings_out.append("warning: zig replay verify exited 1; continuing with emitted trace")
         return SimpleNamespace(
             meta=SimpleNamespace(
                 tick_range=SimpleNamespace(start_tick=0, end_tick=1, tick_count=2),
-                channels=["checkpoint", "sim_state"],
             ),
         )
 
@@ -157,19 +154,16 @@ def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatc
             str(trace_path),
             "--impl",
             "zig",
-            "--chunk-ticks",
-            "8",
         ],
     )
 
     assert result.exit_code == 0, result.output
     assert "warning: zig replay verify exited 1; continuing with emitted trace" in result.output
     assert "trace=" in result.output
-    assert "channels=checkpoint,sim_state" in result.output
+    assert "channels=" + ",".join(TRACE_REQUIRED_CHANNELS) in result.output
     assert captured["replay_path"] == replay_path
     assert captured["out_path"] == trace_path
     assert captured["impl"] == "zig"
-    assert captured["chunk_ticks"] == 8
 
 
 def _write_replay(path: Path, *, ticks: int = 3) -> Path:
@@ -324,30 +318,6 @@ def test_dbg_diff_checkpoint_field_changes_report_mismatch(tmp_path: Path) -> No
     assert result.exit_code == 1, result.output
     assert "result=diverged" in result.output
     assert "checkpoint_field_mismatch" in result.output
-
-
-def test_dbg_diff_default_policy_requires_canonical_channels(tmp_path: Path) -> None:
-    replay_path = _write_replay_with_fire(tmp_path / "sample_optional_channels.crd", ticks=3)
-    golden_trace = tmp_path / "golden_optional_channels.cdt"
-    candidate_trace = tmp_path / "candidate_optional_channels.cdt"
-    runner = CliRunner()
-
-    record_result = runner.invoke(
-        app,
-        ["dbg", "record", str(replay_path), "--out", str(golden_trace)],
-    )
-    assert record_result.exit_code == 0, record_result.output
-
-    meta, ticks, _footer = load_trace(golden_trace)
-    meta.channels = [name for name in meta.channels if name != "entity_samples"]
-    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
-
-    result = runner.invoke(
-        app,
-        ["dbg", "diff", str(golden_trace), str(candidate_trace)],
-    )
-    assert result.exit_code == 1, result.output
-    assert "missing_channel" in result.output
 
 
 def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:

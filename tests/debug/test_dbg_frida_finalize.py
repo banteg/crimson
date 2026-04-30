@@ -34,7 +34,6 @@ def _session_fingerprint_stub() -> dict[str, object]:
 def _session_config_stub() -> dict[str, object]:
     return {
         "out_path": "C:\\share\\frida\\gameplay_diff_capture.jsonl",
-        "jsonl_schema_version": 1,
         "capture_profile": "exhaustive_default",
         "config_env_overrides": [],
         "log_mode": "truncate",
@@ -84,7 +83,6 @@ def _session_config_stub() -> dict[str, object]:
 def _session_start_row(*, capture_format_version: int = CAPTURE_FORMAT_VERSION) -> dict[str, object]:
     return {
         "event": "session_start",
-        "schema_version": 1,
         "capture_format_version": int(capture_format_version),
         "session_id": "session-test",
         "out_path": "C:\\share\\frida\\gameplay_diff_capture.jsonl",
@@ -491,10 +489,6 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     meta, ticks, footer = load_trace(out_trace.out_path)
     assert footer.tick_count == 2
     assert meta.producer.impl == "frida_original"
-    assert "checkpoint" in meta.channels
-    assert "sim_state" in meta.channels
-    assert "entity_samples" in meta.channels
-    assert "rng_stream" in meta.channels
     assert ticks[0].channels.checkpoint.tick_index == 0
     assert ticks[1].channels.checkpoint.tick_index == 1
 

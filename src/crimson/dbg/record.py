@@ -38,22 +38,20 @@ from .canonical_channels import (
 from .payloads import BuiltinObject
 from .schema import (
     TRACE_FORMAT_VERSION,
-    TRACE_REQUIRED_CHANNELS,
     TRACE_SCHEMA_VERSION,
     ReplayTickChannels,
     TickRecord,
-    TraceConfig,
     TraceMeta,
     TraceProducer,
     TraceSource,
     TraceTickRange,
-    channel_versions_for,
 )
 from .trace import TraceError, TraceReader, TraceSummary, write_trace
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _ZIG_ROOT = _REPO_ROOT / "crimson-zig"
 _ZIG_BIN = _ZIG_ROOT / "zig-out" / "bin" / "crimson-zig"
+_TRACE_CHUNK_TICKS = 256
 
 
 class _EntityGenerationState(msgspec.Struct):
@@ -349,33 +347,11 @@ def _build_trace_meta(
     replay_path: Path,
     replay: Replay,
     tick_rows: list[TickRecord],
-    channels_seen: set[str],
     impl: Literal["python", "zig"],
-    config_extra: BuiltinObject | None = None,
 ) -> TraceMeta:
     tick_start = min((row.tick_index for row in tick_rows), default=-1)
     tick_end = max((row.tick_index for row in tick_rows), default=-1)
     replay_fingerprint = _build_replay_fingerprint(replay_path=replay_path, replay=replay)
-    channels_sorted = sorted(channels_seen)
-    config = TraceConfig(
-        impl=str(impl),
-        strict_events=None,
-        zig_build_policy=(
-            None
-            if config_extra is None or "zig_build_policy" not in config_extra
-            else str(config_extra["zig_build_policy"])
-        ),
-        zig_exit_code=(
-            None
-            if config_extra is None or "zig_exit_code" not in config_extra
-            else _builtin_int(config_extra, "zig_exit_code")
-        ),
-        zig_stderr_present=(
-            None
-            if config_extra is None or "zig_stderr_present" not in config_extra
-            else bool(config_extra["zig_stderr_present"])
-        ),
-    )
     return TraceMeta(
         trace_format_version=TRACE_FORMAT_VERSION,
         trace_schema_version=TRACE_SCHEMA_VERSION,
@@ -387,14 +363,11 @@ def _build_trace_meta(
             arch=str(platform.machine()),
         ),
         source=_source_from_replay_fingerprint(replay_fingerprint),
-        channels=channels_sorted,
-        channel_versions=channel_versions_for(channels_sorted),
         tick_range=TraceTickRange(
             start_tick=tick_start,
             end_tick=tick_end,
             tick_count=len(tick_rows),
         ),
-        config=config,
         status=replay.header.status,
     )
 
@@ -403,7 +376,6 @@ def _record_replay_to_trace_python(
     *,
     replay_path: Path,
     out_path: Path,
-    chunk_ticks: int,
 ) -> TraceSummary:
     replay = load_replay_file(replay_path)
 
@@ -472,7 +444,6 @@ def _record_replay_to_trace_python(
     )
 
     tick_rows: list[TickRecord] = []
-    channels_seen: set[str] = set()
     replay_dt_rows = [ftol_ms_i32(tick.dt) for tick in replay.ticks]
     for checkpoint in sorted(checkpoints, key=lambda row: row.tick_index):
         tick_index = int(checkpoint.tick_index)
@@ -503,7 +474,6 @@ def _record_replay_to_trace_python(
         if tick_dt_ms_i32 < 0:
             raise ValueError(f"invalid replay dt_ms_i32 at tick {tick_index}: {tick_dt_ms_i32}")
 
-        channels_seen.update(TRACE_REQUIRED_CHANNELS)
         tick_rows.append(
             TickRecord(
                 tick_index=tick_index,
@@ -518,15 +488,13 @@ def _record_replay_to_trace_python(
         replay_path=replay_path,
         replay=replay,
         tick_rows=tick_rows,
-        channels_seen=channels_seen,
         impl="python",
-        config_extra=None,
     )
     return write_trace(
         out_path,
         meta=meta,
         ticks=tick_rows,
-        chunk_ticks=max(1, chunk_ticks),
+        chunk_ticks=_TRACE_CHUNK_TICKS,
     )
 
 
@@ -558,7 +526,6 @@ def _record_replay_to_trace_zig(
     *,
     replay_path: Path,
     out_path: Path,
-    chunk_ticks: int,
 ) -> tuple[TraceSummary, list[str]]:
     replay = load_replay_file(replay_path)
     if int(replay.header.player_count) != 1:
@@ -582,8 +549,6 @@ def _record_replay_to_trace_zig(
         str(replay_path),
         "--debug-trace-cdt",
         str(out_path),
-        "--debug-trace-cdt-chunk-ticks",
-        str(max(1, int(chunk_ticks))),
         "--format",
         "json",
     ]
@@ -622,7 +587,6 @@ def record_replay_to_trace(
     replay_path: Path,
     out_path: Path,
     impl: Literal["python", "zig"] = "python",
-    chunk_ticks: int = 256,
     warnings_out: list[str] | None = None,
 ) -> TraceSummary:
     replay_path = Path(replay_path)
@@ -633,14 +597,12 @@ def record_replay_to_trace(
         summary = _record_replay_to_trace_python(
             replay_path=replay_path,
             out_path=out_path,
-            chunk_ticks=chunk_ticks,
         )
         return summary
     if str(impl) == "zig":
         summary, warnings = _record_replay_to_trace_zig(
             replay_path=replay_path,
             out_path=out_path,
-            chunk_ticks=chunk_ticks,
         )
         warnings_out.extend(warnings)
         return summary

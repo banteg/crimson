@@ -21,7 +21,6 @@ const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
 const CAPTURE_FORMAT_VERSION = 12;
-const FRIDA_JSONL_SCHEMA_VERSION = 1;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
@@ -981,7 +980,6 @@ function emitSessionStartRow(meta, outPath) {
   const processObj = meta.process;
   return {
     event: "session_start",
-    schema_version: FRIDA_JSONL_SCHEMA_VERSION,
     capture_format_version: CAPTURE_FORMAT_VERSION,
     session_id: outState.sessionId,
     out_path: outPath || CONFIG.outPath,
@@ -5844,7 +5842,6 @@ function main() {
 
   const captureConfig = {
     out_path: CONFIG.outPath,
-    jsonl_schema_version: FRIDA_JSONL_SCHEMA_VERSION,
     capture_profile: "exhaustive_default",
     config_env_overrides: collectConfigEnvOverrides(),
     log_mode: CONFIG.logMode,
