@@ -61,18 +61,18 @@ pub fn tickDemoTrialTimers(
     if (used_ms >= demo_total_play_time_ms and grace_ms < 1) grace_ms = 1;
     if (used_ms > demo_total_play_time_ms) used_ms = demo_total_play_time_ms;
 
-    if (overlay_visible or dt_ms <= 0) {
+    const delta_ms = @max(dt_ms, 0);
+    if (overlay_visible or delta_ms <= 0) {
         return .{
             .global_playtime_ms = @intCast(used_ms),
             .quest_grace_elapsed_ms = grace_ms,
         };
     }
 
-    used_ms += dt_ms;
-    if (used_ms > demo_total_play_time_ms) used_ms = demo_total_play_time_ms;
+    used_ms = @min(addClampedI32(used_ms, delta_ms), demo_total_play_time_ms);
     if (used_ms >= demo_total_play_time_ms and grace_ms < 1) grace_ms = 1;
     if (grace_ms > 0 and game_mode_id == .quests) {
-        grace_ms += dt_ms;
+        grace_ms = addClampedI32(grace_ms, delta_ms);
     }
 
     return .{
@@ -154,6 +154,13 @@ pub fn demoTrialOverlayInfo(
     };
 }
 
+fn addClampedI32(left: i32, right: i32) i32 {
+    const result = @as(i64, left) + @as(i64, right);
+    if (result > std.math.maxInt(i32)) return std.math.maxInt(i32);
+    if (result < std.math.minInt(i32)) return std.math.minInt(i32);
+    return @intCast(result);
+}
+
 test "demo trial timers stop while overlay visible" {
     const result = tickDemoTrialTimers(true, .survival, true, 1000, 0, 500);
     try std.testing.expectEqual(@as(u32, 1000), result.global_playtime_ms);
@@ -171,4 +178,10 @@ test "demo trial overlay blocks later quest tiers in demo" {
     try std.testing.expect(info.visible);
     try std.testing.expectEqual(OverlayKind.quest_tier_limit, info.kind);
     try std.testing.expect(info.show_remaining_line);
+}
+
+test "demo trial timers saturate oversized frame deltas" {
+    const result = tickDemoTrialTimers(true, .quests, false, std.math.maxInt(u32), std.math.maxInt(i32) - 1, std.math.maxInt(i32));
+    try std.testing.expectEqual(@as(u32, @intCast(demo_total_play_time_ms)), result.global_playtime_ms);
+    try std.testing.expectEqual(@as(i32, std.math.maxInt(i32)), result.quest_grace_elapsed_ms);
 }
