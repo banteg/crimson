@@ -464,7 +464,7 @@ fn unsupportedReplayHeaderDetail(
         return "only f32 input quantization is currently ported";
     }
     if (tick_count > std.math.maxInt(i32)) {
-        return "replay has too many ticks for current native verifier";
+        return "replay has too many ticks for current native replay info";
     }
     if (!header.preserve_bugs and !replay_codec.isLatestRulesetGameVersion(header.game_version)) {
         return "only latest ruleset replays are currently ported";
@@ -537,4 +537,43 @@ fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
         .sub_path = path,
         .data = bytes,
     });
+}
+
+test "replay info header tick limit uses info-specific detail" {
+    const allocator = std.testing.allocator;
+    var header = try makeReplayInfoTestHeader(allocator);
+    defer header.deinit(allocator);
+
+    try std.testing.expectEqualStrings(
+        "replay has too many ticks for current native replay info",
+        unsupportedReplayHeaderDetail(header, @as(usize, std.math.maxInt(i32)) + 1).?,
+    );
+}
+
+fn makeReplayInfoTestHeader(
+    allocator: std.mem.Allocator,
+) !replay_codec.ReplayHeader {
+    return .{
+        .game_mode_id = 1,
+        .seed = 1,
+        .replay_format_version = replay_codec.replay_format_version,
+        .quest_level = try allocator.dupe(u8, ""),
+        .bootstrap_kind = try allocator.dupe(u8, "none"),
+        .bootstrap_seed = 0,
+        .game_version = try allocator.dupe(u8, "0.9.0"),
+        .tick_rate = 60,
+        .difficulty_level = 0,
+        .hardcore = false,
+        .preserve_bugs = true,
+        .detail_preset = 5,
+        .gore_disabled = 0,
+        .world_size = 1024.0,
+        .player_count = 1,
+        .status = .{
+            .quest_unlock_index = 0,
+            .quest_unlock_index_full = 0,
+            .weapon_usage_counts = [_]u32{0} ** replay_codec.weapon_usage_count,
+        },
+        .input_quantization = try allocator.dupe(u8, "f32"),
+    };
 }
