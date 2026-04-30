@@ -36,6 +36,32 @@ def test_dbg_health_on_recorded_trace(tmp_path: Path) -> None:
     )
     assert health_result.exit_code == 0, health_result.output
     assert "movement_root_cause_ready=" in health_result.output
+    assert "timing_samples_rows=" in health_result.output
+
+
+def test_dbg_health_flags_empty_timing_rows(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample_empty_timing.crd")
+    trace_path = tmp_path / "sample_empty_timing.cdt"
+    empty_timing_trace = tmp_path / "sample_empty_timing_modified.cdt"
+    runner = CliRunner()
+
+    record_result = runner.invoke(
+        app,
+        ["dbg", "record", str(replay_path), "--out", str(trace_path)],
+    )
+    assert record_result.exit_code == 0, record_result.output
+
+    meta, ticks, _footer = load_trace(trace_path)
+    for tick in ticks:
+        tick.channels = msgspec.structs.replace(tick.channels, timing_samples=[])
+    write_trace(empty_timing_trace, meta=meta, ticks=ticks, chunk_ticks=2)
+
+    health_result = runner.invoke(
+        app,
+        ["dbg", "health", str(empty_timing_trace)],
+    )
+    assert health_result.exit_code == 1, health_result.output
+    assert "issue=timing_samples channel has no rows in trace window" in health_result.output
 
 
 def test_dbg_record_rejects_removed_profile_option(tmp_path: Path) -> None:
@@ -113,7 +139,7 @@ def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatc
         warnings_out.append("warning: zig replay verify exited 1; continuing with emitted trace")
         return SimpleNamespace(
             meta=SimpleNamespace(
-                tick_range={"start_tick": 0, "end_tick": 1, "tick_count": 2},
+                tick_range=SimpleNamespace(start_tick=0, end_tick=1, tick_count=2),
                 channels=["checkpoint", "sim_state"],
             ),
         )
@@ -440,3 +466,4 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
     assert focus_result.exit_code == 0, focus_result.output
     assert "result=diverged" in focus_result.output
     assert "checkpoint_diff_count=" in focus_result.output
+    assert "timing_samples ok=" in focus_result.output

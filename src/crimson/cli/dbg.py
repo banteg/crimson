@@ -59,9 +59,9 @@ def cmd_dbg_record(
     typer.echo(f"trace={out}")
     typer.echo(
         "ticks "
-        f"start={tick_range.get('start_tick')} "
-        f"end={tick_range.get('end_tick')} "
-        f"count={tick_range.get('tick_count')}",
+        f"start={tick_range.start_tick} "
+        f"end={tick_range.end_tick} "
+        f"count={tick_range.tick_count}",
     )
     typer.echo("channels=" + ",".join(summary.meta.channels))
 
@@ -117,6 +117,7 @@ def cmd_dbg_health(
         "sample_projectile_rows",
         "sample_secondary_projectile_rows",
         "sample_bonus_rows",
+        "timing_samples_rows",
     )
     for key in metric_keys:
         typer.echo(f"{key}={metrics.get(key)}")
@@ -301,6 +302,13 @@ def cmd_dbg_tick(
         + " bonuses="
         + str(entity_counts.get("bonuses")),
     )
+    typer.echo(
+        "trace_rows "
+        + "rng_stream="
+        + str(payload.get("rng_stream_count"))
+        + " timing_samples="
+        + str(payload.get("timing_samples_count")),
+    )
     typer.echo("event_count_total=" + str(payload.get("event_count_total")))
     if top_events_text:
         typer.echo("top_event_types=" + top_events_text)
@@ -468,6 +476,7 @@ def cmd_dbg_focus(
     )
     entity_samples = _as_dict(payload.get("entity_samples"))
     sim_state = _as_dict(payload.get("sim_state"))
+    timing_samples = _as_dict(payload.get("timing_samples"))
     typer.echo(
         "entity_samples "
         + "ok="
@@ -477,4 +486,9 @@ def cmd_dbg_focus(
         "sim_state "
         + "ok="
         + str(sim_state.get("ok")),
+    )
+    typer.echo(
+        "timing_samples "
+        + "ok="
+        + str(timing_samples.get("ok")),
     )

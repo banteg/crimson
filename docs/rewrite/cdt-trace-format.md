@@ -70,6 +70,11 @@ Payload encoding:
 
 Tick rows are required to be non-decreasing by `tick_index`.
 
+`TraceMeta` uses typed metadata structs for `producer`, `source`,
+`channel_versions`, `tick_range`, and `config`. Unknown metadata fields are
+rejected. Frida raw capture settings live only under `config.frida` because they
+are producer-private diagnostics.
+
 ## Channel contract (schema v10)
 
 Required channels in both compared traces:
@@ -102,11 +107,12 @@ stored as an integer and rendered as hex only in human-facing diff output. Frida
 raw JSONL still uses producer-private field names such as `caller_static`, but
 finalization canonicalizes them into this durable `caller` field.
 
-`timing_samples` rows contain phase-level timing evidence. Frida captures require
-a non-empty row set with a `gpur_enter` sample matching the tick `dt` and
-`dt_ms_i32`. Zig replay traces emit timing rows. Python replay traces currently
-write an empty list, which is a known producer-alignment gap rather than a
-separate trace kind.
+`timing_samples` rows contain phase-level timing evidence. Frida captures,
+Python replay traces, and Zig replay traces all emit a non-empty row set with a
+`gpur_enter` sample for supported replay ticks. The shared minimum row records
+the tick index, gameplay frame, `frame_dt_f32`, `frame_dt_ms_i32`,
+`frame_dt_ms_f32`, time-scale state, reflex boost timer, and
+`mode_fn = "gameplay_update_and_render"`.
 
 `phase_markers` remain `list[str]` in the durable trace contract.
 Raw Frida capture may hold richer structured phase-marker payloads, but finalize flattens them to names in the trace row.

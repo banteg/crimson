@@ -40,16 +40,64 @@ CHUNK_FLAG_MSGPACK = 1 << 1
 DEFAULT_CHUNK_FLAGS = int(CHUNK_FLAG_ZSTD | CHUNK_FLAG_MSGPACK)
 
 
-class TraceMeta(msgspec.Struct):
+class TraceProducer(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    impl: str
+    impl_version: str = ""
+    platform: str = ""
+    arch: str = ""
+
+
+class TraceSource(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    path: str | None = None
+    sha256: str | None = None
+    size: int | None = None
+    mtime_ns: int | None = None
+    kind: str | None = None
+    tick_rate: int | None = None
+    seed: int | None = None
+    mode_id: int | None = None
+    quest_level: str | None = None
+    run_id: int | None = None
+    quest_stage_major: int | None = None
+    quest_stage_minor: int | None = None
+    global_tick_first: int | None = None
+    global_tick_last: int | None = None
+    run_start_seed_source: str | None = None
+
+
+class TraceChannelVersions(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    checkpoint: int = _DEFAULT_CHANNEL_VERSION
+    sim_state: int = _DEFAULT_CHANNEL_VERSION
+    entity_samples: int = _DEFAULT_CHANNEL_VERSION
+    rng_stream: int = _DEFAULT_CHANNEL_VERSION
+    timing_samples: int = _DEFAULT_CHANNEL_VERSION
+
+
+class TraceTickRange(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    start_tick: int
+    end_tick: int
+    tick_count: int
+
+
+class TraceConfig(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    impl: str | None = None
+    strict_events: bool | None = None
+    zig_build_policy: str | None = None
+    zig_exit_code: int | None = None
+    zig_stderr_present: bool | None = None
+    frida: dict[str, Any] | None = None
+
+
+class TraceMeta(msgspec.Struct, forbid_unknown_fields=True):
     trace_format_version: int
     trace_schema_version: int
     created_utc: str
-    producer: dict[str, Any]
-    source: dict[str, Any]
+    producer: TraceProducer
+    source: TraceSource
     channels: list[str]
-    channel_versions: dict[str, int]
-    tick_range: dict[str, int]
-    config: dict[str, Any]
+    channel_versions: TraceChannelVersions
+    tick_range: TraceTickRange
+    config: TraceConfig
     status: GameStatusData | None = None
 
 
@@ -94,5 +142,11 @@ class TraceFooter(msgspec.Struct):
     channel_counts: dict[str, int]
 
 
-def channel_versions_for(channels: Iterable[str]) -> dict[str, int]:
-    return {str(channel): int(_DEFAULT_CHANNEL_VERSION) for channel in channels}
+def channel_versions_for(channels: Iterable[str]) -> TraceChannelVersions:
+    channel_names = {str(channel) for channel in channels}
+    values = {
+        channel: int(_DEFAULT_CHANNEL_VERSION)
+        for channel in TRACE_REQUIRED_CHANNELS
+        if channel in channel_names
+    }
+    return TraceChannelVersions(**values)

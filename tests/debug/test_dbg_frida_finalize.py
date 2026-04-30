@@ -494,7 +494,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
 
     meta, ticks, footer = load_trace(out_trace.out_path)
     assert footer.tick_count == 2
-    assert meta.producer["impl"] == "frida_original"
+    assert meta.producer.impl == "frida_original"
     assert "checkpoint" in meta.channels
     assert "sim_state" in meta.channels
     assert "entity_samples" in meta.channels

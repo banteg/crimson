@@ -7,8 +7,8 @@ tags:
 
 # Trace format alignment plan
 
-This page tracks the remaining work to keep the owned `.cdt` trace format aligned
-across the three producers we compare during parity work:
+This page tracks the owned `.cdt` trace format alignment across the three
+producers we compare during parity work:
 
 1. Original executable capture through Frida JSONL, finalized by
    `src/crimson/dbg/frida_finalize.py`.
@@ -16,7 +16,7 @@ across the three producers we compare during parity work:
 3. Zig replay recording through `crimson-zig/src/cdt_trace.zig`.
 
 The goal is not to make Frida raw JSONL, Python internals, and Zig internals look
-identical. The goal is that once a run becomes a `.cdt`, consumers can compare
+identical. The goal is that once a run becomes a `.cdt`, consumers compare
 original, Python, and Zig traces without producer-specific interpretation.
 
 ## Current contract
@@ -47,6 +47,18 @@ Required channels are:
 The core channel payload structs live in `src/crimson/dbg/canonical_channels.py`.
 Zig mirrors the same schema in `crimson-zig/src/cdt_trace.zig`.
 
+`TraceMeta` is typed in Python and mirrored by Zig:
+
+- `TraceProducer`
+- `TraceSource`
+- `TraceChannelVersions`
+- `TraceTickRange`
+- `TraceConfig`
+
+Unknown metadata fields are rejected. Producer-private config is allowed only in
+the named Frida extension bag, because raw capture settings are diagnostics and
+not part of the shared comparison contract.
+
 ## Why this format exists
 
 The trace format needs to answer parity questions in a stable order:
@@ -61,7 +73,7 @@ The format should preserve enough evidence to let `dbg diff` find the first bad
 tick and let `dbg focus` explain that tick without going back to producer-private
 logs.
 
-## Producer state
+## Producer alignment
 
 ### Frida original capture
 
@@ -69,180 +81,96 @@ Frida JSONL is an owned producer-private wire format. It may keep capture-side
 field names and diagnostic bags, but `frida_finalize.py` is the boundary that
 must produce canonical `.cdt` rows.
 
-Current strengths:
-
 - lifecycle rows are strict and typed
 - tick channels are decoded with `msgspec` and unknown fields are rejected
 - `caller_static` is normalized into durable RNG `caller`
 - `branch_id` is dropped from the durable RNG row
 - timing samples are validated as replay-grade evidence
-
-Remaining work:
-
-- keep raw-only Frida diagnostics out of durable channel semantics
-- decide whether structured phase-marker payloads should become a durable
-  channel, or stay raw-only and unavailable to `diff`/`focus`
+- Frida session config is kept under `TraceConfig.frida`, not mixed into the
+  shared metadata shape
 
 ### Python replay recorder
 
 Python replay recording produces canonical checkpoint, state, entity, and RNG
 rows from the replay driver.
 
-Current strengths:
-
 - RNG rows carry direct draw state and optional static caller addresses
 - strict RNG trace mode catches untagged supported gameplay draws
 - metadata points at the replay file fingerprint and selected implementation
-
-Remaining work:
-
-- emit meaningful `timing_samples` or explicitly downgrade timing to an optional
-  diagnostic channel for Python traces
-- replace generic `TraceMeta` dictionaries with typed metadata shared with
-  Frida and Zig
-- stop treating channel presence as equivalent to useful channel coverage
+- Python now emits the shared minimum `timing_samples` row set
+- metadata uses the same typed `TraceMeta` contract as finalized Frida and Zig
+  traces
 
 ### Zig replay recorder
 
 Zig replay recording is no longer a verifier-only side path. Its `.cdt` writer
 targets schema 10 and serializes the same required channels.
 
-Current strengths:
-
 - Zig writes schema 10 `.cdt` traces
 - RNG rows come from direct traced draws, not post-hoc lifecycle reconstruction
 - RNG rows include optional static caller addresses
 - timing rows are emitted and have coverage tests
 - metadata is structured in Zig before msgpack encoding
+- Zig metadata field names and requiredness match Python `TraceMeta`
 
-Remaining work:
-
-- keep Zig structs mechanically in sync with the Python schema until the schema
-  has a generated or shared contract
-- align metadata field names and requiredness with Python `TraceMeta` once that
-  type is made explicit
-
-## Remaining alignment work
-
-### 1. Type trace metadata
-
-`TraceMeta` still uses generic dictionaries for `producer`, `source`,
-`channel_versions`, `tick_range`, and `config`. That makes the payload easy to
-extend accidentally and makes cross-producer compatibility depend on convention.
-
-Target:
-
-- introduce typed Python metadata structs for producer, source, tick range, and
-  config
-- keep producer-specific extras behind typed optional fields or a typed
-  extension map with a clear name
-- update Frida and Python producers to construct those structs directly
-- mirror the same required fields in Zig
-
-Acceptance:
-
-- metadata decoding rejects unknown required-shape fields
-- Frida, Python, and Zig traces decode through the same `TraceMeta` type
-- tests cover all three producer metadata shapes
-
-### 2. Resolve timing policy
+## Timing policy
 
 `timing_samples` is required by the schema and compared by `dbg diff`, but
-Python replay traces currently write an empty list for every tick. Frida treats
-timing as replay-grade and Zig emits timing samples.
+Python replay traces used to write an empty list for every tick. Timing is now
+core, not optional.
 
-Target decision:
+The shared minimum per tick is a `gpur_enter` sample with:
 
-- if timing is core, Python must emit at least the shared minimum row set
-- if timing is diagnostic, remove it from required channels and make `diff`
-  compare it only when both traces carry meaningful rows
+- `tick_index`
+- `gameplay_frame`
+- `phase = "gpur_enter"`
+- `write_kind = "snapshot"`
+- `frame_dt_f32`
+- `frame_dt_ms_i32`
+- `frame_dt_ms_f32`
+- `time_scale_active_entry`
+- `time_scale_active_current`
+- `time_scale_factor`
+- `bonus_reflex_boost_timer`
+- `mode_fn = "gameplay_update_and_render"`
 
-Recommended direction:
+Frida validates this row against raw tick `dt`, Python records it from the replay
+driver `before_tick` hook, and Zig emits it from the replay step timing trace.
+`dbg diff` and `dbg focus` compare timing rows. `dbg health` reports required row
+channels that are present but empty across the selected trace window.
 
-- keep timing core
-- define the minimum per-tick row as a `gpur_enter` sample with `frame_dt_f32`,
-  `frame_dt_ms_i32`, and `mode_fn` when known
-- have Python record the same minimum from replay dt and gameplay mode context
-
-Acceptance:
-
-- Frida, Python, and Zig traces all contain non-empty timing rows for supported
-  replay ticks
-- `health` reports an issue when a required channel is present but empty across
-  the whole window
-- `focus` includes timing sample comparison in its tick report
-
-### 3. Decide the durable phase model
+## Phase model
 
 Durable traces currently keep `phase_markers: list[str]`. Frida raw capture can
 hold richer structured marker payloads, but finalization flattens them. Python
 and Zig do not provide a shared structured phase model.
 
-Target decision:
+Decision for schema 10: keep phase markers as labels only. They are low-authority
+hints, while RNG caller rows and timing samples are the durable comparison tools.
+Add typed phase anchors only if a current parity investigation needs intra-tick
+localization that those channels cannot explain.
 
-- either keep phase markers as labels only and document them as low-authority
-  hints
-- or add a typed phase channel with ranges or anchors that can localize RNG and
-  state drift inside a tick
+If phase anchors are added later:
 
-Recommended direction:
+- add them as a typed channel, not producer-private marker payloads
+- require Frida, Python, and Zig producer support in the same schema bump
+- update `diff` and `focus` to explain how anchors affect mismatch reporting
 
-- do not add a broad phase taxonomy yet
-- first add timing comparison to `focus`
-- add structured phase anchors only when a current parity investigation needs
-  intra-tick localization that RNG caller and timing rows cannot explain
+## Next-version cleanup notes
 
-Acceptance if implemented:
+These are intentionally not part of schema 10 alignment, but they look stale or
+low-value enough to discuss before the next schema bump:
 
-- phase anchors are a typed channel, not producer-private marker payloads
-- Frida, Python, and Zig either all emit the channel or it remains optional
-- `diff` and `focus` explain how phase anchors affect mismatch reporting
-
-### 4. Make consumers match the contract
-
-`dbg diff` already compares checkpoint, RNG, sim state, entity samples, and
-timing samples. `dbg focus` omits timing, and `dbg health` does not flag all-empty
-timing coverage.
-
-Target:
-
-- `focus` should compare every required channel
-- `health` should distinguish "channel key exists on each tick" from "channel
-  carries useful rows"
-- human output should show timing row counts alongside RNG/entity metrics
-
-Acceptance:
-
-- focused tick output includes timing sample detail and contributes it to the
-  `diverged` flag
-- health reports all-empty required row channels as issues
-- tests cover timing mismatches in both `diff` and `focus`
-
-### 5. Keep docs synchronized with schema
-
-The docs should describe the current schema, not old migration stages.
-
-Target:
-
-- `docs/rewrite/cdt-trace-format.md` remains the authoritative format spec
-- this page remains the current alignment roadmap
-- Frida capture docs describe raw JSONL as producer-private and `.cdt` as the
-  shared durable format
-- stale schema-version references are updated with every schema bump
-
-Acceptance:
-
-- schema version in docs matches `src/crimson/dbg/schema.py`
-- docs name `caller`, not historical `caller_static_u32` or `branch_id`, for the
-  durable RNG row
-- docs clearly separate raw Frida JSONL fields from durable `.cdt` fields
-
-## Suggested sequencing
-
-1. Update docs to schema 10 and remove stale root planning notes.
-2. Type `TraceMeta` in Python and add cross-producer metadata tests.
-3. Make Python emit minimum timing samples.
-4. Extend `focus` and `health` for timing coverage.
-5. Reassess whether structured phase anchors are still needed.
-6. If phase anchors are needed, add them as a new typed channel with Frida,
-   Python, and Zig producer support in the same schema bump.
+- `phase_markers` may be removable if timing rows and RNG caller rows keep
+  covering the actual debugging workflow.
+- `crimson-zig/src/runtime/replay/diagnostic_trace.zig` still has its own local
+  schema version. Keep it only if the per-tick diagnostic trace remains useful
+  outside `.cdt` generation.
+- `TraceFooter.channel_counts` counts channel presence per tick, not row counts.
+  Health now reports row coverage separately; the footer field may be redundant
+  or should be renamed in a future format bump.
+- `ok_for_movement_root_cause` in health output is older wording. The checks now
+  cover broader parity readiness, not only movement root-cause analysis.
+- Frida raw `branch_id` is only a capture-side alias for caller diagnostics. It
+  should stay out of durable traces and may be removable from capture once
+  existing raw logs no longer need finalization.

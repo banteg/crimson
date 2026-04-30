@@ -34,7 +34,11 @@ from .schema import (
     TRACE_SCHEMA_VERSION,
     ReplayTickChannels,
     TickRecord,
+    TraceConfig,
     TraceMeta,
+    TraceProducer,
+    TraceSource,
+    TraceTickRange,
     channel_versions_for,
 )
 from .trace import TraceSummary, write_trace_iter
@@ -297,6 +301,27 @@ def _fingerprint(path: Path) -> BuiltinObject:
     }
 
 
+def _builtin_text(payload: BuiltinObject, key: str, default: str = "") -> str:
+    value = payload.get(key)
+    if value is None:
+        return default
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (bool, int, float)):
+        return str(value)
+    return default
+
+
+def _builtin_int(payload: BuiltinObject, key: str, default: int = 0) -> int:
+    value = payload.get(key)
+    if isinstance(value, (bool, int, float, str)):
+        try:
+            return int(value)
+        except ValueError:
+            return default
+    return default
+
+
 def _decode_capture_row(line: bytes, *, field: str) -> _CaptureRow:
     try:
         return _CAPTURE_ROW_DECODER.decode(line)
@@ -534,14 +559,6 @@ def _build_meta(
     config = msgspec.to_builtins(session_start.config)
     if not isinstance(config, dict):
         raise FridaFinalizeError("session_start.config must encode to a mapping")
-    source = dict(raw_fingerprint)
-    source["run_id"] = int(run.run_id)
-    source["mode_id"] = int(run.mode_id)
-    source["quest_stage_major"] = int(run.quest_stage_major)
-    source["quest_stage_minor"] = int(run.quest_stage_minor)
-    source["global_tick_first"] = None if run.global_tick_first is None else int(run.global_tick_first)
-    source["global_tick_last"] = None if run.global_tick_last is None else int(run.global_tick_last)
-    source["run_start_seed_source"] = str(run.replay_seed_source)
 
     sorted_channels = sorted(str(channel) for channel in channels_seen)
     tick_end = int(tick_count) - 1
@@ -549,21 +566,34 @@ def _build_meta(
         trace_format_version=int(TRACE_FORMAT_VERSION),
         trace_schema_version=int(TRACE_SCHEMA_VERSION),
         created_utc=datetime.now(tz=UTC).isoformat(),
-        producer={
-            "impl": "frida_original",
-            "impl_version": producer_impl_version,
-            "platform": producer_platform,
-            "arch": producer_arch,
-        },
-        source=source,
+        producer=TraceProducer(
+            impl="frida_original",
+            impl_version=producer_impl_version,
+            platform=producer_platform,
+            arch=producer_arch,
+        ),
+        source=TraceSource(
+            path=_builtin_text(raw_fingerprint, "path"),
+            sha256=_builtin_text(raw_fingerprint, "sha256"),
+            size=_builtin_int(raw_fingerprint, "size"),
+            mtime_ns=_builtin_int(raw_fingerprint, "mtime_ns"),
+            mode_id=int(run.mode_id),
+            seed=int(run.replay_seed),
+            run_id=int(run.run_id),
+            quest_stage_major=int(run.quest_stage_major),
+            quest_stage_minor=int(run.quest_stage_minor),
+            global_tick_first=None if run.global_tick_first is None else int(run.global_tick_first),
+            global_tick_last=None if run.global_tick_last is None else int(run.global_tick_last),
+            run_start_seed_source=str(run.replay_seed_source),
+        ),
         channels=sorted_channels,
         channel_versions=channel_versions_for(sorted_channels),
-        tick_range={
-            "start_tick": 0 if tick_count > 0 else -1,
-            "end_tick": tick_end if tick_count > 0 else -1,
-            "tick_count": int(tick_count),
-        },
-        config=config,
+        tick_range=TraceTickRange(
+            start_tick=0 if tick_count > 0 else -1,
+            end_tick=tick_end if tick_count > 0 else -1,
+            tick_count=int(tick_count),
+        ),
+        config=TraceConfig(frida=config),
         status=run.status,
     )
 

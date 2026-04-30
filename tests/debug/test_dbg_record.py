@@ -134,8 +134,16 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
 
         def run(self, *, hooks):
             tick_result = SimpleNamespace(source_tick=SimpleNamespace(tick_index=0))
+            world = SimpleNamespace(
+                state=SimpleNamespace(
+                    time_scale_active=False,
+                    bonuses=SimpleNamespace(reflex_boost=0.0),
+                ),
+            )
+            if hooks.before_tick is not None:
+                hooks.before_tick(0, world, 0.016)
             if hooks.after_tick is not None:
-                hooks.after_tick(tick_result, SimpleNamespace())
+                hooks.after_tick(tick_result, world)
                 if hooks.on_rng_trace is not None:
                     hooks.on_rng_trace(
                         tick_result,
@@ -189,6 +197,8 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
     assert meta.status == replay.header.status
     assert footer.tick_count == 1
     assert ticks[0].channels.rng_stream[0].caller is None
+    assert len(ticks[0].channels.timing_samples) == 1
+    assert ticks[0].channels.timing_samples[0].phase == "gpur_enter"
 
 
 def test_record_replay_to_trace_zig_emits_python_readable_trace(tmp_path: Path) -> None:

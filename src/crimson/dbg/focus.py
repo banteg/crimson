@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state
+from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state, compare_timing_samples
 from .channel_helpers import (
     ENTITY_SAMPLE_KINDS,
     checkpoint_channel_required,
@@ -10,6 +10,7 @@ from .channel_helpers import (
     entity_samples_channel_required,
     rng_stream_channel_required,
     sim_state_channel_required,
+    timing_samples_channel_required,
 )
 from .checkpoint_diff import checkpoint_deepdiff
 from .payloads import BuiltinObject, to_builtin_object
@@ -75,13 +76,20 @@ def focus_tick(
         sim_state_channel_required(expected_row),
         sim_state_channel_required(candidate_row),
     )
+    expected_timing_samples = timing_samples_channel_required(expected_row)
+    candidate_timing_samples = timing_samples_channel_required(candidate_row)
+    timing_samples_ok, timing_samples_detail = compare_timing_samples(
+        expected_timing_samples,
+        candidate_timing_samples,
+    )
 
     diverged = bool(
         checkpoint_diff is not None
         or not bool(rng_stream.get("ok"))
         or entity_diverged
         or not entity_samples_ok
-        or not sim_state_ok,
+        or not sim_state_ok
+        or not timing_samples_ok,
     )
 
     return to_builtin_object(
@@ -106,6 +114,12 @@ def focus_tick(
             "sim_state": {
                 "ok": bool(sim_state_ok),
                 "detail": sim_state_detail,
+            },
+            "timing_samples": {
+                "ok": bool(timing_samples_ok),
+                "expected_count": len(expected_timing_samples),
+                "candidate_count": len(candidate_timing_samples),
+                "detail": timing_samples_detail,
             },
         },
         field="focus_tick",
