@@ -1559,7 +1559,7 @@ fn loadHighScores(
             .player_count = @intCast(config.player_count),
         },
     ) catch |err| {
-        state.load_error = @errorName(err);
+        state.load_error = highScorePathErrorDetail(err);
         return;
     };
     defer allocator.free(score_path);
@@ -1569,7 +1569,7 @@ fn loadHighScores(
         score_path,
         @intFromEnum(state.mode),
     ) catch |err| {
-        state.load_error = @errorName(err);
+        state.load_error = highScoreReadErrorDetail(err);
         return;
     };
 
@@ -1578,7 +1578,7 @@ fn loadHighScores(
     for (records.items) |record| {
         if (!passesDateFilter(record, config.highscore_date_mode)) continue;
         filtered.append(allocator, record) catch {
-            state.load_error = "OutOfMemory";
+            state.load_error = highScoreAllocationErrorDetail(error.OutOfMemory);
             records.deinit(allocator);
             return;
         };
@@ -1586,11 +1586,34 @@ fn loadHighScores(
     records.deinit(allocator);
 
     state.records = filtered.toOwnedSlice(allocator) catch {
-        state.load_error = "OutOfMemory";
+        state.load_error = highScoreAllocationErrorDetail(error.OutOfMemory);
         return;
     };
     state.records_owned = true;
     state.scroll = @min(state.scroll, if (state.records.len > 10) state.records.len - 10 else 0);
+}
+
+fn highScorePathErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.OutOfMemory => "Unable to build high score file path.",
+        else => @errorName(err),
+    };
+}
+
+fn highScoreReadErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.AccessDenied => "Unable to read high score file: access denied.",
+        error.OutOfMemory => "Unable to load high scores: out of memory.",
+        error.InvalidSize => "High score file has an invalid record size.",
+        else => @errorName(err),
+    };
+}
+
+fn highScoreAllocationErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.OutOfMemory => "Unable to load high scores: out of memory.",
+        else => @errorName(err),
+    };
 }
 
 fn passesDateFilter(record: persistence.highscores.HighScoreRecord, date_mode_raw: u8) bool {
@@ -1790,4 +1813,23 @@ test "high score date filter matches current month and day semantics" {
     try std.testing.expect(passesDateFilter(record, 1));
     try std.testing.expect(passesDateFilter(record, 2));
     try std.testing.expect(passesDateFilter(record, 3));
+}
+
+test "high score load errors use user-facing details" {
+    try std.testing.expectEqualStrings(
+        "Unable to build high score file path.",
+        highScorePathErrorDetail(error.OutOfMemory),
+    );
+    try std.testing.expectEqualStrings(
+        "Unable to read high score file: access denied.",
+        highScoreReadErrorDetail(error.AccessDenied),
+    );
+    try std.testing.expectEqualStrings(
+        "Unable to load high scores: out of memory.",
+        highScoreAllocationErrorDetail(error.OutOfMemory),
+    );
+    try std.testing.expectEqualStrings(
+        "FileBusy",
+        highScoreReadErrorDetail(error.FileBusy),
+    );
 }
