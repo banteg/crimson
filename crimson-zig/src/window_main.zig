@@ -781,6 +781,12 @@ const App = struct {
                     return;
                 }
             }
+            if (questFailedShortcutSelection(results)) |selection| {
+                self.results_selection = selection;
+                self.audio.playUiButtonClick();
+                self.activateResultsSelection(results);
+                return;
+            }
             const buttons = resultsButtonsFor(results);
             window_ui.updateSelectionFromPointer(&self.results_selection, buttons.items[0..buttons.len]);
             if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
@@ -793,64 +799,49 @@ const App = struct {
             const activated = window_ui.buttonActivated(buttons.items[0..buttons.len], self.results_selection);
             if (!activated) return;
             self.audio.playUiButtonClick();
+            self.activateResultsSelection(results);
+            return;
+        }
+    }
 
-            switch (results.run_config.game_mode) {
-                .quests => switch (results.reason) {
-                    .completed => switch (self.results_selection) {
-                        0 => if (nextQuestLevelKey(results.run_config.quest_level_key)) |next_level_key| {
-                            var next_run = results.run_config;
-                            next_run.quest_level_key = next_level_key;
-                            next_run.quest_fail_retry_count = 0;
-                            self.startNewRun(next_run);
-                        } else {
-                            self.results = null;
-                            self.menu.openRoot();
-                            self.setScreen(.main_menu);
-                        },
-                        1 => {
-                            var next_run = results.run_config;
-                            next_run.quest_fail_retry_count = 0;
-                            self.startNewRun(next_run);
-                        },
-                        2 => self.openResultsHighScores(results),
-                        3 => {
-                            self.results = null;
-                            self.menu.openRoot();
-                            self.setScreen(.main_menu);
-                        },
-                        else => {},
+    fn activateResultsSelection(self: *App, results: *const ResultsScreen) void {
+        switch (results.run_config.game_mode) {
+            .quests => switch (results.reason) {
+                .completed => switch (self.results_selection) {
+                    0 => if (nextQuestLevelKey(results.run_config.quest_level_key)) |next_level_key| {
+                        var next_run = results.run_config;
+                        next_run.quest_level_key = next_level_key;
+                        next_run.quest_fail_retry_count = 0;
+                        self.startNewRun(next_run);
+                    } else {
+                        self.results = null;
+                        self.menu.openRoot();
+                        self.setScreen(.main_menu);
                     },
-                    .dead => switch (self.results_selection) {
-                        0 => {
-                            var next_run = results.run_config;
-                            next_run.quest_fail_retry_count +%= 1;
-                            self.startNewRun(next_run);
-                        },
-                        1 => {
-                            self.results = null;
-                            self.quests_menu.reset();
-                            self.setScreen(.quests_menu);
-                        },
-                        2 => {
-                            self.results = null;
-                            self.menu.openRoot();
-                            self.setScreen(.main_menu);
-                        },
-                        else => {},
+                    1 => {
+                        var next_run = results.run_config;
+                        next_run.quest_fail_retry_count = 0;
+                        self.startNewRun(next_run);
                     },
-                    .runtime_error, .abandoned => switch (self.results_selection) {
-                        0 => self.startNewRun(results.run_config),
-                        1 => {
-                            self.results = null;
-                            self.menu.openRoot();
-                            self.setScreen(.main_menu);
-                        },
-                        else => {},
+                    2 => self.openResultsHighScores(results),
+                    3 => {
+                        self.results = null;
+                        self.menu.openRoot();
+                        self.setScreen(.main_menu);
                     },
+                    else => {},
                 },
-                else => switch (self.results_selection) {
-                    0 => self.startNewRun(results.run_config),
-                    1 => self.openResultsHighScores(results),
+                .dead => switch (self.results_selection) {
+                    0 => {
+                        var next_run = results.run_config;
+                        next_run.quest_fail_retry_count +%= 1;
+                        self.startNewRun(next_run);
+                    },
+                    1 => {
+                        self.results = null;
+                        self.quests_menu.reset();
+                        self.setScreen(.quests_menu);
+                    },
                     2 => {
                         self.results = null;
                         self.menu.openRoot();
@@ -858,8 +849,26 @@ const App = struct {
                     },
                     else => {},
                 },
-            }
-            return;
+                .runtime_error, .abandoned => switch (self.results_selection) {
+                    0 => self.startNewRun(results.run_config),
+                    1 => {
+                        self.results = null;
+                        self.menu.openRoot();
+                        self.setScreen(.main_menu);
+                    },
+                    else => {},
+                },
+            },
+            else => switch (self.results_selection) {
+                0 => self.startNewRun(results.run_config),
+                1 => self.openResultsHighScores(results),
+                2 => {
+                    self.results = null;
+                    self.menu.openRoot();
+                    self.setScreen(.main_menu);
+                },
+                else => {},
+            },
         }
     }
 
@@ -1399,33 +1408,37 @@ const App = struct {
                     .completed => drawTextureFit(runtime_assets.texture(.ui_text_level_complete), rl.Rectangle.init(406.0, 136.0, 468.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
                     .abandoned, .runtime_error => drawSmallTextCentered(runtime_assets, resultsTitle(results.reason), 152.0, HudTextColor.accent),
                 }
-                drawSmallTextCentered(runtime_assets, resultsSubtitle(results.reason), 196.0, HudTextColor.primary);
-                drawSmallText(runtime_assets, "TIME", 370.0, 258.0, HudTextColor.dim);
-                drawSmallText(runtime_assets, "XP", 370.0, 286.0, HudTextColor.dim);
-                drawSmallText(runtime_assets, "LEVEL", 370.0, 314.0, HudTextColor.dim);
-                drawSmallText(runtime_assets, "WEAPON", 370.0, 342.0, HudTextColor.dim);
-                drawSmallText(runtime_assets, "HP", 370.0, 370.0, HudTextColor.dim);
-                const elapsed_ms = if (results.quest_final_time) |breakdown| breakdown.final_time_ms else @as(i32, @intCast(results.summary.elapsed_ms_sim));
-                var elapsed_buf: [16]u8 = undefined;
-                drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&elapsed_buf, elapsed_ms), 510.0, 258.0, HudTextColor.primary);
-                drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_experience}, 510.0, 286.0, HudTextColor.primary);
-                drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_level}, 510.0, 314.0, HudTextColor.primary);
-                drawSmallText(runtime_assets, weaponName(results.summary.player_weapon_id), 510.0, 342.0, HudTextColor.primary);
-                const player_health = if (results.player_health_count > 0) results.player_health_values[0] else 0.0;
-                drawSmallTextFmt("{d:.1}", runtime_assets, .{player_health}, 510.0, 370.0, HudTextColor.primary);
-                if (results.quest_final_time) |breakdown| {
-                    drawSmallText(runtime_assets, "BASE", 690.0, 258.0, HudTextColor.dim);
-                    drawSmallText(runtime_assets, "LIFE BONUS", 690.0, 286.0, HudTextColor.dim);
-                    drawSmallText(runtime_assets, "PERK BONUS", 690.0, 314.0, HudTextColor.dim);
-                    drawSmallText(runtime_assets, "FINAL", 690.0, 342.0, HudTextColor.dim);
-                    var base_buf: [16]u8 = undefined;
-                    var life_buf: [16]u8 = undefined;
-                    var perk_buf: [16]u8 = undefined;
-                    var final_buf: [16]u8 = undefined;
-                    drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&base_buf, breakdown.base_time_ms), 846.0, 258.0, HudTextColor.primary);
-                    drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&life_buf, breakdown.life_bonus_ms)}, 846.0, 286.0, HudTextColor.primary);
-                    drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&perk_buf, breakdown.unpicked_perk_bonus_ms)}, 846.0, 314.0, HudTextColor.primary);
-                    drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&final_buf, breakdown.final_time_ms), 846.0, 342.0, HudTextColor.accent);
+                drawSmallTextCentered(runtime_assets, resultsSubtitleFor(&results), 196.0, HudTextColor.primary);
+                if (isQuestFailedResult(&results)) {
+                    drawQuestFailedPreview(runtime_assets, &results);
+                } else {
+                    drawSmallText(runtime_assets, "TIME", 370.0, 258.0, HudTextColor.dim);
+                    drawSmallText(runtime_assets, "XP", 370.0, 286.0, HudTextColor.dim);
+                    drawSmallText(runtime_assets, "LEVEL", 370.0, 314.0, HudTextColor.dim);
+                    drawSmallText(runtime_assets, "WEAPON", 370.0, 342.0, HudTextColor.dim);
+                    drawSmallText(runtime_assets, "HP", 370.0, 370.0, HudTextColor.dim);
+                    const elapsed_ms = if (results.quest_final_time) |breakdown| breakdown.final_time_ms else @as(i32, @intCast(results.summary.elapsed_ms_sim));
+                    var elapsed_buf: [16]u8 = undefined;
+                    drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&elapsed_buf, elapsed_ms), 510.0, 258.0, HudTextColor.primary);
+                    drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_experience}, 510.0, 286.0, HudTextColor.primary);
+                    drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_level}, 510.0, 314.0, HudTextColor.primary);
+                    drawSmallText(runtime_assets, weaponName(results.summary.player_weapon_id), 510.0, 342.0, HudTextColor.primary);
+                    const player_health = if (results.player_health_count > 0) results.player_health_values[0] else 0.0;
+                    drawSmallTextFmt("{d:.1}", runtime_assets, .{player_health}, 510.0, 370.0, HudTextColor.primary);
+                    if (results.quest_final_time) |breakdown| {
+                        drawSmallText(runtime_assets, "BASE", 690.0, 258.0, HudTextColor.dim);
+                        drawSmallText(runtime_assets, "LIFE BONUS", 690.0, 286.0, HudTextColor.dim);
+                        drawSmallText(runtime_assets, "PERK BONUS", 690.0, 314.0, HudTextColor.dim);
+                        drawSmallText(runtime_assets, "FINAL", 690.0, 342.0, HudTextColor.dim);
+                        var base_buf: [16]u8 = undefined;
+                        var life_buf: [16]u8 = undefined;
+                        var perk_buf: [16]u8 = undefined;
+                        var final_buf: [16]u8 = undefined;
+                        drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&base_buf, breakdown.base_time_ms), 846.0, 258.0, HudTextColor.primary);
+                        drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&life_buf, breakdown.life_bonus_ms)}, 846.0, 286.0, HudTextColor.primary);
+                        drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&perk_buf, breakdown.unpicked_perk_bonus_ms)}, 846.0, 314.0, HudTextColor.primary);
+                        drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&final_buf, breakdown.final_time_ms), 846.0, 342.0, HudTextColor.accent);
+                    }
                 }
 
                 if (results.runtime_error) |runtime_error| {
@@ -1714,6 +1727,36 @@ fn resultsButtonsFor(results: *const ResultsScreen) ResultsButtons {
         },
         .len = 3,
     };
+}
+
+fn isQuestFailedResult(results: *const ResultsScreen) bool {
+    return results.run_config.game_mode == .quests and results.reason == .dead;
+}
+
+fn questFailedShortcutSelection(results: *const ResultsScreen) ?usize {
+    if (!isQuestFailedResult(results)) return null;
+    if (rl.isKeyPressed(.escape)) return 2;
+    if (rl.isKeyPressed(.q)) return 1;
+    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.kp_enter)) return 0;
+    return null;
+}
+
+fn questFailedMessage(retry_count: i32, preserve_bugs: bool) [:0]const u8 {
+    return switch (retry_count) {
+        1 => "You didn't make it, do try again.",
+        2 => "Third time no good.",
+        3 => "No luck this time, have another go?",
+        4 => if (preserve_bugs) "Persistence will be rewared." else "Persistence will be rewarded.",
+        5 => "Try one more time?",
+        else => "Quest failed, try again.",
+    };
+}
+
+fn resultsSubtitleFor(results: *const ResultsScreen) [:0]const u8 {
+    if (isQuestFailedResult(results)) {
+        return questFailedMessage(results.run_config.quest_fail_retry_count, results.run_config.preserve_bugs);
+    }
+    return resultsSubtitle(results.reason);
 }
 
 fn resultsHighscorePathErrorDetail(err: anyerror) []const u8 {
@@ -2063,6 +2106,29 @@ test "results high score type click follows native random bit" {
     try std.testing.expectEqual(state_mod.SfxId.ui_typeclick_01, uiTypeClickSfxFromRoll(0));
     try std.testing.expectEqual(state_mod.SfxId.ui_typeclick_02, uiTypeClickSfxFromRoll(1));
     try std.testing.expectEqual(state_mod.SfxId.ui_typeclick_01, uiTypeClickSfxFromRoll(2));
+}
+
+test "quest failed messages match retry count" {
+    try std.testing.expectEqualStrings("Quest failed, try again.", questFailedMessage(0, false));
+    try std.testing.expectEqualStrings("You didn't make it, do try again.", questFailedMessage(1, false));
+    try std.testing.expectEqualStrings("Third time no good.", questFailedMessage(2, false));
+    try std.testing.expectEqualStrings("No luck this time, have another go?", questFailedMessage(3, false));
+    try std.testing.expectEqualStrings("Persistence will be rewarded.", questFailedMessage(4, false));
+    try std.testing.expectEqualStrings("Persistence will be rewared.", questFailedMessage(4, true));
+    try std.testing.expectEqualStrings("Try one more time?", questFailedMessage(5, false));
+    try std.testing.expectEqualStrings("Quest failed, try again.", questFailedMessage(6, false));
+}
+
+test "quest failed result uses retry subtitle" {
+    const results: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{
+            .game_mode = .quests,
+            .quest_fail_retry_count = 3,
+        },
+        .summary = undefined,
+    };
+    try std.testing.expectEqualStrings("No luck this time, have another go?", resultsSubtitleFor(&results));
 }
 
 test "results high score save errors use user-facing details" {
@@ -3085,6 +3151,45 @@ fn drawSmallTextCentered(
     const width = measureSmallText(runtime_assets, text);
     const x = (@as(f32, @floatFromInt(rl.getScreenWidth())) - width) * 0.5;
     drawSmallText(runtime_assets, text, x, y, color);
+}
+
+fn drawSmallTextCenteredAtX(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    text: []const u8,
+    center_x: f32,
+    y: f32,
+    color: rl.Color,
+) void {
+    const width = measureSmallText(runtime_assets, text);
+    drawSmallText(runtime_assets, text, center_x - width * 0.5, y, color);
+}
+
+fn drawSmallTextCenteredFmtAtX(
+    comptime fmt: []const u8,
+    runtime_assets: *const window_assets.RuntimeAssets,
+    args: anytype,
+    center_x: f32,
+    y: f32,
+    color: rl.Color,
+) void {
+    var buf: [64]u8 = undefined;
+    const text = std.fmt.bufPrint(&buf, fmt, args) catch return;
+    drawSmallTextCenteredAtX(runtime_assets, text, center_x, y, color);
+}
+
+fn drawQuestFailedPreview(runtime_assets: *const window_assets.RuntimeAssets, results: *const ResultsScreen) void {
+    const score_center_x = 500.0;
+    const xp_center_x = 652.0;
+    const top_y = 258.0;
+    const value_y = top_y + 22.0;
+    const separator_color = colorWithAlpha(rl.Color.init(149, 175, 198, 255), 0.7);
+    const elapsed_seconds = @as(f32, @floatFromInt(results.summary.elapsed_ms_sim)) * 0.001;
+
+    drawSmallTextCenteredAtX(runtime_assets, "Score", score_center_x, top_y, HudTextColor.dim);
+    drawSmallTextCenteredFmtAtX("{d:.2} secs", runtime_assets, .{elapsed_seconds}, score_center_x, value_y, HudTextColor.primary);
+    rl.drawLine(@intFromFloat((score_center_x + xp_center_x) * 0.5), @intFromFloat(top_y - 2.0), @intFromFloat((score_center_x + xp_center_x) * 0.5), @intFromFloat(value_y + 24.0), separator_color);
+    drawSmallTextCenteredAtX(runtime_assets, "Experience", xp_center_x, top_y, HudTextColor.primary);
+    drawSmallTextCenteredFmtAtX("{d}", runtime_assets, .{results.summary.player_experience}, xp_center_x, value_y, HudTextColor.dim);
 }
 
 fn drawBootAssetFallback(assets_state: AssetsState, assets_message: ?[]const u8) void {
