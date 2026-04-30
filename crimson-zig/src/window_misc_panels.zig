@@ -9,6 +9,8 @@ const panel_rect = rl.Rectangle.init(360.0, 168.0, 510.0, 378.0);
 const panel_timeline_max_ms: i32 = 300;
 const max_mod_lines: usize = 16;
 const max_line_bytes: usize = 224;
+const max_shown_mod_dlls: usize = 10;
+const max_mod_dll_name_bytes: usize = 128;
 
 pub const Action = enum {
     none,
@@ -28,6 +30,21 @@ const PanelState = struct {
 
     fn reset(self: *PanelState) void {
         self.* = .{};
+    }
+};
+
+const ModDllName = struct {
+    bytes: [max_mod_dll_name_bytes]u8 = undefined,
+    len: usize = 0,
+
+    fn set(self: *ModDllName, name: []const u8) void {
+        const copied_len = @min(name.len, self.bytes.len);
+        @memcpy(self.bytes[0..copied_len], name[0..copied_len]);
+        self.len = copied_len;
+    }
+
+    fn slice(self: *const ModDllName) []const u8 {
+        return self.bytes[0..self.len];
     }
 };
 
@@ -80,15 +97,12 @@ pub const ModsState = struct {
 
         var iter = dir.iterate();
         var dll_count: usize = 0;
-        var dll_names: [10][128]u8 = undefined;
-        var dll_name_lens: [10]usize = [_]usize{0} ** 10;
+        var dll_names: [max_shown_mod_dlls]ModDllName = undefined;
         while (iter.next(io) catch null) |entry| {
             if (entry.kind != .file) continue;
             if (!std.ascii.endsWithIgnoreCase(entry.name, ".dll")) continue;
             if (dll_count < dll_names.len) {
-                const copied_len = @min(entry.name.len, dll_names[dll_count].len);
-                @memcpy(dll_names[dll_count][0..copied_len], entry.name[0..copied_len]);
-                dll_name_lens[dll_count] = copied_len;
+                dll_names[dll_count].set(entry.name);
             }
             dll_count += 1;
         }
@@ -106,8 +120,9 @@ pub const ModsState = struct {
         self.appendLine("Found {d} mod DLL(s):", .{dll_count});
         self.appendLine("", .{});
         const shown = @min(dll_count, dll_names.len);
+        sortModDllNames(dll_names[0..shown]);
         for (0..shown) |idx| {
-            self.appendLine("  {s}", .{dll_names[idx][0..dll_name_lens[idx]]});
+            self.appendLine("  {s}", .{dll_names[idx].slice()});
         }
         if (dll_count > dll_names.len) {
             self.appendLine("  ... ({d} more)", .{dll_count - dll_names.len});
@@ -116,6 +131,14 @@ pub const ModsState = struct {
         self.appendLine("Mod loading is not implemented yet.", .{});
     }
 };
+
+fn sortModDllNames(names: []ModDllName) void {
+    std.sort.heap(ModDllName, names, {}, modDllNameLessThan);
+}
+
+fn modDllNameLessThan(_: void, left: ModDllName, right: ModDllName) bool {
+    return std.mem.lessThan(u8, left.slice(), right.slice());
+}
 
 pub const OtherGamesState = struct {
     panel: PanelState = .{},
@@ -195,4 +218,17 @@ fn drawPanelShell(state: *const PanelState, assets: *const window_assets.Runtime
 fn animatedPanelRect(timeline_ms: i32) rl.Rectangle {
     const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, panel_rect.width, timeline_ms);
     return rl.Rectangle.init(panel_rect.x + anim.offset_x, panel_rect.y, panel_rect.width, panel_rect.height);
+}
+
+test "mods dll names are sorted before display" {
+    var names = [_]ModDllName{ .{}, .{}, .{} };
+    names[0].set("zeta.dll");
+    names[1].set("alpha.dll");
+    names[2].set("middle.dll");
+
+    sortModDllNames(names[0..]);
+
+    try std.testing.expectEqualStrings("alpha.dll", names[0].slice());
+    try std.testing.expectEqualStrings("middle.dll", names[1].slice());
+    try std.testing.expectEqualStrings("zeta.dll", names[2].slice());
 }
