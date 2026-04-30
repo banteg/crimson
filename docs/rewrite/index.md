@@ -126,6 +126,7 @@ See also:
 - [Float expression precision map](float-expression-precision-map.md)
 - [Beam rendering (classic + RTX)](beam-rendering.md)
 - [CDT trace format (rewrite tooling)](cdt-trace-format.md)
+- [Trace format alignment plan](trace-format-alignment.md)
 - [Terrain (rewrite)](terrain.md)
 - [Perks architecture (rewrite)](perks-architecture.md)
 - [Original bugs (and rewrite fixes)](original-bugs.md)

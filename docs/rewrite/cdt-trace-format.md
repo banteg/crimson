@@ -12,11 +12,16 @@ It is rewrite tooling format, not an original Crimsonland asset/container format
 This spec describes the current on-disk contract implemented by `src/crimson/dbg/schema.py`
 and `src/crimson/dbg/trace.py`.
 
+For the remaining cross-producer cleanup work, see
+[`trace-format-alignment.md`](trace-format-alignment.md).
+
 ## Versioning
 
 - `trace_format_version`: container/envelope version (`1` currently)
-- `trace_schema_version`: channel payload schema version (`7` currently)
+- `trace_schema_version`: channel payload schema version (`10` currently)
 - container and schema versions are independent
+- this `.cdt` schema is distinct from Zig's local replay diagnostic trace
+  schema in `crimson-zig/src/runtime/replay/diagnostic_trace.zig`
 
 ## File layout
 
@@ -65,7 +70,7 @@ Payload encoding:
 
 Tick rows are required to be non-decreasing by `tick_index`.
 
-## Channel contract (schema v7)
+## Channel contract (schema v10)
 
 Required channels in both compared traces:
 
@@ -84,8 +89,40 @@ and `src/crimson/dbg/canonical_channels.py`:
 - `rng_stream` -> `list[RngStreamRow]`
 - `timing_samples` -> `list[TimingSampleRow]`
 
+`rng_stream` rows contain:
+
+- `tick_call_index`
+- `value_15`
+- `state_before_u32`
+- `state_after_u32`
+- `caller`
+
+`caller` is the optional static caller address used for parity diagnostics. It is
+stored as an integer and rendered as hex only in human-facing diff output. Frida
+raw JSONL still uses producer-private field names such as `caller_static`, but
+finalization canonicalizes them into this durable `caller` field.
+
+`timing_samples` rows contain phase-level timing evidence. Frida captures require
+a non-empty row set with a `gpur_enter` sample matching the tick `dt` and
+`dt_ms_i32`. Zig replay traces emit timing rows. Python replay traces currently
+write an empty list, which is a known producer-alignment gap rather than a
+separate trace kind.
+
 `phase_markers` remain `list[str]` in the durable trace contract.
 Raw Frida capture may hold richer structured phase-marker payloads, but finalize flattens them to names in the trace row.
+
+## Producers
+
+The intended comparison set is:
+
+1. Original game capture, produced by Frida JSONL and finalized by
+   `src/crimson/dbg/frida_finalize.py`.
+2. Python replay trace, produced by `src/crimson/dbg/record.py`.
+3. Zig replay trace, produced by `crimson-zig/src/cdt_trace.zig`.
+
+All three producers should emit the same required channels and the same durable
+row semantics. Producer-private fields are allowed before finalization, but the
+`.cdt` payload must stay canonical.
 
 ## Diff contract
 

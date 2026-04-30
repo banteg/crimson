@@ -49,6 +49,7 @@ nav = [
       { "Terrain seed / prelude architecture" = "rewrite/terrain-seed-architecture.md" },
       { "Quest identifiers" = "rewrite/quest-identifiers.md" },
       { "CDT trace format" = "rewrite/cdt-trace-format.md" },
+      { "Trace format alignment" = "rewrite/trace-format-alignment.md" },
       { "RNG caller mapping workflow" = "rewrite/rng-caller-mapping-workflow.md" },
       { "Float parity policy" = "rewrite/float-parity-policy.md" },
       { "Float expression precision map" = "rewrite/float-expression-precision-map.md" },
