@@ -38,7 +38,49 @@ const ReplayDeathLedgerEntryWire = struct {
     type_id: i32,
     reward_value: f64,
     xp_awarded: i32,
-    owner_id: i32,
+    owner_id: i32 = -1,
+
+    fn msgpackRead(unpacker: anytype) !ReplayDeathLedgerEntryWire {
+        const field_count = try unpacker.readMapHeader(u32);
+        var field_name_buf: [64]u8 = undefined;
+        var entry: ReplayDeathLedgerEntryWire = .{
+            .creature_index = 0,
+            .type_id = 0,
+            .reward_value = 0.0,
+            .xp_awarded = 0,
+        };
+        var seen_creature_index = false;
+        var seen_type_id = false;
+        var seen_reward_value = false;
+        var seen_xp_awarded = false;
+
+        for (0..field_count) |_| {
+            const field_name = try unpacker.readStringInto(&field_name_buf);
+            if (std.mem.eql(u8, field_name, "creature_index")) {
+                entry.creature_index = try unpacker.readInt(i32);
+                seen_creature_index = true;
+            } else if (std.mem.eql(u8, field_name, "type_id")) {
+                entry.type_id = try unpacker.readInt(i32);
+                seen_type_id = true;
+            } else if (std.mem.eql(u8, field_name, "reward_value")) {
+                entry.reward_value = try unpacker.readFloat(f64);
+                seen_reward_value = true;
+            } else if (std.mem.eql(u8, field_name, "xp_awarded")) {
+                entry.xp_awarded = try unpacker.readInt(i32);
+                seen_xp_awarded = true;
+            } else if (std.mem.eql(u8, field_name, "owner_id")) {
+                entry.owner_id = try unpacker.readInt(i32);
+            } else {
+                return error.UnknownStructField;
+            }
+        }
+
+        if (!seen_creature_index or !seen_type_id or !seen_reward_value or !seen_xp_awarded) {
+            return error.MissingCheckpointDeathField;
+        }
+
+        return entry;
+    }
 };
 
 const ReplayPerkSnapshotWire = struct {
@@ -817,6 +859,7 @@ fn buildMismatchOutput(
             const exp = failure.expected;
             const act = failure.actual.?;
             try writer.print("checkpoint mismatch at tick={d}\n", .{failure.tick_index});
+            try writeFirstStateMismatch(writer, exp, act);
             try writer.print("  rng_state expected={d} actual={d}\n", .{ exp.rng_state, act.rng_state });
             try writer.print("  score_xp expected={d} actual={d}\n", .{ exp.score_xp, act.score_xp });
             try writer.print("  kills expected={d} actual={d}\n", .{ exp.kills, act.kills });
@@ -846,6 +889,356 @@ fn buildMismatchOutput(
         .stderr = stderr,
         .exit_code = 1,
     };
+}
+
+fn writeFirstStateMismatch(
+    writer: anytype,
+    expected: *const ReplayCheckpointWire,
+    actual: *const ReplayCheckpointWire,
+) !void {
+    if (expected.tick_index != actual.tick_index) {
+        try writer.print("  first state diff: tick_index expected={d} actual={d}\n", .{ expected.tick_index, actual.tick_index });
+        return;
+    }
+    if (expected.elapsed_ms != actual.elapsed_ms) {
+        try writer.print("  first state diff: elapsed_ms expected={d} actual={d}\n", .{ expected.elapsed_ms, actual.elapsed_ms });
+        return;
+    }
+    if (expected.score_xp != actual.score_xp) {
+        try writer.print("  first state diff: score_xp expected={d} actual={d}\n", .{ expected.score_xp, actual.score_xp });
+        return;
+    }
+    if (expected.kills != actual.kills) {
+        try writer.print("  first state diff: kills expected={d} actual={d}\n", .{ expected.kills, actual.kills });
+        return;
+    }
+    if (expected.creature_count != actual.creature_count) {
+        try writer.print("  first state diff: creature_count expected={d} actual={d}\n", .{ expected.creature_count, actual.creature_count });
+        return;
+    }
+    if (expected.perk_pending != actual.perk_pending) {
+        try writer.print("  first state diff: perk_pending expected={d} actual={d}\n", .{ expected.perk_pending, actual.perk_pending });
+        return;
+    }
+    if (try writeFirstPlayerMismatch(writer, expected.players, actual.players)) return;
+    if (try writeFirstBonusTimerMismatch(writer, expected.bonus_timers, actual.bonus_timers)) return;
+    if (try writeFirstDeathMismatch(writer, expected.deaths, actual.deaths)) return;
+    if (try writeFirstPerkMismatch(writer, expected.perk, actual.perk)) return;
+    if (try writeFirstEventMismatch(writer, expected.events, actual.events)) return;
+    if (try writeFirstTutorialMismatch(writer, expected.tutorial, actual.tutorial)) return;
+    if (try writeFirstTypoMismatch(writer, expected.typo, actual.typo)) return;
+    try writer.writeAll("  first state diff: checkpoint payload differs\n");
+}
+
+fn writeFirstPlayerMismatch(
+    writer: anytype,
+    expected: []const ReplayPlayerCheckpointWire,
+    actual: []const ReplayPlayerCheckpointWire,
+) !bool {
+    if (expected.len != actual.len) {
+        try writer.print("  first state diff: players._len expected={d} actual={d}\n", .{ expected.len, actual.len });
+        return true;
+    }
+    for (expected, actual, 0..) |exp, act, idx| {
+        if (exp.pos.x != act.pos.x) {
+            try writer.print("  first state diff: players[{d}].pos.x expected={d} actual={d}\n", .{ idx, exp.pos.x, act.pos.x });
+            return true;
+        }
+        if (exp.pos.y != act.pos.y) {
+            try writer.print("  first state diff: players[{d}].pos.y expected={d} actual={d}\n", .{ idx, exp.pos.y, act.pos.y });
+            return true;
+        }
+        if (exp.health != act.health) {
+            try writer.print("  first state diff: players[{d}].health expected={d} actual={d}\n", .{ idx, exp.health, act.health });
+            return true;
+        }
+        if (exp.weapon_id != act.weapon_id) {
+            try writer.print("  first state diff: players[{d}].weapon_id expected={d} actual={d}\n", .{ idx, exp.weapon_id, act.weapon_id });
+            return true;
+        }
+        if (exp.ammo != act.ammo) {
+            try writer.print("  first state diff: players[{d}].ammo expected={d} actual={d}\n", .{ idx, exp.ammo, act.ammo });
+            return true;
+        }
+        if (exp.experience != act.experience) {
+            try writer.print("  first state diff: players[{d}].experience expected={d} actual={d}\n", .{ idx, exp.experience, act.experience });
+            return true;
+        }
+        if (exp.level != act.level) {
+            try writer.print("  first state diff: players[{d}].level expected={d} actual={d}\n", .{ idx, exp.level, act.level });
+            return true;
+        }
+    }
+    return false;
+}
+
+fn writeFirstBonusTimerMismatch(
+    writer: anytype,
+    expected: BonusTimersWire,
+    actual: BonusTimersWire,
+) !bool {
+    if (expected.entries.len != actual.entries.len) {
+        try writer.print("  first state diff: bonus_timers._len expected={d} actual={d}\n", .{ expected.entries.len, actual.entries.len });
+        return true;
+    }
+    for (expected.entries) |entry| {
+        const actual_value = bonusTimerValue(actual, entry.key) orelse {
+            try writer.print("  first state diff: bonus_timers[{s}] expected={d} actual=<missing>\n", .{ entry.key, entry.value });
+            return true;
+        };
+        if (entry.value != actual_value) {
+            try writer.print("  first state diff: bonus_timers[{s}] expected={d} actual={d}\n", .{ entry.key, entry.value, actual_value });
+            return true;
+        }
+    }
+    return false;
+}
+
+fn writeFirstDeathMismatch(
+    writer: anytype,
+    expected: []const ReplayDeathLedgerEntryWire,
+    actual: []const ReplayDeathLedgerEntryWire,
+) !bool {
+    if (expected.len != actual.len) {
+        try writer.print("  first state diff: deaths._len expected={d} actual={d}\n", .{ expected.len, actual.len });
+        return true;
+    }
+    for (expected, actual, 0..) |exp, act, idx| {
+        if (exp.creature_index != act.creature_index) {
+            try writer.print("  first state diff: deaths[{d}].creature_index expected={d} actual={d}\n", .{ idx, exp.creature_index, act.creature_index });
+            return true;
+        }
+        if (exp.type_id != act.type_id) {
+            try writer.print("  first state diff: deaths[{d}].type_id expected={d} actual={d}\n", .{ idx, exp.type_id, act.type_id });
+            return true;
+        }
+        if (exp.reward_value != act.reward_value) {
+            try writer.print("  first state diff: deaths[{d}].reward_value expected={d} actual={d}\n", .{ idx, exp.reward_value, act.reward_value });
+            return true;
+        }
+        if (exp.xp_awarded != act.xp_awarded) {
+            try writer.print("  first state diff: deaths[{d}].xp_awarded expected={d} actual={d}\n", .{ idx, exp.xp_awarded, act.xp_awarded });
+            return true;
+        }
+        if (exp.owner_id != act.owner_id) {
+            try writer.print("  first state diff: deaths[{d}].owner_id expected={d} actual={d}\n", .{ idx, exp.owner_id, act.owner_id });
+            return true;
+        }
+    }
+    return false;
+}
+
+fn writeFirstPerkMismatch(
+    writer: anytype,
+    expected: ReplayPerkSnapshotWire,
+    actual: ReplayPerkSnapshotWire,
+) !bool {
+    if (expected.pending_count != actual.pending_count) {
+        try writer.print("  first state diff: perk.pending_count expected={d} actual={d}\n", .{ expected.pending_count, actual.pending_count });
+        return true;
+    }
+    if (expected.choices_dirty != actual.choices_dirty) {
+        try writer.print("  first state diff: perk.choices_dirty expected={} actual={}\n", .{ expected.choices_dirty, actual.choices_dirty });
+        return true;
+    }
+    if (try writeFirstI32SliceMismatch(writer, "perk.choices", expected.choices, actual.choices)) return true;
+    if (expected.player_nonzero_counts.len != actual.player_nonzero_counts.len) {
+        try writer.print("  first state diff: perk.player_nonzero_counts._len expected={d} actual={d}\n", .{ expected.player_nonzero_counts.len, actual.player_nonzero_counts.len });
+        return true;
+    }
+    for (expected.player_nonzero_counts, actual.player_nonzero_counts, 0..) |exp_player, act_player, player_idx| {
+        if (exp_player.len != act_player.len) {
+            try writer.print("  first state diff: perk.player_nonzero_counts[{d}]._len expected={d} actual={d}\n", .{ player_idx, exp_player.len, act_player.len });
+            return true;
+        }
+        for (exp_player, act_player, 0..) |exp_pair, act_pair, pair_idx| {
+            if (exp_pair.len != act_pair.len) {
+                try writer.print("  first state diff: perk.player_nonzero_counts[{d}][{d}]._len expected={d} actual={d}\n", .{ player_idx, pair_idx, exp_pair.len, act_pair.len });
+                return true;
+            }
+            for (exp_pair, act_pair, 0..) |exp_value, act_value, value_idx| {
+                if (exp_value != act_value) {
+                    try writer.print(
+                        "  first state diff: perk.player_nonzero_counts[{d}][{d}][{d}] expected={d} actual={d}\n",
+                        .{ player_idx, pair_idx, value_idx, exp_value, act_value },
+                    );
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+fn writeFirstEventMismatch(
+    writer: anytype,
+    expected: ReplayEventSummaryWire,
+    actual: ReplayEventSummaryWire,
+) !bool {
+    if (expected.hit_count != actual.hit_count) {
+        try writer.print("  first state diff: events.hit_count expected={d} actual={d}\n", .{ expected.hit_count, actual.hit_count });
+        return true;
+    }
+    if (expected.pickup_count != actual.pickup_count) {
+        try writer.print("  first state diff: events.pickup_count expected={d} actual={d}\n", .{ expected.pickup_count, actual.pickup_count });
+        return true;
+    }
+    if (expected.sfx_count != actual.sfx_count) {
+        try writer.print("  first state diff: events.sfx_count expected={d} actual={d}\n", .{ expected.sfx_count, actual.sfx_count });
+        return true;
+    }
+    if (try writeFirstStringSliceMismatch(writer, "events.sfx_head", expected.sfx_head, actual.sfx_head)) return true;
+    return false;
+}
+
+fn writeFirstTutorialMismatch(
+    writer: anytype,
+    expected: ?ReplayTutorialSnapshotWire,
+    actual: ?ReplayTutorialSnapshotWire,
+) !bool {
+    if (expected == null and actual == null) return false;
+    if (expected == null or actual == null) {
+        try writer.print("  first state diff: tutorial expected={s} actual={s}\n", .{ optionalPresence(expected), optionalPresence(actual) });
+        return true;
+    }
+    const exp = expected.?;
+    const act = actual.?;
+    if (exp.stage_index != act.stage_index) {
+        try writer.print("  first state diff: tutorial.stage_index expected={d} actual={d}\n", .{ exp.stage_index, act.stage_index });
+        return true;
+    }
+    if (exp.stage_timer_ms != act.stage_timer_ms) {
+        try writer.print("  first state diff: tutorial.stage_timer_ms expected={d} actual={d}\n", .{ exp.stage_timer_ms, act.stage_timer_ms });
+        return true;
+    }
+    if (exp.stage_transition_timer_ms != act.stage_transition_timer_ms) {
+        try writer.print("  first state diff: tutorial.stage_transition_timer_ms expected={d} actual={d}\n", .{ exp.stage_transition_timer_ms, act.stage_transition_timer_ms });
+        return true;
+    }
+    if (exp.hint_index != act.hint_index) {
+        try writer.print("  first state diff: tutorial.hint_index expected={d} actual={d}\n", .{ exp.hint_index, act.hint_index });
+        return true;
+    }
+    if (exp.hint_alpha != act.hint_alpha) {
+        try writer.print("  first state diff: tutorial.hint_alpha expected={d} actual={d}\n", .{ exp.hint_alpha, act.hint_alpha });
+        return true;
+    }
+    if (exp.hint_fade_in != act.hint_fade_in) {
+        try writer.print("  first state diff: tutorial.hint_fade_in expected={} actual={}\n", .{ exp.hint_fade_in, act.hint_fade_in });
+        return true;
+    }
+    if (exp.repeat_spawn_count != act.repeat_spawn_count) {
+        try writer.print("  first state diff: tutorial.repeat_spawn_count expected={d} actual={d}\n", .{ exp.repeat_spawn_count, act.repeat_spawn_count });
+        return true;
+    }
+    if (exp.hint_bonus_creature_ref != act.hint_bonus_creature_ref) {
+        try writer.print("  first state diff: tutorial.hint_bonus_creature_ref expected={?d} actual={?d}\n", .{ exp.hint_bonus_creature_ref, act.hint_bonus_creature_ref });
+        return true;
+    }
+    if (!std.mem.eql(u8, exp.prompt_text, act.prompt_text)) {
+        try writer.print("  first state diff: tutorial.prompt_text expected={s} actual={s}\n", .{ exp.prompt_text, act.prompt_text });
+        return true;
+    }
+    if (exp.prompt_alpha != act.prompt_alpha) {
+        try writer.print("  first state diff: tutorial.prompt_alpha expected={d} actual={d}\n", .{ exp.prompt_alpha, act.prompt_alpha });
+        return true;
+    }
+    if (!std.mem.eql(u8, exp.hint_text, act.hint_text)) {
+        try writer.print("  first state diff: tutorial.hint_text expected={s} actual={s}\n", .{ exp.hint_text, act.hint_text });
+        return true;
+    }
+    if (exp.hint_alpha_overlay != act.hint_alpha_overlay) {
+        try writer.print("  first state diff: tutorial.hint_alpha_overlay expected={d} actual={d}\n", .{ exp.hint_alpha_overlay, act.hint_alpha_overlay });
+        return true;
+    }
+    return false;
+}
+
+fn writeFirstTypoMismatch(
+    writer: anytype,
+    expected: ?ReplayTypoSnapshotWire,
+    actual: ?ReplayTypoSnapshotWire,
+) !bool {
+    if (expected == null and actual == null) return false;
+    if (expected == null or actual == null) {
+        try writer.print("  first state diff: typo expected={s} actual={s}\n", .{ optionalPresence(expected), optionalPresence(actual) });
+        return true;
+    }
+    const exp = expected.?;
+    const act = actual.?;
+    if (!std.mem.eql(u8, exp.input_text, act.input_text)) {
+        try writer.print("  first state diff: typo.input_text expected={s} actual={s}\n", .{ exp.input_text, act.input_text });
+        return true;
+    }
+    if (exp.submit_count != act.submit_count) {
+        try writer.print("  first state diff: typo.submit_count expected={d} actual={d}\n", .{ exp.submit_count, act.submit_count });
+        return true;
+    }
+    if (exp.match_count != act.match_count) {
+        try writer.print("  first state diff: typo.match_count expected={d} actual={d}\n", .{ exp.match_count, act.match_count });
+        return true;
+    }
+    if (exp.spawn_cooldown_ms != act.spawn_cooldown_ms) {
+        try writer.print("  first state diff: typo.spawn_cooldown_ms expected={d} actual={d}\n", .{ exp.spawn_cooldown_ms, act.spawn_cooldown_ms });
+        return true;
+    }
+    if (exp.active_names.len != act.active_names.len) {
+        try writer.print("  first state diff: typo.active_names._len expected={d} actual={d}\n", .{ exp.active_names.len, act.active_names.len });
+        return true;
+    }
+    for (exp.active_names, act.active_names, 0..) |exp_name, act_name, idx| {
+        if (exp_name.creature_index != act_name.creature_index) {
+            try writer.print("  first state diff: typo.active_names[{d}].creature_index expected={d} actual={d}\n", .{ idx, exp_name.creature_index, act_name.creature_index });
+            return true;
+        }
+        if (!std.mem.eql(u8, exp_name.name, act_name.name)) {
+            try writer.print("  first state diff: typo.active_names[{d}].name expected={s} actual={s}\n", .{ idx, exp_name.name, act_name.name });
+            return true;
+        }
+    }
+    return false;
+}
+
+fn writeFirstI32SliceMismatch(
+    writer: anytype,
+    field: []const u8,
+    expected: []const i32,
+    actual: []const i32,
+) !bool {
+    if (expected.len != actual.len) {
+        try writer.print("  first state diff: {s}._len expected={d} actual={d}\n", .{ field, expected.len, actual.len });
+        return true;
+    }
+    for (expected, actual, 0..) |exp, act, idx| {
+        if (exp != act) {
+            try writer.print("  first state diff: {s}[{d}] expected={d} actual={d}\n", .{ field, idx, exp, act });
+            return true;
+        }
+    }
+    return false;
+}
+
+fn writeFirstStringSliceMismatch(
+    writer: anytype,
+    field: []const u8,
+    expected: []const []const u8,
+    actual: []const []const u8,
+) !bool {
+    if (expected.len != actual.len) {
+        try writer.print("  first state diff: {s}._len expected={d} actual={d}\n", .{ field, expected.len, actual.len });
+        return true;
+    }
+    for (expected, actual, 0..) |exp, act, idx| {
+        if (!std.mem.eql(u8, exp, act)) {
+            try writer.print("  first state diff: {s}[{d}] expected={s} actual={s}\n", .{ field, idx, exp, act });
+            return true;
+        }
+    }
+    return false;
+}
+
+fn optionalPresence(value: anytype) []const u8 {
+    return if (value == null) "null" else "present";
 }
 
 fn buildFailedOutput(
@@ -1117,6 +1510,56 @@ test "compare checkpoints reports first state mismatch" {
     try std.testing.expectEqual(@as(i32, 1), diff.failure.?.tick_index);
 }
 
+test "checkpoint mismatch output reports first player field difference" {
+    const allocator = std.testing.allocator;
+    const expected = testCheckpoint();
+    var actual = testCheckpoint();
+    var actual_players = [_]ReplayPlayerCheckpointWire{actual.players[0]};
+    actual_players[0].health = 99.5;
+    actual.players = actual_players[0..];
+    const diff: DiffResult = .{
+        .ok = false,
+        .checked_count = 1,
+        .failure = .{
+            .kind = .state_mismatch,
+            .tick_index = expected.tick_index,
+            .expected = &expected,
+            .actual = &actual,
+        },
+    };
+
+    const output = try buildMismatchOutput(allocator, diff);
+    defer allocator.free(output.stdout);
+    defer allocator.free(output.stderr);
+
+    try std.testing.expectEqual(@as(u8, 1), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "first state diff: players[0].health expected=100 actual=99.5") != null);
+}
+
+test "checkpoint mismatch output reports first event field difference" {
+    const allocator = std.testing.allocator;
+    const expected = testCheckpoint();
+    var actual = testCheckpoint();
+    actual.events.sfx_count = 1;
+    const diff: DiffResult = .{
+        .ok = false,
+        .checked_count = 1,
+        .failure = .{
+            .kind = .state_mismatch,
+            .tick_index = expected.tick_index,
+            .expected = &expected,
+            .actual = &actual,
+        },
+    };
+
+    const output = try buildMismatchOutput(allocator, diff);
+    defer allocator.free(output.stdout);
+    defer allocator.free(output.stderr);
+
+    try std.testing.expectEqual(@as(u8, 1), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "first state diff: events.sfx_count expected=0 actual=1") != null);
+}
+
 test "checkpoint diff maps checkpoint load errors to user details" {
     try std.testing.expectEqualStrings(
         "checkpoints payload is not valid msgpack wire format",
@@ -1134,6 +1577,35 @@ test "checkpoint diff maps checkpoint load errors to user details" {
         "FileBusy",
         checkpointFileLoadErrorDetail(error.FileBusy),
     );
+}
+
+test "checkpoint death entries default legacy owner id" {
+    const allocator = std.testing.allocator;
+    const LegacyDeathEntry = struct {
+        creature_index: i32,
+        type_id: i32,
+        reward_value: f64,
+        xp_awarded: i32,
+    };
+    const wire: LegacyDeathEntry = .{
+        .creature_index = 5,
+        .type_id = 2,
+        .reward_value = 75.0,
+        .xp_awarded = 10,
+    };
+
+    var writer: std.Io.Writer.Allocating = .init(allocator);
+    defer writer.deinit();
+    try msgpack.encode(wire, &writer.writer);
+
+    var decoded = try msgpack.decodeFromSlice(ReplayDeathLedgerEntryWire, allocator, writer.written());
+    defer decoded.deinit();
+
+    try std.testing.expectEqual(@as(i32, 5), decoded.value.creature_index);
+    try std.testing.expectEqual(@as(i32, 2), decoded.value.type_id);
+    try std.testing.expectEqual(@as(f64, 75.0), decoded.value.reward_value);
+    try std.testing.expectEqual(@as(i32, 10), decoded.value.xp_awarded);
+    try std.testing.expectEqual(@as(i32, -1), decoded.value.owner_id);
 }
 
 test "checkpoint verify maps replay load and runner errors to user details" {

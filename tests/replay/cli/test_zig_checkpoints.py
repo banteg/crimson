@@ -73,6 +73,45 @@ def test_zig_replay_diff_checkpoints_reports_state_mismatch(tmp_path: Path) -> N
     assert "score_xp expected=0 actual=999999" in result.stderr
 
 
+def test_zig_replay_diff_checkpoints_reports_player_field_mismatch(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    sidecar_a = write_checkpoint_sidecar(replay_path, replay)
+    sidecar_b = tmp_path / "survival-player-health.crd.chk"
+
+    payload = load_checkpoints_file(sidecar_a)
+    checkpoints = list(payload.checkpoints)
+    players = list(checkpoints[0].players)
+    players[0] = msgspec.structs.replace(players[0], health=float(players[0].health) - 1.0)
+    checkpoints[0] = msgspec.structs.replace(checkpoints[0], players=players)
+    dump_checkpoints_file(sidecar_b, msgspec.structs.replace(payload, checkpoints=checkpoints))
+
+    result = _run_zig_replay_diff_checkpoints([str(sidecar_a), str(sidecar_b)])
+
+    assert result.returncode == 1
+    assert "checkpoint mismatch at tick=0" in result.stderr
+    assert "first state diff: players[0].health" in result.stderr
+
+
+def test_zig_replay_diff_checkpoints_reports_event_field_mismatch(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    sidecar_a = write_checkpoint_sidecar(replay_path, replay)
+    sidecar_b = tmp_path / "survival-event-sfx.crd.chk"
+
+    payload = load_checkpoints_file(sidecar_a)
+    checkpoints = list(payload.checkpoints)
+    events = msgspec.structs.replace(checkpoints[0].events, sfx_count=int(checkpoints[0].events.sfx_count) + 1)
+    checkpoints[0] = msgspec.structs.replace(checkpoints[0], events=events)
+    dump_checkpoints_file(sidecar_b, msgspec.structs.replace(payload, checkpoints=checkpoints))
+
+    result = _run_zig_replay_diff_checkpoints([str(sidecar_a), str(sidecar_b)])
+
+    assert result.returncode == 1
+    assert "checkpoint mismatch at tick=0" in result.stderr
+    assert "first state diff: events.sfx_count" in result.stderr
+
+
 def test_zig_replay_diff_checkpoints_preserves_rng_only_success(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")

@@ -140,6 +140,37 @@ def test_load_checkpoints_defaults_optional_checkpoint_fields() -> None:
     assert loaded.checkpoints[0].typo is None
 
 
+def test_load_checkpoints_defaults_legacy_death_owner_id() -> None:
+    payload_obj = {
+        "version": FORMAT_VERSION,
+        "sample_rate": 60,
+        "checkpoints": [
+            {
+                "tick_index": 10,
+                "rng_state": 20,
+                "elapsed_ms": 300,
+                "score_xp": 40,
+                "kills": 2,
+                "creature_count": 3,
+                "perk_pending": 4,
+                "players": [],
+                "bonus_timers": {},
+                "deaths": [
+                    {
+                        "creature_index": 5,
+                        "type_id": 2,
+                        "reward_value": 75.0,
+                        "xp_awarded": 10,
+                    },
+                ],
+            },
+        ],
+    }
+    payload = msgspec.msgpack.encode(payload_obj)
+    loaded = load_checkpoints(payload)
+    assert loaded.checkpoints[0].deaths[0].owner_id == -1
+
+
 def test_build_checkpoint_captures_typo_sidecar(base_world: WorldState) -> None:
     world = base_world
     world.state.game_mode = GameMode.TYPO

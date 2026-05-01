@@ -87,7 +87,7 @@ class ReplayDeathLedgerEntry(msgspec.Struct, frozen=True):
     type_id: int
     reward_value: float
     xp_awarded: int
-    owner_id: int
+    owner_id: int = -1
 
 
 class ReplayPerkSnapshot(msgspec.Struct, frozen=True):
