@@ -111,7 +111,8 @@ Remaining work:
 
 - expand Zig CLI coverage where it materially helps development:
   - replay-oriented tools beyond list/verify/info/benchmark/verify-checkpoints/diff-checkpoints,
-  - useful debug/support commands where they make sense natively,
+  - useful debug/support commands where they make sense natively, including
+    the installed `crimson-zig-asset-smoke` archive/image decode validator,
 - keep trace/debug surfaces aligned with current Python contracts,
 - refresh developer docs when tooling behavior changes.
 

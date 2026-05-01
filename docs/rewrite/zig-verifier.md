@@ -49,6 +49,8 @@ consumes the same shared runtime used by the native desktop application.
 - typed RNG caller tagging for verifier/runtime draws
 - native config/status ownership for `crimson.cfg` and `game.cfg`, including
   CLI inspection for both files
+- installed native asset smoke tool for `crimson.paq` archive/image decode
+  validation
 - real boot/menu/gameplay/pause/results/final-quest end-note/statistics/options
   shell
 - archive-backed world/UI asset loading
@@ -83,6 +85,7 @@ Current supported replay-tooling behavior:
 - native debug schema contract reporting via `dbg verify`
 - native `crimson.cfg` human/JSON inspection via `config`
 - native `game.cfg` checksum-verified human/JSON inspection via `status`
+- native runtime asset archive/image validation via `crimson-zig-asset-smoke`
 - current Python-readable trace export contracts
 - quest spawn-table JSON dumps via `quests <level> --format json --seed <seed>`
 - native UDP relay serving via `relay serve`

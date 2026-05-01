@@ -105,6 +105,7 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
+    b.installArtifact(asset_smoke_exe);
     const asset_smoke_step = b.step("asset-smoke", "Run local runtime asset decode smoke");
     const asset_smoke_cmd = b.addRunArtifact(asset_smoke_exe);
     asset_smoke_step.dependOn(&asset_smoke_cmd.step);

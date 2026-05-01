@@ -162,6 +162,7 @@ fn printFailure(rel_path: []const u8, err: anyerror) !void {
 fn printUsage() !void {
     try writeStdout(
         \\Usage:
+        \\  crimson-zig-asset-smoke [assets-dir]
         \\  zig build asset-smoke
         \\  zig build asset-smoke -- /path/to/assets
         \\
