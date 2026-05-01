@@ -2361,7 +2361,7 @@ const App = struct {
                     drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&elapsed_buf, elapsed_ms), 510.0, 258.0, HudTextColor.primary);
                     drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_experience}, 510.0, 286.0, HudTextColor.primary);
                     drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_level}, 510.0, 314.0, HudTextColor.primary);
-                    drawSmallText(runtime_assets, weaponName(results.summary.player_weapon_id), 510.0, 342.0, HudTextColor.primary);
+                    drawSmallText(runtime_assets, weaponName(results.summary.player_weapon_id, results.run_config.preserve_bugs), 510.0, 342.0, HudTextColor.primary);
                     const player_health = if (results.player_health_count > 0) results.player_health_values[0] else 0.0;
                     drawSmallTextFmt("{d:.1}", runtime_assets, .{player_health}, 510.0, 370.0, HudTextColor.primary);
                     if (results.quest_final_time != null) {
@@ -3661,6 +3661,12 @@ test "results high score name display shows caret position" {
     var buf: [persistence.highscores.name_max_edit + 1]u8 = undefined;
     try std.testing.expectEqualStrings("AC_E", highscoreNameDisplay(&buf, &highscore, true));
     try std.testing.expectEqualStrings("ACE", highscoreNameDisplay(&buf, &highscore, false));
+}
+
+test "results weapon names use display labels" {
+    try std.testing.expectEqualStrings("Assault Rifle", weaponName(@intFromEnum(game_ids.WeaponId.assault_rifle), false));
+    try std.testing.expectEqualStrings("Plague Sphreader Gun", weaponName(@intFromEnum(game_ids.WeaponId.plague_spreader_gun), true));
+    try std.testing.expectEqualStrings("unknown", weaponName(999, false));
 }
 
 test "gameplayControlsHeldWithSampler follows configured controls and alternate arrows" {
@@ -5466,7 +5472,7 @@ fn drawLiveRunnerHud(runner: *const live_runner.LiveRunner, update: live_runner.
         overlay_color,
     );
     drawTextFmt("hp {d:.1}  level {d}  xp {d}", .{ player.health, update.player_level, update.player_experience }, 36, 34, 22, text_color);
-    drawTextFmt("weapon {s}  ammo {d:.1}", .{ weaponName(update.player_weapon_id), player.weapon.ammo }, 36, 62, 22, text_color);
+    drawTextFmt("weapon {s}  ammo {d:.1}", .{ weaponName(update.player_weapon_id, false), player.weapon.ammo }, 36, 62, 22, text_color);
     drawTextFmt("shots {d}  hits {d}  creatures {d}", .{ update.shots_fired, update.shots_hit, update.creature_active_count }, 36, 90, 20, muted_text);
     drawTextFmt("elapsed {d}ms  pickups {d}  pending perks {d}", .{ update.elapsed_ms_sim, update.bonus_active_count, runner.perkPendingCount() }, 36, 116, 20, muted_text);
 }
@@ -5876,9 +5882,9 @@ fn resultsSubtitle(reason: ResultsReason) [:0]const u8 {
     };
 }
 
-fn weaponName(weapon_id_raw: i32) []const u8 {
+fn weaponName(weapon_id_raw: i32, preserve_bugs: bool) []const u8 {
     const weapon_id = std.enums.fromInt(game_ids.WeaponId, weapon_id_raw) orelse return "unknown";
-    return @tagName(weapon_id);
+    return game_ids.weaponDisplayName(weapon_id, preserve_bugs);
 }
 
 fn toRlVec(vec: state_mod.Vec2) rl.Vector2 {
