@@ -264,6 +264,9 @@ const NetworkLiveRuntime = union(enum) {
                     .stats = stats,
                     .frames_advanced = step_summary.frames_advanced,
                     .ticks_advanced = step_summary.ticks_advanced,
+                    .last_tick_index = step_summary.last_tick_index,
+                    .last_player_count = step_summary.last_player_count,
+                    .last_input_flags = step_summary.last_input_flags,
                 };
             },
             .client => |*client| blk: {
@@ -277,6 +280,9 @@ const NetworkLiveRuntime = union(enum) {
                     .stats = stats,
                     .frames_advanced = step_summary.frames_advanced,
                     .ticks_advanced = step_summary.ticks_advanced,
+                    .last_tick_index = step_summary.last_tick_index,
+                    .last_player_count = step_summary.last_player_count,
+                    .last_input_flags = step_summary.last_input_flags,
                 };
             },
         };
@@ -335,6 +341,9 @@ const NetworkLiveUpdate = struct {
     stats: lockstep_session.UpdateStats = .{},
     frames_advanced: usize = 0,
     ticks_advanced: usize = 0,
+    last_tick_index: ?i32 = null,
+    last_player_count: usize = 0,
+    last_input_flags: [state_mod.max_players]u32 = [_]u32{0} ** state_mod.max_players,
 };
 
 const BonusHudSlotState = struct {
@@ -1154,7 +1163,13 @@ const App = struct {
             return;
         };
         if (net_update.frames_advanced != 0) {
-            self.network_session.setStatusFmt("Lockstep frames={d} ticks={d}.", .{ net_update.frames_advanced, net_update.ticks_advanced });
+            if (net_update.last_tick_index) |tick_index| {
+                const local_slot = session.localInputSlot() orelse 0;
+                const local_flags = if (local_slot < net_update.last_player_count) net_update.last_input_flags[local_slot] else 0;
+                self.network_session.setStatusFmt("Lockstep tick={d} frames={d} flags=0x{x}.", .{ tick_index, net_update.frames_advanced, local_flags });
+            } else {
+                self.network_session.setStatusFmt("Lockstep frames={d} ticks={d}.", .{ net_update.frames_advanced, net_update.ticks_advanced });
+            }
         } else if (net_update.stats.received != 0 or net_update.stats.sent != 0) {
             self.network_session.setStatusFmt("Lockstep packets recv={d} sent={d}.", .{ net_update.stats.received, net_update.stats.sent });
         }
@@ -3434,6 +3449,10 @@ test "window network live runtime steps host ready frames" {
     const net_update = try runtime.update(std.testing.allocator, io, 20);
     try std.testing.expectEqual(@as(usize, 1), net_update.frames_advanced);
     try std.testing.expectEqual(@as(usize, 1), net_update.ticks_advanced);
+    try std.testing.expectEqual(@as(i32, 0), net_update.last_tick_index.?);
+    try std.testing.expectEqual(@as(usize, 2), net_update.last_player_count);
+    try std.testing.expectEqual(@as(u32, 3), net_update.last_input_flags[0]);
+    try std.testing.expectEqual(@as(u32, 7), net_update.last_input_flags[1]);
 }
 
 test "window network live runtime submits host local input" {
