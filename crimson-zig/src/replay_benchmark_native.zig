@@ -584,7 +584,11 @@ fn runBenchmarkReplay(
         allocator,
         replay,
         &tick_trace,
-        .{ .max_ticks = request.max_ticks },
+        .{
+            .max_ticks = request.max_ticks,
+            .trace_rng = true,
+            .trace_timing = false,
+        },
     );
 }
 

@@ -230,6 +230,8 @@ fn runVerifyWithReplayBytes(
                 &tick_trace,
                 .{
                     .max_ticks = request.max_ticks,
+                    .trace_rng = request.trace_rng or request.debug_trace_cdt != null,
+                    .trace_timing = request.debug_trace_cdt != null,
                 },
             ) catch |err| {
                 writeRequestedDebugTraceOutputs(
