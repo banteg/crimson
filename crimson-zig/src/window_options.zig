@@ -56,6 +56,14 @@ const OptionSlider = enum {
     music,
     detail,
     mouse,
+    resolution,
+    bpp,
+    texture_scale,
+};
+
+const OptionsPage = enum {
+    gameplay,
+    display,
 };
 
 const option_slider_labels = [_][]const u8{
@@ -64,6 +72,29 @@ const option_slider_labels = [_][]const u8{
     "Graphics detail:",
     "Mouse sensitivity:",
 };
+
+const display_slider_labels = [_][]const u8{
+    "Resolution:",
+    "Color depth:",
+    "Texture scale:",
+};
+
+const ResolutionPreset = struct {
+    width: u32,
+    height: u32,
+    label: []const u8,
+};
+
+const resolution_presets = [_]ResolutionPreset{
+    .{ .width = 800, .height = 600, .label = "800 x 600" },
+    .{ .width = 1024, .height = 768, .label = "1024 x 768" },
+    .{ .width = 1280, .height = 720, .label = "1280 x 720" },
+    .{ .width = 1280, .height = 960, .label = "1280 x 960" },
+    .{ .width = 1600, .height = 900, .label = "1600 x 900" },
+    .{ .width = 1920, .height = 1080, .label = "1920 x 1080" },
+};
+
+const texture_scale_presets = [_]f32{ 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0 };
 
 pub const OptionsAction = enum {
     none,
@@ -107,6 +138,7 @@ const PanelState = struct {
 
 pub const OptionsState = struct {
     panel: PanelState = .{},
+    page: OptionsPage = .gameplay,
     active_slider: OptionSlider = .none,
     back_hover_amount: i32 = 0,
 
@@ -161,26 +193,45 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
         .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
     };
 
-    if (updateOptionSlider(state, .sfx, optionSliderRect(panel_rect, 265.0, 86.0, 10), 0, 10, if (config.sound_disable != 0) 0 else audioSliderValue(config.sfx_volume), mouse, click, mouse_down)) |value| {
+    const display = displayButton(panel_rect);
+    const gameplay = gameplayButton(panel_rect);
+    if (state.page == .gameplay and click and rl.checkCollisionPointRec(mouse, display.rect)) {
+        state.page = .display;
+        state.active_slider = .none;
+        result.play_button_click = true;
+        return result;
+    }
+    if (state.page == .display and click and rl.checkCollisionPointRec(mouse, gameplay.rect)) {
+        state.page = .gameplay;
+        state.active_slider = .none;
+        result.play_button_click = true;
+        return result;
+    }
+
+    if (state.page == .display) {
+        return updateDisplayOptions(state, config, panel_rect, mouse, click, mouse_down, result);
+    }
+
+    if (updateOptionSlider(state, .sfx, optionSliderRect(panel_rect, 265.0, 82.0, 10), 0, 10, if (config.sound_disable != 0) 0 else audioSliderValue(config.sfx_volume), mouse, click, mouse_down)) |value| {
         config.sfx_volume = @as(f32, @floatFromInt(value)) * 0.1;
         config.sound_disable = @intFromBool(value == 0);
         result.config_dirty = true;
         result.reload_audio = true;
         result.play_button_click = true;
     }
-    if (updateOptionSlider(state, .music, optionSliderRect(panel_rect, 265.0, 122.0, 10), 0, 10, if (config.music_disable != 0) 0 else audioSliderValue(config.music_volume), mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .music, optionSliderRect(panel_rect, 265.0, 116.0, 10), 0, 10, if (config.music_disable != 0) 0 else audioSliderValue(config.music_volume), mouse, click, mouse_down)) |value| {
         config.music_volume = @as(f32, @floatFromInt(value)) * 0.1;
         config.music_disable = @intFromBool(value == 0);
         result.config_dirty = true;
         result.reload_audio = true;
         result.play_button_click = true;
     }
-    if (updateOptionSlider(state, .detail, optionSliderRect(panel_rect, 265.0, 158.0, 5), 1, 5, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))), mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .detail, optionSliderRect(panel_rect, 265.0, 150.0, 5), 1, 5, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))), mouse, click, mouse_down)) |value| {
         _ = formats.crimson_cfg.applyDetailPreset(config, value);
         result.config_dirty = true;
         result.play_button_click = true;
     }
-    if (updateOptionSlider(state, .mouse, optionSliderRect(panel_rect, 265.0, 194.0, 10), 1, 10, sensitivitySliderValue(config.mouse_sensitivity), mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .mouse, optionSliderRect(panel_rect, 265.0, 184.0, 10), 1, 10, sensitivitySliderValue(config.mouse_sensitivity), mouse, click, mouse_down)) |value| {
         config.mouse_sensitivity = std.math.clamp(@as(f32, @floatFromInt(value)) * 0.1, @as(f32, 0.1), @as(f32, 1.0));
         result.config_dirty = true;
         result.play_button_click = true;
@@ -195,6 +246,48 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
     if (click and rl.checkCollisionPointRec(mouse, controls.rect)) {
         result.action = .open_controls;
         result.play_button_click = true;
+    }
+
+    return result;
+}
+
+fn updateDisplayOptions(
+    state: *OptionsState,
+    config: *formats.crimson_cfg.CrimsonCfg,
+    panel_rect: rl.Rectangle,
+    mouse: rl.Vector2,
+    click: bool,
+    mouse_down: bool,
+    base_result: OptionsUpdate,
+) OptionsUpdate {
+    var result = base_result;
+
+    if (updateOptionSlider(state, .resolution, optionSliderRect(panel_rect, 265.0, 88.0, @intCast(resolution_presets.len)), 1, @intCast(resolution_presets.len), @intCast(resolutionPresetIndex(config) + 1), mouse, click, mouse_down)) |value| {
+        if (applyResolutionPreset(config, @intCast(value - 1))) {
+            result.config_dirty = true;
+            result.play_button_click = true;
+        }
+    }
+    if (click and rectContains(windowModeRect(panel_rect), mouse)) {
+        config.windowed_flag = if (config.windowed_flag == 0) 1 else 0;
+        result.config_dirty = true;
+        result.play_button_click = true;
+    }
+    if (updateOptionSlider(state, .bpp, optionSliderRect(panel_rect, 265.0, 160.0, 2), 1, 2, screenBppSliderValue(config), mouse, click, mouse_down)) |value| {
+        const bpp = screenBppFromSliderValue(value);
+        if (config.screen_bpp != bpp) {
+            config.screen_bpp = bpp;
+            result.config_dirty = true;
+            result.play_button_click = true;
+        }
+    }
+    if (updateOptionSlider(state, .texture_scale, optionSliderRect(panel_rect, 265.0, 196.0, @intCast(texture_scale_presets.len)), 1, @intCast(texture_scale_presets.len), @intCast(textureScalePresetIndex(config.texture_scale) + 1), mouse, click, mouse_down)) |value| {
+        const scale = textureScaleFromSliderValue(value);
+        if (config.texture_scale != scale) {
+            config.texture_scale = scale;
+            result.config_dirty = true;
+            result.play_button_click = true;
+        }
     }
 
     return result;
@@ -317,8 +410,18 @@ pub fn drawControls(state: *const ControlsState, runtime_assets: ?*const window_
 fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg) void {
     const panel_rect = animatedLeftPanelRect(options_panel_rect, state.panel.timeline_ms);
     const controls = controlsButton(panel_rect);
+    const display = displayButton(panel_rect);
+    const gameplay = gameplayButton(panel_rect);
     const controls_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), controls.rect);
-    window_ui.drawButton(controls, false, controls_hovered, runtime_assets);
+    const display_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), display.rect);
+    const gameplay_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), gameplay.rect);
+
+    if (state.page == .gameplay) {
+        window_ui.drawButton(controls, false, controls_hovered, runtime_assets);
+        window_ui.drawButton(display, false, display_hovered, runtime_assets);
+    } else {
+        window_ui.drawButton(gameplay, false, gameplay_hovered, runtime_assets);
+    }
 
     const labels_tex = runtime_assets.texture(.ui_item_texts);
     rl.drawTexturePro(
@@ -330,26 +433,68 @@ fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window
         rl.Color.white,
     );
 
-    for (option_slider_labels, 0..) |label, idx| {
-        const hovered = switch (idx) {
-            0 => rectContains(optionSliderRect(panel_rect, 265.0, 86.0, 10), rl.getMousePosition()),
-            1 => rectContains(optionSliderRect(panel_rect, 265.0, 122.0, 10), rl.getMousePosition()),
-            2 => rectContains(optionSliderRect(panel_rect, 265.0, 158.0, 5), rl.getMousePosition()),
-            3 => rectContains(optionSliderRect(panel_rect, 265.0, 194.0, 10), rl.getMousePosition()),
-            else => false,
-        };
-        window_ui.drawSmallText(runtime_assets, label, panel_rect.x + 60.0, panel_rect.y + 88.0 + @as(f32, @floatFromInt(idx)) * 36.0, if (hovered) text_color else muted_text);
+    if (state.page == .display) {
+        drawDisplayOptionsContents(runtime_assets, panel_rect, config);
+        window_menu.drawPanelBackEntry(runtime_assets, state.panel.timeline_ms, state.back_hover_amount);
+        return;
     }
 
-    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 86.0), 10, if (config.sound_disable != 0) 0 else audioSliderValue(config.sfx_volume));
-    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 122.0), 10, if (config.music_disable != 0) 0 else audioSliderValue(config.music_volume));
-    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 158.0), 5, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))));
-    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 194.0), 10, sensitivitySliderValue(config.mouse_sensitivity));
+    for (option_slider_labels, 0..) |label, idx| {
+        const hovered = switch (idx) {
+            0 => rectContains(optionSliderRect(panel_rect, 265.0, 82.0, 10), rl.getMousePosition()),
+            1 => rectContains(optionSliderRect(panel_rect, 265.0, 116.0, 10), rl.getMousePosition()),
+            2 => rectContains(optionSliderRect(panel_rect, 265.0, 150.0, 5), rl.getMousePosition()),
+            3 => rectContains(optionSliderRect(panel_rect, 265.0, 184.0, 10), rl.getMousePosition()),
+            else => false,
+        };
+        window_ui.drawSmallText(runtime_assets, label, panel_rect.x + 60.0, panel_rect.y + 84.0 + @as(f32, @floatFromInt(idx)) * 34.0, if (hovered) text_color else muted_text);
+    }
+
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 82.0), 10, if (config.sound_disable != 0) 0 else audioSliderValue(config.sfx_volume));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 116.0), 10, if (config.music_disable != 0) 0 else audioSliderValue(config.music_volume));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 150.0), 5, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 184.0), 10, sensitivitySliderValue(config.mouse_sensitivity));
 
     const checkbox_tex: window_assets.TextureId = if (config.ui_info_texts != 0) .ui_check_on else .ui_check_off;
     window_ui.drawTextureFit(runtime_assets.texture(checkbox_tex), rl.Rectangle.init(panel_rect.x + 265.0, panel_rect.y + 230.0, 16.0, 16.0), rl.Color.white);
     window_ui.drawSmallText(runtime_assets, "UI Info texts", panel_rect.x + 287.0, panel_rect.y + 231.0, if (rectContains(optionCheckboxRect(panel_rect), rl.getMousePosition())) text_color else muted_text);
     window_menu.drawPanelBackEntry(runtime_assets, state.panel.timeline_ms, state.back_hover_amount);
+}
+
+fn drawDisplayOptionsContents(runtime_assets: *const window_assets.RuntimeAssets, panel_rect: rl.Rectangle, config: formats.crimson_cfg.CrimsonCfg) void {
+    const mouse = rl.getMousePosition();
+    const label_ys = [_]f32{ 90.0, 162.0, 198.0 };
+    for (display_slider_labels, 0..) |label, idx| {
+        const count: i32 = switch (idx) {
+            0 => @intCast(resolution_presets.len),
+            1 => 2,
+            2 => @intCast(texture_scale_presets.len),
+            else => 0,
+        };
+        const rel_y = label_ys[idx] - 2.0;
+        const hovered = rectContains(optionSliderRect(panel_rect, 265.0, rel_y, count), mouse);
+        window_ui.drawSmallText(runtime_assets, label, panel_rect.x + 60.0, panel_rect.y + label_ys[idx], if (hovered) text_color else muted_text);
+    }
+
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 88.0), @intCast(resolution_presets.len), @intCast(resolutionPresetIndex(&config) + 1));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 160.0), 2, screenBppSliderValue(&config));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 196.0), @intCast(texture_scale_presets.len), @intCast(textureScalePresetIndex(config.texture_scale) + 1));
+
+    var resolution_buf: [32]u8 = undefined;
+    const resolution_text = resolutionValueText(&config, &resolution_buf);
+    window_ui.drawSmallText(runtime_assets, resolution_text, panel_rect.x + 374.0, panel_rect.y + 90.0, value_color);
+
+    const windowed_tex: window_assets.TextureId = if (config.windowed_flag != 0) .ui_check_on else .ui_check_off;
+    window_ui.drawSmallText(runtime_assets, "Window mode:", panel_rect.x + 60.0, panel_rect.y + 126.0, if (rectContains(windowModeRect(panel_rect), mouse)) text_color else muted_text);
+    window_ui.drawTextureFit(runtime_assets.texture(windowed_tex), rl.Rectangle.init(panel_rect.x + 265.0, panel_rect.y + 124.0, 16.0, 16.0), rl.Color.white);
+    window_ui.drawSmallText(runtime_assets, if (config.windowed_flag != 0) "Windowed" else "Fullscreen", panel_rect.x + 287.0, panel_rect.y + 125.0, value_color);
+
+    window_ui.drawSmallText(runtime_assets, if (screenBppSliderValue(&config) == 1) "16 bpp" else "32 bpp", panel_rect.x + 310.0, panel_rect.y + 162.0, value_color);
+
+    var texture_scale_buf: [16]u8 = undefined;
+    const scale_text = std.fmt.bufPrint(&texture_scale_buf, "{d:.2}", .{texture_scale_presets[textureScalePresetIndex(config.texture_scale)]}) catch "";
+    window_ui.drawSmallText(runtime_assets, scale_text, panel_rect.x + 406.0, panel_rect.y + 198.0, value_color);
+    window_ui.drawSmallText(runtime_assets, "Display changes apply on next launch.", panel_rect.x + 128.0, panel_rect.y + 238.0, muted_text);
 }
 
 fn drawControlsPanels(state: *const ControlsState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg) void {
@@ -420,7 +565,15 @@ fn drawMenuPanelShellNoTitle(timeline_ms: i32, runtime_assets: *const window_ass
 }
 
 fn controlsButton(panel_rect: rl.Rectangle) OptionButton {
-    return window_ui.buttonAt("Controls", panel_rect.x + 212.0, panel_rect.y + 195.0, true);
+    return window_ui.buttonAt("Controls", panel_rect.x + 212.0, panel_rect.y + 252.0, true);
+}
+
+fn displayButton(panel_rect: rl.Rectangle) OptionButton {
+    return window_ui.buttonAt("Display", panel_rect.x + 212.0, panel_rect.y + 288.0, true);
+}
+
+fn gameplayButton(panel_rect: rl.Rectangle) OptionButton {
+    return window_ui.buttonAt("Gameplay", panel_rect.x + 212.0, panel_rect.y + 288.0, true);
 }
 
 fn controlsBackButton() OptionButton {
@@ -433,6 +586,10 @@ fn optionSliderRect(panel_rect: rl.Rectangle, rel_x: f32, rel_y: f32, count: i32
 
 fn optionCheckboxRect(panel_rect: rl.Rectangle) rl.Rectangle {
     return rl.Rectangle.init(panel_rect.x + 265.0, panel_rect.y + 230.0, 96.0, 16.0);
+}
+
+fn windowModeRect(panel_rect: rl.Rectangle) rl.Rectangle {
+    return rl.Rectangle.init(panel_rect.x + 265.0, panel_rect.y + 124.0, 112.0, 16.0);
 }
 
 fn updateOptionSlider(
@@ -470,6 +627,54 @@ fn audioSliderValue(value: f32) i32 {
 
 fn sensitivitySliderValue(value: f32) i32 {
     return @intFromFloat(std.math.clamp(value, @as(f32, 0.1), @as(f32, 1.0)) * 10.0 + 0.5);
+}
+
+fn resolutionPresetIndex(config: *const formats.crimson_cfg.CrimsonCfg) usize {
+    for (resolution_presets, 0..) |preset, idx| {
+        if (preset.width == config.screen_width and preset.height == config.screen_height) return idx;
+    }
+    return 1;
+}
+
+fn applyResolutionPreset(config: *formats.crimson_cfg.CrimsonCfg, preset_index: usize) bool {
+    const preset = resolution_presets[@min(preset_index, resolution_presets.len - 1)];
+    if (config.screen_width == preset.width and config.screen_height == preset.height) return false;
+    config.screen_width = preset.width;
+    config.screen_height = preset.height;
+    return true;
+}
+
+fn resolutionValueText(config: *const formats.crimson_cfg.CrimsonCfg, buffer: []u8) []const u8 {
+    for (resolution_presets) |preset| {
+        if (preset.width == config.screen_width and preset.height == config.screen_height) return preset.label;
+    }
+    return std.fmt.bufPrint(buffer, "{d} x {d}", .{ config.screen_width, config.screen_height }) catch "";
+}
+
+fn screenBppSliderValue(config: *const formats.crimson_cfg.CrimsonCfg) i32 {
+    return if (config.screen_bpp == 16) 1 else 2;
+}
+
+fn screenBppFromSliderValue(value: i32) u32 {
+    return if (value <= 1) 16 else 32;
+}
+
+fn textureScalePresetIndex(value: f32) usize {
+    var best_index: usize = 0;
+    var best_delta = @abs(value - texture_scale_presets[0]);
+    for (texture_scale_presets[1..], 1..) |preset, idx| {
+        const delta = @abs(value - preset);
+        if (delta < best_delta) {
+            best_delta = delta;
+            best_index = idx;
+        }
+    }
+    return best_index;
+}
+
+fn textureScaleFromSliderValue(value: i32) f32 {
+    const idx: usize = @intCast(std.math.clamp(value - 1, 0, @as(i32, @intCast(texture_scale_presets.len - 1))));
+    return texture_scale_presets[idx];
 }
 
 fn rectContains(rect: rl.Rectangle, point: rl.Vector2) bool {
@@ -1083,4 +1288,28 @@ test "sensitivity slider value rounds and clamps normalized values" {
     try std.testing.expectEqual(@as(i32, 1), sensitivitySliderValue(-0.5));
     try std.testing.expectEqual(@as(i32, 3), sensitivitySliderValue(0.26));
     try std.testing.expectEqual(@as(i32, 10), sensitivitySliderValue(1.5));
+}
+
+test "display option helpers update persisted config fields" {
+    var cfg = formats.crimson_cfg.defaultConfig();
+
+    try std.testing.expectEqual(@as(usize, 1), resolutionPresetIndex(&cfg));
+    try std.testing.expect(applyResolutionPreset(&cfg, 2));
+    try std.testing.expectEqual(@as(u32, 1280), cfg.screen_width);
+    try std.testing.expectEqual(@as(u32, 720), cfg.screen_height);
+    try std.testing.expect(!applyResolutionPreset(&cfg, 2));
+
+    cfg.windowed_flag = 1;
+    cfg.windowed_flag = if (cfg.windowed_flag == 0) 1 else 0;
+    try std.testing.expectEqual(@as(u8, 0), cfg.windowed_flag);
+
+    try std.testing.expectEqual(@as(i32, 2), screenBppSliderValue(&cfg));
+    cfg.screen_bpp = screenBppFromSliderValue(1);
+    try std.testing.expectEqual(@as(u32, 16), cfg.screen_bpp);
+    cfg.screen_bpp = screenBppFromSliderValue(2);
+    try std.testing.expectEqual(@as(u32, 32), cfg.screen_bpp);
+
+    cfg.texture_scale = textureScaleFromSliderValue(6);
+    try std.testing.expectEqual(@as(f32, 2.0), cfg.texture_scale);
+    try std.testing.expectEqual(@as(usize, 5), textureScalePresetIndex(cfg.texture_scale));
 }

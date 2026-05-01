@@ -65,9 +65,8 @@ Last reviewed: **2026-02-24**
   - Code: `src/crimson/game/__init__.py` (`QuestsMenuView`)
   - Ref: [`docs/crimsonland-exe/quest-select-menu.md`](../crimsonland-exe/quest-select-menu.md)
 - **Options panel (state `2`)**: implemented for core sliders + controls workflow.
-  - Code: `src/crimson/screens/panels/options.py`, `src/crimson/screens/panels/controls.py`
-  - Implemented: SFX/music/detail/mouse sliders, UI info toggle, controls entry and interactive rebinding flow.
-  - Not exposed in this in-game UI: `screen_width`, `screen_height`, `windowed_flag`, `screen_bpp`, `texture_scale` editing (currently config/CLI-managed).
+  - Code: `src/crimson/screens/panels/options.py`, `src/crimson/screens/panels/controls.py`, `crimson-zig/src/window_options.zig`
+  - Implemented: SFX/music/detail/mouse sliders, UI info toggle, display config editing, controls entry and interactive rebinding flow.
 - **Statistics hub (state `4`)**: implemented with child panels.
   - Code: `src/crimson/screens/panels/stats.py`
   - Child views: high scores, weapons database, perks database, credits.
@@ -145,15 +144,7 @@ Last reviewed: **2026-02-24**
 
 ## Biggest remaining parity gaps (vs v1.9.93)
 
-1. **Options parity completeness**
-   - In-game options do not currently edit display/config fields:
-     - `screen_width`
-     - `screen_height`
-     - `windowed_flag`
-     - `screen_bpp`
-     - `texture_scale`
-   - These fields are persisted/used, but today are managed via `crimson.cfg` + CLI/runtime startup, not the state-2 panel.
-2. **Ongoing deep parity validation**
+1. **Ongoing deep parity validation**
    - Deterministic parity infrastructure is in place; remaining gaps are mostly capture-backed edge-case timing and branch-order issues.
    - This status page intentionally avoids tick/session-specific examples that go stale quickly.
    - Current active probes and per-SHA outcomes are tracked in [`docs/frida/differential-sessions.md`](../frida/differential-sessions.md).
