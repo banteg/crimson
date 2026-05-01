@@ -85,6 +85,7 @@ const Screen = enum {
     statistics_menu,
     mods_menu,
     other_games_menu,
+    network_session,
     gameplay,
     pause,
     results,
@@ -404,6 +405,7 @@ const App = struct {
     statistics_menu: window_statistics.State = .{},
     mods_menu: window_misc_panels.ModsState = .{},
     other_games_menu: window_misc_panels.OtherGamesState = .{},
+    network_session: window_misc_panels.NetworkState = .{},
     end_note_selection: usize = 0,
     gameplay: ?GameplayScreen = null,
     results: ?ResultsScreen = null,
@@ -517,6 +519,7 @@ const App = struct {
             .statistics_menu => self.updateStatisticsMenu(frame_dt),
             .mods_menu => self.updateModsMenu(frame_dt),
             .other_games_menu => self.updateOtherGamesMenu(frame_dt),
+            .network_session => self.updateNetworkSession(frame_dt),
             .gameplay => self.updateGameplay(frame_dt),
             .pause => self.updatePause(frame_dt),
             .results => self.updateResults(frame_dt),
@@ -536,6 +539,7 @@ const App = struct {
             .statistics_menu => self.drawStatisticsMenu(),
             .mods_menu => self.drawModsMenu(),
             .other_games_menu => self.drawOtherGamesMenu(),
+            .network_session => self.drawNetworkSession(),
             .gameplay => self.drawGameplay(),
             .pause => self.drawPause(),
             .results => self.drawResults(),
@@ -565,7 +569,7 @@ const App = struct {
         const assets = if (self.runtime_assets) |*runtime_assets| runtime_assets else return;
         switch (self.screen) {
             .boot => {},
-            .main_menu, .play_game_menu, .quests_menu, .statistics_menu, .mods_menu, .other_games_menu, .pause, .results, .end_note, .options, .controls => {
+            .main_menu, .play_game_menu, .quests_menu, .statistics_menu, .mods_menu, .other_games_menu, .network_session, .pause, .results, .end_note, .options, .controls => {
                 window_cursor.drawMenuCursor(assets, self.cursor_pulse_time);
             },
             .gameplay => {
@@ -649,6 +653,10 @@ const App = struct {
             .open_quests => {
                 self.quests_menu.reset();
                 self.setScreen(.quests_menu);
+            },
+            .open_network_session => {
+                self.network_session.reset();
+                self.setScreen(.network_session);
             },
             .back_to_menu => {
                 self.menu.openRoot();
@@ -928,6 +936,20 @@ const App = struct {
         if (panel_update.action == .back_to_menu) {
             self.menu.openRoot();
             self.setScreen(.main_menu);
+        }
+    }
+
+    fn updateNetworkSession(self: *App, frame_dt: f32) void {
+        self.audio.ensureMenuThemeForDemo(self.demo_enabled);
+        const panel_update = window_misc_panels.updateNetwork(&self.network_session, frame_dt, if (self.runtime_assets) |*assets| assets else null);
+        if (panel_update.play_panel_click and !self.network_session.panel.panel_open_sfx_played) {
+            self.audio.playUiPanelClick();
+            self.network_session.panel.panel_open_sfx_played = true;
+        }
+        if (panel_update.play_button_click) self.audio.playUiButtonClick();
+        if (panel_update.action == .back_to_menu) {
+            self.play_game_menu.reset();
+            self.setScreen(.play_game_menu);
         }
     }
 
@@ -1651,6 +1673,10 @@ const App = struct {
 
     fn drawOtherGamesMenu(self: *const App) void {
         window_misc_panels.drawOtherGames(&self.other_games_menu, if (self.runtime_assets) |*assets| assets else null);
+    }
+
+    fn drawNetworkSession(self: *const App) void {
+        window_misc_panels.drawNetwork(&self.network_session, if (self.runtime_assets) |*assets| assets else null);
     }
 
     fn drawGameplay(self: *App) void {

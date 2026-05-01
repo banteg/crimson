@@ -28,6 +28,7 @@ What exists today:
 - native quest spawn-table dump tooling,
 - native UDP relay serve CLI,
 - native `net host/join --format json` session construction,
+- native Play Game network entry shell,
 - a real raylib desktop app target,
 - archive/config/status codecs,
 - archive-backed rendering/audio,
@@ -107,7 +108,8 @@ The important remaining gaps are now:
 - WASM still exposes a narrow replay/runtime surface, but now has both verify
   and info JSON byte-input exports,
 - network/LAN runtime parity is still deferred; Zig can validate and emit
-  pending `net host/join` session JSON, but does not yet launch live netplay.
+  pending `net host/join` session JSON and show the desktop network shell, but
+  does not yet launch live netplay.
 
 The biggest remaining technical risk is not basic gameplay ownership. It is
 closing the remaining replay/tooling and product-shell breadth gaps cleanly.

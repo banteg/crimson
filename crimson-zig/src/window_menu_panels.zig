@@ -42,6 +42,7 @@ pub const PlayGameAction = enum {
     start_typo,
     start_tutorial,
     open_quests,
+    open_network_session,
     back_to_menu,
 };
 
@@ -61,7 +62,7 @@ pub const PlayGameState = struct {
     player_count_selection: usize = 0,
     closing: bool = false,
     close_action: ?PlayGameAction = null,
-    tooltip_ms: [5]i32 = [_]i32{0} ** 5,
+    tooltip_ms: [6]i32 = [_]i32{0} ** 6,
     back_hover_amount: i32 = 0,
 
     pub fn reset(self: *PlayGameState) void {
@@ -82,6 +83,7 @@ const PlayGameModeKey = enum {
     rush,
     survival,
     typo,
+    network,
 };
 
 const PlayGameEntry = struct {
@@ -291,8 +293,9 @@ fn playGameLayoutFromPlayerCount(player_count_raw: u32, status: formats.game_cfg
     const player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
     const tight_spacing = player_count == 1 and status.quest_unlock_index >= 40;
     const y_step: f32 = if (tight_spacing) 28.0 else 32.0;
-    const y_start: f32 = if (tight_spacing) 42.0 else 48.0;
-    const panel_rect = animatedPanelRect(.{ .x = 352.0, .y = 150.0, .width = 510.0, .height = 278.0 }, timeline_ms);
+    const y_start: f32 = if (entries.len >= 6) 36.0 else if (tight_spacing) 42.0 else 48.0;
+    const panel_height: f32 = if (entries.len >= 5) 322.0 else 278.0;
+    const panel_rect = animatedPanelRect(.{ .x = 352.0, .y = 150.0, .width = 510.0, .height = panel_height }, timeline_ms);
     const base_pos = rl.Vector2.init(panel_rect.x + 266.0, panel_rect.y + 50.0);
     const drop_pos = rl.Vector2.init(base_pos.x + 80.0, base_pos.y + 1.0);
     const y_end = y_start + y_step * @as(f32, @floatFromInt(entries.len));
@@ -330,6 +333,7 @@ fn playGameCount(key: PlayGameModeKey, status: formats.game_cfg.Status) u32 {
         .survival => status.mode_play_survival,
         .typo => status.mode_play_typo,
         .tutorial => status.mode_play_other,
+        .network => 0,
     };
 }
 
@@ -347,6 +351,7 @@ fn tooltipIndexForKey(key: PlayGameModeKey) usize {
         .rush => 2,
         .survival => 3,
         .typo => 4,
+        .network => 5,
     };
 }
 
@@ -384,6 +389,7 @@ fn playGameTooltipOffset(key: PlayGameModeKey) rl.Vector2 {
         .survival => .{ .x = 20.0, .y = 0.0 },
         .typo => .{ .x = 0.0, .y = -12.0 },
         .tutorial => .{ .x = 38.0, .y = 0.0 },
+        .network => .{ .x = 0.0, .y = -8.0 },
     };
 }
 
@@ -391,6 +397,7 @@ const play_game_entries_multi = [_]PlayGameEntry{
     .{ .key = .quests, .label = " Quests ", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
     .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
     .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
+    .{ .key = .network, .label = " Network ", .tooltip = "Host or join a rollback-first network session.", .action = .open_network_session },
 };
 
 const play_game_entries_single_tutorial_first = [_]PlayGameEntry{
@@ -398,6 +405,7 @@ const play_game_entries_single_tutorial_first = [_]PlayGameEntry{
     .{ .key = .quests, .label = " Quests ", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
     .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
     .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
+    .{ .key = .network, .label = " Network ", .tooltip = "Host or join a rollback-first network session.", .action = .open_network_session },
 };
 
 const play_game_entries_single = [_]PlayGameEntry{
@@ -405,6 +413,7 @@ const play_game_entries_single = [_]PlayGameEntry{
     .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
     .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
     .{ .key = .tutorial, .label = "Tutorial", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
+    .{ .key = .network, .label = " Network ", .tooltip = "Host or join a rollback-first network session.", .action = .open_network_session },
 };
 
 const play_game_entries_single_typo_tutorial_first = [_]PlayGameEntry{
@@ -413,6 +422,7 @@ const play_game_entries_single_typo_tutorial_first = [_]PlayGameEntry{
     .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
     .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
     .{ .key = .typo, .label = "Typ'o'Shooter", .tooltip = "Use your typing skills as the weapon to lay\nthem down.", .action = .start_typo, .game_mode = .typo, .show_count = true },
+    .{ .key = .network, .label = " Network ", .tooltip = "Host or join a rollback-first network session.", .action = .open_network_session },
 };
 
 const play_game_entries_single_typo = [_]PlayGameEntry{
@@ -421,7 +431,17 @@ const play_game_entries_single_typo = [_]PlayGameEntry{
     .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
     .{ .key = .typo, .label = "Typ'o'Shooter", .tooltip = "Use your typing skills as the weapon to lay\nthem down.", .action = .start_typo, .game_mode = .typo, .show_count = true },
     .{ .key = .tutorial, .label = "Tutorial", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
+    .{ .key = .network, .label = " Network ", .tooltip = "Host or join a rollback-first network session.", .action = .open_network_session },
 };
+
+test "play game entries expose native network session shell" {
+    const status: formats.game_cfg.Status = .{};
+    const entries = playGameEntriesFromPlayerCount(1, status, false);
+
+    try std.testing.expect(entries.len >= 1);
+    try std.testing.expectEqual(PlayGameAction.open_network_session, entries[entries.len - 1].action);
+    try std.testing.expectEqualStrings(" Network ", entries[entries.len - 1].label);
+}
 
 fn drawPlayerCountWidget(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, layout: PlayGameLayout, player_count_raw: u32) void {
     const rect = playerCountHeaderRect(layout);

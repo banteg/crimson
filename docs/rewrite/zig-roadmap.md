@@ -143,9 +143,9 @@ This remains a real missing system, but it is currently deferred.
 Scope when resumed:
 
 - Play Game network entrypoints; the Zig CLI now has a validated
-  `net host/join --format json` pending-session surface, while the desktop
-  panel entry and live runtime remain open,
-- session/lobby shell,
+  `net host/join --format json` pending-session surface, and the desktop
+  Play Game menu opens a native network session shell,
+- live session/lobby behavior,
 - native LAN/runtime behavior.
 
 Reference Python surfaces:

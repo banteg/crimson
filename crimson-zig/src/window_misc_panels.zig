@@ -13,6 +13,7 @@ const max_shown_mod_dlls: usize = 10;
 const max_mod_dll_name_bytes: usize = 128;
 const mod_runtime_scope_text = "Native DLL mod loading is outside this port.";
 const other_games_scope_text = "Other Games ads are outside this port.";
+const network_runtime_scope_text = "Native netplay runtime is not available yet.";
 
 pub const Action = enum {
     none,
@@ -154,6 +155,14 @@ pub const OtherGamesState = struct {
     }
 };
 
+pub const NetworkState = struct {
+    panel: PanelState = .{},
+
+    pub fn reset(self: *NetworkState) void {
+        self.* = .{};
+    }
+};
+
 pub fn updateMods(state: *ModsState, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
     return updatePanel(&state.panel, frame_dt, runtime_assets);
 }
@@ -176,6 +185,10 @@ pub fn updateOtherGames(state: *OtherGamesState, frame_dt: f32, runtime_assets: 
     return updatePanel(&state.panel, frame_dt, runtime_assets);
 }
 
+pub fn updateNetwork(state: *NetworkState, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
+    return updatePanel(&state.panel, frame_dt, runtime_assets);
+}
+
 pub fn drawOtherGames(state: *const OtherGamesState, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     const assets = runtime_assets orelse {
         rl.clearBackground(rl.Color.black);
@@ -184,6 +197,20 @@ pub fn drawOtherGames(state: *const OtherGamesState, runtime_assets: ?*const win
     const animated_rect = drawPanelShell(&state.panel, assets);
     window_ui.drawSmallText(assets, "Other games", animated_rect.x + 184.0, animated_rect.y + 40.0, rl.Color.white);
     window_ui.drawSmallText(assets, other_games_scope_text, animated_rect.x + 152.0, animated_rect.y + 88.0, rl.Color.init(204, 204, 214, 255));
+}
+
+pub fn drawNetwork(state: *const NetworkState, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+    const assets = runtime_assets orelse {
+        rl.clearBackground(rl.Color.black);
+        return;
+    };
+    const animated_rect = drawPanelShell(&state.panel, assets);
+    window_ui.drawSmallText(assets, "Network Session", animated_rect.x + 174.0, animated_rect.y + 40.0, rl.Color.white);
+    window_ui.drawSmallText(assets, "Host", animated_rect.x + 190.0, animated_rect.y + 88.0, rl.Color.init(245, 236, 225, 255));
+    window_ui.drawSmallText(assets, "Join", animated_rect.x + 304.0, animated_rect.y + 88.0, rl.Color.init(245, 236, 225, 255));
+    window_ui.drawSmallText(assets, "rollback relay: 127.0.0.1:31993", animated_rect.x + 146.0, animated_rect.y + 128.0, rl.Color.init(204, 204, 214, 255));
+    window_ui.drawSmallText(assets, "room code: ----", animated_rect.x + 146.0, animated_rect.y + 152.0, rl.Color.init(204, 204, 214, 255));
+    window_ui.drawSmallText(assets, network_runtime_scope_text, animated_rect.x + 116.0, animated_rect.y + 206.0, rl.Color.init(214, 190, 170, 255));
 }
 
 fn updatePanel(state: *PanelState, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
@@ -245,4 +272,8 @@ test "mods panel explains deliberate native dll scope" {
 
     try std.testing.expectEqual(@as(usize, 1), state.line_count);
     try std.testing.expectEqualStrings(mod_runtime_scope_text, state.line(0));
+}
+
+test "network panel scope text stays explicit" {
+    try std.testing.expectEqualStrings("Native netplay runtime is not available yet.", network_runtime_scope_text);
 }
