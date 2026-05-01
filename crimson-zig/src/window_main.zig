@@ -221,7 +221,7 @@ const NetworkLiveRuntime = union(enum) {
                     .mode_id = request.mode_id,
                     .player_count = request.player_count,
                     .build_id = cz.version,
-                    .host_addr = lockstep_session.PeerAddr.loopback(request.port),
+                    .host_addr = try parseNetworkPeerAddr(request.host, request.port),
                     .input_delay_ticks = 0,
                     .pump_options = .{ .first_timeout_ms = 0 },
                 }),
@@ -338,6 +338,19 @@ const NetworkLiveRuntime = union(enum) {
         };
     }
 };
+
+fn parseNetworkPeerAddr(host: []const u8, port: u16) !lockstep_session.PeerAddr {
+    var parts: [4]u8 = undefined;
+    var iter = std.mem.splitScalar(u8, host, '.');
+    var idx: usize = 0;
+    while (iter.next()) |part| {
+        if (idx >= parts.len or part.len == 0) return error.InvalidNetworkHost;
+        parts[idx] = std.fmt.parseInt(u8, part, 10) catch return error.InvalidNetworkHost;
+        idx += 1;
+    }
+    if (idx != parts.len) return error.InvalidNetworkHost;
+    return .{ .host = parts, .port = port };
+}
 
 const NetworkLiveUpdate = struct {
     stats: lockstep_session.UpdateStats = .{},
@@ -3638,6 +3651,7 @@ test "window network live runtime queues client local input" {
         .player_count = 2,
         .netcode = .lockstep,
         .bind_host = "127.0.0.1",
+        .host = "127.0.0.1",
         .port = 31993,
     }, 123);
     defer runtime.deinit(std.testing.allocator, io);
@@ -3666,6 +3680,38 @@ test "window network live runtime queues client local input" {
         },
         .host => return error.TestUnexpectedResult,
     }
+}
+
+test "window network live runtime uses join request host endpoint" {
+    var runtime = try NetworkLiveRuntime.init(.{
+        .role = .join,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .lockstep,
+        .bind_host = "127.0.0.1",
+        .host = "192.168.1.44",
+        .port = 31994,
+    }, 123);
+    defer runtime.deinit(std.testing.allocator, std.Io.Threaded.global_single_threaded.io());
+
+    switch (runtime) {
+        .client => |*client| {
+            try std.testing.expectEqual(lockstep_session.PeerAddr{
+                .host = .{ 192, 168, 1, 44 },
+                .port = 31994,
+            }, client.session.runtime.host_addr);
+        },
+        .host => return error.TestUnexpectedResult,
+    }
+    try std.testing.expectError(error.InvalidNetworkHost, NetworkLiveRuntime.init(.{
+        .role = .join,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .lockstep,
+        .bind_host = "127.0.0.1",
+        .host = "example.invalid",
+        .port = 31994,
+    }, 123));
 }
 
 test "window network live runtime packs host frame input" {
@@ -3708,6 +3754,7 @@ test "window network live runtime packs client frame input for local slot" {
         .player_count = 2,
         .netcode = .lockstep,
         .bind_host = "127.0.0.1",
+        .host = "127.0.0.1",
         .port = 31993,
     }, 123);
     defer runtime.deinit(std.testing.allocator, io);
