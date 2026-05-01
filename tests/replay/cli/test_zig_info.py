@@ -27,6 +27,17 @@ def test_zig_replay_info_matches_python_json_payload_on_simple_replay(tmp_path: 
     assert zig_payload == python_payload
 
 
+def test_zig_replay_info_matches_python_human_output_on_simple_replay(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    python_result = _run_python_replay_info_process([str(replay_path)])
+    zig_result = _run_zig_replay_info_process([str(replay_path)])
+
+    assert zig_result.returncode == 0, dbg_record._command_detail(zig_result)
+    assert zig_result.stdout == python_result.output
+
+
 def test_zig_replay_info_matches_python_json_payload_on_quest_replay(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.QUESTS, ticks=3, quest_level="1.1")
     replay_path = write_replay(tmp_path, replay=replay, name="quest.crd")
@@ -38,6 +49,31 @@ def test_zig_replay_info_matches_python_json_payload_on_quest_replay(tmp_path: P
     )
 
     assert zig_payload == python_payload
+
+
+def test_zig_replay_info_matches_python_verbose_human_player_filter_output(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1, player_count=2)
+    inject_tick_commands(
+        replay,
+        0,
+        [
+            PerkMenuOpenCommand(player_index=0),
+            PerkMenuOpenCommand(player_index=1),
+        ],
+    )
+    replay_path = write_replay(tmp_path, replay=replay, name="survival-2p.crd")
+    args = [
+        str(replay_path),
+        "--verbose",
+        "--player-index",
+        "1",
+    ]
+
+    python_result = _run_python_replay_info_process(args)
+    zig_result = _run_zig_replay_info_process(args)
+
+    assert zig_result.returncode == 0, dbg_record._command_detail(zig_result)
+    assert zig_result.stdout == python_result.output
 
 
 def test_zig_replay_info_matches_python_verbose_player_filter_payload(tmp_path: Path) -> None:
@@ -114,10 +150,14 @@ def test_zig_replay_info_rejects_non_crd_extension(tmp_path: Path) -> None:
 
 
 def _run_python_replay_info(args: list[str]) -> dict[str, object]:
-    runner = CliRunner()
-    result = runner.invoke(app, ["replay", "info", *args])
+    result = _run_python_replay_info_process(args)
     assert result.exit_code == 0, result.output
     return json.loads(result.output)
+
+
+def _run_python_replay_info_process(args: list[str]):
+    runner = CliRunner()
+    return runner.invoke(app, ["replay", "info", *args])
 
 
 def _run_zig_replay_info(args: list[str]) -> dict[str, object]:
