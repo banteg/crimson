@@ -313,7 +313,7 @@ pub const DeterministicSession = struct {
         };
     }
 
-    fn setQuestSpawnEntries(
+    pub fn setQuestSpawnEntries(
         self: *DeterministicSession,
         entries: []const spawn_mod.QuestSpawnEntry,
     ) DeterministicSessionError!void {

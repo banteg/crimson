@@ -7,6 +7,7 @@ const relay_protocol = @import("relay_protocol.zig");
 const relay_service = @import("relay_service.zig");
 const relay_transport = @import("relay_transport.zig");
 const rollback_live_bridge = @import("rollback_live_bridge.zig");
+const rollback_resync_v5 = @import("rollback_resync_v5.zig");
 const rollback_runtime = @import("rollback_runtime.zig");
 const rollback_session = @import("rollback_session.zig");
 const room_code = @import("room_code.zig");
@@ -14,8 +15,12 @@ const room_code = @import("room_code.zig");
 const Io = std.Io;
 const max_players: usize = @intCast(relay_protocol.max_players);
 const runner_snapshot_keep_ticks: i32 = 64;
+const mode_snapshot_stride_ticks: i32 = 4;
 
-pub const LiveSessionError = rollback_live_bridge.BridgeError || live_runner.LiveRunnerError || error{OutOfMemory};
+pub const LiveSessionError = rollback_live_bridge.BridgeError ||
+    rollback_live_bridge.SnapshotBridgeError ||
+    live_runner.LiveRunnerError ||
+    error{OutOfMemory};
 
 pub const StepSummary = struct {
     frames_advanced: usize = 0,
@@ -107,6 +112,7 @@ pub const LiveSession = struct {
         if (self.runner == null) return .{};
 
         self.applyPendingRollback();
+        try self.applyPendingResyncSnapshot(allocator);
 
         var summary: StepSummary = .{};
         while (self.popFrame()) |frame| {
@@ -114,6 +120,7 @@ pub const LiveSession = struct {
             try self.rememberRunnerSnapshot(allocator, frame.tick_index);
             if (self.session.runtime) |*runtime| {
                 try runtime.markLocalRollbackSnapshot(frame.tick_index);
+                try self.storeModeSnapshot(allocator, runtime, frame.tick_index);
             }
             summary.frames_advanced += 1;
             summary.ticks_advanced += update_result.ticks_advanced;
@@ -148,6 +155,32 @@ pub const LiveSession = struct {
             if (from_tick <= 0) continue;
             self.restoreRunnerSnapshotAtOrBefore(from_tick - 1);
         }
+    }
+
+    fn applyPendingResyncSnapshot(self: *LiveSession, allocator: std.mem.Allocator) LiveSessionError!void {
+        const runtime = if (self.session.runtime) |*runtime| runtime else return;
+        var pending = runtime.takePendingResyncSnapshot() orelse return;
+        defer pending.deinit(allocator);
+
+        var decoded = try rollback_resync_v5.decodeModeSnapshot(allocator, pending.payload);
+        defer decoded.deinit();
+        if (decoded.value.tickIndex() != pending.tick_index) return error.SnapshotTickMismatch;
+        try rollback_live_bridge.applyModeSnapshotToRunner(&self.runner.?, decoded.value);
+        try runtime.completeResync(pending.tick_index);
+        self.runner_snapshots.clearRetainingCapacity();
+        try self.rememberRunnerSnapshot(allocator, pending.tick_index);
+    }
+
+    fn storeModeSnapshot(
+        self: *LiveSession,
+        allocator: std.mem.Allocator,
+        runtime: *rollback_runtime.RuntimeCore,
+        tick_index: i32,
+    ) LiveSessionError!void {
+        if (@mod(tick_index, mode_snapshot_stride_ticks) != 0) return;
+        const payload = try rollback_live_bridge.encodeRunnerModeSnapshot(allocator, &self.runner.?, tick_index) orelse return;
+        defer allocator.free(payload);
+        try runtime.storeLocalSnapshot(tick_index, payload);
     }
 
     fn rememberRunnerSnapshot(self: *LiveSession, allocator: std.mem.Allocator, tick_index: i32) !void {
@@ -484,6 +517,119 @@ test "rollback live session restores runner snapshot for local rollback" {
     try std.testing.expectEqual(@as(?i32, 1), summary.last_tick_index);
     try std.testing.expectEqual(@as(u32, 9), summary.last_input_flags[1]);
     try std.testing.expectEqual(@as(usize, 2), live.runner.?.session.tick_index);
+}
+
+test "rollback live session stores mode snapshots for host resync" {
+    const allocator = std.testing.allocator;
+    const io = std.Io.Threaded.global_single_threaded.io();
+
+    var relay_sender: relay_transport.UdpTransport = .{ .bind_host = "127.0.0.1", .bind_port = 0 };
+    try relay_sender.open(io);
+    defer relay_sender.close(io);
+
+    var live = LiveSession.init(.{
+        .server_addr = relay_transport.PeerAddr.loopback(relay_sender.boundPort()),
+        .bind_host = "127.0.0.1",
+        .session = .{
+            .role = .host,
+            .mode_id = 1,
+            .player_count = 1,
+            .build_id = "0.1.0",
+            .input_delay_ticks = 0,
+        },
+    });
+    defer live.deinit(allocator, io);
+    try live.open(io);
+
+    var server_link: relay_reliable.RelayReliableLink = .{};
+    defer server_link.deinit(allocator);
+    try relay_sender.sendPacket(allocator, io, relay_transport.PeerAddr.loopback(live.boundPort()), try server_link.buildPacket(allocator, .{ .room_start = .{
+        .room_code = try room_code.parseRoomCode("ABCD"),
+        .session_id = "s1",
+        .seed = 1234,
+        .mode_id = 1,
+        .player_count = 1,
+        .slot_index = 0,
+        .input_delay_ticks = 0,
+        .rollback_max_ticks = 8,
+    } }, true, 1000));
+
+    try live.update(allocator, io, 1001);
+    for (0..5) |idx| {
+        try live.queueLocalInput(allocator, io, .{ .flags = @intCast(idx) }, 1002 + @as(i64, @intCast(idx)));
+    }
+    _ = try live.stepFrames(allocator);
+
+    const runtime = &(live.session.runtime orelse return error.ExpectedRuntime);
+    try std.testing.expectEqual(@as(usize, 2), runtime.snapshot_blobs.items.len);
+    try std.testing.expectEqual(@as(i32, 0), runtime.snapshot_blobs.items[0].tick_index);
+    try std.testing.expectEqual(@as(i32, 4), runtime.snapshot_blobs.items[1].tick_index);
+
+    var decoded = try rollback_resync_v5.decodeModeSnapshot(allocator, runtime.snapshot_blobs.items[1].payload);
+    defer decoded.deinit();
+    try std.testing.expectEqual(@as(i32, 4), decoded.value.tickIndex());
+}
+
+test "rollback live session applies pending mode resync snapshot" {
+    const allocator = std.testing.allocator;
+    const io = std.Io.Threaded.global_single_threaded.io();
+
+    var relay_sender: relay_transport.UdpTransport = .{ .bind_host = "127.0.0.1", .bind_port = 0 };
+    try relay_sender.open(io);
+    defer relay_sender.close(io);
+
+    var live = LiveSession.init(.{
+        .server_addr = relay_transport.PeerAddr.loopback(relay_sender.boundPort()),
+        .bind_host = "127.0.0.1",
+        .session = .{
+            .role = .join,
+            .mode_id = 1,
+            .player_count = 1,
+            .build_id = "0.1.0",
+            .input_delay_ticks = 0,
+        },
+    });
+    defer live.deinit(allocator, io);
+
+    live.session.match_config = .{
+        .seed = 1234,
+        .mode_id = 1,
+        .player_count = 1,
+        .input_delay_ticks = 0,
+    };
+    live.session.local_slot_index = 0;
+    live.session.runtime = rollback_runtime.RuntimeCore.init(allocator, .{
+        .role = .join,
+        .player_count = 1,
+        .local_slot_index = 0,
+        .input_delay_ticks = 0,
+        .max_rollback_ticks = 8,
+    });
+    _ = try live.ensureLiveRunner();
+
+    const payload = try rollback_resync_v5.encodeModeSnapshot(allocator, .{ .survival = .{
+        .tick_index = 8,
+        .runtime_state = .{
+            .elapsed_ms = 144.0,
+            .stage = 2,
+            .spawn_cooldown_ms = 88.0,
+            .perk_pending_count = 5,
+        },
+    } });
+    live.session.runtime.?.pending_resync_snapshot = .{
+        .tick_index = 8,
+        .payload = payload,
+    };
+    live.session.runtime.?.paused_for_resync = true;
+
+    _ = try live.stepFrames(allocator);
+
+    try std.testing.expectEqual(@as(usize, 9), live.runner.?.session.tick_index);
+    try std.testing.expectApproxEqAbs(@as(f32, 144.0), live.runner.?.session.elapsed_ms_sim, 0.001);
+    try std.testing.expectEqual(@as(i32, 2), live.runner.?.session.spawn_stage);
+    try std.testing.expectApproxEqAbs(@as(f32, 88.0), live.runner.?.session.spawn_cooldown, 0.001);
+    try std.testing.expect(!live.session.runtime.?.paused_for_resync);
+    try std.testing.expect(live.session.runtime.?.pending_resync_snapshot == null);
 }
 
 test "rollback live sessions handshake and exchange input through relay service" {

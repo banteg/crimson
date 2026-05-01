@@ -93,6 +93,70 @@ test {
     try std.testing.expectEqual(@as(?i32, 1), command_input.perk_choice_index);
     try std.testing.expectEqual(@as(?u8, 'x'), command_input.typo_char);
 
+    var rollback_runner = try cz.live_runner.LiveRunner.init(.{ .game_mode = .survival });
+    rollback_runner.session.elapsed_ms_sim = 123.0;
+    rollback_runner.session.spawn_stage = 3;
+    rollback_runner.session.spawn_cooldown = 45.0;
+    const rollback_snapshot = (try cz.net.rollback_live_bridge.modeSnapshotFromRunner(&rollback_runner, 10)).?;
+    var rollback_restored = try cz.live_runner.LiveRunner.init(.{ .game_mode = .survival });
+    try cz.net.rollback_live_bridge.applyModeSnapshotToRunner(&rollback_restored, rollback_snapshot);
+    try std.testing.expectEqual(@as(usize, 11), rollback_restored.session.tick_index);
+    try std.testing.expectApproxEqAbs(@as(f32, 123.0), rollback_restored.session.elapsed_ms_sim, 0.001);
+    try std.testing.expectEqual(@as(i32, 3), rollback_restored.session.spawn_stage);
+
+    var rollback_live = cz.net.rollback_live_session.LiveSession.init(.{
+        .server_addr = cz.net.relay_transport.PeerAddr.loopback(1),
+        .bind_host = "127.0.0.1",
+        .session = .{
+            .role = .join,
+            .mode_id = @intFromEnum(cz.game_ids.GameModeId.survival),
+            .player_count = 1,
+            .build_id = "0.1.0",
+            .input_delay_ticks = 0,
+        },
+    });
+    defer rollback_live.deinit(std.testing.allocator, std.Io.Threaded.global_single_threaded.io());
+    rollback_live.session.match_config = .{
+        .seed = 1234,
+        .mode_id = @intFromEnum(cz.game_ids.GameModeId.survival),
+        .player_count = 1,
+        .input_delay_ticks = 0,
+    };
+    rollback_live.session.local_slot_index = 0;
+    rollback_live.session.runtime = cz.net.rollback_runtime.RuntimeCore.init(std.testing.allocator, .{
+        .role = .join,
+        .player_count = 1,
+        .local_slot_index = 0,
+        .input_delay_ticks = 0,
+        .max_rollback_ticks = 8,
+    });
+    _ = try rollback_live.ensureLiveRunner();
+    for (0..5) |idx| {
+        try rollback_live.session.runtime.?.queueLocalInput(.{ .flags = @intCast(idx) }, 1000 + @as(i64, @intCast(idx)));
+    }
+    _ = try rollback_live.stepFrames(std.testing.allocator);
+    try std.testing.expectEqual(@as(usize, 2), rollback_live.session.runtime.?.snapshot_blobs.items.len);
+    try std.testing.expectEqual(@as(i32, 4), rollback_live.session.runtime.?.snapshot_blobs.items[1].tick_index);
+
+    const resync_payload = try cz.net.rollback_resync_v5.encodeModeSnapshot(std.testing.allocator, .{ .survival = .{
+        .tick_index = 8,
+        .runtime_state = .{
+            .elapsed_ms = 144.0,
+            .stage = 2,
+            .spawn_cooldown_ms = 88.0,
+            .perk_pending_count = 5,
+        },
+    } });
+    rollback_live.session.runtime.?.pending_resync_snapshot = .{
+        .tick_index = 8,
+        .payload = resync_payload,
+    };
+    rollback_live.session.runtime.?.paused_for_resync = true;
+    _ = try rollback_live.stepFrames(std.testing.allocator);
+    try std.testing.expectEqual(@as(usize, 9), rollback_live.runner.?.session.tick_index);
+    try std.testing.expectApproxEqAbs(@as(f32, 144.0), rollback_live.runner.?.session.elapsed_ms_sim, 0.001);
+    try std.testing.expect(!rollback_live.session.runtime.?.paused_for_resync);
+
     var host_live = try cz.net.lockstep_live_session.HostLiveSession.init(.{
         .mode_id = @intFromEnum(cz.game_ids.GameModeId.survival),
         .player_count = 2,
