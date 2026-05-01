@@ -26,6 +26,7 @@ What exists today:
 - native replay list/verification/info/benchmark/checkpoint tooling,
 - native debug contract verification and CDT trace export tooling,
 - native quest spawn-table dump tooling,
+- native UDP relay serve CLI,
 - a real raylib desktop app target,
 - archive/config/status codecs,
 - archive-backed rendering/audio,
@@ -76,6 +77,7 @@ Current supported replay-tooling behavior:
 - native debug schema contract reporting via `dbg verify`
 - current Python-readable trace export contracts
 - quest spawn-table JSON dumps via `quests <level> --format json --seed <seed>`
+- native UDP relay serving via `relay serve`
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
   data rather than stale “unsupported path” wording
 

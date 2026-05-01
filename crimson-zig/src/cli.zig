@@ -6,6 +6,7 @@ const quest_spawn_native = @import("quest_spawn_native.zig");
 const replay_benchmark_native = @import("replay_benchmark_native.zig");
 const replay_info_native = @import("replay_info_native.zig");
 const replay_list_native = @import("replay_list_native.zig");
+const relay_udp_server = @import("net/relay_udp_server.zig");
 const verify_native = @import("verify_native.zig");
 
 const usage =
@@ -19,6 +20,7 @@ const usage =
     \\  crimson-zig dbg record <replay.crd> --out <trace.cdt>
     \\  crimson-zig dbg verify
     \\  crimson-zig quests <level> [quest options]
+    \\  crimson-zig relay serve [relay options]
     \\  crimson-zig --help
     \\
     \\Examples:
@@ -32,6 +34,7 @@ const usage =
     \\  crimson-zig dbg record replay.crd --out replay.cdt
     \\  crimson-zig dbg verify
     \\  crimson-zig quests 1.1 --format json --seed 101
+    \\  crimson-zig relay serve --bind 127.0.0.1 --port 31993
     \\
 ;
 
@@ -112,6 +115,14 @@ pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     }
     if (args.len >= 2 and std.mem.eql(u8, args[1], "quests")) {
         const output = try quest_spawn_native.runQuests(allocator, args[2..]);
+        defer output.deinit(allocator);
+
+        try writeStdout(output.stdout);
+        try writeStderr(output.stderr);
+        return output.exit_code;
+    }
+    if (args.len >= 3 and std.mem.eql(u8, args[1], "relay") and std.mem.eql(u8, args[2], "serve")) {
+        const output = try relay_udp_server.runRelayServe(allocator, std.Io.Threaded.global_single_threaded.io(), args[3..]);
         defer output.deinit(allocator);
 
         try writeStdout(output.stdout);

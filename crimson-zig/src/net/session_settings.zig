@@ -16,7 +16,7 @@ pub const LockstepSessionSettings = struct {
     preserve_bugs: bool = false,
     tick_rate: i32 = lockstep_protocol.tick_rate,
     input_delay_ticks: i32 = lockstep_protocol.input_delay_ticks,
-    netcode_mode: relay_protocol.NetcodeMode = .lockstep,
+    netcode_mode: relay_protocol.NetcodeMode = relay_protocol.NetcodeMode.lockstep,
 };
 
 pub const RelaySessionSettings = struct {
@@ -27,7 +27,7 @@ pub const RelaySessionSettings = struct {
     tick_rate: i32 = relay_protocol.tick_rate,
     input_delay_ticks: i32 = relay_protocol.input_delay_ticks,
     rollback_max_ticks: i32 = relay_protocol.rollback_max_ticks,
-    netcode_mode: relay_protocol.NetcodeMode = .rollback,
+    netcode_mode: relay_protocol.NetcodeMode = relay_protocol.NetcodeMode.rollback,
 };
 
 pub const LockstepOptions = struct {
@@ -47,7 +47,7 @@ pub const RelayOptions = struct {
     tick_rate: i32 = relay_protocol.tick_rate,
     input_delay_ticks: i32 = relay_protocol.input_delay_ticks,
     rollback_max_ticks: i32 = relay_protocol.rollback_max_ticks,
-    netcode_mode: relay_protocol.NetcodeMode = .rollback,
+    netcode_mode: relay_protocol.NetcodeMode = relay_protocol.NetcodeMode.rollback,
 };
 
 pub const HelloOptions = struct {
@@ -358,7 +358,7 @@ test "relay session settings clamp python-compatible numeric fields" {
         .tick_rate = -2,
         .input_delay_ticks = -1,
         .rollback_max_ticks = 0,
-        .netcode_mode = .lockstep,
+        .netcode_mode = relay_protocol.NetcodeMode.lockstep,
     });
 
     try std.testing.expectEqual(@as(i32, 1), settings.mode_id);
@@ -390,7 +390,7 @@ test "relay session settings convert from room create messages" {
         .tick_rate = 0,
         .input_delay_ticks = -1,
         .rollback_max_ticks = 0,
-        .netcode_mode = .lockstep,
+        .netcode_mode = relay_protocol.NetcodeMode.lockstep,
     });
     try std.testing.expectEqual(@as(i32, 3), settings.mode_id);
     try std.testing.expectEqual(@as(i32, 4), settings.player_count);

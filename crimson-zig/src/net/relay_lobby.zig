@@ -176,7 +176,7 @@ test "relay lobby creates room with ready host slot" {
     var room = try createRoom(allocator, &host, .{
         .mode_id = 1,
         .player_count = 2,
-        .netcode_mode = .rollback,
+        .netcode_mode = relay_protocol.NetcodeMode.rollback,
     }, .{
         .code = code,
         .session_id = "session",

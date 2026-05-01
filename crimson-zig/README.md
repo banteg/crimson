@@ -86,6 +86,7 @@ zig build run -- replay list --base-dir .
 zig build run -- replay verify-checkpoints <replay.crd>
 zig build run -- replay diff-checkpoints <expected.chk> <actual.chk>
 zig build run -- replay benchmark <replay.crd> --runs 5
+zig build run -- relay serve --bind 127.0.0.1 --port 31993
 ```
 
 Useful targets:
@@ -101,6 +102,9 @@ Useful targets:
   Builds the freestanding replay/runtime ABI target.
 - `zig build web-window`
   Builds the emscripten/raylib browser target.
+- `zig build run -- relay serve`
+  Runs the native UDP relay server through the main CLI. The dedicated
+  `zig build relay-serve` step remains available for relay-only runs.
 
 ## Desktop shell status
 
@@ -131,6 +135,7 @@ The native CLI currently exposes:
 - `crimson-zig replay verify-checkpoints <replay.crd>`
 - `crimson-zig replay benchmark <replay.crd>` (headless mode only)
 - `crimson-zig replay diff-checkpoints <expected.chk> <actual.chk>`
+- `crimson-zig relay serve`
 
 Supported native replay/runtime modes today:
 
