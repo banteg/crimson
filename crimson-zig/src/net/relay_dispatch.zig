@@ -34,6 +34,7 @@ pub const DispatchOptions = struct {
     room_code: room_code.RoomCode = .{ .bytes = .{ 'a', 'a', 'a', 'a' } },
     session_id: []const u8 = "",
     reconnect_token: []const u8 = "",
+    reconnect_timeout_ms: i64 = relay_protocol.reconnect_timeout_ms,
     max_rooms: usize = 2048,
 };
 
@@ -190,7 +191,7 @@ fn handleRoomJoin(
     const host_build_id = hostBuildId(core, room.*);
     const joined = relay_lobby.joinRoom(room, &core.peers.items[peer_index].peer, .{
         .reconnect_slot_index = reconnect_slot_index,
-        .reconnect_timeout_ms = relay_protocol.reconnect_timeout_ms,
+        .reconnect_timeout_ms = options.reconnect_timeout_ms,
         .now_ms = options.now_ms,
         .host_build_id = host_build_id,
         .new_reconnect_token = options.reconnect_token,
@@ -373,6 +374,50 @@ test "relay dispatch creates joins readies and starts room" {
         if (item.message == .room_start) room_start_count += 1;
     }
     try std.testing.expectEqual(@as(usize, 2), room_start_count);
+}
+
+test "relay dispatch applies reconnect timeout option" {
+    const allocator = std.testing.allocator;
+    var core: relay_core.RelayCore = .{};
+    defer core.deinit(allocator);
+    const host_idx = try core.addPeer(allocator, .{ .peer_id = "host", .build_id = "0.1.0" });
+    const guest_idx = try core.addPeer(allocator, .{ .peer_id = "guest", .build_id = "0.1.0" });
+    const intruder_idx = try core.addPeer(allocator, .{ .peer_id = "intruder", .build_id = "0.1.0" });
+    const code = try room_code.parseRoomCode("ABCD");
+
+    var created = try handleMessage(allocator, &core, host_idx, .{ .room_create = .{ .player_count = 2 } }, .{
+        .room_code = code,
+        .session_id = "session",
+        .reconnect_token = "host-token",
+    });
+    defer created.deinit(allocator);
+    var joined = try handleMessage(allocator, &core, guest_idx, .{ .room_join = .{ .room_code = code } }, .{
+        .now_ms = 1000,
+        .reconnect_token = "guest-token",
+    });
+    defer joined.deinit(allocator);
+
+    var busy = try handleMessage(allocator, &core, intruder_idx, .{ .room_join = .{ .reconnect_token = "guest-token" } }, .{
+        .now_ms = 1200,
+        .reconnect_timeout_ms = 2000,
+        .reconnect_token = "intruder-token",
+    });
+    defer busy.deinit(allocator);
+    try std.testing.expectEqual(@as(usize, 1), busy.items.items.len);
+    switch (busy.items.items[0].message) {
+        .relay_error => |err| try std.testing.expectEqualStrings("slot_busy", err.reason),
+        else => return error.TestExpectedEqual,
+    }
+
+    var expired = try handleMessage(allocator, &core, intruder_idx, .{ .room_join = .{ .reconnect_token = "guest-token" } }, .{
+        .now_ms = 2000,
+        .reconnect_timeout_ms = 500,
+        .reconnect_token = "intruder-token",
+    });
+    defer expired.deinit(allocator);
+    try std.testing.expectEqual(@as(i32, 1), core.peers.items[intruder_idx].peer.slot_index);
+    try std.testing.expectEqualStrings("intruder", core.rooms.items[0].room.slots[1].peer_id);
+    try std.testing.expectEqual(@as(usize, 2), expired.items.items.len);
 }
 
 test "relay dispatch forwards resync request to host and rejects bad sender" {

@@ -13,6 +13,8 @@ pub const Config = struct {
     tick_ms: i64 = 8,
     max_packets: usize = 512,
     link_timeout_ms: i64 = relay_protocol.link_timeout_ms,
+    reconnect_timeout_ms: i64 = relay_protocol.reconnect_timeout_ms,
+    max_rooms: usize = 2048,
 };
 
 pub const CommandOutput = struct {
@@ -63,7 +65,7 @@ pub fn serve(allocator: std.mem.Allocator, io: Io, config: Config) !void {
     var recv_buffer: [64 * 1024]u8 = undefined;
     while (true) {
         const now_ms = monotonicMs(io);
-        try drainPackets(allocator, io, &service, socket, &recv_buffer, now_ms, config.max_packets, config.tick_ms);
+        try drainPackets(allocator, io, &service, socket, &recv_buffer, now_ms, config);
         try flushOutbox(allocator, io, socket, try service.pollResends(allocator, now_ms));
         try flushOutbox(allocator, io, socket, try service.pruneTimeouts(allocator, now_ms, config.link_timeout_ms));
     }
@@ -76,13 +78,12 @@ fn drainPackets(
     socket: Socket,
     recv_buffer: []u8,
     now_ms: i64,
-    max_packets: usize,
-    tick_ms: i64,
+    config: Config,
 ) !void {
-    var remaining = max_packets;
+    var remaining = config.max_packets;
     while (remaining > 0) : (remaining -= 1) {
-        const timeout: Io.Timeout = if (remaining == max_packets)
-            .{ .duration = .{ .raw = .fromMilliseconds(tick_ms), .clock = .awake } }
+        const timeout: Io.Timeout = if (remaining == config.max_packets)
+            .{ .duration = .{ .raw = .fromMilliseconds(config.tick_ms), .clock = .awake } }
         else
             .{ .duration = .{ .raw = .zero, .clock = .awake } };
         const incoming = socket.receiveTimeout(io, recv_buffer, timeout) catch |err| switch (err) {
@@ -94,7 +95,11 @@ fn drainPackets(
         const decoded = relay_protocol.decodePacket(allocator, incoming.data) catch continue;
         defer decoded.deinit();
         try flushOutbox(allocator, io, socket, try service.receivePacket(allocator, addr, decoded.value, .{
-            .dispatch = .{ .now_ms = now_ms },
+            .dispatch = .{
+                .now_ms = now_ms,
+                .reconnect_timeout_ms = config.reconnect_timeout_ms,
+                .max_rooms = config.max_rooms,
+            },
         }));
     }
 }
@@ -141,6 +146,24 @@ fn parseArgs(args: []const []const u8) ParseOutcome {
             config.max_packets = parsePositiveUsize(args[idx]) catch return .{ .invalid = "invalid --max-packets value" };
         } else if (std.mem.startsWith(u8, arg, "--max-packets=")) {
             config.max_packets = parsePositiveUsize(arg["--max-packets=".len..]) catch return .{ .invalid = "invalid --max-packets value" };
+        } else if (std.mem.eql(u8, arg, "--link-timeout-ms")) {
+            idx += 1;
+            if (idx >= args.len) return .{ .invalid = "missing value for --link-timeout-ms" };
+            config.link_timeout_ms = parsePositiveI64(args[idx]) catch return .{ .invalid = "invalid --link-timeout-ms value" };
+        } else if (std.mem.startsWith(u8, arg, "--link-timeout-ms=")) {
+            config.link_timeout_ms = parsePositiveI64(arg["--link-timeout-ms=".len..]) catch return .{ .invalid = "invalid --link-timeout-ms value" };
+        } else if (std.mem.eql(u8, arg, "--reconnect-timeout-ms")) {
+            idx += 1;
+            if (idx >= args.len) return .{ .invalid = "missing value for --reconnect-timeout-ms" };
+            config.reconnect_timeout_ms = parsePositiveI64(args[idx]) catch return .{ .invalid = "invalid --reconnect-timeout-ms value" };
+        } else if (std.mem.startsWith(u8, arg, "--reconnect-timeout-ms=")) {
+            config.reconnect_timeout_ms = parsePositiveI64(arg["--reconnect-timeout-ms=".len..]) catch return .{ .invalid = "invalid --reconnect-timeout-ms value" };
+        } else if (std.mem.eql(u8, arg, "--max-rooms")) {
+            idx += 1;
+            if (idx >= args.len) return .{ .invalid = "missing value for --max-rooms" };
+            config.max_rooms = parsePositiveUsize(args[idx]) catch return .{ .invalid = "invalid --max-rooms value" };
+        } else if (std.mem.startsWith(u8, arg, "--max-rooms=")) {
+            config.max_rooms = parsePositiveUsize(arg["--max-rooms=".len..]) catch return .{ .invalid = "invalid --max-rooms value" };
         } else {
             return .{ .invalid = arg };
         }
@@ -185,7 +208,13 @@ fn printOpen(io: Io, addr: IpAddress, config: Config) !void {
     const stderr = &writer.interface;
     try stderr.print("crimson-zig relay listening on ", .{});
     try addr.format(stderr);
-    try stderr.print(" tick_ms={d} max_packets={d}\n", .{ config.tick_ms, config.max_packets });
+    try stderr.print(" tick_ms={d} max_packets={d} link_timeout_ms={d} reconnect_timeout_ms={d} max_rooms={d}\n", .{
+        config.tick_ms,
+        config.max_packets,
+        config.link_timeout_ms,
+        config.reconnect_timeout_ms,
+        config.max_rooms,
+    });
     try stderr.flush();
 }
 
@@ -210,18 +239,21 @@ fn emptyOutput(allocator: std.mem.Allocator, exit_code: u8) !CommandOutput {
 
 const usage =
     \\Usage:
-    \\  crimson-zig relay serve [--bind ADDR] [--port PORT] [--tick-ms MS] [--max-packets N]
+    \\  crimson-zig relay serve [--bind ADDR] [--port PORT] [--tick-ms MS] [--max-packets N] [--link-timeout-ms MS] [--reconnect-timeout-ms MS] [--max-rooms N]
     \\
     \\Options:
-    \\  --bind ADDR       relay bind address (default: 0.0.0.0)
-    \\  --port PORT       relay UDP port (default: 31993)
-    \\  --tick-ms MS      relay update tick interval (default: 8)
-    \\  --max-packets N   max packets drained per tick (default: 512)
+    \\  --bind ADDR                 relay bind address (default: 0.0.0.0)
+    \\  --port PORT                 relay UDP port (default: 31993)
+    \\  --tick-ms MS                relay update tick interval (default: 8)
+    \\  --max-packets N             max packets drained per tick (default: 512)
+    \\  --link-timeout-ms MS        peer idle timeout before pruning
+    \\  --reconnect-timeout-ms MS   slot reservation timeout for reconnect tokens
+    \\  --max-rooms N               max concurrent relay rooms (default: 2048)
     \\
 ;
 
 test "relay udp server parses defaults and inline options" {
-    const parsed = parseArgs(&.{ "--bind=127.0.0.1", "--port=32000", "--tick-ms=2", "--max-packets=3" });
+    const parsed = parseArgs(&.{ "--bind=127.0.0.1", "--port=32000", "--tick-ms=2", "--max-packets=3", "--link-timeout-ms=1000", "--reconnect-timeout-ms=2000", "--max-rooms=4" });
     const config = switch (parsed) {
         .ok => |config| config,
         else => return error.TestExpectedConfig,
@@ -230,6 +262,9 @@ test "relay udp server parses defaults and inline options" {
     try std.testing.expectEqual(@as(u16, 32000), config.bind_port);
     try std.testing.expectEqual(@as(i64, 2), config.tick_ms);
     try std.testing.expectEqual(@as(usize, 3), config.max_packets);
+    try std.testing.expectEqual(@as(i64, 1000), config.link_timeout_ms);
+    try std.testing.expectEqual(@as(i64, 2000), config.reconnect_timeout_ms);
+    try std.testing.expectEqual(@as(usize, 4), config.max_rooms);
 }
 
 test "relay udp server accepts ephemeral port before binding" {
@@ -250,6 +285,18 @@ test "relay udp server rejects invalid values before binding" {
     }
     switch (parseArgs(&.{"--max-packets=0"})) {
         .invalid => |detail| try std.testing.expectEqualStrings("invalid --max-packets value", detail),
+        else => return error.TestExpectedInvalidArgs,
+    }
+    switch (parseArgs(&.{"--link-timeout-ms=0"})) {
+        .invalid => |detail| try std.testing.expectEqualStrings("invalid --link-timeout-ms value", detail),
+        else => return error.TestExpectedInvalidArgs,
+    }
+    switch (parseArgs(&.{"--reconnect-timeout-ms=0"})) {
+        .invalid => |detail| try std.testing.expectEqualStrings("invalid --reconnect-timeout-ms value", detail),
+        else => return error.TestExpectedInvalidArgs,
+    }
+    switch (parseArgs(&.{"--max-rooms=0"})) {
+        .invalid => |detail| try std.testing.expectEqualStrings("invalid --max-rooms value", detail),
         else => return error.TestExpectedInvalidArgs,
     }
 }
