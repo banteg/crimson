@@ -1,5 +1,6 @@
 pub const game_ids = @import("game_ids.zig");
 pub const rng_caller_static = @import("rng_caller_static.zig");
+pub const replay_benchmark_native = @import("replay_benchmark_native.zig");
 pub const checkpoint_diff_native = @import("checkpoint_diff_native.zig");
 pub const cli = @import("cli.zig");
 pub const hash = @import("hash.zig");

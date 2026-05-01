@@ -63,8 +63,8 @@ Remaining work:
   [`crimson-zig/src/runtime/replay/events.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/replay/events.zig),
 - keep burning down real remaining `Unsupported*` replay/event surfaces that are
   still justified,
-- expand native tooling beyond `replay list`, `replay verify`, and
-  `replay info`,
+- expand native tooling beyond `replay list`, `replay verify`,
+  `replay info`, and `replay benchmark`,
 - widen the WASM surface beyond byte-input replay verification.
 
 Definition of done:
@@ -107,7 +107,7 @@ Python still has broader non-gameplay tooling than Zig.
 Remaining work:
 
 - expand Zig CLI coverage where it materially helps development:
-  - replay-oriented tools beyond list/verify/info/verify-checkpoints/diff-checkpoints,
+  - replay-oriented tools beyond list/verify/info/benchmark/verify-checkpoints/diff-checkpoints,
   - useful debug/support commands where they make sense natively,
 - keep trace/debug surfaces aligned with current Python contracts,
 - refresh developer docs when tooling behavior changes.

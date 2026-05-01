@@ -1,0 +1,201 @@
+from __future__ import annotations
+
+import json
+import subprocess
+from pathlib import Path
+
+import pytest
+
+import crimson.dbg.record as dbg_record
+from crimson.game_modes import GameMode
+
+from ._helpers import build_replay, write_replay
+
+
+def test_zig_replay_benchmark_reports_headless_summary(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    result = _run_zig_replay_benchmark(
+        [str(replay_path), "--runs", "2", "--warmup-runs", "0", "--max-ticks", "2"],
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "ok: mode=headless runs=2 warmup_runs=0 ticks=2" in result.stdout
+    assert "wall_ms" in result.stdout
+    assert "throughput_tps" in result.stdout
+    assert "realtime_x" in result.stdout
+
+
+def test_zig_replay_benchmark_emits_json_payload(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    result = _run_zig_replay_benchmark(
+        [str(replay_path), "--runs", "2", "--warmup-runs", "0", "--max-ticks", "2", "--format", "json"],
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    payload = json.loads(result.stdout)
+    assert payload["schema_version"] == 3
+    assert payload["status"] == "ok"
+    assert payload["settings"] == {
+        "mode": "headless",
+        "runs": 2,
+        "warmup_runs": 0,
+        "max_ticks": 2,
+        "trace_rng": False,
+        "profile": False,
+        "profile_sort": "cumtime",
+        "top": 20,
+        "profile_out": None,
+        "render_telemetry": False,
+        "render_telemetry_out": None,
+        "render_charts_out_dir": None,
+    }
+    assert payload["run_result"]["ticks"] == 2
+    assert payload["benchmark"]["sample_count"] == 2
+    assert len(payload["benchmark"]["samples"]) == 2
+    assert "run_index" not in payload["benchmark"]["samples"][0]
+    assert set(payload["benchmark"]["wall_ms"]) == {"min", "p50", "mean", "p95", "max", "stdev"}
+    assert payload["benchmark"]["wall_ms"]["max"] >= payload["benchmark"]["wall_ms"]["min"] >= 0.0
+    assert payload["benchmark"]["ticks_per_second"]["max"] >= payload["benchmark"]["ticks_per_second"]["min"] >= 0.0
+    assert payload["profile"] is None
+    assert payload["render_telemetry"] is None
+
+
+def test_zig_replay_benchmark_supports_trace_rng(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    result = _run_zig_replay_benchmark(
+        [
+            str(replay_path),
+            "--runs",
+            "1",
+            "--warmup-runs",
+            "0",
+            "--max-ticks",
+            "2",
+            "--trace-rng",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    payload = json.loads(result.stdout)
+    assert payload["settings"]["trace_rng"] is True
+    assert payload["run_result"]["ticks"] == 2
+    assert payload["benchmark"]["sample_count"] == 1
+
+
+def test_zig_replay_benchmark_writes_json_out(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    json_out = tmp_path / "reports" / "benchmark.json"
+
+    result = _run_zig_replay_benchmark(
+        [str(replay_path), "--runs", "1", "--warmup-runs", "0", "--json-out", str(json_out)],
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert f"json_report={json_out}" in result.stdout
+    payload = json.loads(json_out.read_text(encoding="utf-8"))
+    assert payload["benchmark"]["sample_count"] == 1
+    assert payload["run_result"]["ticks"] == 2
+
+
+def test_zig_replay_benchmark_rejects_render_mode(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    result = _run_zig_replay_benchmark([str(replay_path), "--mode", "render"])
+
+    assert result.returncode == 1
+    assert "native replay benchmark supports only --mode headless" in result.stderr
+
+
+@pytest.mark.parametrize(
+    ("args", "detail"),
+    [
+        (["--rtx"], "native replay benchmark does not support render-mode option --rtx"),
+        (
+            ["--render-telemetry"],
+            "native replay benchmark does not support render-mode option --render-telemetry",
+        ),
+        (
+            ["--render-telemetry-out", "telemetry.json"],
+            "native replay benchmark does not support render-mode option --render-telemetry-out",
+        ),
+        (
+            ["--render-charts-out-dir", "charts"],
+            "native replay benchmark does not support render-mode option --render-charts-out-dir",
+        ),
+    ],
+)
+def test_zig_replay_benchmark_rejects_render_only_flags_in_headless_mode(
+    tmp_path: Path,
+    args: list[str],
+    detail: str,
+) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    result = _run_zig_replay_benchmark([str(replay_path), *args])
+
+    assert result.returncode == 1
+    assert f"invalid replay benchmark args: {detail}" in result.stderr
+
+
+@pytest.mark.parametrize(
+    ("args", "detail"),
+    [
+        (["--profile"], "native replay benchmark does not support profiling option --profile"),
+        (
+            ["--profile-sort", "tottime"],
+            "native replay benchmark does not support profiling option --profile-sort",
+        ),
+        (
+            ["--top", "5"],
+            "native replay benchmark does not support profiling option --top",
+        ),
+        (
+            ["--profile-out", "profile.pstats"],
+            "native replay benchmark does not support profiling option --profile-out",
+        ),
+    ],
+)
+def test_zig_replay_benchmark_rejects_profile_flags_explicitly(
+    tmp_path: Path,
+    args: list[str],
+    detail: str,
+) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    result = _run_zig_replay_benchmark([str(replay_path), *args])
+
+    assert result.returncode == 1
+    assert f"invalid replay benchmark args: {detail}" in result.stderr
+
+
+def test_zig_replay_benchmark_rejects_non_crd_extension(tmp_path: Path) -> None:
+    replay_path = tmp_path / "survival.txt"
+    replay_path.write_bytes(b"not checked before extension validation")
+
+    result = _run_zig_replay_benchmark([str(replay_path), "--format", "json"])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "replay benchmark failed: replay file must use .crd extension" in result.stderr
+
+
+def _run_zig_replay_benchmark(args: list[str]) -> subprocess.CompletedProcess[str]:
+    build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
+    assert build_run.returncode == 0, dbg_record._command_detail(build_run)
+
+    return dbg_record._run_process(
+        [str(dbg_record._ZIG_BIN), "replay", "benchmark", *args],
+        cwd=dbg_record._REPO_ROOT,
+    )

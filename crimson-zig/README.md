@@ -7,7 +7,8 @@ Standalone Zig workspace for the native Crimson port.
 `crimson-zig/` is no longer a replay-verifier side project. It already contains:
 
 - a shared deterministic runtime under `src/runtime/`,
-- native replay tooling (`replay list`, `replay verify`, `replay info`, checkpoint replay checks),
+- native replay tooling (`replay list`, `replay verify`, `replay info`,
+  `replay benchmark`, checkpoint verification/diffing),
 - a real raylib desktop app target,
 - archive/codec support for `crimson.paq`, `music.paq`, `sfx.paq`, `crimson.cfg`, and `game.cfg`,
 - a freestanding WASM replay-verification ABI.
@@ -83,6 +84,7 @@ zig build run -- replay info <replay.crd> --format json
 zig build run -- replay list --base-dir .
 zig build run -- replay verify-checkpoints <replay.crd>
 zig build run -- replay diff-checkpoints <expected.chk> <actual.chk>
+zig build run -- replay benchmark <replay.crd> --runs 5
 ```
 
 Useful targets:
@@ -126,6 +128,7 @@ The native CLI currently exposes:
 - `crimson-zig replay info <replay.crd>`
 - `crimson-zig replay list`
 - `crimson-zig replay verify-checkpoints <replay.crd>`
+- `crimson-zig replay benchmark <replay.crd>` (headless mode only)
 - `crimson-zig replay diff-checkpoints <expected.chk> <actual.chk>`
 
 Supported native replay/runtime modes today:
@@ -140,7 +143,8 @@ The native verifier/info stack now:
 
 - decodes `.crd` payloads in Zig,
 - runs the shared deterministic runtime,
-- supports `--trace-rng`,
+- supports RNG tracing via `replay verify --trace-rng` and
+  `replay benchmark --trace-rng`,
 - emits Python-readable trace payloads,
 - reports invalid spawn-template / quest-table inputs as invalid replay/session
   data rather than vague “unsupported path” failures.

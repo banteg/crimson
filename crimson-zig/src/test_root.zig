@@ -21,6 +21,7 @@ test {
     _ = cz.persistence;
     _ = cz.projectiles;
     _ = cz.quest_spawn_logic_full;
+    _ = cz.replay_benchmark_native;
     _ = cz.replay_codec;
     _ = cz.replay_runner;
     _ = cz.secondary_projectiles;
