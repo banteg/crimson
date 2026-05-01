@@ -674,7 +674,7 @@ const App = struct {
                 self.audio.playUiButtonClick();
             }
             gameplay.last_update = gameplay.runner.stepFrame(frame_dt, input) catch |err| {
-                self.finishRun(gameplay, .runtime_error, @errorName(err));
+                self.finishRun(gameplay, .runtime_error, liveRuntimeErrorDetail(err));
                 return;
             };
             gameplay.camera = updateGameplayCamera(
@@ -1056,7 +1056,7 @@ const App = struct {
                 .summary = zeroSessionSummary(),
                 .player_health_values = [_]f32{0.0} ** state_mod.max_players,
                 .player_health_count = 0,
-                .runtime_error = @errorName(err),
+                .runtime_error = liveRuntimeErrorDetail(err),
             };
             self.results_selection = 0;
             self.setScreen(.results);
@@ -1070,7 +1070,7 @@ const App = struct {
                     .summary = zeroSessionSummary(),
                     .player_health_values = [_]f32{0.0} ** state_mod.max_players,
                     .player_health_count = 0,
-                    .runtime_error = @errorName(err),
+                    .runtime_error = typoSourceErrorDetail(err),
                 };
                 self.results_selection = 0;
                 self.setScreen(.results);
@@ -1742,6 +1742,31 @@ fn resultsStatusSaveErrorDetail(err: anyerror) []const u8 {
     };
 }
 
+fn liveRuntimeErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.InvalidPlayerCount => "Run configuration has an invalid player count.",
+        error.InvalidWorldSize => "Run configuration has an invalid world size.",
+        error.InvalidTickRate => "Run configuration has an invalid tick rate.",
+        error.UnsupportedGameMode => "Run configuration uses an unsupported game mode.",
+        error.InvalidQuestSpawnTable => "Quest spawn table is invalid.",
+        error.UnsupportedEventKind => "Runtime event kind is not supported in this mode.",
+        error.UnsupportedEventPlayerIndex => "Runtime event references an out-of-range player.",
+        error.InvalidPerkPickEvent => "Perk selection could not be applied in the current perk state.",
+        error.InvalidCaptureEnumValue => "Runtime capture payload contains an invalid enum value.",
+        error.InvalidSpawnTemplate => "Runtime spawn payload references an invalid creature template.",
+        else => @errorName(err),
+    };
+}
+
+fn typoSourceErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.AccessDenied => "Unable to load Typ'o'Shooter sources: access denied.",
+        error.OutOfMemory => "Unable to load Typ'o'Shooter sources: out of memory.",
+        error.InvalidSize => "Typ'o'Shooter high score file has an invalid record size.",
+        else => @errorName(err),
+    };
+}
+
 fn resultsHighscoreButtons() [2]UiButton {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     return .{
@@ -2022,6 +2047,14 @@ test "results high score save errors use user-facing details" {
     try std.testing.expectEqualStrings("High score file has an invalid record size.", resultsHighscoreSaveErrorDetail(error.InvalidSize));
     try std.testing.expectEqualStrings("Unable to save config: not enough disk space.", resultsConfigSaveErrorDetail(error.NoSpaceLeft));
     try std.testing.expectEqualStrings("Unable to save status: invalid game.cfg checksum.", resultsStatusSaveErrorDetail(error.InvalidGameCfgChecksum));
+}
+
+test "live runtime errors use user-facing details" {
+    try std.testing.expectEqualStrings("Run configuration has an invalid player count.", liveRuntimeErrorDetail(error.InvalidPlayerCount));
+    try std.testing.expectEqualStrings("Runtime event references an out-of-range player.", liveRuntimeErrorDetail(error.UnsupportedEventPlayerIndex));
+    try std.testing.expectEqualStrings("Runtime spawn payload references an invalid creature template.", liveRuntimeErrorDetail(error.InvalidSpawnTemplate));
+    try std.testing.expectEqualStrings("Unable to load Typ'o'Shooter sources: access denied.", typoSourceErrorDetail(error.AccessDenied));
+    try std.testing.expectEqualStrings("Typ'o'Shooter high score file has an invalid record size.", typoSourceErrorDetail(error.InvalidSize));
 }
 
 fn drawWorld(
