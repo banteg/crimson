@@ -1,4 +1,5 @@
 pub const lockstep_protocol = @import("lockstep_protocol.zig");
+pub const lockstep_host_runtime = @import("lockstep_host_runtime.zig");
 pub const lockstep_lobby = @import("lockstep_lobby.zig");
 pub const lockstep_reliable = @import("lockstep_reliable.zig");
 pub const lockstep_state = @import("lockstep_state.zig");
@@ -22,6 +23,7 @@ pub const session_settings = @import("session_settings.zig");
 
 test {
     _ = lockstep_protocol;
+    _ = lockstep_host_runtime;
     _ = lockstep_lobby;
     _ = lockstep_reliable;
     _ = lockstep_state;
