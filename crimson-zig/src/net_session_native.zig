@@ -193,6 +193,7 @@ fn buildSessionOutput(allocator: std.mem.Allocator, request: Request) !CommandOu
     };
     const payload: SessionPayload = .{
         .role = roleName(request.role),
+        .runtime_supported = request.netcode_mode == .lockstep,
         .mode = request.mode_name,
         .mode_id = request.mode_id,
         .player_count = request.player_count,
@@ -228,8 +229,8 @@ fn buildSessionHuman(allocator: std.mem.Allocator, payload: SessionPayload) ![]u
     var writer: std.Io.Writer.Allocating = .init(allocator);
     errdefer writer.deinit();
     try writer.writer.print(
-        "native net session role={s} mode={s} players={d} netcode={s} runtime_supported=false\n",
-        .{ payload.role, payload.mode, payload.player_count, payload.netcode_mode },
+        "native net session role={s} mode={s} players={d} netcode={s} runtime_supported={}\n",
+        .{ payload.role, payload.mode, payload.player_count, payload.netcode_mode, payload.runtime_supported },
     );
     switch (std.meta.stringToEnum(EndpointKind, payload.endpoint.kind).?) {
         .rollback => try writer.writer.print("relay={s}:{d}", .{ payload.endpoint.relay_host.?, payload.endpoint.relay_port.? }),
@@ -367,7 +368,18 @@ test "native net join builds lockstep session payload" {
 
     try std.testing.expectEqual(@as(u8, 0), output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"role\": \"join\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"runtime_supported\": true") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"netcode_mode\": \"lockstep\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host\": \"192.168.1.42\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"port\": 32001") != null);
+}
+
+test "native net rollback session reports unsupported runtime" {
+    const output = try runNet(std.testing.allocator, &.{
+        "host", "--mode", "survival", "--players", "1",
+    });
+    defer output.deinit(std.testing.allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "runtime_supported=false") != null);
 }
