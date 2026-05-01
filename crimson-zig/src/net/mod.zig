@@ -14,6 +14,7 @@ pub const lockstep_transport = @import("lockstep_transport.zig");
 pub const packed_input = @import("packed_input.zig");
 pub const reliable = @import("reliable.zig");
 pub const reliable_channel = @import("reliable_channel.zig");
+pub const rollback = @import("rollback.zig");
 pub const relay_core = @import("relay_core.zig");
 pub const relay_dispatch = @import("relay_dispatch.zig");
 pub const relay_forward = @import("relay_forward.zig");
@@ -43,6 +44,7 @@ test {
     _ = packed_input;
     _ = reliable;
     _ = reliable_channel;
+    _ = rollback;
     _ = relay_core;
     _ = relay_dispatch;
     _ = relay_forward;
