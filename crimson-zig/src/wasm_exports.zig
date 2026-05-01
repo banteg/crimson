@@ -1,7 +1,10 @@
 const std = @import("std");
-const replay_codec = @import("replay_codec.zig");
-const replay_info_native = @import("replay_info_native.zig");
-const verify_native = @import("verify_native.zig");
+const msgpack = @import("msgpack");
+const crimson_zig = @import("crimson_zig");
+const checkpoint_diff_native = crimson_zig.checkpoint_diff_native;
+const replay_codec = crimson_zig.replay_codec;
+const replay_info_native = crimson_zig.replay_info_native;
+const verify_native = crimson_zig.verify_native;
 
 const heap_size = 16 * 1024 * 1024;
 const fallback_error_json = "{\"status\":\"error\",\"message\":\"failed to encode error payload\"}";
@@ -118,6 +121,97 @@ export fn crimson_info_replay_json(
         "<wasm>",
         replay_bytes,
         options.max_ticks,
+    ) catch |err| {
+        setErrorMessage(std.heap.page_allocator, @errorName(err));
+        return -1;
+    };
+    defer output.deinit(std.heap.page_allocator);
+
+    if (output.exit_code == 1 and output.stdout.len == 0 and output.stderr.len > 0) {
+        setErrorMessage(std.heap.page_allocator, std.mem.trimEnd(u8, output.stderr, "\n"));
+        return -1;
+    }
+
+    return copyOutputPayload(output.stdout, out_ptr, out_len);
+}
+
+export fn crimson_diff_checkpoints_text(
+    expected_ptr: usize,
+    expected_len: usize,
+    actual_ptr: usize,
+    actual_len: usize,
+    out_ptr: usize,
+    out_len: usize,
+) i32 {
+    last_error_len = 0;
+    heap_top = 0;
+
+    if (expected_ptr == 0 or expected_len == 0) {
+        setErrorSimple("{\"status\":\"error\",\"message\":\"missing expected checkpoint bytes\"}");
+        return -1;
+    }
+    if (actual_ptr == 0 or actual_len == 0) {
+        setErrorSimple("{\"status\":\"error\",\"message\":\"missing actual checkpoint bytes\"}");
+        return -1;
+    }
+
+    const expected: [*]const u8 = @ptrFromInt(expected_ptr);
+    const actual: [*]const u8 = @ptrFromInt(actual_ptr);
+
+    const output = checkpoint_diff_native.runReplayDiffCheckpointsBytes(
+        std.heap.page_allocator,
+        expected[0..expected_len],
+        actual[0..actual_len],
+    ) catch |err| {
+        setErrorMessage(std.heap.page_allocator, @errorName(err));
+        return -1;
+    };
+    defer output.deinit(std.heap.page_allocator);
+
+    if (output.exit_code == 1 and output.stdout.len == 0 and output.stderr.len > 0) {
+        setErrorMessage(std.heap.page_allocator, std.mem.trimEnd(u8, output.stderr, "\n"));
+        return -1;
+    }
+
+    return copyOutputPayload(output.stdout, out_ptr, out_len);
+}
+
+export fn crimson_verify_checkpoints_text(
+    replay_ptr: usize,
+    replay_len: usize,
+    checkpoints_ptr: usize,
+    checkpoints_len: usize,
+    opts_ptr: usize,
+    opts_len: usize,
+    out_ptr: usize,
+    out_len: usize,
+) i32 {
+    last_error_len = 0;
+    heap_top = 0;
+
+    if (replay_ptr == 0 or replay_len == 0) {
+        setErrorSimple("{\"status\":\"error\",\"message\":\"missing replay bytes\"}");
+        return -1;
+    }
+    if (checkpoints_ptr == 0 or checkpoints_len == 0) {
+        setErrorSimple("{\"status\":\"error\",\"message\":\"missing checkpoint bytes\"}");
+        return -1;
+    }
+
+    const options = parseVerifyOptions(opts_ptr, opts_len) catch |err| {
+        setErrorMessage(std.heap.page_allocator, @errorName(err));
+        return -1;
+    };
+
+    const replay: [*]const u8 = @ptrFromInt(replay_ptr);
+    const checkpoints: [*]const u8 = @ptrFromInt(checkpoints_ptr);
+
+    const output = checkpoint_diff_native.runReplayVerifyCheckpointsBytes(
+        std.heap.page_allocator,
+        replay[0..replay_len],
+        checkpoints[0..checkpoints_len],
+        options.max_ticks,
+        false,
     ) catch |err| {
         setErrorMessage(std.heap.page_allocator, @errorName(err));
         return -1;
@@ -321,6 +415,66 @@ test "crimson_info_replay_json returns replay info payload" {
     try std.testing.expect(std.mem.indexOf(u8, out, "\"timeline\":") != null);
 }
 
+test "crimson_diff_checkpoints_text returns checkpoint diff payload" {
+    const checkpoints = try buildTestCheckpointsPayload(std.testing.allocator, 1);
+    defer std.testing.allocator.free(checkpoints);
+
+    const required_or_error = crimson_diff_checkpoints_text(
+        @intFromPtr(checkpoints.ptr),
+        checkpoints.len,
+        @intFromPtr(checkpoints.ptr),
+        checkpoints.len,
+        0,
+        0,
+    );
+    try std.testing.expect(required_or_error < 0);
+    const required_len: usize = @intCast(-required_or_error);
+
+    const out = try std.testing.allocator.alloc(u8, required_len);
+    defer std.testing.allocator.free(out);
+
+    const copied = crimson_diff_checkpoints_text(
+        @intFromPtr(checkpoints.ptr),
+        checkpoints.len,
+        @intFromPtr(checkpoints.ptr),
+        checkpoints.len,
+        @intFromPtr(out.ptr),
+        out.len,
+    );
+    try std.testing.expectEqual(@as(i32, @intCast(required_len)), copied);
+    try std.testing.expectEqual(@as(i32, 0), crimson_last_error_json(0, 0));
+    try std.testing.expectEqualStrings("ok: 1 checkpoints match\n", out);
+}
+
+test "crimson_verify_checkpoints_text reports checkpoint mismatch through last error" {
+    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(std.testing.allocator);
+    defer std.testing.allocator.free(replay_bytes);
+    const checkpoints = try buildTestCheckpointsPayload(std.testing.allocator, 999);
+    defer std.testing.allocator.free(checkpoints);
+
+    const opts = "{\"max_ticks\":1}";
+    const result = crimson_verify_checkpoints_text(
+        @intFromPtr(replay_bytes.ptr),
+        replay_bytes.len,
+        @intFromPtr(checkpoints.ptr),
+        checkpoints.len,
+        @intFromPtr(opts.ptr),
+        opts.len,
+        0,
+        0,
+    );
+    try std.testing.expectEqual(@as(i32, -1), result);
+
+    const needed_or_error = crimson_last_error_json(0, 0);
+    try std.testing.expect(needed_or_error < 0);
+    const required_len: usize = @intCast(-needed_or_error);
+    const out = try std.testing.allocator.alloc(u8, required_len);
+    defer std.testing.allocator.free(out);
+    const copied = crimson_last_error_json(@intFromPtr(out.ptr), out.len);
+    try std.testing.expectEqual(@as(i32, @intCast(required_len)), copied);
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"message\":\"checkpoint missing at tick=999") != null);
+}
+
 test "crimson_alloc pointers are transient across verify calls" {
     _ = crimson_verify_replay_json(0, 0, 0, 0, 0, 0);
 
@@ -355,4 +509,109 @@ test "crimson_last_error_json reports required size and copies payload" {
 
     const truncated = crimson_last_error_json(@intFromPtr(&out[0]), required_len - 1);
     try std.testing.expectEqual(-@as(i32, @intCast(required_len)), truncated);
+}
+
+fn buildTestCheckpointsPayload(allocator: std.mem.Allocator, tick_index: i32) ![]u8 {
+    const Player = struct {
+        pos: struct {
+            x: f64,
+            y: f64,
+        },
+        health: f64,
+        weapon_id: i32,
+        ammo: f64,
+        experience: i32,
+        level: i32,
+    };
+    const BonusTimers = struct {
+        @"1": i32,
+        @"3": i32,
+    };
+    const Death = struct {
+        creature_index: i32,
+        type_id: i32,
+        reward_value: f64,
+        xp_awarded: i32,
+        owner_id: i32,
+    };
+    const Perk = struct {
+        pending_count: i32,
+        choices_dirty: bool,
+        choices: []const i32,
+        player_nonzero_counts: []const []const []const i32,
+    };
+    const Events = struct {
+        hit_count: i32,
+        pickup_count: i32,
+        sfx_count: i32,
+        sfx_head: []const []const u8,
+    };
+    const Checkpoint = struct {
+        tick_index: i32,
+        rng_state: u32,
+        elapsed_ms: i32,
+        score_xp: i32,
+        kills: i32,
+        creature_count: i32,
+        perk_pending: i32,
+        players: []const Player,
+        bonus_timers: BonusTimers,
+        deaths: []const Death,
+        perk: Perk,
+        events: Events,
+        tutorial: ?struct {} = null,
+        typo: ?struct {} = null,
+    };
+    const Payload = struct {
+        version: i32,
+        sample_rate: i32,
+        checkpoints: []const Checkpoint,
+    };
+
+    const players = [_]Player{.{
+        .pos = .{ .x = 512.0, .y = 513.0 },
+        .health = 100.0,
+        .weapon_id = 1,
+        .ammo = 10.0,
+        .experience = 42,
+        .level = 1,
+    }};
+    const choices: [0]i32 = .{};
+    const player_nonzero_counts: [0][]const []const i32 = .{};
+    const deaths: [0]Death = .{};
+    const sfx_head: [0][]const u8 = .{};
+    const checkpoints = [_]Checkpoint{.{
+        .tick_index = tick_index,
+        .rng_state = 0x1234,
+        .elapsed_ms = 17,
+        .score_xp = 42,
+        .kills = 2,
+        .creature_count = 3,
+        .perk_pending = 0,
+        .players = players[0..],
+        .bonus_timers = .{ .@"1" = 0, .@"3" = 0 },
+        .deaths = deaths[0..],
+        .perk = .{
+            .pending_count = 0,
+            .choices_dirty = false,
+            .choices = choices[0..],
+            .player_nonzero_counts = player_nonzero_counts[0..],
+        },
+        .events = .{
+            .hit_count = 0,
+            .pickup_count = 0,
+            .sfx_count = 0,
+            .sfx_head = sfx_head[0..],
+        },
+    }};
+    const payload: Payload = .{
+        .version = 4,
+        .sample_rate = 1,
+        .checkpoints = checkpoints[0..],
+    };
+
+    var writer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer writer.deinit();
+    try msgpack.encode(payload, &writer.writer);
+    return writer.toOwnedSlice();
 }
