@@ -3,7 +3,8 @@ const msgpack = @import("msgpack");
 const rng_callers = @import("rng_caller_static.zig");
 const game_ids = @import("game_ids.zig");
 
-pub const replay_format_version: i32 = 8;
+pub const replay_format_version: i32 = 11;
+pub const legacy_replay_format_version: i32 = 8;
 pub const weapon_usage_count: usize = 53;
 pub const max_players: usize = 4;
 pub const gzip_magic = [_]u8{ 0x1f, 0x8b };
@@ -1599,7 +1600,7 @@ fn validateInputShape(
 }
 
 fn isSupportedReplayFormatVersion(version: i32) bool {
-    return version == 8 or version == 11;
+    return version == legacy_replay_format_version or version == replay_format_version;
 }
 
 fn tryParseCurrentReplaySummary(

@@ -23,7 +23,7 @@ fn halfFloor(value: f32) f32 {
 
 fn build501TheBeating(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -135,7 +135,7 @@ fn build501TheBeating(
 
 fn build502TheSpankingOfTheDead(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -206,7 +206,7 @@ fn build502TheSpankingOfTheDead(
 
 fn build503TheFortress(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -271,7 +271,7 @@ fn build503TheFortress(
 
 fn build504TheGangWars(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -351,7 +351,7 @@ fn build504TheGangWars(
 
 fn build505KneeDeepInTheDead(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -447,7 +447,7 @@ fn build505KneeDeepInTheDead(
 
 fn build506CrossFire(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -523,7 +523,7 @@ fn build506CrossFire(
 
 fn build507ArmyOfThree(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -634,7 +634,7 @@ fn build507ArmyOfThree(
 
 fn build508MonsterBlues(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -704,7 +704,7 @@ fn build508MonsterBlues(
 
 fn build509Nagolipoli(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -866,7 +866,7 @@ fn build509Nagolipoli(
 
 fn build510TheGathering(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {

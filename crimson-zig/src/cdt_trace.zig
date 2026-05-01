@@ -9,8 +9,9 @@ const replay_runner = @import("runtime/replay_runner.zig");
 const state_mod = @import("runtime/state.zig");
 
 const trace_magic = "crimson_debug_trace_v1\n";
-const trace_format_version: u32 = 1;
-const trace_schema_version: i32 = 12;
+pub const trace_format_version: u32 = 1;
+pub const trace_schema_version: i32 = 12;
+pub const trace_required_channels = "checkpoint,sim_state,entity_samples,rng_stream,timing_samples";
 const trace_chunk_ticks: usize = 256;
 
 const chunk_kind_meta = "META";

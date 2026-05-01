@@ -19,7 +19,7 @@ pub const tier1_builders = [_]common.LevelBuilder{
 
 fn build_1_1_land_hostile(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -35,7 +35,7 @@ fn build_1_1_land_hostile(
 
 fn build_1_2_minor_alien_breach(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -100,7 +100,7 @@ fn build_1_2_minor_alien_breach(
 
 fn build_1_3_target_practice(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -132,7 +132,7 @@ fn build_1_3_target_practice(
 
 fn build_1_4_frontline_assault(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -205,7 +205,7 @@ fn build_1_4_frontline_assault(
 
 fn build_1_5_alien_dens(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -227,7 +227,7 @@ fn build_1_5_alien_dens(
 
 fn build_1_6_the_random_factor(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -273,7 +273,7 @@ fn build_1_6_the_random_factor(
 
 fn build_1_7_spider_wave_syndrome(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -297,7 +297,7 @@ fn build_1_7_spider_wave_syndrome(
 
 fn build_1_8_alien_squads(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -337,7 +337,7 @@ fn build_1_8_alien_squads(
 
 fn build_1_9_nesting_grounds(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -401,7 +401,7 @@ fn build_1_9_nesting_grounds(
 
 fn build_1_10_8_legged_terror(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {

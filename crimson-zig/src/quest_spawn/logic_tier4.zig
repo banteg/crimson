@@ -19,7 +19,7 @@ pub const tier4_builders = [_]common.LevelBuilder{
 
 fn build_401_major_alien_breach(
     ctx: common.BuildContext,
-    _: *common.PythonRandom,
+    _: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -54,7 +54,7 @@ fn build_401_major_alien_breach(
 
 fn build_402_zombie_time(
     ctx: common.BuildContext,
-    _: *common.PythonRandom,
+    _: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -85,7 +85,7 @@ fn build_402_zombie_time(
 
 fn build_403_lizard_zombie_pact(
     ctx: common.BuildContext,
-    _: *common.PythonRandom,
+    _: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -145,7 +145,7 @@ fn build_403_lizard_zombie_pact(
 
 fn build_404_the_collaboration(
     ctx: common.BuildContext,
-    _: *common.PythonRandom,
+    _: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -197,7 +197,7 @@ fn build_404_the_collaboration(
 
 fn build_405_the_massacre(
     ctx: common.BuildContext,
-    _: *common.PythonRandom,
+    _: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -277,7 +277,7 @@ fn appendUnblitzkriegSweep(
 
 fn build_406_the_unblitzkrieg(
     _: common.BuildContext,
-    _: *common.PythonRandom,
+    _: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -306,7 +306,7 @@ fn build_406_the_unblitzkrieg(
 
 fn build_407_gauntlet(
     ctx: common.BuildContext,
-    _: *common.PythonRandom,
+    _: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -372,7 +372,7 @@ fn build_407_gauntlet(
 
 fn build_408_syntax_terror(
     ctx: common.BuildContext,
-    _: *common.PythonRandom,
+    _: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -415,7 +415,7 @@ fn build_408_syntax_terror(
 
 fn build_409_the_annihilation(
     ctx: common.BuildContext,
-    _: *common.PythonRandom,
+    _: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -498,7 +498,7 @@ fn appendEndOfAllAlternatingEdgeSpiders(
 
 fn build_410_the_end_of_all(
     ctx: common.BuildContext,
-    _: *common.PythonRandom,
+    _: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {

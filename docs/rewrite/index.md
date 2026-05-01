@@ -24,7 +24,8 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Workspace: `crimson-zig/`
 - Current headless CLI surface includes `replay list`, `replay verify`,
   `replay info`, `replay benchmark`, `replay verify-checkpoints`, and
-  `replay diff-checkpoints`, plus native `dbg record` CDT trace export.
+  `replay diff-checkpoints`, plus native `dbg record` CDT trace export,
+  `dbg verify`, and `quests` spawn-table dumps.
 - Project direction is a full native Zig port, not just a replay verifier.
 - The Zig tree now also has a real native desktop shell with boot/menu/gameplay/results/options/statistics flow and live Survival/Rush/Quests/Typ-o/Tutorial runs.
 - Replay verification is still the most mature headless Zig surface, with native + wasm build targets already in-tree.

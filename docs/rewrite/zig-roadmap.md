@@ -27,6 +27,8 @@ Today `crimson-zig/` already has:
   [`crimson-zig/src/verify_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/verify_native.zig)
   and
   [`crimson-zig/src/replay_info_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/replay_info_native.zig),
+- native quest spawn-table dumps through
+  [`crimson-zig/src/quest_spawn_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/quest_spawn_native.zig),
 - a real raylib desktop application in
   [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig),
 - archive/config/status codecs under

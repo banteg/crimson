@@ -17,7 +17,7 @@ pub const tier3_builders = [_]common.LevelBuilder{
 
 fn build301TheBlighting(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -133,7 +133,7 @@ fn build301TheBlighting(
 
 fn build302LizardKings(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -189,7 +189,7 @@ fn build302LizardKings(
 
 fn build303TheKilling(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -238,7 +238,7 @@ fn build303TheKilling(
 
 fn build304HiddenEvil(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -293,7 +293,7 @@ fn build304HiddenEvil(
 
 fn build305SurroundedByReptiles(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -361,7 +361,7 @@ fn build305SurroundedByReptiles(
 
 fn build306TheLizquidation(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -406,7 +406,7 @@ fn build306TheLizquidation(
 
 fn build307SpidersInc(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -471,7 +471,7 @@ fn build307SpidersInc(
 
 fn build308LizardRaze(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -530,7 +530,7 @@ fn build308LizardRaze(
 
 fn build309DejaVu(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
@@ -558,7 +558,7 @@ fn build309DejaVu(
 
 fn build310ZombieMasters(
     ctx: common.BuildContext,
-    rng: *common.PythonRandom,
+    rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {

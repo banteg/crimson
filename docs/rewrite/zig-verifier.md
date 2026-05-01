@@ -24,6 +24,8 @@ What exists today:
 - shared deterministic runtime/session ownership under
   `crimson-zig/src/runtime/`,
 - native replay list/verification/info/benchmark/checkpoint tooling,
+- native debug contract verification and CDT trace export tooling,
+- native quest spawn-table dump tooling,
 - a real raylib desktop app target,
 - archive/config/status codecs,
 - archive-backed rendering/audio,
@@ -71,7 +73,9 @@ Current supported replay-tooling behavior:
 - headless replay throughput timing via `replay benchmark` (render benchmark
   mode remains Python-only)
 - native CDT trace export via `dbg record <replay.crd> --out <trace.cdt>`
+- native debug schema contract reporting via `dbg verify`
 - current Python-readable trace export contracts
+- quest spawn-table JSON dumps via `quests <level> --format json --seed <seed>`
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
   data rather than stale “unsupported path” wording
 

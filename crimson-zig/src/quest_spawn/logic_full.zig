@@ -33,7 +33,7 @@ pub fn buildQuestSpawnTable(
         .height = world_size,
         .player_count = player_count,
     };
-    var rng = common.PythonRandom.init(seed);
+    var rng = common.QuestRng.init(seed);
     var len: usize = 0;
     try descriptor.build(ctx, &rng, out_entries, &len);
 
@@ -61,7 +61,7 @@ fn expectQuestEntryEqual(expected: spawn_runtime.QuestSpawnEntry, actual: spawn_
 
 test "level 1-10 rectangular spawn summary stays stable" {
     const descriptor = lookupLevelBuilder(110) orelse unreachable;
-    var rng = common.PythonRandom.init(0x1A2B3C4D);
+    var rng = common.QuestRng.init(0x1A2B3C4D);
     var out_entries = [_]spawn_runtime.QuestSpawnEntry{undefined} ** 128;
     var len: usize = 0;
 
@@ -132,7 +132,7 @@ test "level 1-10 rectangular spawn summary stays stable" {
 
 test "level 5-1 rectangular spawn summary stays stable" {
     const descriptor = lookupLevelBuilder(501) orelse unreachable;
-    var rng = common.PythonRandom.init(0x55667788);
+    var rng = common.QuestRng.init(0x55667788);
     var out_entries = [_]spawn_runtime.QuestSpawnEntry{undefined} ** 128;
     var len: usize = 0;
 

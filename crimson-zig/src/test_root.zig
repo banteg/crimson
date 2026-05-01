@@ -8,6 +8,7 @@ test {
     _ = cz.checkpoint_diff_native;
     _ = cz.creatures;
     _ = cz.dbg_record_native;
+    _ = cz.dbg_verify_native;
     _ = cz.effects;
     _ = cz.terrain_fx;
     _ = cz.demo_trial;
@@ -22,6 +23,7 @@ test {
     _ = cz.persistence;
     _ = cz.projectiles;
     _ = cz.quest_spawn_logic_full;
+    _ = cz.quest_spawn_native;
     _ = cz.replay_benchmark_native;
     _ = cz.replay_codec;
     _ = cz.replay_runner;
