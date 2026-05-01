@@ -881,26 +881,23 @@ pub fn inflateZstdPayload(
     var window: [std.compress.zstd.default_window_len + std.compress.zstd.block_size_max]u8 = undefined;
     var decompress: std.compress.zstd.Decompress = .init(&input, &window, .{ .verify_checksum = false });
 
-    var out: std.Io.Writer.Allocating = .init(allocator);
-    defer out.deinit();
+    var out: std.ArrayList(u8) = .empty;
+    defer out.deinit(allocator);
 
+    var chunk: [8192]u8 = undefined;
     var total: usize = 0;
     while (true) {
-        const remaining = max_output_bytes -| total;
-        const limit = if (remaining == std.math.maxInt(usize)) remaining else remaining + 1;
-        const n = decompress.reader.stream(&out.writer, .limited(limit)) catch |err| switch (err) {
-            error.EndOfStream => break,
-            else => {
-                _ = decompress.err;
-                return error.InvalidZstdPayload;
-            },
+        const n = decompress.reader.readSliceShort(&chunk) catch {
+            _ = decompress.err;
+            return error.InvalidZstdPayload;
         };
         if (n == 0) break;
         total += n;
         if (total > max_output_bytes) return error.PayloadTooLarge;
+        out.appendSlice(allocator, chunk[0..n]) catch return error.OutOfMemory;
     }
 
-    return out.toOwnedSlice() catch return error.OutOfMemory;
+    return out.toOwnedSlice(allocator) catch return error.OutOfMemory;
 }
 
 pub fn parseReplaySummary(
