@@ -46,6 +46,7 @@ pub const persistence = @import("persistence/mod.zig");
 pub const local_input = @import("local_input.zig");
 pub const demo_trial = @import("demo_trial.zig");
 pub const net_lockstep_smoke_native = @import("net_lockstep_smoke_native.zig");
+pub const net_rollback_smoke_native = @import("net_rollback_smoke_native.zig");
 pub const net_session_native = @import("net_session_native.zig");
 pub const net = @import("net/mod.zig");
 pub const runtime_paths = @import("runtime_paths.zig");

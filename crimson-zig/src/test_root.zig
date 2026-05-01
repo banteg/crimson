@@ -23,6 +23,8 @@ test {
     _ = cz.live_runner;
     std.testing.refAllDecls(cz.net_lockstep_smoke_native);
     _ = cz.net_lockstep_smoke_native;
+    std.testing.refAllDecls(cz.net_rollback_smoke_native);
+    _ = cz.net_rollback_smoke_native;
     _ = cz.net_session_native;
     _ = cz.net;
     std.testing.refAllDecls(cz.net.lockstep_live_bridge);

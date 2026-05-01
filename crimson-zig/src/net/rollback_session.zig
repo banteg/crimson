@@ -185,7 +185,7 @@ pub const Session = struct {
             .max_rollback_ticks = start.rollback_max_ticks,
             .reconnect_timeout_ms = self.options.reconnect_timeout_ms,
         });
-        try self.runtime.?.primeInitialDelay();
+        if (self.runtime) |*runtime| try runtime.primeInitialDelay();
         self.started = true;
         self.local_slot_index = start.slot_index;
         self.room_code_latest = start.room_code;

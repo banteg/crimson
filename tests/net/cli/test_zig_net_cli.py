@@ -68,6 +68,20 @@ def test_zig_net_join_lockstep_requires_host() -> None:
     assert "host is required in lockstep mode" in result.stderr
 
 
+def test_zig_net_smoke_rollback_reports_live_exchange() -> None:
+    payload = _run_zig_net_json(["smoke-rollback", "--format", "json"])
+
+    assert payload["status"] == "ok"
+    assert payload["runtime_supported"] is True
+    assert payload["player_count"] == 2
+    assert payload["host_input_flags"] == 3
+    assert payload["guest_input_flags"] == 7
+    assert payload["host_resync_count"] == 0
+    assert payload["guest_resync_count"] == 0
+    assert payload["host_live_ticks_advanced"] >= 1
+    assert payload["guest_live_ticks_advanced"] >= 1
+
+
 def _run_zig_net_json(args: list[str]) -> dict[str, Any]:
     result = _run_zig_net_process(args)
     assert result.returncode == 0, dbg_record._command_detail(result)
