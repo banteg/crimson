@@ -143,7 +143,7 @@ fn runNativeVerify(
     };
 
     const resolution = resolveReplayPath(allocator, request.replay_file, base_dir) catch |err| {
-        return buildVerifyFailedOutput(allocator, @errorName(err));
+        return buildVerifyFailedOutput(allocator, verifySetupErrorDetail(err));
     };
     defer resolution.deinit(allocator);
 
@@ -162,7 +162,7 @@ fn runNativeVerify(
         allocator,
         .limited(replay_codec.max_replay_payload_bytes),
     ) catch |err| {
-        return buildVerifyFailedOutput(allocator, @errorName(err));
+        return buildVerifyFailedOutput(allocator, verifyReplayReadErrorDetail(err));
     };
     defer allocator.free(replay_bytes);
 
@@ -242,7 +242,7 @@ fn runVerifyWithReplayBytes(
                     replay,
                     tick_trace.items,
                 ) catch |trace_err| {
-                    return buildVerifyFailedOutput(allocator, @errorName(trace_err));
+                    return buildVerifyFailedOutput(allocator, verifyDebugTraceErrorDetail(trace_err));
                 };
                 return buildNotPortedOutputForReplayRunnerError(
                     allocator,
@@ -304,7 +304,7 @@ fn runVerifyWithReplayBytes(
             replay,
             tick_trace.items,
         ) catch |trace_err| {
-            return buildVerifyFailedOutput(allocator, @errorName(trace_err));
+            return buildVerifyFailedOutput(allocator, verifyDebugTraceErrorDetail(trace_err));
         };
     }
 
@@ -319,7 +319,7 @@ fn runVerifyWithReplayBytes(
 
     if (request.json_out) |json_out_path| {
         writeFileWithParents(json_out_path, payload) catch |err| {
-            return buildVerifyFailedOutput(allocator, @errorName(err));
+            return buildVerifyFailedOutput(allocator, verifyJsonOutErrorDetail(err));
         };
     }
 
@@ -610,6 +610,42 @@ fn buildNotPortedOutput(
         .stdout = stdout,
         .stderr = stderr,
         .exit_code = 1,
+    };
+}
+
+fn verifySetupErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.AccessDenied => "unable to inspect replay path: access denied",
+        error.OutOfMemory => "native replay verifier ran out of memory while resolving paths",
+        else => @errorName(err),
+    };
+}
+
+fn verifyReplayReadErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.FileNotFound => "replay file not found",
+        error.AccessDenied => "unable to read replay file: access denied",
+        error.FileTooBig, error.PayloadTooLarge => "replay payload exceeds max decompressed size",
+        error.OutOfMemory => "native replay verifier ran out of memory while reading replay",
+        else => @errorName(err),
+    };
+}
+
+fn verifyDebugTraceErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.UnsupportedTarget => "debug trace output is unavailable on this target",
+        error.AccessDenied => "unable to write debug trace output: access denied",
+        error.OutOfMemory => "native replay verifier ran out of memory while writing debug trace output",
+        else => @errorName(err),
+    };
+}
+
+fn verifyJsonOutErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.UnsupportedTarget => "json output file is unavailable on this target",
+        error.AccessDenied => "unable to write replay verify JSON: access denied",
+        error.OutOfMemory => "native replay verifier ran out of memory while writing JSON",
+        else => @errorName(err),
     };
 }
 
@@ -1102,6 +1138,29 @@ test "unsupported verify option output has dedicated wording" {
     try std.testing.expectEqual(@as(i32, 1), output.exit_code);
     try std.testing.expect(
         std.mem.indexOf(u8, output.stderr, "unsupported replay verify option in native verifier") != null,
+    );
+}
+
+test "replay verify file and output errors use user-facing details" {
+    try std.testing.expectEqualStrings(
+        "native replay verifier ran out of memory while resolving paths",
+        verifySetupErrorDetail(error.OutOfMemory),
+    );
+    try std.testing.expectEqualStrings(
+        "replay payload exceeds max decompressed size",
+        verifyReplayReadErrorDetail(error.PayloadTooLarge),
+    );
+    try std.testing.expectEqualStrings(
+        "debug trace output is unavailable on this target",
+        verifyDebugTraceErrorDetail(error.UnsupportedTarget),
+    );
+    try std.testing.expectEqualStrings(
+        "unable to write replay verify JSON: access denied",
+        verifyJsonOutErrorDetail(error.AccessDenied),
+    );
+    try std.testing.expectEqualStrings(
+        "FileBusy",
+        verifyReplayReadErrorDetail(error.FileBusy),
     );
 }
 

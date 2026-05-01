@@ -86,7 +86,7 @@ fn runNativeInfo(
     };
 
     const resolution = resolveReplayPath(allocator, request.replay_file, base_dir) catch |err| {
-        return buildInfoFailedOutput(allocator, @errorName(err));
+        return buildInfoFailedOutput(allocator, infoResolutionErrorDetail(err));
     };
     defer resolution.deinit(allocator);
 
@@ -104,7 +104,7 @@ fn runNativeInfo(
         allocator,
         .limited(replay_codec.max_replay_payload_bytes),
     ) catch |err| {
-        return buildInfoFailedOutput(allocator, @errorName(err));
+        return buildInfoFailedOutput(allocator, infoReplayReadErrorDetail(err));
     };
     defer allocator.free(replay_bytes);
 
@@ -199,7 +199,7 @@ fn runNativeInfo(
 
     if (request.json_out) |json_out_path| {
         writeFileWithParents(json_out_path, payload_json) catch |err| {
-            return buildInfoFailedOutput(allocator, @errorName(err));
+            return buildInfoFailedOutput(allocator, infoJsonOutErrorDetail(err));
         };
     }
 
@@ -302,7 +302,44 @@ fn buildInfoFailedOutputForReplayCodecError(
     allocator: std.mem.Allocator,
     err: replay_codec.ReplayCodecError,
 ) !CommandOutput {
-    const detail = switch (err) {
+    return buildInfoFailedOutput(allocator, replayCodecErrorDetail(err));
+}
+
+fn buildInfoFailedOutputForReplayInfoError(
+    allocator: std.mem.Allocator,
+    err: replay_info_mod.ReplayInfoError,
+) !CommandOutput {
+    return buildInfoFailedOutput(allocator, replayInfoErrorDetail(err));
+}
+
+fn infoResolutionErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.AccessDenied => "unable to inspect replay path: access denied",
+        error.OutOfMemory => "native replay info path resolution ran out of memory",
+        else => @errorName(err),
+    };
+}
+
+fn infoReplayReadErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.FileNotFound => "replay file not found",
+        error.AccessDenied => "unable to read replay file: access denied",
+        error.FileTooBig, error.PayloadTooLarge => "replay payload exceeds max decompressed size",
+        error.OutOfMemory => "native replay info ran out of memory while reading replay",
+        else => @errorName(err),
+    };
+}
+
+fn infoJsonOutErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.AccessDenied => "unable to write replay info JSON: access denied",
+        error.OutOfMemory => "native replay info ran out of memory while writing JSON",
+        else => @errorName(err),
+    };
+}
+
+fn replayCodecErrorDetail(err: replay_codec.ReplayCodecError) []const u8 {
+    return switch (err) {
         error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.MissingHeaderField => "replay header missing required fields",
@@ -318,14 +355,10 @@ fn buildInfoFailedOutputForReplayCodecError(
         error.PayloadTooLarge => "replay payload exceeds max decompressed size",
         error.OutOfMemory => "native replay msgpack decode ran out of memory",
     };
-    return buildInfoFailedOutput(allocator, detail);
 }
 
-fn buildInfoFailedOutputForReplayInfoError(
-    allocator: std.mem.Allocator,
-    err: replay_info_mod.ReplayInfoError,
-) !CommandOutput {
-    const detail = switch (err) {
+fn replayInfoErrorDetail(err: replay_info_mod.ReplayInfoError) []const u8 {
+    return switch (err) {
         error.OutOfMemory => "replay info collector ran out of memory",
         error.InvalidHeaderValue => "replay info collector received invalid header values",
         error.UnsupportedGameMode => "replay info collector only supports survival/rush/quest/typo/tutorial modes",
@@ -340,7 +373,6 @@ fn buildInfoFailedOutputForReplayInfoError(
         error.InvalidQuestSpawnTable => "quest replay/session payload resolves to an invalid quest spawn table",
         error.MissingRngCallerTag => "native replay trace hit an untagged gameplay RNG draw",
     };
-    return buildInfoFailedOutput(allocator, detail);
 }
 
 fn parseNativeSubset(args: []const []const u8) ParseOutcome {
@@ -537,6 +569,44 @@ fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
         .sub_path = path,
         .data = bytes,
     });
+}
+
+test "replay info maps file and json output errors to user details" {
+    try std.testing.expectEqualStrings(
+        "replay payload exceeds max decompressed size",
+        infoReplayReadErrorDetail(error.PayloadTooLarge),
+    );
+    try std.testing.expectEqualStrings(
+        "native replay info path resolution ran out of memory",
+        infoResolutionErrorDetail(error.OutOfMemory),
+    );
+    try std.testing.expectEqualStrings(
+        "unable to write replay info JSON: access denied",
+        infoJsonOutErrorDetail(error.AccessDenied),
+    );
+    try std.testing.expectEqualStrings(
+        "FileBusy",
+        infoReplayReadErrorDetail(error.FileBusy),
+    );
+}
+
+test "replay info exposes codec and collector detail helpers" {
+    try std.testing.expectEqualStrings(
+        "replay payload is not valid msgpack wire format",
+        replayCodecErrorDetail(error.InvalidMsgpack),
+    );
+    try std.testing.expectEqualStrings(
+        "replay bootstrap seed does not match canonical terrain bootstrap draws",
+        replayCodecErrorDetail(error.BootstrapSeedMismatch),
+    );
+    try std.testing.expectEqualStrings(
+        "replay info collector only supports survival/rush/quest/typo/tutorial modes",
+        replayInfoErrorDetail(error.UnsupportedGameMode),
+    );
+    try std.testing.expectEqualStrings(
+        "replay info collector encountered an out-of-range player_index event",
+        replayInfoErrorDetail(error.UnsupportedEventPlayerIndex),
+    );
 }
 
 test "replay info header tick limit uses info-specific detail" {
