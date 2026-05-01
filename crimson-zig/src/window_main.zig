@@ -1166,6 +1166,7 @@ const App = struct {
             self.stopNetworkLiveSession();
             return;
         };
+        self.refreshNetworkLiveCamera();
         if (net_update.frames_advanced != 0) {
             if (net_update.last_tick_index) |tick_index| {
                 const local_slot = session.localInputSlot() orelse 0;
@@ -1211,6 +1212,16 @@ const App = struct {
             frame_dt,
         );
         _ = try session.submitLocalFrameInput(self.allocator, input, now_ms);
+    }
+
+    fn refreshNetworkLiveCamera(self: *App) void {
+        const session = if (self.network_live_session) |*session| session else return;
+        const runner = session.runnerForLocalInput() orelse return;
+        self.network_live_camera = updateGameplayCamera(
+            self.network_live_camera,
+            &runner.session,
+            &self.runtime.config,
+        );
     }
 
     fn stopNetworkLiveSession(self: *App) void {
