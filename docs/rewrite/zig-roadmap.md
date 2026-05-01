@@ -7,7 +7,7 @@ tags:
 
 # Zig port roadmap (`crimson-zig/`)
 
-Last reviewed: **2026-04-12**
+Last reviewed: **2026-05-02**
 
 This page now tracks the remaining work after the Zig port crossed the
 “desktop playable slice” threshold. The current tree already contains a real
@@ -39,6 +39,10 @@ Today `crimson-zig/` already has:
   [`crimson-zig/src/formats/`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/formats),
 - native audio modules under
   [`crimson-zig/src/audio/`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/audio),
+- native rollback session construction and live smoke validation in
+  [`crimson-zig/src/net_session_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/net_session_native.zig)
+  and
+  [`crimson-zig/src/net_rollback_smoke_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/net_rollback_smoke_native.zig),
 - a freestanding WASM replay verify/info plus checkpoint diff/verify ABI in
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig).
 
@@ -144,17 +148,19 @@ Definition of done:
 - remaining visual/audio mismatches are minor polish, not missing systems or
   duplicate architectures.
 
-### 5. Network/LAN parity
+### 5. Network/LAN parity and hardening
 
-This remains a real missing system, but it is currently deferred.
+This is no longer missing first-launch support, but it still needs hardening
+and product parity.
 
-Scope when resumed:
+Remaining work:
 
-- Play Game network entrypoints; the Zig CLI now has a validated
-  `net host/join --format json` pending-session surface, and the desktop
-  Play Game menu opens a native network session shell,
-- live session/lobby behavior,
-- native LAN/runtime behavior.
+- keep the native `net host/join --format json` surface aligned with relay
+  protocol defaults and runtime support flags,
+- expand `net smoke-rollback` beyond the in-process happy path into loss,
+  reorder, jitter, reconnect, and resync scenarios,
+- tighten desktop network lobby/status UX around live rollback sessions,
+- keep legacy lockstep as an explicit fallback while rollback remains primary.
 
 Reference Python surfaces:
 
@@ -169,8 +175,8 @@ If the goal is to finish the Zig port cleanly, the current order should be:
 1. replay/verifier breadth and remaining justified runtime closures
 2. product-shell parity, especially results and demo/trial shell
 3. native tooling breadth
-4. remaining presentation/audio polish
-5. network/LAN parity
+4. network/LAN stress hardening and product-lobby polish
+5. remaining presentation/audio polish
 
 ## What is no longer a roadmap item
 
@@ -180,6 +186,7 @@ These were earlier concerns but are no longer the right headline risks:
 - “Zig has no real desktop game shell”
 - “spawn template coverage is broadly missing”
 - “quest spawn tables are mostly unported”
+- “Zig network support can only emit pending session JSON”
 
 Those areas now have real coverage in the current tree. The remaining work is
 closure and parity, not first-time implementation of those foundations.

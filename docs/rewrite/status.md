@@ -4,7 +4,7 @@ This page tracks the current code-level state of the rewrite under `src/`, and t
 largest remaining parity gaps vs the classic Windows build (v1.9.93) documented in
 [`docs/crimsonland-exe/`](../crimsonland-exe/).
 
-Last reviewed: **2026-02-24**
+Last reviewed: **2026-05-02**
 
 ## What you can run today
 
@@ -24,7 +24,8 @@ Last reviewed: **2026-02-24**
   - `uv run crimson net join --netcode lockstep --host <ip> --port 31993`
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net host --mode survival --players 2 --format json`
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net join --code <invite> --format json`
-    - The native Zig `net host/join` surface currently validates and emits pending session JSON only (`runtime_supported=false`), and the desktop Network panel can configure matching pending role/mode/player/netcode state; live native netplay still belongs to the remaining network/LAN parity work.
+  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --format json`
+    - The native Zig `net host/join` surface now reports `runtime_supported=true` for rollback sessions, and the native smoke command exercises an in-process relay plus host/guest live rollback exchange. Remaining network work is broader stress/lobby parity, not first launch support.
 - Asset tooling:
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig-asset-smoke <assets-dir>`
     - The installed native smoke tool validates `crimson.paq`, JAZ/TGA/JPEG image decoding, runtime texture specs, and small-font width data.

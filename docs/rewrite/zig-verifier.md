@@ -7,7 +7,7 @@ tags:
 
 # Zig native port status (`crimson-zig/`)
 
-Last reviewed: **2026-04-12**
+Last reviewed: **2026-05-02**
 
 Scope target: a full native Zig port of Crimson systems, content, codecs,
 runtime, and product shell.
@@ -29,6 +29,7 @@ What exists today:
 - native quest spawn-table dump tooling,
 - native UDP relay serve CLI,
 - native `net host/join --format json` session construction,
+- native rollback live-session launch and an in-process rollback smoke command,
 - native Play Game network entry shell,
 - a real raylib desktop app target,
 - archive/config/status codecs,
@@ -95,6 +96,9 @@ Current supported replay-tooling behavior:
 - spawn-template runtime summaries via `spawn-plan <template_id> --json`,
   including optional non-demo burst-effect counts
 - native UDP relay serving via `relay serve`
+- native rollback session construction via `net host/join --format json` with
+  `runtime_supported=true`
+- in-process rollback smoke validation via `net smoke-rollback --format json`
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
   data rather than stale “unsupported path” wording
 
@@ -121,9 +125,10 @@ The important remaining gaps are now:
   surrounding product shell,
 - WASM still exposes a narrow replay/runtime surface, but now has replay
   verify/info JSON byte-input exports plus checkpoint diff/verify text exports,
-- network/LAN runtime parity is still deferred; Zig can validate and emit
-  pending `net host/join` session JSON and show the desktop network shell, but
-  does not yet launch live netplay.
+- network/LAN parity still needs broader stress and lobby coverage; Zig can now
+  construct rollback sessions, launch live rollback runners, and smoke-test a
+  host/guest relay exchange, but long impairment scenarios and product-lobby
+  polish remain.
 
 The biggest remaining technical risk is not basic gameplay ownership. It is
 closing the remaining replay/tooling and product-shell breadth gaps cleanly.
