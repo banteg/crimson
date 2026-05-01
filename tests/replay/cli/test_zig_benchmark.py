@@ -25,9 +25,17 @@ def test_zig_replay_benchmark_reports_headless_summary(tmp_path: Path) -> None:
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "ok: mode=headless runs=2 warmup_runs=0 ticks=2" in result.stdout
-    assert "wall_ms" in result.stdout
-    assert "throughput_tps" in result.stdout
-    assert "realtime_x" in result.stdout
+    lines = result.stdout.splitlines()
+    wall_ms_line = next(line for line in lines if line.startswith("wall_ms "))
+    throughput_line = next(line for line in lines if line.startswith("throughput_tps "))
+    assert " p50=" in wall_ms_line
+    assert " p95=" in wall_ms_line
+    assert " stdev=" in wall_ms_line
+    assert " p50=" in throughput_line
+    assert " p95=" in throughput_line
+    assert " stdev=" in throughput_line
+    assert " | realtime_x " in throughput_line
+    assert "json_report=None" not in result.stdout
 
 
 def test_zig_replay_benchmark_emits_json_payload(tmp_path: Path) -> None:

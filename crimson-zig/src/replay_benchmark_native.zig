@@ -519,20 +519,12 @@ fn runBenchmarkWithReplay(
                 realtime.p50,
             },
         );
-        try writer.print(
-            "wall_ms min={d:.3} mean={d:.3} max={d:.3} | throughput_tps min={d:.2} mean={d:.2} max={d:.2} | realtime_x min={d:.2} mean={d:.2} max={d:.2}\n",
-            .{
-                wall.min,
-                wall.mean,
-                wall.max,
-                tps.min,
-                tps.mean,
-                tps.max,
-                realtime.min,
-                realtime.mean,
-                realtime.max,
-            },
-        );
+        try writeMetricAggregate3(writer, "wall_ms", wall);
+        try writer.writeByte('\n');
+        try writeMetricAggregate2(writer, "throughput_tps", tps);
+        try writer.writeAll(" | ");
+        try writeMetricAggregate2(writer, "realtime_x", realtime);
+        try writer.writeByte('\n');
         if (profile_payload) |profile| {
             try writer.print("profile: sort={s} source={s} top={d}\n", .{ profile.sort, profile.source, profile.top });
             try writer.writeAll("hotspots:\n");
@@ -1008,6 +1000,44 @@ fn ticksPerSecond(ticks: usize, wall_ms: f64) f64 {
 fn realtimeMultiplier(elapsed_ms: i64, wall_ms: f64) f64 {
     if (wall_ms <= 0.0) return 0.0;
     return @as(f64, @floatFromInt(elapsed_ms)) / wall_ms;
+}
+
+fn writeMetricAggregate3(
+    writer: anytype,
+    name: []const u8,
+    aggregate: BenchmarkAggregatePayload,
+) !void {
+    try writer.print(
+        "{s} min={d:.3} p50={d:.3} mean={d:.3} p95={d:.3} max={d:.3} stdev={d:.3}",
+        .{
+            name,
+            aggregate.min,
+            aggregate.p50,
+            aggregate.mean,
+            aggregate.p95,
+            aggregate.max,
+            aggregate.stdev,
+        },
+    );
+}
+
+fn writeMetricAggregate2(
+    writer: anytype,
+    name: []const u8,
+    aggregate: BenchmarkAggregatePayload,
+) !void {
+    try writer.print(
+        "{s} min={d:.2} p50={d:.2} mean={d:.2} p95={d:.2} max={d:.2} stdev={d:.2}",
+        .{
+            name,
+            aggregate.min,
+            aggregate.p50,
+            aggregate.mean,
+            aggregate.p95,
+            aggregate.max,
+            aggregate.stdev,
+        },
+    );
 }
 
 fn benchmarkRunResultsMatch(left: replay_runner.ReplayRunResult, right: replay_runner.ReplayRunResult) bool {
