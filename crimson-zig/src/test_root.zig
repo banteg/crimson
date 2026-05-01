@@ -19,6 +19,7 @@ test {
     _ = cz.local_input;
     _ = cz.lifecycle;
     _ = cz.live_runner;
+    _ = cz.net_session_native;
     _ = cz.net;
     _ = cz.perks;
     _ = cz.persistence;

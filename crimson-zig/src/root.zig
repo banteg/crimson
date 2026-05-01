@@ -40,6 +40,7 @@ pub const formats = @import("formats/mod.zig");
 pub const persistence = @import("persistence/mod.zig");
 pub const local_input = @import("local_input.zig");
 pub const demo_trial = @import("demo_trial.zig");
+pub const net_session_native = @import("net_session_native.zig");
 pub const net = @import("net/mod.zig");
 pub const runtime_paths = @import("runtime_paths.zig");
 pub const window_atlas = @import("window_atlas.zig");
