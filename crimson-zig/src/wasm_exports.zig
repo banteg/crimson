@@ -1,5 +1,6 @@
 const std = @import("std");
 const replay_codec = @import("replay_codec.zig");
+const replay_info_native = @import("replay_info_native.zig");
 const verify_native = @import("verify_native.zig");
 
 const heap_size = 16 * 1024 * 1024;
@@ -8,7 +9,7 @@ const oversized_error_json = "{\"status\":\"error\",\"message\":\"error payload 
 
 // Transient bump arena for wasm interop buffers.
 // Contract: pointers returned by `crimson_alloc` stay valid only until the next
-// `crimson_verify_replay_json` call, which resets `heap_top` back to zero.
+// replay-processing call, which resets `heap_top` back to zero.
 var heap: [heap_size]u8 align(8) = undefined;
 var heap_top: usize = 0;
 
@@ -70,6 +71,49 @@ export fn crimson_verify_replay_json(
     };
 
     const output = verify_native.runReplayVerifyBytesJson(
+        std.heap.page_allocator,
+        "<wasm>",
+        replay_bytes,
+        options.max_ticks,
+    ) catch |err| {
+        setErrorMessage(std.heap.page_allocator, @errorName(err));
+        return -1;
+    };
+    defer output.deinit(std.heap.page_allocator);
+
+    if (output.exit_code == 1 and output.stdout.len == 0 and output.stderr.len > 0) {
+        setErrorMessage(std.heap.page_allocator, std.mem.trimEnd(u8, output.stderr, "\n"));
+        return -1;
+    }
+
+    return copyOutputPayload(output.stdout, out_ptr, out_len);
+}
+
+export fn crimson_info_replay_json(
+    replay_ptr: usize,
+    replay_len: usize,
+    opts_ptr: usize,
+    opts_len: usize,
+    out_ptr: usize,
+    out_len: usize,
+) i32 {
+    last_error_len = 0;
+    heap_top = 0;
+
+    if (replay_ptr == 0 or replay_len == 0) {
+        setErrorSimple("{\"status\":\"error\",\"message\":\"missing replay bytes\"}");
+        return -1;
+    }
+
+    const replay: [*]const u8 = @ptrFromInt(replay_ptr);
+    const replay_bytes = replay[0..replay_len];
+
+    const options = parseVerifyOptions(opts_ptr, opts_len) catch |err| {
+        setErrorMessage(std.heap.page_allocator, @errorName(err));
+        return -1;
+    };
+
+    const output = replay_info_native.runReplayInfoBytesJson(
         std.heap.page_allocator,
         "<wasm>",
         replay_bytes,
@@ -239,6 +283,42 @@ test "crimson_verify_replay_json honors max_ticks option" {
     );
     try std.testing.expectEqual(@as(i32, @intCast(required_len)), copied);
     try std.testing.expect(std.mem.indexOf(u8, out, "\"ticks\":1") != null);
+}
+
+test "crimson_info_replay_json returns replay info payload" {
+    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(std.testing.allocator);
+    defer std.testing.allocator.free(replay_bytes);
+
+    const opts = "{\"max_ticks\":1}";
+    const required_or_error = crimson_info_replay_json(
+        @intFromPtr(replay_bytes.ptr),
+        replay_bytes.len,
+        @intFromPtr(opts.ptr),
+        opts.len,
+        0,
+        0,
+    );
+    try std.testing.expect(required_or_error < 0);
+    const required_len: usize = @intCast(-required_or_error);
+
+    const out = try std.testing.allocator.alloc(u8, required_len);
+    defer std.testing.allocator.free(out);
+
+    const copied = crimson_info_replay_json(
+        @intFromPtr(replay_bytes.ptr),
+        replay_bytes.len,
+        @intFromPtr(opts.ptr),
+        opts.len,
+        @intFromPtr(out.ptr),
+        out.len,
+    );
+    try std.testing.expectEqual(@as(i32, @intCast(required_len)), copied);
+    try std.testing.expectEqual(@as(i32, 0), crimson_last_error_json(0, 0));
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"schema_version\":2") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"replay\":\"<wasm>\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"summary\":") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"ticks_simulated\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"timeline\":") != null);
 }
 
 test "crimson_alloc pointers are transient across verify calls" {

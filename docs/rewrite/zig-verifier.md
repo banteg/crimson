@@ -28,7 +28,7 @@ What exists today:
 - archive/config/status codecs,
 - archive-backed rendering/audio,
 - live native gameplay for Survival, Rush, Quests, Typ-o, and Tutorial,
-- a freestanding WASM replay-verification ABI.
+- a freestanding WASM replay verify/info ABI.
 
 Replay tooling is still the most mature headless/public surface, but it now
 consumes the same shared runtime used by the native desktop application.
@@ -67,6 +67,7 @@ Current supported replay-tooling behavior:
 - checkpoint diffing via `replay diff-checkpoints`
 - replay RNG tracing via `replay verify --trace-rng` and
   `replay benchmark --trace-rng`
+- freestanding WASM replay verification and replay info JSON exports
 - headless replay throughput timing via `replay benchmark` (render benchmark
   mode remains Python-only)
 - current Python-readable trace export contracts
@@ -94,7 +95,8 @@ The important remaining gaps are now:
 - some product-shell flows are still thinner than Python,
 - demo/trial shell behavior exists, but still needs polish alongside the
   surrounding product shell,
-- WASM still exposes a narrow replay/runtime surface,
+- WASM still exposes a narrow replay/runtime surface, but now has both verify
+  and info JSON byte-input exports,
 - network/LAN parity is still deferred.
 
 The biggest remaining technical risk is not basic gameplay ownership. It is

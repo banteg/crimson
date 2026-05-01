@@ -70,6 +70,98 @@ pub fn runReplayInfo(
     }
 }
 
+pub fn runReplayInfoBytesJson(
+    allocator: std.mem.Allocator,
+    replay_name: []const u8,
+    replay_bytes: []const u8,
+    max_ticks: ?usize,
+) !CommandOutput {
+    const payload = try buildInfoJsonPayload(allocator, replay_name, replay_bytes, max_ticks, null, false);
+    errdefer allocator.free(payload);
+    return .{
+        .stdout = payload,
+        .stderr = try allocator.dupe(u8, ""),
+        .exit_code = 0,
+    };
+}
+
+fn buildInfoJsonPayload(
+    allocator: std.mem.Allocator,
+    replay_path: []const u8,
+    replay_bytes: []const u8,
+    max_ticks: ?usize,
+    player_index_filter: ?i32,
+    include_extra_events: bool,
+) ![]u8 {
+    var replay_payload_alloc: ?[]u8 = null;
+    defer if (replay_payload_alloc) |buf| allocator.free(buf);
+
+    const replay_payload: []const u8 = if (replay_codec.isZstdPayload(replay_bytes)) blk: {
+        const inflated = try replay_codec.inflateZstdPayload(
+            allocator,
+            replay_bytes,
+            replay_codec.max_replay_payload_bytes,
+        );
+        replay_payload_alloc = inflated;
+        break :blk inflated;
+    } else if (replay_codec.isGzipPayload(replay_bytes)) blk: {
+        const inflated = try replay_codec.inflateGzipPayload(
+            allocator,
+            replay_bytes,
+            replay_codec.max_replay_payload_bytes,
+        );
+        replay_payload_alloc = inflated;
+        break :blk inflated;
+    } else replay_bytes;
+
+    var replay = try replay_codec.parseReplay(allocator, replay_payload);
+    defer replay.deinit(allocator);
+
+    if (unsupportedReplayHeaderDetail(replay.header, replay.tickCount())) |detail| {
+        _ = detail;
+        return error.UnsupportedReplayHeader;
+    }
+    try replay_codec.validateReplayBootstrap(replay.header);
+
+    if (player_index_filter) |player_index| {
+        if (player_index < 0) return error.InvalidPlayerIndexFilter;
+        if (replay.header.player_count > 0 and player_index >= replay.header.player_count) return error.InvalidPlayerIndexFilter;
+    }
+
+    const result = try replay_info_mod.collect(
+        allocator,
+        replay,
+        .{
+            .max_ticks = max_ticks,
+            .player_index = player_index_filter,
+            .include_extra_events = include_extra_events,
+        },
+    );
+    defer result.deinit(allocator);
+
+    const summary: ReplayInfoSummaryPayload = .{
+        .game_mode_id = result.game_mode_id,
+        .tick_rate = result.tick_rate,
+        .ticks_simulated = result.ticks_simulated,
+        .elapsed_ms = result.elapsed_ms,
+        .player_count = result.player_count,
+        .event_count = result.timeline.len,
+        .event_counts_by_kind = replay_info_mod.eventCountsByKind(result.timeline),
+    };
+    const payload: ReplayInfoPayload = .{
+        .schema_version = replay_info_schema_version,
+        .status = "ok",
+        .replay = replay_path,
+        .summary = summary,
+        .timeline = result.timeline,
+    };
+
+    var payload_writer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer payload_writer.deinit();
+    try std.json.Stringify.value(payload, .{}, &payload_writer.writer);
+    return payload_writer.toOwnedSlice();
+}
+
 fn runNativeInfo(
     allocator: std.mem.Allocator,
     request: ReplayInfoRequest,
@@ -108,6 +200,15 @@ fn runNativeInfo(
     };
     defer allocator.free(replay_bytes);
 
+    return runInfoWithReplayBytes(allocator, request, resolution.resolved_path, replay_bytes);
+}
+
+fn runInfoWithReplayBytes(
+    allocator: std.mem.Allocator,
+    request: ReplayInfoRequest,
+    replay_path: []const u8,
+    replay_bytes: []const u8,
+) !CommandOutput {
     var replay_payload_alloc: ?[]u8 = null;
     defer if (replay_payload_alloc) |buf| allocator.free(buf);
 
@@ -187,7 +288,7 @@ fn runNativeInfo(
     const payload: ReplayInfoPayload = .{
         .schema_version = replay_info_schema_version,
         .status = "ok",
-        .replay = resolution.resolved_path,
+        .replay = replay_path,
         .summary = summary,
         .timeline = result.timeline,
     };
@@ -214,7 +315,7 @@ fn runNativeInfo(
         try writer.print(
             "ok: replay={s} mode={s} ticks={d} elapsed_ms={d} events={d}\n",
             .{
-                resolution.resolved_path,
+                replay_path,
                 replayModeLabel(summary.game_mode_id),
                 summary.ticks_simulated,
                 summary.elapsed_ms,

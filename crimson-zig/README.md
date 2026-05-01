@@ -11,7 +11,7 @@ Standalone Zig workspace for the native Crimson port.
   `replay benchmark`, checkpoint verification/diffing),
 - a real raylib desktop app target,
 - archive/codec support for `crimson.paq`, `music.paq`, `sfx.paq`, `crimson.cfg`, and `game.cfg`,
-- a freestanding WASM replay-verification ABI.
+- a freestanding WASM replay verify/info ABI.
 
 The desktop target now owns a real boot-to-menu-to-gameplay loop:
 
@@ -33,7 +33,8 @@ It is mostly closure work:
 - replay/tooling breadth still lags Python,
 - some product-shell flows are still thinner than Python,
 - checkpoint verification tooling still lacks some Python-only diagnostics,
-- WASM is still a narrow replay/runtime ABI,
+- WASM is still a narrow replay/runtime ABI, but exposes both verify and info
+  JSON paths,
 - network/LAN parity is still deferred.
 
 For the staged remaining-work breakdown, see
@@ -156,7 +157,8 @@ Current freestanding exports:
 - `crimson_alloc(size) -> ptr`
 - `crimson_free(ptr, size) -> void`
 - `crimson_verify_replay_json(replay_ptr, replay_len, opts_ptr, opts_len, out_ptr, out_len) -> i32`
+- `crimson_info_replay_json(replay_ptr, replay_len, opts_ptr, opts_len, out_ptr, out_len) -> i32`
 - `crimson_last_error_json(out_ptr, out_len) -> i32`
 
-`crimson_verify_replay_json` accepts an optional JSON options object with
-`max_ticks`.
+`crimson_verify_replay_json` and `crimson_info_replay_json` accept an optional
+JSON options object with `max_ticks`.

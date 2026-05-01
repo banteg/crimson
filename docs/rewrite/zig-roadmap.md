@@ -33,7 +33,7 @@ Today `crimson-zig/` already has:
   [`crimson-zig/src/formats/`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/formats),
 - native audio modules under
   [`crimson-zig/src/audio/`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/audio),
-- a freestanding WASM replay-verification ABI in
+- a freestanding WASM replay verify/info ABI in
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig).
 
 Current live/native gameplay coverage:
@@ -65,7 +65,7 @@ Remaining work:
   still justified,
 - expand native tooling beyond `replay list`, `replay verify`,
   `replay info`, and `replay benchmark`,
-- widen the WASM surface beyond byte-input replay verification.
+- continue widening the WASM surface beyond byte-input replay verification/info.
 
 Definition of done:
 
