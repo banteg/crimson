@@ -15,6 +15,7 @@ pub const packed_input = @import("packed_input.zig");
 pub const reliable = @import("reliable.zig");
 pub const reliable_channel = @import("reliable_channel.zig");
 pub const rollback = @import("rollback.zig");
+pub const rollback_live_bridge = @import("rollback_live_bridge.zig");
 pub const rollback_live_session = @import("rollback_live_session.zig");
 pub const rollback_runtime = @import("rollback_runtime.zig");
 pub const rollback_session = @import("rollback_session.zig");
@@ -50,7 +51,6 @@ test {
     _ = reliable;
     _ = reliable_channel;
     _ = rollback;
-    _ = rollback_live_session;
     _ = rollback_runtime;
     _ = rollback_session;
     _ = rollback_resync_v5;

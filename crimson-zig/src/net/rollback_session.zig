@@ -10,6 +10,17 @@ const room_code = @import("room_code.zig");
 
 pub const Role = rollback_runtime.Role;
 
+pub const MatchConfig = struct {
+    seed: i32 = 0,
+    mode_id: i32 = 0,
+    player_count: i32 = 1,
+    quest_level: ?quest_level.QuestLevel = null,
+    preserve_bugs: bool = false,
+    tick_rate: i32 = relay_protocol.tick_rate,
+    input_delay_ticks: i32 = relay_protocol.input_delay_ticks,
+    status: ?game_cfg.Status = null,
+};
+
 pub const Options = struct {
     role: Role,
     mode_id: i32,
@@ -49,6 +60,7 @@ pub const Session = struct {
     started: bool = false,
     local_slot_index: i32 = -1,
     room_code_latest: ?room_code.RoomCode = null,
+    match_config: ?MatchConfig = null,
     error_reason: []const u8 = "",
 
     pub fn init(options: Options) Session {
@@ -171,6 +183,7 @@ pub const Session = struct {
         self.started = true;
         self.local_slot_index = start.slot_index;
         self.room_code_latest = start.room_code;
+        self.match_config = matchConfigFromRoomStart(start);
     }
 
     fn flushRuntimeOutbox(self: *Session, allocator: std.mem.Allocator, now_ms: i64) !void {
@@ -200,6 +213,19 @@ pub const Session = struct {
         self.error_reason = if (reason.len == 0) "" else try allocator.dupe(u8, reason);
     }
 };
+
+fn matchConfigFromRoomStart(start: relay_protocol.RoomStart) MatchConfig {
+    return .{
+        .seed = start.seed,
+        .mode_id = start.mode_id,
+        .player_count = start.player_count,
+        .quest_level = start.quest_level,
+        .preserve_bugs = start.preserve_bugs,
+        .tick_rate = start.tick_rate,
+        .input_delay_ticks = start.input_delay_ticks,
+        .status = start.status,
+    };
+}
 
 fn clearPacketList(allocator: std.mem.Allocator, packets: *std.ArrayList(relay_protocol.RelayPacket)) void {
     for (packets.items) |*packet| relay_protocol.deinitPacket(allocator, packet);

@@ -27,6 +27,8 @@ test {
     _ = cz.net;
     std.testing.refAllDecls(cz.net.lockstep_live_bridge);
     std.testing.refAllDecls(cz.net.lockstep_live_session);
+    std.testing.refAllDecls(cz.net.rollback_live_bridge);
+    std.testing.refAllDecls(cz.net.rollback_live_session);
 
     var host_status = std.mem.zeroes(cz.formats.game_cfg.Status);
     host_status.quest_unlock_index = 2;

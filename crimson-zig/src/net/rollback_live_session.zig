@@ -1,13 +1,28 @@
 const std = @import("std");
 
+const live_runner = @import("../runtime/live_runner.zig");
 const packed_input = @import("packed_input.zig");
 const relay_reliable = @import("relay_reliable.zig");
+const relay_protocol = @import("relay_protocol.zig");
 const relay_transport = @import("relay_transport.zig");
+const rollback_live_bridge = @import("rollback_live_bridge.zig");
 const rollback_runtime = @import("rollback_runtime.zig");
 const rollback_session = @import("rollback_session.zig");
 const room_code = @import("room_code.zig");
 
 const Io = std.Io;
+const max_players: usize = @intCast(relay_protocol.max_players);
+
+pub const LiveSessionError = rollback_live_bridge.BridgeError || live_runner.LiveRunnerError;
+
+pub const StepSummary = struct {
+    frames_advanced: usize = 0,
+    ticks_advanced: usize = 0,
+    last_tick_index: ?i32 = null,
+    last_player_count: usize = 0,
+    last_input_flags: [max_players]u32 = [_]u32{0} ** max_players,
+    last_update: ?live_runner.FrameUpdate = null,
+};
 
 pub const Options = struct {
     session: rollback_session.Options,
@@ -21,6 +36,7 @@ pub const LiveSession = struct {
     transport: relay_transport.UdpTransport,
     server_addr: relay_transport.PeerAddr,
     session: rollback_session.Session,
+    runner: ?live_runner.LiveRunner = null,
     max_packets_per_update: usize,
 
     pub fn init(options: Options) LiveSession {
@@ -75,6 +91,31 @@ pub const LiveSession = struct {
         return self.session.popFrame();
     }
 
+    pub fn ensureLiveRunner(self: *LiveSession) LiveSessionError!bool {
+        if (self.runner != null) return false;
+        const match_config = self.session.match_config orelse return false;
+        self.runner = try live_runner.LiveRunner.init(try rollback_live_bridge.liveConfigFromMatchConfig(match_config));
+        return true;
+    }
+
+    pub fn stepFrames(self: *LiveSession) LiveSessionError!StepSummary {
+        _ = try self.ensureLiveRunner();
+        if (self.runner == null) return .{};
+
+        var summary: StepSummary = .{};
+        while (self.popFrame()) |frame| {
+            const update_result = try rollback_live_bridge.stepFrame(&self.runner.?, frame);
+            summary.frames_advanced += 1;
+            summary.ticks_advanced += update_result.ticks_advanced;
+            summary.last_tick_index = frame.tick_index;
+            const captured = captureInputFlags(frame);
+            summary.last_player_count = captured.player_count;
+            summary.last_input_flags = captured.flags;
+            summary.last_update = update_result;
+        }
+        return summary;
+    }
+
     fn drainIncoming(self: *LiveSession, allocator: std.mem.Allocator, io: Io, now_ms: i64) !void {
         var packets = try self.transport.recvPackets(allocator, io, self.max_packets_per_update, 0);
         defer packets.deinit(allocator);
@@ -91,6 +132,20 @@ pub const LiveSession = struct {
         }
     }
 };
+
+const CapturedInputFlags = struct {
+    player_count: usize = 0,
+    flags: [max_players]u32 = [_]u32{0} ** max_players,
+};
+
+fn captureInputFlags(frame: rollback_runtime.TickFrame) CapturedInputFlags {
+    var captured: CapturedInputFlags = .{};
+    captured.player_count = @min(frame.player_count, captured.flags.len);
+    for (frame.frame_inputs[0..captured.player_count], 0..) |input, idx| {
+        captured.flags[idx] = input.flags;
+    }
+    return captured;
+}
 
 test "rollback live session sends hello to relay endpoint" {
     const allocator = std.testing.allocator;
@@ -186,4 +241,54 @@ test "rollback live session receives room start and packetizes local input" {
 
     const frame = live.popFrame() orelse return error.ExpectedFrame;
     try std.testing.expectEqual(@as(u32, 7), frame.input(0).flags);
+}
+
+test "rollback live session creates runner and steps local frames after room start" {
+    const allocator = std.testing.allocator;
+    const io = std.Io.Threaded.global_single_threaded.io();
+
+    var relay_sender: relay_transport.UdpTransport = .{ .bind_host = "127.0.0.1", .bind_port = 0 };
+    try relay_sender.open(io);
+    defer relay_sender.close(io);
+
+    var live = LiveSession.init(.{
+        .server_addr = relay_transport.PeerAddr.loopback(relay_sender.boundPort()),
+        .bind_host = "127.0.0.1",
+        .session = .{
+            .role = .host,
+            .mode_id = 2,
+            .player_count = 1,
+            .build_id = "0.1.0",
+            .input_delay_ticks = 0,
+        },
+    });
+    defer live.deinit(allocator, io);
+    try live.open(io);
+
+    var server_link: relay_reliable.RelayReliableLink = .{};
+    defer server_link.deinit(allocator);
+    const code = try room_code.parseRoomCode("ABCD");
+    try relay_sender.sendPacket(allocator, io, relay_transport.PeerAddr.loopback(live.boundPort()), try server_link.buildPacket(allocator, .{ .room_start = .{
+        .room_code = code,
+        .session_id = "s1",
+        .seed = 1234,
+        .mode_id = 2,
+        .player_count = 1,
+        .slot_index = 0,
+        .input_delay_ticks = 0,
+        .rollback_max_ticks = 8,
+    } }, true, 1000));
+
+    try live.update(allocator, io, 1001);
+    try std.testing.expect(try live.ensureLiveRunner());
+    try std.testing.expect(!try live.ensureLiveRunner());
+    try std.testing.expectEqual(@as(u32, 1234), live.runner.?.seed);
+
+    try live.queueLocalInput(allocator, io, .{ .flags = 7 }, 1002);
+    const summary = try live.stepFrames();
+    try std.testing.expectEqual(@as(usize, 1), summary.frames_advanced);
+    try std.testing.expectEqual(@as(?i32, 0), summary.last_tick_index);
+    try std.testing.expectEqual(@as(usize, 1), summary.last_player_count);
+    try std.testing.expectEqual(@as(u32, 7), summary.last_input_flags[0]);
+    try std.testing.expect(summary.last_update != null);
 }
