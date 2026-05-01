@@ -27,7 +27,7 @@ def test_zig_net_host_builds_rollback_session_json() -> None:
     )
 
     assert payload["role"] == "host"
-    assert payload["runtime_supported"] is False
+    assert payload["runtime_supported"] is True
     assert payload["mode"] == "rush"
     assert payload["mode_id"] == 2
     assert payload["player_count"] == 3
