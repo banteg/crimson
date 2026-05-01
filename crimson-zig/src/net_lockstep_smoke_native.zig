@@ -1,8 +1,10 @@
 const std = @import("std");
 
 const game_cfg = @import("formats/game_cfg.zig");
+const lockstep_live_bridge = @import("net/lockstep_live_bridge.zig");
 const lockstep_session = @import("net/lockstep_session.zig");
 const lockstep_state = @import("net/lockstep_state.zig");
+const live_runner = @import("runtime/live_runner.zig");
 const verify_native = @import("verify_native.zig");
 
 const Io = std.Io;
@@ -37,6 +39,8 @@ const SmokePayload = struct {
     tick_index: i32,
     host_input_flags: u32,
     client_input_flags: u32,
+    live_ticks_advanced: usize,
+    live_tick_index: usize,
 };
 
 pub fn runLockstepSmoke(
@@ -143,6 +147,14 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io) !SmokePayload {
     defer lockstep_state.deinitTickFrame(allocator, &frame);
     if (frame.frame_inputs.len != 2) return error.LockstepCanonicalFrameMismatch;
 
+    const match_start = client.runtime.lobby.match_start orelse return error.LockstepMatchStartMissing;
+    var runner = try live_runner.LiveRunner.init(try lockstep_live_bridge.liveConfigFromMatchStart(match_start, .{
+        .tick_rate = client.runtime.tick_rate,
+        .input_delay_ticks = client.runtime.input_delay_ticks,
+    }));
+    const live_update = try lockstep_live_bridge.stepCanonicalFrame(&runner, frame);
+    if (live_update.ticks_advanced != 1) return error.LockstepLiveFrameNotAdvanced;
+
     return .{
         .host_port = host.boundPort(),
         .client_port = client.boundPort(),
@@ -152,6 +164,8 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io) !SmokePayload {
         .tick_index = frame.tick_index,
         .host_input_flags = frame.frame_inputs[0].flags,
         .client_input_flags = frame.frame_inputs[1].flags,
+        .live_ticks_advanced = live_update.ticks_advanced,
+        .live_tick_index = runner.session.tick_index,
     };
 }
 
@@ -196,7 +210,7 @@ fn buildSmokeJson(allocator: std.mem.Allocator, payload: SmokePayload) ![]u8 {
 fn buildSmokeHuman(allocator: std.mem.Allocator, payload: SmokePayload) ![]u8 {
     return std.fmt.allocPrint(
         allocator,
-        "lockstep smoke ok players={d} host_port={d} client_port={d} tick={d} host_flags={d} client_flags={d} packets_sent={d}\n",
+        "lockstep smoke ok players={d} host_port={d} client_port={d} tick={d} host_flags={d} client_flags={d} live_ticks={d} packets_sent={d}\n",
         .{
             payload.player_count,
             payload.host_port,
@@ -204,6 +218,7 @@ fn buildSmokeHuman(allocator: std.mem.Allocator, payload: SmokePayload) ![]u8 {
             payload.tick_index,
             payload.host_input_flags,
             payload.client_input_flags,
+            payload.live_ticks_advanced,
             payload.packets_sent,
         },
     );
@@ -264,6 +279,8 @@ test "lockstep smoke command reports json success" {
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"tick_index\": 0") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_input_flags\": 3") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"client_input_flags\": 7") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"live_ticks_advanced\": 1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"live_tick_index\": 1") != null);
 }
 
 test "lockstep smoke command reports human success" {
@@ -274,6 +291,7 @@ test "lockstep smoke command reports human success" {
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "lockstep smoke ok") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "host_flags=3") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "client_flags=7") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "live_ticks=1") != null);
 }
 
 test "lockstep smoke command validates args" {
