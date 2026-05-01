@@ -300,6 +300,16 @@ const NetworkLiveRuntime = union(enum) {
         return true;
     }
 
+    fn runnerForLocalInput(self: *NetworkLiveRuntime) ?*live_runner.LiveRunner {
+        return switch (self.*) {
+            .host => |*host| if (host.session.runtime.started and host.session.runtime.lockstep != null)
+                &host.runner
+            else
+                null,
+            .client => |*client| if (client.runner) |*runner| runner else null,
+        };
+    }
+
     fn localInputSlot(self: *const NetworkLiveRuntime) ?usize {
         return switch (self.*) {
             .host => 0,
@@ -546,6 +556,9 @@ const App = struct {
     end_note_selection: usize = 0,
     gameplay: ?GameplayScreen = null,
     network_live_session: ?NetworkLiveRuntime = null,
+    network_live_input_interpreter: local_input.LocalInputInterpreter = .{},
+    network_live_camera: state_mod.Vec2 = .{ .x = -1.0, .y = -1.0 },
+    network_live_input_ready: bool = false,
     results: ?ResultsScreen = null,
     options: window_options.OptionsState = .{},
     controls: window_options.ControlsState = .{},
@@ -1094,7 +1107,7 @@ const App = struct {
         if (panel_update.action == .launch_network) {
             self.startNetworkLiveSession();
         }
-        self.updateNetworkLiveSession();
+        self.updateNetworkLiveSession(frame_dt);
     }
 
     fn startNetworkLiveSession(self: *App) void {
@@ -1117,6 +1130,7 @@ const App = struct {
         };
 
         const port = session.boundPort();
+        self.resetNetworkLiveInput();
         self.network_live_session = session;
         switch (request.role) {
             .host => self.network_session.setStatusFmt("Lockstep host listening on port {d}.", .{port}),
@@ -1124,10 +1138,17 @@ const App = struct {
         }
     }
 
-    fn updateNetworkLiveSession(self: *App) void {
-        const session = if (self.network_live_session) |*session| session else return;
+    fn updateNetworkLiveSession(self: *App, frame_dt: f32) void {
         const io = std.Io.Threaded.global_single_threaded.io();
-        const net_update = session.update(self.allocator, io, monotonicMs(io)) catch |err| {
+        const now_ms = monotonicMs(io);
+        self.submitNetworkLiveInput(frame_dt, now_ms) catch |err| {
+            self.network_session.setStatusFmt("Lockstep input failed: {s}", .{@errorName(err)});
+            self.stopNetworkLiveSession();
+            return;
+        };
+
+        const session = if (self.network_live_session) |*session| session else return;
+        const net_update = session.update(self.allocator, io, now_ms) catch |err| {
             self.network_session.setStatusFmt("Lockstep update failed: {s}", .{@errorName(err)});
             self.stopNetworkLiveSession();
             return;
@@ -1139,11 +1160,52 @@ const App = struct {
         }
     }
 
+    fn submitNetworkLiveInput(self: *App, frame_dt: f32, now_ms: i64) !void {
+        const session = if (self.network_live_session) |*session| session else return;
+        const runner = session.runnerForLocalInput() orelse {
+            self.network_live_input_ready = false;
+            return;
+        };
+
+        if (!self.network_live_input_ready) {
+            self.network_live_input_interpreter.setPreserveBugs(runner.session.state.preserve_bugs);
+            self.network_live_input_interpreter.reset(runner.session.playersConst());
+            self.network_live_camera = updateGameplayCamera(
+                self.network_live_camera,
+                &runner.session,
+                &self.runtime.config,
+            );
+            self.network_live_input_ready = true;
+        }
+
+        const camera = buildWorldCamera(
+            runner.session.world_size,
+            &self.runtime.config,
+            self.network_live_camera,
+            runner.session.state.camera_shake_offset,
+        );
+        const input = collectGameplayInput(
+            &self.network_live_input_interpreter,
+            runner,
+            camera,
+            &self.runtime,
+            frame_dt,
+        );
+        _ = try session.submitLocalFrameInput(self.allocator, input, now_ms);
+    }
+
     fn stopNetworkLiveSession(self: *App) void {
         if (self.network_live_session) |*session| {
             session.deinit(self.allocator, std.Io.Threaded.global_single_threaded.io());
             self.network_live_session = null;
         }
+        self.resetNetworkLiveInput();
+    }
+
+    fn resetNetworkLiveInput(self: *App) void {
+        self.network_live_input_interpreter = .{};
+        self.network_live_camera = .{ .x = -1.0, .y = -1.0 };
+        self.network_live_input_ready = false;
     }
 
     fn updateResults(self: *App, frame_dt: f32) void {
@@ -3387,6 +3449,7 @@ test "window network live runtime submits host local input" {
     defer runtime.deinit(std.testing.allocator, io);
 
     try runtime.start(std.testing.allocator, io, 10);
+    try std.testing.expect(runtime.runnerForLocalInput() == null);
     switch (runtime) {
         .host => |*host| {
             host.session.runtime.started = true;
@@ -3394,6 +3457,7 @@ test "window network live runtime submits host local input" {
         },
         .client => return error.TestUnexpectedResult,
     }
+    try std.testing.expect(runtime.runnerForLocalInput() != null);
 
     try runtime.submitLocalInput(std.testing.allocator, .{ .flags = 5 }, 20);
     const net_update = try runtime.update(std.testing.allocator, io, 30);
