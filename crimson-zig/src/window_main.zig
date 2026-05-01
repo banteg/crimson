@@ -1176,6 +1176,7 @@ const App = struct {
             self.network_live_last_update = frame_update;
             if (session.runnerForLocalInput()) |runner| {
                 self.network_live_hud_state.update(frame_dt, &runner.session);
+                self.audio.handleFrameAudio(frame_update.audio, runner.session.state.bonuses.reflex_boost);
             }
         }
         if (net_update.frames_advanced != 0) {
