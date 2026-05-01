@@ -1173,7 +1173,7 @@ const App = struct {
 
     fn startNetworkLiveSession(self: *App) void {
         const request = window_misc_panels.networkLaunchRequest(&self.network_session) orelse {
-            self.network_session.setStatus("Rollback relay is config-only.");
+            self.network_session.setStatus(window_misc_panels.networkLaunchUnavailableMessage(&self.network_session));
             return;
         };
         self.stopNetworkLiveSession();
