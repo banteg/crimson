@@ -7,7 +7,7 @@ Standalone Zig workspace for the native Crimson port.
 `crimson-zig/` is no longer a replay-verifier side project. It already contains:
 
 - a shared deterministic runtime under `src/runtime/`,
-- native replay tooling (`replay verify`, `replay info`),
+- native replay tooling (`replay list`, `replay verify`, `replay info`),
 - a real raylib desktop app target,
 - archive/codec support for `crimson.paq`, `music.paq`, `sfx.paq`, `crimson.cfg`, and `game.cfg`,
 - a freestanding WASM replay-verification ABI.
@@ -80,6 +80,7 @@ zig build wasm
 zig build asset-smoke
 zig build run -- replay verify <replay.crd> --format json
 zig build run -- replay info <replay.crd> --format json
+zig build run -- replay list --base-dir .
 ```
 
 Useful targets:
@@ -121,6 +122,7 @@ The native CLI currently exposes:
 
 - `crimson-zig replay verify <replay.crd>`
 - `crimson-zig replay info <replay.crd>`
+- `crimson-zig replay list`
 
 Supported native replay/runtime modes today:
 

@@ -1080,6 +1080,7 @@ fn parseEventSummary(
         switch (event) {
             .perk_pick => summary.perk_pick_count += 1,
             .perk_menu_open => summary.perk_menu_open_count += 1,
+            .typo_char, .typo_backspace, .typo_submit => {},
             .capture_bootstrap => summary.capture_bootstrap_count += 1,
             .capture_perk_apply => summary.capture_perk_apply_count += 1,
             .capture_perk_pending => summary.capture_perk_pending_count += 1,

@@ -23,7 +23,7 @@ What exists today:
 
 - shared deterministic runtime/session ownership under
   `crimson-zig/src/runtime/`,
-- native replay verification/info tooling,
+- native replay list/verification/info tooling,
 - a real raylib desktop app target,
 - archive/config/status codecs,
 - archive-backed rendering/audio,
@@ -37,7 +37,7 @@ consumes the same shared runtime used by the native desktop application.
 
 - `.crd` replay ingestion and native simulation in Zig
 - shared deterministic session builders
-- native replay `verify` and `info`
+- native replay `list`, `verify`, and `info`
 - CDT/debug trace plumbing
 - typed RNG caller tagging for verifier/runtime draws
 - native config/status ownership for `crimson.cfg` and `game.cfg`
@@ -61,6 +61,7 @@ Current supported native replay/runtime modes:
 Current supported replay-tooling behavior:
 
 - preserve-bugs compatibility mode
+- replay directory listing via `replay list`
 - replay RNG tracing via `--trace-rng`
 - current Python-readable trace export contracts
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
@@ -85,7 +86,8 @@ The important remaining gaps are now:
 
 - replay/verifier breadth still lags Python,
 - some product-shell flows are still thinner than Python,
-- demo/trial shell behavior is still missing in Zig,
+- demo/trial shell behavior exists, but still needs polish alongside the
+  surrounding product shell,
 - WASM still exposes a narrow replay/runtime surface,
 - network/LAN parity is still deferred.
 
