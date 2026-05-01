@@ -161,14 +161,14 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
         .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
     };
 
-    if (updateOptionSlider(state, .sfx, optionSliderRect(panel_rect, 265.0, 86.0, 10), 0, 10, if (config.sound_disable != 0) 0 else volumeSliderValue(config.sfx_volume), mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .sfx, optionSliderRect(panel_rect, 265.0, 86.0, 10), 0, 10, if (config.sound_disable != 0) 0 else audioSliderValue(config.sfx_volume), mouse, click, mouse_down)) |value| {
         config.sfx_volume = @as(f32, @floatFromInt(value)) * 0.1;
         config.sound_disable = @intFromBool(value == 0);
         result.config_dirty = true;
         result.reload_audio = true;
         result.play_button_click = true;
     }
-    if (updateOptionSlider(state, .music, optionSliderRect(panel_rect, 265.0, 122.0, 10), 0, 10, if (config.music_disable != 0) 0 else volumeSliderValue(config.music_volume), mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .music, optionSliderRect(panel_rect, 265.0, 122.0, 10), 0, 10, if (config.music_disable != 0) 0 else audioSliderValue(config.music_volume), mouse, click, mouse_down)) |value| {
         config.music_volume = @as(f32, @floatFromInt(value)) * 0.1;
         config.music_disable = @intFromBool(value == 0);
         result.config_dirty = true;
@@ -180,7 +180,7 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
         result.config_dirty = true;
         result.play_button_click = true;
     }
-    if (updateOptionSlider(state, .mouse, optionSliderRect(panel_rect, 265.0, 194.0, 10), 1, 10, volumeSliderValue(config.mouse_sensitivity), mouse, click, mouse_down)) |value| {
+    if (updateOptionSlider(state, .mouse, optionSliderRect(panel_rect, 265.0, 194.0, 10), 1, 10, sensitivitySliderValue(config.mouse_sensitivity), mouse, click, mouse_down)) |value| {
         config.mouse_sensitivity = std.math.clamp(@as(f32, @floatFromInt(value)) * 0.1, @as(f32, 0.1), @as(f32, 1.0));
         result.config_dirty = true;
         result.play_button_click = true;
@@ -341,10 +341,10 @@ fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window
         window_ui.drawSmallText(runtime_assets, label, panel_rect.x + 60.0, panel_rect.y + 88.0 + @as(f32, @floatFromInt(idx)) * 36.0, if (hovered) text_color else muted_text);
     }
 
-    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 86.0), 10, if (config.sound_disable != 0) 0 else @intFromFloat(std.math.clamp(config.sfx_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
-    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 122.0), 10, if (config.music_disable != 0) 0 else @intFromFloat(std.math.clamp(config.music_volume, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 86.0), 10, if (config.sound_disable != 0) 0 else audioSliderValue(config.sfx_volume));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 122.0), 10, if (config.music_disable != 0) 0 else audioSliderValue(config.music_volume));
     drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 158.0), 5, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))));
-    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 194.0), 10, @intFromFloat(std.math.clamp(config.mouse_sensitivity, @as(f32, 0.1), @as(f32, 1.0)) * 10.0 + 0.5));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 194.0), 10, sensitivitySliderValue(config.mouse_sensitivity));
 
     const checkbox_tex: window_assets.TextureId = if (config.ui_info_texts != 0) .ui_check_on else .ui_check_off;
     window_ui.drawTextureFit(runtime_assets.texture(checkbox_tex), rl.Rectangle.init(panel_rect.x + 265.0, panel_rect.y + 230.0, 16.0, 16.0), rl.Color.white);
@@ -464,8 +464,12 @@ fn adjustOptionSliderValue(current_value: i32, min_value: i32, max_value: i32, d
     return std.math.clamp(current_value + delta, min_value, max_value);
 }
 
-fn volumeSliderValue(value: f32) i32 {
-    return @intFromFloat(std.math.clamp(value, @as(f32, 0.0), @as(f32, 1.0)) * 10.0 + 0.5);
+fn audioSliderValue(value: f32) i32 {
+    return @intFromFloat(std.math.clamp(value, @as(f32, 0.0), @as(f32, 1.0)) * 10.0);
+}
+
+fn sensitivitySliderValue(value: f32) i32 {
+    return @intFromFloat(std.math.clamp(value, @as(f32, 0.1), @as(f32, 1.0)) * 10.0 + 0.5);
 }
 
 fn rectContains(rect: rl.Rectangle, point: rl.Vector2) bool {
@@ -1069,8 +1073,14 @@ test "option slider keyboard adjustment clamps to slider bounds" {
     try std.testing.expectEqual(@as(i32, 1), adjustOptionSliderValue(1, 1, 5, -1));
 }
 
-test "volume slider value rounds and clamps normalized volumes" {
-    try std.testing.expectEqual(@as(i32, 0), volumeSliderValue(-0.5));
-    try std.testing.expectEqual(@as(i32, 3), volumeSliderValue(0.26));
-    try std.testing.expectEqual(@as(i32, 10), volumeSliderValue(1.5));
+test "audio slider value truncates and clamps normalized volumes" {
+    try std.testing.expectEqual(@as(i32, 0), audioSliderValue(-0.5));
+    try std.testing.expectEqual(@as(i32, 2), audioSliderValue(0.26));
+    try std.testing.expectEqual(@as(i32, 10), audioSliderValue(1.5));
+}
+
+test "sensitivity slider value rounds and clamps normalized values" {
+    try std.testing.expectEqual(@as(i32, 1), sensitivitySliderValue(-0.5));
+    try std.testing.expectEqual(@as(i32, 3), sensitivitySliderValue(0.26));
+    try std.testing.expectEqual(@as(i32, 10), sensitivitySliderValue(1.5));
 }
