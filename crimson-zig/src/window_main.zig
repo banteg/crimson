@@ -250,12 +250,32 @@ const NetworkLiveRuntime = union(enum) {
         }
     }
 
-    fn update(self: *NetworkLiveRuntime, allocator: std.mem.Allocator, io: std.Io, now_ms: i64) !lockstep_session.UpdateStats {
+    fn update(self: *NetworkLiveRuntime, allocator: std.mem.Allocator, io: std.Io, now_ms: i64) !NetworkLiveUpdate {
         return switch (self.*) {
-            .host => |*host| host.update(allocator, io, now_ms),
+            .host => |*host| blk: {
+                const stats = try host.update(allocator, io, now_ms);
+                const step_summary = if (host.session.runtime.started)
+                    try host.stepReadyFrames(allocator, now_ms)
+                else
+                    lockstep_live_session.HostStepSummary{};
+                break :blk .{
+                    .stats = stats,
+                    .frames_advanced = step_summary.frames_advanced,
+                    .ticks_advanced = step_summary.ticks_advanced,
+                };
+            },
             .client => |*client| blk: {
+                const stats = try client.update(allocator, io, now_ms);
                 if (client.runner == null) _ = try client.ensureLiveRunner();
-                break :blk try client.update(allocator, io, now_ms);
+                const step_summary = if (client.runner != null)
+                    try client.stepCanonicalFrames(allocator)
+                else
+                    lockstep_live_session.ClientStepSummary{};
+                break :blk .{
+                    .stats = stats,
+                    .frames_advanced = step_summary.frames_advanced,
+                    .ticks_advanced = step_summary.ticks_advanced,
+                };
             },
         };
     }
@@ -266,6 +286,12 @@ const NetworkLiveRuntime = union(enum) {
             .client => |client| client.session.boundPort(),
         };
     }
+};
+
+const NetworkLiveUpdate = struct {
+    stats: lockstep_session.UpdateStats = .{},
+    frames_advanced: usize = 0,
+    ticks_advanced: usize = 0,
 };
 
 const BonusHudSlotState = struct {
@@ -1068,13 +1094,15 @@ const App = struct {
     fn updateNetworkLiveSession(self: *App) void {
         const session = if (self.network_live_session) |*session| session else return;
         const io = std.Io.Threaded.global_single_threaded.io();
-        const stats = session.update(self.allocator, io, monotonicMs(io)) catch |err| {
+        const net_update = session.update(self.allocator, io, monotonicMs(io)) catch |err| {
             self.network_session.setStatusFmt("Lockstep update failed: {s}", .{@errorName(err)});
             self.stopNetworkLiveSession();
             return;
         };
-        if (stats.received != 0 or stats.sent != 0) {
-            self.network_session.setStatusFmt("Lockstep packets recv={d} sent={d}.", .{ stats.received, stats.sent });
+        if (net_update.frames_advanced != 0) {
+            self.network_session.setStatusFmt("Lockstep frames={d} ticks={d}.", .{ net_update.frames_advanced, net_update.ticks_advanced });
+        } else if (net_update.stats.received != 0 or net_update.stats.sent != 0) {
+            self.network_session.setStatusFmt("Lockstep packets recv={d} sent={d}.", .{ net_update.stats.received, net_update.stats.sent });
         }
     }
 
@@ -3282,7 +3310,35 @@ test "window network live runtime opens host session" {
     try runtime.start(std.testing.allocator, io, 10);
     try std.testing.expect(runtime.boundPort() != 0);
     const stats = try runtime.update(std.testing.allocator, io, 20);
-    try std.testing.expectEqual(@as(usize, 0), stats.received);
+    try std.testing.expectEqual(@as(usize, 0), stats.stats.received);
+}
+
+test "window network live runtime steps host ready frames" {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    var runtime = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .lockstep,
+        .bind_host = "127.0.0.1",
+        .port = 0,
+    }, 123);
+    defer runtime.deinit(std.testing.allocator, io);
+
+    try runtime.start(std.testing.allocator, io, 10);
+    switch (runtime) {
+        .host => |*host| {
+            host.session.runtime.started = true;
+            host.session.runtime.lockstep = .{ .player_count = 2, .input_delay_ticks = 0 };
+            try host.session.runtime.lockstep.?.submitInputSample(std.testing.allocator, 0, 0, .{ .flags = 3 });
+            try host.session.runtime.lockstep.?.submitInputSample(std.testing.allocator, 1, 0, .{ .flags = 7 });
+        },
+        .client => return error.TestUnexpectedResult,
+    }
+
+    const net_update = try runtime.update(std.testing.allocator, io, 20);
+    try std.testing.expectEqual(@as(usize, 1), net_update.frames_advanced);
+    try std.testing.expectEqual(@as(usize, 1), net_update.ticks_advanced);
 }
 
 test "demo attract variant sequencing mirrors native cycle" {
