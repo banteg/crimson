@@ -15,6 +15,7 @@ const state_mod = @import("../runtime/state.zig");
 
 pub const BridgeError = error{
     InvalidGameMode,
+    InvalidTypoCharCommand,
     TooManyPlayers,
 };
 
@@ -96,7 +97,9 @@ pub fn frameInputFromPacked(inputs: []const packed_input.PackedPlayerInput) Brid
 }
 
 pub fn frameInputFromTickFrame(frame: lockstep_protocol.TickFrame) BridgeError!live_runner.FrameInput {
-    return frameInputFromPacked(frame.frame_inputs);
+    var input = try frameInputFromPacked(frame.frame_inputs);
+    try applyCommandsToFrameInput(&input, frame.commands);
+    return input;
 }
 
 pub fn frameInputFromHostReadyTick(ready: lockstep_state.HostReadyTick) BridgeError!live_runner.FrameInput {
@@ -121,6 +124,39 @@ pub fn stepHostReadyTick(
         runner.session.dt_nominal,
         try frameInputFromHostReadyTick(ready),
     );
+}
+
+pub fn applyCommandsToFrameInput(
+    input: *live_runner.FrameInput,
+    commands: []const lockstep_protocol.GameCommand,
+) BridgeError!void {
+    for (commands) |command| {
+        try applyCommandToFrameInput(input, command);
+    }
+}
+
+pub fn applyCommandToFrameInput(
+    input: *live_runner.FrameInput,
+    command: lockstep_protocol.GameCommand,
+) BridgeError!void {
+    switch (command) {
+        .perk_menu_open => {
+            input.perk_menu_active = true;
+        },
+        .perk_pick => |pick| {
+            input.perk_choice_index = pick.choice_index;
+        },
+        .typo_char => |typed| {
+            if (typed.ch.len != 1) return error.InvalidTypoCharCommand;
+            input.typo_char = typed.ch[0];
+        },
+        .typo_backspace => {
+            input.typo_backspace = true;
+        },
+        .typo_submit => {
+            input.typo_submit = true;
+        },
+    }
 }
 
 fn statusWeaponUsageCounts(status: game_cfg.Status) [state_mod.weapon_count_size]u32 {
@@ -291,6 +327,34 @@ test "lockstep live bridge advances live runner from canonical frame" {
     try std.testing.expectEqual(@as(usize, 1), runner.session.tick_index);
     try std.testing.expect(after_p0.x != before_p0.x or after_p0.y != before_p0.y);
     try std.testing.expect(after_p1.x != before_p1.x or after_p1.y != before_p1.y);
+}
+
+test "lockstep live bridge maps tick frame commands to frame input" {
+    const commands = [_]lockstep_protocol.GameCommand{
+        .{ .perk_menu_open = .{ .player_index = 0 } },
+        .{ .perk_pick = .{ .player_index = 0, .choice_index = 2 } },
+        .{ .typo_char = .{ .player_index = 0, .ch = "z" } },
+        .{ .typo_submit = .{ .player_index = 0 } },
+    };
+    const frame: lockstep_protocol.TickFrame = .{
+        .frame_inputs = &[_]packed_input.PackedPlayerInput{.{ .flags = lockstep_input_adapter.fire_pressed_flag }},
+        .commands = &commands,
+    };
+
+    const input = try frameInputFromTickFrame(frame);
+    try std.testing.expectEqual(@as(usize, 1), input.player_count);
+    try std.testing.expect(input.players[0].flags.fire_pressed);
+    try std.testing.expect(input.perk_menu_active);
+    try std.testing.expectEqual(@as(?i32, 2), input.perk_choice_index);
+    try std.testing.expectEqual(@as(?u8, 'z'), input.typo_char);
+    try std.testing.expect(input.typo_submit);
+}
+
+test "lockstep live bridge rejects multibyte typo char commands" {
+    var input: live_runner.FrameInput = .{};
+    try std.testing.expectError(error.InvalidTypoCharCommand, applyCommandToFrameInput(&input, .{
+        .typo_char = .{ .player_index = 0, .ch = "ab" },
+    }));
 }
 
 test "lockstep live bridge advances live runner from host ready tick" {

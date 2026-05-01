@@ -78,6 +78,18 @@ test {
     try std.testing.expectEqual(@as(usize, 1), bridge_update.ticks_advanced);
     try std.testing.expectEqual(@as(usize, 1), bridge_runner.session.tick_index);
 
+    const bridge_commands = [_]cz.net.lockstep_protocol.GameCommand{
+        .{ .perk_pick = .{ .player_index = 0, .choice_index = 1 } },
+        .{ .typo_char = .{ .player_index = 0, .ch = "x" } },
+    };
+    const command_input = try cz.net.lockstep_live_bridge.frameInputFromTickFrame(.{
+        .frame_inputs = &[_]cz.net.packed_input.PackedPlayerInput{.{ .flags = cz.net.lockstep_input_adapter.fire_pressed_flag }},
+        .commands = &bridge_commands,
+    });
+    try std.testing.expect(command_input.players[0].flags.fire_pressed);
+    try std.testing.expectEqual(@as(?i32, 1), command_input.perk_choice_index);
+    try std.testing.expectEqual(@as(?u8, 'x'), command_input.typo_char);
+
     const smoke_output = try cz.net_lockstep_smoke_native.runLockstepSmoke(
         std.testing.allocator,
         std.Io.Threaded.global_single_threaded.io(),
