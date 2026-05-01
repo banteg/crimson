@@ -2203,7 +2203,6 @@ fn liveRuntimeErrorDetail(err: anyerror) []const u8 {
         error.InvalidQuestSpawnTable => "Quest spawn table is invalid.",
         error.UnsupportedEventKind => "Runtime event kind is not supported in this mode.",
         error.UnsupportedEventPlayerIndex => "Runtime event references an out-of-range player.",
-        error.InvalidPerkPickEvent => "Perk selection could not be applied in the current perk state.",
         error.InvalidCaptureEnumValue => "Runtime capture payload contains an invalid enum value.",
         error.InvalidSpawnTemplate => "Runtime spawn payload references an invalid creature template.",
         else => @errorName(err),

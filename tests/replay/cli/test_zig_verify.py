@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
+from typing import cast
 
 import msgspec
 import zstandard as zstd
@@ -12,9 +13,10 @@ import crimson.dbg.record as dbg_record
 from crimson.cli import app
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayClaimedStatsSnapshot, dump_replay
+from crimson.sim.input_providers import PerkPickCommand
 from crimson.weapons import WeaponId
 
-from ._helpers import build_replay, write_replay
+from ._helpers import build_replay, build_typo_submit_replay, inject_tick_commands, write_replay
 
 
 def test_zig_replay_verify_respects_max_ticks_partial_run_contract(tmp_path: Path) -> None:
@@ -40,6 +42,65 @@ def test_zig_replay_verify_matches_python_full_payload_on_simple_replay(tmp_path
     )
     zig_payload = _run_zig_replay_verify(
         [str(replay_path), "--format", "json"],
+    )
+
+    assert zig_payload == python_payload
+
+
+def test_zig_replay_verify_matches_python_full_payload_on_quest_replay(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.QUESTS, ticks=3, quest_level="1.1")
+    replay_path = write_replay(tmp_path, replay=replay, name="quest.crd")
+
+    python_payload = _run_python_replay_verify(
+        [str(replay_path), "--format", "json"],
+    )
+    zig_payload = _run_zig_replay_verify(
+        [str(replay_path), "--format", "json"],
+    )
+
+    assert zig_payload == python_payload
+
+
+def test_zig_replay_verify_matches_python_rush_spawn_boundary(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.RUSH, ticks=16)
+    replay_path = write_replay(tmp_path, replay=replay, name="rush.crd")
+
+    python_payload = _run_python_replay_verify(
+        [str(replay_path), "--format", "json"],
+    )
+    zig_payload = _run_zig_replay_verify(
+        [str(replay_path), "--format", "json"],
+    )
+
+    assert zig_payload == python_payload
+
+
+def test_zig_replay_verify_counts_typo_submit_stats_like_python(tmp_path: Path) -> None:
+    replay = build_typo_submit_replay(word="reload")
+    replay_path = write_replay(tmp_path, replay=replay, name="typo-submit.crd")
+
+    python_payload = _run_python_replay_verify(
+        [str(replay_path), "--format", "json"],
+    )
+    zig_payload = _run_zig_replay_verify(
+        [str(replay_path), "--format", "json"],
+    )
+
+    python_run_result = cast("dict[str, object]", python_payload["run_result"])
+    assert python_run_result["shots_fired"] == 1
+    assert python_run_result["shots_hit"] == 0
+    assert zig_payload == python_payload
+
+
+def test_zig_replay_verify_matches_python_partial_typo_rng_state(tmp_path: Path) -> None:
+    replay = build_typo_submit_replay(word="reload")
+    replay_path = write_replay(tmp_path, replay=replay, name="typo-submit.crd")
+
+    python_payload = _run_python_replay_verify(
+        [str(replay_path), "--format", "json", "--max-ticks", "1"],
+    )
+    zig_payload = _run_zig_replay_verify(
+        [str(replay_path), "--format", "json", "--max-ticks", "1"],
     )
 
     assert zig_payload == python_payload
@@ -86,6 +147,17 @@ def test_zig_replay_verify_reports_header_claim_mismatch_like_python(tmp_path: P
     assert python_result.exit_code == 3, python_result.output
     assert zig_result.returncode == 3, dbg_record._command_detail(zig_result)
     assert json.loads(zig_result.stdout) == json.loads(python_result.output)
+
+
+def test_zig_replay_verify_stale_perk_pick_is_noop(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    python_payload = _run_python_replay_verify([str(replay_path), "--format", "json"])
+    zig_payload = _run_zig_replay_verify([str(replay_path), "--format", "json"])
+
+    assert zig_payload == python_payload
 
 
 def test_zig_replay_verify_rejects_non_crd_extension(tmp_path: Path) -> None:

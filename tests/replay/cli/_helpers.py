@@ -20,7 +20,7 @@ from crimson.replay.checkpoints import (
     dump_checkpoints_file,
 )
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import GameCommand
+from crimson.sim.input_providers import GameCommand, TypoCharCommand, TypoSubmitCommand
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.replay_runner_helpers import _run_verify_playback
@@ -47,7 +47,25 @@ def build_replay(
         recorder.record_tick(
             [PlayerInput(aim=Vec2(512.0, 512.0)) for _ in range(int(player_count))],
         )
-    replay = recorder.finish()
+    return claim_replay_stats(recorder.finish())
+
+
+def build_typo_submit_replay(*, word: str = "reload", seed: int = 0xBEEF) -> Replay:
+    header = ReplayHeader(
+        game_mode_id=GameMode.TYPO,
+        seed=int(seed),
+        tick_rate=60,
+        player_count=1,
+    )
+    recorder = ReplayRecorder(header)
+    baseline = PlayerInput(aim=Vec2(512.0, 512.0))
+    for ch in str(word):
+        recorder.record_tick([baseline], commands=[TypoCharCommand(player_index=0, ch=ch)])
+    recorder.record_tick([baseline], commands=[TypoSubmitCommand(player_index=0)])
+    return claim_replay_stats(recorder.finish())
+
+
+def claim_replay_stats(replay: Replay) -> Replay:
     result = _run_verify_playback(replay)
     return msgspec.structs.replace(
         replay,

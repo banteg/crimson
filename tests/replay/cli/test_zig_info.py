@@ -9,7 +9,7 @@ from typer.testing import CliRunner
 import crimson.dbg.record as dbg_record
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.sim.input_providers import PerkMenuOpenCommand
+from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 
 from ._helpers import build_replay, inject_tick_commands, write_replay
 
@@ -17,6 +17,19 @@ from ._helpers import build_replay, inject_tick_commands, write_replay
 def test_zig_replay_info_matches_python_json_payload_on_simple_replay(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    python_payload = _run_python_replay_info(
+        [str(replay_path), "--format", "json"],
+    )
+    zig_payload = _run_zig_replay_info(
+        [str(replay_path), "--format", "json"],
+    )
+
+    assert zig_payload == python_payload
+
+
+def test_zig_replay_info_matches_python_json_payload_on_quest_replay(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.QUESTS, ticks=3, quest_level="1.1")
+    replay_path = write_replay(tmp_path, replay=replay, name="quest.crd")
     python_payload = _run_python_replay_info(
         [str(replay_path), "--format", "json"],
     )
@@ -59,6 +72,17 @@ def test_zig_replay_info_matches_python_verbose_player_filter_payload(tmp_path: 
             "1",
         ],
     )
+
+    assert zig_payload == python_payload
+
+
+def test_zig_replay_info_stale_perk_pick_is_noop(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    python_payload = _run_python_replay_info([str(replay_path), "--format", "json"])
+    zig_payload = _run_zig_replay_info([str(replay_path), "--format", "json"])
 
     assert zig_payload == python_payload
 

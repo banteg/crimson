@@ -8,8 +8,9 @@ import pytest
 
 import crimson.dbg.record as dbg_record
 from crimson.game_modes import GameMode
+from crimson.sim.input_providers import PerkPickCommand
 
-from ._helpers import build_replay, write_replay
+from ._helpers import build_replay, inject_tick_commands, write_replay
 
 
 def test_zig_replay_benchmark_reports_headless_summary(tmp_path: Path) -> None:
@@ -104,6 +105,21 @@ def test_zig_replay_benchmark_writes_json_out(tmp_path: Path) -> None:
     payload = json.loads(json_out.read_text(encoding="utf-8"))
     assert payload["benchmark"]["sample_count"] == 1
     assert payload["run_result"]["ticks"] == 2
+
+
+def test_zig_replay_benchmark_stale_perk_pick_is_noop(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    result = _run_zig_replay_benchmark(
+        [str(replay_path), "--runs", "1", "--warmup-runs", "0", "--format", "json"],
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "ok"
+    assert payload["run_result"]["ticks"] == 1
 
 
 def test_zig_replay_benchmark_rejects_render_mode(tmp_path: Path) -> None:

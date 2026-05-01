@@ -70,7 +70,6 @@ pub const ReplayRunnerError = error{
     UnsupportedEventOrdering,
     UnsupportedEventKind,
     UnsupportedEventPlayerIndex,
-    InvalidPerkPickEvent,
     MissingRngCallerTag,
     InvalidSpawnTemplate,
     InvalidQuestSpawnTable,
@@ -267,33 +266,32 @@ pub fn runReplayWithTrace(
             errdefer if (rng_rows.len > 0) trace_allocator.free(rng_rows);
             const timing_samples = try trace_collector.takeTimingSamples();
             errdefer if (timing_samples.len > 0) trace_allocator.free(timing_samples);
-            try trace.append(
+            var row = try buildTickTrace(
                 trace_allocator,
-                try buildTickTrace(
-                    trace_allocator,
-                    tick_index,
-                    narrowF32(trace_elapsed_ms),
-                    &context.state,
-                    player0,
-                    players,
-                    &context.creatures,
-                    &context.projectiles,
-                    &context.secondary_projectiles,
-                    &context.bonuses,
-                    step_result.rng_after_perk_effects,
-                    step_result.rng_after_creatures,
-                    step_result.rng_after_projectiles,
-                    step_result.rng_after_secondary_projectiles,
-                    step_result.rng_after_particles,
-                    step_result.rng_after_player_update,
-                    step_result.rng_after_stage_spawns,
-                    step_result.rng_after_wave_spawns,
-                    step_result.rng_after_spawns,
-                    step_result.rng_after_bonus_update,
-                    rng_rows,
-                    timing_samples,
-                ),
+                tick_index,
+                narrowF32(trace_elapsed_ms),
+                &context.state,
+                player0,
+                players,
+                &context.creatures,
+                &context.projectiles,
+                &context.secondary_projectiles,
+                &context.bonuses,
+                step_result.rng_after_perk_effects,
+                step_result.rng_after_creatures,
+                step_result.rng_after_projectiles,
+                step_result.rng_after_secondary_projectiles,
+                step_result.rng_after_particles,
+                step_result.rng_after_player_update,
+                step_result.rng_after_stage_spawns,
+                step_result.rng_after_wave_spawns,
+                step_result.rng_after_spawns,
+                step_result.rng_after_bonus_update,
+                rng_rows,
+                timing_samples,
             );
+            row.sfx_events = step_result.sfx_events;
+            try trace.append(trace_allocator, row);
         }
     }
 
@@ -346,7 +344,13 @@ pub fn runReplayWithTrace(
 
     const players = context.playersConst();
     const player0 = players[0];
-    const shots = survival_progression.player0Shots(context.state);
+    const shots: state_mod.PlayerShots = if (game_mode == .typo)
+        .{
+            .fired = context.state.typo.typing.submit_count,
+            .hit = context.state.typo.typing.match_count,
+        }
+    else
+        survival_progression.player0Shots(context.state);
     const most_used_weapon_id = survival_progression.mostUsedWeaponIdForPlayer(
         context.state,
         0,
@@ -697,6 +701,24 @@ test "survival run tracks event and input counters" {
     try std.testing.expect(!result.survival_reward_fire_seen);
 }
 
+test "quest run advances elapsed time with integer simulation milliseconds" {
+    const allocator = std.testing.allocator;
+
+    var replay = try buildTestReplay(allocator, .{
+        .game_mode_id = @intFromEnum(GameModeId.quests),
+        .tick_rate = 60,
+        .quest_level = "1.1",
+        .inputs = &.{ 0, 0, 0 },
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+
+    const result = try runReplay(replay);
+    try std.testing.expectEqual(@as(usize, 3), result.ticks);
+    try std.testing.expectEqual(@as(i64, 50), result.elapsed_ms_nominal);
+    try std.testing.expectEqual(@as(i64, 48), result.elapsed_ms_sim);
+}
+
 test "survival run rejects unsupported event player index" {
     const allocator = std.testing.allocator;
 
@@ -758,7 +780,7 @@ test "survival run rejects multiplayer event player index out of bounds" {
     );
 }
 
-test "survival run rejects invalid perk pick event in strict mode" {
+test "survival run treats stale perk pick as strict no-op" {
     const allocator = std.testing.allocator;
 
     var replay = try buildTestReplay(allocator, .{
@@ -770,10 +792,10 @@ test "survival run rejects invalid perk pick event in strict mode" {
     });
     defer replay.deinit(allocator);
 
-    try std.testing.expectError(
-        error.InvalidPerkPickEvent,
-        runReplay(replay),
-    );
+    const result = try runReplay(replay);
+    try std.testing.expectEqual(@as(usize, 1), result.ticks);
+    try std.testing.expectEqual(@as(usize, 0), result.perk_pick_count);
+    try std.testing.expectEqual(@as(i32, 0), result.perk_pending_count);
 }
 
 test "survival run can skip invalid perk pick event in non-strict mode" {
@@ -903,6 +925,51 @@ test "survival run tracks weapon runtime counters" {
     try std.testing.expectEqual(@as(i32, 1), result.shots_fired);
     try std.testing.expectEqual(@as(i32, 0), result.shots_hit);
     try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.pistol), result.most_used_weapon_id);
+}
+
+test "typo run reports submit count as shots fired" {
+    const allocator = std.testing.allocator;
+
+    var replay = try buildTestReplay(allocator, .{
+        .game_mode_id = @intFromEnum(GameModeId.typo),
+        .tick_rate = 60,
+        .inputs = &.{ 0, 0, 0, 0, 0, 0, 0 },
+        .events = &.{
+            .{ .typo_char = .{ .tick_index = 0, .player_index = 0, .ch = 'r' } },
+            .{ .typo_char = .{ .tick_index = 1, .player_index = 0, .ch = 'e' } },
+            .{ .typo_char = .{ .tick_index = 2, .player_index = 0, .ch = 'l' } },
+            .{ .typo_char = .{ .tick_index = 3, .player_index = 0, .ch = 'o' } },
+            .{ .typo_char = .{ .tick_index = 4, .player_index = 0, .ch = 'a' } },
+            .{ .typo_char = .{ .tick_index = 5, .player_index = 0, .ch = 'd' } },
+            .{ .typo_submit = .{ .tick_index = 6, .player_index = 0 } },
+        },
+    });
+    defer replay.deinit(allocator);
+
+    const result = try runReplay(replay);
+    try std.testing.expectEqual(@as(i32, 1), result.shots_fired);
+    try std.testing.expectEqual(@as(i32, 0), result.shots_hit);
+    try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.sawed_off_shotgun), result.most_used_weapon_id);
+}
+
+test "typo run spawns creatures after creature update phase" {
+    const allocator = std.testing.allocator;
+
+    var replay = try buildTestReplay(allocator, .{
+        .game_mode_id = @intFromEnum(GameModeId.typo),
+        .seed = 0xBEEF,
+        .tick_rate = 60,
+        .inputs = &.{0},
+        .events = &.{
+            .{ .typo_char = .{ .tick_index = 0, .player_index = 0, .ch = 'r' } },
+        },
+    });
+    defer replay.deinit(allocator);
+
+    const result = try runReplay(replay);
+    try std.testing.expectEqual(@as(usize, 1), result.ticks);
+    try std.testing.expect(result.creature_active_count > 0);
+    try std.testing.expectEqual(@as(u32, 4267440421), result.wave_spawn_rng_state);
 }
 
 test "survival run consumes replay dt rows for elapsed_ms" {
@@ -1553,6 +1620,24 @@ test "rush run supports multiplayer replays" {
     try std.testing.expectEqual(@as(usize, 3), result.ticks);
     try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.player_weapon_id);
     try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.most_used_weapon_id);
+}
+
+test "rush run advances spawn cooldown with integer frame milliseconds" {
+    const allocator = std.testing.allocator;
+
+    var replay = try buildTestReplay(allocator, .{
+        .game_mode_id = @intFromEnum(GameModeId.rush),
+        .seed = 0xBEEF,
+        .tick_rate = 60,
+        .inputs = &.{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+
+    const result = try runReplay(replay);
+    try std.testing.expectEqual(@as(usize, 16), result.ticks);
+    try std.testing.expectEqual(@as(usize, 4), result.creature_active_count);
+    try std.testing.expectEqual(@as(u32, 2055104443), result.wave_spawn_rng_state);
 }
 
 test "rush run disables progression updates even above level threshold" {

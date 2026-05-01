@@ -23,7 +23,6 @@ pub const EventError = error{
     InvalidCaptureEnumValue,
     UnsupportedEventKind,
     UnsupportedEventPlayerIndex,
-    InvalidPerkPickEvent,
     InvalidSpawnTemplate,
 };
 
@@ -113,13 +112,7 @@ pub fn applyReplayEvent(
                 },
             ) catch unreachable;
             if (applied == null) {
-                if (!options.strict_events) {
-                    return outcome;
-                }
-                if (options.menu_open_seen_this_tick and state.perk_selection.pending_count <= 0) {
-                    return outcome;
-                }
-                return error.InvalidPerkPickEvent;
+                return outcome;
             }
             outcome.perk_pick_count_delta = 1;
             return outcome;

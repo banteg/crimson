@@ -6,6 +6,7 @@ const replay_codec = @import("replay_codec.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
 const runtime_paths = @import("runtime_paths.zig");
 const state_mod = @import("runtime/state.zig");
+const tutorial_runtime = @import("tutorial/runtime.zig");
 const verify_native = @import("verify_native.zig");
 
 const checkpoints_format_version: i32 = 4;
@@ -503,10 +504,10 @@ fn loadCheckpointsFile(
     return decoded;
 }
 
-fn traceRowForTick(rows: []const replay_runner.ReplayTickTrace, tick_index: i32) ?replay_runner.ReplayTickTrace {
+fn traceRowForTick(rows: []const replay_runner.ReplayTickTrace, tick_index: i32) ?*const replay_runner.ReplayTickTrace {
     if (tick_index < 0) return null;
     const wanted: usize = @intCast(tick_index);
-    for (rows) |row| {
+    for (rows) |*row| {
         if (row.tick_index == wanted) return row;
     }
     return null;
@@ -514,7 +515,7 @@ fn traceRowForTick(rows: []const replay_runner.ReplayTickTrace, tick_index: i32)
 
 fn buildCheckpointFromTrace(
     allocator: std.mem.Allocator,
-    row: replay_runner.ReplayTickTrace,
+    row: *const replay_runner.ReplayTickTrace,
 ) !ReplayCheckpointWire {
     const trace_players = if (row.players.len > 0) row.players else &.{row.player_state};
     const players = try allocator.alloc(ReplayPlayerCheckpointWire, trace_players.len);
@@ -557,6 +558,11 @@ fn buildCheckpointFromTrace(
         built_player_counts += 1;
     }
 
+    const events = try buildEventSummary(allocator, row);
+    errdefer deinitOwnedEventSummary(allocator, events);
+    const typo = try buildTypoSnapshot(allocator, row);
+    errdefer if (typo) |snapshot| deinitOwnedTypoSnapshot(allocator, snapshot);
+
     return .{
         .tick_index = @intCast(row.tick_index),
         .rng_state = row.rng.rng_state,
@@ -574,9 +580,9 @@ fn buildCheckpointFromTrace(
             .choices = perk_choices,
             .player_nonzero_counts = all_player_nonzero_counts,
         },
-        .events = buildEventSummary(row),
-        .tutorial = null,
-        .typo = null,
+        .events = events,
+        .tutorial = buildTutorialSnapshot(row),
+        .typo = typo,
     };
 }
 
@@ -588,11 +594,22 @@ fn deinitOwnedCheckpoint(allocator: std.mem.Allocator, checkpoint: *ReplayCheckp
         deinitPlayerNonzeroCounts(allocator, player_counts);
     }
     allocator.free(checkpoint.perk.player_nonzero_counts);
+    deinitOwnedEventSummary(allocator, checkpoint.events);
+    if (checkpoint.typo) |snapshot| deinitOwnedTypoSnapshot(allocator, snapshot);
+}
+
+fn deinitOwnedEventSummary(allocator: std.mem.Allocator, events: ReplayEventSummaryWire) void {
+    for (events.sfx_head) |entry| allocator.free(entry);
+    allocator.free(events.sfx_head);
+}
+
+fn deinitOwnedTypoSnapshot(allocator: std.mem.Allocator, snapshot: ReplayTypoSnapshotWire) void {
+    allocator.free(snapshot.active_names);
 }
 
 fn buildPerkChoices(
     allocator: std.mem.Allocator,
-    row: replay_runner.ReplayTickTrace,
+    row: *const replay_runner.ReplayTickTrace,
 ) ![]const i32 {
     const choices = row.gameplay_state.perk_selection.choices;
     const visible_count = @min(row.gameplay_state.perk_selection.choice_count, choices.len);
@@ -632,23 +649,91 @@ fn deinitPlayerNonzeroCounts(allocator: std.mem.Allocator, pairs: []const []cons
     allocator.free(pairs);
 }
 
-fn buildEventSummary(row: replay_runner.ReplayTickTrace) ReplayEventSummaryWire {
-    const quest_tick0_reload_sfx = row.tick_index == 0 and
-        row.gameplay_state.game_mode == .quests and
-        row.player_state.weapon.weapon_id == .pistol;
-    if (!quest_tick0_reload_sfx) {
-        return .{
-            .hit_count = 0,
-            .pickup_count = 0,
-            .sfx_count = 0,
-            .sfx_head = &.{},
-        };
+fn buildEventSummary(
+    allocator: std.mem.Allocator,
+    row: *const replay_runner.ReplayTickTrace,
+) !ReplayEventSummaryWire {
+    const sfx_events = row.sfx_events.constSlice();
+    const initial_reload_sfx = initialReloadSfxKey(row);
+    const sfx_count = sfx_events.len + if (initial_reload_sfx != null) @as(usize, 1) else 0;
+    const head_len = @min(sfx_count, 4);
+    const sfx_head = try allocator.alloc([]const u8, head_len);
+    errdefer allocator.free(sfx_head);
+    var built: usize = 0;
+    errdefer {
+        for (sfx_head[0..built]) |entry| allocator.free(entry);
     }
+
+    if (initial_reload_sfx) |key| {
+        if (built < head_len) {
+            sfx_head[built] = try allocator.dupe(u8, key);
+            built += 1;
+        }
+    }
+    for (sfx_events[0..@min(sfx_events.len, head_len - built)]) |sfx_id| {
+        sfx_head[built] = try std.fmt.allocPrint(allocator, "sfx_{s}", .{@tagName(sfx_id)});
+        built += 1;
+    }
+
     return .{
         .hit_count = 0,
         .pickup_count = 0,
-        .sfx_count = 1,
-        .sfx_head = &.{"sfx_pistol_reload"},
+        .sfx_count = @intCast(sfx_count),
+        .sfx_head = sfx_head,
+    };
+}
+
+fn initialReloadSfxKey(row: *const replay_runner.ReplayTickTrace) ?[]const u8 {
+    if (row.tick_index != 0) return null;
+    return switch (row.gameplay_state.game_mode) {
+        .quests => "sfx_pistol_reload",
+        .rush => "sfx_autorifle_reload",
+        .typo => "sfx_shotgun_reload",
+        else => null,
+    };
+}
+
+fn buildTutorialSnapshot(row: *const replay_runner.ReplayTickTrace) ?ReplayTutorialSnapshotWire {
+    if (row.gameplay_state.game_mode != .tutorial) return null;
+    const tutorial = row.gameplay_state.tutorial;
+    const overlay = row.gameplay_state.tutorial_overlay;
+    return .{
+        .stage_index = tutorial.stage_index,
+        .stage_timer_ms = tutorial.stage_timer_ms,
+        .stage_transition_timer_ms = tutorial.stage_transition_timer_ms,
+        .hint_index = tutorial.hint_index,
+        .hint_alpha = tutorial.hint_alpha,
+        .hint_fade_in = tutorial.hint_fade_in,
+        .repeat_spawn_count = tutorial.repeat_spawn_count,
+        .hint_bonus_creature_ref = if (tutorial.hint_bonus_creature_ref) |idx| @intCast(idx) else null,
+        .prompt_text = tutorial_runtime.promptText(overlay.prompt_stage_index),
+        .prompt_alpha = overlay.prompt_alpha,
+        .hint_text = tutorial_runtime.hintText(overlay.hint_index, tutorial.preserve_bugs),
+        .hint_alpha_overlay = overlay.hint_alpha,
+    };
+}
+
+fn buildTypoSnapshot(
+    allocator: std.mem.Allocator,
+    row: *const replay_runner.ReplayTickTrace,
+) !?ReplayTypoSnapshotWire {
+    if (row.gameplay_state.game_mode != .typo) return null;
+    var active_names: std.ArrayList(ReplayTypoNameEntryWire) = .empty;
+    errdefer active_names.deinit(allocator);
+    for (row.entities.creatures) |creature| {
+        const name = row.gameplay_state.typo.names.nameSlice(creature.index);
+        if (name.len == 0) continue;
+        try active_names.append(allocator, .{
+            .creature_index = @intCast(creature.index),
+            .name = name,
+        });
+    }
+    return .{
+        .input_text = row.gameplay_state.typo.typing.slice(),
+        .submit_count = row.gameplay_state.typo.typing.submit_count,
+        .match_count = row.gameplay_state.typo.typing.match_count,
+        .spawn_cooldown_ms = row.gameplay_state.typo.spawn_cooldown_ms,
+        .active_names = try active_names.toOwnedSlice(allocator),
     };
 }
 
@@ -1367,7 +1452,6 @@ fn replayRunnerErrorDetail(err: anyerror) []const u8 {
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
         error.UnsupportedEventKind => "replay events include kinds or values invalid for this mode",
         error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player index",
-        error.InvalidPerkPickEvent => "replay perk pick event is invalid for the current state",
         error.MissingRngCallerTag => "replay capture is missing required RNG caller tags",
         error.InvalidSpawnTemplate => "replay capture references an invalid spawn template",
         error.InvalidQuestSpawnTable => "replay capture references an invalid quest spawn table",

@@ -782,7 +782,6 @@ fn benchmarkReplayRunnerErrorDetail(err: anyerror) []const u8 {
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
         error.UnsupportedEventKind => "replay events include kinds or values invalid for this mode",
         error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player index",
-        error.InvalidPerkPickEvent => "replay perk pick event is invalid for the current state",
         error.MissingRngCallerTag => "replay capture is missing required RNG caller tags",
         error.InvalidSpawnTemplate => "replay capture references an invalid spawn template",
         error.InvalidQuestSpawnTable => "replay capture references an invalid quest spawn table",

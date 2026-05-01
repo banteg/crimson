@@ -10,7 +10,7 @@ import crimson.dbg.record as dbg_record
 from crimson.game_modes import GameMode
 from crimson.replay.checkpoints import dump_checkpoints_file, load_checkpoints_file
 
-from ._helpers import build_replay, write_checkpoint_sidecar, write_replay
+from ._helpers import build_replay, build_typo_submit_replay, write_checkpoint_sidecar, write_replay
 
 
 def test_zig_replay_diff_checkpoints_accepts_python_sidecars(tmp_path: Path) -> None:
@@ -46,6 +46,50 @@ def test_zig_replay_verify_checkpoints_accepts_two_player_sidecar(tmp_path: Path
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "ok: 1 checkpoints match; ticks=3 score_xp=0 kills=0" in result.stdout
+
+
+def test_zig_replay_verify_checkpoints_accepts_rush_sidecar(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.RUSH, ticks=16)
+    replay_path = write_replay(tmp_path, replay=replay, name="rush.crd")
+    write_checkpoint_sidecar(replay_path, replay)
+
+    result = _run_zig_replay_verify_checkpoints([str(replay_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "ok: 1 checkpoints match; ticks=16 score_xp=0 kills=0" in result.stdout
+
+
+def test_zig_replay_verify_checkpoints_accepts_quest_sidecar(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.QUESTS, ticks=16, quest_level="1.1")
+    replay_path = write_replay(tmp_path, replay=replay, name="quest.crd")
+    write_checkpoint_sidecar(replay_path, replay)
+
+    result = _run_zig_replay_verify_checkpoints([str(replay_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "ok: 1 checkpoints match; ticks=16 score_xp=0 kills=0" in result.stdout
+
+
+def test_zig_replay_verify_checkpoints_accepts_tutorial_sidecar(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.TUTORIAL, ticks=16)
+    replay_path = write_replay(tmp_path, replay=replay, name="tutorial.crd")
+    write_checkpoint_sidecar(replay_path, replay)
+
+    result = _run_zig_replay_verify_checkpoints([str(replay_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "ok: 1 checkpoints match; ticks=16 score_xp=0 kills=0" in result.stdout
+
+
+def test_zig_replay_verify_checkpoints_accepts_typo_sidecar(tmp_path: Path) -> None:
+    replay = build_typo_submit_replay(word="reload")
+    replay_path = write_replay(tmp_path, replay=replay, name="typo.crd")
+    write_checkpoint_sidecar(replay_path, replay)
+
+    result = _run_zig_replay_verify_checkpoints([str(replay_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "ok: 1 checkpoints match" in result.stdout
 
 
 def test_zig_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:

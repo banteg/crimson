@@ -126,6 +126,7 @@ pub const ReplayTickTrace = struct {
     rng_rows: []const ReplayTickRngDraw = &.{},
     timing_samples: []const ReplayTickTimingSample = &.{},
     entities: ReplayTickEntitySamples = .{},
+    sfx_events: state_mod.RuntimeSfxBuffer = .{},
 };
 
 pub fn buildReplayTickTrace(

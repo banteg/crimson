@@ -468,7 +468,6 @@ fn replayInfoErrorDetail(err: replay_info_mod.ReplayInfoError) []const u8 {
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
         error.UnsupportedEventKind => "replay events include kinds or values invalid for this mode",
         error.UnsupportedEventPlayerIndex => "replay info collector encountered an out-of-range player_index event",
-        error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
         error.InvalidSpawnTemplate => "replay capture payload references an invalid creature spawn template",
         error.InvalidQuestSpawnTable => "quest replay/session payload resolves to an invalid quest spawn table",

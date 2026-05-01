@@ -242,7 +242,6 @@ pub fn stepTick(
         frame.dt_world,
     );
 
-    const dt_ms = narrowF32(frame.dt * 1000.0);
     frame.dt_ms_i32 = timing.ftolMsI32(frame.dt);
     frame.dt_sim_ms_i32 = timing.ftolMsI32(frame.dt_sim);
     const dt_sim_ms: f32 = @floatFromInt(frame.dt_sim_ms_i32);
@@ -300,16 +299,6 @@ pub fn stepTick(
     callPhaseHook(options.hooks, context, .post_effects, &frame);
 
     callPhaseHook(options.hooks, context, .pre_core_simulation, &frame);
-    if (context.game_mode == .typo) {
-        typo_runtime.midStep(
-            &context.state,
-            players,
-            &context.creatures,
-            elapsed_before_ms,
-            dt_sim_ms,
-            context.world_size,
-        );
-    }
     try context.creatures.update(
         &context.state,
         players,
@@ -511,7 +500,7 @@ pub fn stepTick(
         .rush => {
             const wave_result = spawn_mod.tickRushModeSpawnsBatch(
                 context.spawn_cooldown,
-                dt_ms,
+                @floatFromInt(frame.dt_ms_i32),
                 &context.state.rng,
                 context.player_count,
                 elapsed_before_ms,
@@ -529,7 +518,7 @@ pub fn stepTick(
             const quest_spawns = spawn_mod.tickQuestModeSpawns(
                 context.quest_spawn_entries,
                 context.quest_spawn_timeline_ms,
-                dt_ms,
+                dt_sim_ms,
                 @floatFromInt(context.terrain_size),
                 context.quest_creatures_none_active,
                 context.quest_no_creatures_timer_ms,
@@ -564,7 +553,7 @@ pub fn stepTick(
             if (any_alive_after) {
                 const quest_completion = spawn_mod.tickQuestCompletionTransition(
                     context.quest_completion_transition_ms,
-                    dt_ms,
+                    dt_sim_ms,
                     context.quest_creatures_none_active,
                     spawn_table_empty_now,
                 );
@@ -579,6 +568,18 @@ pub fn stepTick(
                 context.quest_play_completion_music = false;
             }
 
+            frame.rng_after_stage_spawns = context.state.rng.state;
+            frame.rng_after_wave_spawns = context.state.rng.state;
+        },
+        .typo => {
+            typo_runtime.midStep(
+                &context.state,
+                players,
+                &context.creatures,
+                elapsed_before_ms,
+                dt_sim_ms,
+                context.world_size,
+            );
             frame.rng_after_stage_spawns = context.state.rng.state;
             frame.rng_after_wave_spawns = context.state.rng.state;
         },
