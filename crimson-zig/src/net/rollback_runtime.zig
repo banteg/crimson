@@ -61,6 +61,7 @@ pub const RuntimeCore = struct {
     frame_queue: std.ArrayList(TickFrame) = .empty,
     outbox: std.ArrayList(OutgoingMessage) = .empty,
     snapshot_blobs: std.ArrayList(SnapshotEntry) = .empty,
+    rollback_snapshot_ticks: std.ArrayList(i32) = .empty,
     pending_resync_snapshot: ?PendingSnapshot = null,
     resync_assembler: ?rollback_resync_v5.RbResyncAssemblerV5 = null,
     active_resync_request_id: []const u8 = "",
@@ -98,6 +99,7 @@ pub const RuntimeCore = struct {
         self.outbox.deinit(self.allocator);
         self.clearSnapshots();
         self.snapshot_blobs.deinit(self.allocator);
+        self.rollback_snapshot_ticks.deinit(self.allocator);
         if (self.pending_resync_snapshot) |*snapshot| snapshot.deinit(self.allocator);
         if (self.resync_assembler) |*assembler| assembler.deinit();
         if (self.active_resync_request_id.len != 0) self.allocator.free(self.active_resync_request_id);
@@ -152,6 +154,15 @@ pub const RuntimeCore = struct {
         self.pruneSnapshots(tick_index - snapshot_keep_ticks);
     }
 
+    pub fn markLocalRollbackSnapshot(self: *RuntimeCore, tick_index_raw: i32) !void {
+        const tick_index = @max(0, tick_index_raw);
+        for (self.rollback_snapshot_ticks.items) |existing| {
+            if (existing == tick_index) return;
+        }
+        try self.rollback_snapshot_ticks.append(self.allocator, tick_index);
+        self.pruneRollbackSnapshotTicks(tick_index - snapshot_keep_ticks);
+    }
+
     pub fn popFrame(self: *RuntimeCore) ?TickFrame {
         if (self.frame_queue.items.len == 0) return null;
         return self.frame_queue.orderedRemove(0);
@@ -195,7 +206,7 @@ pub const RuntimeCore = struct {
         const from_tick = @max(0, from_tick_raw);
         self.pending_rollback_from = minOptionalTick(self.pending_rollback_from, from_tick);
 
-        if (from_tick == 0 or self.latestSnapshotAtOrBefore(from_tick - 1) == null) {
+        if (from_tick == 0 or !self.hasRollbackSnapshotAtOrBefore(from_tick - 1)) {
             try self.sendResyncRequest(from_tick, "rollback_snapshot_missing", now_ms);
             return;
         }
@@ -344,6 +355,14 @@ pub const RuntimeCore = struct {
         return latest;
     }
 
+    fn hasRollbackSnapshotAtOrBefore(self: RuntimeCore, tick_index: i32) bool {
+        if (self.latestSnapshotAtOrBefore(tick_index) != null) return true;
+        for (self.rollback_snapshot_ticks.items) |snapshot_tick| {
+            if (snapshot_tick <= tick_index) return true;
+        }
+        return false;
+    }
+
     fn pruneSnapshots(self: *RuntimeCore, keep_from: i32) void {
         var idx: usize = 0;
         while (idx < self.snapshot_blobs.items.len) {
@@ -353,6 +372,17 @@ pub const RuntimeCore = struct {
             }
             self.allocator.free(self.snapshot_blobs.items[idx].payload);
             _ = self.snapshot_blobs.orderedRemove(idx);
+        }
+    }
+
+    fn pruneRollbackSnapshotTicks(self: *RuntimeCore, keep_from: i32) void {
+        var idx: usize = 0;
+        while (idx < self.rollback_snapshot_ticks.items.len) {
+            if (self.rollback_snapshot_ticks.items[idx] >= keep_from) {
+                idx += 1;
+                continue;
+            }
+            _ = self.rollback_snapshot_ticks.orderedRemove(idx);
         }
     }
 
@@ -429,6 +459,32 @@ test "rollback runtime sends resync request when rollback snapshot is missing" {
         },
         else => return error.ExpectedResyncRequest,
     }
+}
+
+test "rollback runtime uses local rollback markers without wire snapshot blobs" {
+    var runtime = RuntimeCore.init(std.testing.allocator, .{
+        .role = .host,
+        .player_count = 2,
+        .local_slot_index = 0,
+        .input_delay_ticks = 0,
+        .max_rollback_ticks = 8,
+    });
+    defer runtime.deinit();
+
+    try runtime.queueLocalInput(.{}, 10);
+    _ = runtime.popFrame();
+    try runtime.markLocalRollbackSnapshot(0);
+    try runtime.queueLocalInput(.{}, 11);
+    _ = runtime.popFrame();
+
+    try runtime.handleMessage(.{ .rb_input_sample = .{
+        .slot_index = 1,
+        .samples = &[_]relay_protocol.RbInputSample{.{ .tick_index = 1, .packed_input = .{ .flags = 3 } }},
+    } }, 20);
+
+    try std.testing.expectEqual(@as(i32, 0), runtime.resync_count);
+    try std.testing.expectEqual(@as(?i32, 1), runtime.drainRollbackFrom());
+    try std.testing.expectEqual(@as(usize, 0), runtime.snapshot_blobs.items.len);
 }
 
 test "rollback runtime host answers resync request from latest snapshot" {

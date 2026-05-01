@@ -318,7 +318,7 @@ const NetworkLiveRuntime = union(enum) {
             },
             .rollback => |*rollback| blk: {
                 try rollback.update(allocator, io, now_ms);
-                const step_summary = try rollback.stepFrames();
+                const step_summary = try rollback.stepFrames(allocator);
                 break :blk .{
                     .frames_advanced = step_summary.frames_advanced,
                     .ticks_advanced = step_summary.ticks_advanced,

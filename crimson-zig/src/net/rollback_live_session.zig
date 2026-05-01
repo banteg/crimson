@@ -13,8 +13,9 @@ const room_code = @import("room_code.zig");
 
 const Io = std.Io;
 const max_players: usize = @intCast(relay_protocol.max_players);
+const runner_snapshot_keep_ticks: i32 = 64;
 
-pub const LiveSessionError = rollback_live_bridge.BridgeError || live_runner.LiveRunnerError;
+pub const LiveSessionError = rollback_live_bridge.BridgeError || live_runner.LiveRunnerError || error{OutOfMemory};
 
 pub const StepSummary = struct {
     frames_advanced: usize = 0,
@@ -38,6 +39,7 @@ pub const LiveSession = struct {
     server_addr: relay_transport.PeerAddr,
     session: rollback_session.Session,
     runner: ?live_runner.LiveRunner = null,
+    runner_snapshots: std.ArrayList(LiveRunnerSnapshotEntry) = .empty,
     max_packets_per_update: usize,
 
     pub fn init(options: Options) LiveSession {
@@ -54,6 +56,7 @@ pub const LiveSession = struct {
 
     pub fn deinit(self: *LiveSession, allocator: std.mem.Allocator, io: Io) void {
         self.close(io);
+        self.runner_snapshots.deinit(allocator);
         self.session.deinit(allocator);
         self.* = undefined;
     }
@@ -99,13 +102,19 @@ pub const LiveSession = struct {
         return true;
     }
 
-    pub fn stepFrames(self: *LiveSession) LiveSessionError!StepSummary {
+    pub fn stepFrames(self: *LiveSession, allocator: std.mem.Allocator) LiveSessionError!StepSummary {
         _ = try self.ensureLiveRunner();
         if (self.runner == null) return .{};
+
+        self.applyPendingRollback();
 
         var summary: StepSummary = .{};
         while (self.popFrame()) |frame| {
             const update_result = try rollback_live_bridge.stepFrame(&self.runner.?, frame);
+            try self.rememberRunnerSnapshot(allocator, frame.tick_index);
+            if (self.session.runtime) |*runtime| {
+                try runtime.markLocalRollbackSnapshot(frame.tick_index);
+            }
             summary.frames_advanced += 1;
             summary.ticks_advanced += update_result.ticks_advanced;
             summary.last_tick_index = frame.tick_index;
@@ -132,6 +141,57 @@ pub const LiveSession = struct {
             try self.transport.sendPacket(allocator, io, self.server_addr, packet);
         }
     }
+
+    fn applyPendingRollback(self: *LiveSession) void {
+        const runtime = if (self.session.runtime) |*runtime| runtime else return;
+        while (runtime.drainRollbackFrom()) |from_tick| {
+            if (from_tick <= 0) continue;
+            self.restoreRunnerSnapshotAtOrBefore(from_tick - 1);
+        }
+    }
+
+    fn rememberRunnerSnapshot(self: *LiveSession, allocator: std.mem.Allocator, tick_index: i32) !void {
+        const runner = if (self.runner) |*runner| runner else return;
+        for (self.runner_snapshots.items) |*entry| {
+            if (entry.tick_index == tick_index) {
+                entry.snapshot = runner.captureSnapshot();
+                return;
+            }
+        }
+        try self.runner_snapshots.append(allocator, .{
+            .tick_index = tick_index,
+            .snapshot = runner.captureSnapshot(),
+        });
+        self.pruneRunnerSnapshots(tick_index - runner_snapshot_keep_ticks);
+    }
+
+    fn restoreRunnerSnapshotAtOrBefore(self: *LiveSession, tick_index: i32) void {
+        var best_idx: ?usize = null;
+        for (self.runner_snapshots.items, 0..) |entry, idx| {
+            if (entry.tick_index <= tick_index and (best_idx == null or entry.tick_index > self.runner_snapshots.items[best_idx.?].tick_index)) {
+                best_idx = idx;
+            }
+        }
+        if (best_idx) |idx| {
+            self.runner.?.restoreSnapshot(&self.runner_snapshots.items[idx].snapshot);
+        }
+    }
+
+    fn pruneRunnerSnapshots(self: *LiveSession, keep_from: i32) void {
+        var idx: usize = 0;
+        while (idx < self.runner_snapshots.items.len) {
+            if (self.runner_snapshots.items[idx].tick_index >= keep_from) {
+                idx += 1;
+                continue;
+            }
+            _ = self.runner_snapshots.orderedRemove(idx);
+        }
+    }
+};
+
+const LiveRunnerSnapshotEntry = struct {
+    tick_index: i32,
+    snapshot: live_runner.LiveRunnerSnapshot,
 };
 
 const CapturedInputFlags = struct {
@@ -359,12 +419,71 @@ test "rollback live session creates runner and steps local frames after room sta
     try std.testing.expectEqual(@as(u32, 1234), live.runner.?.seed);
 
     try live.queueLocalInput(allocator, io, .{ .flags = 7 }, 1002);
-    const summary = try live.stepFrames();
+    const summary = try live.stepFrames(allocator);
     try std.testing.expectEqual(@as(usize, 1), summary.frames_advanced);
     try std.testing.expectEqual(@as(?i32, 0), summary.last_tick_index);
     try std.testing.expectEqual(@as(usize, 1), summary.last_player_count);
     try std.testing.expectEqual(@as(u32, 7), summary.last_input_flags[0]);
     try std.testing.expect(summary.last_update != null);
+}
+
+test "rollback live session restores runner snapshot for local rollback" {
+    const allocator = std.testing.allocator;
+    const io = std.Io.Threaded.global_single_threaded.io();
+
+    var relay_sender: relay_transport.UdpTransport = .{ .bind_host = "127.0.0.1", .bind_port = 0 };
+    try relay_sender.open(io);
+    defer relay_sender.close(io);
+
+    var live = LiveSession.init(.{
+        .server_addr = relay_transport.PeerAddr.loopback(relay_sender.boundPort()),
+        .bind_host = "127.0.0.1",
+        .session = .{
+            .role = .host,
+            .mode_id = 2,
+            .player_count = 2,
+            .build_id = "0.1.0",
+            .input_delay_ticks = 0,
+        },
+    });
+    defer live.deinit(allocator, io);
+    try live.open(io);
+
+    var server_link: relay_reliable.RelayReliableLink = .{};
+    defer server_link.deinit(allocator);
+    const code = try room_code.parseRoomCode("ABCD");
+    try relay_sender.sendPacket(allocator, io, relay_transport.PeerAddr.loopback(live.boundPort()), try server_link.buildPacket(allocator, .{ .room_start = .{
+        .room_code = code,
+        .session_id = "s1",
+        .seed = 1234,
+        .mode_id = 2,
+        .player_count = 2,
+        .slot_index = 0,
+        .input_delay_ticks = 0,
+        .rollback_max_ticks = 8,
+    } }, true, 1000));
+
+    try live.update(allocator, io, 1001);
+    try live.queueLocalInput(allocator, io, .{ .flags = 1 }, 1002);
+    _ = try live.stepFrames(allocator);
+    try live.queueLocalInput(allocator, io, .{ .flags = 3 }, 1003);
+    _ = try live.stepFrames(allocator);
+    try std.testing.expectEqual(@as(usize, 2), live.runner.?.session.tick_index);
+
+    try live.session.runtime.?.handleMessage(.{ .rb_input_sample = .{
+        .slot_index = 1,
+        .samples = &[_]relay_protocol.RbInputSample{.{ .tick_index = 1, .packed_input = .{ .flags = 9 } }},
+    } }, 1004);
+
+    const runtime = &live.session.runtime.?;
+    try std.testing.expectEqual(@as(i32, 1), runtime.rollback_count);
+    try std.testing.expect(!runtime.paused_for_resync);
+
+    const summary = try live.stepFrames(allocator);
+    try std.testing.expectEqual(@as(usize, 1), summary.frames_advanced);
+    try std.testing.expectEqual(@as(?i32, 1), summary.last_tick_index);
+    try std.testing.expectEqual(@as(u32, 9), summary.last_input_flags[1]);
+    try std.testing.expectEqual(@as(usize, 2), live.runner.?.session.tick_index);
 }
 
 test "rollback live sessions handshake and exchange input through relay service" {
