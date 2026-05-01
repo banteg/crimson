@@ -2,6 +2,7 @@ const std = @import("std");
 
 const game_cfg = @import("../formats/game_cfg.zig");
 const lockstep_lobby = @import("lockstep_lobby.zig");
+const lockstep_outbox = @import("lockstep_outbox.zig");
 const lockstep_protocol = @import("lockstep_protocol.zig");
 const lockstep_reliable = @import("lockstep_reliable.zig");
 const lockstep_state = @import("lockstep_state.zig");
@@ -12,38 +13,7 @@ const quest_level = @import("../quest_level.zig");
 const host_max_capture_lead_ticks: i32 = 1;
 
 pub const PeerAddr = lockstep_transport.PeerAddr;
-
-pub const OutgoingPacket = struct {
-    addr: PeerAddr,
-    packet: lockstep_protocol.LockstepPacket,
-
-    pub fn deinit(self: *OutgoingPacket, allocator: std.mem.Allocator) void {
-        lockstep_protocol.deinitPacket(allocator, &self.packet);
-        self.* = undefined;
-    }
-};
-
-pub const Outbox = struct {
-    packets: std.ArrayList(OutgoingPacket) = .empty,
-
-    pub fn deinit(self: *Outbox, allocator: std.mem.Allocator) void {
-        for (self.packets.items) |*packet| packet.deinit(allocator);
-        self.packets.deinit(allocator);
-        self.* = undefined;
-    }
-
-    pub fn appendPacket(
-        self: *Outbox,
-        allocator: std.mem.Allocator,
-        addr: PeerAddr,
-        packet: lockstep_protocol.LockstepPacket,
-    ) !void {
-        var owned = try lockstep_protocol.clonePacket(allocator, packet);
-        errdefer lockstep_protocol.deinitPacket(allocator, &owned);
-        try self.packets.append(allocator, .{ .addr = addr, .packet = owned });
-        owned = .{};
-    }
-};
+pub const Outbox = lockstep_outbox.Outbox;
 
 pub const HostRuntimeOptions = struct {
     mode_id: i32,
