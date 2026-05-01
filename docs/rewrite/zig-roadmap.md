@@ -43,6 +43,8 @@ Today `crimson-zig/` already has:
   [`crimson-zig/src/net_session_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/net_session_native.zig)
   and
   [`crimson-zig/src/net_rollback_smoke_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/net_rollback_smoke_native.zig),
+  including a delayed guest-input smoke case that forces prediction correction
+  without resync,
 - a freestanding WASM replay verify/info plus checkpoint diff/verify ABI in
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig).
 
@@ -157,8 +159,8 @@ Remaining work:
 
 - keep the native `net host/join --format json` surface aligned with relay
   protocol defaults and runtime support flags,
-- expand `net smoke-rollback` beyond the in-process happy path into loss,
-  reorder, jitter, reconnect, and resync scenarios,
+- expand `net smoke-rollback` beyond the in-process happy path and delayed
+  input correction into loss, reorder, jitter, reconnect, and resync scenarios,
 - tighten desktop network lobby/status UX around live rollback sessions,
 - keep legacy lockstep as an explicit fallback while rollback remains primary.
 

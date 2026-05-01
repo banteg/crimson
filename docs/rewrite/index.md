@@ -144,7 +144,7 @@ See also:
 
 - Creature runtime parity gaps: remaining AI edge cases and per-weapon behaviors are still pending.
 - Multiplayer (2-4 players): per-player local input is wired in Survival/Rush/Quest; deep scheme-by-scheme parity validation is still in progress.
-- Rollback netplay is primary (relay + room codes, protocol v5, reconnect/resync hooks); remaining hardening work is focused on packet-impairment stress runs and lockstep fallback maintenance.
+- Rollback netplay is primary (relay + room codes, protocol v5, reconnect/resync hooks); Zig now has a delayed-input correction smoke path, and remaining hardening work is focused on broader packet-impairment stress runs plus lockstep fallback maintenance.
 - `game.cfg` progression/unlock wiring is in place; some tail fields/counter semantics still need deeper mapping validation.
 - Full Options/Controls parity (video/window mode editing, full widget set).
 - Native online-score submission is out of scope; direction is a more advanced headless verification system.

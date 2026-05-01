@@ -99,6 +99,7 @@ Current supported replay-tooling behavior:
 - native rollback session construction via `net host/join --format json` with
   `runtime_supported=true`
 - in-process rollback smoke validation via `net smoke-rollback --format json`
+  and `net smoke-rollback --impair delay-first-guest-input --format json`
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
   data rather than stale “unsupported path” wording
 
@@ -126,9 +127,9 @@ The important remaining gaps are now:
 - WASM still exposes a narrow replay/runtime surface, but now has replay
   verify/info JSON byte-input exports plus checkpoint diff/verify text exports,
 - network/LAN parity still needs broader stress and lobby coverage; Zig can now
-  construct rollback sessions, launch live rollback runners, and smoke-test a
-  host/guest relay exchange, but long impairment scenarios and product-lobby
-  polish remain.
+  construct rollback sessions, launch live rollback runners, smoke-test a
+  host/guest relay exchange, and force a delayed-input rollback correction, but
+  longer loss/jitter/reconnect/resync scenarios and product-lobby polish remain.
 
 The biggest remaining technical risk is not basic gameplay ownership. It is
 closing the remaining replay/tooling and product-shell breadth gaps cleanly.
