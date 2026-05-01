@@ -205,14 +205,17 @@ consume that stream in a stable per-tick order.
 
 ### RNG Trace Mode
 
-Replay checkpoint verification exposes `--trace-rng`:
+Replay verification and checkpoint verification expose `--trace-rng`:
 
 ```bash
+uv run crimson replay verify replay.crd --trace-rng
 uv run crimson replay verify-checkpoints replay.crd --trace-rng
 ```
 
-When enabled, checkpoints include presentation draw counters and replay-driver
-RNG trace rows that help localize divergence.
+When enabled, the replay driver records per-tick presentation/gameplay RNG draw
+rows while building the usual checkpoint or verifier trace. Checkpoint sidecars
+still compare the stable checkpoint schema: state, RNG state, deaths, events,
+score/kills, and mode snapshots.
 
 ## Replay Verify
 

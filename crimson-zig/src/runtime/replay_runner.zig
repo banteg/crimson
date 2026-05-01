@@ -142,6 +142,8 @@ pub const ReplayRunOptions = struct {
     inter_tick_rand_draws: i32 = 0,
     quest_spawn_entries: ?[]const spawn_mod.QuestSpawnEntry = null,
     quest_start_weapon_id: ?i32 = null,
+    trace_rng: bool = true,
+    trace_timing: bool = true,
 };
 
 pub fn runReplay(
@@ -230,16 +232,22 @@ pub fn runReplayWithTrace(
         var step_options: replay_step.StepOptions = .{};
         var trace_collector: TickTraceCollector = undefined;
         var trace_collector_active = false;
+        var rng_trace_active = false;
         defer if (trace_collector_active) trace_collector.deinit();
-        defer if (trace_collector_active) context.state.rng.setTraceSink(null, null, false);
-        if (trace_out != null) {
+        defer if (rng_trace_active) context.state.rng.setTraceSink(null, null, false);
+        if (trace_out != null and (options.trace_rng or options.trace_timing)) {
             trace_collector = TickTraceCollector.init(trace_allocator);
             trace_collector_active = true;
 
-            context.state.rng.setTraceSink(&trace_collector, TickTraceCollector.onRngDraw, true);
+            if (options.trace_rng) {
+                context.state.rng.setTraceSink(&trace_collector, TickTraceCollector.onRngDraw, true);
+                rng_trace_active = true;
+            }
 
-            step_options.timing_trace_ctx = &trace_collector;
-            step_options.timing_trace_sink = TickTraceCollector.onTimingSample;
+            if (options.trace_timing) {
+                step_options.timing_trace_ctx = &trace_collector;
+                step_options.timing_trace_sink = TickTraceCollector.onTimingSample;
+            }
         }
 
         const step_result = try replay_step.stepTick(
@@ -250,7 +258,7 @@ pub fn runReplayWithTrace(
             dt_tick,
             step_options,
         );
-        if (trace_collector_active and context.state.rng.consumeMissingTraceCaller()) {
+        if (rng_trace_active and context.state.rng.consumeMissingTraceCaller()) {
             return error.MissingRngCallerTag;
         }
 
@@ -262,9 +270,15 @@ pub fn runReplayWithTrace(
             };
             const players = context.playersConst();
             const player0 = players[0];
-            const rng_rows = try trace_collector.takeRngRows();
+            const rng_rows = if (trace_collector_active)
+                try trace_collector.takeRngRows()
+            else
+                &.{};
             errdefer if (rng_rows.len > 0) trace_allocator.free(rng_rows);
-            const timing_samples = try trace_collector.takeTimingSamples();
+            const timing_samples = if (trace_collector_active)
+                try trace_collector.takeTimingSamples()
+            else
+                &.{};
             errdefer if (timing_samples.len > 0) trace_allocator.free(timing_samples);
             var row = try buildTickTrace(
                 trace_allocator,
@@ -1553,6 +1567,38 @@ test "survival trace records authoritative rng rows and timing samples" {
         try std.testing.expectEqual(row.rng_rows[idx - 1].state_after_u32, draw.state_before_u32);
     }
     try std.testing.expectEqual(row.rng.rng_state, row.rng_rows[row.rng_rows.len - 1].state_after_u32);
+}
+
+test "survival trace can omit rng rows and timing samples" {
+    const allocator = std.testing.allocator;
+
+    const replay = try buildTestReplay(allocator, .{
+        .seed = 0x1234,
+        .tick_rate = 60,
+        .inputs = &.{replay_codec.fire_down_flag | replay_codec.fire_pressed_flag},
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+    replay.inputs[0][0].aim_x = 700.0;
+    replay.inputs[0][0].aim_y = 512.0;
+
+    var trace: std.ArrayList(ReplayTickTrace) = .empty;
+    defer trace.deinit(allocator);
+    defer deinitReplayTickTraceRows(allocator, trace.items);
+    _ = try runReplayWithTrace(
+        allocator,
+        replay,
+        &trace,
+        .{
+            .trace_rng = false,
+            .trace_timing = false,
+        },
+    );
+
+    try std.testing.expectEqual(@as(usize, 1), trace.items.len);
+    try std.testing.expectEqual(@as(usize, 0), trace.items[0].rng_rows.len);
+    try std.testing.expectEqual(@as(usize, 0), trace.items[0].timing_samples.len);
+    try std.testing.expect(trace.items[0].rng.rng_state != 0);
 }
 
 test "rush run original capture bootstrap keeps packed move vector behavior" {

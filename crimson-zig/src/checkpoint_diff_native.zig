@@ -462,7 +462,6 @@ fn runVerifyCheckpointsWithReplay(
     max_ticks: ?usize,
     trace_rng: bool,
 ) !CommandOutput {
-    _ = trace_rng;
     var trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
     defer {
         replay_runner.deinitReplayTickTraceRows(allocator, trace.items);
@@ -473,7 +472,11 @@ fn runVerifyCheckpointsWithReplay(
         allocator,
         replay,
         &trace,
-        .{ .max_ticks = max_ticks },
+        .{
+            .max_ticks = max_ticks,
+            .trace_rng = trace_rng,
+            .trace_timing = false,
+        },
     ) catch |err| {
         return buildVerifyFailedOutput(allocator, replayRunnerErrorDetail(err));
     };
@@ -1777,6 +1780,19 @@ test "byte checkpoint verify accepts replay and checkpoint payloads" {
     try std.testing.expectEqual(@as(u8, 0), output.exit_code);
     try std.testing.expectEqualStrings("", output.stderr);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "ok: 1 checkpoints match; ticks=1") != null);
+
+    const traced_output = try runReplayVerifyCheckpointsBytes(
+        allocator,
+        replay_bytes,
+        checkpoints_payload,
+        1,
+        true,
+    );
+    defer traced_output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), traced_output.exit_code);
+    try std.testing.expectEqualStrings("", traced_output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, traced_output.stdout, "ok: 1 checkpoints match; ticks=1") != null);
 }
 
 test "checkpoint diff maps checkpoint load errors to user details" {
