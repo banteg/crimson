@@ -1,16 +1,70 @@
 const std = @import("std");
 
+const game_cfg = @import("../formats/game_cfg.zig");
+const game_ids = @import("../game_ids.zig");
 const live_runner = @import("../runtime/live_runner.zig");
 const lockstep_input_adapter = @import("lockstep_input_adapter.zig");
 const lockstep_protocol = @import("lockstep_protocol.zig");
 const packed_input = @import("packed_input.zig");
+const quest_level = @import("../quest_level.zig");
+const session_settings = @import("session_settings.zig");
 const state_mod = @import("../runtime/state.zig");
 
 pub const BridgeError = error{
+    InvalidGameMode,
     TooManyPlayers,
 };
 
 pub const StepCanonicalFrameError = BridgeError || live_runner.LiveRunnerError;
+
+pub const LiveConfigOptions = struct {
+    seed: i32 = 1,
+    status: ?game_cfg.Status = null,
+};
+
+pub const MatchStartLiveConfigOptions = struct {
+    tick_rate: i32 = lockstep_protocol.tick_rate,
+    input_delay_ticks: i32 = lockstep_protocol.input_delay_ticks,
+};
+
+pub fn liveConfigFromSettings(
+    settings: session_settings.LockstepSessionSettings,
+    options: LiveConfigOptions,
+) BridgeError!live_runner.LiveModeConfig {
+    const game_mode = std.enums.fromInt(game_ids.GameModeId, settings.mode_id) orelse
+        return error.InvalidGameMode;
+
+    var config: live_runner.LiveModeConfig = .{
+        .seed = @bitCast(options.seed),
+        .game_mode = game_mode,
+        .player_count = settings.player_count,
+        .tick_rate = settings.tick_rate,
+        .preserve_bugs = settings.preserve_bugs,
+    };
+    if (settings.quest_level) |level| {
+        config.quest_level_key = level.levelKey();
+    }
+    if (options.status) |status| {
+        config.status_quest_unlock_index = @intCast(status.quest_unlock_index);
+        config.status_quest_unlock_index_full = @intCast(status.quest_unlock_index_full);
+        config.status_weapon_usage_counts = statusWeaponUsageCounts(status);
+    }
+    return config;
+}
+
+pub fn liveConfigFromMatchStart(
+    start: lockstep_protocol.MatchStart,
+    options: MatchStartLiveConfigOptions,
+) BridgeError!live_runner.LiveModeConfig {
+    const settings = session_settings.fromMatchStart(start, .{
+        .tick_rate = options.tick_rate,
+        .input_delay_ticks = options.input_delay_ticks,
+    });
+    return liveConfigFromSettings(settings, .{
+        .seed = start.seed,
+        .status = start.status,
+    });
+}
 
 pub fn frameInputFromPacked(inputs: []const packed_input.PackedPlayerInput) BridgeError!live_runner.FrameInput {
     if (inputs.len > state_mod.max_players) return error.TooManyPlayers;
@@ -35,6 +89,50 @@ pub fn stepCanonicalFrame(
         runner.session.dt_nominal,
         try frameInputFromTickFrame(frame),
     );
+}
+
+fn statusWeaponUsageCounts(status: game_cfg.Status) [state_mod.weapon_count_size]u32 {
+    var counts: [state_mod.weapon_count_size]u32 = [_]u32{0} ** state_mod.weapon_count_size;
+    for (0..@min(counts.len, status.weapon_usage_counts.len)) |idx| {
+        counts[idx] = status.weapon_usage_counts[idx];
+    }
+    return counts;
+}
+
+test "lockstep live bridge maps match start to live runner config" {
+    var status = std.mem.zeroes(game_cfg.Status);
+    status.quest_unlock_index = 6;
+    status.quest_unlock_index_full = 12;
+    status.weapon_usage_counts[@intFromEnum(game_ids.WeaponId.pistol)] = 9;
+
+    const start: lockstep_protocol.MatchStart = .{
+        .mode_id = @intFromEnum(game_ids.GameModeId.quests),
+        .player_count = 2,
+        .seed = 12345,
+        .quest_level = try quest_level.QuestLevel.parse("2.5"),
+        .preserve_bugs = true,
+        .status = status,
+    };
+
+    const config = try liveConfigFromMatchStart(start, .{
+        .tick_rate = 30,
+        .input_delay_ticks = 3,
+    });
+    try std.testing.expectEqual(@as(u32, 12345), config.seed);
+    try std.testing.expectEqual(game_ids.GameModeId.quests, config.game_mode);
+    try std.testing.expectEqual(@as(i32, 2), config.player_count);
+    try std.testing.expectEqual(@as(i32, 205), config.quest_level_key);
+    try std.testing.expectEqual(@as(i32, 30), config.tick_rate);
+    try std.testing.expect(config.preserve_bugs);
+    try std.testing.expectEqual(@as(i32, 6), config.status_quest_unlock_index);
+    try std.testing.expectEqual(@as(i32, 12), config.status_quest_unlock_index_full);
+    try std.testing.expectEqual(@as(u32, 9), config.status_weapon_usage_counts[@intFromEnum(game_ids.WeaponId.pistol)]);
+}
+
+test "lockstep live bridge rejects unknown match start mode" {
+    try std.testing.expectError(error.InvalidGameMode, liveConfigFromMatchStart(.{
+        .mode_id = 99,
+    }, .{}));
 }
 
 test "lockstep live bridge maps canonical packed inputs to frame input" {
