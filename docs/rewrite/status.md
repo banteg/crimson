@@ -40,6 +40,7 @@ Last reviewed: **2026-02-24**
   - `crimson-zig dbg record <replay.crd> --out <trace.zig.cdt>`
   - `crimson-zig dbg verify`
   - `crimson-zig config --path <crimson.cfg> --format json`
+  - `crimson-zig status --path <game.cfg> --format json`
   - `crimson-zig quests <level> --format json --seed <seed>`
   - `uv run crimson dbg health <trace.cdt>`
   - `uv run crimson dbg diff <expected.cdt> <actual.cdt>`

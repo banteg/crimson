@@ -9,6 +9,7 @@ const replay_info_native = @import("replay_info_native.zig");
 const replay_list_native = @import("replay_list_native.zig");
 const net_session_native = @import("net_session_native.zig");
 const relay_udp_server = @import("net/relay_udp_server.zig");
+const status_native = @import("status_native.zig");
 const verify_native = @import("verify_native.zig");
 
 const usage =
@@ -22,6 +23,7 @@ const usage =
     \\  crimson-zig dbg record <replay.crd> --out <trace.cdt>
     \\  crimson-zig dbg verify
     \\  crimson-zig config [config options]
+    \\  crimson-zig status [status options]
     \\  crimson-zig quests <level> [quest options]
     \\  crimson-zig net host --mode <mode> --players <count> [net options]
     \\  crimson-zig net join --code <room> [net options]
@@ -39,6 +41,7 @@ const usage =
     \\  crimson-zig dbg record replay.crd --out replay.cdt
     \\  crimson-zig dbg verify
     \\  crimson-zig config --path crimson.cfg --format json
+    \\  crimson-zig status --path game.cfg --format json
     \\  crimson-zig quests 1.1 --format json --seed 101
     \\  crimson-zig net host --mode survival --players 2 --format json
     \\  crimson-zig net join --code ab12 --format json
@@ -123,6 +126,14 @@ pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     }
     if (args.len >= 2 and std.mem.eql(u8, args[1], "config")) {
         const output = try config_native.runConfig(allocator, args[2..]);
+        defer output.deinit(allocator);
+
+        try writeStdout(output.stdout);
+        try writeStderr(output.stderr);
+        return output.exit_code;
+    }
+    if (args.len >= 2 and std.mem.eql(u8, args[1], "status")) {
+        const output = try status_native.runStatus(allocator, args[2..]);
         defer output.deinit(allocator);
 
         try writeStdout(output.stdout);

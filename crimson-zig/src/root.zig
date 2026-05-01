@@ -8,6 +8,7 @@ pub const verify_native = @import("verify_native.zig");
 pub const cli = @import("cli.zig");
 pub const dbg_record_native = @import("dbg_record_native.zig");
 pub const dbg_verify_native = @import("dbg_verify_native.zig");
+pub const status_native = @import("status_native.zig");
 pub const hash = @import("hash.zig");
 pub const quest_level = @import("quest_level.zig");
 pub const quest_spawn_logic_full = @import("quest_spawn/logic_full.zig");

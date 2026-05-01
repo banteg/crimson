@@ -25,7 +25,7 @@ What exists today:
   `crimson-zig/src/runtime/`,
 - native replay list/verification/info/benchmark/checkpoint tooling,
 - native debug contract verification and CDT trace export tooling,
-- native `crimson.cfg` inspection tooling,
+- native `crimson.cfg` and `game.cfg` inspection tooling,
 - native quest spawn-table dump tooling,
 - native UDP relay serve CLI,
 - native `net host/join --format json` session construction,
@@ -48,7 +48,7 @@ consumes the same shared runtime used by the native desktop application.
 - CDT/debug trace plumbing
 - typed RNG caller tagging for verifier/runtime draws
 - native config/status ownership for `crimson.cfg` and `game.cfg`, including
-  CLI inspection for `crimson.cfg`
+  CLI inspection for both files
 - real boot/menu/gameplay/pause/results/final-quest end-note/statistics/options
   shell
 - archive-backed world/UI asset loading
@@ -82,6 +82,7 @@ Current supported replay-tooling behavior:
 - native CDT trace export via `dbg record <replay.crd> --out <trace.cdt>`
 - native debug schema contract reporting via `dbg verify`
 - native `crimson.cfg` human/JSON inspection via `config`
+- native `game.cfg` checksum-verified human/JSON inspection via `status`
 - current Python-readable trace export contracts
 - quest spawn-table JSON dumps via `quests <level> --format json --seed <seed>`
 - native UDP relay serving via `relay serve`
