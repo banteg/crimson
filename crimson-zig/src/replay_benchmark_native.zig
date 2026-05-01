@@ -145,6 +145,41 @@ pub fn runReplayBenchmark(
     }
 }
 
+pub fn runReplayBenchmarkBytesJson(
+    allocator: std.mem.Allocator,
+    replay_name: []const u8,
+    replay_bytes: []const u8,
+    max_ticks: ?usize,
+    runs: usize,
+    warmup_runs: usize,
+    trace_rng: bool,
+) !CommandOutput {
+    if (runs == 0) {
+        return buildInvalidBenchmarkArgsOutput(allocator, "invalid --runs value");
+    }
+
+    var replay = loadReplayBytes(allocator, replay_bytes) catch |err| {
+        return buildBenchmarkFailedOutput(allocator, benchmarkReplayLoadErrorDetail(err));
+    };
+    defer replay.deinit(allocator);
+
+    if (unsupportedReplayHeaderDetail(replay.header, replay.tickCount())) |detail| {
+        return buildBenchmarkFailedOutput(allocator, detail);
+    }
+    replay_codec.validateReplayBootstrap(replay.header) catch |err| {
+        return buildBenchmarkFailedOutput(allocator, benchmarkReplayLoadErrorDetail(err));
+    };
+
+    return runBenchmarkWithReplay(allocator, replay_name, .{
+        .replay_file = replay_name,
+        .output_format = .json,
+        .runs = runs,
+        .warmup_runs = warmup_runs,
+        .max_ticks = max_ticks,
+        .trace_rng = trace_rng,
+    }, replay);
+}
+
 fn parseNativeSubset(args: []const []const u8) ParseOutcome {
     var replay_file: ?[]const u8 = null;
     var request: BenchmarkRequest = .{
@@ -381,6 +416,15 @@ fn runNativeBenchmark(
         return buildBenchmarkFailedOutput(allocator, benchmarkReplayLoadErrorDetail(err));
     };
 
+    return runBenchmarkWithReplay(allocator, resolution.resolved_path, request, replay);
+}
+
+fn runBenchmarkWithReplay(
+    allocator: std.mem.Allocator,
+    replay_path: []const u8,
+    request: BenchmarkRequest,
+    replay: replay_codec.Replay,
+) !CommandOutput {
     var last_run: replay_runner.ReplayRunResult = undefined;
     for (0..request.warmup_runs) |_| {
         last_run = runBenchmarkReplay(allocator, replay, request) catch |err| {
@@ -436,7 +480,7 @@ fn runNativeBenchmark(
     }
 
     const run_result = buildRunResultPayload(replay.header, last_run);
-    const payload = buildBenchmarkPayload(allocator, resolution.resolved_path, request, samples, run_result, profile_payload) catch |err| {
+    const payload = buildBenchmarkPayload(allocator, replay_path, request, samples, run_result, profile_payload) catch |err| {
         return buildBenchmarkFailedOutput(allocator, benchmarkAllocationErrorDetail(err));
     };
     defer allocator.free(payload);
@@ -557,6 +601,13 @@ fn loadReplay(
     );
     defer allocator.free(replay_bytes);
 
+    return loadReplayBytes(allocator, replay_bytes);
+}
+
+fn loadReplayBytes(
+    allocator: std.mem.Allocator,
+    replay_bytes: []const u8,
+) !replay_codec.Replay {
     var replay_payload_alloc: ?[]u8 = null;
     defer if (replay_payload_alloc) |buf| allocator.free(buf);
     const replay_payload: []const u8 = if (replay_codec.isZstdPayload(replay_bytes)) blk: {
@@ -568,7 +619,6 @@ fn loadReplay(
         replay_payload_alloc = inflated;
         break :blk inflated;
     } else replay_bytes;
-
     return replay_codec.parseReplay(allocator, replay_payload);
 }
 
@@ -985,6 +1035,31 @@ test "benchmark aggregate computes min max mean and upper median" {
     try std.testing.expectEqual(@as(f64, 2.0), agg.p50);
     try std.testing.expectApproxEqAbs(@as(f64, 2.9), agg.p95, 0.0000001);
     try std.testing.expectApproxEqAbs(@as(f64, 1.0), agg.stdev, 0.0000001);
+}
+
+test "byte replay benchmark emits JSON payload" {
+    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(std.testing.allocator);
+    defer std.testing.allocator.free(replay_bytes);
+
+    const output = try runReplayBenchmarkBytesJson(
+        std.testing.allocator,
+        "<bytes>",
+        replay_bytes,
+        1,
+        1,
+        0,
+        false,
+    );
+    defer output.deinit(std.testing.allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expectEqualStrings("", output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"schema_version\":3") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"replay\":\"<bytes>\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"runs\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"warmup_runs\":0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"sample_count\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"ticks\":1") != null);
 }
 
 test "benchmark replay load errors use user-facing details" {
