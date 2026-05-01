@@ -10,6 +10,12 @@ const room_code = @import("room_code.zig");
 
 pub const Role = rollback_runtime.Role;
 
+const ReconnectState = enum {
+    idle,
+    waiting_for_peer_reconnect,
+    self_reconnecting,
+};
+
 pub const MatchConfig = struct {
     seed: i32 = 0,
     mode_id: i32 = 0,
@@ -34,6 +40,7 @@ pub const Options = struct {
     input_delay_ticks: i32 = relay_protocol.input_delay_ticks,
     rollback_max_ticks: i32 = relay_protocol.rollback_max_ticks,
     reconnect_timeout_ms: i32 = relay_protocol.reconnect_timeout_ms,
+    link_timeout_ms: i32 = relay_protocol.link_timeout_ms,
     status: ?game_cfg.Status = null,
 };
 
@@ -64,6 +71,10 @@ pub const Session = struct {
     reconnect_token: []const u8 = "",
     match_config: ?MatchConfig = null,
     error_reason: []const u8 = "",
+    reconnect_state: ReconnectState = .idle,
+    last_seen_ms: i64 = 0,
+    last_hello_ms: i64 = 0,
+    last_ping_ms: i64 = 0,
 
     pub fn init(options: Options) Session {
         return .{ .options = options };
@@ -80,17 +91,19 @@ pub const Session = struct {
 
     pub fn update(self: *Session, allocator: std.mem.Allocator, now_ms: i64) !void {
         if (!self.accepted) {
-            if (!self.sent_hello) {
+            if (!self.sent_hello or now_ms - self.last_hello_ms >= 200) {
                 try self.send(allocator, .{ .client_hello = .{
                     .protocol_version = relay_protocol.protocol_version,
                     .build_id = self.options.build_id,
                     .peer_name = self.options.peer_name,
                 } }, true, now_ms);
                 self.sent_hello = true;
+                self.last_hello_ms = now_ms;
             }
             return;
         }
 
+        var sent_control = false;
         if (!self.sent_room_request) {
             switch (self.options.role) {
                 .host => try self.send(allocator, .{ .room_create = .{
@@ -105,19 +118,25 @@ pub const Session = struct {
                 } }, true, now_ms),
                 .join => try self.send(allocator, .{ .room_join = .{
                     .room_code = self.options.room_code,
-                    .reconnect_token = self.options.reconnect_token,
+                    .reconnect_token = if (self.reconnect_state == .self_reconnecting) self.reconnect_token else self.options.reconnect_token,
                 } }, true, now_ms),
             }
             self.sent_room_request = true;
+            sent_control = true;
         }
 
         if (self.saw_room_state and !self.sent_ready) {
             try self.send(allocator, .{ .room_ready = .{ .slot_index = self.local_slot_index, .ready = true } }, true, now_ms);
             self.sent_ready = true;
+            sent_control = true;
         }
 
         if (self.runtime) |*runtime| try runtime.checkReconnectTimeout(now_ms);
         try self.flushRuntimeOutbox(allocator, now_ms);
+        try self.checkLinkTimeout(allocator, now_ms);
+        if (!self.accepted) return;
+        try self.pollLinkResends(allocator, now_ms);
+        if (!sent_control) try self.sendPingIfDue(allocator, now_ms);
     }
 
     pub fn handlePacket(
@@ -126,6 +145,7 @@ pub const Session = struct {
         packet: relay_protocol.RelayPacket,
         now_ms: i64,
     ) !void {
+        self.last_seen_ms = now_ms;
         var delivered = try self.link.ingestPacket(allocator, packet, now_ms);
         defer delivered.deinit(allocator);
         for (delivered.messages.items) |message| {
@@ -159,17 +179,27 @@ pub const Session = struct {
             .client_welcome => |welcome| {
                 self.accepted = welcome.accepted;
                 if (!welcome.accepted) try self.setError(allocator, if (welcome.reason.len == 0) "rejected" else welcome.reason);
+                if (welcome.accepted and self.reconnect_state == .self_reconnecting) self.sent_room_request = false;
             },
             .room_state => |state| {
                 self.saw_room_state = true;
                 self.room_code_latest = state.room_code;
                 if (self.runtime) |*runtime| {
-                    if (roomStateHasConnectedSlot(state, self.local_slot_index)) runtime.completeReconnect();
+                    if (self.reconnect_state != .idle and roomStateHasConnectedSlot(state, self.local_slot_index)) {
+                        runtime.completeReconnect();
+                        self.reconnect_state = .idle;
+                    }
                 }
             },
             .room_start => |start| try self.handleRoomStart(allocator, start),
             .relay_error => |err| try self.setError(allocator, if (err.reason.len == 0) "relay_error" else err.reason),
-            .peer_disconnect,
+            .peer_disconnect => |disconnect| {
+                const runtime = if (self.runtime) |*runtime| runtime else return;
+                try runtime.handleMessage(message, now_ms);
+                if (disconnect.slot_index != self.local_slot_index and runtime.paused_for_reconnect) {
+                    self.reconnect_state = .waiting_for_peer_reconnect;
+                }
+            },
             .rb_input_sample,
             .rb_resync_request,
             .rb_resync_begin,
@@ -185,21 +215,28 @@ pub const Session = struct {
     }
 
     fn handleRoomStart(self: *Session, allocator: std.mem.Allocator, start: relay_protocol.RoomStart) !void {
-        if (self.runtime) |*runtime| runtime.deinit();
-        self.runtime = rollback_runtime.RuntimeCore.init(allocator, .{
-            .role = self.options.role,
-            .player_count = start.player_count,
-            .local_slot_index = start.slot_index,
-            .input_delay_ticks = start.input_delay_ticks,
-            .max_rollback_ticks = start.rollback_max_ticks,
-            .reconnect_timeout_ms = self.options.reconnect_timeout_ms,
-        });
-        if (self.runtime) |*runtime| try runtime.primeInitialDelay();
+        const first_start = !self.started;
+        if (first_start) {
+            if (self.runtime) |*runtime| runtime.deinit();
+            self.runtime = rollback_runtime.RuntimeCore.init(allocator, .{
+                .role = self.options.role,
+                .player_count = start.player_count,
+                .local_slot_index = start.slot_index,
+                .input_delay_ticks = start.input_delay_ticks,
+                .max_rollback_ticks = start.rollback_max_ticks,
+                .reconnect_timeout_ms = self.options.reconnect_timeout_ms,
+            });
+            if (self.runtime) |*runtime| try runtime.primeInitialDelay();
+        } else if (self.runtime) |*runtime| {
+            runtime.completeReconnect();
+        }
         self.started = true;
         self.local_slot_index = start.slot_index;
         self.room_code_latest = start.room_code;
         try self.setReconnectToken(allocator, start.reconnect_token);
         self.match_config = matchConfigFromRoomStart(start);
+        self.sent_ready = true;
+        self.reconnect_state = .idle;
     }
 
     fn flushRuntimeOutbox(self: *Session, allocator: std.mem.Allocator, now_ms: i64) !void {
@@ -232,6 +269,50 @@ pub const Session = struct {
     fn setReconnectToken(self: *Session, allocator: std.mem.Allocator, token: []const u8) !void {
         if (self.reconnect_token.len != 0) allocator.free(self.reconnect_token);
         self.reconnect_token = if (token.len == 0) "" else try allocator.dupe(u8, token);
+    }
+
+    fn pollLinkResends(self: *Session, allocator: std.mem.Allocator, now_ms: i64) !void {
+        var packets = try self.link.pollResends(allocator, now_ms);
+        defer relay_reliable.deinitPacketList(allocator, &packets);
+        for (packets.items) |packet| {
+            var owned = try relay_protocol.clonePacket(allocator, packet);
+            errdefer relay_protocol.deinitPacket(allocator, &owned);
+            try self.outbox.items.append(allocator, owned);
+            owned = .{};
+        }
+    }
+
+    fn sendPingIfDue(self: *Session, allocator: std.mem.Allocator, now_ms: i64) !void {
+        if (!self.accepted) return;
+        if (self.last_ping_ms > 0 and now_ms - self.last_ping_ms < relay_protocol.ping_interval_ms) return;
+        const stamp_ms: i32 = @intCast(std.math.clamp(now_ms, std.math.minInt(i32), std.math.maxInt(i32)));
+        try self.send(allocator, .{ .ping = .{ .stamp_ms = stamp_ms } }, false, now_ms);
+        self.last_ping_ms = now_ms;
+    }
+
+    fn checkLinkTimeout(self: *Session, allocator: std.mem.Allocator, now_ms: i64) !void {
+        if (self.last_seen_ms <= 0) return;
+        if (now_ms - self.last_seen_ms < @max(@as(i64, 250), self.options.link_timeout_ms)) return;
+        if (self.started and self.reconnect_token.len != 0) {
+            try self.startSelfReconnect(allocator, now_ms);
+            return;
+        }
+        try self.setError(allocator, "timeout");
+    }
+
+    fn startSelfReconnect(self: *Session, allocator: std.mem.Allocator, now_ms: i64) !void {
+        if (self.reconnect_state == .self_reconnecting) return;
+        self.reconnect_state = .self_reconnecting;
+        if (self.runtime) |*runtime| runtime.beginSelfReconnect(now_ms);
+        self.accepted = false;
+        self.sent_hello = false;
+        self.sent_room_request = false;
+        self.sent_ready = false;
+        self.saw_room_state = false;
+        self.last_hello_ms = 0;
+        self.last_ping_ms = 0;
+        self.link.deinit(allocator);
+        self.link = .{};
     }
 };
 
@@ -451,6 +532,89 @@ test "rollback session stores reconnect token and resumes after room state recon
     try session.queueLocalInput(allocator, .{ .flags = 7 }, 1602);
     const frame = session.popFrame() orelse return error.ExpectedFrame;
     try std.testing.expectEqual(@as(u32, 7), frame.input(0).flags);
+}
+
+test "rollback session self reconnects with token and keeps runtime state" {
+    const allocator = std.testing.allocator;
+    const code = try room_code.parseRoomCode("ABCD");
+    var session = Session.init(.{
+        .role = .join,
+        .mode_id = 2,
+        .player_count = 2,
+        .build_id = "0.1.0",
+        .room_code = code,
+        .input_delay_ticks = 0,
+        .reconnect_timeout_ms = 1000,
+        .link_timeout_ms = 500,
+    });
+    defer session.deinit(allocator);
+    session.accepted = true;
+    session.sent_room_request = true;
+    session.sent_ready = true;
+
+    var server_link: relay_reliable.RelayReliableLink = .{};
+    defer server_link.deinit(allocator);
+    try session.handlePacket(allocator, try server_link.buildPacket(allocator, .{ .room_start = .{
+        .room_code = code,
+        .session_id = "s1",
+        .player_count = 2,
+        .slot_index = 1,
+        .input_delay_ticks = 0,
+        .rollback_max_ticks = 8,
+        .netcode_mode = relay_protocol.NetcodeMode.rollback,
+        .reconnect_token = "guest-token",
+    } }, true, 1000), 1000);
+
+    try session.queueLocalInput(allocator, .{ .flags = 7 }, 1001);
+    const first_frame = session.popFrame() orelse return error.ExpectedFrame;
+    try std.testing.expectEqual(@as(i32, 0), first_frame.tick_index);
+    session.clearOutbox(allocator);
+
+    try session.update(allocator, 1500);
+    try std.testing.expectEqual(ReconnectState.self_reconnecting, session.reconnect_state);
+    try std.testing.expect(!session.accepted);
+    try std.testing.expect(session.runtime.?.paused_for_reconnect);
+    try std.testing.expectEqual(@as(i32, 1), session.runtime.?.reconnect_count);
+
+    try session.update(allocator, 1501);
+    switch (session.outbox.items.items[0].message) {
+        .client_hello => {},
+        else => return error.ExpectedClientHello,
+    }
+    session.clearOutbox(allocator);
+
+    var reconnect_link: relay_reliable.RelayReliableLink = .{};
+    defer reconnect_link.deinit(allocator);
+    try session.handlePacket(allocator, try reconnect_link.buildPacket(allocator, .{ .client_welcome = .{
+        .accepted = true,
+        .peer_id = "guest-new",
+    } }, true, 1502), 1502);
+    try session.update(allocator, 1503);
+    switch (session.outbox.items.items[0].message) {
+        .room_join => |join| {
+            try std.testing.expectEqualStrings("guest-token", join.reconnect_token);
+        },
+        else => return error.ExpectedRoomJoin,
+    }
+    session.clearOutbox(allocator);
+
+    try session.handlePacket(allocator, try reconnect_link.buildPacket(allocator, .{ .room_start = .{
+        .room_code = code,
+        .session_id = "s1",
+        .player_count = 2,
+        .slot_index = 1,
+        .input_delay_ticks = 0,
+        .rollback_max_ticks = 8,
+        .netcode_mode = relay_protocol.NetcodeMode.rollback,
+        .reconnect_token = "guest-token",
+    } }, true, 1504), 1504);
+    try std.testing.expectEqual(ReconnectState.idle, session.reconnect_state);
+    try std.testing.expect(!session.runtime.?.paused_for_reconnect);
+
+    try session.queueLocalInput(allocator, .{ .flags = 8 }, 1505);
+    const resumed_frame = session.popFrame() orelse return error.ExpectedFrame;
+    try std.testing.expectEqual(@as(i32, 1), resumed_frame.tick_index);
+    try std.testing.expectEqual(@as(u32, 8), resumed_frame.input(1).flags);
 }
 
 test "rollback session routes remote input into runtime core" {

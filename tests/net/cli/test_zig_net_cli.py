@@ -201,8 +201,13 @@ def test_zig_net_smoke_rollback_reports_guest_reconnect_recovery() -> None:
 
     assert payload["status"] == "ok"
     assert payload["impairment"] == "guest-reconnect"
+    assert payload["host_input_flags"] == 13
+    assert payload["guest_input_flags"] == 11
+    assert payload["host_tick_index"] == payload["guest_tick_index"]
+    assert payload["host_live_ticks_advanced"] >= 1
+    assert payload["guest_live_ticks_advanced"] >= 1
     assert payload["host_reconnect_count"] == 1
-    assert payload["guest_reconnect_count"] == 0
+    assert payload["guest_reconnect_count"] == 1
     assert payload["host_paused_for_reconnect"] is False
     assert payload["guest_paused_for_reconnect"] is False
     assert payload["host_resync_count"] == 0

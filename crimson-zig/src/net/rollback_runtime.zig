@@ -233,6 +233,12 @@ pub const RuntimeCore = struct {
         self.reconnect_deadline_ms = 0;
     }
 
+    pub fn beginSelfReconnect(self: *RuntimeCore, now_ms: i64) void {
+        if (self.reconnect_deadline_ms <= 0) self.reconnect_count += 1;
+        self.paused_for_reconnect = true;
+        self.reconnect_deadline_ms = now_ms + self.reconnect_timeout_ms;
+    }
+
     pub fn checkReconnectTimeout(self: *RuntimeCore, now_ms: i64) !void {
         if (self.reconnect_deadline_ms <= 0) return;
         if (now_ms < self.reconnect_deadline_ms) return;

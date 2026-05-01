@@ -299,60 +299,60 @@ fn runGuestReconnectSmoke(
     const host_runtime = &(host.session.runtime orelse return error.RollbackRuntimeMissing);
     if (!host_runtime.paused_for_reconnect or host_runtime.reconnect_count != 1) return error.RollbackReconnectPauseMissing;
 
-    var rejoined = rollback_live_session.LiveSession.init(.{
-        .server_addr = relay_transport.PeerAddr.loopback(server.boundPort()),
-        .bind_host = "127.0.0.1",
-        .session = .{
-            .role = .join,
-            .mode_id = 2,
-            .player_count = 2,
-            .build_id = "0.1.0",
-            .peer_name = "guest-reconnect",
-            .room_code = null,
-            .reconnect_token = guest_token,
-            .input_delay_ticks = 0,
-        },
-    });
-    defer rejoined.deinit(allocator, io);
+    try guest.update(allocator, io, 7000);
+    const guest_runtime = &(guest.session.runtime orelse return error.RollbackRuntimeMissing);
+    if (!guest_runtime.paused_for_reconnect or guest_runtime.reconnect_count != 1) return error.RollbackReconnectSelfPauseMissing;
 
-    packets_sent += try driveReconnectUntilStarted(allocator, io, server, service, host, &rejoined, 1810);
-    const rejoined_runtime = &(rejoined.session.runtime orelse return error.RollbackRuntimeMissing);
-    if (rejoined.session.local_slot_index != guest_slot) return error.RollbackReconnectSlotMismatch;
+    packets_sent += try driveReconnectUntilStarted(allocator, io, server, service, host, guest, 7001);
+    if (guest.session.local_slot_index != guest_slot) return error.RollbackReconnectSlotMismatch;
     if (host_runtime.paused_for_reconnect) return error.RollbackReconnectIncomplete;
     if (host_runtime.reconnect_deadline_ms != 0) return error.RollbackReconnectDeadlineActive;
-    if (rejoined_runtime.paused_for_reconnect) return error.RollbackReconnectJoinPaused;
+    if (guest_runtime.paused_for_reconnect) return error.RollbackReconnectJoinPaused;
+
+    try guest.queueLocalInput(allocator, io, .{ .flags = 11 }, 7050);
+    packets_sent += try pumpRelayService(allocator, io, server, service, 7051, null);
+    try host.update(allocator, io, 7052);
+    try host.queueLocalInput(allocator, io, .{ .flags = 13 }, 7053);
+    const host_step = try host.stepFrames(allocator);
+    packets_sent += try pumpRelayService(allocator, io, server, service, 7054, null);
+    try guest.update(allocator, io, 7055);
+    const guest_step = try guest.stepFrames(allocator);
+    if (host_step.frames_advanced == 0 or guest_step.frames_advanced == 0) return error.RollbackReconnectFrameMissing;
+    if (host_step.last_tick_index != guest_step.last_tick_index) return error.RollbackReconnectTickMismatch;
+    if (host_step.last_input_flags[0] != 13 or host_step.last_input_flags[1] != 11) return error.RollbackReconnectHostInputMismatch;
+    if (guest_step.last_input_flags[0] != 13 or guest_step.last_input_flags[1] != 11) return error.RollbackReconnectGuestInputMismatch;
 
     return .{
         .relay_port = server.boundPort(),
         .host_port = host.boundPort(),
-        .guest_port = rejoined.boundPort(),
+        .guest_port = guest.boundPort(),
         .room_code = code,
         .impairment = Impairment.guest_reconnect.label(),
         .packets_sent = packets_sent,
         .delayed_packets = 0,
         .released_packets = 0,
         .dropped_packets = 0,
-        .host_tick_index = -1,
-        .guest_tick_index = -1,
-        .host_input_flags = 0,
-        .guest_input_flags = 0,
-        .host_live_ticks_advanced = 0,
-        .guest_live_ticks_advanced = 0,
+        .host_tick_index = host_step.last_tick_index orelse return error.RollbackHostFrameMissing,
+        .guest_tick_index = guest_step.last_tick_index orelse return error.RollbackGuestFrameMissing,
+        .host_input_flags = guest_step.last_input_flags[0],
+        .guest_input_flags = guest_step.last_input_flags[1],
+        .host_live_ticks_advanced = host_step.ticks_advanced,
+        .guest_live_ticks_advanced = guest_step.ticks_advanced,
         .host_live_tick_index = if (host.runner) |runner| runner.session.tick_index else 0,
-        .guest_live_tick_index = if (rejoined.runner) |runner| runner.session.tick_index else 0,
+        .guest_live_tick_index = if (guest.runner) |runner| runner.session.tick_index else 0,
         .host_resync_count = host_runtime.resync_count,
-        .guest_resync_count = rejoined_runtime.resync_count,
+        .guest_resync_count = guest_runtime.resync_count,
         .resync_snapshot_tick = -1,
         .host_paused_for_resync = host_runtime.paused_for_resync,
-        .guest_paused_for_resync = rejoined_runtime.paused_for_resync,
+        .guest_paused_for_resync = guest_runtime.paused_for_resync,
         .host_reconnect_count = host_runtime.reconnect_count,
-        .guest_reconnect_count = rejoined_runtime.reconnect_count,
+        .guest_reconnect_count = guest_runtime.reconnect_count,
         .host_paused_for_reconnect = host_runtime.paused_for_reconnect,
-        .guest_paused_for_reconnect = rejoined_runtime.paused_for_reconnect,
+        .guest_paused_for_reconnect = guest_runtime.paused_for_reconnect,
         .host_rollback_count = host_runtime.rollback_count,
-        .guest_rollback_count = rejoined_runtime.rollback_count,
+        .guest_rollback_count = guest_runtime.rollback_count,
         .host_prediction_mismatches = host_runtime.prediction_mismatches,
-        .guest_prediction_mismatches = rejoined_runtime.prediction_mismatches,
+        .guest_prediction_mismatches = guest_runtime.prediction_mismatches,
     };
 }
 
@@ -459,7 +459,7 @@ fn driveReconnectUntilStarted(
         packets_sent += try pumpRelayService(allocator, io, server, service, now_ms, null);
         try host.update(allocator, io, now_ms);
         try guest.update(allocator, io, now_ms);
-        if (guest.session.started and !host.session.runtime.?.paused_for_reconnect) return packets_sent;
+        if (guest.session.started and !host.session.runtime.?.paused_for_reconnect and !guest.session.runtime.?.paused_for_reconnect) return packets_sent;
     }
     return error.RollbackReconnectStartMissing;
 }
@@ -857,8 +857,10 @@ test "rollback smoke command can reconnect guest through relay token" {
 
     try std.testing.expectEqual(@as(u8, 0), output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"impairment\": \"guest-reconnect\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_input_flags\": 13") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_input_flags\": 11") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_reconnect_count\": 1") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_reconnect_count\": 0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_reconnect_count\": 1") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_paused_for_reconnect\": false") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_paused_for_reconnect\": false") != null);
 }

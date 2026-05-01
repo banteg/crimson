@@ -133,9 +133,9 @@ The important remaining gaps are now:
 - network/LAN parity still needs broader stress and lobby coverage; Zig can now
   construct rollback sessions, launch live rollback runners, smoke-test a
   host/guest relay exchange, force delayed/reordered/dropped-input rollback
-  correction, complete a guest-requested resync snapshot, and reconnect a
-  guest through its relay token, but longer jitter/reconnect/resync scenarios
-  and product-lobby polish remain.
+  correction, complete a guest-requested resync snapshot, and self-reconnect a
+  guest through its relay token before advancing more input, but longer
+  jitter/reconnect/resync scenarios and product-lobby polish remain.
 
 The biggest remaining technical risk is not basic gameplay ownership. It is
 closing the remaining replay/tooling and product-shell breadth gaps cleanly.
