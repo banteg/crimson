@@ -1,8 +1,11 @@
 const std = @import("std");
+const msgpack = @import("msgpack");
 
 const relay_protocol = @import("relay_protocol.zig");
+const spawn_mod = @import("../runtime/spawn.zig");
 
-pub const schema_version: i32 = 4;
+pub const snapshot_schema_version: i32 = 4;
+pub const schema_version: i32 = snapshot_schema_version;
 pub const snapshot_codec = "msgpack_state_v4_f32wire";
 
 const chunk_payload_bytes: usize = @intCast(relay_protocol.resync_chunk_payload_bytes);
@@ -23,8 +26,117 @@ pub const RollbackResyncV5Error = error{
     ResyncChunksIncomplete,
     ResyncCompressedSizeMismatch,
     ResyncUncompressedSizeMismatch,
+    SnapshotDecodeError,
+    UnsupportedSnapshotSchema,
     OutOfMemory,
 };
+
+pub const ReplayStateSnapshotV2 = struct {
+    tick_index: i32 = 0,
+    recorded_tick_count: i32 = 0,
+};
+
+pub const SurvivalRuntimeSnapshotV2 = struct {
+    elapsed_ms: f32 = 0.0,
+    stage: i32 = 0,
+    spawn_cooldown_ms: f32 = 0.0,
+    perk_pending_count: i32 = 0,
+};
+
+pub const RushRuntimeSnapshotV2 = struct {
+    elapsed_ms: f32 = 0.0,
+    spawn_cooldown_ms: f32 = 0.0,
+    kill_count: i32 = 0,
+};
+
+pub const QuestsRuntimeSnapshotV2 = struct {
+    elapsed_ms: f32 = 0.0,
+    spawn_entries: []const spawn_mod.QuestSpawnEntry = &.{},
+    spawn_timeline_ms: f32 = 0.0,
+    no_creatures_timer_ms: f32 = 0.0,
+    completion_transition_ms: f32 = 0.0,
+    perk_pending_count: i32 = 0,
+};
+
+pub const SurvivalStateSnapshotV2 = struct {
+    schema_version: i32 = snapshot_schema_version,
+    tick_index: i32 = 0,
+    replay_state: ?ReplayStateSnapshotV2 = null,
+    runtime_state: SurvivalRuntimeSnapshotV2 = .{},
+};
+
+pub const RushStateSnapshotV2 = struct {
+    schema_version: i32 = snapshot_schema_version,
+    tick_index: i32 = 0,
+    replay_state: ?ReplayStateSnapshotV2 = null,
+    runtime_state: RushRuntimeSnapshotV2 = .{},
+};
+
+pub const QuestsStateSnapshotV2 = struct {
+    schema_version: i32 = snapshot_schema_version,
+    tick_index: i32 = 0,
+    replay_state: ?ReplayStateSnapshotV2 = null,
+    runtime_state: QuestsRuntimeSnapshotV2 = .{},
+};
+
+pub const ModeStateSnapshotV2 = union(enum) {
+    survival: SurvivalStateSnapshotV2,
+    rush: RushStateSnapshotV2,
+    quests: QuestsStateSnapshotV2,
+
+    pub fn msgpackFormat() msgpack.UnionFormat {
+        return .{ .as_tagged = .{
+            .tag_field = "mode",
+            .tag_value = .field_name,
+        } };
+    }
+
+    pub fn schemaVersion(self: ModeStateSnapshotV2) i32 {
+        return switch (self) {
+            .survival => |snapshot| snapshot.schema_version,
+            .rush => |snapshot| snapshot.schema_version,
+            .quests => |snapshot| snapshot.schema_version,
+        };
+    }
+
+    pub fn tickIndex(self: ModeStateSnapshotV2) i32 {
+        return switch (self) {
+            .survival => |snapshot| snapshot.tick_index,
+            .rush => |snapshot| snapshot.tick_index,
+            .quests => |snapshot| snapshot.tick_index,
+        };
+    }
+};
+
+pub fn encodeModeSnapshot(
+    allocator: std.mem.Allocator,
+    snapshot: ModeStateSnapshotV2,
+) RollbackResyncV5Error![]u8 {
+    try validateModeSnapshot(snapshot);
+    var writer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer writer.deinit();
+    msgpack.encode(snapshot, &writer.writer) catch return error.OutOfMemory;
+    const blob = try writer.toOwnedSlice();
+    errdefer allocator.free(blob);
+    if (blob.len > default_max_snapshot_bytes) return error.SnapshotTooLarge;
+    return blob;
+}
+
+pub fn decodeModeSnapshot(
+    allocator: std.mem.Allocator,
+    blob: []const u8,
+) RollbackResyncV5Error!msgpack.Decoded(ModeStateSnapshotV2) {
+    if (blob.len > default_max_snapshot_bytes) return error.SnapshotTooLarge;
+    var decoded = msgpack.decodeFromSlice(ModeStateSnapshotV2, allocator, blob) catch return error.SnapshotDecodeError;
+    errdefer decoded.deinit();
+    try validateModeSnapshot(decoded.value);
+    return decoded;
+}
+
+fn validateModeSnapshot(snapshot: ModeStateSnapshotV2) RollbackResyncV5Error!void {
+    if (snapshot.schemaVersion() != snapshot_schema_version) return error.UnsupportedSnapshotSchema;
+    _ = snapshot.tickIndex();
+}
 
 pub const RbResyncMessageSet = struct {
     begin: relay_protocol.RbResyncBegin,
@@ -302,6 +414,120 @@ fn freeChunkItems(allocator: std.mem.Allocator, chunks: []relay_protocol.RbResyn
         freeBytes(allocator, chunk.request_id);
         freeBytes(allocator, chunk.payload.data);
     }
+}
+
+test "rollback resync v5 encodes and decodes survival mode snapshots" {
+    const snapshot: ModeStateSnapshotV2 = .{ .survival = .{
+        .tick_index = 12,
+        .replay_state = .{ .tick_index = 12, .recorded_tick_count = 13 },
+        .runtime_state = .{
+            .elapsed_ms = 200.5,
+            .stage = 3,
+            .spawn_cooldown_ms = 40.25,
+            .perk_pending_count = 1,
+        },
+    } };
+
+    const blob = try encodeModeSnapshot(std.testing.allocator, snapshot);
+    defer std.testing.allocator.free(blob);
+
+    var decoded = try decodeModeSnapshot(std.testing.allocator, blob);
+    defer decoded.deinit();
+    switch (decoded.value) {
+        .survival => |survival| {
+            try std.testing.expectEqual(@as(i32, snapshot_schema_version), survival.schema_version);
+            try std.testing.expectEqual(@as(i32, 12), survival.tick_index);
+            try std.testing.expectEqual(@as(i32, 13), survival.replay_state.?.recorded_tick_count);
+            try std.testing.expectEqual(@as(i32, 3), survival.runtime_state.stage);
+            try std.testing.expectEqual(@as(i32, 1), survival.runtime_state.perk_pending_count);
+            try std.testing.expectApproxEqAbs(@as(f32, 200.5), survival.runtime_state.elapsed_ms, 0.001);
+        },
+        else => return error.ExpectedSurvivalSnapshot,
+    }
+}
+
+test "rollback resync v5 decodes python msgspec survival snapshot fixture" {
+    const fixture =
+        "85a46d6f6465a8737572766976616cae736368656d615f76657273696f6e04aa7469636b5f696e6465780cac7265706c61795f737461746582aa7469636b5f696e6465780cb37265636f726465645f7469636b5f636f756e740dad72756e74696d655f737461746584aa656c61707365645f6d73cb4069100000000000a5737461676503b1737061776e5f636f6f6c646f776e5f6d73cb4044200000000000b27065726b5f70656e64696e675f636f756e7401";
+    var bytes: [fixture.len / 2]u8 = undefined;
+    _ = try std.fmt.hexToBytes(&bytes, fixture);
+
+    var decoded = try decodeModeSnapshot(std.testing.allocator, &bytes);
+    defer decoded.deinit();
+    switch (decoded.value) {
+        .survival => |survival| {
+            try std.testing.expectEqual(@as(i32, 12), survival.tick_index);
+            try std.testing.expectEqual(@as(i32, 13), survival.replay_state.?.recorded_tick_count);
+            try std.testing.expectApproxEqAbs(@as(f32, 200.5), survival.runtime_state.elapsed_ms, 0.001);
+            try std.testing.expectEqual(@as(i32, 3), survival.runtime_state.stage);
+            try std.testing.expectApproxEqAbs(@as(f32, 40.25), survival.runtime_state.spawn_cooldown_ms, 0.001);
+            try std.testing.expectEqual(@as(i32, 1), survival.runtime_state.perk_pending_count);
+        },
+        else => return error.ExpectedSurvivalSnapshot,
+    }
+}
+
+test "rollback resync v5 encodes mode-specific runtime snapshots" {
+    const quest_entries = [_]spawn_mod.QuestSpawnEntry{.{
+        .pos = .{ .x = 10.0, .y = 20.0 },
+        .heading = 1.5,
+        .spawn_id = .alien_random_06,
+        .trigger_ms = 300,
+        .count = 4,
+    }};
+    const quest_snapshot: ModeStateSnapshotV2 = .{ .quests = .{
+        .tick_index = 8,
+        .runtime_state = .{
+            .elapsed_ms = 500.0,
+            .spawn_entries = &quest_entries,
+            .spawn_timeline_ms = 250.0,
+            .no_creatures_timer_ms = 20.0,
+            .completion_transition_ms = -1.0,
+            .perk_pending_count = 2,
+        },
+    } };
+
+    const quest_blob = try encodeModeSnapshot(std.testing.allocator, quest_snapshot);
+    defer std.testing.allocator.free(quest_blob);
+    var decoded_quest = try decodeModeSnapshot(std.testing.allocator, quest_blob);
+    defer decoded_quest.deinit();
+    switch (decoded_quest.value) {
+        .quests => |quests| {
+            try std.testing.expectEqual(@as(i32, 8), quests.tick_index);
+            try std.testing.expectEqual(@as(usize, 1), quests.runtime_state.spawn_entries.len);
+            try std.testing.expectEqual(spawn_mod.SpawnId.alien_random_06, quests.runtime_state.spawn_entries[0].spawn_id);
+            try std.testing.expectEqual(@as(i32, 2), quests.runtime_state.perk_pending_count);
+        },
+        else => return error.ExpectedQuestSnapshot,
+    }
+
+    const rush_snapshot: ModeStateSnapshotV2 = .{ .rush = .{
+        .tick_index = 9,
+        .runtime_state = .{
+            .elapsed_ms = 900.0,
+            .spawn_cooldown_ms = 12.0,
+            .kill_count = 5,
+        },
+    } };
+    const rush_blob = try encodeModeSnapshot(std.testing.allocator, rush_snapshot);
+    defer std.testing.allocator.free(rush_blob);
+    var decoded_rush = try decodeModeSnapshot(std.testing.allocator, rush_blob);
+    defer decoded_rush.deinit();
+    switch (decoded_rush.value) {
+        .rush => |rush| try std.testing.expectEqual(@as(i32, 5), rush.runtime_state.kill_count),
+        else => return error.ExpectedRushSnapshot,
+    }
+}
+
+test "rollback resync v5 rejects unsupported snapshot schema" {
+    const blob = try encodeModeSnapshot(std.testing.allocator, .{ .survival = .{ .schema_version = snapshot_schema_version } });
+    defer std.testing.allocator.free(blob);
+    var decoded = try decodeModeSnapshot(std.testing.allocator, blob);
+    defer decoded.deinit();
+
+    try std.testing.expectError(error.UnsupportedSnapshotSchema, encodeModeSnapshot(std.testing.allocator, .{
+        .survival = .{ .schema_version = snapshot_schema_version + 1 },
+    }));
 }
 
 test "rollback resync v5 builds and assembles snapshot stream" {
