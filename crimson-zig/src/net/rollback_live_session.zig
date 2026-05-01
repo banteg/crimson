@@ -4,6 +4,7 @@ const live_runner = @import("../runtime/live_runner.zig");
 const packed_input = @import("packed_input.zig");
 const relay_reliable = @import("relay_reliable.zig");
 const relay_protocol = @import("relay_protocol.zig");
+const relay_service = @import("relay_service.zig");
 const relay_transport = @import("relay_transport.zig");
 const rollback_live_bridge = @import("rollback_live_bridge.zig");
 const rollback_runtime = @import("rollback_runtime.zig");
@@ -145,6 +146,79 @@ fn captureInputFlags(frame: rollback_runtime.TickFrame) CapturedInputFlags {
         captured.flags[idx] = input.flags;
     }
     return captured;
+}
+
+fn serviceAddrFromTransport(addr: relay_transport.PeerAddr) relay_service.PeerAddr {
+    return .{ .host = addr.host, .port = addr.port };
+}
+
+fn transportAddrFromService(addr: relay_service.PeerAddr) relay_transport.PeerAddr {
+    return .{ .host = addr.host, .port = addr.port };
+}
+
+fn pumpRelayService(
+    allocator: std.mem.Allocator,
+    io: Io,
+    server: relay_transport.UdpTransport,
+    service: *relay_service.RelayService,
+    now_ms: i64,
+) !usize {
+    var packets = try server.recvPackets(allocator, io, 64, 10);
+    defer packets.deinit(allocator);
+
+    var sent: usize = 0;
+    for (packets.items.items) |*received| {
+        var outbox = try service.receivePacket(
+            allocator,
+            serviceAddrFromTransport(received.addr),
+            received.packet(),
+            .{ .dispatch = .{ .now_ms = now_ms } },
+        );
+        defer outbox.deinit(allocator);
+
+        for (outbox.items.items) |item| {
+            try server.sendPacket(allocator, io, transportAddrFromService(item.addr), item.packet);
+            sent += 1;
+        }
+    }
+    return sent;
+}
+
+fn driveRollbackHostUntilRoomCode(
+    allocator: std.mem.Allocator,
+    io: Io,
+    server: relay_transport.UdpTransport,
+    service: *relay_service.RelayService,
+    host: *LiveSession,
+    start_ms: i64,
+) !room_code.RoomCode {
+    for (0..16) |step| {
+        const now_ms = start_ms + @as(i64, @intCast(step));
+        try host.update(allocator, io, now_ms);
+        _ = try pumpRelayService(allocator, io, server, service, now_ms);
+        if (host.session.room_code_latest) |code| return code;
+    }
+    return error.ExpectedRoomCode;
+}
+
+fn driveRollbackPairUntilStarted(
+    allocator: std.mem.Allocator,
+    io: Io,
+    server: relay_transport.UdpTransport,
+    service: *relay_service.RelayService,
+    host: *LiveSession,
+    guest: *LiveSession,
+    start_ms: i64,
+) !void {
+    for (0..32) |step| {
+        if (host.session.started and guest.session.started) return;
+        const now_ms = start_ms + @as(i64, @intCast(step));
+        try host.update(allocator, io, now_ms);
+        _ = try pumpRelayService(allocator, io, server, service, now_ms);
+        try guest.update(allocator, io, now_ms);
+        _ = try pumpRelayService(allocator, io, server, service, now_ms);
+    }
+    return error.ExpectedRoomStart;
 }
 
 test "rollback live session sends hello to relay endpoint" {
@@ -291,4 +365,70 @@ test "rollback live session creates runner and steps local frames after room sta
     try std.testing.expectEqual(@as(usize, 1), summary.last_player_count);
     try std.testing.expectEqual(@as(u32, 7), summary.last_input_flags[0]);
     try std.testing.expect(summary.last_update != null);
+}
+
+test "rollback live sessions handshake and exchange input through relay service" {
+    const allocator = std.testing.allocator;
+    const io = std.Io.Threaded.global_single_threaded.io();
+
+    var server: relay_transport.UdpTransport = .{ .bind_host = "127.0.0.1", .bind_port = 0 };
+    try server.open(io);
+    defer server.close(io);
+
+    var service: relay_service.RelayService = .{};
+    defer service.deinit(allocator);
+
+    var host = LiveSession.init(.{
+        .server_addr = relay_transport.PeerAddr.loopback(server.boundPort()),
+        .bind_host = "127.0.0.1",
+        .session = .{
+            .role = .host,
+            .mode_id = 2,
+            .player_count = 2,
+            .build_id = "0.1.0",
+            .peer_name = "host",
+            .input_delay_ticks = 0,
+        },
+    });
+    defer host.deinit(allocator, io);
+
+    const code = try driveRollbackHostUntilRoomCode(allocator, io, server, &service, &host, 1000);
+
+    var guest = LiveSession.init(.{
+        .server_addr = relay_transport.PeerAddr.loopback(server.boundPort()),
+        .bind_host = "127.0.0.1",
+        .session = .{
+            .role = .join,
+            .mode_id = 2,
+            .player_count = 2,
+            .build_id = "0.1.0",
+            .peer_name = "guest",
+            .room_code = code,
+            .input_delay_ticks = 0,
+        },
+    });
+    defer guest.deinit(allocator, io);
+
+    try driveRollbackPairUntilStarted(allocator, io, server, &service, &host, &guest, 1020);
+
+    try std.testing.expect(host.session.started);
+    try std.testing.expect(guest.session.started);
+    try std.testing.expectEqual(@as(i32, 0), host.session.local_slot_index);
+    try std.testing.expectEqual(@as(i32, 1), guest.session.local_slot_index);
+
+    try host.queueLocalInput(allocator, io, .{ .flags = 1 }, 1100);
+    _ = host.popFrame();
+    try guest.queueLocalInput(allocator, io, .{ .flags = 2 }, 1100);
+    _ = guest.popFrame();
+
+    _ = try pumpRelayService(allocator, io, server, &service, 1101);
+    try host.update(allocator, io, 1102);
+    try guest.update(allocator, io, 1102);
+
+    const host_runtime = &(host.session.runtime orelse return error.ExpectedRuntime);
+    const guest_runtime = &(guest.session.runtime orelse return error.ExpectedRuntime);
+    try std.testing.expectEqual(@as(i32, 1), host_runtime.prediction_mismatches);
+    try std.testing.expectEqual(@as(i32, 1), guest_runtime.prediction_mismatches);
+    try std.testing.expect(host_runtime.paused_for_resync);
+    try std.testing.expect(guest_runtime.paused_for_resync);
 }
