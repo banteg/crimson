@@ -26,7 +26,8 @@ Last reviewed: **2026-05-02**
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net join --code <invite> --format json`
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --format json`
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair delay-first-guest-input --format json`
-    - The native Zig `net host/join` surface now reports `runtime_supported=true` for rollback sessions, and the native smoke command exercises an in-process relay plus host/guest live rollback exchange, including a delayed-input correction path. Remaining network work is broader loss/jitter/reconnect/resync stress and lobby parity, not first launch support.
+  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair reorder-first-guest-input --format json`
+    - The native Zig `net host/join` surface now reports `runtime_supported=true` for rollback sessions, and the native smoke command exercises an in-process relay plus host/guest live rollback exchange, including delayed-input and reordered-input correction paths. Remaining network work is broader loss/jitter/reconnect/resync stress and lobby parity, not first launch support.
 - Asset tooling:
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig-asset-smoke <assets-dir>`
     - The installed native smoke tool validates `crimson.paq`, JAZ/TGA/JPEG image decoding, runtime texture specs, and small-font width data.
@@ -164,7 +165,7 @@ Last reviewed: **2026-05-02**
    - This status page intentionally avoids tick/session-specific examples that go stale quickly.
    - Current active probes and per-SHA outcomes are tracked in [`docs/frida/differential-sessions.md`](../frida/differential-sessions.md).
 3. **Rollback stress hardening + lockstep fallback maintenance**
-   - Rollback is now the default path, and Zig has a native delayed-input smoke case for prediction correction. Broader packet-impairment stress validation (loss/reorder/jitter extremes, reconnect, and resync) still needs scenario coverage across long sessions.
+   - Rollback is now the default path, and Zig has native delayed-input and reordered-input smoke cases for prediction correction. Broader packet-impairment stress validation (loss, jitter extremes, reconnect, and resync) still needs scenario coverage across long sessions.
    - Legacy lockstep fallback remains available and must continue to receive compatibility maintenance while rollback remains primary.
 
 ## Out of scope for this rewrite

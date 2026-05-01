@@ -108,6 +108,32 @@ def test_zig_net_smoke_rollback_reports_delayed_input_recovery() -> None:
     assert payload["guest_resync_count"] == 0
 
 
+def test_zig_net_smoke_rollback_reports_reordered_input_recovery() -> None:
+    payload = _run_zig_net_json(
+        [
+            "smoke-rollback",
+            "--impair",
+            "reorder-first-guest-input",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert payload["status"] == "ok"
+    assert payload["impairment"] == "reorder-first-guest-input"
+    assert payload["host_input_flags"] == 4
+    assert payload["guest_input_flags"] == 5
+    assert payload["host_tick_index"] == payload["guest_tick_index"] == 2
+    assert payload["delayed_packets"] == 1
+    assert payload["released_packets"] == 1
+    assert payload["host_rollback_count"] >= 1
+    assert payload["guest_rollback_count"] >= 1
+    assert payload["host_prediction_mismatches"] >= 1
+    assert payload["guest_prediction_mismatches"] >= 1
+    assert payload["host_resync_count"] == 0
+    assert payload["guest_resync_count"] == 0
+
+
 def _run_zig_net_json(args: list[str]) -> dict[str, Any]:
     result = _run_zig_net_process(args)
     assert result.returncode == 0, dbg_record._command_detail(result)
