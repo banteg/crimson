@@ -111,6 +111,11 @@ pub const Bridge = struct {
         self.playSfx(.ui_typeenter, 0.0);
     }
 
+    pub fn playUiTypeClick(self: *Bridge, sfx_id: sfx_map.SfxId) void {
+        std.debug.assert(sfx_id == .ui_typeclick_01 or sfx_id == .ui_typeclick_02);
+        self.playSfx(sfx_id, 0.0);
+    }
+
     pub fn playUiClink(self: *Bridge) void {
         self.playSfx(.ui_clink_01, 0.0);
     }
