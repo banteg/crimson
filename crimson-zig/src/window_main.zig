@@ -267,6 +267,7 @@ const NetworkLiveRuntime = union(enum) {
                     .last_tick_index = step_summary.last_tick_index,
                     .last_player_count = step_summary.last_player_count,
                     .last_input_flags = step_summary.last_input_flags,
+                    .last_frame_update = step_summary.last_update,
                 };
             },
             .client => |*client| blk: {
@@ -283,6 +284,7 @@ const NetworkLiveRuntime = union(enum) {
                     .last_tick_index = step_summary.last_tick_index,
                     .last_player_count = step_summary.last_player_count,
                     .last_input_flags = step_summary.last_input_flags,
+                    .last_frame_update = step_summary.last_update,
                 };
             },
         };
@@ -344,6 +346,7 @@ const NetworkLiveUpdate = struct {
     last_tick_index: ?i32 = null,
     last_player_count: usize = 0,
     last_input_flags: [state_mod.max_players]u32 = [_]u32{0} ** state_mod.max_players,
+    last_frame_update: ?live_runner.FrameUpdate = null,
 };
 
 const BonusHudSlotState = struct {
@@ -569,6 +572,8 @@ const App = struct {
     network_live_camera: state_mod.Vec2 = .{ .x = -1.0, .y = -1.0 },
     network_live_input_ready: bool = false,
     network_live_render_time_s: f32 = 0.0,
+    network_live_hud_state: HudRuntimeState = .{},
+    network_live_last_update: ?live_runner.FrameUpdate = null,
     results: ?ResultsScreen = null,
     options: window_options.OptionsState = .{},
     controls: window_options.ControlsState = .{},
@@ -1167,6 +1172,12 @@ const App = struct {
             return;
         };
         self.refreshNetworkLiveCamera();
+        if (net_update.last_frame_update) |frame_update| {
+            self.network_live_last_update = frame_update;
+            if (session.runnerForLocalInput()) |runner| {
+                self.network_live_hud_state.update(frame_dt, &runner.session);
+            }
+        }
         if (net_update.frames_advanced != 0) {
             if (net_update.last_tick_index) |tick_index| {
                 const local_slot = session.localInputSlot() orelse 0;
@@ -1237,6 +1248,8 @@ const App = struct {
         self.network_live_camera = .{ .x = -1.0, .y = -1.0 };
         self.network_live_input_ready = false;
         self.network_live_render_time_s = 0.0;
+        self.network_live_hud_state = .{};
+        self.network_live_last_update = null;
     }
 
     fn updateResults(self: *App, frame_dt: f32) void {
@@ -2017,6 +2030,9 @@ const App = struct {
             drawBonusHoverLabels(runner, assets, transform, entity_alpha);
             drawDirectionArrows(runner, assets, &self.runtime.config, transform, entity_alpha);
             drawAimEnhancements(runner, assets, transform, entity_alpha);
+        }
+        if (self.network_live_last_update) |frame_update| {
+            drawLiveRunnerHud(runner, frame_update, &self.network_live_hud_state, runtime_assets);
         }
         return true;
     }
@@ -4671,24 +4687,24 @@ fn drawModeClock(assets: *const window_assets.RuntimeAssets, elapsed_ms: f32, x:
     );
 }
 
-fn drawQuestHud(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets, scale: f32) void {
-    const elapsed_ms = @as(f32, @floatFromInt(gameplay.last_update.elapsed_ms_sim));
+fn drawQuestHud(runner: *const live_runner.LiveRunner, update: live_runner.FrameUpdate, assets: *const window_assets.RuntimeAssets, scale: f32) void {
+    const elapsed_ms = @as(f32, @floatFromInt(update.elapsed_ms_sim));
     const slide_x = if (elapsed_ms < 1000.0) (1000.0 - elapsed_ms) * -0.128 * scale else 0.0;
 
     drawTextureFit(assets.texture(.ui_ind_panel), rl.Rectangle.init(slide_x - hs(90.0, scale), hs(67.0, scale), hs(182.0, scale), hs(53.0, scale)), colorWithAlpha(rl.Color.white, 0.7));
     drawTextureFit(assets.texture(.ui_ind_panel), rl.Rectangle.init(-hs(80.0, scale), hs(107.0, scale), hs(182.0, scale), hs(53.0, scale)), colorWithAlpha(rl.Color.white, 0.7));
     drawModeClock(assets, elapsed_ms, slide_x + hs(2.0, scale), hs(78.0, scale), scale);
-    drawSmallTextFmt("{d}:{d:0>2}", assets, .{ @divTrunc(gameplay.last_update.elapsed_ms_sim, 60_000), @mod(@divTrunc(gameplay.last_update.elapsed_ms_sim, 1000), 60) }, slide_x + hs(32.0, scale), hs(86.0, scale), HudTextColor.primary);
+    drawSmallTextFmt("{d}:{d:0>2}", assets, .{ @divTrunc(update.elapsed_ms_sim, 60_000), @mod(@divTrunc(update.elapsed_ms_sim, 1000), 60) }, slide_x + hs(32.0, scale), hs(86.0, scale), HudTextColor.primary);
     drawSmallText(assets, "Progress", hs(18.0, scale), hs(122.0, scale), HudTextColor.primary);
-    if (questProgressRatio(&gameplay.runner.session)) |ratio| {
+    if (questProgressRatio(&runner.session)) |ratio| {
         drawProgressBar(rl.Vector2.init(hs(10.0, scale), hs(139.0, scale)), hs(70.0, scale), ratio, rl.Color.init(51, 204, 77, 204), scale);
     }
 }
 
-fn drawBonusHud(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets, scale: f32) void {
-    var bonus_y: f32 = if (gameplay.runner.session.game_mode == .quests) hs(201.0, scale) else hs(121.0, scale);
+fn drawBonusHud(runner: *const live_runner.LiveRunner, hud_state: *const HudRuntimeState, assets: *const window_assets.RuntimeAssets, scale: f32) void {
+    var bonus_y: f32 = if (runner.session.game_mode == .quests) hs(201.0, scale) else hs(121.0, scale);
     const bonuses_texture = assets.texture(.bonuses);
-    for (gameplay.hud_state.bonus_slots) |slot| {
+    for (hud_state.bonus_slots) |slot| {
         if (!slot.active) continue;
         if (slot.slide_x < -hs(184.0, scale)) {
             bonus_y += hs(52.0, scale);
@@ -4707,7 +4723,7 @@ fn drawBonusHud(gameplay: *const GameplayScreen, assets: *const window_assets.Ru
                 rl.Color.white,
             );
         }
-        drawSmallText(assets, game_ids.bonusDisplayName(slot.bonus_id, gameplay.runner.session.state.preserve_bugs), slide_x + hs(36.0, scale), bonus_y + hs(6.0, scale), HudTextColor.primary);
+        drawSmallText(assets, game_ids.bonusDisplayName(slot.bonus_id, runner.session.state.preserve_bugs), slide_x + hs(36.0, scale), bonus_y + hs(6.0, scale), HudTextColor.primary);
         drawProgressBar(rl.Vector2.init(slide_x + hs(36.0, scale), bonus_y + hs(21.0, scale)), hs(100.0, scale), slot.timer_value * 0.05, rl.Color.init(26, 77, 153, 179), scale);
         if (slot.timer_value_alt > 0.0) {
             drawProgressBar(rl.Vector2.init(slide_x + hs(36.0, scale), bonus_y + hs(27.0, scale)), hs(100.0, scale), slot.timer_value_alt * 0.05, rl.Color.init(26, 77, 153, 179), scale);
@@ -4716,10 +4732,10 @@ fn drawBonusHud(gameplay: *const GameplayScreen, assets: *const window_assets.Ru
     }
 }
 
-fn drawWeaponAuxHud(gameplay: *const GameplayScreen, assets: *const window_assets.RuntimeAssets, scale: f32) void {
-    const players = gameplay.runner.session.playersConst();
-    var bonus_bottom_y: f32 = if (gameplay.runner.session.game_mode == .quests) hs(201.0, scale) else hs(121.0, scale);
-    for (gameplay.hud_state.bonus_slots) |slot| {
+fn drawWeaponAuxHud(runner: *const live_runner.LiveRunner, hud_state: *const HudRuntimeState, assets: *const window_assets.RuntimeAssets, scale: f32) void {
+    const players = runner.session.playersConst();
+    var bonus_bottom_y: f32 = if (runner.session.game_mode == .quests) hs(201.0, scale) else hs(121.0, scale);
+    for (hud_state.bonus_slots) |slot| {
         if (slot.active) bonus_bottom_y += hs(52.0, scale);
     }
     for (players, 0..) |player, idx| {
@@ -4741,7 +4757,7 @@ fn drawWeaponAuxHud(gameplay: *const GameplayScreen, assets: *const window_asset
                 colorWithAlpha(rl.Color.white, fade * 0.8),
             );
         }
-        drawSmallText(assets, game_ids.weaponDisplayName(player.weapon.weapon_id, gameplay.runner.session.state.preserve_bugs), hs(8.0, scale), y + hs(18.0, scale), colorWithAlpha(HudTextColor.primary, fade));
+        drawSmallText(assets, game_ids.weaponDisplayName(player.weapon.weapon_id, runner.session.state.preserve_bugs), hs(8.0, scale), y + hs(18.0, scale), colorWithAlpha(HudTextColor.primary, fade));
     }
 }
 
@@ -4926,8 +4942,10 @@ fn drawBootAssetFallback(assets_state: AssetsState, assets_message: ?[]const u8)
 }
 
 fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const window_assets.RuntimeAssets) void {
-    const runner = &gameplay.runner;
-    const update = gameplay.last_update;
+    drawLiveRunnerHud(&gameplay.runner, gameplay.last_update, &gameplay.hud_state, runtime_assets);
+}
+
+fn drawLiveRunnerHud(runner: *const live_runner.LiveRunner, update: live_runner.FrameUpdate, hud_state: *const HudRuntimeState, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     const players = runner.session.playersConst();
     if (players.len == 0) return;
     const player = players[0];
@@ -5000,7 +5018,7 @@ fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const wind
         }
 
         if (flags.show_quest_hud) {
-            drawQuestHud(gameplay, assets, scale);
+            drawQuestHud(runner, update, assets, scale);
         }
 
         if (flags.show_xp) {
@@ -5010,7 +5028,7 @@ fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const wind
                 rl.Rectangle.init(-hs(68.0, scale), hs(60.0, scale) + hud_y_shift, hs(182.0, scale), hs(53.0, scale)),
                 colorWithAlpha(rl.Color.white, 0.9),
             );
-            const xp_display = gameplay.hud_state.survival_xp_smoothed;
+            const xp_display = hud_state.survival_xp_smoothed;
             drawSmallText(assets, "Xp", hs(4.0, scale), hs(78.0, scale) + hud_y_shift, HudTextColor.dim);
             drawSmallTextFmt("{d}", assets, .{xp_display}, hs(26.0, scale), hs(74.0, scale) + hud_y_shift, HudTextColor.primary);
             drawSmallTextFmt("{d}", assets, .{update.player_level}, hs(85.0, scale), hs(79.0, scale) + hud_y_shift, HudTextColor.primary);
@@ -5022,8 +5040,8 @@ fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const wind
             drawSmallTextFmt("{d} seconds", assets, .{@divTrunc(update.elapsed_ms_sim, 1000)}, hs(255.0, scale), hs(10.0, scale), HudTextColor.primary);
         }
 
-        drawBonusHud(gameplay, assets, scale);
-        drawWeaponAuxHud(gameplay, assets, scale);
+        drawBonusHud(runner, hud_state, assets, scale);
+        drawWeaponAuxHud(runner, hud_state, assets, scale);
         return;
     }
 
