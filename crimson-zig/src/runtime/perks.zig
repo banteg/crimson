@@ -198,6 +198,11 @@ pub fn buildPerkAvailabilityForUnlockIndex(quest_unlock_index: i32) state_mod.Pe
     return availability;
 }
 
+pub fn questUnlockPerkForIndex(global_index: i32) ?PerkId {
+    if (global_index < 0 or global_index >= quest_unlock_perk_by_index.len) return null;
+    return quest_unlock_perk_by_index[@intCast(global_index)];
+}
+
 pub fn perkChoiceCount(player: *const state_mod.PlayerState) i32 {
     if (perkCountGet(player, PerkId.perk_master) > 0) return 7;
     if (perkCountGet(player, PerkId.perk_expert) > 0) return 6;
@@ -1040,6 +1045,14 @@ test "perk menu open consumes rng and caches choices" {
     try std.testing.expect(choices.len > 0);
     try std.testing.expect(before != state.rng.state);
     try std.testing.expect(!state.perk_selection.choices_dirty);
+}
+
+test "quest unlock perk lookup exposes exact reward table rows" {
+    try std.testing.expectEqual(PerkId.uranium_filled_bullets, questUnlockPerkForIndex(2).?);
+    try std.testing.expectEqual(PerkId.death_clock, questUnlockPerkForIndex(41).?);
+    try std.testing.expectEqual(@as(?PerkId, null), questUnlockPerkForIndex(0));
+    try std.testing.expectEqual(@as(?PerkId, null), questUnlockPerkForIndex(-1));
+    try std.testing.expectEqual(@as(?PerkId, null), questUnlockPerkForIndex(50));
 }
 
 test "antiperk is never offerable" {

@@ -915,6 +915,13 @@ pub fn buildWeaponAvailabilityForStatus(
     return availability;
 }
 
+pub fn questUnlockWeaponForIndex(global_index: i32) ?game_ids.WeaponId {
+    if (global_index < 0 or global_index >= quest_unlock_weapon_by_index.len) return null;
+    const raw_id = quest_unlock_weapon_by_index[@intCast(global_index)];
+    if (raw_id <= 0 or raw_id >= state_mod.weapon_count_size) return null;
+    return weapon_data.weaponIdFromInt(raw_id);
+}
+
 pub fn weaponPickRandomAvailable(state: *state_mod.GameplayState) game_ids.WeaponId {
     weaponRefreshAvailable(state);
 
@@ -1452,6 +1459,14 @@ test "weapon pick random available enforces unlock table in quests" {
 
     const picked = weaponPickRandomAvailable(&state);
     try std.testing.expectEqual(game_ids.WeaponId.pistol, picked);
+}
+
+test "quest unlock weapon lookup exposes exact reward table rows" {
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, questUnlockWeaponForIndex(0).?);
+    try std.testing.expectEqual(game_ids.WeaponId.flameburst, questUnlockWeaponForIndex(40).?);
+    try std.testing.expectEqual(@as(?game_ids.WeaponId, null), questUnlockWeaponForIndex(2));
+    try std.testing.expectEqual(@as(?game_ids.WeaponId, null), questUnlockWeaponForIndex(-1));
+    try std.testing.expectEqual(@as(?game_ids.WeaponId, null), questUnlockWeaponForIndex(50));
 }
 
 test "weapon pick random available rerolls used weapons on even gate" {

@@ -97,7 +97,8 @@ Last reviewed: **2026-05-02**
 - **Game over / high score entry (state `7`)**: implemented for Survival/Rush/Typ-o.
   - Code: `src/crimson/ui/game_over.py`, `src/crimson/persistence/highscores.py`, `src/crimson/game/__init__.py`
 - **Quest results (state `8`) / quest failed (state `0x0c`)**: implemented.
-  - Code: `src/crimson/ui/quest_results.py`, `src/crimson/game/__init__.py`
+  - Code: `src/crimson/ui/quest_results.py`, `src/crimson/game/__init__.py`, `crimson-zig/src/window_main.zig`
+  - Zig quest-completion results show the resolved weapon/perk unlock names after the final-time breakdown completes.
 - **Mods menu (state `0x14` path from main menu)**: implemented as a panel and filesystem DLL discovery UI; plugin loading/runtime is still not implemented.
   - Code: `src/crimson/screens/panels/mods.py`, `src/crimson/screens/menu.py`
   - Ref: [`docs/crimsonland-exe/mods.md`](../crimsonland-exe/mods.md)

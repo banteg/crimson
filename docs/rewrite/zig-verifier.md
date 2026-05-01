@@ -126,7 +126,8 @@ This is the main reason the older “verifier-only” framing is now wrong.
 The important remaining gaps are now:
 
 - replay/verifier breadth still lags Python,
-- some product-shell flows are still thinner than Python,
+- some product-shell flows are still thinner than Python, though quest results
+  now include completion reward names from the native unlock tables,
 - demo/trial shell behavior exists, but still needs polish alongside the
   surrounding product shell,
 - WASM still exposes a narrow replay/runtime surface, but now has replay

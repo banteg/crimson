@@ -88,7 +88,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
   - Tutorial mode has full stage-based progression with hint system.
   - Typ-o-Shooter has typing mechanics with target matching and reload command.
 - Game over / high score entry screen is implemented for Survival/Rush/Typ-o.
-- Quest completion/failure screens are implemented (results + failed).
+- Quest completion/failure screens are implemented (results + failed), including native reward-name lines for completed quest unlocks.
 - Demo/attract mode reuses the same gameplay systems (no separate “toy sim”).
 
 ### Gameplay (sandbox)

@@ -581,6 +581,8 @@ const ResultsScreen = struct {
     score_too_low_for_top100: bool = false,
     quest_final_time: ?quest_results.QuestFinalTime = null,
     quest_breakdown_anim: quest_results.QuestResultsBreakdownAnim = .{},
+    quest_unlock_weapon_name: ?[]const u8 = null,
+    quest_unlock_perk_name: ?[]const u8 = null,
 };
 
 const ResultsHighscoreState = struct {
@@ -1998,6 +2000,13 @@ const App = struct {
         if (reason == .completed and runner.session.game_mode == .quests) {
             if (level_key) |resolved| self.runtime.recordQuestCompletion(resolved);
         }
+        const quest_unlock = questUnlockDisplayNames(
+            level_key,
+            runner.session.game_mode,
+            reason,
+            run_config.preserve_bugs,
+            self.runtime.config.gore_disabled,
+        );
         const save_error: ?[]const u8 = save_err: {
             self.runtime.saveStatusIfDirty() catch |err| break :save_err resultsStatusSaveErrorDetail(err);
             break :save_err null;
@@ -2025,6 +2034,8 @@ const App = struct {
                 )
             else
                 null,
+            .quest_unlock_weapon_name = quest_unlock.weapon_name,
+            .quest_unlock_perk_name = quest_unlock.perk_name,
         };
         if (highscore_build.highscore != null) {
             self.audio.playUiClink();
@@ -2382,6 +2393,9 @@ const App = struct {
                         drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&life_buf, breakdown.life_bonus_ms)}, 846.0, 286.0, life_color);
                         drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&perk_buf, breakdown.unpicked_perk_bonus_ms)}, 846.0, 314.0, perk_color);
                         drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&final_buf, breakdown.final_time_ms), 846.0, 342.0, final_color);
+                    }
+                    if (!questResultsBreakdownPending(&results)) {
+                        drawQuestUnlockResults(runtime_assets, &results);
                     }
                 }
 
@@ -2819,6 +2833,51 @@ fn questResultsBreakdownRowColor(results: *const ResultsScreen, row: i32, final_
     }
     const base = if (row == anim.step) HudTextColor.accent else HudTextColor.primary;
     return colorWithAlpha(base, alpha);
+}
+
+const QuestUnlockDisplayNames = struct {
+    weapon_name: ?[]const u8 = null,
+    perk_name: ?[]const u8 = null,
+};
+
+fn questUnlockDisplayNames(
+    level_key: ?i32,
+    game_mode: game_ids.GameModeId,
+    reason: ResultsReason,
+    preserve_bugs: bool,
+    violence_disabled: i32,
+) QuestUnlockDisplayNames {
+    if (game_mode != .quests or reason != .completed) return .{};
+    const index = questLevelKeyToIndex(level_key orelse return .{});
+    const weapon_name = if (bonuses_runtime.questUnlockWeaponForIndex(index)) |weapon_id|
+        game_ids.weaponDisplayName(weapon_id, preserve_bugs)
+    else
+        null;
+    const perk_name = if (runtime_perks.questUnlockPerkForIndex(index)) |perk_id|
+        game_ids.perkDisplayName(perk_id, violence_disabled, preserve_bugs)
+    else
+        null;
+    return .{ .weapon_name = weapon_name, .perk_name = perk_name };
+}
+
+fn questLevelKeyToIndex(level_key: i32) i32 {
+    const major = @divTrunc(level_key, 100);
+    const minor = @mod(level_key, 100);
+    return (major - 1) * 10 + (minor - 1);
+}
+
+fn drawQuestUnlockResults(runtime_assets: *const window_assets.RuntimeAssets, results: *const ResultsScreen) void {
+    if (results.run_config.game_mode != .quests or results.reason != .completed) return;
+    var y: f32 = 394.0;
+    if (results.quest_unlock_weapon_name) |name| {
+        drawSmallText(runtime_assets, "WEAPON UNLOCKED", 690.0, y, HudTextColor.dim);
+        drawSmallText(runtime_assets, name, 846.0, y, HudTextColor.accent);
+        y += 28.0;
+    }
+    if (results.quest_unlock_perk_name) |name| {
+        drawSmallText(runtime_assets, "PERK UNLOCKED", 690.0, y, HudTextColor.dim);
+        drawSmallText(runtime_assets, name, 846.0, y, HudTextColor.accent);
+    }
 }
 
 fn scoreTooLowForTop100(rank_index: usize) bool {
@@ -3604,6 +3663,26 @@ test "results high score name prompt follows quest preserve-bugs wording" {
         .summary = undefined,
     };
     try std.testing.expectEqualStrings("State your name trooper!", resultsNamePrompt(&quest_results_bug_compatible));
+}
+
+test "quest completed results resolve weapon unlock names" {
+    const names = questUnlockDisplayNames(101, .quests, .completed, false, 0);
+
+    try std.testing.expectEqualStrings("Assault Rifle", names.weapon_name.?);
+    try std.testing.expectEqual(@as(?[]const u8, null), names.perk_name);
+}
+
+test "quest completed results resolve perk unlock names" {
+    const names = questUnlockDisplayNames(103, .quests, .completed, false, 0);
+
+    try std.testing.expectEqual(@as(?[]const u8, null), names.weapon_name);
+    try std.testing.expectEqualStrings("Uranium Filled Bullets", names.perk_name.?);
+}
+
+test "quest unlock result names only apply to completed quests" {
+    try std.testing.expectEqual(@as(?[]const u8, null), questUnlockDisplayNames(101, .survival, .completed, false, 0).weapon_name);
+    try std.testing.expectEqual(@as(?[]const u8, null), questUnlockDisplayNames(101, .quests, .dead, false, 0).weapon_name);
+    try std.testing.expectEqual(@as(?[]const u8, null), questUnlockDisplayNames(null, .quests, .completed, false, 0).weapon_name);
 }
 
 test "final quest completed primary action opens end note" {

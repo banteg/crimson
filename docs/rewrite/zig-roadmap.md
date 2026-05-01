@@ -97,8 +97,9 @@ The desktop app is real, but some shells are still thinner than Python.
 
 Remaining work:
 
-- finish results/high-score/product flow parity in
-  [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig),
+- finish remaining results/high-score/product flow parity in
+  [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig);
+  quest-completion results now include resolved weapon/perk unlock names,
 - keep tightening menu/statistics/options descendants in
   [`crimson-zig/src/window_menu.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_menu.zig),
   [`crimson-zig/src/window_menu_panels.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_menu_panels.zig),
