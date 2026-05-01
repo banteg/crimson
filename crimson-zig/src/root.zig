@@ -28,6 +28,7 @@ pub const session_builders = @import("runtime/session_builders.zig");
 pub const live_runner = @import("runtime/live_runner.zig");
 pub const tutorial_runtime = @import("tutorial/runtime.zig");
 pub const typo_names = @import("typo/names.zig");
+pub const ui_formatting = @import("ui_formatting.zig");
 
 pub const formats = @import("formats/mod.zig");
 pub const persistence = @import("persistence/mod.zig");

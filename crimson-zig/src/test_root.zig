@@ -27,6 +27,7 @@ test {
     _ = cz.session_builders;
     _ = cz.spawn;
     _ = cz.state;
+    _ = cz.ui_formatting;
     _ = cz.weapon_data;
     _ = cz.weapons;
     _ = cz.window_atlas;

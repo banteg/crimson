@@ -43,6 +43,7 @@ const state_mod = cz.state;
 const terrain_fx_mod = cz.terrain_fx;
 const tutorial_runtime = cz.tutorial_runtime;
 const typo_names = cz.typo_names;
+const ui_formatting = cz.ui_formatting;
 
 const window_width = 1024;
 const window_height = 768;
@@ -1405,7 +1406,8 @@ const App = struct {
                 drawSmallText(runtime_assets, "WEAPON", 370.0, 342.0, HudTextColor.dim);
                 drawSmallText(runtime_assets, "HP", 370.0, 370.0, HudTextColor.dim);
                 const elapsed_ms = if (results.quest_final_time) |breakdown| breakdown.final_time_ms else @as(i32, @intCast(results.summary.elapsed_ms_sim));
-                drawSmallTextFmt("{d} ms", runtime_assets, .{elapsed_ms}, 510.0, 258.0, HudTextColor.primary);
+                var elapsed_buf: [16]u8 = undefined;
+                drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&elapsed_buf, elapsed_ms), 510.0, 258.0, HudTextColor.primary);
                 drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_experience}, 510.0, 286.0, HudTextColor.primary);
                 drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_level}, 510.0, 314.0, HudTextColor.primary);
                 drawSmallText(runtime_assets, weaponName(results.summary.player_weapon_id), 510.0, 342.0, HudTextColor.primary);
@@ -1416,10 +1418,14 @@ const App = struct {
                     drawSmallText(runtime_assets, "LIFE BONUS", 690.0, 286.0, HudTextColor.dim);
                     drawSmallText(runtime_assets, "PERK BONUS", 690.0, 314.0, HudTextColor.dim);
                     drawSmallText(runtime_assets, "FINAL", 690.0, 342.0, HudTextColor.dim);
-                    drawSmallTextFmt("{d} ms", runtime_assets, .{breakdown.base_time_ms}, 846.0, 258.0, HudTextColor.primary);
-                    drawSmallTextFmt("-{d} ms", runtime_assets, .{breakdown.life_bonus_ms}, 846.0, 286.0, HudTextColor.primary);
-                    drawSmallTextFmt("-{d} ms", runtime_assets, .{breakdown.unpicked_perk_bonus_ms}, 846.0, 314.0, HudTextColor.primary);
-                    drawSmallTextFmt("{d} ms", runtime_assets, .{breakdown.final_time_ms}, 846.0, 342.0, HudTextColor.accent);
+                    var base_buf: [16]u8 = undefined;
+                    var life_buf: [16]u8 = undefined;
+                    var perk_buf: [16]u8 = undefined;
+                    var final_buf: [16]u8 = undefined;
+                    drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&base_buf, breakdown.base_time_ms), 846.0, 258.0, HudTextColor.primary);
+                    drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&life_buf, breakdown.life_bonus_ms)}, 846.0, 286.0, HudTextColor.primary);
+                    drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&perk_buf, breakdown.unpicked_perk_bonus_ms)}, 846.0, 314.0, HudTextColor.primary);
+                    drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&final_buf, breakdown.final_time_ms), 846.0, 342.0, HudTextColor.accent);
                 }
 
                 if (results.runtime_error) |runtime_error| {
@@ -2663,9 +2669,11 @@ fn drawResultsHighscore(
     highscore: *const ResultsHighscoreState,
 ) void {
     const prompt_y = 452.0;
+    var rank_buf: [16]u8 = undefined;
+    const rank_text = ui_formatting.formatOrdinal(&rank_buf, @intCast(highscore.rank_index + 1));
     if (highscore.promptActive()) {
         drawSmallTextCentered(runtime_assets, "NEW HIGH SCORE", prompt_y, HudTextColor.accent);
-        drawSmallTextFmt("RANK #{d}", runtime_assets, .{highscore.rank_index + 1}, 420.0, prompt_y + 28.0, HudTextColor.primary);
+        drawSmallTextFmt("RANK {s}", runtime_assets, .{rank_text}, 420.0, prompt_y + 28.0, HudTextColor.primary);
         drawSmallTextCentered(runtime_assets, "ENTER YOUR NAME TO SAVE THIS RUN", prompt_y + 56.0, HudTextColor.dim);
 
         rl.drawRectangleRounded(
@@ -2691,7 +2699,7 @@ fn drawResultsHighscore(
         }
     } else {
         drawSmallTextCentered(runtime_assets, "SCORE SAVED", prompt_y, HudTextColor.accent);
-        drawSmallTextFmt("RANK #{d}  NAME {s}", runtime_assets, .{ highscore.rank_index + 1, highscore.record.name() }, 330.0, prompt_y + 28.0, HudTextColor.primary);
+        drawSmallTextFmt("RANK {s}  NAME {s}", runtime_assets, .{ rank_text, highscore.record.name() }, 330.0, prompt_y + 28.0, HudTextColor.primary);
     }
 }
 
