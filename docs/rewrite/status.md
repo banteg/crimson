@@ -30,8 +30,9 @@ Last reviewed: **2026-05-02**
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair drop-first-guest-input --format json`
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair force-guest-resync --format json`
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-reconnect --format json`
+  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-reconnect-resync --format json`
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair jitter-burst --format json`
-    - The native Zig `net host/join` surface now reports `runtime_supported=true` for rollback sessions, and the native smoke command exercises an in-process relay plus host/guest live rollback exchange, including delayed-input, reordered-input, dropped-input, repeated jitter recovery without resync, guest-requested resync snapshot, and relay-token guest self-reconnect with post-reconnect input continuity. Remaining network work is longer-session stress and lobby parity, not first launch support.
+    - The native Zig `net host/join` surface now reports `runtime_supported=true` for rollback sessions, and the native smoke command exercises an in-process relay plus host/guest live rollback exchange, including delayed-input, reordered-input, dropped-input, repeated jitter recovery without resync, guest-requested resync snapshot, relay-token guest self-reconnect with post-reconnect input continuity, and a longer reconnect-then-resync path. Remaining network work is broader stress and lobby parity, not first launch support.
 - Asset tooling:
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig-asset-smoke <assets-dir>`
     - The installed native smoke tool validates `crimson.paq`, JAZ/TGA/JPEG image decoding, runtime texture specs, and small-font width data.
@@ -170,7 +171,7 @@ Last reviewed: **2026-05-02**
    - This status page intentionally avoids tick/session-specific examples that go stale quickly.
    - Current active probes and per-SHA outcomes are tracked in [`docs/frida/differential-sessions.md`](../frida/differential-sessions.md).
 3. **Rollback stress hardening + lockstep fallback maintenance**
-   - Rollback is now the default path, and Zig has native delayed-input, reordered-input, dropped-input, repeated jitter, guest-requested resync, and relay-token guest self-reconnect smoke cases with post-reconnect input continuity. Longer reconnect/resync stress still needs scenario coverage across long sessions.
+   - Rollback is now the default path, and Zig has native delayed-input, reordered-input, dropped-input, repeated jitter, guest-requested resync, relay-token guest self-reconnect, and reconnect-then-resync smoke cases. Longer reconnect/resync stress still needs broader multi-cycle scenario coverage across long sessions.
    - Legacy lockstep fallback remains available and must continue to receive compatibility maintenance while rollback remains primary.
 
 ## Out of scope for this rewrite

@@ -104,6 +104,7 @@ Current supported replay-tooling behavior:
   and `net smoke-rollback --impair drop-first-guest-input --format json`
   and `net smoke-rollback --impair force-guest-resync --format json`
   and `net smoke-rollback --impair guest-reconnect --format json`
+  and `net smoke-rollback --impair guest-reconnect-resync --format json`
   and `net smoke-rollback --impair jitter-burst --format json`
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
   data rather than stale “unsupported path” wording
@@ -137,8 +138,9 @@ The important remaining gaps are now:
   host/guest relay exchange, force delayed/reordered/dropped-input rollback
   correction, absorb a repeated jitter burst without resync, complete a
   guest-requested resync snapshot, and self-reconnect a guest through its relay
-  token before advancing more input, but longer reconnect/resync scenarios and
-  product-lobby polish remain.
+  token before advancing more input, and drive a longer reconnect-then-resync
+  smoke path, but broader reconnect/resync stress and product-lobby polish
+  remain.
 
 The biggest remaining technical risk is not basic gameplay ownership. It is
 closing the remaining replay/tooling and product-shell breadth gaps cleanly.
