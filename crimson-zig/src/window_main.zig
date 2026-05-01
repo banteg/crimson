@@ -42,6 +42,7 @@ const game_ids = cz.game_ids;
 const live_runner = cz.live_runner;
 const lockstep_live_session = cz.net.lockstep_live_session;
 const lockstep_session = cz.net.lockstep_session;
+const packed_input = cz.net.packed_input;
 const runtime_perks = cz.perks;
 const runtime_session = cz.session;
 const state_mod = cz.state;
@@ -278,6 +279,13 @@ const NetworkLiveRuntime = union(enum) {
                 };
             },
         };
+    }
+
+    fn submitLocalInput(self: *NetworkLiveRuntime, allocator: std.mem.Allocator, input: packed_input.PackedPlayerInput, now_ms: i64) !void {
+        switch (self.*) {
+            .host => |*host| try host.submitLocalInput(allocator, input),
+            .client => |*client| try client.queueLocalInput(allocator, input, now_ms),
+        }
     }
 
     fn boundPort(self: *const NetworkLiveRuntime) u16 {
@@ -3339,6 +3347,71 @@ test "window network live runtime steps host ready frames" {
     const net_update = try runtime.update(std.testing.allocator, io, 20);
     try std.testing.expectEqual(@as(usize, 1), net_update.frames_advanced);
     try std.testing.expectEqual(@as(usize, 1), net_update.ticks_advanced);
+}
+
+test "window network live runtime submits host local input" {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    var runtime = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 1,
+        .netcode = .lockstep,
+        .bind_host = "127.0.0.1",
+        .port = 0,
+    }, 123);
+    defer runtime.deinit(std.testing.allocator, io);
+
+    try runtime.start(std.testing.allocator, io, 10);
+    switch (runtime) {
+        .host => |*host| {
+            host.session.runtime.started = true;
+            host.session.runtime.lockstep = .{ .player_count = 1, .input_delay_ticks = 0 };
+        },
+        .client => return error.TestUnexpectedResult,
+    }
+
+    try runtime.submitLocalInput(std.testing.allocator, .{ .flags = 5 }, 20);
+    const net_update = try runtime.update(std.testing.allocator, io, 30);
+    try std.testing.expectEqual(@as(usize, 1), net_update.frames_advanced);
+    try std.testing.expectEqual(@as(usize, 1), net_update.ticks_advanced);
+}
+
+test "window network live runtime queues client local input" {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    var runtime = try NetworkLiveRuntime.init(.{
+        .role = .join,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .lockstep,
+        .bind_host = "127.0.0.1",
+        .port = 31993,
+    }, 123);
+    defer runtime.deinit(std.testing.allocator, io);
+
+    try runtime.start(std.testing.allocator, io, 10);
+    switch (runtime) {
+        .client => |*client| {
+            client.session.runtime.lockstep = .{ .local_slot_index = 1, .input_delay_ticks = 0 };
+            client.session.runtime.started = true;
+        },
+        .host => return error.TestUnexpectedResult,
+    }
+
+    try runtime.submitLocalInput(std.testing.allocator, .{ .flags = 7 }, 20);
+    switch (runtime) {
+        .client => |*client| {
+            try std.testing.expectEqual(@as(usize, 2), client.session.outbox.packets.items.len);
+            switch (client.session.outbox.packets.items[1].packet.message) {
+                .input_batch => |batch| {
+                    try std.testing.expectEqual(@as(i32, 1), batch.slot_index);
+                    try std.testing.expectEqual(@as(usize, 1), batch.samples.len);
+                    try std.testing.expectEqual(@as(u32, 7), batch.samples[0].packed_input.flags);
+                },
+                else => return error.TestUnexpectedResult,
+            }
+        },
+        .host => return error.TestUnexpectedResult,
+    }
 }
 
 test "demo attract variant sequencing mirrors native cycle" {
