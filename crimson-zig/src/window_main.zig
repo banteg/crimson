@@ -2456,17 +2456,21 @@ fn collectGameplayInput(
     frame_dt: f32,
 ) live_runner.FrameInput {
     const mouse_world = rl.getScreenToWorld2D(rl.getMousePosition(), camera);
-    const player = runner.player0Const() orelse return .{};
+    const players = runner.session.playersConst();
+    if (players.len == 0) return .{};
     const screen_center: state_mod.Vec2 = .{
         .x = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5,
         .y = @as(f32, @floatFromInt(rl.getScreenHeight())) * 0.5,
     };
 
-    var frame_input: live_runner.FrameInput = .{
-        .player = interpreter.buildPlayerInput(
-            input_codes.RaylibInputSampler{},
-            0,
-            runner.session.playersConst().len,
+    var frame_input: live_runner.FrameInput = .{};
+    const input_count = @min(players.len, state_mod.max_players);
+    const sampler: input_codes.RaylibInputSampler = .{};
+    for (players[0..input_count], 0..) |*player, idx| {
+        frame_input.players[idx] = interpreter.buildPlayerInput(
+            sampler,
+            idx,
+            players.len,
             player,
             &runtime.config,
             .{
@@ -2480,8 +2484,10 @@ fn collectGameplayInput(
             screen_center,
             frame_dt,
             runner.session.creatures.entries[0..],
-        ),
-    };
+        );
+    }
+    frame_input.player_count = input_count;
+    frame_input.player = frame_input.players[0];
 
     if (runner.session.game_mode == .typo) {
         frame_input.typo_submit = rl.isKeyPressed(.enter) or rl.isKeyPressed(.kp_enter);
@@ -2518,11 +2524,11 @@ fn collectDemoAttractInput(
         .y = @as(f32, @floatFromInt(rl.getScreenHeight())) * 0.5,
     };
     const sampler: input_codes.RaylibInputSampler = .{};
-    const player = runner.player0Const() orelse return .{};
-    return .{
-        .player = interpreter.buildPlayerInput(
+    var frame_input: live_runner.FrameInput = .{};
+    for (players[0..input_count], 0..) |*player, idx| {
+        frame_input.players[idx] = interpreter.buildPlayerInput(
             sampler,
-            0,
+            idx,
             players.len,
             player,
             &demo_config,
@@ -2537,8 +2543,11 @@ fn collectDemoAttractInput(
             screen_center,
             frame_dt,
             runner.session.creatures.entries[0..],
-        ),
-    };
+        );
+    }
+    frame_input.player_count = input_count;
+    frame_input.player = frame_input.players[0];
+    return frame_input;
 }
 
 fn demoAttractInactiveAction() DemoAttractInactiveAction {
@@ -3055,6 +3064,48 @@ test "demo attract variant 5 is purchase interstitial without gameplay spawns" {
     try setupDemoAttractVariant(&runner, 5);
     try std.testing.expectEqual(@as(usize, 1), runner.session.playersConst().len);
     try std.testing.expectEqual(@as(usize, 0), runner.session.creatures.activeCount());
+}
+
+test "hudPlayerRowLayout preserves single-player top bar coordinates" {
+    const row = hudPlayerRowLayout(1, 0, 1.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 27.0), row.heart_center.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 21.0), row.heart_center.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 64.0), row.health_bar.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 16.0), row.health_bar.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 120.0), row.health_bar.width, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 9.0), row.health_bar.height, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 220.0), row.weapon_icon.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 2.0), row.weapon_icon.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 64.0), row.weapon_icon.width, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 32.0), row.weapon_icon.height, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 300.0), row.ammo_base.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 10.0), row.ammo_base.y, 1e-6);
+}
+
+test "hudPlayerRowLayout stacks multiplayer rows like the Python HUD" {
+    const row0 = hudPlayerRowLayout(2, 0, 1.0);
+    const row1 = hudPlayerRowLayout(2, 1, 1.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 64.0), row0.health_bar.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 6.0), row0.health_bar.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 64.0), row1.health_bar.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 22.0), row1.health_bar.y, 1e-6);
+
+    const fill0 = hudHealthFillRect(row0, 80.0).?;
+    const fill1 = hudHealthFillRect(row1, 50.0).?;
+    try std.testing.expectApproxEqAbs(@as(f32, 96.0), fill0.width, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 60.0), fill1.width, 1e-6);
+
+    try std.testing.expectApproxEqAbs(@as(f32, 220.0), row0.weapon_icon.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 4.0), row0.weapon_icon.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 32.0), row0.weapon_icon.width, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 16.0), row0.weapon_icon.height, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 220.0), row1.weapon_icon.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 20.0), row1.weapon_icon.y, 1e-6);
+
+    try std.testing.expectApproxEqAbs(@as(f32, 290.0), row0.ammo_base.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 4.0), row0.ammo_base.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 290.0), row1.ammo_base.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 18.0), row1.ammo_base.y, 1e-6);
 }
 
 fn drawWorld(
@@ -3701,6 +3752,41 @@ const HudFlags = struct {
     show_quest_hud: bool,
 };
 
+const HudPlayerRowLayout = struct {
+    heart_center: rl.Vector2,
+    heart_scale: f32,
+    health_bar: rl.Rectangle,
+    weapon_icon: rl.Rectangle,
+    ammo_base: rl.Vector2,
+};
+
+fn hudPlayerRowLayout(player_count_raw: usize, player_index: usize, scale: f32) HudPlayerRowLayout {
+    const player_count = @max(player_count_raw, 1);
+    const idx: f32 = @floatFromInt(player_index);
+    if (player_count == 1) {
+        return .{
+            .heart_center = rl.Vector2.init(hs(27.0, scale), hs(21.0, scale)),
+            .heart_scale = 1.0,
+            .health_bar = rl.Rectangle.init(hs(64.0, scale), hs(16.0, scale), hs(120.0, scale), hs(9.0, scale)),
+            .weapon_icon = rl.Rectangle.init(hs(220.0, scale), hs(2.0, scale), hs(64.0, scale), hs(32.0, scale)),
+            .ammo_base = rl.Vector2.init(hs(300.0, scale), hs(10.0, scale)),
+        };
+    }
+    return .{
+        .heart_center = rl.Vector2.init(hs(27.0, scale), hs(12.0 + idx * 15.0, scale)),
+        .heart_scale = 0.5,
+        .health_bar = rl.Rectangle.init(hs(64.0, scale), hs(6.0 + idx * 16.0, scale), hs(120.0, scale), hs(9.0, scale)),
+        .weapon_icon = rl.Rectangle.init(hs(220.0, scale), hs(4.0 + idx * 16.0, scale), hs(32.0, scale), hs(16.0, scale)),
+        .ammo_base = rl.Vector2.init(hs(290.0, scale), hs(4.0 + idx * 14.0, scale)),
+    };
+}
+
+fn hudHealthFillRect(row: HudPlayerRowLayout, health: f32) ?rl.Rectangle {
+    const health_ratio = std.math.clamp(health / 100.0, @as(f32, 0.0), @as(f32, 1.0));
+    if (!(health_ratio > 0.0)) return null;
+    return rl.Rectangle.init(row.health_bar.x, row.health_bar.y, row.health_bar.width * health_ratio, row.health_bar.height);
+}
+
 fn hudFlagsForGameMode(game_mode: game_ids.GameModeId) HudFlags {
     return switch (game_mode) {
         .quests => .{
@@ -3946,7 +4032,7 @@ fn drawWeaponAuxHud(gameplay: *const GameplayScreen, assets: *const window_asset
     }
 }
 
-fn drawAmmoIndicators(assets: *const window_assets.RuntimeAssets, texture_id: window_assets.TextureId, ammo: f32, clip_size: i32, scale: f32) void {
+fn drawAmmoIndicatorsAt(assets: *const window_assets.RuntimeAssets, texture_id: window_assets.TextureId, ammo: f32, clip_size: i32, scale: f32, base: rl.Vector2) void {
     const texture = assets.texture(texture_id);
     const ammo_count = @max(0, @as(i32, @intFromFloat(ammo)));
     var bars = @max(0, clip_size);
@@ -3956,12 +4042,12 @@ fn drawAmmoIndicators(assets: *const window_assets.RuntimeAssets, texture_id: wi
         const alpha: f32 = if (idx < ammo_count) 0.8 else 0.24;
         drawTextureFit(
             texture,
-            rl.Rectangle.init(hs(300.0, scale) + @as(f32, @floatFromInt(idx)) * hs(6.0, scale), hs(10.0, scale), hs(6.0, scale), hs(16.0, scale)),
+            rl.Rectangle.init(base.x + @as(f32, @floatFromInt(idx)) * hs(6.0, scale), base.y, hs(6.0, scale), hs(16.0, scale)),
             colorWithAlpha(rl.Color.white, alpha),
         );
     }
     if (ammo_count > bars) {
-        drawSmallTextFmt("+ {d}", assets, .{ammo_count - bars}, hs(300.0, scale) + @as(f32, @floatFromInt(bars)) * hs(6.0, scale) + hs(8.0, scale), hs(11.0, scale), HudTextColor.primary);
+        drawSmallTextFmt("+ {d}", assets, .{ammo_count - bars}, base.x + @as(f32, @floatFromInt(bars)) * hs(6.0, scale) + hs(8.0, scale), base.y + hs(1.0, scale), HudTextColor.primary);
     }
 }
 
@@ -4129,7 +4215,9 @@ fn drawBootAssetFallback(assets_state: AssetsState, assets_message: ?[]const u8)
 fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const window_assets.RuntimeAssets) void {
     const runner = &gameplay.runner;
     const update = gameplay.last_update;
-    const player = runner.player0Const() orelse return;
+    const players = runner.session.playersConst();
+    if (players.len == 0) return;
+    const player = players[0];
     if (runtime_assets) |assets| {
         const flags = hudFlagsForGameMode(runner.session.game_mode);
         const elapsed_ms = @as(f32, @floatFromInt(update.elapsed_ms_sim));
@@ -4143,47 +4231,59 @@ fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const wind
         );
 
         if (flags.show_health) {
-            const pulse_speed: f32 = if (player.health < 30.0) 5.0 else 2.0;
             const t = elapsed_ms * 0.001;
-            const pulse = std.math.pow(f32, std.math.sin(t * pulse_speed), 4) * 4.0 + 14.0;
-            drawTextureCentered(
-                assets.texture(.ui_life_heart),
-                rl.Vector2.init(hs(27.0, scale), hs(21.0, scale)),
-                pulse * 2.0 * scale,
-                pulse * 2.0 * scale,
-                colorWithAlpha(rl.Color.white, 0.8),
-            );
-
+            const player0_low_health = player.health < 30.0;
             const ind_life = assets.texture(.ui_ind_life);
-            const health_ratio = std.math.clamp(player.health / 100.0, @as(f32, 0.0), @as(f32, 1.0));
-            drawTextureFit(ind_life, rl.Rectangle.init(hs(64.0, scale), hs(16.0, scale), hs(120.0, scale), hs(9.0, scale)), colorWithAlpha(rl.Color.white, 0.5));
-            if (health_ratio > 0.0) {
-                rl.drawTexturePro(
-                    ind_life,
-                    rl.Rectangle.init(0.0, 0.0, @as(f32, @floatFromInt(ind_life.width)) * health_ratio, @floatFromInt(ind_life.height)),
-                    rl.Rectangle.init(hs(64.0, scale), hs(16.0, scale), hs(120.0, scale) * health_ratio, hs(9.0, scale)),
-                    rl.Vector2.zero(),
-                    0.0,
+
+            for (players, 0..) |hud_player, idx| {
+                const row = hudPlayerRowLayout(players.len, idx, scale);
+                var pulse_speed: f32 = if (hud_player.health < 30.0) 5.0 else 2.0;
+                if (runner.session.state.preserve_bugs and players.len > 1 and idx > 0 and player0_low_health) {
+                    pulse_speed = 5.0;
+                }
+                const phase = @as(f32, @floatFromInt(idx)) * (std.math.pi * 0.5);
+                const pulse = (std.math.pow(f32, std.math.sin(t * pulse_speed + phase), 4) * 4.0 + 14.0) * row.heart_scale;
+                drawTextureCentered(
+                    assets.texture(.ui_life_heart),
+                    row.heart_center,
+                    pulse * 2.0 * scale,
+                    pulse * 2.0 * scale,
                     colorWithAlpha(rl.Color.white, 0.8),
                 );
+
+                drawTextureFit(ind_life, row.health_bar, colorWithAlpha(rl.Color.white, 0.5));
+                if (hudHealthFillRect(row, hud_player.health)) |fill_rect| {
+                    const health_ratio = fill_rect.width / row.health_bar.width;
+                    rl.drawTexturePro(
+                        ind_life,
+                        rl.Rectangle.init(0.0, 0.0, @as(f32, @floatFromInt(ind_life.width)) * health_ratio, @floatFromInt(ind_life.height)),
+                        fill_rect,
+                        rl.Vector2.zero(),
+                        0.0,
+                        colorWithAlpha(rl.Color.white, 0.8),
+                    );
+                }
             }
         }
 
         if (flags.show_weapon) {
-            const weapon_id = std.enums.fromInt(game_ids.WeaponId, update.player_weapon_id) orelse .pistol;
-            const icon_index = weapon_data.weaponIconIndex(weapon_id);
-            if (icon_index >= 0) {
-                drawTextureRegionCenteredRotated(
-                    assets.texture(.ui_wicons),
-                    window_atlas.weaponIconRect(assets.texture(.ui_wicons).width, assets.texture(.ui_wicons).height, icon_index),
-                    rl.Vector2.init(hs(252.0, scale), hs(18.0, scale)),
-                    hs(64.0, scale),
-                    hs(32.0, scale),
-                    0.0,
-                    colorWithAlpha(rl.Color.white, 0.8),
-                );
+            for (players, 0..) |hud_player, idx| {
+                const row = hudPlayerRowLayout(players.len, idx, scale);
+                const weapon_id = hud_player.weapon.weapon_id;
+                const icon_index = weapon_data.weaponIconIndex(weapon_id);
+                if (icon_index >= 0) {
+                    drawTextureRegionCenteredRotated(
+                        assets.texture(.ui_wicons),
+                        window_atlas.weaponIconRect(assets.texture(.ui_wicons).width, assets.texture(.ui_wicons).height, icon_index),
+                        rl.Vector2.init(row.weapon_icon.x + row.weapon_icon.width * 0.5, row.weapon_icon.y + row.weapon_icon.height * 0.5),
+                        row.weapon_icon.width,
+                        row.weapon_icon.height,
+                        0.0,
+                        colorWithAlpha(rl.Color.white, 0.8),
+                    );
+                }
+                drawAmmoIndicatorsAt(assets, weaponIndicatorTextureId(weapon_id), hud_player.weapon.ammo, hud_player.weapon.clip_size, scale, row.ammo_base);
             }
-            drawAmmoIndicators(assets, weaponIndicatorTextureId(weapon_id), player.weapon.ammo, player.weapon.clip_size, scale);
         }
 
         if (flags.show_quest_hud) {
@@ -4225,7 +4325,7 @@ fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const wind
         8,
         overlay_color,
     );
-    drawTextFmt("hp {d:.1}  level {d}  xp {d}", .{ update.player_health, update.player_level, update.player_experience }, 36, 34, 22, text_color);
+    drawTextFmt("hp {d:.1}  level {d}  xp {d}", .{ player.health, update.player_level, update.player_experience }, 36, 34, 22, text_color);
     drawTextFmt("weapon {s}  ammo {d:.1}", .{ weaponName(update.player_weapon_id), player.weapon.ammo }, 36, 62, 22, text_color);
     drawTextFmt("shots {d}  hits {d}  creatures {d}", .{ update.shots_fired, update.shots_hit, update.creature_active_count }, 36, 90, 20, muted_text);
     drawTextFmt("elapsed {d}ms  pickups {d}  pending perks {d}", .{ update.elapsed_ms_sim, update.bonus_active_count, runner.perkPendingCount() }, 36, 116, 20, muted_text);

@@ -46,6 +46,8 @@ pub const LiveSurvivalConfig = LiveModeConfig;
 
 pub const FrameInput = struct {
     player: player_runtime.GameInput = defaultGameInput(),
+    players: [state_mod.max_players]player_runtime.GameInput = [_]player_runtime.GameInput{defaultGameInput()} ** state_mod.max_players,
+    player_count: usize = 0,
     perk_choice_index: ?i32 = null,
     perk_menu_active: bool = false,
     typo_char: ?u8 = null,
@@ -302,32 +304,38 @@ pub const LiveRunner = struct {
         var ticks_advanced: usize = 0;
         var frame_audio: FrameAudioEvents = .{};
         var frame_terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
-        const tick_inputs = [_]player_runtime.GameInput{input.player};
+        const tick_inputs = tickInputsForFrame(input, self.session.playersConst().len);
         while (ticks_advanced < self.max_substeps_per_frame and
             !self.allPlayersDead() and
             !(input.perk_menu_active and self.perkPendingCount() > 0) and
             self.accumulator + epsilon_dt >= self.session.dt_nominal)
         {
-            const before_player = self.player0Const().?.*;
+            var before_players: [state_mod.max_players]state_mod.PlayerState = undefined;
+            const before_player_count = copyActivePlayers(&before_players, self.session.playersConst());
             const before_perk_pending = self.perkPendingCount();
             const before_quest_hit_sfx = self.session.quest_play_hit_sfx;
             const before_quest_completion_music = self.session.quest_play_completion_music;
             const step_result = try replay_step.stepTick(
                 &self.session,
                 self.session.tick_index,
-                tick_inputs[0..],
+                tick_inputs.slice(),
                 &.{},
                 self.session.dt_nominal,
                 .{},
             );
-            const after_player = self.player0Const().?.*;
-            if (after_player.shot_seq > before_player.shot_seq) {
-                frame_audio.appendShot(after_player.weapon.weapon_id, after_player.fire_bullets_timer > 0.0);
-            }
-            const reload_started = (!before_player.weapon.reload_active and after_player.weapon.reload_active) or
-                (after_player.weapon.reload_timer > before_player.weapon.reload_timer + 1e-6);
-            if (reload_started) {
-                frame_audio.appendReload(after_player.weapon.weapon_id);
+            const after_players = self.session.playersConst();
+            const compare_count = @min(before_player_count, after_players.len);
+            for (0..compare_count) |player_idx| {
+                const before_player = before_players[player_idx];
+                const after_player = after_players[player_idx];
+                if (after_player.shot_seq > before_player.shot_seq) {
+                    frame_audio.appendShot(after_player.weapon.weapon_id, after_player.fire_bullets_timer > 0.0);
+                }
+                const reload_started = (!before_player.weapon.reload_active and after_player.weapon.reload_active) or
+                    (after_player.weapon.reload_timer > before_player.weapon.reload_timer + 1e-6);
+                if (reload_started) {
+                    frame_audio.appendReload(after_player.weapon.weapon_id);
+                }
             }
             if (before_perk_pending <= 0 and self.perkPendingCount() > 0) {
                 frame_audio.perk_menu_opened = true;
@@ -498,6 +506,45 @@ pub const LiveRunner = struct {
 
 pub const LiveSurvivalRunner = LiveRunner;
 
+fn copyActivePlayers(
+    out: *[state_mod.max_players]state_mod.PlayerState,
+    players: []const state_mod.PlayerState,
+) usize {
+    const count = @min(players.len, state_mod.max_players);
+    for (players[0..count], 0..) |player, idx| {
+        out[idx] = player;
+    }
+    return count;
+}
+
+const TickInputs = struct {
+    items: [state_mod.max_players]player_runtime.GameInput,
+    len: usize,
+
+    fn slice(self: *const TickInputs) []const player_runtime.GameInput {
+        return self.items[0..self.len];
+    }
+};
+
+fn tickInputsForFrame(input: FrameInput, active_player_count: usize) TickInputs {
+    var out: TickInputs = .{
+        .items = [_]player_runtime.GameInput{defaultGameInput()} ** state_mod.max_players,
+        .len = @min(active_player_count, state_mod.max_players),
+    };
+    if (out.len == 0) return out;
+
+    if (input.player_count == 0) {
+        out.items[0] = input.player;
+        return out;
+    }
+
+    const provided_count = @min(@min(input.player_count, out.len), state_mod.max_players);
+    for (0..provided_count) |idx| {
+        out.items[idx] = input.players[idx];
+    }
+    return out;
+}
+
 test "live survival runner bootstraps pistol survival session" {
     var runner = try LiveSurvivalRunner.init(.{});
     try std.testing.expectEqual(game_ids.GameModeId.survival, runner.session.game_mode);
@@ -574,6 +621,83 @@ test "live survival runner advances fixed ticks from frame time" {
     );
     try std.testing.expectEqual(@as(usize, 1), update.ticks_advanced);
     try std.testing.expectEqual(@as(usize, 1), runner.session.tick_index);
+}
+
+test "live runner applies local inputs for every active player" {
+    var runner = try LiveSurvivalRunner.init(.{
+        .player_count = 2,
+    });
+
+    const before_p0 = runner.session.players()[0].pos;
+    const before_p1 = runner.session.players()[1].pos;
+
+    var inputs = [_]player_runtime.GameInput{defaultGameInput()} ** state_mod.max_players;
+    inputs[0] = .{
+        .move_x = 1.0,
+        .move_y = 0.0,
+        .aim_x = 700.0,
+        .aim_y = 512.0,
+        .flags = .{
+            .fire_down = false,
+            .fire_pressed = false,
+            .reload_pressed = false,
+            .move_mode = 3,
+            .aim_scheme = 0,
+        },
+    };
+    inputs[1] = .{
+        .move_x = 0.0,
+        .move_y = 1.0,
+        .aim_x = 512.0,
+        .aim_y = 700.0,
+        .flags = .{
+            .fire_down = false,
+            .fire_pressed = false,
+            .reload_pressed = false,
+            .move_mode = 3,
+            .aim_scheme = 0,
+        },
+    };
+
+    const update = try runner.stepFrame(runner.session.dt_nominal, .{
+        .players = inputs,
+        .player_count = 2,
+    });
+
+    const after_p0 = runner.session.players()[0].pos;
+    const after_p1 = runner.session.players()[1].pos;
+    try std.testing.expectEqual(@as(usize, 1), update.ticks_advanced);
+    try std.testing.expect(after_p0.x != before_p0.x or after_p0.y != before_p0.y);
+    try std.testing.expect(after_p1.x != before_p1.x or after_p1.y != before_p1.y);
+}
+
+test "live runner emits shot audio for secondary local player" {
+    var runner = try LiveSurvivalRunner.init(.{
+        .player_count = 2,
+    });
+
+    var inputs = [_]player_runtime.GameInput{defaultGameInput()} ** state_mod.max_players;
+    inputs[1] = .{
+        .move_x = 0.0,
+        .move_y = 0.0,
+        .aim_x = 700.0,
+        .aim_y = 512.0,
+        .flags = .{
+            .fire_down = true,
+            .fire_pressed = true,
+            .reload_pressed = false,
+            .move_mode = 3,
+            .aim_scheme = 0,
+        },
+    };
+
+    const update = try runner.stepFrame(runner.session.dt_nominal, .{
+        .players = inputs,
+        .player_count = 2,
+    });
+
+    try std.testing.expectEqual(@as(usize, 1), update.audio.shot_event_count);
+    try std.testing.expectEqual(@as(i32, @intFromEnum(game_ids.WeaponId.pistol)), update.audio.shot_events[0].weapon_id);
 }
 
 test "live survival runner pauses for pending perk picks" {
