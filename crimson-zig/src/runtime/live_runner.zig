@@ -131,6 +131,10 @@ pub const FrameUpdate = struct {
     terrain_fx: terrain_fx_mod.TerrainFxBatch,
 };
 
+pub const LiveRunnerSnapshot = struct {
+    runner: LiveRunner,
+};
+
 pub fn defaultGameInput() player_runtime.GameInput {
     return .{
         .move_x = 0.0,
@@ -456,6 +460,21 @@ pub const LiveRunner = struct {
         return self.session.finalize();
     }
 
+    pub fn captureSnapshot(self: *const LiveRunner) LiveRunnerSnapshot {
+        var captured: LiveRunnerSnapshot = .{ .runner = self.* };
+        captured.runner.rebindInternalPointers();
+        return captured;
+    }
+
+    pub fn restoreSnapshot(self: *LiveRunner, captured: *const LiveRunnerSnapshot) void {
+        self.* = captured.runner;
+        self.rebindInternalPointers();
+    }
+
+    fn rebindInternalPointers(self: *LiveRunner) void {
+        self.session.rebindInternalPointers();
+    }
+
     fn snapshot(
         self: *const LiveRunner,
         ticks_advanced: usize,
@@ -621,6 +640,32 @@ test "live survival runner advances fixed ticks from frame time" {
     );
     try std.testing.expectEqual(@as(usize, 1), update.ticks_advanced);
     try std.testing.expectEqual(@as(usize, 1), runner.session.tick_index);
+}
+
+test "live runner snapshots restore deterministic session state" {
+    var runner = try LiveRunner.init(.{
+        .seed = 1234,
+        .player_count = 1,
+        .tick_rate = 60,
+    });
+
+    runner.player0().?.health = 12.5;
+    runner.session.tick_index = 3;
+    runner.session.state.rng.state = 0xDEADBEEF;
+
+    const snapshot = runner.captureSnapshot();
+    try std.testing.expect(snapshot.runner.session.creatures.effects.? == &snapshot.runner.session.effects);
+
+    runner.player0().?.health = 0.0;
+    runner.session.tick_index = 99;
+    runner.session.state.rng.state = 1;
+
+    runner.restoreSnapshot(&snapshot);
+
+    try std.testing.expectEqual(@as(usize, 3), runner.session.tick_index);
+    try std.testing.expectEqual(@as(u32, 0xDEADBEEF), runner.session.state.rng.state);
+    try std.testing.expectApproxEqAbs(@as(f32, 12.5), runner.player0().?.health, 0.001);
+    try std.testing.expect(runner.session.creatures.effects.? == &runner.session.effects);
 }
 
 test "live runner applies local inputs for every active player" {

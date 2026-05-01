@@ -265,6 +265,11 @@ pub const DeterministicSession = struct {
         self.quest_spawn_entries = self.quest_spawn_entries_storage[0..self.reset_quest_spawn_entries_len];
     }
 
+    pub fn rebindInternalPointers(self: *DeterministicSession) void {
+        self.rebindQuestSpawnEntries();
+        self.creatures.effects = &self.effects;
+    }
+
     pub fn players(self: *DeterministicSession) []state_mod.PlayerState {
         return self.players_storage[0..self.players_len];
     }
