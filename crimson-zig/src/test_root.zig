@@ -1,4 +1,5 @@
 test {
+    const std = @import("std");
     const cz = @import("crimson_zig");
 
     _ = @import("app_runtime.zig");
@@ -20,8 +21,20 @@ test {
     _ = cz.local_input;
     _ = cz.lifecycle;
     _ = cz.live_runner;
+    std.testing.refAllDecls(cz.net_lockstep_smoke_native);
+    _ = cz.net_lockstep_smoke_native;
     _ = cz.net_session_native;
     _ = cz.net;
+
+    const smoke_output = try cz.net_lockstep_smoke_native.runLockstepSmoke(
+        std.testing.allocator,
+        std.Io.Threaded.global_single_threaded.io(),
+        &.{"--json"},
+    );
+    defer smoke_output.deinit(std.testing.allocator);
+    try std.testing.expectEqual(@as(u8, 0), smoke_output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, smoke_output.stdout, "\"host_input_flags\": 3") != null);
+
     _ = cz.perks;
     _ = cz.persistence;
     _ = cz.projectiles;
