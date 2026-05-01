@@ -45,6 +45,7 @@ const tutorial_runtime = cz.tutorial_runtime;
 const typo_names = cz.typo_names;
 const ui_formatting = cz.ui_formatting;
 
+const single_player_alt_move_codes = [_]i32{ 0xC8, 0xD0, 0xCB, 0xCD };
 const window_width = 1024;
 const window_height = 768;
 const ui_button_width: f32 = 280.0;
@@ -258,6 +259,7 @@ const ResultsScreen = struct {
     player_health_count: usize = 0,
     runtime_error: ?[]const u8 = null,
     highscore: ?ResultsHighscoreState = null,
+    score_too_low_for_top100: bool = false,
     quest_final_time: ?quest_results.QuestFinalTime = null,
 };
 
@@ -267,13 +269,16 @@ const ResultsHighscoreState = struct {
     selection: usize = 0,
     save_error: ?[]const u8 = null,
     saved: bool = false,
+    defer_name_input_until_controls_released: bool = true,
     input: [persistence.highscores.name_size]u8 = [_]u8{0} ** persistence.highscores.name_size,
     input_len: usize = 0,
+    input_caret: usize = 0,
 
     fn setInput(self: *ResultsHighscoreState, value: []const u8) void {
         @memset(self.input[0..], 0);
         self.input_len = @min(value.len, persistence.highscores.name_max_edit);
         @memcpy(self.input[0..self.input_len], value[0..self.input_len]);
+        self.input_caret = self.input_len;
     }
 
     fn inputSlice(self: *const ResultsHighscoreState) []const u8 {
@@ -286,9 +291,56 @@ const ResultsHighscoreState = struct {
         return self.input[0..end];
     }
 
+    fn insertChar(self: *ResultsHighscoreState, ch: u8) void {
+        if (self.input_len >= persistence.highscores.name_max_edit) return;
+        self.input_caret = @min(self.input_caret, self.input_len);
+        var idx = self.input_len;
+        while (idx > self.input_caret) : (idx -= 1) {
+            self.input[idx] = self.input[idx - 1];
+        }
+        self.input[self.input_caret] = ch;
+        self.input_len += 1;
+        self.input_caret += 1;
+        self.input[self.input_len] = 0;
+    }
+
+    fn backspace(self: *ResultsHighscoreState) void {
+        if (self.input_caret == 0 or self.input_len == 0) return;
+        self.input_caret = @min(self.input_caret, self.input_len);
+        var idx = self.input_caret - 1;
+        while (idx + 1 < self.input_len) : (idx += 1) {
+            self.input[idx] = self.input[idx + 1];
+        }
+        self.input_len -= 1;
+        self.input_caret -= 1;
+        self.input[self.input_len] = 0;
+    }
+
+    fn moveCaretLeft(self: *ResultsHighscoreState) void {
+        self.input_caret = @min(self.input_caret, self.input_len);
+        self.input_caret -|= 1;
+    }
+
+    fn moveCaretRight(self: *ResultsHighscoreState) void {
+        self.input_caret = @min(self.input_caret + 1, self.input_len);
+    }
+
+    fn moveCaretHome(self: *ResultsHighscoreState) void {
+        self.input_caret = 0;
+    }
+
+    fn moveCaretEnd(self: *ResultsHighscoreState) void {
+        self.input_caret = self.input_len;
+    }
+
     fn promptActive(self: *const ResultsHighscoreState) bool {
         return !self.saved;
     }
+};
+
+const ResultsHighscoreBuild = struct {
+    highscore: ?ResultsHighscoreState = null,
+    score_too_low_for_top100: bool = false,
 };
 
 const App = struct {
@@ -901,11 +953,13 @@ const App = struct {
             self.runtime.base_dir,
             self.runtime.config,
             self.runtime.status,
+            .{
+                .quest_level_key = if (results.run_config.game_mode == .quests)
+                    results.run_config.quest_level_key
+                else
+                    null,
+            },
         );
-        if (results.run_config.game_mode == .quests) {
-            self.statistics_menu.high_scores.mode = .quests;
-            self.statistics_menu.high_scores.quest_level_key = results.run_config.quest_level_key;
-        }
         self.setScreen(.statistics_menu);
     }
 
@@ -952,6 +1006,14 @@ const App = struct {
         results: *ResultsScreen,
         highscore: *ResultsHighscoreState,
     ) void {
+        if (highscore.defer_name_input_until_controls_released) {
+            flushNameInputEvents();
+            if (!gameplayControlsHeld(&self.runtime.config)) {
+                highscore.defer_name_input_until_controls_released = false;
+            }
+            return;
+        }
+
         self.playNameInputTypeClicks(collectNameInput(highscore));
 
         const buttons = resultsHighscoreButtons();
@@ -1147,7 +1209,7 @@ const App = struct {
             self.runtime.saveStatusIfDirty() catch |err| break :save_err resultsStatusSaveErrorDetail(err);
             break :save_err null;
         };
-        const highscore = self.buildResultsHighscore(
+        const highscore_build = self.buildResultsHighscore(
             runner,
             reason,
             runtime_error orelse save_error,
@@ -1160,7 +1222,8 @@ const App = struct {
             .player_health_values = player_health_values,
             .player_health_count = player_health_count,
             .runtime_error = runtime_error orelse save_error,
-            .highscore = highscore,
+            .highscore = highscore_build.highscore,
+            .score_too_low_for_top100 = highscore_build.score_too_low_for_top100,
             .quest_final_time = if (runner.session.game_mode == .quests)
                 quest_results.computeQuestFinalTime(
                     @intCast(runner.summary().elapsed_ms_sim),
@@ -1170,7 +1233,7 @@ const App = struct {
             else
                 null,
         };
-        if (highscore != null) {
+        if (highscore_build.highscore != null) {
             self.audio.playUiClink();
         }
         gameplay.deinit();
@@ -1202,15 +1265,15 @@ const App = struct {
         reason: ResultsReason,
         runtime_error: ?[]const u8,
         player_health_values: []const f32,
-    ) ?ResultsHighscoreState {
-        if (runtime_error != null) return null;
+    ) ResultsHighscoreBuild {
+        if (runtime_error != null) return .{};
         switch (reason) {
             .dead, .completed => {},
-            .abandoned, .runtime_error => return null,
+            .abandoned, .runtime_error => return .{},
         }
-        if (runner.session.game_mode == .quests and reason == .dead) return null;
+        if (runner.session.game_mode == .quests and reason == .dead) return .{};
 
-        const player = runner.player0Const() orelse return null;
+        const player = runner.player0Const() orelse return .{};
         const shot_options: persistence.highscore_record_builder.BuildRecordOptions = switch (runner.session.game_mode) {
             .typo => .{
                 .shots_fired = runner.session.state.typo.typing.submit_count,
@@ -1248,25 +1311,27 @@ const App = struct {
                 .quest_stage_minor = runner.session.state.quest_stage_minor,
                 .player_count = runner.session.player_count,
             },
-        ) catch return null;
+        ) catch return .{};
         defer self.allocator.free(score_path);
 
         const table = persistence.highscores.readHighscoreTable(
             self.allocator,
             score_path,
             @intFromEnum(runner.session.game_mode),
-        ) catch return null;
+        ) catch return .{};
         defer table.deinit(self.allocator);
 
         const rank_index = persistence.highscores.rankIndex(table.items, record);
-        if (rank_index >= persistence.highscores.table_max) return null;
+        if (scoreTooLowForTop100(rank_index)) {
+            return .{ .score_too_low_for_top100 = true };
+        }
 
         var highscore: ResultsHighscoreState = .{
             .record = record,
             .rank_index = rank_index,
         };
         highscore.setInput(formats.crimson_cfg.playerName(&self.runtime.config));
-        return highscore;
+        return .{ .highscore = highscore };
     }
 
     fn drawBoot(self: *const App) void {
@@ -1445,7 +1510,9 @@ const App = struct {
                     drawSmallText(runtime_assets, runtime_error, 330.0, 430.0, rl.Color.orange);
                 }
                 if (results.highscore) |highscore| {
-                    drawResultsHighscore(runtime_assets, &highscore);
+                    drawResultsHighscore(runtime_assets, &highscore, resultsNamePrompt(&results));
+                } else if (results.score_too_low_for_top100) {
+                    drawSmallTextCentered(runtime_assets, "Score too low for top100.", 452.0, HudTextColor.dim);
                 }
             }
         }
@@ -1759,6 +1826,17 @@ fn resultsSubtitleFor(results: *const ResultsScreen) [:0]const u8 {
     return resultsSubtitle(results.reason);
 }
 
+fn scoreTooLowForTop100(rank_index: usize) bool {
+    return rank_index >= persistence.highscores.table_max;
+}
+
+fn resultsNamePrompt(results: *const ResultsScreen) [:0]const u8 {
+    if (results.run_config.game_mode == .quests and results.run_config.preserve_bugs) {
+        return "State your name trooper!";
+    }
+    return "State your name, trooper!";
+}
+
 fn resultsHighscorePathErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
         error.OutOfMemory => "Unable to build high score file path.",
@@ -1853,22 +1931,57 @@ fn collectNameInput(highscore: *ResultsHighscoreState) NameInputEdits {
         const codepoint = rl.getCharPressed();
         if (codepoint == 0) break;
         if (codepoint < 0x20 or codepoint > 0xFF) continue;
-        if (highscore.input_len >= persistence.highscores.name_max_edit) continue;
-        highscore.input[highscore.input_len] = @intCast(codepoint);
-        highscore.input_len += 1;
-        edits.typed = true;
+        const before_len = highscore.input_len;
+        highscore.insertChar(@intCast(codepoint));
+        if (highscore.input_len > before_len) edits.typed = true;
     }
 
-    if ((rl.isKeyPressed(.backspace) or rl.isKeyPressedRepeat(.backspace)) and highscore.input_len > 0) {
-        highscore.input_len -= 1;
-        highscore.input[highscore.input_len] = 0;
-        edits.backspaced = true;
+    if (rl.isKeyPressed(.backspace) or rl.isKeyPressedRepeat(.backspace)) {
+        const before_len = highscore.input_len;
+        highscore.backspace();
+        edits.backspaced = highscore.input_len < before_len;
     }
+    if (rl.isKeyPressed(.left)) highscore.moveCaretLeft();
+    if (rl.isKeyPressed(.right)) highscore.moveCaretRight();
+    if (rl.isKeyPressed(.home)) highscore.moveCaretHome();
+    if (rl.isKeyPressed(.end)) highscore.moveCaretEnd();
     return edits;
 }
 
 fn uiTypeClickSfxFromRoll(roll: u32) state_mod.SfxId {
     return if ((roll & 1) == 0) .ui_typeclick_01 else .ui_typeclick_02;
+}
+
+fn flushNameInputEvents() void {
+    while (rl.getCharPressed() != 0) {}
+    while (@intFromEnum(rl.getKeyPressed()) > 0) {}
+}
+
+fn gameplayControlsHeld(config: *const formats.crimson_cfg.CrimsonCfg) bool {
+    return gameplayControlsHeldWithSampler(config, input_codes.RaylibInputSampler{});
+}
+
+fn gameplayControlsHeldWithSampler(config: *const formats.crimson_cfg.CrimsonCfg, sampler: anytype) bool {
+    const player_count = @as(usize, @intCast(std.math.clamp(config.player_count, @as(u32, 1), @as(u32, 4))));
+    for (0..player_count) |idx| {
+        const binds = formats.crimson_cfg.playerBindBlock(config, idx);
+        const codes = [_]i32{
+            binds.move_forward,
+            binds.move_backward,
+            binds.turn_left,
+            binds.turn_right,
+            binds.fire,
+        };
+        for (codes) |code| {
+            if (code == formats.crimson_cfg.keybind_unbound_code) continue;
+            if (sampler.codeIsDown(code, @intCast(idx))) return true;
+        }
+    }
+
+    for (single_player_alt_move_codes) |code| {
+        if (sampler.codeIsDown(code, 0)) return true;
+    }
+    return false;
 }
 
 fn collectTypoDictionaryWords(
@@ -2139,6 +2252,35 @@ test "results high score save errors use user-facing details" {
     try std.testing.expectEqualStrings("Unable to save status: invalid game.cfg checksum.", resultsStatusSaveErrorDetail(error.InvalidGameCfgChecksum));
 }
 
+test "results high score top100 gate reports non-qualifying rank" {
+    try std.testing.expect(!scoreTooLowForTop100(0));
+    try std.testing.expect(!scoreTooLowForTop100(persistence.highscores.table_max - 1));
+    try std.testing.expect(scoreTooLowForTop100(persistence.highscores.table_max));
+}
+
+test "results high score name prompt follows quest preserve-bugs wording" {
+    const survival_results: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{ .game_mode = .survival, .preserve_bugs = true },
+        .summary = undefined,
+    };
+    try std.testing.expectEqualStrings("State your name, trooper!", resultsNamePrompt(&survival_results));
+
+    const quest_results_fixed: ResultsScreen = .{
+        .reason = .completed,
+        .run_config = .{ .game_mode = .quests, .preserve_bugs = false },
+        .summary = undefined,
+    };
+    try std.testing.expectEqualStrings("State your name, trooper!", resultsNamePrompt(&quest_results_fixed));
+
+    const quest_results_bug_compatible: ResultsScreen = .{
+        .reason = .completed,
+        .run_config = .{ .game_mode = .quests, .preserve_bugs = true },
+        .summary = undefined,
+    };
+    try std.testing.expectEqualStrings("State your name trooper!", resultsNamePrompt(&quest_results_bug_compatible));
+}
+
 test "asset load errors use user-facing details" {
     try std.testing.expectEqualStrings("Runtime asset archive was not found.", assetLoadErrorDetail(error.FileNotFound));
     try std.testing.expectEqualStrings("Runtime assets are missing a required texture.", assetLoadErrorDetail(error.MissingTextureAsset));
@@ -2152,6 +2294,72 @@ test "live runtime errors use user-facing details" {
     try std.testing.expectEqualStrings("Runtime spawn payload references an invalid creature template.", liveRuntimeErrorDetail(error.InvalidSpawnTemplate));
     try std.testing.expectEqualStrings("Unable to load Typ'o'Shooter sources: access denied.", typoSourceErrorDetail(error.AccessDenied));
     try std.testing.expectEqualStrings("Typ'o'Shooter high score file has an invalid record size.", typoSourceErrorDetail(error.InvalidSize));
+}
+
+test "results high score name entry edits at caret" {
+    var highscore: ResultsHighscoreState = .{
+        .record = persistence.highscores.HighScoreRecord.blank(),
+        .rank_index = 0,
+    };
+    highscore.setInput("ACE");
+    highscore.moveCaretLeft();
+    highscore.insertChar('X');
+    try std.testing.expectEqualStrings("ACXE", highscore.inputSlice());
+    try std.testing.expectEqual(@as(usize, 3), highscore.input_caret);
+
+    highscore.backspace();
+    try std.testing.expectEqualStrings("ACE", highscore.inputSlice());
+    try std.testing.expectEqual(@as(usize, 2), highscore.input_caret);
+
+    highscore.moveCaretHome();
+    highscore.insertChar('>');
+    try std.testing.expectEqualStrings(">ACE", highscore.inputSlice());
+    highscore.moveCaretEnd();
+    highscore.insertChar('<');
+    try std.testing.expectEqualStrings(">ACE<", highscore.inputSlice());
+}
+
+test "results high score name display shows caret position" {
+    var highscore: ResultsHighscoreState = .{
+        .record = persistence.highscores.HighScoreRecord.blank(),
+        .rank_index = 0,
+    };
+    highscore.setInput("ACE");
+    highscore.moveCaretLeft();
+    var buf: [persistence.highscores.name_max_edit + 1]u8 = undefined;
+    try std.testing.expectEqualStrings("AC_E", highscoreNameDisplay(&buf, &highscore, true));
+    try std.testing.expectEqualStrings("ACE", highscoreNameDisplay(&buf, &highscore, false));
+}
+
+test "gameplayControlsHeldWithSampler follows configured controls and alternate arrows" {
+    const FakeSampler = struct {
+        const Self = @This();
+
+        down_code: i32,
+        down_player: i32 = 0,
+
+        fn codeIsDown(self: Self, code: i32, player_index: i32) bool {
+            return code == self.down_code and player_index == self.down_player;
+        }
+    };
+
+    var config = formats.crimson_cfg.defaultConfig();
+    const p1_forward: FakeSampler = .{ .down_code = 0x11 };
+    const alt_up: FakeSampler = .{ .down_code = 0xC8 };
+    const p2_fire_while_single_player: FakeSampler = .{ .down_code = 0x9D, .down_player = 1 };
+    try std.testing.expect(gameplayControlsHeldWithSampler(&config, p1_forward));
+    try std.testing.expect(gameplayControlsHeldWithSampler(&config, alt_up));
+    try std.testing.expect(!gameplayControlsHeldWithSampler(&config, p2_fire_while_single_player));
+
+    config.player_count = 2;
+    try std.testing.expect(gameplayControlsHeldWithSampler(&config, p2_fire_while_single_player));
+
+    var unbound_config = formats.crimson_cfg.defaultConfig();
+    var binds = formats.crimson_cfg.playerBindBlock(&unbound_config, 0);
+    binds.move_forward = formats.crimson_cfg.keybind_unbound_code;
+    formats.crimson_cfg.setPlayerBindBlock(&unbound_config, 0, binds);
+    const unbound: FakeSampler = .{ .down_code = formats.crimson_cfg.keybind_unbound_code };
+    try std.testing.expect(!gameplayControlsHeldWithSampler(&unbound_config, unbound));
 }
 
 fn drawWorld(
@@ -2733,6 +2941,7 @@ fn colorWithAlpha(color: rl.Color, alpha: f32) rl.Color {
 fn drawResultsHighscore(
     runtime_assets: *const window_assets.RuntimeAssets,
     highscore: *const ResultsHighscoreState,
+    name_prompt: []const u8,
 ) void {
     const prompt_y = 452.0;
     var rank_buf: [16]u8 = undefined;
@@ -2740,7 +2949,7 @@ fn drawResultsHighscore(
     if (highscore.promptActive()) {
         drawSmallTextCentered(runtime_assets, "NEW HIGH SCORE", prompt_y, HudTextColor.accent);
         drawSmallTextFmt("RANK {s}", runtime_assets, .{rank_text}, 420.0, prompt_y + 28.0, HudTextColor.primary);
-        drawSmallTextCentered(runtime_assets, "ENTER YOUR NAME TO SAVE THIS RUN", prompt_y + 56.0, HudTextColor.dim);
+        drawSmallTextCentered(runtime_assets, name_prompt, prompt_y + 56.0, HudTextColor.dim);
 
         rl.drawRectangleRounded(
             rl.Rectangle.init(392.0, prompt_y + 86.0, 496.0, 34.0),
@@ -2757,7 +2966,8 @@ fn drawResultsHighscore(
         );
 
         const caret_visible = @mod(@as(i32, @intFromFloat(rl.getTime() * 2.5)), 2) == 0;
-        const shown_name = if (highscore.input_len == 0 and caret_visible) "_" else highscore.inputSlice();
+        var shown_name_buf: [persistence.highscores.name_max_edit + 1]u8 = undefined;
+        const shown_name = highscoreNameDisplay(&shown_name_buf, highscore, caret_visible);
         drawSmallText(runtime_assets, shown_name, 410.0, prompt_y + 95.0, rl.Color.white);
 
         if (highscore.save_error) |save_error| {
@@ -2767,6 +2977,19 @@ fn drawResultsHighscore(
         drawSmallTextCentered(runtime_assets, "SCORE SAVED", prompt_y, HudTextColor.accent);
         drawSmallTextFmt("RANK {s}  NAME {s}", runtime_assets, .{ rank_text, highscore.record.name() }, 330.0, prompt_y + 28.0, HudTextColor.primary);
     }
+}
+
+fn highscoreNameDisplay(
+    buf: *[persistence.highscores.name_max_edit + 1]u8,
+    highscore: *const ResultsHighscoreState,
+    caret_visible: bool,
+) []const u8 {
+    if (!caret_visible) return highscore.inputSlice();
+    const caret = @min(highscore.input_caret, highscore.input_len);
+    @memcpy(buf[0..caret], highscore.input[0..caret]);
+    buf[caret] = '_';
+    @memcpy(buf[caret + 1 .. caret + 1 + highscore.input_len - caret], highscore.input[caret..highscore.input_len]);
+    return buf[0 .. highscore.input_len + 1];
 }
 
 const HudTextColor = struct {

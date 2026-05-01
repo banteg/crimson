@@ -191,17 +191,25 @@ pub fn openRoot(state: *State, allocator: std.mem.Allocator) void {
     state.reset(allocator);
 }
 
+pub const OpenHighScoresOptions = struct {
+    quest_level_key: ?i32 = null,
+};
+
 pub fn openHighScores(
     state: *State,
     allocator: std.mem.Allocator,
     base_dir: []const u8,
     config: formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
+    options: OpenHighScoresOptions,
 ) void {
     state.view = .high_scores;
     state.high_scores.clear(allocator);
     state.high_scores.mode = highScoreModeFromConfig(config, status);
-    state.high_scores.quest_level_key = questLevelKeyFromConfig(config);
+    state.high_scores.quest_level_key = if (state.high_scores.mode == .quests)
+        options.quest_level_key orelse questLevelKeyFromConfig(config)
+    else
+        questLevelKeyFromConfig(config);
     loadHighScores(&state.high_scores, allocator, base_dir, config, status);
 }
 
@@ -275,7 +283,7 @@ fn updateHub(
         else => .back,
     };
     switch (action) {
-        .high_scores => openHighScores(state, allocator, base_dir, config.*, status),
+        .high_scores => openHighScores(state, allocator, base_dir, config.*, status, .{}),
         .weapons => {
             state.view = .weapons;
             state.weapons.reset();
@@ -1832,4 +1840,54 @@ test "high score load errors use user-facing details" {
         "FileBusy",
         highScoreReadErrorDetail(error.FileBusy),
     );
+}
+
+test "openHighScores loads requested quest level before reading records" {
+    const allocator = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
+    defer allocator.free(base_dir);
+
+    var quest_101 = persistence.highscores.HighScoreRecord.blank();
+    quest_101.setName("Quest101");
+    quest_101.setGameModeId(.quests);
+    quest_101.setSurvivalElapsedMs(1000);
+    const path_101 = try persistence.highscores.scoresPathForMode(
+        allocator,
+        base_dir,
+        @intFromEnum(game_ids.GameModeId.quests),
+        .{ .quest_stage_major = 1, .quest_stage_minor = 1 },
+    );
+    defer allocator.free(path_101);
+    try persistence.highscores.writeHighscoreRecords(allocator, path_101, &.{quest_101}, null);
+
+    var quest_203 = persistence.highscores.HighScoreRecord.blank();
+    quest_203.setName("Quest203");
+    quest_203.setGameModeId(.quests);
+    quest_203.setSurvivalElapsedMs(2000);
+    const path_203 = try persistence.highscores.scoresPathForMode(
+        allocator,
+        base_dir,
+        @intFromEnum(game_ids.GameModeId.quests),
+        .{ .quest_stage_major = 2, .quest_stage_minor = 3 },
+    );
+    defer allocator.free(path_203);
+    try persistence.highscores.writeHighscoreRecords(allocator, path_203, &.{quest_203}, null);
+
+    var state: State = .{};
+    defer state.high_scores.clear(allocator);
+    var config = formats.crimson_cfg.defaultConfig();
+    config.game_mode = @intFromEnum(game_ids.GameModeId.quests);
+    config.player_count = 1;
+    const status = std.mem.zeroes(formats.game_cfg.Status);
+
+    openHighScores(&state, allocator, base_dir, config, status, .{ .quest_level_key = 203 });
+
+    try std.testing.expectEqual(View.high_scores, state.view);
+    try std.testing.expectEqual(game_ids.GameModeId.quests, state.high_scores.mode);
+    try std.testing.expectEqual(@as(i32, 203), state.high_scores.quest_level_key);
+    try std.testing.expectEqual(@as(usize, 1), state.high_scores.records.len);
+    try std.testing.expectEqualStrings("Quest203", state.high_scores.records[0].name());
 }
