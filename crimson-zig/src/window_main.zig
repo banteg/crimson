@@ -362,7 +362,7 @@ const App = struct {
     fn loadAssets(self: *App) void {
         self.runtime_assets = window_assets.loadRuntimeAssetsFromDefaultSearch(self.allocator) catch |err| {
             self.assets_state = .failed;
-            self.assets_message = self.allocator.dupe(u8, @errorName(err)) catch null;
+            self.assets_message = self.allocator.dupe(u8, assetLoadErrorDetail(err)) catch null;
             return;
         };
         self.assets_state = if (self.runtime_assets != null) .loaded else .unavailable;
@@ -1260,7 +1260,11 @@ const App = struct {
     }
 
     fn drawBoot(self: *const App) void {
-        window_boot.draw(&self.boot, if (self.runtime_assets) |*assets| assets else null);
+        if (self.runtime_assets) |*assets| {
+            window_boot.draw(&self.boot, assets);
+            return;
+        }
+        drawBootAssetFallback(self.assets_state, self.assets_message);
     }
 
     fn drawMainMenu(self: *const App) void {
@@ -1742,6 +1746,20 @@ fn resultsStatusSaveErrorDetail(err: anyerror) []const u8 {
     };
 }
 
+fn assetLoadErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.AccessDenied => "Unable to read runtime assets: access denied.",
+        error.FileNotFound => "Runtime asset archive was not found.",
+        error.MissingTextureAsset => "Runtime assets are missing a required texture.",
+        error.MissingFontWidths => "Runtime assets are missing small font widths.",
+        error.InvalidImageDimensions => "Runtime assets contain an image with invalid dimensions.",
+        error.UnsupportedTextureFormat => "Runtime assets contain an unsupported texture format.",
+        error.UnsupportedMethod => "Runtime asset archive uses an unsupported compression method.",
+        error.OutOfMemory => "Unable to load runtime assets: out of memory.",
+        else => @errorName(err),
+    };
+}
+
 fn liveRuntimeErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
         error.InvalidPlayerCount => "Run configuration has an invalid player count.",
@@ -2047,6 +2065,13 @@ test "results high score save errors use user-facing details" {
     try std.testing.expectEqualStrings("High score file has an invalid record size.", resultsHighscoreSaveErrorDetail(error.InvalidSize));
     try std.testing.expectEqualStrings("Unable to save config: not enough disk space.", resultsConfigSaveErrorDetail(error.NoSpaceLeft));
     try std.testing.expectEqualStrings("Unable to save status: invalid game.cfg checksum.", resultsStatusSaveErrorDetail(error.InvalidGameCfgChecksum));
+}
+
+test "asset load errors use user-facing details" {
+    try std.testing.expectEqualStrings("Runtime asset archive was not found.", assetLoadErrorDetail(error.FileNotFound));
+    try std.testing.expectEqualStrings("Runtime assets are missing a required texture.", assetLoadErrorDetail(error.MissingTextureAsset));
+    try std.testing.expectEqualStrings("Runtime assets are missing small font widths.", assetLoadErrorDetail(error.MissingFontWidths));
+    try std.testing.expectEqualStrings("Runtime assets contain an unsupported texture format.", assetLoadErrorDetail(error.UnsupportedTextureFormat));
 }
 
 test "live runtime errors use user-facing details" {
@@ -3052,6 +3077,22 @@ fn drawSmallTextCentered(
     const width = measureSmallText(runtime_assets, text);
     const x = (@as(f32, @floatFromInt(rl.getScreenWidth())) - width) * 0.5;
     drawSmallText(runtime_assets, text, x, y, color);
+}
+
+fn drawBootAssetFallback(assets_state: AssetsState, assets_message: ?[]const u8) void {
+    rl.clearBackground(rl.Color.black);
+    const title = switch (assets_state) {
+        .failed => "Failed to load runtime assets",
+        .unavailable => "Runtime assets not found",
+        .loaded => return,
+    };
+    const body = switch (assets_state) {
+        .failed => assets_message orelse "Unknown asset load error.",
+        .unavailable => "Set CRIMSON_ASSETS_DIR or run from a checkout with artifacts/assets.",
+        .loaded => return,
+    };
+    rl.drawText(title, 48, 96, 28, rl.Color.init(245, 236, 225, 255));
+    drawTextSlice(body, 48, 140, 18, rl.Color.init(204, 204, 214, 255));
 }
 
 fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const window_assets.RuntimeAssets) void {
