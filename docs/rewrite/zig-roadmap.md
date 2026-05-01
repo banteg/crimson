@@ -29,6 +29,8 @@ Today `crimson-zig/` already has:
   [`crimson-zig/src/replay_info_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/replay_info_native.zig),
 - native quest spawn-table dumps through
   [`crimson-zig/src/quest_spawn_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/quest_spawn_native.zig),
+- native spawn-template materialization summaries through
+  [`crimson-zig/src/spawn_plan_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/spawn_plan_native.zig),
 - a real raylib desktop application in
   [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig),
 - archive/config/status codecs under
@@ -113,7 +115,8 @@ Remaining work:
 - expand Zig CLI coverage where it materially helps development:
   - replay-oriented tools beyond list/verify/info/benchmark/verify-checkpoints/diff-checkpoints,
   - useful debug/support commands where they make sense natively, including
-    the installed `crimson-zig-asset-smoke` archive/image decode validator,
+    `crimson-zig spawn-plan` and the installed `crimson-zig-asset-smoke`
+    archive/image decode validator,
 - keep trace/debug surfaces aligned with current Python contracts,
 - refresh developer docs when tooling behavior changes.
 

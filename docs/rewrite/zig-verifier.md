@@ -49,6 +49,7 @@ consumes the same shared runtime used by the native desktop application.
 - typed RNG caller tagging for verifier/runtime draws
 - native config/status ownership for `crimson.cfg` and `game.cfg`, including
   CLI inspection for both files
+- native spawn-template runtime summary tooling via `spawn-plan`
 - installed native asset smoke tool for `crimson.paq` archive/image decode
   validation
 - installed native desktop `crimson-zig-window` binary for the playable product
@@ -90,6 +91,7 @@ Current supported replay-tooling behavior:
 - native runtime asset archive/image validation via `crimson-zig-asset-smoke`
 - current Python-readable trace export contracts
 - quest spawn-table JSON dumps via `quests <level> --format json --seed <seed>`
+- spawn-template runtime summaries via `spawn-plan <template_id> --json`
 - native UDP relay serving via `relay serve`
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
   data rather than stale “unsupported path” wording

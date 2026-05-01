@@ -14,6 +14,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - `uv run crimson view <name>` (debug views)
 - `uv run crimson view arsenal` (weapon/arsenal sandbox)
 - `uv run crimson quests 1.1` (quest spawn dump)
+- `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig spawn-plan 0x12 --json` (native spawn-template summary)
 - `uv run crimson config` (inspect `crimson.cfg`)
 - `uv run crimson relay serve --bind 0.0.0.0 --port 31993` (run UDP relay)
 - `uv run crimson net host --mode survival --players 2 --relay-host 127.0.0.1 --relay-port 31993` (host rollback room)
@@ -25,8 +26,9 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Current headless CLI surface includes `replay list`, `replay verify`,
   `replay info`, `replay benchmark`, `replay verify-checkpoints`, and
   `replay diff-checkpoints`, plus native `dbg record` CDT trace export,
-  `dbg verify`, `config`/`status` inspection, `quests` spawn-table dumps, and
-  the installed `crimson-zig-asset-smoke` asset decode validator.
+  `dbg verify`, `config`/`status` inspection, `quests` spawn-table dumps,
+  `spawn-plan` runtime materialization summaries, and the installed
+  `crimson-zig-asset-smoke` asset decode validator.
 - Project direction is a full native Zig port, not just a replay verifier.
 - The Zig tree now also has a real native desktop shell with boot/menu/gameplay/results/options/statistics flow and live Survival/Rush/Quests/Typ-o/Tutorial runs.
 - The default Zig install includes the CLI, the desktop `crimson-zig-window`
@@ -110,7 +112,8 @@ Available via `uv run crimson view <name>`:
 
 - `fonts` (font preview)
 - `game_over` (game over screen preview)
-- `spawn-plan` (spawn plan visualization)
+- `spawn-plan` (spawn plan visualization; native runtime summaries are also
+  available through `crimson-zig spawn-plan`)
 - `perk-menu-debug` (perk selection UI)
 - `small-font-debug` (font glyph testing)
 - `arsenal` (weapon/arsenal sandbox)

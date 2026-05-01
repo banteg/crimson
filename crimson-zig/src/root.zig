@@ -13,6 +13,7 @@ pub const hash = @import("hash.zig");
 pub const quest_level = @import("quest_level.zig");
 pub const quest_spawn_logic_full = @import("quest_spawn/logic_full.zig");
 pub const quest_spawn_native = @import("quest_spawn_native.zig");
+pub const spawn_plan_native = @import("spawn_plan_native.zig");
 pub const replay_codec = @import("replay_codec.zig");
 pub const replay_runner = @import("runtime/replay_runner.zig");
 pub const spawn = @import("runtime/spawn.zig");

@@ -28,6 +28,7 @@ test {
     _ = cz.quest_level;
     _ = cz.quest_spawn_logic_full;
     _ = cz.quest_spawn_native;
+    _ = cz.spawn_plan_native;
     _ = cz.replay_benchmark_native;
     _ = cz.replay_codec;
     _ = cz.replay_runner;
