@@ -20,12 +20,14 @@ const Impairment = enum {
     none,
     delay_first_guest_input,
     reorder_first_guest_input,
+    drop_first_guest_input,
 
     fn label(self: Impairment) []const u8 {
         return switch (self) {
             .none => "none",
             .delay_first_guest_input => "delay-first-guest-input",
             .reorder_first_guest_input => "reorder-first-guest-input",
+            .drop_first_guest_input => "drop-first-guest-input",
         };
     }
 };
@@ -54,6 +56,7 @@ const SmokePayload = struct {
     packets_sent: usize,
     delayed_packets: usize,
     released_packets: usize,
+    dropped_packets: usize,
     host_tick_index: i32,
     guest_tick_index: i32,
     host_input_flags: u32,
@@ -155,14 +158,16 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !Smoke
             try host.update(allocator, io, 1204);
             host_step = try host.stepFrames(allocator);
         },
-        .reorder_first_guest_input => {
+        .reorder_first_guest_input, .drop_first_guest_input => {
             if (host_step.last_input_flags[1] != 0) return error.RollbackImpairmentDidNotForcePrediction;
             try guest.queueLocalInput(allocator, io, .{ .flags = 5 }, 1204);
             packets_sent += try pumpRelayService(allocator, io, server, &service, 1205, &packet_impairment);
-            packets_sent += try packet_impairment.releaseDelayed(allocator, io, server);
+            if (impairment == .reorder_first_guest_input) {
+                packets_sent += try packet_impairment.releaseDelayed(allocator, io, server);
+            }
             try host.update(allocator, io, 1206);
             host_step = try host.stepFrames(allocator);
-            if (host_step.last_input_flags[1] != 7) return error.RollbackReorderedInputNotRecovered;
+            if (host_step.last_input_flags[1] != 7) return error.RollbackImpairedInputNotRecovered;
             try host.queueLocalInput(allocator, io, .{ .flags = 4 }, 1207);
             host_step = try host.stepFrames(allocator);
             expected_host_flags = 4;
@@ -187,6 +192,10 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !Smoke
         if (packet_impairment.delayed_packets != 1 or packet_impairment.released_packets != 1) return error.RollbackImpairmentNotApplied;
         if (host_runtime.rollback_count == 0) return error.RollbackHostCorrectionMissing;
     }
+    if (impairment == .drop_first_guest_input) {
+        if (packet_impairment.dropped_packets != 1 or packet_impairment.delayed_packets != 0 or packet_impairment.released_packets != 0) return error.RollbackImpairmentNotApplied;
+        if (host_runtime.rollback_count == 0) return error.RollbackHostCorrectionMissing;
+    }
 
     return .{
         .relay_port = server.boundPort(),
@@ -197,6 +206,7 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !Smoke
         .packets_sent = packets_sent,
         .delayed_packets = packet_impairment.delayed_packets,
         .released_packets = packet_impairment.released_packets,
+        .dropped_packets = packet_impairment.dropped_packets,
         .host_tick_index = host_step.last_tick_index orelse return error.RollbackHostFrameMissing,
         .guest_tick_index = guest_step.last_tick_index orelse return error.RollbackGuestFrameMissing,
         .host_input_flags = guest_step.last_input_flags[0],
@@ -296,7 +306,7 @@ fn pumpRelayService(
 
         for (outbox.items.items) |item| {
             if (impairment) |state| {
-                if (try state.delayPacket(allocator, item)) continue;
+                if (try state.impairPacket(allocator, item)) continue;
             }
             try server.sendPacket(allocator, io, transportAddrFromService(item.addr), item.packet);
             sent += 1;
@@ -312,22 +322,27 @@ const PacketImpairment = struct {
     delayed: ?relay_service.AddressedPacket = null,
     delayed_packets: usize = 0,
     released_packets: usize = 0,
+    dropped_packets: usize = 0,
 
     fn deinit(self: *PacketImpairment, allocator: std.mem.Allocator) void {
         if (self.delayed) |*packet| packet.deinit(allocator);
         self.* = undefined;
     }
 
-    fn delayPacket(
+    fn impairPacket(
         self: *PacketImpairment,
         allocator: std.mem.Allocator,
         packet: relay_service.AddressedPacket,
     ) !bool {
-        if (!self.delaysFirstGuestInput() or self.delayed != null or self.delayed_packets != 0) return false;
+        if (!self.interceptsFirstGuestInput() or self.delayed != null or self.interceptedPackets() != 0) return false;
         if (packet.addr.port != self.target_port) return false;
         switch (packet.packet.message) {
             .rb_input_sample => |batch| {
                 if (batch.slot_index != self.source_slot_index) return false;
+                if (self.mode == .drop_first_guest_input) {
+                    self.dropped_packets += 1;
+                    return true;
+                }
                 self.delayed = .{
                     .addr = packet.addr,
                     .packet = try relay_protocol.clonePacket(allocator, packet.packet),
@@ -339,8 +354,12 @@ const PacketImpairment = struct {
         }
     }
 
-    fn delaysFirstGuestInput(self: *const PacketImpairment) bool {
-        return self.mode == .delay_first_guest_input or self.mode == .reorder_first_guest_input;
+    fn interceptsFirstGuestInput(self: *const PacketImpairment) bool {
+        return self.mode == .delay_first_guest_input or self.mode == .reorder_first_guest_input or self.mode == .drop_first_guest_input;
+    }
+
+    fn interceptedPackets(self: *const PacketImpairment) usize {
+        return self.delayed_packets + self.dropped_packets;
     }
 
     fn releaseDelayed(
@@ -382,6 +401,8 @@ fn parseArgs(args: []const []const u8) ParseOutcome {
             request.impairment = .delay_first_guest_input;
         } else if (std.mem.eql(u8, arg, "--reorder-first-guest-input")) {
             request.impairment = .reorder_first_guest_input;
+        } else if (std.mem.eql(u8, arg, "--drop-first-guest-input")) {
+            request.impairment = .drop_first_guest_input;
         } else {
             return .{ .invalid = arg };
         }
@@ -470,16 +491,17 @@ fn parseImpairment(value: []const u8) ?Impairment {
     if (std.ascii.eqlIgnoreCase(text, "none")) return .none;
     if (std.ascii.eqlIgnoreCase(text, "delay-first-guest-input")) return .delay_first_guest_input;
     if (std.ascii.eqlIgnoreCase(text, "reorder-first-guest-input")) return .reorder_first_guest_input;
+    if (std.ascii.eqlIgnoreCase(text, "drop-first-guest-input")) return .drop_first_guest_input;
     return null;
 }
 
 const usage =
     \\Usage:
-    \\  crimson-zig net smoke-rollback [--format human|json] [--impair none|delay-first-guest-input|reorder-first-guest-input]
+    \\  crimson-zig net smoke-rollback [--format human|json] [--impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input]
     \\
     \\Options:
     \\  --format human|json
-    \\  --impair none|delay-first-guest-input|reorder-first-guest-input
+    \\  --impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input
     \\
 ;
 
@@ -493,6 +515,7 @@ test "rollback smoke command reports json success" {
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_input_flags\": 7") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_resync_count\": 0") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_resync_count\": 0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"dropped_packets\": 0") != null);
 }
 
 test "rollback smoke command can delay guest input and recover" {
@@ -503,6 +526,7 @@ test "rollback smoke command can delay guest input and recover" {
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"impairment\": \"delay-first-guest-input\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"delayed_packets\": 1") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"released_packets\": 1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"dropped_packets\": 0") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_rollback_count\": 1") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_resync_count\": 0") != null);
 }
@@ -517,6 +541,22 @@ test "rollback smoke command can reorder guest input and recover" {
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_input_flags\": 5") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"delayed_packets\": 1") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"released_packets\": 1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"dropped_packets\": 0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_rollback_count\": 1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_resync_count\": 0") != null);
+}
+
+test "rollback smoke command can drop guest input and recover from resend history" {
+    const output = try runRollbackSmoke(std.testing.allocator, std.Io.Threaded.global_single_threaded.io(), &.{ "--json", "--impair", "drop-first-guest-input" });
+    defer output.deinit(std.testing.allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"impairment\": \"drop-first-guest-input\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_input_flags\": 4") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_input_flags\": 5") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"delayed_packets\": 0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"released_packets\": 0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"dropped_packets\": 1") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_rollback_count\": 1") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_resync_count\": 0") != null);
 }

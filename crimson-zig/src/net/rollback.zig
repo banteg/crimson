@@ -84,7 +84,7 @@ pub const RollbackController = struct {
         var local_known = &self.known_by_slot[self.local_slot_index];
         try local_known.put(target_tick, input);
 
-        const oldest = @max(self.next_emit_tick, target_tick - self.max_sent_history_ticks + 1);
+        const oldest = @max(0, target_tick - self.max_sent_history_ticks + 1);
         var samples: std.ArrayList(relay_protocol.RbInputSample) = .empty;
         errdefer samples.deinit(self.allocator);
 
@@ -322,6 +322,31 @@ test "rollback prediction mismatch requests rollback within cap" {
     try std.testing.expectEqual(@as(?i32, null), controller.drainResyncFrom());
     try std.testing.expectEqual(@as(i32, 1), controller.rollback_count);
     try std.testing.expectEqual(@as(i32, 1), controller.prediction_mismatches);
+}
+
+test "rollback local input batch resends emitted input history" {
+    var controller = RollbackController.init(std.testing.allocator, .{
+        .player_count = 2,
+        .local_slot_index = 1,
+        .input_delay_ticks = 0,
+        .max_rollback_ticks = 8,
+    });
+    defer controller.deinit();
+
+    var first = try controller.queueLocalInput(.{ .flags = 7 });
+    defer controller.deinitInputBatch(&first);
+    try std.testing.expectEqual(@as(usize, 1), first.samples.len);
+    try std.testing.expectEqual(@as(i32, 0), first.samples[0].tick_index);
+    try std.testing.expectEqual(@as(u32, 7), first.samples[0].packed_input.flags);
+    try std.testing.expect(controller.popFrame() != null);
+
+    var second = try controller.queueLocalInput(.{ .flags = 5 });
+    defer controller.deinitInputBatch(&second);
+    try std.testing.expectEqual(@as(usize, 2), second.samples.len);
+    try std.testing.expectEqual(@as(i32, 1), second.samples[0].tick_index);
+    try std.testing.expectEqual(@as(u32, 5), second.samples[0].packed_input.flags);
+    try std.testing.expectEqual(@as(i32, 0), second.samples[1].tick_index);
+    try std.testing.expectEqual(@as(u32, 7), second.samples[1].packed_input.flags);
 }
 
 test "rollback noop correction does not trigger rollback" {

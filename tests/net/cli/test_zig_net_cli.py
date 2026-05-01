@@ -79,6 +79,7 @@ def test_zig_net_smoke_rollback_reports_live_exchange() -> None:
     assert payload["impairment"] == "none"
     assert payload["delayed_packets"] == 0
     assert payload["released_packets"] == 0
+    assert payload["dropped_packets"] == 0
     assert payload["host_resync_count"] == 0
     assert payload["guest_resync_count"] == 0
     assert payload["host_live_ticks_advanced"] >= 1
@@ -102,6 +103,7 @@ def test_zig_net_smoke_rollback_reports_delayed_input_recovery() -> None:
     assert payload["guest_input_flags"] == 7
     assert payload["delayed_packets"] == 1
     assert payload["released_packets"] == 1
+    assert payload["dropped_packets"] == 0
     assert payload["host_rollback_count"] >= 1
     assert payload["host_prediction_mismatches"] >= 1
     assert payload["host_resync_count"] == 0
@@ -126,6 +128,34 @@ def test_zig_net_smoke_rollback_reports_reordered_input_recovery() -> None:
     assert payload["host_tick_index"] == payload["guest_tick_index"] == 2
     assert payload["delayed_packets"] == 1
     assert payload["released_packets"] == 1
+    assert payload["dropped_packets"] == 0
+    assert payload["host_rollback_count"] >= 1
+    assert payload["guest_rollback_count"] >= 1
+    assert payload["host_prediction_mismatches"] >= 1
+    assert payload["guest_prediction_mismatches"] >= 1
+    assert payload["host_resync_count"] == 0
+    assert payload["guest_resync_count"] == 0
+
+
+def test_zig_net_smoke_rollback_reports_dropped_input_recovery() -> None:
+    payload = _run_zig_net_json(
+        [
+            "smoke-rollback",
+            "--impair",
+            "drop-first-guest-input",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert payload["status"] == "ok"
+    assert payload["impairment"] == "drop-first-guest-input"
+    assert payload["host_input_flags"] == 4
+    assert payload["guest_input_flags"] == 5
+    assert payload["host_tick_index"] == payload["guest_tick_index"] == 2
+    assert payload["delayed_packets"] == 0
+    assert payload["released_packets"] == 0
+    assert payload["dropped_packets"] == 1
     assert payload["host_rollback_count"] >= 1
     assert payload["guest_rollback_count"] >= 1
     assert payload["host_prediction_mismatches"] >= 1
