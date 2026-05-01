@@ -25,6 +25,7 @@ test {
     _ = cz.net_lockstep_smoke_native;
     _ = cz.net_session_native;
     _ = cz.net;
+    std.testing.refAllDecls(cz.net.lockstep_live_bridge);
 
     const smoke_output = try cz.net_lockstep_smoke_native.runLockstepSmoke(
         std.testing.allocator,

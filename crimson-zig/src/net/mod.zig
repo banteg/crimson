@@ -2,6 +2,7 @@ pub const lockstep_protocol = @import("lockstep_protocol.zig");
 pub const lockstep_client_runtime = @import("lockstep_client_runtime.zig");
 pub const lockstep_host_runtime = @import("lockstep_host_runtime.zig");
 pub const lockstep_input_adapter = @import("lockstep_input_adapter.zig");
+pub const lockstep_live_bridge = @import("lockstep_live_bridge.zig");
 pub const lockstep_lobby = @import("lockstep_lobby.zig");
 pub const lockstep_outbox = @import("lockstep_outbox.zig");
 pub const lockstep_pump = @import("lockstep_pump.zig");
