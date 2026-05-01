@@ -5,6 +5,7 @@ pub const lockstep_lobby = @import("lockstep_lobby.zig");
 pub const lockstep_outbox = @import("lockstep_outbox.zig");
 pub const lockstep_pump = @import("lockstep_pump.zig");
 pub const lockstep_reliable = @import("lockstep_reliable.zig");
+pub const lockstep_session = @import("lockstep_session.zig");
 pub const lockstep_state = @import("lockstep_state.zig");
 pub const lockstep_transport = @import("lockstep_transport.zig");
 pub const packed_input = @import("packed_input.zig");
@@ -32,6 +33,7 @@ test {
     _ = lockstep_outbox;
     _ = lockstep_pump;
     _ = lockstep_reliable;
+    _ = lockstep_session;
     _ = lockstep_state;
     _ = lockstep_transport;
     _ = packed_input;
