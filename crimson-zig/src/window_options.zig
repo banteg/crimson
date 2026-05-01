@@ -58,6 +58,13 @@ const OptionSlider = enum {
     mouse,
 };
 
+const option_slider_labels = [_][]const u8{
+    "Sound volume:",
+    "Music volume:",
+    "Graphics detail:",
+    "Mouse sensitivity:",
+};
+
 pub const OptionsAction = enum {
     none,
     open_controls,
@@ -323,20 +330,12 @@ fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window
         rl.Color.white,
     );
 
-    const labels = [_][]const u8{
-        "Sound volume:",
-        "Music volume:",
-        "Graphics detail:",
-        "Mouse sensitivity:",
-        "UI Info texts",
-    };
-    for (labels, 0..) |label, idx| {
+    for (option_slider_labels, 0..) |label, idx| {
         const hovered = switch (idx) {
             0 => rectContains(optionSliderRect(panel_rect, 265.0, 86.0, 10), rl.getMousePosition()),
             1 => rectContains(optionSliderRect(panel_rect, 265.0, 122.0, 10), rl.getMousePosition()),
             2 => rectContains(optionSliderRect(panel_rect, 265.0, 158.0, 5), rl.getMousePosition()),
             3 => rectContains(optionSliderRect(panel_rect, 265.0, 194.0, 10), rl.getMousePosition()),
-            4 => rectContains(optionCheckboxRect(panel_rect), rl.getMousePosition()),
             else => false,
         };
         window_ui.drawSmallText(runtime_assets, label, panel_rect.x + 60.0, panel_rect.y + 88.0 + @as(f32, @floatFromInt(idx)) * 36.0, if (hovered) text_color else muted_text);
@@ -1042,4 +1041,11 @@ fn animatedLeftPanelRect(rect: rl.Rectangle, timeline_ms: i32) rl.Rectangle {
 fn animatedRightPanelRect(rect: rl.Rectangle, timeline_ms: i32) rl.Rectangle {
     const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
     return rl.Rectangle.init(rect.x - anim.offset_x, rect.y, rect.width, rect.height);
+}
+
+test "options panel slider labels do not duplicate checkbox label" {
+    try std.testing.expectEqual(@as(usize, 4), option_slider_labels.len);
+    for (option_slider_labels) |label| {
+        try std.testing.expect(!std.mem.eql(u8, label, "UI Info texts"));
+    }
 }
