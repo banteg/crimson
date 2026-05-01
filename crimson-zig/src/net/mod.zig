@@ -1,4 +1,5 @@
 pub const lockstep_protocol = @import("lockstep_protocol.zig");
+pub const lockstep_lobby = @import("lockstep_lobby.zig");
 pub const packed_input = @import("packed_input.zig");
 pub const reliable = @import("reliable.zig");
 pub const reliable_channel = @import("reliable_channel.zig");
@@ -18,6 +19,7 @@ pub const session_settings = @import("session_settings.zig");
 
 test {
     _ = lockstep_protocol;
+    _ = lockstep_lobby;
     _ = packed_input;
     _ = reliable;
     _ = reliable_channel;
