@@ -46,7 +46,7 @@ pub const ReplayCodecError = error{
     UnsupportedReplayFormatVersion,
     UnsupportedInputShape,
     UnsupportedEventShape,
-    UnsupportedEventKind,
+    UnknownCommandKind,
     UnsupportedBootstrapKind,
     UnsupportedInputQuantization,
     BootstrapSeedMismatch,
@@ -1284,7 +1284,7 @@ fn parseCurrentCommand(
             .player_index = command.player_index,
         } };
     }
-    return error.UnsupportedEventKind;
+    return error.UnknownCommandKind;
 }
 
 fn validateDtRows(

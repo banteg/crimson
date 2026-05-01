@@ -449,7 +449,7 @@ fn replayCodecErrorDetail(err: replay_codec.ReplayCodecError) []const u8 {
         error.InvalidGzipPayload => "unable to inflate replay gzip payload",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnsupportedEventKind => "replay events include command kinds unsupported by the current replay format",
+        error.UnknownCommandKind => "replay events include an unknown command kind",
         error.UnsupportedBootstrapKind => "replay bootstrap kind is not supported",
         error.UnsupportedInputQuantization => "replay input quantization is not supported",
         error.BootstrapSeedMismatch => "replay bootstrap seed does not match canonical terrain bootstrap draws",
@@ -700,8 +700,8 @@ test "replay info exposes codec and collector detail helpers" {
         replayCodecErrorDetail(error.BootstrapSeedMismatch),
     );
     try std.testing.expectEqualStrings(
-        "replay events include command kinds unsupported by the current replay format",
-        replayCodecErrorDetail(error.UnsupportedEventKind),
+        "replay events include an unknown command kind",
+        replayCodecErrorDetail(error.UnknownCommandKind),
     );
     try std.testing.expectEqualStrings(
         "replay info collector only supports survival/rush/quest/typo/tutorial modes",
