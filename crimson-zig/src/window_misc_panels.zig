@@ -11,9 +11,35 @@ const max_mod_lines: usize = 16;
 const max_line_bytes: usize = 224;
 const max_shown_mod_dlls: usize = 10;
 const max_mod_dll_name_bytes: usize = 128;
+const network_row_count: usize = 5;
 const mod_runtime_scope_text = "Native DLL mod loading is outside this port.";
 const other_games_scope_text = "Other Games ads are outside this port.";
 const network_runtime_scope_text = "Native netplay runtime is not available yet.";
+const network_room_codes = [_][]const u8{ "ab12", "cd34", "ef56", "gh78" };
+
+const NetworkRole = enum {
+    host,
+    join,
+};
+
+const NetworkMode = enum {
+    survival,
+    rush,
+    quests,
+};
+
+const NetworkNetcode = enum {
+    rollback,
+    lockstep,
+};
+
+const NetworkSelection = enum(u8) {
+    role,
+    mode,
+    players,
+    netcode,
+    endpoint,
+};
 
 pub const Action = enum {
     none,
@@ -157,6 +183,12 @@ pub const OtherGamesState = struct {
 
 pub const NetworkState = struct {
     panel: PanelState = .{},
+    selection: NetworkSelection = .role,
+    role: NetworkRole = .host,
+    mode: NetworkMode = .survival,
+    player_count: i32 = 2,
+    netcode: NetworkNetcode = .rollback,
+    room_code_index: usize = 0,
 
     pub fn reset(self: *NetworkState) void {
         self.* = .{};
@@ -186,7 +218,29 @@ pub fn updateOtherGames(state: *OtherGamesState, frame_dt: f32, runtime_assets: 
 }
 
 pub fn updateNetwork(state: *NetworkState, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
-    return updatePanel(&state.panel, frame_dt, runtime_assets);
+    const result = updatePanelEx(&state.panel, frame_dt, runtime_assets, false);
+    if (result.action != .none) return result;
+    if (state.panel.timeline_ms < panel_timeline_max_ms) return result;
+
+    if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
+        state.selection = networkSelectionFromIndex(if (networkSelectionIndex(state.selection) == 0)
+            network_row_count - 1
+        else
+            networkSelectionIndex(state.selection) - 1);
+    }
+    if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
+        state.selection = networkSelectionFromIndex((networkSelectionIndex(state.selection) + 1) % network_row_count);
+    }
+    if (rl.isKeyPressed(.left) or rl.isKeyPressed(.a)) {
+        changeSelectedNetworkValue(state, -1);
+        return .{ .play_button_click = true };
+    }
+    if (rl.isKeyPressed(.right) or rl.isKeyPressed(.d) or window_ui.confirmPressed()) {
+        changeSelectedNetworkValue(state, 1);
+        return .{ .play_button_click = true };
+    }
+
+    return result;
 }
 
 pub fn drawOtherGames(state: *const OtherGamesState, runtime_assets: ?*const window_assets.RuntimeAssets) void {
@@ -206,14 +260,23 @@ pub fn drawNetwork(state: *const NetworkState, runtime_assets: ?*const window_as
     };
     const animated_rect = drawPanelShell(&state.panel, assets);
     window_ui.drawSmallText(assets, "Network Session", animated_rect.x + 174.0, animated_rect.y + 40.0, rl.Color.white);
-    window_ui.drawSmallText(assets, "Host", animated_rect.x + 190.0, animated_rect.y + 88.0, rl.Color.init(245, 236, 225, 255));
-    window_ui.drawSmallText(assets, "Join", animated_rect.x + 304.0, animated_rect.y + 88.0, rl.Color.init(245, 236, 225, 255));
-    window_ui.drawSmallText(assets, "rollback relay: 127.0.0.1:31993", animated_rect.x + 146.0, animated_rect.y + 128.0, rl.Color.init(204, 204, 214, 255));
-    window_ui.drawSmallText(assets, "room code: ----", animated_rect.x + 146.0, animated_rect.y + 152.0, rl.Color.init(204, 204, 214, 255));
-    window_ui.drawSmallText(assets, network_runtime_scope_text, animated_rect.x + 116.0, animated_rect.y + 206.0, rl.Color.init(214, 190, 170, 255));
+
+    var line_buf: [96]u8 = undefined;
+    var value_buf: [96]u8 = undefined;
+    drawNetworkRow(assets, animated_rect, 0, state.selection == .role, "Role", networkRoleLabel(state.role), &line_buf);
+    drawNetworkRow(assets, animated_rect, 1, state.selection == .mode, "Mode", networkModeValueLabel(state), &line_buf);
+    drawNetworkRow(assets, animated_rect, 2, state.selection == .players, "Players", networkPlayersValueLabel(state, &value_buf), &line_buf);
+    drawNetworkRow(assets, animated_rect, 3, state.selection == .netcode, "Netcode", networkNetcodeLabel(state.netcode), &line_buf);
+    drawNetworkRow(assets, animated_rect, 4, state.selection == .endpoint, "Endpoint", networkEndpointValueLabel(state, &value_buf), &line_buf);
+
+    window_ui.drawSmallText(assets, network_runtime_scope_text, animated_rect.x + 116.0, animated_rect.y + 236.0, rl.Color.init(214, 190, 170, 255));
 }
 
 fn updatePanel(state: *PanelState, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
+    return updatePanelEx(state, frame_dt, runtime_assets, true);
+}
+
+fn updatePanelEx(state: *PanelState, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets, confirm_backs: bool) UpdateResult {
     const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
     if (dt_ms > 0) {
         state.timeline_ms = @min(panel_timeline_max_ms, state.timeline_ms + dt_ms);
@@ -230,7 +293,7 @@ fn updatePanel(state: *PanelState, frame_dt: f32, runtime_assets: ?*const window
         state.back_hover_amount = std.math.clamp(state.back_hover_amount - dt_ms * 2, 0, 1000);
     }
 
-    if (rl.isKeyPressed(.escape) or window_ui.confirmPressed() or (back_hovered and rl.isMouseButtonPressed(.left))) {
+    if (rl.isKeyPressed(.escape) or (confirm_backs and window_ui.confirmPressed()) or (back_hovered and rl.isMouseButtonPressed(.left))) {
         return .{ .action = .back_to_menu, .play_button_click = true };
     }
 
@@ -251,6 +314,127 @@ fn drawPanelShell(state: *const PanelState, assets: *const window_assets.Runtime
 fn animatedPanelRect(timeline_ms: i32) rl.Rectangle {
     const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, panel_rect.width, timeline_ms);
     return rl.Rectangle.init(panel_rect.x + anim.offset_x, panel_rect.y, panel_rect.width, panel_rect.height);
+}
+
+fn drawNetworkRow(
+    assets: *const window_assets.RuntimeAssets,
+    panel: rl.Rectangle,
+    row_index: usize,
+    selected: bool,
+    label: []const u8,
+    value: []const u8,
+    scratch: *[96]u8,
+) void {
+    const y = panel.y + 84.0 + @as(f32, @floatFromInt(row_index)) * 28.0;
+    const color = if (selected) rl.Color.init(255, 228, 170, 255) else rl.Color.init(204, 204, 214, 255);
+    const marker = if (selected) ">" else " ";
+    const line = std.fmt.bufPrint(scratch[0..], "{s} {s}: {s}", .{ marker, label, value }) catch return;
+    window_ui.drawSmallText(assets, line, panel.x + 136.0, y, color);
+}
+
+fn networkSelectionIndex(selection: NetworkSelection) usize {
+    return @intFromEnum(selection);
+}
+
+fn networkSelectionFromIndex(index: usize) NetworkSelection {
+    return switch (index % network_row_count) {
+        0 => .role,
+        1 => .mode,
+        2 => .players,
+        3 => .netcode,
+        else => .endpoint,
+    };
+}
+
+fn changeSelectedNetworkValue(state: *NetworkState, direction: i32) void {
+    switch (state.selection) {
+        .role => {
+            state.role = switch (state.role) {
+                .host => .join,
+                .join => .host,
+            };
+        },
+        .mode => {
+            if (state.role == .host) state.mode = cycleNetworkMode(state.mode, direction);
+        },
+        .players => {
+            if (state.role == .host) {
+                state.player_count += direction;
+                if (state.player_count < 1) state.player_count = 4;
+                if (state.player_count > 4) state.player_count = 1;
+            }
+        },
+        .netcode => {
+            state.netcode = switch (state.netcode) {
+                .rollback => .lockstep,
+                .lockstep => .rollback,
+            };
+        },
+        .endpoint => {
+            state.room_code_index = if (direction < 0)
+                (state.room_code_index + network_room_codes.len - 1) % network_room_codes.len
+            else
+                (state.room_code_index + 1) % network_room_codes.len;
+        },
+    }
+}
+
+fn cycleNetworkMode(mode: NetworkMode, direction: i32) NetworkMode {
+    const index: usize = switch (mode) {
+        .survival => 0,
+        .rush => 1,
+        .quests => 2,
+    };
+    const next = if (direction < 0)
+        (index + 2) % 3
+    else
+        (index + 1) % 3;
+    return switch (next) {
+        0 => .survival,
+        1 => .rush,
+        else => .quests,
+    };
+}
+
+fn networkRoleLabel(role: NetworkRole) []const u8 {
+    return switch (role) {
+        .host => "Host",
+        .join => "Join",
+    };
+}
+
+fn networkModeValueLabel(state: *const NetworkState) []const u8 {
+    if (state.role == .join) return "from lobby";
+    return switch (state.mode) {
+        .survival => "Survival",
+        .rush => "Rush",
+        .quests => "Quests 1.1",
+    };
+}
+
+fn networkNetcodeLabel(netcode: NetworkNetcode) []const u8 {
+    return switch (netcode) {
+        .rollback => "Rollback",
+        .lockstep => "Lockstep",
+    };
+}
+
+fn networkPlayersValueLabel(state: *const NetworkState, scratch: *[96]u8) []const u8 {
+    if (state.role == .join) return "from lobby";
+    return std.fmt.bufPrint(scratch[0..], "{d}", .{state.player_count}) catch "";
+}
+
+fn networkEndpointValueLabel(state: *const NetworkState, scratch: *[96]u8) []const u8 {
+    return switch (state.netcode) {
+        .rollback => switch (state.role) {
+            .host => "relay 127.0.0.1:31993",
+            .join => std.fmt.bufPrint(scratch[0..], "room {s} via relay", .{network_room_codes[state.room_code_index]}) catch "",
+        },
+        .lockstep => switch (state.role) {
+            .host => "bind 0.0.0.0:31993",
+            .join => "host 127.0.0.1:31993",
+        },
+    };
 }
 
 test "mods dll names are sorted before display" {
@@ -276,4 +460,43 @@ test "mods panel explains deliberate native dll scope" {
 
 test "network panel scope text stays explicit" {
     try std.testing.expectEqualStrings("Native netplay runtime is not available yet.", network_runtime_scope_text);
+}
+
+test "network panel defaults to host rollback session" {
+    var state: NetworkState = .{};
+
+    try std.testing.expectEqual(NetworkRole.host, state.role);
+    try std.testing.expectEqual(NetworkMode.survival, state.mode);
+    try std.testing.expectEqual(NetworkNetcode.rollback, state.netcode);
+    try std.testing.expectEqual(@as(i32, 2), state.player_count);
+    try std.testing.expectEqualStrings("Host", networkRoleLabel(state.role));
+    try std.testing.expectEqualStrings("Survival", networkModeValueLabel(&state));
+}
+
+test "network panel cycles host mode and player count" {
+    var state: NetworkState = .{ .selection = .mode };
+
+    changeSelectedNetworkValue(&state, 1);
+    try std.testing.expectEqual(NetworkMode.rush, state.mode);
+    changeSelectedNetworkValue(&state, -1);
+    try std.testing.expectEqual(NetworkMode.survival, state.mode);
+
+    state.selection = .players;
+    state.player_count = 4;
+    changeSelectedNetworkValue(&state, 1);
+    try std.testing.expectEqual(@as(i32, 1), state.player_count);
+    changeSelectedNetworkValue(&state, -1);
+    try std.testing.expectEqual(@as(i32, 4), state.player_count);
+}
+
+test "network panel join uses lobby-derived mode and room endpoint" {
+    var state: NetworkState = .{ .role = .join, .selection = .endpoint };
+    var buf: [96]u8 = undefined;
+
+    try std.testing.expectEqualStrings("from lobby", networkModeValueLabel(&state));
+    try std.testing.expectEqualStrings("from lobby", networkPlayersValueLabel(&state, &buf));
+    try std.testing.expectEqualStrings("room ab12 via relay", networkEndpointValueLabel(&state, &buf));
+
+    changeSelectedNetworkValue(&state, 1);
+    try std.testing.expectEqualStrings("room cd34 via relay", networkEndpointValueLabel(&state, &buf));
 }

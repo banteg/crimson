@@ -24,7 +24,7 @@ Last reviewed: **2026-02-24**
   - `uv run crimson net join --netcode lockstep --host <ip> --port 31993`
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net host --mode survival --players 2 --format json`
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net join --code <invite> --format json`
-    - The native Zig `net host/join` surface currently validates and emits pending session JSON only (`runtime_supported=false`); live native netplay still belongs to the remaining network/LAN parity work.
+    - The native Zig `net host/join` surface currently validates and emits pending session JSON only (`runtime_supported=false`), and the desktop Network panel can configure matching pending role/mode/player/netcode state; live native netplay still belongs to the remaining network/LAN parity work.
 - Replay tooling:
   - `uv run crimson replay play <replay.crd>`
   - `uv run crimson replay verify <replay.crd>`
