@@ -15,6 +15,7 @@ const panel_outline = rl.Color.init(122, 78, 58, 255);
 const text_color = rl.Color.init(245, 236, 225, 255);
 const muted_text = rl.Color.init(171, 150, 132, 255);
 const accent_color = rl.Color.init(218, 80, 46, 255);
+const network_session_tooltip = "Host or join a live lockstep network session.";
 
 const player_count_labels = [_][:0]const u8{
     "1 player",
@@ -397,7 +398,7 @@ const play_game_entries_multi = [_]PlayGameEntry{
     .{ .key = .quests, .label = " Quests ", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
     .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
     .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
-    .{ .key = .network, .label = " Network ", .tooltip = "Host or join a rollback-first network session.", .action = .open_network_session },
+    .{ .key = .network, .label = " Network ", .tooltip = network_session_tooltip, .action = .open_network_session },
 };
 
 const play_game_entries_single_tutorial_first = [_]PlayGameEntry{
@@ -405,7 +406,7 @@ const play_game_entries_single_tutorial_first = [_]PlayGameEntry{
     .{ .key = .quests, .label = " Quests ", .tooltip = "Unlock new weapons and perks in Quest mode.", .action = .open_quests, .show_count = true },
     .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
     .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
-    .{ .key = .network, .label = " Network ", .tooltip = "Host or join a rollback-first network session.", .action = .open_network_session },
+    .{ .key = .network, .label = " Network ", .tooltip = network_session_tooltip, .action = .open_network_session },
 };
 
 const play_game_entries_single = [_]PlayGameEntry{
@@ -413,7 +414,7 @@ const play_game_entries_single = [_]PlayGameEntry{
     .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
     .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
     .{ .key = .tutorial, .label = "Tutorial", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
-    .{ .key = .network, .label = " Network ", .tooltip = "Host or join a rollback-first network session.", .action = .open_network_session },
+    .{ .key = .network, .label = " Network ", .tooltip = network_session_tooltip, .action = .open_network_session },
 };
 
 const play_game_entries_single_typo_tutorial_first = [_]PlayGameEntry{
@@ -422,7 +423,7 @@ const play_game_entries_single_typo_tutorial_first = [_]PlayGameEntry{
     .{ .key = .rush, .label = "  Rush  ", .tooltip = "Face a rush of aliens in Rush mode.", .action = .start_rush, .game_mode = .rush, .show_count = true },
     .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
     .{ .key = .typo, .label = "Typ'o'Shooter", .tooltip = "Use your typing skills as the weapon to lay\nthem down.", .action = .start_typo, .game_mode = .typo, .show_count = true },
-    .{ .key = .network, .label = " Network ", .tooltip = "Host or join a rollback-first network session.", .action = .open_network_session },
+    .{ .key = .network, .label = " Network ", .tooltip = network_session_tooltip, .action = .open_network_session },
 };
 
 const play_game_entries_single_typo = [_]PlayGameEntry{
@@ -431,7 +432,7 @@ const play_game_entries_single_typo = [_]PlayGameEntry{
     .{ .key = .survival, .label = "Survival", .tooltip = "Gain perks and weapons and fight back.", .action = .start_survival, .game_mode = .survival, .show_count = true },
     .{ .key = .typo, .label = "Typ'o'Shooter", .tooltip = "Use your typing skills as the weapon to lay\nthem down.", .action = .start_typo, .game_mode = .typo, .show_count = true },
     .{ .key = .tutorial, .label = "Tutorial", .tooltip = "Learn how to play Crimsonland.", .action = .start_tutorial, .game_mode = .tutorial },
-    .{ .key = .network, .label = " Network ", .tooltip = "Host or join a rollback-first network session.", .action = .open_network_session },
+    .{ .key = .network, .label = " Network ", .tooltip = network_session_tooltip, .action = .open_network_session },
 };
 
 test "play game entries expose native network session shell" {
@@ -441,6 +442,7 @@ test "play game entries expose native network session shell" {
     try std.testing.expect(entries.len >= 1);
     try std.testing.expectEqual(PlayGameAction.open_network_session, entries[entries.len - 1].action);
     try std.testing.expectEqualStrings(" Network ", entries[entries.len - 1].label);
+    try std.testing.expectEqualStrings(network_session_tooltip, entries[entries.len - 1].tooltip);
 }
 
 fn drawPlayerCountWidget(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, layout: PlayGameLayout, player_count_raw: u32) void {
