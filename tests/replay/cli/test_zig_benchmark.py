@@ -107,6 +107,46 @@ def test_zig_replay_benchmark_writes_json_out(tmp_path: Path) -> None:
     assert payload["run_result"]["ticks"] == 2
 
 
+def test_zig_replay_benchmark_supports_native_profile_summary(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    result = _run_zig_replay_benchmark(
+        [
+            str(replay_path),
+            "--runs",
+            "1",
+            "--warmup-runs",
+            "0",
+            "--max-ticks",
+            "2",
+            "--profile",
+            "--profile-sort",
+            "tottime",
+            "--top",
+            "5",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    payload = json.loads(result.stdout)
+    assert payload["settings"]["profile"] is True
+    assert payload["settings"]["profile_sort"] == "tottime"
+    assert payload["settings"]["top"] == 5
+    assert payload["profile"]["sort"] == "tottime"
+    assert payload["profile"]["source"] == "project"
+    assert payload["profile"]["top"] == 5
+    assert len(payload["profile"]["hotspots"]) == 1
+    hotspot = payload["profile"]["hotspots"][0]
+    assert hotspot["file"] == "crimson-zig/src/replay_benchmark_native.zig"
+    assert hotspot["function"] == "runReplayWithOptions"
+    assert hotspot["primitive_calls"] == 1
+    assert hotspot["total_calls"] == 1
+    assert hotspot["cumtime"] >= 0.0
+
+
 def test_zig_replay_benchmark_stale_perk_pick_is_noop(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
     inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
@@ -167,15 +207,6 @@ def test_zig_replay_benchmark_rejects_render_only_flags_in_headless_mode(
 @pytest.mark.parametrize(
     ("args", "detail"),
     [
-        (["--profile"], "native replay benchmark does not support profiling option --profile"),
-        (
-            ["--profile-sort", "tottime"],
-            "native replay benchmark does not support profiling option --profile-sort",
-        ),
-        (
-            ["--top", "5"],
-            "native replay benchmark does not support profiling option --top",
-        ),
         (
             ["--profile-out", "profile.pstats"],
             "native replay benchmark does not support profiling option --profile-out",

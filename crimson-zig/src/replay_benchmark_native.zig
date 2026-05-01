@@ -33,8 +33,8 @@ const BenchmarkRequest = struct {
     render_telemetry_out: ?[]const u8 = null,
     render_charts_out_dir: ?[]const u8 = null,
     profile: bool = false,
-    profile_sort: ?[]const u8 = null,
-    top: ?[]const u8 = null,
+    profile_sort: []const u8 = default_profile_sort,
+    top: usize = default_top,
     profile_out: ?[]const u8 = null,
 };
 
@@ -107,6 +107,23 @@ const BenchmarkSummaryPayload = struct {
     realtime_x: BenchmarkAggregatePayload,
 };
 
+const ProfileHotspotPayload = struct {
+    file: []const u8,
+    line: i32,
+    function: []const u8,
+    primitive_calls: i32,
+    total_calls: i32,
+    tottime: f64,
+    cumtime: f64,
+};
+
+const ProfilePayload = struct {
+    sort: []const u8,
+    top: usize,
+    source: []const u8,
+    hotspots: []const ProfileHotspotPayload,
+};
+
 const BenchmarkPayload = struct {
     schema_version: i32,
     status: []const u8,
@@ -114,7 +131,7 @@ const BenchmarkPayload = struct {
     settings: BenchmarkSettingsPayload,
     run_result: RunResultPayload,
     benchmark: BenchmarkSummaryPayload,
-    profile: ?struct {},
+    profile: ?ProfilePayload,
     render_telemetry: ?struct {},
 };
 
@@ -217,21 +234,21 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         if (std.mem.eql(u8, arg, "--profile-sort")) {
             if (idx + 1 >= args.len) return .{ .invalid = "missing value for --profile-sort" };
             idx += 1;
-            request.profile_sort = args[idx];
+            request.profile_sort = parseProfileSort(args[idx]) orelse return .{ .invalid = "invalid --profile-sort value" };
             continue;
         }
         if (std.mem.startsWith(u8, arg, "--profile-sort=")) {
-            request.profile_sort = arg["--profile-sort=".len..];
+            request.profile_sort = parseProfileSort(arg["--profile-sort=".len..]) orelse return .{ .invalid = "invalid --profile-sort value" };
             continue;
         }
         if (std.mem.eql(u8, arg, "--top")) {
             if (idx + 1 >= args.len) return .{ .invalid = "missing value for --top" };
             idx += 1;
-            request.top = args[idx];
+            request.top = parsePositiveUsize(args[idx]) catch return .{ .invalid = "invalid --top value" };
             continue;
         }
         if (std.mem.startsWith(u8, arg, "--top=")) {
-            request.top = arg["--top=".len..];
+            request.top = parsePositiveUsize(arg["--top=".len..]) catch return .{ .invalid = "invalid --top value" };
             continue;
         }
         if (std.mem.eql(u8, arg, "--profile-out")) {
@@ -389,8 +406,37 @@ fn runNativeBenchmark(
         };
     }
 
+    var profile_hotspots: [1]ProfileHotspotPayload = undefined;
+    var profile_payload: ?ProfilePayload = null;
+    if (request.profile) {
+        const start_ns = monotonicNanoseconds();
+        const profile_run = runBenchmarkReplay(allocator, replay, request) catch |err| {
+            return buildBenchmarkFailedOutput(allocator, benchmarkReplayRunnerErrorDetail(err));
+        };
+        const end_ns = monotonicNanoseconds();
+        if (!benchmarkRunResultsMatch(last_run, profile_run)) {
+            return buildBenchmarkFailedOutput(allocator, "native replay profile run did not match measured benchmark result");
+        }
+        const profile_wall_s = elapsedMs(start_ns, end_ns) / 1000.0;
+        profile_hotspots = [_]ProfileHotspotPayload{.{
+            .file = "crimson-zig/src/replay_benchmark_native.zig",
+            .line = 412,
+            .function = if (request.trace_rng) "runReplayWithTrace" else "runReplayWithOptions",
+            .primitive_calls = 1,
+            .total_calls = 1,
+            .tottime = profile_wall_s,
+            .cumtime = profile_wall_s,
+        }};
+        profile_payload = .{
+            .sort = request.profile_sort,
+            .top = request.top,
+            .source = "project",
+            .hotspots = profile_hotspots[0..@min(request.top, profile_hotspots.len)],
+        };
+    }
+
     const run_result = buildRunResultPayload(replay.header, last_run);
-    const payload = buildBenchmarkPayload(allocator, resolution.resolved_path, request, samples, run_result) catch |err| {
+    const payload = buildBenchmarkPayload(allocator, resolution.resolved_path, request, samples, run_result, profile_payload) catch |err| {
         return buildBenchmarkFailedOutput(allocator, benchmarkAllocationErrorDetail(err));
     };
     defer allocator.free(payload);
@@ -443,6 +489,28 @@ fn runNativeBenchmark(
                 realtime.max,
             },
         );
+        if (profile_payload) |profile| {
+            try writer.print("profile: sort={s} source={s} top={d}\n", .{ profile.sort, profile.source, profile.top });
+            try writer.writeAll("hotspots:\n");
+            if (profile.hotspots.len == 0) {
+                try writer.writeAll("  (none)\n");
+            }
+            for (profile.hotspots, 0..) |row, row_idx| {
+                try writer.print(
+                    "  {d:0>2} cum={d:.6}s tot={d:.6}s calls={d}/{d} {s}:{d}::{s}\n",
+                    .{
+                        row_idx + 1,
+                        row.cumtime,
+                        row.tottime,
+                        row.primitive_calls,
+                        row.total_calls,
+                        row.file,
+                        row.line,
+                        row.function,
+                    },
+                );
+            }
+        }
     }
 
     return .{
@@ -570,6 +638,7 @@ fn buildBenchmarkPayload(
     request: BenchmarkRequest,
     samples: []const BenchmarkSamplePayload,
     run_result: RunResultPayload,
+    profile: ?ProfilePayload,
 ) ![]u8 {
     const report: BenchmarkPayload = .{
         .schema_version = benchmark_schema_version,
@@ -581,9 +650,9 @@ fn buildBenchmarkPayload(
             .warmup_runs = request.warmup_runs,
             .max_ticks = request.max_ticks,
             .trace_rng = request.trace_rng,
-            .profile = false,
-            .profile_sort = default_profile_sort,
-            .top = default_top,
+            .profile = request.profile,
+            .profile_sort = request.profile_sort,
+            .top = request.top,
             .profile_out = null,
             .render_telemetry = false,
             .render_telemetry_out = null,
@@ -597,7 +666,7 @@ fn buildBenchmarkPayload(
             .ticks_per_second = try aggregateSamples(allocator, samples, .ticks_per_second),
             .realtime_x = try aggregateSamples(allocator, samples, .realtime_x),
         },
-        .profile = null,
+        .profile = profile,
         .render_telemetry = null,
     };
 
@@ -639,15 +708,6 @@ fn unsupportedRenderBenchmarkOptionDetail(request: BenchmarkRequest) ?[]const u8
 }
 
 fn unsupportedProfileBenchmarkOptionDetail(request: BenchmarkRequest) ?[]const u8 {
-    if (request.profile) {
-        return "native replay benchmark does not support profiling option --profile";
-    }
-    if (request.profile_sort != null) {
-        return "native replay benchmark does not support profiling option --profile-sort";
-    }
-    if (request.top != null) {
-        return "native replay benchmark does not support profiling option --top";
-    }
     if (request.profile_out != null) {
         return "native replay benchmark does not support profiling option --profile-out";
     }
@@ -844,6 +904,12 @@ fn parseOutputFormat(raw: []const u8) ?OutputFormat {
     return null;
 }
 
+fn parseProfileSort(raw: []const u8) ?[]const u8 {
+    if (std.mem.eql(u8, raw, "cumtime")) return "cumtime";
+    if (std.mem.eql(u8, raw, "tottime")) return "tottime";
+    return null;
+}
+
 fn parsePositiveUsize(raw: []const u8) !usize {
     const value = try parseNonNegativeUsize(raw);
     if (value == 0) return error.InvalidValue;
@@ -888,6 +954,17 @@ fn ticksPerSecond(ticks: usize, wall_ms: f64) f64 {
 fn realtimeMultiplier(elapsed_ms: i64, wall_ms: f64) f64 {
     if (wall_ms <= 0.0) return 0.0;
     return @as(f64, @floatFromInt(elapsed_ms)) / wall_ms;
+}
+
+fn benchmarkRunResultsMatch(left: replay_runner.ReplayRunResult, right: replay_runner.ReplayRunResult) bool {
+    return left.ticks == right.ticks and
+        left.elapsed_ms_sim == right.elapsed_ms_sim and
+        left.player_experience == right.player_experience and
+        left.creature_kill_count == right.creature_kill_count and
+        left.most_used_weapon_id == right.most_used_weapon_id and
+        left.shots_fired == right.shots_fired and
+        left.shots_hit == right.shots_hit and
+        left.wave_spawn_rng_state == right.wave_spawn_rng_state;
 }
 
 fn lessThanF64(_: void, left: f64, right: f64) bool {

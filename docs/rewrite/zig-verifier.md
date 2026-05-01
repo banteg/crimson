@@ -71,8 +71,9 @@ Current supported replay-tooling behavior:
 - replay RNG tracing via `replay verify --trace-rng` and
   `replay benchmark --trace-rng`
 - freestanding WASM replay verification and replay info JSON exports
-- headless replay throughput timing via `replay benchmark` (render benchmark
-  mode remains Python-only)
+- headless replay throughput timing and native coarse profiling via
+  `replay benchmark` (render benchmark mode and `.pstats` profile export remain
+  Python-only)
 - native CDT trace export via `dbg record <replay.crd> --out <trace.cdt>`
 - native debug schema contract reporting via `dbg verify`
 - current Python-readable trace export contracts
