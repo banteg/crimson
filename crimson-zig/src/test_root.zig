@@ -6,6 +6,7 @@ test {
     _ = @import("audio/mod.zig");
     _ = cz.bonuses;
     _ = cz.checkpoint_diff_native;
+    _ = cz.config_native;
     _ = cz.creatures;
     _ = cz.dbg_record_native;
     _ = cz.dbg_verify_native;

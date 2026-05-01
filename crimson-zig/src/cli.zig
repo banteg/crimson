@@ -1,5 +1,6 @@
 const std = @import("std");
 const checkpoint_diff_native = @import("checkpoint_diff_native.zig");
+const config_native = @import("config_native.zig");
 const dbg_record_native = @import("dbg_record_native.zig");
 const dbg_verify_native = @import("dbg_verify_native.zig");
 const quest_spawn_native = @import("quest_spawn_native.zig");
@@ -20,6 +21,7 @@ const usage =
     \\  crimson-zig replay diff-checkpoints <expected.chk> <actual.chk>
     \\  crimson-zig dbg record <replay.crd> --out <trace.cdt>
     \\  crimson-zig dbg verify
+    \\  crimson-zig config [config options]
     \\  crimson-zig quests <level> [quest options]
     \\  crimson-zig net host --mode <mode> --players <count> [net options]
     \\  crimson-zig net join --code <room> [net options]
@@ -36,6 +38,7 @@ const usage =
     \\  crimson-zig replay diff-checkpoints replay.crd.chk replay.candidate.crd.chk
     \\  crimson-zig dbg record replay.crd --out replay.cdt
     \\  crimson-zig dbg verify
+    \\  crimson-zig config --path crimson.cfg --format json
     \\  crimson-zig quests 1.1 --format json --seed 101
     \\  crimson-zig net host --mode survival --players 2 --format json
     \\  crimson-zig net join --code ab12 --format json
@@ -112,6 +115,14 @@ pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     }
     if (args.len >= 3 and std.mem.eql(u8, args[1], "dbg") and std.mem.eql(u8, args[2], "verify")) {
         const output = try dbg_verify_native.runDbgVerify(allocator, args[3..]);
+        defer output.deinit(allocator);
+
+        try writeStdout(output.stdout);
+        try writeStderr(output.stderr);
+        return output.exit_code;
+    }
+    if (args.len >= 2 and std.mem.eql(u8, args[1], "config")) {
+        const output = try config_native.runConfig(allocator, args[2..]);
         defer output.deinit(allocator);
 
         try writeStdout(output.stdout);
