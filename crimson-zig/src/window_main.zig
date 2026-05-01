@@ -1110,9 +1110,10 @@ const App = struct {
     }
 
     fn updateNetworkSession(self: *App, frame_dt: f32) void {
-        self.audio.ensureMenuThemeForDemo(self.demo_enabled);
         if (self.network_live_session != null) {
             self.network_live_render_time_s += @max(frame_dt, 0.0);
+        } else {
+            self.audio.ensureMenuThemeForDemo(self.demo_enabled);
         }
         const panel_update = window_misc_panels.updateNetwork(&self.network_session, frame_dt, if (self.runtime_assets) |*assets| assets else null);
         if (panel_update.play_panel_click and !self.network_session.panel.panel_open_sfx_played) {
@@ -1137,6 +1138,7 @@ const App = struct {
             return;
         };
         self.stopNetworkLiveSession();
+        self.audio.stopGameplayMusic();
 
         const io = std.Io.Threaded.global_single_threaded.io();
         const seed: i32 = @bitCast(nextRunSeed(&self.next_seed_state));
