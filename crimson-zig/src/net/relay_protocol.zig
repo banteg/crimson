@@ -11,6 +11,8 @@ const schema_shared = @import("schema_shared.zig");
 pub const protocol_version: i32 = 6;
 pub const default_port: u16 = 31993;
 pub const tick_rate: i32 = lockstep_protocol.tick_rate;
+pub const max_players: i32 = lockstep_protocol.max_players;
+pub const reliable_resend_ms: i32 = lockstep_protocol.reliable_resend_ms;
 pub const input_delay_ticks: i32 = 1;
 pub const rollback_max_ticks: i32 = 8;
 pub const reconnect_timeout_ms: i32 = 15_000;
@@ -214,6 +216,8 @@ test "relay protocol constants mirror python defaults" {
     try std.testing.expectEqual(@as(i32, 6), protocol_version);
     try std.testing.expectEqual(@as(u16, 31993), default_port);
     try std.testing.expectEqual(@as(i32, 60), tick_rate);
+    try std.testing.expectEqual(@as(i32, 4), max_players);
+    try std.testing.expectEqual(@as(i32, 40), reliable_resend_ms);
     try std.testing.expectEqual(@as(i32, 1), input_delay_ticks);
     try std.testing.expectEqual(@as(i32, 8), rollback_max_ticks);
     try std.testing.expectEqual(@as(i32, 15_000), reconnect_timeout_ms);
