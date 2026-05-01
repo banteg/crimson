@@ -5,8 +5,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from typer.testing import CliRunner
 
 import crimson.dbg.record as dbg_record
+from crimson.cli import app
 from crimson.game_modes import GameMode
 from crimson.sim.input_providers import PerkPickCommand
 
@@ -65,6 +67,27 @@ def test_zig_replay_benchmark_emits_json_payload(tmp_path: Path) -> None:
     assert payload["benchmark"]["ticks_per_second"]["max"] >= payload["benchmark"]["ticks_per_second"]["min"] >= 0.0
     assert payload["profile"] is None
     assert payload["render_telemetry"] is None
+
+
+def test_zig_replay_benchmark_matches_python_stable_json_payload(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    args = [str(replay_path), "--runs", "1", "--warmup-runs", "0", "--max-ticks", "2", "--format", "json"]
+
+    python_result = CliRunner().invoke(app, ["replay", "benchmark", *args])
+    assert python_result.exit_code == 0, python_result.output
+
+    zig_result = _run_zig_replay_benchmark(args)
+    assert zig_result.returncode == 0, dbg_record._command_detail(zig_result)
+
+    python_payload = json.loads(python_result.output)
+    zig_payload = json.loads(zig_result.stdout)
+    for key in ("schema_version", "status", "replay", "settings", "run_result", "profile", "render_telemetry"):
+        assert zig_payload[key] == python_payload[key]
+    assert zig_payload["benchmark"]["sample_count"] == python_payload["benchmark"]["sample_count"]
+    assert zig_payload["benchmark"]["samples"][0].keys() == python_payload["benchmark"]["samples"][0].keys()
+    for key in ("wall_ms", "ticks_per_second", "realtime_x"):
+        assert zig_payload["benchmark"][key].keys() == python_payload["benchmark"][key].keys()
 
 
 def test_zig_replay_benchmark_supports_trace_rng(tmp_path: Path) -> None:
