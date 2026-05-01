@@ -3,6 +3,7 @@ pub const lockstep_client_runtime = @import("lockstep_client_runtime.zig");
 pub const lockstep_host_runtime = @import("lockstep_host_runtime.zig");
 pub const lockstep_lobby = @import("lockstep_lobby.zig");
 pub const lockstep_outbox = @import("lockstep_outbox.zig");
+pub const lockstep_pump = @import("lockstep_pump.zig");
 pub const lockstep_reliable = @import("lockstep_reliable.zig");
 pub const lockstep_state = @import("lockstep_state.zig");
 pub const lockstep_transport = @import("lockstep_transport.zig");
@@ -29,6 +30,7 @@ test {
     _ = lockstep_host_runtime;
     _ = lockstep_lobby;
     _ = lockstep_outbox;
+    _ = lockstep_pump;
     _ = lockstep_reliable;
     _ = lockstep_state;
     _ = lockstep_transport;
