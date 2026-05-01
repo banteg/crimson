@@ -180,6 +180,24 @@ pub const RuntimeCore = struct {
         return snapshot;
     }
 
+    pub fn completeResync(self: *RuntimeCore, snapshot_tick_raw: i32) !void {
+        const next_tick = @max(0, snapshot_tick_raw) + 1;
+        if (self.pending_resync_snapshot) |*snapshot| {
+            snapshot.deinit(self.allocator);
+            self.pending_resync_snapshot = null;
+        }
+        if (self.resync_assembler) |*assembler| {
+            assembler.deinit();
+            self.resync_assembler = null;
+        }
+        try self.controller.resetToTick(next_tick);
+        self.frame_queue.clearRetainingCapacity();
+        self.pending_rollback_from = null;
+        self.paused_for_resync = false;
+        self.resync_deadline_ms = 0;
+        try self.setActiveRequestId("");
+    }
+
     pub fn clearOutbox(self: *RuntimeCore) void {
         for (self.outbox.items) |*item| relay_protocol.deinitMessage(self.allocator, &item.message);
         self.outbox.clearRetainingCapacity();
@@ -546,4 +564,37 @@ test "rollback runtime accepts resync stream and exposes pending snapshot" {
     try std.testing.expectEqual(@as(i32, 5), snapshot.tick_index);
     try std.testing.expectEqualStrings("payload-five", snapshot.payload);
     try std.testing.expect(join.takePendingResyncSnapshot() == null);
+}
+
+test "rollback runtime completes resync and resumes input capture after snapshot tick" {
+    var runtime = RuntimeCore.init(std.testing.allocator, .{
+        .role = .join,
+        .player_count = 2,
+        .local_slot_index = 1,
+        .input_delay_ticks = 0,
+        .max_rollback_ticks = 2,
+    });
+    defer runtime.deinit();
+
+    var tick: u32 = 0;
+    while (tick < 6) : (tick += 1) {
+        try runtime.queueLocalInput(.{ .flags = tick + 1 }, 10 + tick);
+        _ = runtime.popFrame();
+    }
+    try runtime.handleMessage(.{ .rb_input_sample = .{
+        .slot_index = 0,
+        .samples = &[_]relay_protocol.RbInputSample{.{ .tick_index = 2, .packed_input = .{ .flags = 99 } }},
+    } }, 20);
+    try std.testing.expect(runtime.paused_for_resync);
+
+    try runtime.completeResync(3);
+    try std.testing.expect(!runtime.paused_for_resync);
+    try std.testing.expectEqual(@as(i32, 4), runtime.controller.capture_tick);
+    try std.testing.expectEqual(@as(i32, 4), runtime.controller.next_emit_tick);
+    try std.testing.expectEqual(@as(i64, 0), runtime.resync_deadline_ms);
+
+    try runtime.queueLocalInput(.{ .flags = 7 }, 30);
+    const frame = runtime.popFrame() orelse return error.ExpectedFrame;
+    try std.testing.expectEqual(@as(i32, 4), frame.tick_index);
+    try std.testing.expectEqual(@as(u32, 7), frame.input(1).flags);
 }

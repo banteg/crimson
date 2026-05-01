@@ -166,8 +166,8 @@ pub const RollbackController = struct {
 
     pub fn resetToTick(self: *RollbackController, tick_index: i32) !void {
         const target = @max(0, tick_index);
-        self.capture_tick = @max(self.capture_tick, target);
-        self.next_emit_tick = @max(self.next_emit_tick, target);
+        self.capture_tick = target;
+        self.next_emit_tick = target;
         self.pending_frames.clearRetainingCapacity();
         self.pending_rollback_from = null;
         self.pending_resync_from = null;
@@ -359,4 +359,28 @@ test "rollback corrections older than cap trigger resync request" {
     try std.testing.expectEqual(@as(?i32, 2), controller.drainResyncFrom());
     try std.testing.expectEqual(@as(i32, 0), controller.rollback_count);
     try std.testing.expectEqual(@as(i32, 1), controller.prediction_mismatches);
+}
+
+test "rollback controller reset rewinds emission cursor to snapshot tick" {
+    var controller = RollbackController.init(std.testing.allocator, .{
+        .player_count = 2,
+        .local_slot_index = 0,
+        .input_delay_ticks = 0,
+        .max_rollback_ticks = 8,
+    });
+    defer controller.deinit();
+
+    var tick: u32 = 0;
+    while (tick < 5) : (tick += 1) {
+        var batch = try controller.queueLocalInput(.{ .flags = tick + 1 });
+        defer controller.deinitInputBatch(&batch);
+        try std.testing.expect(controller.popFrame() != null);
+    }
+
+    try controller.resetToTick(2);
+    try std.testing.expectEqual(@as(i32, 2), controller.capture_tick);
+    try std.testing.expectEqual(@as(i32, 2), controller.next_emit_tick);
+    try std.testing.expect(controller.popFrame() == null);
+    try std.testing.expect(!controller.emitted_frames.contains(1));
+    try std.testing.expect(controller.emitted_frames.contains(2));
 }
