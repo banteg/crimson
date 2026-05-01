@@ -55,6 +55,8 @@ def test_zig_replay_benchmark_emits_json_payload(tmp_path: Path) -> None:
         "render_charts_out_dir": None,
     }
     assert payload["run_result"]["ticks"] == 2
+    assert "creature_kill_count" in payload["run_result"]
+    assert "kills" not in payload["run_result"]
     assert payload["benchmark"]["sample_count"] == 2
     assert len(payload["benchmark"]["samples"]) == 2
     assert "run_index" not in payload["benchmark"]["samples"][0]
