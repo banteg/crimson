@@ -15,6 +15,7 @@ const local_input = cz.local_input;
 const live_audio = @import("audio/live_audio.zig");
 const quest_results = @import("quest_results.zig");
 const rng_callers = cz.rng_caller_static;
+const runtime_bootstrap = cz.bootstrap;
 const runtime_paths = cz.runtime_paths;
 const spawn_mod = cz.spawn;
 const window_assets = @import("window_assets.zig");
@@ -53,6 +54,12 @@ const window_width = 1024;
 const window_height = 768;
 const ui_button_width: f32 = 280.0;
 const ui_button_height: f32 = 56.0;
+const demo_attract_variant_count: i32 = 6;
+const demo_attract_limit_ms: i32 = 4_000;
+const demo_attract_purchase_screen_limit_ms: i32 = 16_000;
+const demo_purchase_title = "Upgrade to the full version of Crimsonland Today!";
+const demo_purchase_features_title = "Full version features:";
+const demo_purchase_footer = "Purchasing the game is very easy and secure.";
 
 const bg_color = rl.Color.init(16, 12, 10, 255);
 const panel_color = rl.Color.init(37, 24, 20, 255);
@@ -91,6 +98,34 @@ const ResultsReason = enum {
     completed,
     runtime_error,
     abandoned,
+};
+
+const DemoAttractPurchaseAction = enum {
+    none,
+    purchase,
+    maybe_later,
+};
+
+const DemoAttractInactiveAction = enum {
+    none,
+    purchase,
+    close,
+};
+
+const DemoPurchaseFeatureLine = struct {
+    text: []const u8,
+    delta_y: f32,
+};
+
+const demo_purchase_feature_lines = [_]DemoPurchaseFeatureLine{
+    .{ .text = "-Unlimited Play Time in three thrilling Game Modes!", .delta_y = 22.0 },
+    .{ .text = "-The varied weapon arsenal consisting of over 20 unique", .delta_y = 17.0 },
+    .{ .text = " weapons that allow you to deal death with plasma, lead,", .delta_y = 17.0 },
+    .{ .text = " fire and electricity!", .delta_y = 22.0 },
+    .{ .text = "-Over 40 game altering Perks!", .delta_y = 22.0 },
+    .{ .text = "-40 insane Levels that give you", .delta_y = 18.0 },
+    .{ .text = " hours of intense and fun gameplay!", .delta_y = 22.0 },
+    .{ .text = "-The ability to post your high scores online!", .delta_y = 44.0 },
 };
 
 const AssetsState = enum {
@@ -255,6 +290,15 @@ const HudRuntimeState = struct {
     }
 };
 
+const DemoAttractPurchaseState = struct {
+    cursor_pulse_time: f32 = 0.0,
+    selection: usize = 0,
+
+    fn reset(self: *DemoAttractPurchaseState) void {
+        self.* = .{};
+    }
+};
+
 const ResultsScreen = struct {
     reason: ResultsReason,
     run_config: live_runner.LiveModeConfig,
@@ -376,6 +420,13 @@ const App = struct {
     demo_trial_elapsed_ms: i32 = 0,
     demo_trial_info: demo_trial.OverlayInfo = .{},
     demo_trial_ui: window_demo_trial.State = .{},
+    demo_attract_active: bool = false,
+    demo_attract_elapsed_ms: i32 = 0,
+    demo_attract_next_variant: i32 = 0,
+    demo_attract_current_variant: i32 = 0,
+    demo_attract_purchase_active: bool = false,
+    demo_attract_purchase_limit_ms: i32 = 0,
+    demo_attract_purchase_ui: DemoAttractPurchaseState = .{},
     quit_requested: bool = false,
 
     fn init(allocator: std.mem.Allocator, runtime: app_runtime.DesktopRuntime, demo_enabled: bool) App {
@@ -430,6 +481,7 @@ const App = struct {
         return .{
             .mods_available = self.modsAvailable(),
             .other_games_enabled = self.otherGamesEnabled(),
+            .demo_enabled = self.demo_enabled,
         };
     }
 
@@ -572,6 +624,7 @@ const App = struct {
                     self.other_games_menu.reset();
                     self.setScreen(.other_games_menu);
                 },
+                .start_demo => self.startDemoAttractRun(),
                 .quit => self.quit_requested = true,
             }
         }
@@ -656,7 +709,48 @@ const App = struct {
         if (self.gameplay) |*gameplay| {
             gameplay.render_time_s += @max(frame_dt, 0.0);
             const dt_ms = @as(i32, @intFromFloat(@min(@max(frame_dt, 0.0), 0.1) * 1000.0));
-            if (self.demo_enabled) {
+            if (self.demo_attract_active) {
+                if (self.demo_attract_purchase_active) {
+                    self.demo_attract_elapsed_ms += dt_ms;
+                    self.demo_trial_info = .{};
+                    switch (updateDemoAttractPurchaseInterstitial(&self.demo_attract_purchase_ui, dt_ms)) {
+                        .none => {},
+                        .maybe_later => {
+                            self.closeGameplayToMenu(gameplay);
+                            return;
+                        },
+                        .purchase => {
+                            _ = openDemoPurchaseUrl(self.allocator);
+                            self.quit_requested = true;
+                            return;
+                        },
+                    }
+                    if (self.demo_attract_elapsed_ms > self.demo_attract_purchase_limit_ms) {
+                        self.startDemoAttractRun();
+                        return;
+                    }
+                    gameplay.last_update = gameplay.runner.stepFrame(0.0, .{}) catch unreachable;
+                    return;
+                }
+                switch (demoAttractInactiveAction()) {
+                    .none => {},
+                    .purchase => {
+                        self.beginDemoAttractPurchaseScreen(false);
+                        gameplay.last_update = gameplay.runner.stepFrame(0.0, .{}) catch unreachable;
+                        return;
+                    },
+                    .close => {
+                        self.closeGameplayToMenu(gameplay);
+                        return;
+                    },
+                }
+                self.demo_attract_elapsed_ms += dt_ms;
+                if (self.demo_attract_elapsed_ms > demoAttractLimitMs(self.demo_attract_current_variant)) {
+                    self.startDemoAttractRun();
+                    return;
+                }
+                self.demo_trial_info = .{};
+            } else if (self.demo_enabled) {
                 const current_demo_info = self.currentDemoTrialInfo(gameplay);
                 const timer_tick = demo_trial.tickDemoTrialTimers(
                     true,
@@ -707,7 +801,10 @@ const App = struct {
             if (!self.demo_enabled) {
                 self.runtime.recordGameplayFrame(frame_dt);
             }
-            var input = collectGameplayInput(&gameplay.input_interpreter, &gameplay.runner, camera, &self.runtime, frame_dt);
+            var input = if (self.demo_attract_active)
+                collectDemoAttractInput(&gameplay.input_interpreter, &gameplay.runner, camera, &self.runtime, frame_dt)
+            else
+                collectGameplayInput(&gameplay.input_interpreter, &gameplay.runner, camera, &self.runtime, frame_dt);
             if (gameplay.runner.session.game_mode == .tutorial and
                 gameplay.runner.perkPendingCount() > 0 and
                 gameplay.runner.session.state.tutorial.stage_index == 6 and
@@ -1000,6 +1097,12 @@ const App = struct {
         self.gameplay = null;
         self.demo_trial_info = .{};
         self.demo_trial_ui.reset();
+        self.demo_attract_active = false;
+        self.demo_attract_elapsed_ms = 0;
+        self.demo_attract_current_variant = 0;
+        self.demo_attract_purchase_active = false;
+        self.demo_attract_purchase_limit_ms = 0;
+        self.demo_attract_purchase_ui.reset();
         self.menu.openRoot();
         self.setScreen(.main_menu);
     }
@@ -1168,20 +1271,29 @@ const App = struct {
     fn startNewRun(self: *App, run_config: live_runner.LiveModeConfig) void {
         self.audio.stopGameplayMusic();
         var configured_run = run_config;
-        configured_run.player_count = @intCast(std.math.clamp(self.runtime.config.player_count, @as(u32, 1), @as(u32, 4)));
+        if (self.demo_attract_active) {
+            configured_run.player_count = std.math.clamp(configured_run.player_count, @as(i32, 1), @as(i32, 4));
+        } else {
+            configured_run.player_count = @intCast(std.math.clamp(self.runtime.config.player_count, @as(u32, 1), @as(u32, 4)));
+        }
         configured_run.detail_preset = @intCast(std.math.clamp(self.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5)));
         configured_run.gore_disabled = @intCast(self.runtime.config.gore_disabled);
         configured_run.hardcore = self.runtime.config.hardcore_flag != 0;
         configured_run.status_quest_unlock_index = @intCast(self.runtime.status.quest_unlock_index);
         configured_run.status_quest_unlock_index_full = @intCast(self.runtime.status.quest_unlock_index_full);
         configured_run.status_weapon_usage_counts = statusWeaponUsageCounts(self.runtime.status);
-        configured_run.demo_mode_active = self.demo_enabled and (configured_run.game_mode == .quests or configured_run.game_mode == .tutorial);
+        configured_run.demo_mode_active = configured_run.demo_mode_active or
+            (self.demo_enabled and (configured_run.game_mode == .quests or configured_run.game_mode == .tutorial));
 
-        self.runtime.recordModeStart(configured_run.game_mode);
-        if (configured_run.game_mode == .quests) {
-            self.runtime.recordQuestStart(configured_run.quest_level_key);
+        if (!self.demo_attract_active) {
+            self.runtime.recordModeStart(configured_run.game_mode);
+            if (configured_run.game_mode == .quests) {
+                self.runtime.recordQuestStart(configured_run.quest_level_key);
+            }
         }
         var runner = live_runner.LiveRunner.init(configured_run) catch |err| {
+            self.demo_attract_active = false;
+            self.demo_attract_elapsed_ms = 0;
             self.results = .{
                 .reason = .runtime_error,
                 .run_config = configured_run,
@@ -1244,6 +1356,65 @@ const App = struct {
         self.gameplay = gameplay;
         self.results = null;
         self.setScreen(.gameplay);
+    }
+
+    fn startDemoAttractRun(self: *App) void {
+        const variant_index = self.demo_attract_next_variant;
+        self.demo_attract_next_variant = nextDemoAttractVariant(variant_index);
+        self.demo_attract_current_variant = variant_index;
+        self.demo_attract_active = true;
+        self.demo_attract_elapsed_ms = 0;
+        self.demo_attract_purchase_active = false;
+        self.demo_attract_purchase_limit_ms = 0;
+        self.demo_attract_purchase_ui.reset();
+        var run_config = runConfigForLiveMode(.survival, null, &self.next_seed_state);
+        run_config.player_count = demoAttractPlayerCount(variant_index);
+        run_config.demo_mode_active = true;
+        self.startNewRun(run_config);
+        if (self.gameplay) |*gameplay| {
+            setupDemoAttractVariant(&gameplay.runner, variant_index) catch |err| {
+                self.finishRun(gameplay, .runtime_error, liveRuntimeErrorDetail(err));
+                return;
+            };
+            if (demoAttractPurchaseActive(variant_index)) {
+                self.beginDemoAttractPurchaseScreen(true);
+            }
+            gameplay.last_update = gameplay.runner.stepFrame(0.0, .{}) catch unreachable;
+            gameplay.camera = updateGameplayCamera(
+                gameplay.camera,
+                &gameplay.runner.session,
+                &self.runtime.config,
+            );
+            self.refreshGameplayGround(gameplay);
+        }
+    }
+
+    fn beginDemoAttractPurchaseScreen(self: *App, reset_timeline: bool) void {
+        self.demo_attract_purchase_active = true;
+        self.demo_attract_purchase_limit_ms = if (demoAttractPurchaseActive(self.demo_attract_current_variant))
+            demoAttractLimitMs(self.demo_attract_current_variant)
+        else
+            demo_attract_purchase_screen_limit_ms;
+        if (reset_timeline) {
+            self.demo_attract_elapsed_ms = 0;
+        }
+        self.demo_attract_purchase_ui.reset();
+    }
+
+    fn refreshGameplayGround(self: *App, gameplay: *GameplayScreen) void {
+        if (gameplay.ground) |*ground| {
+            ground.deinit();
+            gameplay.ground = null;
+        }
+        if (self.runtime_assets) |*runtime_assets| {
+            gameplay.ground = window_ground.GroundRenderer.initForTerrainSetup(
+                runtime_assets,
+                gameplay.runner.terrain_setup,
+                gameplay.runner.session.terrain_size,
+                gameplay.runner.session.terrain_size,
+                self.runtime.config.texture_scale,
+            ) catch null;
+        }
     }
 
     fn reloadAudioConfig(self: *App) void {
@@ -1448,6 +1619,10 @@ const App = struct {
         if (self.gameplay) |*gameplay| {
             const runner = &gameplay.runner;
             const runtime_assets: ?*const window_assets.RuntimeAssets = if (self.runtime_assets) |*loaded_assets| loaded_assets else null;
+            if (self.demo_attract_active and self.demo_attract_purchase_active) {
+                drawDemoAttractPurchaseInterstitial(runtime_assets, self.demo_attract_elapsed_ms, self.demo_attract_purchase_limit_ms, &self.demo_attract_purchase_ui);
+                return;
+            }
             const transform = window_viewport.viewTransform(
                 runner.session.world_size,
                 &self.runtime.config,
@@ -1495,7 +1670,11 @@ const App = struct {
                     window_perk_menu.drawMenu(&gameplay.perk_ui, assets, &self.runtime.config, runner);
                 }
             } else {
-                drawGameplayHud(gameplay, runtime_assets);
+                if (self.demo_attract_active) {
+                    drawDemoAttractOverlay(gameplay, self.demo_attract_elapsed_ms, demoAttractLimitMs(self.demo_attract_current_variant), self.demo_attract_current_variant);
+                } else {
+                    drawGameplayHud(gameplay, runtime_assets);
+                }
                 if (runtime_assets) |assets| {
                     if (runner.session.game_mode == .typo) {
                         drawTypoTypingBox(gameplay, assets);
@@ -2318,6 +2497,270 @@ fn collectGameplayInput(
     return frame_input;
 }
 
+fn collectDemoAttractInput(
+    interpreter: *local_input.LocalInputInterpreter,
+    runner: *live_runner.LiveRunner,
+    camera: rl.Camera2D,
+    runtime: *const app_runtime.DesktopRuntime,
+    frame_dt: f32,
+) live_runner.FrameInput {
+    var demo_config = runtime.config;
+    const players = runner.session.playersConst();
+    const input_count = @min(players.len, state_mod.max_players);
+    for (0..input_count) |idx| {
+        formats.crimson_cfg.setPlayerMovement(&demo_config, idx, @intCast(local_input.movement_control_computer));
+        formats.crimson_cfg.setPlayerAimScheme(&demo_config, idx, @intCast(local_input.aim_scheme_computer));
+    }
+
+    const mouse_world = rl.getScreenToWorld2D(rl.getMousePosition(), camera);
+    const screen_center: state_mod.Vec2 = .{
+        .x = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5,
+        .y = @as(f32, @floatFromInt(rl.getScreenHeight())) * 0.5,
+    };
+    const sampler: input_codes.RaylibInputSampler = .{};
+    const player = runner.player0Const() orelse return .{};
+    return .{
+        .player = interpreter.buildPlayerInput(
+            sampler,
+            0,
+            players.len,
+            player,
+            &demo_config,
+            .{
+                .x = rl.getMousePosition().x,
+                .y = rl.getMousePosition().y,
+            },
+            .{
+                .x = mouse_world.x,
+                .y = mouse_world.y,
+            },
+            screen_center,
+            frame_dt,
+            runner.session.creatures.entries[0..],
+        ),
+    };
+}
+
+fn demoAttractInactiveAction() DemoAttractInactiveAction {
+    const purchase_key = rl.isKeyPressed(.escape) or rl.isKeyPressed(.space);
+    const left_click = rl.isMouseButtonPressed(.left);
+    const right_click = rl.isMouseButtonPressed(.right);
+    const middle_click = rl.isMouseButtonPressed(.middle);
+    return demoAttractInactiveActionFor(
+        rl.getKeyPressed() != .null,
+        purchase_key,
+        left_click,
+        right_click,
+        middle_click,
+    );
+}
+
+fn demoAttractInactiveActionFor(
+    any_key: bool,
+    purchase_key: bool,
+    left_click: bool,
+    right_click: bool,
+    middle_click: bool,
+) DemoAttractInactiveAction {
+    if (purchase_key or left_click) return .purchase;
+    if (any_key or right_click or middle_click) return .close;
+    return .none;
+}
+
+fn demoAttractLimitMs(variant_index: i32) i32 {
+    return switch (@mod(variant_index, demo_attract_variant_count)) {
+        1, 2 => 5_000,
+        5 => 10_000,
+        else => demo_attract_limit_ms,
+    };
+}
+
+fn demoAttractPlayerCount(variant_index: i32) i32 {
+    return switch (@mod(variant_index, demo_attract_variant_count)) {
+        0, 1, 4 => 2,
+        else => 1,
+    };
+}
+
+fn demoAttractPurchaseActive(variant_index: i32) bool {
+    return @mod(variant_index, demo_attract_variant_count) == 5;
+}
+
+fn updateDemoAttractPurchaseInterstitial(state: *DemoAttractPurchaseState, dt_ms: i32) DemoAttractPurchaseAction {
+    state.cursor_pulse_time += @as(f32, @floatFromInt(@max(dt_ms, 0))) * 0.001 * 1.1;
+    const buttons = demoAttractPurchaseButtons();
+    window_ui.updateSelectionFromPointer(&state.selection, buttons[0..]);
+    if (rl.isKeyPressed(.left) or rl.isKeyPressed(.a)) {
+        state.selection = if (state.selection == 0) buttons.len - 1 else state.selection - 1;
+    }
+    if (rl.isKeyPressed(.right) or rl.isKeyPressed(.d)) {
+        state.selection = (state.selection + 1) % buttons.len;
+    }
+    return demoAttractPurchaseActionFor(
+        state.selection,
+        window_ui.buttonActivated(buttons[0..], state.selection),
+        rl.isKeyPressed(.escape),
+    );
+}
+
+fn demoAttractPurchaseActionFor(selection: usize, activated: bool, canceled: bool) DemoAttractPurchaseAction {
+    if (canceled) return .maybe_later;
+    if (!activated) return .none;
+    return if (selection == 0) .purchase else .maybe_later;
+}
+
+fn demoAttractPurchaseButtons() [2]UiButton {
+    return demoAttractPurchaseButtonsForScreen(
+        @floatFromInt(rl.getScreenWidth()),
+        @floatFromInt(rl.getScreenHeight()),
+    );
+}
+
+fn demoAttractPurchaseButtonsForScreen(screen_w: f32, screen_h: f32) [2]UiButton {
+    const button_w: f32 = 145.0;
+    const x = screen_w * 0.5 + 128.0;
+    const y = screen_h * 0.5 + 152.0 + demoAttractPurchaseWideShift(screen_w) * 0.3;
+    return .{
+        .{ .label = "Purchase", .rect = rl.Rectangle.init(x, y, button_w, window_ui.button_plate_height) },
+        .{ .label = "Maybe later", .rect = rl.Rectangle.init(x, y + 40.0, button_w, window_ui.button_plate_height) },
+    };
+}
+
+fn demoAttractPurchaseWideShift(screen_w: f32) f32 {
+    if (screen_w == 800.0) return 64.0;
+    if (screen_w == 1024.0) return 128.0;
+    return 0.0;
+}
+
+fn nextDemoAttractVariant(variant_index: i32) i32 {
+    return @mod(variant_index + 1, demo_attract_variant_count);
+}
+
+fn setupDemoAttractVariant(runner: *live_runner.LiveRunner, variant_index_raw: i32) !void {
+    const variant_index = @mod(variant_index_raw, demo_attract_variant_count);
+    runner.session.creatures.reset();
+    runner.session.bonuses.reset();
+    runner.session.state.bonuses.weapon_power_up = 0.0;
+
+    switch (variant_index) {
+        0, 4 => try setupDemoAttractVariant0(runner),
+        1 => try setupDemoAttractVariant1(runner),
+        2 => try setupDemoAttractVariant2(runner),
+        3 => try setupDemoAttractVariant3(runner),
+        5 => {},
+        else => unreachable,
+    }
+}
+
+fn setupDemoAttractPlayers(runner: *live_runner.LiveRunner, positions: []const state_mod.Vec2, weapon_id: game_ids.WeaponId) void {
+    const players = runner.session.players();
+    for (players, 0..) |*player, idx| {
+        if (idx < positions.len) {
+            player.pos = positions[idx];
+            player.aim = positions[idx];
+        }
+        player.weapon = weaponSlotForDemoAttract(weapon_id);
+    }
+}
+
+fn setupDemoAttractVariant0(runner: *live_runner.LiveRunner) !void {
+    const positions = [_]state_mod.Vec2{
+        .{ .x = 448.0, .y = 384.0 },
+        .{ .x = 546.0, .y = 654.0 },
+    };
+    setupDemoAttractPlayers(runner, positions[0..], .plasma_minigun);
+    var y: i32 = 256;
+    var row: i32 = 0;
+    while (y < 1696) : ({
+        y += 80;
+        row += 1;
+    }) {
+        const col = @mod(row, 2);
+        try spawnDemoAttractCreature(runner, .spider_sp1_ai7_timer_38, .{ .x = @floatFromInt((col + 2) * 64), .y = @floatFromInt(y) }, true);
+        try spawnDemoAttractCreature(runner, .spider_sp1_ai7_timer_38, .{ .x = @floatFromInt(col * 64 + 798), .y = @floatFromInt(y) }, true);
+    }
+}
+
+fn setupDemoAttractVariant1(runner: *live_runner.LiveRunner) !void {
+    const positions = [_]state_mod.Vec2{
+        .{ .x = 490.0, .y = 448.0 },
+        .{ .x = 480.0, .y = 576.0 },
+    };
+    setupDemoAttractPlayers(runner, positions[0..], .submachine_gun);
+    runner.terrain_setup = runtime_bootstrap.advanceExplicitTerrain(&runner.session.state.rng, .{ 2, 3, 2 }, 1024, 1024);
+    runner.session.state.bonuses.weapon_power_up = 15.0;
+    for (0..20) |idx| {
+        const x = @as(f32, @floatFromInt(runner.session.state.rng.randTagged(rng_callers.demo_setup_variant_1_spider_sp1_x) % 200)) + 32.0;
+        const y = @as(f32, @floatFromInt(runner.session.state.rng.randTagged(rng_callers.demo_setup_variant_1_spider_sp1_y) % 899)) + 64.0;
+        try spawnDemoAttractCreature(runner, .spider_sp1_random_green_34, .{ .x = x, .y = y }, true);
+        if (@mod(idx, 3) != 0) {
+            const x2 = @as(f32, @floatFromInt(runner.session.state.rng.randTagged(rng_callers.demo_setup_variant_1_spider_sp2_x) % 30)) + 32.0;
+            const y2 = @as(f32, @floatFromInt(runner.session.state.rng.randTagged(rng_callers.demo_setup_variant_1_spider_sp2_y) % 899)) + 64.0;
+            try spawnDemoAttractCreature(runner, .spider_sp2_random_35, .{ .x = x2, .y = y2 }, true);
+        }
+    }
+}
+
+fn setupDemoAttractVariant2(runner: *live_runner.LiveRunner) !void {
+    const positions = [_]state_mod.Vec2{.{ .x = 512.0, .y = 512.0 }};
+    setupDemoAttractPlayers(runner, positions[0..], .ion_rifle);
+    var y: i32 = 128;
+    var row: i32 = 0;
+    while (y < 848) : ({
+        y += 60;
+        row += 1;
+    }) {
+        const col = @mod(row, 2);
+        try spawnDemoAttractCreature(runner, .zombie_random_41, .{ .x = @floatFromInt(col * 64 + 32), .y = @floatFromInt(y) }, true);
+        try spawnDemoAttractCreature(runner, .zombie_random_41, .{ .x = @floatFromInt((col + 2) * 64), .y = @floatFromInt(y) }, true);
+        try spawnDemoAttractCreature(runner, .zombie_random_41, .{ .x = @floatFromInt(col * 64 - 64), .y = @floatFromInt(y) }, true);
+        try spawnDemoAttractCreature(runner, .zombie_random_41, .{ .x = @floatFromInt((col + 12) * 64), .y = @floatFromInt(y) }, true);
+    }
+}
+
+fn setupDemoAttractVariant3(runner: *live_runner.LiveRunner) !void {
+    const positions = [_]state_mod.Vec2{.{ .x = 512.0, .y = 512.0 }};
+    setupDemoAttractPlayers(runner, positions[0..], .rocket_minigun);
+    runner.terrain_setup = runtime_bootstrap.advanceExplicitTerrain(&runner.session.state.rng, runtime_bootstrap.terrainSlotsForQuestLevelKey(101).?, 1024, 1024);
+    for (0..20) |idx| {
+        const x = @as(f32, @floatFromInt(runner.session.state.rng.randTagged(rng_callers.demo_setup_variant_3_alien_big_x) % 200)) + 32.0;
+        const y = @as(f32, @floatFromInt(runner.session.state.rng.randTagged(rng_callers.demo_setup_variant_3_alien_big_y) % 899)) + 64.0;
+        try spawnDemoAttractCreature(runner, .alien_const_green_24, .{ .x = x, .y = y }, false);
+        if (@mod(idx, 3) != 0) {
+            const x2 = @as(f32, @floatFromInt(runner.session.state.rng.randTagged(rng_callers.demo_setup_variant_3_alien_small_x) % 30)) + 32.0;
+            const y2 = @as(f32, @floatFromInt(runner.session.state.rng.randTagged(rng_callers.demo_setup_variant_3_alien_small_y) % 899)) + 64.0;
+            try spawnDemoAttractCreature(runner, .alien_const_green_small_25, .{ .x = x2, .y = y2 }, false);
+        }
+    }
+}
+
+fn spawnDemoAttractCreature(runner: *live_runner.LiveRunner, spawn_id: spawn_mod.SpawnId, pos: state_mod.Vec2, random_heading: bool) !void {
+    const heading = if (random_heading) demoAttractRandomHeading(&runner.session.state.rng) else 0.0;
+    try runner.session.creatures.spawnTemplateCallWithRuntimeContext(
+        .{
+            .template_id = @intFromEnum(spawn_id),
+            .pos = .{ .x = pos.x, .y = pos.y },
+            .heading = heading,
+        },
+        &runner.session.state.rng,
+        &runner.session.state,
+        runner.session.world_size,
+    );
+}
+
+fn demoAttractRandomHeading(rng: *spawn_mod.Crand) f32 {
+    return @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_random_heading) % 628)) * 0.01;
+}
+
+fn weaponSlotForDemoAttract(weapon_id: game_ids.WeaponId) state_mod.WeaponSlotState {
+    const stats = weapon_data.weapon_stats.get(weapon_id);
+    return .{
+        .weapon_id = weapon_id,
+        .clip_size = stats.clip_size,
+        .ammo = @floatFromInt(@max(0, stats.clip_size)),
+    };
+}
+
 fn collectPlayerHealthValues(
     out: *[state_mod.max_players]f32,
     session: *const runtime_session.DeterministicSession,
@@ -2503,6 +2946,115 @@ test "gameplayControlsHeldWithSampler follows configured controls and alternate 
     formats.crimson_cfg.setPlayerBindBlock(&unbound_config, 0, binds);
     const unbound: FakeSampler = .{ .down_code = formats.crimson_cfg.keybind_unbound_code };
     try std.testing.expect(!gameplayControlsHeldWithSampler(&unbound_config, unbound));
+}
+
+test "demo attract variant sequencing mirrors native cycle" {
+    try std.testing.expectEqual(@as(i32, 6), demo_attract_variant_count);
+    try std.testing.expectEqual(@as(i32, 1), nextDemoAttractVariant(0));
+    try std.testing.expectEqual(@as(i32, 5), nextDemoAttractVariant(4));
+    try std.testing.expectEqual(@as(i32, 0), nextDemoAttractVariant(5));
+    try std.testing.expectEqual(@as(i32, 2), demoAttractPlayerCount(0));
+    try std.testing.expectEqual(@as(i32, 2), demoAttractPlayerCount(1));
+    try std.testing.expectEqual(@as(i32, 1), demoAttractPlayerCount(2));
+    try std.testing.expectEqual(@as(i32, 1), demoAttractPlayerCount(3));
+    try std.testing.expectEqual(@as(i32, 2), demoAttractPlayerCount(4));
+    try std.testing.expectEqual(@as(i32, 1), demoAttractPlayerCount(5));
+    try std.testing.expect(!demoAttractPurchaseActive(4));
+    try std.testing.expect(demoAttractPurchaseActive(5));
+    try std.testing.expectEqual(@as(i32, 10_000), demoAttractLimitMs(5));
+    try std.testing.expectEqual(@as(i32, 16_000), demo_attract_purchase_screen_limit_ms);
+}
+
+test "demo attract inactive input opens purchase before generic close" {
+    try std.testing.expectEqual(DemoAttractInactiveAction.none, demoAttractInactiveActionFor(false, false, false, false, false));
+    try std.testing.expectEqual(DemoAttractInactiveAction.purchase, demoAttractInactiveActionFor(false, true, false, false, false));
+    try std.testing.expectEqual(DemoAttractInactiveAction.purchase, demoAttractInactiveActionFor(false, false, true, false, false));
+    try std.testing.expectEqual(DemoAttractInactiveAction.purchase, demoAttractInactiveActionFor(true, true, false, false, false));
+    try std.testing.expectEqual(DemoAttractInactiveAction.close, demoAttractInactiveActionFor(true, false, false, false, false));
+    try std.testing.expectEqual(DemoAttractInactiveAction.close, demoAttractInactiveActionFor(false, false, false, true, false));
+}
+
+test "demo attract purchase actions map buttons and cancel" {
+    try std.testing.expectEqual(DemoAttractPurchaseAction.none, demoAttractPurchaseActionFor(0, false, false));
+    try std.testing.expectEqual(DemoAttractPurchaseAction.purchase, demoAttractPurchaseActionFor(0, true, false));
+    try std.testing.expectEqual(DemoAttractPurchaseAction.maybe_later, demoAttractPurchaseActionFor(1, true, false));
+    try std.testing.expectEqual(DemoAttractPurchaseAction.maybe_later, demoAttractPurchaseActionFor(0, true, true));
+}
+
+test "demo attract purchase buttons follow native right-side layout" {
+    const buttons = demoAttractPurchaseButtonsForScreen(1024.0, 768.0);
+    try std.testing.expectEqualStrings("Purchase", buttons[0].label);
+    try std.testing.expectEqualStrings("Maybe later", buttons[1].label);
+    try std.testing.expectApproxEqAbs(@as(f32, 640.0), buttons[0].rect.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 640.0), buttons[1].rect.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 574.4), buttons[0].rect.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 614.4), buttons[1].rect.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 145.0), buttons[0].rect.width, 1e-6);
+    try std.testing.expectApproxEqAbs(window_ui.button_plate_height, buttons[0].rect.height, 1e-6);
+}
+
+test "demo attract variant 0 sets two-player spider setup" {
+    var runner = try live_runner.LiveRunner.init(.{
+        .seed = 1234,
+        .game_mode = .survival,
+        .player_count = 2,
+        .demo_mode_active = true,
+    });
+    try setupDemoAttractVariant(&runner, 0);
+    try std.testing.expectEqual(@as(usize, 2), runner.session.playersConst().len);
+    try std.testing.expectEqual(game_ids.WeaponId.plasma_minigun, runner.session.playersConst()[0].weapon.weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.plasma_minigun, runner.session.playersConst()[1].weapon.weapon_id);
+    try std.testing.expectEqual(@as(usize, 36), runner.session.creatures.activeCount());
+}
+
+test "demo attract variant 2 sets one-player zombie column setup" {
+    var runner = try live_runner.LiveRunner.init(.{
+        .seed = 1234,
+        .game_mode = .survival,
+        .player_count = 1,
+        .demo_mode_active = true,
+    });
+    try setupDemoAttractVariant(&runner, 2);
+    try std.testing.expectEqual(@as(usize, 1), runner.session.playersConst().len);
+    try std.testing.expectEqual(game_ids.WeaponId.ion_rifle, runner.session.playersConst()[0].weapon.weapon_id);
+    try std.testing.expectEqual(@as(usize, 48), runner.session.creatures.activeCount());
+}
+
+test "demo attract random variants use expected terrain and spawn counts" {
+    var variant1 = try live_runner.LiveRunner.init(.{
+        .seed = 1234,
+        .game_mode = .survival,
+        .player_count = 2,
+        .demo_mode_active = true,
+    });
+    try setupDemoAttractVariant(&variant1, 1);
+    try std.testing.expectEqualDeep(runtime_bootstrap.TerrainSlotTriplet{ 2, 3, 2 }, variant1.terrain_setup.terrain_slots);
+    try std.testing.expectEqual(game_ids.WeaponId.submachine_gun, variant1.session.playersConst()[0].weapon.weapon_id);
+    try std.testing.expectEqual(@as(usize, 33), variant1.session.creatures.activeCount());
+    try std.testing.expectApproxEqAbs(@as(f32, 15.0), variant1.session.state.bonuses.weapon_power_up, 1e-6);
+
+    var variant3 = try live_runner.LiveRunner.init(.{
+        .seed = 1234,
+        .game_mode = .survival,
+        .player_count = 1,
+        .demo_mode_active = true,
+    });
+    try setupDemoAttractVariant(&variant3, 3);
+    try std.testing.expectEqualDeep(runtime_bootstrap.terrainSlotsForQuestLevelKey(101).?, variant3.terrain_setup.terrain_slots);
+    try std.testing.expectEqual(game_ids.WeaponId.rocket_minigun, variant3.session.playersConst()[0].weapon.weapon_id);
+    try std.testing.expectEqual(@as(usize, 33), variant3.session.creatures.activeCount());
+}
+
+test "demo attract variant 5 is purchase interstitial without gameplay spawns" {
+    var runner = try live_runner.LiveRunner.init(.{
+        .seed = 1234,
+        .game_mode = .survival,
+        .player_count = 1,
+        .demo_mode_active = true,
+    });
+    try setupDemoAttractVariant(&runner, 5);
+    try std.testing.expectEqual(@as(usize, 1), runner.session.playersConst().len);
+    try std.testing.expectEqual(@as(usize, 0), runner.session.creatures.activeCount());
 }
 
 fn drawWorld(
@@ -3677,6 +4229,99 @@ fn drawGameplayHud(gameplay: *const GameplayScreen, runtime_assets: ?*const wind
     drawTextFmt("weapon {s}  ammo {d:.1}", .{ weaponName(update.player_weapon_id), player.weapon.ammo }, 36, 62, 22, text_color);
     drawTextFmt("shots {d}  hits {d}  creatures {d}", .{ update.shots_fired, update.shots_hit, update.creature_active_count }, 36, 90, 20, muted_text);
     drawTextFmt("elapsed {d}ms  pickups {d}  pending perks {d}", .{ update.elapsed_ms_sim, update.bonus_active_count, runner.perkPendingCount() }, 36, 116, 20, muted_text);
+}
+
+fn drawDemoAttractOverlay(gameplay: *const GameplayScreen, elapsed_ms: i32, limit_ms: i32, variant_index: i32) void {
+    const remaining_ms = @max(0, limit_ms - elapsed_ms);
+    const remaining_tenths = @divTrunc(remaining_ms + 99, 100);
+    const remaining_whole = @divTrunc(remaining_tenths, 10);
+    const remaining_frac = @mod(remaining_tenths, 10);
+    drawTextFmt("DEMO MODE  ({d}/{d})", .{ @mod(variant_index, demo_attract_variant_count) + 1, demo_attract_variant_count }, 16, 12, 20, text_color);
+    drawTextFmt("Press Space, Esc, or click for full version", .{}, 16, 36, 16, muted_text);
+    if (gameplay.runner.session.playersConst().len > 0) {
+        const player = gameplay.runner.session.playersConst()[0];
+        drawTextFmt(
+            "{s}  next in {d}.{d}s",
+            .{ game_ids.weaponDisplayName(player.weapon.weapon_id, gameplay.runner.session.state.preserve_bugs), remaining_whole, remaining_frac },
+            16,
+            56,
+            16,
+            muted_text,
+        );
+    }
+}
+
+fn drawDemoAttractPurchaseInterstitial(
+    runtime_assets: ?*const window_assets.RuntimeAssets,
+    elapsed_ms: i32,
+    limit_ms: i32,
+    state: *const DemoAttractPurchaseState,
+) void {
+    if (runtime_assets) |assets| {
+        drawDemoAttractPurchaseScreenAssets(assets, elapsed_ms);
+    } else {
+        const remaining_ms = @max(0, limit_ms - elapsed_ms);
+        const remaining_tenths = @divTrunc(remaining_ms + 99, 100);
+        const remaining_whole = @divTrunc(remaining_tenths, 10);
+        const remaining_frac = @mod(remaining_tenths, 10);
+        const center_y = @divTrunc(rl.getScreenHeight(), 2);
+        drawCenteredText(demo_purchase_title, center_y - 72, 24, text_color);
+        drawCenteredText("Full version features more levels, weapons, perks, and unlimited play time.", center_y - 34, 18, text_color);
+        drawCenteredText("Choose an option", center_y + 8, 18, muted_text);
+        drawCenteredTextFmt("demo resumes in {d}.{d}s", .{ remaining_whole, remaining_frac }, center_y + 42, 18, muted_text);
+    }
+    const buttons = demoAttractPurchaseButtons();
+    for (buttons, 0..) |button, idx| {
+        const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+        window_ui.drawButton(button, idx == state.selection, hovered, runtime_assets);
+    }
+    if (runtime_assets) |assets| {
+        window_cursor.drawMenuCursor(assets, state.cursor_pulse_time);
+    }
+}
+
+fn drawDemoAttractPurchaseScreenAssets(assets: *const window_assets.RuntimeAssets, elapsed_ms: i32) void {
+    const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
+    const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
+    const wide_shift = demoAttractPurchaseWideShift(screen_w);
+    const pulse_phase = @mod(@as(f32, @floatFromInt(@max(elapsed_ms, 0))), 1000.0);
+    const pulse_s = @sin(pulse_phase * 0.0062831855);
+    const pulse = pulse_s * pulse_s;
+    const back_tint = rl.Color.init(
+        @intFromFloat(170.0 + pulse * 50.0),
+        @intFromFloat(170.0 + pulse * 50.0),
+        @intFromFloat(190.0 + pulse * 45.0),
+        255,
+    );
+
+    drawTextureFit(assets.texture(.backplasma), rl.Rectangle.init(0.0, 0.0, screen_w, screen_h), back_tint);
+    drawTextureFit(
+        assets.texture(.mockup),
+        rl.Rectangle.init(screen_w * 0.5 - 128.0 + wide_shift, screen_h * 0.5 - 140.0, 512.0, 256.0),
+        rl.Color.white,
+    );
+    drawTextureFit(
+        assets.texture(.cl_logo),
+        rl.Rectangle.init(screen_w * 0.5 - 256.0, screen_h * 0.5 - 200.0 - wide_shift * 0.4, 512.0, 64.0),
+        rl.Color.white,
+    );
+
+    const text_x = screen_w * 0.5 - 296.0 - wide_shift * 0.8;
+    var y = screen_h * 0.5 - 104.0;
+    drawSmallText(assets, demo_purchase_title, text_x, y, rl.Color.white);
+    y += 28.0;
+    drawSmallText(assets, demo_purchase_features_title, text_x, y, rl.Color.white);
+    rl.drawRectangleRec(
+        rl.Rectangle.init(text_x, y + 15.0, measureSmallText(assets, demo_purchase_features_title), 2.0),
+        rl.Color.init(255, 255, 255, 160),
+    );
+
+    y += 22.0;
+    for (demo_purchase_feature_lines) |line| {
+        drawSmallText(assets, line.text, text_x + 8.0, y, rl.Color.white);
+        y += line.delta_y;
+    }
+    drawSmallText(assets, demo_purchase_footer, text_x, y, rl.Color.white);
 }
 
 fn drawTypoNameLabels(

@@ -27,6 +27,7 @@ const menu_scale_large_max: i32 = 1024;
 const menu_scale_small: f32 = 0.8;
 const menu_scale_large: f32 = 1.2;
 const menu_scale_shift: f32 = 10.0;
+pub const demo_idle_start_ms: i32 = 23_000;
 
 pub const label_row_play_game: i32 = 1;
 pub const label_row_options: i32 = 2;
@@ -44,12 +45,14 @@ pub const Action = enum {
     open_statistics,
     open_mods,
     open_other_games,
+    start_demo,
     quit,
 };
 
 pub const Flags = struct {
     mods_available: bool = false,
     other_games_enabled: bool = false,
+    demo_enabled: bool = false,
 };
 
 pub const State = struct {
@@ -113,6 +116,10 @@ pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_asset
         state.focus_timer_ms = @max(0, state.focus_timer_ms - dt_ms);
     }
 
+    if (flags.demo_enabled and state.timeline_ms >= rootTimelineMaxMs(root_entries.slice()) and state.idle_ms >= demo_idle_start_ms) {
+        return .{ .action = .start_demo };
+    }
+
     if (runtime_assets == null) {
         state.hovered_index = null;
         updateHoverAmounts(state, dt_ms, root_entries.slice());
@@ -157,6 +164,24 @@ pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_asset
         result.play_panel_click = true;
     }
     return result;
+}
+
+test "root menu demo idle starts attract mode in demo builds" {
+    var state: State = .{
+        .timeline_ms = 10_000,
+        .idle_ms = demo_idle_start_ms,
+    };
+    const result = update(&state, 0.0, null, .{ .demo_enabled = true });
+    try std.testing.expectEqual(Action.start_demo, result.action.?);
+}
+
+test "root menu demo idle is ignored in full builds" {
+    var state: State = .{
+        .timeline_ms = 10_000,
+        .idle_ms = demo_idle_start_ms,
+    };
+    const result = update(&state, 0.0, null, .{ .demo_enabled = false });
+    try std.testing.expectEqual(@as(?Action, null), result.action);
 }
 
 pub fn draw(state: *const State, runtime_assets: ?*const window_assets.RuntimeAssets, flags: Flags) void {
