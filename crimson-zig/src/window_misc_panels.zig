@@ -14,7 +14,7 @@ const max_mod_dll_name_bytes: usize = 128;
 const network_row_count: usize = 5;
 const mod_runtime_scope_text = "Native DLL mod loading is outside this port.";
 const other_games_scope_text = "Other Games ads are outside this port.";
-const network_runtime_scope_text = "Native netplay runtime is not available yet.";
+const network_runtime_scope_text = "Lockstep runtime available; rollback relay is config-only.";
 const network_room_codes = [_][]const u8{ "ab12", "cd34", "ef56", "gh78" };
 
 const NetworkRole = enum {
@@ -187,7 +187,7 @@ pub const NetworkState = struct {
     role: NetworkRole = .host,
     mode: NetworkMode = .survival,
     player_count: i32 = 2,
-    netcode: NetworkNetcode = .rollback,
+    netcode: NetworkNetcode = .lockstep,
     room_code_index: usize = 0,
 
     pub fn reset(self: *NetworkState) void {
@@ -459,18 +459,20 @@ test "mods panel explains deliberate native dll scope" {
 }
 
 test "network panel scope text stays explicit" {
-    try std.testing.expectEqualStrings("Native netplay runtime is not available yet.", network_runtime_scope_text);
+    try std.testing.expectEqualStrings("Lockstep runtime available; rollback relay is config-only.", network_runtime_scope_text);
 }
 
-test "network panel defaults to host rollback session" {
+test "network panel defaults to host lockstep session" {
     var state: NetworkState = .{};
 
     try std.testing.expectEqual(NetworkRole.host, state.role);
     try std.testing.expectEqual(NetworkMode.survival, state.mode);
-    try std.testing.expectEqual(NetworkNetcode.rollback, state.netcode);
+    try std.testing.expectEqual(NetworkNetcode.lockstep, state.netcode);
     try std.testing.expectEqual(@as(i32, 2), state.player_count);
     try std.testing.expectEqualStrings("Host", networkRoleLabel(state.role));
     try std.testing.expectEqualStrings("Survival", networkModeValueLabel(&state));
+    var buf: [96]u8 = undefined;
+    try std.testing.expectEqualStrings("bind 0.0.0.0:31993", networkEndpointValueLabel(&state, &buf));
 }
 
 test "network panel cycles host mode and player count" {
@@ -489,12 +491,15 @@ test "network panel cycles host mode and player count" {
     try std.testing.expectEqual(@as(i32, 4), state.player_count);
 }
 
-test "network panel join uses lobby-derived mode and room endpoint" {
+test "network panel join uses lobby-derived mode and lockstep endpoint by default" {
     var state: NetworkState = .{ .role = .join, .selection = .endpoint };
     var buf: [96]u8 = undefined;
 
     try std.testing.expectEqualStrings("from lobby", networkModeValueLabel(&state));
     try std.testing.expectEqualStrings("from lobby", networkPlayersValueLabel(&state, &buf));
+    try std.testing.expectEqualStrings("host 127.0.0.1:31993", networkEndpointValueLabel(&state, &buf));
+
+    state.netcode = .rollback;
     try std.testing.expectEqualStrings("room ab12 via relay", networkEndpointValueLabel(&state, &buf));
 
     changeSelectedNetworkValue(&state, 1);
