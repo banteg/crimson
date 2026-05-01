@@ -66,6 +66,7 @@ pub const RuntimeCore = struct {
     resync_assembler: ?rollback_resync_v5.RbResyncAssemblerV5 = null,
     active_resync_request_id: []const u8 = "",
     handled_resync_request_ids: std.StringHashMap(void),
+    remote_seen_slots: [max_players]bool = [_]bool{false} ** max_players,
 
     paused_for_resync: bool = false,
     pending_rollback_from: ?i32 = null,
@@ -119,10 +120,26 @@ pub const RuntimeCore = struct {
         try self.drainRollbackSignals(now_ms);
     }
 
+    pub fn primeInitialDelay(self: *RuntimeCore) !void {
+        try self.controller.primeInitialDelay();
+        try self.drainFrames();
+    }
+
+    pub fn hostRemoteInputsReady(self: *const RuntimeCore) bool {
+        if (self.paused_for_resync) return false;
+        if (self.role != .host) return true;
+        for (0..self.controller.player_count) |slot| {
+            if (slot == self.controller.local_slot_index) continue;
+            if (!self.remote_seen_slots[slot]) return false;
+        }
+        return true;
+    }
+
     pub fn handleMessage(self: *RuntimeCore, message: relay_protocol.NetMessage, now_ms: i64) !void {
         switch (message) {
             .rb_input_sample => |batch| {
                 if (batch.slot_index != @as(i32, @intCast(self.controller.local_slot_index))) {
+                    self.markRemoteSeen(batch.slot_index);
                     try self.controller.ingestRemoteSamples(batch.slot_index, batch.samples);
                     self.syncMetrics();
                     try self.drainRollbackSignals(now_ms);
@@ -135,6 +152,14 @@ pub const RuntimeCore = struct {
             .rb_resync_commit => |commit| try self.handleResyncCommit(commit, now_ms),
             else => {},
         }
+    }
+
+    fn markRemoteSeen(self: *RuntimeCore, slot_index_raw: i32) void {
+        if (slot_index_raw < 0) return;
+        const slot_index: usize = @intCast(slot_index_raw);
+        if (slot_index >= self.controller.player_count) return;
+        if (slot_index == self.controller.local_slot_index) return;
+        self.remote_seen_slots[slot_index] = true;
     }
 
     pub fn storeLocalSnapshot(self: *RuntimeCore, tick_index_raw: i32, snapshot_blob: []const u8) !void {
@@ -477,6 +502,45 @@ test "rollback runtime sends resync request when rollback snapshot is missing" {
         },
         else => return error.ExpectedResyncRequest,
     }
+}
+
+test "rollback runtime host waits until every remote slot has sent input" {
+    var runtime = RuntimeCore.init(std.testing.allocator, .{
+        .role = .host,
+        .player_count = 3,
+        .local_slot_index = 0,
+        .input_delay_ticks = 0,
+    });
+    defer runtime.deinit();
+
+    try std.testing.expect(!runtime.hostRemoteInputsReady());
+
+    try runtime.handleMessage(.{ .rb_input_sample = .{
+        .slot_index = 1,
+        .samples = &[_]relay_protocol.RbInputSample{.{ .tick_index = 0, .packed_input = .{ .flags = 3 } }},
+    } }, 20);
+    try std.testing.expect(!runtime.hostRemoteInputsReady());
+
+    try runtime.handleMessage(.{ .rb_input_sample = .{
+        .slot_index = 2,
+        .samples = &[_]relay_protocol.RbInputSample{.{ .tick_index = 0, .packed_input = .{ .flags = 4 } }},
+    } }, 21);
+    try std.testing.expect(runtime.hostRemoteInputsReady());
+
+    runtime.paused_for_resync = true;
+    try std.testing.expect(!runtime.hostRemoteInputsReady());
+}
+
+test "rollback runtime joiner does not wait for remote startup input" {
+    var runtime = RuntimeCore.init(std.testing.allocator, .{
+        .role = .join,
+        .player_count = 2,
+        .local_slot_index = 1,
+        .input_delay_ticks = 0,
+    });
+    defer runtime.deinit();
+
+    try std.testing.expect(runtime.hostRemoteInputsReady());
 }
 
 test "rollback runtime uses local rollback markers without wire snapshot blobs" {

@@ -100,6 +100,10 @@ pub const LiveSession = struct {
         return self.session.popFrame();
     }
 
+    pub fn hostRemoteInputsReady(self: *const LiveSession) bool {
+        return self.session.hostRemoteInputsReady();
+    }
+
     pub fn ensureLiveRunner(self: *LiveSession) LiveSessionError!bool {
         if (self.runner != null) return false;
         const match_config = self.session.match_config orelse return false;

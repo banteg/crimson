@@ -177,6 +177,16 @@ pub const RollbackController = struct {
         try pruneBefore(self.allocator, &self.emitted_frames, target);
     }
 
+    pub fn primeInitialDelay(self: *RollbackController) !void {
+        var tick: i32 = 0;
+        while (tick < self.input_delay_ticks) : (tick += 1) {
+            for (0..self.player_count) |slot| {
+                try self.known_by_slot[slot].put(tick, packed_input.neutral);
+            }
+        }
+        try self.emitReadyFrames();
+    }
+
     fn emitReadyFrames(self: *RollbackController) !void {
         const local_known = &self.known_by_slot[self.local_slot_index];
         while (local_known.contains(self.next_emit_tick)) {
@@ -383,4 +393,28 @@ test "rollback controller reset rewinds emission cursor to snapshot tick" {
     try std.testing.expect(controller.popFrame() == null);
     try std.testing.expect(!controller.emitted_frames.contains(1));
     try std.testing.expect(controller.emitted_frames.contains(2));
+}
+
+test "rollback controller primes initial input delay with neutral frames" {
+    var controller = RollbackController.init(std.testing.allocator, .{
+        .player_count = 2,
+        .local_slot_index = 0,
+        .input_delay_ticks = 2,
+        .max_rollback_ticks = 8,
+    });
+    defer controller.deinit();
+
+    try controller.primeInitialDelay();
+
+    const first = controller.popFrame() orelse return error.ExpectedFirstFrame;
+    try std.testing.expectEqual(@as(i32, 0), first.tick_index);
+    try std.testing.expect(!first.predicted(0));
+    try std.testing.expect(!first.predicted(1));
+    try std.testing.expect(packed_input.eql(packed_input.neutral, first.input(0)));
+    try std.testing.expect(packed_input.eql(packed_input.neutral, first.input(1)));
+
+    const second = controller.popFrame() orelse return error.ExpectedSecondFrame;
+    try std.testing.expectEqual(@as(i32, 1), second.tick_index);
+    try std.testing.expect(packed_input.eql(packed_input.neutral, second.input(0)));
+    try std.testing.expect(packed_input.eql(packed_input.neutral, second.input(1)));
 }

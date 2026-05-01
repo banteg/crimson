@@ -139,6 +139,11 @@ pub const Session = struct {
         return runtime.popFrame();
     }
 
+    pub fn hostRemoteInputsReady(self: *const Session) bool {
+        const runtime = if (self.runtime) |*runtime| runtime else return self.options.role != .host;
+        return runtime.hostRemoteInputsReady();
+    }
+
     pub fn clearOutbox(self: *Session, allocator: std.mem.Allocator) void {
         self.outbox.deinit(allocator);
         self.outbox = .{};
@@ -180,6 +185,7 @@ pub const Session = struct {
             .max_rollback_ticks = start.rollback_max_ticks,
             .reconnect_timeout_ms = self.options.reconnect_timeout_ms,
         });
+        try self.runtime.?.primeInitialDelay();
         self.started = true;
         self.local_slot_index = start.slot_index;
         self.room_code_latest = start.room_code;
@@ -376,4 +382,33 @@ test "rollback session routes remote input into runtime core" {
     try std.testing.expectEqual(@as(i32, 1), runtime.prediction_mismatches);
     try std.testing.expectEqual(@as(i32, 1), runtime.resync_count);
     try std.testing.expect(runtime.paused_for_resync);
+}
+
+test "rollback session primes initial delay frames at room start" {
+    const allocator = std.testing.allocator;
+    var session = Session.init(.{
+        .role = .host,
+        .mode_id = 2,
+        .player_count = 1,
+        .build_id = "test",
+    });
+    defer session.deinit(allocator);
+
+    var server_link: relay_reliable.RelayReliableLink = .{};
+    defer server_link.deinit(allocator);
+    try session.handlePacket(allocator, try server_link.buildPacket(allocator, .{ .room_start = .{
+        .room_code = try room_code.parseRoomCode("ABCD"),
+        .session_id = "s1",
+        .mode_id = 2,
+        .player_count = 1,
+        .slot_index = 0,
+        .input_delay_ticks = 1,
+        .rollback_max_ticks = 8,
+        .netcode_mode = relay_protocol.NetcodeMode.rollback,
+    } }, true, 1000), 1000);
+
+    const frame = session.popFrame() orelse return error.ExpectedFrame;
+    try std.testing.expectEqual(@as(i32, 0), frame.tick_index);
+    try std.testing.expectEqual(@as(u32, 0), frame.input(0).flags);
+    try std.testing.expect(session.popFrame() == null);
 }

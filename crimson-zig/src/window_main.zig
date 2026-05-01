@@ -46,6 +46,7 @@ const lockstep_live_session = cz.net.lockstep_live_session;
 const lockstep_session = cz.net.lockstep_session;
 const packed_input = cz.net.packed_input;
 const relay_reliable = cz.net.relay_reliable;
+const relay_protocol = cz.net.relay_protocol;
 const relay_transport = cz.net.relay_transport;
 const rollback_live_bridge = cz.net.rollback_live_bridge;
 const rollback_live_session = cz.net.rollback_live_session;
@@ -322,7 +323,10 @@ const NetworkLiveRuntime = union(enum) {
             },
             .rollback => |*rollback| blk: {
                 try rollback.update(allocator, io, now_ms);
-                const step_summary = try rollback.stepFrames(allocator);
+                const step_summary = if (rollback.hostRemoteInputsReady())
+                    try rollback.stepFrames(allocator)
+                else
+                    rollback_live_session.StepSummary{};
                 break :blk .{
                     .frames_advanced = step_summary.frames_advanced,
                     .ticks_advanced = step_summary.ticks_advanced,
@@ -341,6 +345,13 @@ const NetworkLiveRuntime = union(enum) {
             .client => |*client| try client.queueLocalInput(allocator, input, now_ms),
             .rollback => |*rollback| try rollback.queueLocalInput(allocator, io, input, now_ms),
         }
+    }
+
+    fn hostRemoteInputsReady(self: *const NetworkLiveRuntime) bool {
+        return switch (self.*) {
+            .host, .client => true,
+            .rollback => |*rollback| rollback.hostRemoteInputsReady(),
+        };
     }
 
     fn submitLocalFrameInput(self: *NetworkLiveRuntime, allocator: std.mem.Allocator, io: std.Io, frame_input: live_runner.FrameInput, now_ms: i64) !bool {
@@ -1322,6 +1333,10 @@ const App = struct {
 
     fn submitNetworkLiveInput(self: *App, io: std.Io, frame_dt: f32, now_ms: i64) !void {
         const session = if (self.network_live_session) |*session| session else return;
+        if (!session.hostRemoteInputsReady()) {
+            self.network_live_input_ready = false;
+            return;
+        }
         const runner = session.runnerForLocalInput() orelse {
             self.network_live_input_ready = false;
             return;
@@ -3904,6 +3919,55 @@ test "window network live runtime steps rollback local frames" {
 
     const run_config = runtime.runConfigForResults() orelse return error.ExpectedLiveConfig;
     try std.testing.expectEqual(@as(u32, 4321), run_config.seed);
+}
+
+test "window rollback host waits for remote input before stepping startup frames" {
+    const allocator = std.testing.allocator;
+    const io = std.Io.Threaded.global_single_threaded.io();
+    var runtime = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .rollback,
+        .bind_host = "127.0.0.1",
+        .host = "127.0.0.1",
+        .port = 31993,
+    }, 123);
+    defer runtime.deinit(allocator, io);
+
+    try runtime.start(allocator, io, 10);
+    var server_link: relay_reliable.RelayReliableLink = .{};
+    defer server_link.deinit(allocator);
+    switch (runtime) {
+        .rollback => |*rollback| try rollback.session.handlePacket(allocator, try server_link.buildPacket(allocator, .{ .room_start = .{
+            .room_code = try room_code.parseRoomCode("ABCD"),
+            .session_id = "window-rollback",
+            .seed = 4321,
+            .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+            .player_count = 2,
+            .slot_index = 0,
+            .input_delay_ticks = 1,
+            .rollback_max_ticks = 8,
+        } }, true, 20), 20),
+        .host, .client => return error.TestUnexpectedResult,
+    }
+
+    try std.testing.expect(!runtime.hostRemoteInputsReady());
+    const blocked_update = try runtime.update(allocator, io, 30);
+    try std.testing.expectEqual(@as(usize, 0), blocked_update.frames_advanced);
+
+    switch (runtime) {
+        .rollback => |*rollback| try rollback.session.handlePacket(allocator, try server_link.buildPacket(allocator, .{ .rb_input_sample = .{
+            .slot_index = 1,
+            .samples = &[_]relay_protocol.RbInputSample{.{ .tick_index = 1, .packed_input = .{ .flags = 9 } }},
+        } }, false, 31), 31),
+        .host, .client => return error.TestUnexpectedResult,
+    }
+
+    try std.testing.expect(runtime.hostRemoteInputsReady());
+    const ready_update = try runtime.update(allocator, io, 32);
+    try std.testing.expectEqual(@as(usize, 1), ready_update.frames_advanced);
+    try std.testing.expectEqual(@as(?i32, 0), ready_update.last_tick_index);
 }
 
 test "window network live runtime packs rollback frame input for local slot" {
