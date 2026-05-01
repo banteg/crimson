@@ -40,6 +40,8 @@ const window_viewport = @import("window_viewport.zig");
 const bonuses_runtime = cz.bonuses;
 const game_ids = cz.game_ids;
 const live_runner = cz.live_runner;
+const lockstep_live_session = cz.net.lockstep_live_session;
+const lockstep_session = cz.net.lockstep_session;
 const runtime_perks = cz.perks;
 const runtime_session = cz.session;
 const state_mod = cz.state;
@@ -187,6 +189,82 @@ const GameplayScreen = struct {
             kept += 1;
         }
         self.pending_terrain_fx_count = kept;
+    }
+};
+
+const NetworkLiveRuntime = union(enum) {
+    host: lockstep_live_session.HostLiveSession,
+    client: lockstep_live_session.ClientLiveSession,
+
+    fn init(request: window_misc_panels.NetworkLaunchRequest, seed: i32) !NetworkLiveRuntime {
+        return switch (request.role) {
+            .host => .{
+                .host = try lockstep_live_session.HostLiveSession.init(.{
+                    .bind_host = request.bind_host,
+                    .bind_port = request.port,
+                    .mode_id = request.mode_id,
+                    .player_count = request.player_count,
+                    .build_id = cz.version,
+                    .session_id = "window-lockstep",
+                    .seed = seed,
+                    .input_delay_ticks = 0,
+                    .host_ready = true,
+                    .pump_options = .{ .first_timeout_ms = 0 },
+                }),
+            },
+            .join => .{
+                .client = lockstep_live_session.ClientLiveSession.init(.{
+                    .bind_host = "0.0.0.0",
+                    .bind_port = 0,
+                    .mode_id = request.mode_id,
+                    .player_count = request.player_count,
+                    .build_id = cz.version,
+                    .host_addr = lockstep_session.PeerAddr.loopback(request.port),
+                    .input_delay_ticks = 0,
+                    .pump_options = .{ .first_timeout_ms = 0 },
+                }),
+            },
+        };
+    }
+
+    fn deinit(self: *NetworkLiveRuntime, allocator: std.mem.Allocator, io: std.Io) void {
+        switch (self.*) {
+            .host => |*host| host.deinit(allocator, io),
+            .client => |*client| client.deinit(allocator, io),
+        }
+        self.* = undefined;
+    }
+
+    fn open(self: *NetworkLiveRuntime, io: std.Io) !void {
+        switch (self.*) {
+            .host => |*host| try host.open(io),
+            .client => |*client| try client.open(io),
+        }
+    }
+
+    fn start(self: *NetworkLiveRuntime, allocator: std.mem.Allocator, io: std.Io, now_ms: i64) !void {
+        try self.open(io);
+        switch (self.*) {
+            .host => {},
+            .client => |*client| try client.sendHello(allocator, now_ms),
+        }
+    }
+
+    fn update(self: *NetworkLiveRuntime, allocator: std.mem.Allocator, io: std.Io, now_ms: i64) !lockstep_session.UpdateStats {
+        return switch (self.*) {
+            .host => |*host| host.update(allocator, io, now_ms),
+            .client => |*client| blk: {
+                if (client.runner == null) _ = try client.ensureLiveRunner();
+                break :blk try client.update(allocator, io, now_ms);
+            },
+        };
+    }
+
+    fn boundPort(self: *const NetworkLiveRuntime) u16 {
+        return switch (self.*) {
+            .host => |host| host.session.boundPort(),
+            .client => |client| client.session.boundPort(),
+        };
     }
 };
 
@@ -408,6 +486,7 @@ const App = struct {
     network_session: window_misc_panels.NetworkState = .{},
     end_note_selection: usize = 0,
     gameplay: ?GameplayScreen = null,
+    network_live_session: ?NetworkLiveRuntime = null,
     results: ?ResultsScreen = null,
     options: window_options.OptionsState = .{},
     controls: window_options.ControlsState = .{},
@@ -447,6 +526,7 @@ const App = struct {
     }
 
     fn deinit(self: *App) void {
+        self.stopNetworkLiveSession();
         if (self.gameplay) |*gameplay| {
             gameplay.deinit();
             self.gameplay = null;
@@ -948,8 +1028,60 @@ const App = struct {
         }
         if (panel_update.play_button_click) self.audio.playUiButtonClick();
         if (panel_update.action == .back_to_menu) {
+            self.stopNetworkLiveSession();
             self.play_game_menu.reset();
             self.setScreen(.play_game_menu);
+        }
+        if (panel_update.action == .launch_network) {
+            self.startNetworkLiveSession();
+        }
+        self.updateNetworkLiveSession();
+    }
+
+    fn startNetworkLiveSession(self: *App) void {
+        const request = window_misc_panels.networkLaunchRequest(&self.network_session) orelse {
+            self.network_session.setStatus("Rollback relay is config-only.");
+            return;
+        };
+        self.stopNetworkLiveSession();
+
+        const io = std.Io.Threaded.global_single_threaded.io();
+        const seed: i32 = @bitCast(nextRunSeed(&self.next_seed_state));
+        var session = NetworkLiveRuntime.init(request, seed) catch |err| {
+            self.network_session.setStatusFmt("Lockstep init failed: {s}", .{@errorName(err)});
+            return;
+        };
+        session.start(self.allocator, io, monotonicMs(io)) catch |err| {
+            session.deinit(self.allocator, io);
+            self.network_session.setStatusFmt("Lockstep open failed: {s}", .{@errorName(err)});
+            return;
+        };
+
+        const port = session.boundPort();
+        self.network_live_session = session;
+        switch (request.role) {
+            .host => self.network_session.setStatusFmt("Lockstep host listening on port {d}.", .{port}),
+            .join => self.network_session.setStatusFmt("Lockstep join sent hello from port {d}.", .{port}),
+        }
+    }
+
+    fn updateNetworkLiveSession(self: *App) void {
+        const session = if (self.network_live_session) |*session| session else return;
+        const io = std.Io.Threaded.global_single_threaded.io();
+        const stats = session.update(self.allocator, io, monotonicMs(io)) catch |err| {
+            self.network_session.setStatusFmt("Lockstep update failed: {s}", .{@errorName(err)});
+            self.stopNetworkLiveSession();
+            return;
+        };
+        if (stats.received != 0 or stats.sent != 0) {
+            self.network_session.setStatusFmt("Lockstep packets recv={d} sent={d}.", .{ stats.received, stats.sent });
+        }
+    }
+
+    fn stopNetworkLiveSession(self: *App) void {
+        if (self.network_live_session) |*session| {
+            session.deinit(self.allocator, std.Io.Threaded.global_single_threaded.io());
+            self.network_live_session = null;
         }
     }
 
@@ -3135,6 +3267,24 @@ test "live run player count forces one-player modes" {
     try std.testing.expectEqual(@as(i32, 1), livePlayerCountForMode(.rush, 0));
 }
 
+test "window network live runtime opens host session" {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    var runtime = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .lockstep,
+        .bind_host = "127.0.0.1",
+        .port = 0,
+    }, 123);
+    defer runtime.deinit(std.testing.allocator, io);
+
+    try runtime.start(std.testing.allocator, io, 10);
+    try std.testing.expect(runtime.boundPort() != 0);
+    const stats = try runtime.update(std.testing.allocator, io, 20);
+    try std.testing.expectEqual(@as(usize, 0), stats.received);
+}
+
 test "demo attract variant sequencing mirrors native cycle" {
     try std.testing.expectEqual(@as(i32, 6), demo_attract_variant_count);
     try std.testing.expectEqual(@as(i32, 1), nextDemoAttractVariant(0));
@@ -4883,6 +5033,10 @@ fn runConfigForLiveMode(mode: game_ids.GameModeId, quest_level_key: ?i32, seed_s
             .game_mode = .survival,
         },
     };
+}
+
+fn monotonicMs(io: std.Io) i64 {
+    return std.Io.Timestamp.now(io, .awake).toMilliseconds();
 }
 
 fn livePlayerCountForMode(mode: game_ids.GameModeId, requested_player_count: i32) i32 {

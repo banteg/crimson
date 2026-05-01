@@ -11,7 +11,8 @@ const max_mod_lines: usize = 16;
 const max_line_bytes: usize = 224;
 const max_shown_mod_dlls: usize = 10;
 const max_mod_dll_name_bytes: usize = 128;
-const network_row_count: usize = 5;
+const network_row_count: usize = 6;
+const network_status_bytes: usize = 96;
 const mod_runtime_scope_text = "Native DLL mod loading is outside this port.";
 const other_games_scope_text = "Other Games ads are outside this port.";
 const network_runtime_scope_text = "Lockstep runtime available; rollback relay is config-only.";
@@ -39,17 +40,39 @@ const NetworkSelection = enum(u8) {
     players,
     netcode,
     endpoint,
+    launch,
 };
 
 pub const Action = enum {
     none,
     back_to_menu,
+    launch_network,
 };
 
 pub const UpdateResult = struct {
     action: Action = .none,
     play_panel_click: bool = false,
     play_button_click: bool = false,
+};
+
+pub const NetworkLaunchRole = enum {
+    host,
+    join,
+};
+
+pub const NetworkLaunchNetcode = enum {
+    rollback,
+    lockstep,
+};
+
+pub const NetworkLaunchRequest = struct {
+    role: NetworkLaunchRole,
+    mode_id: i32,
+    player_count: i32,
+    netcode: NetworkLaunchNetcode,
+    bind_host: []const u8 = "0.0.0.0",
+    host: []const u8 = "127.0.0.1",
+    port: u16 = 31993,
 };
 
 const PanelState = struct {
@@ -189,9 +212,27 @@ pub const NetworkState = struct {
     player_count: i32 = 2,
     netcode: NetworkNetcode = .lockstep,
     room_code_index: usize = 0,
+    status_bytes: [network_status_bytes]u8 = undefined,
+    status_len: usize = 0,
 
     pub fn reset(self: *NetworkState) void {
         self.* = .{};
+        self.setStatus("Lockstep ready.");
+    }
+
+    pub fn setStatus(self: *NetworkState, message: []const u8) void {
+        const len = @min(message.len, self.status_bytes.len);
+        @memcpy(self.status_bytes[0..len], message[0..len]);
+        self.status_len = len;
+    }
+
+    pub fn setStatusFmt(self: *NetworkState, comptime fmt: []const u8, args: anytype) void {
+        const rendered = std.fmt.bufPrint(self.status_bytes[0..], fmt, args) catch return;
+        self.status_len = rendered.len;
+    }
+
+    pub fn statusText(self: *const NetworkState) []const u8 {
+        return self.status_bytes[0..self.status_len];
     }
 };
 
@@ -235,6 +276,9 @@ pub fn updateNetwork(state: *NetworkState, frame_dt: f32, runtime_assets: ?*cons
         changeSelectedNetworkValue(state, -1);
         return .{ .play_button_click = true };
     }
+    if (window_ui.confirmPressed() and state.selection == .launch and state.netcode == .lockstep) {
+        return .{ .action = .launch_network, .play_button_click = true };
+    }
     if (rl.isKeyPressed(.right) or rl.isKeyPressed(.d) or window_ui.confirmPressed()) {
         changeSelectedNetworkValue(state, 1);
         return .{ .play_button_click = true };
@@ -268,8 +312,28 @@ pub fn drawNetwork(state: *const NetworkState, runtime_assets: ?*const window_as
     drawNetworkRow(assets, animated_rect, 2, state.selection == .players, "Players", networkPlayersValueLabel(state, &value_buf), &line_buf);
     drawNetworkRow(assets, animated_rect, 3, state.selection == .netcode, "Netcode", networkNetcodeLabel(state.netcode), &line_buf);
     drawNetworkRow(assets, animated_rect, 4, state.selection == .endpoint, "Endpoint", networkEndpointValueLabel(state, &value_buf), &line_buf);
+    drawNetworkRow(assets, animated_rect, 5, state.selection == .launch, "Launch", networkLaunchValueLabel(state), &line_buf);
 
-    window_ui.drawSmallText(assets, network_runtime_scope_text, animated_rect.x + 116.0, animated_rect.y + 236.0, rl.Color.init(214, 190, 170, 255));
+    window_ui.drawSmallText(assets, network_runtime_scope_text, animated_rect.x + 96.0, animated_rect.y + 264.0, rl.Color.init(214, 190, 170, 255));
+    if (state.status_len != 0) {
+        window_ui.drawSmallText(assets, state.statusText(), animated_rect.x + 136.0, animated_rect.y + 286.0, rl.Color.init(204, 204, 214, 255));
+    }
+}
+
+pub fn networkLaunchRequest(state: *const NetworkState) ?NetworkLaunchRequest {
+    if (state.netcode != .lockstep) return null;
+    return .{
+        .role = switch (state.role) {
+            .host => .host,
+            .join => .join,
+        },
+        .mode_id = networkModeId(state.mode),
+        .player_count = std.math.clamp(state.player_count, @as(i32, 1), @as(i32, 4)),
+        .netcode = .lockstep,
+        .bind_host = "0.0.0.0",
+        .host = "127.0.0.1",
+        .port = 31993,
+    };
 }
 
 fn updatePanel(state: *PanelState, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
@@ -342,7 +406,8 @@ fn networkSelectionFromIndex(index: usize) NetworkSelection {
         1 => .mode,
         2 => .players,
         3 => .netcode,
-        else => .endpoint,
+        4 => .endpoint,
+        else => .launch,
     };
 }
 
@@ -376,6 +441,7 @@ fn changeSelectedNetworkValue(state: *NetworkState, direction: i32) void {
             else
                 (state.room_code_index + 1) % network_room_codes.len;
         },
+        .launch => {},
     }
 }
 
@@ -412,6 +478,14 @@ fn networkModeValueLabel(state: *const NetworkState) []const u8 {
     };
 }
 
+fn networkModeId(mode: NetworkMode) i32 {
+    return switch (mode) {
+        .survival => 1,
+        .rush => 2,
+        .quests => 3,
+    };
+}
+
 fn networkNetcodeLabel(netcode: NetworkNetcode) []const u8 {
     return switch (netcode) {
         .rollback => "Rollback",
@@ -434,6 +508,16 @@ fn networkEndpointValueLabel(state: *const NetworkState, scratch: *[96]u8) []con
             .host => "bind 0.0.0.0:31993",
             .join => "host 127.0.0.1:31993",
         },
+    };
+}
+
+fn networkLaunchValueLabel(state: *const NetworkState) []const u8 {
+    return switch (state.netcode) {
+        .lockstep => switch (state.role) {
+            .host => "Start host",
+            .join => "Join host",
+        },
+        .rollback => "Config only",
     };
 }
 
@@ -464,6 +548,7 @@ test "network panel scope text stays explicit" {
 
 test "network panel defaults to host lockstep session" {
     var state: NetworkState = .{};
+    state.reset();
 
     try std.testing.expectEqual(NetworkRole.host, state.role);
     try std.testing.expectEqual(NetworkMode.survival, state.mode);
@@ -471,6 +556,7 @@ test "network panel defaults to host lockstep session" {
     try std.testing.expectEqual(@as(i32, 2), state.player_count);
     try std.testing.expectEqualStrings("Host", networkRoleLabel(state.role));
     try std.testing.expectEqualStrings("Survival", networkModeValueLabel(&state));
+    try std.testing.expectEqualStrings("Lockstep ready.", state.statusText());
     var buf: [96]u8 = undefined;
     try std.testing.expectEqualStrings("bind 0.0.0.0:31993", networkEndpointValueLabel(&state, &buf));
 }
@@ -504,4 +590,26 @@ test "network panel join uses lobby-derived mode and lockstep endpoint by defaul
 
     changeSelectedNetworkValue(&state, 1);
     try std.testing.expectEqualStrings("room cd34 via relay", networkEndpointValueLabel(&state, &buf));
+}
+
+test "network panel builds launch requests only for lockstep" {
+    var state: NetworkState = .{};
+
+    const host_request = networkLaunchRequest(&state) orelse return error.TestExpectedEqual;
+    try std.testing.expectEqual(NetworkLaunchRole.host, host_request.role);
+    try std.testing.expectEqual(NetworkLaunchNetcode.lockstep, host_request.netcode);
+    try std.testing.expectEqual(@as(i32, 1), host_request.mode_id);
+    try std.testing.expectEqual(@as(i32, 2), host_request.player_count);
+    try std.testing.expectEqualStrings("0.0.0.0", host_request.bind_host);
+    try std.testing.expectEqual(@as(u16, 31993), host_request.port);
+
+    state.role = .join;
+    state.player_count = 4;
+    const join_request = networkLaunchRequest(&state) orelse return error.TestExpectedEqual;
+    try std.testing.expectEqual(NetworkLaunchRole.join, join_request.role);
+    try std.testing.expectEqual(@as(i32, 4), join_request.player_count);
+    try std.testing.expectEqualStrings("127.0.0.1", join_request.host);
+
+    state.netcode = .rollback;
+    try std.testing.expect(networkLaunchRequest(&state) == null);
 }
