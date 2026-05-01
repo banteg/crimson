@@ -309,6 +309,7 @@ const ResultsScreen = struct {
     highscore: ?ResultsHighscoreState = null,
     score_too_low_for_top100: bool = false,
     quest_final_time: ?quest_results.QuestFinalTime = null,
+    quest_breakdown_anim: quest_results.QuestResultsBreakdownAnim = .{},
 };
 
 const ResultsHighscoreState = struct {
@@ -518,7 +519,7 @@ const App = struct {
             .other_games_menu => self.updateOtherGamesMenu(frame_dt),
             .gameplay => self.updateGameplay(frame_dt),
             .pause => self.updatePause(frame_dt),
-            .results => self.updateResults(),
+            .results => self.updateResults(frame_dt),
             .end_note => self.updateEndNote(),
             .options => self.updateOptions(frame_dt),
             .controls => self.updateControls(frame_dt),
@@ -930,8 +931,30 @@ const App = struct {
         }
     }
 
-    fn updateResults(self: *App) void {
+    fn updateResults(self: *App, frame_dt: f32) void {
         if (self.results) |*results| {
+            if (results.reason == .completed and results.quest_final_time != null and !results.quest_breakdown_anim.done) {
+                if (rl.isKeyPressed(.space) or rl.isMouseButtonPressed(.left)) {
+                    results.quest_breakdown_anim.setFinal(results.quest_final_time.?);
+                    if (results.highscore) |*highscore| {
+                        highscore.defer_name_input_until_controls_released = true;
+                    }
+                    return;
+                }
+                const frame_dt_ms: i32 = @intFromFloat(frame_dt * 1000.0);
+                const clinks = quest_results.tickQuestResultsBreakdownAnim(
+                    &results.quest_breakdown_anim,
+                    frame_dt_ms,
+                    results.quest_final_time.?,
+                );
+                if (clinks > 0) self.audio.playUiClink();
+                if (results.quest_breakdown_anim.done) {
+                    if (results.highscore) |*highscore| {
+                        highscore.defer_name_input_until_controls_released = true;
+                    }
+                }
+                return;
+            }
             if (results.highscore) |*highscore| {
                 if (highscore.promptActive()) {
                     self.updateResultsHighscoreEntry(results, highscore);
@@ -1723,7 +1746,10 @@ const App = struct {
                     drawSmallText(runtime_assets, "LEVEL", 370.0, 314.0, HudTextColor.dim);
                     drawSmallText(runtime_assets, "WEAPON", 370.0, 342.0, HudTextColor.dim);
                     drawSmallText(runtime_assets, "HP", 370.0, 370.0, HudTextColor.dim);
-                    const elapsed_ms = if (results.quest_final_time) |breakdown| breakdown.final_time_ms else @as(i32, @intCast(results.summary.elapsed_ms_sim));
+                    const elapsed_ms = if (results.quest_final_time != null)
+                        questResultsDisplayBreakdown(&results).final_time_ms
+                    else
+                        @as(i32, @intCast(results.summary.elapsed_ms_sim));
                     var elapsed_buf: [16]u8 = undefined;
                     drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&elapsed_buf, elapsed_ms), 510.0, 258.0, HudTextColor.primary);
                     drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_experience}, 510.0, 286.0, HudTextColor.primary);
@@ -1731,7 +1757,12 @@ const App = struct {
                     drawSmallText(runtime_assets, weaponName(results.summary.player_weapon_id), 510.0, 342.0, HudTextColor.primary);
                     const player_health = if (results.player_health_count > 0) results.player_health_values[0] else 0.0;
                     drawSmallTextFmt("{d:.1}", runtime_assets, .{player_health}, 510.0, 370.0, HudTextColor.primary);
-                    if (results.quest_final_time) |breakdown| {
+                    if (results.quest_final_time != null) {
+                        const breakdown = questResultsDisplayBreakdown(&results);
+                        const base_color = questResultsBreakdownRowColor(&results, 0, false);
+                        const life_color = questResultsBreakdownRowColor(&results, 1, false);
+                        const perk_color = questResultsBreakdownRowColor(&results, 2, false);
+                        const final_color = questResultsBreakdownRowColor(&results, 3, true);
                         drawSmallText(runtime_assets, "BASE", 690.0, 258.0, HudTextColor.dim);
                         drawSmallText(runtime_assets, "LIFE BONUS", 690.0, 286.0, HudTextColor.dim);
                         drawSmallText(runtime_assets, "PERK BONUS", 690.0, 314.0, HudTextColor.dim);
@@ -1740,29 +1771,42 @@ const App = struct {
                         var life_buf: [16]u8 = undefined;
                         var perk_buf: [16]u8 = undefined;
                         var final_buf: [16]u8 = undefined;
-                        drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&base_buf, breakdown.base_time_ms), 846.0, 258.0, HudTextColor.primary);
-                        drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&life_buf, breakdown.life_bonus_ms)}, 846.0, 286.0, HudTextColor.primary);
-                        drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&perk_buf, breakdown.unpicked_perk_bonus_ms)}, 846.0, 314.0, HudTextColor.primary);
-                        drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&final_buf, breakdown.final_time_ms), 846.0, 342.0, HudTextColor.accent);
+                        drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&base_buf, breakdown.base_time_ms), 846.0, 258.0, base_color);
+                        drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&life_buf, breakdown.life_bonus_ms)}, 846.0, 286.0, life_color);
+                        drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&perk_buf, breakdown.unpicked_perk_bonus_ms)}, 846.0, 314.0, perk_color);
+                        drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&final_buf, breakdown.final_time_ms), 846.0, 342.0, final_color);
                     }
                 }
 
+                const breakdown_pending = questResultsBreakdownPending(&results);
                 if (results.runtime_error) |runtime_error| {
                     drawSmallText(runtime_assets, runtime_error, 330.0, 430.0, rl.Color.orange);
                 }
-                if (results.highscore) |highscore| {
+                if (!breakdown_pending and results.highscore != null) {
+                    const highscore = results.highscore.?;
                     drawResultsHighscore(runtime_assets, &highscore, resultsNamePrompt(&results));
-                } else if (results.score_too_low_for_top100) {
+                } else if (!breakdown_pending and results.score_too_low_for_top100) {
                     drawSmallTextCentered(runtime_assets, "Score too low for top100.", 452.0, HudTextColor.dim);
                 }
             }
         }
 
-        const prompt_active = if (self.results) |results|
-            if (results.highscore) |highscore| highscore.promptActive() else false
+        const breakdown_pending = if (self.results) |results|
+            questResultsBreakdownPending(&results)
         else
             false;
-        const buttons = if (prompt_active)
+        const prompt_active = if (!breakdown_pending and self.results != null)
+            if (self.results.?.highscore) |highscore| highscore.promptActive() else false
+        else
+            false;
+        const buttons = if (breakdown_pending)
+            ResultsButtons{ .items = .{
+                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+            }, .len = 0 }
+        else if (prompt_active)
             ResultsButtons{ .items = .{
                 resultsHighscoreButtons()[0],
                 resultsHighscoreButtons()[1],
@@ -2131,6 +2175,43 @@ fn resultsSubtitleFor(results: *const ResultsScreen) [:0]const u8 {
         return questFailedMessage(results.run_config.quest_fail_retry_count, results.run_config.preserve_bugs);
     }
     return resultsSubtitle(results.reason);
+}
+
+fn questResultsBreakdownPending(results: *const ResultsScreen) bool {
+    return results.reason == .completed and results.quest_final_time != null and !results.quest_breakdown_anim.done;
+}
+
+fn questResultsDisplayBreakdown(results: *const ResultsScreen) quest_results.QuestFinalTime {
+    const target = results.quest_final_time orelse return .{
+        .base_time_ms = 0,
+        .life_bonus_ms = 0,
+        .unpicked_perk_bonus_ms = 0,
+        .final_time_ms = 0,
+    };
+    const anim = results.quest_breakdown_anim;
+    if (results.reason != .completed or anim.done) return target;
+    return .{
+        .base_time_ms = anim.base_time_ms,
+        .life_bonus_ms = anim.life_bonus_ms,
+        .unpicked_perk_bonus_ms = anim.perkBonusMs(),
+        .final_time_ms = anim.final_time_ms,
+    };
+}
+
+fn questResultsBreakdownRowColor(results: *const ResultsScreen, row: i32, final_row: bool) rl.Color {
+    const anim = results.quest_breakdown_anim;
+    if (results.reason != .completed or results.quest_final_time == null or anim.done) {
+        return if (final_row) HudTextColor.accent else HudTextColor.primary;
+    }
+    var alpha: f32 = 0.2;
+    if (row < anim.step) {
+        alpha = 0.4;
+    } else if (row == anim.step) {
+        alpha = 1.0;
+        if (final_row) alpha *= anim.highlightAlpha();
+    }
+    const base = if (row == anim.step) HudTextColor.accent else HudTextColor.primary;
+    return colorWithAlpha(base, alpha);
 }
 
 fn scoreTooLowForTop100(rank_index: usize) bool {
