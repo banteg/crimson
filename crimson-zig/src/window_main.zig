@@ -994,7 +994,7 @@ const App = struct {
                 .player_count = results.run_config.player_count,
             },
         ) catch |err| {
-            highscore.save_error = @errorName(err);
+            highscore.save_error = resultsHighscorePathErrorDetail(err);
             return;
         };
         defer self.allocator.free(score_path);
@@ -1005,13 +1005,13 @@ const App = struct {
             highscore.record,
             null,
         ) catch |err| {
-            highscore.save_error = @errorName(err);
+            highscore.save_error = resultsHighscoreSaveErrorDetail(err);
             return;
         };
         defer upsert.deinit(self.allocator);
 
         self.runtime.saveConfigIfDirty() catch |err| {
-            highscore.save_error = @errorName(err);
+            highscore.save_error = resultsConfigSaveErrorDetail(err);
             return;
         };
 
@@ -1706,6 +1706,32 @@ fn resultsButtonsFor(results: *const ResultsScreen) ResultsButtons {
     };
 }
 
+fn resultsHighscorePathErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.OutOfMemory => "Unable to build high score file path.",
+        else => @errorName(err),
+    };
+}
+
+fn resultsHighscoreSaveErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.AccessDenied => "Unable to save high score: access denied.",
+        error.OutOfMemory => "Unable to save high score: out of memory.",
+        error.InvalidSize => "High score file has an invalid record size.",
+        error.NoSpaceLeft => "Unable to save high score: not enough disk space.",
+        else => @errorName(err),
+    };
+}
+
+fn resultsConfigSaveErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.AccessDenied => "Unable to save config: access denied.",
+        error.OutOfMemory => "Unable to save config: out of memory.",
+        error.NoSpaceLeft => "Unable to save config: not enough disk space.",
+        else => @errorName(err),
+    };
+}
+
 fn resultsHighscoreButtons() [2]UiButton {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     return .{
@@ -1978,6 +2004,13 @@ test "results high score type click follows native random bit" {
     try std.testing.expectEqual(state_mod.SfxId.ui_typeclick_01, uiTypeClickSfxFromRoll(0));
     try std.testing.expectEqual(state_mod.SfxId.ui_typeclick_02, uiTypeClickSfxFromRoll(1));
     try std.testing.expectEqual(state_mod.SfxId.ui_typeclick_01, uiTypeClickSfxFromRoll(2));
+}
+
+test "results high score save errors use user-facing details" {
+    try std.testing.expectEqualStrings("Unable to build high score file path.", resultsHighscorePathErrorDetail(error.OutOfMemory));
+    try std.testing.expectEqualStrings("Unable to save high score: access denied.", resultsHighscoreSaveErrorDetail(error.AccessDenied));
+    try std.testing.expectEqualStrings("High score file has an invalid record size.", resultsHighscoreSaveErrorDetail(error.InvalidSize));
+    try std.testing.expectEqualStrings("Unable to save config: not enough disk space.", resultsConfigSaveErrorDetail(error.NoSpaceLeft));
 }
 
 fn drawWorld(
