@@ -1,4 +1,5 @@
 const std = @import("std");
+const msgpack = @import("msgpack");
 const binary = @import("binary.zig");
 
 pub const blob_size: usize = 0x268;
@@ -22,6 +23,65 @@ pub const Status = struct {
     mode_play_other: u32,
     game_sequence_id: u32,
     unknown_tail: [unknown_tail_size]u8,
+
+    pub fn msgpackWrite(self: Status, packer: anytype) !void {
+        try packer.writeMapHeader(10);
+        try packer.writeString("quest_unlock_index");
+        try packer.writeInt(self.quest_unlock_index);
+        try packer.writeString("quest_unlock_index_full");
+        try packer.writeInt(self.quest_unlock_index_full);
+        try packer.writeString("weapon_usage_counts");
+        try packer.writeArray(u32, self.weapon_usage_counts[0..]);
+        try packer.writeString("quest_play_counts");
+        try packer.writeArray(u32, self.quest_play_counts[0..]);
+        try packer.writeString("mode_play_survival");
+        try packer.writeInt(self.mode_play_survival);
+        try packer.writeString("mode_play_rush");
+        try packer.writeInt(self.mode_play_rush);
+        try packer.writeString("mode_play_typo");
+        try packer.writeInt(self.mode_play_typo);
+        try packer.writeString("mode_play_other");
+        try packer.writeInt(self.mode_play_other);
+        try packer.writeString("game_sequence_id");
+        try packer.writeInt(self.game_sequence_id);
+        try packer.writeString("unknown_tail");
+        try packer.writeBinary(self.unknown_tail[0..]);
+    }
+
+    pub fn msgpackRead(unpacker: anytype) !Status {
+        var status = std.mem.zeroes(Status);
+        const field_count = try unpacker.readMapHeader(u32);
+        for (0..field_count) |_| {
+            const key = try unpacker.readString();
+            if (std.mem.eql(u8, key, "quest_unlock_index")) {
+                status.quest_unlock_index = try unpacker.readInt(u16);
+            } else if (std.mem.eql(u8, key, "quest_unlock_index_full")) {
+                status.quest_unlock_index_full = try unpacker.readInt(u16);
+            } else if (std.mem.eql(u8, key, "weapon_usage_counts")) {
+                const values = try unpacker.readArrayInto(u32, status.weapon_usage_counts[0..]);
+                if (values.len != weapon_usage_count) return error.InvalidSize;
+            } else if (std.mem.eql(u8, key, "quest_play_counts")) {
+                const values = try unpacker.readArrayInto(u32, status.quest_play_counts[0..]);
+                if (values.len != quest_play_count) return error.InvalidSize;
+            } else if (std.mem.eql(u8, key, "mode_play_survival")) {
+                status.mode_play_survival = try unpacker.readInt(u32);
+            } else if (std.mem.eql(u8, key, "mode_play_rush")) {
+                status.mode_play_rush = try unpacker.readInt(u32);
+            } else if (std.mem.eql(u8, key, "mode_play_typo")) {
+                status.mode_play_typo = try unpacker.readInt(u32);
+            } else if (std.mem.eql(u8, key, "mode_play_other")) {
+                status.mode_play_other = try unpacker.readInt(u32);
+            } else if (std.mem.eql(u8, key, "game_sequence_id")) {
+                status.game_sequence_id = try unpacker.readInt(u32);
+            } else if (std.mem.eql(u8, key, "unknown_tail")) {
+                const bytes = try unpacker.readBinaryInto(status.unknown_tail[0..]);
+                if (bytes.len != unknown_tail_size) return error.InvalidSize;
+            } else {
+                return error.UnknownStatusField;
+            }
+        }
+        return status;
+    }
 };
 
 pub const ParsedFile = struct {
@@ -222,4 +282,35 @@ test "game.cfg status blob parse/build roundtrip" {
     try std.testing.expectEqual(status.mode_play_other, parsed.mode_play_other);
     try std.testing.expectEqual(status.game_sequence_id, parsed.game_sequence_id);
     try std.testing.expectEqualSlices(u8, &status.unknown_tail, &parsed.unknown_tail);
+}
+
+test "game.cfg status msgpack roundtrip mirrors python data shape" {
+    var status = std.mem.zeroes(Status);
+    status.quest_unlock_index = 12;
+    status.quest_unlock_index_full = 34;
+    status.weapon_usage_counts[5] = 99;
+    status.quest_play_counts[7] = 1234;
+    status.mode_play_survival = 1;
+    status.mode_play_rush = 2;
+    status.mode_play_typo = 3;
+    status.mode_play_other = 4;
+    status.game_sequence_id = 0x12345678;
+    status.unknown_tail = [_]u8{0xA5} ** unknown_tail_size;
+
+    var writer: std.Io.Writer.Allocating = .init(std.testing.allocator);
+    defer writer.deinit();
+    try msgpack.encode(status, &writer.writer);
+
+    const decoded = try msgpack.decodeFromSlice(Status, std.testing.allocator, writer.written());
+    defer decoded.deinit();
+    try std.testing.expectEqual(status.quest_unlock_index, decoded.value.quest_unlock_index);
+    try std.testing.expectEqual(status.quest_unlock_index_full, decoded.value.quest_unlock_index_full);
+    try std.testing.expectEqual(status.weapon_usage_counts[5], decoded.value.weapon_usage_counts[5]);
+    try std.testing.expectEqual(status.quest_play_counts[7], decoded.value.quest_play_counts[7]);
+    try std.testing.expectEqual(status.mode_play_survival, decoded.value.mode_play_survival);
+    try std.testing.expectEqual(status.mode_play_rush, decoded.value.mode_play_rush);
+    try std.testing.expectEqual(status.mode_play_typo, decoded.value.mode_play_typo);
+    try std.testing.expectEqual(status.mode_play_other, decoded.value.mode_play_other);
+    try std.testing.expectEqual(status.game_sequence_id, decoded.value.game_sequence_id);
+    try std.testing.expectEqualSlices(u8, &status.unknown_tail, &decoded.value.unknown_tail);
 }

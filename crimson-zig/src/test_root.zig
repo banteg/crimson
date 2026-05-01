@@ -19,9 +19,11 @@ test {
     _ = cz.local_input;
     _ = cz.lifecycle;
     _ = cz.live_runner;
+    _ = cz.net;
     _ = cz.perks;
     _ = cz.persistence;
     _ = cz.projectiles;
+    _ = cz.quest_level;
     _ = cz.quest_spawn_logic_full;
     _ = cz.quest_spawn_native;
     _ = cz.replay_benchmark_native;

@@ -6,6 +6,7 @@ pub const cli = @import("cli.zig");
 pub const dbg_record_native = @import("dbg_record_native.zig");
 pub const dbg_verify_native = @import("dbg_verify_native.zig");
 pub const hash = @import("hash.zig");
+pub const quest_level = @import("quest_level.zig");
 pub const quest_spawn_logic_full = @import("quest_spawn/logic_full.zig");
 pub const quest_spawn_native = @import("quest_spawn_native.zig");
 pub const replay_codec = @import("replay_codec.zig");
@@ -39,7 +40,13 @@ pub const formats = @import("formats/mod.zig");
 pub const persistence = @import("persistence/mod.zig");
 pub const local_input = @import("local_input.zig");
 pub const demo_trial = @import("demo_trial.zig");
+pub const net = @import("net/mod.zig");
 pub const runtime_paths = @import("runtime_paths.zig");
 pub const window_atlas = @import("window_atlas.zig");
 
 pub const version = "0.1.0-dev";
+
+test {
+    _ = net;
+    _ = quest_level;
+}

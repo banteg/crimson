@@ -188,8 +188,20 @@ pub fn build(b: *std.Build) void {
     const mod_tests = b.addTest(.{ .root_module = test_root_module });
     const run_mod_tests = b.addRunArtifact(mod_tests);
 
+    const root_lib_test_module = b.createModule(.{
+        .root_source_file = b.path("src/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "msgpack", .module = msgpack_dep.module("msgpack") },
+        },
+    });
+    const root_lib_tests = b.addTest(.{ .root_module = root_lib_test_module });
+    const run_root_lib_tests = b.addRunArtifact(root_lib_tests);
+
     const test_step = b.step("test", "Run tests");
     test_step.dependOn(&run_mod_tests.step);
+    test_step.dependOn(&run_root_lib_tests.step);
 
     const wasm_target = b.resolveTargetQuery(.{
         .cpu_arch = .wasm32,
