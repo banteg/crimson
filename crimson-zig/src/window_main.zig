@@ -942,7 +942,7 @@ const App = struct {
         results: *ResultsScreen,
         highscore: *ResultsHighscoreState,
     ) void {
-        collectNameInput(highscore);
+        self.playNameInputTypeClicks(collectNameInput(highscore));
 
         const buttons = resultsHighscoreButtons();
         window_ui.updateSelectionFromPointer(&highscore.selection, buttons[0..]);
@@ -1019,6 +1019,18 @@ const App = struct {
         highscore.save_error = null;
         self.results_selection = 0;
         self.audio.playUiTypeEnter();
+    }
+
+    fn playNameInputTypeClicks(self: *App, edits: NameInputEdits) void {
+        if (edits.typed) self.playNameInputTypeClick();
+        if (edits.backspaced) self.playNameInputTypeClick();
+    }
+
+    fn playNameInputTypeClick(self: *App) void {
+        var rng = spawn_mod.Crand.init(self.next_seed_state);
+        const sfx_id = uiTypeClickSfxFromRoll(rng.randTagged(rng_callers.ui_text_input_update_typeclick));
+        self.next_seed_state = rng.state;
+        self.audio.playUiTypeClick(sfx_id);
     }
 
     fn startNewRun(self: *App, run_config: live_runner.LiveModeConfig) void {
@@ -1702,7 +1714,13 @@ fn resultsHighscoreButtons() [2]UiButton {
     };
 }
 
-fn collectNameInput(highscore: *ResultsHighscoreState) void {
+const NameInputEdits = struct {
+    typed: bool = false,
+    backspaced: bool = false,
+};
+
+fn collectNameInput(highscore: *ResultsHighscoreState) NameInputEdits {
+    var edits: NameInputEdits = .{};
     while (true) {
         const codepoint = rl.getCharPressed();
         if (codepoint == 0) break;
@@ -1710,12 +1728,19 @@ fn collectNameInput(highscore: *ResultsHighscoreState) void {
         if (highscore.input_len >= persistence.highscores.name_max_edit) continue;
         highscore.input[highscore.input_len] = @intCast(codepoint);
         highscore.input_len += 1;
+        edits.typed = true;
     }
 
     if ((rl.isKeyPressed(.backspace) or rl.isKeyPressedRepeat(.backspace)) and highscore.input_len > 0) {
         highscore.input_len -= 1;
         highscore.input[highscore.input_len] = 0;
+        edits.backspaced = true;
     }
+    return edits;
+}
+
+fn uiTypeClickSfxFromRoll(roll: u32) state_mod.SfxId {
+    return if ((roll & 1) == 0) .ui_typeclick_01 else .ui_typeclick_02;
 }
 
 fn collectTypoDictionaryWords(
@@ -1947,6 +1972,12 @@ test "boolAxis returns signed unit values without overflow" {
     try std.testing.expectEqual(@as(f32, 0.0), boolAxis(false, false));
     try std.testing.expectEqual(@as(f32, 0.0), boolAxis(true, true));
     try std.testing.expectEqual(@as(f32, 1.0), boolAxis(false, true));
+}
+
+test "results high score type click follows native random bit" {
+    try std.testing.expectEqual(state_mod.SfxId.ui_typeclick_01, uiTypeClickSfxFromRoll(0));
+    try std.testing.expectEqual(state_mod.SfxId.ui_typeclick_02, uiTypeClickSfxFromRoll(1));
+    try std.testing.expectEqual(state_mod.SfxId.ui_typeclick_01, uiTypeClickSfxFromRoll(2));
 }
 
 fn drawWorld(
