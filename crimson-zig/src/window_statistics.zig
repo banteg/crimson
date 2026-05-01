@@ -175,10 +175,12 @@ pub const State = struct {
     weapons: WeaponsScreen = .{},
     perks: PerksScreen = .{},
     credits: CreditsScreen = .{},
+    default_quest_level_key: i32 = 101,
 
-    pub fn reset(self: *State, allocator: std.mem.Allocator) void {
+    pub fn reset(self: *State, allocator: std.mem.Allocator, default_quest_level_key: i32) void {
         self.high_scores.clear(allocator);
         self.* = .{};
+        self.default_quest_level_key = normalizeQuestLevelKey(default_quest_level_key);
     }
 
     pub fn deinit(self: *State, allocator: std.mem.Allocator) void {
@@ -187,8 +189,8 @@ pub const State = struct {
     }
 };
 
-pub fn openRoot(state: *State, allocator: std.mem.Allocator) void {
-    state.reset(allocator);
+pub fn openRoot(state: *State, allocator: std.mem.Allocator, default_quest_level_key: i32) void {
+    state.reset(allocator, default_quest_level_key);
 }
 
 pub const OpenHighScoresOptions = struct {
@@ -283,7 +285,7 @@ fn updateHub(
         else => .back,
     };
     switch (action) {
-        .high_scores => openHighScores(state, allocator, base_dir, config.*, status, .{}),
+        .high_scores => openHubHighScores(state, allocator, base_dir, config.*, status),
         .weapons => {
             state.view = .weapons;
             state.weapons.reset();
@@ -299,6 +301,18 @@ fn updateHub(
         .back => return .{ .action = .back_to_menu, .play_button_click = true },
     }
     return .{ .play_button_click = true };
+}
+
+fn openHubHighScores(
+    state: *State,
+    allocator: std.mem.Allocator,
+    base_dir: []const u8,
+    config: formats.crimson_cfg.CrimsonCfg,
+    status: formats.game_cfg.Status,
+) void {
+    openHighScores(state, allocator, base_dir, config, status, .{
+        .quest_level_key = state.default_quest_level_key,
+    });
 }
 
 fn updateHighScores(
@@ -692,7 +706,7 @@ fn drawHighScoreRightPanel(
             .kind = .player_count,
             .rect = playerCountWidgetRect(right_rect),
             .items = playerCountLabels()[0..],
-            .selected = @as(usize, @intCast(std.math.clamp(config.player_count, @as(u32, 1), @as(u32, 4)))) - 1,
+            .selected = @as(usize, @intCast(highScorePlayerCountForMode(state.mode, config.player_count))) - 1,
         },
         .{
             .kind = .game_mode,
@@ -1370,7 +1384,7 @@ fn updateHighScoreWidgets(
     }
 
     if (updateDropdownSelection(&state.dropdown_open, .player_count, playerCountWidgetRect(right_rect), playerCountLabels()[0..], click, mouse)) |selected| {
-        config.player_count = @intCast(selected + 1);
+        config.player_count = highScorePlayerCountForMode(state.mode, @intCast(selected + 1));
         loadHighScores(state, allocator, base_dir, config.*, status);
         return .{ .config_dirty = true, .play_button_click = true };
     }
@@ -1380,7 +1394,7 @@ fn updateHighScoreWidgets(
         const mode = highScoreModeFromIndex(selected, status);
         state.mode = mode;
         config.game_mode = @intCast(@intFromEnum(mode));
-        if (mode == .typo) config.player_count = 1;
+        config.player_count = highScorePlayerCountForMode(mode, config.player_count);
         if (mode == .quests and state.quest_level_key <= 0) state.quest_level_key = 101;
         loadHighScores(state, allocator, base_dir, config.*, status);
         return .{ .config_dirty = true, .play_button_click = true };
@@ -1545,6 +1559,11 @@ fn highScoreModeLabelIndex(mode: game_ids.GameModeId, status: formats.game_cfg.S
     };
 }
 
+fn highScorePlayerCountForMode(mode: game_ids.GameModeId, player_count: u32) u32 {
+    if (mode == .typo) return 1;
+    return std.math.clamp(player_count, @as(u32, 1), @as(u32, 4));
+}
+
 fn loadHighScores(
     state: *HighScoresScreen,
     allocator: std.mem.Allocator,
@@ -1564,7 +1583,7 @@ fn loadHighScores(
             .hardcore = config.hardcore_flag != 0,
             .quest_stage_major = @divTrunc(state.quest_level_key, 100),
             .quest_stage_minor = @mod(state.quest_level_key, 100),
-            .player_count = @intCast(config.player_count),
+            .player_count = @intCast(highScorePlayerCountForMode(state.mode, config.player_count)),
         },
     ) catch |err| {
         state.load_error = highScorePathErrorDetail(err);
@@ -1751,6 +1770,12 @@ fn questLevelKeyFromConfig(config: formats.crimson_cfg.CrimsonCfg) i32 {
     return 101;
 }
 
+fn normalizeQuestLevelKey(level_key: i32) i32 {
+    const index = questLevelKeyToIndex(level_key);
+    if (index < 0 or index >= 50) return 101;
+    return level_key;
+}
+
 fn questTitleForLevelKey(level_key: i32) []const u8 {
     const index = questLevelKeyToIndex(level_key);
     if (index < 0 or index >= window_menu_panels.quest_titles.len) return "???";
@@ -1842,6 +1867,57 @@ test "high score load errors use user-facing details" {
     );
 }
 
+test "typo high scores force one player" {
+    try std.testing.expectEqual(@as(u32, 1), highScorePlayerCountForMode(.typo, 4));
+    try std.testing.expectEqual(@as(u32, 4), highScorePlayerCountForMode(.survival, 9));
+    try std.testing.expectEqual(@as(u32, 1), highScorePlayerCountForMode(.rush, 0));
+}
+
+test "typo high score load ignores stale multi player config" {
+    const allocator = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
+    defer allocator.free(base_dir);
+
+    var single_player = persistence.highscores.HighScoreRecord.blank();
+    single_player.setName("TypoOne");
+    single_player.setGameModeId(.typo);
+    single_player.setSurvivalElapsedMs(1000);
+    const path_1p = try persistence.highscores.scoresPathForMode(
+        allocator,
+        base_dir,
+        @intFromEnum(game_ids.GameModeId.typo),
+        .{ .player_count = 1 },
+    );
+    defer allocator.free(path_1p);
+    try persistence.highscores.writeHighscoreRecords(allocator, path_1p, &.{single_player}, null);
+
+    var stale_multi_player = persistence.highscores.HighScoreRecord.blank();
+    stale_multi_player.setName("TypoFour");
+    stale_multi_player.setGameModeId(.typo);
+    stale_multi_player.setSurvivalElapsedMs(4000);
+    const path_4p = try persistence.highscores.scoresPathForMode(
+        allocator,
+        base_dir,
+        @intFromEnum(game_ids.GameModeId.typo),
+        .{ .player_count = 4 },
+    );
+    defer allocator.free(path_4p);
+    try persistence.highscores.writeHighscoreRecords(allocator, path_4p, &.{stale_multi_player}, null);
+
+    var screen: HighScoresScreen = .{ .mode = .typo };
+    defer screen.clear(allocator);
+    var config = formats.crimson_cfg.defaultConfig();
+    config.player_count = 4;
+
+    loadHighScores(&screen, allocator, base_dir, config, std.mem.zeroes(formats.game_cfg.Status));
+
+    try std.testing.expectEqual(@as(usize, 1), screen.records.len);
+    try std.testing.expectEqualStrings("TypoOne", screen.records[0].name());
+}
+
 test "openHighScores loads requested quest level before reading records" {
     const allocator = std.testing.allocator;
     var tmp = std.testing.tmpDir(.{});
@@ -1890,4 +1966,48 @@ test "openHighScores loads requested quest level before reading records" {
     try std.testing.expectEqual(@as(i32, 203), state.high_scores.quest_level_key);
     try std.testing.expectEqual(@as(usize, 1), state.high_scores.records.len);
     try std.testing.expectEqualStrings("Quest203", state.high_scores.records[0].name());
+}
+
+test "hub high scores use remembered quest level default" {
+    const allocator = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
+    defer allocator.free(base_dir);
+
+    var quest_304 = persistence.highscores.HighScoreRecord.blank();
+    quest_304.setName("Quest304");
+    quest_304.setGameModeId(.quests);
+    quest_304.setSurvivalElapsedMs(3000);
+    const path_304 = try persistence.highscores.scoresPathForMode(
+        allocator,
+        base_dir,
+        @intFromEnum(game_ids.GameModeId.quests),
+        .{ .quest_stage_major = 3, .quest_stage_minor = 4 },
+    );
+    defer allocator.free(path_304);
+    try persistence.highscores.writeHighscoreRecords(allocator, path_304, &.{quest_304}, null);
+
+    var state: State = .{};
+    defer state.high_scores.clear(allocator);
+    var config = formats.crimson_cfg.defaultConfig();
+    config.game_mode = @intFromEnum(game_ids.GameModeId.quests);
+    config.player_count = 1;
+    const status = std.mem.zeroes(formats.game_cfg.Status);
+
+    openRoot(&state, allocator, 304);
+    openHubHighScores(&state, allocator, base_dir, config, status);
+
+    try std.testing.expectEqual(View.high_scores, state.view);
+    try std.testing.expectEqual(@as(i32, 304), state.default_quest_level_key);
+    try std.testing.expectEqual(@as(i32, 304), state.high_scores.quest_level_key);
+    try std.testing.expectEqual(@as(usize, 1), state.high_scores.records.len);
+    try std.testing.expectEqualStrings("Quest304", state.high_scores.records[0].name());
+}
+
+test "statistics root normalizes invalid remembered quest level" {
+    var state: State = .{};
+    openRoot(&state, std.testing.allocator, 999);
+    try std.testing.expectEqual(@as(i32, 101), state.default_quest_level_key);
 }

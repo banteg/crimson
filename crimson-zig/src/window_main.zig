@@ -420,6 +420,7 @@ const App = struct {
     demo_trial_elapsed_ms: i32 = 0,
     demo_trial_info: demo_trial.OverlayInfo = .{},
     demo_trial_ui: window_demo_trial.State = .{},
+    last_quest_level_key: i32 = 101,
     demo_attract_active: bool = false,
     demo_attract_elapsed_ms: i32 = 0,
     demo_attract_next_variant: i32 = 0,
@@ -613,7 +614,7 @@ const App = struct {
                     self.setScreen(.options);
                 },
                 .open_statistics => {
-                    window_statistics.openRoot(&self.statistics_menu, self.allocator);
+                    window_statistics.openRoot(&self.statistics_menu, self.allocator, self.last_quest_level_key);
                     self.setScreen(.statistics_menu);
                 },
                 .open_mods => {
@@ -1271,11 +1272,11 @@ const App = struct {
     fn startNewRun(self: *App, run_config: live_runner.LiveModeConfig) void {
         self.audio.stopGameplayMusic();
         var configured_run = run_config;
-        if (self.demo_attract_active) {
-            configured_run.player_count = std.math.clamp(configured_run.player_count, @as(i32, 1), @as(i32, 4));
-        } else {
-            configured_run.player_count = @intCast(std.math.clamp(self.runtime.config.player_count, @as(u32, 1), @as(u32, 4)));
-        }
+        const requested_player_count: i32 = if (self.demo_attract_active)
+            configured_run.player_count
+        else
+            @intCast(self.runtime.config.player_count);
+        configured_run.player_count = livePlayerCountForMode(configured_run.game_mode, requested_player_count);
         configured_run.detail_preset = @intCast(std.math.clamp(self.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5)));
         configured_run.gore_disabled = @intCast(self.runtime.config.gore_disabled);
         configured_run.hardcore = self.runtime.config.hardcore_flag != 0;
@@ -1288,6 +1289,7 @@ const App = struct {
         if (!self.demo_attract_active) {
             self.runtime.recordModeStart(configured_run.game_mode);
             if (configured_run.game_mode == .quests) {
+                self.last_quest_level_key = configured_run.quest_level_key;
                 self.runtime.recordQuestStart(configured_run.quest_level_key);
             }
         }
@@ -2037,39 +2039,64 @@ const ResultsButtons = struct {
     len: usize,
 };
 
+const ResultsButtonLabels = struct {
+    items: [4][:0]const u8,
+    len: usize,
+};
+
 fn resultsButtonsFor(results: *const ResultsScreen) ResultsButtons {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
-    if (results.run_config.game_mode == .quests and results.reason == .completed) {
-        return .{
-            .items = .{
-                .{ .label = questCompletedPrimaryLabel(results.run_config.quest_level_key), .rect = window_ui.centeredRect(center_x, 514.0, ui_button_width, ui_button_height) },
-                .{ .label = "PLAY AGAIN", .rect = window_ui.centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
-                .{ .label = "HIGH SCORES", .rect = window_ui.centeredRect(center_x, 658.0, ui_button_width, ui_button_height) },
-                .{ .label = "MAIN MENU", .rect = window_ui.centeredRect(center_x, 730.0, ui_button_width, ui_button_height) },
-            },
-            .len = 4,
-        };
-    }
-    if (results.run_config.game_mode == .quests and results.reason == .dead) {
-        return .{
-            .items = .{
-                .{ .label = "PLAY AGAIN", .rect = window_ui.centeredRect(center_x, 550.0, ui_button_width, ui_button_height) },
-                .{ .label = "PLAY ANOTHER", .rect = window_ui.centeredRect(center_x, 622.0, ui_button_width, ui_button_height) },
-                .{ .label = "MAIN MENU", .rect = window_ui.centeredRect(center_x, 694.0, ui_button_width, ui_button_height) },
-                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
-            },
-            .len = 3,
-        };
-    }
+    const labels = resultsButtonLabelsFor(results);
     return .{
         .items = .{
-            .{ .label = "PLAY AGAIN", .rect = window_ui.centeredRect(center_x, 550.0, ui_button_width, ui_button_height) },
-            .{ .label = "HIGH SCORES", .rect = window_ui.centeredRect(center_x, 622.0, ui_button_width, ui_button_height) },
-            .{ .label = "MAIN MENU", .rect = window_ui.centeredRect(center_x, 694.0, ui_button_width, ui_button_height) },
-            .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+            .{ .label = labels.items[0], .rect = window_ui.centeredRect(center_x, resultsButtonY(labels.len, 0), ui_button_width, ui_button_height) },
+            .{ .label = labels.items[1], .rect = window_ui.centeredRect(center_x, resultsButtonY(labels.len, 1), ui_button_width, ui_button_height) },
+            .{ .label = labels.items[2], .rect = if (labels.len > 2) window_ui.centeredRect(center_x, resultsButtonY(labels.len, 2), ui_button_width, ui_button_height) else rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+            .{ .label = labels.items[3], .rect = if (labels.len > 3) window_ui.centeredRect(center_x, resultsButtonY(labels.len, 3), ui_button_width, ui_button_height) else rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
         },
-        .len = 3,
+        .len = labels.len,
     };
+}
+
+fn resultsButtonLabelsFor(results: *const ResultsScreen) ResultsButtonLabels {
+    if (results.run_config.game_mode == .quests) {
+        return switch (results.reason) {
+            .completed => .{ .items = .{
+                questCompletedPrimaryLabel(results.run_config.quest_level_key),
+                "PLAY AGAIN",
+                "HIGH SCORES",
+                "MAIN MENU",
+            }, .len = 4 },
+            .dead => .{ .items = .{
+                "PLAY AGAIN",
+                "PLAY ANOTHER",
+                "MAIN MENU",
+                "",
+            }, .len = 3 },
+            .runtime_error, .abandoned => .{ .items = .{
+                "PLAY AGAIN",
+                "MAIN MENU",
+                "",
+                "",
+            }, .len = 2 },
+        };
+    }
+    return .{ .items = .{
+        "PLAY AGAIN",
+        "HIGH SCORES",
+        "MAIN MENU",
+        "",
+    }, .len = 3 };
+}
+
+fn resultsButtonY(button_count: usize, index: usize) f32 {
+    const first_y: f32 = switch (button_count) {
+        2 => 586.0,
+        3 => 550.0,
+        4 => 514.0,
+        else => 550.0,
+    };
+    return first_y + @as(f32, @floatFromInt(index)) * 72.0;
 }
 
 fn questCompletedPrimaryLabel(level_key: i32) [:0]const u8 {
@@ -2832,6 +2859,29 @@ test "quest failed result uses retry subtitle" {
     try std.testing.expectEqualStrings("No luck this time, have another go?", resultsSubtitleFor(&results));
 }
 
+test "quest runtime error result does not expose mismatched high score button" {
+    const results: ResultsScreen = .{
+        .reason = .runtime_error,
+        .run_config = .{
+            .game_mode = .quests,
+        },
+        .summary = undefined,
+    };
+    const labels = resultsButtonLabelsFor(&results);
+    try std.testing.expectEqual(@as(usize, 2), labels.len);
+    try std.testing.expectEqualStrings("PLAY AGAIN", labels.items[0]);
+    try std.testing.expectEqualStrings("MAIN MENU", labels.items[1]);
+}
+
+test "results button y positions keep native vertical rhythm" {
+    try std.testing.expectApproxEqAbs(@as(f32, 586.0), resultsButtonY(2, 0), 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 658.0), resultsButtonY(2, 1), 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 550.0), resultsButtonY(3, 0), 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 694.0), resultsButtonY(3, 2), 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 514.0), resultsButtonY(4, 0), 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 730.0), resultsButtonY(4, 3), 1e-6);
+}
+
 test "results high score save errors use user-facing details" {
     try std.testing.expectEqualStrings("Unable to build high score file path.", resultsHighscorePathErrorDetail(error.OutOfMemory));
     try std.testing.expectEqualStrings("Unable to save high score: access denied.", resultsHighscoreSaveErrorDetail(error.AccessDenied));
@@ -2955,6 +3005,13 @@ test "gameplayControlsHeldWithSampler follows configured controls and alternate 
     formats.crimson_cfg.setPlayerBindBlock(&unbound_config, 0, binds);
     const unbound: FakeSampler = .{ .down_code = formats.crimson_cfg.keybind_unbound_code };
     try std.testing.expect(!gameplayControlsHeldWithSampler(&unbound_config, unbound));
+}
+
+test "live run player count forces one-player modes" {
+    try std.testing.expectEqual(@as(i32, 1), livePlayerCountForMode(.typo, 4));
+    try std.testing.expectEqual(@as(i32, 1), livePlayerCountForMode(.tutorial, 4));
+    try std.testing.expectEqual(@as(i32, 4), livePlayerCountForMode(.survival, 9));
+    try std.testing.expectEqual(@as(i32, 1), livePlayerCountForMode(.rush, 0));
 }
 
 test "demo attract variant sequencing mirrors native cycle" {
@@ -4704,6 +4761,13 @@ fn runConfigForLiveMode(mode: game_ids.GameModeId, quest_level_key: ?i32, seed_s
             .seed = seed,
             .game_mode = .survival,
         },
+    };
+}
+
+fn livePlayerCountForMode(mode: game_ids.GameModeId, requested_player_count: i32) i32 {
+    return switch (mode) {
+        .typo, .tutorial => 1,
+        else => std.math.clamp(requested_player_count, @as(i32, 1), @as(i32, 4)),
     };
 }
 
