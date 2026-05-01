@@ -334,6 +334,26 @@ pub fn setPlayerShowDirectionArrow(cfg: *CrimsonCfg, player_index: usize, enable
     }
 }
 
+pub fn applyDetailPreset(cfg: *CrimsonCfg, preset: i32) u32 {
+    const selected_i32 = std.math.clamp(preset, @as(i32, 1), @as(i32, 5));
+    const selected: u32 = @intCast(selected_i32);
+    cfg.detail_preset = selected;
+    if (selected <= 1) {
+        cfg.fx_detail_0 = 0;
+        cfg.fx_detail_1 = 0;
+        cfg.fx_detail_2 = 0;
+    } else if (selected == 2) {
+        cfg.fx_detail_0 = 0;
+        cfg.fx_detail_1 = 0;
+        cfg.fx_detail_2 = 1;
+    } else {
+        cfg.fx_detail_0 = 1;
+        cfg.fx_detail_1 = 1;
+        cfg.fx_detail_2 = 1;
+    }
+    return selected;
+}
+
 pub fn defaultConfig() CrimsonCfg {
     var cfg = std.mem.zeroes(CrimsonCfg);
     cfg.hud_indicators = [_]u8{ 1, 1 };
@@ -433,7 +453,7 @@ pub fn decode(bytes: []const u8) CrimsonCfgError!CrimsonCfg {
 
     var reader = binary.Reader.init(bytes);
 
-    return .{
+    var cfg: CrimsonCfg = .{
         .sound_disable = try reader.readU8(),
         .music_disable = try reader.readU8(),
         .highscore_date_mode = try reader.readU8(),
@@ -500,6 +520,10 @@ pub fn decode(bytes: []const u8) CrimsonCfgError!CrimsonCfg {
         .keybind_pick_perk = try reader.readU32Le(),
         .keybind_reload = try reader.readU32Le(),
     };
+    if (cfg.detail_preset == 0 and cfg.fx_detail_0 == 0 and cfg.fx_detail_1 == 0 and cfg.fx_detail_2 == 0) {
+        _ = applyDetailPreset(&cfg, 5);
+    }
+    return cfg;
 }
 
 pub fn encode(cfg: CrimsonCfg) [file_size]u8 {
@@ -662,6 +686,41 @@ test "crimson.cfg player name input helper trims trailing spaces and preserves t
 
     try std.testing.expectEqualStrings("Alpha", playerName(&cfg));
     try std.testing.expectEqual(@as(u32, 8), cfg.player_name_len);
+}
+
+test "crimson.cfg detail presets update fx detail flags" {
+    var cfg = defaultConfig();
+
+    try std.testing.expectEqual(@as(u32, 1), applyDetailPreset(&cfg, 0));
+    try std.testing.expectEqual(@as(u8, 0), cfg.fx_detail_0);
+    try std.testing.expectEqual(@as(u8, 0), cfg.fx_detail_1);
+    try std.testing.expectEqual(@as(u8, 0), cfg.fx_detail_2);
+
+    try std.testing.expectEqual(@as(u32, 2), applyDetailPreset(&cfg, 2));
+    try std.testing.expectEqual(@as(u8, 0), cfg.fx_detail_0);
+    try std.testing.expectEqual(@as(u8, 0), cfg.fx_detail_1);
+    try std.testing.expectEqual(@as(u8, 1), cfg.fx_detail_2);
+
+    try std.testing.expectEqual(@as(u32, 5), applyDetailPreset(&cfg, 9));
+    try std.testing.expectEqual(@as(u8, 1), cfg.fx_detail_0);
+    try std.testing.expectEqual(@as(u8, 1), cfg.fx_detail_1);
+    try std.testing.expectEqual(@as(u8, 1), cfg.fx_detail_2);
+}
+
+test "crimson.cfg decode normalizes legacy empty detail preset" {
+    var cfg = defaultConfig();
+    cfg.detail_preset = 0;
+    cfg.fx_detail_0 = 0;
+    cfg.fx_detail_1 = 0;
+    cfg.fx_detail_2 = 0;
+
+    const encoded = encode(cfg);
+    const parsed = try decode(encoded[0..]);
+
+    try std.testing.expectEqual(@as(u32, 5), parsed.detail_preset);
+    try std.testing.expectEqual(@as(u8, 1), parsed.fx_detail_0);
+    try std.testing.expectEqual(@as(u8, 1), parsed.fx_detail_1);
+    try std.testing.expectEqual(@as(u8, 1), parsed.fx_detail_2);
 }
 
 test "crimson.cfg bind block helpers roundtrip" {
