@@ -27,6 +27,7 @@ pub const relay_pump = @import("relay_pump.zig");
 pub const relay_reliable = @import("relay_reliable.zig");
 pub const relay_room = @import("relay_room.zig");
 pub const relay_service = @import("relay_service.zig");
+pub const relay_transport = @import("relay_transport.zig");
 pub const relay_udp_server = @import("relay_udp_server.zig");
 pub const room_code = @import("room_code.zig");
 pub const schema_shared = @import("schema_shared.zig");
@@ -60,6 +61,7 @@ test {
     _ = relay_reliable;
     _ = relay_room;
     _ = relay_service;
+    _ = relay_transport;
     _ = relay_udp_server;
     _ = room_code;
     _ = schema_shared;
