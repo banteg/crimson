@@ -7,6 +7,7 @@ test {
     _ = cz.bonuses;
     _ = cz.checkpoint_diff_native;
     _ = cz.creatures;
+    _ = cz.dbg_record_native;
     _ = cz.effects;
     _ = cz.terrain_fx;
     _ = cz.demo_trial;

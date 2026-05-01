@@ -242,6 +242,8 @@ def _entity_samples_for_world(
         secondary_projectiles=secondary_projectiles,
         bonuses=bonuses,
     )
+
+
 def _sim_state_from_world(world: WorldState, *, replay: Replay) -> SimStateSnapshot:
     gameplay = world.state
     players: list[SnapshotPlayer] = []
@@ -288,11 +290,7 @@ def _build_replay_fingerprint(*, replay_path: Path, replay: Replay) -> BuiltinOb
     replay_fingerprint["tick_rate"] = replay.header.tick_rate
     replay_fingerprint["seed"] = replay.header.seed
     replay_fingerprint["mode_id"] = replay.header.game_mode_id
-    replay_fingerprint["quest_level"] = (
-        ""
-        if replay.header.quest_level is None
-        else replay.header.quest_level.text
-    )
+    replay_fingerprint["quest_level"] = "" if replay.header.quest_level is None else replay.header.quest_level.text
     return replay_fingerprint
 
 
@@ -527,18 +525,10 @@ def _record_replay_to_trace_zig(
     replay_path: Path,
     out_path: Path,
 ) -> tuple[TraceSummary, list[str]]:
-    replay = load_replay_file(replay_path)
-    if int(replay.header.player_count) != 1:
-        raise ValueError(
-            "zig dbg record currently supports only single-player replays; "
-            f"got player_count={int(replay.header.player_count)}",
-        )
-
     build_run = _run_process(["zig", "build"], cwd=_ZIG_ROOT)
     if int(build_run.returncode) != 0:
         raise ValueError(
-            "zig build failed: "
-            f"exit={int(build_run.returncode)} detail={_command_detail(build_run)}",
+            f"zig build failed: exit={int(build_run.returncode)} detail={_command_detail(build_run)}",
         )
 
     warnings: list[str] = []
@@ -559,10 +549,7 @@ def _record_replay_to_trace_zig(
             f"exit={int(verify_run.returncode)} detail={_command_detail(verify_run)}",
         )
     if int(verify_run.returncode) != 0:
-        warning = (
-            f"warning: zig replay verify exited {int(verify_run.returncode)}; "
-            "continuing with emitted trace"
-        )
+        warning = f"warning: zig replay verify exited {int(verify_run.returncode)}; continuing with emitted trace"
         stderr = str(verify_run.stderr).strip()
         if stderr:
             warning = f"{warning}: {stderr.splitlines()[0]}"

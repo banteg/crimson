@@ -281,7 +281,7 @@ const ReplayPerkSnapshotChannel = struct {
     pending_count: i32,
     choices_dirty: bool = false,
     choices: []const i32 = empty_i32,
-    player_nonzero_counts: [1][]const [2]i32,
+    player_nonzero_counts: []const []const [2]i32,
 };
 
 const ReplayEventSummaryChannel = struct {
@@ -299,7 +299,7 @@ const CheckpointChannel = struct {
     kills: i32,
     creature_count: i32,
     perk_pending: i32,
-    players: [1]ReplayPlayerCheckpointChannel,
+    players: []const ReplayPlayerCheckpointChannel,
     bonus_timers: BonusTimersMap,
     state_hash: []const u8 = "",
     command_hash: []const u8 = "",
@@ -784,24 +784,27 @@ fn buildSimState(
     row: replay_runner.ReplayTickTrace,
     mode_id: i32,
 ) TraceWriteError!SimStateSnapshot {
-    const player = row.player_state;
-    const players = try allocator.alloc(SnapshotPlayer, 1);
-    players[0] = .{
-        .index = player.index,
-        .pos = .{ .x = player.pos.x, .y = player.pos.y },
-        .health = player.health,
-        .weapon = .{
-            .weapon_id = @intFromEnum(player.weapon.weapon_id),
-            .ammo = player.weapon.ammo,
-            .clip_size = player.weapon.clip_size,
-            .reload_active = player.weapon.reload_active,
-            .reload_timer = player.weapon.reload_timer,
-            .reload_timer_max = player.weapon.reload_timer_max,
-            .shot_cooldown = player.weapon.shot_cooldown,
-        },
-        .experience = player.experience,
-        .level = player.level,
-    };
+    const fallback_players = [_]state_mod.PlayerState{row.player_state};
+    const trace_players = if (row.players.len > 0) row.players else fallback_players[0..];
+    const players = try allocator.alloc(SnapshotPlayer, trace_players.len);
+    for (trace_players, 0..) |player, idx| {
+        players[idx] = .{
+            .index = player.index,
+            .pos = .{ .x = player.pos.x, .y = player.pos.y },
+            .health = player.health,
+            .weapon = .{
+                .weapon_id = @intFromEnum(player.weapon.weapon_id),
+                .ammo = player.weapon.ammo,
+                .clip_size = player.weapon.clip_size,
+                .reload_active = player.weapon.reload_active,
+                .reload_timer = player.weapon.reload_timer,
+                .reload_timer_max = player.weapon.reload_timer_max,
+                .shot_cooldown = player.weapon.shot_cooldown,
+            },
+            .experience = player.experience,
+            .level = player.level,
+        };
+    }
     return .{
         .gameplay = .{
             .mode_id = mode_id,
@@ -826,7 +829,9 @@ fn buildCheckpoint(
     row: replay_runner.ReplayTickTrace,
     elapsed_ms: i64,
 ) TraceWriteError!CheckpointChannel {
-    const player = row.player_state;
+    const fallback_players = [_]state_mod.PlayerState{row.player_state};
+    const trace_players = if (row.players.len > 0) row.players else fallback_players[0..];
+    const player = trace_players[0];
     const quest_tick0_reload_sfx = row.tick_index == 0 and
         row.gameplay_state.game_mode == .quests and
         player.weapon.weapon_id == .pistol;
@@ -836,8 +841,34 @@ fn buildCheckpoint(
         row.gameplay_state.perk_selection.choice_count,
     );
     errdefer if (perk_choices.len > 0) allocator.free(perk_choices);
-    const player_nonzero_counts = try buildNonzeroPerkCounts(allocator, player);
-    errdefer if (player_nonzero_counts.len > 0) allocator.free(player_nonzero_counts);
+    const player_nonzero_counts = try allocator.alloc([]const [2]i32, trace_players.len);
+    errdefer allocator.free(player_nonzero_counts);
+    var built_nonzero_counts: usize = 0;
+    errdefer {
+        for (player_nonzero_counts[0..built_nonzero_counts]) |pairs| {
+            if (pairs.len > 0) allocator.free(pairs);
+        }
+    }
+    for (trace_players, 0..) |entry, idx| {
+        player_nonzero_counts[idx] = try buildNonzeroPerkCounts(allocator, entry);
+        built_nonzero_counts += 1;
+    }
+
+    const players = try allocator.alloc(ReplayPlayerCheckpointChannel, trace_players.len);
+    errdefer allocator.free(players);
+    for (trace_players, 0..) |entry, idx| {
+        players[idx] = .{
+            .pos = .{
+                .x = round4f64(entry.pos.x),
+                .y = round4f64(entry.pos.y),
+            },
+            .health = round4f64(entry.health),
+            .weapon_id = @intFromEnum(entry.weapon.weapon_id),
+            .ammo = round4f64(entry.weapon.ammo),
+            .experience = entry.experience,
+            .level = entry.level,
+        };
+    }
 
     return .{
         .tick_index = try castI32(row.tick_index),
@@ -847,19 +878,7 @@ fn buildCheckpoint(
         .kills = row.summary.kills,
         .creature_count = @intCast(row.summary.creature_count),
         .perk_pending = row.summary.perk_pending,
-        .players = .{
-            .{
-                .pos = .{
-                    .x = round4f64(player.pos.x),
-                    .y = round4f64(player.pos.y),
-                },
-                .health = round4f64(player.health),
-                .weapon_id = @intFromEnum(player.weapon.weapon_id),
-                .ammo = round4f64(player.weapon.ammo),
-                .experience = player.experience,
-                .level = player.level,
-            },
-        },
+        .players = players,
         .bonus_timers = .{
             .@"4" = bonusTimerMs(row.gameplay_state.bonuses.weapon_power_up),
             .@"9" = bonusTimerMs(row.gameplay_state.bonuses.reflex_boost),
@@ -871,7 +890,7 @@ fn buildCheckpoint(
             .pending_count = row.gameplay_state.perk_selection.pending_count,
             .choices_dirty = row.gameplay_state.perk_selection.choices_dirty,
             .choices = perk_choices,
-            .player_nonzero_counts = .{player_nonzero_counts},
+            .player_nonzero_counts = player_nonzero_counts,
         },
         .events = if (quest_tick0_reload_sfx) .{
             .sfx_count = 1,
@@ -881,6 +900,9 @@ fn buildCheckpoint(
 }
 
 fn deinitCheckpoint(allocator: std.mem.Allocator, checkpoint: *const CheckpointChannel) void {
+    if (checkpoint.players.len > 0) {
+        allocator.free(checkpoint.players);
+    }
     if (checkpoint.perk.choices.len > 0) {
         allocator.free(checkpoint.perk.choices);
     }
@@ -888,6 +910,9 @@ fn deinitCheckpoint(allocator: std.mem.Allocator, checkpoint: *const CheckpointC
         if (pairs.len > 0) {
             allocator.free(pairs);
         }
+    }
+    if (checkpoint.perk.player_nonzero_counts.len > 0) {
+        allocator.free(checkpoint.perk.player_nonzero_counts);
     }
 }
 

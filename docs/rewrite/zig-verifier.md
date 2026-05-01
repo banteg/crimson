@@ -70,6 +70,7 @@ Current supported replay-tooling behavior:
 - freestanding WASM replay verification and replay info JSON exports
 - headless replay throughput timing via `replay benchmark` (render benchmark
   mode remains Python-only)
+- native CDT trace export via `dbg record <replay.crd> --out <trace.cdt>`
 - current Python-readable trace export contracts
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
   data rather than stale “unsupported path” wording

@@ -1,5 +1,6 @@
 const std = @import("std");
 const checkpoint_diff_native = @import("checkpoint_diff_native.zig");
+const dbg_record_native = @import("dbg_record_native.zig");
 const replay_benchmark_native = @import("replay_benchmark_native.zig");
 const replay_info_native = @import("replay_info_native.zig");
 const replay_list_native = @import("replay_list_native.zig");
@@ -13,6 +14,7 @@ const usage =
     \\  crimson-zig replay verify-checkpoints <replay.crd> [checkpoint options]
     \\  crimson-zig replay info <replay.crd> [info options]
     \\  crimson-zig replay diff-checkpoints <expected.chk> <actual.chk>
+    \\  crimson-zig dbg record <replay.crd> --out <trace.cdt>
     \\  crimson-zig --help
     \\
     \\Examples:
@@ -23,6 +25,7 @@ const usage =
     \\  crimson-zig replay verify-checkpoints replay.crd
     \\  crimson-zig replay info replay.crd --format json
     \\  crimson-zig replay diff-checkpoints replay.crd.chk replay.candidate.crd.chk
+    \\  crimson-zig dbg record replay.crd --out replay.cdt
     \\
 ;
 
@@ -79,6 +82,14 @@ pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     }
     if (args.len >= 3 and std.mem.eql(u8, args[1], "replay") and std.mem.eql(u8, args[2], "diff-checkpoints")) {
         const output = try checkpoint_diff_native.runReplayDiffCheckpoints(allocator, args[3..]);
+        defer output.deinit(allocator);
+
+        try writeStdout(output.stdout);
+        try writeStderr(output.stderr);
+        return output.exit_code;
+    }
+    if (args.len >= 3 and std.mem.eql(u8, args[1], "dbg") and std.mem.eql(u8, args[2], "record")) {
+        const output = try dbg_record_native.runDbgRecord(allocator, args[3..]);
         defer output.deinit(allocator);
 
         try writeStdout(output.stdout);

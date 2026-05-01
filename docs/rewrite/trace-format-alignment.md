@@ -104,6 +104,7 @@ Zig replay recording is no longer a verifier-only side path. Its `.cdt` writer
 targets schema 12 and serializes the same required channels.
 
 - Zig writes schema 12 `.cdt` traces
+- Zig exposes native trace export as `crimson-zig dbg record <replay.crd> --out <trace.cdt>`
 - RNG rows come from direct traced draws, not post-hoc lifecycle reconstruction
 - RNG rows include optional static caller addresses
 - timing rows are emitted and have coverage tests

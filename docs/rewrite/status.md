@@ -34,6 +34,7 @@ Last reviewed: **2026-02-24**
   - `uv run scripts/frida/gameplay_diff_capture_host.py --raw-path <capture.jsonl> --output-dir <dir>`
   - `uv run crimson dbg record <replay.crd> --impl python --out <trace.py.cdt>`
   - `uv run crimson dbg record <replay.crd> --impl zig --out <trace.zig.cdt>`
+  - `crimson-zig dbg record <replay.crd> --out <trace.zig.cdt>`
   - `uv run crimson dbg health <trace.cdt>`
   - `uv run crimson dbg diff <expected.cdt> <actual.cdt>`
   - `uv run crimson dbg bisect <expected.cdt> <actual.cdt>`
