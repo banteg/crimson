@@ -5,6 +5,7 @@ test {
     _ = cz.anim;
     _ = @import("audio/mod.zig");
     _ = cz.bonuses;
+    _ = cz.checkpoint_diff_native;
     _ = cz.creatures;
     _ = cz.effects;
     _ = cz.terrain_fx;

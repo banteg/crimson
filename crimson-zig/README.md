@@ -7,7 +7,7 @@ Standalone Zig workspace for the native Crimson port.
 `crimson-zig/` is no longer a replay-verifier side project. It already contains:
 
 - a shared deterministic runtime under `src/runtime/`,
-- native replay tooling (`replay list`, `replay verify`, `replay info`),
+- native replay tooling (`replay list`, `replay verify`, `replay info`, checkpoint replay checks),
 - a real raylib desktop app target,
 - archive/codec support for `crimson.paq`, `music.paq`, `sfx.paq`, `crimson.cfg`, and `game.cfg`,
 - a freestanding WASM replay-verification ABI.
@@ -31,7 +31,7 @@ It is mostly closure work:
 
 - replay/tooling breadth still lags Python,
 - some product-shell flows are still thinner than Python,
-- the demo/trial product shell is still missing in Zig,
+- checkpoint verification tooling still lacks some Python-only diagnostics,
 - WASM is still a narrow replay/runtime ABI,
 - network/LAN parity is still deferred.
 
@@ -81,6 +81,8 @@ zig build asset-smoke
 zig build run -- replay verify <replay.crd> --format json
 zig build run -- replay info <replay.crd> --format json
 zig build run -- replay list --base-dir .
+zig build run -- replay verify-checkpoints <replay.crd>
+zig build run -- replay diff-checkpoints <expected.chk> <actual.chk>
 ```
 
 Useful targets:
@@ -123,6 +125,8 @@ The native CLI currently exposes:
 - `crimson-zig replay verify <replay.crd>`
 - `crimson-zig replay info <replay.crd>`
 - `crimson-zig replay list`
+- `crimson-zig replay verify-checkpoints <replay.crd>`
+- `crimson-zig replay diff-checkpoints <expected.chk> <actual.chk>`
 
 Supported native replay/runtime modes today:
 

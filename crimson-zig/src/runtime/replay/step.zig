@@ -878,6 +878,7 @@ fn buildDiagnosticTrace(
         narrowF32(trace_elapsed_ms),
         &context.state,
         player0,
+        &.{},
         &context.creatures,
         frame.rng_after_perk_effects,
         frame.rng_after_creatures,

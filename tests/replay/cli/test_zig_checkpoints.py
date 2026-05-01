@@ -1,0 +1,111 @@
+from __future__ import annotations
+
+import shutil
+import subprocess
+from pathlib import Path
+
+import msgspec
+
+import crimson.dbg.record as dbg_record
+from crimson.game_modes import GameMode
+from crimson.replay.checkpoints import dump_checkpoints_file, load_checkpoints_file
+
+from ._helpers import build_replay, write_checkpoint_sidecar, write_replay
+
+
+def test_zig_replay_diff_checkpoints_accepts_python_sidecars(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    sidecar_a = write_checkpoint_sidecar(replay_path, replay)
+    sidecar_b = tmp_path / "survival-copy.crd.chk"
+    shutil.copyfile(sidecar_a, sidecar_b)
+
+    result = _run_zig_replay_diff_checkpoints([str(sidecar_a), str(sidecar_b)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "ok: 1 checkpoints match" in result.stdout
+
+
+def test_zig_replay_verify_checkpoints_accepts_python_sidecar(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    write_checkpoint_sidecar(replay_path, replay)
+
+    result = _run_zig_replay_verify_checkpoints([str(replay_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "ok: 1 checkpoints match; ticks=3 score_xp=0 kills=0" in result.stdout
+
+
+def test_zig_replay_verify_checkpoints_accepts_two_player_sidecar(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3, player_count=2)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival-2p.crd")
+    write_checkpoint_sidecar(replay_path, replay)
+
+    result = _run_zig_replay_verify_checkpoints([str(replay_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "ok: 1 checkpoints match; ticks=3 score_xp=0 kills=0" in result.stdout
+
+
+def test_zig_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    sidecar = write_checkpoint_sidecar(replay_path.with_name("survival-mutated.crd"), replay, mutate_checkpoint=True)
+
+    result = _run_zig_replay_verify_checkpoints([str(replay_path), "--checkpoints", str(sidecar)])
+
+    assert result.returncode == 1
+    assert "checkpoint mismatch at tick=0" in result.stderr
+    assert "score_xp expected=999999 actual=0" in result.stderr
+
+
+def test_zig_replay_diff_checkpoints_reports_state_mismatch(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    sidecar_a = write_checkpoint_sidecar(replay_path, replay)
+    sidecar_b = write_checkpoint_sidecar(replay_path.with_name("survival-mutated.crd"), replay, mutate_checkpoint=True)
+
+    result = _run_zig_replay_diff_checkpoints([str(sidecar_a), str(sidecar_b)])
+
+    assert result.returncode == 1
+    assert "checkpoint mismatch at tick=0" in result.stderr
+    assert "score_xp expected=0 actual=999999" in result.stderr
+
+
+def test_zig_replay_diff_checkpoints_preserves_rng_only_success(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    sidecar_a = write_checkpoint_sidecar(replay_path, replay)
+    sidecar_b = tmp_path / "survival-rng-only.crd.chk"
+
+    payload = load_checkpoints_file(sidecar_a)
+    checkpoints = list(payload.checkpoints)
+    checkpoints[0] = msgspec.structs.replace(checkpoints[0], rng_state=int(checkpoints[0].rng_state) + 1)
+    dump_checkpoints_file(sidecar_b, msgspec.structs.replace(payload, checkpoints=checkpoints))
+
+    result = _run_zig_replay_diff_checkpoints([str(sidecar_a), str(sidecar_b)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "ok: 1 checkpoints match" in result.stdout
+    assert "first rng-only divergence tick=0" in result.stdout
+
+
+def _run_zig_replay_diff_checkpoints(args: list[str]) -> subprocess.CompletedProcess[str]:
+    build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
+    assert build_run.returncode == 0, dbg_record._command_detail(build_run)
+
+    return dbg_record._run_process(
+        [str(dbg_record._ZIG_BIN), "replay", "diff-checkpoints", *args],
+        cwd=dbg_record._REPO_ROOT,
+    )
+
+
+def _run_zig_replay_verify_checkpoints(args: list[str]) -> subprocess.CompletedProcess[str]:
+    build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
+    assert build_run.returncode == 0, dbg_record._command_detail(build_run)
+
+    return dbg_record._run_process(
+        [str(dbg_record._ZIG_BIN), "replay", "verify-checkpoints", *args],
+        cwd=dbg_record._REPO_ROOT,
+    )

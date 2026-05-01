@@ -122,6 +122,7 @@ pub const ReplayTickTrace = struct {
     summary: ReplayTickSummary,
     gameplay_state: state_mod.GameplayState,
     player_state: state_mod.PlayerState,
+    players: []const state_mod.PlayerState = &.{},
     rng_rows: []const ReplayTickRngDraw = &.{},
     timing_samples: []const ReplayTickTimingSample = &.{},
     entities: ReplayTickEntitySamples = .{},
@@ -132,6 +133,7 @@ pub fn buildReplayTickTrace(
     elapsed_ms_sim: f32,
     state: *const state_mod.GameplayState,
     player: state_mod.PlayerState,
+    players: []const state_mod.PlayerState,
     creatures: *const creatures_mod.CreaturePool,
     rng_after_perk_effects: u32,
     rng_after_creatures: u32,
@@ -146,6 +148,13 @@ pub fn buildReplayTickTrace(
     rng_rows: []const ReplayTickRngDraw,
     timing_samples: []const ReplayTickTimingSample,
 ) ReplayTickTrace {
+    var score_xp: i32 = 0;
+    if (players.len > 0) {
+        for (players) |entry| score_xp += entry.experience;
+    } else {
+        score_xp = player.experience;
+    }
+
     return .{
         .tick_index = tick_index,
         .timing = .{
@@ -165,7 +174,7 @@ pub fn buildReplayTickTrace(
             .rng_after_bonus_update = rng_after_bonus_update,
         },
         .summary = .{
-            .score_xp = player.experience,
+            .score_xp = score_xp,
             .kills = creatures.kill_count,
             .shots_fired_p0 = if (state.shots_fired.len > 0) state.shots_fired[0] else 0,
             .creature_count = creatures.activeCount(),
@@ -173,6 +182,7 @@ pub fn buildReplayTickTrace(
         },
         .gameplay_state = state.*,
         .player_state = player,
+        .players = players,
         .rng_rows = rng_rows,
         .timing_samples = timing_samples,
     };
@@ -184,6 +194,7 @@ pub fn buildReplayTickTraceWithEntities(
     elapsed_ms_sim: f32,
     state: *const state_mod.GameplayState,
     player: state_mod.PlayerState,
+    players: []const state_mod.PlayerState,
     creatures: *const creatures_mod.CreaturePool,
     projectiles: *const projectiles_mod.ProjectilePool,
     secondary_projectiles: *const secondary_projectiles_mod.SecondaryProjectilePool,
@@ -201,6 +212,9 @@ pub fn buildReplayTickTraceWithEntities(
     rng_rows: []const ReplayTickRngDraw,
     timing_samples: []const ReplayTickTimingSample,
 ) !ReplayTickTrace {
+    const players_copy = try allocator.dupe(state_mod.PlayerState, players);
+    errdefer allocator.free(players_copy);
+
     const entities: ReplayTickEntitySamples = .{
         .creatures = try collectCreatureSamples(allocator, creatures),
         .projectiles = try collectProjectileSamples(allocator, projectiles),
@@ -219,6 +233,7 @@ pub fn buildReplayTickTraceWithEntities(
         elapsed_ms_sim,
         state,
         player,
+        players_copy,
         creatures,
         rng_after_perk_effects,
         rng_after_creatures,
@@ -238,12 +253,14 @@ pub fn buildReplayTickTraceWithEntities(
 }
 
 pub fn deinitReplayTickTrace(allocator: std.mem.Allocator, trace: *ReplayTickTrace) void {
+    if (trace.players.len > 0) allocator.free(trace.players);
     if (trace.rng_rows.len > 0) allocator.free(trace.rng_rows);
     if (trace.timing_samples.len > 0) allocator.free(trace.timing_samples);
     if (trace.entities.creatures.len > 0) allocator.free(trace.entities.creatures);
     if (trace.entities.projectiles.len > 0) allocator.free(trace.entities.projectiles);
     if (trace.entities.secondary_projectiles.len > 0) allocator.free(trace.entities.secondary_projectiles);
     if (trace.entities.bonuses.len > 0) allocator.free(trace.entities.bonuses);
+    trace.players = &.{};
     trace.rng_rows = &.{};
     trace.timing_samples = &.{};
     trace.entities = .{};

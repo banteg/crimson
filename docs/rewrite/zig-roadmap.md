@@ -89,8 +89,8 @@ Remaining work:
   [`crimson-zig/src/window_statistics.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_statistics.zig),
   and
   [`crimson-zig/src/window_options.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_options.zig),
-- port the demo/trial overlay and purchase-shell behavior that Python already
-  has,
+- keep the demo/trial overlay and purchase-shell behavior aligned with Python
+  as surrounding shell flows change,
 - keep removing any remaining fallback/scaffold UI logic from the desktop path.
 
 Definition of done:
@@ -107,7 +107,7 @@ Python still has broader non-gameplay tooling than Zig.
 Remaining work:
 
 - expand Zig CLI coverage where it materially helps development:
-  - replay-oriented tools beyond list/verify/info,
+  - replay-oriented tools beyond list/verify/info/verify-checkpoints/diff-checkpoints,
   - useful debug/support commands where they make sense natively,
 - keep trace/debug surfaces aligned with current Python contracts,
 - refresh developer docs when tooling behavior changes.
