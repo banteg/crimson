@@ -28,6 +28,9 @@ Last reviewed: **2026-02-24**
 - Asset tooling:
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig-asset-smoke <assets-dir>`
     - The installed native smoke tool validates `crimson.paq`, JAZ/TGA/JPEG image decoding, runtime texture specs, and small-font width data.
+- Desktop shell:
+  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig-window`
+    - The installed native desktop shell starts the boot/menu/gameplay product flow; `--demo` starts with shareware demo limits enabled.
 - Replay tooling:
   - `uv run crimson replay play <replay.crd>`
   - `uv run crimson replay verify <replay.crd>`

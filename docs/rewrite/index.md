@@ -29,6 +29,8 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
   the installed `crimson-zig-asset-smoke` asset decode validator.
 - Project direction is a full native Zig port, not just a replay verifier.
 - The Zig tree now also has a real native desktop shell with boot/menu/gameplay/results/options/statistics flow and live Survival/Rush/Quests/Typ-o/Tutorial runs.
+- The default Zig install includes the CLI, the desktop `crimson-zig-window`
+  binary, relay/quest support tools, and the asset smoke validator.
 - Replay verification is still the most mature headless Zig surface, with native + wasm replay/checkpoint build targets already in-tree.
 - Current state is advanced but still incomplete parity. The biggest remaining Zig work is replay/tooling breadth, product-shell parity including demo/trial polish, with network/LAN still deferred.
 - See [Zig native port status](zig-verifier.md) for the current snapshot and [Zig port roadmap](zig-roadmap.md) for remaining work.

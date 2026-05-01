@@ -51,6 +51,8 @@ consumes the same shared runtime used by the native desktop application.
   CLI inspection for both files
 - installed native asset smoke tool for `crimson.paq` archive/image decode
   validation
+- installed native desktop `crimson-zig-window` binary for the playable product
+  shell
 - real boot/menu/gameplay/pause/results/final-quest end-note/statistics/options
   shell
 - archive-backed world/UI asset loading

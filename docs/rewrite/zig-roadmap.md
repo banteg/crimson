@@ -100,6 +100,7 @@ Definition of done:
 
 - boot -> menu -> gameplay -> pause -> results -> stats/options flows behave
   like the Python product shell,
+- default Zig installs include the playable `crimson-zig-window` binary,
 - the remaining differences are deliberate scope decisions, not stale
   placeholders.
 

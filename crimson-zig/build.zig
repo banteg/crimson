@@ -49,6 +49,7 @@ pub fn build(b: *std.Build) void {
         }),
     });
     window_exe.root_module.linkLibrary(raylib_artifact);
+    b.installArtifact(window_exe);
     const window_step = b.step("window", "Build raylib desktop playable slice");
     window_step.dependOn(&window_exe.step);
 
