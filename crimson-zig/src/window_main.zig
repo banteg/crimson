@@ -1142,6 +1142,15 @@ const App = struct {
     fn updateNetworkSession(self: *App, frame_dt: f32) void {
         if (self.network_live_session != null) {
             self.network_live_render_time_s += @max(frame_dt, 0.0);
+            if (rl.isKeyPressed(.escape)) {
+                self.audio.playUiButtonClick();
+                self.stopNetworkLiveSession();
+                self.play_game_menu.reset();
+                self.setScreen(.play_game_menu);
+                return;
+            }
+            self.updateNetworkLiveSession(frame_dt);
+            return;
         } else {
             self.audio.ensureMenuThemeForDemo(self.demo_enabled);
         }
@@ -2082,7 +2091,6 @@ const App = struct {
     fn drawNetworkSession(self: *App) void {
         const runtime_assets: ?*const window_assets.RuntimeAssets = if (self.runtime_assets) |*assets| assets else null;
         if (self.drawNetworkLiveScene(runtime_assets)) {
-            window_misc_panels.drawNetworkOverlay(&self.network_session, runtime_assets);
             return;
         }
         window_misc_panels.drawNetwork(&self.network_session, runtime_assets);
@@ -2141,7 +2149,15 @@ const App = struct {
         if (self.network_live_last_update) |frame_update| {
             drawLiveRunnerHud(runner, frame_update, &self.network_live_hud_state, runtime_assets);
         }
+        self.drawNetworkLiveStatus(runtime_assets);
         return true;
+    }
+
+    fn drawNetworkLiveStatus(self: *const App, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+        if (self.network_session.status_len == 0) return;
+        const assets = runtime_assets orelse return;
+        const y = @as(f32, @floatFromInt(rl.getScreenHeight())) - 30.0;
+        window_ui.drawSmallText(assets, self.network_session.statusText(), 18.0, y, rl.Color.init(204, 204, 214, 220));
     }
 
     fn drawGameplay(self: *App) void {
