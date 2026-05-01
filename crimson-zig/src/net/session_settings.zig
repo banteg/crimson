@@ -68,6 +68,18 @@ pub const WelcomeOptions = struct {
     started: bool = false,
 };
 
+pub const MatchStartSettingsOptions = struct {
+    tick_rate: i32 = lockstep_protocol.tick_rate,
+    input_delay_ticks: i32 = lockstep_protocol.input_delay_ticks,
+};
+
+pub const MatchStartOptions = struct {
+    session_id: []const u8,
+    seed: i32,
+    start_tick: i32 = 0,
+    status: ?game_cfg.Status = null,
+};
+
 pub const RoomCreateOptions = struct {
     status: ?game_cfg.Status = null,
 };
@@ -124,6 +136,17 @@ pub fn fromWelcome(message: lockstep_protocol.Welcome) LockstepSessionSettings {
     });
 }
 
+pub fn fromMatchStart(message: lockstep_protocol.MatchStart, options: MatchStartSettingsOptions) LockstepSessionSettings {
+    return forLockstep(.{
+        .mode_id = message.mode_id,
+        .player_count = message.player_count,
+        .quest_level = message.quest_level,
+        .preserve_bugs = message.preserve_bugs,
+        .tick_rate = options.tick_rate,
+        .input_delay_ticks = options.input_delay_ticks,
+    });
+}
+
 pub fn helloFromSettings(settings: LockstepSessionSettings, options: HelloOptions) lockstep_protocol.Hello {
     return .{
         .protocol_version = options.protocol_version,
@@ -155,6 +178,19 @@ pub fn welcomeFromSettings(settings: LockstepSessionSettings, options: WelcomeOp
         .quest_level = settings.quest_level,
         .preserve_bugs = settings.preserve_bugs,
         .started = options.started,
+    };
+}
+
+pub fn matchStartFromSettings(settings: LockstepSessionSettings, options: MatchStartOptions) lockstep_protocol.MatchStart {
+    return .{
+        .session_id = options.session_id,
+        .mode_id = settings.mode_id,
+        .player_count = settings.player_count,
+        .seed = options.seed,
+        .start_tick = options.start_tick,
+        .quest_level = settings.quest_level,
+        .preserve_bugs = settings.preserve_bugs,
+        .status = options.status,
     };
 }
 
@@ -349,6 +385,45 @@ test "lockstep session settings build hello and welcome messages" {
     try std.testing.expectEqual(@as(i32, 0), welcome.host_slot_index);
     try std.testing.expectEqual(@as(i32, 123), welcome.seed);
     try std.testing.expect(welcome.started);
+}
+
+test "lockstep session settings roundtrip match start messages" {
+    var status = std.mem.zeroes(game_cfg.Status);
+    status.game_sequence_id = 42;
+    const settings = forLockstep(.{
+        .mode_id = 3,
+        .player_count = 2,
+        .quest_level = try quest_level.QuestLevel.parse("2.9"),
+        .preserve_bugs = true,
+        .tick_rate = 60,
+        .input_delay_ticks = 3,
+    });
+
+    const start = matchStartFromSettings(settings, .{
+        .session_id = "lockstep-session",
+        .seed = 98765,
+        .start_tick = 12,
+        .status = status,
+    });
+    try std.testing.expectEqualStrings("lockstep-session", start.session_id);
+    try std.testing.expectEqual(@as(i32, 3), start.mode_id);
+    try std.testing.expectEqual(@as(i32, 2), start.player_count);
+    try std.testing.expectEqual(@as(i32, 98765), start.seed);
+    try std.testing.expectEqual(@as(i32, 12), start.start_tick);
+    try std.testing.expectEqual(@as(i32, 2), start.quest_level.?.major);
+    try std.testing.expectEqual(@as(i32, 9), start.quest_level.?.minor);
+    try std.testing.expect(start.preserve_bugs);
+    try std.testing.expectEqual(@as(u32, 42), start.status.?.game_sequence_id);
+
+    const roundtrip = fromMatchStart(start, .{ .tick_rate = 60, .input_delay_ticks = 3 });
+    try std.testing.expectEqual(@as(i32, 3), roundtrip.mode_id);
+    try std.testing.expectEqual(@as(i32, 2), roundtrip.player_count);
+    try std.testing.expectEqual(@as(i32, 2), roundtrip.quest_level.?.major);
+    try std.testing.expectEqual(@as(i32, 9), roundtrip.quest_level.?.minor);
+    try std.testing.expect(roundtrip.preserve_bugs);
+    try std.testing.expectEqual(@as(i32, 60), roundtrip.tick_rate);
+    try std.testing.expectEqual(@as(i32, 3), roundtrip.input_delay_ticks);
+    try std.testing.expectEqual(relay_protocol.NetcodeMode.lockstep, roundtrip.netcode_mode);
 }
 
 test "relay session settings clamp python-compatible numeric fields" {
