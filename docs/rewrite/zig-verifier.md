@@ -91,6 +91,7 @@ Current supported replay-tooling behavior:
 - native runtime asset archive/image validation via `crimson-zig-asset-smoke`
 - current Python-readable trace export contracts
 - quest spawn-table JSON dumps via `quests <level> --format json --seed <seed>`
+  and human allocation summaries via `quests <level> --show-plan`
 - spawn-template runtime summaries via `spawn-plan <template_id> --json`
 - native UDP relay serving via `relay serve`
 - invalid spawn-template / quest-table inputs reported as invalid replay/session

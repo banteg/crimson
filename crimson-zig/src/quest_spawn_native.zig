@@ -1,6 +1,7 @@
 const std = @import("std");
 
 const bootstrap = @import("runtime/bootstrap.zig");
+const creatures_runtime = @import("runtime/creatures.zig");
 const quest_spawn_common = @import("quest_spawn/logic_common.zig");
 const quest_spawn_logic_full = @import("quest_spawn/logic_full.zig");
 const spawn_runtime = @import("runtime/spawn.zig");
@@ -24,6 +25,7 @@ const QuestDumpRequest = struct {
     player_count: i32 = 1,
     seed: u32 = 0,
     sort: bool = false,
+    show_plan: bool = false,
 };
 
 const ParseOutcome = union(enum) {
@@ -66,6 +68,11 @@ const QuestDumpPayload = struct {
     entries: []const QuestSpawnEntryPayload,
 };
 
+const SpawnPlanSummary = struct {
+    creature_count: usize,
+    spawn_slot_count: usize,
+};
+
 pub fn runQuests(
     allocator: std.mem.Allocator,
     args: []const []const u8,
@@ -92,6 +99,9 @@ fn runQuestDump(
     if (!std.math.isFinite(request.width) or request.width <= 0.0 or !std.math.isFinite(request.height) or request.height <= 0.0) {
         return buildInvalidQuestArgsOutput(allocator, "width and height must be positive finite values");
     }
+    if (request.show_plan and request.output_format == .json) {
+        return buildInvalidQuestArgsOutput(allocator, "--show-plan requires human format");
+    }
 
     var entries_storage = [_]spawn_runtime.QuestSpawnEntry{undefined} ** max_quest_spawn_entries;
     var entry_len: usize = 0;
@@ -113,7 +123,10 @@ fn runQuestDump(
     }
 
     const stdout = switch (request.output_format) {
-        .human => try buildHumanQuestOutput(allocator, level, @intFromEnum(descriptor.start_weapon_id), entries),
+        .human => buildHumanQuestOutput(allocator, level, @intFromEnum(descriptor.start_weapon_id), entries, request.show_plan) catch |err| switch (err) {
+            error.InvalidSpawnTemplate => return buildInvalidQuestArgsOutput(allocator, "unsupported spawn template id in quest plan"),
+            else => return err,
+        },
         .json => try buildJsonQuestOutput(allocator, request, level, @intFromEnum(descriptor.start_weapon_id), entries),
     };
     errdefer allocator.free(stdout);
@@ -130,6 +143,7 @@ fn buildHumanQuestOutput(
     level: QuestLevel,
     start_weapon_id: i32,
     entries: []const spawn_runtime.QuestSpawnEntry,
+    show_plan: bool,
 ) ![]u8 {
     var stdout_buf: std.Io.Writer.Allocating = .init(allocator);
     defer stdout_buf.deinit();
@@ -140,13 +154,20 @@ fn buildHumanQuestOutput(
         .{ level.labelSlice(), entries.len },
     );
     try writer.print("Meta: start_weapon_id={d}\n", .{start_weapon_id});
+    if (show_plan) {
+        const summary = try summarizeQuestPlan(entries);
+        try writer.print(
+            "Plan: total_alloc={d} total_spawn_slots={d}\n",
+            .{ summary.creature_count, summary.spawn_slot_count },
+        );
+    }
     for (entries, 0..) |entry, idx| {
         try writer.print(
-            "{d:0>2}  t={d: >5}  id=0x{x:0>2} ({d: >2})  count={d: >2}  x={d: >7.1}  y={d: >7.1}  heading={d: >7.3}\n",
+            "{d:0>2}  t={d}  id=0x{x:0>2} ({d})  count={d}  x={d: >7.1}  y={d: >7.1}  heading={d: >7.3}\n",
             .{
                 idx + 1,
                 entry.trigger_ms,
-                @intFromEnum(entry.spawn_id),
+                @as(u32, @intCast(@intFromEnum(entry.spawn_id))),
                 @intFromEnum(entry.spawn_id),
                 entry.count,
                 entry.pos.x,
@@ -266,6 +287,10 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
             request.sort = true;
             continue;
         }
+        if (std.mem.eql(u8, arg, "--show-plan")) {
+            request.show_plan = true;
+            continue;
+        }
         if (std.mem.startsWith(u8, arg, "-")) {
             return .{ .invalid = arg };
         }
@@ -340,6 +365,38 @@ fn questEntryLessThan(
     return lhs.count < rhs.count;
 }
 
+fn summarizeQuestPlan(entries: []const spawn_runtime.QuestSpawnEntry) !SpawnPlanSummary {
+    var total_creatures: usize = 0;
+    var total_spawn_slots: usize = 0;
+    for (entries) |entry| {
+        const summary = try summarizeSpawnTemplate(@intFromEnum(entry.spawn_id));
+        const count: usize = @intCast(@max(entry.count, 0));
+        total_creatures += count * summary.creature_count;
+        total_spawn_slots += count * summary.spawn_slot_count;
+    }
+    return .{
+        .creature_count = total_creatures,
+        .spawn_slot_count = total_spawn_slots,
+    };
+}
+
+fn summarizeSpawnTemplate(template_id: i32) !SpawnPlanSummary {
+    var pool: creatures_runtime.CreaturePool = .{};
+    var rng = spawn_runtime.Crand.init(0);
+    try pool.spawnTemplateCall(
+        .{
+            .template_id = template_id,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+        },
+        &rng,
+    );
+    return .{
+        .creature_count = pool.activeCount(),
+        .spawn_slot_count = pool.spawn_slot_count,
+    };
+}
+
 fn buildInvalidQuestArgsOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
@@ -371,7 +428,7 @@ test "quest level parser rejects out of range levels" {
 }
 
 test "quests parser accepts json dump options" {
-    const parsed = parseNativeSubset(&.{ "1.6", "--format", "json", "--width", "1600", "--height=900", "--player-count", "3", "--seed=0x1234", "--sort" });
+    const parsed = parseNativeSubset(&.{ "1.6", "--format", "json", "--width", "1600", "--height=900", "--player-count", "3", "--seed=0x1234", "--sort", "--show-plan" });
     switch (parsed) {
         .ok => |request| {
             try std.testing.expectEqualStrings("1.6", request.level_arg);
@@ -381,7 +438,31 @@ test "quests parser accepts json dump options" {
             try std.testing.expectEqual(@as(i32, 3), request.player_count);
             try std.testing.expectEqual(@as(u32, 0x1234), request.seed);
             try std.testing.expect(request.sort);
+            try std.testing.expect(request.show_plan);
         },
         else => return error.TestExpectedValidArgs,
     }
+}
+
+test "quest plan summary counts template allocations" {
+    var entries = [_]spawn_runtime.QuestSpawnEntry{
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+            .spawn_id = .formation_ring_alien_8_12,
+            .trigger_ms = 0,
+            .count = 2,
+        },
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+            .spawn_id = .alien_spawner_child_1d_fast_07,
+            .trigger_ms = 100,
+            .count = 3,
+        },
+    };
+
+    const summary = try summarizeQuestPlan(entries[0..]);
+    try std.testing.expectEqual(@as(usize, 21), summary.creature_count);
+    try std.testing.expectEqual(@as(usize, 3), summary.spawn_slot_count);
 }

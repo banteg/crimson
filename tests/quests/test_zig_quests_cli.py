@@ -7,10 +7,12 @@ from typing import Any, cast
 import pytest
 
 import crimson.dbg.record as dbg_record
+from crimson.creatures.spawn import SpawnEnv, build_spawn_plan
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext, SpawnEntry
+from grim.geom import Vec2
 from grim.rand import Crand
 
 
@@ -77,6 +79,43 @@ def test_zig_quests_human_output_reports_unknown_level() -> None:
 
     assert result.returncode == 1
     assert "invalid quests args: invalid quest level" in result.stderr
+
+
+def test_zig_quests_show_plan_matches_python_summary() -> None:
+    level = QuestLevel(2, 5)
+    quest = quest_by_level(level)
+    assert quest is not None
+    expected_entries = build_quest_spawn_table(
+        quest,
+        QuestContext(width=1024, height=1024, player_count=1),
+        rng=Crand(0),
+        hardcore=False,
+        full_version=True,
+    )
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+    plan_cache = {
+        entry.spawn_id: build_spawn_plan(entry.spawn_id, Vec2(512.0, 512.0), 0.0, Crand(0), env)
+        for entry in expected_entries
+    }
+    total_alloc = sum(entry.count * len(plan_cache[entry.spawn_id].creatures) for entry in expected_entries)
+    total_slots = sum(entry.count * len(plan_cache[entry.spawn_id].spawn_slots) for entry in expected_entries)
+
+    build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
+    assert build_run.returncode == 0, dbg_record._command_detail(build_run)
+
+    result = dbg_record._run_process(
+        [str(dbg_record._ZIG_BIN), "quests", level.text, "--show-plan"],
+        cwd=dbg_record._REPO_ROOT,
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert f"Plan: total_alloc={total_alloc} total_spawn_slots={total_slots}" in result.stdout
 
 
 def _payload_entries(entries: list[dict[str, Any]]) -> list[tuple[float, float, float, int, int, int]]:

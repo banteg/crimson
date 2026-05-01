@@ -27,7 +27,8 @@ Today `crimson-zig/` already has:
   [`crimson-zig/src/verify_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/verify_native.zig)
   and
   [`crimson-zig/src/replay_info_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/replay_info_native.zig),
-- native quest spawn-table dumps through
+- native quest spawn-table dumps, including optional spawn-plan summaries,
+  through
   [`crimson-zig/src/quest_spawn_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/quest_spawn_native.zig),
 - native spawn-template materialization summaries through
   [`crimson-zig/src/spawn_plan_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/spawn_plan_native.zig),
