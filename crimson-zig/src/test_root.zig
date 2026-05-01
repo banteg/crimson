@@ -26,6 +26,7 @@ test {
     _ = cz.net_session_native;
     _ = cz.net;
     std.testing.refAllDecls(cz.net.lockstep_live_bridge);
+    std.testing.refAllDecls(cz.net.lockstep_live_session);
 
     var host_status = std.mem.zeroes(cz.formats.game_cfg.Status);
     host_status.quest_unlock_index = 2;
@@ -89,6 +90,60 @@ test {
     try std.testing.expect(command_input.players[0].flags.fire_pressed);
     try std.testing.expectEqual(@as(?i32, 1), command_input.perk_choice_index);
     try std.testing.expectEqual(@as(?u8, 'x'), command_input.typo_char);
+
+    var host_live = try cz.net.lockstep_live_session.HostLiveSession.init(.{
+        .mode_id = @intFromEnum(cz.game_ids.GameModeId.survival),
+        .player_count = 2,
+        .build_id = "0.1.0",
+        .session_id = "test-root-live",
+        .seed = 9753,
+        .input_delay_ticks = 0,
+    });
+    defer host_live.deinit(std.testing.allocator, std.Io.Threaded.global_single_threaded.io());
+    try std.testing.expectEqual(@as(u32, 9753), host_live.runner.seed);
+    host_live.session.runtime.lockstep = .{ .player_count = 2, .input_delay_ticks = 0 };
+    try host_live.session.runtime.lockstep.?.submitInputSample(std.testing.allocator, 0, 0, .{
+        .move_x = 1.0,
+        .flags = cz.net.lockstep_input_adapter.move_mode_present_flag |
+            (@as(u32, 3) << cz.net.lockstep_input_adapter.move_mode_shift),
+    });
+    try host_live.session.runtime.lockstep.?.submitInputSample(std.testing.allocator, 1, 0, .{
+        .move_y = 1.0,
+        .flags = cz.net.lockstep_input_adapter.move_mode_present_flag |
+            (@as(u32, 3) << cz.net.lockstep_input_adapter.move_mode_shift),
+    });
+    const host_live_steps = try host_live.stepReadyFrames(std.testing.allocator, 10);
+    try std.testing.expectEqual(@as(usize, 1), host_live_steps.frames_advanced);
+    try std.testing.expectEqual(@as(usize, 1), host_live.runner.session.tick_index);
+
+    var client_live = cz.net.lockstep_live_session.ClientLiveSession.init(.{
+        .mode_id = @intFromEnum(cz.game_ids.GameModeId.survival),
+        .player_count = 2,
+        .build_id = "0.1.0",
+        .host_addr = cz.net.lockstep_transport.PeerAddr.loopback(cz.net.lockstep_protocol.default_port),
+        .input_delay_ticks = 0,
+    });
+    defer {
+        client_live.session.runtime.lobby.match_start = null;
+        client_live.deinit(std.testing.allocator, std.Io.Threaded.global_single_threaded.io());
+    }
+    try std.testing.expect(!try client_live.ensureLiveRunner());
+    client_live.session.runtime.lobby.ingestMatchStart(.{
+        .session_id = "test-root-live",
+        .mode_id = @intFromEnum(cz.game_ids.GameModeId.survival),
+        .player_count = 2,
+        .seed = 7531,
+    });
+    try std.testing.expect(try client_live.ensureLiveRunner());
+    try std.testing.expectEqual(@as(u32, 7531), client_live.runner.?.seed);
+    client_live.session.runtime.lockstep = .{ .local_slot_index = 1, .input_delay_ticks = 0 };
+    try client_live.session.runtime.lockstep.?.ingestTickFrame(std.testing.allocator, .{
+        .tick_index = 0,
+        .frame_inputs = &bridge_inputs,
+    }, 20);
+    const client_live_steps = try client_live.stepCanonicalFrames(std.testing.allocator);
+    try std.testing.expectEqual(@as(usize, 1), client_live_steps.frames_advanced);
+    try std.testing.expectEqual(@as(usize, 1), client_live.runner.?.session.tick_index);
 
     const smoke_output = try cz.net_lockstep_smoke_native.runLockstepSmoke(
         std.testing.allocator,
