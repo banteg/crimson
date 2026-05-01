@@ -237,6 +237,50 @@ pub fn runReplayVerifyCheckpoints(
     }
 }
 
+pub fn runReplayDiffCheckpointsBytes(
+    allocator: std.mem.Allocator,
+    expected_bytes: []const u8,
+    actual_bytes: []const u8,
+) !CommandOutput {
+    var expected = loadCheckpointsBytes(allocator, expected_bytes) catch |err| {
+        return buildFailedOutput(allocator, checkpointFileLoadErrorDetail(err));
+    };
+    defer expected.deinit();
+
+    var actual = loadCheckpointsBytes(allocator, actual_bytes) catch |err| {
+        return buildFailedOutput(allocator, checkpointFileLoadErrorDetail(err));
+    };
+    defer actual.deinit();
+
+    return runDiffWithCheckpoints(allocator, expected.value.checkpoints, actual.value.checkpoints);
+}
+
+pub fn runReplayVerifyCheckpointsBytes(
+    allocator: std.mem.Allocator,
+    replay_bytes: []const u8,
+    checkpoints_bytes: []const u8,
+    max_ticks: ?usize,
+    trace_rng: bool,
+) !CommandOutput {
+    var expected = loadCheckpointsBytes(allocator, checkpoints_bytes) catch |err| {
+        return buildVerifyFailedOutput(allocator, checkpointFileLoadErrorDetail(err));
+    };
+    defer expected.deinit();
+
+    var replay = loadReplayBytes(allocator, replay_bytes) catch |err| {
+        return buildVerifyFailedOutput(allocator, replayLoadErrorDetail(err));
+    };
+    defer replay.deinit(allocator);
+
+    return runVerifyCheckpointsWithReplay(
+        allocator,
+        expected.value.checkpoints,
+        replay,
+        max_ticks,
+        trace_rng,
+    );
+}
+
 fn parseDiffArgs(args: []const []const u8) DiffParseOutcome {
     if (args.len != 2) return .{ .invalid = "expected <expected.chk> <actual.chk>" };
     if (std.mem.startsWith(u8, args[0], "-")) return .{ .invalid = "expected checkpoints file path, got option" };
@@ -317,14 +361,22 @@ fn runNativeDiff(
     };
     defer actual.deinit();
 
-    const diff = compareCheckpoints(expected.value.checkpoints, actual.value.checkpoints);
+    return runDiffWithCheckpoints(allocator, expected.value.checkpoints, actual.value.checkpoints);
+}
+
+fn runDiffWithCheckpoints(
+    allocator: std.mem.Allocator,
+    expected_checkpoints: []const ReplayCheckpointWire,
+    actual_checkpoints: []const ReplayCheckpointWire,
+) !CommandOutput {
+    const diff = compareCheckpoints(expected_checkpoints, actual_checkpoints);
     if (!diff.ok) {
         return buildMismatchOutput(allocator, diff);
     }
 
     var stdout_buf: std.Io.Writer.Allocating = .init(allocator);
     defer stdout_buf.deinit();
-    try stdout_buf.writer.print("ok: {d} checkpoints match\n", .{expected.value.checkpoints.len});
+    try stdout_buf.writer.print("ok: {d} checkpoints match\n", .{expected_checkpoints.len});
     if (diff.first_rng_only_tick) |tick| {
         try stdout_buf.writer.print("first rng-only divergence tick={d}\n", .{tick});
     }
@@ -389,35 +441,28 @@ fn runNativeVerifyCheckpoints(
     };
     defer allocator.free(replay_bytes);
 
-    var replay_payload_alloc: ?[]u8 = null;
-    defer if (replay_payload_alloc) |buf| allocator.free(buf);
-    const replay_payload: []const u8 = if (replay_codec.isZstdPayload(replay_bytes)) blk: {
-        const inflated = replay_codec.inflateZstdPayload(
-            allocator,
-            replay_bytes,
-            replay_codec.max_replay_payload_bytes,
-        ) catch |err| {
-            return buildVerifyFailedOutput(allocator, replayLoadErrorDetail(err));
-        };
-        replay_payload_alloc = inflated;
-        break :blk inflated;
-    } else if (replay_codec.isGzipPayload(replay_bytes)) blk: {
-        const inflated = replay_codec.inflateGzipPayload(
-            allocator,
-            replay_bytes,
-            replay_codec.max_replay_payload_bytes,
-        ) catch |err| {
-            return buildVerifyFailedOutput(allocator, replayLoadErrorDetail(err));
-        };
-        replay_payload_alloc = inflated;
-        break :blk inflated;
-    } else replay_bytes;
-
-    var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
+    var replay = loadReplayBytes(allocator, replay_bytes) catch |err| {
         return buildVerifyFailedOutput(allocator, replayLoadErrorDetail(err));
     };
     defer replay.deinit(allocator);
 
+    return runVerifyCheckpointsWithReplay(
+        allocator,
+        expected.value.checkpoints,
+        replay,
+        request.max_ticks,
+        request.trace_rng,
+    );
+}
+
+fn runVerifyCheckpointsWithReplay(
+    allocator: std.mem.Allocator,
+    expected_checkpoints: []const ReplayCheckpointWire,
+    replay: replay_codec.Replay,
+    max_ticks: ?usize,
+    trace_rng: bool,
+) !CommandOutput {
+    _ = trace_rng;
     var trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
     defer {
         replay_runner.deinitReplayTickTraceRows(allocator, trace.items);
@@ -428,7 +473,7 @@ fn runNativeVerifyCheckpoints(
         allocator,
         replay,
         &trace,
-        .{ .max_ticks = request.max_ticks },
+        .{ .max_ticks = max_ticks },
     ) catch |err| {
         return buildVerifyFailedOutput(allocator, replayRunnerErrorDetail(err));
     };
@@ -439,7 +484,7 @@ fn runNativeVerifyCheckpoints(
         actual.deinit(allocator);
     }
 
-    for (expected.value.checkpoints) |expected_checkpoint| {
+    for (expected_checkpoints) |expected_checkpoint| {
         const row = traceRowForTick(trace.items, expected_checkpoint.tick_index) orelse continue;
         var checkpoint = buildCheckpointFromTrace(allocator, row) catch |err| {
             return buildVerifyFailedOutput(allocator, checkpointBuildErrorDetail(err));
@@ -451,14 +496,14 @@ fn runNativeVerifyCheckpoints(
         };
     }
 
-    const diff = compareCheckpoints(expected.value.checkpoints, actual.items);
+    const diff = compareCheckpoints(expected_checkpoints, actual.items);
     if (!diff.ok) return buildMismatchOutput(allocator, diff);
 
     var stdout_buf: std.Io.Writer.Allocating = .init(allocator);
     defer stdout_buf.deinit();
     try stdout_buf.writer.print(
         "ok: {d} checkpoints match; ticks={d} score_xp={d} kills={d}",
-        .{ expected.value.checkpoints.len, run.ticks, run.player_experience, run.creature_kill_count },
+        .{ expected_checkpoints.len, run.ticks, run.player_experience, run.creature_kill_count },
     );
     if (diff.first_rng_only_tick) |tick| {
         try stdout_buf.writer.print("; rng-only drift starts at tick={d}", .{tick});
@@ -483,6 +528,13 @@ fn loadCheckpointsFile(
     const bytes = try std.Io.Dir.cwd().readFileAlloc(io, path, allocator, .unlimited);
     defer allocator.free(bytes);
 
+    return loadCheckpointsBytes(allocator, bytes);
+}
+
+fn loadCheckpointsBytes(
+    allocator: std.mem.Allocator,
+    bytes: []const u8,
+) !msgpack.Decoded(ReplayCheckpointsWire) {
     var payload: []u8 = undefined;
     var payload_owned = false;
     if (replay_codec.isZstdPayload(bytes)) {
@@ -502,6 +554,33 @@ fn loadCheckpointsFile(
 
     if (decoded.value.version != checkpoints_format_version) return error.UnsupportedCheckpointsVersion;
     return decoded;
+}
+
+fn loadReplayBytes(
+    allocator: std.mem.Allocator,
+    replay_bytes: []const u8,
+) !replay_codec.Replay {
+    var replay_payload_alloc: ?[]u8 = null;
+    defer if (replay_payload_alloc) |buf| allocator.free(buf);
+    const replay_payload: []const u8 = if (replay_codec.isZstdPayload(replay_bytes)) blk: {
+        const inflated = try replay_codec.inflateZstdPayload(
+            allocator,
+            replay_bytes,
+            replay_codec.max_replay_payload_bytes,
+        );
+        replay_payload_alloc = inflated;
+        break :blk inflated;
+    } else if (replay_codec.isGzipPayload(replay_bytes)) blk: {
+        const inflated = try replay_codec.inflateGzipPayload(
+            allocator,
+            replay_bytes,
+            replay_codec.max_replay_payload_bytes,
+        );
+        replay_payload_alloc = inflated;
+        break :blk inflated;
+    } else replay_bytes;
+
+    return replay_codec.parseReplay(allocator, replay_payload);
 }
 
 fn traceRowForTick(rows: []const replay_runner.ReplayTickTrace, tick_index: i32) ?*const replay_runner.ReplayTickTrace {
@@ -1644,6 +1723,62 @@ test "checkpoint mismatch output reports first event field difference" {
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "first state diff: events.sfx_count expected=0 actual=1") != null);
 }
 
+test "byte checkpoint diff accepts msgpack payloads" {
+    const allocator = std.testing.allocator;
+    const checkpoint = testCheckpoint();
+    const payload = try encodeTestCheckpoints(allocator, &.{checkpoint});
+    defer allocator.free(payload);
+
+    const output = try runReplayDiffCheckpointsBytes(allocator, payload, payload);
+    defer output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expectEqualStrings("", output.stderr);
+    try std.testing.expectEqualStrings("ok: 1 checkpoints match\n", output.stdout);
+}
+
+test "byte checkpoint verify accepts replay and checkpoint payloads" {
+    const allocator = std.testing.allocator;
+    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(replay_bytes);
+
+    var replay = try loadReplayBytes(allocator, replay_bytes);
+    defer replay.deinit(allocator);
+
+    var trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
+    defer {
+        replay_runner.deinitReplayTickTraceRows(allocator, trace.items);
+        trace.deinit(allocator);
+    }
+
+    _ = try replay_runner.runReplayWithTrace(
+        allocator,
+        replay,
+        &trace,
+        .{ .max_ticks = 1 },
+    );
+    try std.testing.expect(trace.items.len > 0);
+
+    var checkpoint = try buildCheckpointFromTrace(allocator, &trace.items[0]);
+    defer deinitOwnedCheckpoint(allocator, &checkpoint);
+
+    const checkpoints_payload = try encodeTestCheckpoints(allocator, &.{checkpoint});
+    defer allocator.free(checkpoints_payload);
+
+    const output = try runReplayVerifyCheckpointsBytes(
+        allocator,
+        replay_bytes,
+        checkpoints_payload,
+        1,
+        false,
+    );
+    defer output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expectEqualStrings("", output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "ok: 1 checkpoints match; ticks=1") != null);
+}
+
 test "checkpoint diff maps checkpoint load errors to user details" {
     try std.testing.expectEqualStrings(
         "checkpoints payload is not valid msgpack wire format",
@@ -1760,4 +1895,19 @@ fn testCheckpoint() ReplayCheckpointWire {
         .tutorial = null,
         .typo = null,
     };
+}
+
+fn encodeTestCheckpoints(
+    allocator: std.mem.Allocator,
+    checkpoints: []const ReplayCheckpointWire,
+) ![]u8 {
+    const payload: ReplayCheckpointsWire = .{
+        .version = checkpoints_format_version,
+        .sample_rate = 1,
+        .checkpoints = checkpoints,
+    };
+    var writer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer writer.deinit();
+    try msgpack.encode(payload, &writer.writer);
+    return writer.toOwnedSlice();
 }
