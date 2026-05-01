@@ -92,7 +92,8 @@ Current supported replay-tooling behavior:
 - current Python-readable trace export contracts
 - quest spawn-table JSON dumps via `quests <level> --format json --seed <seed>`
   and human allocation summaries via `quests <level> --show-plan`
-- spawn-template runtime summaries via `spawn-plan <template_id> --json`
+- spawn-template runtime summaries via `spawn-plan <template_id> --json`,
+  including optional non-demo burst-effect counts
 - native UDP relay serving via `relay serve`
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
   data rather than stale “unsupported path” wording

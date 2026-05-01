@@ -1,7 +1,9 @@
 const std = @import("std");
 
 const creatures_runtime = @import("runtime/creatures.zig");
+const effects_runtime = @import("runtime/effects.zig");
 const spawn_runtime = @import("runtime/spawn.zig");
+const state_runtime = @import("runtime/state.zig");
 const verify_native = @import("verify_native.zig");
 
 pub const CommandOutput = verify_native.CommandOutput;
@@ -19,6 +21,8 @@ const SpawnPlanRequest = struct {
     seed: u32 = 0xBEEF,
     pos: spawn_runtime.Vec2 = .{ .x = 512.0, .y = 512.0 },
     heading: f32 = 0.0,
+    terrain_size: f32 = 1024.0,
+    demo_mode_active: bool = true,
     hardcore: bool = false,
     quest_fail_retry_count: i32 = 0,
 };
@@ -74,10 +78,13 @@ const SpawnPlanPayload = struct {
         y: f32,
     },
     heading: f32,
+    terrain_size: f32,
+    demo_mode_active: bool,
     hardcore: bool,
     quest_fail_retry_count: i32,
     active_count: usize,
     spawn_slot_count: usize,
+    effect_count: usize,
     creatures: []const CreaturePayload,
     spawn_slots: []const SpawnSlotPayload,
 };
@@ -102,22 +109,31 @@ fn runSpawnPlanRequest(
     var pool: creatures_runtime.CreaturePool = .{};
     pool.hardcore = request.hardcore;
     pool.quest_fail_retry_count = request.quest_fail_retry_count;
+    var effects: effects_runtime.EffectPool = .{};
+    pool.effects = &effects;
 
-    var rng = spawn_runtime.Crand.init(request.seed);
-    pool.spawnTemplateCall(
+    var state = state_runtime.GameplayState.init(request.seed);
+    state.demo_mode_active = request.demo_mode_active;
+    state.hardcore = request.hardcore;
+    state.quest_fail_retry_count = request.quest_fail_retry_count;
+
+    pool.spawnTemplateCallWithRuntimeContext(
         .{
             .template_id = request.template_id,
             .pos = request.pos,
             .heading = request.heading,
         },
-        &rng,
+        &state.rng,
+        &state,
+        request.terrain_size,
     ) catch |err| switch (err) {
         error.InvalidSpawnTemplate => return buildInvalidOutput(allocator, "unsupported spawn template id"),
     };
+    const effect_count = effects_runtime.effect_pool_size - effects.free_len;
 
     const stdout = switch (request.output_format) {
-        .human => try buildHumanOutput(allocator, request, &pool, rng.state),
-        .json => try buildJsonOutput(allocator, request, &pool, rng.state),
+        .human => try buildHumanOutput(allocator, request, &pool, state.rng.state, effect_count),
+        .json => try buildJsonOutput(allocator, request, &pool, state.rng.state, effect_count),
     };
     errdefer allocator.free(stdout);
 
@@ -133,6 +149,7 @@ fn buildHumanOutput(
     request: SpawnPlanRequest,
     pool: *const creatures_runtime.CreaturePool,
     rng_state: u32,
+    effect_count: usize,
 ) ![]u8 {
     var stdout_buf: std.Io.Writer.Allocating = .init(allocator);
     defer stdout_buf.deinit();
@@ -147,8 +164,8 @@ fn buildHumanOutput(
         .{ request.pos.x, request.pos.y, request.heading, request.seed, rng_state },
     );
     try writer.print(
-        "active={d} slots={d} hardcore={} quest_fail_retry_count={d}\n\n",
-        .{ pool.activeCount(), pool.spawn_slot_count, request.hardcore, request.quest_fail_retry_count },
+        "active={d} slots={d} effects={d} demo_mode_active={} terrain_size={d:.1} hardcore={} quest_fail_retry_count={d}\n\n",
+        .{ pool.activeCount(), pool.spawn_slot_count, effect_count, request.demo_mode_active, request.terrain_size, request.hardcore, request.quest_fail_retry_count },
     );
 
     try writer.writeAll("creatures:\n");
@@ -196,6 +213,7 @@ fn buildJsonOutput(
     request: SpawnPlanRequest,
     pool: *const creatures_runtime.CreaturePool,
     rng_state: u32,
+    effect_count: usize,
 ) ![]u8 {
     var creatures_storage: [creatures_runtime.max_creatures]CreaturePayload = undefined;
     var creature_len: usize = 0;
@@ -243,10 +261,13 @@ fn buildJsonOutput(
         .rng_state = rng_state,
         .pos = .{ .x = request.pos.x, .y = request.pos.y },
         .heading = request.heading,
+        .terrain_size = request.terrain_size,
+        .demo_mode_active = request.demo_mode_active,
         .hardcore = request.hardcore,
         .quest_fail_retry_count = request.quest_fail_retry_count,
         .active_count = creature_len,
         .spawn_slot_count = pool.spawn_slot_count,
+        .effect_count = effect_count,
         .creatures = creatures_storage[0..creature_len],
         .spawn_slots = slots_storage[0..pool.spawn_slot_count],
     };
@@ -314,6 +335,24 @@ fn parseArgs(args: []const []const u8) ParseOutcome {
             request.heading = parseFiniteFloat(arg["--heading=".len..]) orelse return .{ .invalid = "invalid --heading value" };
             continue;
         }
+        if (std.mem.eql(u8, arg, "--terrain-size")) {
+            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --terrain-size" };
+            idx += 1;
+            request.terrain_size = parsePositiveFloat(args[idx]) orelse return .{ .invalid = "invalid --terrain-size value" };
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--terrain-size=")) {
+            request.terrain_size = parsePositiveFloat(arg["--terrain-size=".len..]) orelse return .{ .invalid = "invalid --terrain-size value" };
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--demo-mode-active")) {
+            request.demo_mode_active = true;
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--no-demo-mode-active")) {
+            request.demo_mode_active = false;
+            continue;
+        }
         if (std.mem.eql(u8, arg, "--hardcore")) {
             request.hardcore = true;
             continue;
@@ -359,6 +398,12 @@ fn parseFiniteFloat(raw: []const u8) ?f32 {
     return value;
 }
 
+fn parsePositiveFloat(raw: []const u8) ?f32 {
+    const value = parseFiniteFloat(raw) orelse return null;
+    if (value <= 0.0) return null;
+    return value;
+}
+
 fn parseRetryCount(raw: []const u8) ?i32 {
     const value = std.fmt.parseInt(i32, raw, 10) catch return null;
     if (value < 0) return null;
@@ -395,6 +440,8 @@ test "spawn-plan parser accepts json options" {
         "100,200",
         "--heading",
         "1.5",
+        "--terrain-size=2048",
+        "--no-demo-mode-active",
         "--hardcore",
         "--quest-fail-retry-count=2",
     });
@@ -406,6 +453,8 @@ test "spawn-plan parser accepts json options" {
     try std.testing.expectEqual(@as(f32, 100.0), request.pos.x);
     try std.testing.expectEqual(@as(f32, 200.0), request.pos.y);
     try std.testing.expectEqual(@as(f32, 1.5), request.heading);
+    try std.testing.expectEqual(@as(f32, 2048.0), request.terrain_size);
+    try std.testing.expect(!request.demo_mode_active);
     try std.testing.expect(request.hardcore);
     try std.testing.expectEqual(@as(i32, 2), request.quest_fail_retry_count);
 }
@@ -417,4 +466,13 @@ test "spawn-plan rejects unknown template id" {
     const output = try runSpawnPlan(arena.allocator(), &.{ "0x02", "--json" });
     try std.testing.expectEqual(@as(u8, 1), output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "invalid spawn template id") != null);
+}
+
+test "spawn-plan counts runtime burst effects outside demo mode" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+
+    const output = try runSpawnPlan(arena.allocator(), &.{ "0x24", "--json", "--no-demo-mode-active" });
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"effect_count\":8") != null);
 }

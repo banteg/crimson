@@ -49,6 +49,23 @@ def test_zig_spawn_plan_json_matches_python_summary() -> None:
         assert payload["template_id"] == int(template_id)
         assert payload["active_count"] == len(expected.creatures)
         assert payload["spawn_slot_count"] == len(expected.spawn_slots)
+        assert payload["effect_count"] == 0
+
+
+def test_zig_spawn_plan_counts_runtime_effects_outside_demo_mode() -> None:
+    build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
+    assert build_run.returncode == 0, dbg_record._command_detail(build_run)
+
+    result = dbg_record._run_process(
+        [str(dbg_record._ZIG_BIN), "spawn-plan", "0x24", "--json", "--no-demo-mode-active"],
+        cwd=dbg_record._REPO_ROOT,
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    payload = cast("dict[str, Any]", json.loads(result.stdout))
+    assert payload["demo_mode_active"] is False
+    assert payload["terrain_size"] == 1024
+    assert payload["effect_count"] == 8
 
 
 def test_zig_spawn_plan_rejects_unsupported_template() -> None:
@@ -75,5 +92,5 @@ def test_zig_spawn_plan_human_output_includes_summary() -> None:
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "template_id=0x12 (18)" in result.stdout
-    assert "active=9 slots=0" in result.stdout
+    assert "active=9 slots=0 effects=0" in result.stdout
     assert "creatures:" in result.stdout

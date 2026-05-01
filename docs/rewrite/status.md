@@ -49,7 +49,7 @@ Last reviewed: **2026-02-24**
   - `crimson-zig status --path <game.cfg> --format json`
   - `crimson-zig quests <level> --format json --seed <seed>`
   - `crimson-zig quests <level> --show-plan`
-  - `crimson-zig spawn-plan <template_id> --json`
+  - `crimson-zig spawn-plan <template_id> --json` (add `--no-demo-mode-active` to include runtime burst effects)
   - `uv run crimson dbg health <trace.cdt>`
   - `uv run crimson dbg diff <expected.cdt> <actual.cdt>`
   - `uv run crimson dbg bisect <expected.cdt> <actual.cdt>`

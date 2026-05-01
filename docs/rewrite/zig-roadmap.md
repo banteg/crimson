@@ -32,6 +32,7 @@ Today `crimson-zig/` already has:
   [`crimson-zig/src/quest_spawn_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/quest_spawn_native.zig),
 - native spawn-template materialization summaries through
   [`crimson-zig/src/spawn_plan_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/spawn_plan_native.zig),
+  including runtime burst-effect counts when demo mode is disabled,
 - a real raylib desktop application in
   [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig),
 - archive/config/status codecs under
