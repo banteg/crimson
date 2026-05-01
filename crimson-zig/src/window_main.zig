@@ -14,7 +14,9 @@ const input_codes = @import("input_codes.zig");
 const local_input = cz.local_input;
 const live_audio = @import("audio/live_audio.zig");
 const quest_results = @import("quest_results.zig");
+const rng_callers = cz.rng_caller_static;
 const runtime_paths = cz.runtime_paths;
+const spawn_mod = cz.spawn;
 const window_assets = @import("window_assets.zig");
 const window_atlas = cz.window_atlas;
 const window_boot = @import("window_boot.zig");
@@ -46,6 +48,7 @@ const typo_names = cz.typo_names;
 const ui_formatting = cz.ui_formatting;
 
 const single_player_alt_move_codes = [_]i32{ 0xC8, 0xD0, 0xCB, 0xCD };
+const final_quest_level_key: i32 = 510;
 const window_width = 1024;
 const window_height = 768;
 const ui_button_width: f32 = 280.0;
@@ -78,6 +81,7 @@ const Screen = enum {
     gameplay,
     pause,
     results,
+    end_note,
     options,
     controls,
 };
@@ -355,6 +359,7 @@ const App = struct {
     statistics_menu: window_statistics.State = .{},
     mods_menu: window_misc_panels.ModsState = .{},
     other_games_menu: window_misc_panels.OtherGamesState = .{},
+    end_note_selection: usize = 0,
     gameplay: ?GameplayScreen = null,
     results: ?ResultsScreen = null,
     options: window_options.OptionsState = .{},
@@ -461,6 +466,7 @@ const App = struct {
             .gameplay => self.updateGameplay(frame_dt),
             .pause => self.updatePause(frame_dt),
             .results => self.updateResults(),
+            .end_note => self.updateEndNote(),
             .options => self.updateOptions(frame_dt),
             .controls => self.updateControls(frame_dt),
         }
@@ -479,6 +485,7 @@ const App = struct {
             .gameplay => self.drawGameplay(),
             .pause => self.drawPause(),
             .results => self.drawResults(),
+            .end_note => self.drawEndNote(),
             .options => self.drawOptions(),
             .controls => self.drawControls(),
         }
@@ -504,7 +511,7 @@ const App = struct {
         const assets = if (self.runtime_assets) |*runtime_assets| runtime_assets else return;
         switch (self.screen) {
             .boot => {},
-            .main_menu, .play_game_menu, .quests_menu, .statistics_menu, .mods_menu, .other_games_menu, .pause, .results, .options, .controls => {
+            .main_menu, .play_game_menu, .quests_menu, .statistics_menu, .mods_menu, .other_games_menu, .pause, .results, .end_note, .options, .controls => {
                 window_cursor.drawMenuCursor(assets, self.cursor_pulse_time);
             },
             .gameplay => {
@@ -860,16 +867,7 @@ const App = struct {
         switch (results.run_config.game_mode) {
             .quests => switch (results.reason) {
                 .completed => switch (self.results_selection) {
-                    0 => if (nextQuestLevelKey(results.run_config.quest_level_key)) |next_level_key| {
-                        var next_run = results.run_config;
-                        next_run.quest_level_key = next_level_key;
-                        next_run.quest_fail_retry_count = 0;
-                        self.startNewRun(next_run);
-                    } else {
-                        self.results = null;
-                        self.menu.openRoot();
-                        self.setScreen(.main_menu);
-                    },
+                    0 => self.activateQuestCompletedPrimary(results),
                     1 => {
                         var next_run = results.run_config;
                         next_run.quest_fail_retry_count = 0;
@@ -921,6 +919,68 @@ const App = struct {
                 },
                 else => {},
             },
+        }
+    }
+
+    fn activateQuestCompletedPrimary(self: *App, results: *const ResultsScreen) void {
+        if (isFinalQuestLevelKey(results.run_config.quest_level_key)) {
+            self.results = null;
+            self.end_note_selection = 0;
+            self.setScreen(.end_note);
+            return;
+        }
+        if (nextQuestLevelKey(results.run_config.quest_level_key)) |next_level_key| {
+            var next_run = results.run_config;
+            next_run.quest_level_key = next_level_key;
+            next_run.quest_fail_retry_count = 0;
+            self.startNewRun(next_run);
+            return;
+        }
+        self.results = null;
+        self.menu.openRoot();
+        self.setScreen(.main_menu);
+    }
+
+    fn updateEndNote(self: *App) void {
+        self.audio.ensureMenuThemeForDemo(self.demo_enabled);
+        const buttons = endNoteButtons();
+        window_ui.updateSelectionFromPointer(&self.end_note_selection, buttons[0..]);
+        if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
+            self.end_note_selection = if (self.end_note_selection == 0) buttons.len - 1 else self.end_note_selection - 1;
+        }
+        if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
+            self.end_note_selection = (self.end_note_selection + 1) % buttons.len;
+        }
+        if (rl.isKeyPressed(.escape)) {
+            self.audio.playUiButtonClick();
+            self.menu.openRoot();
+            self.setScreen(.main_menu);
+            return;
+        }
+
+        if (!window_ui.buttonActivated(buttons[0..], self.end_note_selection)) return;
+        self.audio.playUiButtonClick();
+        switch (self.end_note_selection) {
+            0 => {
+                self.runtime.config.game_mode = @intFromEnum(game_ids.GameModeId.survival);
+                self.runtime.config_dirty = true;
+                self.startNewRun(runConfigForLiveMode(.survival, null, &self.next_seed_state));
+            },
+            1 => {
+                self.runtime.config.game_mode = @intFromEnum(game_ids.GameModeId.rush);
+                self.runtime.config_dirty = true;
+                self.startNewRun(runConfigForLiveMode(.rush, null, &self.next_seed_state));
+            },
+            2 => {
+                self.runtime.config.game_mode = @intFromEnum(game_ids.GameModeId.typo);
+                self.runtime.config_dirty = true;
+                self.startNewRun(runConfigForLiveMode(.typo, null, &self.next_seed_state));
+            },
+            3 => {
+                self.menu.openRoot();
+                self.setScreen(.main_menu);
+            },
+            else => {},
         }
     }
 
@@ -1550,6 +1610,43 @@ const App = struct {
         }
     }
 
+    fn drawEndNote(self: *const App) void {
+        rl.clearBackground(bg_color);
+        drawBackdrop();
+
+        const panel = endNotePanelRect();
+        if (self.runtime_assets) |*runtime_assets| {
+            drawTextureFit(runtime_assets.texture(.ui_menu_panel), panel, colorWithAlpha(rl.Color.white, 0.96));
+            const hardcore = self.runtime.config.hardcore_flag != 0;
+            drawSmallText(runtime_assets, if (hardcore) "   Incredible!" else "Congratulations!", panel.x + 214.0, panel.y + 46.0, colorWithAlpha(rl.Color.white, 0.8));
+
+            var body_y = panel.y + 78.0;
+            const body_color = colorWithAlpha(rl.Color.white, 0.5);
+            for (endNoteBodyLines(hardcore)) |line| {
+                drawSmallText(runtime_assets, line, panel.x + 206.0, body_y, body_color);
+                body_y += 14.0;
+            }
+            body_y += 22.0;
+            drawSmallText(runtime_assets, "Good luck with your battles, trooper!", panel.x + 206.0, body_y, body_color);
+        } else {
+            rl.drawRectangleRounded(panel, 0.08, 8, panel_color);
+            rl.drawRectangleRoundedLinesEx(panel, 0.08, 8, 2.0, panel_outline);
+            const hardcore = self.runtime.config.hardcore_flag != 0;
+            rl.drawText(if (hardcore) "Incredible!" else "Congratulations!", @intFromFloat(panel.x + 210.0), @intFromFloat(panel.y + 42.0), 20, text_color);
+            var body_y = panel.y + 76.0;
+            for (endNoteBodyLines(hardcore)) |line| {
+                rl.drawText(line, @intFromFloat(panel.x + 206.0), @intFromFloat(body_y), 14, muted_text);
+                body_y += 18.0;
+            }
+        }
+
+        const buttons = endNoteButtons();
+        for (buttons[0..], 0..) |button, idx| {
+            const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+            window_ui.drawButton(button, idx == self.end_note_selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
+        }
+    }
+
     fn drawOptions(self: *const App) void {
         if (self.options_back_to == .pause and self.gameplay != null) {
             @constCast(self).drawGameplay();
@@ -1766,7 +1863,7 @@ fn resultsButtonsFor(results: *const ResultsScreen) ResultsButtons {
     if (results.run_config.game_mode == .quests and results.reason == .completed) {
         return .{
             .items = .{
-                .{ .label = "PLAY NEXT", .rect = window_ui.centeredRect(center_x, 514.0, ui_button_width, ui_button_height) },
+                .{ .label = questCompletedPrimaryLabel(results.run_config.quest_level_key), .rect = window_ui.centeredRect(center_x, 514.0, ui_button_width, ui_button_height) },
                 .{ .label = "PLAY AGAIN", .rect = window_ui.centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
                 .{ .label = "HIGH SCORES", .rect = window_ui.centeredRect(center_x, 658.0, ui_button_width, ui_button_height) },
                 .{ .label = "MAIN MENU", .rect = window_ui.centeredRect(center_x, 730.0, ui_button_width, ui_button_height) },
@@ -1794,6 +1891,10 @@ fn resultsButtonsFor(results: *const ResultsScreen) ResultsButtons {
         },
         .len = 3,
     };
+}
+
+fn questCompletedPrimaryLabel(level_key: i32) [:0]const u8 {
+    return if (isFinalQuestLevelKey(level_key)) "SHOW END NOTE" else "PLAY NEXT";
 }
 
 fn isQuestFailedResult(results: *const ResultsScreen) bool {
@@ -1917,6 +2018,41 @@ fn resultsHighscoreButtons() [2]UiButton {
     return .{
         .{ .label = "SAVE SCORE", .rect = window_ui.centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
         .{ .label = "SKIP", .rect = window_ui.centeredRect(center_x, 658.0, ui_button_width, ui_button_height) },
+    };
+}
+
+fn endNotePanelRect() rl.Rectangle {
+    return rl.Rectangle.init(-108.0, 29.0, 510.0, 378.0);
+}
+
+fn endNoteButtons() [4]UiButton {
+    const panel = endNotePanelRect();
+    const x = panel.x + 266.0;
+    const y = panel.y + 210.0;
+    return .{
+        window_ui.buttonAt("Survival", x, y, true),
+        window_ui.buttonAt("  Rush  ", x, y + 32.0, true),
+        window_ui.buttonAt("Typ'o'Shooter", x, y + 64.0, true),
+        window_ui.buttonAt("Main Menu", x, y + 96.0, true),
+    };
+}
+
+fn endNoteBodyLines(hardcore: bool) []const [:0]const u8 {
+    return if (hardcore) &.{
+        "You've done the thing we all thought was",
+        "virtually impossible. To reward your",
+        "efforts a new weapon has been unlocked ",
+        "for you: Splitter Gun.",
+        "",
+        "",
+    } else &.{
+        "You've completed all the levels, but the battle",
+        "isn't over yet! With all of the unlocked perks",
+        "and weapons your Survival is just a bit easier.",
+        "You can also replay the quests in Hardcore.",
+        "As an additional reward for your victorious",
+        "playing, a completely new and different game",
+        "mode is unlocked for you: Typ'o'Shooter.",
     };
 }
 
@@ -2279,6 +2415,13 @@ test "results high score name prompt follows quest preserve-bugs wording" {
         .summary = undefined,
     };
     try std.testing.expectEqualStrings("State your name trooper!", resultsNamePrompt(&quest_results_bug_compatible));
+}
+
+test "final quest completed primary action opens end note" {
+    try std.testing.expectEqualStrings("PLAY NEXT", questCompletedPrimaryLabel(509));
+    try std.testing.expectEqualStrings("SHOW END NOTE", questCompletedPrimaryLabel(510));
+    try std.testing.expectEqual(@as(?i32, null), nextQuestLevelKey(510));
+    try std.testing.expect(isFinalQuestLevelKey(510));
 }
 
 test "asset load errors use user-facing details" {
@@ -3783,9 +3926,13 @@ fn nextQuestLevelKey(level_key: i32) ?i32 {
     const stage = @divTrunc(level_key, 100);
     const minor = @mod(level_key, 100);
     if (stage < 1 or stage > 5 or minor < 1 or minor > 10) return null;
-    if (stage == 5 and minor == 10) return null;
+    if (isFinalQuestLevelKey(level_key)) return null;
     if (minor < 10) return stage * 100 + minor + 1;
     return (stage + 1) * 100 + 1;
+}
+
+fn isFinalQuestLevelKey(level_key: i32) bool {
+    return level_key == final_quest_level_key;
 }
 
 fn runConfigForLiveMode(mode: game_ids.GameModeId, quest_level_key: ?i32, seed_state: *u32) live_runner.LiveModeConfig {

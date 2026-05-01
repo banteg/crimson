@@ -41,7 +41,8 @@ consumes the same shared runtime used by the native desktop application.
 - CDT/debug trace plumbing
 - typed RNG caller tagging for verifier/runtime draws
 - native config/status ownership for `crimson.cfg` and `game.cfg`
-- real boot/menu/gameplay/pause/results/statistics/options shell
+- real boot/menu/gameplay/pause/results/final-quest end-note/statistics/options
+  shell
 - archive-backed world/UI asset loading
 - archive-backed audio loading and gameplay/menu audio routing
 - transient world FX, terrain baking, sprite/atlas rendering, and HUD/cursor
