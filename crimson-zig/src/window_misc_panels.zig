@@ -302,7 +302,16 @@ pub fn drawNetwork(state: *const NetworkState, runtime_assets: ?*const window_as
         rl.clearBackground(rl.Color.black);
         return;
     };
-    const animated_rect = drawPanelShell(&state.panel, assets);
+    drawNetworkPanel(state, assets, true);
+}
+
+pub fn drawNetworkOverlay(state: *const NetworkState, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+    const assets = runtime_assets orelse return;
+    drawNetworkPanel(state, assets, false);
+}
+
+fn drawNetworkPanel(state: *const NetworkState, assets: *const window_assets.RuntimeAssets, draw_backdrop: bool) void {
+    const animated_rect = drawPanelShellEx(&state.panel, assets, draw_backdrop);
     window_ui.drawSmallText(assets, "Network Session", animated_rect.x + 174.0, animated_rect.y + 40.0, rl.Color.white);
 
     var line_buf: [96]u8 = undefined;
@@ -367,7 +376,11 @@ fn updatePanelEx(state: *PanelState, frame_dt: f32, runtime_assets: ?*const wind
 }
 
 fn drawPanelShell(state: *const PanelState, assets: *const window_assets.RuntimeAssets) rl.Rectangle {
-    window_menu.drawMenuBackdrop(assets);
+    return drawPanelShellEx(state, assets, true);
+}
+
+fn drawPanelShellEx(state: *const PanelState, assets: *const window_assets.RuntimeAssets, draw_backdrop: bool) rl.Rectangle {
+    if (draw_backdrop) window_menu.drawMenuBackdrop(assets);
     window_menu.drawSign(state.timeline_ms, assets);
     const animated_rect = animatedPanelRect(state.timeline_ms);
     window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), animated_rect, rl.Color.white, false);

@@ -568,6 +568,7 @@ const App = struct {
     network_live_input_interpreter: local_input.LocalInputInterpreter = .{},
     network_live_camera: state_mod.Vec2 = .{ .x = -1.0, .y = -1.0 },
     network_live_input_ready: bool = false,
+    network_live_render_time_s: f32 = 0.0,
     results: ?ResultsScreen = null,
     options: window_options.OptionsState = .{},
     controls: window_options.ControlsState = .{},
@@ -1102,6 +1103,9 @@ const App = struct {
 
     fn updateNetworkSession(self: *App, frame_dt: f32) void {
         self.audio.ensureMenuThemeForDemo(self.demo_enabled);
+        if (self.network_live_session != null) {
+            self.network_live_render_time_s += @max(frame_dt, 0.0);
+        }
         const panel_update = window_misc_panels.updateNetwork(&self.network_session, frame_dt, if (self.runtime_assets) |*assets| assets else null);
         if (panel_update.play_panel_click and !self.network_session.panel.panel_open_sfx_played) {
             self.audio.playUiPanelClick();
@@ -1221,6 +1225,7 @@ const App = struct {
         self.network_live_input_interpreter = .{};
         self.network_live_camera = .{ .x = -1.0, .y = -1.0 };
         self.network_live_input_ready = false;
+        self.network_live_render_time_s = 0.0;
     }
 
     fn updateResults(self: *App, frame_dt: f32) void {
@@ -1945,8 +1950,64 @@ const App = struct {
         window_misc_panels.drawOtherGames(&self.other_games_menu, if (self.runtime_assets) |*assets| assets else null);
     }
 
-    fn drawNetworkSession(self: *const App) void {
-        window_misc_panels.drawNetwork(&self.network_session, if (self.runtime_assets) |*assets| assets else null);
+    fn drawNetworkSession(self: *App) void {
+        const runtime_assets: ?*const window_assets.RuntimeAssets = if (self.runtime_assets) |*assets| assets else null;
+        if (self.drawNetworkLiveScene(runtime_assets)) {
+            window_misc_panels.drawNetworkOverlay(&self.network_session, runtime_assets);
+            return;
+        }
+        window_misc_panels.drawNetwork(&self.network_session, runtime_assets);
+    }
+
+    fn drawNetworkLiveScene(self: *App, runtime_assets: ?*const window_assets.RuntimeAssets) bool {
+        const session = if (self.network_live_session) |*session| session else return false;
+        const runner = session.runnerForLocalInput() orelse return false;
+        rl.clearBackground(rl.Color.init(10, 10, 12, 255));
+
+        if (!self.network_live_input_ready) {
+            self.network_live_camera = updateGameplayCamera(
+                self.network_live_camera,
+                &runner.session,
+                &self.runtime.config,
+            );
+        }
+        const transform = window_viewport.viewTransform(
+            runner.session.world_size,
+            &self.runtime.config,
+            state_mod.Vec2.add(self.network_live_camera, runner.session.state.camera_shake_offset),
+            .{
+                .x = @floatFromInt(rl.getScreenWidth()),
+                .y = @floatFromInt(rl.getScreenHeight()),
+            },
+        );
+        const camera = buildWorldCamera(
+            runner.session.world_size,
+            &self.runtime.config,
+            self.network_live_camera,
+            runner.session.state.camera_shake_offset,
+        );
+        const entity_alpha: f32 = 1.0;
+        const fx_detail_0 = self.runtime.config.fx_detail_0 != 0;
+        const fx_detail_1 = self.runtime.config.fx_detail_1 != 0;
+        const fx_detail_2 = self.runtime.config.fx_detail_2 != 0;
+
+        camera.begin();
+        drawWorld(runner, runtime_assets, null);
+        drawPlayers(runner, runtime_assets, self.network_live_render_time_s, entity_alpha, false);
+        drawCreatures(runner, runtime_assets, entity_alpha, fx_detail_0);
+        drawFreezeOverlay(runner, runtime_assets, entity_alpha);
+        drawPlayers(runner, runtime_assets, self.network_live_render_time_s, entity_alpha, true);
+        drawProjectiles(runner, runtime_assets, self.network_live_render_time_s, entity_alpha, fx_detail_1);
+        drawWorldEffects(runner, runtime_assets, entity_alpha, fx_detail_1, fx_detail_2);
+        drawBonuses(runner, runtime_assets, self.network_live_render_time_s, entity_alpha);
+        camera.end();
+
+        if (runtime_assets) |assets| {
+            drawBonusHoverLabels(runner, assets, transform, entity_alpha);
+            drawDirectionArrows(runner, assets, &self.runtime.config, transform, entity_alpha);
+            drawAimEnhancements(runner, assets, transform, entity_alpha);
+        }
+        return true;
     }
 
     fn drawGameplay(self: *App) void {
