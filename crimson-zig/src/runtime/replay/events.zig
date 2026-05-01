@@ -74,10 +74,6 @@ pub fn applyReplayEvent(
     switch (event) {
         .perk_menu_open => |open| {
             outcome.menu_open_seen_this_tick = true;
-            if (options.game_mode == .rush) {
-                if (options.strict_events) return error.UnsupportedEventKind;
-                return outcome;
-            }
             if (open.player_index < 0 or open.player_index >= @as(i32, @intCast(players.len))) {
                 return error.UnsupportedEventPlayerIndex;
             }
@@ -92,10 +88,6 @@ pub fn applyReplayEvent(
             return outcome;
         },
         .perk_pick => |pick| {
-            if (options.game_mode == .rush) {
-                if (options.strict_events) return error.UnsupportedEventKind;
-                return outcome;
-            }
             if (pick.player_index < 0 or pick.player_index >= @as(i32, @intCast(players.len))) {
                 return error.UnsupportedEventPlayerIndex;
             }

@@ -13,7 +13,7 @@ import crimson.dbg.record as dbg_record
 from crimson.cli import app
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayClaimedStatsSnapshot, dump_replay
-from crimson.sim.input_providers import PerkPickCommand
+from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 from crimson.weapons import WeaponId
 
 from ._helpers import build_replay, build_typo_submit_replay, inject_tick_commands, write_replay
@@ -71,6 +71,28 @@ def test_zig_replay_verify_matches_python_rush_spawn_boundary(tmp_path: Path) ->
     zig_payload = _run_zig_replay_verify(
         [str(replay_path), "--format", "json"],
     )
+
+    assert zig_payload == python_payload
+
+
+def test_zig_replay_verify_ignores_rush_stale_perk_pick_like_python(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.RUSH, ticks=1)
+    inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
+    replay_path = write_replay(tmp_path, replay=replay, name="rush-stale-perk-pick.crd")
+
+    python_payload = _run_python_replay_verify([str(replay_path), "--format", "json"])
+    zig_payload = _run_zig_replay_verify([str(replay_path), "--format", "json"])
+
+    assert zig_payload == python_payload
+
+
+def test_zig_replay_verify_accepts_rush_perk_menu_open_like_python(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.RUSH, ticks=1)
+    inject_tick_commands(replay, 0, [PerkMenuOpenCommand(player_index=0)])
+    replay_path = write_replay(tmp_path, replay=replay, name="rush-perk-menu-open.crd")
+
+    python_payload = _run_python_replay_verify([str(replay_path), "--format", "json"])
+    zig_payload = _run_zig_replay_verify([str(replay_path), "--format", "json"])
 
     assert zig_payload == python_payload
 
