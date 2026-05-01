@@ -152,7 +152,7 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
         state.back_hover_amount = std.math.clamp(state.back_hover_amount - dt_ms * 2, 0, 1000);
     }
 
-    if (rl.isKeyPressed(.escape) or rl.isKeyPressed(.enter) or rl.isKeyPressed(.space) or (back_hovered and click)) {
+    if (rl.isKeyPressed(.escape) or window_ui.confirmPressed() or (back_hovered and click)) {
         state.active_slider = .none;
         return .{ .action = .back_to_menu, .play_button_click = true };
     }
@@ -231,7 +231,7 @@ pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.cri
         return updateControlsRebinding(state, config);
     }
 
-    if (rl.isKeyPressed(.escape) or rl.isKeyPressed(.enter) or rl.isKeyPressed(.space) or (back_hovered and rl.isMouseButtonPressed(.left))) {
+    if (rl.isKeyPressed(.escape) or window_ui.confirmPressed() or (back_hovered and rl.isMouseButtonPressed(.left))) {
         if (state.open_dropdown != .none) {
             state.open_dropdown = .none;
             return .{};
@@ -274,7 +274,7 @@ pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.cri
     var result: ControlsUpdate = .{
         .play_panel_click = dt_ms > 0 and state.timeline_ms >= panel_timeline_max_ms and !state.panel_open_sfx_played,
     };
-    const activated = rl.isKeyPressed(.enter) or rl.isKeyPressed(.space) or rl.isMouseButtonPressed(.left);
+    const activated = window_ui.confirmPressed() or rl.isMouseButtonPressed(.left);
 
     if (state.focus_right and rebind_rows.len > 0) {
         if (!activated) return result;
@@ -609,7 +609,7 @@ fn updateControlsDropdown(state: *ControlsState, config: *formats.crimson_cfg.Cr
         }
     }
 
-    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.space)) {
+    if (window_ui.confirmPressed()) {
         return applyControlsDropdownSelection(state, config, items[state.dropdown_selection].value);
     }
     if (rl.isMouseButtonPressed(.left) and !rl.checkCollisionPointRec(mouse, base_rect)) {

@@ -305,7 +305,7 @@ fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.
         }
     }
 
-    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.space)) {
+    if (window_ui.confirmPressed()) {
         config.player_count = @intCast(state.player_count_selection + 1);
         state.player_list_open = false;
         return .{ .play_button_click = true, .config_dirty = true };
@@ -628,7 +628,7 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
     }
 
     if (hovered_row) |row| {
-        if (rl.isMouseButtonPressed(.left) or rl.isKeyPressed(.enter)) {
+        if (rl.isMouseButtonPressed(.left) or window_ui.confirmPressed()) {
             return tryStartQuest(state, config, status, state.stage, row);
         }
     }

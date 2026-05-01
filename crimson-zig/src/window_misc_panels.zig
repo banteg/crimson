@@ -174,7 +174,7 @@ fn updatePanel(state: *PanelState, frame_dt: f32, runtime_assets: ?*const window
         state.back_hover_amount = std.math.clamp(state.back_hover_amount - dt_ms * 2, 0, 1000);
     }
 
-    if (rl.isKeyPressed(.escape) or rl.isKeyPressed(.enter) or rl.isKeyPressed(.space) or (back_hovered and rl.isMouseButtonPressed(.left))) {
+    if (rl.isKeyPressed(.escape) or window_ui.confirmPressed() or (back_hovered and rl.isMouseButtonPressed(.left))) {
         return .{ .action = .back_to_menu, .play_button_click = true };
     }
 
