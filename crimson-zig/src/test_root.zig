@@ -114,6 +114,10 @@ test {
     });
     const host_live_steps = try host_live.stepReadyFrames(std.testing.allocator, 10);
     try std.testing.expectEqual(@as(usize, 1), host_live_steps.frames_advanced);
+    try std.testing.expectEqual(@as(?i32, 0), host_live_steps.last_tick_index);
+    try std.testing.expectEqual(@as(usize, 2), host_live_steps.last_player_count);
+    try std.testing.expect(host_live_steps.last_input_flags[0] != 0);
+    try std.testing.expect(host_live_steps.last_input_flags[1] != 0);
     try std.testing.expectEqual(@as(usize, 1), host_live.runner.session.tick_index);
 
     var client_live = cz.net.lockstep_live_session.ClientLiveSession.init(.{
@@ -143,6 +147,10 @@ test {
     }, 20);
     const client_live_steps = try client_live.stepCanonicalFrames(std.testing.allocator);
     try std.testing.expectEqual(@as(usize, 1), client_live_steps.frames_advanced);
+    try std.testing.expectEqual(@as(?i32, 0), client_live_steps.last_tick_index);
+    try std.testing.expectEqual(@as(usize, 2), client_live_steps.last_player_count);
+    try std.testing.expectEqual(bridge_inputs[0].flags, client_live_steps.last_input_flags[0]);
+    try std.testing.expectEqual(bridge_inputs[1].flags, client_live_steps.last_input_flags[1]);
     try std.testing.expectEqual(@as(usize, 1), client_live.runner.?.session.tick_index);
 
     const smoke_output = try cz.net_lockstep_smoke_native.runLockstepSmoke(

@@ -1,10 +1,8 @@
 const std = @import("std");
 
 const game_cfg = @import("formats/game_cfg.zig");
-const lockstep_live_bridge = @import("net/lockstep_live_bridge.zig");
+const lockstep_live_session = @import("net/lockstep_live_session.zig");
 const lockstep_session = @import("net/lockstep_session.zig");
-const lockstep_state = @import("net/lockstep_state.zig");
-const live_runner = @import("runtime/live_runner.zig");
 const verify_native = @import("verify_native.zig");
 
 const Io = std.Io;
@@ -62,7 +60,7 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io) !SmokePayload {
     var status = std.mem.zeroes(game_cfg.Status);
     status.game_sequence_id = 101;
 
-    var host = lockstep_session.HostSession.init(.{
+    var host = try lockstep_live_session.HostLiveSession.init(.{
         .bind_host = "127.0.0.1",
         .bind_port = 0,
         .mode_id = 2,
@@ -76,12 +74,12 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io) !SmokePayload {
     try host.open(io);
     defer host.deinit(allocator, io);
 
-    var client = lockstep_session.ClientSession.init(.{
+    var client = lockstep_live_session.ClientLiveSession.init(.{
         .bind_host = "127.0.0.1",
         .mode_id = 2,
         .player_count = 2,
         .build_id = "0.1.0",
-        .host_addr = lockstep_session.PeerAddr.loopback(host.boundPort()),
+        .host_addr = lockstep_session.PeerAddr.loopback(host.session.boundPort()),
         .input_delay_ticks = 0,
         .pump_options = .{ .first_timeout_ms = 100 },
     });
@@ -113,7 +111,8 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io) !SmokePayload {
     client_received += stats.received;
     packets_sent += stats.sent;
 
-    if (!host.runtime.started or !client.runtime.started) return error.LockstepHandshakeFailed;
+    if (!host.session.runtime.started or !client.session.runtime.started) return error.LockstepHandshakeFailed;
+    if (!try client.ensureLiveRunner()) return error.LockstepLiveRunnerMissing;
 
     try client.queueLocalInput(allocator, .{ .flags = 7 }, 60);
     stats = try client.update(allocator, io, 60);
@@ -125,16 +124,10 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io) !SmokePayload {
     host_received += stats.received;
     packets_sent += stats.sent;
 
-    var ready_frames = try host.popReadyFrames(allocator, 80);
-    defer lockstep_state.deinitHostReadyTicks(allocator, &ready_frames);
-    if (ready_frames.items.len != 1) return error.LockstepFrameNotReady;
-    const ready = ready_frames.items[0];
+    const host_live_steps = try host.stepReadyFrames(allocator, 80);
+    if (host_live_steps.frames_advanced != 1) return error.LockstepFrameNotReady;
+    if (host_live_steps.ticks_advanced != 1) return error.LockstepLiveFrameNotAdvanced;
 
-    try host.broadcastTickFrame(allocator, .{
-        .tick_index = ready.tick_index,
-        .frame_inputs = ready.frame_inputs,
-        .commands = &.{},
-    }, 90);
     stats = try host.update(allocator, io, 90);
     host_received += stats.received;
     packets_sent += stats.sent;
@@ -143,29 +136,22 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io) !SmokePayload {
     client_received += stats.received;
     packets_sent += stats.sent;
 
-    var frame = client.popCanonicalFrame() orelse return error.LockstepCanonicalFrameMissing;
-    defer lockstep_state.deinitTickFrame(allocator, &frame);
-    if (frame.frame_inputs.len != 2) return error.LockstepCanonicalFrameMismatch;
-
-    const match_start = client.runtime.lobby.match_start orelse return error.LockstepMatchStartMissing;
-    var runner = try live_runner.LiveRunner.init(try lockstep_live_bridge.liveConfigFromMatchStart(match_start, .{
-        .tick_rate = client.runtime.tick_rate,
-        .input_delay_ticks = client.runtime.input_delay_ticks,
-    }));
-    const live_update = try lockstep_live_bridge.stepCanonicalFrame(&runner, frame);
-    if (live_update.ticks_advanced != 1) return error.LockstepLiveFrameNotAdvanced;
+    const client_live_steps = try client.stepCanonicalFrames(allocator);
+    if (client_live_steps.frames_advanced != 1) return error.LockstepCanonicalFrameMissing;
+    if (client_live_steps.last_player_count != 2) return error.LockstepCanonicalFrameMismatch;
+    if (client_live_steps.ticks_advanced != 1) return error.LockstepLiveFrameNotAdvanced;
 
     return .{
-        .host_port = host.boundPort(),
-        .client_port = client.boundPort(),
+        .host_port = host.session.boundPort(),
+        .client_port = client.session.boundPort(),
         .host_received = host_received,
         .client_received = client_received,
         .packets_sent = packets_sent,
-        .tick_index = frame.tick_index,
-        .host_input_flags = frame.frame_inputs[0].flags,
-        .client_input_flags = frame.frame_inputs[1].flags,
-        .live_ticks_advanced = live_update.ticks_advanced,
-        .live_tick_index = runner.session.tick_index,
+        .tick_index = client_live_steps.last_tick_index orelse return error.LockstepCanonicalFrameMissing,
+        .host_input_flags = client_live_steps.last_input_flags[0],
+        .client_input_flags = client_live_steps.last_input_flags[1],
+        .live_ticks_advanced = client_live_steps.ticks_advanced,
+        .live_tick_index = client.runner.?.session.tick_index,
     };
 }
 
