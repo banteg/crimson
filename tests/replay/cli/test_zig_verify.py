@@ -47,6 +47,18 @@ def test_zig_replay_verify_matches_python_full_payload_on_simple_replay(tmp_path
     assert zig_payload == python_payload
 
 
+def test_zig_replay_verify_matches_python_human_output_on_simple_replay(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    python_result = _run_python_replay_verify_process([str(replay_path)])
+    zig_result = _run_zig_replay_verify_process([str(replay_path)])
+
+    assert python_result.exit_code == 0, python_result.output
+    assert zig_result.returncode == 0, dbg_record._command_detail(zig_result)
+    assert zig_result.stdout == python_result.output
+
+
 def test_zig_replay_verify_matches_python_full_payload_on_quest_replay(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.QUESTS, ticks=3, quest_level="1.1")
     replay_path = write_replay(tmp_path, replay=replay, name="quest.crd")
@@ -169,6 +181,34 @@ def test_zig_replay_verify_reports_header_claim_mismatch_like_python(tmp_path: P
     assert python_result.exit_code == 3, python_result.output
     assert zig_result.returncode == 3, dbg_record._command_detail(zig_result)
     assert json.loads(zig_result.stdout) == json.loads(python_result.output)
+
+
+def test_zig_replay_verify_reports_header_claim_mismatch_human_like_python(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay = msgspec.structs.replace(
+        replay,
+        header=msgspec.structs.replace(
+            replay.header,
+            claimed_stats=ReplayClaimedStatsSnapshot(
+                complete=True,
+                ticks=2,
+                elapsed_ms=1,
+                score_xp=999,
+                kills=4,
+                most_used_weapon_id=WeaponId.PISTOL,
+                shots_fired=2,
+                shots_hit=1,
+            ),
+        ),
+    )
+    replay_path = write_replay(tmp_path, replay=replay, name="survival-claimed-bad.crd")
+
+    python_result = _run_python_replay_verify_process([str(replay_path)])
+    zig_result = _run_zig_replay_verify_process([str(replay_path)])
+
+    assert python_result.exit_code == 3, python_result.output
+    assert zig_result.returncode == 3, dbg_record._command_detail(zig_result)
+    assert zig_result.stdout == python_result.output
 
 
 def test_zig_replay_verify_stale_perk_pick_is_noop(tmp_path: Path) -> None:

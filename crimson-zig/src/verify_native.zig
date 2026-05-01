@@ -355,8 +355,8 @@ fn runVerifyWithReplayBytes(
             try writer.print(
                 "; header_claim complete={s} match={s} mismatches=",
                 .{
-                    if (header_claim_payload.expected.complete) "true" else "false",
-                    if (header_claim_payload.match) "true" else "false",
+                    if (header_claim_payload.expected.complete) "True" else "False",
+                    if (header_claim_payload.match) "True" else "False",
                 },
             );
             if (header_claim_payload.mismatched_fields.len == 0) {
