@@ -104,6 +104,7 @@ Current supported replay-tooling behavior:
   and `net smoke-rollback --impair drop-first-guest-input --format json`
   and `net smoke-rollback --impair force-guest-resync --format json`
   and `net smoke-rollback --impair guest-reconnect --format json`
+  and `net smoke-rollback --impair jitter-burst --format json`
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
   data rather than stale “unsupported path” wording
 
@@ -133,9 +134,10 @@ The important remaining gaps are now:
 - network/LAN parity still needs broader stress and lobby coverage; Zig can now
   construct rollback sessions, launch live rollback runners, smoke-test a
   host/guest relay exchange, force delayed/reordered/dropped-input rollback
-  correction, complete a guest-requested resync snapshot, and self-reconnect a
-  guest through its relay token before advancing more input, but longer
-  jitter/reconnect/resync scenarios and product-lobby polish remain.
+  correction, absorb a repeated jitter burst without resync, complete a
+  guest-requested resync snapshot, and self-reconnect a guest through its relay
+  token before advancing more input, but longer reconnect/resync scenarios and
+  product-lobby polish remain.
 
 The biggest remaining technical risk is not basic gameplay ownership. It is
 closing the remaining replay/tooling and product-shell breadth gaps cleanly.

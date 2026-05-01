@@ -23,6 +23,7 @@ const Impairment = enum {
     drop_first_guest_input,
     force_guest_resync,
     guest_reconnect,
+    jitter_burst,
 
     fn label(self: Impairment) []const u8 {
         return switch (self) {
@@ -32,6 +33,7 @@ const Impairment = enum {
             .drop_first_guest_input => "drop-first-guest-input",
             .force_guest_resync => "force-guest-resync",
             .guest_reconnect => "guest-reconnect",
+            .jitter_burst => "jitter-burst",
         };
     }
 };
@@ -182,6 +184,20 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !Smoke
         );
     }
 
+    if (impairment == .jitter_burst) {
+        return runJitterBurstSmoke(
+            allocator,
+            io,
+            server,
+            &service,
+            &host,
+            &guest,
+            code,
+            packets_sent,
+            &packet_impairment,
+        );
+    }
+
     try guest.queueLocalInput(allocator, io, .{ .flags = 7 }, 1200);
     packets_sent += try pumpRelayService(allocator, io, server, &service, 1201, &packet_impairment);
     try host.update(allocator, io, 1202);
@@ -208,15 +224,23 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !Smoke
             }
             try host.update(allocator, io, 1206);
             host_step = try host.stepFrames(allocator);
+            final_exchange_ms = 1208;
+            if (host_step.last_input_flags[1] != 7) {
+                try guest.update(allocator, io, 1207);
+                packets_sent += try pumpRelayService(allocator, io, server, &service, 1208, &packet_impairment);
+                try host.update(allocator, io, 1209);
+                host_step = try host.stepFrames(allocator);
+                final_exchange_ms = 1211;
+            }
             if (host_step.last_input_flags[1] != 7) return error.RollbackImpairedInputNotRecovered;
-            try host.queueLocalInput(allocator, io, .{ .flags = 4 }, 1207);
+            try host.queueLocalInput(allocator, io, .{ .flags = 4 }, final_exchange_ms - 1);
             host_step = try host.stepFrames(allocator);
             expected_host_flags = 4;
             expected_guest_flags = 5;
-            final_exchange_ms = 1208;
         },
         .force_guest_resync => unreachable,
         .guest_reconnect => unreachable,
+        .jitter_burst => unreachable,
     }
     packets_sent += try pumpRelayService(allocator, io, server, &service, final_exchange_ms, &packet_impairment);
     try guest.update(allocator, io, final_exchange_ms);
@@ -443,6 +467,89 @@ fn runGuestResyncSmoke(
     };
 }
 
+fn runJitterBurstSmoke(
+    allocator: std.mem.Allocator,
+    io: Io,
+    server: relay_transport.UdpTransport,
+    service: *relay_service.RelayService,
+    host: *rollback_live_session.LiveSession,
+    guest: *rollback_live_session.LiveSession,
+    code: room_code.RoomCode,
+    initial_packets_sent: usize,
+    packet_impairment: *PacketImpairment,
+) !SmokePayload {
+    var packets_sent = initial_packets_sent;
+    var last_host_step: rollback_live_session.StepSummary = .{};
+    var last_guest_step: rollback_live_session.StepSummary = .{};
+
+    for (0..4) |idx| {
+        const tick: u32 = @intCast(idx + 1);
+        const now_ms: i64 = 1400 + @as(i64, @intCast(idx)) * 20;
+        const host_flags = 30 + tick;
+        const guest_flags = 70 + tick;
+
+        try guest.queueLocalInput(allocator, io, .{ .flags = guest_flags }, now_ms);
+        packets_sent += try pumpRelayService(allocator, io, server, service, now_ms + 1, packet_impairment);
+        try host.update(allocator, io, now_ms + 2);
+
+        try host.queueLocalInput(allocator, io, .{ .flags = host_flags }, now_ms + 3);
+        last_host_step = try host.stepFrames(allocator);
+        if (last_host_step.frames_advanced == 0) return error.RollbackJitterHostFrameMissing;
+
+        packets_sent += try packet_impairment.releaseDelayed(allocator, io, server);
+        try host.update(allocator, io, now_ms + 4);
+        last_host_step = try host.stepFrames(allocator);
+        if (last_host_step.frames_advanced == 0) return error.RollbackJitterCorrectionMissing;
+        if (last_host_step.last_input_flags[0] != host_flags or last_host_step.last_input_flags[1] != guest_flags) return error.RollbackJitterHostInputMismatch;
+
+        packets_sent += try pumpRelayService(allocator, io, server, service, now_ms + 5, null);
+        try guest.update(allocator, io, now_ms + 6);
+        last_guest_step = try guest.stepFrames(allocator);
+        if (last_guest_step.frames_advanced == 0) return error.RollbackJitterGuestFrameMissing;
+        if (last_guest_step.last_input_flags[0] != host_flags or last_guest_step.last_input_flags[1] != guest_flags) return error.RollbackJitterGuestInputMismatch;
+    }
+
+    const host_runtime = &(host.session.runtime orelse return error.RollbackRuntimeMissing);
+    const guest_runtime = &(guest.session.runtime orelse return error.RollbackRuntimeMissing);
+    if (packet_impairment.delayed_packets != 4 or packet_impairment.released_packets != 4 or packet_impairment.dropped_packets != 0) return error.RollbackImpairmentNotApplied;
+    if (host_runtime.resync_count != 0 or guest_runtime.resync_count != 0) return error.RollbackUnexpectedResyncPause;
+    if (host_runtime.paused_for_resync or guest_runtime.paused_for_resync) return error.RollbackUnexpectedResyncPause;
+    if (host_runtime.rollback_count < 4 or guest_runtime.rollback_count < 3) return error.RollbackJitterCorrectionMissing;
+
+    return .{
+        .relay_port = server.boundPort(),
+        .host_port = host.boundPort(),
+        .guest_port = guest.boundPort(),
+        .room_code = code,
+        .impairment = Impairment.jitter_burst.label(),
+        .packets_sent = packets_sent,
+        .delayed_packets = packet_impairment.delayed_packets,
+        .released_packets = packet_impairment.released_packets,
+        .dropped_packets = packet_impairment.dropped_packets,
+        .host_tick_index = last_host_step.last_tick_index orelse return error.RollbackHostFrameMissing,
+        .guest_tick_index = last_guest_step.last_tick_index orelse return error.RollbackGuestFrameMissing,
+        .host_input_flags = last_guest_step.last_input_flags[0],
+        .guest_input_flags = last_guest_step.last_input_flags[1],
+        .host_live_ticks_advanced = last_host_step.ticks_advanced,
+        .guest_live_ticks_advanced = last_guest_step.ticks_advanced,
+        .host_live_tick_index = host.runner.?.session.tick_index,
+        .guest_live_tick_index = guest.runner.?.session.tick_index,
+        .host_resync_count = host_runtime.resync_count,
+        .guest_resync_count = guest_runtime.resync_count,
+        .resync_snapshot_tick = -1,
+        .host_paused_for_resync = host_runtime.paused_for_resync,
+        .guest_paused_for_resync = guest_runtime.paused_for_resync,
+        .host_reconnect_count = host_runtime.reconnect_count,
+        .guest_reconnect_count = guest_runtime.reconnect_count,
+        .host_paused_for_reconnect = host_runtime.paused_for_reconnect,
+        .guest_paused_for_reconnect = guest_runtime.paused_for_reconnect,
+        .host_rollback_count = host_runtime.rollback_count,
+        .guest_rollback_count = guest_runtime.rollback_count,
+        .host_prediction_mismatches = host_runtime.prediction_mismatches,
+        .guest_prediction_mismatches = guest_runtime.prediction_mismatches,
+    };
+}
+
 fn driveReconnectUntilStarted(
     allocator: std.mem.Allocator,
     io: Io,
@@ -600,7 +707,9 @@ const PacketImpairment = struct {
         packet: relay_service.AddressedPacket,
     ) !bool {
         if (!self.interceptsRollbackInput()) return false;
-        if (self.mode != .force_guest_resync and (self.delayed != null or self.interceptedPackets() != 0)) return false;
+        if (self.mode == .jitter_burst) {
+            if (self.delayed != null) return false;
+        } else if (self.mode != .force_guest_resync and (self.delayed != null or self.interceptedPackets() != 0)) return false;
         if (packet.addr.port != self.target_port) return false;
         switch (packet.packet.message) {
             .rb_input_sample => |batch| {
@@ -625,7 +734,7 @@ const PacketImpairment = struct {
     }
 
     fn interceptsRollbackInput(self: *const PacketImpairment) bool {
-        return self.mode == .delay_first_guest_input or self.mode == .reorder_first_guest_input or self.mode == .drop_first_guest_input or self.mode == .force_guest_resync;
+        return self.mode == .delay_first_guest_input or self.mode == .reorder_first_guest_input or self.mode == .drop_first_guest_input or self.mode == .force_guest_resync or self.mode == .jitter_burst;
     }
 
     fn interceptedPackets(self: *const PacketImpairment) usize {
@@ -677,6 +786,8 @@ fn parseArgs(args: []const []const u8) ParseOutcome {
             request.impairment = .force_guest_resync;
         } else if (std.mem.eql(u8, arg, "--guest-reconnect")) {
             request.impairment = .guest_reconnect;
+        } else if (std.mem.eql(u8, arg, "--jitter-burst")) {
+            request.impairment = .jitter_burst;
         } else {
             return .{ .invalid = arg };
         }
@@ -768,16 +879,17 @@ fn parseImpairment(value: []const u8) ?Impairment {
     if (std.ascii.eqlIgnoreCase(text, "drop-first-guest-input")) return .drop_first_guest_input;
     if (std.ascii.eqlIgnoreCase(text, "force-guest-resync")) return .force_guest_resync;
     if (std.ascii.eqlIgnoreCase(text, "guest-reconnect")) return .guest_reconnect;
+    if (std.ascii.eqlIgnoreCase(text, "jitter-burst")) return .jitter_burst;
     return null;
 }
 
 const usage =
     \\Usage:
-    \\  crimson-zig net smoke-rollback [--format human|json] [--impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input|force-guest-resync|guest-reconnect]
+    \\  crimson-zig net smoke-rollback [--format human|json] [--impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input|force-guest-resync|guest-reconnect|jitter-burst]
     \\
     \\Options:
     \\  --format human|json
-    \\  --impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input|force-guest-resync|guest-reconnect
+    \\  --impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input|force-guest-resync|guest-reconnect|jitter-burst
     \\
 ;
 
@@ -863,6 +975,21 @@ test "rollback smoke command can reconnect guest through relay token" {
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_reconnect_count\": 1") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_paused_for_reconnect\": false") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_paused_for_reconnect\": false") != null);
+}
+
+test "rollback smoke command can absorb repeated jitter without resync" {
+    const output = try runRollbackSmoke(std.testing.allocator, std.Io.Threaded.global_single_threaded.io(), &.{ "--json", "--impair", "jitter-burst" });
+    defer output.deinit(std.testing.allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"impairment\": \"jitter-burst\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_input_flags\": 34") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_input_flags\": 74") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"delayed_packets\": 4") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"released_packets\": 4") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"dropped_packets\": 0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_resync_count\": 0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_resync_count\": 0") != null);
 }
 
 test "rollback smoke command reports human success" {
