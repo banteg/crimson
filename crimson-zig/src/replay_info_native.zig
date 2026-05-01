@@ -449,7 +449,7 @@ fn replayCodecErrorDetail(err: replay_codec.ReplayCodecError) []const u8 {
         error.InvalidGzipPayload => "unable to inflate replay gzip payload",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnsupportedEventKind => "replay events include kinds unsupported by the current native runtime",
+        error.UnsupportedEventKind => "replay events include command kinds unsupported by the current replay format",
         error.UnsupportedBootstrapKind => "replay bootstrap kind is not supported",
         error.UnsupportedInputQuantization => "replay input quantization is not supported",
         error.BootstrapSeedMismatch => "replay bootstrap seed does not match canonical terrain bootstrap draws",
@@ -466,7 +466,7 @@ fn replayInfoErrorDetail(err: replay_info_mod.ReplayInfoError) []const u8 {
         error.UnsupportedPlayerCount => "replay info collector only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "replay info collector only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay events include kinds unsupported for this mode",
+        error.UnsupportedEventKind => "replay events include kinds or values invalid for this mode",
         error.UnsupportedEventPlayerIndex => "replay info collector encountered an out-of-range player_index event",
         error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
@@ -585,22 +585,22 @@ fn unsupportedReplayHeaderDetail(
     tick_count: usize,
 ) ?[]const u8 {
     if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3 and header.game_mode_id != 4 and header.game_mode_id != 8) {
-        return "only survival/rush/quest/typo/tutorial replays are currently ported";
+        return "native replay tools support only survival/rush/quest/typo/tutorial modes";
     }
     if ((header.game_mode_id == 4 or header.game_mode_id == 8) and header.player_count != 1) {
         return "typo and tutorial replays require player_count == 1";
     }
     if (header.player_count < 1 or header.player_count > 4) {
-        return "only 1-4 player replays are currently ported";
+        return "native replay tools support only 1-4 player replays";
     }
     if (!std.mem.eql(u8, header.input_quantization, "f32")) {
-        return "only f32 input quantization is currently ported";
+        return "native replay tools support only f32 input quantization";
     }
     if (tick_count > std.math.maxInt(i32)) {
         return "replay has too many ticks for current native replay info";
     }
     if (!header.preserve_bugs and !replay_codec.isLatestRulesetGameVersion(header.game_version)) {
-        return "only latest ruleset replays are currently ported";
+        return "native replay tools require latest ruleset replays unless preserve_bugs is set";
     }
     return null;
 }
@@ -701,12 +701,20 @@ test "replay info exposes codec and collector detail helpers" {
         replayCodecErrorDetail(error.BootstrapSeedMismatch),
     );
     try std.testing.expectEqualStrings(
+        "replay events include command kinds unsupported by the current replay format",
+        replayCodecErrorDetail(error.UnsupportedEventKind),
+    );
+    try std.testing.expectEqualStrings(
         "replay info collector only supports survival/rush/quest/typo/tutorial modes",
         replayInfoErrorDetail(error.UnsupportedGameMode),
     );
     try std.testing.expectEqualStrings(
         "replay info collector encountered an out-of-range player_index event",
         replayInfoErrorDetail(error.UnsupportedEventPlayerIndex),
+    );
+    try std.testing.expectEqualStrings(
+        "replay events include kinds or values invalid for this mode",
+        replayInfoErrorDetail(error.UnsupportedEventKind),
     );
 }
 

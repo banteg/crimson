@@ -697,22 +697,22 @@ fn unsupportedReplayHeaderDetail(
     tick_count: usize,
 ) ?[]const u8 {
     if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3 and header.game_mode_id != 4 and header.game_mode_id != 8) {
-        return "only survival/rush/quest/typo/tutorial replays are currently ported";
+        return "native replay tools support only survival/rush/quest/typo/tutorial modes";
     }
     if ((header.game_mode_id == 4 or header.game_mode_id == 8) and header.player_count != 1) {
         return "typo and tutorial replays require player_count == 1";
     }
     if (header.player_count < 1 or header.player_count > 4) {
-        return "only 1-4 player replays are currently ported";
+        return "native replay tools support only 1-4 player replays";
     }
     if (!std.mem.eql(u8, header.input_quantization, "f32")) {
-        return "only f32 input quantization is currently ported";
+        return "native replay tools support only f32 input quantization";
     }
     if (tick_count > std.math.maxInt(i32)) {
         return "replay has too many ticks for current native benchmark";
     }
     if (!header.preserve_bugs and !replay_codec.isLatestRulesetGameVersion(header.game_version)) {
-        return "only latest ruleset replays are currently ported";
+        return "native replay tools require latest ruleset replays unless preserve_bugs is set";
     }
     return null;
 }
@@ -761,7 +761,7 @@ fn benchmarkReplayLoadErrorDetail(err: anyerror) []const u8 {
         error.InvalidGzipPayload => "unable to inflate replay gzip payload",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnsupportedEventKind => "replay events include kinds unsupported by the current native runtime",
+        error.UnsupportedEventKind => "replay events include command kinds unsupported by the current replay format",
         error.UnsupportedBootstrapKind => "replay bootstrap kind is not supported",
         error.UnsupportedInputQuantization => "replay input quantization is not supported",
         error.BootstrapSeedMismatch => "replay bootstrap seed does not match canonical terrain bootstrap draws",
@@ -780,7 +780,7 @@ fn benchmarkReplayRunnerErrorDetail(err: anyerror) []const u8 {
         error.UnsupportedPlayerCount => "native replay benchmark only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "native replay benchmark only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay events include kinds unsupported for this mode",
+        error.UnsupportedEventKind => "replay events include kinds or values invalid for this mode",
         error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player index",
         error.InvalidPerkPickEvent => "replay perk pick event is invalid for the current state",
         error.MissingRngCallerTag => "replay capture is missing required RNG caller tags",
@@ -924,6 +924,10 @@ test "benchmark replay load errors use user-facing details" {
         "native replay benchmark ran out of memory while loading replay",
         benchmarkReplayLoadErrorDetail(error.OutOfMemory),
     );
+    try std.testing.expectEqualStrings(
+        "replay events include command kinds unsupported by the current replay format",
+        benchmarkReplayLoadErrorDetail(error.UnsupportedEventKind),
+    );
 }
 
 test "benchmark runner and output errors use user-facing details" {
@@ -934,6 +938,10 @@ test "benchmark runner and output errors use user-facing details" {
     try std.testing.expectEqualStrings(
         "replay events include an out-of-range player index",
         benchmarkReplayRunnerErrorDetail(error.UnsupportedEventPlayerIndex),
+    );
+    try std.testing.expectEqualStrings(
+        "replay events include kinds or values invalid for this mode",
+        benchmarkReplayRunnerErrorDetail(error.UnsupportedEventKind),
     );
     try std.testing.expectEqualStrings(
         "native replay benchmark ran out of memory while resolving paths",

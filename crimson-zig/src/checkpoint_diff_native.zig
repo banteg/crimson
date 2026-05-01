@@ -1346,7 +1346,7 @@ fn replayLoadErrorDetail(err: anyerror) []const u8 {
         error.InvalidGzipPayload => "unable to inflate replay gzip payload",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnsupportedEventKind => "replay events include kinds unsupported by the current native runtime",
+        error.UnsupportedEventKind => "replay events include command kinds unsupported by the current replay format",
         error.UnsupportedBootstrapKind => "replay bootstrap kind is not supported",
         error.UnsupportedInputQuantization => "replay input quantization is not supported",
         error.BootstrapSeedMismatch => "replay bootstrap seed does not match canonical terrain bootstrap draws",
@@ -1365,7 +1365,7 @@ fn replayRunnerErrorDetail(err: anyerror) []const u8 {
         error.UnsupportedPlayerCount => "native replay run only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "native replay run only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay events include kinds unsupported for this mode",
+        error.UnsupportedEventKind => "replay events include kinds or values invalid for this mode",
         error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player index",
         error.InvalidPerkPickEvent => "replay perk pick event is invalid for the current state",
         error.MissingRngCallerTag => "replay capture is missing required RNG caller tags",
@@ -1618,12 +1618,20 @@ test "checkpoint verify maps replay load and runner errors to user details" {
         replayLoadErrorDetail(error.PayloadTooLarge),
     );
     try std.testing.expectEqualStrings(
+        "replay events include command kinds unsupported by the current replay format",
+        replayLoadErrorDetail(error.UnsupportedEventKind),
+    );
+    try std.testing.expectEqualStrings(
         "native replay run only supports survival/rush/quest/typo/tutorial modes",
         replayRunnerErrorDetail(error.UnsupportedGameMode),
     );
     try std.testing.expectEqualStrings(
         "replay events include an out-of-range player index",
         replayRunnerErrorDetail(error.UnsupportedEventPlayerIndex),
+    );
+    try std.testing.expectEqualStrings(
+        "replay events include kinds or values invalid for this mode",
+        replayRunnerErrorDetail(error.UnsupportedEventKind),
     );
     try std.testing.expectEqualStrings(
         "FileBusy",

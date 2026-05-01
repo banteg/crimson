@@ -42,7 +42,6 @@ const ReplayRunnerProgressHint = struct {
 
 const ParseOutcome = union(enum) {
     ok: VerifyRequest,
-    unsupported: []const u8,
     invalid: []const u8,
 };
 
@@ -105,7 +104,6 @@ pub fn runReplayVerify(
 ) !CommandOutput {
     switch (parseNativeSubset(verify_args)) {
         .ok => |request| return runNativeVerify(allocator, request),
-        .unsupported => |detail| return buildUnsupportedVerifyOptionOutput(allocator, detail),
         .invalid => |detail| return buildInvalidVerifyArgsOutput(allocator, detail),
     }
 }
@@ -152,7 +150,7 @@ fn runNativeVerify(
     }
 
     if (!std.mem.endsWith(u8, resolution.resolved_path, ".crd")) {
-        return buildNotPortedOutput(allocator, "only .crd replay files are currently supported");
+        return buildVerifyFailedOutput(allocator, "replay file must use .crd extension");
     }
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -184,7 +182,7 @@ fn runVerifyWithReplayBytes(
             replay_bytes,
             replay_codec.max_replay_payload_bytes,
         ) catch |err| {
-            return buildNotPortedOutputForReplayCodecError(allocator, err);
+            return buildOutputForReplayCodecError(allocator, err);
         };
         replay_payload_alloc = inflated;
         break :blk inflated;
@@ -194,23 +192,23 @@ fn runVerifyWithReplayBytes(
             replay_bytes,
             replay_codec.max_replay_payload_bytes,
         ) catch |err| {
-            return buildNotPortedOutputForReplayCodecError(allocator, err);
+            return buildOutputForReplayCodecError(allocator, err);
         };
         replay_payload_alloc = inflated;
         break :blk inflated;
     } else replay_bytes;
 
     var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
-        return buildNotPortedOutputForReplayCodecError(allocator, err);
+        return buildOutputForReplayCodecError(allocator, err);
     };
     defer replay.deinit(allocator);
     const header = replay.header;
 
     if (unsupportedReplayHeaderDetail(header, replay.tickCount())) |detail| {
-        return buildNotPortedOutput(allocator, detail);
+        return buildVerifyFailedOutput(allocator, detail);
     }
     replay_codec.validateReplayBootstrap(header) catch |err| {
-        return buildNotPortedOutputForReplayCodecError(allocator, err);
+        return buildOutputForReplayCodecError(allocator, err);
     };
     const trace_requested = request.trace_rng or request.debug_trace_cdt != null;
     const ticks_to_simulate: usize = if (request.max_ticks) |max_ticks|
@@ -244,7 +242,7 @@ fn runVerifyWithReplayBytes(
                 ) catch |trace_err| {
                     return buildVerifyFailedOutput(allocator, verifyDebugTraceErrorDetail(trace_err));
                 };
-                return buildNotPortedOutputForReplayRunnerError(
+                return buildReplayRunnerFailureOutput(
                     allocator,
                     err,
                     .{
@@ -260,7 +258,7 @@ fn runVerifyWithReplayBytes(
         break :blk replay_runner.runReplayWithOptions(replay, .{
             .max_ticks = request.max_ticks,
         }) catch |err| {
-            return buildNotPortedOutputForReplayRunnerError(
+            return buildReplayRunnerFailureOutput(
                 allocator,
                 err,
                 .{
@@ -573,46 +571,6 @@ fn buildInvalidVerifyArgsOutput(
     };
 }
 
-fn buildUnsupportedVerifyOptionOutput(
-    allocator: std.mem.Allocator,
-    detail: []const u8,
-) !CommandOutput {
-    var stderr_buf: std.Io.Writer.Allocating = .init(allocator);
-    defer stderr_buf.deinit();
-    const writer = &stderr_buf.writer;
-    try writer.print("unsupported replay verify option in native verifier: {s}\n", .{detail});
-
-    const stderr = try stderr_buf.toOwnedSlice();
-    errdefer allocator.free(stderr);
-    const stdout = try allocator.dupe(u8, "");
-
-    return .{
-        .stdout = stdout,
-        .stderr = stderr,
-        .exit_code = 1,
-    };
-}
-
-fn buildNotPortedOutput(
-    allocator: std.mem.Allocator,
-    detail: []const u8,
-) !CommandOutput {
-    var stderr_buf: std.Io.Writer.Allocating = .init(allocator);
-    defer stderr_buf.deinit();
-    const writer = &stderr_buf.writer;
-    try writer.print("replay verification hit a native runtime limitation: {s}\n", .{detail});
-
-    const stderr = try stderr_buf.toOwnedSlice();
-    errdefer allocator.free(stderr);
-    const stdout = try allocator.dupe(u8, "");
-
-    return .{
-        .stdout = stdout,
-        .stderr = stderr,
-        .exit_code = 1,
-    };
-}
-
 fn verifySetupErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
         error.AccessDenied => "unable to inspect replay path: access denied",
@@ -654,27 +612,27 @@ fn unsupportedReplayHeaderDetail(
     tick_count: usize,
 ) ?[]const u8 {
     if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3 and header.game_mode_id != 4 and header.game_mode_id != 8) {
-        return "only survival/rush/quest/typo/tutorial replays are currently ported";
+        return "native replay tools support only survival/rush/quest/typo/tutorial modes";
     }
     if ((header.game_mode_id == 4 or header.game_mode_id == 8) and header.player_count != 1) {
         return "typo and tutorial replays require player_count == 1";
     }
     if (header.player_count < 1 or header.player_count > 4) {
-        return "only 1-4 player replays are currently ported";
+        return "native replay tools support only 1-4 player replays";
     }
     if (!std.mem.eql(u8, header.input_quantization, "f32")) {
-        return "only f32 input quantization is currently ported";
+        return "native replay tools support only f32 input quantization";
     }
     if (tick_count > std.math.maxInt(i32)) {
         return "replay has too many ticks for current native verifier";
     }
     if (!header.preserve_bugs and !replay_codec.isLatestRulesetGameVersion(header.game_version)) {
-        return "only latest ruleset replays are currently ported";
+        return "native replay tools require latest ruleset replays unless preserve_bugs is set";
     }
     return null;
 }
 
-fn buildNotPortedOutputForReplayCodecError(
+fn buildOutputForReplayCodecError(
     allocator: std.mem.Allocator,
     err: replay_codec.ReplayCodecError,
 ) !CommandOutput {
@@ -686,17 +644,17 @@ fn buildNotPortedOutputForReplayCodecError(
         error.UnsupportedEventShape => return buildVerifyFailedOutput(allocator, "replay events are not in the canonical wire shape"),
         error.InvalidGzipPayload => return buildVerifyFailedOutput(allocator, "unable to inflate replay gzip payload"),
         error.InvalidZstdPayload => return buildVerifyFailedOutput(allocator, "unable to inflate replay zstd payload"),
-        error.UnsupportedReplayFormatVersion => return buildNotPortedOutput(allocator, "replay format version is not supported"),
-        error.UnsupportedEventKind => return buildNotPortedOutput(allocator, "replay events include kinds unsupported by the current native runtime"),
-        error.UnsupportedBootstrapKind => return buildNotPortedOutput(allocator, "replay bootstrap kind is not supported"),
-        error.UnsupportedInputQuantization => return buildNotPortedOutput(allocator, "replay input quantization is not supported"),
-        error.BootstrapSeedMismatch => return buildNotPortedOutput(allocator, "replay bootstrap seed does not match canonical terrain bootstrap draws"),
-        error.PayloadTooLarge => return buildNotPortedOutput(allocator, "replay payload exceeds max decompressed size"),
-        error.OutOfMemory => return buildNotPortedOutput(allocator, "native replay msgpack decode ran out of memory"),
+        error.UnsupportedReplayFormatVersion => return buildVerifyFailedOutput(allocator, "replay format version is not supported"),
+        error.UnsupportedEventKind => return buildVerifyFailedOutput(allocator, "replay events include command kinds unsupported by the current replay format"),
+        error.UnsupportedBootstrapKind => return buildVerifyFailedOutput(allocator, "replay bootstrap kind is not supported"),
+        error.UnsupportedInputQuantization => return buildVerifyFailedOutput(allocator, "replay input quantization is not supported"),
+        error.BootstrapSeedMismatch => return buildVerifyFailedOutput(allocator, "replay bootstrap seed does not match canonical terrain bootstrap draws"),
+        error.PayloadTooLarge => return buildVerifyFailedOutput(allocator, "replay payload exceeds max decompressed size"),
+        error.OutOfMemory => return buildVerifyFailedOutput(allocator, "native replay msgpack decode ran out of memory"),
     }
 }
 
-fn buildNotPortedOutputForReplayRunnerError(
+fn buildReplayRunnerFailureOutput(
     allocator: std.mem.Allocator,
     err: replay_runner.ReplayRunnerError,
     progress: ReplayRunnerProgressHint,
@@ -708,7 +666,7 @@ fn buildNotPortedOutputForReplayRunnerError(
         error.UnsupportedPlayerCount => "native replay run only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "native replay run only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay events include kinds unsupported for this mode",
+        error.UnsupportedEventKind => "replay events include kinds or values invalid for this mode",
         error.UnsupportedEventPlayerIndex => "native replay run encountered an out-of-range player_index event",
         error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
@@ -757,12 +715,9 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         const arg = args[idx];
 
         if (std.mem.eql(u8, arg, "--strict-events")) {
-            continue;
+            return .{ .invalid = "--strict-events" };
         }
 
-        if (std.mem.eql(u8, arg, "--lenient-events")) {
-            return .{ .unsupported = "--lenient-events" };
-        }
         if (std.mem.eql(u8, arg, "--trace-rng")) {
             request.trace_rng = true;
             continue;
@@ -811,13 +766,6 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         if (std.mem.startsWith(u8, arg, "--json-out=")) {
             request.json_out = arg["--json-out=".len..];
             continue;
-        }
-
-        if (std.mem.eql(u8, arg, "--submitted-score") or std.mem.startsWith(u8, arg, "--submitted-score=")) {
-            return .{ .unsupported = "--submitted-score" };
-        }
-        if (std.mem.eql(u8, arg, "--score-metric") or std.mem.startsWith(u8, arg, "--score-metric=")) {
-            return .{ .unsupported = "--score-metric" };
         }
 
         if (std.mem.eql(u8, arg, "--base-dir") or std.mem.eql(u8, arg, "--runtime-dir")) {
@@ -1007,14 +955,25 @@ test "parse native subset reports unknown option as invalid" {
     }
 }
 
-test "parse native subset reports unsupported lenient events option" {
+test "parse native subset reports removed strict events option as invalid" {
+    const parsed = parseNativeSubset(&.{
+        "survival_20260224_041009_score76661.crd",
+        "--strict-events",
+    });
+    switch (parsed) {
+        .invalid => |detail| try std.testing.expectEqualStrings("--strict-events", detail),
+        else => return error.TestExpectedInvalidOption,
+    }
+}
+
+test "parse native subset reports removed lenient events option as invalid" {
     const parsed = parseNativeSubset(&.{
         "survival_20260224_041009_score76661.crd",
         "--lenient-events",
     });
     switch (parsed) {
-        .unsupported => |detail| try std.testing.expectEqualStrings("--lenient-events", detail),
-        else => return error.TestExpectedUnsupportedOption,
+        .invalid => |detail| try std.testing.expectEqualStrings("--lenient-events", detail),
+        else => return error.TestExpectedInvalidOption,
     }
 }
 
@@ -1040,14 +999,14 @@ test "parse native subset rejects invalid max ticks value" {
     }
 }
 
-test "parse native subset reports removed submitted score option as unsupported" {
+test "parse native subset reports removed submitted score option as invalid" {
     const parsed = parseNativeSubset(&.{
         "survival_20260224_041009_score76661.crd",
         "--submitted-score=76661",
     });
     switch (parsed) {
-        .unsupported => |detail| try std.testing.expectEqualStrings("--submitted-score", detail),
-        else => return error.TestExpectedUnsupportedOption,
+        .invalid => |detail| try std.testing.expectEqualStrings("--submitted-score=76661", detail),
+        else => return error.TestExpectedInvalidOption,
     }
 }
 
@@ -1129,18 +1088,6 @@ test "build verify payload escapes replay path via json stringify" {
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"replay\":\"test\\\"\\nreplay.crd\"") != null);
 }
 
-test "unsupported verify option output has dedicated wording" {
-    const allocator = std.testing.allocator;
-    const output = try buildUnsupportedVerifyOptionOutput(allocator, "--trace-rng");
-    defer allocator.free(output.stdout);
-    defer allocator.free(output.stderr);
-
-    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
-    try std.testing.expect(
-        std.mem.indexOf(u8, output.stderr, "unsupported replay verify option in native verifier") != null,
-    );
-}
-
 test "replay verify file and output errors use user-facing details" {
     try std.testing.expectEqualStrings(
         "native replay verifier ran out of memory while resolving paths",
@@ -1164,7 +1111,7 @@ test "replay verify file and output errors use user-facing details" {
     );
 }
 
-test "replay codec malformed payload errors map to verify failed output" {
+test "replay codec invalid replay errors map to verify failed output" {
     const allocator = std.testing.allocator;
     const cases = [_]struct {
         err: replay_codec.ReplayCodecError,
@@ -1176,10 +1123,17 @@ test "replay codec malformed payload errors map to verify failed output" {
         .{ .err = error.UnsupportedInputShape, .detail = "replay input rows are not in the canonical wire shape" },
         .{ .err = error.UnsupportedEventShape, .detail = "replay events are not in the canonical wire shape" },
         .{ .err = error.InvalidGzipPayload, .detail = "unable to inflate replay gzip payload" },
+        .{ .err = error.UnsupportedReplayFormatVersion, .detail = "replay format version is not supported" },
+        .{ .err = error.UnsupportedEventKind, .detail = "replay events include command kinds unsupported by the current replay format" },
+        .{ .err = error.UnsupportedBootstrapKind, .detail = "replay bootstrap kind is not supported" },
+        .{ .err = error.UnsupportedInputQuantization, .detail = "replay input quantization is not supported" },
+        .{ .err = error.BootstrapSeedMismatch, .detail = "replay bootstrap seed does not match canonical terrain bootstrap draws" },
+        .{ .err = error.PayloadTooLarge, .detail = "replay payload exceeds max decompressed size" },
+        .{ .err = error.OutOfMemory, .detail = "native replay msgpack decode ran out of memory" },
     };
 
     for (cases) |case_item| {
-        const output = try buildNotPortedOutputForReplayCodecError(allocator, case_item.err);
+        const output = try buildOutputForReplayCodecError(allocator, case_item.err);
         defer output.deinit(allocator);
 
         try std.testing.expectEqual(@as(i32, 1), output.exit_code);
@@ -1189,20 +1143,9 @@ test "replay codec malformed payload errors map to verify failed output" {
     }
 }
 
-test "replay codec unsupported event kind remains not ported output" {
+test "runtime replay failure output includes progress hints" {
     const allocator = std.testing.allocator;
-    const output = try buildNotPortedOutputForReplayCodecError(allocator, error.UnsupportedEventKind);
-    defer output.deinit(allocator);
-
-    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification hit a native runtime limitation:") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay events include kinds unsupported by the current native runtime") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification failed:") == null);
-}
-
-test "survival sim not ported output includes replay progress hints" {
-    const allocator = std.testing.allocator;
-    const output = try buildNotPortedOutputForReplayRunnerError(
+    const output = try buildReplayRunnerFailureOutput(
         allocator,
         error.InvalidPerkPickEvent,
         .{
@@ -1254,7 +1197,7 @@ test "unsupported replay header detail rejects unsupported game mode" {
     header.game_mode_id = 9;
 
     const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
-    try std.testing.expectEqualStrings("only survival/rush/quest/typo/tutorial replays are currently ported", detail);
+    try std.testing.expectEqualStrings("native replay tools support only survival/rush/quest/typo/tutorial modes", detail);
 }
 
 test "unsupported replay header detail rejects unsupported player count" {
@@ -1264,7 +1207,7 @@ test "unsupported replay header detail rejects unsupported player count" {
     header.player_count = 5;
 
     const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
-    try std.testing.expectEqualStrings("only 1-4 player replays are currently ported", detail);
+    try std.testing.expectEqualStrings("native replay tools support only 1-4 player replays", detail);
 }
 
 test "unsupported replay header detail rejects non f32 quantization" {
@@ -1275,7 +1218,7 @@ test "unsupported replay header detail rejects non f32 quantization" {
     header.input_quantization = try allocator.dupe(u8, "u8");
 
     const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
-    try std.testing.expectEqualStrings("only f32 input quantization is currently ported", detail);
+    try std.testing.expectEqualStrings("native replay tools support only f32 input quantization", detail);
 }
 
 test "unsupported replay header detail rejects oversized tick count" {
@@ -1296,7 +1239,7 @@ test "unsupported replay header detail rejects non latest ruleset" {
     header.game_version = try allocator.dupe(u8, "0.6.9");
 
     const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
-    try std.testing.expectEqualStrings("only latest ruleset replays are currently ported", detail);
+    try std.testing.expectEqualStrings("native replay tools require latest ruleset replays unless preserve_bugs is set", detail);
 }
 
 test "unsupported replay header detail accepts supported replay envelope" {
