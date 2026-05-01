@@ -226,7 +226,11 @@ pub const RollbackController = struct {
     }
 
     fn noteLateMismatch(self: *RollbackController, slot_index: usize, tick: i32, incoming: packed_input.PackedPlayerInput) void {
-        const emitted = self.emitted_frames.get(tick) orelse return;
+        const emitted = self.emitted_frames.get(tick) orelse {
+            const distance = @max(0, self.next_emit_tick - tick);
+            if (tick < self.next_emit_tick and distance > self.max_rollback_ticks) self.requestResyncFromLateTick(tick, distance);
+            return;
+        };
         if (slot_index >= self.player_count) return;
         if (packed_input.eql(emitted.inputs[slot_index], incoming)) return;
 
@@ -241,6 +245,12 @@ pub const RollbackController = struct {
 
         self.rollback_count += 1;
         self.pending_rollback_from = minOptionalTick(self.pending_rollback_from, tick);
+    }
+
+    fn requestResyncFromLateTick(self: *RollbackController, tick: i32, distance: i32) void {
+        self.prediction_mismatches += 1;
+        self.max_rollback_distance = @max(self.max_rollback_distance, distance);
+        self.pending_resync_from = minOptionalTick(self.pending_resync_from, tick);
     }
 
     fn pruneLocalKnown(self: *RollbackController, local_known: *std.AutoHashMap(i32, packed_input.PackedPlayerInput), oldest: i32, target_tick: i32) !void {
@@ -392,6 +402,32 @@ test "rollback corrections older than cap trigger resync request" {
 
     try std.testing.expectEqual(@as(?i32, null), controller.drainRollbackFrom());
     try std.testing.expectEqual(@as(?i32, 2), controller.drainResyncFrom());
+    try std.testing.expectEqual(@as(i32, 0), controller.rollback_count);
+    try std.testing.expectEqual(@as(i32, 1), controller.prediction_mismatches);
+}
+
+test "rollback corrections older than emitted history trigger resync request" {
+    var controller = RollbackController.init(std.testing.allocator, .{
+        .player_count = 2,
+        .local_slot_index = 0,
+        .input_delay_ticks = 0,
+        .max_rollback_ticks = 2,
+    });
+    defer controller.deinit();
+
+    var tick: u32 = 0;
+    while (tick < 6) : (tick += 1) {
+        var batch = try controller.queueLocalInput(.{ .flags = tick });
+        defer controller.deinitInputBatch(&batch);
+        try std.testing.expect(controller.popFrame() != null);
+    }
+    try std.testing.expect(!controller.emitted_frames.contains(1));
+
+    const samples = [_]relay_protocol.RbInputSample{.{ .tick_index = 1, .packed_input = .{ .move_x = 1.0, .flags = 99 } }};
+    try controller.ingestRemoteSamples(1, &samples);
+
+    try std.testing.expectEqual(@as(?i32, null), controller.drainRollbackFrom());
+    try std.testing.expectEqual(@as(?i32, 1), controller.drainResyncFrom());
     try std.testing.expectEqual(@as(i32, 0), controller.rollback_count);
     try std.testing.expectEqual(@as(i32, 1), controller.prediction_mismatches);
 }
