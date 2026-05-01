@@ -32,7 +32,7 @@ pub fn updateSelectionFromPointer(selection: *usize, buttons: []const UiButton) 
 }
 
 pub fn buttonActivated(buttons: []const UiButton, selection: usize) bool {
-    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.space)) return true;
+    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.kp_enter) or rl.isKeyPressed(.space)) return true;
 
     if (!rl.isMouseButtonPressed(.left)) return false;
     const mouse = rl.getMousePosition();
