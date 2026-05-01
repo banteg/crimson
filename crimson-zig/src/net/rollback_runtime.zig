@@ -69,12 +69,15 @@ pub const RuntimeCore = struct {
     remote_seen_slots: [max_players]bool = [_]bool{false} ** max_players,
 
     paused_for_resync: bool = false,
+    paused_for_reconnect: bool = false,
     pending_rollback_from: ?i32 = null,
     rollback_count: i32 = 0,
     prediction_mismatches: i32 = 0,
     max_rollback_ticks_seen: i32 = 0,
     resync_count: i32 = 0,
+    reconnect_count: i32 = 0,
     resync_deadline_ms: i64 = 0,
+    reconnect_deadline_ms: i64 = 0,
     next_resync_id: i32 = 1,
     error_reason: []const u8 = "",
 
@@ -112,7 +115,7 @@ pub const RuntimeCore = struct {
     }
 
     pub fn queueLocalInput(self: *RuntimeCore, input: packed_input.PackedPlayerInput, now_ms: i64) !void {
-        if (self.paused_for_resync) return;
+        if (self.paused_for_resync or self.paused_for_reconnect) return;
         var batch = try self.controller.queueLocalInput(input);
         defer self.controller.deinitInputBatch(&batch);
         try self.send(.{ .rb_input_sample = batch }, false);
@@ -126,7 +129,7 @@ pub const RuntimeCore = struct {
     }
 
     pub fn hostRemoteInputsReady(self: *const RuntimeCore) bool {
-        if (self.paused_for_resync) return false;
+        if (self.paused_for_resync or self.paused_for_reconnect) return false;
         if (self.role != .host) return true;
         for (0..self.controller.player_count) |slot| {
             if (slot == self.controller.local_slot_index) continue;
@@ -150,6 +153,7 @@ pub const RuntimeCore = struct {
             .rb_resync_begin => |begin_message| try self.handleResyncBegin(begin_message),
             .rb_resync_chunk => |chunk| try self.handleResyncChunk(chunk),
             .rb_resync_commit => |commit| try self.handleResyncCommit(commit, now_ms),
+            .peer_disconnect => |disconnect| try self.handlePeerDisconnect(disconnect, now_ms),
             else => {},
         }
     }
@@ -189,6 +193,7 @@ pub const RuntimeCore = struct {
     }
 
     pub fn popFrame(self: *RuntimeCore) ?TickFrame {
+        if (self.paused_for_reconnect) return null;
         if (self.frame_queue.items.len == 0) return null;
         return self.frame_queue.orderedRemove(0);
     }
@@ -223,13 +228,24 @@ pub const RuntimeCore = struct {
         try self.setActiveRequestId("");
     }
 
+    pub fn completeReconnect(self: *RuntimeCore) void {
+        self.paused_for_reconnect = false;
+        self.reconnect_deadline_ms = 0;
+    }
+
+    pub fn checkReconnectTimeout(self: *RuntimeCore, now_ms: i64) !void {
+        if (self.reconnect_deadline_ms <= 0) return;
+        if (now_ms < self.reconnect_deadline_ms) return;
+        try self.setError("reconnect_timeout");
+    }
+
     pub fn clearOutbox(self: *RuntimeCore) void {
         for (self.outbox.items) |*item| relay_protocol.deinitMessage(self.allocator, &item.message);
         self.outbox.clearRetainingCapacity();
     }
 
     fn drainFrames(self: *RuntimeCore) !void {
-        if (self.paused_for_resync) return;
+        if (self.paused_for_resync or self.paused_for_reconnect) return;
         while (self.controller.popFrame()) |frame| {
             var tick_frame: TickFrame = .{
                 .tick_index = frame.tick_index,
@@ -238,6 +254,16 @@ pub const RuntimeCore = struct {
             for (0..frame.player_count) |slot| tick_frame.frame_inputs[slot] = frame.frame_inputs[slot];
             try self.frame_queue.append(self.allocator, tick_frame);
         }
+    }
+
+    fn handlePeerDisconnect(self: *RuntimeCore, disconnect: relay_protocol.PeerDisconnect, now_ms: i64) !void {
+        if (disconnect.slot_index == @as(i32, @intCast(self.controller.local_slot_index))) {
+            try self.setError(if (disconnect.reason.len == 0) "peer_disconnect" else disconnect.reason);
+            return;
+        }
+        if (self.reconnect_deadline_ms <= 0) self.reconnect_count += 1;
+        self.paused_for_reconnect = true;
+        self.reconnect_deadline_ms = now_ms + self.reconnect_timeout_ms;
     }
 
     fn drainRollbackSignals(self: *RuntimeCore, now_ms: i64) !void {
@@ -661,4 +687,52 @@ test "rollback runtime completes resync and resumes input capture after snapshot
     const frame = runtime.popFrame() orelse return error.ExpectedFrame;
     try std.testing.expectEqual(@as(i32, 4), frame.tick_index);
     try std.testing.expectEqual(@as(u32, 7), frame.input(1).flags);
+}
+
+test "rollback runtime pauses on peer disconnect and times out reconnect" {
+    var runtime = RuntimeCore.init(std.testing.allocator, .{
+        .role = .host,
+        .player_count = 2,
+        .local_slot_index = 0,
+        .input_delay_ticks = 0,
+        .reconnect_timeout_ms = 500,
+    });
+    defer runtime.deinit();
+
+    try runtime.queueLocalInput(.{ .flags = 1 }, 1000);
+    try std.testing.expect(runtime.popFrame() != null);
+
+    try runtime.handleMessage(.{ .peer_disconnect = .{ .slot_index = 1, .reason = "timeout" } }, 1200);
+    try std.testing.expect(runtime.paused_for_reconnect);
+    try std.testing.expectEqual(@as(i32, 1), runtime.reconnect_count);
+    try std.testing.expectEqual(@as(i64, 1700), runtime.reconnect_deadline_ms);
+
+    try runtime.queueLocalInput(.{ .flags = 2 }, 1201);
+    try std.testing.expect(runtime.popFrame() == null);
+
+    try runtime.checkReconnectTimeout(1699);
+    try std.testing.expectEqualStrings("", runtime.error_reason);
+    try runtime.checkReconnectTimeout(1700);
+    try std.testing.expectEqualStrings("reconnect_timeout", runtime.error_reason);
+}
+
+test "rollback runtime resumes input capture after reconnect completes" {
+    var runtime = RuntimeCore.init(std.testing.allocator, .{
+        .role = .host,
+        .player_count = 2,
+        .local_slot_index = 0,
+        .input_delay_ticks = 0,
+    });
+    defer runtime.deinit();
+
+    try runtime.handleMessage(.{ .peer_disconnect = .{ .slot_index = 1, .reason = "network_drop" } }, 1000);
+    try std.testing.expect(runtime.paused_for_reconnect);
+
+    runtime.completeReconnect();
+    try std.testing.expect(!runtime.paused_for_reconnect);
+    try std.testing.expectEqual(@as(i64, 0), runtime.reconnect_deadline_ms);
+
+    try runtime.queueLocalInput(.{ .flags = 7 }, 1100);
+    const frame = runtime.popFrame() orelse return error.ExpectedFrame;
+    try std.testing.expectEqual(@as(u32, 7), frame.input(0).flags);
 }

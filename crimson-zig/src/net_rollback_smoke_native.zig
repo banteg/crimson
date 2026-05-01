@@ -22,6 +22,7 @@ const Impairment = enum {
     reorder_first_guest_input,
     drop_first_guest_input,
     force_guest_resync,
+    guest_reconnect,
 
     fn label(self: Impairment) []const u8 {
         return switch (self) {
@@ -30,6 +31,7 @@ const Impairment = enum {
             .reorder_first_guest_input => "reorder-first-guest-input",
             .drop_first_guest_input => "drop-first-guest-input",
             .force_guest_resync => "force-guest-resync",
+            .guest_reconnect => "guest-reconnect",
         };
     }
 };
@@ -72,6 +74,10 @@ const SmokePayload = struct {
     resync_snapshot_tick: i32,
     host_paused_for_resync: bool,
     guest_paused_for_resync: bool,
+    host_reconnect_count: i32,
+    guest_reconnect_count: i32,
+    host_paused_for_reconnect: bool,
+    guest_paused_for_reconnect: bool,
     host_rollback_count: i32,
     guest_rollback_count: i32,
     host_prediction_mismatches: i32,
@@ -95,6 +101,7 @@ pub fn runRollbackSmoke(
 
 fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !SmokePayload {
     const force_guest_resync = impairment == .force_guest_resync;
+    const guest_reconnect = impairment == .guest_reconnect;
     var server: relay_transport.UdpTransport = .{ .bind_host = "127.0.0.1", .bind_port = 0 };
     try server.open(io);
     defer server.close(io);
@@ -148,6 +155,19 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !Smoke
     };
     defer packet_impairment.deinit(allocator);
 
+    if (guest_reconnect) {
+        return runGuestReconnectSmoke(
+            allocator,
+            io,
+            server,
+            &service,
+            &host,
+            &guest,
+            code,
+            packets_sent,
+        );
+    }
+
     if (force_guest_resync) {
         return runGuestResyncSmoke(
             allocator,
@@ -196,6 +216,7 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !Smoke
             final_exchange_ms = 1208;
         },
         .force_guest_resync => unreachable,
+        .guest_reconnect => unreachable,
     }
     packets_sent += try pumpRelayService(allocator, io, server, &service, final_exchange_ms, &packet_impairment);
     try guest.update(allocator, io, final_exchange_ms);
@@ -242,10 +263,96 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !Smoke
         .resync_snapshot_tick = -1,
         .host_paused_for_resync = host_runtime.paused_for_resync,
         .guest_paused_for_resync = guest_runtime.paused_for_resync,
+        .host_reconnect_count = host_runtime.reconnect_count,
+        .guest_reconnect_count = guest_runtime.reconnect_count,
+        .host_paused_for_reconnect = host_runtime.paused_for_reconnect,
+        .guest_paused_for_reconnect = guest_runtime.paused_for_reconnect,
         .host_rollback_count = host_runtime.rollback_count,
         .guest_rollback_count = guest_runtime.rollback_count,
         .host_prediction_mismatches = host_runtime.prediction_mismatches,
         .guest_prediction_mismatches = guest_runtime.prediction_mismatches,
+    };
+}
+
+fn runGuestReconnectSmoke(
+    allocator: std.mem.Allocator,
+    io: Io,
+    server: relay_transport.UdpTransport,
+    service: *relay_service.RelayService,
+    host: *rollback_live_session.LiveSession,
+    guest: *rollback_live_session.LiveSession,
+    code: room_code.RoomCode,
+    initial_packets_sent: usize,
+) !SmokePayload {
+    const guest_token = guest.session.reconnect_token;
+    if (guest_token.len == 0) return error.RollbackReconnectTokenMissing;
+    const guest_slot = guest.session.local_slot_index;
+
+    var packets_sent = initial_packets_sent;
+    try markServicePeerLastSeen(service, code, host.session.local_slot_index, 1800);
+    try markServicePeerLastSeen(service, code, guest_slot, 0);
+    var pruned = try service.pruneTimeouts(allocator, 1800, 1000);
+    defer pruned.deinit(allocator);
+    packets_sent += try flushAddressedOutbox(allocator, io, server, pruned);
+    try host.update(allocator, io, 1801);
+
+    const host_runtime = &(host.session.runtime orelse return error.RollbackRuntimeMissing);
+    if (!host_runtime.paused_for_reconnect or host_runtime.reconnect_count != 1) return error.RollbackReconnectPauseMissing;
+
+    var rejoined = rollback_live_session.LiveSession.init(.{
+        .server_addr = relay_transport.PeerAddr.loopback(server.boundPort()),
+        .bind_host = "127.0.0.1",
+        .session = .{
+            .role = .join,
+            .mode_id = 2,
+            .player_count = 2,
+            .build_id = "0.1.0",
+            .peer_name = "guest-reconnect",
+            .room_code = null,
+            .reconnect_token = guest_token,
+            .input_delay_ticks = 0,
+        },
+    });
+    defer rejoined.deinit(allocator, io);
+
+    packets_sent += try driveReconnectUntilStarted(allocator, io, server, service, host, &rejoined, 1810);
+    const rejoined_runtime = &(rejoined.session.runtime orelse return error.RollbackRuntimeMissing);
+    if (rejoined.session.local_slot_index != guest_slot) return error.RollbackReconnectSlotMismatch;
+    if (host_runtime.paused_for_reconnect) return error.RollbackReconnectIncomplete;
+    if (host_runtime.reconnect_deadline_ms != 0) return error.RollbackReconnectDeadlineActive;
+    if (rejoined_runtime.paused_for_reconnect) return error.RollbackReconnectJoinPaused;
+
+    return .{
+        .relay_port = server.boundPort(),
+        .host_port = host.boundPort(),
+        .guest_port = rejoined.boundPort(),
+        .room_code = code,
+        .impairment = Impairment.guest_reconnect.label(),
+        .packets_sent = packets_sent,
+        .delayed_packets = 0,
+        .released_packets = 0,
+        .dropped_packets = 0,
+        .host_tick_index = -1,
+        .guest_tick_index = -1,
+        .host_input_flags = 0,
+        .guest_input_flags = 0,
+        .host_live_ticks_advanced = 0,
+        .guest_live_ticks_advanced = 0,
+        .host_live_tick_index = if (host.runner) |runner| runner.session.tick_index else 0,
+        .guest_live_tick_index = if (rejoined.runner) |runner| runner.session.tick_index else 0,
+        .host_resync_count = host_runtime.resync_count,
+        .guest_resync_count = rejoined_runtime.resync_count,
+        .resync_snapshot_tick = -1,
+        .host_paused_for_resync = host_runtime.paused_for_resync,
+        .guest_paused_for_resync = rejoined_runtime.paused_for_resync,
+        .host_reconnect_count = host_runtime.reconnect_count,
+        .guest_reconnect_count = rejoined_runtime.reconnect_count,
+        .host_paused_for_reconnect = host_runtime.paused_for_reconnect,
+        .guest_paused_for_reconnect = rejoined_runtime.paused_for_reconnect,
+        .host_rollback_count = host_runtime.rollback_count,
+        .guest_rollback_count = rejoined_runtime.rollback_count,
+        .host_prediction_mismatches = host_runtime.prediction_mismatches,
+        .guest_prediction_mismatches = rejoined_runtime.prediction_mismatches,
     };
 }
 
@@ -325,11 +432,36 @@ fn runGuestResyncSmoke(
         .resync_snapshot_tick = snapshot_tick,
         .host_paused_for_resync = host_runtime.paused_for_resync,
         .guest_paused_for_resync = guest_runtime.paused_for_resync,
+        .host_reconnect_count = host_runtime.reconnect_count,
+        .guest_reconnect_count = guest_runtime.reconnect_count,
+        .host_paused_for_reconnect = host_runtime.paused_for_reconnect,
+        .guest_paused_for_reconnect = guest_runtime.paused_for_reconnect,
         .host_rollback_count = host_runtime.rollback_count,
         .guest_rollback_count = guest_runtime.rollback_count,
         .host_prediction_mismatches = host_runtime.prediction_mismatches,
         .guest_prediction_mismatches = guest_runtime.prediction_mismatches,
     };
+}
+
+fn driveReconnectUntilStarted(
+    allocator: std.mem.Allocator,
+    io: Io,
+    server: relay_transport.UdpTransport,
+    service: *relay_service.RelayService,
+    host: *rollback_live_session.LiveSession,
+    guest: *rollback_live_session.LiveSession,
+    start_ms: i64,
+) !usize {
+    var packets_sent: usize = 0;
+    for (0..32) |step| {
+        const now_ms = start_ms + @as(i64, @intCast(step));
+        try guest.update(allocator, io, now_ms);
+        packets_sent += try pumpRelayService(allocator, io, server, service, now_ms, null);
+        try host.update(allocator, io, now_ms);
+        try guest.update(allocator, io, now_ms);
+        if (guest.session.started and !host.session.runtime.?.paused_for_reconnect) return packets_sent;
+    }
+    return error.RollbackReconnectStartMissing;
 }
 
 fn exchangeNeutralStartupTick(
@@ -421,6 +553,31 @@ fn pumpRelayService(
         }
     }
     return sent;
+}
+
+fn flushAddressedOutbox(
+    allocator: std.mem.Allocator,
+    io: Io,
+    server: relay_transport.UdpTransport,
+    outbox: relay_service.AddressedOutbox,
+) !usize {
+    var sent: usize = 0;
+    for (outbox.items.items) |item| {
+        try server.sendPacket(allocator, io, transportAddrFromService(item.addr), item.packet);
+        sent += 1;
+    }
+    return sent;
+}
+
+fn markServicePeerLastSeen(service: *relay_service.RelayService, code: room_code.RoomCode, slot_index: i32, now_ms: i64) !void {
+    const room_index = service.core.findRoomByCode(code) orelse return error.RollbackRoomCodeMissing;
+    for (service.core.rooms.items[room_index].room.slots) |slot| {
+        if (slot.slot_index != slot_index) continue;
+        const peer_index = service.core.findPeerById(slot.peer_id) orelse return error.RollbackPeerMissing;
+        service.core.peers.items[peer_index].peer.last_seen_ms = now_ms;
+        return;
+    }
+    return error.RollbackPeerMissing;
 }
 
 const PacketImpairment = struct {
@@ -518,6 +675,8 @@ fn parseArgs(args: []const []const u8) ParseOutcome {
             request.impairment = .drop_first_guest_input;
         } else if (std.mem.eql(u8, arg, "--force-guest-resync")) {
             request.impairment = .force_guest_resync;
+        } else if (std.mem.eql(u8, arg, "--guest-reconnect")) {
+            request.impairment = .guest_reconnect;
         } else {
             return .{ .invalid = arg };
         }
@@ -608,16 +767,17 @@ fn parseImpairment(value: []const u8) ?Impairment {
     if (std.ascii.eqlIgnoreCase(text, "reorder-first-guest-input")) return .reorder_first_guest_input;
     if (std.ascii.eqlIgnoreCase(text, "drop-first-guest-input")) return .drop_first_guest_input;
     if (std.ascii.eqlIgnoreCase(text, "force-guest-resync")) return .force_guest_resync;
+    if (std.ascii.eqlIgnoreCase(text, "guest-reconnect")) return .guest_reconnect;
     return null;
 }
 
 const usage =
     \\Usage:
-    \\  crimson-zig net smoke-rollback [--format human|json] [--impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input|force-guest-resync]
+    \\  crimson-zig net smoke-rollback [--format human|json] [--impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input|force-guest-resync|guest-reconnect]
     \\
     \\Options:
     \\  --format human|json
-    \\  --impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input|force-guest-resync
+    \\  --impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input|force-guest-resync|guest-reconnect
     \\
 ;
 
@@ -689,6 +849,18 @@ test "rollback smoke command can force guest resync and apply host snapshot" {
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"resync_snapshot_tick\": 4") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_paused_for_resync\": false") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_prediction_mismatches\": 1") != null);
+}
+
+test "rollback smoke command can reconnect guest through relay token" {
+    const output = try runRollbackSmoke(std.testing.allocator, std.Io.Threaded.global_single_threaded.io(), &.{ "--json", "--impair", "guest-reconnect" });
+    defer output.deinit(std.testing.allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"impairment\": \"guest-reconnect\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_reconnect_count\": 1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_reconnect_count\": 0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_paused_for_reconnect\": false") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_paused_for_reconnect\": false") != null);
 }
 
 test "rollback smoke command reports human success" {

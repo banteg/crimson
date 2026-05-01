@@ -188,6 +188,27 @@ def test_zig_net_smoke_rollback_reports_guest_resync_recovery() -> None:
     assert payload["guest_prediction_mismatches"] >= 1
 
 
+def test_zig_net_smoke_rollback_reports_guest_reconnect_recovery() -> None:
+    payload = _run_zig_net_json(
+        [
+            "smoke-rollback",
+            "--impair",
+            "guest-reconnect",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert payload["status"] == "ok"
+    assert payload["impairment"] == "guest-reconnect"
+    assert payload["host_reconnect_count"] == 1
+    assert payload["guest_reconnect_count"] == 0
+    assert payload["host_paused_for_reconnect"] is False
+    assert payload["guest_paused_for_reconnect"] is False
+    assert payload["host_resync_count"] == 0
+    assert payload["guest_resync_count"] == 0
+
+
 def _run_zig_net_json(args: list[str]) -> dict[str, Any]:
     result = _run_zig_net_process(args)
     assert result.returncode == 0, dbg_record._command_detail(result)
