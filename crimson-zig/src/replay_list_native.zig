@@ -32,6 +32,7 @@ const ReplayListRow = struct {
     duration: []u8,
     score_xp: []u8,
     kills: []u8,
+    modified: []u8,
     modified_ns: i128,
     parse_error: ?[]u8 = null,
 
@@ -43,6 +44,7 @@ const ReplayListRow = struct {
         allocator.free(self.duration);
         allocator.free(self.score_xp);
         allocator.free(self.kills);
+        allocator.free(self.modified);
         if (self.parse_error) |parse_error| allocator.free(parse_error);
     }
 };
@@ -133,12 +135,12 @@ fn runNativeList(
     if (rows.items.len == 0) {
         try stdout.print("no replay files found under {s}\n", .{replays_dir});
     } else {
-        try stdout.writeAll("replay mode version ticks duration score kills modified_ns\n");
+        try stdout.writeAll("replay mode version ticks duration score kills modified\n");
         var parse_errors: usize = 0;
         for (rows.items) |row| {
             if (row.parse_error != null) parse_errors += 1;
             try stdout.print(
-                "{s} {s} {s} {s} {s} {s} {s} {d}\n",
+                "{s} {s} {s} {s} {s} {s} {s} {s}\n",
                 .{
                     row.replay,
                     row.mode,
@@ -147,7 +149,7 @@ fn runNativeList(
                     row.duration,
                     row.score_xp,
                     row.kills,
-                    row.modified_ns,
+                    row.modified,
                 },
             );
         }
@@ -267,6 +269,8 @@ fn buildReplayListRow(
     errdefer allocator.free(score_xp);
     const kills = try std.fmt.allocPrint(allocator, "{d}", .{header.claimed_stats.kills});
     errdefer allocator.free(kills);
+    const modified = try formatModified(allocator, modified_ns);
+    errdefer allocator.free(modified);
 
     return .{
         .replay = rel_path,
@@ -276,6 +280,7 @@ fn buildReplayListRow(
         .duration = duration,
         .score_xp = score_xp,
         .kills = kills,
+        .modified = modified,
         .modified_ns = modified_ns,
     };
 }
@@ -298,6 +303,8 @@ fn buildInvalidReplayListRow(
     errdefer allocator.free(score_xp);
     const kills = try allocator.dupe(u8, "-");
     errdefer allocator.free(kills);
+    const modified = try formatModified(allocator, modified_ns);
+    errdefer allocator.free(modified);
     const parse_error_owned = try allocator.dupe(u8, parse_error);
     errdefer allocator.free(parse_error_owned);
 
@@ -309,6 +316,7 @@ fn buildInvalidReplayListRow(
         .duration = duration,
         .score_xp = score_xp,
         .kills = kills,
+        .modified = modified,
         .modified_ns = modified_ns,
         .parse_error = parse_error_owned,
     };
@@ -355,6 +363,27 @@ fn formatDuration(allocator: std.mem.Allocator, ticks: usize, tick_rate: i32) ![
         return std.fmt.allocPrint(allocator, "{d}:{d:0>2}", .{ minutes, seconds });
     }
     return std.fmt.allocPrint(allocator, "{d:.1}s", .{total_seconds});
+}
+
+fn formatModified(allocator: std.mem.Allocator, modified_ns: i128) ![]u8 {
+    const ns_per_s: i128 = std.time.ns_per_s;
+    const seconds_i128 = @divFloor(modified_ns, ns_per_s);
+    const seconds: u64 = @intCast(@max(seconds_i128, 0));
+    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = seconds };
+    const year_day = epoch_seconds.getEpochDay().calculateYearDay();
+    const month_day = year_day.calculateMonthDay();
+    const day_seconds = epoch_seconds.getDaySeconds();
+    return std.fmt.allocPrint(
+        allocator,
+        "{d:0>4}-{d:0>2}-{d:0>2} {d:0>2}:{d:0>2}",
+        .{
+            year_day.year,
+            month_day.month.numeric(),
+            month_day.day_index + 1,
+            day_seconds.getHoursIntoDay(),
+            day_seconds.getMinutesIntoHour(),
+        },
+    );
 }
 
 fn compareRows(_: void, left: ReplayListRow, right: ReplayListRow) bool {
@@ -417,6 +446,17 @@ test "duration formatting mirrors replay list display" {
     const hours = try formatDuration(allocator, 60 * 3670, 60);
     defer allocator.free(hours);
     try std.testing.expectEqualStrings("1:01:10", hours);
+}
+
+test "modified formatting mirrors replay list display shape" {
+    const allocator = std.testing.allocator;
+    const epoch = try formatModified(allocator, 0);
+    defer allocator.free(epoch);
+    try std.testing.expectEqualStrings("1970-01-01 00:00", epoch);
+
+    const later = try formatModified(allocator, (2021 * std.time.s_per_hour + 4 * std.time.s_per_min) * std.time.ns_per_s);
+    defer allocator.free(later);
+    try std.testing.expectEqualStrings("1970-03-26 05:04", later);
 }
 
 test "replay list maps invalid row errors to user details" {

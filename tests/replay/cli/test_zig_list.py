@@ -25,12 +25,14 @@ def test_zig_replay_list_shows_replays_under_base_dir(tmp_path: Path) -> None:
     result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
 
     assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "replay mode version ticks duration score kills modified_ns" in result.stdout
+    assert "replay mode version ticks duration score kills modified" in result.stdout
+    assert "modified_ns" not in result.stdout
     assert "alpha.crd" in result.stdout
     assert "nested/nested.crd" in result.stdout
     assert "zeta.crd" in result.stdout
     assert "survival" in result.stdout
     assert replay.header.game_version in result.stdout
+    assert re.search(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}", result.stdout) is not None
     assert "count=3 parsed=3 errors=0" in result.stdout
     assert f"replays_dir={tmp_path / 'replays'}" in result.stdout
 
