@@ -8,7 +8,7 @@ import msgspec
 
 import crimson.dbg.record as dbg_record
 from crimson.game_modes import GameMode
-from crimson.replay.checkpoints import dump_checkpoints_file, load_checkpoints_file
+from crimson.replay.checkpoints import ReplayDeathLedgerEntry, dump_checkpoints_file, load_checkpoints_file
 
 from ._helpers import build_replay, build_typo_submit_replay, write_checkpoint_sidecar, write_replay
 
@@ -154,6 +154,59 @@ def test_zig_replay_diff_checkpoints_reports_event_field_mismatch(tmp_path: Path
     assert result.returncode == 1
     assert "checkpoint mismatch at tick=0" in result.stderr
     assert "first state diff: events.sfx_count" in result.stderr
+
+
+def test_zig_replay_diff_checkpoints_reports_event_sfx_head_summary(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    sidecar_a = write_checkpoint_sidecar(replay_path, replay)
+    sidecar_b = tmp_path / "survival-event-sfx-head.crd.chk"
+
+    payload = load_checkpoints_file(sidecar_a)
+    checkpoints = list(payload.checkpoints)
+    events = msgspec.structs.replace(
+        checkpoints[0].events,
+        sfx_head=[*checkpoints[0].events.sfx_head, "menu_click"],
+    )
+    checkpoints[0] = msgspec.structs.replace(checkpoints[0], events=events)
+    dump_checkpoints_file(sidecar_b, msgspec.structs.replace(payload, checkpoints=checkpoints))
+
+    result = _run_zig_replay_diff_checkpoints([str(sidecar_a), str(sidecar_b)])
+
+    assert result.returncode == 1
+    assert "checkpoint mismatch at tick=0" in result.stderr
+    assert "first state diff: events.sfx_head._len" in result.stderr
+    assert "events expected=(hits=0, pickups=0, sfx=0, head=[])" in result.stderr
+    assert "actual=(hits=0, pickups=0, sfx=0, head=['menu_click'])" in result.stderr
+
+
+def test_zig_replay_diff_checkpoints_reports_first_death_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    sidecar_a = write_checkpoint_sidecar(replay_path, replay)
+    sidecar_b = tmp_path / "survival-death.crd.chk"
+
+    payload = load_checkpoints_file(sidecar_a)
+    checkpoints = list(payload.checkpoints)
+    deaths = [
+        ReplayDeathLedgerEntry(
+            creature_index=7,
+            type_id=2,
+            reward_value=3.5,
+            xp_awarded=4,
+            owner_id=1,
+        ),
+    ]
+    checkpoints[0] = msgspec.structs.replace(checkpoints[0], deaths=deaths)
+    dump_checkpoints_file(sidecar_b, msgspec.structs.replace(payload, checkpoints=checkpoints))
+
+    result = _run_zig_replay_diff_checkpoints([str(sidecar_a), str(sidecar_b)])
+
+    assert result.returncode == 1
+    assert "checkpoint mismatch at tick=0" in result.stderr
+    assert "first state diff: deaths._len expected=0 actual=1" in result.stderr
+    assert "first death expected=[] actual=[ReplayDeathLedgerEntry(" in result.stderr
+    assert "creature_index=7, type_id=2, reward_value=3.5, xp_awarded=4, owner_id=1" in result.stderr
 
 
 def test_zig_replay_diff_checkpoints_preserves_rng_only_success(tmp_path: Path) -> None:

@@ -1033,11 +1033,25 @@ fn buildMismatchOutput(
             try writer.print("  creature_count expected={d} actual={d}\n", .{ exp.creature_count, act.creature_count });
             try writer.print("  perk_pending expected={d} actual={d}\n", .{ exp.perk_pending, act.perk_pending });
             try writer.print("  deaths expected={d} actual={d}\n", .{ exp.deaths.len, act.deaths.len });
+            if (exp.deaths.len > 0 or act.deaths.len > 0) {
+                try writer.writeAll("  first death expected=");
+                try writeFirstDeathSummary(writer, exp.deaths);
+                try writer.writeAll(" actual=");
+                try writeFirstDeathSummary(writer, act.deaths);
+                try writer.writeAll("\n");
+            }
             if (exp.events.hit_count >= 0) {
                 try writer.print(
-                    "  events expected=(hits={d}, pickups={d}, sfx={d}) actual=(hits={d}, pickups={d}, sfx={d})\n",
-                    .{ exp.events.hit_count, exp.events.pickup_count, exp.events.sfx_count, act.events.hit_count, act.events.pickup_count, act.events.sfx_count },
+                    "  events expected=(hits={d}, pickups={d}, sfx={d}, head=",
+                    .{ exp.events.hit_count, exp.events.pickup_count, exp.events.sfx_count },
                 );
+                try writeStringSliceSummary(writer, exp.events.sfx_head);
+                try writer.print(
+                    ") actual=(hits={d}, pickups={d}, sfx={d}, head=",
+                    .{ act.events.hit_count, act.events.pickup_count, act.events.sfx_count },
+                );
+                try writeStringSliceSummary(writer, act.events.sfx_head);
+                try writer.writeAll(")\n");
             }
             if (!perksEqual(exp.perk, act.perk)) {
                 try writer.print(
@@ -1193,6 +1207,22 @@ fn writeFirstDeathMismatch(
         }
     }
     return false;
+}
+
+fn writeFirstDeathSummary(
+    writer: anytype,
+    deaths: []const ReplayDeathLedgerEntryWire,
+) !void {
+    if (deaths.len == 0) {
+        try writer.writeAll("[]");
+        return;
+    }
+
+    const death = deaths[0];
+    try writer.print(
+        "[ReplayDeathLedgerEntry(creature_index={d}, type_id={d}, reward_value={d}, xp_awarded={d}, owner_id={d})]",
+        .{ death.creature_index, death.type_id, death.reward_value, death.xp_awarded, death.owner_id },
+    );
 }
 
 fn writeFirstPerkMismatch(
@@ -1402,6 +1432,18 @@ fn writeFirstStringSliceMismatch(
         }
     }
     return false;
+}
+
+fn writeStringSliceSummary(
+    writer: anytype,
+    values: []const []const u8,
+) !void {
+    try writer.writeAll("[");
+    for (values, 0..) |value, idx| {
+        if (idx > 0) try writer.writeAll(", ");
+        try writer.print("'{s}'", .{value});
+    }
+    try writer.writeAll("]");
 }
 
 fn optionalPresence(value: anytype) []const u8 {
