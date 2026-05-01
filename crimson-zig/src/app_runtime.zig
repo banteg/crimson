@@ -100,9 +100,22 @@ pub const DesktopRuntime = struct {
     }
 
     pub fn recordQuestCompletion(self: *DesktopRuntime, level_key: i32) void {
-        const idx = quest_status.trackedQuestCompletedCounterIndex(level_key) orelse return;
-        self.status.quest_play_counts[idx] +%= 1;
-        self.status_dirty = true;
+        if (quest_status.trackedQuestCompletedCounterIndex(level_key)) |idx| {
+            self.status.quest_play_counts[idx] +%= 1;
+            self.status_dirty = true;
+        }
+
+        const global_index = quest_status.questLevelKeyGlobalIndex(level_key) orelse return;
+        const next_unlock: u16 = @intCast(global_index + 1);
+        if (self.config.hardcore_flag != 0) {
+            if (next_unlock > self.status.quest_unlock_index_full) {
+                self.status.quest_unlock_index_full = next_unlock;
+                self.status_dirty = true;
+            }
+        } else if (next_unlock > self.status.quest_unlock_index) {
+            self.status.quest_unlock_index = next_unlock;
+            self.status_dirty = true;
+        }
     }
 
     pub fn recordGameplayFrame(self: *DesktopRuntime, frame_dt: f32) void {
@@ -254,6 +267,26 @@ test "desktop runtime records tracked quest counters" {
     try std.testing.expectEqual(@as(u32, 1), runtime.status.quest_play_counts[51]);
     try std.testing.expectEqual(@as(u32, 0), runtime.status.quest_play_counts[50]);
     try std.testing.expectEqual(@as(u32, 0), runtime.status.quest_play_counts[90]);
+    try std.testing.expectEqual(@as(u16, 50), runtime.status.quest_unlock_index);
+    try std.testing.expect(runtime.status_dirty);
+}
+
+test "desktop runtime advances hardcore quest unlock progress separately" {
+    var runtime: DesktopRuntime = .{
+        .allocator = std.testing.allocator,
+        .base_dir = &.{},
+        .config_path = &.{},
+        .status_path = &.{},
+        .config = formats.crimson_cfg.defaultConfig(),
+        .status = std.mem.zeroes(formats.game_cfg.Status),
+    };
+    runtime.config.hardcore_flag = 1;
+    runtime.status.quest_unlock_index = 7;
+
+    runtime.recordQuestCompletion(501);
+
+    try std.testing.expectEqual(@as(u16, 7), runtime.status.quest_unlock_index);
+    try std.testing.expectEqual(@as(u16, 41), runtime.status.quest_unlock_index_full);
     try std.testing.expect(runtime.status_dirty);
 }
 
