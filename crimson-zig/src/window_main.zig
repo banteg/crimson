@@ -1154,6 +1154,7 @@ const App = struct {
         self.audio.ensureMenuThemeForDemo(self.demo_enabled);
         const options_update = window_options.updateOptions(&self.options, frame_dt, &self.runtime.config, if (self.runtime_assets) |*assets| assets else null);
         if (options_update.config_dirty) self.runtime.config_dirty = true;
+        if (options_update.window_changed) self.applyWindowConfig();
         if (options_update.reload_audio) self.reloadAudioConfig();
         if (options_update.play_panel_click and !self.options.panel.panel_open_sfx_played) {
             self.audio.playUiPanelClick();
@@ -1449,6 +1450,20 @@ const App = struct {
             audio_mod.audioConfigFromCrimsonCfg(self.runtime.config),
             null,
         );
+    }
+
+    fn applyWindowConfig(self: *App) void {
+        const width = self.runtime.windowWidth(window_width);
+        const height = self.runtime.windowHeight(window_height);
+        const wants_fullscreen = self.runtime.config.windowed_flag == 0;
+
+        if (rl.isWindowFullscreen() and !wants_fullscreen) {
+            rl.toggleFullscreen();
+        }
+        rl.setWindowSize(width, height);
+        if (!rl.isWindowFullscreen() and wants_fullscreen) {
+            rl.toggleFullscreen();
+        }
     }
 
     fn finishRun(self: *App, gameplay: *GameplayScreen, reason: ResultsReason, runtime_error: ?[]const u8) void {

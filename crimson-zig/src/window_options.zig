@@ -110,6 +110,7 @@ pub const ControlsAction = enum {
 pub const OptionsUpdate = struct {
     action: OptionsAction = .none,
     config_dirty: bool = false,
+    window_changed: bool = false,
     reload_audio: bool = false,
     play_panel_click: bool = false,
     play_button_click: bool = false,
@@ -265,12 +266,14 @@ fn updateDisplayOptions(
     if (updateOptionSlider(state, .resolution, optionSliderRect(panel_rect, 265.0, 88.0, @intCast(resolution_presets.len)), 1, @intCast(resolution_presets.len), @intCast(resolutionPresetIndex(config) + 1), mouse, click, mouse_down)) |value| {
         if (applyResolutionPreset(config, @intCast(value - 1))) {
             result.config_dirty = true;
+            result.window_changed = true;
             result.play_button_click = true;
         }
     }
     if (click and rectContains(windowModeRect(panel_rect), mouse)) {
         config.windowed_flag = if (config.windowed_flag == 0) 1 else 0;
         result.config_dirty = true;
+        result.window_changed = true;
         result.play_button_click = true;
     }
     if (updateOptionSlider(state, .bpp, optionSliderRect(panel_rect, 265.0, 160.0, 2), 1, 2, screenBppSliderValue(config), mouse, click, mouse_down)) |value| {
@@ -494,7 +497,7 @@ fn drawDisplayOptionsContents(runtime_assets: *const window_assets.RuntimeAssets
     var texture_scale_buf: [16]u8 = undefined;
     const scale_text = std.fmt.bufPrint(&texture_scale_buf, "{d:.2}", .{texture_scale_presets[textureScalePresetIndex(config.texture_scale)]}) catch "";
     window_ui.drawSmallText(runtime_assets, scale_text, panel_rect.x + 406.0, panel_rect.y + 198.0, value_color);
-    window_ui.drawSmallText(runtime_assets, "Display changes apply on next launch.", panel_rect.x + 128.0, panel_rect.y + 238.0, muted_text);
+    window_ui.drawSmallText(runtime_assets, "Texture scale applies to new terrain.", panel_rect.x + 128.0, panel_rect.y + 238.0, muted_text);
 }
 
 fn drawControlsPanels(state: *const ControlsState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg) void {
