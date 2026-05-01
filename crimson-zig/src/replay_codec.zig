@@ -867,7 +867,6 @@ pub fn inflateGzipPayload(
         total += n;
         if (total > max_output_bytes) return error.PayloadTooLarge;
         out.appendSlice(allocator, chunk[0..n]) catch return error.OutOfMemory;
-        if (n < chunk.len) break;
     }
 
     return out.toOwnedSlice(allocator) catch return error.OutOfMemory;
@@ -882,24 +881,26 @@ pub fn inflateZstdPayload(
     var window: [std.compress.zstd.default_window_len + std.compress.zstd.block_size_max]u8 = undefined;
     var decompress: std.compress.zstd.Decompress = .init(&input, &window, .{ .verify_checksum = false });
 
-    var out: std.ArrayList(u8) = .empty;
-    defer out.deinit(allocator);
+    var out: std.Io.Writer.Allocating = .init(allocator);
+    defer out.deinit();
 
-    var chunk: [8192]u8 = undefined;
     var total: usize = 0;
     while (true) {
-        const n = decompress.reader.readSliceShort(&chunk) catch {
-            _ = decompress.err;
-            return error.InvalidZstdPayload;
+        const remaining = max_output_bytes -| total;
+        const limit = if (remaining == std.math.maxInt(usize)) remaining else remaining + 1;
+        const n = decompress.reader.stream(&out.writer, .limited(limit)) catch |err| switch (err) {
+            error.EndOfStream => break,
+            else => {
+                _ = decompress.err;
+                return error.InvalidZstdPayload;
+            },
         };
         if (n == 0) break;
         total += n;
         if (total > max_output_bytes) return error.PayloadTooLarge;
-        out.appendSlice(allocator, chunk[0..n]) catch return error.OutOfMemory;
-        if (n < chunk.len) break;
     }
 
-    return out.toOwnedSlice(allocator) catch return error.OutOfMemory;
+    return out.toOwnedSlice() catch return error.OutOfMemory;
 }
 
 pub fn parseReplaySummary(
@@ -2125,6 +2126,23 @@ test "parse replay event rejects invalid perk pick indexes" {
         },
     };
     try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
+}
+
+test "inflate zstd payload consumes replay fixture through eof" {
+    const compressed = @embedFile("../../tests/fixtures/replays/quest_1.5_20260303_211620_completed_t40512.crd");
+    const inflated = try inflateZstdPayload(std.testing.allocator, compressed, max_replay_payload_bytes);
+    defer std.testing.allocator.free(inflated);
+
+    try std.testing.expectEqual(@as(usize, 191445), inflated.len);
+    try std.testing.expectEqualSlices(u8, &.{ 0x82, 0xa6, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72 }, inflated[0..8]);
+}
+
+test "inflate zstd payload enforces max output size" {
+    const compressed = @embedFile("../../tests/fixtures/replays/quest_1.5_20260303_211620_completed_t40512.crd");
+    try std.testing.expectError(
+        error.PayloadTooLarge,
+        inflateZstdPayload(std.testing.allocator, compressed, 1024),
+    );
 }
 
 test "parse current replay preserves typo metadata and commands" {
