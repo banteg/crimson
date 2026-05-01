@@ -1,6 +1,7 @@
 const std = @import("std");
 
 const relay_service = @import("net/relay_service.zig");
+const relay_protocol = @import("net/relay_protocol.zig");
 const relay_transport = @import("net/relay_transport.zig");
 const rollback_live_session = @import("net/rollback_live_session.zig");
 const room_code = @import("net/room_code.zig");
@@ -15,8 +16,21 @@ const OutputFormat = enum {
     json,
 };
 
+const Impairment = enum {
+    none,
+    delay_first_guest_input,
+
+    fn label(self: Impairment) []const u8 {
+        return switch (self) {
+            .none => "none",
+            .delay_first_guest_input => "delay-first-guest-input",
+        };
+    }
+};
+
 const Request = struct {
     output_format: OutputFormat = .human,
+    impairment: Impairment = .none,
 };
 
 const ParseOutcome = union(enum) {
@@ -34,7 +48,10 @@ const SmokePayload = struct {
     host_port: u16,
     guest_port: u16,
     room_code: room_code.RoomCode,
+    impairment: []const u8,
     packets_sent: usize,
+    delayed_packets: usize,
+    released_packets: usize,
     host_tick_index: i32,
     guest_tick_index: i32,
     host_input_flags: u32,
@@ -45,7 +62,10 @@ const SmokePayload = struct {
     guest_live_tick_index: usize,
     host_resync_count: i32,
     guest_resync_count: i32,
+    host_rollback_count: i32,
     guest_rollback_count: i32,
+    host_prediction_mismatches: i32,
+    guest_prediction_mismatches: i32,
 };
 
 pub fn runRollbackSmoke(
@@ -55,7 +75,7 @@ pub fn runRollbackSmoke(
 ) !CommandOutput {
     switch (parseArgs(args)) {
         .ok => |request| {
-            const payload = runSmoke(allocator, io) catch |err| return buildFailureOutput(allocator, @errorName(err));
+            const payload = runSmoke(allocator, io, request.impairment) catch |err| return buildFailureOutput(allocator, @errorName(err));
             return buildSmokeOutput(allocator, request.output_format, payload);
         },
         .help => return buildUsageOutput(allocator, 0, ""),
@@ -63,7 +83,7 @@ pub fn runRollbackSmoke(
     }
 }
 
-fn runSmoke(allocator: std.mem.Allocator, io: Io) !SmokePayload {
+fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !SmokePayload {
     var server: relay_transport.UdpTransport = .{ .bind_host = "127.0.0.1", .bind_port = 0 };
     try server.open(io);
     defer server.close(io);
@@ -109,13 +129,26 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io) !SmokePayload {
     }
     if (!host.session.hostRemoteInputsReady()) return error.RollbackHostNotReady;
 
+    var packet_impairment: PacketImpairment = .{
+        .mode = impairment,
+        .target_port = host.boundPort(),
+        .source_slot_index = guest.session.local_slot_index,
+    };
+    defer packet_impairment.deinit(allocator);
+
     try guest.queueLocalInput(allocator, io, .{ .flags = 7 }, 1200);
-    packets_sent += try pumpRelayService(allocator, io, server, &service, 1201);
+    packets_sent += try pumpRelayService(allocator, io, server, &service, 1201, &packet_impairment);
     try host.update(allocator, io, 1202);
 
     try host.queueLocalInput(allocator, io, .{ .flags = 3 }, 1203);
-    const host_step = try host.stepFrames(allocator);
-    packets_sent += try pumpRelayService(allocator, io, server, &service, 1204);
+    var host_step = try host.stepFrames(allocator);
+    if (impairment == .delay_first_guest_input) {
+        if (host_step.last_input_flags[1] != 0) return error.RollbackImpairmentDidNotForcePrediction;
+        packets_sent += try packet_impairment.releaseDelayed(allocator, io, server);
+        try host.update(allocator, io, 1204);
+        host_step = try host.stepFrames(allocator);
+    }
+    packets_sent += try pumpRelayService(allocator, io, server, &service, 1205, &packet_impairment);
     try guest.update(allocator, io, 1205);
     const guest_step = try guest.stepFrames(allocator);
 
@@ -128,13 +161,20 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io) !SmokePayload {
     const host_runtime = &(host.session.runtime orelse return error.RollbackRuntimeMissing);
     const guest_runtime = &(guest.session.runtime orelse return error.RollbackRuntimeMissing);
     if (host_runtime.paused_for_resync or guest_runtime.paused_for_resync) return error.RollbackUnexpectedResyncPause;
+    if (impairment == .delay_first_guest_input) {
+        if (packet_impairment.delayed_packets != 1 or packet_impairment.released_packets != 1) return error.RollbackImpairmentNotApplied;
+        if (host_runtime.rollback_count == 0) return error.RollbackHostCorrectionMissing;
+    }
 
     return .{
         .relay_port = server.boundPort(),
         .host_port = host.boundPort(),
         .guest_port = guest.boundPort(),
         .room_code = code,
+        .impairment = impairment.label(),
         .packets_sent = packets_sent,
+        .delayed_packets = packet_impairment.delayed_packets,
+        .released_packets = packet_impairment.released_packets,
         .host_tick_index = host_step.last_tick_index orelse return error.RollbackHostFrameMissing,
         .guest_tick_index = guest_step.last_tick_index orelse return error.RollbackGuestFrameMissing,
         .host_input_flags = guest_step.last_input_flags[0],
@@ -145,7 +185,10 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io) !SmokePayload {
         .guest_live_tick_index = guest.runner.?.session.tick_index,
         .host_resync_count = host_runtime.resync_count,
         .guest_resync_count = guest_runtime.resync_count,
+        .host_rollback_count = host_runtime.rollback_count,
         .guest_rollback_count = guest_runtime.rollback_count,
+        .host_prediction_mismatches = host_runtime.prediction_mismatches,
+        .guest_prediction_mismatches = guest_runtime.prediction_mismatches,
     };
 }
 
@@ -159,10 +202,10 @@ fn exchangeNeutralStartupTick(
     now_ms: i64,
 ) !usize {
     try guest.queueLocalInput(allocator, io, .{}, now_ms);
-    var sent = try pumpRelayService(allocator, io, server, service, now_ms + 1);
+    var sent = try pumpRelayService(allocator, io, server, service, now_ms + 1, null);
     try host.update(allocator, io, now_ms + 2);
     try host.queueLocalInput(allocator, io, .{}, now_ms + 3);
-    sent += try pumpRelayService(allocator, io, server, service, now_ms + 4);
+    sent += try pumpRelayService(allocator, io, server, service, now_ms + 4, null);
     try guest.update(allocator, io, now_ms + 5);
     const host_step = try host.stepFrames(allocator);
     const guest_step = try guest.stepFrames(allocator);
@@ -181,7 +224,7 @@ fn driveHostUntilRoomCode(
     for (0..16) |step| {
         const now_ms = start_ms + @as(i64, @intCast(step));
         try host.update(allocator, io, now_ms);
-        _ = try pumpRelayService(allocator, io, server, service, now_ms);
+        _ = try pumpRelayService(allocator, io, server, service, now_ms, null);
         if (host.session.room_code_latest) |code| return code;
     }
     return error.RollbackRoomCodeMissing;
@@ -201,9 +244,9 @@ fn drivePairUntilStarted(
         if (host.session.started and guest.session.started) return packets_sent;
         const now_ms = start_ms + @as(i64, @intCast(step));
         try host.update(allocator, io, now_ms);
-        packets_sent += try pumpRelayService(allocator, io, server, service, now_ms);
+        packets_sent += try pumpRelayService(allocator, io, server, service, now_ms, null);
         try guest.update(allocator, io, now_ms);
-        packets_sent += try pumpRelayService(allocator, io, server, service, now_ms);
+        packets_sent += try pumpRelayService(allocator, io, server, service, now_ms, null);
     }
     return error.RollbackRoomStartMissing;
 }
@@ -214,6 +257,7 @@ fn pumpRelayService(
     server: relay_transport.UdpTransport,
     service: *relay_service.RelayService,
     now_ms: i64,
+    impairment: ?*PacketImpairment,
 ) !usize {
     var packets = try server.recvPackets(allocator, io, 64, 10);
     defer packets.deinit(allocator);
@@ -229,12 +273,64 @@ fn pumpRelayService(
         defer outbox.deinit(allocator);
 
         for (outbox.items.items) |item| {
+            if (impairment) |state| {
+                if (try state.delayPacket(allocator, item)) continue;
+            }
             try server.sendPacket(allocator, io, transportAddrFromService(item.addr), item.packet);
             sent += 1;
         }
     }
     return sent;
 }
+
+const PacketImpairment = struct {
+    mode: Impairment = .none,
+    target_port: u16 = 0,
+    source_slot_index: i32 = -1,
+    delayed: ?relay_service.AddressedPacket = null,
+    delayed_packets: usize = 0,
+    released_packets: usize = 0,
+
+    fn deinit(self: *PacketImpairment, allocator: std.mem.Allocator) void {
+        if (self.delayed) |*packet| packet.deinit(allocator);
+        self.* = undefined;
+    }
+
+    fn delayPacket(
+        self: *PacketImpairment,
+        allocator: std.mem.Allocator,
+        packet: relay_service.AddressedPacket,
+    ) !bool {
+        if (self.mode != .delay_first_guest_input or self.delayed != null or self.delayed_packets != 0) return false;
+        if (packet.addr.port != self.target_port) return false;
+        switch (packet.packet.message) {
+            .rb_input_sample => |batch| {
+                if (batch.slot_index != self.source_slot_index) return false;
+                self.delayed = .{
+                    .addr = packet.addr,
+                    .packet = try relay_protocol.clonePacket(allocator, packet.packet),
+                };
+                self.delayed_packets += 1;
+                return true;
+            },
+            else => return false,
+        }
+    }
+
+    fn releaseDelayed(
+        self: *PacketImpairment,
+        allocator: std.mem.Allocator,
+        io: Io,
+        server: relay_transport.UdpTransport,
+    ) !usize {
+        var packet = self.delayed orelse return error.RollbackDelayedPacketMissing;
+        self.delayed = null;
+        defer packet.deinit(allocator);
+        try server.sendPacket(allocator, io, transportAddrFromService(packet.addr), packet.packet);
+        self.released_packets += 1;
+        return 1;
+    }
+};
 
 fn serviceAddrFromTransport(addr: relay_transport.PeerAddr) relay_service.PeerAddr {
     return .{ .host = addr.host, .port = addr.port };
@@ -252,8 +348,12 @@ fn parseArgs(args: []const []const u8) ParseOutcome {
         if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) return .help;
         if (takeValue(args, &idx, arg, "--format")) |value| {
             request.output_format = parseOutputFormat(value) orelse return .{ .invalid = "invalid --format value" };
+        } else if (takeValue(args, &idx, arg, "--impair")) |value| {
+            request.impairment = parseImpairment(value) orelse return .{ .invalid = "invalid --impair value" };
         } else if (std.mem.eql(u8, arg, "--json")) {
             request.output_format = .json;
+        } else if (std.mem.eql(u8, arg, "--delay-first-guest-input")) {
+            request.impairment = .delay_first_guest_input;
         } else {
             return .{ .invalid = arg };
         }
@@ -337,12 +437,20 @@ fn parseOutputFormat(value: []const u8) ?OutputFormat {
     return null;
 }
 
+fn parseImpairment(value: []const u8) ?Impairment {
+    const text = std.mem.trim(u8, value, " \t\r\n");
+    if (std.ascii.eqlIgnoreCase(text, "none")) return .none;
+    if (std.ascii.eqlIgnoreCase(text, "delay-first-guest-input")) return .delay_first_guest_input;
+    return null;
+}
+
 const usage =
     \\Usage:
-    \\  crimson-zig net smoke-rollback [--format human|json]
+    \\  crimson-zig net smoke-rollback [--format human|json] [--impair none|delay-first-guest-input]
     \\
     \\Options:
     \\  --format human|json
+    \\  --impair none|delay-first-guest-input
     \\
 ;
 
@@ -356,6 +464,18 @@ test "rollback smoke command reports json success" {
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_input_flags\": 7") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_resync_count\": 0") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_resync_count\": 0") != null);
+}
+
+test "rollback smoke command can delay guest input and recover" {
+    const output = try runRollbackSmoke(std.testing.allocator, std.Io.Threaded.global_single_threaded.io(), &.{ "--json", "--impair", "delay-first-guest-input" });
+    defer output.deinit(std.testing.allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"impairment\": \"delay-first-guest-input\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"delayed_packets\": 1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"released_packets\": 1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_rollback_count\": 1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_resync_count\": 0") != null);
 }
 
 test "rollback smoke command reports human success" {
