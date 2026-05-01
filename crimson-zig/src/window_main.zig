@@ -574,6 +574,9 @@ const App = struct {
     network_live_render_time_s: f32 = 0.0,
     network_live_hud_state: HudRuntimeState = .{},
     network_live_last_update: ?live_runner.FrameUpdate = null,
+    network_live_ground: ?window_ground.GroundRenderer = null,
+    network_live_pending_terrain_fx: [16]terrain_fx_mod.TerrainFxBatch = [_]terrain_fx_mod.TerrainFxBatch{.{}} ** 16,
+    network_live_pending_terrain_fx_count: usize = 0,
     results: ?ResultsScreen = null,
     options: window_options.OptionsState = .{},
     controls: window_options.ControlsState = .{},
@@ -1175,8 +1178,13 @@ const App = struct {
         if (net_update.last_frame_update) |frame_update| {
             self.network_live_last_update = frame_update;
             if (session.runnerForLocalInput()) |runner| {
+                self.ensureNetworkLiveGround(runner);
                 self.network_live_hud_state.update(frame_dt, &runner.session);
                 self.audio.handleFrameAudio(frame_update.audio, runner.session.state.bonuses.reflex_boost);
+                self.queueNetworkLiveTerrainFxBatch(frame_update.terrain_fx);
+                if (self.runtime_assets) |*runtime_assets| {
+                    self.flushNetworkLiveTerrainFx(runtime_assets);
+                }
             }
         }
         if (net_update.frames_advanced != 0) {
@@ -1236,6 +1244,46 @@ const App = struct {
         );
     }
 
+    fn ensureNetworkLiveGround(self: *App, runner: *const live_runner.LiveRunner) void {
+        if (self.network_live_ground != null) return;
+        if (self.runtime_assets) |*runtime_assets| {
+            self.network_live_ground = window_ground.GroundRenderer.initForTerrainSetup(
+                runtime_assets,
+                runner.terrain_setup,
+                runner.session.terrain_size,
+                runner.session.terrain_size,
+                self.runtime.config.texture_scale,
+            ) catch null;
+        }
+    }
+
+    fn queueNetworkLiveTerrainFxBatch(self: *App, batch: terrain_fx_mod.TerrainFxBatch) void {
+        if (batch.isEmpty()) return;
+        if (self.network_live_pending_terrain_fx_count < self.network_live_pending_terrain_fx.len) {
+            self.network_live_pending_terrain_fx[self.network_live_pending_terrain_fx_count] = batch;
+            self.network_live_pending_terrain_fx_count += 1;
+            return;
+        }
+        var idx: usize = 1;
+        while (idx < self.network_live_pending_terrain_fx.len) : (idx += 1) {
+            self.network_live_pending_terrain_fx[idx - 1] = self.network_live_pending_terrain_fx[idx];
+        }
+        self.network_live_pending_terrain_fx[self.network_live_pending_terrain_fx.len - 1] = batch;
+    }
+
+    fn flushNetworkLiveTerrainFx(self: *App, assets: *const window_assets.RuntimeAssets) void {
+        const ground = &(self.network_live_ground orelse return);
+        if (!ground.renderTargetReady()) return;
+
+        var kept: usize = 0;
+        for (self.network_live_pending_terrain_fx[0..self.network_live_pending_terrain_fx_count]) |batch| {
+            if (window_terrain_fx.bakeTerrainFxBatch(ground, &batch, assets)) continue;
+            self.network_live_pending_terrain_fx[kept] = batch;
+            kept += 1;
+        }
+        self.network_live_pending_terrain_fx_count = kept;
+    }
+
     fn stopNetworkLiveSession(self: *App) void {
         if (self.network_live_session) |*session| {
             session.deinit(self.allocator, std.Io.Threaded.global_single_threaded.io());
@@ -1251,6 +1299,11 @@ const App = struct {
         self.network_live_render_time_s = 0.0;
         self.network_live_hud_state = .{};
         self.network_live_last_update = null;
+        if (self.network_live_ground) |*ground| {
+            ground.deinit();
+            self.network_live_ground = null;
+        }
+        self.network_live_pending_terrain_fx_count = 0;
     }
 
     fn updateResults(self: *App, frame_dt: f32) void {
@@ -1996,6 +2049,8 @@ const App = struct {
                 &self.runtime.config,
             );
         }
+        self.ensureNetworkLiveGround(runner);
+        const ground: ?*const window_ground.GroundRenderer = if (self.network_live_ground) |*ground| ground else null;
         const transform = window_viewport.viewTransform(
             runner.session.world_size,
             &self.runtime.config,
@@ -2017,7 +2072,7 @@ const App = struct {
         const fx_detail_2 = self.runtime.config.fx_detail_2 != 0;
 
         camera.begin();
-        drawWorld(runner, runtime_assets, null);
+        drawWorld(runner, runtime_assets, ground);
         drawPlayers(runner, runtime_assets, self.network_live_render_time_s, entity_alpha, false);
         drawCreatures(runner, runtime_assets, entity_alpha, fx_detail_0);
         drawFreezeOverlay(runner, runtime_assets, entity_alpha);
