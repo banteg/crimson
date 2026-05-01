@@ -383,11 +383,6 @@ pub fn drawNetwork(state: *const NetworkState, runtime_assets: ?*const window_as
     drawNetworkPanel(state, assets, true);
 }
 
-pub fn drawNetworkOverlay(state: *const NetworkState, runtime_assets: ?*const window_assets.RuntimeAssets) void {
-    const assets = runtime_assets orelse return;
-    drawNetworkPanel(state, assets, false);
-}
-
 fn drawNetworkPanel(state: *const NetworkState, assets: *const window_assets.RuntimeAssets, draw_backdrop: bool) void {
     const animated_rect = drawPanelShellEx(&state.panel, assets, draw_backdrop);
     window_ui.drawSmallText(assets, "Network Session", animated_rect.x + 174.0, animated_rect.y + 40.0, rl.Color.white);
