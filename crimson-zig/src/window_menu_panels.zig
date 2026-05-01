@@ -36,81 +36,6 @@ pub const quest_titles = [_][]const u8{
     "Cross Fire",            "Army of Three",            "Monster Blues",      "Nagolipoli",        "The Gathering",
 };
 
-const credits_lines = [_][]const u8{
-    "2026 Remake:",
-    "banteg",
-    "",
-    "Crimsonland",
-    "Game Design:",
-    "Tero Alatalo",
-    "",
-    "Programming:",
-    "Tero Alatalo",
-    "",
-    "Producer:",
-    "Zach Young",
-    "",
-    "2D Art:",
-    "Tero Alatalo",
-    "",
-    "3D Modelling:",
-    "Tero Alatalo",
-    "Timo Palonen",
-    "",
-    "Music:",
-    "Valtteri Pihlajam",
-    "Ville Eriksson",
-    "",
-    "Sound Effects:",
-    "Ion Hardie",
-    "Tero Alatalo",
-    "Valtteri Pihlajam",
-    "Ville Eriksson",
-    "",
-    "Manual:",
-    "Miikka Kulmala",
-    "Zach Young",
-    "",
-    "Special thanks to:",
-    "Petri J",
-    "Peter Hajba / Remedy",
-    "",
-    "Play testers:",
-    "Avraham Petrosyan",
-    "Bryce Baker",
-    "Dan Ruskin",
-    "Dirk Bunk",
-    "Eric Dallaire",
-    "Erik Van Pelt",
-    "Ernie Ramirez",
-    "Ion Hardie",
-    "James C. Smith",
-    "Jarkko Forsbacka",
-    "Jeff McAteer",
-    "Juha Alatalo",
-    "Kalle Hahl",
-    "Lars Brubaker",
-    "Lee Cooper",
-    "Markus Lassila",
-    "Matti Alanen",
-    "Miikka Kulmala",
-    "Mika Alatalo",
-    "Mike Colonnese",
-    "Simon Hallam",
-    "Toni Nurminen",
-    "Valtteri Pihlajam",
-    "Ville Eriksson",
-    "Ville M",
-    "Zach Young",
-    "",
-    "2003 (c) 10tons entertainment",
-    "10tons logo by Pasi Heinonen",
-    "",
-    "Uses Vorbis Audio Decompression",
-    "2003 (c) Xiph.Org Foundation",
-    "(see vorbis.txt)",
-};
-
 pub const PlayGameAction = enum {
     start_survival,
     start_rush,
@@ -118,20 +43,6 @@ pub const PlayGameAction = enum {
     start_tutorial,
     open_quests,
     back_to_menu,
-};
-
-pub const StatisticsAction = enum {
-    open_high_scores,
-    open_weapons,
-    open_perks,
-    open_credits,
-    back_to_menu,
-};
-
-pub const InfoKind = enum {
-    weapons,
-    perks,
-    credits,
 };
 
 const PanelState = struct {
@@ -850,138 +761,6 @@ fn questCounts(status: formats.game_cfg.Status, stage: i32, row: usize) QuestCou
     };
 }
 
-pub const StatisticsState = struct {
-    panel: PanelState = .{},
-
-    pub fn reset(self: *StatisticsState) void {
-        self.* = .{};
-    }
-};
-
-pub const StatisticsResult = struct {
-    action: ?StatisticsAction = null,
-    play_panel_click: bool = false,
-    play_button_click: bool = false,
-};
-
-pub fn updateStatistics(state: *StatisticsState, frame_dt: f32) StatisticsResult {
-    const dt_ms = panelAdvance(&state.panel, frame_dt);
-    const buttons = statisticsButtons(state.panel.timeline_ms);
-    window_ui.updateSelectionFromPointer(&state.panel.selection, buttons[0..]);
-    if (rl.isKeyPressed(.escape)) return .{ .action = .back_to_menu, .play_button_click = true };
-    if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-        state.panel.selection = if (state.panel.selection == 0) buttons.len - 1 else state.panel.selection - 1;
-    }
-    if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-        state.panel.selection = (state.panel.selection + 1) % buttons.len;
-    }
-    if (!window_ui.buttonActivated(buttons[0..], state.panel.selection)) {
-        return .{
-            .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
-        };
-    }
-    return .{
-        .play_button_click = true,
-        .action = switch (state.panel.selection) {
-            0 => .open_high_scores,
-            1 => .open_weapons,
-            2 => .open_perks,
-            3 => .open_credits,
-            4 => .back_to_menu,
-            else => null,
-        },
-    };
-}
-
-pub fn drawStatistics(state: *const StatisticsState, runtime_assets: ?*const window_assets.RuntimeAssets) void {
-    if (runtime_assets) |assets| {
-        drawMenuPanelShell(state.panel.timeline_ms, assets, .{ .x = 390.0, .y = 168.0, .width = 500.0, .height = 360.0 }, window_menu.label_row_statistics);
-        const buttons = statisticsButtons(state.panel.timeline_ms);
-        for (buttons, 0..) |button, idx| {
-            const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-            window_ui.drawButton(button, idx == state.panel.selection, hovered, assets);
-        }
-        return;
-    }
-    rl.clearBackground(panel_color);
-}
-
-pub const InfoViewState = struct {
-    kind: InfoKind = .weapons,
-    scroll: usize = 0,
-
-    pub fn open(self: *InfoViewState, kind: InfoKind) void {
-        self.* = .{ .kind = kind };
-    }
-};
-
-pub const InfoResult = struct {
-    back_to_statistics: bool = false,
-};
-
-pub fn updateInfoView(state: *InfoViewState) InfoResult {
-    const max_scroll = infoMaxScroll(state.kind);
-    if (rl.isKeyPressed(.escape) or backButtonActivated()) {
-        return .{ .back_to_statistics = true };
-    }
-    if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-        if (state.scroll > 0) state.scroll -= 1;
-    }
-    if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-        state.scroll = @min(state.scroll + 1, max_scroll);
-    }
-    return .{};
-}
-
-pub fn drawInfoView(state: *const InfoViewState, runtime_assets: ?*const window_assets.RuntimeAssets, status: formats.game_cfg.Status) void {
-    if (runtime_assets) |assets| {
-        drawMenuPanelShell(300, assets, .{ .x = 250.0, .y = 118.0, .width = 780.0, .height = 500.0 }, infoLabelRow(state.kind));
-        drawInfoContents(state, assets, status);
-        return;
-    }
-    rl.clearBackground(panel_color);
-}
-
-fn drawInfoContents(state: *const InfoViewState, runtime_assets: *const window_assets.RuntimeAssets, status: formats.game_cfg.Status) void {
-    const lines = infoLines(state.kind, status);
-    const start = state.scroll;
-    const end = @min(start + 20, lines.len);
-    var y: f32 = 178.0;
-    for (lines[start..end]) |line| {
-        window_ui.drawSmallText(runtime_assets, line, 300.0, y, text_color);
-        y += 16.0;
-    }
-    const back = backOnlyButton()[0];
-    const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), back.rect);
-    window_ui.drawButton(back, false, hovered, runtime_assets);
-}
-
-fn infoLines(kind: InfoKind, status: formats.game_cfg.Status) []const []const u8 {
-    _ = status;
-    return switch (kind) {
-        .credits => credits_lines[0..],
-        .weapons => weapon_lines[0..],
-        .perks => perk_lines[0..],
-    };
-}
-
-fn infoMaxScroll(kind: InfoKind) usize {
-    const total = switch (kind) {
-        .credits => credits_lines.len,
-        .weapons => weapon_lines.len,
-        .perks => perk_lines.len,
-    };
-    return if (total > 20) total - 20 else 0;
-}
-
-fn infoLabelRow(kind: InfoKind) i32 {
-    return switch (kind) {
-        .credits => window_menu.label_row_statistics,
-        .weapons => window_menu.label_row_statistics,
-        .perks => window_menu.label_row_statistics,
-    };
-}
-
 fn frameDeltaMs(frame_dt: f32) i32 {
     return @intFromFloat(@min(frame_dt, 0.1) * 1000.0);
 }
@@ -1057,27 +836,9 @@ fn playerCountRowRect(layout: PlayGameLayout, idx: usize) rl.Rectangle {
     return rl.Rectangle.init(layout.drop_pos.x, layout.drop_pos.y + 17.0 + @as(f32, @floatFromInt(idx)) * 16.0, 102.0, 16.0);
 }
 
-fn statisticsButtons(timeline_ms: i32) [5]window_ui.UiButton {
-    const panel_rect = animatedPanelRect(.{ .x = 390.0, .y = 168.0, .width = 500.0, .height = 360.0 }, timeline_ms);
-    const center_x = panel_rect.x + panel_rect.width * 0.5;
-    return .{
-        .{ .label = "HIGH SCORES", .rect = window_ui.centeredRect(center_x, 250.0, 240.0, 44.0) },
-        .{ .label = "WEAPONS", .rect = window_ui.centeredRect(center_x, 304.0, 240.0, 44.0) },
-        .{ .label = "PERKS", .rect = window_ui.centeredRect(center_x, 358.0, 240.0, 44.0) },
-        .{ .label = "CREDITS", .rect = window_ui.centeredRect(center_x, 412.0, 240.0, 44.0) },
-        .{ .label = "BACK", .rect = window_ui.centeredRect(center_x, 478.0, 180.0, 44.0) },
-    };
-}
-
 fn animatedPanelRect(rect: rl.Rectangle, timeline_ms: i32) rl.Rectangle {
     const anim = window_menu.uiElementAnim(1, panel_timeline_max_ms, 0, rect.width, timeline_ms);
     return rl.Rectangle.init(rect.x + anim.offset_x, rect.y, rect.width, rect.height);
-}
-
-fn backOnlyButton() [1]window_ui.UiButton {
-    return .{
-        window_ui.buttonAt("Back", @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5 - 41.0, 562.0, false),
-    };
 }
 
 fn setConfigGameMode(config: *formats.crimson_cfg.CrimsonCfg, mode: game_ids.GameModeId) bool {
@@ -1085,33 +846,4 @@ fn setConfigGameMode(config: *formats.crimson_cfg.CrimsonCfg, mode: game_ids.Gam
     if (config.game_mode == mode_value) return false;
     config.game_mode = mode_value;
     return true;
-}
-
-fn backButtonActivated() bool {
-    const back = backOnlyButton()[0];
-    return rl.isMouseButtonPressed(.left) and rl.checkCollisionPointRec(rl.getMousePosition(), back.rect);
-}
-
-const weapon_lines = buildWeaponLines();
-const perk_lines = buildPerkLines();
-
-fn buildWeaponLines() [53][]const u8 {
-    var lines: [53][]const u8 = undefined;
-    var idx: usize = 0;
-    inline for (std.meta.fields(game_ids.WeaponId)) |field| {
-        const weapon_id: game_ids.WeaponId = @enumFromInt(field.value);
-        if (weapon_id == .none) continue;
-        lines[idx] = game_ids.weaponDisplayName(weapon_id, false);
-        idx += 1;
-    }
-    return lines;
-}
-
-fn buildPerkLines() [58][]const u8 {
-    var lines: [58][]const u8 = undefined;
-    inline for (std.meta.fields(game_ids.PerkId), 0..) |field, idx| {
-        const perk_id: game_ids.PerkId = @enumFromInt(field.value);
-        lines[idx] = game_ids.perkDisplayName(perk_id, 0, false);
-    }
-    return lines;
 }

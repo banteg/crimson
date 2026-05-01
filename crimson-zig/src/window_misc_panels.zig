@@ -11,6 +11,8 @@ const max_mod_lines: usize = 16;
 const max_line_bytes: usize = 224;
 const max_shown_mod_dlls: usize = 10;
 const max_mod_dll_name_bytes: usize = 128;
+const mod_runtime_scope_text = "Native DLL mod loading is outside this port.";
+const other_games_scope_text = "Other Games ads are outside this port.";
 
 pub const Action = enum {
     none,
@@ -71,6 +73,10 @@ pub const ModsState = struct {
         return self.lines[idx][0..self.line_lens[idx]];
     }
 
+    fn appendScopeLine(self: *ModsState) void {
+        self.appendLine(mod_runtime_scope_text, .{});
+    }
+
     fn rebuildLines(self: *ModsState, base_dir: []const u8) void {
         var mods_path_buf: [std.fs.max_path_bytes]u8 = undefined;
         const mods_path = std.fmt.bufPrint(&mods_path_buf, "{s}/mods", .{base_dir}) catch {
@@ -79,7 +85,7 @@ pub const ModsState = struct {
             self.appendLine("Expected location:", .{});
             self.appendLine("  {s}/mods", .{base_dir});
             self.appendLine("", .{});
-            self.appendLine("Mod loading is not implemented yet.", .{});
+            self.appendScopeLine();
             return;
         };
 
@@ -90,7 +96,7 @@ pub const ModsState = struct {
             self.appendLine("Expected location:", .{});
             self.appendLine("  {s}", .{mods_path});
             self.appendLine("", .{});
-            self.appendLine("Mod loading is not implemented yet.", .{});
+            self.appendScopeLine();
             return;
         };
         defer dir.close(io);
@@ -113,7 +119,7 @@ pub const ModsState = struct {
             self.appendLine("Expected location:", .{});
             self.appendLine("  {s}", .{mods_path});
             self.appendLine("", .{});
-            self.appendLine("Mod loading is not implemented yet.", .{});
+            self.appendScopeLine();
             return;
         }
 
@@ -128,7 +134,7 @@ pub const ModsState = struct {
             self.appendLine("  ... ({d} more)", .{dll_count - dll_names.len});
         }
         self.appendLine("", .{});
-        self.appendLine("Mod loading is not implemented yet.", .{});
+        self.appendScopeLine();
     }
 };
 
@@ -177,7 +183,7 @@ pub fn drawOtherGames(state: *const OtherGamesState, runtime_assets: ?*const win
     };
     const animated_rect = drawPanelShell(&state.panel, assets);
     window_ui.drawSmallText(assets, "Other games", animated_rect.x + 184.0, animated_rect.y + 40.0, rl.Color.white);
-    window_ui.drawSmallText(assets, "This menu is out of scope for the rewrite.", animated_rect.x + 152.0, animated_rect.y + 88.0, rl.Color.init(204, 204, 214, 255));
+    window_ui.drawSmallText(assets, other_games_scope_text, animated_rect.x + 152.0, animated_rect.y + 88.0, rl.Color.init(204, 204, 214, 255));
 }
 
 fn updatePanel(state: *PanelState, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
@@ -231,4 +237,12 @@ test "mods dll names are sorted before display" {
     try std.testing.expectEqualStrings("alpha.dll", names[0].slice());
     try std.testing.expectEqualStrings("middle.dll", names[1].slice());
     try std.testing.expectEqualStrings("zeta.dll", names[2].slice());
+}
+
+test "mods panel explains deliberate native dll scope" {
+    var state: ModsState = .{};
+    state.appendScopeLine();
+
+    try std.testing.expectEqual(@as(usize, 1), state.line_count);
+    try std.testing.expectEqualStrings(mod_runtime_scope_text, state.line(0));
 }

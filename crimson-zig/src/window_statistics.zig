@@ -6,8 +6,10 @@ const cz = @import("crimson_zig");
 const formats = cz.formats;
 const persistence = cz.persistence;
 const game_ids = cz.game_ids;
+const rng_callers = cz.rng_caller_static;
 const runtime_bonuses = cz.bonuses;
 const runtime_perks = cz.perks;
+const spawn_mod = cz.spawn;
 const state_mod = cz.state;
 const weapon_data = cz.weapon_data;
 const window_atlas = cz.window_atlas;
@@ -29,11 +31,21 @@ const panel_timeline_max_ms: i32 = 300;
 const credits_table_size: usize = 0x100;
 const credits_flag_heading: u8 = 0x1;
 const credits_flag_clicked: u8 = 0x4;
+const stats_easter_roll_unset: i32 = -1;
+const stats_easter_trigger_roll: i32 = 3;
+const stats_easter_text = "Orbes Volantes Exstare";
+const stats_easter_text_y: f32 = 5.0;
+const azk_board_side: usize = 6;
+const azk_board_cells: usize = azk_board_side * azk_board_side;
+const azk_tile_size: f32 = 32.0;
+const azk_timer_reset_ms: i32 = 0x2580;
+const azk_match_timer_bonus_ms: i32 = 2000;
 
 const left_panel_rect = rl.Rectangle.init(164.0, 156.0, 424.0, 402.0);
 const right_panel_rect = rl.Rectangle.init(678.0, 174.0, 424.0, 276.0);
 const stats_panel_rect = rl.Rectangle.init(390.0, 168.0, 510.0, 378.0);
 const credits_panel_rect = rl.Rectangle.init(360.0, 168.0, 510.0, 378.0);
+const azk_panel_rect = rl.Rectangle.init(360.0, 168.0, 510.0, 378.0);
 
 const HubAction = enum {
     high_scores,
@@ -49,6 +61,7 @@ const View = enum {
     weapons,
     perks,
     credits,
+    alien_zookeeper,
 };
 
 const DropdownKind = enum {
@@ -79,6 +92,9 @@ const PanelState = struct {
 
 const HubState = struct {
     panel: PanelState = .{},
+    easter_roll: i32 = stats_easter_roll_unset,
+    easter_rng: spawn_mod.Crand = .{ .state = 0xC0FFEE },
+    easter_text_x: ?f32 = null,
 
     fn reset(self: *HubState) void {
         self.* = .{};
@@ -142,6 +158,23 @@ const CreditsScreen = struct {
     }
 };
 
+const AlienZooKeeperScreen = struct {
+    board: [azk_board_cells]i32 = [_]i32{0} ** azk_board_cells,
+    selected_index: i32 = -1,
+    timer_ms: i32 = azk_timer_reset_ms,
+    anim_time_ms: i32 = 0,
+    score: i32 = 0,
+    rng: spawn_mod.Crand = .{ .state = 0xA211E00 },
+
+    fn reset(self: *AlienZooKeeperScreen) void {
+        self.selected_index = -1;
+        self.timer_ms = azk_timer_reset_ms;
+        self.anim_time_ms = 0;
+        self.score = 0;
+        rerollAlienZooKeeperBoardNoInitialMatch(self);
+    }
+};
+
 const CreditLineState = struct {
     text: []const u8 = "",
     flags: u8 = 0,
@@ -175,6 +208,7 @@ pub const State = struct {
     weapons: WeaponsScreen = .{},
     perks: PerksScreen = .{},
     credits: CreditsScreen = .{},
+    alien_zookeeper: AlienZooKeeperScreen = .{},
     default_quest_level_key: i32 = 101,
 
     pub fn reset(self: *State, allocator: std.mem.Allocator, default_quest_level_key: i32) void {
@@ -230,6 +264,7 @@ pub fn update(
         .weapons => updateWeapons(state, frame_dt, config.*, status),
         .perks => updatePerks(state, frame_dt, status),
         .credits => updateCredits(state, frame_dt, runtime_assets),
+        .alien_zookeeper => updateAlienZooKeeper(state, frame_dt),
     };
 }
 
@@ -245,6 +280,7 @@ pub fn draw(
         .weapons => drawWeapons(&state.weapons, runtime_assets, config, status, state.hub.panel.timeline_ms),
         .perks => drawPerks(&state.perks, runtime_assets, config, status, state.hub.panel.timeline_ms),
         .credits => drawCredits(&state.credits, runtime_assets, state.hub.panel.timeline_ms),
+        .alien_zookeeper => drawAlienZooKeeper(&state.alien_zookeeper, runtime_assets, state.hub.panel.timeline_ms),
     }
 }
 
@@ -257,6 +293,7 @@ fn updateHub(
     status: formats.game_cfg.Status,
 ) UpdateResult {
     const dt_ms = state.hub.panel.advance(frame_dt);
+    updateStatsEaster(&state.hub, currentDateStampUtc());
     const panel_rect = animatedCenterPanelRect(stats_panel_rect, state.hub.panel.timeline_ms);
     const buttons = hubButtons(panel_rect);
     window_ui.updateSelectionFromPointer(&state.hub.panel.selection, buttons[0..]);
@@ -507,6 +544,43 @@ fn updateCredits(state: *State, frame_dt: f32, runtime_assets: ?*const window_as
         updateCreditsLineClicks(&state.credits, assets, panel_rect, rl.getMousePosition(), rl.isMouseButtonPressed(.left));
         updateCreditsSecretUnlock(&state.credits);
     }
+    if (state.credits.secret_unlock and backButtonActivated(secretButton(panel_rect)[0])) {
+        state.alien_zookeeper.reset();
+        state.view = .alien_zookeeper;
+        return .{ .play_button_click = true };
+    }
+    return .{};
+}
+
+fn updateAlienZooKeeper(state: *State, frame_dt: f32) UpdateResult {
+    _ = state.hub.panel.advance(frame_dt);
+    const screen = &state.alien_zookeeper;
+    const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
+    if (dt_ms > 0) {
+        screen.anim_time_ms += dt_ms;
+        if (screen.timer_ms > 0) {
+            screen.timer_ms = @max(0, screen.timer_ms - dt_ms);
+        }
+    }
+    fillAlienZooKeeperEmptyCells(screen);
+
+    const panel_rect = animatedCenterPanelRect(azk_panel_rect, state.hub.panel.timeline_ms);
+    const buttons = alienZooKeeperButtons(panel_rect);
+    if (rl.isKeyPressed(.escape) or backButtonActivated(buttons[1])) {
+        state.view = .hub;
+        state.hub.reset();
+        return .{ .play_button_click = true };
+    }
+    if (backButtonActivated(buttons[0])) {
+        screen.reset();
+        return .{ .play_button_click = true };
+    }
+    if (rl.isMouseButtonPressed(.left)) {
+        if (alienZooKeeperTileAt(screen, panel_rect, rl.getMousePosition())) |idx| {
+            resolveAlienZooKeeperClick(screen, idx);
+            return .{ .play_button_click = true };
+        }
+    }
     return .{};
 }
 
@@ -517,6 +591,9 @@ fn drawHub(state: *const HubState, runtime_assets: ?*const window_assets.Runtime
         drawAtlasTitle(assets, panel_rect, 290.0, 52.0, window_menu.label_row_statistics);
         var playtime_buf: [64]u8 = undefined;
         window_ui.drawSmallText(assets, formatPlaytimeText(&playtime_buf, status.game_sequence_id), panel_rect.x + 204.0, panel_rect.y + 334.0, muted_text);
+        if (state.easter_text_x) |x| {
+            window_ui.drawSmallText(assets, stats_easter_text, x, stats_easter_text_y, rl.Color.init(51, 255, 153, 128));
+        }
         const buttons = hubButtons(panel_rect);
         for (buttons, 0..) |button, idx| {
             const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
@@ -606,6 +683,58 @@ fn drawCredits(state: *const CreditsScreen, runtime_assets: ?*const window_asset
         const back = backOnlyButton(panel_rect)[0];
         const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), back.rect);
         window_ui.drawButton(back, false, hovered, assets);
+        if (state.secret_unlock) {
+            const secret = secretButton(panel_rect)[0];
+            const secret_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), secret.rect);
+            window_ui.drawButton(secret, false, secret_hovered, assets);
+        }
+        return;
+    }
+    rl.clearBackground(panel_color);
+}
+
+fn drawAlienZooKeeper(state: *const AlienZooKeeperScreen, runtime_assets: ?*const window_assets.RuntimeAssets, timeline_ms: i32) void {
+    if (runtime_assets) |assets| {
+        const panel_rect = animatedCenterPanelRect(azk_panel_rect, timeline_ms);
+        drawPanelShellNoTitle(timeline_ms, assets, azk_panel_rect);
+        const board = alienZooKeeperBoardRect(panel_rect);
+
+        window_ui.drawSmallText(assets, "AlienZooKeeper", board.x - 22.0, board.y - 54.0, text_color);
+        window_ui.drawSmallText(assets, "a puzzle game unfinished", board.x - 10.0, board.y - 30.0, muted_text);
+        window_ui.drawSmallText(assets, "..or something more?", board.x + 4.0, board.y - 17.0, muted_text);
+        window_ui.drawSmallTextFmt("score: {d}", assets, .{state.score}, board.x + 124.0, board.y - 16.0, rl.Color.init(255, 255, 255, 179));
+
+        rl.drawRectangle(@intFromFloat(board.x), @intFromFloat(board.y), @intFromFloat(board.width), @intFromFloat(board.height), rl.Color.init(0, 0, 0, 153));
+        drawRectLines(board, 1.0, rl.Color.white);
+
+        const timer_value = @min(@divTrunc(@max(state.timer_ms, 0), 100), 0xC0);
+        const timer_rect = rl.Rectangle.init(board.x, board.y + 200.0, @floatFromInt(timer_value), 6.0);
+        rl.drawRectangleRec(timer_rect, rl.Color.init(51, 153, 255, 153));
+        drawRectLines(rl.Rectangle.init(board.x, board.y + 200.0, board.width, 6.0), 1.0, rl.Color.white);
+
+        if (state.selected_index >= 0) {
+            const selected: usize = @intCast(state.selected_index);
+            const col = selected % azk_board_side;
+            const row = selected / azk_board_side;
+            const selected_rect = rl.Rectangle.init(
+                board.x + @as(f32, @floatFromInt(col)) * azk_tile_size + 4.0,
+                board.y + @as(f32, @floatFromInt(row)) * azk_tile_size + 4.0,
+                24.0,
+                24.0,
+            );
+            rl.drawRectangleRec(selected_rect, rl.Color.init(51, 102, 179, 102));
+            drawRectLines(selected_rect, 1.0, rl.Color.white);
+        }
+
+        drawAlienZooKeeperTiles(state, assets, board);
+        if (state.timer_ms == 0 and std.math.cos(@as(f32, @floatFromInt(state.anim_time_ms)) * 0.005) > 0.0) {
+            window_ui.drawSmallText(assets, "Game Over", board.x + 38.0, board.y + 74.0, text_color);
+        }
+        const buttons = alienZooKeeperButtons(panel_rect);
+        for (buttons) |button| {
+            const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
+            window_ui.drawButton(button, false, hovered, assets);
+        }
         return;
     }
     rl.clearBackground(panel_color);
@@ -934,6 +1063,23 @@ fn backOnlyButton(panel_rect: rl.Rectangle) [1]window_ui.UiButton {
     };
 }
 
+fn secretButton(panel_rect: rl.Rectangle) [1]window_ui.UiButton {
+    return .{
+        window_ui.buttonAt("Secret", panel_rect.x + 206.0, panel_rect.y + 310.0, false),
+    };
+}
+
+fn alienZooKeeperButtons(panel_rect: rl.Rectangle) [2]window_ui.UiButton {
+    return .{
+        window_ui.buttonAt("Reset", panel_rect.x + 236.0, panel_rect.y + 300.0, false),
+        window_ui.buttonAt("Back", panel_rect.x + 336.0, panel_rect.y + 300.0, false),
+    };
+}
+
+fn alienZooKeeperBoardRect(panel_rect: rl.Rectangle) rl.Rectangle {
+    return rl.Rectangle.init(panel_rect.x + 181.0, panel_rect.y + 90.0, azk_tile_size * @as(f32, @floatFromInt(azk_board_side)), azk_tile_size * @as(f32, @floatFromInt(azk_board_side)));
+}
+
 fn weaponBackButton(left_rect: rl.Rectangle) [1]window_ui.UiButton {
     return .{
         window_ui.buttonAt("Back", left_rect.x + 368.0, left_rect.y + 313.0, false),
@@ -977,6 +1123,14 @@ fn drawPerkScrollbar(total: usize, start: usize, left_rect: rl.Rectangle) void {
 
 fn drawUnderline(x: f32, y: f32, width: f32) void {
     rl.drawRectangle(@intFromFloat(x), @intFromFloat(y), @intFromFloat(width), 1, rl.Color.init(255, 255, 255, 180));
+}
+
+fn drawRectLines(rect: rl.Rectangle, thickness: f32, color: rl.Color) void {
+    const t = @max(1.0, thickness);
+    rl.drawRectangle(@intFromFloat(rect.x), @intFromFloat(rect.y), @intFromFloat(rect.width), @intFromFloat(t), color);
+    rl.drawRectangle(@intFromFloat(rect.x), @intFromFloat(rect.y + rect.height - t), @intFromFloat(rect.width), @intFromFloat(t), color);
+    rl.drawRectangle(@intFromFloat(rect.x), @intFromFloat(rect.y), @intFromFloat(t), @intFromFloat(rect.height), color);
+    rl.drawRectangle(@intFromFloat(rect.x + rect.width - t), @intFromFloat(rect.y), @intFromFloat(t), @intFromFloat(rect.height), color);
 }
 
 fn creditsScrollFractionPx(scroll_time_s: f32) f32 {
@@ -1191,6 +1345,130 @@ fn creditsAllRoundLinesFlagged(screen: *const CreditsScreen) bool {
         if (line.text.len != 0 and std.mem.indexOfScalar(u8, line.text, 'o') != null and (line.flags & credits_flag_clicked) == 0) return false;
     }
     return true;
+}
+
+const AlienZooKeeperMatch = struct {
+    found: bool = false,
+    index: usize = 0,
+    vertical: bool = false,
+};
+
+fn alienZooKeeperMatch3Find(board: []const i32) AlienZooKeeperMatch {
+    var row: usize = 0;
+    while (row < azk_board_side) : (row += 1) {
+        const base = row * azk_board_side;
+        var col: usize = 0;
+        while (col + 2 < azk_board_side) : (col += 1) {
+            const idx = base + col;
+            const value = board[idx];
+            if (value >= 0 and board[idx + 1] == value and board[idx + 2] == value) {
+                return .{ .found = true, .index = idx, .vertical = false };
+            }
+        }
+    }
+
+    var col: usize = 0;
+    while (col < azk_board_side) : (col += 1) {
+        row = 0;
+        while (row + 2 < azk_board_side) : (row += 1) {
+            const idx = row * azk_board_side + col;
+            const value = board[idx];
+            if (value >= 0 and board[idx + azk_board_side] == value and board[idx + azk_board_side * 2] == value) {
+                return .{ .found = true, .index = idx, .vertical = true };
+            }
+        }
+    }
+    return .{};
+}
+
+fn fillAlienZooKeeperEmptyCells(screen: *AlienZooKeeperScreen) void {
+    for (&screen.board) |*tile| {
+        if (tile.* == -1) {
+            tile.* = @intCast(screen.rng.randTagged(rng_callers.credits_secret_alien_zookeeper_fill_empty) % 5);
+        }
+    }
+}
+
+fn rerollAlienZooKeeperBoardNoInitialMatch(screen: *AlienZooKeeperScreen) void {
+    while (true) {
+        for (&screen.board) |*tile| {
+            tile.* = @intCast(screen.rng.randTagged(rng_callers.credits_secret_alien_zookeeper_reroll_fill) % 5);
+        }
+        if (!alienZooKeeperMatch3Find(screen.board[0..]).found) return;
+    }
+}
+
+fn resolveAlienZooKeeperClick(screen: *AlienZooKeeperScreen, index: usize) void {
+    if (screen.timer_ms <= 0 or screen.board[index] == -3) return;
+    if (screen.selected_index < 0) {
+        screen.selected_index = @intCast(index);
+        return;
+    }
+
+    const selected: usize = @intCast(screen.selected_index);
+    std.mem.swap(i32, &screen.board[index], &screen.board[selected]);
+    screen.selected_index = -1;
+
+    const match = alienZooKeeperMatch3Find(screen.board[0..]);
+    if (!match.found) return;
+    clearAlienZooKeeperMatch(screen, match);
+    screen.score += 1;
+    screen.timer_ms += azk_match_timer_bonus_ms;
+}
+
+fn clearAlienZooKeeperMatch(screen: *AlienZooKeeperScreen, match: AlienZooKeeperMatch) void {
+    screen.board[match.index] = -3;
+    if (match.vertical) {
+        if (match.index + azk_board_side < azk_board_cells) screen.board[match.index + azk_board_side] = -3;
+        if (match.index + azk_board_side * 2 < azk_board_cells) screen.board[match.index + azk_board_side * 2] = -3;
+    } else {
+        if (match.index + 1 < azk_board_cells) screen.board[match.index + 1] = -3;
+        if (match.index + 2 < azk_board_cells) screen.board[match.index + 2] = -3;
+    }
+}
+
+fn alienZooKeeperTileAt(screen: *const AlienZooKeeperScreen, panel_rect: rl.Rectangle, mouse: rl.Vector2) ?usize {
+    const board = alienZooKeeperBoardRect(panel_rect);
+    if (!rectContains(board, mouse)) return null;
+    const col = @as(usize, @intFromFloat(@floor((mouse.x - board.x) / azk_tile_size)));
+    const row = @as(usize, @intFromFloat(@floor((mouse.y - board.y) / azk_tile_size)));
+    if (row >= azk_board_side or col >= azk_board_side) return null;
+    const idx = row * azk_board_side + col;
+    if (screen.board[idx] == -3) return null;
+    return idx;
+}
+
+fn drawAlienZooKeeperTiles(state: *const AlienZooKeeperScreen, assets: *const window_assets.RuntimeAssets, board_rect: rl.Rectangle) void {
+    const alien = assets.texture(.alien);
+    const frame_w = @as(f32, @floatFromInt(alien.width)) / 8.0;
+    const frame_h = @as(f32, @floatFromInt(alien.height)) / 8.0;
+    for (state.board, 0..) |tile, idx| {
+        if (tile == -3) continue;
+        const frame: i32 = @mod(@divTrunc(state.anim_time_ms, 50) + tile * 2, 32);
+        const src_col = @mod(frame, 8);
+        const src_row = @divTrunc(frame, 8);
+        const col = idx % azk_board_side;
+        const row = idx / azk_board_side;
+        const src = rl.Rectangle.init(@as(f32, @floatFromInt(src_col)) * frame_w, @as(f32, @floatFromInt(src_row)) * frame_h, frame_w, frame_h);
+        const dst = rl.Rectangle.init(
+            board_rect.x + @as(f32, @floatFromInt(col)) * azk_tile_size,
+            board_rect.y + @as(f32, @floatFromInt(row)) * azk_tile_size,
+            azk_tile_size,
+            azk_tile_size,
+        );
+        rl.drawTexturePro(alien, src, dst, rl.Vector2.zero(), 0.0, alienZooKeeperTileTint(tile));
+    }
+}
+
+fn alienZooKeeperTileTint(tile: i32) rl.Color {
+    return switch (tile) {
+        0 => rl.Color.init(255, 128, 128, 255),
+        1 => rl.Color.init(128, 128, 255, 255),
+        2 => rl.Color.init(255, 128, 255, 255),
+        3 => rl.Color.init(128, 255, 255, 255),
+        4 => rl.Color.init(255, 255, 128, 255),
+        else => rl.Color.white,
+    };
 }
 
 fn playerCountLabels() [4][]const u8 {
@@ -1679,6 +1957,27 @@ fn currentEpochSeconds() u64 {
     return @intCast(@max(timestamp.toSeconds(), 0));
 }
 
+fn updateStatsEaster(hub: *HubState, stamp: persistence.highscores.DateStamp) void {
+    hub.easter_text_x = null;
+    hub.easter_roll = statsMenuEasterRoll(hub.easter_roll, &hub.easter_rng);
+    if (!isOrbesVolantesDay(stamp) or hub.easter_roll != stats_easter_trigger_roll) return;
+    hub.easter_roll = stats_easter_roll_unset;
+    hub.easter_text_x = statsMenuEasterTextX(&hub.easter_rng);
+}
+
+fn statsMenuEasterRoll(current_roll: i32, rng: *spawn_mod.Crand) i32 {
+    if (current_roll != stats_easter_roll_unset) return current_roll;
+    return @intCast(rng.randTagged(rng_callers.rewrite_stats_menu_easter_roll) % 32);
+}
+
+fn isOrbesVolantesDay(stamp: persistence.highscores.DateStamp) bool {
+    return stamp.month == 3 and stamp.day == 3;
+}
+
+fn statsMenuEasterTextX(rng: *spawn_mod.Crand) f32 {
+    return @floatFromInt(rng.randTagged(rng_callers.rewrite_stats_menu_easter_text_x) % 64 + 16);
+}
+
 fn buildWeaponList(
     dest: *[state_mod.weapon_count_size]game_ids.WeaponId,
     config: formats.crimson_cfg.CrimsonCfg,
@@ -1846,6 +2145,71 @@ test "high score date filter matches current month and day semantics" {
     try std.testing.expect(passesDateFilter(record, 1));
     try std.testing.expect(passesDateFilter(record, 2));
     try std.testing.expect(passesDateFilter(record, 3));
+}
+
+test "statistics easter text appears only on Orbes Volantes day" {
+    var hub: HubState = .{ .easter_roll = stats_easter_trigger_roll };
+    updateStatsEaster(&hub, .{ .year = 2026, .month = 3, .day = 3 });
+
+    try std.testing.expect(hub.easter_text_x != null);
+    try std.testing.expect(hub.easter_text_x.? >= 16.0);
+    try std.testing.expect(hub.easter_text_x.? <= 79.0);
+    try std.testing.expectEqual(stats_easter_roll_unset, hub.easter_roll);
+
+    updateStatsEaster(&hub, .{ .year = 2026, .month = 3, .day = 4 });
+    try std.testing.expect(hub.easter_text_x == null);
+}
+
+test "statistics easter roll is sticky until consumed" {
+    var rng = spawn_mod.Crand.init(1234);
+    const roll = statsMenuEasterRoll(stats_easter_roll_unset, &rng);
+    try std.testing.expect(roll >= 0);
+    try std.testing.expect(roll < 32);
+    try std.testing.expectEqual(@as(i32, 11), statsMenuEasterRoll(11, &rng));
+    try std.testing.expect(isOrbesVolantesDay(.{ .year = 2026, .month = 3, .day = 3 }));
+    try std.testing.expect(!isOrbesVolantesDay(.{ .year = 2026, .month = 5, .day = 1 }));
+}
+
+test "alien zookeeper finds horizontal matches before vertical" {
+    var board = [_]i32{-3} ** azk_board_cells;
+    board[0] = 2;
+    board[1] = 2;
+    board[2] = 2;
+    board[6] = 1;
+    board[12] = 1;
+    board[18] = 1;
+
+    const match = alienZooKeeperMatch3Find(board[0..]);
+    try std.testing.expect(match.found);
+    try std.testing.expect(!match.vertical);
+    try std.testing.expectEqual(@as(usize, 0), match.index);
+}
+
+test "alien zookeeper reset builds board without initial match" {
+    var screen: AlienZooKeeperScreen = .{ .rng = spawn_mod.Crand.init(1234) };
+    screen.reset();
+    try std.testing.expect(!alienZooKeeperMatch3Find(screen.board[0..]).found);
+    try std.testing.expectEqual(@as(i32, azk_timer_reset_ms), screen.timer_ms);
+    try std.testing.expectEqual(@as(i32, 0), screen.score);
+}
+
+test "alien zookeeper click clears matched trio and scores" {
+    var screen: AlienZooKeeperScreen = .{};
+    screen.board = [_]i32{-3} ** azk_board_cells;
+    screen.board[0] = 1;
+    screen.board[1] = 0;
+    screen.board[2] = 1;
+    screen.board[3] = 1;
+    screen.selected_index = 0;
+    screen.timer_ms = 1000;
+
+    resolveAlienZooKeeperClick(&screen, 1);
+
+    try std.testing.expectEqual(@as(i32, -3), screen.board[1]);
+    try std.testing.expectEqual(@as(i32, -3), screen.board[2]);
+    try std.testing.expectEqual(@as(i32, -3), screen.board[3]);
+    try std.testing.expectEqual(@as(i32, 1), screen.score);
+    try std.testing.expectEqual(@as(i32, 3000), screen.timer_ms);
 }
 
 test "high score load errors use user-facing details" {
