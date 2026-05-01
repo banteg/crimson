@@ -45,6 +45,11 @@ const lockstep_live_bridge = cz.net.lockstep_live_bridge;
 const lockstep_live_session = cz.net.lockstep_live_session;
 const lockstep_session = cz.net.lockstep_session;
 const packed_input = cz.net.packed_input;
+const relay_reliable = cz.net.relay_reliable;
+const relay_transport = cz.net.relay_transport;
+const rollback_live_bridge = cz.net.rollback_live_bridge;
+const rollback_live_session = cz.net.rollback_live_session;
+const room_code = cz.net.room_code;
 const runtime_perks = cz.perks;
 const runtime_session = cz.session;
 const state_mod = cz.state;
@@ -198,33 +203,53 @@ const GameplayScreen = struct {
 const NetworkLiveRuntime = union(enum) {
     host: lockstep_live_session.HostLiveSession,
     client: lockstep_live_session.ClientLiveSession,
+    rollback: rollback_live_session.LiveSession,
 
     fn init(request: window_misc_panels.NetworkLaunchRequest, seed: i32) !NetworkLiveRuntime {
-        return switch (request.role) {
-            .host => .{
-                .host = try lockstep_live_session.HostLiveSession.init(.{
-                    .bind_host = request.bind_host,
-                    .bind_port = request.port,
-                    .mode_id = request.mode_id,
-                    .player_count = request.player_count,
-                    .build_id = cz.version,
-                    .session_id = "window-lockstep",
-                    .seed = seed,
-                    .input_delay_ticks = 0,
-                    .host_ready = true,
-                    .pump_options = .{ .first_timeout_ms = 0 },
-                }),
+        return switch (request.netcode) {
+            .lockstep => switch (request.role) {
+                .host => .{
+                    .host = try lockstep_live_session.HostLiveSession.init(.{
+                        .bind_host = request.bind_host,
+                        .bind_port = request.port,
+                        .mode_id = request.mode_id,
+                        .player_count = request.player_count,
+                        .build_id = cz.version,
+                        .session_id = "window-lockstep",
+                        .seed = seed,
+                        .input_delay_ticks = 0,
+                        .host_ready = true,
+                        .pump_options = .{ .first_timeout_ms = 0 },
+                    }),
+                },
+                .join => .{
+                    .client = lockstep_live_session.ClientLiveSession.init(.{
+                        .bind_host = "0.0.0.0",
+                        .bind_port = 0,
+                        .mode_id = request.mode_id,
+                        .player_count = request.player_count,
+                        .build_id = cz.version,
+                        .host_addr = try parseNetworkPeerAddr(request.host, request.port),
+                        .input_delay_ticks = 0,
+                        .pump_options = .{ .first_timeout_ms = 0 },
+                    }),
+                },
             },
-            .join => .{
-                .client = lockstep_live_session.ClientLiveSession.init(.{
-                    .bind_host = "0.0.0.0",
-                    .bind_port = 0,
-                    .mode_id = request.mode_id,
-                    .player_count = request.player_count,
-                    .build_id = cz.version,
-                    .host_addr = try parseNetworkPeerAddr(request.host, request.port),
-                    .input_delay_ticks = 0,
-                    .pump_options = .{ .first_timeout_ms = 0 },
+            .rollback => .{
+                .rollback = rollback_live_session.LiveSession.init(.{
+                    .server_addr = try parseRelayPeerAddr(request.host, request.port),
+                    .bind_host = request.bind_host,
+                    .session = .{
+                        .role = switch (request.role) {
+                            .host => .host,
+                            .join => .join,
+                        },
+                        .mode_id = request.mode_id,
+                        .player_count = request.player_count,
+                        .build_id = cz.version,
+                        .peer_name = "window",
+                        .input_delay_ticks = 0,
+                    },
                 }),
             },
         };
@@ -234,6 +259,7 @@ const NetworkLiveRuntime = union(enum) {
         switch (self.*) {
             .host => |*host| host.deinit(allocator, io),
             .client => |*client| client.deinit(allocator, io),
+            .rollback => |*rollback| rollback.deinit(allocator, io),
         }
         self.* = undefined;
     }
@@ -242,6 +268,7 @@ const NetworkLiveRuntime = union(enum) {
         switch (self.*) {
             .host => |*host| try host.open(io),
             .client => |*client| try client.open(io),
+            .rollback => |*rollback| try rollback.open(io),
         }
     }
 
@@ -250,6 +277,7 @@ const NetworkLiveRuntime = union(enum) {
         switch (self.*) {
             .host => {},
             .client => |*client| try client.sendHello(allocator, now_ms),
+            .rollback => |*rollback| try rollback.update(allocator, io, now_ms),
         }
     }
 
@@ -288,24 +316,37 @@ const NetworkLiveRuntime = union(enum) {
                     .last_frame_update = step_summary.last_update,
                 };
             },
+            .rollback => |*rollback| blk: {
+                try rollback.update(allocator, io, now_ms);
+                const step_summary = try rollback.stepFrames();
+                break :blk .{
+                    .frames_advanced = step_summary.frames_advanced,
+                    .ticks_advanced = step_summary.ticks_advanced,
+                    .last_tick_index = step_summary.last_tick_index,
+                    .last_player_count = step_summary.last_player_count,
+                    .last_input_flags = step_summary.last_input_flags,
+                    .last_frame_update = step_summary.last_update,
+                };
+            },
         };
     }
 
-    fn submitLocalInput(self: *NetworkLiveRuntime, allocator: std.mem.Allocator, input: packed_input.PackedPlayerInput, now_ms: i64) !void {
+    fn submitLocalInput(self: *NetworkLiveRuntime, allocator: std.mem.Allocator, io: std.Io, input: packed_input.PackedPlayerInput, now_ms: i64) !void {
         switch (self.*) {
             .host => |*host| try host.submitLocalInput(allocator, input),
             .client => |*client| try client.queueLocalInput(allocator, input, now_ms),
+            .rollback => |*rollback| try rollback.queueLocalInput(allocator, io, input, now_ms),
         }
     }
 
-    fn submitLocalFrameInput(self: *NetworkLiveRuntime, allocator: std.mem.Allocator, frame_input: live_runner.FrameInput, now_ms: i64) !bool {
+    fn submitLocalFrameInput(self: *NetworkLiveRuntime, allocator: std.mem.Allocator, io: std.Io, frame_input: live_runner.FrameInput, now_ms: i64) !bool {
         const slot = self.localInputSlot() orelse return false;
         if (frame_input.player_count != 0 and slot >= frame_input.player_count) return false;
         const local_input_value = if (frame_input.player_count == 0 and slot == 0)
             frame_input.player
         else
             frame_input.players[slot];
-        try self.submitLocalInput(allocator, lockstep_input_adapter.packGameInput(local_input_value), now_ms);
+        try self.submitLocalInput(allocator, io, lockstep_input_adapter.packGameInput(local_input_value), now_ms);
         return true;
     }
 
@@ -316,6 +357,7 @@ const NetworkLiveRuntime = union(enum) {
             else
                 null,
             .client => |*client| if (client.runner) |*runner| runner else null,
+            .rollback => |*rollback| if (rollback.runner) |*runner| runner else null,
         };
     }
 
@@ -325,6 +367,10 @@ const NetworkLiveRuntime = union(enum) {
             .client => |client| blk: {
                 const maybe_config = lockstep_live_bridge.liveConfigFromClientRuntime(client.session.runtime) orelse break :blk null;
                 break :blk maybe_config catch null;
+            },
+            .rollback => |rollback| blk: {
+                const match_config = rollback.session.match_config orelse break :blk null;
+                break :blk rollback_live_bridge.liveConfigFromMatchConfig(match_config) catch null;
             },
         };
     }
@@ -339,6 +385,12 @@ const NetworkLiveRuntime = union(enum) {
                 if (slot >= state_mod.max_players) break :blk null;
                 break :blk slot;
             },
+            .rollback => |rollback| blk: {
+                if (rollback.session.local_slot_index < 0) break :blk null;
+                const slot: usize = @intCast(rollback.session.local_slot_index);
+                if (slot >= state_mod.max_players) break :blk null;
+                break :blk slot;
+            },
         };
     }
 
@@ -346,11 +398,25 @@ const NetworkLiveRuntime = union(enum) {
         return switch (self.*) {
             .host => |host| host.session.boundPort(),
             .client => |client| client.session.boundPort(),
+            .rollback => |rollback| rollback.boundPort(),
         };
     }
 };
 
 fn parseNetworkPeerAddr(host: []const u8, port: u16) !lockstep_session.PeerAddr {
+    var parts: [4]u8 = undefined;
+    var iter = std.mem.splitScalar(u8, host, '.');
+    var idx: usize = 0;
+    while (iter.next()) |part| {
+        if (idx >= parts.len or part.len == 0) return error.InvalidNetworkHost;
+        parts[idx] = std.fmt.parseInt(u8, part, 10) catch return error.InvalidNetworkHost;
+        idx += 1;
+    }
+    if (idx != parts.len) return error.InvalidNetworkHost;
+    return .{ .host = parts, .port = port };
+}
+
+fn parseRelayPeerAddr(host: []const u8, port: u16) !relay_transport.PeerAddr {
     var parts: [4]u8 = undefined;
     var iter = std.mem.splitScalar(u8, host, '.');
     var idx: usize = 0;
@@ -1203,7 +1269,7 @@ const App = struct {
     fn updateNetworkLiveSession(self: *App, frame_dt: f32) void {
         const io = std.Io.Threaded.global_single_threaded.io();
         const now_ms = monotonicMs(io);
-        self.submitNetworkLiveInput(frame_dt, now_ms) catch |err| {
+        self.submitNetworkLiveInput(io, frame_dt, now_ms) catch |err| {
             self.network_session.setStatusFmt("Lockstep input failed: {s}", .{@errorName(err)});
             self.stopNetworkLiveSession();
             return;
@@ -1250,7 +1316,7 @@ const App = struct {
         }
     }
 
-    fn submitNetworkLiveInput(self: *App, frame_dt: f32, now_ms: i64) !void {
+    fn submitNetworkLiveInput(self: *App, io: std.Io, frame_dt: f32, now_ms: i64) !void {
         const session = if (self.network_live_session) |*session| session else return;
         const runner = session.runnerForLocalInput() orelse {
             self.network_live_input_ready = false;
@@ -1281,7 +1347,7 @@ const App = struct {
             &self.runtime,
             frame_dt,
         );
-        _ = try session.submitLocalFrameInput(self.allocator, input, now_ms);
+        _ = try session.submitLocalFrameInput(self.allocator, io, input, now_ms);
     }
 
     fn refreshNetworkLiveCamera(self: *App) void {
@@ -3654,7 +3720,7 @@ test "window network live runtime steps host ready frames" {
             try host.session.runtime.lockstep.?.submitInputSample(std.testing.allocator, 0, 0, .{ .flags = 3 });
             try host.session.runtime.lockstep.?.submitInputSample(std.testing.allocator, 1, 0, .{ .flags = 7 });
         },
-        .client => return error.TestUnexpectedResult,
+        .client, .rollback => return error.TestUnexpectedResult,
     }
 
     const net_update = try runtime.update(std.testing.allocator, io, 20);
@@ -3685,11 +3751,11 @@ test "window network live runtime submits host local input" {
             host.session.runtime.started = true;
             host.session.runtime.lockstep = .{ .player_count = 1, .input_delay_ticks = 0 };
         },
-        .client => return error.TestUnexpectedResult,
+        .client, .rollback => return error.TestUnexpectedResult,
     }
     try std.testing.expect(runtime.runnerForLocalInput() != null);
 
-    try runtime.submitLocalInput(std.testing.allocator, .{ .flags = 5 }, 20);
+    try runtime.submitLocalInput(std.testing.allocator, io, .{ .flags = 5 }, 20);
     const net_update = try runtime.update(std.testing.allocator, io, 30);
     try std.testing.expectEqual(@as(usize, 1), net_update.frames_advanced);
     try std.testing.expectEqual(@as(usize, 1), net_update.ticks_advanced);
@@ -3714,10 +3780,10 @@ test "window network live runtime queues client local input" {
             client.session.runtime.lockstep = .{ .local_slot_index = 1, .input_delay_ticks = 0 };
             client.session.runtime.started = true;
         },
-        .host => return error.TestUnexpectedResult,
+        .host, .rollback => return error.TestUnexpectedResult,
     }
 
-    try runtime.submitLocalInput(std.testing.allocator, .{ .flags = 7 }, 20);
+    try runtime.submitLocalInput(std.testing.allocator, io, .{ .flags = 7 }, 20);
     switch (runtime) {
         .client => |*client| {
             try std.testing.expectEqual(@as(usize, 2), client.session.outbox.packets.items.len);
@@ -3730,7 +3796,7 @@ test "window network live runtime queues client local input" {
                 else => return error.TestUnexpectedResult,
             }
         },
-        .host => return error.TestUnexpectedResult,
+        .host, .rollback => return error.TestUnexpectedResult,
     }
 }
 
@@ -3753,7 +3819,7 @@ test "window network live runtime uses join request host endpoint" {
                 .port = 31994,
             }, client.session.runtime.host_addr);
         },
-        .host => return error.TestUnexpectedResult,
+        .host, .rollback => return error.TestUnexpectedResult,
     }
     try std.testing.expectError(error.InvalidNetworkHost, NetworkLiveRuntime.init(.{
         .role = .join,
@@ -3764,6 +3830,117 @@ test "window network live runtime uses join request host endpoint" {
         .host = "example.invalid",
         .port = 31994,
     }, 123));
+}
+
+test "window network live runtime opens rollback relay session" {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    var runtime = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .rollback,
+        .bind_host = "127.0.0.1",
+        .host = "127.0.0.1",
+        .port = 31993,
+    }, 123);
+    defer runtime.deinit(std.testing.allocator, io);
+
+    try runtime.start(std.testing.allocator, io, 10);
+    try std.testing.expect(runtime.boundPort() != 0);
+    switch (runtime) {
+        .rollback => |rollback| {
+            try std.testing.expect(rollback.session.sent_hello);
+            try std.testing.expect(!rollback.session.started);
+        },
+        .host, .client => return error.TestUnexpectedResult,
+    }
+}
+
+test "window network live runtime steps rollback local frames" {
+    const allocator = std.testing.allocator;
+    const io = std.Io.Threaded.global_single_threaded.io();
+    var runtime = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 1,
+        .netcode = .rollback,
+        .bind_host = "127.0.0.1",
+        .host = "127.0.0.1",
+        .port = 31993,
+    }, 123);
+    defer runtime.deinit(allocator, io);
+
+    try runtime.start(allocator, io, 10);
+    var server_link: relay_reliable.RelayReliableLink = .{};
+    defer server_link.deinit(allocator);
+    const code = try room_code.parseRoomCode("ABCD");
+    switch (runtime) {
+        .rollback => |*rollback| try rollback.session.handlePacket(allocator, try server_link.buildPacket(allocator, .{ .room_start = .{
+            .room_code = code,
+            .session_id = "window-rollback",
+            .seed = 4321,
+            .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+            .player_count = 1,
+            .slot_index = 0,
+            .input_delay_ticks = 0,
+            .rollback_max_ticks = 8,
+        } }, true, 20), 20),
+        .host, .client => return error.TestUnexpectedResult,
+    }
+
+    try std.testing.expect(runtime.runnerForLocalInput() == null);
+    try runtime.submitLocalInput(allocator, io, .{ .flags = 5 }, 30);
+    const net_update = try runtime.update(allocator, io, 40);
+    try std.testing.expectEqual(@as(usize, 1), net_update.frames_advanced);
+    try std.testing.expectEqual(@as(usize, 1), net_update.ticks_advanced);
+    try std.testing.expectEqual(@as(?i32, 0), net_update.last_tick_index);
+    try std.testing.expectEqual(@as(usize, 1), net_update.last_player_count);
+    try std.testing.expectEqual(@as(u32, 5), net_update.last_input_flags[0]);
+    try std.testing.expect(runtime.runnerForLocalInput() != null);
+
+    const run_config = runtime.runConfigForResults() orelse return error.ExpectedLiveConfig;
+    try std.testing.expectEqual(@as(u32, 4321), run_config.seed);
+}
+
+test "window network live runtime packs rollback frame input for local slot" {
+    const allocator = std.testing.allocator;
+    const io = std.Io.Threaded.global_single_threaded.io();
+    var runtime = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 1,
+        .netcode = .rollback,
+        .bind_host = "127.0.0.1",
+        .host = "127.0.0.1",
+        .port = 31993,
+    }, 123);
+    defer runtime.deinit(allocator, io);
+
+    try runtime.start(allocator, io, 10);
+    var server_link: relay_reliable.RelayReliableLink = .{};
+    defer server_link.deinit(allocator);
+    switch (runtime) {
+        .rollback => |*rollback| try rollback.session.handlePacket(allocator, try server_link.buildPacket(allocator, .{ .room_start = .{
+            .room_code = try room_code.parseRoomCode("ABCD"),
+            .session_id = "window-rollback",
+            .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+            .player_count = 1,
+            .slot_index = 0,
+            .input_delay_ticks = 0,
+            .rollback_max_ticks = 8,
+        } }, true, 20), 20),
+        .host, .client => return error.TestUnexpectedResult,
+    }
+
+    var frame_input: live_runner.FrameInput = .{};
+    frame_input.player_count = 1;
+    frame_input.players[0] = live_runner.defaultGameInput();
+    frame_input.players[0].flags.fire_pressed = true;
+    try std.testing.expect(try runtime.submitLocalFrameInput(allocator, io, frame_input, 30));
+
+    const net_update = try runtime.update(allocator, io, 40);
+    try std.testing.expectEqual(@as(usize, 1), net_update.frames_advanced);
+    try std.testing.expectEqual(@as(u32, lockstep_input_adapter.fire_pressed_flag), net_update.last_input_flags[0]);
 }
 
 test "window network live terminal reason prefers quest completion" {
@@ -3791,14 +3968,14 @@ test "window network live runtime packs host frame input" {
             host.session.runtime.started = true;
             host.session.runtime.lockstep = .{ .player_count = 1, .input_delay_ticks = 0 };
         },
-        .client => return error.TestUnexpectedResult,
+        .client, .rollback => return error.TestUnexpectedResult,
     }
 
     var frame_input: live_runner.FrameInput = .{};
     frame_input.player_count = 1;
     frame_input.players[0] = live_runner.defaultGameInput();
     frame_input.players[0].flags.fire_pressed = true;
-    try std.testing.expect(try runtime.submitLocalFrameInput(std.testing.allocator, frame_input, 20));
+    try std.testing.expect(try runtime.submitLocalFrameInput(std.testing.allocator, io, frame_input, 20));
 
     const net_update = try runtime.update(std.testing.allocator, io, 30);
     try std.testing.expectEqual(@as(usize, 1), net_update.frames_advanced);
@@ -3824,7 +4001,7 @@ test "window network live runtime packs client frame input for local slot" {
             client.session.runtime.lockstep = .{ .local_slot_index = 1, .input_delay_ticks = 0 };
             client.session.runtime.started = true;
         },
-        .host => return error.TestUnexpectedResult,
+        .host, .rollback => return error.TestUnexpectedResult,
     }
 
     var frame_input: live_runner.FrameInput = .{};
@@ -3833,7 +4010,7 @@ test "window network live runtime packs client frame input for local slot" {
     frame_input.players[0].flags.reload_pressed = true;
     frame_input.players[1] = live_runner.defaultGameInput();
     frame_input.players[1].flags.fire_pressed = true;
-    try std.testing.expect(try runtime.submitLocalFrameInput(std.testing.allocator, frame_input, 20));
+    try std.testing.expect(try runtime.submitLocalFrameInput(std.testing.allocator, io, frame_input, 20));
 
     switch (runtime) {
         .client => |*client| {
@@ -3846,7 +4023,7 @@ test "window network live runtime packs client frame input for local slot" {
                 else => return error.TestUnexpectedResult,
             }
         },
-        .host => return error.TestUnexpectedResult,
+        .host, .rollback => return error.TestUnexpectedResult,
     }
 }
 
