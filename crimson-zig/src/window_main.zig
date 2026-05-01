@@ -1134,7 +1134,7 @@ const App = struct {
             if (level_key) |resolved| self.runtime.recordQuestCompletion(resolved);
         }
         const save_error: ?[]const u8 = save_err: {
-            self.runtime.saveStatusIfDirty() catch |err| break :save_err @errorName(err);
+            self.runtime.saveStatusIfDirty() catch |err| break :save_err resultsStatusSaveErrorDetail(err);
             break :save_err null;
         };
         const highscore = self.buildResultsHighscore(
@@ -1173,7 +1173,7 @@ const App = struct {
         self.audio.stopGameplayMusic();
         self.runtime.absorbSessionState(&gameplay.runner.session);
         self.runtime.saveStatusIfDirty() catch |err| {
-            std.log.err("saveStatusIfDirty failed during tutorial close: {s}", .{@errorName(err)});
+            std.log.err("saveStatusIfDirty failed during tutorial close: {s}", .{resultsStatusSaveErrorDetail(err)});
         };
         gameplay.deinit();
         self.gameplay = null;
@@ -1732,6 +1732,16 @@ fn resultsConfigSaveErrorDetail(err: anyerror) []const u8 {
     };
 }
 
+fn resultsStatusSaveErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.AccessDenied => "Unable to save status: access denied.",
+        error.OutOfMemory => "Unable to save status: out of memory.",
+        error.NoSpaceLeft => "Unable to save status: not enough disk space.",
+        error.InvalidGameCfgChecksum => "Unable to save status: invalid game.cfg checksum.",
+        else => @errorName(err),
+    };
+}
+
 fn resultsHighscoreButtons() [2]UiButton {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     return .{
@@ -2011,6 +2021,7 @@ test "results high score save errors use user-facing details" {
     try std.testing.expectEqualStrings("Unable to save high score: access denied.", resultsHighscoreSaveErrorDetail(error.AccessDenied));
     try std.testing.expectEqualStrings("High score file has an invalid record size.", resultsHighscoreSaveErrorDetail(error.InvalidSize));
     try std.testing.expectEqualStrings("Unable to save config: not enough disk space.", resultsConfigSaveErrorDetail(error.NoSpaceLeft));
+    try std.testing.expectEqualStrings("Unable to save status: invalid game.cfg checksum.", resultsStatusSaveErrorDetail(error.InvalidGameCfgChecksum));
 }
 
 fn drawWorld(
