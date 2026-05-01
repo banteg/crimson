@@ -41,6 +41,7 @@ const bonuses_runtime = cz.bonuses;
 const game_ids = cz.game_ids;
 const live_runner = cz.live_runner;
 const lockstep_input_adapter = cz.net.lockstep_input_adapter;
+const lockstep_live_bridge = cz.net.lockstep_live_bridge;
 const lockstep_live_session = cz.net.lockstep_live_session;
 const lockstep_session = cz.net.lockstep_session;
 const packed_input = cz.net.packed_input;
@@ -318,6 +319,16 @@ const NetworkLiveRuntime = union(enum) {
         };
     }
 
+    fn runConfigForResults(self: *const NetworkLiveRuntime) ?live_runner.LiveModeConfig {
+        return switch (self.*) {
+            .host => |host| lockstep_live_bridge.liveConfigFromHostRuntime(host.session.runtime) catch null,
+            .client => |client| blk: {
+                const maybe_config = lockstep_live_bridge.liveConfigFromClientRuntime(client.session.runtime) orelse break :blk null;
+                break :blk maybe_config catch null;
+            },
+        };
+    }
+
     fn localInputSlot(self: *const NetworkLiveRuntime) ?usize {
         return switch (self.*) {
             .host => 0,
@@ -361,6 +372,12 @@ const NetworkLiveUpdate = struct {
     last_input_flags: [state_mod.max_players]u32 = [_]u32{0} ** state_mod.max_players,
     last_frame_update: ?live_runner.FrameUpdate = null,
 };
+
+fn networkLiveTerminalReason(game_mode: game_ids.GameModeId, quest_completed: bool, all_players_dead: bool) ?ResultsReason {
+    if (game_mode == .quests and quest_completed) return .completed;
+    if (all_players_dead) return .dead;
+    return null;
+}
 
 const BonusHudSlotState = struct {
     active: bool = false,
@@ -1200,6 +1217,15 @@ const App = struct {
                 if (self.runtime_assets) |*runtime_assets| {
                     self.flushNetworkLiveTerrainFx(runtime_assets);
                 }
+                if (networkLiveTerminalReason(runner.session.game_mode, runner.session.quest_completed, frame_update.all_players_dead)) |reason| {
+                    if (session.runConfigForResults()) |run_config| {
+                        self.finishLiveRunner(runner, run_config, reason, null);
+                    } else {
+                        self.network_session.setStatus("Lockstep match finished before results were available.");
+                    }
+                    self.stopNetworkLiveSession();
+                    return;
+                }
             }
         }
         if (net_update.frames_advanced != 0) {
@@ -1857,8 +1883,20 @@ const App = struct {
     }
 
     fn finishRun(self: *App, gameplay: *GameplayScreen, reason: ResultsReason, runtime_error: ?[]const u8) void {
-        self.audio.stopGameplayMusic();
         const runner = &gameplay.runner;
+        self.finishLiveRunner(runner, gameplay.run_config, reason, runtime_error);
+        gameplay.deinit();
+        self.gameplay = null;
+    }
+
+    fn finishLiveRunner(
+        self: *App,
+        runner: *const live_runner.LiveRunner,
+        run_config: live_runner.LiveModeConfig,
+        reason: ResultsReason,
+        runtime_error: ?[]const u8,
+    ) void {
+        self.audio.stopGameplayMusic();
         const level_key = runner.quest_level_key;
         self.runtime.absorbSessionState(&runner.session);
         var player_health_values: [state_mod.max_players]f32 = [_]f32{0.0} ** state_mod.max_players;
@@ -1878,7 +1916,7 @@ const App = struct {
         );
         self.results = .{
             .reason = reason,
-            .run_config = gameplay.run_config,
+            .run_config = run_config,
             .summary = runner.summary(),
             .player_health_values = player_health_values,
             .player_health_count = player_health_count,
@@ -1897,8 +1935,6 @@ const App = struct {
         if (highscore_build.highscore != null) {
             self.audio.playUiClink();
         }
-        gameplay.deinit();
-        self.gameplay = null;
         self.results_selection = 0;
         self.setScreen(.results);
     }
@@ -3712,6 +3748,13 @@ test "window network live runtime uses join request host endpoint" {
         .host = "example.invalid",
         .port = 31994,
     }, 123));
+}
+
+test "window network live terminal reason prefers quest completion" {
+    try std.testing.expectEqual(@as(?ResultsReason, .completed), networkLiveTerminalReason(.quests, true, false));
+    try std.testing.expectEqual(@as(?ResultsReason, .completed), networkLiveTerminalReason(.quests, true, true));
+    try std.testing.expectEqual(@as(?ResultsReason, .dead), networkLiveTerminalReason(.survival, false, true));
+    try std.testing.expectEqual(@as(?ResultsReason, null), networkLiveTerminalReason(.survival, false, false));
 }
 
 test "window network live runtime packs host frame input" {
