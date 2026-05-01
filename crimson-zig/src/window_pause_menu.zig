@@ -3,6 +3,7 @@ const rl = @import("raylib");
 
 const window_assets = @import("window_assets.zig");
 const window_menu = @import("window_menu.zig");
+const window_ui = @import("window_ui.zig");
 
 const menu_label_width: f32 = 122.0;
 const menu_label_height: f32 = 28.0;
@@ -159,7 +160,7 @@ fn hoveredIndex(runtime_assets: ?*const window_assets.RuntimeAssets) ?usize {
 
 fn activateSelection(state: *State) bool {
     if (!entryEnabled(state.selection, state.timeline_ms)) return false;
-    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.space)) return true;
+    if (window_ui.confirmPressed()) return true;
     if (!rl.isMouseButtonPressed(.left)) return false;
     const hovered = state.hovered_index orelse return false;
     return hovered == state.selection;

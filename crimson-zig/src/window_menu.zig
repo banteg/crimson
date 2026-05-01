@@ -345,7 +345,7 @@ fn hoveredRootIndex(runtime_assets: ?*const window_assets.RuntimeAssets, root_en
 
 fn activateRootSelection(state: *State, selected_slot: usize) bool {
     if (!rootEntryEnabled(selected_slot, state.timeline_ms)) return false;
-    return if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.space))
+    return if (window_ui.confirmPressed())
         true
     else if (!rl.isMouseButtonPressed(.left))
         false

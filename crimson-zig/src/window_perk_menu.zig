@@ -306,7 +306,7 @@ fn updateMenuInput(
         return result;
     }
 
-    if (rl.isKeyPressed(.enter) or rl.isKeyPressed(.space)) {
+    if (window_ui.confirmPressed()) {
         closeMenu(state, runner.perkPendingCount());
         result.perk_choice_index = @intCast(state.selected_index);
         result.play_button_click = true;
