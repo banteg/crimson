@@ -17,7 +17,7 @@ const network_join_endpoint_max_bytes: usize = 48;
 const default_network_port: u16 = 31993;
 const mod_runtime_scope_text = "Native DLL mod loading is outside this port.";
 const other_games_scope_text = "Other Games ads are outside this port.";
-const network_runtime_scope_text = "Lockstep runtime available; rollback relay is config-only.";
+const network_runtime_scope_text = "Lockstep and rollback runtimes available.";
 const network_room_codes = [_][]const u8{ "ab12", "cd34", "ef56", "gh78" };
 const default_network_host_endpoint = "0.0.0.0:31993";
 const default_network_join_endpoint = "127.0.0.1:31993";
@@ -77,6 +77,7 @@ pub const NetworkLaunchRequest = struct {
     bind_host: []const u8 = "0.0.0.0",
     host: []const u8 = "127.0.0.1",
     port: u16 = 31993,
+    room_code_text: ?[]const u8 = null,
 };
 
 const PanelState = struct {
@@ -354,7 +355,7 @@ pub fn updateNetwork(state: *NetworkState, frame_dt: f32, runtime_assets: ?*cons
     if (collectNetworkEndpointInput(state).any()) {
         return .{ .play_button_click = true };
     }
-    if (window_ui.confirmPressed() and state.selection == .launch and state.netcode == .lockstep) {
+    if (window_ui.confirmPressed() and state.selection == .launch) {
         return .{ .action = .launch_network, .play_button_click = true };
     }
     if (rl.isKeyPressed(.right) or rl.isKeyPressed(.d) or window_ui.confirmPressed()) {
@@ -403,32 +404,58 @@ fn drawNetworkPanel(state: *const NetworkState, assets: *const window_assets.Run
 }
 
 pub fn networkLaunchRequest(state: *const NetworkState) ?NetworkLaunchRequest {
-    if (state.netcode != .lockstep) return null;
-    const endpoint = parseLockstepEndpoint(state.lockstepEndpointInput().slice()) orelse return null;
-    return .{
-        .role = switch (state.role) {
-            .host => .host,
-            .join => .join,
+    return switch (state.netcode) {
+        .lockstep => blk: {
+            const endpoint = parseLockstepEndpoint(state.lockstepEndpointInput().slice()) orelse return null;
+            break :blk .{
+                .role = switch (state.role) {
+                    .host => .host,
+                    .join => .join,
+                },
+                .mode_id = networkModeId(state.mode),
+                .player_count = std.math.clamp(state.player_count, @as(i32, 1), @as(i32, 4)),
+                .netcode = .lockstep,
+                .bind_host = switch (state.role) {
+                    .host => endpoint.host,
+                    .join => "0.0.0.0",
+                },
+                .host = endpoint.host,
+                .port = endpoint.port,
+            };
         },
-        .mode_id = networkModeId(state.mode),
-        .player_count = std.math.clamp(state.player_count, @as(i32, 1), @as(i32, 4)),
-        .netcode = .lockstep,
-        .bind_host = switch (state.role) {
-            .host => endpoint.host,
-            .join => "0.0.0.0",
+        .rollback => blk: {
+            const maybe_room_code: ?[]const u8 = switch (state.role) {
+                .host => null,
+                .join => network_room_codes[state.room_code_index],
+            };
+            break :blk .{
+                .role = switch (state.role) {
+                    .host => .host,
+                    .join => .join,
+                },
+                .mode_id = networkModeId(state.mode),
+                .player_count = std.math.clamp(state.player_count, @as(i32, 1), @as(i32, 4)),
+                .netcode = .rollback,
+                .bind_host = "0.0.0.0",
+                .host = "127.0.0.1",
+                .port = default_network_port,
+                .room_code_text = maybe_room_code,
+            };
         },
-        .host = endpoint.host,
-        .port = endpoint.port,
     };
 }
 
 pub fn networkLaunchUnavailableMessage(state: *const NetworkState) []const u8 {
-    if (state.netcode != .lockstep) return "Rollback relay is config-only.";
-    if (parseLockstepEndpoint(state.lockstepEndpointInput().slice()) == null) {
-        return switch (state.role) {
-            .host => "Lockstep bind must be IPv4[:port].",
-            .join => "Lockstep endpoint must be IPv4[:port].",
-        };
+    switch (state.netcode) {
+        .lockstep => {
+            if (parseLockstepEndpoint(state.lockstepEndpointInput().slice()) == null) {
+                return switch (state.role) {
+                    .host => "Lockstep bind must be IPv4[:port].",
+                    .join => "Lockstep endpoint must be IPv4[:port].",
+                };
+            }
+        },
+        .rollback => {},
     }
     return "Network session is not ready.";
 }
@@ -640,7 +667,10 @@ fn networkLaunchValueLabel(state: *const NetworkState) []const u8 {
             .host => if (parseLockstepEndpoint(state.host_endpoint.slice()) == null) "Invalid bind" else "Start host",
             .join => if (parseLockstepEndpoint(state.join_endpoint.slice()) == null) "Invalid endpoint" else "Join host",
         },
-        .rollback => "Config only",
+        .rollback => switch (state.role) {
+            .host => "Create room",
+            .join => "Join room",
+        },
     };
 }
 
@@ -711,7 +741,7 @@ test "mods panel explains deliberate native dll scope" {
 }
 
 test "network panel scope text stays explicit" {
-    try std.testing.expectEqualStrings("Lockstep runtime available; rollback relay is config-only.", network_runtime_scope_text);
+    try std.testing.expectEqualStrings("Lockstep and rollback runtimes available.", network_runtime_scope_text);
 }
 
 test "network panel defaults to host lockstep session" {
@@ -810,7 +840,7 @@ test "network panel validates lockstep endpoint" {
     try std.testing.expect(parseLockstepEndpoint("192.168.1:32001") == null);
 }
 
-test "network panel builds launch requests only for lockstep" {
+test "network panel builds launch requests for lockstep and rollback" {
     var state: NetworkState = .{};
 
     const host_request = networkLaunchRequest(&state) orelse return error.TestExpectedEqual;
@@ -845,6 +875,17 @@ test "network panel builds launch requests only for lockstep" {
     try std.testing.expectEqualStrings("Lockstep endpoint must be IPv4[:port].", networkLaunchUnavailableMessage(&state));
 
     state.netcode = .rollback;
-    try std.testing.expect(networkLaunchRequest(&state) == null);
-    try std.testing.expectEqualStrings("Rollback relay is config-only.", networkLaunchUnavailableMessage(&state));
+    const rollback_join_request = networkLaunchRequest(&state) orelse return error.TestExpectedEqual;
+    try std.testing.expectEqual(NetworkLaunchNetcode.rollback, rollback_join_request.netcode);
+    try std.testing.expectEqual(NetworkLaunchRole.join, rollback_join_request.role);
+    try std.testing.expectEqualStrings("127.0.0.1", rollback_join_request.host);
+    try std.testing.expectEqual(@as(u16, default_network_port), rollback_join_request.port);
+    try std.testing.expectEqualStrings("ab12", rollback_join_request.room_code_text.?);
+    try std.testing.expectEqualStrings("Network session is not ready.", networkLaunchUnavailableMessage(&state));
+
+    state.role = .host;
+    const rollback_host_request = networkLaunchRequest(&state) orelse return error.TestExpectedEqual;
+    try std.testing.expectEqual(NetworkLaunchNetcode.rollback, rollback_host_request.netcode);
+    try std.testing.expectEqual(NetworkLaunchRole.host, rollback_host_request.role);
+    try std.testing.expect(rollback_host_request.room_code_text == null);
 }

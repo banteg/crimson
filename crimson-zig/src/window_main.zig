@@ -248,6 +248,10 @@ const NetworkLiveRuntime = union(enum) {
                         .player_count = request.player_count,
                         .build_id = cz.version,
                         .peer_name = "window",
+                        .room_code = if (request.room_code_text) |code_text|
+                            try cz.net.room_code.parseRoomCode(code_text)
+                        else
+                            null,
                         .input_delay_ticks = 0,
                     },
                 }),

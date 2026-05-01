@@ -193,7 +193,7 @@ fn buildSessionOutput(allocator: std.mem.Allocator, request: Request) !CommandOu
     };
     const payload: SessionPayload = .{
         .role = roleName(request.role),
-        .runtime_supported = request.netcode_mode == .lockstep,
+        .runtime_supported = true,
         .mode = request.mode_name,
         .mode_id = request.mode_id,
         .player_count = request.player_count,
@@ -374,12 +374,12 @@ test "native net join builds lockstep session payload" {
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"port\": 32001") != null);
 }
 
-test "native net rollback session reports unsupported runtime" {
+test "native net rollback session reports supported runtime" {
     const output = try runNet(std.testing.allocator, &.{
         "host", "--mode", "survival", "--players", "1",
     });
     defer output.deinit(std.testing.allocator);
 
     try std.testing.expectEqual(@as(u8, 0), output.exit_code);
-    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "runtime_supported=false") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "runtime_supported=true") != null);
 }
