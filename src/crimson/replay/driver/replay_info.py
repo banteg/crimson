@@ -10,7 +10,13 @@ from ...game_modes import GameMode
 from ...perks.ids import PerkId, perk_display_name
 from ...replay import Replay
 from ...sim.hooks import TickResult
-from ...sim.input_providers import GameCommand, PerkMenuOpenCommand
+from ...sim.input_providers import (
+    GameCommand,
+    PerkMenuOpenCommand,
+    TypoBackspaceCommand,
+    TypoCharCommand,
+    TypoSubmitCommand,
+)
 from ...sim.state_types import BonusPickupEvent, PlayerState
 from ...weapons import WeaponId, weapon_display_name
 from .playback_driver import PlaybackDriver, PlaybackWalkHooks
@@ -29,6 +35,9 @@ ReplayInfoCoreEventKind = Literal[
 ReplayInfoExtraEventKind = Literal[
     "creature_deaths",
     "perk_menu_open",
+    "typo_backspace",
+    "typo_char",
+    "typo_submit",
 ]
 ReplayInfoEventKind: TypeAlias = ReplayInfoCoreEventKind | ReplayInfoExtraEventKind
 
@@ -134,6 +143,42 @@ def _append_extra_replay_commands(
                 kind="perk_menu_open",
                 player_index=cmd.player_index,
                 detail=f"p{cmd.player_index} perk menu opened",
+                data={"player_index": cmd.player_index},
+                player_filter=player_filter,
+                include_extra_events=True,
+            )
+        elif isinstance(cmd, TypoCharCommand):
+            _append_event(
+                timeline,
+                tick_index=tick_index,
+                elapsed_ms=elapsed_ms,
+                kind="typo_char",
+                player_index=cmd.player_index,
+                detail=f"p{cmd.player_index} typed '{cmd.ch}'",
+                data={"player_index": cmd.player_index, "ch": cmd.ch},
+                player_filter=player_filter,
+                include_extra_events=True,
+            )
+        elif isinstance(cmd, TypoBackspaceCommand):
+            _append_event(
+                timeline,
+                tick_index=tick_index,
+                elapsed_ms=elapsed_ms,
+                kind="typo_backspace",
+                player_index=cmd.player_index,
+                detail=f"p{cmd.player_index} typo backspace",
+                data={"player_index": cmd.player_index},
+                player_filter=player_filter,
+                include_extra_events=True,
+            )
+        elif isinstance(cmd, TypoSubmitCommand):
+            _append_event(
+                timeline,
+                tick_index=tick_index,
+                elapsed_ms=elapsed_ms,
+                kind="typo_submit",
+                player_index=cmd.player_index,
+                detail=f"p{cmd.player_index} typo submit",
                 data={"player_index": cmd.player_index},
                 player_filter=player_filter,
                 include_extra_events=True,

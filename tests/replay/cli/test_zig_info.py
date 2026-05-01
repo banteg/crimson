@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
+from typing import Any, cast
 
 from typer.testing import CliRunner
 
@@ -11,7 +12,7 @@ from crimson.cli import app
 from crimson.game_modes import GameMode
 from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 
-from ._helpers import build_replay, inject_tick_commands, write_replay
+from ._helpers import build_replay, build_typo_submit_replay, inject_tick_commands, write_replay
 
 
 def test_zig_replay_info_matches_python_json_payload_on_simple_replay(tmp_path: Path) -> None:
@@ -110,6 +111,45 @@ def test_zig_replay_info_matches_python_verbose_player_filter_payload(tmp_path: 
     )
 
     assert zig_payload == python_payload
+
+
+def test_zig_replay_info_matches_python_verbose_typo_command_payload(tmp_path: Path) -> None:
+    replay = build_typo_submit_replay(word="go")
+    replay_path = write_replay(tmp_path, replay=replay, name="typo.crd")
+
+    python_payload = _run_python_replay_info(
+        [
+            str(replay_path),
+            "--format",
+            "json",
+            "--verbose",
+        ],
+    )
+    zig_payload = _run_zig_replay_info(
+        [
+            str(replay_path),
+            "--format",
+            "json",
+            "--verbose",
+        ],
+    )
+
+    assert zig_payload == python_payload
+    summary = cast("dict[str, Any]", zig_payload["summary"])
+    counts = cast("dict[str, int]", summary["event_counts_by_kind"])
+    assert counts["typo_char"] == 2
+    assert counts["typo_submit"] == 1
+    timeline = cast("list[dict[str, Any]]", zig_payload["timeline"])
+    command_events = [
+        event
+        for event in timeline
+        if event["kind"] in {"typo_char", "typo_submit"}
+    ]
+    assert [event["detail"] for event in command_events] == [
+        "p0 typed 'g'",
+        "p0 typed 'o'",
+        "p0 typo submit",
+    ]
 
 
 def test_zig_replay_info_stale_perk_pick_is_noop(tmp_path: Path) -> None:

@@ -37,6 +37,9 @@ pub const EventKind = enum {
     player_death,
     creature_deaths,
     perk_menu_open,
+    typo_backspace,
+    typo_char,
+    typo_submit,
 };
 
 const BonusPickupData = struct {
@@ -105,6 +108,24 @@ const PerkMenuOpenData = struct {
     player_index: i32,
 };
 
+const TypoCharData = struct {
+    player_index: i32,
+    ch: u8,
+
+    fn jsonStringify(self: TypoCharData, jws: anytype) !void {
+        try jws.beginObject();
+        try jws.objectField("player_index");
+        try jws.write(self.player_index);
+        try jws.objectField("ch");
+        try jws.write(&[_]u8{self.ch});
+        try jws.endObject();
+    }
+};
+
+const TypoCommandData = struct {
+    player_index: i32,
+};
+
 pub const EventData = union(enum) {
     bonus_pickup: BonusPickupData,
     weapon_change: WeaponChangeData,
@@ -115,9 +136,13 @@ pub const EventData = union(enum) {
     player_death: PlayerDeathData,
     creature_deaths: CreatureDeathsData,
     perk_menu_open: PerkMenuOpenData,
+    typo_backspace: TypoCommandData,
+    typo_char: TypoCharData,
+    typo_submit: TypoCommandData,
 
     pub fn jsonStringify(self: EventData, jws: anytype) !void {
         switch (self) {
+            .typo_char => |payload| try payload.jsonStringify(jws),
             inline else => |payload| try jws.write(payload),
         }
     }
@@ -165,6 +190,9 @@ pub const EventCountsByKind = struct {
             .health_heal,
             .level_up,
             .perk_menu_open,
+            .typo_backspace,
+            .typo_char,
+            .typo_submit,
             .perk_pick,
             .player_death,
             .weapon_change,
@@ -466,6 +494,63 @@ fn appendExtraReplayCommands(
                     open.player_index,
                     detail,
                     .{ .perk_menu_open = .{ .player_index = open.player_index } },
+                ));
+            },
+            .typo_char => |command| {
+                if (player_filter) |index| {
+                    if (command.player_index != index) continue;
+                }
+                const detail = try std.fmt.allocPrint(
+                    allocator,
+                    "p{d} typed '{c}'",
+                    .{ command.player_index, command.ch },
+                );
+                errdefer allocator.free(detail);
+                try timeline.append(allocator, makeEvent(
+                    tick_index,
+                    elapsed_ms,
+                    .typo_char,
+                    command.player_index,
+                    detail,
+                    .{ .typo_char = .{ .player_index = command.player_index, .ch = command.ch } },
+                ));
+            },
+            .typo_backspace => |command| {
+                if (player_filter) |index| {
+                    if (command.player_index != index) continue;
+                }
+                const detail = try std.fmt.allocPrint(
+                    allocator,
+                    "p{d} typo backspace",
+                    .{command.player_index},
+                );
+                errdefer allocator.free(detail);
+                try timeline.append(allocator, makeEvent(
+                    tick_index,
+                    elapsed_ms,
+                    .typo_backspace,
+                    command.player_index,
+                    detail,
+                    .{ .typo_backspace = .{ .player_index = command.player_index } },
+                ));
+            },
+            .typo_submit => |command| {
+                if (player_filter) |index| {
+                    if (command.player_index != index) continue;
+                }
+                const detail = try std.fmt.allocPrint(
+                    allocator,
+                    "p{d} typo submit",
+                    .{command.player_index},
+                );
+                errdefer allocator.free(detail);
+                try timeline.append(allocator, makeEvent(
+                    tick_index,
+                    elapsed_ms,
+                    .typo_submit,
+                    command.player_index,
+                    detail,
+                    .{ .typo_submit = .{ .player_index = command.player_index } },
                 ));
             },
             else => {},
