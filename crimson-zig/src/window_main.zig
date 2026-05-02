@@ -4510,6 +4510,23 @@ test "results weapon names use display labels" {
     try std.testing.expectEqualStrings("unknown", weaponName(999, false));
 }
 
+test "results score card hit percent follows high score counters" {
+    var record = persistence.highscores.HighScoreRecord.blank();
+    try std.testing.expectEqual(@as(u32, 0), resultsHitPercent(&record));
+
+    record.setShotsFired(20);
+    record.setShotsHit(15);
+    try std.testing.expectEqual(@as(u32, 75), resultsHitPercent(&record));
+
+    record.setShotsFired(3);
+    record.setShotsHit(2);
+    try std.testing.expectEqual(@as(u32, 66), resultsHitPercent(&record));
+
+    record.setShotsFired(3);
+    record.setShotsHit(5);
+    try std.testing.expectEqual(@as(u32, 166), resultsHitPercent(&record));
+}
+
 test "gameplayControlsHeldWithSampler follows configured controls and alternate arrows" {
     const FakeSampler = struct {
         const Self = @This();
@@ -5898,6 +5915,17 @@ fn drawResultsNameEntryWeaponRow(
 
     const weapon_name = game_ids.weaponDisplayName(weapon_id, results.run_config.preserve_bugs);
     drawSmallTextCenteredAtX(runtime_assets, weapon_name, pos.x + 36.0, row_y + 32.0, row_color);
+
+    drawSmallTextFmt("Frags: {d}", runtime_assets, .{record.creatureKillCount()}, pos.x + 114.0, row_y + 1.0, row_color);
+    drawSmallTextFmt("Hit %: {d}%", runtime_assets, .{resultsHitPercent(record)}, pos.x + 114.0, row_y + 15.0, row_color);
+
+    rl.drawLine(@intFromFloat(pos.x - 12.0), @intFromFloat(row_y + 48.0), @intFromFloat(pos.x + 180.0), @intFromFloat(row_y + 48.0), line_color);
+}
+
+fn resultsHitPercent(record: *const persistence.highscores.HighScoreRecord) u32 {
+    const shots_fired = record.shotsFired();
+    if (shots_fired == 0) return 0;
+    return @intCast(@divTrunc(@as(u64, record.shotsHit()) * 100, @as(u64, shots_fired)));
 }
 
 const HudTextColor = struct {
