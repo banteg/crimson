@@ -3109,6 +3109,18 @@ const QuestUnlockDisplayNames = struct {
     perk_name: ?[]const u8 = null,
 };
 
+const QuestUnlockKind = enum {
+    weapon,
+    perk,
+};
+
+fn questUnlockResultLabel(kind: QuestUnlockKind) [:0]const u8 {
+    return switch (kind) {
+        .weapon => "Weapon unlocked:",
+        .perk => "Perk unlocked:",
+    };
+}
+
 fn questUnlockDisplayNames(
     level_key: ?i32,
     game_mode: game_ids.GameModeId,
@@ -3139,13 +3151,13 @@ fn drawQuestUnlockResults(runtime_assets: *const window_assets.RuntimeAssets, re
     if (results.run_config.game_mode != .quests or results.reason != .completed) return;
     var y: f32 = 394.0;
     if (results.quest_unlock_weapon_name) |name| {
-        drawSmallText(runtime_assets, "WEAPON UNLOCKED", 690.0, y, HudTextColor.dim);
-        drawSmallText(runtime_assets, name, 846.0, y, HudTextColor.accent);
-        y += 28.0;
+        drawSmallText(runtime_assets, questUnlockResultLabel(.weapon), 690.0, y + 1.0, HudTextColor.dim);
+        drawSmallText(runtime_assets, name, 690.0, y + 14.0, HudTextColor.accent);
+        y += 30.0;
     }
     if (results.quest_unlock_perk_name) |name| {
-        drawSmallText(runtime_assets, "PERK UNLOCKED", 690.0, y, HudTextColor.dim);
-        drawSmallText(runtime_assets, name, 846.0, y, HudTextColor.accent);
+        drawSmallText(runtime_assets, questUnlockResultLabel(.perk), 690.0, y + 1.0, HudTextColor.dim);
+        drawSmallText(runtime_assets, name, 690.0, y + 14.0, HudTextColor.accent);
     }
 }
 
@@ -4219,6 +4231,11 @@ test "quest unlock result names only apply to completed quests" {
     try std.testing.expectEqual(@as(?[]const u8, null), questUnlockDisplayNames(101, .survival, .completed, false, 0).weapon_name);
     try std.testing.expectEqual(@as(?[]const u8, null), questUnlockDisplayNames(101, .quests, .dead, false, 0).weapon_name);
     try std.testing.expectEqual(@as(?[]const u8, null), questUnlockDisplayNames(null, .quests, .completed, false, 0).weapon_name);
+}
+
+test "quest unlock result labels match native casing" {
+    try std.testing.expectEqualStrings("Weapon unlocked:", questUnlockResultLabel(.weapon));
+    try std.testing.expectEqualStrings("Perk unlocked:", questUnlockResultLabel(.perk));
 }
 
 test "final quest completed primary action opens end note" {
