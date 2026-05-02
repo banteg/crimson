@@ -2532,7 +2532,7 @@ const App = struct {
 
             var body_y = panel.y + 78.0;
             const body_color = colorWithAlpha(rl.Color.white, 0.5);
-            for (endNoteBodyLines(hardcore)) |line| {
+            for (endNoteBodyLines(hardcore, self.preserve_bugs)) |line| {
                 drawSmallText(runtime_assets, line, panel.x + 206.0, body_y, body_color);
                 body_y += 14.0;
             }
@@ -2544,7 +2544,7 @@ const App = struct {
             const hardcore = self.runtime.config.hardcore_flag != 0;
             rl.drawText(if (hardcore) "Incredible!" else "Congratulations!", @intFromFloat(panel.x + 210.0), @intFromFloat(panel.y + 42.0), 20, text_color);
             var body_y = panel.y + 76.0;
-            for (endNoteBodyLines(hardcore)) |line| {
+            for (endNoteBodyLines(hardcore, self.preserve_bugs)) |line| {
                 rl.drawText(line, @intFromFloat(panel.x + 206.0), @intFromFloat(body_y), 14, muted_text);
                 body_y += 18.0;
             }
@@ -3273,14 +3273,23 @@ fn endNoteButtonsForScreen(screen_width: f32) [4]UiButton {
     };
 }
 
-fn endNoteBodyLines(hardcore: bool) []const [:0]const u8 {
-    return if (hardcore) &.{
+fn endNoteBodyLines(hardcore: bool, preserve_bugs: bool) []const [:0]const u8 {
+    if (hardcore) return &.{
         "You've done the thing we all thought was",
         "virtually impossible. To reward your",
         "efforts a new weapon has been unlocked ",
         "for you: Splitter Gun.",
         "",
         "",
+    };
+    return if (preserve_bugs) &.{
+        "You've completed all the levels but the battle",
+        "isn't over yet! With all of the unlocked perks",
+        "and weapons your Survival is just a bit easier.",
+        "You can also replay the quests in Hardcore.",
+        "As an additional reward for your victorious",
+        "playing, a completely new and different game",
+        "mode is unlocked for you: Typ'o'Shooter.",
     } else &.{
         "You've completed all the levels, but the battle",
         "isn't over yet! With all of the unlocked perks",
@@ -4235,6 +4244,21 @@ test "end note panel and buttons use native widescreen anchor" {
 
     const buttons_1024 = endNoteButtonsForScreen(1024.0);
     try std.testing.expectApproxEqAbs(@as(f32, 329.0), buttons_1024[0].rect.y, 1e-6);
+}
+
+test "end note body preserves native missing comma when requested" {
+    try std.testing.expectEqualStrings(
+        "You've completed all the levels, but the battle",
+        endNoteBodyLines(false, false)[0],
+    );
+    try std.testing.expectEqualStrings(
+        "You've completed all the levels but the battle",
+        endNoteBodyLines(false, true)[0],
+    );
+    try std.testing.expectEqualStrings(
+        "You've done the thing we all thought was",
+        endNoteBodyLines(true, true)[0],
+    );
 }
 
 test "asset load errors use user-facing details" {
