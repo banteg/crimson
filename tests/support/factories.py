@@ -99,8 +99,8 @@ def make_projectile_update_options(
     players: Sequence[PlayerState] | None = None,
     apply_player_damage: Callable[[int, float], None] | None = None,
     apply_creature_damage: CreatureDamageApplier | None = None,
-    on_hit: Callable[[ProjectileHit], object] | None = None,
-    on_hit_post: Callable[[ProjectileHit, object], None] | None = None,
+    begin_hit_presentation: Callable[[ProjectileHit], object] | None = None,
+    finish_hit_presentation: Callable[[ProjectileHit, object], None] | None = None,
 ) -> ProjectileUpdateOptions:
     state = GameplayState() if runtime_state is None else runtime_state
     player_seq: Sequence[PlayerState] = () if players is None else players
@@ -116,6 +116,6 @@ def make_projectile_update_options(
         apply_creature_damage=apply_creature_damage,
         ion_aoe_scale=float(ion_aoe_scale),
         detail_preset=int(detail_preset),
-        on_hit=on_hit,
-        on_hit_post=on_hit_post,
+        begin_hit_presentation=begin_hit_presentation,
+        finish_hit_presentation=finish_hit_presentation,
     )
