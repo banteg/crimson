@@ -10,6 +10,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_map import SfxId
 
+from ...creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects import EffectPool
@@ -20,7 +21,6 @@ from ...rng_caller_static import RngCallerStatic
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..types import (
     MAIN_PROJECTILE_POOL_SIZE,
-    CreatureDamageApplier,
     Projectile,
     ProjectileCollisionProfile,
     ProjectileHit,
@@ -63,7 +63,7 @@ class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     runtime_state: GameplayState
     players: Sequence[PlayerState]
     hit_runtime: ProjectileHitRuntime
-    apply_creature_damage: CreatureDamageApplier | None = None
+    creature_damage_runtime: CreatureDamageRuntime | None = None
     ion_aoe_scale: float = 1.0
     detail_preset: int = 5
 
@@ -174,7 +174,9 @@ class ProjectilePool:
         runtime_state = options.runtime_state
         players = options.players
         hit_runtime = options.hit_runtime
-        apply_creature_damage = options.apply_creature_damage
+        creature_damage_runtime = options.creature_damage_runtime
+        if creature_damage_runtime is None:
+            creature_damage_runtime = DirectCreatureDamageRuntime(creatures=creatures)
 
         if dt <= 0.0:
             return []
@@ -254,7 +256,7 @@ class ProjectilePool:
             runtime_state=runtime_state,
             effects=effects,
             sfx_queue=sfx_queue,
-            apply_creature_damage=apply_creature_damage,
+            creature_damage_runtime=creature_damage_runtime,
         )
 
         def _reset_shock_chain_if_owner(index: int) -> None:
@@ -465,7 +467,7 @@ class ProjectilePool:
                                 damage_type=damage_type,
                                 impulse=impulse,
                                 owner=proj.owner,
-                                apply_creature_damage=apply_creature_damage,
+                                creature_damage_runtime=creature_damage_runtime,
                             )
                             creature_spatial.sync_index(int(hit_idx))
                             if proj.life_timer != 0.25:
@@ -478,7 +480,7 @@ class ProjectilePool:
                                 damage_type=damage_type,
                                 impulse=impulse,
                                 owner=proj.owner,
-                                apply_creature_damage=apply_creature_damage,
+                                creature_damage_runtime=creature_damage_runtime,
                             )
                             creature_spatial.sync_index(int(hit_idx))
                             proj.damage_pool -= float(creature.hp)

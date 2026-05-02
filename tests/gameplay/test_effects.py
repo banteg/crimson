@@ -10,6 +10,7 @@ from crimson.owner_ref import OwnerRef
 from crimson.rng_caller_static import RngCallerStatic
 from grim.color import RGBA
 from grim.geom import Vec2
+from tests.support.factories import RecordingCreatureDamageRuntime
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -305,23 +306,14 @@ def test_particle_update_uses_explicit_damage_applier() -> None:
 
     pool = ParticlePool(size=1, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     creature = _new_creature()
-    calls: list[tuple[int, float, int, Vec2, OwnerRef]] = []
-
-    def _applier(
-        creature_index: int,
-        damage: float,
-        damage_type: int,
-        impulse: Vec2,
-        owner: OwnerRef,
-    ) -> None:
-        calls.append((creature_index, damage, damage_type, impulse, owner))
+    damage_runtime = RecordingCreatureDamageRuntime(creatures=[creature], apply_damage=False)
 
     _spawn_hit_particle(pool)
-    pool.update(0.016, creatures=[creature], apply_creature_damage=_applier)
-    assert len(calls) == 1
-    assert calls[0][0] == 0
-    assert calls[0][2] == 4
-    assert calls[0][4] == OwnerRef.from_player(0)
+    pool.update(0.016, creatures=[creature], creature_damage_runtime=damage_runtime)
+    assert len(damage_runtime.calls) == 1
+    assert damage_runtime.calls[0][0] == 0
+    assert damage_runtime.calls[0][2] == 4
+    assert damage_runtime.calls[0][4] == OwnerRef.from_player(0)
     assert_float_close(creature.hp, 100.0)
 
 

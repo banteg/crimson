@@ -11,6 +11,7 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from grim.sfx_map import SfxId
 
+from ...creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects import EffectPool, FxQueue, SpriteEffectPool
@@ -20,8 +21,6 @@ from ...owner_ref import OwnerRef
 from ...rng_caller_static import RngCallerStatic
 from ..types import (
     SECONDARY_PROJECTILE_POOL_SIZE,
-    CreatureDamageApplier,
-    SecondaryDetonationKillHandler,
     SecondaryProjectile,
     SecondaryProjectileTypeId,
 )
@@ -73,8 +72,7 @@ class SecondaryStepCtx(msgspec.Struct, frozen=True):
     runtime_state: GameplayState | None = None
     fx_queue: FxQueue | None = None
     detail_preset: int = 5
-    apply_creature_damage: CreatureDamageApplier | None = None
-    on_detonation_kill: SecondaryDetonationKillHandler | None = None
+    creature_damage_runtime: CreatureDamageRuntime | None = None
 
 
 class SecondaryProjectilePool:
@@ -160,8 +158,9 @@ class SecondaryProjectilePool:
         runtime_state = ctx.runtime_state
         fx_queue = ctx.fx_queue
         detail_preset = int(ctx.detail_preset)
-        apply_creature_damage = ctx.apply_creature_damage
-        on_detonation_kill = ctx.on_detonation_kill
+        creature_damage_runtime = ctx.creature_damage_runtime
+        if creature_damage_runtime is None:
+            creature_damage_runtime = DirectCreatureDamageRuntime(creatures=creatures)
 
         if dt <= 0.0:
             return
@@ -180,7 +179,7 @@ class SecondaryProjectilePool:
                 damage_type=CreatureDamageType.EXPLOSION,
                 impulse=impulse,
                 owner=owner,
-                apply_creature_damage=apply_creature_damage,
+                creature_damage_runtime=creature_damage_runtime,
             )
 
         rng = Crand(0)
@@ -248,13 +247,13 @@ class SecondaryProjectilePool:
                             impulse=impulse,
                         )
                         creature_spatial.sync_index(int(creature_idx))
-                        if on_detonation_kill is not None and hp_before > 0.0 and float(creature.hp) <= 0.0:
+                        if hp_before > 0.0 and float(creature.hp) <= 0.0:
                             # Native detonation AoE does an extra two random decals and a
                             # second `creature_handle_death` call after the killing hit.
                             if fx_queue is not None:
                                 fx_queue.add_random(pos=creature.pos, rng=rng)
                                 fx_queue.add_random(pos=creature.pos, rng=rng)
-                            on_detonation_kill(int(creature_idx))
+                            creature_damage_runtime.on_secondary_detonation_kill(int(creature_idx))
                 continue
 
             if not isinstance(rule, (RocketRule, HomingRocketRule, RocketMinigunRule)):

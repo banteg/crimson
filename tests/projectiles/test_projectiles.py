@@ -28,8 +28,8 @@ from crimson.projectiles.types import (
 )
 from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
+from tests.support.factories import RecordingCreatureDamageRuntime, make_projectile_update_options
 from tests.support.factories import make_creature_state as _creature
-from tests.support.factories import make_projectile_update_options
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -357,31 +357,31 @@ def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None
     )
 
 
-def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAssertion, mocker) -> None:
+def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAssertion) -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn_from_spec(
         SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.ROCKET, time_to_live=2.0),
     )
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
+    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
 
-    apply_damage = mocker.Mock()
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, apply_creature_damage=apply_damage))
+    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, creature_damage_runtime=damage_runtime))
 
     snapshot.assert_match(
         [
             {
-                "idx": int(call.args[0]),
-                "damage": round(float(call.args[1]), 6),
-                "damage_type": int(call.args[2]),
-                "impulse": _normalize_vec2(call.args[3]),
-                "owner": _normalize_owner(call.args[4]),
+                "idx": int(call[0]),
+                "damage": round(float(call[1]), 6),
+                "damage_type": int(call[2]),
+                "impulse": _normalize_vec2(call[3]),
+                "owner": _normalize_owner(call[4]),
             }
-            for call in apply_damage.call_args_list
+            for call in damage_runtime.calls
         ],
     )
 
 
-def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion, mocker) -> None:
+def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion) -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn_from_spec(
         SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.DETONATION, time_to_live=1.0),
@@ -389,25 +389,20 @@ def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, 0.0), hp=20.0)]
     fx_queue = FxQueue()
 
-    def _apply(idx: int, damage: float, damage_type: int, impulse: Vec2, owner: OwnerRef) -> None:
-        _ = (damage_type, impulse, owner)
-        creatures[int(idx)].hp -= float(damage)
-
-    on_kill = mocker.Mock()
+    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures)
     pool.step(
         SecondaryStepCtx(
             dt=0.1,
             creatures=creatures,
             fx_queue=fx_queue,
-            apply_creature_damage=_apply,
-            on_detonation_kill=on_kill,
+            creature_damage_runtime=damage_runtime,
         ),
     )
 
     snapshot.assert_match(
         {
             "creature_hp": round(float(creatures[0].hp), 6),
-            "followup_calls": [int(call.args[0]) for call in on_kill.call_args_list],
+            "followup_calls": list(damage_runtime.detonation_kills),
             "fx_count": int(fx_queue.count),
         },
     )

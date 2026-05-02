@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
-from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import SecondaryProjectilePool, SecondarySpawnSpec, SecondaryStepCtx
 from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
 from crimson.projectiles.types import SecondaryProjectileTypeId
 from grim.geom import Vec2
+from tests.support.factories import RecordingCreatureDamageRuntime
 from tests.support.factories import make_creature_state as _creature
 
 
@@ -58,12 +58,8 @@ def test_secondary_projectile_hit_order_matches_linear_index_scan() -> None:
         _creature(pos=Vec2(70.0, -9.0), hp=1000.0, size=500.0),
     ]
 
-    hit_indices: list[int] = []
+    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
 
-    def _apply(idx: int, damage: float, damage_type: int, impulse: Vec2, owner: OwnerRef) -> None:
-        _ = (damage, damage_type, impulse, owner)
-        hit_indices.append(int(idx))
+    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, creature_damage_runtime=damage_runtime))
 
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, apply_creature_damage=_apply))
-
-    assert hit_indices == [0]
+    assert [call[0] for call in damage_runtime.calls] == [0]

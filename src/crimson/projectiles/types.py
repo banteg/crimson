@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from enum import IntEnum
-from typing import TypeAlias
 
 import msgspec
 
@@ -44,12 +42,6 @@ class SecondaryProjectileTypeId(IntEnum):
     HOMING_ROCKET = 2
     DETONATION = 3
     ROCKET_MINIGUN = 4
-
-
-CreatureDamageApplier: TypeAlias = Callable[[int, float, int, Vec2, OwnerRef], None]
-
-
-SecondaryDetonationKillHandler = Callable[[int], None]
 
 
 class ProjectileCollisionProfile(msgspec.Struct, frozen=True):
@@ -96,14 +88,12 @@ class SecondaryProjectile(msgspec.Struct):
 
 
 __all__ = [
-    "CreatureDamageApplier",
     "MAIN_PROJECTILE_POOL_SIZE",
     "Projectile",
     "ProjectileCollisionProfile",
     "ProjectileHit",
     "ProjectileTemplateId",
     "OwnerRef",
-    "SecondaryDetonationKillHandler",
     "SECONDARY_PROJECTILE_POOL_SIZE",
     "SecondaryProjectile",
     "SecondaryProjectileTypeId",

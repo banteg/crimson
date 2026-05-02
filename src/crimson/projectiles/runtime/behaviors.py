@@ -10,6 +10,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_map import SfxId
 
+from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...creatures.spawn import CreatureFlags
@@ -25,7 +26,6 @@ from ..effects import (
     _spawn_splitter_hit_effects,
 )
 from ..types import (
-    CreatureDamageApplier,
     Projectile,
     ProjectileTemplateId,
 )
@@ -47,7 +47,7 @@ class _ProjectileUpdateCtx(msgspec.Struct):
     runtime_state: GameplayState | None
     effects: EffectPool | None
     sfx_queue: MutableSequence[SfxId] | None
-    apply_creature_damage: CreatureDamageApplier | None = None
+    creature_damage_runtime: CreatureDamageRuntime
 
 
 class _ProjectileHitInfo(msgspec.Struct):
@@ -118,7 +118,7 @@ def _linger_ion_aoe(
                 damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
                 owner=proj.owner,
-                apply_creature_damage=ctx.apply_creature_damage,
+                creature_damage_runtime=ctx.creature_damage_runtime,
             )
 
 
@@ -300,7 +300,7 @@ def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) ->
             damage_type=CreatureDamageType.BULLET,
             impulse=Vec2(),
             owner=hit.proj.owner,
-            apply_creature_damage=ctx.apply_creature_damage,
+            creature_damage_runtime=ctx.creature_damage_runtime,
         )
     hit.proj.life_timer = 0.25
 
