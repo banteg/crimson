@@ -1119,6 +1119,14 @@ const App = struct {
                 self.play_game_menu.reset();
                 self.setScreen(.play_game_menu);
             },
+            .back_to_results => {
+                if (self.results != null) {
+                    self.setScreen(.results);
+                } else {
+                    self.menu.openRoot();
+                    self.setScreen(.main_menu);
+                }
+            },
             .back_to_menu => {
                 self.menu.openRoot();
                 self.setScreen(.main_menu);
@@ -1835,6 +1843,7 @@ const App = struct {
                 else
                     null,
                 .highlight_rank = resultsHighscoreHighlightRank(results),
+                .back_action = .results,
             },
         );
         self.setScreen(.statistics_menu);

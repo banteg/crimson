@@ -57,6 +57,7 @@ const HubAction = enum {
 
 const ChildAction = enum {
     hub,
+    results,
     open_play_game,
     alien_zookeeper,
 };
@@ -160,6 +161,7 @@ const HighScoresScreen = struct {
     mode: game_ids.GameModeId = .survival,
     quest_level_key: i32 = 101,
     highlight_rank: ?usize = null,
+    back_action: HighScoresBackAction = .hub,
     button_selection: usize = 0,
     dropdown_open: DropdownKind = .none,
     scroll: usize = 0,
@@ -247,6 +249,7 @@ const CreditLineState = struct {
 pub const Action = enum {
     none,
     back_to_menu,
+    back_to_results,
     open_play_game,
 };
 
@@ -289,6 +292,12 @@ pub fn openRoot(state: *State, allocator: std.mem.Allocator, default_quest_level
 pub const OpenHighScoresOptions = struct {
     quest_level_key: ?i32 = null,
     highlight_rank: ?usize = null,
+    back_action: HighScoresBackAction = .hub,
+};
+
+pub const HighScoresBackAction = enum {
+    hub,
+    results,
 };
 
 pub fn openHighScores(
@@ -307,6 +316,7 @@ pub fn openHighScores(
     else
         questLevelKeyFromConfig(config);
     state.high_scores.highlight_rank = options.highlight_rank;
+    state.high_scores.back_action = options.back_action;
     loadHighScores(&state.high_scores, allocator, base_dir, config, status);
 }
 
@@ -457,6 +467,7 @@ fn finishChildAction(state: *State, action: ChildAction) UpdateResult {
             state.view = .hub;
             state.hub.reset();
         },
+        .results => return .{ .action = .back_to_results },
         .open_play_game => return .{ .action = .open_play_game },
         .alien_zookeeper => {
             state.alien_zookeeper.reset();
@@ -499,7 +510,7 @@ fn updateHighScores(
 
     if (rl.isKeyPressed(.escape)) {
         hs.dropdown_open = .none;
-        beginChildClose(state, .hub);
+        beginChildClose(state, highScoreBackChildAction(hs.back_action));
         return .{ .play_button_click = true };
     }
 
@@ -550,10 +561,17 @@ fn updateHighScores(
         },
         2 => blk: {
             hs.dropdown_open = .none;
-            beginChildClose(state, .hub);
+            beginChildClose(state, highScoreBackChildAction(hs.back_action));
             break :blk .{ .play_button_click = true };
         },
         else => .{},
+    };
+}
+
+fn highScoreBackChildAction(action: HighScoresBackAction) ChildAction {
+    return switch (action) {
+        .hub => .hub,
+        .results => .results,
     };
 }
 
@@ -2767,6 +2785,27 @@ test "openHighScores preserves highlighted saved rank and scrolls it into view" 
     try std.testing.expectEqual(@as(?usize, 11), state.high_scores.highlight_rank);
     try std.testing.expectEqual(@as(usize, 2), state.high_scores.scroll);
     try std.testing.expectEqual(@as(usize, 12), state.high_scores.records.len);
+}
+
+test "openHighScores can return to result screen instead of statistics hub" {
+    const allocator = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
+    defer allocator.free(base_dir);
+
+    var state: State = .{};
+    defer state.high_scores.clear(allocator);
+    var config = formats.crimson_cfg.defaultConfig();
+    config.game_mode = @intFromEnum(game_ids.GameModeId.survival);
+    config.player_count = 1;
+    const status = std.mem.zeroes(formats.game_cfg.Status);
+
+    openHighScores(&state, allocator, base_dir, config, status, .{ .back_action = .results });
+    try std.testing.expectEqual(HighScoresBackAction.results, state.high_scores.back_action);
+    try std.testing.expectEqual(ChildAction.results, highScoreBackChildAction(state.high_scores.back_action));
+    try std.testing.expectEqual(Action.back_to_results, finishChildAction(&state, .results).action);
 }
 
 test "hub high scores use remembered quest level default" {
