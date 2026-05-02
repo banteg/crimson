@@ -598,6 +598,8 @@ fn loadReplay(
     allocator: std.mem.Allocator,
     path: []const u8,
 ) !replay_codec.Replay {
+    if (builtin.os.tag == .freestanding) return error.UnavailableOnFreestanding;
+
     const io = std.Io.Threaded.global_single_threaded.io();
     const replay_bytes = try std.Io.Dir.cwd().readFileAlloc(
         io,
@@ -955,6 +957,8 @@ fn buildPrefixedErrorOutput(
 }
 
 fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
+    if (builtin.os.tag == .freestanding) return error.UnavailableOnFreestanding;
+
     const io = std.Io.Threaded.global_single_threaded.io();
     if (std.fs.path.dirname(path)) |dir| {
         if (dir.len > 0) try std.Io.Dir.cwd().createDirPath(io, dir);
@@ -994,6 +998,8 @@ fn isSingleSegmentPath(path: []const u8) bool {
 }
 
 fn isFile(path: []const u8) !bool {
+    if (builtin.os.tag == .freestanding) return error.UnavailableOnFreestanding;
+
     if (path.len == 0) return false;
     const io = std.Io.Threaded.global_single_threaded.io();
     const stat = std.Io.Dir.cwd().statFile(io, path, .{}) catch |err| switch (err) {
@@ -1009,6 +1015,8 @@ fn elapsedMs(start_ns: i128, end_ns: i128) f64 {
 }
 
 fn monotonicNanoseconds() i128 {
+    if (builtin.os.tag == .freestanding) return 0;
+
     const io = std.Io.Threaded.global_single_threaded.io();
     return std.Io.Timestamp.now(io, .awake).nanoseconds;
 }

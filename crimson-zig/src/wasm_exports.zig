@@ -3,6 +3,7 @@ const msgpack = @import("msgpack");
 const crimson_zig = @import("crimson_zig");
 const checkpoint_diff_native = crimson_zig.checkpoint_diff_native;
 const replay_codec = crimson_zig.replay_codec;
+const replay_benchmark_native = crimson_zig.replay_benchmark_native;
 const replay_info_native = crimson_zig.replay_info_native;
 const verify_native = crimson_zig.verify_native;
 
@@ -21,6 +22,13 @@ var last_error_len: usize = 0;
 
 const WasmVerifyOptions = struct {
     max_ticks: ?usize = null,
+};
+
+const WasmBenchmarkOptions = struct {
+    max_ticks: ?usize = null,
+    runs: usize = 1,
+    warmup_runs: usize = 0,
+    trace_rng: bool = false,
 };
 
 export fn crimson_alloc(size: usize) usize {
@@ -121,6 +129,52 @@ export fn crimson_info_replay_json(
         "<wasm>",
         replay_bytes,
         options.max_ticks,
+    ) catch |err| {
+        setErrorMessage(std.heap.page_allocator, @errorName(err));
+        return -1;
+    };
+    defer output.deinit(std.heap.page_allocator);
+
+    if (output.exit_code == 1 and output.stdout.len == 0 and output.stderr.len > 0) {
+        setErrorMessage(std.heap.page_allocator, std.mem.trimEnd(u8, output.stderr, "\n"));
+        return -1;
+    }
+
+    return copyOutputPayload(output.stdout, out_ptr, out_len);
+}
+
+export fn crimson_benchmark_replay_json(
+    replay_ptr: usize,
+    replay_len: usize,
+    opts_ptr: usize,
+    opts_len: usize,
+    out_ptr: usize,
+    out_len: usize,
+) i32 {
+    last_error_len = 0;
+    heap_top = 0;
+
+    if (replay_ptr == 0 or replay_len == 0) {
+        setErrorSimple("{\"status\":\"error\",\"message\":\"missing replay bytes\"}");
+        return -1;
+    }
+
+    const replay: [*]const u8 = @ptrFromInt(replay_ptr);
+    const replay_bytes = replay[0..replay_len];
+
+    const options = parseBenchmarkOptions(opts_ptr, opts_len) catch |err| {
+        setErrorMessage(std.heap.page_allocator, @errorName(err));
+        return -1;
+    };
+
+    const output = replay_benchmark_native.runReplayBenchmarkBytesJson(
+        std.heap.page_allocator,
+        "<wasm>",
+        replay_bytes,
+        options.max_ticks,
+        options.runs,
+        options.warmup_runs,
+        options.trace_rng,
     ) catch |err| {
         setErrorMessage(std.heap.page_allocator, @errorName(err));
         return -1;
@@ -239,6 +293,23 @@ fn parseVerifyOptions(opts_ptr: usize, opts_len: usize) !WasmVerifyOptions {
             .ignore_unknown_fields = true,
         },
     ) catch return error.InvalidVerifyOptionsJson;
+    defer parsed.deinit();
+    return parsed.value;
+}
+
+fn parseBenchmarkOptions(opts_ptr: usize, opts_len: usize) !WasmBenchmarkOptions {
+    if (opts_len == 0) return .{};
+    if (opts_ptr == 0) return error.InvalidBenchmarkOptionsJson;
+
+    const opts_raw: [*]const u8 = @ptrFromInt(opts_ptr);
+    const parsed = std.json.parseFromSlice(
+        WasmBenchmarkOptions,
+        std.heap.page_allocator,
+        opts_raw[0..opts_len],
+        .{
+            .ignore_unknown_fields = true,
+        },
+    ) catch return error.InvalidBenchmarkOptionsJson;
     defer parsed.deinit();
     return parsed.value;
 }
@@ -413,6 +484,66 @@ test "crimson_info_replay_json returns replay info payload" {
     try std.testing.expect(std.mem.indexOf(u8, out, "\"summary\":") != null);
     try std.testing.expect(std.mem.indexOf(u8, out, "\"ticks_simulated\":1") != null);
     try std.testing.expect(std.mem.indexOf(u8, out, "\"timeline\":") != null);
+}
+
+test "crimson_benchmark_replay_json returns benchmark payload" {
+    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(std.testing.allocator);
+    defer std.testing.allocator.free(replay_bytes);
+
+    const opts = "{\"max_ticks\":1,\"runs\":1,\"warmup_runs\":0}";
+    const required_or_error = crimson_benchmark_replay_json(
+        @intFromPtr(replay_bytes.ptr),
+        replay_bytes.len,
+        @intFromPtr(opts.ptr),
+        opts.len,
+        0,
+        0,
+    );
+    try std.testing.expect(required_or_error < 0);
+    const required_len: usize = @intCast(-required_or_error);
+
+    const out = try std.testing.allocator.alloc(u8, required_len + 1024);
+    defer std.testing.allocator.free(out);
+
+    const copied = crimson_benchmark_replay_json(
+        @intFromPtr(replay_bytes.ptr),
+        replay_bytes.len,
+        @intFromPtr(opts.ptr),
+        opts.len,
+        @intFromPtr(out.ptr),
+        out.len,
+    );
+    try std.testing.expect(copied > 0);
+    try std.testing.expectEqual(@as(i32, 0), crimson_last_error_json(0, 0));
+    const payload = out[0..@as(usize, @intCast(copied))];
+    try std.testing.expect(std.mem.indexOf(u8, payload, "\"schema_version\":3") != null);
+    try std.testing.expect(std.mem.indexOf(u8, payload, "\"replay\":\"<wasm>\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, payload, "\"runs\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, payload, "\"warmup_runs\":0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, payload, "\"sample_count\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, payload, "\"ticks\":1") != null);
+}
+
+test "crimson_benchmark_replay_json rejects invalid options json" {
+    var invalid_opts = [_]u8{ '{', ']' };
+    var replay_bytes = [_]u8{0x90};
+    const result = crimson_benchmark_replay_json(
+        @intFromPtr(&replay_bytes[0]),
+        replay_bytes.len,
+        @intFromPtr(&invalid_opts[0]),
+        invalid_opts.len,
+        0,
+        0,
+    );
+    try std.testing.expectEqual(@as(i32, -1), result);
+
+    const needed_or_error = crimson_last_error_json(0, 0);
+    try std.testing.expect(needed_or_error < 0);
+    const required_len: usize = @intCast(-needed_or_error);
+    var out: [128]u8 = undefined;
+    const copied = crimson_last_error_json(@intFromPtr(&out[0]), out.len);
+    try std.testing.expectEqual(@as(i32, @intCast(required_len)), copied);
+    try std.testing.expect(std.mem.indexOf(u8, out[0..required_len], "\"message\":\"InvalidBenchmarkOptionsJson\"") != null);
 }
 
 test "crimson_diff_checkpoints_text returns checkpoint diff payload" {
