@@ -390,7 +390,6 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
 
     audio_bridge = AudioBridge(
         demo_mode_active=False,
-        reflex_boost_timer_source=lambda: 0.0,
         audio=object(),  # type: ignore[arg-type]  # sentinel; play_sfx is patched
         audio_rng=Crand(0xBEEF),
     )

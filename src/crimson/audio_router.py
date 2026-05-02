@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -29,17 +28,20 @@ _BULLET_HIT_SFX = (
 )
 
 
+class AudioRouterRuntime(msgspec.Struct):
+    def reflex_boost_timer(self) -> float:
+        return 0.0
+
+
 class AudioRouter(msgspec.Struct):
     audio_rng: Crand
     audio: AudioState | None = None
     demo_mode_active: bool = False
     sfx_enabled: bool = True
-    reflex_boost_timer_source: Callable[[], float] | None = None
+    runtime: AudioRouterRuntime = msgspec.field(default_factory=AudioRouterRuntime)
+
     def _reflex_boost_timer(self) -> float:
-        source = self.reflex_boost_timer_source
-        if source is None:
-            return 0.0
-        return float(source())
+        return float(self.runtime.reflex_boost_timer())
 
     def play_sfx(self, sfx: SfxId) -> None:
         if self.audio is None or (not self.sfx_enabled):

@@ -8,6 +8,7 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 
+from ..audio_router import AudioRouterRuntime
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world import viewport
@@ -16,6 +17,13 @@ from .audio_bridge import AudioBridge
 from .render_resources import RenderResources
 from .sim_world_state import SimWorldState
 from .terrain_runtime import TerrainRuntime
+
+
+class _WorldAudioRouterRuntime(AudioRouterRuntime):
+    sim_world: SimWorldState
+
+    def reflex_boost_timer(self) -> float:
+        return float(self.sim_world.state.bonuses.reflex_boost)
 
 
 class WorldRuntime:
@@ -62,7 +70,7 @@ class WorldRuntime:
         self.render_resources = render_resources
         self.audio_bridge = AudioBridge(
             demo_mode_active=bool(self.demo_mode_active),
-            reflex_boost_timer_source=lambda: float(self.sim_world.state.bonuses.reflex_boost),
+            runtime=_WorldAudioRouterRuntime(sim_world=self.sim_world),
             audio=self.audio,
             audio_rng=self.audio_rng,
         )
