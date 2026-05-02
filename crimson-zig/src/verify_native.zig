@@ -204,7 +204,7 @@ fn runVerifyWithReplayBytes(
     defer replay.deinit(allocator);
     const header = replay.header;
 
-    if (unsupportedReplayHeaderDetail(header, replay.tickCount())) |detail| {
+    if (replay_codec.unsupportedReplayHeaderDetail(header, replay.tickCount(), .verifier)) |detail| {
         return buildVerifyFailedOutput(allocator, detail);
     }
     replay_codec.validateReplayBootstrap(header) catch |err| {
@@ -607,31 +607,6 @@ fn verifyJsonOutErrorDetail(err: anyerror) []const u8 {
         error.OutOfMemory => "native replay verifier ran out of memory while writing JSON",
         else => @errorName(err),
     };
-}
-
-fn unsupportedReplayHeaderDetail(
-    header: replay_codec.ReplayHeader,
-    tick_count: usize,
-) ?[]const u8 {
-    if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3 and header.game_mode_id != 4 and header.game_mode_id != 8) {
-        return "native replay tools support only survival/rush/quest/typo/tutorial modes";
-    }
-    if ((header.game_mode_id == 4 or header.game_mode_id == 8) and header.player_count != 1) {
-        return "typo and tutorial replays require player_count == 1";
-    }
-    if (header.player_count < 1 or header.player_count > 4) {
-        return "native replay tools support only 1-4 player replays";
-    }
-    if (!std.mem.eql(u8, header.input_quantization, "f32")) {
-        return "native replay tools support only f32 input quantization";
-    }
-    if (tick_count > std.math.maxInt(i32)) {
-        return "replay has too many ticks for current native verifier";
-    }
-    if (!header.preserve_bugs and !replay_codec.isLatestRulesetGameVersion(header.game_version)) {
-        return "native replay tools require latest ruleset replays unless preserve_bugs is set";
-    }
-    return null;
 }
 
 fn buildOutputForReplayCodecError(
@@ -1197,7 +1172,7 @@ test "unsupported replay header detail rejects unsupported game mode" {
     defer header.deinit(allocator);
     header.game_mode_id = 9;
 
-    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    const detail = replay_codec.unsupportedReplayHeaderDetail(header, 1, .verifier) orelse return error.TestExpectedUnsupported;
     try std.testing.expectEqualStrings("native replay tools support only survival/rush/quest/typo/tutorial modes", detail);
 }
 
@@ -1207,7 +1182,7 @@ test "unsupported replay header detail rejects unsupported player count" {
     defer header.deinit(allocator);
     header.player_count = 5;
 
-    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    const detail = replay_codec.unsupportedReplayHeaderDetail(header, 1, .verifier) orelse return error.TestExpectedUnsupported;
     try std.testing.expectEqualStrings("native replay tools support only 1-4 player replays", detail);
 }
 
@@ -1218,7 +1193,7 @@ test "unsupported replay header detail rejects non f32 quantization" {
     allocator.free(header.input_quantization);
     header.input_quantization = try allocator.dupe(u8, "u8");
 
-    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    const detail = replay_codec.unsupportedReplayHeaderDetail(header, 1, .verifier) orelse return error.TestExpectedUnsupported;
     try std.testing.expectEqualStrings("native replay tools support only f32 input quantization", detail);
 }
 
@@ -1228,7 +1203,7 @@ test "unsupported replay header detail rejects oversized tick count" {
     defer header.deinit(allocator);
 
     const overflow_ticks = @as(usize, std.math.maxInt(i32)) + 1;
-    const detail = unsupportedReplayHeaderDetail(header, overflow_ticks) orelse return error.TestExpectedUnsupported;
+    const detail = replay_codec.unsupportedReplayHeaderDetail(header, overflow_ticks, .verifier) orelse return error.TestExpectedUnsupported;
     try std.testing.expectEqualStrings("replay has too many ticks for current native verifier", detail);
 }
 
@@ -1239,7 +1214,7 @@ test "unsupported replay header detail rejects non latest ruleset" {
     allocator.free(header.game_version);
     header.game_version = try allocator.dupe(u8, "0.6.9");
 
-    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    const detail = replay_codec.unsupportedReplayHeaderDetail(header, 1, .verifier) orelse return error.TestExpectedUnsupported;
     try std.testing.expectEqualStrings("native replay tools require latest ruleset replays unless preserve_bugs is set", detail);
 }
 
@@ -1248,7 +1223,7 @@ test "unsupported replay header detail accepts supported replay envelope" {
     const header = try makeTestReplayHeader(allocator);
     defer header.deinit(allocator);
 
-    try std.testing.expect(unsupportedReplayHeaderDetail(header, 1) == null);
+    try std.testing.expect(replay_codec.unsupportedReplayHeaderDetail(header, 1, .verifier) == null);
 }
 
 test "unsupported replay header detail accepts preserve bugs older ruleset replay envelope" {
@@ -1259,5 +1234,5 @@ test "unsupported replay header detail accepts preserve bugs older ruleset repla
     allocator.free(header.game_version);
     header.game_version = try allocator.dupe(u8, "0.6.9");
 
-    try std.testing.expect(unsupportedReplayHeaderDetail(header, 1) == null);
+    try std.testing.expect(replay_codec.unsupportedReplayHeaderDetail(header, 1, .verifier) == null);
 }

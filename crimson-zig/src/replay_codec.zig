@@ -186,6 +186,42 @@ pub fn isLatestRulesetGameVersion(game_version: []const u8) bool {
     return std.mem.startsWith(u8, game_version, latest_ruleset_game_version_prefix);
 }
 
+pub const ReplayToolKind = enum {
+    verifier,
+    replay_info,
+    benchmark,
+};
+
+pub fn unsupportedReplayHeaderDetail(
+    header: ReplayHeader,
+    tick_count: usize,
+    tool_kind: ReplayToolKind,
+) ?[]const u8 {
+    if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3 and header.game_mode_id != 4 and header.game_mode_id != 8) {
+        return "native replay tools support only survival/rush/quest/typo/tutorial modes";
+    }
+    if ((header.game_mode_id == 4 or header.game_mode_id == 8) and header.player_count != 1) {
+        return "typo and tutorial replays require player_count == 1";
+    }
+    if (header.player_count < 1 or header.player_count > 4) {
+        return "native replay tools support only 1-4 player replays";
+    }
+    if (!std.mem.eql(u8, header.input_quantization, "f32")) {
+        return "native replay tools support only f32 input quantization";
+    }
+    if (tick_count > std.math.maxInt(i32)) {
+        return switch (tool_kind) {
+            .verifier => "replay has too many ticks for current native verifier",
+            .replay_info => "replay has too many ticks for current native replay info",
+            .benchmark => "replay has too many ticks for current native benchmark",
+        };
+    }
+    if (!header.preserve_bugs and !isLatestRulesetGameVersion(header.game_version)) {
+        return "native replay tools require latest ruleset replays unless preserve_bugs is set";
+    }
+    return null;
+}
+
 pub const PerkPickEvent = struct {
     tick_index: usize,
     player_index: i32,

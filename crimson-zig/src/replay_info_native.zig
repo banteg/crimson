@@ -106,7 +106,7 @@ pub fn runReplayInfoBytesJson(
     };
     defer replay.deinit(allocator);
 
-    if (unsupportedReplayHeaderDetail(replay.header, replay.tickCount())) |detail| {
+    if (replay_codec.unsupportedReplayHeaderDetail(replay.header, replay.tickCount(), .replay_info)) |detail| {
         return buildInfoFailedOutput(allocator, detail);
     }
     replay_codec.validateReplayBootstrap(replay.header) catch |err| {
@@ -232,7 +232,7 @@ fn runInfoWithReplayBytes(
     };
     defer replay.deinit(allocator);
 
-    if (unsupportedReplayHeaderDetail(replay.header, replay.tickCount())) |detail| {
+    if (replay_codec.unsupportedReplayHeaderDetail(replay.header, replay.tickCount(), .replay_info)) |detail| {
         return buildInfoFailedOutput(allocator, detail);
     }
     replay_codec.validateReplayBootstrap(replay.header) catch |err| {
@@ -572,31 +572,6 @@ fn replayModeLabel(game_mode_id: i32) []const u8 {
     };
 }
 
-fn unsupportedReplayHeaderDetail(
-    header: replay_codec.ReplayHeader,
-    tick_count: usize,
-) ?[]const u8 {
-    if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3 and header.game_mode_id != 4 and header.game_mode_id != 8) {
-        return "native replay tools support only survival/rush/quest/typo/tutorial modes";
-    }
-    if ((header.game_mode_id == 4 or header.game_mode_id == 8) and header.player_count != 1) {
-        return "typo and tutorial replays require player_count == 1";
-    }
-    if (header.player_count < 1 or header.player_count > 4) {
-        return "native replay tools support only 1-4 player replays";
-    }
-    if (!std.mem.eql(u8, header.input_quantization, "f32")) {
-        return "native replay tools support only f32 input quantization";
-    }
-    if (tick_count > std.math.maxInt(i32)) {
-        return "replay has too many ticks for current native replay info";
-    }
-    if (!header.preserve_bugs and !replay_codec.isLatestRulesetGameVersion(header.game_version)) {
-        return "native replay tools require latest ruleset replays unless preserve_bugs is set";
-    }
-    return null;
-}
-
 fn resolveReplayPath(
     allocator: std.mem.Allocator,
     replay_file: []const u8,
@@ -828,7 +803,7 @@ test "replay info header tick limit uses info-specific detail" {
 
     try std.testing.expectEqualStrings(
         "replay has too many ticks for current native replay info",
-        unsupportedReplayHeaderDetail(header, @as(usize, std.math.maxInt(i32)) + 1).?,
+        replay_codec.unsupportedReplayHeaderDetail(header, @as(usize, std.math.maxInt(i32)) + 1, .replay_info).?,
     );
 }
 
