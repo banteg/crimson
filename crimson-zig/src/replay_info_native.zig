@@ -457,6 +457,8 @@ fn replayInfoErrorDetail(err: replay_info_mod.ReplayInfoError) []const u8 {
         error.InvalidHeaderValue => "replay info collector received invalid header values",
         error.UnsupportedGameMode => "replay info collector only supports survival/rush/quest/typo/tutorial modes",
         error.UnsupportedPlayerCount => "replay info collector only supports 1-4 player replays",
+        error.InvalidPlayerFilter => "replay info collector received invalid player_index filter",
+        error.PlayerFilterOutOfRange => "replay info collector received out-of-range player_index filter",
         error.UnsupportedInputQuantization => "replay info collector only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
         error.UnsupportedEventKind => "replay events include kinds or values invalid for this mode",
@@ -785,6 +787,14 @@ test "replay info exposes codec and collector detail helpers" {
     try std.testing.expectEqualStrings(
         "replay info collector only supports survival/rush/quest/typo/tutorial modes",
         replayInfoErrorDetail(error.UnsupportedGameMode),
+    );
+    try std.testing.expectEqualStrings(
+        "replay info collector received invalid player_index filter",
+        replayInfoErrorDetail(error.InvalidPlayerFilter),
+    );
+    try std.testing.expectEqualStrings(
+        "replay info collector received out-of-range player_index filter",
+        replayInfoErrorDetail(error.PlayerFilterOutOfRange),
     );
     try std.testing.expectEqualStrings(
         "replay info collector encountered an out-of-range player_index event",

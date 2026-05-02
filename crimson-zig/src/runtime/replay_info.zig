@@ -18,7 +18,9 @@ const SimulationContext = runtime_session.DeterministicSession;
 const epsilon: f32 = 1e-6;
 
 pub const ReplayInfoError = replay_runner.ReplayRunnerError || error{
+    InvalidPlayerFilter,
     OutOfMemory,
+    PlayerFilterOutOfRange,
 };
 
 pub const CollectOptions = struct {
@@ -232,6 +234,7 @@ pub fn collect(
     if (header.player_count <= 0 or header.player_count > state_mod.max_players) {
         return error.UnsupportedPlayerCount;
     }
+    try validatePlayerFilter(header.player_count, options.player_index);
     if (!std.mem.eql(u8, header.input_quantization, "f32")) {
         return error.UnsupportedInputQuantization;
     }
@@ -739,6 +742,12 @@ fn currentElapsedMs(context: *const SimulationContext) i64 {
     };
 }
 
+fn validatePlayerFilter(player_count: i32, player_index: ?i32) ReplayInfoError!void {
+    const index = player_index orelse return;
+    if (index < 0) return error.InvalidPlayerFilter;
+    if (player_count > 0 and index >= player_count) return error.PlayerFilterOutOfRange;
+}
+
 fn makeEvent(
     tick_index: i32,
     elapsed_ms: i64,
@@ -756,4 +765,12 @@ fn makeEvent(
         .detail = detail,
         .data = data,
     };
+}
+
+test "replay info player filter validation matches collector bounds" {
+    try validatePlayerFilter(2, null);
+    try validatePlayerFilter(2, 0);
+    try validatePlayerFilter(2, 1);
+    try std.testing.expectError(error.InvalidPlayerFilter, validatePlayerFilter(2, -1));
+    try std.testing.expectError(error.PlayerFilterOutOfRange, validatePlayerFilter(2, 2));
 }
