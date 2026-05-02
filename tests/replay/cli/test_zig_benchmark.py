@@ -143,6 +143,7 @@ def test_zig_replay_benchmark_writes_json_out(tmp_path: Path) -> None:
 def test_zig_replay_benchmark_supports_native_profile_summary(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    profile_out = tmp_path / "profiles" / "native-profile.json"
 
     result = _run_zig_replay_benchmark(
         [
@@ -158,6 +159,8 @@ def test_zig_replay_benchmark_supports_native_profile_summary(tmp_path: Path) ->
             "tottime",
             "--top",
             "5",
+            "--profile-out",
+            str(profile_out),
             "--format",
             "json",
         ],
@@ -168,6 +171,7 @@ def test_zig_replay_benchmark_supports_native_profile_summary(tmp_path: Path) ->
     assert payload["settings"]["profile"] is True
     assert payload["settings"]["profile_sort"] == "tottime"
     assert payload["settings"]["top"] == 5
+    assert payload["settings"]["profile_out"] == str(profile_out)
     assert payload["profile"]["sort"] == "tottime"
     assert payload["profile"]["source"] == "project"
     assert payload["profile"]["top"] == 5
@@ -178,6 +182,10 @@ def test_zig_replay_benchmark_supports_native_profile_summary(tmp_path: Path) ->
     assert hotspot["primitive_calls"] == 1
     assert hotspot["total_calls"] == 1
     assert hotspot["cumtime"] >= 0.0
+    profile_payload = json.loads(profile_out.read_text(encoding="utf-8"))
+    assert profile_payload["sort"] == payload["profile"]["sort"]
+    assert profile_payload["source"] == payload["profile"]["source"]
+    assert profile_payload["hotspots"][0]["function"] == "runReplayWithOptions"
 
 
 def test_zig_replay_benchmark_stale_perk_pick_is_noop(tmp_path: Path) -> None:
@@ -237,27 +245,27 @@ def test_zig_replay_benchmark_rejects_render_only_flags_in_headless_mode(
     assert f"invalid replay benchmark args: {detail}" in result.stderr
 
 
-@pytest.mark.parametrize(
-    ("args", "detail"),
-    [
-        (
-            ["--profile-out", "profile.pstats"],
-            "native replay benchmark does not support profiling option --profile-out",
-        ),
-    ],
-)
-def test_zig_replay_benchmark_rejects_profile_flags_explicitly(
-    tmp_path: Path,
-    args: list[str],
-    detail: str,
-) -> None:
+def test_zig_replay_benchmark_human_profile_out_reports_path(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    profile_out = tmp_path / "profiles" / "native-profile.json"
 
-    result = _run_zig_replay_benchmark([str(replay_path), *args])
+    result = _run_zig_replay_benchmark(
+        [
+            str(replay_path),
+            "--runs",
+            "1",
+            "--warmup-runs",
+            "0",
+            "--profile",
+            "--profile-out",
+            str(profile_out),
+        ],
+    )
 
-    assert result.returncode == 1
-    assert f"invalid replay benchmark args: {detail}" in result.stderr
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert f"profile_report={profile_out}" in result.stdout
+    assert profile_out.is_file()
 
 
 def test_zig_replay_benchmark_rejects_non_crd_extension(tmp_path: Path) -> None:

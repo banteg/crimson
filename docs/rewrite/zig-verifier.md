@@ -83,8 +83,9 @@ Current supported replay-tooling behavior:
 - freestanding WASM replay verification and replay info JSON exports
 - freestanding WASM checkpoint diff/verify text exports
 - headless replay throughput timing and native coarse profiling via
-  `replay benchmark` (render benchmark mode and `.pstats` profile export remain
-  Python-only)
+  `replay benchmark`, including native JSON profile summary export with
+  `--profile --profile-out`; render benchmark mode and cProfile `.pstats`
+  export remain Python-only
 - native CDT trace export via `dbg record <replay.crd> --out <trace.cdt>`
 - native debug schema contract reporting via `dbg verify`
 - native `crimson.cfg` human/JSON inspection via `config`

@@ -343,10 +343,6 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
     if (unsupportedRenderBenchmarkOptionDetail(request)) |detail| {
         return .{ .invalid = detail };
     }
-    if (unsupportedProfileBenchmarkOptionDetail(request)) |detail| {
-        return .{ .invalid = detail };
-    }
-
     const replay = replay_file orelse return .{ .invalid = "missing replay file argument" };
     request.replay_file = replay;
     return .{ .ok = request };
@@ -360,9 +356,6 @@ fn runNativeBenchmark(
         return buildBenchmarkFailedOutput(allocator, "native file replay benchmark is unavailable on freestanding targets");
     }
     if (unsupportedRenderBenchmarkOptionDetail(request)) |detail| {
-        return buildBenchmarkFailedOutput(allocator, detail);
-    }
-    if (unsupportedProfileBenchmarkOptionDetail(request)) |detail| {
         return buildBenchmarkFailedOutput(allocator, detail);
     }
 
@@ -485,6 +478,18 @@ fn runBenchmarkWithReplay(
     };
     defer allocator.free(payload);
 
+    if (request.profile_out) |profile_out_path| {
+        if (profile_payload) |profile| {
+            const profile_json = buildProfilePayloadJson(allocator, profile) catch |err| {
+                return buildBenchmarkFailedOutput(allocator, benchmarkAllocationErrorDetail(err));
+            };
+            defer allocator.free(profile_json);
+            writeFileWithParents(profile_out_path, profile_json) catch |err| {
+                return buildBenchmarkFailedOutput(allocator, benchmarkProfileOutErrorDetail(err));
+            };
+        }
+    }
+
     if (request.json_out) |json_out_path| {
         writeFileWithParents(json_out_path, payload) catch |err| {
             return buildBenchmarkFailedOutput(allocator, benchmarkJsonOutErrorDetail(err));
@@ -498,6 +503,11 @@ fn runBenchmarkWithReplay(
     if (request.json_out) |json_out_path| {
         if (request.output_format == .human) {
             try writer.print("json_report={s}\n", .{json_out_path});
+        }
+    }
+    if (request.profile_out) |profile_out_path| {
+        if (request.output_format == .human and profile_payload != null) {
+            try writer.print("profile_report={s}\n", .{profile_out_path});
         }
     }
 
@@ -699,7 +709,7 @@ fn buildBenchmarkPayload(
             .profile = request.profile,
             .profile_sort = request.profile_sort,
             .top = request.top,
-            .profile_out = null,
+            .profile_out = request.profile_out,
             .render_telemetry = false,
             .render_telemetry_out = null,
             .render_charts_out_dir = null,
@@ -719,6 +729,16 @@ fn buildBenchmarkPayload(
     var payload_writer: std.Io.Writer.Allocating = .init(allocator);
     errdefer payload_writer.deinit();
     try std.json.Stringify.value(report, .{}, &payload_writer.writer);
+    return payload_writer.toOwnedSlice();
+}
+
+fn buildProfilePayloadJson(
+    allocator: std.mem.Allocator,
+    profile: ProfilePayload,
+) ![]u8 {
+    var payload_writer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer payload_writer.deinit();
+    try std.json.Stringify.value(profile, .{}, &payload_writer.writer);
     return payload_writer.toOwnedSlice();
 }
 
@@ -749,13 +769,6 @@ fn unsupportedRenderBenchmarkOptionDetail(request: BenchmarkRequest) ?[]const u8
     }
     if (request.render_charts_out_dir != null) {
         return "native replay benchmark does not support render-mode option --render-charts-out-dir";
-    }
-    return null;
-}
-
-fn unsupportedProfileBenchmarkOptionDetail(request: BenchmarkRequest) ?[]const u8 {
-    if (request.profile_out != null) {
-        return "native replay benchmark does not support profiling option --profile-out";
     }
     return null;
 }
@@ -914,6 +927,14 @@ fn benchmarkJsonOutErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
         error.AccessDenied => "unable to write replay benchmark JSON: access denied",
         error.OutOfMemory => "native replay benchmark ran out of memory while writing JSON",
+        else => @errorName(err),
+    };
+}
+
+fn benchmarkProfileOutErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.AccessDenied => "unable to write replay benchmark profile JSON: access denied",
+        error.OutOfMemory => "native replay benchmark ran out of memory while writing profile JSON",
         else => @errorName(err),
     };
 }
