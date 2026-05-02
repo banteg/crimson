@@ -6,9 +6,10 @@ from crimson.creatures.spawn import SpawnId
 from crimson.game_modes import GameMode
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, InputStatus, LocalInputProvider
+from crimson.sim.input_providers import FrameContext, InputStatus, LocalInputProvider, LocalInputRuntime
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
+from tests.support.builders.input_providers import StaticLocalInputRuntime
 from tests.support.world_runtime import WorldRuntimeHost
 
 
@@ -19,7 +20,7 @@ def _assets_dir() -> Path:
 def _build_runner(
     world: WorldRuntimeHost,
     *,
-    build_inputs,
+    input_runtime: LocalInputRuntime,
 ) -> tuple[DeterministicSession, TickRunner]:
     session = DeterministicSession(
         world=world.sim_world.world_state,
@@ -35,7 +36,7 @@ def _build_runner(
     )
     provider = LocalInputProvider(
         player_count=len(world.sim_world.players),
-        build_inputs=build_inputs,
+        runtime=input_runtime,
     )
     runner = TickRunner(
         session=session,
@@ -116,13 +117,9 @@ def test_runner_path_projectile_hits_enqueue_decals() -> None:
 
     session, runner = _build_runner(
         world,
-        build_inputs=lambda frame_ctx: [
-            PlayerInput(
-                aim=target,
-                fire_down=True,
-                fire_pressed=True,
-            ),
-        ],
+        input_runtime=StaticLocalInputRuntime(
+            inputs=(PlayerInput(aim=target, fire_down=True, fire_pressed=True),),
+        ),
     )
     clock = FixedStepClock(tick_rate=60)
     frame_index = 0
@@ -148,7 +145,7 @@ def test_runner_multi_tick_batch_apply_order_is_deterministic() -> None:
         world = WorldRuntimeHost(assets_dir=_assets_dir())
         session, runner = _build_runner(
             world,
-            build_inputs=lambda frame_ctx: [PlayerInput()],
+            input_runtime=StaticLocalInputRuntime(inputs=(PlayerInput(),)),
         )
         clock = FixedStepClock(tick_rate=60)
         frame_index = 0

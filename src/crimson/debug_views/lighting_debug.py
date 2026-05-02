@@ -22,7 +22,7 @@ from ..owner_ref import OwnerRef
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
-from ..sim.input_providers import FrameContext
+from ..sim.input_providers import FrameContext, LocalInputRuntime
 from ..tooling.audio_bootstrap import init_view_audio
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
@@ -1191,6 +1191,13 @@ def _shadow_debug_mode_name(mode: int) -> str:
     return f"mode{index}"
 
 
+class _LightingLocalInputRuntime(LocalInputRuntime):
+    view: LightingDebugView
+
+    def capture_frame_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
+        return self.view._build_runner_inputs(frame_ctx)
+
+
 class LightingDebugView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
@@ -1289,7 +1296,7 @@ class LightingDebugView:
         self._screenshot_requested = False
         self._tick_harness = StandaloneTickHarness(
             game_mode=GameMode.SURVIVAL,
-            build_inputs=self._build_runner_inputs,
+            input_runtime=_LightingLocalInputRuntime(view=self),
         )
 
     def _load_texture(self, texture_id: TextureId) -> rl.Texture:

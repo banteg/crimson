@@ -41,7 +41,7 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
-from tests.support.builders.input_providers import CallbackInputProvider
+from tests.support.builders.input_providers import CallbackInputProvider, StaticLocalInputRuntime
 from tests.support.builders.session import make_session
 
 
@@ -102,7 +102,7 @@ def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mock
     session, sim_world = make_session()
     provider = LocalInputProvider(
         player_count=len(sim_world.players),
-        build_inputs=lambda _frame_ctx: [PlayerInput(aim=Vec2(512.0, 512.0))],
+        runtime=StaticLocalInputRuntime(inputs=(PlayerInput(aim=Vec2(512.0, 512.0)),)),
     )
     runner = TickRunner(
         session=session,
@@ -231,7 +231,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
     live_session, sim_world = make_session(seed=int(header.seed))
     live_provider = LocalInputProvider(
         player_count=1,
-        build_inputs=lambda _frame_ctx: list(input_row),
+        runtime=StaticLocalInputRuntime(inputs=tuple(input_row)),
     )
     live_runner = TickRunner(
         session=live_session,
@@ -345,7 +345,7 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
 
     provider = LocalInputProvider(
         player_count=1,
-        build_inputs=lambda _frame_ctx: [PlayerInput()],
+        runtime=StaticLocalInputRuntime(inputs=(PlayerInput(),)),
     )
     runner = TickRunner(
         session=session,

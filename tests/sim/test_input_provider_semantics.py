@@ -14,7 +14,7 @@ from crimson.sim.input_providers import (
     TickSupply,
 )
 from crimson.sim.tick_runner import TickRunner, TickRunnerConfig
-from tests.support.builders.input_providers import CallbackInputProvider
+from tests.support.builders.input_providers import CallbackInputProvider, StaticLocalInputRuntime
 from tests.support.builders.session import make_session
 
 _FRAME_CTX = FrameContext(
@@ -28,7 +28,7 @@ _FRAME_CTX = FrameContext(
 def test_local_provider_never_stalls_and_clears_edges() -> None:
     provider = LocalInputProvider(
         player_count=1,
-        build_inputs=lambda _frame_ctx: [PlayerInput(fire_down=True, fire_pressed=True)],
+        runtime=StaticLocalInputRuntime(inputs=(PlayerInput(fire_down=True, fire_pressed=True),)),
     )
     provider.begin_frame(_FRAME_CTX)
 
@@ -44,7 +44,7 @@ def test_local_provider_never_stalls_and_clears_edges() -> None:
 
 
 def test_local_provider_allows_empty_inputs_for_zero_players() -> None:
-    provider = LocalInputProvider(player_count=0, build_inputs=lambda _frame_ctx: [])
+    provider = LocalInputProvider(player_count=0, runtime=StaticLocalInputRuntime())
     provider.begin_frame(_FRAME_CTX)
 
     tick0 = provider.pull_tick(0, _FRAME_CTX.tick_dt_seconds)

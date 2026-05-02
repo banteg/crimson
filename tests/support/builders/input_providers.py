@@ -8,9 +8,18 @@ from crimson.sim.input_providers import (
     GameCommand,
     InputProvider,
     InputStatus,
+    LocalInputRuntime,
     ResolvedTick,
     TickSupply,
 )
+
+
+class StaticLocalInputRuntime(LocalInputRuntime):
+    inputs: tuple[PlayerInput, ...] = ()
+
+    def capture_frame_inputs(self, frame_ctx: FrameContext) -> tuple[PlayerInput, ...]:
+        _ = frame_ctx
+        return tuple(self.inputs)
 
 
 class CallbackInputProvider(InputProvider):
