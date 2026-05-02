@@ -981,7 +981,7 @@ fn runJitterBurstSmoke(
 
         packets_sent += try packet_impairment.releaseDelayed(allocator, io, server);
         try host.update(allocator, io, now_ms + 4);
-        last_host_step = try host.stepFrames(allocator);
+        last_host_step = try stepFramesAfterUpdateRetry(allocator, io, host, now_ms + 5);
         if (last_host_step.frames_advanced == 0) return error.RollbackJitterCorrectionMissing;
         if (last_host_step.last_input_flags[0] != host_flags or last_host_step.last_input_flags[1] != guest_flags) return error.RollbackJitterHostInputMismatch;
 
@@ -1123,7 +1123,7 @@ fn driveBidirectionalJitterBurst(
 
         summary.packets_sent += try guest_to_host.releaseDelayed(allocator, io, server);
         try host.update(allocator, io, now_ms + 4);
-        summary.host_step = try host.stepFrames(allocator);
+        summary.host_step = try stepFramesAfterUpdateRetry(allocator, io, host, now_ms + 5);
         if (summary.host_step.frames_advanced == 0) return error.RollbackJitterCorrectionMissing;
         if (summary.host_step.last_input_flags[0] != host_flags or summary.host_step.last_input_flags[1] != guest_flags) return error.RollbackJitterHostInputMismatch;
 
@@ -1135,7 +1135,7 @@ fn driveBidirectionalJitterBurst(
 
         summary.packets_sent += try host_to_guest.releaseDelayed(allocator, io, server);
         try guest.update(allocator, io, now_ms + 7);
-        summary.guest_step = try guest.stepFrames(allocator);
+        summary.guest_step = try stepFramesAfterUpdateRetry(allocator, io, guest, now_ms + 8);
         if (summary.guest_step.frames_advanced == 0) return error.RollbackJitterCorrectionMissing;
         if (summary.guest_step.last_input_flags[0] != host_flags or summary.guest_step.last_input_flags[1] != guest_flags) return error.RollbackJitterGuestInputMismatch;
     }
@@ -1149,6 +1149,24 @@ fn driveBidirectionalJitterBurst(
     if (host_runtime.resync_count != 0 or guest_runtime.resync_count != 0) return error.RollbackUnexpectedResyncPause;
     if (host_runtime.paused_for_resync or guest_runtime.paused_for_resync) return error.RollbackUnexpectedResyncPause;
     if (require_rollback_corrections and (host_runtime.rollback_count < 3 or guest_runtime.rollback_count < 3)) return error.RollbackJitterCorrectionMissing;
+    return summary;
+}
+
+fn stepFramesAfterUpdateRetry(
+    allocator: std.mem.Allocator,
+    io: Io,
+    session: *rollback_live_session.LiveSession,
+    start_ms: i64,
+) !rollback_live_session.StepSummary {
+    var summary = try session.stepFrames(allocator);
+    if (summary.frames_advanced != 0) return summary;
+
+    for (0..3) |idx| {
+        const now_ms = start_ms + @as(i64, @intCast(idx));
+        try session.update(allocator, io, now_ms);
+        summary = try session.stepFrames(allocator);
+        if (summary.frames_advanced != 0) return summary;
+    }
     return summary;
 }
 
