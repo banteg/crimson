@@ -114,6 +114,10 @@ pub fn runReplayInfoBytesJson(
     replay_codec.validateReplayBootstrap(replay.header) catch |err| {
         return buildInfoFailedOutputForReplayCodecError(allocator, err);
     };
+    if (try playerFilterValidationDetail(allocator, replay.header, player_index)) |detail| {
+        defer allocator.free(detail);
+        return buildInfoFailedOutput(allocator, detail);
+    }
 
     const result = replay_info_mod.collect(
         allocator,
@@ -241,21 +245,9 @@ fn runInfoWithReplayBytes(
         return buildInfoFailedOutputForReplayCodecError(allocator, err);
     };
 
-    if (request.player_index) |player_index| {
-        if (player_index < 0) {
-            const detail = try std.fmt.allocPrint(allocator, "invalid player_index filter: {d}", .{player_index});
-            defer allocator.free(detail);
-            return buildInfoFailedOutput(allocator, detail);
-        }
-        if (replay.header.player_count > 0 and player_index >= replay.header.player_count) {
-            const detail = try std.fmt.allocPrint(
-                allocator,
-                "player_index filter out of range: {d} (player_count={d})",
-                .{ player_index, replay.header.player_count },
-            );
-            defer allocator.free(detail);
-            return buildInfoFailedOutput(allocator, detail);
-        }
+    if (try playerFilterValidationDetail(allocator, replay.header, request.player_index)) |detail| {
+        defer allocator.free(detail);
+        return buildInfoFailedOutput(allocator, detail);
     }
 
     const result = replay_info_mod.collect(
@@ -362,6 +354,27 @@ fn buildReplayNotFoundOutput(
         .stderr = try stderr_buf.toOwnedSlice(),
         .exit_code = 1,
     };
+}
+
+fn playerFilterValidationDetail(
+    allocator: std.mem.Allocator,
+    header: replay_codec.ReplayHeader,
+    player_index: ?i32,
+) !?[]u8 {
+    const index = player_index orelse return null;
+    if (index < 0) {
+        const detail = try std.fmt.allocPrint(allocator, "invalid player_index filter: {d}", .{index});
+        return detail;
+    }
+    if (header.player_count > 0 and index >= header.player_count) {
+        const detail = try std.fmt.allocPrint(
+            allocator,
+            "player_index filter out of range: {d} (player_count={d})",
+            .{ index, header.player_count },
+        );
+        return detail;
+    }
+    return null;
 }
 
 fn buildInvalidInfoArgsOutput(
@@ -795,7 +808,30 @@ test "byte replay info forwards player filter to collector" {
     try std.testing.expectEqual(@as(u8, 1), output.exit_code);
     try std.testing.expectEqualStrings("", output.stdout);
     try std.testing.expectEqualStrings(
-        "replay info failed: replay info collector received out-of-range player_index filter\n",
+        "replay info failed: player_index filter out of range: 1 (player_count=1)\n",
+        output.stderr,
+    );
+}
+
+test "byte replay info rejects negative player filter with CLI detail" {
+    const allocator = std.testing.allocator;
+    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(replay_bytes);
+
+    const output = try runReplayInfoBytesJson(
+        allocator,
+        "<bytes>",
+        replay_bytes,
+        null,
+        -1,
+        false,
+    );
+    defer output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u8, 1), output.exit_code);
+    try std.testing.expectEqualStrings("", output.stdout);
+    try std.testing.expectEqualStrings(
+        "replay info failed: invalid player_index filter: -1\n",
         output.stderr,
     );
 }

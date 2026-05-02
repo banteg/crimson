@@ -632,7 +632,7 @@ test "crimson_info_replay_json accepts info-specific options" {
         std.mem.indexOf(
             u8,
             out[0..required_len],
-            "\"message\":\"replay info failed: replay info collector received out-of-range player_index filter\"",
+            "\"message\":\"replay info failed: player_index filter out of range: 1 (player_count=1)\"",
         ) != null,
     );
 }
