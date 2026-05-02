@@ -20,7 +20,7 @@ from crimson.net.lockstep_protocol import TickFrame
 from crimson.net.lockstep_runtime import HostLockstepRuntimeConfig, LockstepRuntime
 from crimson.sim.hooks import LanFrameSample, LanTickSync, TickResult
 from crimson.sim.input_providers import InputStatus, PerkPickCommand, ResolvedTick
-from crimson.sim.tick_runner import TickBatchResult
+from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from grim.rand import Crand
 from grim.view import ViewContext
 from tests.support.builders import FakeRunner, make_tick_payload
@@ -119,8 +119,8 @@ def test_interactive_headless_no_runtime_pumps_zero(make_game_state) -> None:
 def test_lan_tick_consumption_drives_runner_until_stall(mocker, make_mode_config) -> None:
     mode = _survival_mode(config=make_mode_config(game_mode=GameMode.SURVIVAL))
     tick_payload = make_tick_payload()
-    runner = FakeRunner(results=
-        [
+    runner = FakeRunner(
+        results=[
             TickBatchResult(
                 ticks_completed=1,
                 batch_status=InputStatus.READY,
@@ -175,13 +175,11 @@ def test_lan_tick_consumption_treats_frame_pop_block_as_non_stall(mocker, make_m
         tick_rate=60,
     )
     mocker.patch.object(mode, "_lan_allow_frame_pop", return_value=False)
-
-    def _block_frame_pop() -> None:
-        provider.pull_tick(0, 1.0 / 60.0)
-
-    runner = FakeRunner(
-        results=[TickBatchResult(ticks_completed=0, batch_status=InputStatus.STALLED, next_tick_index=0)],
-        on_advance=_block_frame_pop,
+    session = make_session()[0]
+    runner = TickRunner(
+        session=session,
+        input_provider=provider,
+        config=TickRunnerConfig(),
     )
     mocker.patch.object(
         mode,
@@ -194,13 +192,13 @@ def test_lan_tick_consumption_treats_frame_pop_block_as_non_stall(mocker, make_m
     stop = mode._consume_lan_tick_frames(
         runtime=_host_lan_runtime(),
         lockstep_runtime=None,
-        session=make_session()[0],
+        session=session,
         role="host",
         dt_tick=1.0 / 60.0,
     )
 
     assert stop is False
-    assert runner.calls == 1
+    assert provider.pop_blocked is True
     assert int(mode._input_stall_count) == before_stall_count
 
 
@@ -251,7 +249,8 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
                 completed_results=ticks,
             ),
         ],
-        on_advance=lambda: provider._samples_by_runner_tick.update(sync_samples),
+        lan_frame_sample_sink=provider._samples_by_runner_tick,
+        lan_frame_samples_by_advance=[sync_samples],
     )
     runtime = _BroadcastTickFrameRuntime()
     tick_sync = _LanTickSyncRuntime(
@@ -315,7 +314,8 @@ def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker, make_mode_c
                 completed_results=[tick],
             ),
         ],
-        on_advance=lambda: provider._samples_by_runner_tick.update(sync_samples),
+        lan_frame_sample_sink=provider._samples_by_runner_tick,
+        lan_frame_samples_by_advance=[sync_samples],
     )
     runtime = _BroadcastTickFrameRuntime()
     tick_sync = _LanTickSyncRuntime(
