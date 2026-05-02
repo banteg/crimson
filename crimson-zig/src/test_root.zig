@@ -230,6 +230,16 @@ test {
     try std.testing.expectEqual(@as(u8, 0), smoke_output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, smoke_output.stdout, "\"host_input_flags\": 3") != null);
 
+    const rollback_smoke_output = try cz.net_rollback_smoke_native.runRollbackSmoke(
+        std.testing.allocator,
+        std.Io.Threaded.global_single_threaded.io(),
+        &.{ "--json", "--impair", "guest-double-reconnect" },
+    );
+    defer rollback_smoke_output.deinit(std.testing.allocator);
+    try std.testing.expectEqual(@as(u8, 0), rollback_smoke_output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, rollback_smoke_output.stdout, "\"host_reconnect_count\": 2") != null);
+    try std.testing.expect(std.mem.indexOf(u8, rollback_smoke_output.stdout, "\"guest_reconnect_count\": 2") != null);
+
     _ = cz.perks;
     _ = cz.persistence;
     _ = cz.projectiles;

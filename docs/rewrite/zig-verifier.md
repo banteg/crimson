@@ -106,6 +106,7 @@ Current supported replay-tooling behavior:
   and `net smoke-rollback --impair force-guest-resync --format json`
   and `net smoke-rollback --impair guest-reconnect --format json`
   and `net smoke-rollback --impair guest-reconnect-resync --format json`
+  and `net smoke-rollback --impair guest-double-reconnect --format json`
   and `net smoke-rollback --impair jitter-burst --format json`
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
   data rather than stale “unsupported path” wording
