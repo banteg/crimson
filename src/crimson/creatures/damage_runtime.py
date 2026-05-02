@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 
 from ..owner_ref import OwnerRef
 
@@ -29,6 +30,9 @@ class CreatureDamageRuntime(msgspec.Struct):
 
     def on_secondary_detonation_kill(self, creature_index: int) -> None:
         _ = creature_index
+
+    def on_creature_lethal(self, creature_index: int, death_sfx: tuple[SfxId, ...]) -> None:
+        _ = creature_index, death_sfx
 
 
 class DirectCreatureDamageRuntime(CreatureDamageRuntime):

@@ -99,6 +99,7 @@ class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeath
             return
         creature_apply_damage_with_lethal_followup(
             creature,
+            creature_index=idx,
             damage_amount=float(damage),
             damage_type=int(damage_type),
             impulse=impulse,
@@ -109,16 +110,19 @@ class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeath
             preserve_bugs=bool(self.world.state.preserve_bugs),
             effects=self.world.state.effects,
             detail_preset=int(self.detail_preset),
-            on_lethal=lambda death_sfx: self.world._record_creature_death(
-                creature_index=idx,
-                dt=float(self.dt),
-                detail_preset=int(self.detail_preset),
-                world_size=float(self.world_size),
-                fx_queue=self.fx_queue,
-                deaths=self.deaths,
-                sfx=self.sfx,
-                death_sfx=death_sfx,
-            ),
+            creature_damage_runtime=self,
+        )
+
+    def on_creature_lethal(self, creature_index: int, death_sfx: tuple[SfxId, ...]) -> None:
+        self.world._record_creature_death(
+            creature_index=int(creature_index),
+            dt=float(self.dt),
+            detail_preset=int(self.detail_preset),
+            world_size=float(self.world_size),
+            fx_queue=self.fx_queue,
+            deaths=self.deaths,
+            sfx=self.sfx,
+            death_sfx=death_sfx,
         )
 
     def on_secondary_detonation_kill(self, creature_index: int) -> None:
