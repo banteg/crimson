@@ -45,10 +45,10 @@ Today `crimson-zig/` already has:
   [`crimson-zig/src/net_rollback_smoke_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/net_rollback_smoke_native.zig),
   including delayed, reordered, and dropped guest-input smoke cases that force
   prediction correction without resync, plus a guest-requested resync smoke
-  case that applies a host snapshot stream, a repeated jitter-burst smoke case,
-  a relay-token guest self-reconnect smoke case with post-reconnect input
-  continuity, a double guest reconnect smoke case, and a longer
-  reconnect-then-resync smoke case,
+  case that applies a host snapshot stream, repeated and bidirectional
+  jitter-burst smoke cases, a relay-token guest self-reconnect smoke case with
+  post-reconnect input continuity, a double guest reconnect smoke case, and a
+  longer reconnect-then-resync smoke case,
 - a freestanding WASM replay verify/info/benchmark plus checkpoint diff/verify ABI in
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig).
 
