@@ -106,6 +106,38 @@ pub const HealthSummary = struct {
     }
 };
 
+pub const TickCheckpointSummary = struct {
+    score_xp: i32,
+    kills: i32,
+    creature_count: i32,
+    perk_pending: i32,
+};
+
+pub const TickEntityCounts = struct {
+    creatures: i32,
+    projectiles: i32,
+    secondary_projectiles: i32,
+    bonuses: i32,
+};
+
+pub const TickSummary = struct {
+    tick_index: i32,
+    elapsed_ms: i64,
+    dt_ms_i32: i32,
+    mode_id: i32,
+    checkpoint: TickCheckpointSummary,
+    entity_counts: TickEntityCounts,
+    rng_stream_count: i32,
+    timing_samples_count: i32,
+    event_count_total: i32,
+    top_event_types: []const []const u8,
+
+    pub fn deinit(self: TickSummary, allocator: std.mem.Allocator) void {
+        for (self.top_event_types) |entry| allocator.free(entry);
+        allocator.free(self.top_event_types);
+    }
+};
+
 const TickRange = struct {
     start_tick: i32,
     end_tick: i32,
@@ -588,6 +620,132 @@ pub fn summarizeTraceHealthBytes(
         .issues = owned_issues,
         .ok_for_parity_analysis = owned_issues.len == 0,
     };
+}
+
+pub fn summarizeTraceTickFile(
+    allocator: std.mem.Allocator,
+    io: std.Io,
+    trace_path: []const u8,
+    tick_index: i32,
+) !TickSummary {
+    const bytes = try std.Io.Dir.cwd().readFileAlloc(io, trace_path, allocator, .limited(256 * 1024 * 1024));
+    defer allocator.free(bytes);
+    return summarizeTraceTickBytes(allocator, bytes, tick_index);
+}
+
+pub fn summarizeTraceTickBytes(
+    allocator: std.mem.Allocator,
+    bytes: []const u8,
+    tick_index: i32,
+) !TickSummary {
+    if (tick_index < 0) return error.TickNotFound;
+    if (bytes.len < trace_magic.len + 4 + trailer_magic.len + 8) return error.InvalidTraceHeader;
+    if (!std.mem.startsWith(u8, bytes, trace_magic)) return error.InvalidTraceMagic;
+    const version = readU32Le(bytes[trace_magic.len..][0..4]);
+    if (version != trace_format_version) return error.UnsupportedTraceFormatVersion;
+
+    const trailer_offset = bytes.len - trailer_magic.len - 8;
+    if (!std.mem.eql(u8, bytes[trailer_offset..][0..trailer_magic.len], trailer_magic)) return error.InvalidTraceTrailer;
+    const footer_offset_u64 = readU64Le(bytes[trailer_offset + trailer_magic.len ..][0..8]);
+    if (footer_offset_u64 > std.math.maxInt(usize)) return error.InvalidTraceFooterOffset;
+    const footer_offset: usize = @intCast(footer_offset_u64);
+    const footer_chunk = try chunkPayloadAt(bytes, footer_offset);
+    if (!std.mem.eql(u8, footer_chunk.kind, chunk_kind_footer)) return error.InvalidTraceFooterChunk;
+    var decoded_footer = try msgpack.decodeFromSlice(TraceFooter, allocator, footer_chunk.payload);
+    defer decoded_footer.deinit();
+    const footer = decoded_footer.value;
+
+    for (footer.tick_blocks) |entry| {
+        if (tick_index < entry.start_tick or tick_index > entry.end_tick) continue;
+        if (entry.file_offset < 0) return error.InvalidTraceBlockOffset;
+        const tick_chunk = try chunkPayloadAt(bytes, @intCast(entry.file_offset));
+        if (!std.mem.eql(u8, tick_chunk.kind, chunk_kind_tick)) return error.InvalidTraceTickChunk;
+        if (tick_chunk.start_tick != entry.start_tick or tick_chunk.end_tick != entry.end_tick) return error.InvalidTraceTickChunk;
+        if (entry.uncompressed_len < 0) return error.InvalidTraceTickChunk;
+        if (tick_chunk.payload.len != @as(usize, @intCast(entry.uncompressed_len))) return error.InvalidTraceTickChunk;
+        if (checksum64(tick_chunk.payload) != entry.checksum) return error.InvalidTraceChecksum;
+
+        var decoded_block = try msgpack.decodeFromSlice(TickBlockRead, allocator, tick_chunk.payload);
+        defer decoded_block.deinit();
+        const block = decoded_block.value;
+        if (block.start_tick != entry.start_tick or block.end_tick != entry.end_tick) return error.InvalidTraceTickBlock;
+
+        for (block.ticks) |tick| {
+            if (tick.tick_index == tick_index) {
+                return buildTickSummary(allocator, tick);
+            }
+        }
+        return error.TickNotFound;
+    }
+
+    return error.TickNotFound;
+}
+
+fn buildTickSummary(allocator: std.mem.Allocator, tick: TickRecordRead) !TickSummary {
+    const checkpoint = tick.channels.checkpoint;
+    const entity_samples = tick.channels.entity_samples;
+    const event_counts = .{
+        .hit_count = checkpoint.events.hit_count,
+        .pickup_count = checkpoint.events.pickup_count,
+        .sfx_count = checkpoint.events.sfx_count,
+    };
+
+    return .{
+        .tick_index = tick.tick_index,
+        .elapsed_ms = tick.elapsed_ms,
+        .dt_ms_i32 = tick.dt_ms_i32,
+        .mode_id = tick.mode_id,
+        .checkpoint = .{
+            .score_xp = checkpoint.score_xp,
+            .kills = checkpoint.kills,
+            .creature_count = checkpoint.creature_count,
+            .perk_pending = checkpoint.perk_pending,
+        },
+        .entity_counts = .{
+            .creatures = @intCast(entity_samples.creatures.len),
+            .projectiles = @intCast(entity_samples.projectiles.len),
+            .secondary_projectiles = @intCast(entity_samples.secondary_projectiles.len),
+            .bonuses = @intCast(entity_samples.bonuses.len),
+        },
+        .rng_stream_count = @intCast(tick.channels.rng_stream.len),
+        .timing_samples_count = @intCast(tick.channels.timing_samples.len),
+        .event_count_total = event_counts.hit_count + event_counts.pickup_count + event_counts.sfx_count,
+        .top_event_types = try buildTopEventTypes(allocator, event_counts),
+    };
+}
+
+const EventCount = struct {
+    name: []const u8,
+    count: i32,
+};
+
+fn buildTopEventTypes(
+    allocator: std.mem.Allocator,
+    event_counts: anytype,
+) ![]const []const u8 {
+    var rows = [_]EventCount{
+        .{ .name = "hit_count", .count = event_counts.hit_count },
+        .{ .name = "pickup_count", .count = event_counts.pickup_count },
+        .{ .name = "sfx_count", .count = event_counts.sfx_count },
+    };
+    std.mem.sort(EventCount, &rows, {}, eventCountLessThan);
+
+    const out = try allocator.alloc([]const u8, rows.len);
+    errdefer allocator.free(out);
+    var built: usize = 0;
+    errdefer {
+        for (out[0..built]) |entry| allocator.free(entry);
+    }
+    for (rows, 0..) |row, idx| {
+        out[idx] = try std.fmt.allocPrint(allocator, "{s}:{d}", .{ row.name, row.count });
+        built += 1;
+    }
+    return out;
+}
+
+fn eventCountLessThan(_: void, left: EventCount, right: EventCount) bool {
+    if (left.count != right.count) return left.count > right.count;
+    return std.mem.lessThan(u8, left.name, right.name);
 }
 
 const EntityGenerationState = struct {

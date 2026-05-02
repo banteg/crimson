@@ -137,7 +137,10 @@ Frida validates this row against raw tick `dt`, Python records it from the repla
 driver `before_tick` hook, and Zig emits it from the replay step timing trace.
 `dbg diff` and `dbg focus` compare timing rows. Python `dbg health` and native
 `crimson-zig dbg health <trace.cdt> --format json` report required row channels
-that are present but empty across the selected trace window.
+that are present but empty across the selected trace window. Native
+`crimson-zig dbg tick <trace.cdt> <tick> --json` can inspect one tick's
+checkpoint, entity-count, event-count, RNG-row, and timing-row summary directly
+from the same CDT chunks.
 
 ## Phase model
 

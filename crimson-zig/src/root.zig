@@ -8,6 +8,7 @@ pub const verify_native = @import("verify_native.zig");
 pub const cli = @import("cli.zig");
 pub const dbg_health_native = @import("dbg_health_native.zig");
 pub const dbg_record_native = @import("dbg_record_native.zig");
+pub const dbg_tick_native = @import("dbg_tick_native.zig");
 pub const dbg_verify_native = @import("dbg_verify_native.zig");
 pub const status_native = @import("status_native.zig");
 pub const hash = @import("hash.zig");

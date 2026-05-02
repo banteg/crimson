@@ -97,6 +97,8 @@ Current supported replay-tooling behavior:
 - native CDT trace health inspection via
   `dbg health <trace.cdt> --format json`, including tick-window filters and
   `--json-out`
+- native one-tick CDT summaries via `dbg tick <trace.cdt> <tick> --json`,
+  including `--json-out`
 - native debug schema contract reporting via `dbg verify`
 - native `crimson.cfg` human/JSON inspection via `config`
 - native `game.cfg` checksum-verified human/JSON inspection via `status`
