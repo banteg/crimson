@@ -7,6 +7,7 @@ from grim.geom import Vec2
 
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
+from ..projectiles.types import CreatureDamageApplier
 from ..sim.state_types import GameplayState, PlayerState
 from .apply_context import BonusApplyCtx, BonusApplyHandler
 from .double_experience import apply_double_experience
@@ -58,6 +59,7 @@ def bonus_apply(
     detail_preset: int = 5,
     defer_freeze_corpse_fx: bool = False,
     freeze_corpse_indices: set[int] | None = None,
+    apply_creature_damage: CreatureDamageApplier | None = None,
 ) -> None:
     """Apply a bonus to player + global timers (subset of `bonus_apply`)."""
 
@@ -84,6 +86,7 @@ def bonus_apply(
         icon_id=int(icon_id),
         defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
         freeze_corpse_indices=freeze_corpse_indices,
+        apply_creature_damage=apply_creature_damage,
     )
     handler = _BONUS_APPLY_HANDLERS.get(bonus_id)
     if handler is not None:

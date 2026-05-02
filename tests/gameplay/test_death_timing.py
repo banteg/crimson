@@ -104,7 +104,8 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
     before_state = rng.state
 
     def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
-        apply_creature_damage = world.state.projectiles.creature_damage_applier
+        ctx = cast("PrimaryStepCtx", _args[0])
+        apply_creature_damage = ctx.options.apply_creature_damage
         assert apply_creature_damage is not None
         apply_creature_damage(0, 1000.0, CreatureDamageType.BULLET, Vec2(), OwnerRef.from_player(0))
         return []
@@ -249,8 +250,7 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
 
     def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
         ctx = cast("PrimaryStepCtx", _args[0])
-        _ = ctx.options
-        apply_creature_damage = world.state.projectiles.creature_damage_applier
+        apply_creature_damage = ctx.options.apply_creature_damage
         assert apply_creature_damage is not None
         apply_creature_damage(0, 1000.0, CreatureDamageType.BULLET, Vec2(), OwnerRef.from_player(0))
         return []
@@ -354,8 +354,7 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
     def _fake_projectile_step(*args: object, **kwargs: object) -> list[ProjectileHit]:
         _ = kwargs
         ctx = cast("PrimaryStepCtx", args[0])
-        _ = ctx.options
-        apply_creature_damage = world.state.projectiles.creature_damage_applier
+        apply_creature_damage = ctx.options.apply_creature_damage
         if apply_creature_damage is not None:
             apply_creature_damage(0, 1000.0, CreatureDamageType.BULLET, Vec2(), OwnerRef.from_player(0))
         return []

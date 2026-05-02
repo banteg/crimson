@@ -7,7 +7,7 @@ from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.gameplay import GameplayState
 from crimson.projectiles.runtime import ProjectileUpdateOptions
-from crimson.projectiles.types import ProjectileHit
+from crimson.projectiles.types import CreatureDamageApplier, ProjectileHit
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.rand import CrandLike
@@ -98,6 +98,7 @@ def make_projectile_update_options(
     runtime_state: GameplayState | None = None,
     players: Sequence[PlayerState] | None = None,
     apply_player_damage: Callable[[int, float], None] | None = None,
+    apply_creature_damage: CreatureDamageApplier | None = None,
     on_hit: Callable[[ProjectileHit], object] | None = None,
     on_hit_post: Callable[[ProjectileHit, object], None] | None = None,
 ) -> ProjectileUpdateOptions:
@@ -112,6 +113,7 @@ def make_projectile_update_options(
         apply_player_damage=(
             _default_apply_player_damage(player_seq) if apply_player_damage is None else apply_player_damage
         ),
+        apply_creature_damage=apply_creature_damage,
         ion_aoe_scale=float(ion_aoe_scale),
         detail_preset=int(detail_preset),
         on_hit=on_hit,
