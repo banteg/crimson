@@ -14,9 +14,11 @@ import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, NetworkSessionConfig, PendingNetworkSession
 from crimson.game_modes import GameMode
-from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider
+from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider, _LanTickSyncRuntime
 from crimson.modes.survival_mode import SurvivalMode
-from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
+from crimson.net.lockstep_protocol import TickFrame
+from crimson.net.lockstep_runtime import HostLockstepRuntimeConfig, LockstepRuntime
+from crimson.sim.hooks import LanFrameSample, LanTickSync, TickResult
 from crimson.sim.input_providers import InputStatus, PerkPickCommand, ResolvedTick
 from crimson.sim.tick_runner import TickBatchResult
 from grim.rand import Crand
@@ -43,6 +45,14 @@ class _DummyRuntime:
         return None
 
 
+class _BroadcastTickFrameRuntime:
+    def __init__(self) -> None:
+        self.frames: list[TickFrame] = []
+
+    def broadcast_tick_frame(self, frame: TickFrame) -> None:
+        self.frames.append(frame)
+
+
 def _pending_session() -> PendingNetworkSession:
     return PendingNetworkSession(
         role="host",
@@ -57,6 +67,18 @@ def _pending_session() -> PendingNetworkSession:
 
 def _assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
+
+
+def _host_lan_runtime() -> LockstepRuntime:
+    return LockstepRuntime(
+        HostLockstepRuntimeConfig(
+            mode_id=GameMode.SURVIVAL,
+            player_count=1,
+            bind_host="127.0.0.1",
+            host_ip="127.0.0.1",
+            port=0,
+        ),
+    )
 
 
 def _mode_rng() -> Crand:
@@ -125,7 +147,7 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker, make_mode_config
         player_count=1,
         tick_rate=60,
     )
-    mocker.patch.object(mode, "_build_lan_sync_callbacks", return_value=None)
+    mocker.patch.object(mode, "_build_lan_tick_sync_runtime", return_value=None)
     mocker.patch.object(mode, "_lan_on_tick_applied", return_value="continue")
     mocker.patch.object(
         mode,
@@ -134,7 +156,7 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker, make_mode_config
     )
 
     stop = mode._consume_lan_tick_frames(
-        runtime=object(),  # type: ignore[arg-type]  # _ensure_tick_runner is patched
+        runtime=_host_lan_runtime(),
         lockstep_runtime=None,
         session=make_session()[0],
         role="host",
@@ -161,11 +183,11 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker, make_
         "_ensure_tick_runner",
         return_value=(runner, provider),
     )
-    mocker.patch.object(mode, "_build_lan_sync_callbacks", return_value=None)
+    mocker.patch.object(mode, "_build_lan_tick_sync_runtime", return_value=None)
 
     before_stall_count = int(mode._input_stall_count)
     stop = mode._consume_lan_tick_frames(
-        runtime=object(),  # type: ignore[arg-type]  # _ensure_tick_runner is patched
+        runtime=_host_lan_runtime(),
         lockstep_runtime=None,
         session=make_session()[0],
         role="host",
@@ -199,16 +221,6 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
             payload=make_tick_payload(elapsed_ms=33.33),
         ),
     ]
-    runner = FakeRunner(results=
-        [
-            TickBatchResult(
-                ticks_completed=2,
-                batch_status=InputStatus.READY,
-                next_tick_index=2,
-                completed_results=ticks,
-            ),
-        ],
-    )
     provider = _LanRuntimeInputProvider(
         player_count=1,
         tick_rate=60,
@@ -225,16 +237,25 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
             commands=(),
         ),
     }
-    broadcast_calls: list[int] = []
-    callbacks = LanSyncCallbacks(
+    runner = FakeRunner(
+        results=[
+            TickBatchResult(
+                ticks_completed=2,
+                batch_status=InputStatus.READY,
+                next_tick_index=2,
+                completed_results=ticks,
+            ),
+        ],
+        on_advance=lambda: provider._samples_by_runner_tick.update(sync_samples),
+    )
+    runtime = _BroadcastTickFrameRuntime()
+    tick_sync = _LanTickSyncRuntime(
         role="host",
-        take_frame_sample=lambda tick: sync_samples.pop(int(tick), None),
-        broadcast_tick_frame=lambda frame_tick_index, _frame_inputs, _commands: broadcast_calls.append(
-            int(frame_tick_index),
-        ),
+        provider=provider,
+        lockstep_runtime=runtime,
     )
 
-    mocker.patch.object(mode, "_build_lan_sync_callbacks", return_value=callbacks)
+    mocker.patch.object(mode, "_build_lan_tick_sync_runtime", return_value=tick_sync)
     mocker.patch.object(mode, "_lan_on_tick_applied", return_value="stop_before_finalize")
     mocker.patch.object(
         mode,
@@ -243,7 +264,7 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
     )
 
     stop = mode._consume_lan_tick_frames(
-        runtime=object(),  # type: ignore[arg-type]  # _ensure_tick_runner is patched
+        runtime=_host_lan_runtime(),
         lockstep_runtime=None,
         session=make_session()[0],
         role="host",
@@ -252,9 +273,9 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
 
     assert stop is False
     assert runner.calls == 1
-    assert broadcast_calls == []
+    assert runtime.frames == []
     # Tick 1 was not finalized and its sample should remain untouched.
-    assert 1 in sync_samples
+    assert 1 in provider._samples_by_runner_tick
 
 
 def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker, make_mode_config) -> None:
@@ -269,14 +290,6 @@ def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker, make_mode_c
         ),
         payload=make_tick_payload(elapsed_ms=16.67),
     )
-    runner = FakeRunner(results=[
-        TickBatchResult(
-            ticks_completed=1,
-            batch_status=InputStatus.READY,
-            next_tick_index=1,
-            completed_results=[tick],
-        ),
-    ])
     provider = _LanRuntimeInputProvider(
         player_count=1,
         tick_rate=60,
@@ -288,15 +301,24 @@ def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker, make_mode_c
             commands=(command,),
         ),
     }
-    broadcast_calls: list[tuple[int, tuple[object, ...]]] = []
-    callbacks = LanSyncCallbacks(
-        role="host",
-        take_frame_sample=lambda tick: sync_samples.pop(int(tick), None),
-        broadcast_tick_frame=lambda frame_tick_index, _frame_inputs, commands: broadcast_calls.append(
-            (int(frame_tick_index), tuple(commands)),
-        ),
+    runner = FakeRunner(
+        results=[
+            TickBatchResult(
+                ticks_completed=1,
+                batch_status=InputStatus.READY,
+                next_tick_index=1,
+                completed_results=[tick],
+            ),
+        ],
+        on_advance=lambda: provider._samples_by_runner_tick.update(sync_samples),
     )
-    mocker.patch.object(mode, "_build_lan_sync_callbacks", return_value=callbacks)
+    runtime = _BroadcastTickFrameRuntime()
+    tick_sync = _LanTickSyncRuntime(
+        role="host",
+        provider=provider,
+        lockstep_runtime=runtime,
+    )
+    mocker.patch.object(mode, "_build_lan_tick_sync_runtime", return_value=tick_sync)
     mocker.patch.object(
         mode,
         "_ensure_tick_runner",
@@ -304,7 +326,7 @@ def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker, make_mode_c
     )
 
     stop = mode._consume_lan_tick_frames(
-        runtime=object(),  # type: ignore[arg-type]
+        runtime=_host_lan_runtime(),
         lockstep_runtime=None,
         session=make_session()[0],
         role="host",
@@ -312,7 +334,7 @@ def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker, make_mode_c
     )
 
     assert stop is False
-    assert broadcast_calls == [(10, (command,))]
+    assert [(int(frame.tick_index), tuple(frame.commands)) for frame in runtime.frames] == [(10, (command,))]
 
 
 def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, mocker) -> None:

@@ -3,8 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import time
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal, TypeAlias
+from typing import TYPE_CHECKING, Literal, TypeAlias, cast
 
 import msgspec
 
@@ -64,7 +63,6 @@ from ..sim.clock import FixedStepClock
 from ..sim.frame_pump import advance_tick_runner_frame
 from ..sim.hooks import (
     LanFrameSample,
-    LanSyncCallbacks,
     LanTickSync,
     TickResult,
 )
@@ -105,15 +103,13 @@ if TYPE_CHECKING:
 LanRuntime = LockstepRuntime | RollbackRuntime
 
 
-@dataclass(slots=True)
-class _AppliedBatchTick:
+class _AppliedBatchTick(msgspec.Struct):
     tick: DeterministicSessionTick
     replay_tick_index: int | None
     frame_tick_index: int | None = None
 
 
-@dataclass(frozen=True, slots=True)
-class _BatchApplyOutcome:
+class _BatchApplyOutcome(msgspec.Struct, frozen=True):
     ticks_applied: int = 0
     stopped: bool = False
     stop_after_finalize: bool = False
@@ -121,8 +117,7 @@ class _BatchApplyOutcome:
     post_apply_reactions: tuple[PostApplyReaction, ...] = ()
 
 
-@dataclass(frozen=True, slots=True)
-class _ModeFrameState:
+class _ModeFrameState(msgspec.Struct, frozen=True):
     dt: float
     dt_ui_ms: float
 
@@ -217,6 +212,39 @@ class _LanRuntimeInputProvider:
             return
         if isinstance(runtime, LockstepRuntime):
             runtime.submit_local_command(command)
+
+
+class _LanTickSyncRuntime(msgspec.Struct, frozen=True):
+    role: str
+    provider: _LanRuntimeInputProvider
+    lockstep_runtime: object | None = None
+
+    def prepare_tick_result(self, tick_result: TickResult) -> None:
+        source_tick = tick_result.source_tick
+        sample = self.provider.take_frame_sample(int(source_tick.tick_index))
+        if sample is None:
+            raise RuntimeError("lan tick runner completed without runtime frame metadata")
+        if tuple(source_tick.commands) != tuple(sample.commands):
+            raise RuntimeError("lan tick result commands diverged from canonical frame")
+        tick_result.lan_sync = LanTickSync(
+            frame_tick_index=int(sample.frame_tick_index),
+            frame_inputs=tuple(sample.frame_inputs),
+        )
+
+    def finalize_tick_result(self, tick_result: TickResult) -> None:
+        sync = tick_result.lan_sync
+        if sync is None:
+            raise RuntimeError("lan tick result missing frame metadata")
+        if str(self.role) != "host" or self.lockstep_runtime is None:
+            return
+        runtime = cast(LockstepRuntime, self.lockstep_runtime)
+        runtime.broadcast_tick_frame(
+            TickFrame(
+                tick_index=int(sync.frame_tick_index),
+                frame_inputs=[list(packed) for packed in sync.frame_inputs],
+                commands=list(tick_result.source_tick.commands),
+            ),
+        )
 
 
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
@@ -1412,30 +1440,17 @@ class BaseGameplayMode:
     def _reset_lan_capture_clock(self) -> None:
         self._network_input_provider.reset_capture_clock()
 
-    def _build_lan_sync_callbacks(
+    def _build_lan_tick_sync_runtime(
         self,
         *,
-        runtime: LanRuntime,
         lockstep_runtime: LockstepRuntime | None,
         role: str,
         provider: _LanRuntimeInputProvider,
-    ) -> LanSyncCallbacks:
-        return LanSyncCallbacks(
+    ) -> _LanTickSyncRuntime:
+        return _LanTickSyncRuntime(
             role=str(role),
-            take_frame_sample=provider.take_frame_sample,
-            broadcast_tick_frame=(
-                (
-                    lambda frame_tick_index, frame_inputs, commands: lockstep_runtime.broadcast_tick_frame(
-                        TickFrame(
-                            tick_index=int(frame_tick_index),
-                            frame_inputs=[list(packed) for packed in frame_inputs],
-                            commands=list(commands),
-                        ),
-                    )
-                )
-                if role == "host" and lockstep_runtime is not None
-                else None
-            ),
+            provider=provider,
+            lockstep_runtime=lockstep_runtime if role == "host" else None,
         )
 
     def _ensure_tick_runner(
@@ -1501,43 +1516,6 @@ class BaseGameplayMode:
             None if bool(is_networked) else FixedStepClock(tick_rate=int(self._gameplay_tick_rate()))
         )
         return (runner, provider)
-
-    @staticmethod
-    def _prepare_lan_tick_sync(
-        *,
-        tick_result: TickResult,
-        callbacks: LanSyncCallbacks,
-    ) -> None:
-        source_tick = tick_result.source_tick
-        sample = callbacks.take_frame_sample(int(source_tick.tick_index))
-        if sample is None:
-            raise RuntimeError("lan tick runner completed without runtime frame metadata")
-        if tuple(source_tick.commands) != tuple(sample.commands):
-            raise RuntimeError("lan tick result commands diverged from canonical frame")
-        tick_result.lan_sync = LanTickSync(
-            frame_tick_index=int(sample.frame_tick_index),
-            frame_inputs=tuple(sample.frame_inputs),
-        )
-
-    @staticmethod
-    def _finalize_lan_tick_sync(
-        *,
-        tick_result: TickResult,
-        callbacks: LanSyncCallbacks,
-    ) -> None:
-        sync = tick_result.lan_sync
-        if sync is None:
-            raise RuntimeError("lan tick result missing frame metadata")
-        frame_tick_index = int(sync.frame_tick_index)
-        role = str(callbacks.role)
-
-        broadcast = callbacks.broadcast_tick_frame
-        if role == "host" and broadcast is not None:
-            broadcast(
-                int(frame_tick_index),
-                tuple(sync.frame_inputs),
-                tuple(tick_result.source_tick.commands),
-            )
 
     def _record_replay_checkpoint_from_tick(
         self,
@@ -1718,8 +1696,7 @@ class BaseGameplayMode:
             if provider.pop_blocked:
                 return False
         else:
-            lan_sync_callbacks = self._build_lan_sync_callbacks(
-                runtime=runtime,
+            lan_tick_sync = self._build_lan_tick_sync_runtime(
                 lockstep_runtime=lockstep_runtime,
                 role=str(role),
                 provider=provider,
@@ -1740,7 +1717,7 @@ class BaseGameplayMode:
                 batch=batch,
                 session=session,
                 recorder=self._replay_recorder,
-                lan_sync_callbacks=lan_sync_callbacks,
+                lan_tick_sync=lan_tick_sync,
                 on_tick_applied=_on_tick_applied,
                 on_checkpoint=lambda replay_tick_index, tick: self._record_replay_checkpoint_from_tick(
                     tick_index=int(replay_tick_index),
@@ -1806,7 +1783,7 @@ class BaseGameplayMode:
         batch: TickBatchResult,
         session: DeterministicSession,
         recorder: ReplayRecorder | None = None,
-        lan_sync_callbacks: LanSyncCallbacks | None = None,
+        lan_tick_sync: _LanTickSyncRuntime | None = None,
         on_tick_applied: Callable[[_AppliedBatchTick], LanStepAction] | None = None,
         on_checkpoint: Callable[[int, DeterministicSessionTick], None] | None = None,
     ) -> _BatchApplyOutcome:
@@ -1830,11 +1807,8 @@ class BaseGameplayMode:
                 tick=tick,
                 replay_tick_index=replay_tick_index,
             )
-            if lan_sync_callbacks is not None:
-                self._prepare_lan_tick_sync(
-                    tick_result=tick_result,
-                    callbacks=lan_sync_callbacks,
-                )
+            if lan_tick_sync is not None:
+                lan_tick_sync.prepare_tick_result(tick_result)
             if tick_result.lan_sync is not None:
                 applied.frame_tick_index = int(tick_result.lan_sync.frame_tick_index)
 
@@ -1868,11 +1842,8 @@ class BaseGameplayMode:
             if replay_tick_index is not None and on_checkpoint is not None:
                 on_checkpoint(int(replay_tick_index), tick)
 
-            if lan_sync_callbacks is not None:
-                self._finalize_lan_tick_sync(
-                    tick_result=tick_result,
-                    callbacks=lan_sync_callbacks,
-                )
+            if lan_tick_sync is not None:
+                lan_tick_sync.finalize_tick_result(tick_result)
 
             if action == "stop_after_finalize":
                 stop_after_finalize = True
