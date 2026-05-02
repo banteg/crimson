@@ -11,7 +11,7 @@ Standalone Zig workspace for the native Crimson port.
   `replay benchmark`, checkpoint verification/diffing),
 - a real raylib desktop app target,
 - archive/codec support for `crimson.paq`, `music.paq`, `sfx.paq`, `crimson.cfg`, and `game.cfg`,
-- a freestanding WASM replay verify/info ABI.
+- a freestanding WASM replay verify/info/benchmark and checkpoint comparison ABI.
 
 The desktop target now owns a real boot-to-menu-to-gameplay loop:
 
@@ -33,8 +33,8 @@ It is mostly closure work:
 - replay/tooling breadth still lags Python,
 - some product-shell flows are still thinner than Python,
 - checkpoint verification tooling still lacks some Python-only diagnostics,
-- WASM is still a narrow replay/runtime ABI, but exposes both verify and info
-  JSON paths,
+- WASM is still a narrow replay/runtime ABI, but exposes replay
+  verify/info/benchmark JSON paths plus checkpoint text and JSON paths,
 - network/LAN parity is still deferred.
 
 For the staged remaining-work breakdown, see
@@ -83,8 +83,8 @@ zig build asset-smoke
 zig build run -- replay verify <replay.crd> --format json
 zig build run -- replay info <replay.crd> --format json
 zig build run -- replay list --base-dir .
-zig build run -- replay verify-checkpoints <replay.crd>
-zig build run -- replay diff-checkpoints <expected.chk> <actual.chk>
+zig build run -- replay verify-checkpoints <replay.crd> --format json
+zig build run -- replay diff-checkpoints <expected.chk> <actual.chk> --format json
 zig build run -- replay benchmark <replay.crd> --runs 5
 zig build asset-smoke -- /path/to/assets --json
 zig build run -- relay serve --bind 127.0.0.1 --port 31993
@@ -166,10 +166,13 @@ Current freestanding exports:
 - `crimson_info_replay_json(replay_ptr, replay_len, opts_ptr, opts_len, out_ptr, out_len) -> i32`
 - `crimson_benchmark_replay_json(replay_ptr, replay_len, opts_ptr, opts_len, out_ptr, out_len) -> i32`
 - `crimson_diff_checkpoints_text(expected_ptr, expected_len, actual_ptr, actual_len, out_ptr, out_len) -> i32`
+- `crimson_diff_checkpoints_json(expected_ptr, expected_len, actual_ptr, actual_len, out_ptr, out_len) -> i32`
 - `crimson_verify_checkpoints_text(replay_ptr, replay_len, checkpoints_ptr, checkpoints_len, opts_ptr, opts_len, out_ptr, out_len) -> i32`
+- `crimson_verify_checkpoints_json(replay_ptr, replay_len, checkpoints_ptr, checkpoints_len, opts_ptr, opts_len, out_ptr, out_len) -> i32`
 - `crimson_last_error_json(out_ptr, out_len) -> i32`
 
-The replay verify/info/checkpoint exports accept an optional JSON options
-object with `max_ticks`. The replay benchmark export accepts `max_ticks`,
-`runs`, `warmup_runs`, and `trace_rng`; freestanding WASM has no host clock, so
-callers that need wall-time measurements should time the export externally.
+The replay verify/info and checkpoint verify exports accept an optional JSON
+options object with `max_ticks`. The replay benchmark export accepts
+`max_ticks`, `runs`, `warmup_runs`, and `trace_rng`; freestanding WASM has no
+host clock, so callers that need wall-time measurements should time the export
+externally.
