@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from pathlib import Path
-from types import SimpleNamespace
 
 import crimson.world.render_resources as render_resources_mod
 from crimson.sim.terrain_fx import TerrainDecalFx, TerrainFxBatch
 from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS
 from grim.assets import TextureId
 from grim.color import RGBA
+from grim.config import default_crimson_cfg
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 from tests.support.world_runtime import WorldRuntimeHost
@@ -91,7 +91,9 @@ def test_process_ground_pending_does_not_live_sync_texture_scale_from_config(ass
         texture_scale=1.0,
     )
     world.render_resources.ground = ground
-    world.render_resources.config = SimpleNamespace(texture_scale=0.5)
+    config = default_crimson_cfg()
+    config.display.texture_scale = 0.5
+    world.render_resources.config = config
 
     world.render_resources.process_ground_pending()
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.game_modes import GameMode
-from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
@@ -36,7 +35,7 @@ class _WorldRuntimeHostPostApplyReactionRuntime(PostApplyReactionRuntime):
         self.host.audio_bridge.router.play_sfx(sfx)
 
 
-class WorldRuntimeHost:
+class WorldRuntimeHost(WorldRuntime):
     def __init__(
         self,
         *,
@@ -52,7 +51,7 @@ class WorldRuntimeHost:
         rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC,
     ) -> None:
         resolved_audio_rng = audio_rng if audio_rng is not None else Crand(0xBEEF)
-        self._runtime = WorldRuntime(
+        super().__init__(
             assets_dir=assets_dir,
             world_size=world_size,
             demo_mode_active=demo_mode_active,
@@ -67,148 +66,7 @@ class WorldRuntimeHost:
         player_count = 1
         if config is not None:
             player_count = int(config.gameplay.player_count)
-        self._runtime.reset(player_count=max(1, min(4, int(player_count))))
-        self._survival_test_spawn_state = SurvivalSpawnState()
-        self._survival_test_elapsed_ms = 0.0
-
-    # ------------------------------------------------------------------
-    # Delegated properties
-    # ------------------------------------------------------------------
-
-    @property
-    def assets_dir(self) -> Path:
-        return self._runtime.assets_dir
-
-    @property
-    def world_size(self) -> float:
-        return self._runtime.world_size
-
-    @world_size.setter
-    def world_size(self, value: float) -> None:
-        self._runtime.world_size = float(value)
-
-    @property
-    def demo_mode_active(self) -> bool:
-        return self._runtime.demo_mode_active
-
-    @demo_mode_active.setter
-    def demo_mode_active(self, value: bool) -> None:
-        self._runtime.demo_mode_active = bool(value)
-
-    @property
-    def quest_fail_retry_count(self) -> int:
-        return self._runtime.quest_fail_retry_count
-
-    @quest_fail_retry_count.setter
-    def quest_fail_retry_count(self, value: int) -> None:
-        self._runtime.quest_fail_retry_count = int(value)
-
-    @property
-    def hardcore(self) -> bool:
-        return self._runtime.hardcore
-
-    @hardcore.setter
-    def hardcore(self, value: bool) -> None:
-        self._runtime.hardcore = bool(value)
-
-    @property
-    def preserve_bugs(self) -> bool:
-        return self._runtime.preserve_bugs
-
-    @preserve_bugs.setter
-    def preserve_bugs(self, value: bool) -> None:
-        self._runtime.preserve_bugs = bool(value)
-
-    @property
-    def config(self) -> CrimsonConfig | None:
-        return self._runtime.config
-
-    @config.setter
-    def config(self, value: CrimsonConfig | None) -> None:
-        self._runtime.config = value
-
-    @property
-    def audio(self) -> AudioState | None:
-        return self._runtime.audio
-
-    @audio.setter
-    def audio(self, value: AudioState | None) -> None:
-        self._runtime.audio = value
-
-    @property
-    def audio_rng(self) -> Crand:
-        return self._runtime.audio_rng
-
-    @audio_rng.setter
-    def audio_rng(self, value: Crand) -> None:
-        self._runtime.audio_rng = value
-
-    @property
-    def rtx_mode(self) -> RtxRenderMode:
-        return self._runtime.rtx_mode
-
-    @rtx_mode.setter
-    def rtx_mode(self, value: RtxRenderMode) -> None:
-        self._runtime.rtx_mode = value
-
-    @property
-    def sim_world(self):
-        return self._runtime.sim_world
-
-    @property
-    def render_resources(self):
-        return self._runtime.render_resources
-
-    @property
-    def audio_bridge(self):
-        return self._runtime.audio_bridge
-
-    @property
-    def terrain_runtime(self):
-        return self._runtime.terrain_runtime
-
-    @property
-    def camera(self) -> Vec2:
-        return self._runtime.camera
-
-    @camera.setter
-    def camera(self, value: Vec2) -> None:
-        self._runtime.camera = value
-
-    @property
-    def lan_player_rings_enabled(self) -> bool:
-        return self._runtime.lan_player_rings_enabled
-
-    @lan_player_rings_enabled.setter
-    def lan_player_rings_enabled(self, value: bool) -> None:
-        self._runtime.lan_player_rings_enabled = bool(value)
-
-    @property
-    def lan_local_aim_indicators_only(self) -> bool:
-        return self._runtime.lan_local_aim_indicators_only
-
-    @lan_local_aim_indicators_only.setter
-    def lan_local_aim_indicators_only(self, value: bool) -> None:
-        self._runtime.lan_local_aim_indicators_only = bool(value)
-
-    @property
-    def lan_local_player_slot_index(self) -> int:
-        return self._runtime.lan_local_player_slot_index
-
-    @lan_local_player_slot_index.setter
-    def lan_local_player_slot_index(self, value: int) -> None:
-        self._runtime.lan_local_player_slot_index = int(value)
-
-    @property
-    def renderer(self):
-        return self._runtime.renderer
-
-    # ------------------------------------------------------------------
-    # Delegated lifecycle methods
-    # ------------------------------------------------------------------
-
-    def sync_audio_bridge_state(self) -> None:
-        self._runtime.sync_audio_bridge_state()
+        self.reset(player_count=max(1, min(4, int(player_count))))
 
     def reset(
         self,
@@ -217,34 +75,28 @@ class WorldRuntimeHost:
         player_count: int = 1,
         spawn_pos: Vec2 | None = None,
     ) -> None:
-        self._runtime.reset(seed=seed, player_count=player_count, spawn_pos=spawn_pos)
+        super().reset(seed=seed, player_count=player_count, spawn_pos=spawn_pos)
         self._survival_test_spawn_state = SurvivalSpawnState()
         self._survival_test_elapsed_ms = 0.0
 
     def open(self) -> None:
-        self._runtime.open_runtime()
+        self.open_runtime()
 
     def close(self) -> None:
-        self._runtime.close_runtime()
-
-    def build_render_frame(self) -> RenderFrame:
-        return self._runtime.build_render_frame()
-
-    def update_camera(self, dt: float) -> None:
-        self._runtime.update_camera(dt)
+        self.close_runtime()
 
     # ------------------------------------------------------------------
     # Test-specific methods (not on WorldRuntime)
     # ------------------------------------------------------------------
 
     def load_world_state(self, world_state: WorldState) -> None:
-        self._runtime.sim_world.load_world_state(world_state)
+        self.sim_world.load_world_state(world_state)
         self._survival_test_spawn_state = SurvivalSpawnState()
         self._survival_test_elapsed_ms = 0.0
 
     def sync_ground_settings(self) -> None:
-        self._runtime.render_resources.config = self._runtime.config
-        self._runtime.render_resources.sync_ground_settings()
+        self.render_resources.config = self.config
+        self.render_resources.sync_ground_settings()
 
     def apply_terrain_setup(
         self,
@@ -252,22 +104,16 @@ class WorldRuntimeHost:
         terrain_slots: TerrainSlotTriplet,
         seed: int,
     ) -> None:
-        self._runtime.terrain_runtime.apply_terrain_setup(
+        self.terrain_runtime.apply_terrain_setup(
             terrain_slots=terrain_slots,
             seed=int(seed),
         )
 
-    def draw(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        self._runtime.draw(
-            draw_aim_indicators=draw_aim_indicators,
-            entity_alpha=entity_alpha,
-        )
-
     def world_to_screen(self, pos: Vec2) -> Vec2:
-        return self._runtime.renderer.world_to_screen(pos)
+        return self.renderer.world_to_screen(pos)
 
     def screen_to_world(self, pos: Vec2) -> Vec2:
-        return self._runtime.renderer.screen_to_world(pos)
+        return self.renderer.screen_to_world(pos)
 
     def step_survival_frame(
         self,
