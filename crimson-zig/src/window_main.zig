@@ -146,6 +146,13 @@ const DemoUpsellOverlayMetrics = struct {
     bar_alpha: u8,
 };
 
+const DemoPurchaseBackplasmaColors = struct {
+    top_left: rl.Color,
+    top_right: rl.Color,
+    bottom_right: rl.Color,
+    bottom_left: rl.Color,
+};
+
 const demo_purchase_feature_lines = [_]DemoPurchaseFeatureLine{
     .{ .text = "-Unlimited Play Time in three thrilling Game Modes!", .delta_y = 22.0 },
     .{ .text = "-The varied weapon arsenal consisting of over 20 unique", .delta_y = 17.0 },
@@ -4444,6 +4451,17 @@ test "demo attract purchase buttons follow native right-side layout" {
     try std.testing.expectApproxEqAbs(window_ui.button_plate_height, buttons[0].rect.height, 1e-6);
 }
 
+test "demo purchase backplasma colors follow native corner pulse" {
+    const dark = demoPurchaseBackplasmaColors(0);
+    try std.testing.expectEqualDeep(rl.Color.init(0, 0, 0, 255), dark.top_left);
+    try std.testing.expectEqualDeep(rl.Color.init(0, 0, 77, 255), dark.top_right);
+    try std.testing.expectEqualDeep(rl.Color.init(0, 102, 0, 0), dark.bottom_right);
+    try std.testing.expectEqualDeep(rl.Color.init(0, 102, 102, 255), dark.bottom_left);
+
+    const bright = demoPurchaseBackplasmaColors(250);
+    try std.testing.expectEqualDeep(rl.Color.init(0, 102, 140, 255), bright.bottom_right);
+}
+
 test "demo attract variant 0 sets two-player spider setup" {
     var runner = try live_runner.LiveRunner.init(.{
         .seed = 1234,
@@ -5853,17 +5871,7 @@ fn drawDemoAttractPurchaseScreenAssets(assets: *const window_assets.RuntimeAsset
     const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
     const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
     const wide_shift = demoAttractPurchaseWideShift(screen_w);
-    const pulse_phase = @mod(@as(f32, @floatFromInt(@max(elapsed_ms, 0))), 1000.0);
-    const pulse_s = @sin(pulse_phase * 0.0062831855);
-    const pulse = pulse_s * pulse_s;
-    const back_tint = rl.Color.init(
-        @intFromFloat(170.0 + pulse * 50.0),
-        @intFromFloat(170.0 + pulse * 50.0),
-        @intFromFloat(190.0 + pulse * 45.0),
-        255,
-    );
-
-    drawTextureFit(assets.texture(.backplasma), rl.Rectangle.init(0.0, 0.0, screen_w, screen_h), back_tint);
+    drawDemoPurchaseBackplasma(assets.texture(.backplasma), screen_w, screen_h, elapsed_ms);
     drawTextureFit(
         assets.texture(.mockup),
         rl.Rectangle.init(screen_w * 0.5 - 128.0 + wide_shift, screen_h * 0.5 - 140.0, 512.0, 256.0),
@@ -5891,6 +5899,44 @@ fn drawDemoAttractPurchaseScreenAssets(assets: *const window_assets.RuntimeAsset
         y += line.delta_y;
     }
     drawSmallText(assets, demo_purchase_footer, text_x, y, rl.Color.white);
+}
+
+fn drawDemoPurchaseBackplasma(texture: rl.Texture2D, screen_w: f32, screen_h: f32, elapsed_ms: i32) void {
+    const colors = demoPurchaseBackplasmaColors(elapsed_ms);
+    rl.beginBlendMode(.alpha);
+    rl.gl.rlSetTexture(texture.id);
+    rl.gl.rlBegin(rl.gl.rl_quads);
+    rl.gl.rlColor4ub(colors.top_left.r, colors.top_left.g, colors.top_left.b, colors.top_left.a);
+    rl.gl.rlTexCoord2f(0.0, 0.0);
+    rl.gl.rlVertex2f(0.0, 0.0);
+    rl.gl.rlColor4ub(colors.top_right.r, colors.top_right.g, colors.top_right.b, colors.top_right.a);
+    rl.gl.rlTexCoord2f(0.5, 0.0);
+    rl.gl.rlVertex2f(screen_w, 0.0);
+    rl.gl.rlColor4ub(colors.bottom_right.r, colors.bottom_right.g, colors.bottom_right.b, colors.bottom_right.a);
+    rl.gl.rlTexCoord2f(0.5, 0.5);
+    rl.gl.rlVertex2f(screen_w, screen_h);
+    rl.gl.rlColor4ub(colors.bottom_left.r, colors.bottom_left.g, colors.bottom_left.b, colors.bottom_left.a);
+    rl.gl.rlTexCoord2f(0.0, 0.5);
+    rl.gl.rlVertex2f(0.0, screen_h);
+    rl.gl.rlEnd();
+    rl.gl.rlSetTexture(0);
+    rl.endBlendMode();
+}
+
+fn demoPurchaseBackplasmaColors(elapsed_ms: i32) DemoPurchaseBackplasmaColors {
+    const pulse_phase = @mod(@as(f32, @floatFromInt(@max(elapsed_ms, 0))), 1000.0);
+    const pulse_s = @sin(pulse_phase * 0.0062831855);
+    const pulse = pulse_s * pulse_s;
+    return .{
+        .top_left = colorFromUnitRgba(0.0, 0.0, 0.0, 1.0),
+        .top_right = colorFromUnitRgba(0.0, 0.0, 0.3, 1.0),
+        .bottom_right = colorFromUnitRgba(0.0, 0.4, pulse * 0.55, pulse),
+        .bottom_left = colorFromUnitRgba(0.0, 0.4, 0.4, 1.0),
+    };
+}
+
+fn colorFromUnitRgba(r: f32, g: f32, b: f32, a: f32) rl.Color {
+    return rl.Color.init(alphaByte(r), alphaByte(g), alphaByte(b), alphaByte(a));
 }
 
 fn drawTypoNameLabels(
