@@ -8,14 +8,23 @@ from crimson.persistence import save_status
 
 
 def test_zig_status_human_output_reports_summary(tmp_path: Path) -> None:
+    weapon_counts = [0] * int(save_status.WEAPON_USAGE_COUNT)
+    weapon_counts[3] = 4
+    weapon_counts[10] = 5
+    quest_counts = [0] * int(save_status.QUEST_PLAY_COUNT)
+    quest_counts[7] = 2
+    quest_counts[14] = 6
     data = save_status.GameStatusData(
         quest_unlock_index=12,
         quest_unlock_index_full=34,
+        weapon_usage_counts=tuple(weapon_counts),
+        quest_play_counts=tuple(quest_counts),
         mode_play_survival=1,
         mode_play_rush=2,
         mode_play_typo=3,
         mode_play_other=4,
         game_sequence_id=123456,
+        unknown_tail=b"zig-status-test!",
     )
     path = tmp_path / save_status.GAME_CFG_NAME
     save_status.save_status(path, data)
@@ -34,8 +43,11 @@ def test_zig_status_human_output_reports_summary(tmp_path: Path) -> None:
     assert "quest_unlock_index: 12" in result.stdout
     assert "quest_unlock_index_full: 34" in result.stdout
     assert "mode_plays: survival=1 rush=2 typo=3 other=4" in result.stdout
+    assert "total_weapon_usage: 9" in result.stdout
+    assert "total_quest_plays: 8" in result.stdout
     assert "game_sequence_id: 123456" in result.stdout
     assert "fields:" in result.stdout
+    assert "unknown_tail: 0x7a69672d7374617475732d7465737421 (len=16)" in result.stdout
 
 
 def test_zig_status_json_output_reports_summary_and_fields(tmp_path: Path) -> None:
@@ -57,17 +69,28 @@ def test_zig_status_json_output_reports_summary_and_fields(tmp_path: Path) -> No
     )
     path = tmp_path / save_status.GAME_CFG_NAME
     save_status.save_status(path, data)
+    json_out = tmp_path / "reports" / "status.json"
 
     build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
     assert build_run.returncode == 0, dbg_record._command_detail(build_run)
 
     result = dbg_record._run_process(
-        [str(dbg_record._ZIG_BIN), "status", "--base-dir", str(tmp_path), "--format", "json"],
+        [
+            str(dbg_record._ZIG_BIN),
+            "status",
+            "--base-dir",
+            str(tmp_path),
+            "--format",
+            "json",
+            "--json-out",
+            str(json_out),
+        ],
         cwd=dbg_record._REPO_ROOT,
     )
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     payload = json.loads(result.stdout)
+    assert payload == json.loads(json_out.read_text())
     assert payload["schema_version"] == 1
     assert payload["status"] == "ok"
     assert payload["path"] == str(path)
