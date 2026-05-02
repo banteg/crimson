@@ -1,6 +1,9 @@
 const std = @import("std");
 const rl = @import("raylib");
 
+const cz = @import("crimson_zig");
+const room_code = cz.net.room_code;
+
 const window_assets = @import("window_assets.zig");
 const window_menu = @import("window_menu.zig");
 const window_ui = @import("window_ui.zig");
@@ -18,7 +21,7 @@ const default_network_port: u16 = 31993;
 const mod_runtime_scope_text = "Native DLL mod loading is outside this port.";
 const other_games_scope_text = "Other Games ads are outside this port.";
 const network_runtime_scope_text = "Rollback and lockstep runtimes available.";
-const network_room_codes = [_][]const u8{ "ab12", "cd34", "ef56", "gh78" };
+const default_network_room_code = "ab12";
 const default_network_host_endpoint = "0.0.0.0:31993";
 const default_network_join_endpoint = "127.0.0.1:31993";
 
@@ -133,6 +136,37 @@ const NetworkJoinEndpointInput = struct {
     }
 };
 
+const NetworkRoomCodeInput = struct {
+    bytes: [room_code.room_code_length]u8,
+    len: usize,
+
+    fn set(self: *NetworkRoomCodeInput, code: []const u8) void {
+        self.len = 0;
+        for (code) |ch| {
+            if (!networkRoomCodeCharAllowed(ch)) continue;
+            _ = self.insertChar(ch);
+        }
+    }
+
+    fn slice(self: *const NetworkRoomCodeInput) []const u8 {
+        return self.bytes[0..self.len];
+    }
+
+    fn insertChar(self: *NetworkRoomCodeInput, ch: u8) bool {
+        if (self.len >= self.bytes.len) return false;
+        if (!networkRoomCodeCharAllowed(ch)) return false;
+        self.bytes[self.len] = std.ascii.toLower(ch);
+        self.len += 1;
+        return true;
+    }
+
+    fn backspace(self: *NetworkRoomCodeInput) bool {
+        if (self.len == 0) return false;
+        self.len -= 1;
+        return true;
+    }
+};
+
 fn networkEndpointInput(default_endpoint: []const u8) NetworkJoinEndpointInput {
     return .{
         .bytes = defaultNetworkEndpointBytes(default_endpoint),
@@ -144,6 +178,15 @@ fn defaultNetworkEndpointBytes(default_endpoint: []const u8) [network_join_endpo
     var bytes: [network_join_endpoint_max_bytes]u8 = undefined;
     @memcpy(bytes[0..default_endpoint.len], default_endpoint);
     return bytes;
+}
+
+fn networkRoomCodeInput(default_code: []const u8) NetworkRoomCodeInput {
+    var input: NetworkRoomCodeInput = .{
+        .bytes = undefined,
+        .len = 0,
+    };
+    input.set(default_code);
+    return input;
 }
 
 const NetworkEndpoint = struct {
@@ -271,7 +314,7 @@ pub const NetworkState = struct {
     mode: NetworkMode = .survival,
     player_count: i32 = 2,
     netcode: NetworkNetcode = .rollback,
-    room_code_index: usize = 0,
+    room_code_input: NetworkRoomCodeInput = networkRoomCodeInput(default_network_room_code),
     host_endpoint: NetworkJoinEndpointInput = networkEndpointInput(default_network_host_endpoint),
     join_endpoint: NetworkJoinEndpointInput = networkEndpointInput(default_network_join_endpoint),
     status_bytes: [network_status_bytes]u8 = undefined,
@@ -426,7 +469,10 @@ pub fn networkLaunchRequest(state: *const NetworkState) ?NetworkLaunchRequest {
         .rollback => blk: {
             const maybe_room_code: ?[]const u8 = switch (state.role) {
                 .host => null,
-                .join => network_room_codes[state.room_code_index],
+                .join => blk_code: {
+                    _ = room_code.parseRoomCode(state.room_code_input.slice()) catch return null;
+                    break :blk_code state.room_code_input.slice();
+                },
             };
             break :blk .{
                 .role = switch (state.role) {
@@ -455,7 +501,11 @@ pub fn networkLaunchUnavailableMessage(state: *const NetworkState) []const u8 {
                 };
             }
         },
-        .rollback => {},
+        .rollback => {
+            if (state.role == .join) {
+                _ = room_code.parseRoomCode(state.room_code_input.slice()) catch return "Room code must be 4 letters or digits.";
+            }
+        },
     }
     return "Network session is not ready.";
 }
@@ -563,13 +613,7 @@ fn changeSelectedNetworkValue(state: *NetworkState, direction: i32) void {
                 .lockstep => .rollback,
             };
         },
-        .endpoint => {
-            if (state.netcode == .lockstep) return;
-            state.room_code_index = if (direction < 0)
-                (state.room_code_index + network_room_codes.len - 1) % network_room_codes.len
-            else
-                (state.room_code_index + 1) % network_room_codes.len;
-        },
+        .endpoint => {},
         .launch => {},
     }
 }
@@ -631,7 +675,7 @@ fn networkEndpointValueLabel(state: *const NetworkState, scratch: *[96]u8) []con
     return switch (state.netcode) {
         .rollback => switch (state.role) {
             .host => "relay 127.0.0.1:31993",
-            .join => std.fmt.bufPrint(scratch[0..], "room {s} via relay", .{network_room_codes[state.room_code_index]}) catch "",
+            .join => std.fmt.bufPrint(scratch[0..], "room {s} via relay", .{networkRoomCodeLabel(state)}) catch "",
         },
         .lockstep => switch (state.role) {
             .host => std.fmt.bufPrint(scratch[0..], "bind {s}", .{state.host_endpoint.slice()}) catch "",
@@ -640,9 +684,31 @@ fn networkEndpointValueLabel(state: *const NetworkState, scratch: *[96]u8) []con
     };
 }
 
+fn networkRoomCodeLabel(state: *const NetworkState) []const u8 {
+    const code = state.room_code_input.slice();
+    if (code.len == 0) return "-";
+    return code;
+}
+
 fn collectNetworkEndpointInput(state: *NetworkState) NetworkEndpointInputEdits {
     var edits: NetworkEndpointInputEdits = .{};
-    if (state.selection != .endpoint or state.netcode != .lockstep or state.role != .join) return edits;
+    if (state.selection != .endpoint) return edits;
+
+    if (state.netcode == .rollback and state.role == .join) {
+        while (true) {
+            const codepoint = rl.getCharPressed();
+            if (codepoint == 0) break;
+            if (!networkRoomCodeCharAllowed(codepoint)) continue;
+            edits.typed = state.room_code_input.insertChar(@intCast(codepoint)) or edits.typed;
+        }
+
+        if (rl.isKeyPressed(.backspace) or rl.isKeyPressedRepeat(.backspace)) {
+            edits.backspaced = state.room_code_input.backspace();
+        }
+        return edits;
+    }
+
+    if (state.netcode != .lockstep or state.role != .join) return edits;
 
     while (true) {
         const codepoint = rl.getCharPressed();
@@ -659,6 +725,12 @@ fn collectNetworkEndpointInput(state: *NetworkState) NetworkEndpointInputEdits {
 
 fn networkEndpointCharAllowed(codepoint: i32) bool {
     return (codepoint >= '0' and codepoint <= '9') or codepoint == '.' or codepoint == ':';
+}
+
+fn networkRoomCodeCharAllowed(codepoint: i32) bool {
+    return (codepoint >= '0' and codepoint <= '9') or
+        (codepoint >= 'a' and codepoint <= 'z') or
+        (codepoint >= 'A' and codepoint <= 'Z');
 }
 
 fn networkLaunchValueLabel(state: *const NetworkState) []const u8 {
@@ -783,8 +855,8 @@ test "network panel join uses lobby-derived mode and rollback room by default" {
     try std.testing.expectEqualStrings("from lobby", networkPlayersValueLabel(&state, &buf));
     try std.testing.expectEqualStrings("room ab12 via relay", networkEndpointValueLabel(&state, &buf));
 
-    changeSelectedNetworkValue(&state, 1);
-    try std.testing.expectEqualStrings("room cd34 via relay", networkEndpointValueLabel(&state, &buf));
+    state.room_code_input.set("ZX9Q!");
+    try std.testing.expectEqualStrings("room zx9q via relay", networkEndpointValueLabel(&state, &buf));
 
     state.netcode = .lockstep;
     try std.testing.expectEqualStrings("host 127.0.0.1:31993", networkEndpointValueLabel(&state, &buf));
@@ -807,15 +879,22 @@ test "network panel edits lockstep join endpoint" {
     try std.testing.expectEqualStrings("192.168.1.44:32002", state.join_endpoint.slice());
 }
 
-test "network panel keeps rollback endpoint cycling separate from lockstep host input" {
+test "network panel edits rollback room code separately from lockstep host input" {
     var state: NetworkState = .{ .role = .join, .selection = .endpoint };
 
-    changeSelectedNetworkValue(&state, 1);
-    try std.testing.expectEqual(@as(usize, 1), state.room_code_index);
+    state.room_code_input.set("");
+    try std.testing.expect(state.room_code_input.insertChar('A'));
+    try std.testing.expect(state.room_code_input.insertChar('b'));
+    try std.testing.expect(state.room_code_input.insertChar('1'));
+    try std.testing.expect(state.room_code_input.insertChar('2'));
+    try std.testing.expect(!state.room_code_input.insertChar('3'));
+    try std.testing.expectEqualStrings("ab12", state.room_code_input.slice());
+    try std.testing.expect(state.room_code_input.backspace());
+    try std.testing.expectEqualStrings("ab1", state.room_code_input.slice());
 
     state.netcode = .lockstep;
     changeSelectedNetworkValue(&state, 1);
-    try std.testing.expectEqual(@as(usize, 1), state.room_code_index);
+    try std.testing.expectEqualStrings("ab1", state.room_code_input.slice());
 }
 
 test "network panel endpoint input accepts ipv4 port characters only" {
@@ -824,6 +903,14 @@ test "network panel endpoint input accepts ipv4 port characters only" {
     try std.testing.expect(networkEndpointCharAllowed('.'));
     try std.testing.expect(networkEndpointCharAllowed(':'));
     try std.testing.expect(!networkEndpointCharAllowed('a'));
+}
+
+test "network panel room code input accepts alnum only" {
+    try std.testing.expect(networkRoomCodeCharAllowed('0'));
+    try std.testing.expect(networkRoomCodeCharAllowed('z'));
+    try std.testing.expect(networkRoomCodeCharAllowed('Z'));
+    try std.testing.expect(!networkRoomCodeCharAllowed('-'));
+    try std.testing.expect(!networkRoomCodeCharAllowed(':'));
 }
 
 test "network panel validates lockstep endpoint" {
@@ -889,6 +976,10 @@ test "network panel builds launch requests for lockstep and rollback" {
     try std.testing.expectEqual(@as(u16, default_network_port), rollback_join_request.port);
     try std.testing.expectEqualStrings("ab12", rollback_join_request.room_code_text.?);
     try std.testing.expectEqualStrings("Network session is not ready.", networkLaunchUnavailableMessage(&state));
+
+    state.room_code_input.set("A1");
+    try std.testing.expect(networkLaunchRequest(&state) == null);
+    try std.testing.expectEqualStrings("Room code must be 4 letters or digits.", networkLaunchUnavailableMessage(&state));
 
     state.role = .host;
     const rollback_host_request = networkLaunchRequest(&state) orelse return error.TestExpectedEqual;
