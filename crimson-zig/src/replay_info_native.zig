@@ -439,8 +439,8 @@ fn replayCodecErrorDetail(err: replay_codec.ReplayCodecError) []const u8 {
         error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.MissingHeaderField => "replay header missing required fields",
-        error.UnsupportedInputShape => "replay input rows are not in the canonical wire shape",
-        error.UnsupportedEventShape => "replay events are not in the canonical wire shape",
+        error.UnsupportedInputShape => "replay input rows are invalid: expected canonical wire shape",
+        error.UnsupportedEventShape => "replay events are invalid: expected canonical wire shape",
         error.InvalidGzipPayload => "unable to inflate replay gzip payload",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
@@ -463,8 +463,8 @@ fn replayInfoErrorDetail(err: replay_info_mod.ReplayInfoError) []const u8 {
         error.PlayerFilterOutOfRange => "replay info collector received out-of-range player_index filter",
         error.UnsupportedInputQuantization => "replay info collector only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay events include kinds or values invalid for this mode",
-        error.UnsupportedEventPlayerIndex => "replay info collector encountered an out-of-range player_index event",
+        error.UnsupportedEventKind => "replay events include invalid kinds or values for this mode",
+        error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player_index",
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
         error.InvalidSpawnTemplate => "replay capture payload references an invalid creature spawn template",
         error.InvalidQuestSpawnTable => "quest replay/session payload resolves to an invalid quest spawn table",
@@ -826,11 +826,11 @@ test "replay info exposes codec and collector detail helpers" {
         replayInfoErrorDetail(error.PlayerFilterOutOfRange),
     );
     try std.testing.expectEqualStrings(
-        "replay info collector encountered an out-of-range player_index event",
+        "replay events include an out-of-range player_index",
         replayInfoErrorDetail(error.UnsupportedEventPlayerIndex),
     );
     try std.testing.expectEqualStrings(
-        "replay events include kinds or values invalid for this mode",
+        "replay events include invalid kinds or values for this mode",
         replayInfoErrorDetail(error.UnsupportedEventKind),
     );
 }

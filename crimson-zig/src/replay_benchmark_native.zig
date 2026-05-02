@@ -852,8 +852,8 @@ fn benchmarkReplayLoadErrorDetail(err: anyerror) []const u8 {
         error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.MissingHeaderField => "replay header missing required fields",
-        error.UnsupportedInputShape => "replay input rows are not in the canonical wire shape",
-        error.UnsupportedEventShape => "replay events are not in the canonical wire shape",
+        error.UnsupportedInputShape => "replay input rows are invalid: expected canonical wire shape",
+        error.UnsupportedEventShape => "replay events are invalid: expected canonical wire shape",
         error.InvalidGzipPayload => "unable to inflate replay gzip payload",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
@@ -876,8 +876,8 @@ fn benchmarkReplayRunnerErrorDetail(err: anyerror) []const u8 {
         error.UnsupportedPlayerCount => "native replay benchmark only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "native replay benchmark only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay events include kinds or values invalid for this mode",
-        error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player index",
+        error.UnsupportedEventKind => "replay events include invalid kinds or values for this mode",
+        error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player_index",
         error.MissingRngCallerTag => "replay capture is missing required RNG caller tags",
         error.InvalidSpawnTemplate => "replay capture references an invalid spawn template",
         error.InvalidQuestSpawnTable => "replay capture references an invalid quest spawn table",
@@ -1224,11 +1224,11 @@ test "benchmark runner and output errors use user-facing details" {
         benchmarkReplayRunnerErrorDetail(error.UnsupportedGameMode),
     );
     try std.testing.expectEqualStrings(
-        "replay events include an out-of-range player index",
+        "replay events include an out-of-range player_index",
         benchmarkReplayRunnerErrorDetail(error.UnsupportedEventPlayerIndex),
     );
     try std.testing.expectEqualStrings(
-        "replay events include kinds or values invalid for this mode",
+        "replay events include invalid kinds or values for this mode",
         benchmarkReplayRunnerErrorDetail(error.UnsupportedEventKind),
     );
     try std.testing.expectEqualStrings(

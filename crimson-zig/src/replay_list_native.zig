@@ -553,8 +553,8 @@ fn replayListRowErrorDetail(err: anyerror) []const u8 {
         error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.MissingHeaderField => "replay header missing required fields",
-        error.UnsupportedInputShape => "replay input rows are not in the canonical wire shape",
-        error.UnsupportedEventShape => "replay events are not in the canonical wire shape",
+        error.UnsupportedInputShape => "replay input rows are invalid: expected canonical wire shape",
+        error.UnsupportedEventShape => "replay events are invalid: expected canonical wire shape",
         error.InvalidGzipPayload => "unable to inflate replay gzip payload",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
@@ -693,6 +693,14 @@ test "replay list maps invalid row errors to user details" {
     try std.testing.expectEqualStrings(
         "replay events include an unknown command kind",
         replayListRowErrorDetail(error.UnknownCommandKind),
+    );
+    try std.testing.expectEqualStrings(
+        "replay input rows are invalid: expected canonical wire shape",
+        replayListRowErrorDetail(error.UnsupportedInputShape),
+    );
+    try std.testing.expectEqualStrings(
+        "replay events are invalid: expected canonical wire shape",
+        replayListRowErrorDetail(error.UnsupportedEventShape),
     );
     try std.testing.expectEqualStrings(
         "FileBusy",

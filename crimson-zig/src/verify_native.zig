@@ -617,8 +617,8 @@ fn buildOutputForReplayCodecError(
         error.InvalidMsgpack => return buildVerifyFailedOutput(allocator, "replay payload is not valid msgpack wire format"),
         error.InvalidHeaderValue => return buildVerifyFailedOutput(allocator, "replay header contains invalid values"),
         error.MissingHeaderField => return buildVerifyFailedOutput(allocator, "replay header missing required fields"),
-        error.UnsupportedInputShape => return buildVerifyFailedOutput(allocator, "replay input rows are not in the canonical wire shape"),
-        error.UnsupportedEventShape => return buildVerifyFailedOutput(allocator, "replay events are not in the canonical wire shape"),
+        error.UnsupportedInputShape => return buildVerifyFailedOutput(allocator, "replay input rows are invalid: expected canonical wire shape"),
+        error.UnsupportedEventShape => return buildVerifyFailedOutput(allocator, "replay events are invalid: expected canonical wire shape"),
         error.InvalidGzipPayload => return buildVerifyFailedOutput(allocator, "unable to inflate replay gzip payload"),
         error.InvalidZstdPayload => return buildVerifyFailedOutput(allocator, "unable to inflate replay zstd payload"),
         error.UnsupportedReplayFormatVersion => return buildVerifyFailedOutput(allocator, "replay format version is not supported"),
@@ -643,8 +643,8 @@ fn buildReplayRunnerFailureOutput(
         error.UnsupportedPlayerCount => "native replay run only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "native replay run only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay events include kinds or values invalid for this mode",
-        error.UnsupportedEventPlayerIndex => "native replay run encountered an out-of-range player_index event",
+        error.UnsupportedEventKind => "replay events include invalid kinds or values for this mode",
+        error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player_index",
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
         error.InvalidSpawnTemplate => "replay capture payload references an invalid creature spawn template",
         error.InvalidQuestSpawnTable => "quest replay/session payload resolves to an invalid quest spawn table",
@@ -1096,8 +1096,8 @@ test "replay codec invalid replay errors map to verify failed output" {
         .{ .err = error.InvalidMsgpack, .detail = "replay payload is not valid msgpack wire format" },
         .{ .err = error.InvalidHeaderValue, .detail = "replay header contains invalid values" },
         .{ .err = error.MissingHeaderField, .detail = "replay header missing required fields" },
-        .{ .err = error.UnsupportedInputShape, .detail = "replay input rows are not in the canonical wire shape" },
-        .{ .err = error.UnsupportedEventShape, .detail = "replay events are not in the canonical wire shape" },
+        .{ .err = error.UnsupportedInputShape, .detail = "replay input rows are invalid: expected canonical wire shape" },
+        .{ .err = error.UnsupportedEventShape, .detail = "replay events are invalid: expected canonical wire shape" },
         .{ .err = error.InvalidGzipPayload, .detail = "unable to inflate replay gzip payload" },
         .{ .err = error.UnsupportedReplayFormatVersion, .detail = "replay format version is not supported" },
         .{ .err = error.UnknownCommandKind, .detail = "replay events include an unknown command kind" },
@@ -1134,8 +1134,10 @@ test "runtime replay failure output includes progress hints" {
     defer allocator.free(output.stderr);
 
     try std.testing.expectEqual(@as(i32, 1), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay events include invalid kinds or values for this mode") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "ticks_processed=2559/8807") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "event_count=8") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "unsupported") == null);
 }
 
 fn makeTestReplayHeader(
