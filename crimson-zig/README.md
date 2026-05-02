@@ -117,8 +117,8 @@ HUD, world rendering, terrain FX, projectiles, perk menus, and audio.
 Current notable behaviors:
 
 - window size is read from `crimson.cfg`,
-- `--demo` enables the shareware shell and `--no-intro` skips directly to the
-  root menu,
+- `--demo` enables the shareware shell, `--no-intro` skips directly to the
+  root menu, and `--seed N` fixes the first run seed,
 - the OS cursor is hidden and replaced by native menu/aim cursors,
 - world rendering uses archive-backed terrain/sprites/effects,
 - gameplay audio and product-shell audio are routed through native Zig audio

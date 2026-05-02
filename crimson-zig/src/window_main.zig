@@ -700,6 +700,7 @@ const App = struct {
     assets_state: AssetsState = .unavailable,
     assets_message: ?[]u8 = null,
     next_seed_state: u32 = 0xC0FFEE,
+    next_seed_override: ?u32 = null,
     cursor_pulse_time: f32 = 0.0,
     demo_enabled: bool = false,
     demo_trial_elapsed_ms: i32 = 0,
@@ -722,6 +723,7 @@ const App = struct {
             .screen = initialScreenForArgs(args),
             .audio = live_audio.Bridge.init(allocator, audio_mod.audioConfigFromCrimsonCfg(runtime.config), null),
             .demo_enabled = args.demo_enabled,
+            .next_seed_override = args.seed,
         };
         app.boot.reset();
         app.menu.reset();
@@ -933,10 +935,10 @@ const App = struct {
         }
         if (play_game_update.play_button_click) self.audio.playUiButtonClick();
         if (play_game_update.action) |action| switch (action) {
-            .start_survival => self.startNewRun(runConfigForLiveMode(.survival, null, &self.next_seed_state)),
-            .start_rush => self.startNewRun(runConfigForLiveMode(.rush, null, &self.next_seed_state)),
-            .start_typo => self.startNewRun(runConfigForLiveMode(.typo, null, &self.next_seed_state)),
-            .start_tutorial => self.startNewRun(runConfigForLiveMode(.tutorial, null, &self.next_seed_state)),
+            .start_survival => self.startNewRun(self.liveRunConfig(.survival, null)),
+            .start_rush => self.startNewRun(self.liveRunConfig(.rush, null)),
+            .start_typo => self.startNewRun(self.liveRunConfig(.typo, null)),
+            .start_tutorial => self.startNewRun(self.liveRunConfig(.tutorial, null)),
             .open_quests => {
                 self.quests_menu.reset();
                 self.setScreen(.quests_menu);
@@ -967,7 +969,7 @@ const App = struct {
             return;
         }
         if (quest_update.start_level_key) |level_key| {
-            self.startNewRun(runConfigForLiveMode(.quests, level_key, &self.next_seed_state));
+            self.startNewRun(self.liveRunConfig(.quests, level_key));
         }
     }
 
@@ -1267,7 +1269,7 @@ const App = struct {
         self.audio.stopGameplayMusic();
 
         const io = std.Io.Threaded.global_single_threaded.io();
-        const seed: i32 = @bitCast(nextRunSeed(&self.next_seed_state));
+        const seed: i32 = @bitCast(self.takeRunSeed());
         var session = NetworkLiveRuntime.init(request, seed) catch |err| {
             self.network_session.setStatusFmt("Lockstep init failed: {s}", .{@errorName(err)});
             return;
@@ -1601,17 +1603,17 @@ const App = struct {
             0 => {
                 self.runtime.config.game_mode = @intFromEnum(game_ids.GameModeId.survival);
                 self.runtime.config_dirty = true;
-                self.startNewRun(runConfigForLiveMode(.survival, null, &self.next_seed_state));
+                self.startNewRun(self.liveRunConfig(.survival, null));
             },
             1 => {
                 self.runtime.config.game_mode = @intFromEnum(game_ids.GameModeId.rush);
                 self.runtime.config_dirty = true;
-                self.startNewRun(runConfigForLiveMode(.rush, null, &self.next_seed_state));
+                self.startNewRun(self.liveRunConfig(.rush, null));
             },
             2 => {
                 self.runtime.config.game_mode = @intFromEnum(game_ids.GameModeId.typo);
                 self.runtime.config_dirty = true;
-                self.startNewRun(runConfigForLiveMode(.typo, null, &self.next_seed_state));
+                self.startNewRun(self.liveRunConfig(.typo, null));
             },
             3 => {
                 self.menu.openRoot();
@@ -1909,7 +1911,7 @@ const App = struct {
         self.demo_attract_purchase_active = false;
         self.demo_attract_purchase_limit_ms = 0;
         self.demo_attract_purchase_ui.reset();
-        var run_config = runConfigForLiveMode(.survival, null, &self.next_seed_state);
+        var run_config = self.liveRunConfig(.survival, null);
         run_config.player_count = demoAttractPlayerCount(variant_index);
         run_config.demo_mode_active = true;
         self.startNewRun(run_config);
@@ -2511,11 +2513,20 @@ const App = struct {
         }
         window_options.drawControls(&self.controls, if (self.runtime_assets) |*assets| assets else null, self.runtime.config);
     }
+
+    fn liveRunConfig(self: *App, mode: game_ids.GameModeId, quest_level_key: ?i32) live_runner.LiveModeConfig {
+        return runConfigForLiveModeWithSeed(mode, quest_level_key, self.takeRunSeed());
+    }
+
+    fn takeRunSeed(self: *App) u32 {
+        return takeSeedOverride(&self.next_seed_state, &self.next_seed_override);
+    }
 };
 
 const WindowArgs = struct {
     demo_enabled: bool = false,
     no_intro: bool = false,
+    seed: ?u32 = null,
 };
 
 pub fn main(init: std.process.Init) !void {
@@ -2554,7 +2565,9 @@ pub fn main(init: std.process.Init) !void {
 
 fn parseWindowArgs(args: []const []const u8) !WindowArgs {
     var parsed: WindowArgs = .{};
-    for (args[1..]) |arg| {
+    var index: usize = 1;
+    while (index < args.len) : (index += 1) {
+        const arg = args[index];
         if (std.mem.eql(u8, arg, "--demo")) {
             parsed.demo_enabled = true;
             continue;
@@ -2563,13 +2576,29 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
             parsed.no_intro = true;
             continue;
         }
+        if (std.mem.eql(u8, arg, "--seed")) {
+            index += 1;
+            if (index >= args.len) return error.InvalidArgs;
+            parsed.seed = try parseWindowSeed(args[index]);
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--seed=")) {
+            parsed.seed = try parseWindowSeed(arg["--seed=".len..]);
+            continue;
+        }
         if (std.mem.eql(u8, arg, "--help")) {
-            std.debug.print("usage: crimson-zig-window [--demo] [--no-intro]\n", .{});
+            std.debug.print("usage: crimson-zig-window [--demo] [--no-intro] [--seed N]\n", .{});
             std.process.exit(0);
         }
         return error.InvalidArgs;
     }
     return parsed;
+}
+
+fn parseWindowSeed(raw: []const u8) !u32 {
+    const value = std.fmt.parseInt(u64, raw, 0) catch return error.InvalidArgs;
+    if (value > std.math.maxInt(u32)) return error.InvalidArgs;
+    return @intCast(value);
 }
 
 fn initialScreenForArgs(args: WindowArgs) Screen {
@@ -3597,8 +3626,39 @@ test "window args parse demo and no intro flags" {
     try std.testing.expectEqual(Screen.main_menu, initialScreenForArgs(args));
 }
 
+test "window args parse seed flag" {
+    const separate = try parseWindowArgs(&.{ "crimson-zig-window", "--seed", "123" });
+    try std.testing.expectEqual(@as(?u32, 123), separate.seed);
+
+    const joined = try parseWindowArgs(&.{ "crimson-zig-window", "--seed=0x1234" });
+    try std.testing.expectEqual(@as(?u32, 0x1234), joined.seed);
+}
+
+test "window args reject invalid seed" {
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--seed" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--seed", "nope" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--seed", "0x100000000" }));
+}
+
 test "window args reject unknown flags" {
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--wat" }));
+}
+
+test "seed override is consumed before generated seeds" {
+    var seed_state: u32 = 0xC0FFEE;
+    var override: ?u32 = 12345;
+
+    try std.testing.expectEqual(@as(u32, 12345), takeSeedOverride(&seed_state, &override));
+    try std.testing.expectEqual(@as(?u32, null), override);
+    try std.testing.expectEqual(nextRunSeedFromState(0xC0FFEE), takeSeedOverride(&seed_state, &override));
+}
+
+test "zero seed override normalizes to nonzero" {
+    var seed_state: u32 = 0xC0FFEE;
+    var override: ?u32 = 0;
+
+    try std.testing.expectEqual(@as(u32, 1), takeSeedOverride(&seed_state, &override));
+    try std.testing.expectEqual(@as(u32, 0xC0FFEE), seed_state);
 }
 
 test "results high score type click follows native random bit" {
@@ -5913,8 +5973,21 @@ fn zeroSessionSummary() runtime_session.SessionSummary {
 }
 
 fn nextRunSeed(seed_state: *u32) u32 {
-    seed_state.* = seed_state.* *% 1664525 +% 1013904223;
-    return if (seed_state.* == 0) 1 else seed_state.*;
+    seed_state.* = nextRunSeedFromState(seed_state.*);
+    return seed_state.*;
+}
+
+fn nextRunSeedFromState(seed_state: u32) u32 {
+    const next_seed = seed_state *% 1664525 +% 1013904223;
+    return if (next_seed == 0) 1 else next_seed;
+}
+
+fn takeSeedOverride(seed_state: *u32, seed_override: *?u32) u32 {
+    if (seed_override.*) |seed| {
+        seed_override.* = null;
+        return if (seed == 0) 1 else seed;
+    }
+    return nextRunSeed(seed_state);
 }
 
 fn nextQuestLevelKey(level_key: i32) ?i32 {
@@ -5931,7 +6004,10 @@ fn isFinalQuestLevelKey(level_key: i32) bool {
 }
 
 fn runConfigForLiveMode(mode: game_ids.GameModeId, quest_level_key: ?i32, seed_state: *u32) live_runner.LiveModeConfig {
-    const seed = nextRunSeed(seed_state);
+    return runConfigForLiveModeWithSeed(mode, quest_level_key, nextRunSeed(seed_state));
+}
+
+fn runConfigForLiveModeWithSeed(mode: game_ids.GameModeId, quest_level_key: ?i32, seed: u32) live_runner.LiveModeConfig {
     return switch (mode) {
         .rush => .{
             .seed = seed,
