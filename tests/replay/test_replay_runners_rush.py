@@ -4,8 +4,7 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.sim.input_providers import PerkPickCommand
-from grim.rand import CallerStatic
-from tests.support.replay_runner_helpers import _blank_rush_replay, _run_verify_playback
+from tests.support.replay_runner_helpers import ReplayRngTraceRecorder, _blank_rush_replay, _run_verify_playback
 
 
 def test_rush_runner_is_deterministic() -> None:
@@ -83,16 +82,13 @@ def test_rush_runner_checkpoints_capture_debug_fields() -> None:
 def test_rush_runner_tick_rng_trace_observer_emits_rows_for_first_tick() -> None:
     _header, rec = _blank_rush_replay(ticks=1, seed=0x1234)
     replay = rec.finish()
-    rows_by_tick: dict[int, list[tuple[int, int, int, CallerStatic]]] = {}
-
-    def _observer(tick_index: int, draws: list[tuple[int, int, int, CallerStatic]]) -> None:
-        rows_by_tick[int(tick_index)] = list(draws)
+    observer = ReplayRngTraceRecorder(rows_by_tick={})
 
     _run_verify_playback(
         replay,
         trace_rng=True,
-        tick_rng_trace_observer=_observer,
+        observer=observer,
     )
 
-    assert sorted(rows_by_tick.keys()) == [0]
-    assert rows_by_tick[0]
+    assert sorted(observer.rows_by_tick.keys()) == [0]
+    assert observer.rows_by_tick[0]

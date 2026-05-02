@@ -3,15 +3,45 @@ from __future__ import annotations
 import pytest
 
 from crimson.replay.driver.playback_driver import (
-    PlaybackWalkHooks,
+    PlaybackWalkObserver,
     PlaybackWalkResult,
     build_verify_playback_driver,
 )
 from crimson.replay.driver.setup import ReplayRunnerError
+from crimson.sim.hooks import TickResult
+from crimson.sim.world_state import WorldState
 from tests.support.replay_runner_helpers import _blank_survival_replay
 
 
-def test_playback_driver_walk_before_and_after_hooks_see_pre_and_post_step_world(mocker) -> None:
+class _ExperienceWalkObserver(PlaybackWalkObserver):
+    observed_before: list[int]
+    observed_after: list[int]
+
+    def before_tick(self, tick_index: int, world: WorldState, dt_tick: float) -> None:
+        _ = tick_index, dt_tick
+        self.observed_before.append(int(world.players[0].experience))
+
+    def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
+        _ = tick_result
+        self.observed_after.append(int(world.players[0].experience))
+
+
+class _ProgressObserver(PlaybackWalkObserver):
+    progress_ticks: list[int]
+
+    def progress(self, next_tick_index: int) -> None:
+        self.progress_ticks.append(int(next_tick_index))
+
+
+class _WalkedTickObserver(PlaybackWalkObserver):
+    walked_ticks: list[int]
+
+    def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
+        _ = world
+        self.walked_ticks.append(int(tick_result.source_tick.tick_index))
+
+
+def test_playback_driver_walk_observer_sees_pre_and_post_step_world(mocker) -> None:
     _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
     replay = rec.finish()
     driver = build_verify_playback_driver(replay)
@@ -27,9 +57,9 @@ def test_playback_driver_walk_before_and_after_hooks_see_pre_and_post_step_world
     mocker.patch.object(driver, "step_tick", side_effect=_step_tick_with_mutation)
 
     walk_result = driver.walk_ticks(
-        hooks=PlaybackWalkHooks(
-            before_tick=lambda _tick_index, world, _dt_tick: observed_before.append(int(world.players[0].experience)),
-            after_tick=lambda _tick_result, world: observed_after.append(int(world.players[0].experience)),
+        observer=_ExperienceWalkObserver(
+            observed_before=observed_before,
+            observed_after=observed_after,
         ),
     )
 
@@ -47,7 +77,7 @@ def test_playback_driver_walk_progress_uses_absolute_completed_tick_indexes() ->
     walk_result = driver.walk_ticks(
         start_tick=1,
         stop_tick=3,
-        hooks=PlaybackWalkHooks(on_progress=progress_ticks.append),
+        observer=_ProgressObserver(progress_ticks=progress_ticks),
     )
 
     assert walk_result == PlaybackWalkResult(start_tick=1, next_tick_index=3, ticks_completed=2)
@@ -63,9 +93,7 @@ def test_playback_driver_walk_clamps_ranges_to_tick_limit() -> None:
     walk_result = driver.walk_ticks(
         start_tick=2,
         stop_tick=10,
-        hooks=PlaybackWalkHooks(
-            after_tick=lambda tick_result, _world: walked_ticks.append(int(tick_result.source_tick.tick_index)),
-        ),
+        observer=_WalkedTickObserver(walked_ticks=walked_ticks),
     )
 
     assert walk_result == PlaybackWalkResult(start_tick=2, next_tick_index=3, ticks_completed=1)

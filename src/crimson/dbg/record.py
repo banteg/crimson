@@ -14,8 +14,9 @@ from grim.rand import RecordedCallerStatic
 from ..math_parity import f32
 from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint
-from ..replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
+from ..replay.driver.playback_driver import PlaybackWalkObserver, RngTraceDraw, build_verify_playback_driver
 from ..replay.types import Replay
+from ..sim.hooks import TickResult
 from ..sim.step_pipeline import time_scale_reflex_boost_factor
 from ..sim.timing import ftol_ms_i32
 from ..sim.world_state import WorldState
@@ -390,30 +391,6 @@ def _record_replay_to_trace_python(
     secondary_state = _EntityGenerationState()
     bonus_state = _EntityGenerationState()
 
-    def _tick_observer(tick_index: int, world: WorldState) -> None:
-        entity_samples_by_tick[tick_index] = _entity_samples_for_world(
-            world,
-            creature_state=creature_state,
-            projectile_state=projectile_state,
-            secondary_state=secondary_state,
-            bonus_state=bonus_state,
-        )
-        sim_state_by_tick[tick_index] = _sim_state_from_world(world, replay=replay)
-
-    def _tick_rng_trace_observer(tick_index: int, draws: list[tuple[int, int, int, RecordedCallerStatic]]) -> None:
-        rng_stream_by_tick[int(tick_index)] = _rng_stream_from_draws(draws)
-
-    def _before_tick(tick_index: int, world: WorldState, dt: float) -> None:
-        dt_ms_i32 = int(ftol_ms_i32(dt))
-        if dt_ms_i32 < 0:
-            raise ValueError(f"invalid replay dt_ms_i32 at tick {tick_index}: {dt_ms_i32}")
-        timing_samples_by_tick[int(tick_index)] = _timing_samples_for_tick(
-            tick_index=int(tick_index),
-            dt=float(dt),
-            dt_ms_i32=dt_ms_i32,
-            world=world,
-        )
-
     driver = build_verify_playback_driver(
         replay,
         max_ticks=None,
@@ -421,24 +398,36 @@ def _record_replay_to_trace_python(
         strict_rng_trace=True,
     )
 
-    def _after_tick(tick_result, world: WorldState) -> None:
-        tick_index = int(tick_result.source_tick.tick_index)
-        if tick_index in checkpoint_ticks:
-            checkpoints.append(driver.build_checkpoint(tick_result=tick_result))
-        _tick_observer(tick_index, world)
+    class _ReplayRecordObserver(PlaybackWalkObserver):
+        def before_tick(self, tick_index: int, world: WorldState, dt_tick: float) -> None:
+            dt_ms_i32 = int(ftol_ms_i32(dt_tick))
+            if dt_ms_i32 < 0:
+                raise ValueError(f"invalid replay dt_ms_i32 at tick {tick_index}: {dt_ms_i32}")
+            timing_samples_by_tick[int(tick_index)] = _timing_samples_for_tick(
+                tick_index=int(tick_index),
+                dt=float(dt_tick),
+                dt_ms_i32=dt_ms_i32,
+                world=world,
+            )
 
-    def _on_rng_trace(tick_result, draws: tuple[tuple[int, int, int, RecordedCallerStatic], ...]) -> None:
-        _tick_rng_trace_observer(
-            int(tick_result.source_tick.tick_index),
-            list(draws),
-        )
+        def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
+            tick_index = int(tick_result.source_tick.tick_index)
+            if tick_index in checkpoint_ticks:
+                checkpoints.append(driver.build_checkpoint(tick_result=tick_result))
+            entity_samples_by_tick[tick_index] = _entity_samples_for_world(
+                world,
+                creature_state=creature_state,
+                projectile_state=projectile_state,
+                secondary_state=secondary_state,
+                bonus_state=bonus_state,
+            )
+            sim_state_by_tick[tick_index] = _sim_state_from_world(world, replay=replay)
+
+        def rng_trace(self, tick_result: TickResult, draws: tuple[RngTraceDraw, ...]) -> None:
+            rng_stream_by_tick[int(tick_result.source_tick.tick_index)] = _rng_stream_from_draws(list(draws))
 
     driver.run(
-        hooks=PlaybackWalkHooks(
-            before_tick=_before_tick,
-            after_tick=_after_tick,
-            on_rng_trace=_on_rng_trace,
-        ),
+        observer=_ReplayRecordObserver(),
     )
 
     tick_rows: list[TickRecord] = []

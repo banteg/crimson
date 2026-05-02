@@ -1604,12 +1604,15 @@ def cmd_replay_verify_checkpoints(
     from ..dbg.checkpoint_diff import compare_checkpoints
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
     from ..replay.checkpoints import (
+        ReplayCheckpoint,
         ReplayCheckpointsError,
         default_checkpoints_path,
         load_checkpoints_file,
     )
-    from ..replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
+    from ..replay.driver.playback_driver import PlaybackDriver, PlaybackWalkObserver, build_verify_playback_driver
     from ..replay.driver.setup import ReplayRunnerError
+    from ..sim.hooks import TickResult
+    from ..sim.world_state import WorldState
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():
@@ -1641,7 +1644,18 @@ def cmd_replay_verify_checkpoints(
         raise typer.Exit(code=1) from exc
 
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected.checkpoints}
-    actual = []
+    actual: list[ReplayCheckpoint] = []
+
+    class _CheckpointVerifyObserver(PlaybackWalkObserver):
+        driver: PlaybackDriver
+        checkpoint_ticks: set[int]
+        actual: list[ReplayCheckpoint]
+
+        def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
+            _ = world
+            tick_index = int(tick_result.source_tick.tick_index)
+            if tick_index in self.checkpoint_ticks:
+                self.actual.append(self.driver.build_checkpoint(tick_result=tick_result))
 
     try:
         driver = build_verify_playback_driver(
@@ -1650,13 +1664,12 @@ def cmd_replay_verify_checkpoints(
             trace_rng=bool(trace_rng),
         )
 
-        def _after_tick(tick_result, _world) -> None:
-            tick_index = int(tick_result.source_tick.tick_index)
-            if tick_index in checkpoint_ticks:
-                actual.append(driver.build_checkpoint(tick_result=tick_result))
-
         result = driver.run(
-            hooks=PlaybackWalkHooks(after_tick=_after_tick),
+            observer=_CheckpointVerifyObserver(
+                driver=driver,
+                checkpoint_ticks=checkpoint_ticks,
+                actual=actual,
+            ),
         )
     except (ReplayGameVersionError, ReplayRunnerError) as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)

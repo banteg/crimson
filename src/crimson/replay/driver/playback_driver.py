@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
+from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass
 from pathlib import Path
 from typing import TypeAlias
+
+import msgspec
 
 from crimson.quests.level import QuestLevel
 from grim.rand import CallerStatic, CrtRand, RecordedCallerStatic, RngTraceSink
@@ -49,13 +50,6 @@ from .setup import (
 )
 
 RngTraceDraw: TypeAlias = tuple[int, int, int, RecordedCallerStatic]
-TickRngTraceObserver: TypeAlias = Callable[[TickResult, tuple[RngTraceDraw, ...]], None]
-TickProgressCallback: TypeAlias = Callable[[int], None]
-TickBeginObserver: TypeAlias = Callable[
-    [int, WorldState, float],
-    None,
-]
-TickEndObserver: TypeAlias = Callable[[TickResult, WorldState], None]
 
 
 def require_quest_level_from_replay(replay: Replay) -> QuestLevel:
@@ -108,16 +102,21 @@ def _tick_rng_trace(rng: object, *, enabled: bool, strict: bool = False) -> Iter
         rng.set_trace_sink(previous_sink, require_caller=bool(previous_require_caller))
 
 
-@dataclass(slots=True, frozen=True)
-class PlaybackWalkHooks:
-    before_tick: TickBeginObserver | None = None
-    after_tick: TickEndObserver | None = None
-    on_progress: TickProgressCallback | None = None
-    on_rng_trace: TickRngTraceObserver | None = None
+class PlaybackWalkObserver(msgspec.Struct):
+    def before_tick(self, tick_index: int, world: WorldState, dt_tick: float) -> None:
+        _ = tick_index, world, dt_tick
+
+    def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
+        _ = tick_result, world
+
+    def rng_trace(self, tick_result: TickResult, draws: tuple[RngTraceDraw, ...]) -> None:
+        _ = tick_result, draws
+
+    def progress(self, next_tick_index: int) -> None:
+        _ = next_tick_index
 
 
-@dataclass(slots=True, frozen=True)
-class PlaybackWalkResult:
+class PlaybackWalkResult(msgspec.Struct, frozen=True):
     start_tick: int
     next_tick_index: int
     ticks_completed: int
@@ -453,7 +452,7 @@ class PlaybackDriver:
         *,
         start_tick: int = 0,
         stop_tick: int | None = None,
-        hooks: PlaybackWalkHooks | None = None,
+        observer: PlaybackWalkObserver | None = None,
     ) -> PlaybackWalkResult:
         requested_start_tick = int(start_tick)
         if requested_start_tick < 0:
@@ -467,24 +466,20 @@ class PlaybackDriver:
         tick_limit = int(self.tick_limit)
         next_tick_index = min(requested_start_tick, tick_limit)
         stop_tick_index = min(requested_stop_tick, tick_limit)
-        active_hooks = hooks if hooks is not None else PlaybackWalkHooks()
+        active_observer = observer if observer is not None else PlaybackWalkObserver()
 
         while next_tick_index < stop_tick_index:
-            if active_hooks.before_tick is not None:
-                active_hooks.before_tick(
-                    int(next_tick_index),
-                    self.world,
-                    float(self.replay.ticks[next_tick_index].dt),
-                )
+            active_observer.before_tick(
+                int(next_tick_index),
+                self.world,
+                float(self.replay.ticks[next_tick_index].dt),
+            )
             tick_result = self.step_tick(next_tick_index)
             next_tick_index = int(tick_result.source_tick.tick_index) + 1
 
-            if active_hooks.after_tick is not None:
-                active_hooks.after_tick(tick_result, self.world)
-            if active_hooks.on_rng_trace is not None:
-                active_hooks.on_rng_trace(tick_result, self._last_tick_rng_rows)
-            if active_hooks.on_progress is not None:
-                active_hooks.on_progress(int(next_tick_index))
+            active_observer.after_tick(tick_result, self.world)
+            active_observer.rng_trace(tick_result, self._last_tick_rng_rows)
+            active_observer.progress(int(next_tick_index))
 
         return PlaybackWalkResult(
             start_tick=min(requested_start_tick, tick_limit),
@@ -495,12 +490,12 @@ class PlaybackDriver:
     def run(
         self,
         *,
-        hooks: PlaybackWalkHooks | None = None,
+        observer: PlaybackWalkObserver | None = None,
     ) -> RunResult:
         self.walk_ticks(
             start_tick=0,
             stop_tick=int(self.tick_limit),
-            hooks=hooks,
+            observer=observer,
         )
         return self.build_run_result(ticks=int(self.tick_limit))
 
