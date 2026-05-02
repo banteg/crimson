@@ -318,6 +318,36 @@ pub fn runReplayDiffCheckpointsBytes(
     return runDiffWithCheckpoints(allocator, expected.value.checkpoints, actual.value.checkpoints);
 }
 
+/// Compare checkpoint msgpack payloads and return the schema-versioned JSON report.
+pub fn runReplayDiffCheckpointsBytesJson(
+    allocator: std.mem.Allocator,
+    expected_name: []const u8,
+    expected_bytes: []const u8,
+    actual_name: []const u8,
+    actual_bytes: []const u8,
+) !CommandOutput {
+    var expected = loadCheckpointsBytes(allocator, expected_bytes) catch |err| {
+        return buildFailedOutput(allocator, checkpointFileLoadErrorDetail(err));
+    };
+    defer expected.deinit();
+
+    var actual = loadCheckpointsBytes(allocator, actual_bytes) catch |err| {
+        return buildFailedOutput(allocator, checkpointFileLoadErrorDetail(err));
+    };
+    defer actual.deinit();
+
+    return runDiffWithCheckpointsOutput(
+        allocator,
+        expected.value.checkpoints,
+        actual.value.checkpoints,
+        .{
+            .output_format = .json,
+            .expected_file = expected_name,
+            .actual_file = actual_name,
+        },
+    );
+}
+
 pub fn runReplayVerifyCheckpointsBytes(
     allocator: std.mem.Allocator,
     replay_bytes: []const u8,
@@ -341,6 +371,40 @@ pub fn runReplayVerifyCheckpointsBytes(
         replay,
         max_ticks,
         trace_rng,
+    );
+}
+
+/// Verify replay bytes against checkpoint msgpack bytes and return the JSON report.
+pub fn runReplayVerifyCheckpointsBytesJson(
+    allocator: std.mem.Allocator,
+    replay_name: []const u8,
+    replay_bytes: []const u8,
+    checkpoints_name: []const u8,
+    checkpoints_bytes: []const u8,
+    max_ticks: ?usize,
+    trace_rng: bool,
+) !CommandOutput {
+    var expected = loadCheckpointsBytes(allocator, checkpoints_bytes) catch |err| {
+        return buildVerifyFailedOutput(allocator, checkpointFileLoadErrorDetail(err));
+    };
+    defer expected.deinit();
+
+    var replay = loadReplayBytes(allocator, replay_bytes) catch |err| {
+        return buildVerifyFailedOutput(allocator, replayLoadErrorDetail(err));
+    };
+    defer replay.deinit(allocator);
+
+    return runVerifyCheckpointsWithReplayOutput(
+        allocator,
+        expected.value.checkpoints,
+        replay,
+        .{
+            .output_format = .json,
+            .replay_file = replay_name,
+            .checkpoints_file = checkpoints_name,
+            .max_ticks = max_ticks,
+            .trace_rng = trace_rng,
+        },
     );
 }
 
@@ -2067,6 +2131,23 @@ test "byte checkpoint diff accepts msgpack payloads" {
     try std.testing.expectEqual(@as(u8, 0), output.exit_code);
     try std.testing.expectEqualStrings("", output.stderr);
     try std.testing.expectEqualStrings("ok: 1 checkpoints match\n", output.stdout);
+
+    const json_output = try runReplayDiffCheckpointsBytesJson(
+        allocator,
+        "<expected>",
+        payload,
+        "<actual>",
+        payload,
+    );
+    defer json_output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), json_output.exit_code);
+    try std.testing.expectEqualStrings("", json_output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"schema_version\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"command\":\"diff-checkpoints\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"expected\":\"<expected>\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"actual\":\"<actual>\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"checked_count\":1") != null);
 }
 
 test "byte checkpoint verify accepts replay and checkpoint payloads" {
@@ -2122,6 +2203,27 @@ test "byte checkpoint verify accepts replay and checkpoint payloads" {
     try std.testing.expectEqual(@as(u8, 0), traced_output.exit_code);
     try std.testing.expectEqualStrings("", traced_output.stderr);
     try std.testing.expect(std.mem.indexOf(u8, traced_output.stdout, "ok: 1 checkpoints match; ticks=1") != null);
+
+    const json_output = try runReplayVerifyCheckpointsBytesJson(
+        allocator,
+        "<wasm>",
+        replay_bytes,
+        "<checkpoints>",
+        checkpoints_payload,
+        1,
+        true,
+    );
+    defer json_output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), json_output.exit_code);
+    try std.testing.expectEqualStrings("", json_output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"schema_version\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"command\":\"verify-checkpoints\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"replay\":\"<wasm>\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"checkpoints\":\"<checkpoints>\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"checkpoint_count\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"ticks\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"trace_rng\":true") != null);
 }
 
 test "checkpoint diff maps checkpoint load errors to user details" {

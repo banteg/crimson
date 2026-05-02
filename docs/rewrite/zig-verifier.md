@@ -35,7 +35,8 @@ What exists today:
 - archive/config/status codecs,
 - archive-backed rendering/audio,
 - live native gameplay for Survival, Rush, Quests, Typ-o, and Tutorial,
-- a freestanding WASM replay verify/info plus checkpoint diff/verify ABI.
+- a freestanding WASM replay verify/info plus checkpoint diff/verify text and
+  JSON ABI.
 
 Replay tooling is still the most mature headless/public surface, but it now
 consumes the same shared runtime used by the native desktop application.
@@ -84,7 +85,7 @@ Current supported replay-tooling behavior:
 - replay RNG tracing via `replay verify --trace-rng` and
   `replay benchmark --trace-rng`
 - freestanding WASM replay verification and replay info JSON exports
-- freestanding WASM checkpoint diff/verify text exports
+- freestanding WASM checkpoint diff/verify text and JSON exports
 - headless replay throughput timing and native coarse profiling via
   `replay benchmark`, including native JSON profile summary export with
   `--profile --profile-out`; render benchmark mode and cProfile `.pstats`
@@ -138,7 +139,8 @@ The important remaining gaps are now:
 - demo/trial shell behavior exists, but still needs polish alongside the
   surrounding product shell,
 - WASM still exposes a narrow replay/runtime surface, but now has replay
-  verify/info JSON byte-input exports plus checkpoint diff/verify text exports,
+  verify/info JSON byte-input exports plus checkpoint diff/verify text and JSON
+  exports,
 - network/LAN parity still needs broader stress and lobby coverage; Zig can now
   construct rollback sessions, launch live rollback runners, smoke-test a
   host/guest relay exchange, force delayed/reordered/dropped-input rollback

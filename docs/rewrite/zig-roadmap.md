@@ -49,7 +49,8 @@ Today `crimson-zig/` already has:
   jitter-burst smoke cases, a relay-token guest self-reconnect smoke case with
   post-reconnect input continuity, a double guest reconnect smoke case, and a
   longer reconnect-then-resync smoke case,
-- a freestanding WASM replay verify/info/benchmark plus checkpoint diff/verify ABI in
+- a freestanding WASM replay verify/info/benchmark plus checkpoint diff/verify
+  text and JSON ABI in
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig).
 
 Current live/native gameplay coverage:
