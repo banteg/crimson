@@ -535,6 +535,16 @@ pub fn replayEventKindFailureDetail(
     return null;
 }
 
+pub fn replayInputShapeFailureDetail(
+    allocator: std.mem.Allocator,
+    payload: []const u8,
+) ReplayCodecError!?[]u8 {
+    if (try currentReplayInputShapeFailureDetail(allocator, payload)) |detail| {
+        return detail;
+    }
+    return legacyReplayInputShapeFailureDetail(allocator, payload);
+}
+
 fn replayEventKindAllowedInMode(event: ReplayEvent, game_mode: game_ids.GameModeId) bool {
     return switch (event) {
         .typo_char,
@@ -1334,6 +1344,43 @@ fn buildDt(
     return out;
 }
 
+fn currentReplayInputShapeFailureDetail(
+    allocator: std.mem.Allocator,
+    payload: []const u8,
+) ReplayCodecError!?[]u8 {
+    var decoded = msgpack.decodeFromSlice(ReplayCurrentWire, allocator, payload) catch |err| {
+        return switch (err) {
+            error.OutOfMemory => error.OutOfMemory,
+            else => null,
+        };
+    };
+    defer decoded.deinit();
+
+    const wire = decoded.value;
+    const player_count = try parseI32(wire.header.player_count);
+    if (player_count <= 0) return null;
+    const expected_players: usize = @intCast(player_count);
+
+    for (wire.ticks, 0..) |tick, tick_idx| {
+        if (tick.inputs.len != expected_players) {
+            return std.fmt.allocPrint(
+                allocator,
+                "replay tick {d} has {d} players, expected {d}",
+                .{ tick_idx, tick.inputs.len, expected_players },
+            ) catch return error.OutOfMemory;
+        }
+        if (!std.math.isFinite(tick.dt) or tick.dt < 0.0) {
+            return std.fmt.allocPrint(
+                allocator,
+                "replay tick {d} dt must be finite and >= 0",
+                .{tick_idx},
+            ) catch return error.OutOfMemory;
+        }
+    }
+
+    return null;
+}
+
 fn validateCurrentTicks(
     wire_ticks: []const ReplayTickCurrentWire,
     player_count: i32,
@@ -1434,6 +1481,52 @@ fn buildDtCurrent(
         out[idx] = tick.dt;
     }
     return out;
+}
+
+fn legacyReplayInputShapeFailureDetail(
+    allocator: std.mem.Allocator,
+    payload: []const u8,
+) ReplayCodecError!?[]u8 {
+    var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch |err| {
+        return switch (err) {
+            error.OutOfMemory => error.OutOfMemory,
+            else => null,
+        };
+    };
+    defer decoded.deinit();
+
+    const wire = decoded.value;
+    const player_count = try parseI32(wire.header.player_count);
+    if (player_count <= 0) return null;
+    const expected_players: usize = @intCast(player_count);
+
+    for (wire.inputs, 0..) |tick, tick_idx| {
+        if (tick.len != expected_players) {
+            return std.fmt.allocPrint(
+                allocator,
+                "replay tick {d} has {d} players, expected {d}",
+                .{ tick_idx, tick.len, expected_players },
+            ) catch return error.OutOfMemory;
+        }
+    }
+    if (wire.dt.len != wire.inputs.len) {
+        return std.fmt.allocPrint(
+            allocator,
+            "replay dt row count {d} does not match input tick count {d}",
+            .{ wire.dt.len, wire.inputs.len },
+        ) catch return error.OutOfMemory;
+    }
+    for (wire.dt, 0..) |value, tick_idx| {
+        if (!std.math.isFinite(value) or value < 0.0) {
+            return std.fmt.allocPrint(
+                allocator,
+                "replay tick {d} dt must be finite and >= 0",
+                .{tick_idx},
+            ) catch return error.OutOfMemory;
+        }
+    }
+
+    return null;
 }
 
 fn parseCurrentCommand(

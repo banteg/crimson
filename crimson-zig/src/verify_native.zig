@@ -199,6 +199,12 @@ fn runVerifyWithReplayBytes(
     } else replay_bytes;
 
     var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
+        if (err == error.UnsupportedInputShape) {
+            if (try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload)) |detail| {
+                defer allocator.free(detail);
+                return buildVerifyFailedOutput(allocator, detail);
+            }
+        }
         return buildOutputForReplayCodecError(allocator, err);
     };
     defer replay.deinit(allocator);

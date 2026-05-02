@@ -21,6 +21,7 @@ from ._helpers import (
     build_typo_submit_replay,
     inject_tick_commands,
     write_current_bad_claimed_stats_replay,
+    write_current_bad_tick_player_count_replay,
     write_current_missing_quest_level_replay,
     write_current_mode_player_count_replay,
     write_current_typo_event_replay,
@@ -294,6 +295,25 @@ def test_zig_replay_verify_reports_invalid_claimed_stats_detail(tmp_path: Path) 
         "claimed_stats.shots_fired"
     ) in zig_result.stderr
     assert zig_result.stderr == python_result.output
+    assert "native runtime limitation" not in zig_result.stderr
+
+
+def test_zig_replay_verify_reports_tick_player_count_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = write_current_bad_tick_player_count_replay(
+        tmp_path,
+        replay=replay,
+        name="bad-tick-player-count.crd",
+    )
+
+    python_result = _run_python_replay_verify_process([str(replay_path), "--format", "json"])
+    zig_result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
+
+    assert python_result.exit_code == 1, python_result.output
+    assert zig_result.returncode == 1, dbg_record._command_detail(zig_result)
+    assert "replay verification failed: replay tick 0 has 0 players, expected 1" in zig_result.stderr
+    assert zig_result.stderr == python_result.output
+    assert "canonical wire shape" not in zig_result.stderr
     assert "native runtime limitation" not in zig_result.stderr
 
 
