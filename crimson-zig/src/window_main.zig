@@ -2883,6 +2883,13 @@ const ResultsHighscorePromptLayout = struct {
     saved_y: f32,
 };
 
+const ResultsNameEntryClockLayout = struct {
+    table_rect: rl.Rectangle,
+    pointer_rect: rl.Rectangle,
+    pointer_origin: rl.Vector2,
+    rotation: f32,
+};
+
 const quest_failed_panel_w: f32 = 510.0;
 const quest_failed_panel_h: f32 = 378.0;
 const quest_failed_banner_w: f32 = 256.0;
@@ -3013,6 +3020,16 @@ fn resultsNameEntryScoreCardPos(results: *const ResultsScreen, screen_width: f32
         return rl.Vector2.init(prompt.input_rect.x + 26.0, prompt.input_rect.y + 46.0);
     }
     return rl.Vector2.init(prompt.input_rect.x + 16.0, prompt.input_rect.y + 76.0);
+}
+
+fn resultsNameEntryClockLayout(score_card_pos: rl.Vector2, elapsed_ms: u32) ResultsNameEntryClockLayout {
+    const col2_x = score_card_pos.x + 100.0;
+    return .{
+        .table_rect = rl.Rectangle.init(col2_x + 8.0, score_card_pos.y + 14.0, 32.0, 32.0),
+        .pointer_rect = rl.Rectangle.init(col2_x + 24.0, score_card_pos.y + 30.0, 32.0, 32.0),
+        .pointer_origin = rl.Vector2.init(16.0, 16.0),
+        .rotation = @as(f32, @floatFromInt(elapsed_ms)) * 0.006,
+    };
 }
 
 fn resultsScoreTooLowMessagePos(results: *const ResultsScreen, screen_width: f32) rl.Vector2 {
@@ -4163,6 +4180,13 @@ test "results high score prompt uses native ok submit button" {
     const score_card = resultsNameEntryScoreCardPos(&results, 640.0);
     try std.testing.expectApproxEqAbs(@as(f32, 214.0), score_card.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 269.0), score_card.y, 1e-6);
+
+    const clock = resultsNameEntryClockLayout(score_card, 90_000);
+    try std.testing.expectApproxEqAbs(@as(f32, 322.0), clock.table_rect.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 283.0), clock.table_rect.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 338.0), clock.pointer_rect.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 299.0), clock.pointer_rect.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 540.0), clock.rotation, 1e-6);
 }
 
 test "game over score too low message uses native banner anchor" {
@@ -5725,9 +5749,28 @@ fn drawResultsNameEntryScoreCard(
     } else {
         drawSmallText(runtime_assets, "Game time", right_label_x + 6.0, pos.y, label_color);
         var time_buf: [16]u8 = undefined;
-        const elapsed_ms: i32 = @intCast(@min(record.survivalElapsedMs(), @as(u32, @intCast(std.math.maxInt(i32)))));
+        const elapsed_ms_u32 = record.survivalElapsedMs();
+        const elapsed_ms: i32 = @intCast(@min(elapsed_ms_u32, @as(u32, @intCast(std.math.maxInt(i32)))));
+        drawResultsNameEntryClock(runtime_assets, pos, elapsed_ms_u32);
         drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&time_buf, elapsed_ms), right_label_x + 40.0, pos.y + 19.0, label_color);
     }
+}
+
+fn drawResultsNameEntryClock(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    score_card_pos: rl.Vector2,
+    elapsed_ms: u32,
+) void {
+    const layout = resultsNameEntryClockLayout(score_card_pos, elapsed_ms);
+    drawTextureFit(runtime_assets.texture(.ui_clock_table), layout.table_rect, rl.Color.white);
+    rl.drawTexturePro(
+        runtime_assets.texture(.ui_clock_pointer),
+        rl.Rectangle.init(0.0, 0.0, @floatFromInt(runtime_assets.texture(.ui_clock_pointer).width), @floatFromInt(runtime_assets.texture(.ui_clock_pointer).height)),
+        layout.pointer_rect,
+        layout.pointer_origin,
+        layout.rotation,
+        rl.Color.white,
+    );
 }
 
 fn drawResultsNameEntryWeaponRow(
