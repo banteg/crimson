@@ -53,6 +53,8 @@ Today `crimson-zig/` already has:
 - a freestanding WASM replay verify/info/benchmark plus checkpoint diff/verify
   text and JSON ABI in
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig).
+  The replay info export now accepts max-tick, player-index, and verbose event
+  options.
 
 Current live/native gameplay coverage:
 

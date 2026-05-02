@@ -86,7 +86,8 @@ Current supported replay-tooling behavior:
   and `--json-out`
 - replay RNG tracing via `replay verify --trace-rng` and
   `replay benchmark --trace-rng`
-- freestanding WASM replay verification and replay info JSON exports
+- freestanding WASM replay verification and replay info JSON exports, with
+  replay info options for max ticks, player filtering, and verbose event output
 - freestanding WASM checkpoint diff/verify text and JSON exports
 - headless replay throughput timing and native coarse profiling via
   `replay benchmark`, including native JSON profile summary export with
@@ -142,8 +143,8 @@ The important remaining gaps are now:
 - demo/trial shell behavior exists and now honors the demo quest cap in the
   product menus, but still needs polish alongside the surrounding product shell,
 - WASM still exposes a narrow replay/runtime surface, but now has replay
-  verify/info JSON byte-input exports plus checkpoint diff/verify text and JSON
-  exports,
+  verify/info JSON byte-input exports, replay info filter/verbose options, plus
+  checkpoint diff/verify text and JSON exports,
 - network/LAN parity still needs broader stress and lobby coverage; Zig can now
   construct rollback sessions, launch live rollback runners, smoke-test a
   host/guest relay exchange, force delayed/reordered/dropped-input rollback

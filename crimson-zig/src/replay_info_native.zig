@@ -75,6 +75,8 @@ pub fn runReplayInfoBytesJson(
     replay_name: []const u8,
     replay_bytes: []const u8,
     max_ticks: ?usize,
+    player_index: ?i32,
+    include_extra_events: bool,
 ) !CommandOutput {
     var replay_payload_alloc: ?[]u8 = null;
     defer if (replay_payload_alloc) |buf| allocator.free(buf);
@@ -118,8 +120,8 @@ pub fn runReplayInfoBytesJson(
         replay,
         .{
             .max_ticks = max_ticks,
-            .player_index = null,
-            .include_extra_events = false,
+            .player_index = player_index,
+            .include_extra_events = include_extra_events,
         },
     ) catch |err| {
         return buildInfoFailedOutputForReplayInfoError(allocator, err);
@@ -743,6 +745,8 @@ test "byte replay info emits JSON payload" {
         "<bytes>",
         replay_bytes,
         1,
+        null,
+        false,
     );
     defer output.deinit(allocator);
 
@@ -760,6 +764,8 @@ test "byte replay info returns detailed codec failure output" {
         "<bytes>",
         "not msgpack",
         null,
+        null,
+        false,
     );
     defer output.deinit(allocator);
 
@@ -767,6 +773,29 @@ test "byte replay info returns detailed codec failure output" {
     try std.testing.expectEqualStrings("", output.stdout);
     try std.testing.expectEqualStrings(
         "replay info failed: replay payload is not valid msgpack wire format\n",
+        output.stderr,
+    );
+}
+
+test "byte replay info forwards player filter to collector" {
+    const allocator = std.testing.allocator;
+    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(replay_bytes);
+
+    const output = try runReplayInfoBytesJson(
+        allocator,
+        "<bytes>",
+        replay_bytes,
+        null,
+        1,
+        true,
+    );
+    defer output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u8, 1), output.exit_code);
+    try std.testing.expectEqualStrings("", output.stdout);
+    try std.testing.expectEqualStrings(
+        "replay info failed: replay info collector received out-of-range player_index filter\n",
         output.stderr,
     );
 }

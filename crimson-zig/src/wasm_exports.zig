@@ -24,6 +24,13 @@ const WasmVerifyOptions = struct {
     max_ticks: ?usize = null,
 };
 
+const WasmInfoOptions = struct {
+    max_ticks: ?usize = null,
+    player_index: ?i32 = null,
+    include_extra_events: bool = false,
+    verbose: bool = false,
+};
+
 const WasmBenchmarkOptions = struct {
     max_ticks: ?usize = null,
     runs: usize = 1,
@@ -119,7 +126,7 @@ export fn crimson_info_replay_json(
     const replay: [*]const u8 = @ptrFromInt(replay_ptr);
     const replay_bytes = replay[0..replay_len];
 
-    const options = parseVerifyOptions(opts_ptr, opts_len) catch |err| {
+    const options = parseInfoOptions(opts_ptr, opts_len) catch |err| {
         setErrorMessage(std.heap.page_allocator, @errorName(err));
         return -1;
     };
@@ -129,6 +136,8 @@ export fn crimson_info_replay_json(
         "<wasm>",
         replay_bytes,
         options.max_ticks,
+        options.player_index,
+        options.include_extra_events or options.verbose,
     ) catch |err| {
         setErrorMessage(std.heap.page_allocator, @errorName(err));
         return -1;
@@ -392,6 +401,23 @@ fn parseVerifyOptions(opts_ptr: usize, opts_len: usize) !WasmVerifyOptions {
     return parsed.value;
 }
 
+fn parseInfoOptions(opts_ptr: usize, opts_len: usize) !WasmInfoOptions {
+    if (opts_len == 0) return .{};
+    if (opts_ptr == 0) return error.InvalidInfoOptionsJson;
+
+    const opts_raw: [*]const u8 = @ptrFromInt(opts_ptr);
+    const parsed = std.json.parseFromSlice(
+        WasmInfoOptions,
+        std.heap.page_allocator,
+        opts_raw[0..opts_len],
+        .{
+            .ignore_unknown_fields = true,
+        },
+    ) catch return error.InvalidInfoOptionsJson;
+    defer parsed.deinit();
+    return parsed.value;
+}
+
 fn parseBenchmarkOptions(opts_ptr: usize, opts_len: usize) !WasmBenchmarkOptions {
     if (opts_len == 0) return .{};
     if (opts_ptr == 0) return error.InvalidBenchmarkOptionsJson;
@@ -579,6 +605,58 @@ test "crimson_info_replay_json returns replay info payload" {
     try std.testing.expect(std.mem.indexOf(u8, out, "\"summary\":") != null);
     try std.testing.expect(std.mem.indexOf(u8, out, "\"ticks_simulated\":1") != null);
     try std.testing.expect(std.mem.indexOf(u8, out, "\"timeline\":") != null);
+}
+
+test "crimson_info_replay_json accepts info-specific options" {
+    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(std.testing.allocator);
+    defer std.testing.allocator.free(replay_bytes);
+
+    const opts = "{\"player_index\":1,\"verbose\":true}";
+    const result = crimson_info_replay_json(
+        @intFromPtr(replay_bytes.ptr),
+        replay_bytes.len,
+        @intFromPtr(opts.ptr),
+        opts.len,
+        0,
+        0,
+    );
+    try std.testing.expectEqual(@as(i32, -1), result);
+
+    const needed_or_error = crimson_last_error_json(0, 0);
+    try std.testing.expect(needed_or_error < 0);
+    const required_len: usize = @intCast(-needed_or_error);
+    var out: [256]u8 = undefined;
+    const copied = crimson_last_error_json(@intFromPtr(&out[0]), out.len);
+    try std.testing.expectEqual(@as(i32, @intCast(required_len)), copied);
+    try std.testing.expect(
+        std.mem.indexOf(
+            u8,
+            out[0..required_len],
+            "\"message\":\"replay info failed: replay info collector received out-of-range player_index filter\"",
+        ) != null,
+    );
+}
+
+test "crimson_info_replay_json rejects invalid info options json" {
+    var invalid_opts = [_]u8{ '{', ']' };
+    var replay_bytes = [_]u8{0x90};
+    const result = crimson_info_replay_json(
+        @intFromPtr(&replay_bytes[0]),
+        replay_bytes.len,
+        @intFromPtr(&invalid_opts[0]),
+        invalid_opts.len,
+        0,
+        0,
+    );
+    try std.testing.expectEqual(@as(i32, -1), result);
+
+    const needed_or_error = crimson_last_error_json(0, 0);
+    try std.testing.expect(needed_or_error < 0);
+    const required_len: usize = @intCast(-needed_or_error);
+    var out: [128]u8 = undefined;
+    const copied = crimson_last_error_json(@intFromPtr(&out[0]), out.len);
+    try std.testing.expectEqual(@as(i32, @intCast(required_len)), copied);
+    try std.testing.expect(std.mem.indexOf(u8, out[0..required_len], "\"message\":\"InvalidInfoOptionsJson\"") != null);
 }
 
 test "crimson_info_replay_json exposes detailed replay info failures" {
