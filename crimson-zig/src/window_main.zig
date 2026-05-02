@@ -715,15 +715,19 @@ const App = struct {
     demo_attract_purchase_ui: DemoAttractPurchaseState = .{},
     quit_requested: bool = false,
 
-    fn init(allocator: std.mem.Allocator, runtime: app_runtime.DesktopRuntime, demo_enabled: bool) App {
+    fn init(allocator: std.mem.Allocator, runtime: app_runtime.DesktopRuntime, args: WindowArgs) App {
         var app: App = .{
             .allocator = allocator,
             .runtime = runtime,
+            .screen = initialScreenForArgs(args),
             .audio = live_audio.Bridge.init(allocator, audio_mod.audioConfigFromCrimsonCfg(runtime.config), null),
-            .demo_enabled = demo_enabled,
+            .demo_enabled = args.demo_enabled,
         };
         app.boot.reset();
         app.menu.reset();
+        if (args.no_intro) {
+            app.menu.openRoot();
+        }
         app.loadAssets();
         return app;
     }
@@ -2511,6 +2515,7 @@ const App = struct {
 
 const WindowArgs = struct {
     demo_enabled: bool = false,
+    no_intro: bool = false,
 };
 
 pub fn main(init: std.process.Init) !void {
@@ -2531,7 +2536,7 @@ pub fn main(init: std.process.Init) !void {
 
     rl.setTargetFPS(60);
 
-    var app = App.init(allocator, runtime, args.demo_enabled);
+    var app = App.init(allocator, runtime, args);
     defer app.deinit();
 
     while (!rl.windowShouldClose() and !app.quit_requested) {
@@ -2554,13 +2559,21 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
             parsed.demo_enabled = true;
             continue;
         }
+        if (std.mem.eql(u8, arg, "--no-intro")) {
+            parsed.no_intro = true;
+            continue;
+        }
         if (std.mem.eql(u8, arg, "--help")) {
-            std.debug.print("usage: crimson-zig-window [--demo]\n", .{});
+            std.debug.print("usage: crimson-zig-window [--demo] [--no-intro]\n", .{});
             std.process.exit(0);
         }
         return error.InvalidArgs;
     }
     return parsed;
+}
+
+fn initialScreenForArgs(args: WindowArgs) Screen {
+    return if (args.no_intro) .main_menu else .boot;
 }
 
 fn openDemoPurchaseUrl(allocator: std.mem.Allocator) bool {
@@ -3575,6 +3588,17 @@ test "boolAxis returns signed unit values without overflow" {
     try std.testing.expectEqual(@as(f32, 0.0), boolAxis(false, false));
     try std.testing.expectEqual(@as(f32, 0.0), boolAxis(true, true));
     try std.testing.expectEqual(@as(f32, 1.0), boolAxis(false, true));
+}
+
+test "window args parse demo and no intro flags" {
+    const args = try parseWindowArgs(&.{ "crimson-zig-window", "--demo", "--no-intro" });
+    try std.testing.expect(args.demo_enabled);
+    try std.testing.expect(args.no_intro);
+    try std.testing.expectEqual(Screen.main_menu, initialScreenForArgs(args));
+}
+
+test "window args reject unknown flags" {
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--wat" }));
 }
 
 test "results high score type click follows native random bit" {

@@ -20,4 +20,4 @@ def test_zig_window_is_installed_by_default_build() -> None:
     )
 
     assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "usage: crimson-zig-window [--demo]" in result.stderr
+    assert "usage: crimson-zig-window [--demo] [--no-intro]" in result.stderr
