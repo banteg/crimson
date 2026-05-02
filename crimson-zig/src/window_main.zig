@@ -68,6 +68,11 @@ const ui_button_height: f32 = 56.0;
 const demo_attract_variant_count: i32 = 6;
 const demo_attract_limit_ms: i32 = 4_000;
 const demo_attract_purchase_screen_limit_ms: i32 = 16_000;
+const demo_upsell_messages = [_][:0]const u8{
+    "Want more Levels?",
+    "Want more Weapons?",
+    "Want more Perks?",
+};
 const demo_purchase_title = "Upgrade to the full version of Crimsonland Today!";
 const demo_purchase_features_title = "Full version features:";
 const demo_purchase_footer = "Purchasing the game is very easy and secure.";
@@ -127,6 +132,18 @@ const DemoAttractInactiveAction = enum {
 const DemoPurchaseFeatureLine = struct {
     text: []const u8,
     delta_y: f32,
+};
+
+const DemoUpsellOverlayMetrics = struct {
+    text: [:0]const u8,
+    text_x: f32,
+    text_y: f32,
+    text_width: f32,
+    bg_rect: rl.Rectangle,
+    bar_rect: rl.Rectangle,
+    text_alpha: u8,
+    bg_alpha: u8,
+    bar_alpha: u8,
 };
 
 const demo_purchase_feature_lines = [_]DemoPurchaseFeatureLine{
@@ -713,6 +730,7 @@ const App = struct {
     demo_attract_elapsed_ms: i32 = 0,
     demo_attract_next_variant: i32 = 0,
     demo_attract_current_variant: i32 = 0,
+    demo_upsell_message_index: usize = 0,
     demo_attract_purchase_active: bool = false,
     demo_attract_purchase_limit_ms: i32 = 0,
     demo_attract_purchase_ui: DemoAttractPurchaseState = .{},
@@ -1938,6 +1956,8 @@ const App = struct {
             };
             if (demoAttractPurchaseActive(variant_index)) {
                 self.beginDemoAttractPurchaseScreen(true);
+            } else {
+                self.demo_upsell_message_index = nextDemoUpsellMessageIndex(self.demo_upsell_message_index);
             }
             gameplay.last_update = gameplay.runner.stepFrame(0.0, .{}) catch unreachable;
             gameplay.camera = updateGameplayCamera(
@@ -2338,7 +2358,7 @@ const App = struct {
                 }
             } else {
                 if (self.demo_attract_active) {
-                    drawDemoAttractOverlay(gameplay, self.demo_attract_elapsed_ms, demoAttractLimitMs(self.demo_attract_current_variant), self.demo_attract_current_variant);
+                    drawDemoAttractOverlay(self.demo_attract_elapsed_ms, demoAttractLimitMs(self.demo_attract_current_variant), self.demo_upsell_message_index);
                 } else {
                     drawGameplayHud(gameplay, runtime_assets);
                 }
@@ -3512,6 +3532,10 @@ fn nextDemoAttractVariant(variant_index: i32) i32 {
     return @mod(variant_index + 1, demo_attract_variant_count);
 }
 
+fn nextDemoUpsellMessageIndex(index: usize) usize {
+    return (index + 1) % demo_upsell_messages.len;
+}
+
 fn setupDemoAttractVariant(runner: *live_runner.LiveRunner, variant_index_raw: i32) !void {
     const variant_index = @mod(variant_index_raw, demo_attract_variant_count);
     runner.session.creatures.reset();
@@ -4366,6 +4390,30 @@ test "demo attract variant sequencing mirrors native cycle" {
     try std.testing.expect(demoAttractPurchaseActive(5));
     try std.testing.expectEqual(@as(i32, 10_000), demoAttractLimitMs(5));
     try std.testing.expectEqual(@as(i32, 16_000), demo_attract_purchase_screen_limit_ms);
+}
+
+test "demo attract upsell messages cycle on gameplay variants" {
+    try std.testing.expectEqualStrings("Want more Levels?", demo_upsell_messages[0]);
+    try std.testing.expectEqual(@as(usize, 1), nextDemoUpsellMessageIndex(0));
+    try std.testing.expectEqual(@as(usize, 2), nextDemoUpsellMessageIndex(1));
+    try std.testing.expectEqual(@as(usize, 0), nextDemoUpsellMessageIndex(2));
+}
+
+test "demo attract upsell overlay follows native fade and progress math" {
+    const early = demoUpsellOverlayMetrics(500, 4000, 1);
+    try std.testing.expectEqualStrings("Want more Weapons?", early.text);
+    try std.testing.expectApproxEqAbs(@as(f32, 50.0), early.text_x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 58.0), early.text_y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 230.4), early.text_width, 1e-3);
+    try std.testing.expectApproxEqAbs(@as(f32, 28.8), early.bar_rect.width, 1e-3);
+    try std.testing.expectEqual(@as(u8, 102), early.text_alpha);
+    try std.testing.expectEqual(@as(u8, 51), early.bg_alpha);
+    try std.testing.expectEqual(@as(u8, 82), early.bar_alpha);
+
+    const final = demoUpsellOverlayMetrics(3900, 4000, 4);
+    try std.testing.expectEqualStrings("Want more Weapons?", final.text);
+    try std.testing.expectEqual(@as(u8, 51), final.text_alpha);
+    try std.testing.expectApproxEqAbs(@as(f32, 224.64), final.bar_rect.width, 1e-3);
 }
 
 test "demo attract inactive input opens purchase before generic close" {
@@ -5727,24 +5775,49 @@ fn drawLiveRunnerHud(runner: *const live_runner.LiveRunner, update: live_runner.
     drawTextFmt("elapsed {d}ms  pickups {d}  pending perks {d}", .{ update.elapsed_ms_sim, update.bonus_active_count, runner.perkPendingCount() }, 36, 116, 20, muted_text);
 }
 
-fn drawDemoAttractOverlay(gameplay: *const GameplayScreen, elapsed_ms: i32, limit_ms: i32, variant_index: i32) void {
-    const remaining_ms = @max(0, limit_ms - elapsed_ms);
-    const remaining_tenths = @divTrunc(remaining_ms + 99, 100);
-    const remaining_whole = @divTrunc(remaining_tenths, 10);
-    const remaining_frac = @mod(remaining_tenths, 10);
-    drawTextFmt("DEMO MODE  ({d}/{d})", .{ @mod(variant_index, demo_attract_variant_count) + 1, demo_attract_variant_count }, 16, 12, 20, text_color);
-    drawTextFmt("Press Space, Esc, or click for full version", .{}, 16, 36, 16, muted_text);
-    if (gameplay.runner.session.playersConst().len > 0) {
-        const player = gameplay.runner.session.playersConst()[0];
-        drawTextFmt(
-            "{s}  next in {d}.{d}s",
-            .{ game_ids.weaponDisplayName(player.weapon.weapon_id, gameplay.runner.session.state.preserve_bugs), remaining_whole, remaining_frac },
-            16,
-            56,
-            16,
-            muted_text,
-        );
+fn drawDemoAttractOverlay(elapsed_ms: i32, limit_ms: i32, message_index: usize) void {
+    const metrics = demoUpsellOverlayMetrics(elapsed_ms, limit_ms, message_index);
+    rl.drawRectangleRec(metrics.bg_rect, rl.Color.init(0, 0, 0, metrics.bg_alpha));
+    rl.drawRectangleRec(metrics.bar_rect, rl.Color.init(128, 26, 26, metrics.bar_alpha));
+    drawTextSlice(metrics.text, @intFromFloat(metrics.text_x), @intFromFloat(metrics.text_y), 16, rl.Color.init(255, 255, 255, metrics.text_alpha));
+}
+
+fn demoUpsellOverlayMetrics(timeline_ms: i32, limit_ms: i32, message_index: usize) DemoUpsellOverlayMetrics {
+    const text = demo_upsell_messages[message_index % demo_upsell_messages.len];
+    const timeline = @max(timeline_ms, 0);
+    const limit = @max(limit_ms, 0);
+    const vertical = @as(f32, @floatFromInt(timeline)) * 0.016;
+    var alpha: f32 = 1.0;
+    if (vertical < 20.0) {
+        alpha = vertical * 0.05;
     }
+    if (timeline > limit - 500) {
+        alpha = @as(f32, @floatFromInt(limit - timeline)) * 0.002;
+    }
+    alpha = std.math.clamp(alpha, @as(f32, 0.0), @as(f32, 1.0));
+
+    const text_width = @as(f32, @floatFromInt(text.len)) * 12.8;
+    const text_y = vertical + 50.0;
+    const progress = if (limit > 0)
+        std.math.clamp(@as(f32, @floatFromInt(timeline)) / @as(f32, @floatFromInt(limit)), @as(f32, 0.0), @as(f32, 1.0))
+    else
+        0.0;
+
+    return .{
+        .text = text,
+        .text_x = 50.0,
+        .text_y = text_y,
+        .text_width = text_width,
+        .bg_rect = rl.Rectangle.init(60.0, text_y - 4.0, text_width + 12.0, 30.0),
+        .bar_rect = rl.Rectangle.init(64.0, vertical + 72.0, text_width * progress, 3.0),
+        .text_alpha = alphaByte(alpha),
+        .bg_alpha = alphaByte(alpha * 0.5),
+        .bar_alpha = alphaByte(alpha * 0.8),
+    };
+}
+
+fn alphaByte(alpha: f32) u8 {
+    return @intFromFloat(@round(std.math.clamp(alpha, @as(f32, 0.0), @as(f32, 1.0)) * 255.0));
 }
 
 fn drawDemoAttractPurchaseInterstitial(
