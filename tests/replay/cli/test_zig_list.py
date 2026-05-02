@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -109,6 +110,51 @@ def test_zig_replay_list_reports_when_no_replays_found(tmp_path: Path) -> None:
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert f"no replay files found under {tmp_path / 'replays'}" in result.stdout
+
+
+def test_zig_replay_list_emits_json_and_artifact(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    write_replay(tmp_path / "replays", replay=replay, name="ok.crd")
+    broken = tmp_path / "replays" / "broken.crd"
+    broken.write_bytes(b"not-a-replay")
+    json_out = tmp_path / "artifacts" / "list.json"
+
+    result = _run_zig_replay_list(
+        [
+            "--base-dir",
+            str(tmp_path),
+            "--format=json",
+            "--json-out",
+            str(json_out),
+        ],
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    payload = json.loads(result.stdout)
+    assert payload["schema_version"] == 1
+    assert payload["status"] == "ok"
+    assert payload["replays_dir"] == str(tmp_path / "replays")
+    assert payload["summary"] == {"count": 2, "parsed": 1, "errors": 1}
+    assert payload["rows"][0]["replay"] in {"ok.crd", "broken.crd"}
+    ok_row = next(row for row in payload["rows"] if row["replay"] == "ok.crd")
+    assert ok_row["mode"] == "survival"
+    assert ok_row["game_version"] == replay.header.game_version
+    assert ok_row["ticks"] == "2"
+    assert isinstance(ok_row["modified_ns"], int)
+    assert ok_row["parse_error"] is None
+    broken_row = next(row for row in payload["rows"] if row["replay"] == "broken.crd")
+    assert broken_row["mode"] == "invalid"
+    assert broken_row["parse_error"] == "replay payload is not valid msgpack wire format"
+    assert json.loads(json_out.read_text(encoding="utf-8")) == payload
+
+
+def test_zig_replay_list_emits_empty_json(tmp_path: Path) -> None:
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path), "--format", "json"])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    payload = json.loads(result.stdout)
+    assert payload["summary"] == {"count": 0, "parsed": 0, "errors": 0}
+    assert payload["rows"] == []
 
 
 def _run_zig_replay_list(args: list[str]) -> subprocess.CompletedProcess[str]:

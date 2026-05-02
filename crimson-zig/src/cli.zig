@@ -38,6 +38,7 @@ const usage =
     \\
     \\Examples:
     \\  crimson-zig replay list --base-dir .
+    \\  crimson-zig replay list --base-dir . --format json
     \\  crimson-zig replay verify survival_20260224_041009_score76661.crd
     \\  crimson-zig replay verify replay.crd --format json
     \\  crimson-zig replay benchmark replay.crd --runs 5

@@ -4,6 +4,8 @@ const std = @import("std");
 const replay_codec = @import("replay_codec.zig");
 const runtime_paths = @import("runtime_paths.zig");
 
+const replay_list_schema_version: i32 = 1;
+
 pub const CommandOutput = struct {
     stdout: []u8,
     stderr: []u8,
@@ -15,8 +17,15 @@ pub const CommandOutput = struct {
     }
 };
 
+const OutputFormat = enum {
+    human,
+    json,
+};
+
 const ListRequest = struct {
     base_dir: ?[]const u8 = null,
+    output_format: OutputFormat = .human,
+    json_out: ?[]const u8 = null,
 };
 
 const ParseOutcome = union(enum) {
@@ -49,6 +58,33 @@ const ReplayListRow = struct {
     }
 };
 
+const ReplayListSummaryPayload = struct {
+    count: usize,
+    parsed: usize,
+    errors: usize,
+};
+
+const ReplayListRowPayload = struct {
+    replay: []const u8,
+    mode: []const u8,
+    game_version: []const u8,
+    ticks: []const u8,
+    duration: []const u8,
+    score_xp: []const u8,
+    kills: []const u8,
+    modified: []const u8,
+    modified_ns: i64,
+    parse_error: ?[]const u8,
+};
+
+const ReplayListPayload = struct {
+    schema_version: i32,
+    status: []const u8,
+    replays_dir: []const u8,
+    summary: ReplayListSummaryPayload,
+    rows: []const ReplayListRowPayload,
+};
+
 pub fn runReplayList(
     allocator: std.mem.Allocator,
     args: []const []const u8,
@@ -66,6 +102,26 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         const arg = args[idx];
 
         if (std.mem.eql(u8, arg, "--color") or std.mem.eql(u8, arg, "--no-color")) {
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--format")) {
+            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --format" };
+            idx += 1;
+            request.output_format = parseOutputFormat(args[idx]) orelse return .{ .invalid = "invalid --format value" };
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--format=")) {
+            request.output_format = parseOutputFormat(arg["--format=".len..]) orelse return .{ .invalid = "invalid --format value" };
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--json-out")) {
+            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --json-out" };
+            idx += 1;
+            request.json_out = args[idx];
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--json-out=")) {
+            request.json_out = arg["--json-out=".len..];
             continue;
         }
         if (std.mem.eql(u8, arg, "--base-dir") or std.mem.eql(u8, arg, "--runtime-dir")) {
@@ -128,17 +184,40 @@ fn runNativeList(
     };
     std.sort.heap(ReplayListRow, rows.items, {}, compareRows);
 
+    var parse_errors: usize = 0;
+    for (rows.items) |row| {
+        if (row.parse_error != null) parse_errors += 1;
+    }
+
+    var payload_json: ?[]u8 = null;
+    defer if (payload_json) |payload| allocator.free(payload);
+    if (request.output_format == .json or request.json_out != null) {
+        const payload = buildListJsonPayload(allocator, replays_dir, rows.items, parse_errors) catch |err| {
+            return buildListFailedOutput(allocator, replayListJsonOutErrorDetail(err));
+        };
+        payload_json = payload;
+        if (request.json_out) |json_out_path| {
+            writeFileWithParents(json_out_path, payload) catch |err| {
+                return buildListFailedOutput(allocator, replayListJsonOutErrorDetail(err));
+            };
+        }
+    }
+
     var stdout_buf: std.Io.Writer.Allocating = .init(allocator);
     defer stdout_buf.deinit();
     const stdout = &stdout_buf.writer;
 
-    if (rows.items.len == 0) {
+    if (request.output_format == .json) {
+        try stdout.writeAll(payload_json.?);
+        try stdout.writeByte('\n');
+    } else if (rows.items.len == 0) {
         try stdout.print("no replay files found under {s}\n", .{replays_dir});
+        if (request.json_out) |json_out_path| {
+            try stdout.print("json_report={s}\n", .{json_out_path});
+        }
     } else {
         try stdout.writeAll("replay mode version ticks duration score kills modified\n");
-        var parse_errors: usize = 0;
         for (rows.items) |row| {
-            if (row.parse_error != null) parse_errors += 1;
             try stdout.print(
                 "{s} {s} {s} {s} {s} {s} {s} {s}\n",
                 .{
@@ -155,6 +234,9 @@ fn runNativeList(
         }
         try stdout.print("count={d} parsed={d} errors={d}\n", .{ rows.items.len, rows.items.len - parse_errors, parse_errors });
         try stdout.print("replays_dir={s}\n", .{replays_dir});
+        if (request.json_out) |json_out_path| {
+            try stdout.print("json_report={s}\n", .{json_out_path});
+        }
         for (rows.items) |row| {
             if (row.parse_error) |parse_error| {
                 try stdout.print("warning: {s}: {s}\n", .{ row.replay, parse_error });
@@ -167,6 +249,47 @@ fn runNativeList(
         .stderr = try allocator.dupe(u8, ""),
         .exit_code = 0,
     };
+}
+
+fn buildListJsonPayload(
+    allocator: std.mem.Allocator,
+    replays_dir: []const u8,
+    rows: []const ReplayListRow,
+    parse_errors: usize,
+) ![]u8 {
+    const row_payloads = try allocator.alloc(ReplayListRowPayload, rows.len);
+    defer allocator.free(row_payloads);
+    for (rows, row_payloads) |row, *payload_row| {
+        payload_row.* = .{
+            .replay = row.replay,
+            .mode = row.mode,
+            .game_version = row.game_version,
+            .ticks = row.ticks,
+            .duration = row.duration,
+            .score_xp = row.score_xp,
+            .kills = row.kills,
+            .modified = row.modified,
+            .modified_ns = modifiedNsForJson(row.modified_ns),
+            .parse_error = row.parse_error,
+        };
+    }
+
+    const payload: ReplayListPayload = .{
+        .schema_version = replay_list_schema_version,
+        .status = "ok",
+        .replays_dir = replays_dir,
+        .summary = .{
+            .count = rows.len,
+            .parsed = rows.len - parse_errors,
+            .errors = parse_errors,
+        },
+        .rows = row_payloads,
+    };
+
+    var payload_writer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer payload_writer.deinit();
+    try std.json.Stringify.value(payload, .{}, &payload_writer.writer);
+    return payload_writer.toOwnedSlice();
 }
 
 fn collectReplayRows(
@@ -391,6 +514,18 @@ fn compareRows(_: void, left: ReplayListRow, right: ReplayListRow) bool {
     return std.mem.lessThan(u8, left.replay, right.replay);
 }
 
+fn modifiedNsForJson(modified_ns: i128) i64 {
+    if (modified_ns < std.math.minInt(i64)) return std.math.minInt(i64);
+    if (modified_ns > std.math.maxInt(i64)) return std.math.maxInt(i64);
+    return @intCast(modified_ns);
+}
+
+fn parseOutputFormat(raw: []const u8) ?OutputFormat {
+    if (std.mem.eql(u8, raw, "human")) return .human;
+    if (std.mem.eql(u8, raw, "json")) return .json;
+    return null;
+}
+
 fn buildListFailedOutput(allocator: std.mem.Allocator, detail: []const u8) !CommandOutput {
     const stdout = try allocator.dupe(u8, "");
     errdefer allocator.free(stdout);
@@ -399,6 +534,14 @@ fn buildListFailedOutput(allocator: std.mem.Allocator, detail: []const u8) !Comm
         .stdout = stdout,
         .stderr = stderr,
         .exit_code = 1,
+    };
+}
+
+fn replayListJsonOutErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.AccessDenied => "unable to write replay list JSON: access denied",
+        error.OutOfMemory => "native replay list ran out of memory while writing JSON",
+        else => @errorName(err),
     };
 }
 
@@ -422,6 +565,85 @@ fn replayListRowErrorDetail(err: anyerror) []const u8 {
         error.OutOfMemory => "native replay list ran out of memory while reading replay",
         else => @errorName(err),
     };
+}
+
+fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    if (std.fs.path.dirname(path)) |dir| {
+        if (dir.len > 0) try std.Io.Dir.cwd().createDirPath(io, dir);
+    }
+    try std.Io.Dir.cwd().writeFile(io, .{
+        .sub_path = path,
+        .data = bytes,
+    });
+}
+
+test "replay list parser accepts artifact output options" {
+    const parsed = parseNativeSubset(&.{
+        "--format=json",
+        "--json-out",
+        "artifacts/list.json",
+        "--runtime-dir=runtime",
+        "--no-color",
+    });
+
+    switch (parsed) {
+        .ok => |request| {
+            try std.testing.expectEqual(OutputFormat.json, request.output_format);
+            try std.testing.expectEqualStrings("artifacts/list.json", request.json_out.?);
+            try std.testing.expectEqualStrings("runtime", request.base_dir.?);
+        },
+        .invalid => |detail| {
+            std.debug.print("unexpected invalid replay list args: {s}\n", .{detail});
+            return error.TestUnexpectedResult;
+        },
+    }
+}
+
+test "replay list writes json artifact while preserving json stdout" {
+    const allocator = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
+    defer allocator.free(base_dir);
+    const replays_dir = try std.fs.path.join(allocator, &.{ base_dir, "replays" });
+    defer allocator.free(replays_dir);
+    const replay_path = try std.fs.path.join(allocator, &.{ replays_dir, "sample.crd" });
+    defer allocator.free(replay_path);
+    const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "list.json" });
+    defer allocator.free(json_path);
+
+    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(replay_bytes);
+
+    const io = std.Io.Threaded.global_single_threaded.io();
+    try std.Io.Dir.cwd().createDirPath(io, replays_dir);
+    try std.Io.Dir.cwd().writeFile(io, .{
+        .sub_path = replay_path,
+        .data = replay_bytes,
+    });
+
+    const output = try runReplayList(allocator, &.{
+        "--base-dir",
+        base_dir,
+        "--format",
+        "json",
+        "--json-out",
+        json_path,
+    });
+    defer output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expectEqualStrings("", output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"schema_version\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"replay\":\"sample.crd\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"count\":1") != null);
+
+    const artifact = try std.Io.Dir.cwd().readFileAlloc(io, json_path, allocator, .limited(64 * 1024));
+    defer allocator.free(artifact);
+    const stdout_json = std.mem.trimRight(u8, output.stdout, "\n");
+    try std.testing.expectEqualStrings(stdout_json, artifact);
 }
 
 fn replayListScanErrorDetail(err: anyerror) []const u8 {

@@ -75,7 +75,8 @@ Current supported native replay/runtime modes:
 Current supported replay-tooling behavior:
 
 - preserve-bugs compatibility mode
-- replay directory listing via `replay list`
+- replay directory listing via `replay list`, including `--format json` and
+  `--json-out`
 - checkpoint verification via `replay verify-checkpoints`
 - checkpoint diffing via `replay diff-checkpoints`
 - replay RNG tracing via `replay verify --trace-rng` and
