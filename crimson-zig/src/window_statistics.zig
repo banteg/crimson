@@ -87,7 +87,7 @@ const PanelState = struct {
     }
 
     fn advance(self: *PanelState, frame_dt: f32) i32 {
-        const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
+        const dt_ms = frameDeltaMs(frame_dt);
         if (dt_ms > 0) {
             self.timeline_ms = @min(panel_timeline_max_ms, self.timeline_ms + dt_ms);
         }
@@ -100,11 +100,50 @@ const HubState = struct {
     easter_roll: i32 = stats_easter_roll_unset,
     easter_rng: spawn_mod.Crand = .{ .state = 0xC0FFEE },
     easter_text_x: ?f32 = null,
+    closing: bool = false,
+    close_action: ?HubAction = null,
 
     fn reset(self: *HubState) void {
         self.* = .{};
     }
+
+    fn beginClose(self: *HubState, action: HubAction) void {
+        if (self.closing) return;
+        self.closing = true;
+        self.close_action = action;
+    }
+
+    fn advance(self: *HubState, frame_dt: f32) HubTimelineUpdate {
+        const dt_ms = frameDeltaMs(frame_dt);
+        if (self.closing) {
+            if (dt_ms > 0) self.panel.timeline_ms -= dt_ms;
+            if (self.panel.timeline_ms < 0) {
+                const action = self.close_action;
+                self.closing = false;
+                self.close_action = null;
+                return .{ .dt_ms = dt_ms, .closed_action = action };
+            }
+            return .{ .dt_ms = dt_ms };
+        }
+        if (dt_ms > 0) {
+            self.panel.timeline_ms = @min(panel_timeline_max_ms, self.panel.timeline_ms + dt_ms);
+        }
+        return .{ .dt_ms = dt_ms };
+    }
+
+    fn interactive(self: *const HubState) bool {
+        return !self.closing and self.panel.timeline_ms >= panel_timeline_max_ms;
+    }
 };
+
+const HubTimelineUpdate = struct {
+    dt_ms: i32,
+    closed_action: ?HubAction = null,
+};
+
+fn frameDeltaMs(frame_dt: f32) i32 {
+    return @intFromFloat(@min(@max(frame_dt, 0.0), 0.1) * 1000.0);
+}
 
 const HighScoresScreen = struct {
     mode: game_ids.GameModeId = .survival,
@@ -302,14 +341,19 @@ fn updateHub(
     config: *formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
 ) UpdateResult {
-    const dt_ms = state.hub.panel.advance(frame_dt);
+    const timeline_update = state.hub.advance(frame_dt);
+    if (timeline_update.closed_action) |action| {
+        return finishHubAction(state, allocator, base_dir, config, status, action);
+    }
     updateStatsEaster(&state.hub, currentDateStampUtc());
     const panel_rect = animatedCenterPanelRect(stats_panel_rect, state.hub.panel.timeline_ms);
     const buttons = hubButtons(panel_rect);
     window_ui.updateSelectionFromPointer(&state.hub.panel.selection, buttons[0..]);
 
-    if (rl.isKeyPressed(.escape)) {
-        return .{ .action = .back_to_menu, .play_button_click = true };
+    if (!state.hub.interactive()) {
+        return .{
+            .play_panel_click = timeline_update.dt_ms > 0 and state.hub.panel.timeline_ms >= panel_timeline_max_ms and !state.hub.panel.panel_open_sfx_played,
+        };
     }
     if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
         state.hub.panel.selection = if (state.hub.panel.selection == 0) buttons.len - 1 else state.hub.panel.selection - 1;
@@ -317,9 +361,13 @@ fn updateHub(
     if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
         state.hub.panel.selection = (state.hub.panel.selection + 1) % buttons.len;
     }
+    if (rl.isKeyPressed(.escape)) {
+        state.hub.beginClose(.back);
+        return .{ .play_button_click = true };
+    }
     if (!window_ui.buttonActivated(buttons[0..], state.hub.panel.selection)) {
         return .{
-            .play_panel_click = dt_ms > 0 and state.hub.panel.timeline_ms >= panel_timeline_max_ms and !state.hub.panel.panel_open_sfx_played,
+            .play_panel_click = timeline_update.dt_ms > 0 and state.hub.panel.timeline_ms >= panel_timeline_max_ms and !state.hub.panel.panel_open_sfx_played,
         };
     }
 
@@ -331,6 +379,18 @@ fn updateHub(
         4 => .back,
         else => .back,
     };
+    state.hub.beginClose(action);
+    return .{ .play_button_click = true };
+}
+
+fn finishHubAction(
+    state: *State,
+    allocator: std.mem.Allocator,
+    base_dir: []const u8,
+    config: *formats.crimson_cfg.CrimsonCfg,
+    status: formats.game_cfg.Status,
+    action: HubAction,
+) UpdateResult {
     switch (action) {
         .high_scores => openHubHighScores(state, allocator, base_dir, config.*, status),
         .weapons => {
@@ -345,9 +405,9 @@ fn updateHub(
             state.view = .credits;
             state.credits.reset();
         },
-        .back => return .{ .action = .back_to_menu, .play_button_click = true },
+        .back => return .{ .action = .back_to_menu },
     }
-    return .{ .play_button_click = true };
+    return .{};
 }
 
 fn openHubHighScores(
@@ -2330,6 +2390,36 @@ test "statistics playtime text follows default and preserve-bugs pluralization" 
         "played for 1 hours 1 minutes",
         formatPlaytimeText(&buf, (1 * 60 * 60 + 1 * 60) * 1000, true),
     );
+}
+
+test "statistics hub timeline gates input and dispatches after close" {
+    var hub: HubState = .{};
+    try std.testing.expect(!hub.interactive());
+
+    try std.testing.expectEqual(@as(i32, 100), hub.advance(0.50).dt_ms);
+    try std.testing.expectEqual(@as(i32, 100), hub.panel.timeline_ms);
+    try std.testing.expect(!hub.interactive());
+
+    _ = hub.advance(0.10);
+    _ = hub.advance(0.10);
+    try std.testing.expectEqual(@as(i32, panel_timeline_max_ms), hub.panel.timeline_ms);
+    try std.testing.expect(hub.interactive());
+
+    hub.beginClose(.credits);
+    try std.testing.expect(!hub.interactive());
+    try std.testing.expect(hub.closing);
+    try std.testing.expectEqual(@as(?HubAction, .credits), hub.close_action);
+
+    try std.testing.expectEqual(@as(?HubAction, null), hub.advance(0.10).closed_action);
+    try std.testing.expectEqual(@as(i32, 200), hub.panel.timeline_ms);
+    try std.testing.expectEqual(@as(?HubAction, null), hub.advance(0.10).closed_action);
+    try std.testing.expectEqual(@as(i32, 100), hub.panel.timeline_ms);
+    try std.testing.expectEqual(@as(?HubAction, null), hub.advance(0.10).closed_action);
+    try std.testing.expectEqual(@as(i32, 0), hub.panel.timeline_ms);
+
+    try std.testing.expectEqual(@as(?HubAction, .credits), hub.advance(0.01).closed_action);
+    try std.testing.expect(!hub.closing);
+    try std.testing.expectEqual(@as(?HubAction, null), hub.close_action);
 }
 
 test "statistics right panel shifts match narrow native layouts" {

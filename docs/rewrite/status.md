@@ -103,7 +103,8 @@ Last reviewed: **2026-05-03**
 - **Statistics hub (state `4`)**: implemented with child panels.
   - Code: `src/crimson/screens/panels/stats.py`
   - Child views: high scores, weapons database, perks database, credits.
-  - Code: `src/crimson/game/__init__.py`, `src/crimson/screens/panels/databases.py`, `src/crimson/screens/panels/credits.py`
+  - Code: `src/crimson/game/__init__.py`, `src/crimson/screens/panels/databases.py`, `src/crimson/screens/panels/credits.py`, `crimson-zig/src/window_statistics.zig`
+  - Zig now gates the hub buttons until the native 300 ms open timeline completes and closes the hub panel before dispatching child-view or Back actions.
 - **Demo / attract mode**: implemented (variant sequencing, upsell flow, trial overlay during gameplay).
   - Code: `src/crimson/demo.py`, `src/crimson/ui/demo_trial_overlay.py`
   - Ref: [`docs/crimsonland-exe/demo-mode.md`](../crimsonland-exe/demo-mode.md), [`docs/crimsonland-exe/screens.md`](../crimsonland-exe/screens.md)
