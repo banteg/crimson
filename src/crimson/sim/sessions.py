@@ -41,7 +41,7 @@ from .step_pipeline import (
 )
 from .terrain_fx import TerrainFxScratch
 from .timing import FrameTiming
-from .world_state import WorldState
+from .world_state import WorldMidStepRuntime, WorldState
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 RUSH_FORCED_AMMO = 30.0
@@ -298,6 +298,14 @@ class TutorialSessionRuntime(SessionModeRuntime):
         tutorial_post_step(ctx)
 
 
+class _SessionWorldMidStepRuntime(WorldMidStepRuntime):
+    mode_runtime: SessionModeRuntime
+    ctx: MidStepContext
+
+    def run_mid_step(self) -> None:
+        self.mode_runtime.mid_step(self.ctx)
+
+
 # ---------------------------------------------------------------------------
 # Shared timing helper
 # ---------------------------------------------------------------------------
@@ -407,7 +415,7 @@ class DeterministicSession(msgspec.Struct):
         dt_raw_ms = float(timing.dt_ms_i32)
         elapsed_before_ms = self.elapsed_ms
 
-        hook = None
+        mid_step_runtime = None
         if mode_runtime.needs_mid_step():
             ctx = MidStepContext(
                 world=self.world,
@@ -416,7 +424,10 @@ class DeterministicSession(msgspec.Struct):
                 dt_raw_ms=dt_raw_ms,
                 world_size=self.world_size,
             )
-            hook = lambda: mode_runtime.mid_step(ctx)  # noqa: E731
+            mid_step_runtime = _SessionWorldMidStepRuntime(
+                mode_runtime=mode_runtime,
+                ctx=ctx,
+            )
 
         fx_queue = self.terrain_fx.decals
         fx_queue_rotated = self.terrain_fx.corpses
@@ -443,7 +454,7 @@ class DeterministicSession(msgspec.Struct):
             dt_player_local=timing.dt_player_local,
             defer_camera_shake_update=self.defer_camera_shake_update,
             defer_freeze_corpse_fx=False,
-            mid_step_hook=hook,
+            mid_step_runtime=mid_step_runtime,
             inputs=normalized_inputs,
             world_size=self.world_size,
             damage_scale_by_type=self.damage_scale_by_type,
