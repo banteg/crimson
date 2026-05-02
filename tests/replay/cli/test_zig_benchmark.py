@@ -12,7 +12,7 @@ from crimson.cli import app
 from crimson.game_modes import GameMode
 from crimson.sim.input_providers import PerkPickCommand
 
-from ._helpers import build_replay, inject_tick_commands, write_replay
+from ._helpers import build_replay, inject_tick_commands, write_legacy_out_of_order_event_replay, write_replay
 
 
 def test_zig_replay_benchmark_reports_headless_summary(tmp_path: Path) -> None:
@@ -201,6 +201,21 @@ def test_zig_replay_benchmark_stale_perk_pick_is_noop(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["status"] == "ok"
     assert payload["run_result"]["ticks"] == 1
+
+
+def test_zig_replay_benchmark_reports_event_ordering_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_legacy_out_of_order_event_replay(tmp_path, replay=replay, name="event-order.crd")
+
+    result = _run_zig_replay_benchmark([str(replay_path), "--runs", "1", "--warmup-runs", "0"])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert (
+        "replay benchmark failed: replay events are not ordered in canonical tick order: "
+        "tick=1 follows tick=2 (event_index=1, event=perk_menu_open)"
+    ) in result.stderr
+    assert "native replay benchmark" not in result.stderr
 
 
 def test_zig_replay_benchmark_rejects_render_mode(tmp_path: Path) -> None:

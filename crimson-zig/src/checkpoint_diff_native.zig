@@ -702,6 +702,10 @@ fn runVerifyCheckpointsWithReplayOutput(
     replay: replay_codec.Replay,
     options: VerifyOutputOptions,
 ) !CommandOutput {
+    if (try replay_codec.replayEventOrderingFailureDetail(allocator, replay.events)) |detail| {
+        defer allocator.free(detail);
+        return buildVerifyFailedOutput(allocator, detail);
+    }
     if (try replay_codec.replayEventPlayerIndexFailureDetail(allocator, replay.header.player_count, replay.events)) |detail| {
         defer allocator.free(detail);
         return buildVerifyFailedOutput(allocator, detail);

@@ -16,7 +16,13 @@ from crimson.replay import ReplayClaimedStatsSnapshot, dump_replay
 from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 from crimson.weapons import WeaponId
 
-from ._helpers import build_replay, build_typo_submit_replay, inject_tick_commands, write_replay
+from ._helpers import (
+    build_replay,
+    build_typo_submit_replay,
+    inject_tick_commands,
+    write_legacy_out_of_order_event_replay,
+    write_replay,
+)
 
 
 def test_zig_replay_verify_respects_max_ticks_partial_run_contract(tmp_path: Path) -> None:
@@ -281,6 +287,21 @@ def test_zig_replay_verify_reports_event_player_index_detail(tmp_path: Path) -> 
     assert (
         "replay verification failed: replay event player_index out of range: 1 "
         "(player_count=1, tick=0, event=perk_menu_open)"
+    ) in result.stderr
+    assert "ticks_processed=" not in result.stderr
+
+
+def test_zig_replay_verify_reports_event_ordering_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_legacy_out_of_order_event_replay(tmp_path, replay=replay, name="event-order.crd")
+
+    result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert (
+        "replay verification failed: replay events are not ordered in canonical tick order: "
+        "tick=1 follows tick=2 (event_index=1, event=perk_menu_open)"
     ) in result.stderr
     assert "ticks_processed=" not in result.stderr
 

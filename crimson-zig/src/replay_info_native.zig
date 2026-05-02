@@ -118,6 +118,10 @@ pub fn runReplayInfoBytesJson(
         defer allocator.free(detail);
         return buildInfoFailedOutput(allocator, detail);
     }
+    if (try replay_codec.replayEventOrderingFailureDetail(allocator, replay.events)) |detail| {
+        defer allocator.free(detail);
+        return buildInfoFailedOutput(allocator, detail);
+    }
     if (try replay_codec.replayEventPlayerIndexFailureDetail(allocator, replay.header.player_count, replay.events)) |detail| {
         defer allocator.free(detail);
         return buildInfoFailedOutput(allocator, detail);
@@ -250,6 +254,10 @@ fn runInfoWithReplayBytes(
     };
 
     if (try playerFilterValidationDetail(allocator, replay.header, request.player_index)) |detail| {
+        defer allocator.free(detail);
+        return buildInfoFailedOutput(allocator, detail);
+    }
+    if (try replay_codec.replayEventOrderingFailureDetail(allocator, replay.events)) |detail| {
         defer allocator.free(detail);
         return buildInfoFailedOutput(allocator, detail);
     }

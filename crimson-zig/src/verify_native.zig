@@ -210,6 +210,10 @@ fn runVerifyWithReplayBytes(
     replay_codec.validateReplayBootstrap(header) catch |err| {
         return buildOutputForReplayCodecError(allocator, err);
     };
+    if (try replay_codec.replayEventOrderingFailureDetail(allocator, replay.events)) |detail| {
+        defer allocator.free(detail);
+        return buildVerifyFailedOutput(allocator, detail);
+    }
     if (try replay_codec.replayEventPlayerIndexFailureDetail(allocator, header.player_count, replay.events)) |detail| {
         defer allocator.free(detail);
         return buildVerifyFailedOutput(allocator, detail);

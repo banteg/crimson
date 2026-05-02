@@ -455,6 +455,28 @@ pub fn replayEventPlayerIndexFailureDetail(
     return null;
 }
 
+pub fn replayEventOrderingFailureDetail(
+    allocator: std.mem.Allocator,
+    events: []const ReplayEvent,
+) !?[]u8 {
+    var previous_tick: ?usize = null;
+    for (events, 0..) |event, event_index| {
+        const tick_index = event.tickIndex();
+        if (previous_tick) |prev_tick| {
+            if (tick_index < prev_tick) {
+                const detail = try std.fmt.allocPrint(
+                    allocator,
+                    "replay events are not ordered in canonical tick order: tick={d} follows tick={d} (event_index={d}, event={s})",
+                    .{ tick_index, prev_tick, event_index, replayEventKindName(event) },
+                );
+                return detail;
+            }
+        }
+        previous_tick = tick_index;
+    }
+    return null;
+}
+
 fn replayEventPlayerIndex(event: ReplayEvent) ?i32 {
     return switch (event) {
         .perk_pick => |payload| payload.player_index,
@@ -2225,6 +2247,29 @@ test "event player index failure detail identifies first invalid command event" 
 
     try std.testing.expectEqualStrings(
         "replay event player_index out of range: 1 (player_count=1, tick=7, event=perk_menu_open)",
+        detail,
+    );
+}
+
+test "event ordering failure detail identifies first descending tick" {
+    const allocator = std.testing.allocator;
+    const events = [_]ReplayEvent{
+        .{ .perk_menu_open = .{
+            .tick_index = 2,
+            .player_index = 0,
+        } },
+        .{ .perk_pick = .{
+            .tick_index = 1,
+            .player_index = 0,
+            .choice_index = 0,
+        } },
+    };
+
+    const detail = (try replayEventOrderingFailureDetail(allocator, events[0..])) orelse return error.TestExpectedDetail;
+    defer allocator.free(detail);
+
+    try std.testing.expectEqualStrings(
+        "replay events are not ordered in canonical tick order: tick=1 follows tick=2 (event_index=1, event=perk_pick)",
         detail,
     );
 }

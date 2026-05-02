@@ -418,6 +418,10 @@ fn runBenchmarkWithReplay(
     request: BenchmarkRequest,
     replay: replay_codec.Replay,
 ) !CommandOutput {
+    if (try replay_codec.replayEventOrderingFailureDetail(allocator, replay.events)) |detail| {
+        defer allocator.free(detail);
+        return buildBenchmarkFailedOutput(allocator, detail);
+    }
     if (try replay_codec.replayEventPlayerIndexFailureDetail(allocator, replay.header.player_count, replay.events)) |detail| {
         defer allocator.free(detail);
         return buildBenchmarkFailedOutput(allocator, detail);

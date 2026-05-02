@@ -13,7 +13,13 @@ from crimson.game_modes import GameMode
 from crimson.replay import dump_replay
 from crimson.replay.checkpoints import ReplayDeathLedgerEntry, dump_checkpoints_file, load_checkpoints_file
 
-from ._helpers import build_replay, build_typo_submit_replay, write_checkpoint_sidecar, write_replay
+from ._helpers import (
+    build_replay,
+    build_typo_submit_replay,
+    write_checkpoint_sidecar,
+    write_legacy_out_of_order_event_replay,
+    write_replay,
+)
 
 
 def test_zig_replay_diff_checkpoints_accepts_python_sidecars(tmp_path: Path) -> None:
@@ -125,6 +131,23 @@ def test_zig_replay_verify_checkpoints_reports_event_player_index_detail(tmp_pat
         "(player_count=1, tick=0, event=perk_menu_open)"
     ) in result.stderr
     assert "replay events include an out-of-range player index" not in result.stderr
+
+
+def test_zig_replay_verify_checkpoints_reports_event_ordering_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    sidecar_source = write_replay(tmp_path, replay=replay, name="event-order-source.crd")
+    sidecar = write_checkpoint_sidecar(sidecar_source, replay)
+    replay_path = write_legacy_out_of_order_event_replay(tmp_path, replay=replay, name="event-order.crd")
+
+    result = _run_zig_replay_verify_checkpoints([str(replay_path), "--checkpoints", str(sidecar)])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert (
+        "replay verification failed: replay events are not ordered in canonical tick order: "
+        "tick=1 follows tick=2 (event_index=1, event=perk_menu_open)"
+    ) in result.stderr
+    assert "replay events are not ordered in canonical tick order (progress:" not in result.stderr
 
 
 def test_zig_replay_diff_checkpoints_reports_state_mismatch(tmp_path: Path) -> None:

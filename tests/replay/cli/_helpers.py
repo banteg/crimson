@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import msgspec
+import zstandard as zstd
 
 from crimson.game_modes import GameMode
 from crimson.quests.level import QuestLevel
@@ -95,6 +96,50 @@ def write_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
     replay_path = tmp_path / name
     replay_path.parent.mkdir(parents=True, exist_ok=True)
     replay_path.write_bytes(dump_replay(replay))
+    return replay_path
+
+
+def write_legacy_out_of_order_event_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
+    raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
+    payload = msgspec.msgpack.decode(raw_payload)
+    header = payload["header"]
+
+    legacy_payload = {
+        "header": {
+            "game_mode_id": header["game_mode_id"],
+            "seed": header["seed"],
+            "replay_format_version": header["replay_format_version"],
+            "quest_level": "",
+            "bootstrap_kind": "none",
+            "bootstrap_seed": 0,
+            "game_version": header["game_version"],
+            "tick_rate": header["tick_rate"],
+            "difficulty_level": 0,
+            "hardcore": header["hardcore"],
+            "preserve_bugs": header["preserve_bugs"],
+            "detail_preset": header["detail_preset"],
+            "gore_disabled": header["violence_disabled"],
+            "world_size": header["world_size"],
+            "player_count": header["player_count"],
+            "status": {
+                "quest_unlock_index": header["status"]["quest_unlock_index"],
+                "quest_unlock_index_full": header["status"]["quest_unlock_index_full"],
+                "weapon_usage_counts": header["status"]["weapon_usage_counts"],
+            },
+            "claimed_stats": header["claimed_stats"],
+            "input_quantization": header["input_quantization"],
+        },
+        "inputs": [tick["inputs"] for tick in payload["ticks"]],
+        "dt": [tick["dt"] for tick in payload["ticks"]],
+        "events": [
+            {"type": "perk_menu_open", "tick_index": 2, "player_index": 0},
+            {"type": "perk_menu_open", "tick_index": 1, "player_index": 0},
+        ],
+    }
+
+    replay_path = tmp_path / name
+    replay_path.parent.mkdir(parents=True, exist_ok=True)
+    replay_path.write_bytes(msgspec.msgpack.encode(legacy_payload))
     return replay_path
 
 

@@ -12,7 +12,13 @@ from crimson.cli import app
 from crimson.game_modes import GameMode
 from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 
-from ._helpers import build_replay, build_typo_submit_replay, inject_tick_commands, write_replay
+from ._helpers import (
+    build_replay,
+    build_typo_submit_replay,
+    inject_tick_commands,
+    write_legacy_out_of_order_event_replay,
+    write_replay,
+)
 
 
 def test_zig_replay_info_matches_python_json_payload_on_simple_replay(tmp_path: Path) -> None:
@@ -140,11 +146,7 @@ def test_zig_replay_info_matches_python_verbose_typo_command_payload(tmp_path: P
     assert counts["typo_char"] == 2
     assert counts["typo_submit"] == 1
     timeline = cast("list[dict[str, Any]]", zig_payload["timeline"])
-    command_events = [
-        event
-        for event in timeline
-        if event["kind"] in {"typo_char", "typo_submit"}
-    ]
+    command_events = [event for event in timeline if event["kind"] in {"typo_char", "typo_submit"}]
     assert [event["detail"] for event in command_events] == [
         "p0 typed 'g'",
         "p0 typed 'o'",
@@ -176,6 +178,21 @@ def test_zig_replay_info_writes_json_out_like_python(tmp_path: Path) -> None:
     stdout_payload = json.loads(result.stdout)
     file_payload = json.loads(json_out.read_text(encoding="utf-8"))
     assert file_payload == stdout_payload
+
+
+def test_zig_replay_info_reports_event_ordering_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_legacy_out_of_order_event_replay(tmp_path, replay=replay, name="event-order.crd")
+
+    result = _run_zig_replay_info_process([str(replay_path), "--format", "json"])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert (
+        "replay info failed: replay events are not ordered in canonical tick order: "
+        "tick=1 follows tick=2 (event_index=1, event=perk_menu_open)"
+    ) in result.stderr
+    assert "replay info collector" not in result.stderr
 
 
 def test_zig_replay_info_rejects_non_crd_extension(tmp_path: Path) -> None:
