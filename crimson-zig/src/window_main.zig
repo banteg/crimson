@@ -2393,16 +2393,34 @@ const App = struct {
 
         if (self.results) |results| {
             if (self.runtime_assets) |*runtime_assets| {
-                drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(262.0, 116.0, 756.0, 392.0), colorWithAlpha(rl.Color.white, 0.96));
-                switch (results.reason) {
-                    .dead => drawTextureFit(runtime_assets.texture(.ui_text_reaper), rl.Rectangle.init(464.0, 136.0, 354.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
-                    .completed => drawTextureFit(runtime_assets.texture(.ui_text_level_complete), rl.Rectangle.init(406.0, 136.0, 468.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
-                    .abandoned, .runtime_error => drawSmallTextCentered(runtime_assets, resultsTitle(results.reason), 152.0, HudTextColor.accent),
-                }
-                drawSmallTextCentered(runtime_assets, resultsSubtitleFor(&results), 196.0, HudTextColor.primary);
                 if (isQuestFailedResult(&results)) {
-                    drawQuestFailedPreview(runtime_assets, &results);
+                    const layout = questFailedResultsPanelLayout(@floatFromInt(rl.getScreenWidth()));
+                    drawTextureFit(
+                        runtime_assets.texture(.ui_menu_panel),
+                        rl.Rectangle.init(layout.top_left.x, layout.top_left.y, quest_failed_panel_w, quest_failed_panel_h),
+                        colorWithAlpha(rl.Color.white, 0.96),
+                    );
+                    drawTextureFit(
+                        runtime_assets.texture(.ui_text_reaper),
+                        rl.Rectangle.init(layout.banner_pos.x, layout.banner_pos.y, quest_failed_banner_w, quest_failed_banner_h),
+                        colorWithAlpha(rl.Color.white, 0.96),
+                    );
+                    drawSmallText(
+                        runtime_assets,
+                        resultsSubtitleFor(&results),
+                        layout.top_left.x + quest_failed_message_x_offset,
+                        layout.top_left.y + quest_failed_message_y_offset,
+                        HudTextColor.primary,
+                    );
+                    drawQuestFailedPreview(runtime_assets, &results, layout);
                 } else {
+                    drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(262.0, 116.0, 756.0, 392.0), colorWithAlpha(rl.Color.white, 0.96));
+                    switch (results.reason) {
+                        .dead => drawTextureFit(runtime_assets.texture(.ui_text_reaper), rl.Rectangle.init(464.0, 136.0, 354.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
+                        .completed => drawTextureFit(runtime_assets.texture(.ui_text_level_complete), rl.Rectangle.init(406.0, 136.0, 468.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
+                        .abandoned, .runtime_error => drawSmallTextCentered(runtime_assets, resultsTitle(results.reason), 152.0, HudTextColor.accent),
+                    }
+                    drawSmallTextCentered(runtime_assets, resultsSubtitleFor(&results), 196.0, HudTextColor.primary);
                     drawSmallText(runtime_assets, "TIME", 370.0, 258.0, HudTextColor.dim);
                     drawSmallText(runtime_assets, "XP", 370.0, 286.0, HudTextColor.dim);
                     drawSmallText(runtime_assets, "LEVEL", 370.0, 314.0, HudTextColor.dim);
@@ -2857,6 +2875,19 @@ const ResultsHighscorePromptLayout = struct {
     saved_y: f32,
 };
 
+const quest_failed_panel_w: f32 = 510.0;
+const quest_failed_panel_h: f32 = 378.0;
+const quest_failed_banner_w: f32 = 256.0;
+const quest_failed_banner_h: f32 = 64.0;
+const quest_failed_banner_x_offset: f32 = 214.0;
+const quest_failed_banner_y_offset: f32 = 40.0;
+const quest_failed_message_x_offset: f32 = quest_failed_banner_x_offset + 30.0;
+const quest_failed_message_y_offset: f32 = 126.0;
+const quest_failed_score_x_offset: f32 = quest_failed_banner_x_offset + 40.0;
+const quest_failed_score_y_offset: f32 = 152.0;
+const quest_failed_button_x_offset: f32 = quest_failed_banner_x_offset + 52.0;
+const quest_failed_button_y_offset: f32 = 240.0;
+
 fn gameOverResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
     const top_left = rl.Vector2.init(
         -24.0,
@@ -2865,6 +2896,20 @@ fn gameOverResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
     return .{
         .top_left = top_left,
         .banner_pos = rl.Vector2.init(top_left.x + 214.0, top_left.y + 40.0),
+    };
+}
+
+fn questFailedResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
+    const top_left = rl.Vector2.init(
+        -108.0,
+        29.0 + window_menu.menuWidescreenYShift(screen_width),
+    );
+    return .{
+        .top_left = top_left,
+        .banner_pos = rl.Vector2.init(
+            top_left.x + quest_failed_banner_x_offset,
+            top_left.y + quest_failed_banner_y_offset,
+        ),
     };
 }
 
@@ -2886,6 +2931,13 @@ fn resultsQualifiesForTop100(results: *const ResultsScreen) bool {
 
 fn resultsActionButtonLayout(results: *const ResultsScreen, screen_width: f32) ResultsActionButtonLayout {
     const qualifies = resultsQualifiesForTop100(results);
+    if (isQuestFailedResult(results)) {
+        const layout = questFailedResultsPanelLayout(screen_width);
+        return .{
+            .x = layout.top_left.x + quest_failed_button_x_offset,
+            .y = layout.top_left.y + quest_failed_button_y_offset,
+        };
+    }
     if (isQuestCompletedResult(results)) {
         const layout = questResultsPanelLayout(screen_width);
         var y = layout.top_left.y + (if (qualifies) @as(f32, 96.0) else 108.0) + 84.0;
@@ -3866,6 +3918,35 @@ test "quest failed result uses retry subtitle" {
         .summary = undefined,
     };
     try std.testing.expectEqualStrings("No luck this time, have another go?", resultsSubtitleFor(&results));
+}
+
+test "quest failed panel layout uses native anchor" {
+    const layout_640 = questFailedResultsPanelLayout(640.0);
+    try std.testing.expectEqual(@as(f32, -108.0), layout_640.top_left.x);
+    try std.testing.expectEqual(@as(f32, 29.0), layout_640.top_left.y);
+    try std.testing.expectEqual(@as(f32, 106.0), layout_640.banner_pos.x);
+    try std.testing.expectEqual(@as(f32, 69.0), layout_640.banner_pos.y);
+
+    const layout_1024 = questFailedResultsPanelLayout(1024.0);
+    try std.testing.expectEqual(@as(f32, -108.0), layout_1024.top_left.x);
+    try std.testing.expectEqual(@as(f32, 119.0), layout_1024.top_left.y);
+}
+
+test "quest failed result action buttons use native panel anchor" {
+    const results: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{
+            .game_mode = .quests,
+        },
+        .summary = undefined,
+    };
+    const layout = resultsActionButtonLayout(&results, 640.0);
+    try std.testing.expectEqual(@as(f32, 158.0), layout.x);
+    try std.testing.expectEqual(@as(f32, 269.0), layout.y);
+
+    const labels = resultsButtonLabelsFor(&results);
+    const third = resultsActionButtonRect(labels.items[2], layout, 2);
+    try std.testing.expectEqual(@as(f32, 333.0), third.y);
 }
 
 test "quest runtime error result does not expose mismatched high score button" {
@@ -5864,19 +5945,36 @@ fn drawSmallTextCenteredFmtAtX(
     drawSmallTextCenteredAtX(runtime_assets, text, center_x, y, color);
 }
 
-fn drawQuestFailedPreview(runtime_assets: *const window_assets.RuntimeAssets, results: *const ResultsScreen) void {
-    const score_center_x = 500.0;
-    const xp_center_x = 652.0;
-    const top_y = 258.0;
-    const value_y = top_y + 22.0;
+fn drawQuestFailedPreview(runtime_assets: *const window_assets.RuntimeAssets, results: *const ResultsScreen, layout: ResultsPanelLayout) void {
+    const score_pos = rl.Vector2.init(
+        layout.top_left.x + quest_failed_score_x_offset,
+        layout.top_left.y + quest_failed_score_y_offset,
+    );
+    const score_center_x = score_pos.x + 32.0;
+    const xp_center_x = score_pos.x + 128.0;
+    const top_y = score_pos.y;
+    const value_y = top_y + 15.0;
     const separator_color = colorWithAlpha(rl.Color.init(149, 175, 198, 255), 0.7);
     const elapsed_seconds = @as(f32, @floatFromInt(results.summary.elapsed_ms_sim)) * 0.001;
 
     drawSmallTextCenteredAtX(runtime_assets, "Score", score_center_x, top_y, HudTextColor.dim);
     drawSmallTextCenteredFmtAtX("{d:.2} secs", runtime_assets, .{elapsed_seconds}, score_center_x, value_y, HudTextColor.primary);
-    rl.drawLine(@intFromFloat((score_center_x + xp_center_x) * 0.5), @intFromFloat(top_y - 2.0), @intFromFloat((score_center_x + xp_center_x) * 0.5), @intFromFloat(value_y + 24.0), separator_color);
+    rl.drawLine(
+        @intFromFloat(score_pos.x + 80.0),
+        @intFromFloat(score_pos.y),
+        @intFromFloat(score_pos.x + 80.0),
+        @intFromFloat(score_pos.y + 48.0),
+        separator_color,
+    );
     drawSmallTextCenteredAtX(runtime_assets, "Experience", xp_center_x, top_y, HudTextColor.primary);
     drawSmallTextCenteredFmtAtX("{d}", runtime_assets, .{results.summary.player_experience}, xp_center_x, value_y, HudTextColor.dim);
+    rl.drawRectangle(
+        @intFromFloat(score_pos.x - 16.0),
+        @intFromFloat(score_pos.y + 52.0),
+        192,
+        1,
+        separator_color,
+    );
 }
 
 fn drawBootAssetFallback(assets_state: AssetsState, assets_message: ?[]const u8) void {
