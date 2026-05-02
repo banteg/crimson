@@ -10,7 +10,7 @@ Standalone Zig workspace for the native Crimson port.
 - native replay tooling (`replay list`, `replay verify`, `replay info`,
   `replay benchmark`, checkpoint verification/diffing),
 - native CDT debug tooling (`dbg record`, `dbg health`, `dbg tick`,
-  `dbg entity`, `dbg query`, `dbg diff`, `dbg bisect`),
+  `dbg entity`, `dbg query`, `dbg diff`, `dbg bisect`, `dbg focus`),
 - a real raylib desktop app target,
 - archive/codec support for `crimson.paq`, `music.paq`, `sfx.paq`, `crimson.cfg`, and `game.cfg`,
 - a freestanding WASM replay verify/info/benchmark and checkpoint comparison ABI.
@@ -143,6 +143,7 @@ The native CLI currently exposes:
 - `crimson-zig replay diff-checkpoints <expected.chk> <actual.chk>`
 - `crimson-zig dbg diff <expected.cdt> <actual.cdt>`
 - `crimson-zig dbg bisect <expected.cdt> <actual.cdt>`
+- `crimson-zig dbg focus <expected.cdt> <actual.cdt> --tick <n>`
 - `crimson-zig relay serve`
 
 Supported native replay/runtime modes today:

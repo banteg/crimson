@@ -290,6 +290,13 @@ pub const TraceBisectReport = struct {
     window_end: ?i32 = null,
 };
 
+pub const TraceFocusReport = struct {
+    tick_index: i32,
+    diverged: bool,
+    checkpoint_diff_count: usize,
+    mismatch: ?TraceDiffMismatch = null,
+};
+
 const TickRange = struct {
     start_tick: i32,
     end_tick: i32,
@@ -1186,6 +1193,40 @@ pub fn bisectTraceBytes(
 ) !TraceBisectReport {
     const diff = try diffTraceBytes(allocator, expected_bytes, actual_bytes, options);
     return bisectReportFromDiff(diff, window_before, window_after);
+}
+
+pub fn focusTraceFiles(
+    allocator: std.mem.Allocator,
+    io: std.Io,
+    expected_path: []const u8,
+    actual_path: []const u8,
+    tick_index: i32,
+) !TraceFocusReport {
+    const expected_bytes = try std.Io.Dir.cwd().readFileAlloc(io, expected_path, allocator, .limited(256 * 1024 * 1024));
+    defer allocator.free(expected_bytes);
+    const actual_bytes = try std.Io.Dir.cwd().readFileAlloc(io, actual_path, allocator, .limited(256 * 1024 * 1024));
+    defer allocator.free(actual_bytes);
+    return focusTraceBytes(allocator, expected_bytes, actual_bytes, tick_index);
+}
+
+pub fn focusTraceBytes(
+    allocator: std.mem.Allocator,
+    expected_bytes: []const u8,
+    actual_bytes: []const u8,
+    tick_index: i32,
+) !TraceFocusReport {
+    if (tick_index < 0) return error.TickNotFound;
+    const options: TraceDiffOptions = .{
+        .tick_start = tick_index,
+        .tick_end = tick_index,
+    };
+    var expected_rows = try loadTraceDiffRows(allocator, expected_bytes, options);
+    defer expected_rows.deinit(allocator);
+    var actual_rows = try loadTraceDiffRows(allocator, actual_bytes, options);
+    defer actual_rows.deinit(allocator);
+    if (expected_rows.items.len == 0 and actual_rows.items.len == 0) return error.TickNotFound;
+    const diff = diffTraceRows(expected_rows.items, actual_rows.items, options);
+    return focusReportFromDiff(tick_index, diff);
 }
 
 fn appendMatchingQueryEntityRows(
@@ -2235,6 +2276,23 @@ fn bisectReportFromDiff(
     };
 }
 
+fn focusReportFromDiff(tick_index: i32, diff: TraceDiffReport) TraceFocusReport {
+    if (diff.ok) {
+        return .{
+            .tick_index = tick_index,
+            .diverged = false,
+            .checkpoint_diff_count = 0,
+            .mismatch = null,
+        };
+    }
+    return .{
+        .tick_index = tick_index,
+        .diverged = true,
+        .checkpoint_diff_count = 1,
+        .mismatch = diff.mismatch,
+    };
+}
+
 fn firstTraceRowMismatch(expected: *const TraceDiffRow, actual: *const TraceDiffRow) ?TraceDiffMismatch {
     if (diffI64(expected.tick_index, expected.tick_index, actual.tick_index, "tick_index")) |mismatch| return mismatch;
     if (diffI64(expected.tick_index, expected.elapsed_ms, actual.elapsed_ms, "elapsed_ms")) |mismatch| return mismatch;
@@ -2406,6 +2464,20 @@ test "trace bisect report derives first bad tick window" {
     try std.testing.expectEqual(@as(?i32, -11), report.window_start);
     try std.testing.expectEqual(@as(?i32, 7), report.window_end);
     try std.testing.expectEqualStrings("checkpoint.kills", report.mismatch.?.field.?);
+}
+
+test "trace focus report summarizes one tick divergence" {
+    const expected = testTraceDiffRow(4);
+    var actual = expected;
+    actual.rng_stream_count = 1;
+
+    const diff = diffTraceRows(&.{expected}, &.{actual}, .{ .tick_start = 4, .tick_end = 4 });
+    const report = focusReportFromDiff(4, diff);
+
+    try std.testing.expect(report.diverged);
+    try std.testing.expectEqual(@as(i32, 4), report.tick_index);
+    try std.testing.expectEqual(@as(usize, 1), report.checkpoint_diff_count);
+    try std.testing.expectEqualStrings("rng_stream._len", report.mismatch.?.field.?);
 }
 
 fn testTraceDiffRow(tick_index: i32) TraceDiffRow {

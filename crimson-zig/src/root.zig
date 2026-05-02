@@ -9,6 +9,7 @@ pub const cli = @import("cli.zig");
 pub const dbg_bisect_native = @import("dbg_bisect_native.zig");
 pub const dbg_diff_native = @import("dbg_diff_native.zig");
 pub const dbg_entity_native = @import("dbg_entity_native.zig");
+pub const dbg_focus_native = @import("dbg_focus_native.zig");
 pub const dbg_health_native = @import("dbg_health_native.zig");
 pub const dbg_query_native = @import("dbg_query_native.zig");
 pub const dbg_record_native = @import("dbg_record_native.zig");
