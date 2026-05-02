@@ -2449,7 +2449,7 @@ const App = struct {
                 }
                 if (!breakdown_pending and results.highscore != null) {
                     const highscore = results.highscore.?;
-                    drawResultsHighscore(runtime_assets, &highscore, resultsNamePrompt(&results));
+                    drawResultsHighscore(runtime_assets, &results, &highscore, resultsNamePrompt(&results));
                 } else if (!breakdown_pending and results.score_too_low_for_top100) {
                     drawSmallTextCentered(runtime_assets, "Score too low for top100.", 452.0, HudTextColor.dim);
                 }
@@ -2849,6 +2849,14 @@ const ResultsActionButtonLayout = struct {
     step_y: f32 = 32.0,
 };
 
+const ResultsHighscorePromptLayout = struct {
+    prompt_x: f32,
+    prompt_y: f32,
+    input_rect: rl.Rectangle,
+    saved_x: f32,
+    saved_y: f32,
+};
+
 fn gameOverResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
     const top_left = rl.Vector2.init(
         -24.0,
@@ -2912,6 +2920,31 @@ fn resultsHighscoreOkButtonRect(results: *const ResultsScreen, screen_width: f32
     }
     const layout = gameOverResultsPanelLayout(screen_width);
     return window_ui.buttonAt("OK", layout.banner_pos.x + 178.0, layout.banner_pos.y + 116.0, false).rect;
+}
+
+fn resultsHighscorePromptLayout(results: *const ResultsScreen, screen_width: f32) ResultsHighscorePromptLayout {
+    if (isQuestCompletedResult(results)) {
+        const layout = questResultsPanelLayout(screen_width);
+        const content_x = layout.top_left.x + 220.0;
+        return .{
+            .prompt_x = content_x + 42.0,
+            .prompt_y = layout.top_left.y + 118.0,
+            .input_rect = rl.Rectangle.init(content_x, layout.top_left.y + 150.0, 166.0, 18.0),
+            .saved_x = content_x + 8.0,
+            .saved_y = layout.top_left.y + 118.0,
+        };
+    }
+
+    const layout = gameOverResultsPanelLayout(screen_width);
+    const form_x = layout.banner_pos.x + 8.0;
+    const form_y = layout.banner_pos.y + 84.0;
+    return .{
+        .prompt_x = form_x + 42.0,
+        .prompt_y = form_y,
+        .input_rect = rl.Rectangle.init(form_x, form_y + 40.0, 166.0, 18.0),
+        .saved_x = form_x + 8.0,
+        .saved_y = form_y,
+    };
 }
 
 fn isQuestFailedResult(results: *const ResultsScreen) bool {
@@ -3959,6 +3992,12 @@ test "results high score prompt uses native ok submit button" {
     try std.testing.expectEqualStrings("OK", buttons.items[0].label);
     try std.testing.expectApproxEqAbs(@as(f32, 368.0), buttons.items[0].rect.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 185.0), buttons.items[0].rect.y, 1e-6);
+
+    const prompt = resultsHighscorePromptLayout(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 240.0), prompt.prompt_x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 153.0), prompt.prompt_y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 198.0), prompt.input_rect.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 193.0), prompt.input_rect.y, 1e-6);
 }
 
 test "quest results high score prompt uses native ok submit button" {
@@ -3980,6 +4019,12 @@ test "quest results high score prompt uses native ok submit button" {
     try std.testing.expectEqualStrings("OK", buttons.items[0].label);
     try std.testing.expectApproxEqAbs(@as(f32, 282.0), buttons.items[0].rect.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 171.0), buttons.items[0].rect.y, 1e-6);
+
+    const prompt = resultsHighscorePromptLayout(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 154.0), prompt.prompt_x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 147.0), prompt.prompt_y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 112.0), prompt.input_rect.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 179.0), prompt.input_rect.y, 1e-6);
 }
 
 test "results high score save errors use user-facing details" {
@@ -5324,42 +5369,42 @@ fn colorWithAlpha(color: rl.Color, alpha: f32) rl.Color {
 
 fn drawResultsHighscore(
     runtime_assets: *const window_assets.RuntimeAssets,
+    results: *const ResultsScreen,
     highscore: *const ResultsHighscoreState,
     name_prompt: []const u8,
 ) void {
-    const prompt_y = 452.0;
+    const layout = resultsHighscorePromptLayout(results, @floatFromInt(rl.getScreenWidth()));
     var rank_buf: [16]u8 = undefined;
     const rank_text = ui_formatting.formatOrdinal(&rank_buf, @intCast(highscore.rank_index + 1));
     if (highscore.promptActive()) {
-        drawSmallTextCentered(runtime_assets, "NEW HIGH SCORE", prompt_y, HudTextColor.accent);
-        drawSmallTextFmt("RANK {s}", runtime_assets, .{rank_text}, 420.0, prompt_y + 28.0, HudTextColor.primary);
-        drawSmallTextCentered(runtime_assets, name_prompt, prompt_y + 56.0, HudTextColor.dim);
+        drawSmallText(runtime_assets, name_prompt, layout.prompt_x, layout.prompt_y, HudTextColor.accent);
 
-        rl.drawRectangleRounded(
-            rl.Rectangle.init(392.0, prompt_y + 86.0, 496.0, 34.0),
-            0.15,
-            8,
-            rl.Color.init(22, 18, 16, 230),
+        rl.drawRectangleLines(
+            @intFromFloat(layout.input_rect.x),
+            @intFromFloat(layout.input_rect.y),
+            @intFromFloat(layout.input_rect.width),
+            @intFromFloat(layout.input_rect.height),
+            rl.Color.white,
         );
-        rl.drawRectangleRoundedLinesEx(
-            rl.Rectangle.init(392.0, prompt_y + 86.0, 496.0, 34.0),
-            0.15,
-            8,
-            2.0,
-            rl.Color.init(138, 101, 78, 255),
+        rl.drawRectangle(
+            @intFromFloat(layout.input_rect.x + 1.0),
+            @intFromFloat(layout.input_rect.y + 1.0),
+            @intFromFloat(layout.input_rect.width - 2.0),
+            @intFromFloat(layout.input_rect.height - 2.0),
+            rl.Color.black,
         );
 
         const caret_visible = @mod(@as(i32, @intFromFloat(rl.getTime() * 2.5)), 2) == 0;
         var shown_name_buf: [persistence.highscores.name_max_edit + 1]u8 = undefined;
         const shown_name = highscoreNameDisplay(&shown_name_buf, highscore, caret_visible);
-        drawSmallText(runtime_assets, shown_name, 410.0, prompt_y + 95.0, rl.Color.white);
+        drawSmallText(runtime_assets, shown_name, layout.input_rect.x + 4.0, layout.input_rect.y + 2.0, colorWithAlpha(rl.Color.white, 0.8));
 
         if (highscore.save_error) |save_error| {
-            drawSmallText(runtime_assets, save_error, 410.0, prompt_y + 126.0, rl.Color.orange);
+            drawSmallText(runtime_assets, save_error, layout.input_rect.x, layout.input_rect.y + 30.0, rl.Color.orange);
         }
     } else {
-        drawSmallTextCentered(runtime_assets, "SCORE SAVED", prompt_y, HudTextColor.accent);
-        drawSmallTextFmt("RANK {s}  NAME {s}", runtime_assets, .{ rank_text, highscore.record.name() }, 330.0, prompt_y + 28.0, HudTextColor.primary);
+        drawSmallText(runtime_assets, "SCORE SAVED", layout.saved_x, layout.saved_y, HudTextColor.accent);
+        drawSmallTextFmt("Rank: {s}  Name: {s}", runtime_assets, .{ rank_text, highscore.record.name() }, layout.saved_x, layout.saved_y + 18.0, HudTextColor.primary);
     }
 }
 
