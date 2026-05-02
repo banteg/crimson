@@ -218,6 +218,10 @@ fn runVerifyWithReplayBytes(
         defer allocator.free(detail);
         return buildVerifyFailedOutput(allocator, detail);
     }
+    if (try replay_codec.replayEventKindFailureDetail(allocator, header.game_mode_id, replay.events)) |detail| {
+        defer allocator.free(detail);
+        return buildVerifyFailedOutput(allocator, detail);
+    }
     const trace_requested = request.trace_rng or request.debug_trace_cdt != null;
     const ticks_to_simulate: usize = if (request.max_ticks) |max_ticks|
         @min(max_ticks, replay.tickCount())

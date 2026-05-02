@@ -143,6 +143,17 @@ def write_legacy_out_of_order_event_replay(tmp_path: Path, *, replay: Replay, na
     return replay_path
 
 
+def write_current_typo_event_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
+    raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
+    payload = msgspec.msgpack.decode(raw_payload)
+    payload["ticks"][0]["commands"] = [{"type": "typo_char", "player_index": 0, "ch": "x"}]
+
+    replay_path = tmp_path / name
+    replay_path.parent.mkdir(parents=True, exist_ok=True)
+    replay_path.write_bytes(msgspec.msgpack.encode(payload))
+    return replay_path
+
+
 def write_checkpoint_sidecar(
     replay_path: Path,
     replay: Replay,

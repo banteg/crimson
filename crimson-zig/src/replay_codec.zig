@@ -477,6 +477,42 @@ pub fn replayEventOrderingFailureDetail(
     return null;
 }
 
+pub fn replayEventKindFailureDetail(
+    allocator: std.mem.Allocator,
+    game_mode_id: i32,
+    events: []const ReplayEvent,
+) !?[]u8 {
+    const game_mode = std.enums.fromInt(game_ids.GameModeId, game_mode_id) orelse return null;
+    for (events, 0..) |event, event_index| {
+        if (replayEventKindAllowedInMode(event, game_mode)) continue;
+        const detail = try std.fmt.allocPrint(
+            allocator,
+            "replay event kind invalid for game mode: event={s} tick={d} event_index={d} game_mode={s}",
+            .{ replayEventKindName(event), event.tickIndex(), event_index, @tagName(game_mode) },
+        );
+        return detail;
+    }
+    return null;
+}
+
+fn replayEventKindAllowedInMode(event: ReplayEvent, game_mode: game_ids.GameModeId) bool {
+    return switch (event) {
+        .typo_char,
+        .typo_backspace,
+        .typo_submit,
+        => game_mode == .typo,
+        .capture_perk_apply,
+        .capture_perk_pending,
+        => game_mode != .rush,
+        .perk_pick,
+        .perk_menu_open,
+        .capture_bootstrap,
+        .capture_creature_spawn,
+        .capture_state_transition,
+        => true,
+    };
+}
+
 fn replayEventPlayerIndex(event: ReplayEvent) ?i32 {
     return switch (event) {
         .perk_pick => |payload| payload.player_index,
@@ -2270,6 +2306,25 @@ test "event ordering failure detail identifies first descending tick" {
 
     try std.testing.expectEqualStrings(
         "replay events are not ordered in canonical tick order: tick=1 follows tick=2 (event_index=1, event=perk_pick)",
+        detail,
+    );
+}
+
+test "event kind failure detail identifies first mode-incompatible event" {
+    const allocator = std.testing.allocator;
+    const events = [_]ReplayEvent{
+        .{ .typo_char = .{
+            .tick_index = 0,
+            .player_index = 0,
+            .ch = 'x',
+        } },
+    };
+
+    const detail = (try replayEventKindFailureDetail(allocator, @intFromEnum(game_ids.GameModeId.survival), events[0..])) orelse return error.TestExpectedDetail;
+    defer allocator.free(detail);
+
+    try std.testing.expectEqualStrings(
+        "replay event kind invalid for game mode: event=typo_char tick=0 event_index=0 game_mode=survival",
         detail,
     );
 }

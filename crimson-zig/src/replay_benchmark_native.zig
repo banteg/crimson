@@ -426,6 +426,10 @@ fn runBenchmarkWithReplay(
         defer allocator.free(detail);
         return buildBenchmarkFailedOutput(allocator, detail);
     }
+    if (try replay_codec.replayEventKindFailureDetail(allocator, replay.header.game_mode_id, replay.events)) |detail| {
+        defer allocator.free(detail);
+        return buildBenchmarkFailedOutput(allocator, detail);
+    }
 
     var last_run: replay_runner.ReplayRunResult = undefined;
     for (0..request.warmup_runs) |_| {

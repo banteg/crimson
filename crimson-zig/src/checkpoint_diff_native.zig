@@ -710,6 +710,10 @@ fn runVerifyCheckpointsWithReplayOutput(
         defer allocator.free(detail);
         return buildVerifyFailedOutput(allocator, detail);
     }
+    if (try replay_codec.replayEventKindFailureDetail(allocator, replay.header.game_mode_id, replay.events)) |detail| {
+        defer allocator.free(detail);
+        return buildVerifyFailedOutput(allocator, detail);
+    }
 
     var trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
     defer {

@@ -126,6 +126,10 @@ pub fn runReplayInfoBytesJson(
         defer allocator.free(detail);
         return buildInfoFailedOutput(allocator, detail);
     }
+    if (try replay_codec.replayEventKindFailureDetail(allocator, replay.header.game_mode_id, replay.events)) |detail| {
+        defer allocator.free(detail);
+        return buildInfoFailedOutput(allocator, detail);
+    }
 
     const result = replay_info_mod.collect(
         allocator,
@@ -262,6 +266,10 @@ fn runInfoWithReplayBytes(
         return buildInfoFailedOutput(allocator, detail);
     }
     if (try replay_codec.replayEventPlayerIndexFailureDetail(allocator, replay.header.player_count, replay.events)) |detail| {
+        defer allocator.free(detail);
+        return buildInfoFailedOutput(allocator, detail);
+    }
+    if (try replay_codec.replayEventKindFailureDetail(allocator, replay.header.game_mode_id, replay.events)) |detail| {
         defer allocator.free(detail);
         return buildInfoFailedOutput(allocator, detail);
     }
