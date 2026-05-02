@@ -227,6 +227,8 @@ pub fn stepTick(
         }
         if (flags.reload_pressed) {
             context.reload_pressed_count += 1;
+        }
+        if (flags.reload_pressed or flags.reload_down) {
             frame.reload_active_any = true;
         }
     }
@@ -429,6 +431,7 @@ pub fn stepTick(
                 .fire_down = flags.fire_down,
                 .fire_pressed = flags.fire_pressed,
                 .reload_pressed = flags.reload_pressed,
+                .reload_down = flags.reload_down,
                 .reload_active_any = frame.reload_active_any,
                 .move_mode = move_mode_for_tick,
                 .single_player_mode = players.len == 1,
@@ -968,6 +971,40 @@ test "step tick applies counters and emits trace snapshot" {
 
     try std.testing.expectEqual(@as(usize, 1), TraceCapture.calls);
     try std.testing.expectEqual(@as(usize, 0), TraceCapture.last_tick_index);
+}
+
+test "step tick treats held replay reload as active without counting a press" {
+    var header = testHeader();
+    header.seed = 1;
+    header.player_count = 1;
+    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    context.rebindQuestSpawnEntries();
+
+    const input: player_runtime.GameInput = .{
+        .move_x = 0.0,
+        .move_y = 0.0,
+        .aim_x = 700.0,
+        .aim_y = 512.0,
+        .flags = .{
+            .fire_down = false,
+            .fire_pressed = false,
+            .reload_pressed = false,
+            .reload_down = true,
+        },
+    };
+
+    const result = try stepTick(
+        &context,
+        0,
+        &[_]player_runtime.GameInput{input},
+        &.{},
+        context.dt_nominal,
+        .{},
+    );
+
+    try std.testing.expectEqual(@as(usize, 1), context.tick_index);
+    try std.testing.expectEqual(@as(usize, 0), context.reload_pressed_count);
+    try std.testing.expect(result.reload_active_any);
 }
 
 test "step tick accepts preserve bugs and keeps player zero perk targeting" {

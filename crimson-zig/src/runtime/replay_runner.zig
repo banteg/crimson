@@ -526,6 +526,7 @@ pub fn mapReplayInputToGameInput(input: replay_codec.ReplayPlayerInput) player_r
             .fire_down = flags.fire_down,
             .fire_pressed = flags.fire_pressed,
             .reload_pressed = flags.reload_pressed,
+            .reload_down = flags.reload_down,
             .move_mode = flags.move_mode,
             .aim_scheme = flags.aim_scheme,
             .move_forward_pressed = flags.move_forward_pressed,
@@ -540,6 +541,7 @@ test "replay input adapter preserves packed flag decode semantics" {
     const packed_flags: u32 =
         replay_codec.fire_down_flag |
         replay_codec.reload_pressed_flag |
+        replay_codec.reload_down_flag |
         replay_codec.move_keys_present_flag |
         replay_codec.move_forward_flag |
         replay_codec.turn_right_flag |
@@ -565,6 +567,7 @@ test "replay input adapter preserves packed flag decode semantics" {
     try std.testing.expectEqual(expected_flags.fire_down, mapped.flags.fire_down);
     try std.testing.expectEqual(expected_flags.fire_pressed, mapped.flags.fire_pressed);
     try std.testing.expectEqual(expected_flags.reload_pressed, mapped.flags.reload_pressed);
+    try std.testing.expectEqual(expected_flags.reload_down, mapped.flags.reload_down);
     try std.testing.expectEqual(expected_flags.move_mode, mapped.flags.move_mode);
     try std.testing.expectEqual(expected_flags.aim_scheme, mapped.flags.aim_scheme);
     try std.testing.expectEqual(expected_flags.move_forward_pressed, mapped.flags.move_forward_pressed);

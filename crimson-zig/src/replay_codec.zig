@@ -18,6 +18,7 @@ const msgpack_bin32: u8 = 0xC6;
 pub const fire_down_flag: u32 = 1 << 0;
 pub const fire_pressed_flag: u32 = 1 << 1;
 pub const reload_pressed_flag: u32 = 1 << 2;
+pub const reload_down_flag: u32 = 1 << 16;
 pub const move_keys_present_flag: u32 = 1 << 3;
 pub const move_forward_flag: u32 = 1 << 4;
 pub const move_backward_flag: u32 = 1 << 5;
@@ -148,6 +149,7 @@ pub const InputFlags = struct {
     fire_down: bool,
     fire_pressed: bool,
     reload_pressed: bool,
+    reload_down: bool,
     move_mode: ?i32 = null,
     aim_scheme: ?i32 = null,
     move_forward_pressed: ?bool = null,
@@ -161,6 +163,7 @@ pub fn unpackInputFlags(flags: u32) InputFlags {
         .fire_down = (flags & fire_down_flag) != 0,
         .fire_pressed = (flags & fire_pressed_flag) != 0,
         .reload_pressed = (flags & reload_pressed_flag) != 0,
+        .reload_down = (flags & reload_down_flag) != 0,
     };
 
     if ((flags & move_keys_present_flag) != 0) {
@@ -1925,6 +1928,7 @@ fn parseI64(value: i64) ReplayCodecError!i64 {
 test "unpack input flags decodes packed fields" {
     const packed_flags: u32 = fire_down_flag |
         reload_pressed_flag |
+        reload_down_flag |
         move_keys_present_flag |
         move_forward_flag |
         turn_left_flag |
@@ -1937,6 +1941,7 @@ test "unpack input flags decodes packed fields" {
     try std.testing.expect(decoded.fire_down);
     try std.testing.expect(!decoded.fire_pressed);
     try std.testing.expect(decoded.reload_pressed);
+    try std.testing.expect(decoded.reload_down);
     try std.testing.expectEqual(@as(?i32, 3), decoded.move_mode);
     try std.testing.expectEqual(@as(?i32, -1), decoded.aim_scheme);
     try std.testing.expect(decoded.move_forward_pressed != null and decoded.move_forward_pressed.?);

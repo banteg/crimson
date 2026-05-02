@@ -62,6 +62,7 @@ pub const TickInputFlags = struct {
     fire_down: bool = false,
     fire_pressed: bool = false,
     reload_pressed: bool = false,
+    reload_down: bool = false,
     reload_active_any: bool = false,
     move_mode: i32 = 0,
     single_player_mode: bool = true,
@@ -264,7 +265,7 @@ pub fn stepPlayerForTickWithEffects(
 
     const fire_gate_open_pre_reload = player.weapon.shot_cooldown <= 0.0 and player.weapon.reload_timer == 0.0;
     var swapped_alt_weapon = false;
-    const reload_key_active = input_flags.reload_pressed;
+    const reload_key_active = input_flags.reload_down or input_flags.reload_pressed;
     const reload_key_released = !input_flags.reload_active_any;
     if (has_alt_weapon_perk) {
         var cooldown_ms = state.player_alt_weapon_swap_cooldown_ms;
@@ -1434,6 +1435,48 @@ test "alternate weapon reload press swaps and adds cooldown" {
         &creatures,
         &particles,
         .{ .reload_pressed = true, .reload_active_any = true },
+        0.1,
+    );
+
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.weapon.weapon_id);
+    try std.testing.expect(player.alt_weapon != null);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.alt_weapon.?.weapon_id);
+    try expectFloatClose(0.1, player.weapon.shot_cooldown);
+    try std.testing.expectEqual(@as(i32, 200), state.player_alt_weapon_swap_cooldown_ms);
+}
+
+test "alternate weapon held reload swaps without a fresh press" {
+    var state = state_mod.GameplayState.init(1);
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var particles: particles_mod.ParticlePool = .{};
+    var player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{ .x = 512.0, .y = 512.0 },
+        .aim = .{ .x = 700.0, .y = 512.0 },
+    };
+    player.perk_counts.set(PerkId.alternate_weapon, 1);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
+    player.alt_weapon = .{
+        .weapon_id = game_ids.WeaponId.pistol,
+        .clip_size = 10,
+        .ammo = 10.0,
+        .reload_active = false,
+        .reload_timer = 0.0,
+        .reload_timer_max = 0.0,
+        .shot_cooldown = 0.0,
+    };
+    player.weapon.shot_cooldown = 0.0;
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .reload_down = true, .reload_active_any = true },
         0.1,
     );
 
