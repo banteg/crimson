@@ -4,11 +4,23 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import PerkPickCommand
 from crimson.sim.presentation_reactions import (
     PostApplyReaction,
+    PostApplyReactionRuntime,
     QuestPresentationReaction,
     apply_post_apply_reaction,
 )
 from grim.sfx_map import SfxId
 from tests.support.builders.session import make_session
+
+
+class RecordingPostApplyReactionRuntime(PostApplyReactionRuntime):
+    sfx: list[SfxId]
+    music: list[str]
+
+    def play_sfx(self, sfx: SfxId) -> None:
+        self.sfx.append(sfx)
+
+    def play_completion_music(self) -> None:
+        self.music.append("crimsonquest")
 
 
 def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() -> None:
@@ -47,8 +59,7 @@ def test_quest_presentation_reaction_tracks_audio_flags() -> None:
 
 
 def test_apply_post_apply_reaction_applies_sfx_and_completion_music() -> None:
-    play_sfx = []
-    play_completion_music = []
+    runtime = RecordingPostApplyReactionRuntime(sfx=[], music=[])
 
     apply_post_apply_reaction(
         reaction=PostApplyReaction(
@@ -58,9 +69,8 @@ def test_apply_post_apply_reaction_applies_sfx_and_completion_music() -> None:
                 play_completion_music=True,
             ),
         ),
-        play_sfx=play_sfx.append,
-        play_completion_music=lambda: play_completion_music.append("crimsonquest"),
+        runtime=runtime,
     )
 
-    assert play_sfx == [SfxId.UI_BONUS, SfxId.QUESTHIT]
-    assert play_completion_music == ["crimsonquest"]
+    assert runtime.sfx == [SfxId.UI_BONUS, SfxId.QUESTHIT]
+    assert runtime.music == ["crimsonquest"]

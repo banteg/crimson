@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from dataclasses import dataclass
+import msgspec
 
 from grim.sfx_map import SfxId
 
@@ -9,16 +8,22 @@ from .hooks import TickResult
 from .sessions import QuestSpawnState
 
 
-@dataclass(frozen=True, slots=True)
-class QuestPresentationReaction:
+class QuestPresentationReaction(msgspec.Struct, frozen=True):
     play_hit_sfx: bool = False
     play_completion_music: bool = False
 
 
-@dataclass(frozen=True, slots=True)
-class PostApplyReaction:
+class PostApplyReaction(msgspec.Struct, frozen=True):
     sfx: tuple[SfxId, ...] = ()
     quest: QuestPresentationReaction | None = None
+
+
+class PostApplyReactionRuntime(msgspec.Struct):
+    def play_sfx(self, sfx: SfxId) -> None:
+        _ = sfx
+
+    def play_completion_music(self) -> None:
+        pass
 
 
 def build_post_apply_reaction(
@@ -42,15 +47,15 @@ def build_post_apply_reaction(
 def apply_post_apply_reaction(
     *,
     reaction: PostApplyReaction,
-    play_sfx: Callable[[SfxId], None] | None,
-    play_completion_music: Callable[[], None] | None = None,
+    runtime: PostApplyReactionRuntime | None = None,
 ) -> None:
+    if runtime is None:
+        return
     quest = reaction.quest
-    if play_sfx is not None:
-        for sfx in reaction.sfx:
-            play_sfx(sfx)
-        if quest is not None and bool(quest.play_hit_sfx):
-            play_sfx(SfxId.QUESTHIT)
+    for sfx in reaction.sfx:
+        runtime.play_sfx(sfx)
+    if quest is not None and bool(quest.play_hit_sfx):
+        runtime.play_sfx(SfxId.QUESTHIT)
 
-    if quest is not None and bool(quest.play_completion_music) and play_completion_music is not None:
-        play_completion_music()
+    if quest is not None and bool(quest.play_completion_music):
+        runtime.play_completion_music()

@@ -81,6 +81,7 @@ from ..sim.input_providers import (
 )
 from ..sim.presentation_reactions import (
     PostApplyReaction,
+    PostApplyReactionRuntime,
     apply_post_apply_reaction,
     build_post_apply_reaction,
 )
@@ -128,6 +129,13 @@ class _ModePresentationApplyRuntime(PresentationApplyRuntime):
             self.reactions_by_tick.get(int(output.tick_index), PostApplyReaction()),
             dt_seconds=float(output.dt_sim),
         )
+
+
+class _ModePostApplyReactionRuntime(PostApplyReactionRuntime):
+    mode: BaseGameplayMode
+
+    def play_sfx(self, sfx: SfxId) -> None:
+        self.mode.audio_bridge.router.play_sfx(sfx)
 
 
 class _ModeLocalInputRuntime(LocalInputRuntime):
@@ -1857,7 +1865,7 @@ class BaseGameplayMode:
         _ = dt_seconds
         apply_post_apply_reaction(
             reaction=reaction,
-            play_sfx=self.audio_bridge.router.play_sfx,
+            runtime=_ModePostApplyReactionRuntime(mode=self),
         )
 
     def _process_tick_batch_results(

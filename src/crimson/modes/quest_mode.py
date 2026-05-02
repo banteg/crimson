@@ -38,6 +38,7 @@ from ..sim.bootstrap import advance_explicit_terrain, advance_unlock_terrain
 from ..sim.hooks import TickResult
 from ..sim.presentation_reactions import (
     PostApplyReaction,
+    PostApplyReactionRuntime,
     apply_post_apply_reaction,
     build_post_apply_reaction,
 )
@@ -84,6 +85,16 @@ class QuestRunOutcome(msgspec.Struct, frozen=True):
     shots_hit: int
     most_used_weapon_id: WeaponId
     player_health_values: tuple[float, ...] = ()
+
+
+class _QuestPostApplyReactionRuntime(PostApplyReactionRuntime):
+    mode: QuestMode
+
+    def play_sfx(self, sfx: SfxId) -> None:
+        self.mode.audio_bridge.router.play_sfx(sfx)
+
+    def play_completion_music(self) -> None:
+        self.mode._play_quest_completion_music()
 
 
 class QuestMode(BaseGameplayMode):
@@ -328,8 +339,7 @@ class QuestMode(BaseGameplayMode):
         _ = dt_seconds
         apply_post_apply_reaction(
             reaction=reaction,
-            play_sfx=self.audio_bridge.router.play_sfx,
-            play_completion_music=self._play_quest_completion_music,
+            runtime=_QuestPostApplyReactionRuntime(mode=self),
         )
 
     def _play_quest_completion_music(self) -> None:
