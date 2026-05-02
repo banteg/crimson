@@ -124,7 +124,7 @@ fn runQuestDump(
 
     const stdout = switch (request.output_format) {
         .human => buildHumanQuestOutput(allocator, level, @intFromEnum(descriptor.start_weapon_id), entries, request.show_plan) catch |err| switch (err) {
-            error.InvalidSpawnTemplate => return buildInvalidQuestArgsOutput(allocator, "unsupported spawn template id in quest plan"),
+            error.InvalidSpawnTemplate => return buildInvalidQuestArgsOutput(allocator, "invalid spawn template id in quest plan"),
             else => return err,
         },
         .json => try buildJsonQuestOutput(allocator, request, level, @intFromEnum(descriptor.start_weapon_id), entries),
@@ -465,4 +465,13 @@ test "quest plan summary counts template allocations" {
     const summary = try summarizeQuestPlan(entries[0..]);
     try std.testing.expectEqual(@as(usize, 21), summary.creature_count);
     try std.testing.expectEqual(@as(usize, 3), summary.spawn_slot_count);
+}
+
+test "quests invalid quest plan detail avoids unsupported wording" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+
+    const output = try buildInvalidQuestArgsOutput(arena.allocator(), "invalid spawn template id in quest plan");
+    try std.testing.expectEqualStrings("invalid quests args: invalid spawn template id in quest plan\n", output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "unsupported") == null);
 }

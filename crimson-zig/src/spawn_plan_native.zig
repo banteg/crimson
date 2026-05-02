@@ -127,7 +127,7 @@ fn runSpawnPlanRequest(
         &state,
         request.terrain_size,
     ) catch |err| switch (err) {
-        error.InvalidSpawnTemplate => return buildInvalidOutput(allocator, "unsupported spawn template id"),
+        error.InvalidSpawnTemplate => return buildInvalidOutput(allocator, "invalid spawn template id"),
     };
     const effect_count = effects_runtime.effect_pool_size - effects.free_len;
 
@@ -466,6 +466,15 @@ test "spawn-plan rejects unknown template id" {
     const output = try runSpawnPlan(arena.allocator(), &.{ "0x02", "--json" });
     try std.testing.expectEqual(@as(u8, 1), output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "invalid spawn template id") != null);
+}
+
+test "spawn-plan invalid template detail avoids unsupported wording" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+
+    const output = try buildInvalidOutput(arena.allocator(), "invalid spawn template id");
+    try std.testing.expectEqualStrings("invalid spawn-plan args: invalid spawn template id\n", output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "unsupported") == null);
 }
 
 test "spawn-plan counts runtime burst effects outside demo mode" {
