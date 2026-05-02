@@ -593,7 +593,7 @@ def test_replay_render_uses_render_video_runner(tmp_path: Path, mocker) -> None:
     assert kwargs["output_path"] == replay_path.with_suffix(".render.mp4")
 
 
-def test_replay_render_progress_callback_uses_separate_video_audio_bars(mocker) -> None:
+def test_replay_render_progress_runtime_uses_separate_video_audio_bars(mocker) -> None:
     import crimson.cli as cli_mod
 
     class _FakeBar:
@@ -624,17 +624,16 @@ def test_replay_render_progress_callback_uses_separate_video_audio_bars(mocker) 
 
     mocker.patch.object(cli_mod, "tqdm", side_effect=fake_tqdm)
 
-    callback, close = cli_mod._replay_render_progress_callback(total_ticks=10, render_audio=True)
-    assert callback is not None
-    assert close is not None
+    progress = cli_mod._replay_render_progress_runtime(total_ticks=10, render_audio=True)
+    assert progress is not None
     assert len(bars) == 1
     video_bar = bars[0]
 
-    callback("video", 3, 5, 10)
-    callback("audio", 0, 4, 10)
-    callback("video", 4, 10, 10)
-    callback("audio", 0, 10, 10)
-    close()
+    progress.update(phase="video", frame_count=3, tick_index=5, total_ticks=10)
+    progress.update(phase="audio", frame_count=0, tick_index=4, total_ticks=10)
+    progress.update(phase="video", frame_count=4, tick_index=10, total_ticks=10)
+    progress.update(phase="audio", frame_count=0, tick_index=10, total_ticks=10)
+    progress.close()
 
     assert len(bars) == 2
     audio_bar = bars[1]

@@ -5,7 +5,6 @@ import shutil
 import subprocess
 import tempfile
 import time
-from collections.abc import Callable
 from pathlib import Path
 from typing import Literal
 
@@ -50,6 +49,21 @@ class ReplayRenderResult(msgspec.Struct, frozen=True):
     width: int
     height: int
     run_result: RunResult
+
+
+class ReplayRenderProgress(msgspec.Struct):
+    def update(
+        self,
+        *,
+        phase: ReplayRenderPhase,
+        frame_count: int,
+        tick_index: int,
+        total_ticks: int,
+    ) -> None:
+        _ = phase, frame_count, tick_index, total_ticks
+
+    def close(self) -> None:
+        return None
 
 
 class _FfmpegVideoTransport:
@@ -141,7 +155,7 @@ def run_replay_render_video(
     pixel_format: str = "yuv420p",
     overwrite: bool = False,
     mute_audio: bool = True,
-    progress: Callable[[ReplayRenderPhase, int, int, int], None] | None = None,
+    progress: ReplayRenderProgress | None = None,
 ) -> ReplayRenderResult:
     from grim.assets import load_runtime_resources, unload_runtime_resources
     from grim.config import ensure_crimson_cfg
@@ -268,13 +282,23 @@ def run_replay_render_video(
                 render_pipeline.present()
                 frame_count += 1
                 if progress is not None:
-                    progress("video", frame_count, mode.tick_index, total_ticks)
+                    progress.update(
+                        phase="video",
+                        frame_count=frame_count,
+                        tick_index=mode.tick_index,
+                        total_ticks=total_ticks,
+                    )
 
             if frame_count <= 0:
                 raise ReplayRenderError("replay render produced no frames")
 
             if progress is not None:
-                progress("video", frame_count, total_ticks, total_ticks)
+                progress.update(
+                    phase="video",
+                    frame_count=frame_count,
+                    tick_index=total_ticks,
+                    total_ticks=total_ticks,
+                )
             render_pipeline.flush()
             render_pipeline.close()
             render_pipeline = None
@@ -311,7 +335,12 @@ def run_replay_render_video(
                     target_audio_frames=round(frame_count * captured_audio.effective_sample_rate / fps),
                 )
                 if progress is not None:
-                    progress("audio", frame_count, total_ticks, total_ticks)
+                    progress.update(
+                        phase="audio",
+                        frame_count=frame_count,
+                        tick_index=total_ticks,
+                        total_ticks=total_ticks,
+                    )
         except ReplayRenderError:
             if render_pipeline is not None:
                 render_pipeline.close()
@@ -448,7 +477,7 @@ def _capture_replay_audio_track(
     trace_rng: bool,
     output_path: Path,
     replay_tick_rate: int,
-    progress: Callable[[ReplayRenderPhase, int, int, int], None] | None = None,
+    progress: ReplayRenderProgress | None = None,
     total_ticks: int = 0,
 ) -> _CapturedAudioTrack:
     from ...modes.replay_playback_mode import ReplayPlaybackMode
@@ -491,7 +520,12 @@ def _capture_replay_audio_track(
                 raise ReplayRenderError("audio capture aborted: replay playback requested close")
             capture.flush_pending()
             if progress is not None and total_ticks > 0:
-                progress("audio", 0, mode.tick_index, total_ticks)
+                progress.update(
+                    phase="audio",
+                    frame_count=0,
+                    tick_index=mode.tick_index,
+                    total_ticks=total_ticks,
+                )
             next_tick_deadline += tick_dt
             sleep_s = next_tick_deadline - time.perf_counter()
             if sleep_s > 0.0:

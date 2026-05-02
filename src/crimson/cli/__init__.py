@@ -19,8 +19,9 @@ app.add_typer(dbg_app, name="dbg")
 app.add_typer(net_app, name="net")
 app.add_typer(relay_app, name="relay")
 
-def _replay_render_progress_callback(*, total_ticks: int, render_audio: bool):
-    return _replay._replay_render_progress_callback(
+
+def _replay_render_progress_runtime(*, total_ticks: int, render_audio: bool):
+    return _replay._replay_render_progress_runtime(
         total_ticks=total_ticks,
         render_audio=render_audio,
         tqdm_factory=tqdm,
