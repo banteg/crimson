@@ -2475,7 +2475,8 @@ const App = struct {
                     const highscore = results.highscore.?;
                     drawResultsHighscore(runtime_assets, &results, &highscore, resultsNamePrompt(&results));
                 } else if (!breakdown_pending and results.score_too_low_for_top100) {
-                    drawSmallTextCentered(runtime_assets, "Score too low for top100.", 452.0, HudTextColor.dim);
+                    const pos = resultsScoreTooLowMessagePos(&results, @floatFromInt(rl.getScreenWidth()));
+                    drawSmallText(runtime_assets, "Score too low for top100.", pos.x, pos.y, rl.Color.init(200, 200, 200, 255));
                 }
             }
         }
@@ -3004,6 +3005,15 @@ fn resultsHighscorePromptLayout(results: *const ResultsScreen, screen_width: f32
         .saved_x = form_x + 8.0,
         .saved_y = form_y,
     };
+}
+
+fn resultsScoreTooLowMessagePos(results: *const ResultsScreen, screen_width: f32) rl.Vector2 {
+    if (isQuestCompletedResult(results)) {
+        const layout = questResultsPanelLayout(screen_width);
+        return rl.Vector2.init(layout.top_left.x + 258.0, layout.top_left.y + 102.0);
+    }
+    const layout = gameOverResultsPanelLayout(screen_width);
+    return rl.Vector2.init(layout.banner_pos.x + 38.0, layout.banner_pos.y + 62.0);
 }
 
 fn isQuestFailedResult(results: *const ResultsScreen) bool {
@@ -4138,6 +4148,18 @@ test "results high score prompt uses native ok submit button" {
     try std.testing.expectApproxEqAbs(@as(f32, 193.0), prompt.input_rect.y, 1e-6);
 }
 
+test "game over score too low message uses native banner anchor" {
+    const results: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{ .game_mode = .survival },
+        .summary = undefined,
+        .score_too_low_for_top100 = true,
+    };
+    const pos = resultsScoreTooLowMessagePos(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 228.0), pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 131.0), pos.y, 1e-6);
+}
+
 test "quest results high score prompt uses native ok submit button" {
     const results: ResultsScreen = .{
         .reason = .completed,
@@ -4163,6 +4185,21 @@ test "quest results high score prompt uses native ok submit button" {
     try std.testing.expectApproxEqAbs(@as(f32, 147.0), prompt.prompt_y, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 112.0), prompt.input_rect.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 179.0), prompt.input_rect.y, 1e-6);
+}
+
+test "quest result score too low message uses native score card anchor" {
+    const results: ResultsScreen = .{
+        .reason = .completed,
+        .run_config = .{
+            .game_mode = .quests,
+            .quest_level_key = 109,
+        },
+        .summary = undefined,
+        .score_too_low_for_top100 = true,
+    };
+    const pos = resultsScoreTooLowMessagePos(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 150.0), pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 131.0), pos.y, 1e-6);
 }
 
 test "results high score save errors use user-facing details" {
