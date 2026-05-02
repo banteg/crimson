@@ -13,6 +13,8 @@ test {
     std.testing.refAllDecls(cz.dbg_health_native);
     _ = cz.dbg_health_native;
     _ = cz.creatures;
+    std.testing.refAllDecls(cz.dbg_query_native);
+    _ = cz.dbg_query_native;
     _ = cz.dbg_record_native;
     std.testing.refAllDecls(cz.dbg_tick_native);
     _ = cz.dbg_tick_native;
@@ -416,4 +418,45 @@ test "aggregate dbg entity summarizes native CDT entity" {
     const artifact = try std.Io.Dir.cwd().readFileAlloc(io, json_path, allocator, .limited(64 * 1024));
     defer allocator.free(artifact);
     try std.testing.expectEqualStrings(entity_output.stdout, artifact);
+}
+
+test "aggregate dbg query filters native CDT rows" {
+    const allocator = std.testing.allocator;
+
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
+    defer allocator.free(base_dir);
+    const replay_path = try std.fs.path.join(allocator, &.{ base_dir, "sample.crd" });
+    defer allocator.free(replay_path);
+    const trace_path = try std.fs.path.join(allocator, &.{ base_dir, "sample.cdt" });
+    defer allocator.free(trace_path);
+    const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "query.json" });
+    defer allocator.free(json_path);
+
+    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(replay_bytes);
+
+    const io = std.Io.Threaded.global_single_threaded.io();
+    try std.Io.Dir.cwd().writeFile(io, .{
+        .sub_path = replay_path,
+        .data = replay_bytes,
+    });
+
+    const record_output = try cz.dbg_record_native.runDbgRecord(allocator, &.{ replay_path, "--out", trace_path });
+    defer record_output.deinit(allocator);
+    try std.testing.expectEqual(@as(u8, 0), record_output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, record_output.stdout, "trace=") != null);
+
+    const query_output = try cz.dbg_query_native.runDbgQuery(allocator, &.{ trace_path, "entities where uid == 0", "--json", "--json-out", json_path });
+    defer query_output.deinit(allocator);
+    try std.testing.expectEqual(@as(u8, 0), query_output.exit_code);
+    try std.testing.expectEqualStrings("", query_output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, query_output.stdout, "\"scope\":\"entities\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, query_output.stdout, "\"uid\":0") != null);
+
+    const artifact = try std.Io.Dir.cwd().readFileAlloc(io, json_path, allocator, .limited(64 * 1024));
+    defer allocator.free(artifact);
+    try std.testing.expectEqualStrings(query_output.stdout, artifact);
 }

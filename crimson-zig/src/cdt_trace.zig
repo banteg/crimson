@@ -172,6 +172,94 @@ pub const EntityHistorySummary = struct {
     }
 };
 
+pub const QueryScope = enum {
+    ticks,
+    entities,
+};
+
+pub const QueryField = enum {
+    tick_index,
+    mode_id,
+    dt_ms_i32,
+    checkpoint_score_xp,
+    checkpoint_kills,
+    checkpoint_creature_count,
+    checkpoint_perk_pending,
+    entity_count_creatures,
+    entity_count_projectiles,
+    entity_count_secondary_projectiles,
+    entity_count_bonuses,
+    rng_stream_count,
+    timing_samples_count,
+    event_count_total,
+    uid,
+    generation,
+    index,
+    type_id,
+    hp,
+    pool_kind,
+};
+
+pub const QueryOp = enum {
+    eq,
+    ne,
+    gt,
+    ge,
+    lt,
+    le,
+};
+
+pub const QueryLiteral = union(enum) {
+    int: i64,
+    float: f64,
+    string: []const u8,
+};
+
+pub const QueryRequest = struct {
+    scope: QueryScope,
+    expression: []const u8,
+    field: QueryField,
+    op: QueryOp,
+    literal: QueryLiteral,
+    limit: usize = 256,
+};
+
+pub const QueryRow = struct {
+    tick_index: i32,
+    mode_id: ?i32 = null,
+    dt_ms_i32: ?i32 = null,
+    uid: ?i32 = null,
+    generation: ?i32 = null,
+    pool_kind: ?[]const u8 = null,
+    index: ?i32 = null,
+    type_id: ?i32 = null,
+    hp: ?f32 = null,
+    entity_count_creatures: ?i32 = null,
+    entity_count_projectiles: ?i32 = null,
+    entity_count_secondary_projectiles: ?i32 = null,
+    entity_count_bonuses: ?i32 = null,
+    checkpoint_score_xp: ?i32 = null,
+    checkpoint_kills: ?i32 = null,
+    checkpoint_creature_count: ?i32 = null,
+    checkpoint_perk_pending: ?i32 = null,
+    rng_stream_count: ?i32 = null,
+    timing_samples_count: ?i32 = null,
+    event_count_total: ?i32 = null,
+};
+
+pub const QueryResult = struct {
+    scope: []const u8,
+    expression: []const u8,
+    limit: usize,
+    match_count: usize,
+    truncated: bool,
+    rows: []const QueryRow,
+
+    pub fn deinit(self: QueryResult, allocator: std.mem.Allocator) void {
+        allocator.free(self.rows);
+    }
+};
+
 const TickRange = struct {
     start_tick: i32,
     end_tick: i32,
@@ -935,6 +1023,237 @@ fn appendMatchingEntitySamples(
             .pos = .{ .x = sample.pos.x, .y = sample.pos.y },
         });
     }
+}
+
+pub fn queryTraceFile(
+    allocator: std.mem.Allocator,
+    io: std.Io,
+    trace_path: []const u8,
+    request: QueryRequest,
+) !QueryResult {
+    const bytes = try std.Io.Dir.cwd().readFileAlloc(io, trace_path, allocator, .limited(256 * 1024 * 1024));
+    defer allocator.free(bytes);
+    return queryTraceBytes(allocator, bytes, request);
+}
+
+pub fn queryTraceBytes(
+    allocator: std.mem.Allocator,
+    bytes: []const u8,
+    request: QueryRequest,
+) !QueryResult {
+    if (request.limit == 0) return error.InvalidQueryLimit;
+    if (bytes.len < trace_magic.len + 4 + trailer_magic.len + 8) return error.InvalidTraceHeader;
+    if (!std.mem.startsWith(u8, bytes, trace_magic)) return error.InvalidTraceMagic;
+    const version = readU32Le(bytes[trace_magic.len..][0..4]);
+    if (version != trace_format_version) return error.UnsupportedTraceFormatVersion;
+
+    const trailer_offset = bytes.len - trailer_magic.len - 8;
+    if (!std.mem.eql(u8, bytes[trailer_offset..][0..trailer_magic.len], trailer_magic)) return error.InvalidTraceTrailer;
+    const footer_offset_u64 = readU64Le(bytes[trailer_offset + trailer_magic.len ..][0..8]);
+    if (footer_offset_u64 > std.math.maxInt(usize)) return error.InvalidTraceFooterOffset;
+    const footer_offset: usize = @intCast(footer_offset_u64);
+    const footer_chunk = try chunkPayloadAt(bytes, footer_offset);
+    if (!std.mem.eql(u8, footer_chunk.kind, chunk_kind_footer)) return error.InvalidTraceFooterChunk;
+    var decoded_footer = try msgpack.decodeFromSlice(TraceFooter, allocator, footer_chunk.payload);
+    defer decoded_footer.deinit();
+    const footer = decoded_footer.value;
+
+    var rows: std.ArrayList(QueryRow) = .empty;
+    errdefer rows.deinit(allocator);
+    var match_count: usize = 0;
+
+    for (footer.tick_blocks) |entry| {
+        if (entry.file_offset < 0) return error.InvalidTraceBlockOffset;
+        const tick_chunk = try chunkPayloadAt(bytes, @intCast(entry.file_offset));
+        if (!std.mem.eql(u8, tick_chunk.kind, chunk_kind_tick)) return error.InvalidTraceTickChunk;
+        if (tick_chunk.start_tick != entry.start_tick or tick_chunk.end_tick != entry.end_tick) return error.InvalidTraceTickChunk;
+        if (entry.uncompressed_len < 0) return error.InvalidTraceTickChunk;
+        if (tick_chunk.payload.len != @as(usize, @intCast(entry.uncompressed_len))) return error.InvalidTraceTickChunk;
+        if (checksum64(tick_chunk.payload) != entry.checksum) return error.InvalidTraceChecksum;
+
+        var decoded_block = try msgpack.decodeFromSlice(TickBlockRead, allocator, tick_chunk.payload);
+        defer decoded_block.deinit();
+        const block = decoded_block.value;
+        if (block.start_tick != entry.start_tick or block.end_tick != entry.end_tick) return error.InvalidTraceTickBlock;
+
+        for (block.ticks) |tick| {
+            switch (request.scope) {
+                .ticks => {
+                    const row = queryRowFromTick(tick);
+                    if (queryRowMatches(row, request)) {
+                        match_count += 1;
+                        if (rows.items.len < request.limit) try rows.append(allocator, row);
+                    }
+                },
+                .entities => {
+                    try appendMatchingQueryEntityRows(allocator, &rows, &match_count, request, tick);
+                },
+            }
+        }
+    }
+
+    const owned_rows = try rows.toOwnedSlice(allocator);
+    return .{
+        .scope = @tagName(request.scope),
+        .expression = request.expression,
+        .limit = request.limit,
+        .match_count = match_count,
+        .truncated = match_count > owned_rows.len,
+        .rows = owned_rows,
+    };
+}
+
+fn appendMatchingQueryEntityRows(
+    allocator: std.mem.Allocator,
+    rows: *std.ArrayList(QueryRow),
+    match_count: *usize,
+    request: QueryRequest,
+    tick: TickRecordRead,
+) !void {
+    const samples = tick.channels.entity_samples;
+    for (samples.creatures) |sample| {
+        const row: QueryRow = .{
+            .tick_index = tick.tick_index,
+            .uid = sample.uid,
+            .generation = sample.generation,
+            .pool_kind = "creature",
+            .index = sample.index,
+            .type_id = sample.type_id,
+            .hp = sample.hp,
+        };
+        if (queryRowMatches(row, request)) {
+            match_count.* += 1;
+            if (rows.items.len < request.limit) try rows.append(allocator, row);
+        }
+    }
+    for (samples.projectiles) |sample| {
+        const row: QueryRow = .{
+            .tick_index = tick.tick_index,
+            .uid = sample.uid,
+            .generation = sample.generation,
+            .pool_kind = "projectile",
+            .index = sample.index,
+            .type_id = sample.type_id,
+        };
+        if (queryRowMatches(row, request)) {
+            match_count.* += 1;
+            if (rows.items.len < request.limit) try rows.append(allocator, row);
+        }
+    }
+    for (samples.secondary_projectiles) |sample| {
+        const row: QueryRow = .{
+            .tick_index = tick.tick_index,
+            .uid = sample.uid,
+            .generation = sample.generation,
+            .pool_kind = "secondary_projectile",
+            .index = sample.index,
+            .type_id = sample.type_id,
+        };
+        if (queryRowMatches(row, request)) {
+            match_count.* += 1;
+            if (rows.items.len < request.limit) try rows.append(allocator, row);
+        }
+    }
+    for (samples.bonuses) |sample| {
+        const row: QueryRow = .{
+            .tick_index = tick.tick_index,
+            .uid = sample.uid,
+            .generation = sample.generation,
+            .pool_kind = "bonus",
+            .index = sample.index,
+            .type_id = sample.bonus_id,
+        };
+        if (queryRowMatches(row, request)) {
+            match_count.* += 1;
+            if (rows.items.len < request.limit) try rows.append(allocator, row);
+        }
+    }
+}
+
+fn queryRowFromTick(tick: TickRecordRead) QueryRow {
+    const checkpoint = tick.channels.checkpoint;
+    const entity_samples = tick.channels.entity_samples;
+    const event_count_total = checkpoint.events.hit_count + checkpoint.events.pickup_count + checkpoint.events.sfx_count;
+    return .{
+        .tick_index = tick.tick_index,
+        .mode_id = tick.mode_id,
+        .dt_ms_i32 = tick.dt_ms_i32,
+        .checkpoint_score_xp = checkpoint.score_xp,
+        .checkpoint_kills = checkpoint.kills,
+        .checkpoint_creature_count = checkpoint.creature_count,
+        .checkpoint_perk_pending = checkpoint.perk_pending,
+        .entity_count_creatures = @intCast(entity_samples.creatures.len),
+        .entity_count_projectiles = @intCast(entity_samples.projectiles.len),
+        .entity_count_secondary_projectiles = @intCast(entity_samples.secondary_projectiles.len),
+        .entity_count_bonuses = @intCast(entity_samples.bonuses.len),
+        .rng_stream_count = @intCast(tick.channels.rng_stream.len),
+        .timing_samples_count = @intCast(tick.channels.timing_samples.len),
+        .event_count_total = event_count_total,
+    };
+}
+
+fn queryRowMatches(row: QueryRow, request: QueryRequest) bool {
+    return switch (request.field) {
+        .tick_index => compareInt(row.tick_index, request.op, request.literal),
+        .mode_id => compareInt(row.mode_id orelse return false, request.op, request.literal),
+        .dt_ms_i32 => compareInt(row.dt_ms_i32 orelse return false, request.op, request.literal),
+        .checkpoint_score_xp => compareInt(row.checkpoint_score_xp orelse return false, request.op, request.literal),
+        .checkpoint_kills => compareInt(row.checkpoint_kills orelse return false, request.op, request.literal),
+        .checkpoint_creature_count => compareInt(row.checkpoint_creature_count orelse return false, request.op, request.literal),
+        .checkpoint_perk_pending => compareInt(row.checkpoint_perk_pending orelse return false, request.op, request.literal),
+        .entity_count_creatures => compareInt(row.entity_count_creatures orelse return false, request.op, request.literal),
+        .entity_count_projectiles => compareInt(row.entity_count_projectiles orelse return false, request.op, request.literal),
+        .entity_count_secondary_projectiles => compareInt(row.entity_count_secondary_projectiles orelse return false, request.op, request.literal),
+        .entity_count_bonuses => compareInt(row.entity_count_bonuses orelse return false, request.op, request.literal),
+        .rng_stream_count => compareInt(row.rng_stream_count orelse return false, request.op, request.literal),
+        .timing_samples_count => compareInt(row.timing_samples_count orelse return false, request.op, request.literal),
+        .event_count_total => compareInt(row.event_count_total orelse return false, request.op, request.literal),
+        .uid => compareInt(row.uid orelse return false, request.op, request.literal),
+        .generation => compareInt(row.generation orelse return false, request.op, request.literal),
+        .index => compareInt(row.index orelse return false, request.op, request.literal),
+        .type_id => compareInt(row.type_id orelse return false, request.op, request.literal),
+        .hp => compareFloat(row.hp orelse return false, request.op, request.literal),
+        .pool_kind => compareString(row.pool_kind orelse return false, request.op, request.literal),
+    };
+}
+
+fn compareInt(value: i32, op: QueryOp, literal: QueryLiteral) bool {
+    return switch (literal) {
+        .int => |expected| compareF64(@floatFromInt(value), op, @floatFromInt(expected)),
+        .float => |expected| compareF64(@floatFromInt(value), op, expected),
+        .string => false,
+    };
+}
+
+fn compareFloat(value: f32, op: QueryOp, literal: QueryLiteral) bool {
+    return switch (literal) {
+        .int => |expected| compareF64(value, op, @floatFromInt(expected)),
+        .float => |expected| compareF64(value, op, expected),
+        .string => false,
+    };
+}
+
+fn compareF64(value: f64, op: QueryOp, expected: f64) bool {
+    return switch (op) {
+        .eq => value == expected,
+        .ne => value != expected,
+        .gt => value > expected,
+        .ge => value >= expected,
+        .lt => value < expected,
+        .le => value <= expected,
+    };
+}
+
+fn compareString(value: []const u8, op: QueryOp, literal: QueryLiteral) bool {
+    const expected = switch (literal) {
+        .string => |text| text,
+        else => return false,
+    };
+    return switch (op) {
+        .eq => std.mem.eql(u8, value, expected),
+        .ne => !std.mem.eql(u8, value, expected),
+        else => false,
+    };
 }
 
 const EntityGenerationState = struct {

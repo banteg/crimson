@@ -27,9 +27,11 @@ Today `crimson-zig/` already has:
   [`crimson-zig/src/verify_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/verify_native.zig)
   and
   [`crimson-zig/src/replay_info_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/replay_info_native.zig),
-  plus native CDT health, tick, and entity inspection in
+  plus native CDT health, tick, entity, and compact query inspection in
   [`crimson-zig/src/dbg_entity_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/dbg_entity_native.zig),
   [`crimson-zig/src/dbg_health_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/dbg_health_native.zig)
+  and
+  [`crimson-zig/src/dbg_query_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/dbg_query_native.zig)
   and
   [`crimson-zig/src/dbg_tick_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/dbg_tick_native.zig),
 - native quest spawn-table dumps, including optional spawn-plan summaries,
@@ -90,7 +92,7 @@ Remaining work:
   still justified,
 - expand native tooling beyond `replay list`, `replay verify`,
   `replay info`, `replay benchmark`, `dbg health`, `dbg tick`, and
-  `dbg entity`,
+  `dbg entity`/`dbg query`,
 - continue widening the WASM surface beyond byte-input replay verification,
   info, benchmark summaries, and checkpoint comparison.
 

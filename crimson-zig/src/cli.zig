@@ -3,6 +3,7 @@ const checkpoint_diff_native = @import("checkpoint_diff_native.zig");
 const config_native = @import("config_native.zig");
 const dbg_entity_native = @import("dbg_entity_native.zig");
 const dbg_health_native = @import("dbg_health_native.zig");
+const dbg_query_native = @import("dbg_query_native.zig");
 const dbg_record_native = @import("dbg_record_native.zig");
 const dbg_tick_native = @import("dbg_tick_native.zig");
 const dbg_verify_native = @import("dbg_verify_native.zig");
@@ -30,6 +31,7 @@ const usage =
     \\  crimson-zig dbg health <trace.cdt> [health options]
     \\  crimson-zig dbg tick <trace.cdt> <tick> [tick options]
     \\  crimson-zig dbg entity <trace.cdt> <entity_uid> [entity options]
+    \\  crimson-zig dbg query <trace.cdt> <expression> [query options]
     \\  crimson-zig dbg verify
     \\  crimson-zig config [config options]
     \\  crimson-zig status [status options]
@@ -56,6 +58,7 @@ const usage =
     \\  crimson-zig dbg health replay.cdt
     \\  crimson-zig dbg tick replay.cdt 0 --json
     \\  crimson-zig dbg entity replay.cdt 0 --json
+    \\  crimson-zig dbg query replay.cdt "entities where uid == 0" --json
     \\  crimson-zig dbg verify
     \\  crimson-zig config --path crimson.cfg --format json
     \\  crimson-zig status --path game.cfg --format json
@@ -154,6 +157,14 @@ pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     }
     if (args.len >= 3 and std.mem.eql(u8, args[1], "dbg") and std.mem.eql(u8, args[2], "entity")) {
         const output = try dbg_entity_native.runDbgEntity(allocator, args[3..]);
+        defer output.deinit(allocator);
+
+        try writeStdout(output.stdout);
+        try writeStderr(output.stderr);
+        return output.exit_code;
+    }
+    if (args.len >= 3 and std.mem.eql(u8, args[1], "dbg") and std.mem.eql(u8, args[2], "query")) {
+        const output = try dbg_query_native.runDbgQuery(allocator, args[3..]);
         defer output.deinit(allocator);
 
         try writeStdout(output.stdout);

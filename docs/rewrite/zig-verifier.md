@@ -102,6 +102,9 @@ Current supported replay-tooling behavior:
 - native CDT entity-history summaries via
   `dbg entity <trace.cdt> <entity_uid> --json`, including tick-range filters and
   `--json-out`
+- native compact CDT row filtering via
+  `dbg query <trace.cdt> "ticks where checkpoint.kills >= 0" --json` and
+  `dbg query <trace.cdt> "entities where uid == 0" --json`
 - native debug schema contract reporting via `dbg verify`
 - native `crimson.cfg` human/JSON inspection via `config`
 - native `game.cfg` checksum-verified human/JSON inspection via `status`

@@ -142,7 +142,9 @@ that are present but empty across the selected trace window. Native
 checkpoint, entity-count, event-count, RNG-row, and timing-row summary directly
 from the same CDT chunks. Native
 `crimson-zig dbg entity <trace.cdt> <entity_uid> --json` can also follow one
-sampled entity UID across a selected tick range.
+sampled entity UID across a selected tick range. Native
+`crimson-zig dbg query <trace.cdt> "entities where uid == 0" --json` exposes a
+compact field-filter subset for tick and entity rows.
 
 ## Phase model
 
