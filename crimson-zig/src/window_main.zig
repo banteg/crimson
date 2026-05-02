@@ -606,6 +606,13 @@ const ResultsScreen = struct {
     quest_breakdown_anim: quest_results.QuestResultsBreakdownAnim = .{},
     quest_unlock_weapon_name: ?[]const u8 = null,
     quest_unlock_perk_name: ?[]const u8 = null,
+    score_card_hover: ResultsScoreCardHover = .{},
+};
+
+const ResultsScoreCardHover = struct {
+    weapon: f32 = 0.0,
+    time: f32 = 0.0,
+    hit_ratio: f32 = 0.0,
 };
 
 const ResultsHighscoreState = struct {
@@ -1510,6 +1517,7 @@ const App = struct {
                 }
                 return;
             }
+            updateResultsScoreCardHover(results, frame_dt);
             if (results.highscore) |*highscore| {
                 if (highscore.promptActive()) {
                     self.updateResultsHighscoreEntry(results, highscore);
@@ -2899,6 +2907,17 @@ const ResultsHighscorePromptLayout = struct {
     saved_y: f32,
 };
 
+const ResultsScoreCardSurface = struct {
+    pos: rl.Vector2,
+    show_weapon_row: bool,
+};
+
+const ResultsScoreCardHoverRects = struct {
+    weapon: rl.Rectangle,
+    time: rl.Rectangle,
+    hit_ratio: rl.Rectangle,
+};
+
 const ResultsNameEntryClockLayout = struct {
     table_rect: rl.Rectangle,
     pointer_rect: rl.Rectangle,
@@ -3052,6 +3071,83 @@ fn resultsSavedScoreCardPos(results: *const ResultsScreen, screen_width: f32) rl
         layout.banner_pos.x + 30.0,
         layout.banner_pos.y + if (qualifies) @as(f32, 80.0) else 78.0,
     );
+}
+
+fn resultsVisibleScoreCard(results: *const ResultsScreen, screen_width: f32) ?ResultsScoreCardSurface {
+    if (questResultsBreakdownPending(results)) return null;
+    if (results.highscore) |highscore| {
+        if (highscore.promptActive()) {
+            return .{
+                .pos = resultsNameEntryScoreCardPos(results, screen_width),
+                .show_weapon_row = isQuestCompletedResult(results),
+            };
+        }
+        return .{
+            .pos = resultsSavedScoreCardPos(results, screen_width),
+            .show_weapon_row = !isQuestCompletedResult(results),
+        };
+    }
+    if (results.score_too_low_for_top100 and results.score_too_low_record != null) {
+        return .{
+            .pos = resultsSavedScoreCardPos(results, screen_width),
+            .show_weapon_row = !isQuestCompletedResult(results),
+        };
+    }
+    return null;
+}
+
+fn resultsScoreCardHoverRects(pos: rl.Vector2) ResultsScoreCardHoverRects {
+    return .{
+        .weapon = rl.Rectangle.init(pos.x + 4.0, pos.y + 52.0, 64.0, 32.0),
+        .time = rl.Rectangle.init(pos.x + 108.0, pos.y + 16.0, 64.0, 29.0),
+        .hit_ratio = rl.Rectangle.init(pos.x + 114.0, pos.y + 67.0, 64.0, 17.0),
+    };
+}
+
+fn updateResultsScoreCardHover(results: *ResultsScreen, frame_dt: f32) void {
+    const dt_hover = @max(frame_dt, 0.0) * 2.0;
+    const surface = resultsVisibleScoreCard(results, @floatFromInt(rl.getScreenWidth())) orelse {
+        results.score_card_hover.weapon = resultsHoverStep(results.score_card_hover.weapon, false, dt_hover);
+        results.score_card_hover.time = resultsHoverStep(results.score_card_hover.time, false, dt_hover);
+        results.score_card_hover.hit_ratio = resultsHoverStep(results.score_card_hover.hit_ratio, false, dt_hover);
+        return;
+    };
+
+    if (isQuestCompletedResult(results)) {
+        results.score_card_hover.weapon = resultsHoverStep(results.score_card_hover.weapon, false, dt_hover);
+        results.score_card_hover.time = resultsHoverStep(results.score_card_hover.time, false, dt_hover);
+        results.score_card_hover.hit_ratio = resultsHoverStep(results.score_card_hover.hit_ratio, false, dt_hover);
+        return;
+    }
+
+    const rects = resultsScoreCardHoverRects(surface.pos);
+    const mouse = rl.getMousePosition();
+    results.score_card_hover.time = resultsHoverStep(
+        results.score_card_hover.time,
+        rl.checkCollisionPointRec(mouse, rects.time),
+        dt_hover,
+    );
+
+    if (surface.show_weapon_row) {
+        results.score_card_hover.weapon = resultsHoverStep(
+            results.score_card_hover.weapon,
+            rl.checkCollisionPointRec(mouse, rects.weapon),
+            dt_hover,
+        );
+        results.score_card_hover.hit_ratio = resultsHoverStep(
+            results.score_card_hover.hit_ratio,
+            rl.checkCollisionPointRec(mouse, rects.hit_ratio),
+            dt_hover,
+        );
+    } else {
+        results.score_card_hover.weapon = resultsHoverStep(results.score_card_hover.weapon, false, dt_hover);
+        results.score_card_hover.hit_ratio = 0.0;
+    }
+}
+
+fn resultsHoverStep(value: f32, hovered: bool, delta: f32) f32 {
+    const next = if (hovered) value + delta else value - delta;
+    return std.math.clamp(next, @as(f32, 0.0), @as(f32, 1.0));
 }
 
 fn resultsScoreCardRankText(results: *const ResultsScreen, rank_index: usize, buffer: []u8) []const u8 {
@@ -4527,6 +4623,47 @@ test "results score card hit percent follows high score counters" {
     try std.testing.expectEqual(@as(u32, 166), resultsHitPercent(&record));
 }
 
+test "results score card hover geometry follows native card rows" {
+    const rects = resultsScoreCardHoverRects(rl.Vector2.init(220.0, 149.0));
+    try std.testing.expectApproxEqAbs(@as(f32, 224.0), rects.weapon.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 201.0), rects.weapon.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 328.0), rects.time.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 165.0), rects.time.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 334.0), rects.hit_ratio.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 216.0), rects.hit_ratio.y, 1e-6);
+
+    const lower_tooltip = resultsScoreCardTooltipPos(rl.Vector2.init(220.0, 149.0), true);
+    try std.testing.expectApproxEqAbs(@as(f32, 224.0), lower_tooltip.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 249.0), lower_tooltip.y, 1e-6);
+
+    const compact_tooltip = resultsScoreCardTooltipPos(rl.Vector2.init(220.0, 149.0), false);
+    try std.testing.expectApproxEqAbs(@as(f32, 224.0), compact_tooltip.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 201.0), compact_tooltip.y, 1e-6);
+}
+
+test "results score card hover step clamps and decays" {
+    try std.testing.expectEqual(@as(f32, 0.25), resultsHoverStep(0.0, true, 0.25));
+    try std.testing.expectEqual(@as(f32, 1.0), resultsHoverStep(0.9, true, 0.25));
+    try std.testing.expectEqual(@as(f32, 0.5), resultsHoverStep(0.75, false, 0.25));
+    try std.testing.expectEqual(@as(f32, 0.0), resultsHoverStep(0.1, false, 0.25));
+}
+
+test "results score card hit ratio tooltip follows preserve-bugs wording" {
+    const fixed: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{ .game_mode = .survival, .preserve_bugs = false },
+        .summary = undefined,
+    };
+    try std.testing.expectEqualStrings("The % of bullets that hit the target", resultsHitRatioTooltip(&fixed));
+
+    const bug_compatible: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{ .game_mode = .survival, .preserve_bugs = true },
+        .summary = undefined,
+    };
+    try std.testing.expectEqualStrings("The % of shot bullets hit the target", resultsHitRatioTooltip(&bug_compatible));
+}
+
 test "gameplayControlsHeldWithSampler follows configured controls and alternate arrows" {
     const FakeSampler = struct {
         const Self = @This();
@@ -5869,6 +6006,9 @@ fn drawResultsScoreRecordCardAt(
     if (show_weapon_row) {
         drawResultsNameEntryWeaponRow(runtime_assets, results, record, pos, line_color, row_color);
     }
+    if (!isQuestCompletedResult(results)) {
+        drawResultsScoreCardTooltips(runtime_assets, results, pos, show_weapon_row, label_color);
+    }
 }
 
 fn drawResultsNameEntryClock(
@@ -5926,6 +6066,43 @@ fn resultsHitPercent(record: *const persistence.highscores.HighScoreRecord) u32 
     const shots_fired = record.shotsFired();
     if (shots_fired == 0) return 0;
     return @intCast(@divTrunc(@as(u64, record.shotsHit()) * 100, @as(u64, shots_fired)));
+}
+
+fn drawResultsScoreCardTooltips(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    results: *const ResultsScreen,
+    pos: rl.Vector2,
+    show_weapon_row: bool,
+    color: rl.Color,
+) void {
+    const tooltip_pos = resultsScoreCardTooltipPos(pos, show_weapon_row);
+    drawResultsScoreCardTooltip(runtime_assets, "Most used weapon during the game", tooltip_pos.x - 20.0, tooltip_pos.y, color, results.score_card_hover.weapon);
+    drawResultsScoreCardTooltip(runtime_assets, "The time the game lasted", tooltip_pos.x + 12.0, tooltip_pos.y, color, results.score_card_hover.time);
+    drawResultsScoreCardTooltip(runtime_assets, resultsHitRatioTooltip(results), tooltip_pos.x - 22.0, tooltip_pos.y, color, results.score_card_hover.hit_ratio);
+}
+
+fn drawResultsScoreCardTooltip(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    text: []const u8,
+    x: f32,
+    y: f32,
+    color: rl.Color,
+    hover: f32,
+) void {
+    if (hover <= 0.5) return;
+    const alpha = (hover - 0.5) * 2.0;
+    drawSmallText(runtime_assets, text, x, y, rl.Color.init(color.r, color.g, color.b, @intFromFloat(std.math.clamp(alpha, @as(f32, 0.0), @as(f32, 1.0)) * 255.0)));
+}
+
+fn resultsScoreCardTooltipPos(pos: rl.Vector2, show_weapon_row: bool) rl.Vector2 {
+    return rl.Vector2.init(pos.x + 4.0, pos.y + if (show_weapon_row) @as(f32, 100.0) else @as(f32, 52.0));
+}
+
+fn resultsHitRatioTooltip(results: *const ResultsScreen) []const u8 {
+    return if (results.run_config.preserve_bugs)
+        "The % of shot bullets hit the target"
+    else
+        "The % of bullets that hit the target";
 }
 
 const HudTextColor = struct {
