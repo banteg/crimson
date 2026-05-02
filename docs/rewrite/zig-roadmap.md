@@ -134,6 +134,10 @@ Remaining work:
   [`crimson-zig/src/window_pause_menu.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_pause_menu.zig);
   the pause menu now waits for its native close timeline before dispatching
   Back, Options, or Quit actions,
+- keep tightening remaining miscellaneous panels in
+  [`crimson-zig/src/window_misc_panels.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_misc_panels.zig);
+  Mods, Other Games, and Network Session now wait for the shared native panel
+  close timeline before dispatching Back or Launch actions,
 - keep the demo/trial overlay and purchase-shell behavior aligned with Python
   as surrounding shell flows change,
 - keep removing any remaining fallback/scaffold UI logic from the desktop path.

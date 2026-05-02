@@ -120,6 +120,7 @@ Last reviewed: **2026-05-03**
 - **Mods menu (state `0x14` path from main menu)**: implemented as a panel and filesystem DLL discovery UI; plugin loading/runtime is still not implemented.
   - Code: `src/crimson/screens/panels/mods.py`, `src/crimson/screens/menu.py`
   - Ref: [`docs/crimsonland-exe/mods.md`](../crimsonland-exe/mods.md)
+  - Zig now routes Mods, Other Games, and Network Session panel Back/Launch actions through the native close timeline before dispatch.
 - **Scope policy for Mods and Other Games/shareware ads**: out of scope for the rewrite target.
   - Rationale: native DLL plugin runtime is not practical to support in the Python rewrite architecture.
   - Rewrite stance: keep menu-shell UX compatibility where useful, but do not implement native DLL mod loading/execution or Other Games ad/runtime flows.

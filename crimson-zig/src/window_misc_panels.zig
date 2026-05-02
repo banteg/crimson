@@ -88,6 +88,8 @@ const PanelState = struct {
     timeline_ms: i32 = 0,
     panel_open_sfx_played: bool = false,
     back_hover_amount: i32 = 0,
+    closing: bool = false,
+    close_action: Action = .none,
 
     fn reset(self: *PanelState) void {
         self.* = .{};
@@ -401,7 +403,8 @@ pub fn updateNetwork(state: *NetworkState, frame_dt: f32, runtime_assets: ?*cons
         return .{ .play_button_click = true };
     }
     if (window_ui.confirmPressed() and state.selection == .launch) {
-        return .{ .action = .launch_network, .play_button_click = true };
+        beginPanelClose(&state.panel, .launch_network);
+        return .{ .play_button_click = true };
     }
     if (rl.isKeyPressed(.right) or rl.isKeyPressed(.d) or window_ui.confirmPressed()) {
         changeSelectedNetworkValue(state, 1);
@@ -523,12 +526,20 @@ fn updatePanel(state: *PanelState, frame_dt: f32, runtime_assets: ?*const window
 
 fn updatePanelEx(state: *PanelState, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets, confirm_backs: bool) UpdateResult {
     const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
-    if (dt_ms > 0) {
+    if (dt_ms > 0 and state.closing) {
+        state.timeline_ms -= dt_ms;
+        if (state.timeline_ms < 0 and state.close_action != .none) {
+            const action = state.close_action;
+            state.closing = false;
+            state.close_action = .none;
+            return .{ .action = action };
+        }
+    } else if (dt_ms > 0) {
         state.timeline_ms = @min(panel_timeline_max_ms, state.timeline_ms + dt_ms);
     }
 
     const back_hovered = if (runtime_assets) |assets|
-        state.timeline_ms >= panel_timeline_max_ms and rl.checkCollisionPointRec(rl.getMousePosition(), window_menu.panelBackHitRect(assets, state.timeline_ms))
+        !state.closing and state.timeline_ms >= panel_timeline_max_ms and rl.checkCollisionPointRec(rl.getMousePosition(), window_menu.panelBackHitRect(assets, state.timeline_ms))
     else
         false;
 
@@ -538,13 +549,22 @@ fn updatePanelEx(state: *PanelState, frame_dt: f32, runtime_assets: ?*const wind
         state.back_hover_amount = std.math.clamp(state.back_hover_amount - dt_ms * 2, 0, 1000);
     }
 
+    if (state.closing) return .{};
+
     if (rl.isKeyPressed(.escape) or (confirm_backs and window_ui.confirmPressed()) or (back_hovered and rl.isMouseButtonPressed(.left))) {
-        return .{ .action = .back_to_menu, .play_button_click = true };
+        beginPanelClose(state, .back_to_menu);
+        return .{ .play_button_click = true };
     }
 
     return .{
         .play_panel_click = dt_ms > 0 and state.timeline_ms >= panel_timeline_max_ms and !state.panel_open_sfx_played,
     };
+}
+
+fn beginPanelClose(state: *PanelState, action: Action) void {
+    if (state.closing) return;
+    state.closing = true;
+    state.close_action = action;
 }
 
 fn drawPanelShell(state: *const PanelState, assets: *const window_assets.RuntimeAssets) rl.Rectangle {
@@ -864,6 +884,39 @@ test "mods panel explains deliberate native dll scope" {
 
 test "network panel scope text stays explicit" {
     try std.testing.expectEqualStrings("Rollback and lockstep runtimes available.", network_runtime_scope_text);
+}
+
+test "misc panel close timeline gates action dispatch" {
+    var panel: PanelState = .{ .timeline_ms = panel_timeline_max_ms };
+    beginPanelClose(&panel, .back_to_menu);
+
+    try std.testing.expect(panel.closing);
+    try std.testing.expectEqual(Action.none, updatePanelEx(&panel, 0.10, null, true).action);
+    try std.testing.expectEqual(panel_timeline_max_ms - 100, panel.timeline_ms);
+    try std.testing.expectEqual(Action.none, updatePanelEx(&panel, 0.10, null, true).action);
+    try std.testing.expectEqual(Action.none, updatePanelEx(&panel, 0.10, null, true).action);
+    try std.testing.expect(panel.closing);
+
+    const update_result = updatePanelEx(&panel, 0.01, null, true);
+    try std.testing.expectEqual(Action.back_to_menu, update_result.action);
+    try std.testing.expect(!panel.closing);
+    try std.testing.expectEqual(Action.none, panel.close_action);
+}
+
+test "misc panel open timeline emits panel click when fully open" {
+    var panel: PanelState = .{};
+
+    for (0..2) |_| {
+        const update_result = updatePanelEx(&panel, 0.10, null, true);
+        try std.testing.expect(!update_result.play_panel_click);
+    }
+
+    var update_result = updatePanelEx(&panel, 0.10, null, true);
+    try std.testing.expect(update_result.play_panel_click);
+
+    panel.panel_open_sfx_played = true;
+    update_result = updatePanelEx(&panel, 0.01, null, true);
+    try std.testing.expect(!update_result.play_panel_click);
 }
 
 test "network panel defaults to host rollback session" {
