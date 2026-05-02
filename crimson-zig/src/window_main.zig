@@ -1623,7 +1623,7 @@ const App = struct {
 
     fn updateEndNote(self: *App) void {
         self.audio.ensureMenuThemeForDemo(self.demo_enabled);
-        const buttons = endNoteButtons();
+        const buttons = endNoteButtonsForScreen(@floatFromInt(rl.getScreenWidth()));
         window_ui.updateSelectionFromPointer(&self.end_note_selection, buttons[0..]);
         if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
             self.end_note_selection = if (self.end_note_selection == 0) buttons.len - 1 else self.end_note_selection - 1;
@@ -2523,7 +2523,8 @@ const App = struct {
         rl.clearBackground(bg_color);
         drawBackdrop();
 
-        const panel = endNotePanelRect();
+        const screen_width: f32 = @floatFromInt(rl.getScreenWidth());
+        const panel = endNotePanelRect(screen_width);
         if (self.runtime_assets) |*runtime_assets| {
             drawTextureFit(runtime_assets.texture(.ui_menu_panel), panel, colorWithAlpha(rl.Color.white, 0.96));
             const hardcore = self.runtime.config.hardcore_flag != 0;
@@ -2549,7 +2550,7 @@ const App = struct {
             }
         }
 
-        const buttons = endNoteButtons();
+        const buttons = endNoteButtonsForScreen(screen_width);
         for (buttons[0..], 0..) |button, idx| {
             const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
             window_ui.drawButton(button, idx == self.end_note_selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
@@ -3256,12 +3257,12 @@ fn resultsHighscoreButtonsForScreen(results: *const ResultsScreen, screen_width:
     };
 }
 
-fn endNotePanelRect() rl.Rectangle {
-    return rl.Rectangle.init(-108.0, 29.0, 510.0, 378.0);
+fn endNotePanelRect(screen_width: f32) rl.Rectangle {
+    return rl.Rectangle.init(-108.0, 29.0 + window_menu.menuWidescreenYShift(screen_width), 510.0, 378.0);
 }
 
-fn endNoteButtons() [4]UiButton {
-    const panel = endNotePanelRect();
+fn endNoteButtonsForScreen(screen_width: f32) [4]UiButton {
+    const panel = endNotePanelRect(screen_width);
     const x = panel.x + 266.0;
     const y = panel.y + 210.0;
     return .{
@@ -4216,6 +4217,24 @@ test "final quest completed primary action opens end note" {
     try std.testing.expectEqualStrings("Show End Note", questCompletedPrimaryLabel(510));
     try std.testing.expectEqual(@as(?i32, null), nextQuestLevelKey(510));
     try std.testing.expect(isFinalQuestLevelKey(510));
+}
+
+test "end note panel and buttons use native widescreen anchor" {
+    const panel_640 = endNotePanelRect(640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, -108.0), panel_640.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 29.0), panel_640.y, 1e-6);
+
+    const buttons_640 = endNoteButtonsForScreen(640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 158.0), buttons_640[0].rect.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 239.0), buttons_640[0].rect.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 335.0), buttons_640[3].rect.y, 1e-6);
+
+    const panel_1024 = endNotePanelRect(1024.0);
+    try std.testing.expectApproxEqAbs(@as(f32, -108.0), panel_1024.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 119.0), panel_1024.y, 1e-6);
+
+    const buttons_1024 = endNoteButtonsForScreen(1024.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 329.0), buttons_1024[0].rect.y, 1e-6);
 }
 
 test "asset load errors use user-facing details" {
