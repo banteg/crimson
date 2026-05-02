@@ -40,7 +40,7 @@ from ..math_parity import (
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.helpers import perk_active
-from ..player_damage import player_take_damage
+from ..player_damage import PlayerDeathRuntime, player_take_damage
 from ..projectiles.types import ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import GameplayState, PlayerState
@@ -320,6 +320,27 @@ class _CreatureInteractionCtx(msgspec.Struct):
     contact_dist_sq: float = 0.0
 
 
+class _CreatureInteractionPlayerDeathRuntime(PlayerDeathRuntime):
+    ctx: _CreatureInteractionCtx
+
+    def on_player_lethal(self, player: PlayerState, *, dt: float) -> None:
+        _ = player
+        from ..perks.impl.final_revenge import apply_final_revenge_on_player_death
+
+        ctx = self.ctx
+        apply_final_revenge_on_player_death(
+            state=ctx.state,
+            creatures=ctx.pool,
+            players=ctx.players,
+            player=ctx.player,
+            dt=float(dt),
+            world_size=float(max(float(ctx.world_width), float(ctx.world_height))),
+            detail_preset=int(ctx.detail_preset),
+            fx_queue=ctx.fx_queue,
+            deaths=ctx.deaths,
+        )
+
+
 _CreatureInteractionStep = Callable[[_CreatureInteractionCtx], None]
 
 
@@ -458,28 +479,13 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         elif perk_active(ctx.player, PerkId.VEINS_OF_POISON):
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
-    def _on_player_lethal_final_revenge() -> None:
-        from ..perks.impl.final_revenge import apply_final_revenge_on_player_death
-
-        apply_final_revenge_on_player_death(
-            state=ctx.state,
-            creatures=ctx.pool,
-            players=ctx.players,
-            player=ctx.player,
-            dt=float(ctx.dt),
-            world_size=float(max(float(ctx.world_width), float(ctx.world_height))),
-            detail_preset=int(ctx.detail_preset),
-            fx_queue=ctx.fx_queue,
-            deaths=ctx.deaths,
-        )
-
     player_take_damage(
         ctx.state,
         ctx.player,
         float(creature.contact_damage),
         dt=ctx.dt,
         players=ctx.players,
-        on_lethal=_on_player_lethal_final_revenge,
+        death_runtime=_CreatureInteractionPlayerDeathRuntime(ctx=ctx),
     )
 
     if ctx.fx_queue is not None:

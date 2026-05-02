@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, cast
 
 import msgspec
@@ -24,6 +24,7 @@ from .perks import PerkId
 from .perks.helpers import perk_active
 from .perks.runtime.player_ticks import apply_player_perk_ticks
 from .perks.state import PerkEffectIntervals, PerkSelectionState
+from .player_damage import PlayerDeathRuntime
 from .projectiles.runtime import (
     ProjectilePool,
     SecondaryProjectilePool,
@@ -545,7 +546,7 @@ def player_update(
     players: list[PlayerState] | None = None,
     creatures: Sequence[CreatureState] | None = None,
     spawn_slots: Sequence[SpawnSlotInit] | None = None,
-    on_player_lethal: Callable[[PlayerState], None] | None = None,
+    player_death_runtime: PlayerDeathRuntime | None = None,
     reload_active_any: bool | None = None,
 ) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""
@@ -992,7 +993,7 @@ def player_update(
             creatures=creatures,
             players=players,
             force_pre_swap_fire_gate=bool(force_pre_swap_fire_gate),
-            on_player_lethal=on_player_lethal,
+            player_death_runtime=player_death_runtime,
         ),
     )
 
