@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from enum import Enum
 from typing import Annotated, Protocol, TypeAlias
 
@@ -80,7 +80,10 @@ class InputProvider(Protocol):
     def submit_command(self, command: GameCommand) -> None: ...
 
 
-LocalInputBuilder: TypeAlias = Callable[[FrameContext], Sequence[PlayerInput]]
+class LocalInputRuntime(msgspec.Struct):
+    def capture_frame_inputs(self, frame_ctx: FrameContext) -> Sequence[PlayerInput]:
+        _ = frame_ctx
+        raise NotImplementedError
 
 
 class LocalInputProvider:
@@ -90,10 +93,10 @@ class LocalInputProvider:
         self,
         *,
         player_count: int,
-        build_inputs: LocalInputBuilder,
+        runtime: LocalInputRuntime,
     ) -> None:
         self._player_count = max(0, player_count)
-        self._build_inputs = build_inputs
+        self._runtime = runtime
         self._pending_commands: list[GameCommand] = []
         self._commands_for_next_tick: list[GameCommand] = []
         self._frame_inputs: list[PlayerInput] = []
@@ -101,7 +104,7 @@ class LocalInputProvider:
         self._first_tick_pending = False
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
-        frame_inputs = list(self._build_inputs(frame_ctx))
+        frame_inputs = list(self._runtime.capture_frame_inputs(frame_ctx))
         self._frame_inputs = list(frame_inputs)
         self._edge_inputs = clear_input_edges(self._frame_inputs)
         self._first_tick_pending = True

@@ -19,6 +19,7 @@ from grim.music import init_music_state
 from grim.rand import Crand
 from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
+from tests.support.builders.input_providers import StaticLocalInputRuntime
 from tests.support.builders.session import make_session
 from tests.support.builders.tick_payload import make_tick_payload
 from tests.support.helpers import assert_float_close
@@ -203,7 +204,7 @@ def test_world_runtime_apply_tick_batch_applies_post_apply_bonus_sfx(mocker) -> 
 
     StandaloneTickHarness(
         game_mode=GameMode.SURVIVAL,
-        build_inputs=lambda _ctx: [],
+        input_runtime=StaticLocalInputRuntime(),
     )._apply_tick_batch(
         world._runtime,
         batch=batch,

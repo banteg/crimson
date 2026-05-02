@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -13,8 +12,7 @@ from ..sim.batch_apply import (
 )
 from ..sim.clock import FixedStepClock
 from ..sim.frame_pump import advance_tick_runner_frame
-from ..sim.input import PlayerInput
-from ..sim.input_providers import FrameContext, LocalInputProvider
+from ..sim.input_providers import LocalInputProvider, LocalInputRuntime
 from ..sim.presentation_reactions import (
     PostApplyReaction,
     apply_post_apply_reaction,
@@ -25,9 +23,6 @@ from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 
 if TYPE_CHECKING:
     from .runtime import WorldRuntime
-
-
-WorldTickInputBuilder = Callable[[FrameContext], Sequence[PlayerInput]]
 
 
 class _StandalonePresentationApplyRuntime(PresentationApplyRuntime):
@@ -46,7 +41,7 @@ class StandaloneTickHarness:
     """Standalone local runner for demo/debug screens outside BaseGameplayMode."""
 
     game_mode: GameMode
-    build_inputs: WorldTickInputBuilder
+    input_runtime: LocalInputRuntime
     tick_rate: int = 60
     session: DeterministicSession | None = None
     runner: TickRunner | None = None
@@ -103,7 +98,7 @@ class StandaloneTickHarness:
         )
         provider = LocalInputProvider(
             player_count=int(player_count),
-            build_inputs=self.build_inputs,
+            runtime=self.input_runtime,
         )
         runner = TickRunner(
             session=session,

@@ -73,6 +73,7 @@ from ..sim.input_providers import (
     GameCommand,
     InputStatus,
     LocalInputProvider,
+    LocalInputRuntime,
     PerkMenuOpenCommand,
     PerkPickCommand,
     ResolvedTick,
@@ -127,6 +128,13 @@ class _ModePresentationApplyRuntime(PresentationApplyRuntime):
             self.reactions_by_tick.get(int(output.tick_index), PostApplyReaction()),
             dt_seconds=float(output.dt_sim),
         )
+
+
+class _ModeLocalInputRuntime(LocalInputRuntime):
+    mode: BaseGameplayMode
+
+    def capture_frame_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
+        return self.mode._build_local_inputs(dt=float(frame_ctx.dt_seconds))
 
 
 class _ModeFrameState(msgspec.Struct, frozen=True):
@@ -1560,7 +1568,7 @@ class BaseGameplayMode:
         else:
             provider = LocalInputProvider(
                 player_count=max(0, len(self.sim_world.players)),
-                build_inputs=lambda frame_ctx: self._build_local_inputs(dt=float(frame_ctx.dt_seconds)),
+                runtime=_ModeLocalInputRuntime(mode=self),
             )
         self._flush_queued_input_commands(provider=provider)
 

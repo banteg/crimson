@@ -26,6 +26,7 @@ from crimson.sim.tick_runner import TickRunner, TickRunnerConfig
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext
+from tests.support.builders.input_providers import StaticLocalInputRuntime
 
 if TYPE_CHECKING:
     from crimson.net.rollback_runtime import RollbackRuntime
@@ -171,7 +172,7 @@ def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner(make_mo
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     session.elapsed_ms = 0.0
-    input_provider = LocalInputProvider(player_count=1, build_inputs=lambda _frame_ctx: [])
+    input_provider = LocalInputProvider(player_count=1, runtime=StaticLocalInputRuntime())
     mode._tick_input_provider = input_provider
     mode._tick_runner = TickRunner(
         session=session,
@@ -235,7 +236,7 @@ def test_quest_consume_net_runtime_recovery_restores_authoritative_runtime(make_
     mode._rollback_runtime = cast("RollbackRuntime", _RollbackRuntimeStub(tick_index=9, payload=payload))
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
-    input_provider = LocalInputProvider(player_count=1, build_inputs=lambda _frame_ctx: [])
+    input_provider = LocalInputProvider(player_count=1, runtime=StaticLocalInputRuntime())
     mode._tick_input_provider = input_provider
     mode._tick_runner = TickRunner(
         session=session,
