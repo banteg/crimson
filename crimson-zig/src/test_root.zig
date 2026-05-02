@@ -264,6 +264,7 @@ test {
     _ = @import("window_demo_trial.zig");
     _ = @import("window_main.zig");
     _ = @import("window_menu.zig");
+    _ = @import("window_menu_panels.zig");
     _ = @import("window_misc_panels.zig");
     _ = @import("window_options.zig");
     _ = @import("window_statistics.zig");

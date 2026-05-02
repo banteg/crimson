@@ -2164,6 +2164,7 @@ const App = struct {
             if (self.runtime_assets) |*assets| assets else null,
             self.runtime.config,
             self.runtime.status,
+            self.demo_enabled,
         );
     }
 

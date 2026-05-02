@@ -58,6 +58,8 @@ consumes the same shared runtime used by the native desktop application.
   shell
 - real boot/menu/gameplay/pause/results/final-quest end-note/statistics/options
   shell
+- demo Play Game / Quest menu gating applies the native shareware quest unlock
+  index cap while still using the full saved progress in full builds
 - archive-backed world/UI asset loading
 - archive-backed audio loading and gameplay/menu audio routing
 - transient world FX, terrain baking, sprite/atlas rendering, and HUD/cursor
@@ -136,8 +138,8 @@ The important remaining gaps are now:
 - replay/verifier breadth still lags Python,
 - some product-shell flows are still thinner than Python, though quest results
   now include completion reward names from the native unlock tables,
-- demo/trial shell behavior exists, but still needs polish alongside the
-  surrounding product shell,
+- demo/trial shell behavior exists and now honors the demo quest cap in the
+  product menus, but still needs polish alongside the surrounding product shell,
 - WASM still exposes a narrow replay/runtime surface, but now has replay
   verify/info JSON byte-input exports plus checkpoint diff/verify text and JSON
   exports,

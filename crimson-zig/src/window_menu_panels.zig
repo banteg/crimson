@@ -127,6 +127,7 @@ const quest_list_hover_right_pad: f32 = 210.0;
 const quest_list_hover_top_pad: f32 = 2.0;
 const quest_list_hover_bottom_pad: f32 = 18.0;
 const quest_hardcore_unlock_index: u32 = 40;
+const demo_quest_unlock_limit: u16 = 10;
 
 pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, runtime_assets: ?*const window_assets.RuntimeAssets, demo_enabled: bool) PlayGameResult {
     const dt_ms = frameDeltaMs(frame_dt);
@@ -276,7 +277,8 @@ fn playGameEntries(config: *const formats.crimson_cfg.CrimsonCfg, status: format
 fn playGameEntriesFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status, demo_enabled: bool) []const PlayGameEntry {
     const player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
     const main_total = questTotalPlayed(status) + status.mode_play_rush + status.mode_play_survival;
-    const has_typo = !demo_enabled and player_count == 1 and status.quest_unlock_index >= 40;
+    const quest_unlock_index = visibleQuestUnlockIndex(status, demo_enabled);
+    const has_typo = !demo_enabled and player_count == 1 and quest_unlock_index >= quest_hardcore_unlock_index;
     const tutorial_first = player_count == 1 and main_total == 0;
     if (player_count != 1) return play_game_entries_multi[0..];
     if (has_typo and tutorial_first) return play_game_entries_single_typo_tutorial_first[0..];
@@ -292,7 +294,7 @@ fn playGameLayout(config: *const formats.crimson_cfg.CrimsonCfg, status: formats
 fn playGameLayoutFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status, timeline_ms: i32, demo_enabled: bool) PlayGameLayout {
     const entries = playGameEntriesFromPlayerCount(player_count_raw, status, demo_enabled);
     const player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
-    const tight_spacing = player_count == 1 and status.quest_unlock_index >= 40;
+    const tight_spacing = player_count == 1 and visibleQuestUnlockIndex(status, demo_enabled) >= quest_hardcore_unlock_index;
     const y_step: f32 = if (tight_spacing) 28.0 else 32.0;
     const y_start: f32 = if (entries.len >= 6) 36.0 else if (tight_spacing) 42.0 else 48.0;
     const panel_height: f32 = if (entries.len >= 5) 322.0 else 278.0;
@@ -436,13 +438,35 @@ const play_game_entries_single_typo = [_]PlayGameEntry{
 };
 
 test "play game entries expose native network session shell" {
-    const status: formats.game_cfg.Status = .{};
+    const status = std.mem.zeroes(formats.game_cfg.Status);
     const entries = playGameEntriesFromPlayerCount(1, status, false);
 
     try std.testing.expect(entries.len >= 1);
     try std.testing.expectEqual(PlayGameAction.open_network_session, entries[entries.len - 1].action);
     try std.testing.expectEqualStrings(" Network ", entries[entries.len - 1].label);
     try std.testing.expectEqualStrings(network_session_tooltip, entries[entries.len - 1].tooltip);
+}
+
+test "demo play game layout caps visible quest unlock progress" {
+    var status = std.mem.zeroes(formats.game_cfg.Status);
+    status.quest_unlock_index = 49;
+
+    const demo_entries = playGameEntriesFromPlayerCount(1, status, true);
+    for (demo_entries) |entry| {
+        try std.testing.expect(entry.key != .typo);
+    }
+
+    const demo_layout = playGameLayoutFromPlayerCount(1, status, panel_timeline_max_ms, true);
+    try std.testing.expectEqual(@as(f32, 32.0), demo_layout.y_step);
+    try std.testing.expectEqual(@as(f32, 48.0), demo_layout.y_start);
+
+    const full_entries = playGameEntriesFromPlayerCount(1, status, false);
+    try std.testing.expect(full_entries.len >= 1);
+    var full_has_typo = false;
+    for (full_entries) |entry| {
+        full_has_typo = full_has_typo or entry.key == .typo;
+    }
+    try std.testing.expect(full_has_typo);
 }
 
 fn drawPlayerCountWidget(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, layout: PlayGameLayout, player_count_raw: u32) void {
@@ -550,12 +574,12 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
     }
 
     if (questDigitRowPressed()) |row| {
-        return tryStartQuest(state, config, status, state.stage, row);
+        return tryStartQuest(state, config, status, demo_enabled, state.stage, row);
     }
 
-    const hovered_row = hoveredQuestRow(layout, hardcoreUnlocked(status));
+    const hovered_row = hoveredQuestRow(layout, hardcoreUnlocked(status, demo_enabled));
 
-    if (hardcoreUnlocked(status)) {
+    if (hardcoreUnlocked(status, demo_enabled)) {
         const hardcore_rect = hardcoreCheckRect(layout);
         if (rl.checkCollisionPointRec(rl.getMousePosition(), hardcore_rect) and rl.isMouseButtonPressed(.left)) {
             config.hardcore_flag = if (config.hardcore_flag == 0) 1 else 0;
@@ -566,7 +590,7 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
 
     if (hovered_row) |row| {
         if (rl.isMouseButtonPressed(.left) or window_ui.confirmPressed()) {
-            return tryStartQuest(state, config, status, state.stage, row);
+            return tryStartQuest(state, config, status, demo_enabled, state.stage, row);
         }
     }
 
@@ -581,20 +605,20 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
     };
 }
 
-pub fn drawQuests(state: *const QuestState, runtime_assets: ?*const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) void {
+pub fn drawQuests(state: *const QuestState, runtime_assets: ?*const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, demo_enabled: bool) void {
     if (runtime_assets) |assets| {
         drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, questLayout(state.panel.timeline_ms).panel_rect);
-        drawQuestContent(state, assets, config, status);
+        drawQuestContent(state, assets, config, status, demo_enabled);
         return;
     }
     rl.clearBackground(panel_color);
 }
 
-fn drawQuestContent(state: *const QuestState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) void {
+fn drawQuestContent(state: *const QuestState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, demo_enabled: bool) void {
     const layout = questLayout(state.panel.timeline_ms);
     const title_tex = runtime_assets.texture(.ui_text_quest);
     const hovered_stage = hoveredQuestStage(layout);
-    const hovered_row = hoveredQuestRow(layout, hardcoreUnlocked(status));
+    const hovered_row = hoveredQuestRow(layout, hardcoreUnlocked(status, demo_enabled));
     const show_counts = rl.isKeyDown(.f1);
     rl.drawTexturePro(
         title_tex,
@@ -614,17 +638,17 @@ fn drawQuestContent(state: *const QuestState, runtime_assets: *const window_asse
         window_ui.drawTextureFit(runtime_assets.texture(texture_id), rl.Rectangle.init(x, layout.icons_start_pos.y, quest_stage_icon_size * icon_scale, quest_stage_icon_size * icon_scale), tint);
     }
 
-    if (hardcoreUnlocked(status)) {
+    if (hardcoreUnlocked(status, demo_enabled)) {
         const check_tex = if (config.hardcore_flag != 0) runtime_assets.texture(.ui_check_on) else runtime_assets.texture(.ui_check_off);
         const rect = hardcoreCheckRect(layout);
         window_ui.drawTextureFit(check_tex, rl.Rectangle.init(rect.x, rect.y, @floatFromInt(check_tex.width), @floatFromInt(check_tex.height)), rl.Color.white);
         window_ui.drawSmallText(runtime_assets, "Hardcore", rect.x + @as(f32, @floatFromInt(check_tex.width)) + 6.0, rect.y + 1.0, questRowColor(config.hardcore_flag != 0, false));
     }
 
-    var y = questRowsY0(layout, hardcoreUnlocked(status));
+    var y = questRowsY0(layout, hardcoreUnlocked(status, demo_enabled));
     for (0..10) |row| {
         const level_minor = @as(i32, @intCast(row + 1));
-        const unlocked = questUnlocked(status, config.hardcore_flag != 0, state.stage, level_minor);
+        const unlocked = questUnlocked(status, config.hardcore_flag != 0, demo_enabled, state.stage, level_minor);
         const hovered = hovered_row != null and hovered_row.? == row;
         const color = questRowColor(config.hardcore_flag != 0, hovered);
         window_ui.drawSmallTextFmt("{d}.{d}", runtime_assets, .{ state.stage, level_minor }, layout.list_pos.x, y, color);
@@ -650,7 +674,7 @@ fn drawQuestContent(state: *const QuestState, runtime_assets: *const window_asse
     }
 
     if (show_counts) {
-        window_ui.drawSmallText(runtime_assets, "(completed/games)", layout.list_pos.x + 96.0, questRowsY0(layout, hardcoreUnlocked(status)) + quest_list_row_step * 10.0 - 2.0, questRowColor(config.hardcore_flag != 0, false));
+        window_ui.drawSmallText(runtime_assets, "(completed/games)", layout.list_pos.x + 96.0, questRowsY0(layout, hardcoreUnlocked(status, demo_enabled)) + quest_list_row_step * 10.0 - 2.0, questRowColor(config.hardcore_flag != 0, false));
     }
 
     const back = questBackButton(layout);
@@ -658,14 +682,37 @@ fn drawQuestContent(state: *const QuestState, runtime_assets: *const window_asse
     window_ui.drawButton(back, false, hovered, runtime_assets);
 }
 
-fn questUnlocked(status: formats.game_cfg.Status, hardcore: bool, stage: i32, minor: i32) bool {
+fn questUnlocked(status: formats.game_cfg.Status, hardcore: bool, demo_enabled: bool, stage: i32, minor: i32) bool {
     const global_index = (stage - 1) * 10 + (minor - 1);
-    const unlock = if (hardcore) status.quest_unlock_index_full else status.quest_unlock_index;
+    const unlock = if (!demo_enabled and hardcore)
+        status.quest_unlock_index_full
+    else
+        visibleQuestUnlockIndex(status, demo_enabled);
     return @as(i32, unlock) >= global_index;
 }
 
-fn hardcoreUnlocked(status: formats.game_cfg.Status) bool {
-    return status.quest_unlock_index >= quest_hardcore_unlock_index;
+fn hardcoreUnlocked(status: formats.game_cfg.Status, demo_enabled: bool) bool {
+    return visibleQuestUnlockIndex(status, demo_enabled) >= quest_hardcore_unlock_index;
+}
+
+fn visibleQuestUnlockIndex(status: formats.game_cfg.Status, demo_enabled: bool) u16 {
+    if (demo_enabled) return @min(status.quest_unlock_index, demo_quest_unlock_limit);
+    return status.quest_unlock_index;
+}
+
+test "demo quest menu caps visible unlock progress to native demo limit" {
+    var status = std.mem.zeroes(formats.game_cfg.Status);
+    status.quest_unlock_index = 49;
+    status.quest_unlock_index_full = 49;
+
+    try std.testing.expect(questUnlocked(status, false, true, 1, 10));
+    try std.testing.expect(questUnlocked(status, false, true, 2, 1));
+    try std.testing.expect(!questUnlocked(status, false, true, 2, 2));
+    try std.testing.expect(!questUnlocked(status, true, true, 2, 2));
+    try std.testing.expect(!hardcoreUnlocked(status, true));
+
+    try std.testing.expect(questUnlocked(status, false, false, 5, 10));
+    try std.testing.expect(hardcoreUnlocked(status, false));
 }
 
 fn questTitle(stage: i32, minor: i32) []const u8 {
@@ -714,9 +761,9 @@ fn beginCloseQuestStart(state: *QuestState, level_key: i32) void {
     state.closing_level_key = level_key;
 }
 
-fn tryStartQuest(state: *QuestState, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, stage: i32, row: usize) QuestResult {
+fn tryStartQuest(state: *QuestState, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, demo_enabled: bool, stage: i32, row: usize) QuestResult {
     const minor = @as(i32, @intCast(row + 1));
-    if (!questUnlocked(status, config.hardcore_flag != 0, stage, minor)) return .{};
+    if (!questUnlocked(status, config.hardcore_flag != 0, demo_enabled, stage, minor)) return .{};
     const level_key = stage * 100 + minor;
     config.game_mode = @intFromEnum(game_ids.GameModeId.quests);
     beginCloseQuestStart(state, level_key);
