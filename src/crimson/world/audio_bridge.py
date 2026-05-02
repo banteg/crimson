@@ -1,35 +1,31 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import cast
-
-import msgspec
-
 from grim.audio import AudioState
 from grim.rand import Crand
 from grim.sfx_map import SfxId
 
-from ..audio_router import AudioRouter
+from ..audio_router import AudioRouter, AudioRouterRuntime
 from ..sim.presentation_step import DeterministicPresentationPlan, PresentationPlanRuntime, apply_presentation_plan
 
 
-def _zero_reflex_boost() -> float:
-    return 0.0
-
-
-class AudioBridge(msgspec.Struct):
-    audio_rng: Crand
-    demo_mode_active: bool = False
-    reflex_boost_timer_source: Callable[[], float] = _zero_reflex_boost
-    audio: AudioState | None = None
-    router: AudioRouter = cast(AudioRouter, None)
-
-    def __post_init__(self) -> None:
+class AudioBridge:
+    def __init__(
+        self,
+        *,
+        audio_rng: Crand,
+        demo_mode_active: bool = False,
+        runtime: AudioRouterRuntime | None = None,
+        audio: AudioState | None = None,
+    ) -> None:
+        self.audio_rng = audio_rng
+        self.demo_mode_active = bool(demo_mode_active)
+        self.audio = audio
+        self.runtime = runtime if runtime is not None else AudioRouterRuntime()
         self.router = AudioRouter(
             audio_rng=self.audio_rng,
             audio=self.audio,
             demo_mode_active=bool(self.demo_mode_active),
-            reflex_boost_timer_source=self.reflex_boost_timer_source,
+            runtime=self.runtime,
         )
 
     def sync(
