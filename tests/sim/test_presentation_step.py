@@ -9,6 +9,7 @@ from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.presentation_step import (
     DeterministicPresentationPlan,
+    PresentationPlanRuntime,
     apply_presentation_plan,
     plan_hit_sfx,
     plan_world_presentation_step,
@@ -493,9 +494,8 @@ def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
 
 
 def test_apply_presentation_plan_dispatches_audio_in_order() -> None:
-    class _Sink:
-        def __init__(self) -> None:
-            self.events: list[str] = []
+    class _Runtime(PresentationPlanRuntime):
+        events: list[str]
 
         def trigger_game_tune(self) -> str | None:
             self.events.append("tune")
@@ -504,20 +504,19 @@ def test_apply_presentation_plan_dispatches_audio_in_order() -> None:
         def play_sfx(self, sfx: SfxId) -> None:
             self.events.append(sfx.value)
 
-    sink = _Sink()
+    runtime = _Runtime(events=[])
     apply_presentation_plan(
         plan=DeterministicPresentationPlan(trigger_game_tune=True, sfx=[SfxId.UI_BONUS, SfxId.UI_LEVELUP]),
-        audio_sink=sink,
+        runtime=runtime,
         apply_audio=True,
     )
 
-    assert sink.events == ["tune", SfxId.UI_BONUS.value, SfxId.UI_LEVELUP.value]
+    assert runtime.events == ["tune", SfxId.UI_BONUS.value, SfxId.UI_LEVELUP.value]
 
 
 def test_apply_presentation_plan_skips_when_audio_disabled() -> None:
-    class _Sink:
-        def __init__(self) -> None:
-            self.called = False
+    class _Runtime(PresentationPlanRuntime):
+        called: bool = False
 
         def trigger_game_tune(self) -> str | None:
             self.called = True
@@ -527,11 +526,11 @@ def test_apply_presentation_plan_skips_when_audio_disabled() -> None:
             _ = sfx
             self.called = True
 
-    sink = _Sink()
+    runtime = _Runtime()
     apply_presentation_plan(
         plan=DeterministicPresentationPlan(trigger_game_tune=True, sfx=[SfxId.UI_BONUS]),
-        audio_sink=sink,
+        runtime=runtime,
         apply_audio=False,
     )
 
-    assert sink.called is False
+    assert runtime.called is False
