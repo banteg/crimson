@@ -99,7 +99,7 @@ Last reviewed: **2026-05-03**
   - Ref: [`docs/crimsonland-exe/quest-select-menu.md`](../crimsonland-exe/quest-select-menu.md)
 - **Options panel (state `2`)**: implemented for core sliders + controls workflow.
   - Code: `src/crimson/screens/panels/options.py`, `src/crimson/screens/panels/controls.py`, `crimson-zig/src/window_options.zig`
-  - Implemented: SFX/music/detail/mouse sliders, UI info toggle, display config editing, controls entry and interactive rebinding flow.
+  - Implemented: SFX/music/detail/mouse sliders, UI info toggle, display config editing, controls entry and interactive rebinding flow. Zig now routes Options/Controls navigation through the native 300 ms panel close timeline before dispatching Back or Controls actions.
 - **Statistics hub (state `4`)**: implemented with child panels.
   - Code: `src/crimson/screens/panels/stats.py`
   - Child views: high scores, weapons database, perks database, credits.

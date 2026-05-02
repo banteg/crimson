@@ -139,18 +139,24 @@ pub const ControlsUpdate = struct {
     play_button_click: bool = false,
 };
 
+const OptionsTimelineUpdate = struct {
+    dt_ms: i32,
+    closed_action: OptionsAction = .none,
+};
+
+const ControlsTimelineUpdate = struct {
+    dt_ms: i32,
+    closed_action: ControlsAction = .none,
+};
+
+fn frameDeltaMs(frame_dt: f32) i32 {
+    return @intFromFloat(@min(frame_dt, 0.1) * 1000.0);
+}
+
 const PanelState = struct {
     selection: usize = 0,
     timeline_ms: i32 = 0,
     panel_open_sfx_played: bool = false,
-
-    fn advance(self: *PanelState, frame_dt: f32) i32 {
-        const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
-        if (dt_ms > 0) {
-            self.timeline_ms = @min(panel_timeline_max_ms, self.timeline_ms + dt_ms);
-        }
-        return dt_ms;
-    }
 };
 
 pub const OptionsState = struct {
@@ -158,6 +164,8 @@ pub const OptionsState = struct {
     page: OptionsPage = .gameplay,
     active_slider: OptionSlider = .none,
     back_hover_amount: i32 = 0,
+    closing: bool = false,
+    close_action: OptionsAction = .none,
 
     pub fn reset(self: *OptionsState) void {
         self.* = .{};
@@ -176,6 +184,8 @@ pub const ControlsState = struct {
     rebinding_row_index: ?usize = null,
     rebinding_player_index: usize = 0,
     back_hover_amount: i32 = 0,
+    closing: bool = false,
+    close_action: ControlsAction = .none,
 
     pub fn reset(self: *ControlsState) void {
         self.* = .{};
@@ -184,8 +194,71 @@ pub const ControlsState = struct {
 
 const OptionButton = window_ui.UiButton;
 
+fn beginOptionsClose(state: *OptionsState, action: OptionsAction) void {
+    if (state.closing) return;
+    state.active_slider = .none;
+    state.closing = true;
+    state.close_action = action;
+}
+
+fn advanceOptionsTimeline(state: *OptionsState, frame_dt: f32) OptionsTimelineUpdate {
+    const dt_ms = frameDeltaMs(frame_dt);
+    if (state.closing) {
+        if (dt_ms > 0) state.panel.timeline_ms -= dt_ms;
+        if (state.panel.timeline_ms < 0 and state.close_action != .none) {
+            const action = state.close_action;
+            state.closing = false;
+            state.close_action = .none;
+            return .{ .dt_ms = dt_ms, .closed_action = action };
+        }
+        return .{ .dt_ms = dt_ms };
+    }
+    if (dt_ms > 0) {
+        state.panel.timeline_ms = @min(panel_timeline_max_ms, state.panel.timeline_ms + dt_ms);
+    }
+    return .{ .dt_ms = dt_ms };
+}
+
+fn optionsInteractive(state: *const OptionsState) bool {
+    return !state.closing and state.panel.timeline_ms >= panel_timeline_max_ms;
+}
+
+fn beginControlsClose(state: *ControlsState, action: ControlsAction) void {
+    if (state.closing) return;
+    state.open_dropdown = .none;
+    state.rebinding_row_index = null;
+    state.closing = true;
+    state.close_action = action;
+}
+
+fn advanceControlsTimeline(state: *ControlsState, frame_dt: f32) ControlsTimelineUpdate {
+    const dt_ms = frameDeltaMs(frame_dt);
+    if (state.closing) {
+        if (dt_ms > 0) state.timeline_ms -= dt_ms;
+        if (state.timeline_ms < 0 and state.close_action != .none) {
+            const action = state.close_action;
+            state.closing = false;
+            state.close_action = .none;
+            return .{ .dt_ms = dt_ms, .closed_action = action };
+        }
+        return .{ .dt_ms = dt_ms };
+    }
+    if (dt_ms > 0) {
+        state.timeline_ms = @min(panel_timeline_max_ms, state.timeline_ms + dt_ms);
+    }
+    return .{ .dt_ms = dt_ms };
+}
+
+fn controlsInteractive(state: *const ControlsState) bool {
+    return !state.closing and state.timeline_ms >= panel_timeline_max_ms;
+}
+
 pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, runtime_assets: ?*const window_assets.RuntimeAssets) OptionsUpdate {
-    const dt_ms = state.panel.advance(frame_dt);
+    const timeline_update = advanceOptionsTimeline(state, frame_dt);
+    if (timeline_update.closed_action != .none) {
+        return .{ .action = timeline_update.closed_action };
+    }
+    const dt_ms = timeline_update.dt_ms;
     const mouse = rl.getMousePosition();
     const click = rl.isMouseButtonPressed(.left);
     const mouse_down = rl.isMouseButtonDown(.left);
@@ -201,14 +274,15 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
         state.back_hover_amount = std.math.clamp(state.back_hover_amount - dt_ms * 2, 0, 1000);
     }
 
-    if (rl.isKeyPressed(.escape) or (back_hovered and click)) {
-        state.active_slider = .none;
-        return .{ .action = .back_to_menu, .play_button_click = true };
-    }
-
     var result: OptionsUpdate = .{
         .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
     };
+    if (!optionsInteractive(state)) return result;
+
+    if (rl.isKeyPressed(.escape) or (back_hovered and click)) {
+        beginOptionsClose(state, .back_to_menu);
+        return .{ .play_button_click = true };
+    }
 
     updateOptionsSelectionFromPointer(state, panel_rect, mouse);
     updateOptionsSelectionFromKeys(state);
@@ -239,6 +313,8 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
     }
 
     mergeOptionsUpdate(&result, applyGameplayKeyboardOption(config, state.panel.selection, keyboard_delta, confirm));
+    const keyboard_open_controls = result.action == .open_controls;
+    if (keyboard_open_controls) result.action = .none;
 
     if (updateOptionSlider(state, .sfx, optionSliderRect(panel_rect, 265.0, 82.0, 10), 0, 10, mouse, click, mouse_down)) |value| {
         config.sfx_volume = @as(f32, @floatFromInt(value)) * 0.1;
@@ -271,8 +347,8 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
     }
 
     const controls = controlsButton(panel_rect);
-    if ((click and rl.checkCollisionPointRec(mouse, controls.rect)) or result.action == .open_controls) {
-        result.action = .open_controls;
+    if ((click and rl.checkCollisionPointRec(mouse, controls.rect)) or keyboard_open_controls) {
+        beginOptionsClose(state, .open_controls);
         result.play_button_click = true;
     }
 
@@ -510,10 +586,11 @@ pub fn drawOptions(state: *const OptionsState, runtime_assets: ?*const window_as
 }
 
 pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, runtime_assets: ?*const window_assets.RuntimeAssets) ControlsUpdate {
-    const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
-    if (dt_ms > 0) {
-        state.timeline_ms = @min(panel_timeline_max_ms, state.timeline_ms + dt_ms);
+    const timeline_update = advanceControlsTimeline(state, frame_dt);
+    if (timeline_update.closed_action != .none) {
+        return .{ .action = timeline_update.closed_action };
     }
+    const dt_ms = timeline_update.dt_ms;
     const left_rect = animatedLeftPanelRect(controls_left_panel_rect, state.timeline_ms);
     const right_rect = animatedRightPanelRect(controls_right_panel_rect, state.timeline_ms);
     const mouse = rl.getMousePosition();
@@ -527,6 +604,11 @@ pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.cri
         state.back_hover_amount = std.math.clamp(state.back_hover_amount - dt_ms * 2, 0, 1000);
     }
 
+    var result: ControlsUpdate = .{
+        .play_panel_click = dt_ms > 0 and state.timeline_ms >= panel_timeline_max_ms and !state.panel_open_sfx_played,
+    };
+    if (!controlsInteractive(state)) return result;
+
     if (state.rebinding_row_index != null) {
         return updateControlsRebinding(state, config);
     }
@@ -536,7 +618,8 @@ pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.cri
             state.open_dropdown = .none;
             return .{};
         }
-        return .{ .action = .back_to_options, .play_button_click = true };
+        beginControlsClose(state, .back_to_options);
+        return .{ .play_button_click = true };
     }
 
     if (state.open_dropdown != .none) {
@@ -571,9 +654,6 @@ pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.cri
         }
     }
 
-    var result: ControlsUpdate = .{
-        .play_panel_click = dt_ms > 0 and state.timeline_ms >= panel_timeline_max_ms and !state.panel_open_sfx_played,
-    };
     const activated = window_ui.confirmPressed() or rl.isMouseButtonPressed(.left);
 
     if (state.focus_right and rebind_rows.len > 0) {
@@ -1504,6 +1584,70 @@ test "options selection count follows active page" {
 
     try std.testing.expectEqual(@as(usize, display_selection_count - 1), state.panel.selection);
     try std.testing.expectEqual(@as(usize, gameplay_selection_count), optionsSelectionCount(.gameplay));
+}
+
+test "options panel timeline gates input and dispatches after close" {
+    var state: OptionsState = .{};
+    try std.testing.expect(!optionsInteractive(&state));
+
+    try std.testing.expectEqual(@as(i32, 100), advanceOptionsTimeline(&state, 0.50).dt_ms);
+    try std.testing.expectEqual(@as(i32, 100), state.panel.timeline_ms);
+    try std.testing.expect(!optionsInteractive(&state));
+
+    _ = advanceOptionsTimeline(&state, 0.10);
+    _ = advanceOptionsTimeline(&state, 0.10);
+    try std.testing.expectEqual(@as(i32, panel_timeline_max_ms), state.panel.timeline_ms);
+    try std.testing.expect(optionsInteractive(&state));
+
+    beginOptionsClose(&state, .open_controls);
+    try std.testing.expect(!optionsInteractive(&state));
+    try std.testing.expect(state.closing);
+    try std.testing.expectEqual(OptionsAction.open_controls, state.close_action);
+
+    try std.testing.expectEqual(OptionsAction.none, advanceOptionsTimeline(&state, 0.10).closed_action);
+    try std.testing.expectEqual(@as(i32, 200), state.panel.timeline_ms);
+    try std.testing.expectEqual(OptionsAction.none, advanceOptionsTimeline(&state, 0.10).closed_action);
+    try std.testing.expectEqual(@as(i32, 100), state.panel.timeline_ms);
+    try std.testing.expectEqual(OptionsAction.none, advanceOptionsTimeline(&state, 0.10).closed_action);
+    try std.testing.expectEqual(@as(i32, 0), state.panel.timeline_ms);
+
+    try std.testing.expectEqual(OptionsAction.open_controls, advanceOptionsTimeline(&state, 0.01).closed_action);
+    try std.testing.expect(!state.closing);
+    try std.testing.expectEqual(OptionsAction.none, state.close_action);
+}
+
+test "controls panel timeline gates input and dispatches after close" {
+    var state: ControlsState = .{};
+    try std.testing.expect(!controlsInteractive(&state));
+
+    try std.testing.expectEqual(@as(i32, 100), advanceControlsTimeline(&state, 0.50).dt_ms);
+    try std.testing.expectEqual(@as(i32, 100), state.timeline_ms);
+    try std.testing.expect(!controlsInteractive(&state));
+
+    _ = advanceControlsTimeline(&state, 0.10);
+    _ = advanceControlsTimeline(&state, 0.10);
+    try std.testing.expectEqual(@as(i32, panel_timeline_max_ms), state.timeline_ms);
+    try std.testing.expect(controlsInteractive(&state));
+
+    state.open_dropdown = .aim;
+    state.rebinding_row_index = 2;
+    beginControlsClose(&state, .back_to_options);
+    try std.testing.expect(!controlsInteractive(&state));
+    try std.testing.expect(state.closing);
+    try std.testing.expectEqual(ControlsAction.back_to_options, state.close_action);
+    try std.testing.expectEqual(DropdownKind.none, state.open_dropdown);
+    try std.testing.expectEqual(@as(?usize, null), state.rebinding_row_index);
+
+    try std.testing.expectEqual(ControlsAction.none, advanceControlsTimeline(&state, 0.10).closed_action);
+    try std.testing.expectEqual(@as(i32, 200), state.timeline_ms);
+    try std.testing.expectEqual(ControlsAction.none, advanceControlsTimeline(&state, 0.10).closed_action);
+    try std.testing.expectEqual(@as(i32, 100), state.timeline_ms);
+    try std.testing.expectEqual(ControlsAction.none, advanceControlsTimeline(&state, 0.10).closed_action);
+    try std.testing.expectEqual(@as(i32, 0), state.timeline_ms);
+
+    try std.testing.expectEqual(ControlsAction.back_to_options, advanceControlsTimeline(&state, 0.01).closed_action);
+    try std.testing.expect(!state.closing);
+    try std.testing.expectEqual(ControlsAction.none, state.close_action);
 }
 
 test "gameplay options keyboard adjustment updates config" {
