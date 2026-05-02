@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal, TypeAlias, cast
 
 import msgspec
@@ -91,7 +91,7 @@ from ..ui.hud import HudState, draw_target_health_bar
 from ..weapon_runtime import most_used_weapon_id_for_player
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import shots_from_state
-from .components.perk_menu_controller import PerkMenuController, PerkMenuUiContext
+from .components.perk_menu_controller import PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreatureDeath, CreaturePool
@@ -135,6 +135,16 @@ class _ModeLocalInputRuntime(LocalInputRuntime):
 
     def capture_frame_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
         return self.mode._build_local_inputs(dt=float(frame_ctx.dt_seconds))
+
+
+class _ModePerkMenuRuntime(PerkMenuRuntime):
+    mode: BaseGameplayMode
+
+    def on_close(self) -> None:
+        self.mode._perk_menu_closed()
+
+    def play_sfx(self, sfx_id: SfxId) -> None:
+        self.mode.audio_bridge.router.play_sfx(sfx_id)
 
 
 class _ModeFrameState(msgspec.Struct, frozen=True):
@@ -707,8 +717,11 @@ class BaseGameplayMode:
         assert font is not None, "small font must be loaded before ui text draw"
         draw_small_text(font, text, pos, color)
 
-    def _perk_menu_play_sfx(self) -> Callable[[SfxId], None] | None:
-        return self.audio_bridge.router.play_sfx
+    def _perk_menu_runtime(self) -> PerkMenuRuntime:
+        return _ModePerkMenuRuntime(mode=self)
+
+    def _perk_menu_closed(self) -> None:
+        return None
 
     def _perk_menu_ui_context(self) -> PerkMenuUiContext:
         return PerkMenuUiContext(
@@ -718,7 +731,6 @@ class BaseGameplayMode:
             fx_detail=self.config.display.fx_detail_enabled(level=0, default=False),
             resources=self.render_resources.resources,
             mouse=self._ui_mouse_pos(),
-            play_sfx=self._perk_menu_play_sfx(),
         )
 
     def _open_perk_menu_ui(
@@ -731,7 +743,6 @@ class BaseGameplayMode:
     ) -> None:
         if menu.active:
             return
-        perk_ctx = self._perk_menu_ui_context()
         recorder = getattr(self, "_replay_recorder", None)
         if recorder is not None:
             self._record_replay_checkpoint(max(0, int(recorder.tick_index) - 1), force=True)
@@ -743,7 +754,7 @@ class BaseGameplayMode:
             player_count=int(player_count),
         )
         assert choices, "perk menu open requires prepared perk choices"
-        menu.open_menu(play_sfx=perk_ctx.play_sfx)
+        menu.open_menu()
         self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 
     def _ui_mouse_pos(self) -> rl.Vector2:

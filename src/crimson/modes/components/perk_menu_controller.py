@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 
 import msgspec
 
@@ -28,11 +28,17 @@ from ...ui.perk_menu import (
     perk_menu_panel_slide_x,
 )
 
-PlaySfxFn = Callable[[SfxId], None]
-OnCloseFn = Callable[[], None]
-
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
+
+
+class PerkMenuRuntime(msgspec.Struct):
+    def on_close(self) -> None:
+        return None
+
+    def play_sfx(self, sfx_id: SfxId) -> None:
+        _ = sfx_id
+        return None
 
 
 class PerkMenuUiContext(msgspec.Struct, frozen=True):
@@ -42,7 +48,6 @@ class PerkMenuUiContext(msgspec.Struct, frozen=True):
     resources: RuntimeResources
     mouse: rl.Vector2
     fx_detail: bool = False
-    play_sfx: PlaySfxFn | None = None
 
 
 class PerkMenuController:
@@ -52,10 +57,10 @@ class PerkMenuController:
         self,
         *,
         cancel_label: str = "Cancel",
-        on_close: OnCloseFn | None = None,
+        runtime: PerkMenuRuntime | None = None,
     ) -> None:
         self._cancel_label = cancel_label
-        self._on_close = on_close
+        self._runtime = runtime if runtime is not None else PerkMenuRuntime()
         self.reset()
 
     @property
@@ -159,14 +164,12 @@ class PerkMenuController:
         if not self._open:
             return
         self._open = False
-        if self._on_close is not None:
-            self._on_close()
+        self._runtime.on_close()
 
-    def open_menu(self, *, play_sfx: PlaySfxFn | None = None) -> None:
+    def open_menu(self) -> None:
         if self._open:
             return
-        if play_sfx is not None:
-            play_sfx(SfxId.UI_PANELCLICK)
+        self._runtime.play_sfx(SfxId.UI_PANELCLICK)
         self._open = True
         self._selected_index = 0
 
@@ -228,8 +231,7 @@ class PerkMenuController:
             if rect.contains(ctx.mouse):
                 self._selected_index = idx
                 if click:
-                    if ctx.play_sfx is not None:
-                        ctx.play_sfx(SfxId.UI_BUTTONCLICK)
+                    self._runtime.play_sfx(SfxId.UI_BUTTONCLICK)
                     self.close()
                     return int(idx)
                 break
@@ -248,14 +250,12 @@ class PerkMenuController:
             mouse=ctx.mouse,
             click=click,
         ):
-            if ctx.play_sfx is not None:
-                ctx.play_sfx(SfxId.UI_BUTTONCLICK)
+            self._runtime.play_sfx(SfxId.UI_BUTTONCLICK)
             self.close()
             return None
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
-            if ctx.play_sfx is not None:
-                ctx.play_sfx(SfxId.UI_BUTTONCLICK)
+            self._runtime.play_sfx(SfxId.UI_BUTTONCLICK)
             self.close()
             return int(self._selected_index)
         return None

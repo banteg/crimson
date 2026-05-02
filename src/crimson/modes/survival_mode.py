@@ -79,7 +79,7 @@ class SurvivalMode(BaseGameplayMode):
             audio_rng=audio_rng,
         )
         self._perk_prompt = PerkPromptState()
-        self._perk_menu = PerkMenuController(on_close=self._reset_perk_prompt)
+        self._perk_menu = PerkMenuController(runtime=self._perk_menu_runtime())
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._cursor_time = 0.0
         self._replay_recorder: ReplayRecorder | None = None
@@ -122,7 +122,7 @@ class SurvivalMode(BaseGameplayMode):
             player_count=max(1, len(self.sim_world.players)),
         )
 
-    def _reset_perk_prompt(self) -> None:
+    def _perk_menu_closed(self) -> None:
         self._perk_prompt.reset_if_pending(pending_count=int(self.state.perk_selection.pending_count))
 
     def _update_perk_ui(
