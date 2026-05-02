@@ -276,12 +276,13 @@ pub fn draw(
     runtime_assets: ?*const window_assets.RuntimeAssets,
     config: formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
+    preserve_bugs: bool,
 ) void {
     switch (state.view) {
-        .hub => drawHub(&state.hub, runtime_assets, status),
-        .high_scores => drawHighScores(&state.high_scores, runtime_assets, config, status, state.hub.panel.timeline_ms),
-        .weapons => drawWeapons(&state.weapons, runtime_assets, config, status, state.hub.panel.timeline_ms),
-        .perks => drawPerks(&state.perks, runtime_assets, config, status, state.hub.panel.timeline_ms),
+        .hub => drawHub(&state.hub, runtime_assets, status, preserve_bugs),
+        .high_scores => drawHighScores(&state.high_scores, runtime_assets, config, status, preserve_bugs, state.hub.panel.timeline_ms),
+        .weapons => drawWeapons(&state.weapons, runtime_assets, config, status, preserve_bugs, state.hub.panel.timeline_ms),
+        .perks => drawPerks(&state.perks, runtime_assets, config, status, preserve_bugs, state.hub.panel.timeline_ms),
         .credits => drawCredits(&state.credits, runtime_assets, state.hub.panel.timeline_ms),
         .alien_zookeeper => drawAlienZooKeeper(&state.alien_zookeeper, runtime_assets, state.hub.panel.timeline_ms),
     }
@@ -587,13 +588,13 @@ fn updateAlienZooKeeper(state: *State, frame_dt: f32) UpdateResult {
     return .{};
 }
 
-fn drawHub(state: *const HubState, runtime_assets: ?*const window_assets.RuntimeAssets, status: formats.game_cfg.Status) void {
+fn drawHub(state: *const HubState, runtime_assets: ?*const window_assets.RuntimeAssets, status: formats.game_cfg.Status, preserve_bugs: bool) void {
     if (runtime_assets) |assets| {
         const panel_rect = animatedCenterPanelRect(stats_panel_rect, state.panel.timeline_ms);
         drawPanelShellNoTitle(state.panel.timeline_ms, assets, stats_panel_rect);
         drawAtlasTitle(assets, panel_rect, 290.0, 52.0, window_menu.label_row_statistics);
         var playtime_buf: [64]u8 = undefined;
-        window_ui.drawSmallText(assets, formatPlaytimeText(&playtime_buf, status.game_sequence_id), panel_rect.x + 204.0, panel_rect.y + 334.0, muted_text);
+        window_ui.drawSmallText(assets, formatPlaytimeText(&playtime_buf, status.game_sequence_id, preserve_bugs), panel_rect.x + 204.0, panel_rect.y + 334.0, muted_text);
         if (state.easter_text_x) |x| {
             window_ui.drawSmallText(assets, stats_easter_text, x, stats_easter_text_y, rl.Color.init(51, 255, 153, 128));
         }
@@ -612,6 +613,7 @@ fn drawHighScores(
     runtime_assets: ?*const window_assets.RuntimeAssets,
     config: formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
+    preserve_bugs: bool,
     timeline_ms: i32,
 ) void {
     if (runtime_assets) |assets| {
@@ -619,7 +621,7 @@ fn drawHighScores(
         const right_rect = animatedRightPanelRect(right_panel_rect, timeline_ms);
         drawSplitPanelShell(assets, timeline_ms);
         drawHighScoreMainPanel(state, assets, config, status, left_rect);
-        drawHighScoreRightPanel(state, assets, config, status, left_rect, right_rect);
+        drawHighScoreRightPanel(state, assets, config, status, preserve_bugs, left_rect, right_rect);
         return;
     }
     rl.clearBackground(panel_color);
@@ -630,13 +632,14 @@ fn drawWeapons(
     runtime_assets: ?*const window_assets.RuntimeAssets,
     config: formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
+    preserve_bugs: bool,
     timeline_ms: i32,
 ) void {
     if (runtime_assets) |assets| {
         const left_rect = animatedLeftPanelRect(left_panel_rect, timeline_ms);
         const right_rect = animatedRightPanelRect(right_panel_rect, timeline_ms);
         drawSplitPanelShell(assets, timeline_ms);
-        drawWeaponsPanels(state, assets, config, status, left_rect, right_rect);
+        drawWeaponsPanels(state, assets, config, status, preserve_bugs, left_rect, right_rect);
         return;
     }
     rl.clearBackground(panel_color);
@@ -647,13 +650,14 @@ fn drawPerks(
     runtime_assets: ?*const window_assets.RuntimeAssets,
     config: formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
+    preserve_bugs: bool,
     timeline_ms: i32,
 ) void {
     if (runtime_assets) |assets| {
         const left_rect = animatedLeftPanelRect(left_panel_rect, timeline_ms);
         const right_rect = animatedRightPanelRect(right_panel_rect, timeline_ms);
         drawSplitPanelShell(assets, timeline_ms);
-        drawPerksPanels(state, assets, status, config.gore_disabled, config.hardcore_flag != 0, config.game_mode == @intFromEnum(game_ids.GameModeId.tutorial), left_rect, right_rect);
+        drawPerksPanels(state, assets, status, config.gore_disabled, config.hardcore_flag != 0, preserve_bugs, left_rect, right_rect);
         return;
     }
     rl.clearBackground(panel_color);
@@ -806,12 +810,13 @@ fn drawHighScoreRightPanel(
     assets: *const window_assets.RuntimeAssets,
     config: formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
+    preserve_bugs: bool,
     left_rect: rl.Rectangle,
     right_rect: rl.Rectangle,
 ) void {
     if (selectedHighScoreRank(state, left_rect)) |rank| {
         if (rank < state.records.len) {
-            drawHighScoreLocalDetails(assets, state.records[rank], rank, right_rect);
+            drawHighScoreLocalDetails(assets, state.records[rank], rank, preserve_bugs, right_rect);
             return;
         }
     }
@@ -874,6 +879,7 @@ fn drawWeaponsPanels(
     assets: *const window_assets.RuntimeAssets,
     config: formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
+    preserve_bugs: bool,
     left_rect: rl.Rectangle,
     right_rect: rl.Rectangle,
 ) void {
@@ -893,7 +899,7 @@ fn drawWeaponsPanels(
     for (weapon_ids[start..end], 0..) |weapon_id, row| {
         const list_index = start + row;
         const color = if (list_index == state.selection) text_color else muted_text;
-        window_ui.drawSmallText(assets, game_ids.weaponDisplayName(weapon_id, false), left_rect.x + 218.0, left_rect.y + 130.0 + @as(f32, @floatFromInt(row)) * 16.0, color);
+        window_ui.drawSmallText(assets, game_ids.weaponDisplayName(weapon_id, preserve_bugs), left_rect.x + 218.0, left_rect.y + 130.0 + @as(f32, @floatFromInt(row)) * 16.0, color);
     }
 
     const back = weaponBackButton(left_rect)[0];
@@ -904,7 +910,7 @@ fn drawWeaponsPanels(
     const weapon_id = weapon_ids[@min(state.selection, total - 1)];
     const detail_x = right_rect.x;
     window_ui.drawSmallTextFmt("weapon #{d}", assets, .{@intFromEnum(weapon_id)}, detail_x + 240.0, right_rect.y + 32.0, muted_text);
-    const name = game_ids.weaponDisplayName(weapon_id, false);
+    const name = game_ids.weaponDisplayName(weapon_id, preserve_bugs);
     window_ui.drawSmallText(assets, name, detail_x + 50.0, right_rect.y + 50.0, text_color);
     const icon_index = weapon_data.weaponIconIndex(weapon_id);
     if (icon_index >= 0) {
@@ -1576,7 +1582,7 @@ fn hoveredListRow(rect: rl.Rectangle, total: usize, scroll: usize) ?usize {
     return scroll + row;
 }
 
-fn drawHighScoreLocalDetails(assets: *const window_assets.RuntimeAssets, record: persistence.highscores.HighScoreRecord, rank: usize, right_rect: rl.Rectangle) void {
+fn drawHighScoreLocalDetails(assets: *const window_assets.RuntimeAssets, record: persistence.highscores.HighScoreRecord, rank: usize, preserve_bugs: bool, right_rect: rl.Rectangle) void {
     const detail_x = right_rect.x + 78.0;
     const mode = record.gameModeId() orelse .survival;
     const local_text = rl.Color.init(229, 229, 229, 204);
@@ -1635,7 +1641,7 @@ fn drawHighScoreLocalDetails(assets: *const window_assets.RuntimeAssets, record:
     const shots_fired = record.shotsFired();
     const hit_pct: u32 = if (shots_fired == 0) 0 else @intCast(@divTrunc(record.shotsHit() * 100, shots_fired));
     window_ui.drawSmallTextFmt("Hit %: {d}%", assets, .{hit_pct}, detail_x + 122.0, right_rect.y + 161.0, lower_text);
-    const weapon_name = game_ids.weaponDisplayName(record.mostUsedWeaponId(), false);
+    const weapon_name = game_ids.weaponDisplayName(record.mostUsedWeaponId(), preserve_bugs);
     const weapon_name_x = right_rect.x + 90.0 + @max(@as(f32, 0.0), 32.0 - window_ui.measureSmallText(assets, weapon_name) * 0.5);
     window_ui.drawSmallText(assets, weapon_name, weapon_name_x, right_rect.y + 178.0, lower_text);
     rl.drawLine(@intFromFloat(right_rect.x + 74.0), @intFromFloat(right_rect.y + 194.0), @intFromFloat(right_rect.x + 266.0), @intFromFloat(right_rect.y + 194.0), separator);
@@ -2050,10 +2056,13 @@ fn formatHighScoreValue(buf: []u8, record: persistence.highscores.HighScoreRecor
     };
 }
 
-fn formatPlaytimeText(buf: []u8, game_sequence_ms: u32) []const u8 {
+fn formatPlaytimeText(buf: []u8, game_sequence_ms: u32, preserve_bugs: bool) []const u8 {
     const total_minutes = @divTrunc(@divTrunc(game_sequence_ms, 1000), 60);
     const hours = @divTrunc(total_minutes, 60);
     const minutes = @mod(total_minutes, 60);
+    if (preserve_bugs) {
+        return std.fmt.bufPrint(buf, "played for {d} hours {d} minutes", .{ hours, minutes }) catch "played for 0 hours 0 minutes";
+    }
     const hour_label = if (hours == 1) "hour" else "hours";
     const minute_label = if (minutes == 1) "minute" else "minutes";
     return std.fmt.bufPrint(buf, "played for {d} {s} {d} {s}", .{ hours, hour_label, minutes, minute_label }) catch "played for 0 hours 0 minutes";
@@ -2192,6 +2201,18 @@ test "statistics easter roll is sticky until consumed" {
     try std.testing.expectEqual(@as(i32, 11), statsMenuEasterRoll(11, &rng));
     try std.testing.expect(isOrbesVolantesDay(.{ .year = 2026, .month = 3, .day = 3 }));
     try std.testing.expect(!isOrbesVolantesDay(.{ .year = 2026, .month = 5, .day = 1 }));
+}
+
+test "statistics playtime text follows default and preserve-bugs pluralization" {
+    var buf: [64]u8 = undefined;
+    try std.testing.expectEqualStrings(
+        "played for 1 hour 1 minute",
+        formatPlaytimeText(&buf, (1 * 60 * 60 + 1 * 60) * 1000, false),
+    );
+    try std.testing.expectEqualStrings(
+        "played for 1 hours 1 minutes",
+        formatPlaytimeText(&buf, (1 * 60 * 60 + 1 * 60) * 1000, true),
+    );
 }
 
 test "alien zookeeper finds horizontal matches before vertical" {

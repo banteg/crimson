@@ -71,7 +71,7 @@ crimson replay render <file>      render replay to high-quality 60fps video via 
 crimson replay verify-checkpoints <file>  compare replay output to checkpoint sidecar
 ```
 
-Useful flags: `--seed N` (deterministic runs), `--demo` (shareware teaser), `--no-intro` (skip logos), `--base-dir PATH` / `CRIMSON_RUNTIME_DIR` (runtime file location), `--assets-dir PATH` (PAQ / extracted asset location).
+Useful flags: `--seed N` (deterministic runs), `--demo` (shareware teaser), `--preserve-bugs` (native quirks for parity work), `--no-intro` (skip logos), `--base-dir PATH` / `CRIMSON_RUNTIME_DIR` (runtime file location), `--assets-dir PATH` (PAQ / extracted asset location).
 
 ## Project layout
 
