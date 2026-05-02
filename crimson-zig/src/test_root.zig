@@ -257,5 +257,6 @@ test {
     _ = @import("window_misc_panels.zig");
     _ = @import("window_options.zig");
     _ = @import("window_statistics.zig");
+    _ = @import("asset_smoke_main.zig");
     _ = @import("wasm_exports.zig");
 }

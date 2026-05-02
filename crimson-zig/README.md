@@ -86,6 +86,7 @@ zig build run -- replay list --base-dir .
 zig build run -- replay verify-checkpoints <replay.crd>
 zig build run -- replay diff-checkpoints <expected.chk> <actual.chk>
 zig build run -- replay benchmark <replay.crd> --runs 5
+zig build asset-smoke -- /path/to/assets --json
 zig build run -- relay serve --bind 127.0.0.1 --port 31993
 ```
 
@@ -97,7 +98,7 @@ Useful targets:
   Launches the desktop app.
 - `zig build asset-smoke`
   Runs a local decode smoke pass over archive-backed assets and reports exact
-  failing entries.
+  failing entries. Pass `--json` or `--format json` for scriptable output.
 - `zig build wasm`
   Builds the freestanding replay/runtime ABI target.
 - `zig build web-window`
