@@ -8,6 +8,8 @@ test {
     _ = cz.bonuses;
     _ = cz.checkpoint_diff_native;
     _ = cz.config_native;
+    std.testing.refAllDecls(cz.dbg_diff_native);
+    _ = cz.dbg_diff_native;
     std.testing.refAllDecls(cz.dbg_entity_native);
     _ = cz.dbg_entity_native;
     std.testing.refAllDecls(cz.dbg_health_native);
@@ -377,6 +379,47 @@ test "aggregate dbg tick summarizes native CDT tick" {
     const artifact = try std.Io.Dir.cwd().readFileAlloc(io, json_path, allocator, .limited(64 * 1024));
     defer allocator.free(artifact);
     try std.testing.expectEqualStrings(tick_output.stdout, artifact);
+}
+
+test "aggregate dbg diff compares native CDT traces" {
+    const allocator = std.testing.allocator;
+
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
+    defer allocator.free(base_dir);
+    const replay_path = try std.fs.path.join(allocator, &.{ base_dir, "sample.crd" });
+    defer allocator.free(replay_path);
+    const trace_path = try std.fs.path.join(allocator, &.{ base_dir, "sample.cdt" });
+    defer allocator.free(trace_path);
+    const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "diff.json" });
+    defer allocator.free(json_path);
+
+    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(replay_bytes);
+
+    const io = std.Io.Threaded.global_single_threaded.io();
+    try std.Io.Dir.cwd().writeFile(io, .{
+        .sub_path = replay_path,
+        .data = replay_bytes,
+    });
+
+    const record_output = try cz.dbg_record_native.runDbgRecord(allocator, &.{ replay_path, "--out", trace_path });
+    defer record_output.deinit(allocator);
+    try std.testing.expectEqual(@as(u8, 0), record_output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, record_output.stdout, "trace=") != null);
+
+    const diff_output = try cz.dbg_diff_native.runDbgDiff(allocator, &.{ trace_path, trace_path, "--json", "--json-out", json_path });
+    defer diff_output.deinit(allocator);
+    try std.testing.expectEqual(@as(u8, 0), diff_output.exit_code);
+    try std.testing.expectEqualStrings("", diff_output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, diff_output.stdout, "\"status\":\"ok\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, diff_output.stdout, "\"checked_count\":2") != null);
+
+    const artifact = try std.Io.Dir.cwd().readFileAlloc(io, json_path, allocator, .limited(64 * 1024));
+    defer allocator.free(artifact);
+    try std.testing.expectEqualStrings(diff_output.stdout, artifact);
 }
 
 test "aggregate dbg entity summarizes native CDT entity" {

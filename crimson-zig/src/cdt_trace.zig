@@ -260,6 +260,27 @@ pub const QueryResult = struct {
     }
 };
 
+pub const TraceDiffOptions = struct {
+    tick_start: ?i32 = null,
+    tick_end: ?i32 = null,
+};
+
+pub const TraceDiffMismatch = struct {
+    kind: []const u8,
+    tick_index: i32,
+    field: ?[]const u8 = null,
+    expected: ?i64 = null,
+    actual: ?i64 = null,
+};
+
+pub const TraceDiffReport = struct {
+    ok: bool,
+    checked_count: usize,
+    tick_start: ?i32,
+    tick_end: ?i32,
+    mismatch: ?TraceDiffMismatch = null,
+};
+
 const TickRange = struct {
     start_tick: i32,
     end_tick: i32,
@@ -1103,6 +1124,33 @@ pub fn queryTraceBytes(
     };
 }
 
+pub fn diffTraceFiles(
+    allocator: std.mem.Allocator,
+    io: std.Io,
+    expected_path: []const u8,
+    actual_path: []const u8,
+    options: TraceDiffOptions,
+) !TraceDiffReport {
+    const expected_bytes = try std.Io.Dir.cwd().readFileAlloc(io, expected_path, allocator, .limited(256 * 1024 * 1024));
+    defer allocator.free(expected_bytes);
+    const actual_bytes = try std.Io.Dir.cwd().readFileAlloc(io, actual_path, allocator, .limited(256 * 1024 * 1024));
+    defer allocator.free(actual_bytes);
+    return diffTraceBytes(allocator, expected_bytes, actual_bytes, options);
+}
+
+pub fn diffTraceBytes(
+    allocator: std.mem.Allocator,
+    expected_bytes: []const u8,
+    actual_bytes: []const u8,
+    options: TraceDiffOptions,
+) !TraceDiffReport {
+    var expected_rows = try loadTraceDiffRows(allocator, expected_bytes, options);
+    defer expected_rows.deinit(allocator);
+    var actual_rows = try loadTraceDiffRows(allocator, actual_bytes, options);
+    defer actual_rows.deinit(allocator);
+    return diffTraceRows(expected_rows.items, actual_rows.items, options);
+}
+
 fn appendMatchingQueryEntityRows(
     allocator: std.mem.Allocator,
     rows: *std.ArrayList(QueryRow),
@@ -1939,6 +1987,227 @@ fn encodeMsgpackOwned(allocator: std.mem.Allocator, value: anytype) ![]u8 {
     return writer.toOwnedSlice();
 }
 
+const TraceDiffRow = struct {
+    tick_index: i32,
+    elapsed_ms: i64,
+    dt_ms_i32: i32,
+    mode_id: i32,
+    checkpoint_rng_state: i64,
+    checkpoint_elapsed_ms: i64,
+    checkpoint_score_xp: i32,
+    checkpoint_kills: i32,
+    checkpoint_creature_count: i32,
+    checkpoint_perk_pending: i32,
+    checkpoint_player_count: i64,
+    checkpoint_death_count: i64,
+    event_hit_count: i32,
+    event_pickup_count: i32,
+    event_sfx_count: i32,
+    event_sfx_head_count: i64,
+    entity_creature_count: i64,
+    entity_projectile_count: i64,
+    entity_secondary_projectile_count: i64,
+    entity_bonus_count: i64,
+    rng_stream_count: i64,
+    timing_samples_count: i64,
+};
+
+fn loadTraceDiffRows(
+    allocator: std.mem.Allocator,
+    bytes: []const u8,
+    options: TraceDiffOptions,
+) !std.ArrayList(TraceDiffRow) {
+    if (bytes.len < trace_magic.len + 4 + trailer_magic.len + 8) return error.InvalidTraceHeader;
+    if (!std.mem.startsWith(u8, bytes, trace_magic)) return error.InvalidTraceMagic;
+    const version = readU32Le(bytes[trace_magic.len..][0..4]);
+    if (version != trace_format_version) return error.UnsupportedTraceFormatVersion;
+
+    const trailer_offset = bytes.len - trailer_magic.len - 8;
+    if (!std.mem.eql(u8, bytes[trailer_offset..][0..trailer_magic.len], trailer_magic)) return error.InvalidTraceTrailer;
+    const footer_offset_u64 = readU64Le(bytes[trailer_offset + trailer_magic.len ..][0..8]);
+    if (footer_offset_u64 > std.math.maxInt(usize)) return error.InvalidTraceFooterOffset;
+    const footer_offset: usize = @intCast(footer_offset_u64);
+    const footer_chunk = try chunkPayloadAt(bytes, footer_offset);
+    if (!std.mem.eql(u8, footer_chunk.kind, chunk_kind_footer)) return error.InvalidTraceFooterChunk;
+    var decoded_footer = try msgpack.decodeFromSlice(TraceFooter, allocator, footer_chunk.payload);
+    defer decoded_footer.deinit();
+    const footer = decoded_footer.value;
+    if (footer.tick_count <= 0) return error.InvalidTraceFooter;
+    if (footer.first_tick < 0 or footer.last_tick < 0) return error.InvalidTraceFooter;
+    if (footer.first_tick > footer.last_tick) return error.InvalidTraceFooter;
+    if (footer.tick_blocks.len == 0) return error.InvalidTraceFooter;
+
+    var rows: std.ArrayList(TraceDiffRow) = .empty;
+    errdefer rows.deinit(allocator);
+
+    for (footer.tick_blocks) |entry| {
+        if (options.tick_start) |tick_start| {
+            if (entry.end_tick < tick_start) continue;
+        }
+        if (options.tick_end) |tick_end| {
+            if (entry.start_tick > tick_end) continue;
+        }
+        if (entry.file_offset < 0) return error.InvalidTraceBlockOffset;
+        const tick_chunk = try chunkPayloadAt(bytes, @intCast(entry.file_offset));
+        if (!std.mem.eql(u8, tick_chunk.kind, chunk_kind_tick)) return error.InvalidTraceTickChunk;
+        if (tick_chunk.start_tick != entry.start_tick or tick_chunk.end_tick != entry.end_tick) return error.InvalidTraceTickChunk;
+        if (entry.uncompressed_len < 0) return error.InvalidTraceTickChunk;
+        if (tick_chunk.payload.len != @as(usize, @intCast(entry.uncompressed_len))) return error.InvalidTraceTickChunk;
+        if (checksum64(tick_chunk.payload) != entry.checksum) return error.InvalidTraceChecksum;
+
+        var decoded_block = try msgpack.decodeFromSlice(TickBlockRead, allocator, tick_chunk.payload);
+        defer decoded_block.deinit();
+        const block = decoded_block.value;
+        if (block.start_tick != entry.start_tick or block.end_tick != entry.end_tick) return error.InvalidTraceTickBlock;
+
+        for (block.ticks) |tick| {
+            if (options.tick_start) |tick_start| {
+                if (tick.tick_index < tick_start) continue;
+            }
+            if (options.tick_end) |tick_end| {
+                if (tick.tick_index > tick_end) continue;
+            }
+            try rows.append(allocator, traceDiffRowFromTick(tick));
+        }
+    }
+
+    return rows;
+}
+
+fn traceDiffRowFromTick(tick: TickRecordRead) TraceDiffRow {
+    const checkpoint = tick.channels.checkpoint;
+    const entities = tick.channels.entity_samples;
+    return .{
+        .tick_index = tick.tick_index,
+        .elapsed_ms = tick.elapsed_ms,
+        .dt_ms_i32 = tick.dt_ms_i32,
+        .mode_id = tick.mode_id,
+        .checkpoint_rng_state = checkpoint.rng_state,
+        .checkpoint_elapsed_ms = checkpoint.elapsed_ms,
+        .checkpoint_score_xp = checkpoint.score_xp,
+        .checkpoint_kills = checkpoint.kills,
+        .checkpoint_creature_count = checkpoint.creature_count,
+        .checkpoint_perk_pending = checkpoint.perk_pending,
+        .checkpoint_player_count = @intCast(checkpoint.players.len),
+        .checkpoint_death_count = @intCast(checkpoint.deaths.len),
+        .event_hit_count = checkpoint.events.hit_count,
+        .event_pickup_count = checkpoint.events.pickup_count,
+        .event_sfx_count = checkpoint.events.sfx_count,
+        .event_sfx_head_count = @intCast(checkpoint.events.sfx_head.len),
+        .entity_creature_count = @intCast(entities.creatures.len),
+        .entity_projectile_count = @intCast(entities.projectiles.len),
+        .entity_secondary_projectile_count = @intCast(entities.secondary_projectiles.len),
+        .entity_bonus_count = @intCast(entities.bonuses.len),
+        .rng_stream_count = @intCast(tick.channels.rng_stream.len),
+        .timing_samples_count = @intCast(tick.channels.timing_samples.len),
+    };
+}
+
+fn diffTraceRows(
+    expected: []const TraceDiffRow,
+    actual: []const TraceDiffRow,
+    options: TraceDiffOptions,
+) TraceDiffReport {
+    var checked_count: usize = 0;
+    var expected_idx: usize = 0;
+    var actual_idx: usize = 0;
+
+    while (expected_idx < expected.len or actual_idx < actual.len) {
+        checked_count += 1;
+        if (actual_idx >= actual.len or (expected_idx < expected.len and expected[expected_idx].tick_index < actual[actual_idx].tick_index)) {
+            const tick = expected[expected_idx].tick_index;
+            return .{
+                .ok = false,
+                .checked_count = checked_count,
+                .tick_start = options.tick_start,
+                .tick_end = options.tick_end,
+                .mismatch = .{
+                    .kind = "missing_tick",
+                    .tick_index = tick,
+                    .field = "tick_present",
+                    .expected = 1,
+                    .actual = 0,
+                },
+            };
+        }
+        if (expected_idx >= expected.len or actual[actual_idx].tick_index < expected[expected_idx].tick_index) {
+            const tick = actual[actual_idx].tick_index;
+            return .{
+                .ok = false,
+                .checked_count = checked_count,
+                .tick_start = options.tick_start,
+                .tick_end = options.tick_end,
+                .mismatch = .{
+                    .kind = "extra_tick",
+                    .tick_index = tick,
+                    .field = "tick_present",
+                    .expected = 0,
+                    .actual = 1,
+                },
+            };
+        }
+
+        if (firstTraceRowMismatch(&expected[expected_idx], &actual[actual_idx])) |mismatch| {
+            return .{
+                .ok = false,
+                .checked_count = checked_count,
+                .tick_start = options.tick_start,
+                .tick_end = options.tick_end,
+                .mismatch = mismatch,
+            };
+        }
+
+        expected_idx += 1;
+        actual_idx += 1;
+    }
+
+    return .{
+        .ok = true,
+        .checked_count = checked_count,
+        .tick_start = options.tick_start,
+        .tick_end = options.tick_end,
+    };
+}
+
+fn firstTraceRowMismatch(expected: *const TraceDiffRow, actual: *const TraceDiffRow) ?TraceDiffMismatch {
+    if (diffI64(expected.tick_index, expected.tick_index, actual.tick_index, "tick_index")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.elapsed_ms, actual.elapsed_ms, "elapsed_ms")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.dt_ms_i32, actual.dt_ms_i32, "dt_ms_i32")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.mode_id, actual.mode_id, "mode_id")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.checkpoint_rng_state, actual.checkpoint_rng_state, "checkpoint.rng_state")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.checkpoint_elapsed_ms, actual.checkpoint_elapsed_ms, "checkpoint.elapsed_ms")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.checkpoint_score_xp, actual.checkpoint_score_xp, "checkpoint.score_xp")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.checkpoint_kills, actual.checkpoint_kills, "checkpoint.kills")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.checkpoint_creature_count, actual.checkpoint_creature_count, "checkpoint.creature_count")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.checkpoint_perk_pending, actual.checkpoint_perk_pending, "checkpoint.perk_pending")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.checkpoint_player_count, actual.checkpoint_player_count, "checkpoint.players._len")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.checkpoint_death_count, actual.checkpoint_death_count, "checkpoint.deaths._len")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.event_hit_count, actual.event_hit_count, "checkpoint.events.hit_count")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.event_pickup_count, actual.event_pickup_count, "checkpoint.events.pickup_count")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.event_sfx_count, actual.event_sfx_count, "checkpoint.events.sfx_count")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.event_sfx_head_count, actual.event_sfx_head_count, "checkpoint.events.sfx_head._len")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.entity_creature_count, actual.entity_creature_count, "entity_samples.creatures._len")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.entity_projectile_count, actual.entity_projectile_count, "entity_samples.projectiles._len")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.entity_secondary_projectile_count, actual.entity_secondary_projectile_count, "entity_samples.secondary_projectiles._len")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.entity_bonus_count, actual.entity_bonus_count, "entity_samples.bonuses._len")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.rng_stream_count, actual.rng_stream_count, "rng_stream._len")) |mismatch| return mismatch;
+    if (diffI64(expected.tick_index, expected.timing_samples_count, actual.timing_samples_count, "timing_samples._len")) |mismatch| return mismatch;
+    return null;
+}
+
+fn diffI64(tick_index: i32, expected: anytype, actual: anytype, field: []const u8) ?TraceDiffMismatch {
+    const exp: i64 = @intCast(expected);
+    const act: i64 = @intCast(actual);
+    if (exp == act) return null;
+    return .{
+        .kind = "field_mismatch",
+        .tick_index = tick_index,
+        .field = field,
+        .expected = exp,
+        .actual = act,
+    };
+}
+
 fn checksum64(payload: []const u8) u64 {
     const Blake2b64 = std.crypto.hash.blake2.Blake2b(64);
     var digest: [Blake2b64.digest_length]u8 = undefined;
@@ -2028,4 +2297,58 @@ fn writeU64Le(out: *std.Io.Writer, value: u64) !void {
     var buf: [8]u8 = undefined;
     std.mem.writeInt(u64, &buf, value, .little);
     try out.writeAll(buf[0..]);
+}
+
+test "trace diff rows report first summary mismatch" {
+    const expected = testTraceDiffRow(0);
+    var actual = expected;
+    actual.checkpoint_score_xp = 7;
+
+    const report = diffTraceRows(&.{expected}, &.{actual}, .{});
+
+    try std.testing.expect(!report.ok);
+    try std.testing.expectEqual(@as(usize, 1), report.checked_count);
+    try std.testing.expectEqualStrings("field_mismatch", report.mismatch.?.kind);
+    try std.testing.expectEqualStrings("checkpoint.score_xp", report.mismatch.?.field.?);
+    try std.testing.expectEqual(@as(?i64, 0), report.mismatch.?.expected);
+    try std.testing.expectEqual(@as(?i64, 7), report.mismatch.?.actual);
+}
+
+test "trace diff rows report missing ticks" {
+    const expected = testTraceDiffRow(3);
+
+    const report = diffTraceRows(&.{expected}, &.{}, .{ .tick_start = 3, .tick_end = 3 });
+
+    try std.testing.expect(!report.ok);
+    try std.testing.expectEqual(@as(usize, 1), report.checked_count);
+    try std.testing.expectEqual(@as(?i32, 3), report.tick_start);
+    try std.testing.expectEqualStrings("missing_tick", report.mismatch.?.kind);
+    try std.testing.expectEqual(@as(i32, 3), report.mismatch.?.tick_index);
+}
+
+fn testTraceDiffRow(tick_index: i32) TraceDiffRow {
+    return .{
+        .tick_index = tick_index,
+        .elapsed_ms = @as(i64, tick_index) * 17,
+        .dt_ms_i32 = 17,
+        .mode_id = 1,
+        .checkpoint_rng_state = 1,
+        .checkpoint_elapsed_ms = @as(i64, tick_index) * 17,
+        .checkpoint_score_xp = 0,
+        .checkpoint_kills = 0,
+        .checkpoint_creature_count = 0,
+        .checkpoint_perk_pending = 0,
+        .checkpoint_player_count = 1,
+        .checkpoint_death_count = 0,
+        .event_hit_count = 0,
+        .event_pickup_count = 0,
+        .event_sfx_count = 0,
+        .event_sfx_head_count = 0,
+        .entity_creature_count = 0,
+        .entity_projectile_count = 0,
+        .entity_secondary_projectile_count = 0,
+        .entity_bonus_count = 0,
+        .rng_stream_count = 0,
+        .timing_samples_count = 0,
+    };
 }
