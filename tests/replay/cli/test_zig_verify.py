@@ -259,6 +259,22 @@ def test_zig_replay_verify_reports_old_format_as_replay_failure(tmp_path: Path) 
     assert "native runtime limitation" not in result.stderr
 
 
+def test_zig_replay_verify_reports_legacy_json_as_replay_failure(tmp_path: Path) -> None:
+    replay_path = tmp_path / "legacy-json.crd"
+    replay_path.write_bytes(b' \n{"header":{"game_mode_id":1,"seed":1}}')
+
+    result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert (
+        "replay verification failed: legacy JSON replay format is unsupported; regenerate the replay"
+        in result.stderr
+    )
+    assert "msgpack" not in result.stderr
+    assert "native runtime limitation" not in result.stderr
+
+
 def test_zig_replay_verify_reports_unknown_command_as_replay_failure(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
     raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))

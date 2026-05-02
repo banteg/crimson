@@ -42,6 +42,7 @@ const crt_rand_inc: u32 = 2_531_011;
 
 pub const ReplayCodecError = error{
     InvalidMsgpack,
+    LegacyJsonPayload,
     InvalidHeaderValue,
     MissingHeaderField,
     MissingQuestLevel,
@@ -1011,6 +1012,18 @@ pub fn isZstdPayload(bytes: []const u8) bool {
     return std.mem.eql(u8, bytes[0..zstd_magic.len], zstd_magic[0..]);
 }
 
+fn isLegacyJsonPayload(bytes: []const u8) bool {
+    var idx: usize = 0;
+    while (idx < bytes.len) : (idx += 1) {
+        switch (bytes[idx]) {
+            ' ', '\t', '\r', '\n', 0x0b, 0x0c => continue,
+            '{', '[' => return true,
+            else => return false,
+        }
+    }
+    return false;
+}
+
 pub fn inflateGzipPayload(
     allocator: std.mem.Allocator,
     compressed: []const u8,
@@ -1068,6 +1081,8 @@ pub fn parseReplaySummary(
     allocator: std.mem.Allocator,
     payload: []const u8,
 ) ReplayCodecError!ReplaySummary {
+    if (isLegacyJsonPayload(payload)) return error.LegacyJsonPayload;
+
     if (try tryParseCurrentReplaySummary(allocator, payload)) |summary| {
         return summary;
     }
@@ -1103,6 +1118,8 @@ pub fn parseReplay(
     allocator: std.mem.Allocator,
     payload: []const u8,
 ) ReplayCodecError!Replay {
+    if (isLegacyJsonPayload(payload)) return error.LegacyJsonPayload;
+
     if (try tryParseCurrentReplay(allocator, payload)) |replay| {
         return replay;
     }
@@ -2774,6 +2791,13 @@ test "parse replay decode errors preserve oom and map invalid msgpack" {
     const invalid_payload = [_]u8{0xc1};
     try std.testing.expectError(error.InvalidMsgpack, parseReplaySummary(std.testing.allocator, invalid_payload[0..]));
     try std.testing.expectError(error.InvalidMsgpack, parseReplay(std.testing.allocator, invalid_payload[0..]));
+}
+
+test "parse replay rejects legacy json payload before msgpack decode" {
+    const payload = " \n{\"header\":{\"game_mode_id\":1,\"seed\":1}}";
+
+    try std.testing.expectError(error.LegacyJsonPayload, parseReplaySummary(std.testing.allocator, payload));
+    try std.testing.expectError(error.LegacyJsonPayload, parseReplay(std.testing.allocator, payload));
 }
 
 test "binary bytes reader accepts msgpack bin8 payloads" {

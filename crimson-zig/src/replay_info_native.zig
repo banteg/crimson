@@ -474,6 +474,7 @@ fn infoJsonOutErrorDetail(err: anyerror) []const u8 {
 fn replayCodecErrorDetail(err: replay_codec.ReplayCodecError) []const u8 {
     return switch (err) {
         error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
+        error.LegacyJsonPayload => "legacy JSON replay format is unsupported; regenerate the replay",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.MissingHeaderField => "replay header missing required fields",
         error.MissingQuestLevel => "quest replays require a valid header.quest_level",
@@ -867,6 +868,10 @@ test "replay info exposes codec and collector detail helpers" {
     try std.testing.expectEqualStrings(
         "replay payload is not valid msgpack wire format",
         replayCodecErrorDetail(error.InvalidMsgpack),
+    );
+    try std.testing.expectEqualStrings(
+        "legacy JSON replay format is unsupported; regenerate the replay",
+        replayCodecErrorDetail(error.LegacyJsonPayload),
     );
     try std.testing.expectEqualStrings(
         "replay bootstrap seed does not match canonical terrain bootstrap draws",

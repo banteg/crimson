@@ -627,6 +627,7 @@ fn buildOutputForReplayCodecError(
 ) !CommandOutput {
     switch (err) {
         error.InvalidMsgpack => return buildVerifyFailedOutput(allocator, "replay payload is not valid msgpack wire format"),
+        error.LegacyJsonPayload => return buildVerifyFailedOutput(allocator, "legacy JSON replay format is unsupported; regenerate the replay"),
         error.InvalidHeaderValue => return buildVerifyFailedOutput(allocator, "replay header contains invalid values"),
         error.MissingHeaderField => return buildVerifyFailedOutput(allocator, "replay header missing required fields"),
         error.MissingQuestLevel => return buildVerifyFailedOutput(allocator, "quest replays require a valid header.quest_level"),
@@ -1109,6 +1110,7 @@ test "replay codec invalid replay errors map to verify failed output" {
         detail: []const u8,
     }{
         .{ .err = error.InvalidMsgpack, .detail = "replay payload is not valid msgpack wire format" },
+        .{ .err = error.LegacyJsonPayload, .detail = "legacy JSON replay format is unsupported; regenerate the replay" },
         .{ .err = error.InvalidHeaderValue, .detail = "replay header contains invalid values" },
         .{ .err = error.MissingHeaderField, .detail = "replay header missing required fields" },
         .{ .err = error.MissingQuestLevel, .detail = "quest replays require a valid header.quest_level" },

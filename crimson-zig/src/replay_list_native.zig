@@ -551,6 +551,7 @@ fn replayListRowErrorDetail(err: anyerror) []const u8 {
         error.AccessDenied => "unable to read replay file: access denied",
         error.FileTooBig, error.PayloadTooLarge => "replay payload exceeds max decompressed size",
         error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
+        error.LegacyJsonPayload => "legacy JSON replay format is unsupported; regenerate the replay",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.MissingHeaderField => "replay header missing required fields",
         error.MissingQuestLevel => "quest replays require a valid header.quest_level",

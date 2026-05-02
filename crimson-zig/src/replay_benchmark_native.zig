@@ -863,6 +863,7 @@ fn buildBenchmarkFailedOutput(
 fn benchmarkReplayLoadErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
         error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
+        error.LegacyJsonPayload => "legacy JSON replay format is unsupported; regenerate the replay",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.MissingHeaderField => "replay header missing required fields",
         error.MissingQuestLevel => "quest replays require a valid header.quest_level",
