@@ -6,8 +6,9 @@ from crimson.game_modes import GameMode
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
-from crimson.sim.sessions import DeterministicSession, MidStepContext
+from crimson.sim.sessions import DeterministicSession, MidStepContext, SessionModeRuntime
 from crimson.sim.state_types import PlayerState
+from crimson.sim.world_state import WorldState
 from crimson.typo.runtime import apply_typo_command, typo_input_transform, typo_mid_step
 from crimson.typo.state import reset_typo_state
 from crimson.typo.typing import TYPING_MAX_CHARS, TypingBuffer
@@ -66,9 +67,14 @@ def test_typo_commands_apply_before_input_transform(make_world_state) -> None:
     class _StopAfterTransform(RuntimeError):
         pass
 
-    def _transform(inputs: list[PlayerInput]) -> list[PlayerInput]:
-        seen_typing_text.append(str(world.state.typo.typing.text))
-        raise _StopAfterTransform
+    class _TransformObserver(SessionModeRuntime):
+        world: WorldState
+        seen_typing_text: list[str]
+
+        def transform_inputs(self, inputs: list[PlayerInput]) -> list[PlayerInput]:
+            _ = inputs
+            self.seen_typing_text.append(str(self.world.state.typo.typing.text))
+            raise _StopAfterTransform
 
     session = DeterministicSession(
         world=world,
@@ -76,7 +82,7 @@ def test_typo_commands_apply_before_input_transform(make_world_state) -> None:
         damage_scale_by_type={},
         game_mode=GameMode.TYPO,
         perk_progression_enabled=False,
-        input_transform=_transform,
+        mode_runtime=_TransformObserver(world=world, seen_typing_text=seen_typing_text),
     )
 
     with pytest.raises(_StopAfterTransform):

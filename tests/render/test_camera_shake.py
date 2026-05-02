@@ -12,11 +12,8 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import (
     DeterministicSession,
-    RushSpawnState,
-    SurvivalSpawnState,
-    rush_input_transform,
-    rush_mid_step,
-    survival_mid_step,
+    RushSessionRuntime,
+    SurvivalSessionRuntime,
 )
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
@@ -168,14 +165,13 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     world = _build_session_world(seed=0x1234)
     entry = _spawn_nuke_pickup_on_player(world)
     player = world.players[0]
-    spawn = SurvivalSpawnState()
     session = DeterministicSession(
         world=world,
         world_size=1024.0,
         damage_scale_by_type=build_damage_scale_by_type(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=True,
-        mid_step_hook=lambda ctx: survival_mid_step(ctx, spawn),
+        mode_runtime=SurvivalSessionRuntime(),
         finalize_post_render_lifecycle=True,
     )
 
@@ -193,15 +189,13 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     world = _build_session_world(seed=0x5678)
     entry = _spawn_nuke_pickup_on_player(world)
     player = world.players[0]
-    spawn = RushSpawnState()
     session = DeterministicSession(
         world=world,
         world_size=1024.0,
         damage_scale_by_type=build_damage_scale_by_type(),
         game_mode=GameMode.RUSH,
         perk_progression_enabled=False,
-        mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),
-        input_transform=rush_input_transform,
+        mode_runtime=RushSessionRuntime(world=world),
         elapsed_uses_raw_dt=True,
         finalize_post_render_lifecycle=True,
     )

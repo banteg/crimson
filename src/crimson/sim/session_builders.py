@@ -5,32 +5,20 @@ from ..quests.level import QuestLevel
 from ..quests.types import SpawnEntry
 from ..sim.world_state import WorldState
 from ..tutorial import reset_tutorial_state
-from ..tutorial.runtime import tutorial_before_step, tutorial_input_transform, tutorial_post_step
-from ..typo.runtime import typo_before_step, typo_input_transform, typo_mid_step, typo_post_step
 from ..typo.state import reset_typo_state
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from .sessions import (
     DeterministicSession,
+    QuestSessionRuntime,
     QuestSpawnState,
+    RushSessionRuntime,
     RushSpawnState,
+    SurvivalSessionRuntime,
     SurvivalSpawnState,
-    quest_post_step,
-    rush_input_transform,
-    rush_mid_step,
-    survival_mid_step,
+    TutorialSessionRuntime,
+    TypoSessionRuntime,
 )
-
-RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
-RUSH_FORCED_AMMO = 30.0
-
-
-def enforce_rush_loadout(world: WorldState) -> None:
-    for player in world.players:
-        if player.weapon.weapon_id != RUSH_WEAPON_ID:
-            weapon_assign_player(player, RUSH_WEAPON_ID, state=world.state)
-        # Native `rush_mode_update` forces assault rifle + 30 ammo every frame.
-        player.weapon.ammo = float(RUSH_FORCED_AMMO)
 
 
 def build_survival_session(
@@ -44,7 +32,7 @@ def build_survival_session(
     finalize_post_render_lifecycle: bool,
     apply_world_dt_steps: bool = False,
 ) -> tuple[DeterministicSession, SurvivalSpawnState]:
-    spawn_state = SurvivalSpawnState()
+    mode_runtime = SurvivalSessionRuntime()
     session = DeterministicSession(
         world=world,
         world_size=world_size,
@@ -56,9 +44,9 @@ def build_survival_session(
         game_tune_started=game_tune_started,
         apply_world_dt_steps=apply_world_dt_steps,
         finalize_post_render_lifecycle=finalize_post_render_lifecycle,
-        mid_step_hook=lambda ctx: survival_mid_step(ctx, spawn_state),
+        mode_runtime=mode_runtime,
     )
-    return session, spawn_state
+    return session, mode_runtime.spawn
 
 
 def build_rush_session(
@@ -71,7 +59,7 @@ def build_rush_session(
     game_tune_started: bool,
     finalize_post_render_lifecycle: bool,
 ) -> tuple[DeterministicSession, RushSpawnState]:
-    spawn_state = RushSpawnState()
+    mode_runtime = RushSessionRuntime(world=world)
     session = DeterministicSession(
         world=world,
         world_size=world_size,
@@ -83,11 +71,9 @@ def build_rush_session(
         game_tune_started=game_tune_started,
         finalize_post_render_lifecycle=finalize_post_render_lifecycle,
         elapsed_uses_raw_dt=True,
-        mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn_state),
-        before_step_hook=lambda: enforce_rush_loadout(world),
-        input_transform=rush_input_transform,
+        mode_runtime=mode_runtime,
     )
-    return session, spawn_state
+    return session, mode_runtime.spawn
 
 
 def build_quest_session(
@@ -113,6 +99,7 @@ def build_quest_session(
 
     world.creatures.capture_spawn_events_authoritative = False
     quest_state = QuestSpawnState(spawn_entries=tuple(spawn_entries))
+    mode_runtime = QuestSessionRuntime(spawn=quest_state)
     session = DeterministicSession(
         world=world,
         world_size=world_size,
@@ -125,7 +112,7 @@ def build_quest_session(
         demo_mode_active=demo_mode_active,
         apply_world_dt_steps=apply_world_dt_steps,
         finalize_post_render_lifecycle=finalize_post_render_lifecycle,
-        post_step_hook=lambda ctx: quest_post_step(ctx, quest_state),
+        mode_runtime=mode_runtime,
     )
     return session, quest_state
 
@@ -156,10 +143,7 @@ def build_typo_session(
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
         game_tune_started=game_tune_started,
-        before_step_hook=lambda: typo_before_step(world),
-        mid_step_hook=typo_mid_step,
-        post_step_hook=typo_post_step,
-        input_transform=lambda inputs: typo_input_transform(world, inputs),
+        mode_runtime=TypoSessionRuntime(world=world),
     )
     return session
 
@@ -189,8 +173,6 @@ def build_tutorial_session(
         violence_disabled=violence_disabled,
         game_tune_started=game_tune_started,
         demo_mode_active=demo_mode_active,
-        before_step_hook=lambda: tutorial_before_step(world),
-        post_step_hook=tutorial_post_step,
-        input_transform=lambda inputs: tutorial_input_transform(world, inputs),
+        mode_runtime=TutorialSessionRuntime(world=world),
     )
     return session

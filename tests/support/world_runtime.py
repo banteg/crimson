@@ -9,7 +9,12 @@ from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import ResolvedTick
 from crimson.sim.presentation_reactions import apply_post_apply_reaction, build_post_apply_reaction
-from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSpawnState, survival_mid_step
+from crimson.sim.sessions import (
+    DeterministicSession,
+    DeterministicSessionTick,
+    SurvivalSessionRuntime,
+    SurvivalSpawnState,
+)
 from crimson.sim.world_state import WorldState
 from crimson.terrain_slots import TerrainSlotTriplet
 from crimson.world import WorldRuntime
@@ -281,7 +286,7 @@ class WorldRuntimeHost:
             game_tune_started=self.sim_world.game_tune_started,
             demo_mode_active=self.demo_mode_active,
             defer_camera_shake_update=defer_camera_shake_update,
-            mid_step_hook=lambda ctx: survival_mid_step(ctx, self._survival_test_spawn_state),
+            mode_runtime=SurvivalSessionRuntime(spawn=self._survival_test_spawn_state),
         )
         session.elapsed_ms = float(self._survival_test_elapsed_ms)
 

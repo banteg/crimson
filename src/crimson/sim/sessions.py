@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import time
-from collections.abc import Callable
-from dataclasses import dataclass
-from typing import TypeAlias
 
 import msgspec
 
@@ -21,8 +18,11 @@ from ..perks.selection import (
 from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
-from ..typo.runtime import apply_typo_command
+from ..tutorial.runtime import tutorial_before_step, tutorial_input_transform, tutorial_post_step
+from ..typo.runtime import apply_typo_command, typo_before_step, typo_input_transform, typo_mid_step, typo_post_step
+from ..weapon_runtime import weapon_assign_player
 from ..weapon_runtime.availability import prepare_weapon_availability
+from ..weapons import WeaponId
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .input_providers import (
@@ -43,6 +43,9 @@ from .terrain_fx import TerrainFxScratch
 from .timing import FrameTiming
 from .world_state import WorldState
 
+RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
+RUSH_FORCED_AMMO = 30.0
+
 # ---------------------------------------------------------------------------
 # Tick result types
 # ---------------------------------------------------------------------------
@@ -54,9 +57,8 @@ class DeterministicSessionTick(msgspec.Struct):
     presentation_plan_ms: float = 0.0
 
 
-
 # ---------------------------------------------------------------------------
-# Mid-/post-step hook system (spawn strategies)
+# Mode runtime system
 # ---------------------------------------------------------------------------
 
 class MidStepContext(msgspec.Struct, frozen=True):
@@ -68,7 +70,6 @@ class MidStepContext(msgspec.Struct, frozen=True):
     dt_raw_ms: float
     world_size: float
 
-MidStepHook: TypeAlias = Callable[[MidStepContext], None]
 
 class PostStepContext(msgspec.Struct, frozen=True):
     """Context passed to post-step hooks during deterministic stepping."""
@@ -79,19 +80,17 @@ class PostStepContext(msgspec.Struct, frozen=True):
     world_size: float
     detail_preset: int
 
-PostStepHook: TypeAlias = Callable[[PostStepContext], None]
 
-@dataclass
-class SurvivalSpawnState:
+class SurvivalSpawnState(msgspec.Struct):
     stage: int = 0
     spawn_cooldown_ms: float = 0.0
 
-@dataclass
-class RushSpawnState:
+
+class RushSpawnState(msgspec.Struct):
     spawn_cooldown_ms: float = 0.0
 
-@dataclass
-class QuestSpawnState:
+
+class QuestSpawnState(msgspec.Struct):
     spawn_entries: tuple[SpawnEntry, ...] = ()
     spawn_timeline_ms: float = 0.0
     no_creatures_timer_ms: float = 0.0
@@ -99,6 +98,15 @@ class QuestSpawnState:
     completed: bool = False
     play_hit_sfx: bool = False
     play_completion_music: bool = False
+
+
+def enforce_rush_loadout(world: WorldState) -> None:
+    for player in world.players:
+        if player.weapon.weapon_id != RUSH_WEAPON_ID:
+            weapon_assign_player(player, RUSH_WEAPON_ID, state=world.state)
+        # Native `rush_mode_update` forces assault rifle + 30 ammo every frame.
+        player.weapon.ammo = float(RUSH_FORCED_AMMO)
+
 
 def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
     state = ctx.world.state
@@ -133,6 +141,7 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
     spawn.spawn_cooldown_ms = cooldown
     ctx.world.creatures.spawn_inits(wave_spawns)
 
+
 def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
     state = ctx.world.state
     cooldown, spawns = tick_rush_mode_spawns(
@@ -146,6 +155,7 @@ def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
     )
     spawn.spawn_cooldown_ms = cooldown
     ctx.world.creatures.spawn_inits(spawns)
+
 
 def quest_post_step(ctx: PostStepContext, spawn: QuestSpawnState) -> None:
     state = ctx.world.state
@@ -195,11 +205,98 @@ def quest_post_step(ctx: PostStepContext, spawn: QuestSpawnState) -> None:
         spawn.play_hit_sfx = False
         spawn.play_completion_music = False
 
+
 def rush_input_transform(inputs: list[PlayerInput]) -> list[PlayerInput]:
     return [
         msgspec.structs.replace(inp, reload_pressed=False) if inp.reload_pressed else inp
         for inp in inputs
     ]
+
+
+class SessionModeRuntime(msgspec.Struct):
+    def before_step(self) -> None:
+        return None
+
+    def needs_mid_step(self) -> bool:
+        return False
+
+    def transform_inputs(self, inputs: list[PlayerInput]) -> list[PlayerInput]:
+        return inputs
+
+    def mid_step(self, ctx: MidStepContext) -> None:
+        _ = ctx
+        return None
+
+    def post_step(self, ctx: PostStepContext) -> None:
+        _ = ctx
+        return None
+
+
+class SurvivalSessionRuntime(SessionModeRuntime):
+    spawn: SurvivalSpawnState = msgspec.field(default_factory=SurvivalSpawnState)
+
+    def needs_mid_step(self) -> bool:
+        return True
+
+    def mid_step(self, ctx: MidStepContext) -> None:
+        survival_mid_step(ctx, self.spawn)
+
+
+class RushSessionRuntime(SessionModeRuntime):
+    world: WorldState
+    spawn: RushSpawnState = msgspec.field(default_factory=RushSpawnState)
+
+    def before_step(self) -> None:
+        enforce_rush_loadout(self.world)
+
+    def needs_mid_step(self) -> bool:
+        return True
+
+    def transform_inputs(self, inputs: list[PlayerInput]) -> list[PlayerInput]:
+        return rush_input_transform(inputs)
+
+    def mid_step(self, ctx: MidStepContext) -> None:
+        rush_mid_step(ctx, self.spawn)
+
+
+class QuestSessionRuntime(SessionModeRuntime):
+    spawn: QuestSpawnState
+
+    def post_step(self, ctx: PostStepContext) -> None:
+        quest_post_step(ctx, self.spawn)
+
+
+class TypoSessionRuntime(SessionModeRuntime):
+    world: WorldState
+
+    def before_step(self) -> None:
+        typo_before_step(self.world)
+
+    def needs_mid_step(self) -> bool:
+        return True
+
+    def transform_inputs(self, inputs: list[PlayerInput]) -> list[PlayerInput]:
+        return typo_input_transform(self.world, inputs)
+
+    def mid_step(self, ctx: MidStepContext) -> None:
+        typo_mid_step(ctx)
+
+    def post_step(self, ctx: PostStepContext) -> None:
+        typo_post_step(ctx)
+
+
+class TutorialSessionRuntime(SessionModeRuntime):
+    world: WorldState
+
+    def before_step(self) -> None:
+        tutorial_before_step(self.world)
+
+    def transform_inputs(self, inputs: list[PlayerInput]) -> list[PlayerInput]:
+        return tutorial_input_transform(self.world, inputs)
+
+    def post_step(self, ctx: PostStepContext) -> None:
+        tutorial_post_step(ctx)
+
 
 # ---------------------------------------------------------------------------
 # Shared timing helper
@@ -245,11 +342,7 @@ class DeterministicSession(msgspec.Struct):
     elapsed_ms: float = 0.0
     terrain_fx: TerrainFxScratch = msgspec.field(default_factory=TerrainFxScratch)
 
-    # Optional hooks (provided by modes / callers)
-    mid_step_hook: MidStepHook | None = None
-    post_step_hook: PostStepHook | None = None
-    before_step_hook: Callable[[], None] | None = None
-    input_transform: Callable[[list[PlayerInput]], list[PlayerInput]] | None = None
+    mode_runtime: SessionModeRuntime = msgspec.field(default_factory=SessionModeRuntime)
 
     def __post_init__(self) -> None:
         state = self.world.state
@@ -270,8 +363,8 @@ class DeterministicSession(msgspec.Struct):
         commands: list[GameCommand] | None = None,
     ) -> DeterministicSessionTick:
         timing = self.timing_for_dt(dt)
-        if self.before_step_hook is not None:
-            self.before_step_hook()
+        mode_runtime = self.mode_runtime
+        mode_runtime.before_step()
 
         post_apply_sfx: list[SfxId] = []
         for cmd in (commands or ()):
@@ -306,16 +399,16 @@ class DeterministicSession(msgspec.Struct):
                     raise RuntimeError(f"unhandled command type: {type(cmd).__name__}")
 
         tick_inputs = inputs
-        if tick_inputs is not None and self.input_transform is not None:
-            tick_inputs = self.input_transform(tick_inputs)
+        if tick_inputs is not None:
+            tick_inputs = mode_runtime.transform_inputs(tick_inputs)
 
         state = self.world.state
         dt_sim_ms = float(timing.dt_sim_ms_i32)
         dt_raw_ms = float(timing.dt_ms_i32)
         elapsed_before_ms = self.elapsed_ms
 
-        hook: Callable[[], None] | None = None
-        if self.mid_step_hook is not None:
+        hook = None
+        if mode_runtime.needs_mid_step():
             ctx = MidStepContext(
                 world=self.world,
                 elapsed_before_ms=elapsed_before_ms,
@@ -323,8 +416,7 @@ class DeterministicSession(msgspec.Struct):
                 dt_raw_ms=dt_raw_ms,
                 world_size=self.world_size,
             )
-            _mid = self.mid_step_hook
-            hook = lambda: _mid(ctx)  # noqa: E731
+            hook = lambda: mode_runtime.mid_step(ctx)  # noqa: E731
 
         fx_queue = self.terrain_fx.decals
         fx_queue_rotated = self.terrain_fx.corpses
@@ -404,16 +496,15 @@ class DeterministicSession(msgspec.Struct):
         if step.presentation.trigger_game_tune:
             self.game_tune_started = True
 
-        if self.post_step_hook is not None:
-            self.post_step_hook(
-                PostStepContext(
-                    world=self.world,
-                    step_result=step,
-                    dt_sim_ms=dt_sim_ms,
-                    world_size=self.world_size,
-                    detail_preset=self.detail_preset,
-                ),
-            )
+        mode_runtime.post_step(
+            PostStepContext(
+                world=self.world,
+                step_result=step,
+                dt_sim_ms=dt_sim_ms,
+                world_size=self.world_size,
+                detail_preset=self.detail_preset,
+            ),
+        )
 
         creature_count_world_step = sum(1 for c in self.world.creatures.entries if c.active)
 
