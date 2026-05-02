@@ -47,8 +47,9 @@ Today `crimson-zig/` already has:
   prediction correction without resync, plus a guest-requested resync smoke
   case that applies a host snapshot stream, repeated and bidirectional
   jitter-burst smoke cases, a relay-token guest self-reconnect smoke case with
-  post-reconnect input continuity, a double guest reconnect smoke case, and a
-  longer reconnect-then-resync smoke case,
+  post-reconnect input continuity, a double guest reconnect smoke case, a
+  longer reconnect-then-resync smoke case, and a double-reconnect-then-resync
+  stress case,
 - a freestanding WASM replay verify/info/benchmark plus checkpoint diff/verify
   text and JSON ABI in
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig).
