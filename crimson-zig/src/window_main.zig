@@ -1479,6 +1479,12 @@ const App = struct {
                     return;
                 }
             }
+            if (questCompletedShortcutSelection(results)) |selection| {
+                self.results_selection = selection;
+                self.audio.playUiButtonClick();
+                self.activateResultsSelection(results);
+                return;
+            }
             if (questFailedShortcutSelection(results)) |selection| {
                 self.results_selection = selection;
                 self.audio.playUiButtonClick();
@@ -2815,6 +2821,28 @@ fn isQuestFailedResult(results: *const ResultsScreen) bool {
     return results.run_config.game_mode == .quests and results.reason == .dead;
 }
 
+fn isQuestCompletedResult(results: *const ResultsScreen) bool {
+    return results.run_config.game_mode == .quests and results.reason == .completed;
+}
+
+fn questCompletedShortcutSelection(results: *const ResultsScreen) ?usize {
+    if (!isQuestCompletedResult(results)) return null;
+    return questCompletedShortcutSelectionFor(
+        rl.isKeyPressed(.escape),
+        rl.isKeyPressed(.enter) or rl.isKeyPressed(.kp_enter),
+        rl.isKeyPressed(.n),
+        rl.isKeyPressed(.h),
+    );
+}
+
+fn questCompletedShortcutSelectionFor(escape_pressed: bool, enter_pressed: bool, n_pressed: bool, h_pressed: bool) ?usize {
+    if (escape_pressed) return 3;
+    if (enter_pressed) return 1;
+    if (n_pressed) return 0;
+    if (h_pressed) return 2;
+    return null;
+}
+
 fn questFailedShortcutSelection(results: *const ResultsScreen) ?usize {
     if (!isQuestFailedResult(results)) return null;
     if (rl.isKeyPressed(.escape)) return 2;
@@ -3702,6 +3730,14 @@ test "quest runtime error result does not expose mismatched high score button" {
     try std.testing.expectEqual(@as(usize, 2), labels.len);
     try std.testing.expectEqualStrings("PLAY AGAIN", labels.items[0]);
     try std.testing.expectEqualStrings("MAIN MENU", labels.items[1]);
+}
+
+test "quest completed shortcuts match native result actions" {
+    try std.testing.expectEqual(@as(?usize, 3), questCompletedShortcutSelectionFor(true, false, false, false));
+    try std.testing.expectEqual(@as(?usize, 1), questCompletedShortcutSelectionFor(false, true, false, false));
+    try std.testing.expectEqual(@as(?usize, 0), questCompletedShortcutSelectionFor(false, false, true, false));
+    try std.testing.expectEqual(@as(?usize, 2), questCompletedShortcutSelectionFor(false, false, false, true));
+    try std.testing.expectEqual(@as(?usize, null), questCompletedShortcutSelectionFor(false, false, false, false));
 }
 
 test "results button y positions keep native vertical rhythm" {
