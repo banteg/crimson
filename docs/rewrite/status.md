@@ -114,6 +114,9 @@ Last reviewed: **2026-05-03**
 - **Quest results (state `8`) / quest failed (state `0x0c`)**: implemented.
   - Code: `src/crimson/ui/quest_results.py`, `src/crimson/game/__init__.py`, `crimson-zig/src/window_main.zig`
   - Zig quest-completion results show the resolved weapon/perk unlock names after the final-time breakdown completes, honor the completed-results keyboard shortcuts, and route the final quest end-note screen through the native 300 ms open/close timeline before dispatching its follow-up action.
+- **Pause menu**: implemented.
+  - Code: `src/crimson/screens/pause_menu.py`, `crimson-zig/src/window_pause_menu.zig`
+  - Zig now routes pause-menu Back, Options, and Quit actions through the native close timeline before dispatch.
 - **Mods menu (state `0x14` path from main menu)**: implemented as a panel and filesystem DLL discovery UI; plugin loading/runtime is still not implemented.
   - Code: `src/crimson/screens/panels/mods.py`, `src/crimson/screens/menu.py`
   - Ref: [`docs/crimsonland-exe/mods.md`](../crimsonland-exe/mods.md)

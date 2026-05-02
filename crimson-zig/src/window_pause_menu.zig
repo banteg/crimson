@@ -28,6 +28,8 @@ pub const State = struct {
     focus_timer_ms: i32 = 0,
     hovered_index: ?usize = null,
     panel_open_sfx_played: bool = false,
+    closing: bool = false,
+    close_action: ?Action = null,
     hover_amounts: [3]i32 = [_]i32{0} ** 3,
 
     pub fn reset(self: *State) void {
@@ -52,11 +54,22 @@ const entries = [_]Entry{
     .{ .slot = 2, .row = window_menu.label_row_back },
 };
 
+const TimelineUpdate = struct {
+    action: ?Action = null,
+    play_panel_click: bool = false,
+};
+
 pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
     const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
-    if (dt_ms > 0) {
-        state.timeline_ms = @min(timelineMaxMs(), state.timeline_ms + dt_ms);
-        state.focus_timer_ms = @max(0, state.focus_timer_ms - dt_ms);
+
+    const timeline_update = advanceTimeline(state, dt_ms);
+    if (timeline_update.action) |action| {
+        updateHoverAmounts(state, dt_ms);
+        return .{ .action = action };
+    }
+    if (state.closing) {
+        updateHoverAmounts(state, dt_ms);
+        return .{};
     }
 
     if (runtime_assets == null) {
@@ -83,11 +96,12 @@ pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_asset
         }
         if (rl.isKeyPressed(.escape)) {
             updateHoverAmounts(state, dt_ms);
-            return .{ .action = .back_to_previous, .play_button_click = true };
+            beginClose(state, .back_to_previous);
+            return .{ .play_button_click = true };
         }
         updateHoverAmounts(state, dt_ms);
         return .{
-            .play_panel_click = dt_ms > 0 and state.timeline_ms >= timelineMaxMs() and !state.panel_open_sfx_played,
+            .play_panel_click = timeline_update.play_panel_click,
         };
     }
 
@@ -97,11 +111,11 @@ pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_asset
         2 => .back_to_previous,
         else => unreachable,
     };
+    beginClose(state, action);
     updateHoverAmounts(state, dt_ms);
     return .{
-        .action = action,
         .play_button_click = true,
-        .play_panel_click = dt_ms > 0 and state.timeline_ms >= timelineMaxMs() and !state.panel_open_sfx_played,
+        .play_panel_click = timeline_update.play_panel_click,
     };
 }
 
@@ -164,6 +178,33 @@ fn activateSelection(state: *State) bool {
     if (!rl.isMouseButtonPressed(.left)) return false;
     const hovered = state.hovered_index orelse return false;
     return hovered == state.selection;
+}
+
+fn beginClose(state: *State, action: Action) void {
+    if (state.closing) return;
+    state.closing = true;
+    state.close_action = action;
+}
+
+fn advanceTimeline(state: *State, dt_ms: i32) TimelineUpdate {
+    if (dt_ms <= 0) return .{};
+    if (state.closing) {
+        state.timeline_ms -= dt_ms;
+        state.focus_timer_ms = @max(0, state.focus_timer_ms - dt_ms);
+        if (state.timeline_ms < 0) {
+            const action = state.close_action orelse return .{};
+            state.closing = false;
+            state.close_action = null;
+            return .{ .action = action };
+        }
+        return .{};
+    }
+    const previous_timeline = state.timeline_ms;
+    state.timeline_ms = @min(timelineMaxMs(), state.timeline_ms + dt_ms);
+    state.focus_timer_ms = @max(0, state.focus_timer_ms - dt_ms);
+    return .{
+        .play_panel_click = previous_timeline < timelineMaxMs() and state.timeline_ms >= timelineMaxMs() and !state.panel_open_sfx_played,
+    };
 }
 
 fn buttonRect(slot: usize, item_texture: rl.Texture2D) rl.Rectangle {
@@ -243,4 +284,34 @@ fn menuItemScale(slot: usize) struct { scale: f32, local_y_shift: f32 } {
 
 fn radiansToDegrees(radians: f32) f32 {
     return radians * (180.0 / std.math.pi);
+}
+
+test "pause menu close timeline gates action dispatch" {
+    var state: State = .{};
+    state.timeline_ms = timelineMaxMs();
+    beginClose(&state, .back_to_menu);
+
+    try std.testing.expect(state.closing);
+    try std.testing.expectEqual(@as(?Action, null), advanceTimeline(&state, 100).action);
+    try std.testing.expectEqual(timelineMaxMs() - 100, state.timeline_ms);
+    try std.testing.expectEqual(@as(?Action, null), advanceTimeline(&state, 499).action);
+    try std.testing.expect(state.closing);
+
+    const update_result = advanceTimeline(&state, 1);
+    try std.testing.expectEqual(Action.back_to_menu, update_result.action.?);
+    try std.testing.expect(!state.closing);
+    try std.testing.expectEqual(@as(?Action, null), state.close_action);
+}
+
+test "pause menu open timeline emits panel click once when fully open" {
+    var state: State = .{};
+    var update_result = advanceTimeline(&state, timelineMaxMs() - 1);
+    try std.testing.expect(!update_result.play_panel_click);
+
+    update_result = advanceTimeline(&state, 1);
+    try std.testing.expect(update_result.play_panel_click);
+
+    state.panel_open_sfx_played = true;
+    update_result = advanceTimeline(&state, 1);
+    try std.testing.expect(!update_result.play_panel_click);
 }

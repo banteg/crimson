@@ -130,6 +130,10 @@ Remaining work:
   the root menu, statistics hub, statistics child panels, and options/controls
   panels now wait for the native open timeline and close before dispatching
   descendant or Back actions,
+- keep tightening pause and gameplay-adjacent shells in
+  [`crimson-zig/src/window_pause_menu.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_pause_menu.zig);
+  the pause menu now waits for its native close timeline before dispatching
+  Back, Options, or Quit actions,
 - keep the demo/trial overlay and purchase-shell behavior aligned with Python
   as surrounding shell flows change,
 - keep removing any remaining fallback/scaffold UI logic from the desktop path.
