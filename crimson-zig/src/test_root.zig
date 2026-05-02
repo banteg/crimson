@@ -1,13 +1,15 @@
-test {
-    const std = @import("std");
-    const cz = @import("crimson_zig");
+const std = @import("std");
+const cz = @import("crimson_zig");
 
+test {
     _ = @import("app_runtime.zig");
     _ = cz.anim;
     _ = @import("audio/mod.zig");
     _ = cz.bonuses;
     _ = cz.checkpoint_diff_native;
     _ = cz.config_native;
+    std.testing.refAllDecls(cz.dbg_health_native);
+    _ = cz.dbg_health_native;
     _ = cz.creatures;
     _ = cz.dbg_record_native;
     _ = cz.dbg_verify_native;
@@ -285,4 +287,47 @@ test {
     _ = @import("window_statistics.zig");
     _ = @import("asset_smoke_main.zig");
     _ = @import("wasm_exports.zig");
+}
+
+test "aggregate dbg health summarizes native CDT trace" {
+    const allocator = std.testing.allocator;
+
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
+    defer allocator.free(base_dir);
+    const replay_path = try std.fs.path.join(allocator, &.{ base_dir, "sample.crd" });
+    defer allocator.free(replay_path);
+    const trace_path = try std.fs.path.join(allocator, &.{ base_dir, "sample.cdt" });
+    defer allocator.free(trace_path);
+    const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "health.json" });
+    defer allocator.free(json_path);
+
+    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(replay_bytes);
+
+    const io = std.Io.Threaded.global_single_threaded.io();
+    try std.Io.Dir.cwd().writeFile(io, .{
+        .sub_path = replay_path,
+        .data = replay_bytes,
+    });
+
+    const record_output = try cz.dbg_record_native.runDbgRecord(allocator, &.{ replay_path, "--out", trace_path });
+    defer record_output.deinit(allocator);
+    try std.testing.expectEqual(@as(u8, 0), record_output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, record_output.stdout, "trace=") != null);
+
+    const health_output = try cz.dbg_health_native.runDbgHealth(allocator, &.{ trace_path, "--format", "json", "--json-out", json_path });
+    defer health_output.deinit(allocator);
+    try std.testing.expectEqual(@as(u8, 0), health_output.exit_code);
+    try std.testing.expectEqualStrings("", health_output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"status\":\"ok\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"trace_schema_version\":12") != null);
+    try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"ticks_in_window\":") != null);
+    try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"ok_for_parity_analysis\":true") != null);
+
+    const artifact = try std.Io.Dir.cwd().readFileAlloc(io, json_path, allocator, .limited(64 * 1024));
+    defer allocator.free(artifact);
+    try std.testing.expectEqualStrings(health_output.stdout, artifact);
 }

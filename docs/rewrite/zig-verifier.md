@@ -94,6 +94,9 @@ Current supported replay-tooling behavior:
   `--profile --profile-out`; render benchmark mode and cProfile `.pstats`
   export remain Python-only
 - native CDT trace export via `dbg record <replay.crd> --out <trace.cdt>`
+- native CDT trace health inspection via
+  `dbg health <trace.cdt> --format json`, including tick-window filters and
+  `--json-out`
 - native debug schema contract reporting via `dbg verify`
 - native `crimson.cfg` human/JSON inspection via `config`
 - native `game.cfg` checksum-verified human/JSON inspection via `status`

@@ -54,6 +54,58 @@ const TraceMsgpackError = error{
 
 pub const TraceWriteError = TraceDomainError || TraceFsError || TraceWriterError || TraceAllocError || TraceMsgpackError;
 
+pub const HealthOptions = struct {
+    tick_start: ?i32 = null,
+    tick_end: ?i32 = null,
+};
+
+pub const ChannelCounts = struct {
+    checkpoint: i32 = 0,
+    sim_state: i32 = 0,
+    entity_samples: i32 = 0,
+    rng_stream: i32 = 0,
+    timing_samples: i32 = 0,
+};
+
+pub const ChannelRowCounts = struct {
+    rng_stream: i32 = 0,
+    timing_samples: i32 = 0,
+};
+
+pub const TickWindowSummary = struct {
+    requested_start: ?i32 = null,
+    requested_end: ?i32 = null,
+    actual_start: ?i32 = null,
+    actual_end: ?i32 = null,
+    ticks_in_window: i32 = 0,
+};
+
+pub const HealthMetrics = struct {
+    ticks_with_dt_ms_i32: i32 = 0,
+    rng_stream_rows: i32 = 0,
+    sim_state_rows: i32 = 0,
+    sample_creature_rows: i32 = 0,
+    sample_projectile_rows: i32 = 0,
+    sample_secondary_projectile_rows: i32 = 0,
+    sample_bonus_rows: i32 = 0,
+    timing_samples_rows: i32 = 0,
+};
+
+pub const HealthSummary = struct {
+    trace_format_version: i32,
+    trace_schema_version: i32,
+    tick_window: TickWindowSummary,
+    channels_present: ChannelCounts,
+    channel_row_counts: ChannelRowCounts,
+    metrics: HealthMetrics,
+    issues: []const []const u8,
+    ok_for_parity_analysis: bool,
+
+    pub fn deinit(self: HealthSummary, allocator: std.mem.Allocator) void {
+        allocator.free(self.issues);
+    }
+};
+
 const TickRange = struct {
     start_tick: i32,
     end_tick: i32,
@@ -86,6 +138,22 @@ const TraceMeta = struct {
     source: Source,
     tick_range: TickRange,
     status: replay_codec.ReplayStatus = .{},
+};
+
+const TraceStatusRead = struct {
+    quest_unlock_index: i32 = 0,
+    quest_unlock_index_full: i32 = 0,
+    weapon_usage_counts: []const u32 = &.{},
+};
+
+const TraceMetaRead = struct {
+    trace_format_version: i32 = @intCast(trace_format_version),
+    trace_schema_version: i32 = trace_schema_version,
+    created_utc: []const u8,
+    producer: Producer,
+    source: Source,
+    tick_range: TickRange,
+    status: TraceStatusRead = .{},
 };
 
 const TickBlockIndexEntry = struct {
@@ -330,6 +398,197 @@ const TickBlock = struct {
     end_tick: i32,
     ticks: []const TickRecord,
 };
+
+const ReplayPerkSnapshotChannelRead = struct {
+    pending_count: i32,
+    choices_dirty: bool = false,
+    choices: []const i32 = empty_i32,
+    player_nonzero_counts: []const []const []const i32,
+};
+
+const CheckpointChannelRead = struct {
+    tick_index: i32,
+    rng_state: i64,
+    elapsed_ms: i64,
+    score_xp: i32,
+    kills: i32,
+    creature_count: i32,
+    perk_pending: i32,
+    players: []const ReplayPlayerCheckpointChannel,
+    bonus_timers: BonusTimersMap,
+    state_hash: []const u8 = "",
+    command_hash: []const u8 = "",
+    deaths: []const ReplayDeathLedgerEntry = empty_deaths,
+    perk: ReplayPerkSnapshotChannelRead,
+    events: ReplayEventSummaryChannel = .{},
+};
+
+const TickChannelsRead = struct {
+    checkpoint: CheckpointChannelRead,
+    sim_state: SimStateSnapshot,
+    entity_samples: EntitySamplesSnapshot,
+    rng_stream: []const RngStreamRow = empty_rng_stream,
+    timing_samples: []const TimingSampleRow = empty_timing_samples,
+};
+
+const TickRecordRead = struct {
+    tick_index: i32,
+    elapsed_ms: i64,
+    dt_ms_i32: i32,
+    mode_id: i32,
+    channels: TickChannelsRead,
+};
+
+const TickBlockRead = struct {
+    start_tick: i32,
+    end_tick: i32,
+    ticks: []const TickRecordRead,
+};
+
+const ChunkPayload = struct {
+    kind: []const u8,
+    start_tick: i32,
+    end_tick: i32,
+    payload: []const u8,
+};
+
+pub fn summarizeTraceHealthFile(
+    allocator: std.mem.Allocator,
+    io: std.Io,
+    trace_path: []const u8,
+    options: HealthOptions,
+) !HealthSummary {
+    const bytes = try std.Io.Dir.cwd().readFileAlloc(io, trace_path, allocator, .limited(256 * 1024 * 1024));
+    defer allocator.free(bytes);
+    return summarizeTraceHealthBytes(allocator, bytes, options);
+}
+
+pub fn summarizeTraceHealthBytes(
+    allocator: std.mem.Allocator,
+    bytes: []const u8,
+    options: HealthOptions,
+) !HealthSummary {
+    if (bytes.len < trace_magic.len + 4 + trailer_magic.len + 8) return error.InvalidTraceHeader;
+    if (!std.mem.startsWith(u8, bytes, trace_magic)) return error.InvalidTraceMagic;
+    const version = readU32Le(bytes[trace_magic.len..][0..4]);
+    if (version != trace_format_version) return error.UnsupportedTraceFormatVersion;
+
+    const meta_offset = trace_magic.len + 4;
+    const meta_chunk = try chunkPayloadAt(bytes, meta_offset);
+    if (!std.mem.eql(u8, meta_chunk.kind, chunk_kind_meta)) return error.InvalidTraceMetaChunk;
+    var decoded_meta = try msgpack.decodeFromSlice(TraceMetaRead, allocator, meta_chunk.payload);
+    defer decoded_meta.deinit();
+    const meta = decoded_meta.value;
+
+    const trailer_offset = bytes.len - trailer_magic.len - 8;
+    if (!std.mem.eql(u8, bytes[trailer_offset..][0..trailer_magic.len], trailer_magic)) return error.InvalidTraceTrailer;
+    const footer_offset_u64 = readU64Le(bytes[trailer_offset + trailer_magic.len ..][0..8]);
+    if (footer_offset_u64 > std.math.maxInt(usize)) return error.InvalidTraceFooterOffset;
+    const footer_offset: usize = @intCast(footer_offset_u64);
+    const footer_chunk = try chunkPayloadAt(bytes, footer_offset);
+    if (!std.mem.eql(u8, footer_chunk.kind, chunk_kind_footer)) return error.InvalidTraceFooterChunk;
+    var decoded_footer = try msgpack.decodeFromSlice(TraceFooter, allocator, footer_chunk.payload);
+    defer decoded_footer.deinit();
+    const footer = decoded_footer.value;
+    if (footer.tick_count <= 0) return error.InvalidTraceFooter;
+    if (footer.first_tick < 0 or footer.last_tick < 0) return error.InvalidTraceFooter;
+    if (footer.first_tick > footer.last_tick) return error.InvalidTraceFooter;
+    if (footer.tick_blocks.len == 0) return error.InvalidTraceFooter;
+
+    var channels_present: ChannelCounts = .{};
+    var channel_row_counts: ChannelRowCounts = .{};
+    var metrics: HealthMetrics = .{};
+    var ticks_total: i32 = 0;
+    var actual_start: ?i32 = null;
+    var actual_end: ?i32 = null;
+
+    for (footer.tick_blocks) |entry| {
+        if (options.tick_start) |tick_start| {
+            if (entry.end_tick < tick_start) continue;
+        }
+        if (options.tick_end) |tick_end| {
+            if (entry.start_tick > tick_end) continue;
+        }
+
+        if (entry.file_offset < 0) return error.InvalidTraceBlockOffset;
+        const block_offset: usize = @intCast(entry.file_offset);
+        const tick_chunk = try chunkPayloadAt(bytes, block_offset);
+        if (!std.mem.eql(u8, tick_chunk.kind, chunk_kind_tick)) return error.InvalidTraceTickChunk;
+        if (tick_chunk.start_tick != entry.start_tick or tick_chunk.end_tick != entry.end_tick) return error.InvalidTraceTickChunk;
+        if (entry.uncompressed_len < 0) return error.InvalidTraceTickChunk;
+        if (tick_chunk.payload.len != @as(usize, @intCast(entry.uncompressed_len))) return error.InvalidTraceTickChunk;
+        if (checksum64(tick_chunk.payload) != entry.checksum) return error.InvalidTraceChecksum;
+
+        var decoded_block = try msgpack.decodeFromSlice(TickBlockRead, allocator, tick_chunk.payload);
+        defer decoded_block.deinit();
+        const block = decoded_block.value;
+        if (block.start_tick != entry.start_tick or block.end_tick != entry.end_tick) return error.InvalidTraceTickBlock;
+
+        for (block.ticks) |tick| {
+            if (options.tick_start) |tick_start| {
+                if (tick.tick_index < tick_start) continue;
+            }
+            if (options.tick_end) |tick_end| {
+                if (tick.tick_index > tick_end) continue;
+            }
+
+            ticks_total += 1;
+            metrics.ticks_with_dt_ms_i32 += 1;
+            if (actual_start == null or tick.tick_index < actual_start.?) actual_start = tick.tick_index;
+            if (actual_end == null or tick.tick_index > actual_end.?) actual_end = tick.tick_index;
+
+            channels_present.checkpoint += 1;
+            channels_present.sim_state += 1;
+            channels_present.entity_samples += 1;
+            channels_present.rng_stream += 1;
+            channels_present.timing_samples += 1;
+
+            metrics.sim_state_rows += 1;
+            metrics.rng_stream_rows += @intCast(tick.channels.rng_stream.len);
+            metrics.timing_samples_rows += @intCast(tick.channels.timing_samples.len);
+            metrics.sample_creature_rows += @intCast(tick.channels.entity_samples.creatures.len);
+            metrics.sample_projectile_rows += @intCast(tick.channels.entity_samples.projectiles.len);
+            metrics.sample_secondary_projectile_rows += @intCast(tick.channels.entity_samples.secondary_projectiles.len);
+            metrics.sample_bonus_rows += @intCast(tick.channels.entity_samples.bonuses.len);
+        }
+    }
+
+    channel_row_counts.rng_stream = metrics.rng_stream_rows;
+    channel_row_counts.timing_samples = metrics.timing_samples_rows;
+
+    var issues: std.ArrayList([]const u8) = .empty;
+    errdefer issues.deinit(allocator);
+    if (ticks_total == 0) {
+        try issues.append(allocator, "trace window has no ticks");
+    }
+    if (channels_present.checkpoint <= 0) try issues.append(allocator, "checkpoint channel missing");
+    if (channels_present.sim_state <= 0) try issues.append(allocator, "sim_state channel missing");
+    if (channels_present.entity_samples <= 0) try issues.append(allocator, "entity_samples channel missing");
+    if (channels_present.rng_stream <= 0) try issues.append(allocator, "rng_stream channel missing");
+    if (channels_present.timing_samples <= 0) try issues.append(allocator, "timing_samples channel missing");
+    if (ticks_total > 0) {
+        if (channel_row_counts.rng_stream <= 0) try issues.append(allocator, "rng_stream channel has no rows in trace window");
+        if (channel_row_counts.timing_samples <= 0) try issues.append(allocator, "timing_samples channel has no rows in trace window");
+    }
+
+    const owned_issues = try issues.toOwnedSlice(allocator);
+    return .{
+        .trace_format_version = meta.trace_format_version,
+        .trace_schema_version = meta.trace_schema_version,
+        .tick_window = .{
+            .requested_start = options.tick_start,
+            .requested_end = options.tick_end,
+            .actual_start = actual_start,
+            .actual_end = actual_end,
+            .ticks_in_window = ticks_total,
+        },
+        .channels_present = channels_present,
+        .channel_row_counts = channel_row_counts,
+        .metrics = metrics,
+        .issues = owned_issues,
+        .ok_for_parity_analysis = owned_issues.len == 0,
+    };
+}
 
 const EntityGenerationState = struct {
     generation_by_index: std.AutoHashMap(usize, i32),
@@ -1019,6 +1278,41 @@ fn checksum64(payload: []const u8) u64 {
     var digest: [Blake2b64.digest_length]u8 = undefined;
     Blake2b64.hash(payload, &digest, .{});
     return std.mem.readInt(u64, digest[0..8], .little);
+}
+
+fn chunkPayloadAt(bytes: []const u8, offset: usize) !ChunkPayload {
+    if (offset > bytes.len or bytes.len - offset < chunk_header_len) return error.InvalidTraceChunkHeader;
+    const header = bytes[offset .. offset + chunk_header_len];
+    const compressed_len = readU32Le(header[16..20]);
+    const uncompressed_len = readU32Le(header[20..24]);
+    const payload_start = offset + chunk_header_len;
+    if (compressed_len != uncompressed_len) return error.UnsupportedTraceCompression;
+    if (payload_start > bytes.len or bytes.len - payload_start < compressed_len) return error.InvalidTracePayload;
+
+    const flags = readU32Le(header[12..16]);
+    if ((flags & chunk_flag_msgpack) == 0) return error.InvalidTraceChunkFlags;
+    const payload = bytes[payload_start .. payload_start + compressed_len];
+    const expected_checksum = readU64Le(header[24..32]);
+    if (checksum64(payload) != expected_checksum) return error.InvalidTraceChecksum;
+
+    return .{
+        .kind = header[0..4],
+        .start_tick = readI32Le(header[4..8]),
+        .end_tick = readI32Le(header[8..12]),
+        .payload = payload,
+    };
+}
+
+fn readI32Le(bytes: *const [4]u8) i32 {
+    return std.mem.readInt(i32, bytes, .little);
+}
+
+fn readU32Le(bytes: *const [4]u8) u32 {
+    return std.mem.readInt(u32, bytes, .little);
+}
+
+fn readU64Le(bytes: *const [8]u8) u64 {
+    return std.mem.readInt(u64, bytes, .little);
 }
 
 fn castI32(value: anytype) TraceWriteError!i32 {

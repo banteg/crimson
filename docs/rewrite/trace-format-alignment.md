@@ -135,8 +135,9 @@ The shared minimum per tick is a `gpur_enter` sample with:
 
 Frida validates this row against raw tick `dt`, Python records it from the replay
 driver `before_tick` hook, and Zig emits it from the replay step timing trace.
-`dbg diff` and `dbg focus` compare timing rows. `dbg health` reports required row
-channels that are present but empty across the selected trace window.
+`dbg diff` and `dbg focus` compare timing rows. Python `dbg health` and native
+`crimson-zig dbg health <trace.cdt> --format json` report required row channels
+that are present but empty across the selected trace window.
 
 ## Phase model
 
@@ -173,8 +174,8 @@ Schema 12 collapses owned-producer metadata that had no independent consumer:
   the schema always requires the same channel set
 - `TraceMeta.config` was removed because producer-private config belongs in raw
   producer logs
-- footer channel count summaries were removed because `dbg health` recomputes
-  row coverage from ticks
+- footer channel count summaries were removed because Python and native
+  `dbg health` recompute row coverage from ticks
 - raw Frida JSONL dropped its separate `schema_version` and now uses only
   `capture_format_version = 12`
 - public trace chunk-size options were removed; CDT chunking is fixed at the

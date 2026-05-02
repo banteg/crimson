@@ -23,10 +23,12 @@ Today `crimson-zig/` already has:
   [`crimson-zig/src/runtime/session.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/session.zig)
   and
   [`crimson-zig/src/runtime/session_builders.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/runtime/session_builders.zig),
-- native replay tooling in
+- native replay/debug tooling in
   [`crimson-zig/src/verify_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/verify_native.zig)
   and
   [`crimson-zig/src/replay_info_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/replay_info_native.zig),
+  plus native CDT health inspection in
+  [`crimson-zig/src/dbg_health_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/dbg_health_native.zig),
 - native quest spawn-table dumps, including optional spawn-plan summaries,
   through
   [`crimson-zig/src/quest_spawn_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/quest_spawn_native.zig),
@@ -84,7 +86,7 @@ Remaining work:
 - keep burning down real remaining `Unsupported*` replay/event surfaces that are
   still justified,
 - expand native tooling beyond `replay list`, `replay verify`,
-  `replay info`, and `replay benchmark`,
+  `replay info`, `replay benchmark`, and `dbg health`,
 - continue widening the WASM surface beyond byte-input replay verification,
   info, benchmark summaries, and checkpoint comparison.
 

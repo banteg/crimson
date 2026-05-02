@@ -55,6 +55,7 @@ Last reviewed: **2026-05-02**
   - `uv run crimson dbg record <replay.crd> --impl python --out <trace.py.cdt>`
   - `uv run crimson dbg record <replay.crd> --impl zig --out <trace.zig.cdt>`
   - `crimson-zig dbg record <replay.crd> --out <trace.zig.cdt>`
+  - `crimson-zig dbg health <trace.cdt> --format json`
   - `crimson-zig dbg verify`
   - `crimson-zig config --path <crimson.cfg> --format json`
   - `crimson-zig status --path <game.cfg> --format json`
