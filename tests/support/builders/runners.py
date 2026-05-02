@@ -1,27 +1,26 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from dataclasses import dataclass, field
+import msgspec
 
-from crimson.sim.hooks import TickResult
+from crimson.sim.hooks import LanFrameSample, TickResult
 from crimson.sim.input_providers import InputStatus, ResolvedTick
 from crimson.sim.tick_runner import TickBatchResult
 
 from .tick_payload import make_tick_payload
 
 
-@dataclass
-class FakeRunner:
+class FakeRunner(msgspec.Struct):
     """Configurable fake tick runner for orchestration tests.
 
     When ``results`` is non-empty, pops the first result on each advance.
     Otherwise generates a default batch from ``ticks_requested``.
     """
 
-    results: list[TickBatchResult] = field(default_factory=list)
+    results: list[TickBatchResult] = msgspec.field(default_factory=list)
+    lan_frame_sample_sink: dict[int, LanFrameSample] | None = None
+    lan_frame_samples_by_advance: list[dict[int, LanFrameSample]] = msgspec.field(default_factory=list)
     frame_count: int = 0
     calls: int = 0
-    on_advance: Callable[[], None] | None = None
 
     def begin_frame(self, frame_ctx: object) -> None:
         _ = frame_ctx
@@ -30,8 +29,8 @@ class FakeRunner:
     def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> TickBatchResult:
         _ = tick_dt
         self.calls += 1
-        if self.on_advance is not None:
-            self.on_advance()
+        if self.lan_frame_sample_sink is not None and self.lan_frame_samples_by_advance:
+            self.lan_frame_sample_sink.update(self.lan_frame_samples_by_advance.pop(0))
         if self.results:
             result = self.results.pop(0)
             result.next_tick_index = int(start_tick) + int(result.ticks_completed)
