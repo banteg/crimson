@@ -63,8 +63,6 @@ const single_player_alt_move_codes = [_]i32{ 0xC8, 0xD0, 0xCB, 0xCD };
 const final_quest_level_key: i32 = 510;
 const window_width = 1024;
 const window_height = 768;
-const ui_button_width: f32 = 280.0;
-const ui_button_height: f32 = 56.0;
 const demo_attract_variant_count: i32 = 6;
 const demo_attract_limit_ms: i32 = 4_000;
 const demo_attract_purchase_screen_limit_ms: i32 = 16_000;
@@ -1760,7 +1758,7 @@ const App = struct {
 
         self.playNameInputTypeClicks(collectNameInput(highscore));
 
-        const buttons = resultsHighscoreButtons();
+        const buttons = resultsHighscoreButtonsFor(results);
         window_ui.updateSelectionFromPointer(&highscore.selection, buttons.items[0..buttons.len]);
         if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
             highscore.selection = if (highscore.selection == 0) buttons.len - 1 else highscore.selection - 1;
@@ -2473,8 +2471,8 @@ const App = struct {
                 .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
                 .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
             }, .len = 0 }
-        else if (prompt_active)
-            resultsHighscoreButtons()
+        else if (prompt_active and self.results != null)
+            resultsHighscoreButtonsFor(&self.results.?)
         else if (self.results) |results|
             resultsButtonsFor(&results)
         else
@@ -2792,14 +2790,14 @@ const ResultsButtonLabels = struct {
 };
 
 fn resultsButtonsFor(results: *const ResultsScreen) ResultsButtons {
-    const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
     const labels = resultsButtonLabelsFor(results);
+    const layout = resultsActionButtonLayout(results, @floatFromInt(rl.getScreenWidth()));
     return .{
         .items = .{
-            .{ .label = labels.items[0], .rect = window_ui.centeredRect(center_x, resultsButtonY(labels.len, 0), ui_button_width, ui_button_height) },
-            .{ .label = labels.items[1], .rect = window_ui.centeredRect(center_x, resultsButtonY(labels.len, 1), ui_button_width, ui_button_height) },
-            .{ .label = labels.items[2], .rect = if (labels.len > 2) window_ui.centeredRect(center_x, resultsButtonY(labels.len, 2), ui_button_width, ui_button_height) else rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
-            .{ .label = labels.items[3], .rect = if (labels.len > 3) window_ui.centeredRect(center_x, resultsButtonY(labels.len, 3), ui_button_width, ui_button_height) else rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+            .{ .label = labels.items[0], .rect = resultsActionButtonRect(labels.items[0], layout, 0) },
+            .{ .label = labels.items[1], .rect = resultsActionButtonRect(labels.items[1], layout, 1) },
+            .{ .label = labels.items[2], .rect = if (labels.len > 2) resultsActionButtonRect(labels.items[2], layout, 2) else rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+            .{ .label = labels.items[3], .rect = if (labels.len > 3) resultsActionButtonRect(labels.items[3], layout, 3) else rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
         },
         .len = labels.len,
     };
@@ -2836,18 +2834,84 @@ fn resultsButtonLabelsFor(results: *const ResultsScreen) ResultsButtonLabels {
     }, .len = 3 };
 }
 
-fn resultsButtonY(button_count: usize, index: usize) f32 {
-    const first_y: f32 = switch (button_count) {
-        2 => 586.0,
-        3 => 550.0,
-        4 => 514.0,
-        else => 550.0,
-    };
-    return first_y + @as(f32, @floatFromInt(index)) * 72.0;
-}
-
 fn questCompletedPrimaryLabel(level_key: i32) [:0]const u8 {
     return if (isFinalQuestLevelKey(level_key)) "Show End Note" else "Play Next";
+}
+
+const ResultsPanelLayout = struct {
+    top_left: rl.Vector2,
+    banner_pos: rl.Vector2,
+};
+
+const ResultsActionButtonLayout = struct {
+    x: f32,
+    y: f32,
+    step_y: f32 = 32.0,
+};
+
+fn gameOverResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
+    const top_left = rl.Vector2.init(
+        -24.0,
+        29.0 + window_menu.menuWidescreenYShift(screen_width),
+    );
+    return .{
+        .top_left = top_left,
+        .banner_pos = rl.Vector2.init(top_left.x + 214.0, top_left.y + 40.0),
+    };
+}
+
+fn questResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
+    const top_left = rl.Vector2.init(
+        -108.0,
+        29.0 + window_menu.menuWidescreenYShift(screen_width),
+    );
+    return .{
+        .top_left = top_left,
+        .banner_pos = rl.Vector2.init(top_left.x + 202.0, top_left.y + 36.0),
+    };
+}
+
+fn resultsQualifiesForTop100(results: *const ResultsScreen) bool {
+    if (results.highscore != null) return true;
+    return !results.score_too_low_for_top100;
+}
+
+fn resultsActionButtonLayout(results: *const ResultsScreen, screen_width: f32) ResultsActionButtonLayout {
+    const qualifies = resultsQualifiesForTop100(results);
+    if (isQuestCompletedResult(results)) {
+        const layout = questResultsPanelLayout(screen_width);
+        var y = layout.top_left.y + (if (qualifies) @as(f32, 96.0) else 108.0) + 84.0;
+        if (results.quest_unlock_weapon_name != null) y += 30.0;
+        if (results.quest_unlock_perk_name != null) y += 30.0;
+        return .{
+            .x = layout.top_left.x + 270.0,
+            .y = y + 6.0,
+        };
+    }
+
+    const layout = gameOverResultsPanelLayout(screen_width);
+    return .{
+        .x = layout.banner_pos.x + 52.0,
+        .y = layout.banner_pos.y + if (qualifies) @as(f32, 210.0) else 208.0,
+    };
+}
+
+fn resultsActionButtonRect(label: [:0]const u8, layout: ResultsActionButtonLayout, index: usize) rl.Rectangle {
+    return rl.Rectangle.init(
+        layout.x,
+        layout.y + @as(f32, @floatFromInt(index)) * layout.step_y,
+        window_ui.buttonWidth(label, true),
+        window_ui.button_plate_height,
+    );
+}
+
+fn resultsHighscoreOkButtonRect(results: *const ResultsScreen, screen_width: f32) rl.Rectangle {
+    if (isQuestCompletedResult(results)) {
+        const layout = questResultsPanelLayout(screen_width);
+        return window_ui.buttonAt("OK", layout.top_left.x + 390.0, layout.top_left.y + 142.0, false).rect;
+    }
+    const layout = gameOverResultsPanelLayout(screen_width);
+    return window_ui.buttonAt("OK", layout.banner_pos.x + 178.0, layout.banner_pos.y + 116.0, false).rect;
 }
 
 fn isQuestFailedResult(results: *const ResultsScreen) bool {
@@ -3076,15 +3140,14 @@ fn typoSourceErrorDetail(err: anyerror) []const u8 {
     };
 }
 
-fn resultsHighscoreButtons() ResultsButtons {
-    const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
-    return resultsHighscoreButtonsAt(center_x);
+fn resultsHighscoreButtonsFor(results: *const ResultsScreen) ResultsButtons {
+    return resultsHighscoreButtonsForScreen(results, @floatFromInt(rl.getScreenWidth()));
 }
 
-fn resultsHighscoreButtonsAt(center_x: f32) ResultsButtons {
+fn resultsHighscoreButtonsForScreen(results: *const ResultsScreen, screen_width: f32) ResultsButtons {
     return .{
         .items = .{
-            .{ .label = "OK", .rect = window_ui.centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
+            .{ .label = "OK", .rect = resultsHighscoreOkButtonRect(results, screen_width) },
             .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
             .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
             .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
@@ -3820,22 +3883,103 @@ test "quest completed shortcuts match native result actions" {
     try std.testing.expectEqual(@as(?usize, null), questCompletedShortcutSelectionFor(false, false, false, false));
 }
 
-test "results button y positions keep native vertical rhythm" {
-    try std.testing.expectApproxEqAbs(@as(f32, 586.0), resultsButtonY(2, 0), 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 658.0), resultsButtonY(2, 1), 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 550.0), resultsButtonY(3, 0), 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 694.0), resultsButtonY(3, 2), 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 514.0), resultsButtonY(4, 0), 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 730.0), resultsButtonY(4, 3), 1e-6);
+test "game over result action buttons use native banner anchor" {
+    const results: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{ .game_mode = .survival },
+        .summary = undefined,
+        .highscore = .{
+            .record = persistence.highscores.HighScoreRecord.blank(),
+            .rank_index = 0,
+        },
+    };
+    const layout = resultsActionButtonLayout(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 242.0), layout.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 279.0), layout.y, 1e-6);
+
+    const first = resultsActionButtonRect("Play Again", layout, 0);
+    const second = resultsActionButtonRect("High scores", layout, 1);
+    try std.testing.expectApproxEqAbs(@as(f32, 242.0), first.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 279.0), first.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 311.0), second.y, 1e-6);
+}
+
+test "quest completed result action buttons use native score card anchor" {
+    const results: ResultsScreen = .{
+        .reason = .completed,
+        .run_config = .{
+            .game_mode = .quests,
+            .quest_level_key = 109,
+        },
+        .summary = undefined,
+        .highscore = .{
+            .record = persistence.highscores.HighScoreRecord.blank(),
+            .rank_index = 0,
+        },
+    };
+    const layout = resultsActionButtonLayout(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 162.0), layout.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 215.0), layout.y, 1e-6);
+
+    const labels = resultsButtonLabelsFor(&results);
+    const third = resultsActionButtonRect(labels.items[2], layout, 2);
+    try std.testing.expectEqualStrings("High scores", labels.items[2]);
+    try std.testing.expectApproxEqAbs(@as(f32, 279.0), third.y, 1e-6);
+}
+
+test "quest completed result action buttons move below unlock lines" {
+    const results: ResultsScreen = .{
+        .reason = .completed,
+        .run_config = .{
+            .game_mode = .quests,
+            .quest_level_key = 109,
+        },
+        .summary = undefined,
+        .quest_unlock_weapon_name = "Plasma Minigun",
+        .quest_unlock_perk_name = "Fastloader",
+    };
+    const layout = resultsActionButtonLayout(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 162.0), layout.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 275.0), layout.y, 1e-6);
 }
 
 test "results high score prompt uses native ok submit button" {
-    const buttons = resultsHighscoreButtonsAt(640.0);
+    const results: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{ .game_mode = .survival },
+        .summary = undefined,
+        .highscore = .{
+            .record = persistence.highscores.HighScoreRecord.blank(),
+            .rank_index = 0,
+        },
+    };
+    const buttons = resultsHighscoreButtonsForScreen(&results, 640.0);
 
     try std.testing.expectEqual(@as(usize, 1), buttons.len);
     try std.testing.expectEqualStrings("OK", buttons.items[0].label);
-    try std.testing.expectApproxEqAbs(@as(f32, 500.0), buttons.items[0].rect.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 586.0), buttons.items[0].rect.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 368.0), buttons.items[0].rect.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 185.0), buttons.items[0].rect.y, 1e-6);
+}
+
+test "quest results high score prompt uses native ok submit button" {
+    const results: ResultsScreen = .{
+        .reason = .completed,
+        .run_config = .{
+            .game_mode = .quests,
+            .quest_level_key = 109,
+        },
+        .summary = undefined,
+        .highscore = .{
+            .record = persistence.highscores.HighScoreRecord.blank(),
+            .rank_index = 0,
+        },
+    };
+    const buttons = resultsHighscoreButtonsForScreen(&results, 640.0);
+
+    try std.testing.expectEqual(@as(usize, 1), buttons.len);
+    try std.testing.expectEqualStrings("OK", buttons.items[0].label);
+    try std.testing.expectApproxEqAbs(@as(f32, 282.0), buttons.items[0].rect.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 171.0), buttons.items[0].rect.y, 1e-6);
 }
 
 test "results high score save errors use user-facing details" {
