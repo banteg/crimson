@@ -425,8 +425,8 @@ class PlaybackDriver:
             source_tick = ResolvedTick(
                 tick_index=int(tick_index),
                 dt_seconds=float(dt_tick),
-                inputs=list(inputs),
-                commands=list(commands),
+                inputs=tuple(inputs),
+                commands=tuple(commands),
             )
 
             session_tick = self.session.step_tick(

@@ -42,7 +42,7 @@ class ReplayRecorder:
         self,
         inputs: Sequence[PlayerInput],
         *,
-        commands: list[GameCommand] | None = None,
+        commands: Sequence[GameCommand] | None = None,
         dt: float | None = None,
     ) -> int:
         """Record a single simulation tick worth of inputs.

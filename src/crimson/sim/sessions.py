@@ -51,6 +51,7 @@ class DeterministicSessionTick(msgspec.Struct):
     step: DeterministicStepResult
     elapsed_ms: float
     creature_count_world_step: int
+    presentation_plan_ms: float = 0.0
 
 
 
@@ -388,20 +389,18 @@ class DeterministicSession(msgspec.Struct):
         if recording_rng is not None:
             presentation_trace.draws_total = int(recording_rng.calls)
 
+        presentation = msgspec.structs.replace(
+            presentation,
+            terrain_fx=self.terrain_fx.take_batch(),
+            post_apply_sfx=tuple(post_apply_sfx),
+        )
         step = DeterministicStepResult(
             dt_sim=timing.dt_sim,
             timing=timing,
             events=events,
             presentation=presentation,
-            presentation_plan_ms=presentation_plan_ms,
             presentation_rng_trace=presentation_trace,
-            terrain_fx=self.terrain_fx.take_batch(),
         )
-        if post_apply_sfx:
-            step = msgspec.structs.replace(
-                step,
-                post_apply_sfx=tuple(post_apply_sfx),
-            )
         if step.presentation.trigger_game_tune:
             self.game_tune_started = True
 
@@ -428,4 +427,5 @@ class DeterministicSession(msgspec.Struct):
             step=step,
             elapsed_ms=self.elapsed_ms,
             creature_count_world_step=creature_count_world_step,
+            presentation_plan_ms=float(presentation_plan_ms),
         )

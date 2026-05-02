@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.sim.batch_apply import PresentationTickOutput, apply_presentation_outputs
-from crimson.sim.presentation_step import PresentationStepCommands
+from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.terrain_fx import TerrainCorpseFx, TerrainDecalFx, TerrainFxBatch, TerrainFxScratch
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -29,6 +29,38 @@ def _terrain_batch() -> TerrainFxBatch:
             ),
         ),
     )
+
+
+class _PresentationAudioBridge:
+    def __init__(self, calls: list[tuple[str, int | None]]) -> None:
+        self._calls = calls
+
+    def apply_plan(self, *, plan: DeterministicPresentationPlan, apply_audio: bool = True) -> None:
+        _ = plan, apply_audio
+        self._calls.append(("audio", 1))
+
+
+class _PresentationRenderResources:
+    def __init__(self, calls: list[tuple[str, int | None]]) -> None:
+        self._calls = calls
+
+    def consume_terrain_fx_batch(self, batch: TerrainFxBatch) -> None:
+        _ = batch
+        self._calls.append(("terrain", 1))
+
+
+class _PresentationRuntime:
+    def __init__(self, calls: list[tuple[str, int | None]]) -> None:
+        self._calls = calls
+        self.audio_bridge = _PresentationAudioBridge(calls)
+        self.render_resources = _PresentationRenderResources(calls)
+
+    def sync_audio_bridge_state(self) -> None:
+        self._calls.append(("sync", None))
+
+    def update_camera(self, dt: float) -> None:
+        _ = dt
+        self._calls.append(("camera", 1))
 
 
 def test_terrain_fx_scratch_take_batch_copies_active_entries_and_clears() -> None:
@@ -62,23 +94,18 @@ def test_apply_presentation_outputs_applies_terrain_fx_in_output_order() -> None
         PresentationTickOutput(
             tick_index=1,
             dt_sim=1.0 / 60.0,
-            presentation=PresentationStepCommands(),
-            terrain_fx=_terrain_batch(),
+            presentation=DeterministicPresentationPlan(terrain_fx=_terrain_batch()),
         ),
         PresentationTickOutput(
             tick_index=2,
             dt_sim=1.0 / 60.0,
-            presentation=None,
-            terrain_fx=_terrain_batch(),
+            presentation=DeterministicPresentationPlan(terrain_fx=_terrain_batch()),
         ),
     )
 
     apply_presentation_outputs(
         outputs=outputs,
-        sync_audio_bridge_state=lambda: calls.append(("sync", None)),
-        apply_audio_plan=lambda _plan, _apply_audio: calls.append(("audio", 1)),
-        apply_terrain_fx=lambda _batch: calls.append(("terrain", 1)),
-        update_camera=lambda _dt: calls.append(("camera", 1)),
+        runtime=_PresentationRuntime(calls),
         on_output_applied=lambda output: calls.append(("done", int(output.tick_index))),
         apply_audio=True,
     )
@@ -89,6 +116,8 @@ def test_apply_presentation_outputs_applies_terrain_fx_in_output_order() -> None
         ("camera", 1),
         ("terrain", 1),
         ("done", 1),
+        ("audio", 1),
+        ("camera", 1),
         ("terrain", 1),
         ("done", 2),
     ]

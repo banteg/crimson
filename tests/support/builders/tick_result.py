@@ -20,8 +20,8 @@ def make_tick_result(
         source_tick=ResolvedTick(
             tick_index=int(tick_index),
             dt_seconds=float(dt_sim),
-            inputs=[],
-            commands=[],
+            inputs=(),
+            commands=(),
         ),
         payload=payload,
         replay_tick_index=(int(tick_index) if replay_tick_index is None else int(replay_tick_index)),

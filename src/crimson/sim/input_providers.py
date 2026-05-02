@@ -61,8 +61,8 @@ class InputStatus(str, Enum):
 class ResolvedTick(msgspec.Struct, frozen=True):
     tick_index: int
     dt_seconds: float
-    inputs: list[PlayerInput] = msgspec.field(default_factory=list)
-    commands: list[GameCommand] = msgspec.field(default_factory=list)
+    inputs: tuple[PlayerInput, ...] = ()
+    commands: tuple[GameCommand, ...] = ()
 
 
 class TickSupply(msgspec.Struct, frozen=True):
@@ -122,8 +122,8 @@ class LocalInputProvider:
                 tick=ResolvedTick(
                     tick_index=tick_index,
                     dt_seconds=dt_seconds,
-                    inputs=inputs,
-                    commands=commands,
+                    inputs=tuple(inputs),
+                    commands=tuple(commands),
                 ),
             )
         inputs = [] if self._player_count <= 0 else list(self._edge_inputs)
@@ -132,8 +132,8 @@ class LocalInputProvider:
             tick=ResolvedTick(
                 tick_index=tick_index,
                 dt_seconds=dt_seconds,
-                inputs=inputs,
-                commands=[],
+                inputs=tuple(inputs),
+                commands=(),
             ),
         )
 

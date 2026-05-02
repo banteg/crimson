@@ -10,7 +10,7 @@ from grim.geom import Vec2
 from ..creatures.runtime import CreaturePool
 from ..creatures.spawn import SpawnEnv
 from ..gameplay import GameplayState
-from ..sim.presentation_step import PresentationStepCommands
+from ..sim.presentation_step import DeterministicPresentationPlan
 from ..sim.state_types import PlayerState
 from ..sim.world_state import WorldEvents, WorldState
 from ..weapon_runtime import init_default_alt_weapon, weapon_assign_player
@@ -76,7 +76,7 @@ class SimWorldState(msgspec.Struct):
     last_events: WorldEvents = msgspec.field(
         default_factory=lambda: WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
     )
-    last_presentation: PresentationStepCommands = msgspec.field(default_factory=PresentationStepCommands)
+    last_presentation: DeterministicPresentationPlan = msgspec.field(default_factory=DeterministicPresentationPlan)
     def __post_init__(self) -> None:
         self.reset(seed=0xBEEF, player_count=1)
 
@@ -101,7 +101,7 @@ class SimWorldState(msgspec.Struct):
         self.state.rng.srand(int(seed))
 
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
-        self.last_presentation = PresentationStepCommands()
+        self.last_presentation = DeterministicPresentationPlan()
 
         self.presentation_elapsed_ms = 0.0
         self.bonus_anim_phase = 0.0
@@ -122,14 +122,14 @@ class SimWorldState(msgspec.Struct):
         self.players = self.world_state.players
         self.creatures = self.world_state.creatures
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
-        self.last_presentation = PresentationStepCommands()
+        self.last_presentation = DeterministicPresentationPlan()
 
 
     def apply_step_metadata(
         self,
         *,
         events: WorldEvents,
-        presentation: PresentationStepCommands,
+        presentation: DeterministicPresentationPlan,
         dt_sim: float,
         game_tune_started: bool,
     ) -> None:
@@ -144,6 +144,6 @@ class SimWorldState(msgspec.Struct):
 
     def close_session(self) -> None:
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
-        self.last_presentation = PresentationStepCommands()
+        self.last_presentation = DeterministicPresentationPlan()
 
         self.game_tune_started = False

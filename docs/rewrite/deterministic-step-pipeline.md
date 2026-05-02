@@ -75,8 +75,8 @@ At the runtime boundary, one deterministic tick is one `ResolvedTick`:
 
 - `tick_index`
 - `dt_seconds`
-- `inputs`
-- `commands`
+- `inputs`: canonical tuple of per-player `PlayerInput` values in slot order
+- `commands`: canonical tuple of per-tick game commands
 
 Live/LAN paths receive it through `InputProvider.pull_tick(...) -> TickSupply`.
 Replay paths synthesize the same shape inside `PlaybackDriver.step_tick(...)`.
@@ -92,9 +92,14 @@ whose `step` is a `DeterministicStepResult` with:
 
 - `dt_sim`: effective dt after deterministic scaling
 - `events`: deterministic sim events
-- `presentation`: deterministic presentation commands
-- `post_apply_sfx_keys`: post-apply presentation reactions triggered by successful command effects
+- `presentation`: a `DeterministicPresentationPlan` envelope for deterministic native-parity outputs
 - optional RNG trace data when replay trace mode is enabled
+
+`DeterministicPresentationPlan` intentionally remains part of deterministic
+stepping. Native hit audio and terrain decals consume the authoritative RNG
+stream, so headless verification still builds the plan even when no renderer or
+audio backend is present. Sinks are optional consumers of that plan; the plan is
+not optional for parity.
 
 ```mermaid
 flowchart LR
@@ -133,6 +138,9 @@ Shared helpers own the bookkeeping around that sequence:
 
 This keeps live gameplay, replay playback, headless verification, and runtime
 harnesses close to the same deterministic contract even when their outer loops differ.
+`apply_presentation_outputs()` consumes the outer runtime's presentation
+capabilities for audio, terrain, and camera effects; deterministic stepping
+only emits the plan.
 
 ```mermaid
 sequenceDiagram
@@ -151,6 +159,13 @@ sequenceDiagram
     Outer->>Apply: build/apply post-apply reactions
     Outer->>Hooks: optional checkpoints / replay info / LAN sync
 ```
+
+## Deferred TODOs
+
+- Rollback restore is intentionally deferred here. The current runtime can
+  signal rollback/resync, but true rollback should restore a deterministic
+  snapshot at the requested tick and replay corrected inputs through the shared
+  tick pipeline before it is treated as a verification path.
 
 ### Timer Ownership
 

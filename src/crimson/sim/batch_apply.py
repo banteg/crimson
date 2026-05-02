@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Any, Protocol
 
 from .hooks import TickResult
-from .presentation_step import PresentationStepCommands
+from .presentation_step import DeterministicPresentationPlan
 from .step_pipeline import DeterministicStepResult
-from .terrain_fx import TerrainFxBatch
 from .world_state import WorldEvents
 
 
@@ -16,7 +15,7 @@ class SimMetadataSink(Protocol):
         self,
         *,
         events: WorldEvents,
-        presentation: PresentationStepCommands,
+        presentation: DeterministicPresentationPlan,
         dt_sim: float,
         game_tune_started: bool,
     ) -> None: ...
@@ -26,8 +25,7 @@ class SimMetadataSink(Protocol):
 class PresentationTickOutput:
     tick_index: int
     dt_sim: float
-    presentation: PresentationStepCommands | None
-    terrain_fx: TerrainFxBatch = TerrainFxBatch()
+    presentation: DeterministicPresentationPlan | None
 
 
 def apply_sim_metadata_tick_result(
@@ -47,7 +45,6 @@ def apply_sim_metadata_tick_result(
         tick_index=int(tick_result.source_tick.tick_index),
         dt_sim=float(step.dt_sim),
         presentation=step.presentation,
-        terrain_fx=step.terrain_fx,
     )
 
 
@@ -84,23 +81,22 @@ def apply_sim_metadata_batch(
 def apply_presentation_outputs(
     *,
     outputs: Sequence[PresentationTickOutput],
-    sync_audio_bridge_state: Callable[[], None],
-    apply_audio_plan: Callable[[PresentationStepCommands, bool], None],
-    apply_terrain_fx: Callable[[TerrainFxBatch], None] | None,
-    update_camera: Callable[[float], None] | None,
+    runtime: Any,
     on_output_applied: Callable[[PresentationTickOutput], None] | None = None,
     apply_audio: bool,
+    update_camera: bool = True,
 ) -> None:
     if not outputs:
         return
 
-    sync_audio_bridge_state()
+    runtime.sync_audio_bridge_state()
     for output in outputs:
         if output.presentation is not None:
-            apply_audio_plan(output.presentation, bool(apply_audio))
-            if update_camera is not None:
-                update_camera(float(output.dt_sim))
-        if apply_terrain_fx is not None and not output.terrain_fx.is_empty():
-            apply_terrain_fx(output.terrain_fx)
+            runtime.audio_bridge.apply_plan(plan=output.presentation, apply_audio=bool(apply_audio))
+            if bool(update_camera):
+                runtime.update_camera(float(output.dt_sim))
+            terrain_fx = output.presentation.terrain_fx
+            if not terrain_fx.is_empty():
+                runtime.render_resources.consume_terrain_fx_batch(terrain_fx)
         if on_output_applied is not None:
             on_output_applied(output)

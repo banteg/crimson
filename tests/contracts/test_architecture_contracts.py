@@ -29,7 +29,7 @@ from crimson.sim.input_providers import (
     PerkPickCommand,
     ResolvedTick,
 )
-from crimson.sim.presentation_step import PresentationStepCommands
+from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
 from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from crimson.world.audio_bridge import AudioBridge
@@ -139,7 +139,7 @@ def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mock
         assert result.payload is not None
         payload = result.payload
         assert isinstance(payload, DeterministicSessionTick)
-        assert isinstance(payload.step.presentation, PresentationStepCommands)
+        assert isinstance(payload.step.presentation, DeterministicPresentationPlan)
         assert payload.step is not None
 
 
@@ -150,8 +150,8 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
         resolve_tick=lambda tick, dt: ResolvedTick(
             tick_index=int(tick),
             dt_seconds=float(dt),
-            inputs=list(tick_input),
-            commands=runtime.pull_commands(peer="host", tick_index=int(tick)),
+            inputs=tuple(tick_input),
+            commands=tuple(runtime.pull_commands(peer="host", tick_index=int(tick))),
         ),
         submit_command=runtime.submit_local_command,
     )
@@ -159,8 +159,8 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
         resolve_tick=lambda tick, dt: ResolvedTick(
             tick_index=int(tick),
             dt_seconds=float(dt),
-            inputs=list(tick_input),
-            commands=runtime.pull_commands(peer="client", tick_index=int(tick)),
+            inputs=tuple(tick_input),
+            commands=tuple(runtime.pull_commands(peer="client", tick_index=int(tick))),
         ),
     )
     host_session, _ = make_session(seed=42)
@@ -207,8 +207,8 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     )
 
     # Commands propagated through runner to both host and client
-    assert host_batch.completed_results[0].source_tick.commands == [command]
-    assert client_batch.completed_results[0].source_tick.commands == [command]
+    assert host_batch.completed_results[0].source_tick.commands == (command,)
+    assert client_batch.completed_results[0].source_tick.commands == (command,)
 
 
 def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
@@ -394,14 +394,13 @@ def test_contract_6_shared_batch_apply_separates_deterministic_and_output_phases
     deterministic_apply_source = inspect.getsource(batch_apply_module.apply_tick_to_sim)
     output_source = inspect.getsource(batch_apply_module.apply_presentation_outputs)
 
-    assert "apply_audio_plan" not in deterministic_batch_source
     assert "update_camera" not in deterministic_batch_source
-    assert "apply_audio_plan" not in deterministic_tick_source
     assert "update_camera" not in deterministic_tick_source
-    assert "apply_audio_plan" not in deterministic_apply_source
     assert "update_camera" not in deterministic_apply_source
     assert "apply_step_metadata" not in output_source
     assert output_source.count("sync_audio_bridge_state()") == 1
+    assert "runtime.audio_bridge.apply_plan" in output_source
+    assert "runtime.render_resources.consume_terrain_fx_batch" in output_source
 
 
 def test_contract_7_live_frame_advancement_uses_shared_helper() -> None:

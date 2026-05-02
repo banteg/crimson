@@ -28,10 +28,10 @@ def build_post_apply_reaction(
 ) -> PostApplyReaction:
     if quest_state is None:
         return PostApplyReaction(
-            sfx=tuple(tick_result.payload.step.post_apply_sfx),
+            sfx=tuple(tick_result.payload.step.presentation.post_apply_sfx),
         )
     return PostApplyReaction(
-        sfx=tuple(tick_result.payload.step.post_apply_sfx),
+        sfx=tuple(tick_result.payload.step.presentation.post_apply_sfx),
         quest=QuestPresentationReaction(
             play_hit_sfx=bool(quest_state.play_hit_sfx),
             play_completion_music=bool(quest_state.play_completion_music),

@@ -305,15 +305,15 @@ class WorldRuntimeHost:
             apply_audio=bool(apply_audio),
         )
         self.update_camera(float(tick.step.dt_sim))
-        self.render_resources.consume_terrain_fx_batch(tick.step.terrain_fx)
+        self.render_resources.consume_terrain_fx_batch(tick.step.presentation.terrain_fx)
         apply_post_apply_reaction(
             reaction=build_post_apply_reaction(
                 tick_result=TickResult(
                     source_tick=ResolvedTick(
                         tick_index=0,
                         dt_seconds=float(dt),
-                        inputs=[] if tick_inputs is None else list(tick_inputs),
-                        commands=[],
+                        inputs=() if tick_inputs is None else tuple(tick_inputs),
+                        commands=(),
                     ),
                     payload=tick,
                 ),

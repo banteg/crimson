@@ -21,7 +21,7 @@ def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() 
         commands=[PerkPickCommand(player_index=0, choice_index=0)],
     )
 
-    assert tick.step.post_apply_sfx == (SfxId.UI_BONUS,)
+    assert tick.step.presentation.post_apply_sfx == (SfxId.UI_BONUS,)
 
 
 def test_session_step_tick_skips_bonus_post_apply_sfx_for_stale_perk_pick() -> None:
@@ -33,7 +33,7 @@ def test_session_step_tick_skips_bonus_post_apply_sfx_for_stale_perk_pick() -> N
         commands=[PerkPickCommand(player_index=0, choice_index=0)],
     )
 
-    assert tick.step.post_apply_sfx == ()
+    assert tick.step.presentation.post_apply_sfx == ()
 
 
 def test_quest_presentation_reaction_tracks_audio_flags() -> None:

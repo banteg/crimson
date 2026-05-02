@@ -500,13 +500,7 @@ class ReplayPlaybackMode:
         if advance.outputs:
             apply_presentation_outputs(
                 outputs=advance.outputs,
-                sync_audio_bridge_state=runtime.sync_audio_bridge_state,
-                apply_audio_plan=lambda plan, should_apply_audio: runtime.audio_bridge.apply_plan(
-                    plan=plan,
-                    apply_audio=bool(should_apply_audio),
-                ),
-                apply_terrain_fx=runtime.render_resources.consume_terrain_fx_batch,
-                update_camera=runtime.update_camera,
+                runtime=runtime,
                 on_output_applied=_on_output_applied,
                 apply_audio=True,
             )

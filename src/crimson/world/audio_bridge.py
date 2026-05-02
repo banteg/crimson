@@ -9,7 +9,7 @@ from grim.audio import AudioState
 from grim.rand import Crand
 
 from ..audio_router import AudioRouter
-from ..sim.presentation_step import PresentationStepCommands, apply_presentation_plan
+from ..sim.presentation_step import DeterministicPresentationPlan, apply_presentation_plan
 
 
 def _zero_reflex_boost() -> float:
@@ -45,7 +45,7 @@ class AudioBridge(msgspec.Struct):
         self.router.audio_rng = audio_rng
         self.router.demo_mode_active = bool(demo_mode_active)
 
-    def apply_plan(self, *, plan: PresentationStepCommands, apply_audio: bool = True) -> None:
+    def apply_plan(self, *, plan: DeterministicPresentationPlan, apply_audio: bool = True) -> None:
         apply_presentation_plan(
             plan=plan,
             audio_sink=self.router,

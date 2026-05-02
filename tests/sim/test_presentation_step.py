@@ -8,7 +8,7 @@ from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.presentation_step import (
-    PresentationStepCommands,
+    DeterministicPresentationPlan,
     apply_presentation_plan,
     plan_hit_sfx,
     plan_world_presentation_step,
@@ -506,7 +506,7 @@ def test_apply_presentation_plan_dispatches_audio_in_order() -> None:
 
     sink = _Sink()
     apply_presentation_plan(
-        plan=PresentationStepCommands(trigger_game_tune=True, sfx=[SfxId.UI_BONUS, SfxId.UI_LEVELUP]),
+        plan=DeterministicPresentationPlan(trigger_game_tune=True, sfx=[SfxId.UI_BONUS, SfxId.UI_LEVELUP]),
         audio_sink=sink,
         apply_audio=True,
     )
@@ -529,7 +529,7 @@ def test_apply_presentation_plan_skips_when_audio_disabled() -> None:
 
     sink = _Sink()
     apply_presentation_plan(
-        plan=PresentationStepCommands(trigger_game_tune=True, sfx=[SfxId.UI_BONUS]),
+        plan=DeterministicPresentationPlan(trigger_game_tune=True, sfx=[SfxId.UI_BONUS]),
         audio_sink=sink,
         apply_audio=False,
     )
