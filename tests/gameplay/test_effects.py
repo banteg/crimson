@@ -285,7 +285,7 @@ def test_particle_pool_tags_style_specific_jitter_callers() -> None:
     ]
 
 
-def test_particle_update_uses_argument_or_pool_damage_applier() -> None:
+def test_particle_update_uses_explicit_damage_applier() -> None:
     def _spawn_hit_particle(pool: ParticlePool) -> None:
         pool.spawn_particle(
             pos=Vec2(),
@@ -303,62 +303,26 @@ def test_particle_update_uses_argument_or_pool_damage_applier() -> None:
         creature.lifecycle_stage = 16.0
         return creature
 
-    # No kwarg: fall back to pool-level damage applier.
     pool = ParticlePool(size=1, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     creature = _new_creature()
-    pool_calls: list[tuple[int, float, int, Vec2, OwnerRef]] = []
+    calls: list[tuple[int, float, int, Vec2, OwnerRef]] = []
 
-    def _pool_applier(
+    def _applier(
         creature_index: int,
         damage: float,
         damage_type: int,
         impulse: Vec2,
         owner: OwnerRef,
     ) -> None:
-        pool_calls.append((creature_index, damage, damage_type, impulse, owner))
+        calls.append((creature_index, damage, damage_type, impulse, owner))
 
-    pool.creature_damage_applier = _pool_applier
     _spawn_hit_particle(pool)
-    pool.update(0.016, creatures=[creature])
-    assert len(pool_calls) == 1
-    assert pool_calls[0][0] == 0
-    assert pool_calls[0][2] == 4
-    assert pool_calls[0][4] == OwnerRef.from_player(0)
+    pool.update(0.016, creatures=[creature], apply_creature_damage=_applier)
+    assert len(calls) == 1
+    assert calls[0][0] == 0
+    assert calls[0][2] == 4
+    assert calls[0][4] == OwnerRef.from_player(0)
     assert_float_close(creature.hp, 100.0)
-
-    # With kwarg: prefer provided applier over pool-level fallback.
-    pool2 = ParticlePool(size=1, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    creature2 = _new_creature()
-    pool2_calls: list[tuple[int, float, int, Vec2, OwnerRef]] = []
-    arg_calls: list[tuple[int, float, int, Vec2, OwnerRef]] = []
-
-    def _pool2_applier(
-        creature_index: int,
-        damage: float,
-        damage_type: int,
-        impulse: Vec2,
-        owner: OwnerRef,
-    ) -> None:
-        pool2_calls.append((creature_index, damage, damage_type, impulse, owner))
-
-    def _arg_applier(
-        creature_index: int,
-        damage: float,
-        damage_type: int,
-        impulse: Vec2,
-        owner: OwnerRef,
-    ) -> None:
-        arg_calls.append((creature_index, damage, damage_type, impulse, owner))
-
-    pool2.creature_damage_applier = _pool2_applier
-    _spawn_hit_particle(pool2)
-    pool2.update(0.016, creatures=[creature2], apply_creature_damage=_arg_applier)
-    assert len(arg_calls) == 1
-    assert pool2_calls == []
-    assert arg_calls[0][0] == 0
-    assert arg_calls[0][2] == 4
-    assert arg_calls[0][4] == OwnerRef.from_player(0)
-    assert_float_close(creature2.hp, 100.0)
 
 
 def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:

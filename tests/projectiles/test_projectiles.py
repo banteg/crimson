@@ -365,8 +365,7 @@ def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAsser
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
     apply_damage = mocker.Mock()
-    pool.creature_damage_applier = apply_damage
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures))
+    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, apply_creature_damage=apply_damage))
 
     snapshot.assert_match(
         [
@@ -395,12 +394,12 @@ def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion
         creatures[int(idx)].hp -= float(damage)
 
     on_kill = mocker.Mock()
-    pool.creature_damage_applier = _apply
     pool.step(
         SecondaryStepCtx(
             dt=0.1,
             creatures=creatures,
             fx_queue=fx_queue,
+            apply_creature_damage=_apply,
             on_detonation_kill=on_kill,
         ),
     )
