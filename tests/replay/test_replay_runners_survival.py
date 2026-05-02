@@ -8,7 +8,11 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import advance_unlock_terrain
 from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 from grim.rand import CallerStatic, Crand
-from tests.support.replay_runner_helpers import _blank_survival_replay, _run_verify_playback
+from tests.support.replay_runner_helpers import (
+    ReplayRngTraceRecorder,
+    _blank_survival_replay,
+    _run_verify_playback,
+)
 
 
 def test_survival_runner_is_deterministic() -> None:
@@ -120,38 +124,32 @@ def test_survival_runner_checkpoints_capture_debug_fields() -> None:
 def test_survival_runner_tick_rng_trace_observer_emits_rows_for_first_tick() -> None:
     _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
     replay = rec.finish()
-    rows_by_tick: dict[int, list[tuple[int, int, int, CallerStatic]]] = {}
-
-    def _observer(tick_index: int, draws: list[tuple[int, int, int, CallerStatic]]) -> None:
-        rows_by_tick[int(tick_index)] = list(draws)
+    observer = ReplayRngTraceRecorder(rows_by_tick={})
 
     _run_verify_playback(
         replay,
         trace_rng=True,
-        tick_rng_trace_observer=_observer,
+        observer=observer,
     )
 
-    assert sorted(rows_by_tick.keys()) == [0]
-    assert rows_by_tick[0]
+    assert sorted(observer.rows_by_tick.keys()) == [0]
+    assert observer.rows_by_tick[0]
 
 
 def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
     _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
     replay = rec.finish()
-    rows_by_tick: dict[int, list[tuple[int, int, int, CallerStatic]]] = {}
-
-    def _observer(tick_index: int, draws: list[tuple[int, int, int, CallerStatic]]) -> None:
-        rows_by_tick[int(tick_index)] = list(draws)
+    observer = ReplayRngTraceRecorder(rows_by_tick={})
 
     _run_verify_playback(
         replay,
         trace_rng=True,
-        tick_rng_trace_observer=_observer,
+        observer=observer,
     )
 
-    assert sorted(rows_by_tick.keys()) == [0, 1, 2]
+    assert sorted(observer.rows_by_tick.keys()) == [0, 1, 2]
     tagged_by_tick: dict[int, list[CallerStatic]] = {}
-    for tick_index, draws in sorted(rows_by_tick.items()):
+    for tick_index, draws in sorted(observer.rows_by_tick.items()):
         tagged_callers: list[CallerStatic] = []
         for state_before_u32, value_15, state_after_u32, caller in draws:
             expected_after = (int(state_before_u32) * 214013 + 2531011) & 0xFFFFFFFF

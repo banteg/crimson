@@ -6,11 +6,14 @@ import pytest
 
 from crimson.dbg.checkpoint_diff import compare_checkpoints
 from crimson.replay import load_replay_file
-from crimson.replay.checkpoints import load_checkpoints_file
+from crimson.replay.checkpoints import ReplayCheckpoint, load_checkpoints_file
 from crimson.replay.driver.playback_driver import (
-    PlaybackWalkHooks,
+    PlaybackDriver,
+    PlaybackWalkObserver,
     build_verify_playback_driver,
 )
+from crimson.sim.hooks import TickResult
+from crimson.sim.world_state import WorldState
 from tests.support.replay_runner_helpers import _run_verify_playback
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "replays"
@@ -46,6 +49,17 @@ def _build_verify_driver(*, replay):
     )
 
 
+class _CheckpointObserver(PlaybackWalkObserver):
+    driver: PlaybackDriver
+    checkpoint_ticks: set[int]
+    checkpoints: list[ReplayCheckpoint]
+
+    def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
+        _ = world
+        if int(tick_result.source_tick.tick_index) in self.checkpoint_ticks:
+            self.checkpoints.append(self.driver.build_checkpoint(tick_result=tick_result))
+
+
 def _run_walk_playback(
     *,
     replay,
@@ -61,14 +75,14 @@ def _run_walk_playback(
         chunk_size = int(_PLAYBACK_CHUNK_PATTERN[chunk_index % len(_PLAYBACK_CHUNK_PATTERN)])
         chunk_end = min(tick_limit, tick_index + chunk_size)
 
-        def _after_tick(tick_result, _world) -> None:
-            if int(tick_result.source_tick.tick_index) in checkpoint_ticks:
-                playback_checkpoints.append(driver.build_checkpoint(tick_result=tick_result))
-
         walk_result = driver.walk_ticks(
             start_tick=tick_index,
             stop_tick=chunk_end,
-            hooks=PlaybackWalkHooks(after_tick=_after_tick),
+            observer=_CheckpointObserver(
+                driver=driver,
+                checkpoint_ticks=checkpoint_ticks,
+                checkpoints=playback_checkpoints,
+            ),
         )
         tick_index = int(walk_result.next_tick_index)
         chunk_index += 1

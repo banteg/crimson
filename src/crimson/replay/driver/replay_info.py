@@ -20,7 +20,7 @@ from ...sim.input_providers import (
 )
 from ...sim.state_types import BonusPickupEvent, PlayerState
 from ...weapons import WeaponId, weapon_display_name
-from .playback_driver import PlaybackDriver, PlaybackWalkHooks
+from .playback_driver import PlaybackDriver, PlaybackWalkObserver
 from .setup import ReplayRunnerError
 
 _EPSILON = 1e-6
@@ -382,7 +382,6 @@ def collect_replay_info(
     mode = driver.mode_id
     player_filter = _validate_player_filter(replay=replay, player_index=player_index)
     timeline: list[ReplayInfoTimelineEvent] = []
-    before: list[_PlayerSnapshot] | None = None
 
     def _append_tick(tick_result: TickResult, *, after_players: list[PlayerState], before: list[_PlayerSnapshot]) -> None:
         source_tick = tick_result.source_tick
@@ -435,19 +434,20 @@ def collect_replay_info(
             include_extra_events=include_extra_events,
         )
 
-    def _before_tick(_tick_index: int, world, _dt_tick: float) -> None:
-        nonlocal before
-        before = _capture_snapshots(world.players)
+    class _ReplayInfoWalkObserver(PlaybackWalkObserver):
+        before: list[_PlayerSnapshot] | None = None
 
-    def _after_tick(tick_result: TickResult, world) -> None:
-        assert before is not None, "missing pre-step replay snapshot"
-        _append_tick(tick_result, after_players=world.players, before=before)
+        def before_tick(self, tick_index: int, world, dt_tick: float) -> None:
+            _ = tick_index, dt_tick
+            self.before = _capture_snapshots(world.players)
+
+        def after_tick(self, tick_result: TickResult, world) -> None:
+            before_snapshot = self.before
+            assert before_snapshot is not None, "missing pre-step replay snapshot"
+            _append_tick(tick_result, after_players=world.players, before=before_snapshot)
 
     walk_result = driver.walk_ticks(
-        hooks=PlaybackWalkHooks(
-            before_tick=_before_tick,
-            after_tick=_after_tick,
-        ),
+        observer=_ReplayInfoWalkObserver(),
     )
     run_result = driver.build_run_result(ticks=int(walk_result.ticks_completed))
 

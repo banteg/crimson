@@ -7,10 +7,12 @@ from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
-from crimson.replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackWalkObserver, build_verify_playback_driver
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import advance_explicit_terrain, advance_unlock_terrain
+from crimson.sim.hooks import TickResult
 from crimson.sim.input_providers import PerkPickCommand
+from crimson.sim.world_state import WorldState
 from crimson.weapons import WEAPON_BY_ID
 from grim.rand import Crand
 from tests.support.replay_runner_helpers import (
@@ -19,6 +21,19 @@ from tests.support.replay_runner_helpers import (
     _quest_spawn_entries,
     _run_verify_playback,
 )
+
+
+class _ExperienceWalkObserver(PlaybackWalkObserver):
+    observed_before: list[int]
+    observed_after: list[int]
+
+    def before_tick(self, tick_index: int, world: WorldState, dt_tick: float) -> None:
+        _ = tick_index, dt_tick
+        self.observed_before.append(int(world.players[0].experience))
+
+    def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
+        _ = tick_result
+        self.observed_after.append(int(world.players[0].experience))
 
 
 def test_quest_runner_is_deterministic() -> None:
@@ -178,9 +193,9 @@ def test_playback_driver_tick_begin_observer_runs_before_step(mocker) -> None:
     mocker.patch.object(driver, "step_tick", side_effect=_step_tick_with_mutation)
 
     driver.run(
-        hooks=PlaybackWalkHooks(
-            before_tick=lambda _tick_index, world, _dt_tick: observed_before.append(int(world.players[0].experience)),
-            after_tick=lambda _tick_result, world: observed_after.append(int(world.players[0].experience)),
+        observer=_ExperienceWalkObserver(
+            observed_before=observed_before,
+            observed_after=observed_after,
         ),
     )
 

@@ -124,7 +124,7 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
                 deaths=[],
             )
 
-        def run(self, *, hooks):
+        def run(self, *, observer):
             tick_result = SimpleNamespace(source_tick=SimpleNamespace(tick_index=0))
             world = SimpleNamespace(
                 state=SimpleNamespace(
@@ -132,15 +132,12 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
                     bonuses=SimpleNamespace(reflex_boost=0.0),
                 ),
             )
-            if hooks.before_tick is not None:
-                hooks.before_tick(0, world, 0.016)
-            if hooks.after_tick is not None:
-                hooks.after_tick(tick_result, world)
-                if hooks.on_rng_trace is not None:
-                    hooks.on_rng_trace(
-                        tick_result,
-                        ((0x90ABCDEF, 28052, 0xED9D2340, None),),
-                    )
+            observer.before_tick(0, world, 0.016)
+            observer.after_tick(tick_result, world)
+            observer.rng_trace(
+                tick_result,
+                ((0x90ABCDEF, 28052, 0xED9D2340, None),),
+            )
             return SimpleNamespace()
 
     monkeypatch.setattr(dbg_record, "load_replay_file", lambda _path: replay)

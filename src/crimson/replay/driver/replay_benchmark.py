@@ -20,7 +20,7 @@ from grim.view import ViewContext
 
 from ...modes.replay_playback_mode import ReplayPlaybackMode
 from ...replay import Replay
-from .playback_driver import PlaybackWalkHooks, build_verify_playback_driver
+from .playback_driver import PlaybackWalkObserver, build_verify_playback_driver
 from .render_telemetry import RenderTelemetryFrameSnapshot, RenderTelemetrySession
 from .render_telemetry_charts import write_render_telemetry_charts
 from .setup import RunResult
@@ -35,6 +35,19 @@ class _ProgressBarLike(Protocol):
     def set_postfix_str(self, s: str, refresh: bool = True) -> None: ...
 
     def close(self) -> None: ...
+
+
+class _TickProgressObserver(PlaybackWalkObserver):
+    tick_progress_bar: _ProgressBarLike
+    tick_total: int
+    completed_ticks: int = 0
+
+    def progress(self, next_tick_index: int) -> None:
+        target_tick = max(0, min(int(self.tick_total), int(next_tick_index)))
+        if target_tick <= int(self.completed_ticks):
+            return
+        self.tick_progress_bar.update(target_tick - int(self.completed_ticks))
+        self.completed_ticks = target_tick
 
 
 class _ProfileStatsLike(Protocol):
@@ -462,8 +475,7 @@ def run_replay_benchmark(
 
         def _run_once_with_tick_progress(*, tick_desc: str) -> RunResult:
             tick_progress: _ProgressBarLike | None = None
-            completed_ticks = 0
-            tick_callback: Callable[[int], None] | None = None
+            tick_observer: _TickProgressObserver | None = None
             completed_run = False
             if bool(show_progress) and tick_total > 0:
                 tick_progress_bar = cast(
@@ -476,16 +488,10 @@ def run_replay_benchmark(
                     ),
                 )
                 tick_progress = tick_progress_bar
-
-                def _on_tick(tick_index: int) -> None:
-                    nonlocal completed_ticks
-                    target_tick = max(0, min(tick_total, int(tick_index)))
-                    if target_tick <= completed_ticks:
-                        return
-                    tick_progress_bar.update(target_tick - completed_ticks)
-                    completed_ticks = target_tick
-
-                tick_callback = _on_tick
+                tick_observer = _TickProgressObserver(
+                    tick_progress_bar=tick_progress_bar,
+                    tick_total=tick_total,
+                )
 
             try:
                 driver = build_verify_playback_driver(
@@ -494,12 +500,13 @@ def run_replay_benchmark(
                     trace_rng=bool(trace_rng),
                 )
                 result = driver.run(
-                    hooks=PlaybackWalkHooks(on_progress=tick_callback),
+                    observer=tick_observer,
                 )
                 completed_run = True
                 return result
             finally:
                 if tick_progress is not None:
+                    completed_ticks = 0 if tick_observer is None else int(tick_observer.completed_ticks)
                     if completed_run and completed_ticks < tick_total:
                         tick_progress.update(tick_total - completed_ticks)
                     tick_progress.close()

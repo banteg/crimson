@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
@@ -9,14 +7,20 @@ from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.replay.checkpoints import ReplayCheckpoint
-from crimson.replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
+from crimson.replay.driver.playback_driver import (
+    PlaybackDriver,
+    PlaybackWalkObserver,
+    RngTraceDraw,
+    build_verify_playback_driver,
+)
 from crimson.replay.driver.replay_info import ReplayInfoResult, collect_replay_info
 from crimson.replay.driver.setup import RunResult
 from crimson.replay.types import current_replay_game_version
+from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
-from grim.rand import CallerStatic, Crand
+from grim.rand import Crand
 
 
 def _blank_survival_replay(
@@ -120,6 +124,47 @@ def _quest_spawn_entries(level: str = "1.1", *, player_count: int = 1, seed: int
     )
 
 
+class ReplayRngTraceRecorder(PlaybackWalkObserver):
+    rows_by_tick: dict[int, list[RngTraceDraw]]
+
+    def rng_trace(self, tick_result: TickResult, draws: tuple[RngTraceDraw, ...]) -> None:
+        self.rows_by_tick[int(tick_result.source_tick.tick_index)] = list(draws)
+
+
+class _VerifyPlaybackObserver(PlaybackWalkObserver):
+    driver: PlaybackDriver
+    checkpoints_out: list[ReplayCheckpoint] | None = None
+    checkpoint_ticks: set[int] | None = None
+    checkpoint_use_world_step_creature_count: bool = False
+    observer: PlaybackWalkObserver | None = None
+
+    def before_tick(self, tick_index: int, world: WorldState, dt_tick: float) -> None:
+        if self.observer is not None:
+            self.observer.before_tick(int(tick_index), world, float(dt_tick))
+
+    def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
+        checkpoints_out = self.checkpoints_out
+        checkpoint_ticks = self.checkpoint_ticks
+        tick_index = int(tick_result.source_tick.tick_index)
+        if checkpoints_out is not None and checkpoint_ticks is not None and tick_index in checkpoint_ticks:
+            checkpoints_out.append(
+                self.driver.build_checkpoint(
+                    tick_result=tick_result,
+                    use_world_step_creature_count=bool(self.checkpoint_use_world_step_creature_count),
+                ),
+            )
+        if self.observer is not None:
+            self.observer.after_tick(tick_result, world)
+
+    def rng_trace(self, tick_result: TickResult, draws: tuple[RngTraceDraw, ...]) -> None:
+        if self.observer is not None:
+            self.observer.rng_trace(tick_result, draws)
+
+    def progress(self, next_tick_index: int) -> None:
+        if self.observer is not None:
+            self.observer.progress(int(next_tick_index))
+
+
 def _run_verify_playback(
     replay,
     *,
@@ -133,9 +178,7 @@ def _run_verify_playback(
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     spawn_entries=None,
     start_weapon_id=None,
-    tick_progress_callback: Callable[[int], None] | None = None,
-    tick_observer: Callable[[int, WorldState], None] | None = None,
-    tick_rng_trace_observer: Callable[[int, list[tuple[int, int, int, CallerStatic]]], None] | None = None,
+    observer: PlaybackWalkObserver | None = None,
 ) -> RunResult:
     driver = build_verify_playback_driver(
         replay,
@@ -148,36 +191,13 @@ def _run_verify_playback(
         start_weapon_id=start_weapon_id,
     )
 
-    after_tick = None
-    if checkpoints_out is not None or tick_observer is not None:
-        def _after_tick(tick_result, world) -> None:
-            if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_result.source_tick.tick_index) in checkpoint_ticks:
-                checkpoints_out.append(
-                    driver.build_checkpoint(
-                        tick_result=tick_result,
-                        use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
-                    ),
-                )
-            if tick_observer is not None:
-                tick_observer(int(tick_result.source_tick.tick_index), world)
-
-        after_tick = _after_tick
-
-    on_rng_trace = None
-    if tick_rng_trace_observer is not None:
-        def _on_rng_trace(tick_result, draws) -> None:
-            tick_rng_trace_observer(
-                int(tick_result.source_tick.tick_index),
-                list(draws),
-            )
-
-        on_rng_trace = _on_rng_trace
-
     return driver.run(
-        hooks=PlaybackWalkHooks(
-            after_tick=after_tick,
-            on_progress=tick_progress_callback,
-            on_rng_trace=on_rng_trace,
+        observer=_VerifyPlaybackObserver(
+            driver=driver,
+            checkpoints_out=checkpoints_out,
+            checkpoint_ticks=checkpoint_ticks,
+            checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
+            observer=observer,
         ),
     )
 
