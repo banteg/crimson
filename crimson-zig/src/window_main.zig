@@ -943,7 +943,7 @@ const App = struct {
             .start_typo => self.startNewRun(self.liveRunConfig(.typo, null)),
             .start_tutorial => self.startNewRun(self.liveRunConfig(.tutorial, null)),
             .open_quests => {
-                self.quests_menu.reset();
+                self.quests_menu.resetToLevelKey(self.last_quest_level_key);
                 self.setScreen(.quests_menu);
             },
             .open_network_session => {
@@ -993,6 +993,9 @@ const App = struct {
         }
         if (statistics_update.play_button_click) {
             self.audio.playUiButtonClick();
+        }
+        if (statistics_update.quest_level_key) |quest_level_key| {
+            self.last_quest_level_key = quest_level_key;
         }
         switch (statistics_update.action) {
             .none => {},

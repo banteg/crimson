@@ -523,6 +523,11 @@ pub const QuestState = struct {
     pub fn reset(self: *QuestState) void {
         self.* = .{};
     }
+
+    pub fn resetToLevelKey(self: *QuestState, level_key: i32) void {
+        self.reset();
+        self.stage = std.math.clamp(@divTrunc(level_key, 100), @as(i32, 1), @as(i32, 5));
+    }
 };
 
 pub const QuestResult = struct {
@@ -532,6 +537,19 @@ pub const QuestResult = struct {
     play_button_click: bool = false,
     config_dirty: bool = false,
 };
+
+test "quest menu reset can preserve selected quest stage" {
+    var state: QuestState = .{ .stage = 1 };
+
+    state.resetToLevelKey(407);
+    try std.testing.expectEqual(@as(i32, 4), state.stage);
+
+    state.resetToLevelKey(999);
+    try std.testing.expectEqual(@as(i32, 5), state.stage);
+
+    state.resetToLevelKey(-1);
+    try std.testing.expectEqual(@as(i32, 1), state.stage);
+}
 
 pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, demo_enabled: bool) QuestResult {
     const dt_ms = frameDeltaMs(frame_dt);

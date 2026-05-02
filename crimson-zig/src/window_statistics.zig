@@ -202,6 +202,7 @@ pub const Action = enum {
 
 pub const UpdateResult = struct {
     action: Action = .none,
+    quest_level_key: ?i32 = null,
     config_dirty: bool = false,
     play_panel_click: bool = false,
     play_button_click: bool = false,
@@ -410,9 +411,9 @@ fn updateHighScores(
         }
     }
 
-    if (updateHighScoreQuestArrows(hs, config, status, left_rect)) {
+    if (updateHighScoreQuestArrows(hs, config, status, left_rect)) |quest_level_key| {
         loadHighScores(hs, allocator, base_dir, config.*, status);
-        return .{ .config_dirty = true, .play_button_click = true };
+        return .{ .quest_level_key = quest_level_key, .config_dirty = true, .play_button_click = true };
     }
 
     if (updateHighScoreWidgets(hs, allocator, base_dir, config, status, right_rect)) |widget_result| {
@@ -1793,10 +1794,10 @@ fn updateHighScoreQuestArrows(
     config: *formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
     left_rect: rl.Rectangle,
-) bool {
-    if (state.mode != .quests) return false;
+) ?i32 {
+    if (state.mode != .quests) return null;
     const click = rl.isMouseButtonPressed(.left);
-    if (!click) return false;
+    if (!click) return null;
 
     const unlock = if (config.hardcore_flag != 0) status.quest_unlock_index_full else status.quest_unlock_index;
     const max_index = std.math.clamp(unlock, @as(i32, 0), @as(i32, 49));
@@ -1804,13 +1805,13 @@ fn updateHighScoreQuestArrows(
     const mouse = rl.getMousePosition();
     if (current_index > 0 and rectContains(questPrevArrowRect(left_rect), mouse)) {
         state.quest_level_key = questIndexToLevelKey(current_index - 1);
-        return true;
+        return state.quest_level_key;
     }
     if (current_index < max_index and rectContains(questNextArrowRect(left_rect), mouse)) {
         state.quest_level_key = questIndexToLevelKey(current_index + 1);
-        return true;
+        return state.quest_level_key;
     }
-    return false;
+    return null;
 }
 
 fn drawQuestArrows(
