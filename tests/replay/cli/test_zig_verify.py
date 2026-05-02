@@ -21,6 +21,7 @@ from ._helpers import (
     build_typo_submit_replay,
     inject_tick_commands,
     write_current_missing_quest_level_replay,
+    write_current_mode_player_count_replay,
     write_current_typo_event_replay,
     write_legacy_out_of_order_event_replay,
     write_replay,
@@ -290,6 +291,30 @@ def test_zig_replay_verify_reports_missing_quest_level_as_replay_failure(tmp_pat
     assert "native runtime limitation" not in result.stderr
     assert "native runtime" not in result.stderr
     assert "InvalidQuestSpawnTable" not in result.stderr
+
+
+def test_zig_replay_verify_reports_single_player_mode_count_as_replay_failure(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    cases = (
+        (GameMode.TYPO, "typo-multiplayer.crd", "Typ-o replays require player_count == 1"),
+        (GameMode.TUTORIAL, "tutorial-multiplayer.crd", "tutorial replays require player_count == 1"),
+    )
+
+    for mode, name, detail in cases:
+        replay_path = write_current_mode_player_count_replay(
+            tmp_path,
+            replay=replay,
+            name=name,
+            mode=mode,
+            player_count=2,
+        )
+
+        result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
+
+        assert result.returncode == 1
+        assert result.stdout == ""
+        assert f"replay verification failed: {detail}" in result.stderr
+        assert "native runtime limitation" not in result.stderr
 
 
 def test_zig_replay_verify_reports_event_player_index_detail(tmp_path: Path) -> None:

@@ -45,6 +45,8 @@ pub const ReplayCodecError = error{
     InvalidHeaderValue,
     MissingHeaderField,
     MissingQuestLevel,
+    TypoMultiplayer,
+    TutorialMultiplayer,
     UnsupportedReplayFormatVersion,
     UnsupportedInputShape,
     UnsupportedEventShape,
@@ -201,8 +203,11 @@ pub fn unsupportedReplayHeaderDetail(
     if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3 and header.game_mode_id != 4 and header.game_mode_id != 8) {
         return "native replay tools support only survival/rush/quest/typo/tutorial modes";
     }
-    if ((header.game_mode_id == 4 or header.game_mode_id == 8) and header.player_count != 1) {
-        return "typo and tutorial replays require player_count == 1";
+    if (header.game_mode_id == @intFromEnum(game_ids.GameModeId.typo) and header.player_count != 1) {
+        return "Typ-o replays require player_count == 1";
+    }
+    if (header.game_mode_id == @intFromEnum(game_ids.GameModeId.tutorial) and header.player_count != 1) {
+        return "tutorial replays require player_count == 1";
     }
     if (isMissingQuestLevel(header.game_mode_id, header.quest_level)) {
         return "quest replays require a valid header.quest_level";
@@ -229,6 +234,15 @@ pub fn unsupportedReplayHeaderDetail(
 fn isMissingQuestLevel(game_mode_id: i32, quest_level: []const u8) bool {
     return game_mode_id == @intFromEnum(game_ids.GameModeId.quests) and
         std.mem.trim(u8, quest_level, " \t\r\n").len == 0;
+}
+
+fn validateModePlayerCount(game_mode_id: i32, player_count: i32) ReplayCodecError!void {
+    if (game_mode_id == @intFromEnum(game_ids.GameModeId.typo) and player_count != 1) {
+        return error.TypoMultiplayer;
+    }
+    if (game_mode_id == @intFromEnum(game_ids.GameModeId.tutorial) and player_count != 1) {
+        return error.TutorialMultiplayer;
+    }
 }
 
 pub const PerkPickEvent = struct {
@@ -1841,6 +1855,7 @@ fn buildHeader(
     if (tick_rate <= 0 or player_count <= 0) {
         return error.InvalidHeaderValue;
     }
+    try validateModePlayerCount(game_mode_id, player_count);
     if (wire.game_version.len == 0) {
         return error.MissingHeaderField;
     }
@@ -1926,6 +1941,7 @@ fn buildHeaderCurrent(
     const quest_unlock_index_full = try parseI32(wire.status.quest_unlock_index_full);
 
     if (tick_rate <= 0 or player_count <= 0) return error.InvalidHeaderValue;
+    try validateModePlayerCount(wire.game_mode_id, player_count);
     if (wire.game_version.len == 0) return error.MissingHeaderField;
     if (wire.game_mode_id == @intFromEnum(game_ids.GameModeId.quests) and wire.quest_level == null) {
         return error.MissingQuestLevel;
@@ -2528,6 +2544,75 @@ test "build current header rejects quest replay without quest level" {
         .input_quantization = "f32",
     };
     try std.testing.expectError(error.MissingQuestLevel, buildHeaderCurrent(std.testing.allocator, wire));
+}
+
+test "build headers reject multiplayer Typ-o and tutorial replays" {
+    const usage_counts = [_]u32{0} ** weapon_usage_count;
+    const cases = [_]struct {
+        game_mode_id: i32,
+        expected_error: ReplayCodecError,
+    }{
+        .{
+            .game_mode_id = @intFromEnum(game_ids.GameModeId.typo),
+            .expected_error = error.TypoMultiplayer,
+        },
+        .{
+            .game_mode_id = @intFromEnum(game_ids.GameModeId.tutorial),
+            .expected_error = error.TutorialMultiplayer,
+        },
+    };
+
+    for (cases) |case| {
+        const wire: ReplayHeaderWire = .{
+            .game_mode_id = case.game_mode_id,
+            .seed = 1,
+            .replay_format_version = replay_format_version,
+            .quest_level = "",
+            .bootstrap_kind = "none",
+            .bootstrap_seed = 0,
+            .game_version = "0.7.0",
+            .tick_rate = 60,
+            .difficulty_level = 0,
+            .hardcore = false,
+            .preserve_bugs = false,
+            .detail_preset = 5,
+            .gore_disabled = 0,
+            .world_size = 1024.0,
+            .player_count = 2,
+            .status = .{
+                .quest_unlock_index = 0,
+                .quest_unlock_index_full = 0,
+                .weapon_usage_counts = usage_counts[0..],
+            },
+            .claimed_stats = .{},
+            .input_quantization = "f32",
+        };
+        try std.testing.expectError(case.expected_error, buildHeader(std.testing.allocator, wire));
+
+        const current_wire: ReplayHeaderCurrentWire = .{
+            .game_mode_id = case.game_mode_id,
+            .seed = 1,
+            .replay_format_version = replay_format_version,
+            .quest_level = null,
+            .game_version = "0.9.0",
+            .tick_rate = 60,
+            .quest_fail_retry_count = 0,
+            .hardcore = false,
+            .preserve_bugs = false,
+            .detail_preset = 5,
+            .violence_disabled = 0,
+            .world_size = 1024.0,
+            .player_count = 2,
+            .status = .{
+                .quest_unlock_index = 0,
+                .quest_unlock_index_full = 0,
+                .weapon_usage_counts = usage_counts[0..],
+            },
+            .claimed_stats = .{},
+            .input_quantization = "f32",
+        };
+        try std.testing.expectError(case.expected_error, buildHeaderCurrent(std.testing.allocator, current_wire));
+    }
 }
 
 test "unsupported replay header detail reports missing quest level" {
