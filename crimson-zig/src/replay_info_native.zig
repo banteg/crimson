@@ -76,67 +76,54 @@ pub fn runReplayInfoBytesJson(
     replay_bytes: []const u8,
     max_ticks: ?usize,
 ) !CommandOutput {
-    const payload = try buildInfoJsonPayload(allocator, replay_name, replay_bytes, max_ticks, null, false);
-    errdefer allocator.free(payload);
-    return .{
-        .stdout = payload,
-        .stderr = try allocator.dupe(u8, ""),
-        .exit_code = 0,
-    };
-}
-
-fn buildInfoJsonPayload(
-    allocator: std.mem.Allocator,
-    replay_path: []const u8,
-    replay_bytes: []const u8,
-    max_ticks: ?usize,
-    player_index_filter: ?i32,
-    include_extra_events: bool,
-) ![]u8 {
     var replay_payload_alloc: ?[]u8 = null;
     defer if (replay_payload_alloc) |buf| allocator.free(buf);
 
     const replay_payload: []const u8 = if (replay_codec.isZstdPayload(replay_bytes)) blk: {
-        const inflated = try replay_codec.inflateZstdPayload(
+        const inflated = replay_codec.inflateZstdPayload(
             allocator,
             replay_bytes,
             replay_codec.max_replay_payload_bytes,
-        );
+        ) catch |err| {
+            return buildInfoFailedOutputForReplayCodecError(allocator, err);
+        };
         replay_payload_alloc = inflated;
         break :blk inflated;
     } else if (replay_codec.isGzipPayload(replay_bytes)) blk: {
-        const inflated = try replay_codec.inflateGzipPayload(
+        const inflated = replay_codec.inflateGzipPayload(
             allocator,
             replay_bytes,
             replay_codec.max_replay_payload_bytes,
-        );
+        ) catch |err| {
+            return buildInfoFailedOutputForReplayCodecError(allocator, err);
+        };
         replay_payload_alloc = inflated;
         break :blk inflated;
     } else replay_bytes;
 
-    var replay = try replay_codec.parseReplay(allocator, replay_payload);
+    var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
+        return buildInfoFailedOutputForReplayCodecError(allocator, err);
+    };
     defer replay.deinit(allocator);
 
     if (unsupportedReplayHeaderDetail(replay.header, replay.tickCount())) |detail| {
-        _ = detail;
-        return error.UnsupportedReplayHeader;
+        return buildInfoFailedOutput(allocator, detail);
     }
-    try replay_codec.validateReplayBootstrap(replay.header);
+    replay_codec.validateReplayBootstrap(replay.header) catch |err| {
+        return buildInfoFailedOutputForReplayCodecError(allocator, err);
+    };
 
-    if (player_index_filter) |player_index| {
-        if (player_index < 0) return error.InvalidPlayerIndexFilter;
-        if (replay.header.player_count > 0 and player_index >= replay.header.player_count) return error.InvalidPlayerIndexFilter;
-    }
-
-    const result = try replay_info_mod.collect(
+    const result = replay_info_mod.collect(
         allocator,
         replay,
         .{
             .max_ticks = max_ticks,
-            .player_index = player_index_filter,
-            .include_extra_events = include_extra_events,
+            .player_index = null,
+            .include_extra_events = false,
         },
-    );
+    ) catch |err| {
+        return buildInfoFailedOutputForReplayInfoError(allocator, err);
+    };
     defer result.deinit(allocator);
 
     const summary: ReplayInfoSummaryPayload = .{
@@ -151,15 +138,21 @@ fn buildInfoJsonPayload(
     const payload: ReplayInfoPayload = .{
         .schema_version = replay_info_schema_version,
         .status = "ok",
-        .replay = replay_path,
+        .replay = replay_name,
         .summary = summary,
         .timeline = result.timeline,
     };
 
-    var payload_writer: std.Io.Writer.Allocating = .init(allocator);
-    errdefer payload_writer.deinit();
-    try std.json.Stringify.value(payload, .{}, &payload_writer.writer);
-    return payload_writer.toOwnedSlice();
+    var stdout_buf: std.Io.Writer.Allocating = .init(allocator);
+    defer stdout_buf.deinit();
+    try std.json.Stringify.value(payload, .{}, &stdout_buf.writer);
+    try stdout_buf.writer.writeByte('\n');
+
+    return .{
+        .stdout = try stdout_buf.toOwnedSlice(),
+        .stderr = try allocator.dupe(u8, ""),
+        .exit_code = 0,
+    };
 }
 
 fn runNativeInfo(
@@ -761,6 +754,44 @@ test "replay info writes json artifact while preserving json stdout" {
     defer allocator.free(artifact);
     const stdout_json = std.mem.trimRight(u8, output.stdout, "\n");
     try std.testing.expectEqualStrings(stdout_json, artifact);
+}
+
+test "byte replay info emits JSON payload" {
+    const allocator = std.testing.allocator;
+    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(replay_bytes);
+
+    const output = try runReplayInfoBytesJson(
+        allocator,
+        "<bytes>",
+        replay_bytes,
+        1,
+    );
+    defer output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expectEqualStrings("", output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"schema_version\":2") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"replay\":\"<bytes>\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"ticks_simulated\":1") != null);
+}
+
+test "byte replay info returns detailed codec failure output" {
+    const allocator = std.testing.allocator;
+    const output = try runReplayInfoBytesJson(
+        allocator,
+        "<bytes>",
+        "not msgpack",
+        null,
+    );
+    defer output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u8, 1), output.exit_code);
+    try std.testing.expectEqualStrings("", output.stdout);
+    try std.testing.expectEqualStrings(
+        "replay info failed: replay payload is not valid msgpack wire format\n",
+        output.stderr,
+    );
 }
 
 test "replay info exposes codec and collector detail helpers" {

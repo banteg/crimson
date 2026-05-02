@@ -581,6 +581,33 @@ test "crimson_info_replay_json returns replay info payload" {
     try std.testing.expect(std.mem.indexOf(u8, out, "\"timeline\":") != null);
 }
 
+test "crimson_info_replay_json exposes detailed replay info failures" {
+    const replay_bytes = "not msgpack";
+    const result = crimson_info_replay_json(
+        @intFromPtr(replay_bytes.ptr),
+        replay_bytes.len,
+        0,
+        0,
+        0,
+        0,
+    );
+    try std.testing.expectEqual(@as(i32, -1), result);
+
+    const needed_or_error = crimson_last_error_json(0, 0);
+    try std.testing.expect(needed_or_error < 0);
+    const required_len: usize = @intCast(-needed_or_error);
+    var out: [128]u8 = undefined;
+    const copied = crimson_last_error_json(@intFromPtr(&out[0]), out.len);
+    try std.testing.expectEqual(@as(i32, @intCast(required_len)), copied);
+    try std.testing.expect(
+        std.mem.indexOf(
+            u8,
+            out[0..required_len],
+            "\"message\":\"replay info failed: replay payload is not valid msgpack wire format\"",
+        ) != null,
+    );
+}
+
 test "crimson_benchmark_replay_json returns benchmark payload" {
     const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(std.testing.allocator);
     defer std.testing.allocator.free(replay_bytes);
