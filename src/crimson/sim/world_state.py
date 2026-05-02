@@ -54,6 +54,150 @@ class WorldEvents(msgspec.Struct):
 _WORLD_DT_STEPS = WORLD_DT_STEPS
 _PLAYER_DEATH_HOOKS = PLAYER_DEATH_HOOKS
 
+
+class _WorldStepRuntime(msgspec.Struct):
+    world: WorldState
+    dt: float
+    world_size: float
+    detail_preset: int
+    violence_disabled: int
+    fx_queue: FxQueue
+    game_mode: GameMode
+    hit_audio_game_tune_started: bool
+    deaths: list[CreatureDeath]
+    sfx: list[SfxId]
+    trigger_game_tune: bool = False
+    hit_sfx: list[SfxId] = msgspec.field(default_factory=list)
+
+    def apply_player_projectile_damage(self, player_index: int, damage: float) -> None:
+        idx = int(player_index)
+        if not (0 <= idx < len(self.world.players)):
+            return
+        player_take_projectile_damage(self.world.state, self.world.players[idx], float(damage))
+
+    def apply_creature_damage(
+        self,
+        creature_index: int,
+        damage: float,
+        damage_type: int,
+        impulse: Vec2,
+        owner: OwnerRef,
+    ) -> None:
+        idx = int(creature_index)
+        if not (0 <= idx < len(self.world.creatures.entries)):
+            return
+        creature = self.world.creatures.entries[idx]
+        if not creature.active:
+            return
+        creature_apply_damage_with_lethal_followup(
+            creature,
+            damage_amount=float(damage),
+            damage_type=int(damage_type),
+            impulse=impulse,
+            owner=owner,
+            dt=float(self.dt),
+            players=self.world.players,
+            rng=self.world.state.rng,
+            preserve_bugs=bool(self.world.state.preserve_bugs),
+            effects=self.world.state.effects,
+            detail_preset=int(self.detail_preset),
+            on_lethal=lambda death_sfx: self.world._record_creature_death(
+                creature_index=idx,
+                dt=float(self.dt),
+                detail_preset=int(self.detail_preset),
+                world_size=float(self.world_size),
+                fx_queue=self.fx_queue,
+                deaths=self.deaths,
+                sfx=self.sfx,
+                death_sfx=death_sfx,
+            ),
+        )
+
+    def on_secondary_detonation_kill(self, creature_index: int) -> None:
+        idx = int(creature_index)
+        if not (0 <= idx < len(self.world.creatures.entries)) or float(self.world.creatures.entries[idx].hp) > 0.0:
+            return
+        # Native detonation follow-up re-enters creature death handling but does
+        # not run a second death-SFX random pick (`creature_apply_damage` only
+        # does that on the original killing hit).
+        self.world._record_creature_death(
+            creature_index=idx,
+            dt=float(self.dt),
+            detail_preset=int(self.detail_preset),
+            world_size=float(self.world_size),
+            fx_queue=self.fx_queue,
+            deaths=self.deaths,
+            sfx=self.sfx,
+        )
+
+    def prepare_projectile_hit_presentation(self, hit: ProjectileHit) -> ProjectileDecalPostCtx:
+        return self.world._prepare_projectile_hit_presentation(
+            hit=hit,
+            fx_queue=self.fx_queue,
+            detail_preset=int(self.detail_preset),
+            violence_disabled=int(self.violence_disabled),
+        )
+
+    def finalize_projectile_hit_presentation(self, hit: ProjectileHit, post_ctx: ProjectileDecalPostCtx) -> None:
+        self.world._finalize_projectile_hit_presentation(
+            post_ctx=post_ctx,
+            fx_queue=self.fx_queue,
+        )
+        hit_trigger, keys = plan_hit_sfx(
+            [hit],
+            game_mode=self.game_mode,
+            demo_mode_active=self.world.state.demo_mode_active,
+            game_tune_started=self.hit_audio_game_tune_started,
+            rng=self.world.state.rng,
+        )
+        if hit_trigger:
+            self.trigger_game_tune = True
+            self.hit_audio_game_tune_started = True
+        if keys:
+            self.hit_sfx.extend(keys)
+
+    def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None:
+        idx = int(creature_index)
+        if not (0 <= idx < len(self.world.creatures.entries)):
+            return
+        creature = self.world.creatures.entries[idx]
+        if not creature.active:
+            return
+        if float(creature.hp) <= 0.0:
+            return
+        creature.last_hit_owner = owner
+        self.world._record_creature_death(
+            creature_index=idx,
+            dt=float(self.dt),
+            detail_preset=int(self.detail_preset),
+            world_size=float(self.world_size),
+            fx_queue=self.fx_queue,
+            deaths=self.deaths,
+            sfx=self.sfx,
+            keep_corpse=False,
+        )
+
+    def on_player_lethal(self, player: PlayerState, *, dt: float) -> None:
+        self.world._run_player_death_hooks(
+            player=player,
+            dt=float(dt),
+            world_size=float(self.world_size),
+            detail_preset=int(self.detail_preset),
+            fx_queue=self.fx_queue,
+            deaths=self.deaths,
+        )
+
+    def build_events(self, *, hits: list[ProjectileHit], pickups: list[BonusPickupEvent]) -> WorldEvents:
+        return WorldEvents(
+            hits=hits,
+            deaths=tuple(self.deaths),
+            pickups=pickups,
+            sfx=self.sfx,
+            trigger_game_tune=bool(self.trigger_game_tune),
+            hit_sfx=self.hit_sfx,
+        )
+
+
 class WorldState(msgspec.Struct):
     spawn_env: SpawnEnv
     state: GameplayState
@@ -130,12 +274,6 @@ class WorldState(msgspec.Struct):
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=fx_queue)
 
-        def _apply_projectile_damage_to_player(player_index: int, damage: float) -> None:
-            idx = int(player_index)
-            if not (0 <= idx < len(self.players)):
-                return
-            player_take_projectile_damage(self.state, self.players[idx], float(damage))
-
         creature_result = self.creatures.update(
             dt,
             options=CreatureUpdateOptions(
@@ -151,95 +289,18 @@ class WorldState(msgspec.Struct):
                 violence_disabled=int(violence_disabled),
             ),
         )
-        deaths = list(creature_result.deaths)
-        sfx = list(creature_result.sfx)
-        trigger_game_tune = False
-        hit_sfx: list[SfxId] = []
-        hit_audio_game_tune_started = game_tune_started
-
-        def _apply_projectile_damage_to_creature(
-            creature_index: int,
-            damage: float,
-            damage_type: int,
-            impulse: Vec2,
-            owner: OwnerRef,
-        ) -> None:
-            idx = int(creature_index)
-            if not (0 <= idx < len(self.creatures.entries)):
-                return
-            creature = self.creatures.entries[idx]
-            if not creature.active:
-                return
-            creature_apply_damage_with_lethal_followup(
-                creature,
-                damage_amount=float(damage),
-                damage_type=int(damage_type),
-                impulse=impulse,
-                owner=owner,
-                dt=float(dt),
-                players=self.players,
-                rng=self.state.rng,
-                preserve_bugs=bool(self.state.preserve_bugs),
-                effects=self.state.effects,
-                detail_preset=int(detail_preset),
-                on_lethal=lambda death_sfx: self._record_creature_death(
-                    creature_index=idx,
-                    dt=float(dt),
-                    detail_preset=int(detail_preset),
-                    world_size=float(world_size),
-                    fx_queue=fx_queue,
-                    deaths=deaths,
-                    sfx=sfx,
-                    death_sfx=death_sfx,
-                ),
-            )
-
-        prev_creature_damage_appliers = self._set_creature_damage_appliers(_apply_projectile_damage_to_creature)
-
-        def _on_secondary_detonation_kill(creature_index: int) -> None:
-            idx = int(creature_index)
-            if not (0 <= idx < len(self.creatures.entries)) or float(self.creatures.entries[idx].hp) > 0.0:
-                return
-            # Native detonation follow-up re-enters creature death handling but does
-            # not run a second death-SFX random pick (`creature_apply_damage` only
-            # does that on the original killing hit).
-            self._record_creature_death(
-                creature_index=idx,
-                dt=float(dt),
-                detail_preset=int(detail_preset),
-                world_size=float(world_size),
-                fx_queue=fx_queue,
-                deaths=deaths,
-                sfx=sfx,
-            )
-
-        def _on_projectile_hit_pre(hit: ProjectileHit) -> ProjectileDecalPostCtx:
-            return self._prepare_projectile_hit_presentation(
-                hit=hit,
-                fx_queue=fx_queue,
-                detail_preset=int(detail_preset),
-                violence_disabled=int(violence_disabled),
-            )
-
-        def _on_projectile_hit_post(_hit: ProjectileHit, post_ctx: ProjectileDecalPostCtx) -> None:
-            nonlocal trigger_game_tune, hit_audio_game_tune_started
-            self._finalize_projectile_hit_presentation(
-                post_ctx=post_ctx,
-                fx_queue=fx_queue,
-            )
-            hit_trigger, keys = plan_hit_sfx(
-                [_hit],
-                game_mode=game_mode,
-                demo_mode_active=self.state.demo_mode_active,
-                game_tune_started=hit_audio_game_tune_started,
-                rng=self.state.rng,
-            )
-            if hit_trigger:
-                trigger_game_tune = True
-                hit_audio_game_tune_started = True
-            if keys:
-                hit_sfx.extend(keys)
-
+        step_runtime = _WorldStepRuntime(
+            world=self,
+            dt=float(dt),
+            world_size=float(world_size),
+            detail_preset=int(detail_preset),
+            violence_disabled=int(violence_disabled),
+            fx_queue=fx_queue,
+            game_mode=game_mode,
+            hit_audio_game_tune_started=bool(game_tune_started),
+            deaths=list(creature_result.deaths),
+            sfx=list(creature_result.sfx),
+        )
         hits = self.state.projectiles.step(
             PrimaryStepCtx(
                 dt=float(dt),
@@ -251,9 +312,13 @@ class WorldState(msgspec.Struct):
                     rng=self.state.rng,
                     runtime_state=self.state,
                     players=self.players,
-                    apply_player_damage=_apply_projectile_damage_to_player,
-                    on_hit=_on_projectile_hit_pre,
-                    on_hit_post=cast("Callable[[ProjectileHit, object], None]", _on_projectile_hit_post),
+                    apply_player_damage=step_runtime.apply_player_projectile_damage,
+                    apply_creature_damage=step_runtime.apply_creature_damage,
+                    on_hit=step_runtime.prepare_projectile_hit_presentation,
+                    on_hit_post=cast(
+                        "Callable[[ProjectileHit, object], None]",
+                        step_runtime.finalize_projectile_hit_presentation,
+                    ),
                 ),
             ),
         )
@@ -264,7 +329,8 @@ class WorldState(msgspec.Struct):
                 runtime_state=self.state,
                 fx_queue=fx_queue,
                 detail_preset=int(detail_preset),
-                on_detonation_kill=_on_secondary_detonation_kill,
+                apply_creature_damage=step_runtime.apply_creature_damage,
+                on_detonation_kill=step_runtime.on_secondary_detonation_kill,
             ),
         )
         self._run_post_damage_player_death_hooks(
@@ -273,34 +339,14 @@ class WorldState(msgspec.Struct):
             world_size=float(world_size),
             detail_preset=int(detail_preset),
             fx_queue=fx_queue,
-            deaths=deaths,
+            deaths=step_runtime.deaths,
         )
-
-        def _kill_creature_no_corpse(creature_index: int, owner: OwnerRef) -> None:
-            idx = int(creature_index)
-            if not (0 <= idx < len(self.creatures.entries)):
-                return
-            creature = self.creatures.entries[idx]
-            if not creature.active:
-                return
-            if float(creature.hp) <= 0.0:
-                return
-            creature.last_hit_owner = owner
-            self._record_creature_death(
-                creature_index=idx,
-                dt=float(dt),
-                detail_preset=int(detail_preset),
-                world_size=float(world_size),
-                fx_queue=fx_queue,
-                deaths=deaths,
-                sfx=sfx,
-                keep_corpse=False,
-            )
 
         self.state.particles.update(
             dt,
             creatures=self.creatures.entries,
-            kill_creature=_kill_creature_no_corpse,
+            apply_creature_damage=step_runtime.apply_creature_damage,
+            kill_creature=step_runtime.kill_creature_no_corpse,
             fx_queue=fx_queue,
             sprite_effects=self.state.sprite_effects,
         )
@@ -321,13 +367,9 @@ class WorldState(msgspec.Struct):
                 players=self.players,
                 creatures=self.creatures.entries,
                 spawn_slots=self.creatures.spawn_slots,
-                on_player_lethal=lambda dead_player, dt_value=float(player_dt): self._run_player_death_hooks(
-                    player=dead_player,
+                on_player_lethal=lambda dead_player, dt_value=float(player_dt): step_runtime.on_player_lethal(
+                    dead_player,
                     dt=float(dt_value),
-                    world_size=float(world_size),
-                    detail_preset=int(detail_preset),
-                    fx_queue=fx_queue,
-                    deaths=deaths,
                 ),
                 reload_active_any=bool(reload_active_any),
             )
@@ -365,6 +407,7 @@ class WorldState(msgspec.Struct):
             detail_preset=int(detail_preset),
             defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
             freeze_corpse_indices=freeze_corpse_indices_at_tick_start,
+            apply_creature_damage=step_runtime.apply_creature_damage,
         )
         if pickups:
             emit_bonus_pickup_effects(
@@ -374,57 +417,12 @@ class WorldState(msgspec.Struct):
             )
         survival_enforce_reward_weapon_guard(self.state, self.players)
         if self.state.sfx_queue:
-            sfx.extend(self.state.sfx_queue)
+            step_runtime.sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()
         # Player-damage VO RNG work lives inside `player_take_damage` for native
         # ordering parity (VO draw before heading-jitter draw).
         self.state.player_death_hook_skip_indices.clear()
-        self._restore_creature_damage_appliers(prev_creature_damage_appliers)
-        return WorldEvents(
-            hits=hits,
-            deaths=tuple(deaths),
-            pickups=pickups,
-            sfx=sfx,
-            trigger_game_tune=bool(trigger_game_tune),
-            hit_sfx=hit_sfx,
-        )
-
-    def _set_creature_damage_appliers(
-        self,
-        applier: Callable[[int, float, int, Vec2, OwnerRef], None] | None,
-    ) -> tuple[
-        Callable[[int, float, int, Vec2, OwnerRef], None] | None,
-        Callable[[int, float, int, Vec2, OwnerRef], None] | None,
-        Callable[[int, float, int, Vec2, OwnerRef], None] | None,
-        Callable[[int, float, int, Vec2, OwnerRef], None] | None,
-    ]:
-        prev = (
-            self.state.projectiles.creature_damage_applier,
-            self.state.secondary_projectiles.creature_damage_applier,
-            self.state.particles.creature_damage_applier,
-            self.state.bonus_pool.creature_damage_applier,
-        )
-        self.state.projectiles.creature_damage_applier = applier
-        self.state.secondary_projectiles.creature_damage_applier = applier
-        self.state.particles.creature_damage_applier = applier
-        self.state.bonus_pool.creature_damage_applier = applier
-        return prev
-
-    def _restore_creature_damage_appliers(
-        self,
-        previous: tuple[
-            Callable[[int, float, int, Vec2, OwnerRef], None] | None,
-            Callable[[int, float, int, Vec2, OwnerRef], None] | None,
-            Callable[[int, float, int, Vec2, OwnerRef], None] | None,
-            Callable[[int, float, int, Vec2, OwnerRef], None] | None,
-        ],
-    ) -> None:
-        (
-            self.state.projectiles.creature_damage_applier,
-            self.state.secondary_projectiles.creature_damage_applier,
-            self.state.particles.creature_damage_applier,
-            self.state.bonus_pool.creature_damage_applier,
-        ) = previous
+        return step_runtime.build_events(hits=hits, pickups=pickups)
 
     def _run_player_death_hooks(
         self,

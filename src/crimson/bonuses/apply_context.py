@@ -7,6 +7,7 @@ import msgspec
 
 from grim.geom import Vec2
 
+from ..projectiles.types import CreatureDamageApplier
 from ..sim.state_types import GameplayState, PlayerState
 from .hud import _TimerRef
 from .ids import BONUS_BY_ID, BonusId
@@ -29,6 +30,7 @@ class BonusApplyCtx(msgspec.Struct):
     icon_id: int
     defer_freeze_corpse_fx: bool = False
     freeze_corpse_indices: set[int] | None = None
+    apply_creature_damage: CreatureDamageApplier | None = None
 
     def register_global(self, timer_key: str) -> None:
         self.state.bonus_hud.register(

@@ -49,6 +49,7 @@ class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     runtime_state: GameplayState
     players: Sequence[PlayerState]
     apply_player_damage: Callable[[int, float], None]
+    apply_creature_damage: CreatureDamageApplier | None = None
     ion_aoe_scale: float = 1.0
     detail_preset: int = 5
     on_hit: Callable[[ProjectileHit], object] | None = None
@@ -170,7 +171,11 @@ class ProjectilePool:
         runtime_state = options.runtime_state
         players = options.players
         apply_player_damage = options.apply_player_damage
-        apply_creature_damage = self._creature_damage_applier
+        apply_creature_damage = (
+            options.apply_creature_damage
+            if options.apply_creature_damage is not None
+            else self._creature_damage_applier
+        )
         on_hit = options.on_hit
         on_hit_post = options.on_hit_post
 
@@ -252,6 +257,7 @@ class ProjectilePool:
             runtime_state=runtime_state,
             effects=effects,
             sfx_queue=sfx_queue,
+            apply_creature_damage=apply_creature_damage,
         )
 
         def _reset_shock_chain_if_owner(index: int) -> None:

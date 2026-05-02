@@ -73,6 +73,7 @@ class SecondaryStepCtx(msgspec.Struct, frozen=True):
     runtime_state: GameplayState | None = None
     fx_queue: FxQueue | None = None
     detail_preset: int = 5
+    apply_creature_damage: CreatureDamageApplier | None = None
     on_detonation_kill: SecondaryDetonationKillHandler | None = None
 
 
@@ -168,6 +169,11 @@ class SecondaryProjectilePool:
         runtime_state = ctx.runtime_state
         fx_queue = ctx.fx_queue
         detail_preset = int(ctx.detail_preset)
+        apply_creature_damage = (
+            ctx.apply_creature_damage
+            if ctx.apply_creature_damage is not None
+            else self._creature_damage_applier
+        )
         on_detonation_kill = ctx.on_detonation_kill
 
         if dt <= 0.0:
@@ -187,7 +193,7 @@ class SecondaryProjectilePool:
                 damage_type=CreatureDamageType.EXPLOSION,
                 impulse=impulse,
                 owner=owner,
-                apply_creature_damage=self._creature_damage_applier,
+                apply_creature_damage=apply_creature_damage,
             )
 
         rng = Crand(0)

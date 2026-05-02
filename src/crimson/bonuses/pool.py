@@ -371,6 +371,7 @@ class BonusPool:
         detail_preset: int = 5,
         defer_freeze_corpse_fx: bool = False,
         freeze_corpse_indices: set[int] | None = None,
+        apply_creature_damage: CreatureDamageApplier | None = None,
     ) -> list[BonusPickupEvent]:
         if dt <= 0.0:
             return []
@@ -411,6 +412,11 @@ class BonusPool:
                         detail_preset=int(detail_preset),
                         defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
                         freeze_corpse_indices=freeze_corpse_indices,
+                        apply_creature_damage=(
+                            apply_creature_damage
+                            if apply_creature_damage is not None
+                            else self._creature_damage_applier
+                        ),
                     )
                     entry.picked = True
                     entry.time_left = BONUS_PICKUP_LINGER

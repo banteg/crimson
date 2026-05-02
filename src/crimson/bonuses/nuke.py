@@ -69,7 +69,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
 
     creatures = ctx.creatures
     if creatures:
-        apply_creature_damage = ctx.state.bonus_pool.creature_damage_applier
+        apply_creature_damage = ctx.apply_creature_damage
         prev_guard = bool(ctx.state.bonus_spawn_guard)
         ctx.state.bonus_spawn_guard = True
         for idx, creature in enumerate(creatures):
