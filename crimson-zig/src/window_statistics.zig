@@ -416,7 +416,7 @@ fn updateHighScores(
         return .{ .quest_level_key = quest_level_key, .config_dirty = true, .play_button_click = true };
     }
 
-    if (updateHighScoreWidgets(hs, allocator, base_dir, config, status, right_rect)) |widget_result| {
+    if (updateHighScoreWidgets(hs, allocator, base_dir, config, status, highScoreRightOptionsRect(right_rect, config.screen_width))) |widget_result| {
         return widget_result;
     }
 
@@ -661,7 +661,7 @@ fn drawPerks(
         const left_rect = animatedLeftPanelRect(left_panel_rect, timeline_ms);
         const right_rect = animatedRightPanelRect(right_panel_rect, timeline_ms);
         drawSplitPanelShell(assets, timeline_ms);
-        drawPerksPanels(state, assets, status, config.gore_disabled, config.hardcore_flag != 0, preserve_bugs, left_rect, right_rect);
+        drawPerksPanels(state, assets, status, config.gore_disabled, config.hardcore_flag != 0, preserve_bugs, left_rect, right_rect, config.screen_width);
         return;
     }
     rl.clearBackground(panel_color);
@@ -820,18 +820,19 @@ fn drawHighScoreRightPanel(
 ) void {
     if (selectedHighScoreRank(state, left_rect)) |rank| {
         if (rank < state.records.len) {
-            drawHighScoreLocalDetails(assets, state.records[rank], rank, preserve_bugs, right_rect);
+            drawHighScoreLocalDetails(assets, state.records[rank], rank, preserve_bugs, highScoreRightLocalCardRect(right_rect, config.screen_width));
             return;
         }
     }
 
+    const options_rect = highScoreRightOptionsRect(right_rect, config.screen_width);
     const check_tex = if (config.score_load_gate != 0) assets.texture(.ui_check_on) else assets.texture(.ui_check_off);
-    window_ui.drawTextureFit(check_tex, rl.Rectangle.init(right_rect.x + 44.0, right_rect.y + 44.0, @floatFromInt(check_tex.width), @floatFromInt(check_tex.height)), rl.Color.white);
-    window_ui.drawSmallText(assets, "Show internet scores", right_rect.x + 66.0, right_rect.y + 45.0, text_color);
-    window_ui.drawSmallText(assets, "Number of players", right_rect.x + 46.0, right_rect.y + 64.0, text_color);
-    window_ui.drawSmallText(assets, "Game mode", right_rect.x + 174.0, right_rect.y + 64.0, text_color);
-    window_ui.drawSmallText(assets, "Show scores:", right_rect.x + 44.0, right_rect.y + 106.0, text_color);
-    window_ui.drawSmallText(assets, "Selected score list:", right_rect.x + 44.0, right_rect.y + 150.0, text_color);
+    window_ui.drawTextureFit(check_tex, rl.Rectangle.init(options_rect.x + 44.0, options_rect.y + 44.0, @floatFromInt(check_tex.width), @floatFromInt(check_tex.height)), rl.Color.white);
+    window_ui.drawSmallText(assets, "Show internet scores", options_rect.x + 66.0, options_rect.y + 45.0, text_color);
+    window_ui.drawSmallText(assets, "Number of players", options_rect.x + 46.0, options_rect.y + 64.0, text_color);
+    window_ui.drawSmallText(assets, "Game mode", options_rect.x + 174.0, options_rect.y + 64.0, text_color);
+    window_ui.drawSmallText(assets, "Show scores:", options_rect.x + 44.0, options_rect.y + 106.0, text_color);
+    window_ui.drawSmallText(assets, "Selected score list:", options_rect.x + 44.0, options_rect.y + 150.0, text_color);
 
     var mode_labels_buf: [4][]const u8 = undefined;
     const mode_labels = highScoreModeLabels(&mode_labels_buf, status);
@@ -845,25 +846,25 @@ fn drawHighScoreRightPanel(
     }{
         .{
             .kind = .player_count,
-            .rect = playerCountWidgetRect(right_rect),
+            .rect = playerCountWidgetRect(options_rect),
             .items = playerCountLabels()[0..],
             .selected = @as(usize, @intCast(highScorePlayerCountForMode(state.mode, config.player_count))) - 1,
         },
         .{
             .kind = .game_mode,
-            .rect = gameModeWidgetRect(right_rect),
+            .rect = gameModeWidgetRect(options_rect),
             .items = mode_labels,
             .selected = highScoreModeLabelIndex(state.mode, status),
         },
         .{
             .kind = .date_mode,
-            .rect = dateModeWidgetRect(right_rect),
+            .rect = dateModeWidgetRect(options_rect),
             .items = scoreDateModeLabels()[0..],
             .selected = @min(config.highscore_date_mode, 3),
         },
         .{
             .kind = .score_list,
-            .rect = scoreListWidgetRect(right_rect),
+            .rect = scoreListWidgetRect(options_rect),
             .items = saved_names[0..],
             .selected = formats.crimson_cfg.selectedSavedNameSlot(&config),
         },
@@ -912,7 +913,7 @@ fn drawWeaponsPanels(
 
     if (total == 0) return;
     const weapon_id = weapon_ids[@min(state.selection, total - 1)];
-    const detail_x = right_rect.x;
+    const detail_x = right_rect.x + weaponsDbRightDetailXShift(config.screen_width);
     window_ui.drawSmallTextFmt("{s} #{d}", assets, .{ weaponNoLabel(preserve_bugs), @intFromEnum(weapon_id) }, detail_x + 240.0, right_rect.y + 32.0, muted_text);
     const name = game_ids.weaponDisplayName(weapon_id, preserve_bugs);
     window_ui.drawSmallText(assets, name, detail_x + 50.0, right_rect.y + 50.0, text_color);
@@ -952,6 +953,7 @@ fn drawPerksPanels(
     preserve_bugs: bool,
     left_rect: rl.Rectangle,
     right_rect: rl.Rectangle,
+    screen_width: u32,
 ) void {
     _ = hardcore;
     const title = "Unlocked Perks Database";
@@ -987,7 +989,7 @@ fn drawPerksPanels(
     if (total == 0) return;
     const detail_index = @min(state.hovered orelse state.selection, total - 1);
     const perk_id = perk_ids[detail_index];
-    const detail_x = right_rect.x + 34.0;
+    const detail_x = right_rect.x + 34.0 + perksDbRightDetailXShift(screen_width);
     window_ui.drawSmallTextFmt("{s} #{d}", assets, .{ perkNoLabel(preserve_bugs), @intFromEnum(perk_id) }, detail_x + 190.0, right_rect.y + 32.0, muted_text);
     const name = game_ids.perkDisplayName(perk_id, violence_disabled, preserve_bugs);
     const name_width = window_ui.measureSmallText(assets, name);
@@ -1548,6 +1550,30 @@ fn dateModeWidgetRect(right_rect: rl.Rectangle) rl.Rectangle {
 
 fn scoreListWidgetRect(right_rect: rl.Rectangle) rl.Rectangle {
     return rl.Rectangle.init(right_rect.x + 44.0, right_rect.y + 164.0, 174.0, 16.0);
+}
+
+fn highScoreRightOptionsRect(right_rect: rl.Rectangle, screen_width: u32) rl.Rectangle {
+    return rl.Rectangle.init(right_rect.x + highScoreRightOptionsXShift(screen_width), right_rect.y, right_rect.width, right_rect.height);
+}
+
+fn highScoreRightLocalCardRect(right_rect: rl.Rectangle, screen_width: u32) rl.Rectangle {
+    return rl.Rectangle.init(right_rect.x + highScoreRightLocalCardXShift(screen_width), right_rect.y, right_rect.width, right_rect.height);
+}
+
+fn highScoreRightOptionsXShift(screen_width: u32) f32 {
+    return if (screen_width <= 640) 10.0 else 0.0;
+}
+
+fn highScoreRightLocalCardXShift(screen_width: u32) f32 {
+    return if (screen_width <= 640) 12.0 else 0.0;
+}
+
+fn weaponsDbRightDetailXShift(screen_width: u32) f32 {
+    return if (screen_width <= 640) 20.0 else 0.0;
+}
+
+fn perksDbRightDetailXShift(screen_width: u32) f32 {
+    return if (screen_width <= 640) -10.0 else 0.0;
 }
 
 fn hoveredHighScoreRank(state: *const HighScoresScreen, left_rect: rl.Rectangle) ?usize {
@@ -2300,6 +2326,21 @@ test "statistics playtime text follows default and preserve-bugs pluralization" 
         "played for 1 hours 1 minutes",
         formatPlaytimeText(&buf, (1 * 60 * 60 + 1 * 60) * 1000, true),
     );
+}
+
+test "statistics right panel shifts match narrow native layouts" {
+    try std.testing.expectEqual(@as(f32, 0.0), highScoreRightOptionsXShift(1024));
+    try std.testing.expectEqual(@as(f32, 10.0), highScoreRightOptionsXShift(640));
+    try std.testing.expectEqual(@as(f32, 0.0), highScoreRightLocalCardXShift(1024));
+    try std.testing.expectEqual(@as(f32, 12.0), highScoreRightLocalCardXShift(640));
+    try std.testing.expectEqual(@as(f32, 0.0), weaponsDbRightDetailXShift(1024));
+    try std.testing.expectEqual(@as(f32, 20.0), weaponsDbRightDetailXShift(640));
+    try std.testing.expectEqual(@as(f32, 0.0), perksDbRightDetailXShift(1024));
+    try std.testing.expectEqual(@as(f32, -10.0), perksDbRightDetailXShift(640));
+
+    const right_rect = rl.Rectangle.init(630.0, 209.0, 424.0, 276.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 640.0), highScoreRightOptionsRect(right_rect, 640).x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 642.0), highScoreRightLocalCardRect(right_rect, 640).x, 1e-6);
 }
 
 test "statistics database detail labels follow preserve-bugs wording" {
