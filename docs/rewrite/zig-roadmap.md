@@ -127,8 +127,8 @@ Remaining work:
   [`crimson-zig/src/window_statistics.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_statistics.zig),
   and
   [`crimson-zig/src/window_options.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_options.zig);
-  the statistics hub now waits for the native open timeline and closes before
-  dispatching child-view or Back actions,
+  the statistics hub and child panels now wait for the native open timeline and
+  close before dispatching descendant or Back actions,
 - keep the demo/trial overlay and purchase-shell behavior aligned with Python
   as surrounding shell flows change,
 - keep removing any remaining fallback/scaffold UI logic from the desktop path.

@@ -55,6 +55,12 @@ const HubAction = enum {
     back,
 };
 
+const ChildAction = enum {
+    hub,
+    open_play_game,
+    alien_zookeeper,
+};
+
 const View = enum {
     hub,
     high_scores,
@@ -139,6 +145,11 @@ const HubState = struct {
 const HubTimelineUpdate = struct {
     dt_ms: i32,
     closed_action: ?HubAction = null,
+};
+
+const ChildTimelineUpdate = struct {
+    dt_ms: i32,
+    closed_action: ?ChildAction = null,
 };
 
 fn frameDeltaMs(frame_dt: f32) i32 {
@@ -256,6 +267,8 @@ pub const State = struct {
     credits: CreditsScreen = .{},
     alien_zookeeper: AlienZooKeeperScreen = .{},
     default_quest_level_key: i32 = 101,
+    child_closing: bool = false,
+    child_close_action: ?ChildAction = null,
 
     pub fn reset(self: *State, allocator: std.mem.Allocator, default_quest_level_key: i32) void {
         self.high_scores.clear(allocator);
@@ -410,6 +423,49 @@ fn finishHubAction(
     return .{};
 }
 
+fn beginChildClose(state: *State, action: ChildAction) void {
+    if (state.child_closing) return;
+    state.child_closing = true;
+    state.child_close_action = action;
+}
+
+fn advanceChildTimeline(state: *State, frame_dt: f32) ChildTimelineUpdate {
+    const dt_ms = frameDeltaMs(frame_dt);
+    if (state.child_closing) {
+        if (dt_ms > 0) state.hub.panel.timeline_ms -= dt_ms;
+        if (state.hub.panel.timeline_ms < 0) {
+            const action = state.child_close_action;
+            state.child_closing = false;
+            state.child_close_action = null;
+            return .{ .dt_ms = dt_ms, .closed_action = action };
+        }
+        return .{ .dt_ms = dt_ms };
+    }
+    if (dt_ms > 0) {
+        state.hub.panel.timeline_ms = @min(panel_timeline_max_ms, state.hub.panel.timeline_ms + dt_ms);
+    }
+    return .{ .dt_ms = dt_ms };
+}
+
+fn childInteractive(state: *const State) bool {
+    return !state.child_closing and state.hub.panel.timeline_ms >= panel_timeline_max_ms;
+}
+
+fn finishChildAction(state: *State, action: ChildAction) UpdateResult {
+    switch (action) {
+        .hub => {
+            state.view = .hub;
+            state.hub.reset();
+        },
+        .open_play_game => return .{ .action = .open_play_game },
+        .alien_zookeeper => {
+            state.alien_zookeeper.reset();
+            state.view = .alien_zookeeper;
+        },
+    }
+    return .{};
+}
+
 fn openHubHighScores(
     state: *State,
     allocator: std.mem.Allocator,
@@ -430,19 +486,20 @@ fn updateHighScores(
     config: *formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
 ) UpdateResult {
-    _ = state.hub.panel.advance(frame_dt);
+    const timeline_update = advanceChildTimeline(state, frame_dt);
+    if (timeline_update.closed_action) |action| return finishChildAction(state, action);
     const left_rect = animatedLeftPanelRect(left_panel_rect, state.hub.panel.timeline_ms);
     const right_rect = animatedRightPanelRect(right_panel_rect, state.hub.panel.timeline_ms);
     const hs = &state.high_scores;
     const buttons = highScoreButtons(left_rect);
+    if (!childInteractive(state)) return .{};
     window_ui.updateSelectionFromPointer(&hs.button_selection, buttons[0..]);
     const rows: usize = 10;
     const max_scroll = if (hs.records.len > rows) hs.records.len - rows else 0;
 
     if (rl.isKeyPressed(.escape)) {
         hs.dropdown_open = .none;
-        state.view = .hub;
-        state.hub.reset();
+        beginChildClose(state, .hub);
         return .{ .play_button_click = true };
     }
 
@@ -487,11 +544,13 @@ fn updateHighScores(
             loadHighScores(hs, allocator, base_dir, config.*, status);
             break :blk .{ .play_button_click = true };
         },
-        1 => .{ .action = .open_play_game, .play_button_click = true },
+        1 => blk: {
+            beginChildClose(state, .open_play_game);
+            break :blk .{ .play_button_click = true };
+        },
         2 => blk: {
             hs.dropdown_open = .none;
-            state.view = .hub;
-            state.hub.reset();
+            beginChildClose(state, .hub);
             break :blk .{ .play_button_click = true };
         },
         else => .{},
@@ -499,11 +558,13 @@ fn updateHighScores(
 }
 
 fn updateWeapons(state: *State, frame_dt: f32, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) UpdateResult {
-    _ = state.hub.panel.advance(frame_dt);
+    const timeline_update = advanceChildTimeline(state, frame_dt);
+    if (timeline_update.closed_action) |action| return finishChildAction(state, action);
     const left_rect = animatedLeftPanelRect(left_panel_rect, state.hub.panel.timeline_ms);
     var weapon_ids: [state_mod.weapon_count_size]game_ids.WeaponId = undefined;
     const total = buildWeaponList(&weapon_ids, config, status);
     const screen = &state.weapons;
+    if (!childInteractive(state)) return .{};
 
     if (total == 0) {
         screen.selection = 0;
@@ -513,8 +574,7 @@ fn updateWeapons(state: *State, frame_dt: f32, config: formats.crimson_cfg.Crims
     }
 
     if (rl.isKeyPressed(.escape) or backButtonActivated(weaponBackButton(left_rect)[0])) {
-        state.view = .hub;
-        state.hub.reset();
+        beginChildClose(state, .hub);
         return .{ .play_button_click = true };
     }
 
@@ -546,12 +606,14 @@ fn updateWeapons(state: *State, frame_dt: f32, config: formats.crimson_cfg.Crims
 }
 
 fn updatePerks(state: *State, frame_dt: f32, status: formats.game_cfg.Status) UpdateResult {
-    _ = state.hub.panel.advance(frame_dt);
+    const timeline_update = advanceChildTimeline(state, frame_dt);
+    if (timeline_update.closed_action) |action| return finishChildAction(state, action);
     const left_rect = animatedLeftPanelRect(left_panel_rect, state.hub.panel.timeline_ms);
     var perk_ids: [state_mod.perk_count_size]game_ids.PerkId = undefined;
     const total = buildPerkList(&perk_ids, status);
     const screen = &state.perks;
     screen.hovered = null;
+    if (!childInteractive(state)) return .{};
 
     if (total == 0) {
         screen.selection = 0;
@@ -562,8 +624,7 @@ fn updatePerks(state: *State, frame_dt: f32, status: formats.game_cfg.Status) Up
     }
 
     if (rl.isKeyPressed(.escape) or backButtonActivated(perkBackButton(left_rect)[0])) {
-        state.view = .hub;
-        state.hub.reset();
+        beginChildClose(state, .hub);
         return .{ .play_button_click = true };
     }
 
@@ -598,11 +659,12 @@ fn updatePerks(state: *State, frame_dt: f32, status: formats.game_cfg.Status) Up
 }
 
 fn updateCredits(state: *State, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
-    _ = state.hub.panel.advance(frame_dt);
+    const timeline_update = advanceChildTimeline(state, frame_dt);
+    if (timeline_update.closed_action) |action| return finishChildAction(state, action);
     const panel_rect = animatedCenterPanelRect(credits_panel_rect, state.hub.panel.timeline_ms);
+    if (!childInteractive(state)) return .{};
     if (rl.isKeyPressed(.escape) or backButtonActivated(backOnlyButton(panel_rect)[0])) {
-        state.view = .hub;
-        state.hub.reset();
+        beginChildClose(state, .hub);
         return .{ .play_button_click = true };
     }
     const dt_clamped = @min(frame_dt, 0.1);
@@ -613,15 +675,15 @@ fn updateCredits(state: *State, frame_dt: f32, runtime_assets: ?*const window_as
         updateCreditsSecretUnlock(&state.credits);
     }
     if (state.credits.secret_unlock and backButtonActivated(secretButton(panel_rect)[0])) {
-        state.alien_zookeeper.reset();
-        state.view = .alien_zookeeper;
+        beginChildClose(state, .alien_zookeeper);
         return .{ .play_button_click = true };
     }
     return .{};
 }
 
 fn updateAlienZooKeeper(state: *State, frame_dt: f32) UpdateResult {
-    _ = state.hub.panel.advance(frame_dt);
+    const timeline_update = advanceChildTimeline(state, frame_dt);
+    if (timeline_update.closed_action) |action| return finishChildAction(state, action);
     const screen = &state.alien_zookeeper;
     const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
     if (dt_ms > 0) {
@@ -634,9 +696,9 @@ fn updateAlienZooKeeper(state: *State, frame_dt: f32) UpdateResult {
 
     const panel_rect = animatedCenterPanelRect(azk_panel_rect, state.hub.panel.timeline_ms);
     const buttons = alienZooKeeperButtons(panel_rect);
+    if (!childInteractive(state)) return .{};
     if (rl.isKeyPressed(.escape) or backButtonActivated(buttons[1])) {
-        state.view = .hub;
-        state.hub.reset();
+        beginChildClose(state, .hub);
         return .{ .play_button_click = true };
     }
     if (backButtonActivated(buttons[0])) {
@@ -2420,6 +2482,36 @@ test "statistics hub timeline gates input and dispatches after close" {
     try std.testing.expectEqual(@as(?HubAction, .credits), hub.advance(0.01).closed_action);
     try std.testing.expect(!hub.closing);
     try std.testing.expectEqual(@as(?HubAction, null), hub.close_action);
+}
+
+test "statistics child timeline gates input and dispatches after close" {
+    var state: State = .{ .view = .weapons };
+    try std.testing.expect(!childInteractive(&state));
+
+    try std.testing.expectEqual(@as(i32, 100), advanceChildTimeline(&state, 0.50).dt_ms);
+    try std.testing.expectEqual(@as(i32, 100), state.hub.panel.timeline_ms);
+    try std.testing.expect(!childInteractive(&state));
+
+    _ = advanceChildTimeline(&state, 0.10);
+    _ = advanceChildTimeline(&state, 0.10);
+    try std.testing.expectEqual(@as(i32, panel_timeline_max_ms), state.hub.panel.timeline_ms);
+    try std.testing.expect(childInteractive(&state));
+
+    beginChildClose(&state, .hub);
+    try std.testing.expect(!childInteractive(&state));
+    try std.testing.expect(state.child_closing);
+    try std.testing.expectEqual(@as(?ChildAction, .hub), state.child_close_action);
+
+    try std.testing.expectEqual(@as(?ChildAction, null), advanceChildTimeline(&state, 0.10).closed_action);
+    try std.testing.expectEqual(@as(i32, 200), state.hub.panel.timeline_ms);
+    try std.testing.expectEqual(@as(?ChildAction, null), advanceChildTimeline(&state, 0.10).closed_action);
+    try std.testing.expectEqual(@as(i32, 100), state.hub.panel.timeline_ms);
+    try std.testing.expectEqual(@as(?ChildAction, null), advanceChildTimeline(&state, 0.10).closed_action);
+    try std.testing.expectEqual(@as(i32, 0), state.hub.panel.timeline_ms);
+
+    try std.testing.expectEqual(@as(?ChildAction, .hub), advanceChildTimeline(&state, 0.01).closed_action);
+    try std.testing.expect(!state.child_closing);
+    try std.testing.expectEqual(@as(?ChildAction, null), state.child_close_action);
 }
 
 test "statistics right panel shifts match narrow native layouts" {
