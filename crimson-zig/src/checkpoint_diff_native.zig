@@ -702,6 +702,11 @@ fn runVerifyCheckpointsWithReplayOutput(
     replay: replay_codec.Replay,
     options: VerifyOutputOptions,
 ) !CommandOutput {
+    if (try replay_codec.replayEventPlayerIndexFailureDetail(allocator, replay.header.player_count, replay.events)) |detail| {
+        defer allocator.free(detail);
+        return buildVerifyFailedOutput(allocator, detail);
+    }
+
     var trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
     defer {
         replay_runner.deinitReplayTickTraceRows(allocator, trace.items);

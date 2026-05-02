@@ -6,9 +6,11 @@ import subprocess
 from pathlib import Path
 
 import msgspec
+import zstandard as zstd
 
 import crimson.dbg.record as dbg_record
 from crimson.game_modes import GameMode
+from crimson.replay import dump_replay
 from crimson.replay.checkpoints import ReplayDeathLedgerEntry, dump_checkpoints_file, load_checkpoints_file
 
 from ._helpers import build_replay, build_typo_submit_replay, write_checkpoint_sidecar, write_replay
@@ -103,6 +105,26 @@ def test_zig_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
     assert result.returncode == 1
     assert "checkpoint mismatch at tick=0" in result.stderr
     assert "score_xp expected=999999 actual=0" in result.stderr
+
+
+def test_zig_replay_verify_checkpoints_reports_event_player_index_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = write_replay(tmp_path, replay=replay, name="event-player-index.crd")
+    sidecar = write_checkpoint_sidecar(replay_path, replay)
+    raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
+    payload = msgspec.msgpack.decode(raw_payload)
+    payload["ticks"][0]["commands"] = [{"type": "perk_menu_open", "player_index": 1}]
+    replay_path.write_bytes(msgspec.msgpack.encode(payload))
+
+    result = _run_zig_replay_verify_checkpoints([str(replay_path), "--checkpoints", str(sidecar)])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert (
+        "replay verification failed: replay event player_index out of range: 1 "
+        "(player_count=1, tick=0, event=perk_menu_open)"
+    ) in result.stderr
+    assert "replay events include an out-of-range player index" not in result.stderr
 
 
 def test_zig_replay_diff_checkpoints_reports_state_mismatch(tmp_path: Path) -> None:
