@@ -72,6 +72,11 @@ const DropdownKind = enum {
     score_list,
 };
 
+const DropdownUpdate = struct {
+    selected: ?usize = null,
+    consumed: bool = false,
+};
+
 const PanelState = struct {
     selection: usize = 0,
     timeline_ms: i32 = 0,
@@ -1706,14 +1711,18 @@ fn updateHighScoreWidgets(
         return .{ .config_dirty = true, .play_button_click = true };
     }
 
-    if (updateDropdownSelection(&state.dropdown_open, .player_count, playerCountWidgetRect(right_rect), playerCountLabels()[0..], click, mouse)) |selected| {
+    const player_update = updateDropdownSelection(&state.dropdown_open, .player_count, playerCountWidgetRect(right_rect), playerCountLabels()[0..], click, mouse);
+    if (player_update.selected) |selected| {
         config.player_count = highScorePlayerCountForMode(state.mode, @intCast(selected + 1));
         loadHighScores(state, allocator, base_dir, config.*, status);
         return .{ .config_dirty = true, .play_button_click = true };
     }
+    if (player_update.consumed) return .{};
+
     var mode_labels_buf: [4][]const u8 = undefined;
     const mode_labels = highScoreModeLabels(&mode_labels_buf, status);
-    if (updateDropdownSelection(&state.dropdown_open, .game_mode, gameModeWidgetRect(right_rect), mode_labels, click, mouse)) |selected| {
+    const mode_update = updateDropdownSelection(&state.dropdown_open, .game_mode, gameModeWidgetRect(right_rect), mode_labels, click, mouse);
+    if (mode_update.selected) |selected| {
         const mode = highScoreModeFromIndex(selected, status);
         state.mode = mode;
         config.game_mode = @intCast(@intFromEnum(mode));
@@ -1722,17 +1731,25 @@ fn updateHighScoreWidgets(
         loadHighScores(state, allocator, base_dir, config.*, status);
         return .{ .config_dirty = true, .play_button_click = true };
     }
-    if (updateDropdownSelection(&state.dropdown_open, .date_mode, dateModeWidgetRect(right_rect), scoreDateModeLabels()[0..], click, mouse)) |selected| {
+    if (mode_update.consumed) return .{};
+
+    const date_update = updateDropdownSelection(&state.dropdown_open, .date_mode, dateModeWidgetRect(right_rect), scoreDateModeLabels()[0..], click, mouse);
+    if (date_update.selected) |selected| {
         config.highscore_date_mode = @intCast(selected);
         loadHighScores(state, allocator, base_dir, config.*, status);
         return .{ .config_dirty = true, .play_button_click = true };
     }
+    if (date_update.consumed) return .{};
+
     var saved_names: [formats.crimson_cfg.saved_name_slot_count][]const u8 = undefined;
     for (0..saved_names.len) |idx| saved_names[idx] = formats.crimson_cfg.savedNameLabel(config, idx);
-    if (updateDropdownSelection(&state.dropdown_open, .score_list, scoreListWidgetRect(right_rect), saved_names[0..], click, mouse)) |selected| {
+    const score_list_update = updateDropdownSelection(&state.dropdown_open, .score_list, scoreListWidgetRect(right_rect), saved_names[0..], click, mouse);
+    if (score_list_update.selected) |selected| {
         formats.crimson_cfg.setSelectedSavedNameSlot(config, selected);
         return .{ .config_dirty = true, .play_button_click = true };
     }
+    if (score_list_update.consumed) return .{};
+
     return null;
 }
 
@@ -1743,32 +1760,32 @@ fn updateDropdownSelection(
     items: []const []const u8,
     click: bool,
     mouse: rl.Vector2,
-) ?usize {
-    if (!click) return null;
+) DropdownUpdate {
+    if (!click) return .{};
     if (open.* == .none) {
         if (rectContains(rect, mouse)) {
             open.* = kind;
+            return .{ .consumed = true };
         }
-        return null;
+        return .{};
     }
     if (open.* != kind) {
-        if (!rectContains(rect, mouse)) open.* = .none;
-        return null;
+        return .{};
     }
 
     const list_rect = rl.Rectangle.init(rect.x, rect.y, rect.width, 16.0 * @as(f32, @floatFromInt(items.len + 1)));
     if (!rectContains(list_rect, mouse)) {
         open.* = .none;
-        return null;
+        return .{ .consumed = true };
     }
     if (mouse.y < rect.y + 16.0) {
         open.* = .none;
-        return null;
+        return .{ .consumed = true };
     }
     const row = @as(usize, @intFromFloat((mouse.y - (rect.y + 17.0)) / 16.0));
     open.* = .none;
-    if (row < items.len) return row;
-    return null;
+    if (row < items.len) return .{ .selected = row, .consumed = true };
+    return .{ .consumed = true };
 }
 
 fn updateHighScoreQuestArrows(
@@ -2225,6 +2242,28 @@ test "high score list scrolling does not move footer button selection" {
     applyHighScoreScrollAction(&screen, .end, 20, 10);
     try std.testing.expectEqual(@as(usize, 20), screen.scroll);
     try std.testing.expectEqual(@as(usize, 1), screen.button_selection);
+}
+
+test "high score dropdown clicks consume open and close transitions" {
+    const items = [_][]const u8{ "One", "Two" };
+    const rect = rl.Rectangle.init(10.0, 20.0, 80.0, 16.0);
+    var open: DropdownKind = .none;
+
+    const open_update = updateDropdownSelection(&open, .player_count, rect, items[0..], true, rl.Vector2.init(12.0, 22.0));
+    try std.testing.expect(open_update.consumed);
+    try std.testing.expect(open_update.selected == null);
+    try std.testing.expectEqual(DropdownKind.player_count, open);
+
+    const close_update = updateDropdownSelection(&open, .player_count, rect, items[0..], true, rl.Vector2.init(140.0, 22.0));
+    try std.testing.expect(close_update.consumed);
+    try std.testing.expect(close_update.selected == null);
+    try std.testing.expectEqual(DropdownKind.none, open);
+
+    _ = updateDropdownSelection(&open, .player_count, rect, items[0..], true, rl.Vector2.init(12.0, 22.0));
+    const select_update = updateDropdownSelection(&open, .player_count, rect, items[0..], true, rl.Vector2.init(12.0, 38.0));
+    try std.testing.expect(select_update.consumed);
+    try std.testing.expectEqual(@as(?usize, 0), select_update.selected);
+    try std.testing.expectEqual(DropdownKind.none, open);
 }
 
 test "statistics easter text appears only on Orbes Volantes day" {
