@@ -374,8 +374,18 @@ fn buildReplayListRow(
         break :blk inflated;
     } else replay_bytes;
 
+    var input_shape_detail: ?[]u8 = null;
+    defer if (input_shape_detail) |detail| allocator.free(detail);
     var summary = replay_codec.parseReplaySummary(allocator, replay_payload) catch |err| {
-        return buildInvalidReplayListRow(allocator, rel_path, modified_ns, replayListRowErrorDetail(err));
+        if (err == error.UnsupportedInputShape) {
+            input_shape_detail = try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload);
+        }
+        return buildInvalidReplayListRow(
+            allocator,
+            rel_path,
+            modified_ns,
+            input_shape_detail orelse replayListRowErrorDetail(err),
+        );
     };
     defer summary.deinit(allocator);
 

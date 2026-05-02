@@ -360,8 +360,10 @@ pub fn runReplayVerifyCheckpointsBytes(
     };
     defer expected.deinit();
 
-    var replay = loadReplayBytes(allocator, replay_bytes) catch |err| {
-        return buildVerifyFailedOutput(allocator, replayLoadErrorDetail(err));
+    var input_shape_detail: ?[]u8 = null;
+    defer if (input_shape_detail) |detail| allocator.free(detail);
+    var replay = loadReplayBytes(allocator, replay_bytes, &input_shape_detail) catch |err| {
+        return buildVerifyFailedOutput(allocator, input_shape_detail orelse replayLoadErrorDetail(err));
     };
     defer replay.deinit(allocator);
 
@@ -389,8 +391,10 @@ pub fn runReplayVerifyCheckpointsBytesJson(
     };
     defer expected.deinit();
 
-    var replay = loadReplayBytes(allocator, replay_bytes) catch |err| {
-        return buildVerifyFailedOutput(allocator, replayLoadErrorDetail(err));
+    var input_shape_detail: ?[]u8 = null;
+    defer if (input_shape_detail) |detail| allocator.free(detail);
+    var replay = loadReplayBytes(allocator, replay_bytes, &input_shape_detail) catch |err| {
+        return buildVerifyFailedOutput(allocator, input_shape_detail orelse replayLoadErrorDetail(err));
     };
     defer replay.deinit(allocator);
 
@@ -663,8 +667,10 @@ fn runNativeVerifyCheckpoints(
     };
     defer allocator.free(replay_bytes);
 
-    var replay = loadReplayBytes(allocator, replay_bytes) catch |err| {
-        return buildVerifyFailedOutput(allocator, replayLoadErrorDetail(err));
+    var input_shape_detail: ?[]u8 = null;
+    defer if (input_shape_detail) |detail| allocator.free(detail);
+    var replay = loadReplayBytes(allocator, replay_bytes, &input_shape_detail) catch |err| {
+        return buildVerifyFailedOutput(allocator, input_shape_detail orelse replayLoadErrorDetail(err));
     };
     defer replay.deinit(allocator);
 
@@ -899,6 +905,7 @@ fn loadCheckpointsBytes(
 fn loadReplayBytes(
     allocator: std.mem.Allocator,
     replay_bytes: []const u8,
+    input_shape_detail: ?*?[]u8,
 ) !replay_codec.Replay {
     var replay_payload_alloc: ?[]u8 = null;
     defer if (replay_payload_alloc) |buf| allocator.free(buf);
@@ -920,7 +927,14 @@ fn loadReplayBytes(
         break :blk inflated;
     } else replay_bytes;
 
-    return replay_codec.parseReplay(allocator, replay_payload);
+    return replay_codec.parseReplay(allocator, replay_payload) catch |err| {
+        if (err == error.UnsupportedInputShape) {
+            if (input_shape_detail) |detail| {
+                detail.* = try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload);
+            }
+        }
+        return err;
+    };
 }
 
 fn traceRowForTick(rows: []const replay_runner.ReplayTickTrace, tick_index: i32) ?*const replay_runner.ReplayTickTrace {
@@ -2173,7 +2187,7 @@ test "byte checkpoint verify accepts replay and checkpoint payloads" {
     const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
     defer allocator.free(replay_bytes);
 
-    var replay = try loadReplayBytes(allocator, replay_bytes);
+    var replay = try loadReplayBytes(allocator, replay_bytes, null);
     defer replay.deinit(allocator);
 
     var trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;

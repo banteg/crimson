@@ -104,7 +104,7 @@ pub fn runReplayInfoBytesJson(
     } else replay_bytes;
 
     var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
-        return buildInfoFailedOutputForReplayCodecError(allocator, err);
+        return buildInfoFailedOutputForReplayCodecErrorWithPayload(allocator, replay_payload, err);
     };
     defer replay.deinit(allocator);
 
@@ -246,7 +246,7 @@ fn runInfoWithReplayBytes(
     } else replay_bytes;
 
     var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
-        return buildInfoFailedOutputForReplayCodecError(allocator, err);
+        return buildInfoFailedOutputForReplayCodecErrorWithPayload(allocator, replay_payload, err);
     };
     defer replay.deinit(allocator);
 
@@ -436,6 +436,21 @@ fn buildInfoFailedOutputForReplayCodecError(
     err: replay_codec.ReplayCodecError,
 ) !CommandOutput {
     return buildInfoFailedOutput(allocator, replayCodecErrorDetail(err));
+}
+
+fn buildInfoFailedOutputForReplayCodecErrorWithPayload(
+    allocator: std.mem.Allocator,
+    replay_payload: []const u8,
+    err: replay_codec.ReplayCodecError,
+) !CommandOutput {
+    var detail_alloc: ?[]u8 = null;
+    defer if (detail_alloc) |detail| allocator.free(detail);
+
+    if (err == error.UnsupportedInputShape) {
+        detail_alloc = try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload);
+    }
+    const detail = detail_alloc orelse replayCodecErrorDetail(err);
+    return buildInfoFailedOutput(allocator, detail);
 }
 
 fn buildInfoFailedOutputForReplayInfoError(

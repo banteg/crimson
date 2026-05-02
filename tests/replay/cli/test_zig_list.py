@@ -13,7 +13,7 @@ from crimson.game_modes import GameMode
 from crimson.replay import ReplayClaimedStatsSnapshot
 from crimson.weapons import WeaponId
 
-from ._helpers import build_replay, write_replay
+from ._helpers import build_replay, write_current_bad_tick_player_count_replay, write_replay
 
 
 def test_zig_replay_list_shows_replays_under_base_dir(tmp_path: Path) -> None:
@@ -52,6 +52,22 @@ def test_zig_replay_list_keeps_listing_when_replay_is_invalid(tmp_path: Path) ->
     assert "broken.crd invalid - - - - -" in result.stdout
     assert "warning: broken.crd:" in result.stdout
     assert "count=2 parsed=1 errors=1" in result.stdout
+
+
+def test_zig_replay_list_reports_tick_player_count_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    write_current_bad_tick_player_count_replay(
+        tmp_path / "replays",
+        replay=replay,
+        name="bad-tick-player-count.crd",
+    )
+
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "bad-tick-player-count.crd invalid - - - - -" in result.stdout
+    assert "warning: bad-tick-player-count.crd: replay tick 0 has 0 players, expected 1" in result.stdout
+    assert "canonical wire shape" not in result.stdout
 
 
 def test_zig_replay_list_sorts_in_reverse_chronological_order(tmp_path: Path) -> None:

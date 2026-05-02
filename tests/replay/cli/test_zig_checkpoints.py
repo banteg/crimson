@@ -17,6 +17,7 @@ from ._helpers import (
     build_replay,
     build_typo_submit_replay,
     write_checkpoint_sidecar,
+    write_current_bad_tick_player_count_replay,
     write_current_typo_event_replay,
     write_current_unknown_command_replay,
     write_legacy_out_of_order_event_replay,
@@ -113,6 +114,24 @@ def test_zig_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
     assert result.returncode == 1
     assert "checkpoint mismatch at tick=0" in result.stderr
     assert "score_xp expected=999999 actual=0" in result.stderr
+
+
+def test_zig_replay_verify_checkpoints_reports_tick_player_count_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    sidecar_source = write_replay(tmp_path, replay=replay, name="sidecar-source.crd")
+    sidecar = write_checkpoint_sidecar(sidecar_source, replay)
+    replay_path = write_current_bad_tick_player_count_replay(
+        tmp_path,
+        replay=replay,
+        name="bad-tick-player-count.crd",
+    )
+
+    result = _run_zig_replay_verify_checkpoints([str(replay_path), "--checkpoints", str(sidecar)])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "replay verification failed: replay tick 0 has 0 players, expected 1" in result.stderr
+    assert "canonical wire shape" not in result.stderr
 
 
 def test_zig_replay_verify_checkpoints_reports_event_player_index_detail(tmp_path: Path) -> None:
