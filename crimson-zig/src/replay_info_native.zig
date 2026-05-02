@@ -690,6 +690,79 @@ test "replay info maps file and json output errors to user details" {
     );
 }
 
+test "replay info parser accepts artifact and filter options" {
+    const parsed = parseNativeSubset(&.{
+        "sample.crd",
+        "--format=json",
+        "--json-out",
+        "artifacts/info.json",
+        "--max-ticks=12",
+        "--verbose",
+        "--player-index",
+        "0",
+        "--runtime-dir=runtime",
+    });
+
+    switch (parsed) {
+        .ok => |request| {
+            try std.testing.expectEqualStrings("sample.crd", request.replay_file);
+            try std.testing.expectEqual(OutputFormat.json, request.output_format);
+            try std.testing.expectEqualStrings("artifacts/info.json", request.json_out.?);
+            try std.testing.expectEqual(@as(?usize, 12), request.max_ticks);
+            try std.testing.expect(request.verbose);
+            try std.testing.expectEqual(@as(?i32, 0), request.player_index);
+            try std.testing.expectEqualStrings("runtime", request.base_dir.?);
+        },
+        .invalid => |detail| {
+            std.debug.print("unexpected invalid replay info args: {s}\n", .{detail});
+            return error.TestUnexpectedResult;
+        },
+    }
+}
+
+test "replay info writes json artifact while preserving json stdout" {
+    const allocator = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
+    defer allocator.free(base_dir);
+    const replay_path = try std.fs.path.join(allocator, &.{ base_dir, "sample.crd" });
+    defer allocator.free(replay_path);
+    const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "info.json" });
+    defer allocator.free(json_path);
+
+    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(replay_bytes);
+
+    const io = std.Io.Threaded.global_single_threaded.io();
+    try std.Io.Dir.cwd().writeFile(io, .{
+        .sub_path = replay_path,
+        .data = replay_bytes,
+    });
+
+    const output = try runReplayInfo(allocator, &.{
+        replay_path,
+        "--format",
+        "json",
+        "--json-out",
+        json_path,
+        "--max-ticks",
+        "1",
+    });
+    defer output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expectEqualStrings("", output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"schema_version\":2") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"ticks_simulated\":1") != null);
+
+    const artifact = try std.Io.Dir.cwd().readFileAlloc(io, json_path, allocator, .limited(64 * 1024));
+    defer allocator.free(artifact);
+    const stdout_json = std.mem.trimRight(u8, output.stdout, "\n");
+    try std.testing.expectEqualStrings(stdout_json, artifact);
+}
+
 test "replay info exposes codec and collector detail helpers" {
     try std.testing.expectEqualStrings(
         "replay payload is not valid msgpack wire format",

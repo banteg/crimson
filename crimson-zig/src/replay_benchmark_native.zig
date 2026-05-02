@@ -1125,6 +1125,105 @@ test "byte replay benchmark emits JSON payload" {
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"ticks\":1") != null);
 }
 
+test "benchmark parser accepts artifact and profile options" {
+    const parsed = parseNativeSubset(&.{
+        "sample.crd",
+        "--runs=2",
+        "--warmup-runs",
+        "0",
+        "--max-ticks=12",
+        "--trace-rng",
+        "--profile",
+        "--profile-sort=tottime",
+        "--top",
+        "1",
+        "--profile-out",
+        "artifacts/profile.json",
+        "--format=json",
+        "--json-out",
+        "artifacts/benchmark.json",
+        "--runtime-dir=runtime",
+    });
+
+    switch (parsed) {
+        .ok => |request| {
+            try std.testing.expectEqualStrings("sample.crd", request.replay_file);
+            try std.testing.expectEqual(@as(usize, 2), request.runs);
+            try std.testing.expectEqual(@as(usize, 0), request.warmup_runs);
+            try std.testing.expectEqual(@as(?usize, 12), request.max_ticks);
+            try std.testing.expect(request.trace_rng);
+            try std.testing.expect(request.profile);
+            try std.testing.expectEqualStrings("tottime", request.profile_sort);
+            try std.testing.expectEqual(@as(usize, 1), request.top);
+            try std.testing.expectEqualStrings("artifacts/profile.json", request.profile_out.?);
+            try std.testing.expectEqual(OutputFormat.json, request.output_format);
+            try std.testing.expectEqualStrings("artifacts/benchmark.json", request.json_out.?);
+            try std.testing.expectEqualStrings("runtime", request.base_dir.?);
+        },
+        .invalid => |detail| {
+            std.debug.print("unexpected invalid replay benchmark args: {s}\n", .{detail});
+            return error.TestUnexpectedResult;
+        },
+    }
+}
+
+test "benchmark writes json and profile artifacts in human mode" {
+    const allocator = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
+    defer allocator.free(base_dir);
+    const replay_path = try std.fs.path.join(allocator, &.{ base_dir, "sample.crd" });
+    defer allocator.free(replay_path);
+    const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "benchmark.json" });
+    defer allocator.free(json_path);
+    const profile_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "profile.json" });
+    defer allocator.free(profile_path);
+
+    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(replay_bytes);
+
+    const io = std.Io.Threaded.global_single_threaded.io();
+    try std.Io.Dir.cwd().writeFile(io, .{
+        .sub_path = replay_path,
+        .data = replay_bytes,
+    });
+
+    const output = try runReplayBenchmark(allocator, &.{
+        replay_path,
+        "--runs",
+        "1",
+        "--warmup-runs",
+        "0",
+        "--max-ticks",
+        "1",
+        "--profile",
+        "--profile-out",
+        profile_path,
+        "--json-out",
+        json_path,
+    });
+    defer output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expectEqualStrings("", output.stderr);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "json_report=") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "profile_report=") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "ok: mode=headless runs=1 warmup_runs=0 ticks=1") != null);
+
+    const benchmark_artifact = try std.Io.Dir.cwd().readFileAlloc(io, json_path, allocator, .limited(64 * 1024));
+    defer allocator.free(benchmark_artifact);
+    try std.testing.expect(std.mem.indexOf(u8, benchmark_artifact, "\"schema_version\":3") != null);
+    try std.testing.expect(std.mem.indexOf(u8, benchmark_artifact, "\"sample_count\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, benchmark_artifact, "\"profile\":{") != null);
+
+    const profile_artifact = try std.Io.Dir.cwd().readFileAlloc(io, profile_path, allocator, .limited(64 * 1024));
+    defer allocator.free(profile_artifact);
+    try std.testing.expect(std.mem.indexOf(u8, profile_artifact, "\"source\":\"project\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, profile_artifact, "\"hotspots\"") != null);
+}
+
 test "benchmark replay load errors use user-facing details" {
     try std.testing.expectEqualStrings(
         "replay payload is not valid msgpack wire format",
