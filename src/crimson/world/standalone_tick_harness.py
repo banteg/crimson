@@ -5,7 +5,12 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
-from ..sim.batch_apply import apply_presentation_outputs, apply_sim_metadata_batch
+from ..sim.batch_apply import (
+    PresentationApplyRuntime,
+    PresentationTickOutput,
+    apply_presentation_outputs,
+    apply_sim_metadata_batch,
+)
 from ..sim.clock import FixedStepClock
 from ..sim.frame_pump import advance_tick_runner_frame
 from ..sim.input import PlayerInput
@@ -23,6 +28,17 @@ if TYPE_CHECKING:
 
 
 WorldTickInputBuilder = Callable[[FrameContext], Sequence[PlayerInput]]
+
+
+class _StandalonePresentationApplyRuntime(PresentationApplyRuntime):
+    runtime: WorldRuntime
+    reactions_by_tick: dict[int, PostApplyReaction]
+
+    def output_applied(self, output: PresentationTickOutput) -> None:
+        apply_post_apply_reaction(
+            reaction=self.reactions_by_tick.get(int(output.tick_index), PostApplyReaction()),
+            play_sfx=self.runtime.audio_bridge.router.play_sfx,
+        )
 
 
 @dataclass(slots=True)
@@ -122,9 +138,9 @@ class StandaloneTickHarness:
         apply_presentation_outputs(
             outputs=outputs,
             runtime=runtime,
-            on_output_applied=lambda output: apply_post_apply_reaction(
-                reaction=reactions.get(int(output.tick_index), PostApplyReaction()),
-                play_sfx=runtime.audio_bridge.router.play_sfx,
+            apply_runtime=_StandalonePresentationApplyRuntime(
+                runtime=runtime,
+                reactions_by_tick=reactions,
             ),
             apply_audio=True,
         )

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from collections.abc import Sequence
 from typing import Any, Protocol
+
+import msgspec
 
 from .hooks import TickResult
 from .presentation_step import DeterministicPresentationPlan
@@ -21,11 +22,16 @@ class SimMetadataSink(Protocol):
     ) -> None: ...
 
 
-@dataclass(frozen=True, slots=True)
-class PresentationTickOutput:
+class PresentationTickOutput(msgspec.Struct, frozen=True):
     tick_index: int
     dt_sim: float
     presentation: DeterministicPresentationPlan | None
+
+
+class PresentationApplyRuntime(msgspec.Struct):
+    def output_applied(self, output: PresentationTickOutput) -> None:
+        _ = output
+        return None
 
 
 def apply_sim_metadata_tick_result(
@@ -82,7 +88,7 @@ def apply_presentation_outputs(
     *,
     outputs: Sequence[PresentationTickOutput],
     runtime: Any,
-    on_output_applied: Callable[[PresentationTickOutput], None] | None = None,
+    apply_runtime: PresentationApplyRuntime | None = None,
     apply_audio: bool,
     update_camera: bool = True,
 ) -> None:
@@ -98,5 +104,5 @@ def apply_presentation_outputs(
             terrain_fx = output.presentation.terrain_fx
             if not terrain_fx.is_empty():
                 runtime.render_resources.consume_terrain_fx_batch(terrain_fx)
-        if on_output_applied is not None:
-            on_output_applied(output)
+        if apply_runtime is not None:
+            apply_runtime.output_applied(output)

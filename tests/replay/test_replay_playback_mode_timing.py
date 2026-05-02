@@ -46,10 +46,10 @@ def _replay_with_ticks(tick_count: int) -> Replay:
 
 
 def _capture_output_ticks(mocker, captured_ticks: list[int]) -> None:
-    def _apply_presentation_outputs(*, outputs, on_output_applied, **_kwargs) -> None:
+    def _apply_presentation_outputs(*, outputs, apply_runtime, **_kwargs) -> None:
         for output in outputs:
             captured_ticks.append(int(output.tick_index))
-            on_output_applied(output)
+            apply_runtime.output_applied(output)
 
     mocker.patch.object(
         replay_playback_mode,

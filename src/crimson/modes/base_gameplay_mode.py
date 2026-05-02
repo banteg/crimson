@@ -55,6 +55,7 @@ from ..replay.checkpoints import (
 from ..replay.input_codec import pack_player_input, unpack_player_input
 from ..screens.results.game_over import GameOverUi
 from ..sim.batch_apply import (
+    PresentationApplyRuntime,
     PresentationTickOutput,
     apply_presentation_outputs,
     apply_sim_metadata_tick_result,
@@ -115,6 +116,17 @@ class _BatchApplyOutcome(msgspec.Struct, frozen=True):
     stop_after_finalize: bool = False
     presentation_outputs: tuple[PresentationTickOutput, ...] = ()
     post_apply_reactions: tuple[PostApplyReaction, ...] = ()
+
+
+class _ModePresentationApplyRuntime(PresentationApplyRuntime):
+    mode: BaseGameplayMode
+    reactions_by_tick: dict[int, PostApplyReaction]
+
+    def output_applied(self, output: PresentationTickOutput) -> None:
+        self.mode._apply_tick_post_apply_reaction(
+            self.reactions_by_tick.get(int(output.tick_index), PostApplyReaction()),
+            dt_seconds=float(output.dt_sim),
+        )
 
 
 class _ModeFrameState(msgspec.Struct, frozen=True):
@@ -1800,9 +1812,9 @@ class BaseGameplayMode:
         apply_presentation_outputs(
             outputs=outputs,
             runtime=self._world_runtime,
-            on_output_applied=lambda output: self._apply_tick_post_apply_reaction(
-                reaction_by_tick.get(int(output.tick_index), PostApplyReaction()),
-                dt_seconds=float(output.dt_sim),
+            apply_runtime=_ModePresentationApplyRuntime(
+                mode=self,
+                reactions_by_tick=reaction_by_tick,
             ),
             apply_audio=bool(apply_audio),
             update_camera=bool(update_camera),
