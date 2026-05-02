@@ -18,6 +18,7 @@ from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PlayerState
+from .damage_runtime import CreatureDamageRuntime
 from .damage_types import CreatureDamageType
 from .runtime import CREATURE_LIFECYCLE_ALIVE, CreatureState
 from .spawn import CreatureFlags, CreatureTypeId
@@ -297,6 +298,7 @@ def creature_apply_damage(
 def creature_apply_damage_with_lethal_followup(
     creature: CreatureState,
     *,
+    creature_index: int,
     damage_amount: float,
     damage_type: int,
     impulse: Vec2,
@@ -307,7 +309,7 @@ def creature_apply_damage_with_lethal_followup(
     preserve_bugs: bool = False,
     effects: EffectPool | None = None,
     detail_preset: int = 5,
-    on_lethal: Callable[[tuple[SfxId, ...]], None],
+    creature_damage_runtime: CreatureDamageRuntime,
 ) -> bool:
     """Apply damage and run a required lethal follow-up exactly on death transition.
 
@@ -329,6 +331,9 @@ def creature_apply_damage_with_lethal_followup(
         detail_preset=int(detail_preset),
     )
     if killed and death_start_needed:
-        on_lethal(resolve_native_death_sfx(creature, rng=rng, preserve_bugs=preserve_bugs))
+        creature_damage_runtime.on_creature_lethal(
+            int(creature_index),
+            resolve_native_death_sfx(creature, rng=rng, preserve_bugs=preserve_bugs),
+        )
         return True
     return False

@@ -47,6 +47,7 @@ from ..sim.state_types import GameplayState, PlayerState
 from ..sim.timing import ftol_ms_i32
 from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
+from .damage_runtime import CreatureDamageRuntime
 from .damage_types import CreatureDamageType
 from .lifecycle import (
     CREATURE_LIFECYCLE_ALIVE,
@@ -338,10 +339,73 @@ class _CreatureInteractionPlayerDeathRuntime(PlayerDeathRuntime):
             detail_preset=int(ctx.detail_preset),
             fx_queue=ctx.fx_queue,
             deaths=ctx.deaths,
+            )
+
+
+class _CreatureInteractionCreatureDamageRuntime(CreatureDamageRuntime):
+    ctx: _CreatureInteractionCtx
+
+    def on_creature_lethal(self, creature_index: int, death_sfx: tuple[SfxId, ...]) -> None:
+        ctx = self.ctx
+        creature = ctx.creature
+        ctx.deaths.append(
+            ctx.pool.handle_death(
+                int(creature_index),
+                state=ctx.state,
+                players=ctx.players,
+                rng=ctx.rng,
+                dt=float(ctx.dt),
+                detail_preset=int(ctx.detail_preset),
+                world_width=float(ctx.world_width),
+                world_height=float(ctx.world_height),
+                fx_queue=ctx.fx_queue,
+            ),
         )
+        ctx.sfx.extend(death_sfx)
+        if creature.active:
+            ctx.pool._tick_dead(
+                creature,
+                dt=ctx.dt,
+                world_width=float(ctx.world_width),
+                world_height=float(ctx.world_height),
+                fx_queue_rotated=ctx.fx_queue_rotated,
+                rng=ctx.rng,
+                detail_preset=int(ctx.detail_preset),
+                violence_disabled=int(ctx.violence_disabled),
+            )
 
 
 _CreatureInteractionStep = Callable[[_CreatureInteractionCtx], None]
+
+
+class _CreaturePoolCreatureDamageRuntime(CreatureDamageRuntime):
+    pool: CreaturePool
+    state: GameplayState
+    players: list[PlayerState]
+    rng: CrandLike
+    dt: float
+    detail_preset: int
+    world_width: float
+    world_height: float
+    fx_queue: FxQueue | None
+    deaths: list[CreatureDeath]
+    sfx: list[SfxId]
+
+    def on_creature_lethal(self, creature_index: int, death_sfx: tuple[SfxId, ...]) -> None:
+        self.deaths.append(
+            self.pool.handle_death(
+                int(creature_index),
+                state=self.state,
+                players=self.players,
+                rng=self.rng,
+                dt=float(self.dt),
+                detail_preset=int(self.detail_preset),
+                world_width=float(self.world_width),
+                world_height=float(self.world_height),
+                fx_queue=self.fx_queue,
+            ),
+        )
+        self.sfx.extend(death_sfx)
 
 
 def _creature_interaction_plaguebearer_spread(ctx: _CreatureInteractionCtx) -> None:
@@ -431,35 +495,9 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     if perk_active(ctx.player, PerkId.MR_MELEE):
         from .damage import creature_apply_damage_with_lethal_followup
 
-        def _on_mr_melee_lethal(death_sfx: tuple[SfxId, ...]) -> None:
-            ctx.deaths.append(
-                ctx.pool.handle_death(
-                    ctx.creature_index,
-                    state=ctx.state,
-                    players=ctx.players,
-                    rng=ctx.rng,
-                    dt=float(ctx.dt),
-                    detail_preset=int(ctx.detail_preset),
-                    world_width=float(ctx.world_width),
-                    world_height=float(ctx.world_height),
-                    fx_queue=ctx.fx_queue,
-                ),
-            )
-            ctx.sfx.extend(death_sfx)
-            if creature.active:
-                ctx.pool._tick_dead(
-                    creature,
-                    dt=ctx.dt,
-                        world_width=float(ctx.world_width),
-                        world_height=float(ctx.world_height),
-                        fx_queue_rotated=ctx.fx_queue_rotated,
-                        rng=ctx.rng,
-                        detail_preset=int(ctx.detail_preset),
-                        violence_disabled=int(ctx.violence_disabled),
-                    )
-
         mr_melee_killed = creature_apply_damage_with_lethal_followup(
             creature,
+            creature_index=int(ctx.creature_index),
             damage_amount=25.0,
             damage_type=CreatureDamageType.MELEE,
             impulse=Vec2(),
@@ -470,7 +508,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             preserve_bugs=bool(ctx.state.preserve_bugs),
             effects=ctx.state.effects,
             detail_preset=int(ctx.detail_preset),
-            on_lethal=_on_mr_melee_lethal,
+            creature_damage_runtime=_CreatureInteractionCreatureDamageRuntime(ctx=ctx),
         )
 
     if float(ctx.player.shield_timer) <= 0.0:
@@ -906,6 +944,19 @@ class CreaturePool:
         # Native AI7 timer math uses `frame_dt_ms` integer slots with ftol-style
         # truncation semantics.
         dt_ms = ftol_ms_i32(float(dt)) if dt > 0.0 else 0
+        creature_damage_runtime = _CreaturePoolCreatureDamageRuntime(
+            pool=self,
+            state=state,
+            players=players,
+            rng=rng,
+            dt=float(dt),
+            detail_preset=int(detail_preset),
+            world_width=float(world_width),
+            world_height=float(world_height),
+            fx_queue=fx_queue,
+            deaths=deaths,
+            sfx=sfx,
+        )
 
         def _apply_self_damage_tick(creature_index: int, creature: CreatureState) -> bool:
             if dt <= 0.0 or float(state.bonuses.freeze) > 0.0:
@@ -921,24 +972,9 @@ class CreaturePool:
 
             from .damage import creature_apply_damage_with_lethal_followup
 
-            def _on_lethal(death_sfx: tuple[SfxId, ...]) -> None:
-                deaths.append(
-                    self.handle_death(
-                        int(creature_index),
-                        state=state,
-                        players=players,
-                        rng=rng,
-                        dt=float(dt),
-                        detail_preset=int(detail_preset),
-                        world_width=world_width,
-                        world_height=world_height,
-                        fx_queue=fx_queue,
-                    ),
-                )
-                sfx.extend(death_sfx)
-
             return creature_apply_damage_with_lethal_followup(
                 creature,
+                creature_index=int(creature_index),
                 damage_amount=float(damage_amount),
                 damage_type=CreatureDamageType.SELF_TICK,
                 impulse=Vec2(),
@@ -949,7 +985,7 @@ class CreaturePool:
                 preserve_bugs=bool(state.preserve_bugs),
                 effects=state.effects,
                 detail_preset=int(detail_preset),
-                on_lethal=_on_lethal,
+                creature_damage_runtime=creature_damage_runtime,
             )
 
         for idx, creature in enumerate(self._entries):

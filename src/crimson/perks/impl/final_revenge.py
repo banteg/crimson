@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 
+from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...effects import FxQueue
 from ...owner_ref import OwnerRef
@@ -15,6 +16,33 @@ from ..runtime.hook_types import PerkHooks
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureDeath, CreaturePool
+
+
+class _FinalRevengeCreatureDamageRuntime(CreatureDamageRuntime):
+    state: GameplayState
+    creatures: CreaturePool
+    players: list[PlayerState]
+    dt: float
+    world_size: float
+    detail_preset: int
+    fx_queue: FxQueue | None
+    deaths: list[CreatureDeath]
+
+    def on_creature_lethal(self, creature_index: int, death_sfx: tuple[SfxId, ...]) -> None:
+        self.deaths.append(
+            self.creatures.handle_death(
+                int(creature_index),
+                state=self.state,
+                players=self.players,
+                rng=self.state.rng,
+                dt=float(self.dt),
+                detail_preset=int(self.detail_preset),
+                world_width=float(self.world_size),
+                world_height=float(self.world_size),
+                fx_queue=self.fx_queue,
+            ),
+        )
+        self.state.sfx_queue.extend(death_sfx)
 
 
 def apply_final_revenge_on_player_death(
@@ -45,6 +73,16 @@ def apply_final_revenge_on_player_death(
 
     prev_guard = bool(state.bonus_spawn_guard)
     state.bonus_spawn_guard = True
+    creature_damage_runtime = _FinalRevengeCreatureDamageRuntime(
+        state=state,
+        creatures=creatures,
+        players=players,
+        dt=float(dt),
+        world_size=float(world_size),
+        detail_preset=int(detail_preset),
+        fx_queue=fx_queue,
+        deaths=deaths,
+    )
     for creature_idx, creature in enumerate(creatures.entries):
         if not creature.active:
             continue
@@ -58,9 +96,9 @@ def apply_final_revenge_on_player_death(
             continue
 
         damage = remaining * 5.0
-        death_creature_idx = int(creature_idx)
         creature_apply_damage_with_lethal_followup(
             creature,
+            creature_index=int(creature_idx),
             damage_amount=damage,
             damage_type=CreatureDamageType.EXPLOSION,
             impulse=Vec2(),
@@ -71,22 +109,7 @@ def apply_final_revenge_on_player_death(
             preserve_bugs=bool(state.preserve_bugs),
             effects=state.effects,
             detail_preset=int(detail_preset),
-            on_lethal=lambda death_sfx, death_creature_idx=death_creature_idx: (
-                deaths.append(
-                    creatures.handle_death(
-                        int(death_creature_idx),
-                        state=state,
-                        players=players,
-                        rng=state.rng,
-                        dt=float(dt),
-                        detail_preset=int(detail_preset),
-                        world_width=float(world_size),
-                        world_height=float(world_size),
-                        fx_queue=fx_queue,
-                    ),
-                ),
-                state.sfx_queue.extend(death_sfx),
-            ),
+            creature_damage_runtime=creature_damage_runtime,
         )
 
     state.bonus_spawn_guard = prev_guard
