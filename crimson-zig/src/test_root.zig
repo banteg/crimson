@@ -240,6 +240,17 @@ test {
     try std.testing.expect(std.mem.indexOf(u8, rollback_smoke_output.stdout, "\"host_reconnect_count\": 2") != null);
     try std.testing.expect(std.mem.indexOf(u8, rollback_smoke_output.stdout, "\"guest_reconnect_count\": 2") != null);
 
+    const reconnect_jitter_smoke_output = try cz.net_rollback_smoke_native.runRollbackSmoke(
+        std.testing.allocator,
+        std.Io.Threaded.global_single_threaded.io(),
+        &.{ "--json", "--impair", "guest-reconnect-bidirectional-jitter-burst" },
+    );
+    defer reconnect_jitter_smoke_output.deinit(std.testing.allocator);
+    try std.testing.expectEqual(@as(u8, 0), reconnect_jitter_smoke_output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, reconnect_jitter_smoke_output.stdout, "\"impairment\": \"guest-reconnect-bidirectional-jitter-burst\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, reconnect_jitter_smoke_output.stdout, "\"host_reconnect_count\": 1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, reconnect_jitter_smoke_output.stdout, "\"delayed_packets\": 6") != null);
+
     _ = cz.perks;
     _ = cz.persistence;
     _ = cz.projectiles;
