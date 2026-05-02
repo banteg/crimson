@@ -481,7 +481,7 @@ def test_contract_9_post_apply_reactions_are_shared() -> None:
     replay_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._apply_post_apply_reaction)
     world_source = inspect.getsource(standalone_tick_harness_module._StandalonePresentationApplyRuntime.output_applied)
 
-    assert 'play_sfx(SfxId.QUESTHIT)' in helper_source
+    assert 'runtime.play_sfx(SfxId.QUESTHIT)' in helper_source
     assert "PerkPickCommand" not in gameplay_source
     assert 'play_sfx(SfxId.UI_BONUS)' not in gameplay_source
     assert "apply_post_apply_reaction(" in replay_source

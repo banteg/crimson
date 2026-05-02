@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from grim.sfx_map import SfxId
+
 from ..game_modes import GameMode
 from ..sim.batch_apply import (
     PresentationApplyRuntime,
@@ -15,6 +17,7 @@ from ..sim.frame_pump import advance_tick_runner_frame
 from ..sim.input_providers import LocalInputProvider, LocalInputRuntime
 from ..sim.presentation_reactions import (
     PostApplyReaction,
+    PostApplyReactionRuntime,
     apply_post_apply_reaction,
     build_post_apply_reaction,
 )
@@ -32,8 +35,15 @@ class _StandalonePresentationApplyRuntime(PresentationApplyRuntime):
     def output_applied(self, output: PresentationTickOutput) -> None:
         apply_post_apply_reaction(
             reaction=self.reactions_by_tick.get(int(output.tick_index), PostApplyReaction()),
-            play_sfx=self.runtime.audio_bridge.router.play_sfx,
+            runtime=_StandalonePostApplyReactionRuntime(runtime=self.runtime),
         )
+
+
+class _StandalonePostApplyReactionRuntime(PostApplyReactionRuntime):
+    runtime: WorldRuntime
+
+    def play_sfx(self, sfx: SfxId) -> None:
+        self.runtime.audio_bridge.router.play_sfx(sfx)
 
 
 @dataclass(slots=True)

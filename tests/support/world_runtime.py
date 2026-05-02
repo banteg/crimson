@@ -8,7 +8,11 @@ from crimson.render.rtx.mode import RtxRenderMode
 from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import ResolvedTick
-from crimson.sim.presentation_reactions import apply_post_apply_reaction, build_post_apply_reaction
+from crimson.sim.presentation_reactions import (
+    PostApplyReactionRuntime,
+    apply_post_apply_reaction,
+    build_post_apply_reaction,
+)
 from crimson.sim.sessions import (
     DeterministicSession,
     DeterministicSessionTick,
@@ -22,6 +26,14 @@ from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.rand import Crand
+from grim.sfx_map import SfxId
+
+
+class _WorldRuntimeHostPostApplyReactionRuntime(PostApplyReactionRuntime):
+    host: WorldRuntimeHost
+
+    def play_sfx(self, sfx: SfxId) -> None:
+        self.host.audio_bridge.router.play_sfx(sfx)
 
 
 class WorldRuntimeHost:
@@ -323,6 +335,6 @@ class WorldRuntimeHost:
                     payload=tick,
                 ),
             ),
-            play_sfx=self.audio_bridge.router.play_sfx,
+            runtime=_WorldRuntimeHostPostApplyReactionRuntime(host=self),
         )
         return tick

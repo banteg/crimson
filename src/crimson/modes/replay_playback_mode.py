@@ -14,6 +14,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
+from grim.sfx_map import SfxId
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
@@ -39,6 +40,7 @@ from ..sim.clock import FixedStepClock
 from ..sim.hooks import TickResult
 from ..sim.presentation_reactions import (
     PostApplyReaction,
+    PostApplyReactionRuntime,
     apply_post_apply_reaction,
     build_post_apply_reaction,
 )
@@ -85,6 +87,19 @@ class _ReplayPresentationApplyRuntime(PresentationApplyRuntime):
 
     def output_applied(self, output: PresentationTickOutput) -> None:
         self.mode._apply_post_apply_reaction(self.reactions_by_tick[int(output.tick_index)])
+
+
+class _ReplayPostApplyReactionRuntime(PostApplyReactionRuntime):
+    mode: ReplayPlaybackMode
+
+    def play_sfx(self, sfx: SfxId) -> None:
+        runtime = self.mode._runtime
+        if runtime is None:
+            return
+        runtime.audio_bridge.router.play_sfx(sfx)
+
+    def play_completion_music(self) -> None:
+        self.mode._play_quest_completion_music()
 
 
 class ReplayPlaybackMode:
@@ -435,8 +450,7 @@ class ReplayPlaybackMode:
             return
         apply_post_apply_reaction(
             reaction=reaction,
-            play_sfx=runtime.audio_bridge.router.play_sfx,
-            play_completion_music=self._play_quest_completion_music,
+            runtime=_ReplayPostApplyReactionRuntime(mode=self),
         )
 
     def _play_quest_completion_music(self) -> None:
