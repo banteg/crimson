@@ -909,7 +909,7 @@ fn drawWeaponsPanels(
     if (total == 0) return;
     const weapon_id = weapon_ids[@min(state.selection, total - 1)];
     const detail_x = right_rect.x;
-    window_ui.drawSmallTextFmt("weapon #{d}", assets, .{@intFromEnum(weapon_id)}, detail_x + 240.0, right_rect.y + 32.0, muted_text);
+    window_ui.drawSmallTextFmt("{s} #{d}", assets, .{ weaponNoLabel(preserve_bugs), @intFromEnum(weapon_id) }, detail_x + 240.0, right_rect.y + 32.0, muted_text);
     const name = game_ids.weaponDisplayName(weapon_id, preserve_bugs);
     window_ui.drawSmallText(assets, name, detail_x + 50.0, right_rect.y + 50.0, text_color);
     const icon_index = weapon_data.weaponIconIndex(weapon_id);
@@ -927,10 +927,11 @@ fn drawWeaponsPanels(
     const stats_entry = weapon_data.weapon_stats.get(weapon_id);
     const ammo_class = @intFromEnum(weapon_data.projectileTypeIdFromWeaponId(weapon_id) orelse game_ids.ProjectileTypeId.pistol);
     var fire_rate_buf: [64]u8 = undefined;
+    const fire_rate_label = weaponFireRateLabel(preserve_bugs);
     const fire_rate_text = if (ammo_class == 1)
-        "Fire rate: n/a"
+        std.fmt.bufPrint(&fire_rate_buf, "{s}: n/a", .{fire_rate_label}) catch "Fire rate: ?"
     else
-        std.fmt.bufPrint(&fire_rate_buf, "Fire rate: {d} rpm", .{@as(i32, @intFromFloat(60.0 / stats_entry.shot_cooldown))}) catch "Fire rate: ?";
+        std.fmt.bufPrint(&fire_rate_buf, "{s}: {d} rpm", .{ fire_rate_label, @as(i32, @intFromFloat(60.0 / stats_entry.shot_cooldown)) }) catch "Fire rate: ?";
     window_ui.drawSmallText(assets, fire_rate_text, detail_x + 66.0, right_rect.y + 128.0, text_color);
     var reload_buf: [64]u8 = undefined;
     const reload_text = std.fmt.bufPrint(&reload_buf, "Reload time: {d:.1} secs", .{stats_entry.reload_time}) catch "Reload time: ?";
@@ -983,7 +984,7 @@ fn drawPerksPanels(
     const detail_index = @min(state.hovered orelse state.selection, total - 1);
     const perk_id = perk_ids[detail_index];
     const detail_x = right_rect.x + 34.0;
-    window_ui.drawSmallTextFmt("perk #{d}", assets, .{@intFromEnum(perk_id)}, detail_x + 190.0, right_rect.y + 32.0, muted_text);
+    window_ui.drawSmallTextFmt("{s} #{d}", assets, .{ perkNoLabel(preserve_bugs), @intFromEnum(perk_id) }, detail_x + 190.0, right_rect.y + 32.0, muted_text);
     const name = game_ids.perkDisplayName(perk_id, violence_disabled, preserve_bugs);
     const name_width = window_ui.measureSmallText(assets, name);
     const name_x = detail_x + 128.0 - name_width * 0.5;
@@ -997,7 +998,7 @@ fn drawPerksPanels(
         window_ui.drawSmallText(assets, req_text, detail_x + 16.0, y, rl.Color.init(255, 204, 204, 220));
         y += 18.0;
     }
-    drawWrappedSmallText(assets, window_statistics_data.perkDescription(perk_id), detail_x + 16.0, y, 256.0, muted_text);
+    drawWrappedSmallText(assets, game_ids.perkDisplayDescription(perk_id, violence_disabled, preserve_bugs), detail_x + 16.0, y, 256.0, muted_text);
 }
 
 fn animatedCenterPanelRect(rect: rl.Rectangle, timeline_ms: i32) rl.Rectangle {
@@ -2056,6 +2057,18 @@ fn formatHighScoreValue(buf: []u8, record: persistence.highscores.HighScoreRecor
     };
 }
 
+fn weaponNoLabel(preserve_bugs: bool) []const u8 {
+    return if (preserve_bugs) "wepno" else "weapon";
+}
+
+fn weaponFireRateLabel(preserve_bugs: bool) []const u8 {
+    return if (preserve_bugs) "Firerate" else "Fire rate";
+}
+
+fn perkNoLabel(preserve_bugs: bool) []const u8 {
+    return if (preserve_bugs) "perkno" else "perk";
+}
+
 fn formatPlaytimeText(buf: []u8, game_sequence_ms: u32, preserve_bugs: bool) []const u8 {
     const total_minutes = @divTrunc(@divTrunc(game_sequence_ms, 1000), 60);
     const hours = @divTrunc(total_minutes, 60);
@@ -2213,6 +2226,28 @@ test "statistics playtime text follows default and preserve-bugs pluralization" 
         "played for 1 hours 1 minutes",
         formatPlaytimeText(&buf, (1 * 60 * 60 + 1 * 60) * 1000, true),
     );
+}
+
+test "statistics database detail labels follow preserve-bugs wording" {
+    try std.testing.expectEqualStrings("weapon", weaponNoLabel(false));
+    try std.testing.expectEqualStrings("wepno", weaponNoLabel(true));
+    try std.testing.expectEqualStrings("Fire rate", weaponFireRateLabel(false));
+    try std.testing.expectEqualStrings("Firerate", weaponFireRateLabel(true));
+    try std.testing.expectEqualStrings("perk", perkNoLabel(false));
+    try std.testing.expectEqualStrings("perkno", perkNoLabel(true));
+}
+
+test "statistics perk descriptions use preserve-bugs text" {
+    try std.testing.expect(std.mem.indexOf(
+        u8,
+        game_ids.perkDisplayDescription(.anxious_loader, 0, false),
+        "waiting for your gun",
+    ) != null);
+    try std.testing.expect(std.mem.indexOf(
+        u8,
+        game_ids.perkDisplayDescription(.anxious_loader, 0, true),
+        "waiting your gun",
+    ) != null);
 }
 
 test "alien zookeeper finds horizontal matches before vertical" {
