@@ -44,6 +44,7 @@ pub const ReplayCodecError = error{
     InvalidMsgpack,
     InvalidHeaderValue,
     MissingHeaderField,
+    MissingQuestLevel,
     UnsupportedReplayFormatVersion,
     UnsupportedInputShape,
     UnsupportedEventShape,
@@ -203,6 +204,9 @@ pub fn unsupportedReplayHeaderDetail(
     if ((header.game_mode_id == 4 or header.game_mode_id == 8) and header.player_count != 1) {
         return "typo and tutorial replays require player_count == 1";
     }
+    if (isMissingQuestLevel(header.game_mode_id, header.quest_level)) {
+        return "quest replays require a valid header.quest_level";
+    }
     if (header.player_count < 1 or header.player_count > 4) {
         return "native replay tools support only 1-4 player replays";
     }
@@ -220,6 +224,11 @@ pub fn unsupportedReplayHeaderDetail(
         return "native replay tools require latest ruleset replays unless preserve_bugs is set";
     }
     return null;
+}
+
+fn isMissingQuestLevel(game_mode_id: i32, quest_level: []const u8) bool {
+    return game_mode_id == @intFromEnum(game_ids.GameModeId.quests) and
+        std.mem.trim(u8, quest_level, " \t\r\n").len == 0;
 }
 
 pub const PerkPickEvent = struct {
@@ -1835,6 +1844,9 @@ fn buildHeader(
     if (wire.game_version.len == 0) {
         return error.MissingHeaderField;
     }
+    if (isMissingQuestLevel(game_mode_id, wire.quest_level)) {
+        return error.MissingQuestLevel;
+    }
     if (wire.status.weapon_usage_counts.len != weapon_usage_count) {
         return error.InvalidHeaderValue;
     }
@@ -1915,6 +1927,9 @@ fn buildHeaderCurrent(
 
     if (tick_rate <= 0 or player_count <= 0) return error.InvalidHeaderValue;
     if (wire.game_version.len == 0) return error.MissingHeaderField;
+    if (wire.game_mode_id == @intFromEnum(game_ids.GameModeId.quests) and wire.quest_level == null) {
+        return error.MissingQuestLevel;
+    }
     if (wire.status.weapon_usage_counts.len != weapon_usage_count) return error.InvalidHeaderValue;
 
     var usage_counts: [weapon_usage_count]u32 = [_]u32{0} ** weapon_usage_count;
@@ -2457,6 +2472,95 @@ test "build header rejects world_size above i32 range" {
         .input_quantization = "f32",
     };
     try std.testing.expectError(error.InvalidHeaderValue, buildHeader(std.testing.allocator, wire));
+}
+
+test "build header rejects quest replay without quest level" {
+    const usage_counts = [_]u32{0} ** weapon_usage_count;
+    const wire: ReplayHeaderWire = .{
+        .game_mode_id = @intFromEnum(game_ids.GameModeId.quests),
+        .seed = 1,
+        .replay_format_version = replay_format_version,
+        .quest_level = " \t",
+        .bootstrap_kind = "none",
+        .bootstrap_seed = 0,
+        .game_version = "0.7.0",
+        .tick_rate = 60,
+        .difficulty_level = 0,
+        .hardcore = false,
+        .preserve_bugs = false,
+        .detail_preset = 5,
+        .gore_disabled = 0,
+        .world_size = 1024.0,
+        .player_count = 1,
+        .status = .{
+            .quest_unlock_index = 0,
+            .quest_unlock_index_full = 0,
+            .weapon_usage_counts = usage_counts[0..],
+        },
+        .claimed_stats = .{},
+        .input_quantization = "f32",
+    };
+    try std.testing.expectError(error.MissingQuestLevel, buildHeader(std.testing.allocator, wire));
+}
+
+test "build current header rejects quest replay without quest level" {
+    const usage_counts = [_]u32{0} ** weapon_usage_count;
+    const wire: ReplayHeaderCurrentWire = .{
+        .game_mode_id = @intFromEnum(game_ids.GameModeId.quests),
+        .seed = 1,
+        .replay_format_version = replay_format_version,
+        .quest_level = null,
+        .game_version = "0.9.0",
+        .tick_rate = 60,
+        .quest_fail_retry_count = 0,
+        .hardcore = false,
+        .preserve_bugs = false,
+        .detail_preset = 5,
+        .violence_disabled = 0,
+        .world_size = 1024.0,
+        .player_count = 1,
+        .status = .{
+            .quest_unlock_index = 0,
+            .quest_unlock_index_full = 0,
+            .weapon_usage_counts = usage_counts[0..],
+        },
+        .claimed_stats = .{},
+        .input_quantization = "f32",
+    };
+    try std.testing.expectError(error.MissingQuestLevel, buildHeaderCurrent(std.testing.allocator, wire));
+}
+
+test "unsupported replay header detail reports missing quest level" {
+    const allocator = std.testing.allocator;
+    const header: ReplayHeader = .{
+        .game_mode_id = @intFromEnum(game_ids.GameModeId.quests),
+        .seed = 1,
+        .replay_format_version = replay_format_version,
+        .quest_level = try allocator.dupe(u8, ""),
+        .bootstrap_kind = try allocator.dupe(u8, "none"),
+        .bootstrap_seed = 0,
+        .game_version = try allocator.dupe(u8, "0.9.0"),
+        .tick_rate = 60,
+        .difficulty_level = 0,
+        .hardcore = false,
+        .preserve_bugs = false,
+        .detail_preset = 5,
+        .gore_disabled = 0,
+        .world_size = 1024.0,
+        .player_count = 1,
+        .status = .{
+            .quest_unlock_index = 0,
+            .quest_unlock_index_full = 0,
+            .weapon_usage_counts = [_]u32{0} ** weapon_usage_count,
+        },
+        .input_quantization = try allocator.dupe(u8, "f32"),
+    };
+    defer header.deinit(allocator);
+
+    try std.testing.expectEqualStrings(
+        "quest replays require a valid header.quest_level",
+        unsupportedReplayHeaderDetail(header, 1, .verifier).?,
+    );
 }
 
 test "build header parses claimed stats snapshot" {

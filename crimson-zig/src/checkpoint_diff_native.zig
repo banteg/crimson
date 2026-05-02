@@ -1905,6 +1905,7 @@ fn replayLoadErrorDetail(err: anyerror) []const u8 {
         error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.MissingHeaderField => "replay header missing required fields",
+        error.MissingQuestLevel => "quest replays require a valid header.quest_level",
         error.UnsupportedInputShape => "replay input rows are not in the canonical wire shape",
         error.UnsupportedEventShape => "replay events are not in the canonical wire shape",
         error.InvalidGzipPayload => "unable to inflate replay gzip payload",

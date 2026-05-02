@@ -165,6 +165,18 @@ def write_current_unknown_command_replay(tmp_path: Path, *, replay: Replay, name
     return replay_path
 
 
+def write_current_missing_quest_level_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
+    raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
+    payload = msgspec.msgpack.decode(raw_payload)
+    payload["header"]["game_mode_id"] = int(GameMode.QUESTS)
+    payload["header"]["quest_level"] = None
+
+    replay_path = tmp_path / name
+    replay_path.parent.mkdir(parents=True, exist_ok=True)
+    replay_path.write_bytes(msgspec.msgpack.encode(payload))
+    return replay_path
+
+
 def write_checkpoint_sidecar(
     replay_path: Path,
     replay: Replay,

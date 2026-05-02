@@ -476,6 +476,7 @@ fn replayCodecErrorDetail(err: replay_codec.ReplayCodecError) []const u8 {
         error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.MissingHeaderField => "replay header missing required fields",
+        error.MissingQuestLevel => "quest replays require a valid header.quest_level",
         error.UnsupportedInputShape => "replay input rows are invalid: expected canonical wire shape",
         error.UnsupportedEventShape => "replay events are invalid: expected canonical wire shape",
         error.InvalidGzipPayload => "unable to inflate replay gzip payload",
@@ -868,6 +869,10 @@ test "replay info exposes codec and collector detail helpers" {
     try std.testing.expectEqualStrings(
         "replay bootstrap seed does not match canonical terrain bootstrap draws",
         replayCodecErrorDetail(error.BootstrapSeedMismatch),
+    );
+    try std.testing.expectEqualStrings(
+        "quest replays require a valid header.quest_level",
+        replayCodecErrorDetail(error.MissingQuestLevel),
     );
     try std.testing.expectEqualStrings(
         "replay events include an unknown command kind",

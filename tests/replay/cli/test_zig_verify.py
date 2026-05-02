@@ -20,6 +20,7 @@ from ._helpers import (
     build_replay,
     build_typo_submit_replay,
     inject_tick_commands,
+    write_current_missing_quest_level_replay,
     write_current_typo_event_replay,
     write_legacy_out_of_order_event_replay,
     write_replay,
@@ -271,6 +272,24 @@ def test_zig_replay_verify_reports_unknown_command_as_replay_failure(tmp_path: P
     assert result.stdout == ""
     assert "replay verification failed: replay events include an unknown command kind" in result.stderr
     assert "native runtime limitation" not in result.stderr
+
+
+def test_zig_replay_verify_reports_missing_quest_level_as_replay_failure(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = write_current_missing_quest_level_replay(
+        tmp_path,
+        replay=replay,
+        name="missing-quest-level.crd",
+    )
+
+    result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "replay verification failed: quest replays require a valid header.quest_level" in result.stderr
+    assert "native runtime limitation" not in result.stderr
+    assert "native runtime" not in result.stderr
+    assert "InvalidQuestSpawnTable" not in result.stderr
 
 
 def test_zig_replay_verify_reports_event_player_index_detail(tmp_path: Path) -> None:
