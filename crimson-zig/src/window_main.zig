@@ -2422,8 +2422,8 @@ const App = struct {
                 } else {
                     drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(262.0, 116.0, 756.0, 392.0), colorWithAlpha(rl.Color.white, 0.96));
                     switch (results.reason) {
-                        .dead => drawTextureFit(runtime_assets.texture(.ui_text_reaper), rl.Rectangle.init(464.0, 136.0, 354.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
-                        .completed => drawTextureFit(runtime_assets.texture(.ui_text_level_complete), rl.Rectangle.init(406.0, 136.0, 468.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
+                        .dead => drawTextureFit(runtime_assets.texture(resultsBannerTextureId(.dead).?), rl.Rectangle.init(464.0, 136.0, 354.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
+                        .completed => drawTextureFit(runtime_assets.texture(resultsBannerTextureId(.completed).?), rl.Rectangle.init(406.0, 136.0, 468.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
                         .abandoned, .runtime_error => drawSmallTextCentered(runtime_assets, resultsTitle(results.reason), 152.0, HudTextColor.accent),
                     }
                     drawSmallTextCentered(runtime_assets, resultsSubtitleFor(&results), 196.0, HudTextColor.primary);
@@ -3065,6 +3065,14 @@ fn resultsSubtitleFor(results: *const ResultsScreen) [:0]const u8 {
         return questFailedMessage(results.run_config.quest_fail_retry_count, results.run_config.preserve_bugs);
     }
     return resultsSubtitle(results.reason);
+}
+
+fn resultsBannerTextureId(reason: ResultsReason) ?window_assets.TextureId {
+    return switch (reason) {
+        .dead => .ui_text_reaper,
+        .completed => .ui_text_well_done,
+        .abandoned, .runtime_error => null,
+    };
 }
 
 fn questResultsBreakdownPending(results: *const ResultsScreen) bool {
@@ -4097,6 +4105,13 @@ test "quest completed result action buttons move below unlock lines" {
     const layout = resultsActionButtonLayout(&results, 640.0);
     try std.testing.expectApproxEqAbs(@as(f32, 162.0), layout.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 275.0), layout.y, 1e-6);
+}
+
+test "result banner textures match native result screens" {
+    try std.testing.expectEqual(window_assets.TextureId.ui_text_reaper, resultsBannerTextureId(.dead).?);
+    try std.testing.expectEqual(window_assets.TextureId.ui_text_well_done, resultsBannerTextureId(.completed).?);
+    try std.testing.expectEqual(@as(?window_assets.TextureId, null), resultsBannerTextureId(.abandoned));
+    try std.testing.expectEqual(@as(?window_assets.TextureId, null), resultsBannerTextureId(.runtime_error));
 }
 
 test "results high score prompt uses native ok submit button" {
