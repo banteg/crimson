@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import cast
 
 import msgspec
@@ -49,6 +48,11 @@ class WorldEvents(msgspec.Struct):
     sfx: list[SfxId]
     trigger_game_tune: bool = False
     hit_sfx: list[SfxId] = msgspec.field(default_factory=list)
+
+
+class WorldMidStepRuntime(msgspec.Struct):
+    def run_mid_step(self) -> None:
+        return None
 
 
 _WORLD_DT_STEPS = WORLD_DT_STEPS
@@ -243,7 +247,7 @@ class WorldState(msgspec.Struct):
         dt_player_local: float | None = None,
         defer_camera_shake_update: bool = False,
         defer_freeze_corpse_fx: bool = False,
-        mid_step_hook: Callable[[], None] | None = None,
+        mid_step_runtime: WorldMidStepRuntime | None = None,
         inputs: list[PlayerInput] | None,
         world_size: float,
         damage_scale_by_type: dict[int, float],
@@ -381,8 +385,8 @@ class WorldState(msgspec.Struct):
         if dt > 0.0:
             self._advance_creature_anim(dt)
             self._advance_player_anim(dt, prev_positions)
-        if mid_step_hook is not None:
-            mid_step_hook()
+        if mid_step_runtime is not None:
+            mid_step_runtime.run_mid_step()
         if not bool(defer_camera_shake_update):
             camera_shake_update(self.state, dt)
         # Native level-up/perk-pending check runs before `bonus_update` in
