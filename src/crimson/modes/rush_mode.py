@@ -277,25 +277,11 @@ class RushMode(BaseGameplayMode):
         if session is None:
             return
 
-        tick_dt = float(self._gameplay_tick_dt(session=session))
-
-        def _on_tick(tick, tick_index: int | None) -> bool:
-            _ = tick_index
-            action = self._lan_on_tick_applied(tick, None, tick_dt)
-            return action != "continue"
-
-        def _on_checkpoint(tick_index: int, tick) -> None:
-            self._record_replay_checkpoint_from_tick(
-                tick_index=int(tick_index),
-                tick=tick,
-            )
-
         self._run_deterministic_session_ticks(
             dt_frame=float(sim_dt),
             session=session,
             recorder=self._replay_recorder,
-            on_tick=_on_tick,
-            on_checkpoint=_on_checkpoint,
+            stop_on_mode_tick=True,
         )
 
     def _draw_game_cursor(self) -> None:

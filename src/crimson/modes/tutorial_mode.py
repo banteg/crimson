@@ -320,11 +320,6 @@ class TutorialMode(BaseGameplayMode):
                         dt_frame=float(dt_world),
                         session=session,
                         recorder=self._replay_recorder,
-                        on_tick=lambda _tick, _tick_index: False,
-                        on_checkpoint=lambda tick_index, tick: self._record_replay_checkpoint_from_tick(
-                            tick_index=int(tick_index),
-                            tick=tick,
-                        ),
                     )
                 finally:
                     self._frame_input_state = None

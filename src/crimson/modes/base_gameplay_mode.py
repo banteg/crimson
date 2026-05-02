@@ -247,6 +247,58 @@ class _LanTickSyncRuntime(msgspec.Struct, frozen=True):
         )
 
 
+class _BatchApplyRuntime(msgspec.Struct, frozen=True):
+    mode: BaseGameplayMode
+    session: DeterministicSession
+    recorder: ReplayRecorder | None = None
+    lan_tick_sync: _LanTickSyncRuntime | None = None
+    mode_tick_dt: float | None = None
+
+    def ensure_replay_tick_index(self, tick_result: TickResult) -> int | None:
+        replay_tick_index = tick_result.replay_tick_index
+        if replay_tick_index is None and self.recorder is not None:
+            replay_tick_index = int(
+                self.recorder.record_tick(
+                    list(tick_result.source_tick.inputs),
+                    commands=list(tick_result.source_tick.commands),
+                ),
+            )
+            tick_result.replay_tick_index = replay_tick_index
+        return replay_tick_index
+
+    def prepare_tick_result(self, tick_result: TickResult) -> int | None:
+        if self.lan_tick_sync is not None:
+            self.lan_tick_sync.prepare_tick_result(tick_result)
+        if tick_result.lan_sync is None:
+            return None
+        return int(tick_result.lan_sync.frame_tick_index)
+
+    def tick_applied_action(self, applied: _AppliedBatchTick) -> LanStepAction:
+        if self.mode_tick_dt is None:
+            return "continue"
+        frame_tick_index = applied.frame_tick_index
+        if self.lan_tick_sync is not None and frame_tick_index is None:
+            raise RuntimeError("lan tick runner completed without runtime frame metadata")
+        return self.mode._lan_on_tick_applied(
+            applied.tick,
+            None if frame_tick_index is None else int(frame_tick_index),
+            float(self.mode_tick_dt),
+        )
+
+    def record_checkpoint(self, replay_tick_index: int | None, tick: DeterministicSessionTick) -> None:
+        if replay_tick_index is None:
+            return
+        self.mode._record_replay_checkpoint_from_tick(
+            tick_index=int(replay_tick_index),
+            tick=tick,
+        )
+
+    def finalize_tick_result(self, tick_result: TickResult) -> None:
+        if self.lan_tick_sync is None:
+            return
+        self.lan_tick_sync.finalize_tick_result(tick_result)
+
+
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
 # These knobs currently affect deterministic simulation (not just rendering), so
 # we force stable values while in a LAN match.
@@ -1669,7 +1721,7 @@ class BaseGameplayMode:
         sim_ns_start = time.perf_counter_ns()
         ticks_requested = 1 if float(dt_tick) > 0.0 else 0
         # LAN always requests exactly 0 or 1 ticks per frame. This ensures
-        # _on_tick_applied stop actions never discard simulated-but-unapplied ticks.
+        # mode tick-apply stop actions never discard simulated-but-unapplied ticks.
         assert ticks_requested <= 1
         advance = advance_tick_runner_frame(
             runner=runner,
@@ -1702,26 +1754,15 @@ class BaseGameplayMode:
                 provider=provider,
             )
 
-            def _on_tick_applied(applied: _AppliedBatchTick) -> LanStepAction:
-                frame_tick_index = applied.frame_tick_index
-                if frame_tick_index is None:
-                    raise RuntimeError("lan tick runner completed without runtime frame metadata")
-                return self._lan_on_tick_applied(
-                    applied.tick,
-                    int(frame_tick_index),
-                    float(dt_tick),
-                )
-
             apply_ns_start = time.perf_counter_ns()
             outcome = self._process_tick_batch_results(
                 batch=batch,
-                session=session,
-                recorder=self._replay_recorder,
-                lan_tick_sync=lan_tick_sync,
-                on_tick_applied=_on_tick_applied,
-                on_checkpoint=lambda replay_tick_index, tick: self._record_replay_checkpoint_from_tick(
-                    tick_index=int(replay_tick_index),
-                    tick=tick,
+                runtime=_BatchApplyRuntime(
+                    mode=self,
+                    session=session,
+                    recorder=self._replay_recorder,
+                    lan_tick_sync=lan_tick_sync,
+                    mode_tick_dt=float(dt_tick),
                 ),
             )
             self._apply_batch_presentation_outputs(
@@ -1781,11 +1822,7 @@ class BaseGameplayMode:
         self,
         *,
         batch: TickBatchResult,
-        session: DeterministicSession,
-        recorder: ReplayRecorder | None = None,
-        lan_tick_sync: _LanTickSyncRuntime | None = None,
-        on_tick_applied: Callable[[_AppliedBatchTick], LanStepAction] | None = None,
-        on_checkpoint: Callable[[int, DeterministicSessionTick], None] | None = None,
+        runtime: _BatchApplyRuntime,
     ) -> _BatchApplyOutcome:
         ticks_applied = 0
         stop_after_finalize = False
@@ -1794,29 +1831,18 @@ class BaseGameplayMode:
 
         for tick_result in batch.completed_results:
             tick = tick_result.payload
-            replay_tick_index = tick_result.replay_tick_index
-            if replay_tick_index is None and recorder is not None:
-                replay_tick_index = int(
-                    recorder.record_tick(
-                        list(tick_result.source_tick.inputs),
-                        commands=list(tick_result.source_tick.commands),
-                    ),
-                )
-                tick_result.replay_tick_index = replay_tick_index
+            replay_tick_index = runtime.ensure_replay_tick_index(tick_result)
             applied = _AppliedBatchTick(
                 tick=tick,
                 replay_tick_index=replay_tick_index,
+                frame_tick_index=runtime.prepare_tick_result(tick_result),
             )
-            if lan_tick_sync is not None:
-                lan_tick_sync.prepare_tick_result(tick_result)
-            if tick_result.lan_sync is not None:
-                applied.frame_tick_index = int(tick_result.lan_sync.frame_tick_index)
 
             presentation_outputs.append(
                 apply_sim_metadata_tick_result(
                     sim_world=self.sim_world,
                     tick_result=tick_result,
-                    game_tune_started=bool(session.game_tune_started),
+                    game_tune_started=bool(runtime.session.game_tune_started),
                 ),
             )
             post_apply_reactions.append(
@@ -1827,9 +1853,7 @@ class BaseGameplayMode:
             self._ticks_advanced_per_frame += 1
             ticks_applied += 1
 
-            action: LanStepAction = "continue"
-            if on_tick_applied is not None:
-                action = on_tick_applied(applied)
+            action = runtime.tick_applied_action(applied)
             if action == "stop_before_finalize":
                 return _BatchApplyOutcome(
                     ticks_applied=int(ticks_applied),
@@ -1839,11 +1863,9 @@ class BaseGameplayMode:
                     post_apply_reactions=tuple(post_apply_reactions),
                 )
 
-            if replay_tick_index is not None and on_checkpoint is not None:
-                on_checkpoint(int(replay_tick_index), tick)
+            runtime.record_checkpoint(replay_tick_index, tick)
 
-            if lan_tick_sync is not None:
-                lan_tick_sync.finalize_tick_result(tick_result)
+            runtime.finalize_tick_result(tick_result)
 
             if action == "stop_after_finalize":
                 stop_after_finalize = True
@@ -1869,8 +1891,7 @@ class BaseGameplayMode:
         dt_frame: float,
         session: DeterministicSession,
         recorder: ReplayRecorder | None,
-        on_tick: Callable[[DeterministicSessionTick, int | None], bool],
-        on_checkpoint: Callable[[int, DeterministicSessionTick], None] | None = None,
+        stop_on_mode_tick: bool = False,
     ) -> None:
         if float(dt_frame) <= 0.0:
             return
@@ -1913,12 +1934,12 @@ class BaseGameplayMode:
         apply_ns_start = time.perf_counter_ns()
         outcome = self._process_tick_batch_results(
             batch=batch,
-            session=session,
-            recorder=recorder,
-            on_tick_applied=lambda applied: (
-                "stop_after_finalize" if on_tick(applied.tick, applied.replay_tick_index) else "continue"
+            runtime=_BatchApplyRuntime(
+                mode=self,
+                session=session,
+                recorder=recorder,
+                mode_tick_dt=float(tick_dt) if bool(stop_on_mode_tick) else None,
             ),
-            on_checkpoint=on_checkpoint,
         )
         self._apply_batch_presentation_outputs(
             outputs=outcome.presentation_outputs,

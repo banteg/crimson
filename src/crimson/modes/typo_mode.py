@@ -233,18 +233,10 @@ class TypoShooterMode(BaseGameplayMode):
         if session is None:
             return
 
-        def _on_checkpoint(tick_index: int, tick) -> None:
-            self._record_replay_checkpoint_from_tick(
-                tick_index=int(tick_index),
-                tick=tick,
-            )
-
         self._run_deterministic_session_ticks(
             dt_frame=float(dt_world),
             session=session,
             recorder=self._replay_recorder,
-            on_tick=lambda _tick, _tick_index: False,
-            on_checkpoint=_on_checkpoint,
         )
         # Death/game-over flow is handled at the start of the next frame so the
         # trooper death animation can play before the UI slides in.
