@@ -12,6 +12,7 @@ from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
 from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.damage import creature_apply_damage_with_lethal_followup
+from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..creatures.runtime import CreatureDeath, CreaturePool, CreatureUpdateOptions
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
@@ -59,7 +60,7 @@ _WORLD_DT_STEPS = WORLD_DT_STEPS
 _PLAYER_DEATH_HOOKS = PLAYER_DEATH_HOOKS
 
 
-class _WorldStepRuntime(ProjectileHitRuntime):
+class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime):
     world: WorldState
     dt: float
     world_size: float
@@ -327,7 +328,7 @@ class WorldState(msgspec.Struct):
                     runtime_state=self.state,
                     players=self.players,
                     hit_runtime=step_runtime,
-                    apply_creature_damage=step_runtime.apply_creature_damage,
+                    creature_damage_runtime=step_runtime,
                 ),
             ),
         )
@@ -338,8 +339,7 @@ class WorldState(msgspec.Struct):
                 runtime_state=self.state,
                 fx_queue=fx_queue,
                 detail_preset=int(detail_preset),
-                apply_creature_damage=step_runtime.apply_creature_damage,
-                on_detonation_kill=step_runtime.on_secondary_detonation_kill,
+                creature_damage_runtime=step_runtime,
             ),
         )
         self._run_post_damage_player_death_hooks(
@@ -354,8 +354,7 @@ class WorldState(msgspec.Struct):
         self.state.particles.update(
             dt,
             creatures=self.creatures.entries,
-            apply_creature_damage=step_runtime.apply_creature_damage,
-            kill_creature=step_runtime.kill_creature_no_corpse,
+            creature_damage_runtime=step_runtime,
             fx_queue=fx_queue,
             sprite_effects=self.state.sprite_effects,
         )
@@ -416,7 +415,7 @@ class WorldState(msgspec.Struct):
             detail_preset=int(detail_preset),
             defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
             freeze_corpse_indices=freeze_corpse_indices_at_tick_start,
-            apply_creature_damage=step_runtime.apply_creature_damage,
+            creature_damage_runtime=step_runtime,
         )
         if pickups:
             emit_bonus_pickup_effects(

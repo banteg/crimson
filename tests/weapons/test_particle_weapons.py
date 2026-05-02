@@ -15,6 +15,7 @@ from crimson.weapon_runtime import (
 )
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from tests.support.factories import RecordingCreatureDamageRuntime
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -187,12 +188,9 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     creature.size = 50.0
     creature.lifecycle_stage = 16.0
 
-    killed: list[tuple[int, OwnerRef]] = []
+    damage_runtime = RecordingCreatureDamageRuntime(creatures=[creature])
 
-    def _kill(creature_index: int, owner: OwnerRef) -> None:
-        killed.append((int(creature_index), owner))
+    state.particles.update(0.016, creatures=[creature], creature_damage_runtime=damage_runtime)
+    state.particles.update(2.0, creatures=[creature], creature_damage_runtime=damage_runtime)
 
-    state.particles.update(0.016, creatures=[creature], kill_creature=_kill)
-    state.particles.update(2.0, creatures=[creature], kill_creature=_kill)
-
-    assert killed == [(0, OwnerRef.from_player(0))]
+    assert damage_runtime.kills == [(0, OwnerRef.from_player(0))]

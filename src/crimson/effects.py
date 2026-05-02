@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
@@ -12,11 +12,11 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.rand import CallerStatic, Crand, CrandLike
 
+from .creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDamageRuntime
 from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
 from .math_parity import f32
 from .owner_ref import OwnerRef
-from .projectiles.types import CreatureDamageApplier
 from .rng_caller_static import RngCallerStatic
 
 if TYPE_CHECKING:
@@ -59,9 +59,6 @@ class ParticleStyleId(IntEnum):
     BLOW_TORCH = 1
     HR_FLAMER = 2
     BUBBLEGUN = 8
-
-
-CreatureKillHandler = Callable[[int, OwnerRef], None]
 
 
 class Particle(msgspec.Struct):
@@ -171,8 +168,7 @@ class ParticlePool:
         dt: float,
         *,
         creatures: Sequence[CreatureState] | None = None,
-        apply_creature_damage: CreatureDamageApplier | None = None,
-        kill_creature: CreatureKillHandler | None = None,
+        creature_damage_runtime: CreatureDamageRuntime | None = None,
         fx_queue: FxQueue | None = None,
         sprite_effects: SpriteEffectPool | None = None,
     ) -> list[int]:
@@ -188,7 +184,8 @@ class ParticlePool:
         if dt <= 0.0:
             return []
         dt = f32(float(dt))
-        damage_applier = apply_creature_damage
+        if creature_damage_runtime is None and creatures is not None:
+            creature_damage_runtime = DirectCreatureDamageRuntime(creatures=creatures)
 
         def _creature_find_in_radius(*, pos: Vec2, radius: float) -> int:
             if creatures is None:
@@ -255,8 +252,8 @@ class ParticlePool:
                 if style == int(ParticleStyleId.BUBBLEGUN) and entry.target_id != -1:
                     target_id = int(entry.target_id)
                     entry.target_id = -1
-                    if kill_creature is not None:
-                        kill_creature(target_id, entry.owner)
+                    if creature_damage_runtime is not None:
+                        creature_damage_runtime.kill_creature_no_corpse(target_id, entry.owner)
                     elif creatures is not None and 0 <= target_id < len(creatures):
                         creatures[target_id].hp = -1.0
                         creatures[target_id].active = False
@@ -345,8 +342,8 @@ class ParticlePool:
 
                         damage = max(0.0, float(entry.intensity) * 10.0)
                         if damage > 0.0:
-                            if damage_applier is not None:
-                                damage_applier(
+                            if creature_damage_runtime is not None:
+                                creature_damage_runtime.apply_creature_damage(
                                     int(hit_idx),
                                     float(damage),
                                     4,

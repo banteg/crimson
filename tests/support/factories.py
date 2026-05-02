@@ -4,12 +4,13 @@ from collections.abc import Sequence
 
 import msgspec
 
+from crimson.creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDamageRuntime
 from crimson.creatures.runtime import CreatureState, CreatureUpdateOptions
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.gameplay import GameplayState
+from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import ProjectileHitRuntime, ProjectileUpdateOptions
-from crimson.projectiles.types import CreatureDamageApplier
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.rand import CrandLike
@@ -93,6 +94,42 @@ class RecordingProjectileHitRuntime(ProjectileHitRuntime):
             player.health -= damage_value
 
 
+class RecordingCreatureDamageRuntime(DirectCreatureDamageRuntime):
+    calls: list[tuple[int, float, int, Vec2, OwnerRef]] = msgspec.field(default_factory=list)
+    kills: list[tuple[int, OwnerRef]] = msgspec.field(default_factory=list)
+    detonation_kills: list[int] = msgspec.field(default_factory=list)
+    apply_damage: bool = True
+
+    def apply_creature_damage(
+        self,
+        creature_index: int,
+        damage: float,
+        damage_type: int,
+        impulse: Vec2,
+        owner: OwnerRef,
+    ) -> None:
+        _ = owner
+        idx = int(creature_index)
+        damage_value = float(damage)
+        self.calls.append((idx, damage_value, int(damage_type), impulse, owner))
+        if not bool(self.apply_damage):
+            return
+        super().apply_creature_damage(
+            idx,
+            damage_value,
+            int(damage_type),
+            impulse,
+            owner,
+        )
+
+    def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None:
+        self.kills.append((int(creature_index), owner))
+        super().kill_creature_no_corpse(creature_index, owner)
+
+    def on_secondary_detonation_kill(self, creature_index: int) -> None:
+        self.detonation_kills.append(int(creature_index))
+
+
 def make_projectile_update_options(
     *,
     world_size: float = 1024.0,
@@ -103,7 +140,7 @@ def make_projectile_update_options(
     runtime_state: GameplayState | None = None,
     players: Sequence[PlayerState] | None = None,
     hit_runtime: ProjectileHitRuntime | None = None,
-    apply_creature_damage: CreatureDamageApplier | None = None,
+    creature_damage_runtime: CreatureDamageRuntime | None = None,
 ) -> ProjectileUpdateOptions:
     state = GameplayState() if runtime_state is None else runtime_state
     player_seq: Sequence[PlayerState] = () if players is None else players
@@ -114,7 +151,7 @@ def make_projectile_update_options(
         runtime_state=state,
         players=player_seq,
         hit_runtime=RecordingProjectileHitRuntime(players=player_seq) if hit_runtime is None else hit_runtime,
-        apply_creature_damage=apply_creature_damage,
+        creature_damage_runtime=creature_damage_runtime,
         ion_aoe_scale=float(ion_aoe_scale),
         detail_preset=int(detail_preset),
     )

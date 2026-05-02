@@ -7,9 +7,9 @@ import msgspec
 
 from grim.geom import Vec2
 
+from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..game_modes import GameMode
 from ..perks.helpers import perk_active
-from ..projectiles.types import CreatureDamageApplier
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
 from ..weapon_runtime.availability import weapon_pick_random_available
@@ -362,7 +362,7 @@ class BonusPool:
         detail_preset: int = 5,
         defer_freeze_corpse_fx: bool = False,
         freeze_corpse_indices: set[int] | None = None,
-        apply_creature_damage: CreatureDamageApplier | None = None,
+        creature_damage_runtime: CreatureDamageRuntime | None = None,
     ) -> list[BonusPickupEvent]:
         if dt <= 0.0:
             return []
@@ -403,7 +403,7 @@ class BonusPool:
                         detail_preset=int(detail_preset),
                         defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
                         freeze_corpse_indices=freeze_corpse_indices,
-                        apply_creature_damage=apply_creature_damage,
+                        creature_damage_runtime=creature_damage_runtime,
                     )
                     entry.picked = True
                     entry.time_left = BONUS_PICKUP_LINGER

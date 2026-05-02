@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 from grim.geom import Vec2
 
 from ...collision_math import native_find_size_margin
+from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.lifecycle import creature_lifecycle_is_alive
 from ...owner_ref import OwnerRef
-from ..types import CreatureDamageApplier
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
@@ -81,23 +81,20 @@ def _apply_damage_to_creature(
     damage_type: int,
     impulse: Vec2,
     owner: OwnerRef,
-    apply_creature_damage: CreatureDamageApplier | None = None,
+    creature_damage_runtime: CreatureDamageRuntime,
 ) -> None:
     if damage <= 0.0:
         return
     idx = int(creature_index)
     if not (0 <= idx < len(creatures)):
         return
-    if apply_creature_damage is not None:
-        apply_creature_damage(
-            idx,
-            float(damage),
-            int(damage_type),
-            impulse,
-            owner,
-        )
-    else:
-        creatures[idx].hp -= float(damage)
+    creature_damage_runtime.apply_creature_damage(
+        idx,
+        float(damage),
+        int(damage_type),
+        impulse,
+        owner,
+    )
 
 
 __all__ = [
