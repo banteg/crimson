@@ -320,10 +320,10 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
 
     replay_tick_indices: list[int] = []
 
-    def _apply_presentation_outputs(*, outputs, on_output_applied, **_kwargs) -> None:
+    def _apply_presentation_outputs(*, outputs, apply_runtime, **_kwargs) -> None:
         for output in outputs:
             replay_tick_indices.append(int(output.tick_index))
-            on_output_applied(output)
+            apply_runtime.output_applied(output)
 
     mocker.patch.object(
         replay_playback_mode,
@@ -444,7 +444,7 @@ def test_contract_9_post_apply_reactions_are_shared() -> None:
     helper_source = inspect.getsource(presentation_reactions_module.apply_post_apply_reaction)
     gameplay_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._process_tick_batch_results)
     replay_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._apply_post_apply_reaction)
-    world_source = inspect.getsource(standalone_tick_harness_module.StandaloneTickHarness._apply_tick_batch)
+    world_source = inspect.getsource(standalone_tick_harness_module._StandalonePresentationApplyRuntime.output_applied)
 
     assert 'play_sfx(SfxId.QUESTHIT)' in helper_source
     assert "PerkPickCommand" not in gameplay_source

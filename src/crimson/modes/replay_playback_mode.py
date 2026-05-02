@@ -31,6 +31,7 @@ from ..replay.driver.playback_driver import (
 from ..replay.driver.playback_pump import advance_playback_frame
 from ..replay.driver.setup import ReplayRunnerError
 from ..sim.batch_apply import (
+    PresentationApplyRuntime,
     PresentationTickOutput,
     apply_presentation_outputs,
 )
@@ -76,6 +77,14 @@ _REPLAY_WIDGET_TEXT_OFFSET_X = 0.0
 _REPLAY_WIDGET_TEXT_OFFSET_Y = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_X = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_Y = 0.0
+
+
+class _ReplayPresentationApplyRuntime(PresentationApplyRuntime):
+    mode: ReplayPlaybackMode
+    reactions_by_tick: dict[int, PostApplyReaction]
+
+    def output_applied(self, output: PresentationTickOutput) -> None:
+        self.mode._apply_post_apply_reaction(self.reactions_by_tick[int(output.tick_index)])
 
 
 class ReplayPlaybackMode:
@@ -490,9 +499,6 @@ class ReplayPlaybackMode:
         self._frame_index = int(advance.frame_index)
         self._tick_index = int(advance.next_tick_index)
 
-        def _on_output_applied(output: PresentationTickOutput) -> None:
-            self._apply_post_apply_reaction(reaction_by_tick[int(output.tick_index)])
-
         reaction_by_tick = {
             int(tick_result.source_tick.tick_index): self._build_post_apply_reaction(tick_result=tick_result)
             for tick_result in advance.tick_results
@@ -501,12 +507,15 @@ class ReplayPlaybackMode:
             apply_presentation_outputs(
                 outputs=advance.outputs,
                 runtime=runtime,
-                on_output_applied=_on_output_applied,
+                apply_runtime=_ReplayPresentationApplyRuntime(
+                    mode=self,
+                    reactions_by_tick=reaction_by_tick,
+                ),
                 apply_audio=True,
             )
         else:
             for output in advance.outputs:
-                _on_output_applied(output)
+                self._apply_post_apply_reaction(reaction_by_tick[int(output.tick_index)])
 
         self._mark_finished_if_complete()
         self._dt_accum = float(self._clock.accum)
