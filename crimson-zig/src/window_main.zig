@@ -658,26 +658,38 @@ const ResultsScreen = struct {
     quest_unlock_weapon_name: ?[]const u8 = null,
     quest_unlock_perk_name: ?[]const u8 = null,
     score_card_hover: ResultsScoreCardHover = .{},
+    timeline_ms: i32 = 0,
+    panel_open_sfx_played: bool = false,
     closing: bool = false,
     close_selection: usize = 0,
-    close_timeline_ms: i32 = results_close_timeline_max_ms,
+    close_timeline_ms: i32 = 0,
 
     fn beginClose(self: *ResultsScreen, selection: usize) void {
         if (self.closing) return;
         self.closing = true;
         self.close_selection = selection;
-        self.close_timeline_ms = results_close_timeline_max_ms;
+        self.close_timeline_ms = if (self.timeline_ms > 0) self.timeline_ms else resultsTimelineMaxMs(self);
     }
 
     fn advanceClose(self: *ResultsScreen, frame_dt: f32) ?usize {
-        if (!self.closing) return null;
         const dt_ms: i32 = @intFromFloat(@min(frame_dt, 0.1) * 1000.0);
-        if (dt_ms > 0) self.close_timeline_ms -= dt_ms;
+        if (!self.closing) return null;
+        if (dt_ms > 0) {
+            self.timeline_ms = @max(0, self.timeline_ms - dt_ms);
+            self.close_timeline_ms -= dt_ms;
+        }
         if (self.close_timeline_ms <= 0) {
             self.closing = false;
+            self.timeline_ms = 0;
             return self.close_selection;
         }
         return null;
+    }
+
+    fn advanceOpen(self: *ResultsScreen, frame_dt: f32) void {
+        if (self.closing) return;
+        const dt_ms: i32 = @intFromFloat(@min(frame_dt, 0.1) * 1000.0);
+        if (dt_ms > 0) self.timeline_ms = @min(resultsTimelineMaxMs(self), self.timeline_ms + dt_ms);
     }
 };
 
@@ -1561,12 +1573,18 @@ const App = struct {
 
     fn updateResults(self: *App, frame_dt: f32) void {
         if (self.results) |*results| {
+            const was_open = results.timeline_ms >= resultsTimelineMaxMs(results);
             if (results.advanceClose(frame_dt)) |selection| {
                 self.results_selection = selection;
                 self.activateResultsSelection(results);
                 return;
             }
             if (results.closing) return;
+            results.advanceOpen(frame_dt);
+            if (!results.panel_open_sfx_played and !was_open and results.timeline_ms >= resultsTimelineMaxMs(results)) {
+                self.audio.playUiPanelClick();
+                results.panel_open_sfx_played = true;
+            }
 
             if (questCompletedGlobalShortcutSelection(results)) |selection| {
                 self.results_selection = selection;
@@ -2516,7 +2534,7 @@ const App = struct {
         if (self.results) |results| {
             if (self.runtime_assets) |*runtime_assets| {
                 if (isQuestFailedResult(&results)) {
-                    const layout = questFailedResultsPanelLayout(@floatFromInt(rl.getScreenWidth()));
+                    const layout = questFailedResultsPanelLayoutForTimeline(@floatFromInt(rl.getScreenWidth()), results.timeline_ms);
                     drawTextureFit(
                         runtime_assets.texture(.ui_menu_panel),
                         rl.Rectangle.init(layout.top_left.x, layout.top_left.y, quest_failed_panel_w, quest_failed_panel_h),
@@ -2536,47 +2554,49 @@ const App = struct {
                     );
                     drawQuestFailedPreview(runtime_assets, &results, layout);
                 } else {
-                    drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(262.0, 116.0, 756.0, 392.0), colorWithAlpha(rl.Color.white, 0.96));
+                    const slide_x = resultsPanelSlideOffsetX(&results, results.timeline_ms);
+                    const center_x = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5 + slide_x;
+                    drawTextureFit(runtime_assets.texture(.ui_menu_panel), rl.Rectangle.init(262.0 + slide_x, 116.0, 756.0, 392.0), colorWithAlpha(rl.Color.white, 0.96));
                     switch (results.reason) {
-                        .dead => drawTextureFit(runtime_assets.texture(resultsBannerTextureId(.dead).?), rl.Rectangle.init(464.0, 136.0, 354.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
-                        .completed => drawTextureFit(runtime_assets.texture(resultsBannerTextureId(.completed).?), rl.Rectangle.init(406.0, 136.0, 468.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
-                        .abandoned, .runtime_error => drawSmallTextCentered(runtime_assets, resultsTitle(results.reason), 152.0, HudTextColor.accent),
+                        .dead => drawTextureFit(runtime_assets.texture(resultsBannerTextureId(.dead).?), rl.Rectangle.init(464.0 + slide_x, 136.0, 354.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
+                        .completed => drawTextureFit(runtime_assets.texture(resultsBannerTextureId(.completed).?), rl.Rectangle.init(406.0 + slide_x, 136.0, 468.0, 48.0), colorWithAlpha(rl.Color.white, 0.96)),
+                        .abandoned, .runtime_error => drawSmallTextCenteredAtX(runtime_assets, resultsTitle(results.reason), center_x, 152.0, HudTextColor.accent),
                     }
-                    drawSmallTextCentered(runtime_assets, resultsSubtitleFor(&results), 196.0, HudTextColor.primary);
-                    drawSmallText(runtime_assets, "TIME", 370.0, 258.0, HudTextColor.dim);
-                    drawSmallText(runtime_assets, "XP", 370.0, 286.0, HudTextColor.dim);
-                    drawSmallText(runtime_assets, "LEVEL", 370.0, 314.0, HudTextColor.dim);
-                    drawSmallText(runtime_assets, "WEAPON", 370.0, 342.0, HudTextColor.dim);
-                    drawSmallText(runtime_assets, "HP", 370.0, 370.0, HudTextColor.dim);
+                    drawSmallTextCenteredAtX(runtime_assets, resultsSubtitleFor(&results), center_x, 196.0, HudTextColor.primary);
+                    drawSmallText(runtime_assets, "TIME", 370.0 + slide_x, 258.0, HudTextColor.dim);
+                    drawSmallText(runtime_assets, "XP", 370.0 + slide_x, 286.0, HudTextColor.dim);
+                    drawSmallText(runtime_assets, "LEVEL", 370.0 + slide_x, 314.0, HudTextColor.dim);
+                    drawSmallText(runtime_assets, "WEAPON", 370.0 + slide_x, 342.0, HudTextColor.dim);
+                    drawSmallText(runtime_assets, "HP", 370.0 + slide_x, 370.0, HudTextColor.dim);
                     const elapsed_ms = if (results.quest_final_time != null)
                         questResultsDisplayBreakdown(&results).final_time_ms
                     else
                         @as(i32, @intCast(results.summary.elapsed_ms_sim));
                     var elapsed_buf: [16]u8 = undefined;
-                    drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&elapsed_buf, elapsed_ms), 510.0, 258.0, HudTextColor.primary);
-                    drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_experience}, 510.0, 286.0, HudTextColor.primary);
-                    drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_level}, 510.0, 314.0, HudTextColor.primary);
-                    drawSmallText(runtime_assets, weaponName(results.summary.player_weapon_id, results.run_config.preserve_bugs), 510.0, 342.0, HudTextColor.primary);
+                    drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&elapsed_buf, elapsed_ms), 510.0 + slide_x, 258.0, HudTextColor.primary);
+                    drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_experience}, 510.0 + slide_x, 286.0, HudTextColor.primary);
+                    drawSmallTextFmt("{d}", runtime_assets, .{results.summary.player_level}, 510.0 + slide_x, 314.0, HudTextColor.primary);
+                    drawSmallText(runtime_assets, weaponName(results.summary.player_weapon_id, results.run_config.preserve_bugs), 510.0 + slide_x, 342.0, HudTextColor.primary);
                     const player_health = if (results.player_health_count > 0) results.player_health_values[0] else 0.0;
-                    drawSmallTextFmt("{d:.1}", runtime_assets, .{player_health}, 510.0, 370.0, HudTextColor.primary);
+                    drawSmallTextFmt("{d:.1}", runtime_assets, .{player_health}, 510.0 + slide_x, 370.0, HudTextColor.primary);
                     if (results.quest_final_time != null) {
                         const breakdown = questResultsDisplayBreakdown(&results);
                         const base_color = questResultsBreakdownRowColor(&results, 0, false);
                         const life_color = questResultsBreakdownRowColor(&results, 1, false);
                         const perk_color = questResultsBreakdownRowColor(&results, 2, false);
                         const final_color = questResultsBreakdownRowColor(&results, 3, true);
-                        drawSmallText(runtime_assets, "BASE", 690.0, 258.0, HudTextColor.dim);
-                        drawSmallText(runtime_assets, "LIFE BONUS", 690.0, 286.0, HudTextColor.dim);
-                        drawSmallText(runtime_assets, "PERK BONUS", 690.0, 314.0, HudTextColor.dim);
-                        drawSmallText(runtime_assets, "FINAL", 690.0, 342.0, HudTextColor.dim);
+                        drawSmallText(runtime_assets, "BASE", 690.0 + slide_x, 258.0, HudTextColor.dim);
+                        drawSmallText(runtime_assets, "LIFE BONUS", 690.0 + slide_x, 286.0, HudTextColor.dim);
+                        drawSmallText(runtime_assets, "PERK BONUS", 690.0 + slide_x, 314.0, HudTextColor.dim);
+                        drawSmallText(runtime_assets, "FINAL", 690.0 + slide_x, 342.0, HudTextColor.dim);
                         var base_buf: [16]u8 = undefined;
                         var life_buf: [16]u8 = undefined;
                         var perk_buf: [16]u8 = undefined;
                         var final_buf: [16]u8 = undefined;
-                        drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&base_buf, breakdown.base_time_ms), 846.0, 258.0, base_color);
-                        drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&life_buf, breakdown.life_bonus_ms)}, 846.0, 286.0, life_color);
-                        drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&perk_buf, breakdown.unpicked_perk_bonus_ms)}, 846.0, 314.0, perk_color);
-                        drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&final_buf, breakdown.final_time_ms), 846.0, 342.0, final_color);
+                        drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&base_buf, breakdown.base_time_ms), 846.0 + slide_x, 258.0, base_color);
+                        drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&life_buf, breakdown.life_bonus_ms)}, 846.0 + slide_x, 286.0, life_color);
+                        drawSmallTextFmt("-{s}", runtime_assets, .{ui_formatting.formatTimeMmSs(&perk_buf, breakdown.unpicked_perk_bonus_ms)}, 846.0 + slide_x, 314.0, perk_color);
+                        drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&final_buf, breakdown.final_time_ms), 846.0 + slide_x, 342.0, final_color);
                     }
                     if (!questResultsBreakdownPending(&results)) {
                         drawQuestUnlockResults(runtime_assets, &results);
@@ -2591,7 +2611,7 @@ const App = struct {
                     const highscore = results.highscore.?;
                     drawResultsHighscore(runtime_assets, &results, &highscore, resultsNamePrompt(&results));
                 } else if (!breakdown_pending and results.score_too_low_for_top100) {
-                    const pos = resultsScoreTooLowMessagePos(&results, @floatFromInt(rl.getScreenWidth()));
+                    const pos = resultsScoreTooLowMessagePosForTimeline(&results, @floatFromInt(rl.getScreenWidth()), results.timeline_ms);
                     drawSmallText(runtime_assets, "Score too low for top100.", pos.x, pos.y, rl.Color.init(200, 200, 200, 255));
                     if (results.score_too_low_record) |record| {
                         drawResultsScoreRecordCardAt(
@@ -2599,7 +2619,7 @@ const App = struct {
                             &results,
                             &record,
                             persistence.highscores.table_max,
-                            resultsSavedScoreCardPos(&results, @floatFromInt(rl.getScreenWidth())),
+                            resultsSavedScoreCardPosForTimeline(&results, @floatFromInt(rl.getScreenWidth()), results.timeline_ms),
                             !isQuestCompletedResult(&results),
                         );
                     }
@@ -2944,7 +2964,7 @@ const ResultsButtonLabels = struct {
 
 fn resultsButtonsFor(results: *const ResultsScreen) ResultsButtons {
     const labels = resultsButtonLabelsFor(results);
-    const layout = resultsActionButtonLayout(results, @floatFromInt(rl.getScreenWidth()));
+    const layout = resultsActionButtonLayoutForTimeline(results, @floatFromInt(rl.getScreenWidth()), results.timeline_ms);
     return .{
         .items = .{
             .{ .label = labels.items[0], .rect = resultsActionButtonRect(labels.items[0], layout, 0) },
@@ -3040,11 +3060,52 @@ const quest_failed_score_x_offset: f32 = quest_failed_banner_x_offset + 40.0;
 const quest_failed_score_y_offset: f32 = 152.0;
 const quest_failed_button_x_offset: f32 = quest_failed_banner_x_offset + 52.0;
 const quest_failed_button_y_offset: f32 = 240.0;
-const results_close_timeline_max_ms: i32 = 250;
+const game_over_results_timeline_max_ms: i32 = 250;
+const quest_results_timeline_max_ms: i32 = 400;
+const quest_results_slide_start_ms: i32 = 100;
+const ResultsPanelTimelineKind = enum { cubic_250, quest_completed };
+
+fn resultsTimelineMaxMs(results: *const ResultsScreen) i32 {
+    return if (isQuestCompletedResult(results)) quest_results_timeline_max_ms else game_over_results_timeline_max_ms;
+}
+
+fn easeOutCubic01(t: f32) f32 {
+    const clamped = std.math.clamp(t, @as(f32, 0.0), @as(f32, 1.0));
+    const inv = 1.0 - clamped;
+    return 1.0 - inv * inv * inv;
+}
+
+fn resultsPanelSlideOffsetX(results: *const ResultsScreen, timeline_ms: i32) f32 {
+    return resultsPanelSlideOffsetXForKind(if (isQuestCompletedResult(results)) .quest_completed else .cubic_250, timeline_ms);
+}
+
+fn resultsPanelSlideOffsetXForKind(kind: ResultsPanelTimelineKind, timeline_ms: i32) f32 {
+    const panel_w = quest_failed_panel_w;
+    switch (kind) {
+        .quest_completed => {
+            if (timeline_ms < quest_results_slide_start_ms) return -panel_w;
+            if (timeline_ms < quest_results_timeline_max_ms) {
+                const span: f32 = @floatFromInt(quest_results_timeline_max_ms - quest_results_slide_start_ms);
+                const progress = @as(f32, @floatFromInt(timeline_ms - quest_results_slide_start_ms)) / span;
+                return -panel_w * (1.0 - std.math.clamp(progress, @as(f32, 0.0), @as(f32, 1.0)));
+            }
+            return 0.0;
+        },
+        .cubic_250 => {
+            const progress = @as(f32, @floatFromInt(timeline_ms)) / @as(f32, @floatFromInt(game_over_results_timeline_max_ms));
+            return -panel_w * (1.0 - easeOutCubic01(progress));
+        },
+    }
+}
 
 fn gameOverResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
+    return gameOverResultsPanelLayoutForTimeline(screen_width, game_over_results_timeline_max_ms);
+}
+
+fn gameOverResultsPanelLayoutForTimeline(screen_width: f32, timeline_ms: i32) ResultsPanelLayout {
+    const slide_x = resultsPanelSlideOffsetXForKind(.cubic_250, timeline_ms);
     const top_left = rl.Vector2.init(
-        -24.0,
+        -24.0 + slide_x,
         29.0 + window_menu.menuWidescreenYShift(screen_width),
     );
     return .{
@@ -3054,8 +3115,13 @@ fn gameOverResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
 }
 
 fn questFailedResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
+    return questFailedResultsPanelLayoutForTimeline(screen_width, game_over_results_timeline_max_ms);
+}
+
+fn questFailedResultsPanelLayoutForTimeline(screen_width: f32, timeline_ms: i32) ResultsPanelLayout {
+    const slide_x = resultsPanelSlideOffsetXForKind(.cubic_250, timeline_ms);
     const top_left = rl.Vector2.init(
-        -108.0,
+        -108.0 + slide_x,
         29.0 + window_menu.menuWidescreenYShift(screen_width),
     );
     return .{
@@ -3068,8 +3134,13 @@ fn questFailedResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
 }
 
 fn questResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
+    return questResultsPanelLayoutForTimeline(screen_width, quest_results_timeline_max_ms);
+}
+
+fn questResultsPanelLayoutForTimeline(screen_width: f32, timeline_ms: i32) ResultsPanelLayout {
+    const slide_x = resultsPanelSlideOffsetXForKind(.quest_completed, timeline_ms);
     const top_left = rl.Vector2.init(
-        -108.0,
+        -108.0 + slide_x,
         29.0 + window_menu.menuWidescreenYShift(screen_width),
     );
     return .{
@@ -3078,22 +3149,32 @@ fn questResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
     };
 }
 
+fn resultsPanelLayoutForTimeline(results: *const ResultsScreen, screen_width: f32, timeline_ms: i32) ResultsPanelLayout {
+    if (isQuestFailedResult(results)) return questFailedResultsPanelLayoutForTimeline(screen_width, timeline_ms);
+    if (isQuestCompletedResult(results)) return questResultsPanelLayoutForTimeline(screen_width, timeline_ms);
+    return gameOverResultsPanelLayoutForTimeline(screen_width, timeline_ms);
+}
+
 fn resultsQualifiesForTop100(results: *const ResultsScreen) bool {
     if (results.highscore != null) return true;
     return !results.score_too_low_for_top100;
 }
 
 fn resultsActionButtonLayout(results: *const ResultsScreen, screen_width: f32) ResultsActionButtonLayout {
+    return resultsActionButtonLayoutForTimeline(results, screen_width, resultsTimelineMaxMs(results));
+}
+
+fn resultsActionButtonLayoutForTimeline(results: *const ResultsScreen, screen_width: f32, timeline_ms: i32) ResultsActionButtonLayout {
     const qualifies = resultsQualifiesForTop100(results);
     if (isQuestFailedResult(results)) {
-        const layout = questFailedResultsPanelLayout(screen_width);
+        const layout = questFailedResultsPanelLayoutForTimeline(screen_width, timeline_ms);
         return .{
             .x = layout.top_left.x + quest_failed_button_x_offset,
             .y = layout.top_left.y + quest_failed_button_y_offset,
         };
     }
     if (isQuestCompletedResult(results)) {
-        const layout = questResultsPanelLayout(screen_width);
+        const layout = questResultsPanelLayoutForTimeline(screen_width, timeline_ms);
         var y = layout.top_left.y + (if (qualifies) @as(f32, 96.0) else 108.0) + 84.0;
         if (results.quest_unlock_weapon_name != null) y += 30.0;
         if (results.quest_unlock_perk_name != null) y += 30.0;
@@ -3103,7 +3184,7 @@ fn resultsActionButtonLayout(results: *const ResultsScreen, screen_width: f32) R
         };
     }
 
-    const layout = gameOverResultsPanelLayout(screen_width);
+    const layout = gameOverResultsPanelLayoutForTimeline(screen_width, timeline_ms);
     return .{
         .x = layout.banner_pos.x + 52.0,
         .y = layout.banner_pos.y + if (qualifies) @as(f32, 210.0) else 208.0,
@@ -3120,17 +3201,25 @@ fn resultsActionButtonRect(label: [:0]const u8, layout: ResultsActionButtonLayou
 }
 
 fn resultsHighscoreOkButtonRect(results: *const ResultsScreen, screen_width: f32) rl.Rectangle {
+    return resultsHighscoreOkButtonRectForTimeline(results, screen_width, resultsTimelineMaxMs(results));
+}
+
+fn resultsHighscoreOkButtonRectForTimeline(results: *const ResultsScreen, screen_width: f32, timeline_ms: i32) rl.Rectangle {
     if (isQuestCompletedResult(results)) {
-        const layout = questResultsPanelLayout(screen_width);
+        const layout = questResultsPanelLayoutForTimeline(screen_width, timeline_ms);
         return window_ui.buttonAt("OK", layout.top_left.x + 390.0, layout.top_left.y + 142.0, false).rect;
     }
-    const layout = gameOverResultsPanelLayout(screen_width);
+    const layout = gameOverResultsPanelLayoutForTimeline(screen_width, timeline_ms);
     return window_ui.buttonAt("OK", layout.banner_pos.x + 178.0, layout.banner_pos.y + 116.0, false).rect;
 }
 
 fn resultsHighscorePromptLayout(results: *const ResultsScreen, screen_width: f32) ResultsHighscorePromptLayout {
+    return resultsHighscorePromptLayoutForTimeline(results, screen_width, resultsTimelineMaxMs(results));
+}
+
+fn resultsHighscorePromptLayoutForTimeline(results: *const ResultsScreen, screen_width: f32, timeline_ms: i32) ResultsHighscorePromptLayout {
     if (isQuestCompletedResult(results)) {
-        const layout = questResultsPanelLayout(screen_width);
+        const layout = questResultsPanelLayoutForTimeline(screen_width, timeline_ms);
         const content_x = layout.top_left.x + 220.0;
         return .{
             .prompt_x = content_x + 42.0,
@@ -3141,7 +3230,7 @@ fn resultsHighscorePromptLayout(results: *const ResultsScreen, screen_width: f32
         };
     }
 
-    const layout = gameOverResultsPanelLayout(screen_width);
+    const layout = gameOverResultsPanelLayoutForTimeline(screen_width, timeline_ms);
     const form_x = layout.banner_pos.x + 8.0;
     const form_y = layout.banner_pos.y + 84.0;
     return .{
@@ -3154,7 +3243,11 @@ fn resultsHighscorePromptLayout(results: *const ResultsScreen, screen_width: f32
 }
 
 fn resultsNameEntryScoreCardPos(results: *const ResultsScreen, screen_width: f32) rl.Vector2 {
-    const prompt = resultsHighscorePromptLayout(results, screen_width);
+    return resultsNameEntryScoreCardPosForTimeline(results, screen_width, resultsTimelineMaxMs(results));
+}
+
+fn resultsNameEntryScoreCardPosForTimeline(results: *const ResultsScreen, screen_width: f32, timeline_ms: i32) rl.Vector2 {
+    const prompt = resultsHighscorePromptLayoutForTimeline(results, screen_width, timeline_ms);
     if (isQuestCompletedResult(results)) {
         return rl.Vector2.init(prompt.input_rect.x + 26.0, prompt.input_rect.y + 46.0);
     }
@@ -3162,15 +3255,19 @@ fn resultsNameEntryScoreCardPos(results: *const ResultsScreen, screen_width: f32
 }
 
 fn resultsSavedScoreCardPos(results: *const ResultsScreen, screen_width: f32) rl.Vector2 {
+    return resultsSavedScoreCardPosForTimeline(results, screen_width, resultsTimelineMaxMs(results));
+}
+
+fn resultsSavedScoreCardPosForTimeline(results: *const ResultsScreen, screen_width: f32, timeline_ms: i32) rl.Vector2 {
     const qualifies = resultsQualifiesForTop100(results);
     if (isQuestCompletedResult(results)) {
-        const layout = questResultsPanelLayout(screen_width);
+        const layout = questResultsPanelLayoutForTimeline(screen_width, timeline_ms);
         const score_card_x = layout.top_left.x + 250.0;
         const score_card_y = layout.top_left.y + (if (qualifies) @as(f32, 96.0) else 108.0) + 16.0;
         return rl.Vector2.init(score_card_x, score_card_y);
     }
 
-    const layout = gameOverResultsPanelLayout(screen_width);
+    const layout = gameOverResultsPanelLayoutForTimeline(screen_width, timeline_ms);
     return rl.Vector2.init(
         layout.banner_pos.x + 30.0,
         layout.banner_pos.y + if (qualifies) @as(f32, 80.0) else 78.0,
@@ -3182,18 +3279,18 @@ fn resultsVisibleScoreCard(results: *const ResultsScreen, screen_width: f32) ?Re
     if (results.highscore) |highscore| {
         if (highscore.promptActive()) {
             return .{
-                .pos = resultsNameEntryScoreCardPos(results, screen_width),
+                .pos = resultsNameEntryScoreCardPosForTimeline(results, screen_width, results.timeline_ms),
                 .show_weapon_row = isQuestCompletedResult(results),
             };
         }
         return .{
-            .pos = resultsSavedScoreCardPos(results, screen_width),
+            .pos = resultsSavedScoreCardPosForTimeline(results, screen_width, results.timeline_ms),
             .show_weapon_row = !isQuestCompletedResult(results),
         };
     }
     if (results.score_too_low_for_top100 and results.score_too_low_record != null) {
         return .{
-            .pos = resultsSavedScoreCardPos(results, screen_width),
+            .pos = resultsSavedScoreCardPosForTimeline(results, screen_width, results.timeline_ms),
             .show_weapon_row = !isQuestCompletedResult(results),
         };
     }
@@ -3270,11 +3367,15 @@ fn resultsNameEntryClockLayout(score_card_pos: rl.Vector2, elapsed_ms: u32) Resu
 }
 
 fn resultsScoreTooLowMessagePos(results: *const ResultsScreen, screen_width: f32) rl.Vector2 {
+    return resultsScoreTooLowMessagePosForTimeline(results, screen_width, resultsTimelineMaxMs(results));
+}
+
+fn resultsScoreTooLowMessagePosForTimeline(results: *const ResultsScreen, screen_width: f32, timeline_ms: i32) rl.Vector2 {
     if (isQuestCompletedResult(results)) {
-        const layout = questResultsPanelLayout(screen_width);
+        const layout = questResultsPanelLayoutForTimeline(screen_width, timeline_ms);
         return rl.Vector2.init(layout.top_left.x + 258.0, layout.top_left.y + 102.0);
     }
-    const layout = gameOverResultsPanelLayout(screen_width);
+    const layout = gameOverResultsPanelLayoutForTimeline(screen_width, timeline_ms);
     return rl.Vector2.init(layout.banner_pos.x + 38.0, layout.banner_pos.y + 62.0);
 }
 
@@ -3429,15 +3530,16 @@ fn questLevelKeyToIndex(level_key: i32) i32 {
 
 fn drawQuestUnlockResults(runtime_assets: *const window_assets.RuntimeAssets, results: *const ResultsScreen) void {
     if (results.run_config.game_mode != .quests or results.reason != .completed) return;
+    const x = 690.0 + resultsPanelSlideOffsetX(results, results.timeline_ms);
     var y: f32 = 394.0;
     if (results.quest_unlock_weapon_name) |name| {
-        drawSmallText(runtime_assets, questUnlockResultLabel(.weapon), 690.0, y + 1.0, HudTextColor.dim);
-        drawSmallText(runtime_assets, name, 690.0, y + 14.0, HudTextColor.accent);
+        drawSmallText(runtime_assets, questUnlockResultLabel(.weapon), x, y + 1.0, HudTextColor.dim);
+        drawSmallText(runtime_assets, name, x, y + 14.0, HudTextColor.accent);
         y += 30.0;
     }
     if (results.quest_unlock_perk_name) |name| {
-        drawSmallText(runtime_assets, questUnlockResultLabel(.perk), 690.0, y + 1.0, HudTextColor.dim);
-        drawSmallText(runtime_assets, name, 690.0, y + 14.0, HudTextColor.accent);
+        drawSmallText(runtime_assets, questUnlockResultLabel(.perk), x, y + 1.0, HudTextColor.dim);
+        drawSmallText(runtime_assets, name, x, y + 14.0, HudTextColor.accent);
     }
 }
 
@@ -3539,13 +3641,17 @@ fn typoSourceErrorDetail(err: anyerror) []const u8 {
 }
 
 fn resultsHighscoreButtonsFor(results: *const ResultsScreen) ResultsButtons {
-    return resultsHighscoreButtonsForScreen(results, @floatFromInt(rl.getScreenWidth()));
+    return resultsHighscoreButtonsForTimeline(results, @floatFromInt(rl.getScreenWidth()), results.timeline_ms);
 }
 
 fn resultsHighscoreButtonsForScreen(results: *const ResultsScreen, screen_width: f32) ResultsButtons {
+    return resultsHighscoreButtonsForTimeline(results, screen_width, resultsTimelineMaxMs(results));
+}
+
+fn resultsHighscoreButtonsForTimeline(results: *const ResultsScreen, screen_width: f32, timeline_ms: i32) ResultsButtons {
     return .{
         .items = .{
-            .{ .label = "OK", .rect = resultsHighscoreOkButtonRect(results, screen_width) },
+            .{ .label = "OK", .rect = resultsHighscoreOkButtonRectForTimeline(results, screen_width, timeline_ms) },
             .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
             .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
             .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
@@ -4370,7 +4476,7 @@ test "results close timeline gates action dispatch" {
 
     try std.testing.expect(results.closing);
     try std.testing.expectEqual(@as(?usize, null), results.advanceClose(0.10));
-    try std.testing.expectEqual(results_close_timeline_max_ms - 100, results.close_timeline_ms);
+    try std.testing.expectEqual(game_over_results_timeline_max_ms - 100, results.close_timeline_ms);
     try std.testing.expectEqual(@as(?usize, null), results.advanceClose(0.10));
     try std.testing.expect(results.closing);
 
@@ -4391,7 +4497,45 @@ test "results close ignores repeated activation until dispatch" {
     try std.testing.expectEqual(@as(usize, 0), results.close_selection);
     try std.testing.expectEqual(@as(?usize, null), results.advanceClose(0.10));
     try std.testing.expectEqual(@as(?usize, null), results.advanceClose(0.10));
-    try std.testing.expectEqual(@as(?usize, 0), results.advanceClose(0.05));
+    try std.testing.expectEqual(@as(?usize, null), results.advanceClose(0.10));
+    try std.testing.expectEqual(@as(?usize, 0), results.advanceClose(0.10));
+}
+
+test "results open timeline animates panels from native closed edge" {
+    var game_over_results: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{ .game_mode = .survival },
+        .summary = undefined,
+    };
+    const game_over_closed = gameOverResultsPanelLayoutForTimeline(640.0, game_over_results.timeline_ms);
+    try std.testing.expectApproxEqAbs(@as(f32, -534.0), game_over_closed.top_left.x, 1e-6);
+
+    game_over_results.advanceOpen(0.10);
+    const game_over_mid = gameOverResultsPanelLayoutForTimeline(640.0, game_over_results.timeline_ms);
+    try std.testing.expect(game_over_mid.top_left.x > game_over_closed.top_left.x);
+    try std.testing.expect(game_over_mid.top_left.x < gameOverResultsPanelLayout(640.0).top_left.x);
+
+    game_over_results.advanceOpen(0.10);
+    game_over_results.advanceOpen(0.10);
+    try std.testing.expectEqual(@as(i32, game_over_results_timeline_max_ms), game_over_results.timeline_ms);
+    const game_over_open = gameOverResultsPanelLayoutForTimeline(640.0, game_over_results.timeline_ms);
+    try std.testing.expectApproxEqAbs(gameOverResultsPanelLayout(640.0).top_left.x, game_over_open.top_left.x, 1e-6);
+
+    var quest_completed_results: ResultsScreen = .{
+        .reason = .completed,
+        .run_config = .{ .game_mode = .quests },
+        .summary = undefined,
+    };
+    const quest_hidden = questResultsPanelLayoutForTimeline(640.0, quest_completed_results.timeline_ms);
+    try std.testing.expectApproxEqAbs(@as(f32, -618.0), quest_hidden.top_left.x, 1e-6);
+    quest_completed_results.advanceOpen(0.10);
+    try std.testing.expectEqual(@as(i32, quest_results_slide_start_ms), quest_completed_results.timeline_ms);
+    try std.testing.expectApproxEqAbs(quest_hidden.top_left.x, questResultsPanelLayoutForTimeline(640.0, quest_completed_results.timeline_ms).top_left.x, 1e-6);
+    quest_completed_results.advanceOpen(0.10);
+    quest_completed_results.advanceOpen(0.10);
+    quest_completed_results.advanceOpen(0.10);
+    try std.testing.expectEqual(@as(i32, quest_results_timeline_max_ms), quest_completed_results.timeline_ms);
+    try std.testing.expectApproxEqAbs(questResultsPanelLayout(640.0).top_left.x, questResultsPanelLayoutForTimeline(640.0, quest_completed_results.timeline_ms).top_left.x, 1e-6);
 }
 
 test "game over result action buttons use native banner anchor" {
@@ -6081,7 +6225,7 @@ fn drawResultsHighscore(
     highscore: *const ResultsHighscoreState,
     name_prompt: []const u8,
 ) void {
-    const layout = resultsHighscorePromptLayout(results, @floatFromInt(rl.getScreenWidth()));
+    const layout = resultsHighscorePromptLayoutForTimeline(results, @floatFromInt(rl.getScreenWidth()), results.timeline_ms);
     if (highscore.promptActive()) {
         drawSmallText(runtime_assets, name_prompt, layout.prompt_x, layout.prompt_y, resultsNamePromptColor(results));
 
@@ -6120,7 +6264,7 @@ fn drawResultsHighscore(
             runtime_assets,
             results,
             highscore,
-            resultsSavedScoreCardPos(results, @floatFromInt(rl.getScreenWidth())),
+            resultsSavedScoreCardPosForTimeline(results, @floatFromInt(rl.getScreenWidth()), results.timeline_ms),
             !isQuestCompletedResult(results),
         );
     }
@@ -6144,7 +6288,7 @@ fn drawResultsNameEntryScoreCard(
         runtime_assets,
         results,
         highscore,
-        resultsNameEntryScoreCardPos(results, @floatFromInt(rl.getScreenWidth())),
+        resultsNameEntryScoreCardPosForTimeline(results, @floatFromInt(rl.getScreenWidth()), results.timeline_ms),
         isQuestCompletedResult(results),
     );
 }

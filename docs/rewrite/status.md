@@ -111,7 +111,7 @@ Last reviewed: **2026-05-03**
   - Ref: [`docs/crimsonland-exe/demo-mode.md`](../crimsonland-exe/demo-mode.md), [`docs/crimsonland-exe/screens.md`](../crimsonland-exe/screens.md)
 - **Game over / high score entry (state `7`)**: implemented for Survival/Rush/Typ-o.
   - Code: `src/crimson/ui/game_over.py`, `src/crimson/persistence/highscores.py`, `src/crimson/game/__init__.py`
-  - Zig now routes game-over/results Play Again, High scores, and Main Menu actions through the native close timeline before dispatch.
+  - Zig now animates game-over/results panels through the native open/close slide timeline, keeps high-score/button hitboxes aligned with the moving panel, and routes Play Again, High scores, and Main Menu actions through the native close timeline before dispatch.
 - **Quest results (state `8`) / quest failed (state `0x0c`)**: implemented.
   - Code: `src/crimson/ui/quest_results.py`, `src/crimson/game/__init__.py`, `crimson-zig/src/window_main.zig`
   - Zig quest-completion results show the resolved weapon/perk unlock names after the final-time breakdown completes, honor the completed-results keyboard shortcuts, and route the final quest end-note screen through the native 300 ms open/close timeline before dispatching its follow-up action.
