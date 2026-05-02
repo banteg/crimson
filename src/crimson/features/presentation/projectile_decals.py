@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-
 from grim.geom import Vec2
 from grim.rand import CrandLike
 
-from ...bonuses.fire_bullets import queue_large_hit_decal_streak
+from ...bonuses.fire_bullets import LargeHitDecalRuntime, queue_large_hit_decal_streak
 from ...effects import FxQueue
 from ...projectiles.types import ProjectileHit, ProjectileTemplateId
 
@@ -17,7 +15,7 @@ def queue_projectile_large_streak_decal(
     fx_queue: FxQueue,
     rng: CrandLike,
     freeze_origin: Vec2 | None = None,
-    spawn_freeze_shard: Callable[[Vec2, float], None] | None = None,
+    runtime: LargeHitDecalRuntime | None = None,
 ) -> bool:
     type_id = hit.type_id
     if type_id not in (ProjectileTemplateId.GAUSS_GUN, ProjectileTemplateId.FIRE_BULLETS):
@@ -28,6 +26,6 @@ def queue_projectile_large_streak_decal(
         fx_queue=fx_queue,
         rng=rng,
         freeze_origin=freeze_origin,
-        spawn_freeze_shard=spawn_freeze_shard,
+        runtime=runtime,
     )
     return True

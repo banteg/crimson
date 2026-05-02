@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Sequence
-from typing import Protocol
+from collections.abc import Sequence
 
 import msgspec
 
@@ -10,6 +9,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_map import SfxId
 
+from ..bonuses.fire_bullets import LargeHitDecalRuntime
 from ..bonuses.freeze import freeze_bonus_active
 from ..effects import FxQueue
 from ..features.presentation import queue_projectile_large_streak_decal
@@ -43,10 +43,12 @@ class DeterministicPresentationPlan(msgspec.Struct):
     post_apply_sfx: tuple[SfxId, ...] = ()
 
 
-class PresentationAudioSink(Protocol):
-    def trigger_game_tune(self) -> str | None: ...
+class PresentationPlanRuntime(msgspec.Struct):
+    def trigger_game_tune(self) -> str | None:
+        return None
 
-    def play_sfx(self, sfx: SfxId) -> None: ...
+    def play_sfx(self, sfx: SfxId) -> None:
+        _ = sfx
 
 
 def plan_player_audio_sfx(
@@ -128,7 +130,21 @@ class ProjectileDecalPostCtx(msgspec.Struct, frozen=True):
     base_angle: float
     type_id: int
     freeze_active: bool
-    freeze_shard_spawn: Callable[[Vec2, float], None] | None = None
+    large_hit_decal_runtime: LargeHitDecalRuntime | None = None
+
+
+class _ProjectileFreezeShardRuntime(LargeHitDecalRuntime):
+    state: GameplayState
+    rng: CrandLike
+    detail_preset: int
+
+    def spawn_freeze_shard(self, pos: Vec2, angle: float) -> None:
+        self.state.effects.spawn_freeze_shard(
+            pos=pos,
+            angle=float(angle),
+            rng=self.rng,
+            detail_preset=int(self.detail_preset),
+        )
 
 
 def queue_projectile_decals(
@@ -170,18 +186,13 @@ def queue_projectile_decals_pre_hit(
 ) -> ProjectileDecalPostCtx:
     freeze_active = freeze_bonus_active(state=state)
     bloody = bool(players) and perk_active(players[0], PerkId.BLOODY_MESS_QUICK_LEARNER)
-    freeze_shard_spawn: Callable[[Vec2, float], None] | None = None
+    large_hit_decal_runtime: LargeHitDecalRuntime | None = None
     if freeze_active:
-
-        def _spawn_freeze_shard(pos: Vec2, angle: float) -> None:
-            state.effects.spawn_freeze_shard(
-                pos=pos,
-                angle=float(angle),
-                rng=rng,
-                detail_preset=int(detail_preset),
-            )
-
-        freeze_shard_spawn = _spawn_freeze_shard
+        large_hit_decal_runtime = _ProjectileFreezeShardRuntime(
+            state=state,
+            rng=rng,
+            detail_preset=int(detail_preset),
+        )
 
     type_id = hit.type_id
 
@@ -269,7 +280,7 @@ def queue_projectile_decals_pre_hit(
         base_angle=float(base_angle),
         type_id=int(type_id),
         freeze_active=bool(freeze_active),
-        freeze_shard_spawn=freeze_shard_spawn,
+        large_hit_decal_runtime=large_hit_decal_runtime,
     )
 
 
@@ -292,7 +303,7 @@ def queue_projectile_decals_post_hit(
         fx_queue=fx_queue,
         rng=rng,
         freeze_origin=hit.hit if bool(post_ctx.freeze_active) else None,
-        spawn_freeze_shard=post_ctx.freeze_shard_spawn,
+        runtime=post_ctx.large_hit_decal_runtime,
     )
 
     if bool(hook_handled) or bool(post_ctx.freeze_active):
@@ -389,12 +400,12 @@ def plan_world_presentation_step(
 def apply_presentation_plan(
     *,
     plan: DeterministicPresentationPlan,
-    audio_sink: PresentationAudioSink | None,
+    runtime: PresentationPlanRuntime | None,
     apply_audio: bool = True,
 ) -> None:
-    if not bool(apply_audio) or audio_sink is None:
+    if not bool(apply_audio) or runtime is None:
         return
     if bool(plan.trigger_game_tune):
-        audio_sink.trigger_game_tune()
+        runtime.trigger_game_tune()
     for sfx in plan.sfx:
-        audio_sink.play_sfx(sfx)
+        runtime.play_sfx(sfx)

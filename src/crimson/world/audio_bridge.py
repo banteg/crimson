@@ -7,9 +7,10 @@ import msgspec
 
 from grim.audio import AudioState
 from grim.rand import Crand
+from grim.sfx_map import SfxId
 
 from ..audio_router import AudioRouter
-from ..sim.presentation_step import DeterministicPresentationPlan, apply_presentation_plan
+from ..sim.presentation_step import DeterministicPresentationPlan, PresentationPlanRuntime, apply_presentation_plan
 
 
 def _zero_reflex_boost() -> float:
@@ -48,6 +49,16 @@ class AudioBridge(msgspec.Struct):
     def apply_plan(self, *, plan: DeterministicPresentationPlan, apply_audio: bool = True) -> None:
         apply_presentation_plan(
             plan=plan,
-            audio_sink=self.router,
+            runtime=_AudioBridgePresentationPlanRuntime(bridge=self),
             apply_audio=bool(apply_audio),
         )
+
+
+class _AudioBridgePresentationPlanRuntime(PresentationPlanRuntime):
+    bridge: AudioBridge
+
+    def trigger_game_tune(self) -> str | None:
+        return self.bridge.router.trigger_game_tune()
+
+    def play_sfx(self, sfx: SfxId) -> None:
+        self.bridge.router.play_sfx(sfx)
