@@ -1761,7 +1761,7 @@ const App = struct {
         self.playNameInputTypeClicks(collectNameInput(highscore));
 
         const buttons = resultsHighscoreButtons();
-        window_ui.updateSelectionFromPointer(&highscore.selection, buttons[0..]);
+        window_ui.updateSelectionFromPointer(&highscore.selection, buttons.items[0..buttons.len]);
         if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
             highscore.selection = if (highscore.selection == 0) buttons.len - 1 else highscore.selection - 1;
         }
@@ -1769,16 +1769,11 @@ const App = struct {
             highscore.selection = (highscore.selection + 1) % buttons.len;
         }
 
-        if (!window_ui.buttonActivated(buttons[0..], highscore.selection)) return;
+        if (!window_ui.buttonActivated(buttons.items[0..buttons.len], highscore.selection)) return;
         self.audio.playUiButtonClick();
 
         switch (highscore.selection) {
             0 => self.saveResultsHighscore(results, highscore),
-            1 => {
-                highscore.saved = true;
-                highscore.save_error = null;
-                self.results_selection = 0;
-            },
             else => {},
         }
     }
@@ -2479,12 +2474,7 @@ const App = struct {
                 .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
             }, .len = 0 }
         else if (prompt_active)
-            ResultsButtons{ .items = .{
-                resultsHighscoreButtons()[0],
-                resultsHighscoreButtons()[1],
-                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
-                .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
-            }, .len = 2 }
+            resultsHighscoreButtons()
         else if (self.results) |results|
             resultsButtonsFor(&results)
         else
@@ -3086,11 +3076,20 @@ fn typoSourceErrorDetail(err: anyerror) []const u8 {
     };
 }
 
-fn resultsHighscoreButtons() [2]UiButton {
+fn resultsHighscoreButtons() ResultsButtons {
     const center_x: f32 = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5;
+    return resultsHighscoreButtonsAt(center_x);
+}
+
+fn resultsHighscoreButtonsAt(center_x: f32) ResultsButtons {
     return .{
-        .{ .label = "SAVE SCORE", .rect = window_ui.centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
-        .{ .label = "SKIP", .rect = window_ui.centeredRect(center_x, 658.0, ui_button_width, ui_button_height) },
+        .items = .{
+            .{ .label = "OK", .rect = window_ui.centeredRect(center_x, 586.0, ui_button_width, ui_button_height) },
+            .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+            .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+            .{ .label = "", .rect = rl.Rectangle.init(0.0, 0.0, 0.0, 0.0) },
+        },
+        .len = 1,
     };
 }
 
@@ -3802,6 +3801,15 @@ test "results button y positions keep native vertical rhythm" {
     try std.testing.expectApproxEqAbs(@as(f32, 694.0), resultsButtonY(3, 2), 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 514.0), resultsButtonY(4, 0), 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 730.0), resultsButtonY(4, 3), 1e-6);
+}
+
+test "results high score prompt uses native ok submit button" {
+    const buttons = resultsHighscoreButtonsAt(640.0);
+
+    try std.testing.expectEqual(@as(usize, 1), buttons.len);
+    try std.testing.expectEqualStrings("OK", buttons.items[0].label);
+    try std.testing.expectApproxEqAbs(@as(f32, 500.0), buttons.items[0].rect.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 586.0), buttons.items[0].rect.y, 1e-6);
 }
 
 test "results high score save errors use user-facing details" {
