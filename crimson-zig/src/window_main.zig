@@ -3197,6 +3197,11 @@ fn resultsNamePrompt(results: *const ResultsScreen) [:0]const u8 {
     return "State your name, trooper!";
 }
 
+fn resultsNamePromptColor(results: *const ResultsScreen) rl.Color {
+    if (isQuestCompletedResult(results)) return rl.Color.init(149, 175, 198, 255);
+    return rl.Color.white;
+}
+
 fn resultsHighscorePathErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
         error.OutOfMemory => "Unable to build high score file path.",
@@ -4263,6 +4268,22 @@ test "results high score name prompt follows quest preserve-bugs wording" {
         .summary = undefined,
     };
     try std.testing.expectEqualStrings("State your name trooper!", resultsNamePrompt(&quest_results_bug_compatible));
+}
+
+test "results high score name prompt color follows result mode" {
+    const survival_results: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{ .game_mode = .survival },
+        .summary = undefined,
+    };
+    try std.testing.expectEqual(rl.Color.white, resultsNamePromptColor(&survival_results));
+
+    const quest_completed_results: ResultsScreen = .{
+        .reason = .completed,
+        .run_config = .{ .game_mode = .quests },
+        .summary = undefined,
+    };
+    try std.testing.expectEqual(rl.Color.init(149, 175, 198, 255), resultsNamePromptColor(&quest_completed_results));
 }
 
 test "quest completed results resolve weapon unlock names" {
@@ -5590,7 +5611,7 @@ fn drawResultsHighscore(
     var rank_buf: [16]u8 = undefined;
     const rank_text = ui_formatting.formatOrdinal(&rank_buf, @intCast(highscore.rank_index + 1));
     if (highscore.promptActive()) {
-        drawSmallText(runtime_assets, name_prompt, layout.prompt_x, layout.prompt_y, HudTextColor.accent);
+        drawSmallText(runtime_assets, name_prompt, layout.prompt_x, layout.prompt_y, resultsNamePromptColor(results));
 
         rl.drawRectangleLines(
             @intFromFloat(layout.input_rect.x),
