@@ -168,15 +168,20 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker, make_mode_config
     assert mode._input_stall_count == 0
 
 
-def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker, make_mode_config) -> None:
+def test_lan_tick_consumption_treats_frame_pop_block_as_non_stall(mocker, make_mode_config) -> None:
     mode = _survival_mode(config=make_mode_config(game_mode=GameMode.SURVIVAL))
     provider = _LanRuntimeInputProvider(
         player_count=1,
         tick_rate=60,
     )
-    runner = FakeRunner(results=
-        [TickBatchResult(ticks_completed=0, batch_status=InputStatus.STALLED, next_tick_index=0)],
-        on_advance=lambda: setattr(provider, "_pop_blocked", True),
+    mocker.patch.object(mode, "_lan_allow_frame_pop", return_value=False)
+
+    def _block_frame_pop() -> None:
+        provider.pull_tick(0, 1.0 / 60.0)
+
+    runner = FakeRunner(
+        results=[TickBatchResult(ticks_completed=0, batch_status=InputStatus.STALLED, next_tick_index=0)],
+        on_advance=_block_frame_pop,
     )
     mocker.patch.object(
         mode,

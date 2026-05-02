@@ -147,13 +147,25 @@ LanStepAction = Literal["continue", "stop_before_finalize", "stop_after_finalize
 LanSession: TypeAlias = DeterministicSession
 
 
+class _LanFramePopRuntime(msgspec.Struct):
+    def allow_frame_pop(self) -> bool:
+        return True
+
+
+class _ModeLanFramePopRuntime(_LanFramePopRuntime):
+    mode: BaseGameplayMode
+
+    def allow_frame_pop(self) -> bool:
+        return self.mode._lan_allow_frame_pop()
+
+
 class _LanRuntimeInputProvider:
     def __init__(self, *, player_count: int, tick_rate: int) -> None:
         _ = player_count
         self._runtime: LanRuntime | None = None
         self._role: str = ""
         self._samples_by_runner_tick: dict[int, LanFrameSample] = {}
-        self._before_pop: Callable[[], bool] | None = None
+        self._frame_pop_runtime = _LanFramePopRuntime()
         self._pop_blocked = False
         self._capture_clock = FixedStepClock(tick_rate=max(1, int(tick_rate)))
 
@@ -165,8 +177,8 @@ class _LanRuntimeInputProvider:
     def set_role(self, role: str) -> None:
         self._role = str(role)
 
-    def set_before_pop(self, callback: Callable[[], bool] | None) -> None:
-        self._before_pop = callback
+    def set_frame_pop_runtime(self, runtime: _LanFramePopRuntime | None) -> None:
+        self._frame_pop_runtime = runtime if runtime is not None else _LanFramePopRuntime()
         self._pop_blocked = False
 
     @property
@@ -193,8 +205,7 @@ class _LanRuntimeInputProvider:
 
     def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
         self._pop_blocked = False
-        before_pop = self._before_pop
-        if before_pop is not None and (not bool(before_pop())):
+        if not bool(self._frame_pop_runtime.allow_frame_pop()):
             self._pop_blocked = True
             return TickSupply(status=InputStatus.STALLED, tick=None)
         runtime = self._runtime
@@ -1552,7 +1563,7 @@ class BaseGameplayMode:
                     raise TypeError("networked tick runner provider must be _LanRuntimeInputProvider")
                 provider.bind_runtime(lan_runtime)
                 provider.set_role(str(role))
-                provider.set_before_pop(None)
+                provider.set_frame_pop_runtime(None)
                 self._tick_runner_local_clock = None
             elif self._tick_runner_local_clock is None:
                 self._tick_runner_local_clock = FixedStepClock(
@@ -1564,7 +1575,7 @@ class BaseGameplayMode:
             provider = self._network_input_provider
             provider.bind_runtime(lan_runtime)
             provider.set_role(str(role))
-            provider.set_before_pop(None)
+            provider.set_frame_pop_runtime(None)
         else:
             provider = LocalInputProvider(
                 player_count=max(0, len(self.sim_world.players)),
@@ -1737,7 +1748,7 @@ class BaseGameplayMode:
         if not isinstance(provider, _LanRuntimeInputProvider):
             raise TypeError("networked tick runner provider must be _LanRuntimeInputProvider")
         provider.bind_runtime(runtime)
-        provider.set_before_pop(self._lan_allow_frame_pop)
+        provider.set_frame_pop_runtime(_ModeLanFramePopRuntime(mode=self))
         sim_ns_start = time.perf_counter_ns()
         ticks_requested = 1 if float(dt_tick) > 0.0 else 0
         # LAN always requests exactly 0 or 1 ticks per frame. This ensures
