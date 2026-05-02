@@ -29,11 +29,11 @@ from ...sim.session_builders import (
     build_survival_session,
     build_tutorial_session,
     build_typo_session,
-    enforce_rush_loadout,
 )
 from ...sim.sessions import (
     DeterministicSession,
     QuestSpawnState,
+    enforce_rush_loadout,
 )
 from ...sim.world_state import WorldState
 from ...typo.state import typo_shot_counts
