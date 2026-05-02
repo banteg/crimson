@@ -601,6 +601,7 @@ const ResultsScreen = struct {
     runtime_error: ?[]const u8 = null,
     highscore: ?ResultsHighscoreState = null,
     score_too_low_for_top100: bool = false,
+    score_too_low_record: ?persistence.highscores.HighScoreRecord = null,
     quest_final_time: ?quest_results.QuestFinalTime = null,
     quest_breakdown_anim: quest_results.QuestResultsBreakdownAnim = .{},
     quest_unlock_weapon_name: ?[]const u8 = null,
@@ -686,6 +687,7 @@ const ResultsHighscoreState = struct {
 const ResultsHighscoreBuild = struct {
     highscore: ?ResultsHighscoreState = null,
     score_too_low_for_top100: bool = false,
+    score_too_low_record: ?persistence.highscores.HighScoreRecord = null,
 };
 
 const App = struct {
@@ -2074,6 +2076,7 @@ const App = struct {
             .runtime_error = runtime_error orelse save_error,
             .highscore = highscore_build.highscore,
             .score_too_low_for_top100 = highscore_build.score_too_low_for_top100,
+            .score_too_low_record = highscore_build.score_too_low_record,
             .quest_final_time = if (runner.session.game_mode == .quests)
                 quest_results.computeQuestFinalTime(
                     @intCast(runner.summary().elapsed_ms_sim),
@@ -2173,7 +2176,10 @@ const App = struct {
 
         const rank_index = persistence.highscores.rankIndex(table.items, record);
         if (scoreTooLowForTop100(rank_index)) {
-            return .{ .score_too_low_for_top100 = true };
+            return .{
+                .score_too_low_for_top100 = true,
+                .score_too_low_record = record,
+            };
         }
 
         var highscore: ResultsHighscoreState = .{
@@ -2477,6 +2483,16 @@ const App = struct {
                 } else if (!breakdown_pending and results.score_too_low_for_top100) {
                     const pos = resultsScoreTooLowMessagePos(&results, @floatFromInt(rl.getScreenWidth()));
                     drawSmallText(runtime_assets, "Score too low for top100.", pos.x, pos.y, rl.Color.init(200, 200, 200, 255));
+                    if (results.score_too_low_record) |record| {
+                        drawResultsScoreRecordCardAt(
+                            runtime_assets,
+                            &results,
+                            &record,
+                            persistence.highscores.table_max,
+                            resultsSavedScoreCardPos(&results, @floatFromInt(rl.getScreenWidth())),
+                            !isQuestCompletedResult(&results),
+                        );
+                    }
                 }
             }
         }
@@ -3036,6 +3052,11 @@ fn resultsSavedScoreCardPos(results: *const ResultsScreen, screen_width: f32) rl
         layout.banner_pos.x + 30.0,
         layout.banner_pos.y + if (qualifies) @as(f32, 80.0) else 78.0,
     );
+}
+
+fn resultsScoreCardRankText(results: *const ResultsScreen, rank_index: usize, buffer: []u8) []const u8 {
+    if (isQuestCompletedResult(results) and scoreTooLowForTop100(rank_index)) return "--";
+    return ui_formatting.formatOrdinal(buffer, @intCast(rank_index + 1));
 }
 
 fn resultsNameEntryClockLayout(score_card_pos: rl.Vector2, elapsed_ms: u32) ResultsNameEntryClockLayout {
@@ -4219,6 +4240,13 @@ test "game over score too low message uses native banner anchor" {
     const pos = resultsScoreTooLowMessagePos(&results, 640.0);
     try std.testing.expectApproxEqAbs(@as(f32, 228.0), pos.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 131.0), pos.y, 1e-6);
+
+    const score_card = resultsSavedScoreCardPos(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 220.0), score_card.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 147.0), score_card.y, 1e-6);
+
+    var rank_buf: [16]u8 = undefined;
+    try std.testing.expectEqualStrings("101st", resultsScoreCardRankText(&results, persistence.highscores.table_max, &rank_buf));
 }
 
 test "quest results high score prompt uses native ok submit button" {
@@ -4269,6 +4297,13 @@ test "quest result score too low message uses native score card anchor" {
     const pos = resultsScoreTooLowMessagePos(&results, 640.0);
     try std.testing.expectApproxEqAbs(@as(f32, 150.0), pos.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 131.0), pos.y, 1e-6);
+
+    const score_card = resultsSavedScoreCardPos(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 142.0), score_card.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 153.0), score_card.y, 1e-6);
+
+    var rank_buf: [16]u8 = undefined;
+    try std.testing.expectEqualStrings("--", resultsScoreCardRankText(&results, persistence.highscores.table_max, &rank_buf));
 }
 
 test "results high score save errors use user-facing details" {
@@ -5750,7 +5785,24 @@ fn drawResultsScoreCardAt(
     pos: rl.Vector2,
     show_weapon_row: bool,
 ) void {
-    const record = &highscore.record;
+    drawResultsScoreRecordCardAt(
+        runtime_assets,
+        results,
+        &highscore.record,
+        highscore.rank_index,
+        pos,
+        show_weapon_row,
+    );
+}
+
+fn drawResultsScoreRecordCardAt(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    results: *const ResultsScreen,
+    record: *const persistence.highscores.HighScoreRecord,
+    rank_index: usize,
+    pos: rl.Vector2,
+    show_weapon_row: bool,
+) void {
     const label_color = colorWithAlpha(rl.Color.init(230, 230, 230, 255), 0.8);
     const value_color = rl.Color.init(230, 230, 255, 255);
     const row_color = colorWithAlpha(rl.Color.init(230, 230, 230, 255), 0.7);
@@ -5773,7 +5825,8 @@ fn drawResultsScoreCardAt(
 
     var ordinal_buf: [16]u8 = undefined;
     var rank_buf: [32]u8 = undefined;
-    const rank_label = std.fmt.bufPrint(&rank_buf, "Rank: {s}", .{ui_formatting.formatOrdinal(&ordinal_buf, @intCast(highscore.rank_index + 1))}) catch "Rank: --";
+    const rank_text = resultsScoreCardRankText(results, rank_index, &ordinal_buf);
+    const rank_label = std.fmt.bufPrint(&rank_buf, "Rank: {s}", .{rank_text}) catch "Rank: --";
     drawSmallTextCenteredAtX(runtime_assets, rank_label, left_center_x, pos.y + 30.0, label_color);
 
     rl.drawLine(
