@@ -164,9 +164,10 @@ The important remaining gaps are now:
   correction, absorb a repeated jitter burst without resync, complete a
   guest-requested resync snapshot, and self-reconnect a guest through its relay
   token before advancing more input, absorb bidirectional jitter after a
-  reconnect, drive a longer reconnect-then-resync smoke path, and recover from
-  a double-reconnect-then-resync sequence, but broader reconnect/resync stress
-  and product-lobby polish remain.
+  reconnect, drive a longer reconnect-then-resync smoke path, recover from a
+  double-reconnect-then-resync sequence, and absorb bidirectional jitter after
+  two reconnect cycles, but broader reconnect/resync stress and product-lobby
+  polish remain.
 
 The biggest remaining technical risk is not basic gameplay ownership. It is
 closing the remaining replay/tooling and product-shell breadth gaps cleanly.
