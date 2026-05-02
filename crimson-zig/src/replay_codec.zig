@@ -440,6 +440,9 @@ pub const ReplayEventSummary = struct {
     total_count: usize = 0,
     perk_menu_open_count: usize = 0,
     perk_pick_count: usize = 0,
+    typo_char_count: usize = 0,
+    typo_backspace_count: usize = 0,
+    typo_submit_count: usize = 0,
     capture_bootstrap_count: usize = 0,
     capture_perk_apply_count: usize = 0,
     capture_perk_pending_count: usize = 0,
@@ -470,16 +473,7 @@ pub const Replay = struct {
             .total_count = self.events.len,
         };
         for (self.events) |event| {
-            switch (event) {
-                .perk_pick => summary.perk_pick_count += 1,
-                .perk_menu_open => summary.perk_menu_open_count += 1,
-                .typo_char, .typo_backspace, .typo_submit => {},
-                .capture_bootstrap => summary.capture_bootstrap_count += 1,
-                .capture_perk_apply => summary.capture_perk_apply_count += 1,
-                .capture_perk_pending => summary.capture_perk_pending_count += 1,
-                .capture_creature_spawn => summary.capture_creature_spawn_count += 1,
-                .capture_state_transition => summary.capture_state_transition_count += 1,
-            }
+            countReplayEvent(&summary, event);
         }
         return summary;
     }
@@ -1115,16 +1109,7 @@ fn parseEventSummary(
     };
     for (wire_events) |wire_event| {
         const event = try parseReplayEvent(wire_event, input_len);
-        switch (event) {
-            .perk_pick => summary.perk_pick_count += 1,
-            .perk_menu_open => summary.perk_menu_open_count += 1,
-            .typo_char, .typo_backspace, .typo_submit => {},
-            .capture_bootstrap => summary.capture_bootstrap_count += 1,
-            .capture_perk_apply => summary.capture_perk_apply_count += 1,
-            .capture_perk_pending => summary.capture_perk_pending_count += 1,
-            .capture_creature_spawn => summary.capture_creature_spawn_count += 1,
-            .capture_state_transition => summary.capture_state_transition_count += 1,
-        }
+        countReplayEvent(&summary, event);
     }
     return summary;
 }
@@ -1205,19 +1190,25 @@ fn parseCurrentEventSummary(
         for (tick.commands) |command| {
             const event = try parseCurrentCommand(command, tick_index, input_len);
             summary.total_count += 1;
-            switch (event) {
-                .perk_pick => summary.perk_pick_count += 1,
-                .perk_menu_open => summary.perk_menu_open_count += 1,
-                .typo_char, .typo_backspace, .typo_submit => {},
-                .capture_bootstrap => summary.capture_bootstrap_count += 1,
-                .capture_perk_apply => summary.capture_perk_apply_count += 1,
-                .capture_perk_pending => summary.capture_perk_pending_count += 1,
-                .capture_creature_spawn => summary.capture_creature_spawn_count += 1,
-                .capture_state_transition => summary.capture_state_transition_count += 1,
-            }
+            countReplayEvent(&summary, event);
         }
     }
     return summary;
+}
+
+fn countReplayEvent(summary: *ReplayEventSummary, event: ReplayEvent) void {
+    switch (event) {
+        .perk_pick => summary.perk_pick_count += 1,
+        .perk_menu_open => summary.perk_menu_open_count += 1,
+        .typo_char => summary.typo_char_count += 1,
+        .typo_backspace => summary.typo_backspace_count += 1,
+        .typo_submit => summary.typo_submit_count += 1,
+        .capture_bootstrap => summary.capture_bootstrap_count += 1,
+        .capture_perk_apply => summary.capture_perk_apply_count += 1,
+        .capture_perk_pending => summary.capture_perk_pending_count += 1,
+        .capture_creature_spawn => summary.capture_creature_spawn_count += 1,
+        .capture_state_transition => summary.capture_state_transition_count += 1,
+    }
 }
 
 fn buildInputsCurrent(
@@ -2206,6 +2197,10 @@ test "parse current replay preserves typo metadata and commands" {
                     .ch = "a",
                 },
                 .{
+                    .type = "typo_backspace",
+                    .player_index = 0,
+                },
+                .{
                     .type = "typo_submit",
                     .player_index = 0,
                 },
@@ -2242,10 +2237,24 @@ test "parse current replay preserves typo metadata and commands" {
     try std.testing.expectEqual(@as(i32, @intFromEnum(game_ids.GameModeId.typo)), replay.header.game_mode_id);
     try std.testing.expectEqualStrings("amber", replay.header.typo_dictionary_words[0]);
     try std.testing.expectEqualStrings("ALPHA", replay.header.typo_highscore_names[0]);
-    try std.testing.expectEqual(@as(usize, 2), replay.events.len);
+    try std.testing.expectEqual(@as(usize, 3), replay.events.len);
     try std.testing.expect(replay.events[0] == .typo_char);
     try std.testing.expectEqual(@as(u8, 'a'), replay.events[0].typo_char.ch);
-    try std.testing.expect(replay.events[1] == .typo_submit);
+    try std.testing.expect(replay.events[1] == .typo_backspace);
+    try std.testing.expect(replay.events[2] == .typo_submit);
+
+    const replay_summary = replay.summarizeEvents();
+    try std.testing.expectEqual(@as(usize, 3), replay_summary.total_count);
+    try std.testing.expectEqual(@as(usize, 1), replay_summary.typo_char_count);
+    try std.testing.expectEqual(@as(usize, 1), replay_summary.typo_backspace_count);
+    try std.testing.expectEqual(@as(usize, 1), replay_summary.typo_submit_count);
+
+    const parsed_summary = try parseReplaySummary(allocator, writer.written());
+    defer parsed_summary.deinit(allocator);
+    try std.testing.expectEqual(@as(usize, 3), parsed_summary.events.total_count);
+    try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_char_count);
+    try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_backspace_count);
+    try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_submit_count);
 }
 
 test "build header rejects world_size above i32 range" {
