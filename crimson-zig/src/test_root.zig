@@ -243,6 +243,7 @@ test {
     _ = cz.perks;
     _ = cz.persistence;
     _ = cz.projectiles;
+    _ = @import("quest_results.zig");
     _ = cz.quest_level;
     _ = cz.quest_spawn_logic_full;
     _ = cz.quest_spawn_native;
@@ -260,13 +261,16 @@ test {
     _ = cz.weapon_data;
     _ = cz.weapons;
     _ = cz.window_atlas;
+    _ = @import("window_assets.zig");
     _ = @import("window_cursor.zig");
     _ = @import("window_demo_trial.zig");
+    _ = @import("window_ground.zig");
     _ = @import("window_main.zig");
     _ = @import("window_menu.zig");
     _ = @import("window_menu_panels.zig");
     _ = @import("window_misc_panels.zig");
     _ = @import("window_options.zig");
+    _ = @import("window_perk_menu.zig");
     _ = @import("window_statistics.zig");
     _ = @import("asset_smoke_main.zig");
     _ = @import("wasm_exports.zig");
