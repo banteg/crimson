@@ -14,6 +14,7 @@ from tqdm import tqdm
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
 from ..quests.level import QuestLevel
+from ..replay.driver.replay_render import ReplayRenderProgress
 from ..weapons import WeaponId
 
 if TYPE_CHECKING:
@@ -48,10 +49,6 @@ class _ProgressBarLike(Protocol):
     def close(self) -> None: ...
 
 
-ReplayRenderProgressCallback = Callable[["ReplayRenderPhase", int, int, int], None]
-ReplayRenderProgressClose = Callable[[], None]
-
-
 def _resolve_replay_path(replay_file: Path, *, base_dir: Path) -> tuple[Path, tuple[Path, ...]]:
     """Resolve a replay path, with a convenience lookup under the runtime dir.
 
@@ -78,52 +75,47 @@ def _default_replay_render_output_path(replay_path: Path) -> Path:
     return Path(replay_path).with_suffix(".render.mp4")
 
 
-def _replay_render_progress_callback(
-    *,
-    total_ticks: int,
-    render_audio: bool,
-    tqdm_factory: Callable[..., _ProgressBarLike] = tqdm,
-) -> tuple[ReplayRenderProgressCallback | None, ReplayRenderProgressClose | None]:
-    if int(total_ticks) <= 0:
-        return None, None
-
-    video_bar = tqdm_factory(
-        total=int(total_ticks),
-        unit="tick",
-        desc="replay video",
-        leave=True,
-    )
+class _ReplayRenderProgressBars(ReplayRenderProgress):
+    total_ticks: int
+    render_audio: bool
+    tqdm_factory: Callable[..., _ProgressBarLike]
+    video_bar: _ProgressBarLike
     audio_bar: _ProgressBarLike | None = None
-    video_last_tick = 0
-    audio_last_tick = 0
+    video_last_tick: int = 0
+    audio_last_tick: int = 0
 
-    def _ensure_audio_bar(total: int) -> _ProgressBarLike:
-        nonlocal audio_bar
-        if audio_bar is not None:
-            return audio_bar
-        audio_bar = tqdm_factory(
+    def _ensure_audio_bar(self, total: int) -> _ProgressBarLike:
+        if self.audio_bar is not None:
+            return self.audio_bar
+        self.audio_bar = self.tqdm_factory(
             total=int(total),
             unit="tick",
             desc="replay audio",
             leave=True,
         )
-        return audio_bar
+        return self.audio_bar
 
-    def callback(phase: str, frame_count: int, tick_index: int, callback_total_ticks: int) -> None:
-        nonlocal video_last_tick, audio_last_tick
-        resolved_total = int(total_ticks)
-        if int(callback_total_ticks) > 0:
-            resolved_total = int(callback_total_ticks)
+    def update(
+        self,
+        *,
+        phase: ReplayRenderPhase,
+        frame_count: int,
+        tick_index: int,
+        total_ticks: int,
+    ) -> None:
+        resolved_total = int(self.total_ticks)
+        if int(total_ticks) > 0:
+            resolved_total = int(total_ticks)
         if int(resolved_total) <= 0:
             return
-        if str(phase) == "video":
-            bar = video_bar
-            last_tick = int(video_last_tick)
-        elif str(phase) == "audio":
-            if not bool(render_audio):
+        if phase == "video":
+            bar = self.video_bar
+            last_tick = int(self.video_last_tick)
+        elif phase == "audio":
+            if not bool(self.render_audio):
                 return
-            bar = _ensure_audio_bar(int(resolved_total))
-            last_tick = int(audio_last_tick)
+            bar = self._ensure_audio_bar(int(resolved_total))
+            last_tick = int(self.audio_last_tick)
         else:
             return
         if int(bar.total) != int(resolved_total):
@@ -133,18 +125,37 @@ def _replay_render_progress_callback(
         if int(delta) <= 0:
             return
         bar.update(int(delta))
-        if str(phase) == "video":
+        if phase == "video":
             bar.set_postfix(frames=int(frame_count), refresh=False)
-            video_last_tick = int(tick)
+            self.video_last_tick = int(tick)
         else:
-            audio_last_tick = int(tick)
+            self.audio_last_tick = int(tick)
 
-    def close() -> None:
-        video_bar.close()
-        if audio_bar is not None:
-            audio_bar.close()
+    def close(self) -> None:
+        self.video_bar.close()
+        if self.audio_bar is not None:
+            self.audio_bar.close()
 
-    return callback, close
+
+def _replay_render_progress_runtime(
+    *,
+    total_ticks: int,
+    render_audio: bool,
+    tqdm_factory: Callable[..., _ProgressBarLike] = tqdm,
+) -> ReplayRenderProgress | None:
+    if int(total_ticks) <= 0:
+        return None
+    return _ReplayRenderProgressBars(
+        total_ticks=int(total_ticks),
+        render_audio=bool(render_audio),
+        tqdm_factory=tqdm_factory,
+        video_bar=tqdm_factory(
+            total=int(total_ticks),
+            unit="tick",
+            desc="replay video",
+            leave=True,
+        ),
+    )
 
 
 def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
@@ -1530,13 +1541,13 @@ def cmd_replay_render(
     output_path = Path(out) if out is not None else _default_replay_render_output_path(replay_path)
 
     replay_bytes = Path(replay_path).read_bytes()
-    progress_close: ReplayRenderProgressClose | None = None
+    progress_runtime: ReplayRenderProgress | None = None
     try:
         replay = load_replay(replay_bytes)
         total_ticks = len(replay.ticks)
         if max_ticks is not None:
             total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
-        progress_callback, progress_close = _replay_render_progress_callback(
+        progress_runtime = _replay_render_progress_runtime(
             total_ticks=total_ticks,
             render_audio=bool(audio),
         )
@@ -1557,14 +1568,14 @@ def cmd_replay_render(
             pixel_format=str(pixel_format),
             overwrite=bool(overwrite),
             mute_audio=not bool(audio),
-            progress=progress_callback,
+            progress=progress_runtime,
         )
     except (ReplayCodecError, ReplayGameVersionError, ReplayRenderError, ReplayRunnerError) as exc:
         typer.echo(f"replay render failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     finally:
-        if progress_close is not None:
-            progress_close()
+        if progress_runtime is not None:
+            progress_runtime.close()
 
     message = (
         f"ok: output={render.output_path} "

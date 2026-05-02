@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
-from unittest.mock import call
 
 import pytest
 
@@ -104,9 +103,20 @@ def test_capture_audio_track_reports_progress_without_manual_fx_queue_clears(moc
         def __init__(self) -> None:
             self.audio = SimpleNamespace(sound_disabled=False, music_disabled=False)
 
-    from unittest.mock import Mock
+    class _Progress(replay_render_mod.ReplayRenderProgress):
+        events: list[tuple[str, int, int, int]]
 
-    progress = Mock()
+        def update(
+            self,
+            *,
+            phase: replay_render_mod.ReplayRenderPhase,
+            frame_count: int,
+            tick_index: int,
+            total_ticks: int,
+        ) -> None:
+            self.events.append((phase, int(frame_count), int(tick_index), int(total_ticks)))
+
+    progress = _Progress(events=[])
 
     captured = replay_render_mod._capture_replay_audio_track(
         rl=_FakeRl(),
@@ -127,10 +137,10 @@ def test_capture_audio_track_reports_progress_without_manual_fx_queue_clears(moc
     assert captured.channels == 2
     assert captured.captured_frames == 2400
     assert captured.captured_ticks == 3
-    assert progress.call_args_list == [
-        call("audio", 0, 1, 120),
-        call("audio", 0, 2, 120),
-        call("audio", 0, 3, 120),
+    assert progress.events == [
+        ("audio", 0, 1, 120),
+        ("audio", 0, 2, 120),
+        ("audio", 0, 3, 120),
     ]
 
 
