@@ -24,10 +24,14 @@ from crimson.sim.frame_pump import advance_tick_runner_frame
 from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
+    FrameContext,
     GameCommand,
+    InputProvider,
+    InputStatus,
     LocalInputProvider,
     PerkPickCommand,
     ResolvedTick,
+    TickSupply,
 )
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
@@ -41,7 +45,7 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
-from tests.support.builders.input_providers import CallbackInputProvider, StaticLocalInputRuntime
+from tests.support.builders.input_providers import StaticLocalInputRuntime
 from tests.support.builders.session import make_session
 
 
@@ -68,6 +72,43 @@ class _MockLockstepRuntime:
             for target in self._commands_by_peer_and_tick:
                 self._commands_by_peer_and_tick[target][tick] = list(commands)
         return list(self._commands_by_peer_and_tick[str(peer)].pop(int(tick_index), []))
+
+
+class _LockstepInputProvider(InputProvider):
+    def __init__(
+        self,
+        *,
+        runtime: _MockLockstepRuntime,
+        peer: str,
+        inputs: tuple[PlayerInput, ...],
+        accepts_local_commands: bool = False,
+    ) -> None:
+        self._runtime = runtime
+        self._peer = peer
+        self._inputs = inputs
+        self._accepts_local_commands = accepts_local_commands
+
+    def begin_frame(self, frame_ctx: FrameContext) -> None:
+        _ = frame_ctx
+
+    def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
+        tick = int(tick_index)
+        return TickSupply(
+            status=InputStatus.READY,
+            tick=ResolvedTick(
+                tick_index=tick,
+                dt_seconds=float(default_dt_seconds),
+                inputs=tuple(self._inputs),
+                commands=tuple(self._runtime.pull_commands(peer=self._peer, tick_index=tick)),
+            ),
+        )
+
+    def supports_command_submission(self) -> bool:
+        return bool(self._accepts_local_commands)
+
+    def submit_command(self, command: GameCommand) -> None:
+        if self._accepts_local_commands:
+            self._runtime.submit_local_command(command)
 
 
 def _advance_with_clock(
@@ -145,23 +186,17 @@ def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mock
 
 def test_contract_3_lockstep_command_propagation_over_network_provider() -> None:
     runtime = _MockLockstepRuntime()
-    tick_input = [PlayerInput()]
-    host_provider = CallbackInputProvider(
-        resolve_tick=lambda tick, dt: ResolvedTick(
-            tick_index=int(tick),
-            dt_seconds=float(dt),
-            inputs=tuple(tick_input),
-            commands=tuple(runtime.pull_commands(peer="host", tick_index=int(tick))),
-        ),
-        submit_command=runtime.submit_local_command,
+    tick_input = (PlayerInput(),)
+    host_provider = _LockstepInputProvider(
+        runtime=runtime,
+        peer="host",
+        inputs=tick_input,
+        accepts_local_commands=True,
     )
-    client_provider = CallbackInputProvider(
-        resolve_tick=lambda tick, dt: ResolvedTick(
-            tick_index=int(tick),
-            dt_seconds=float(dt),
-            inputs=tuple(tick_input),
-            commands=tuple(runtime.pull_commands(peer="client", tick_index=int(tick))),
-        ),
+    client_provider = _LockstepInputProvider(
+        runtime=runtime,
+        peer="client",
+        inputs=tick_input,
     )
     host_session, _ = make_session(seed=42)
     client_session, _ = make_session(seed=42)

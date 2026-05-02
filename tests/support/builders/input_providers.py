@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
     FrameContext,
@@ -22,34 +20,53 @@ class StaticLocalInputRuntime(LocalInputRuntime):
         return tuple(self.inputs)
 
 
-class CallbackInputProvider(InputProvider):
+class StalledInputProvider(InputProvider):
+    def begin_frame(self, frame_ctx: FrameContext) -> None:
+        _ = frame_ctx
+
+    def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
+        _ = tick_index, default_dt_seconds
+        return TickSupply(status=InputStatus.STALLED, tick=None)
+
+    def supports_command_submission(self) -> bool:
+        return False
+
+    def submit_command(self, command: GameCommand) -> None:
+        _ = command
+
+
+class ReadyTickInputProvider(InputProvider):
     def __init__(
         self,
         *,
-        resolve_tick: Callable[[int, float], ResolvedTick | None] | None = None,
-        submit_command: Callable[[GameCommand], None] | None = None,
+        inputs: tuple[PlayerInput, ...] = (),
+        commands: tuple[GameCommand, ...] = (),
+        dt_seconds: float | None = None,
     ) -> None:
-        self._resolve_tick = resolve_tick
-        self._submit_command = submit_command
+        self._inputs = inputs
+        self._commands = commands
+        self._dt_seconds = dt_seconds
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
         _ = frame_ctx
 
     def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
-        if self._resolve_tick is None:
-            return TickSupply(status=InputStatus.STALLED, tick=None)
-        resolved_tick = self._resolve_tick(int(tick_index), float(default_dt_seconds))
-        if resolved_tick is None:
-            return TickSupply(status=InputStatus.STALLED, tick=None)
-        return TickSupply(status=InputStatus.READY, tick=resolved_tick)
+        dt_seconds = float(default_dt_seconds) if self._dt_seconds is None else float(self._dt_seconds)
+        return TickSupply(
+            status=InputStatus.READY,
+            tick=ResolvedTick(
+                tick_index=int(tick_index),
+                dt_seconds=dt_seconds,
+                inputs=tuple(self._inputs),
+                commands=tuple(self._commands),
+            ),
+        )
 
     def supports_command_submission(self) -> bool:
-        return self._submit_command is not None
+        return False
 
     def submit_command(self, command: GameCommand) -> None:
-        submit_command = self._submit_command
-        if submit_command is not None:
-            submit_command(command)
+        _ = command
 
 
 class StallableInputProvider(InputProvider):
