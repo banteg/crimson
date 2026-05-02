@@ -44,6 +44,7 @@ pub const ReplayCodecError = error{
     InvalidMsgpack,
     LegacyJsonPayload,
     InvalidHeaderValue,
+    InvalidClaimedStats,
     MissingHeaderField,
     MissingQuestLevel,
     TypoMultiplayer,
@@ -243,6 +244,21 @@ fn validateModePlayerCount(game_mode_id: i32, player_count: i32) ReplayCodecErro
     }
     if (game_mode_id == @intFromEnum(game_ids.GameModeId.tutorial) and player_count != 1) {
         return error.TutorialMultiplayer;
+    }
+}
+
+fn validateClaimedStats(claimed_stats: ReplayClaimedStats) ReplayCodecError!void {
+    if (claimed_stats.ticks < 0 or
+        claimed_stats.elapsed_ms < 0 or
+        claimed_stats.score_xp < 0 or
+        claimed_stats.kills < 0 or
+        claimed_stats.shots_fired < 0 or
+        claimed_stats.shots_hit < 0)
+    {
+        return error.InvalidHeaderValue;
+    }
+    if (claimed_stats.shots_hit > claimed_stats.shots_fired) {
+        return error.InvalidClaimedStats;
     }
 }
 
@@ -1898,16 +1914,7 @@ fn buildHeader(
         .shots_fired = try parseI32(wire.claimed_stats.shots_fired),
         .shots_hit = try parseI32(wire.claimed_stats.shots_hit),
     };
-    if (claimed_stats.ticks < 0 or
-        claimed_stats.elapsed_ms < 0 or
-        claimed_stats.score_xp < 0 or
-        claimed_stats.kills < 0 or
-        claimed_stats.shots_fired < 0 or
-        claimed_stats.shots_hit < 0 or
-        claimed_stats.shots_hit > claimed_stats.shots_fired)
-    {
-        return error.InvalidHeaderValue;
-    }
+    try validateClaimedStats(claimed_stats);
 
     return .{
         .game_mode_id = game_mode_id,
@@ -1980,16 +1987,7 @@ fn buildHeaderCurrent(
         .shots_fired = try parseI32(wire.claimed_stats.shots_fired),
         .shots_hit = try parseI32(wire.claimed_stats.shots_hit),
     };
-    if (claimed_stats.ticks < 0 or
-        claimed_stats.elapsed_ms < 0 or
-        claimed_stats.score_xp < 0 or
-        claimed_stats.kills < 0 or
-        claimed_stats.shots_fired < 0 or
-        claimed_stats.shots_hit < 0 or
-        claimed_stats.shots_hit > claimed_stats.shots_fired)
-    {
-        return error.InvalidHeaderValue;
-    }
+    try validateClaimedStats(claimed_stats);
 
     const quest_level = if (wire.quest_level) |level|
         std.fmt.allocPrint(allocator, "{d}.{d}", .{ level.major, level.minor }) catch return error.OutOfMemory
@@ -2504,7 +2502,7 @@ test "build header rejects world_size above i32 range" {
         .claimed_stats = .{},
         .input_quantization = "f32",
     };
-    try std.testing.expectError(error.InvalidHeaderValue, buildHeader(std.testing.allocator, wire));
+    try std.testing.expectError(error.InvalidClaimedStats, buildHeader(std.testing.allocator, wire));
 }
 
 test "build header rejects quest replay without quest level" {

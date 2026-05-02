@@ -196,6 +196,18 @@ def write_current_mode_player_count_replay(
     return replay_path
 
 
+def write_current_bad_claimed_stats_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
+    raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
+    payload = msgspec.msgpack.decode(raw_payload)
+    payload["header"]["claimed_stats"]["shots_fired"] = 1
+    payload["header"]["claimed_stats"]["shots_hit"] = 2
+
+    replay_path = tmp_path / name
+    replay_path.parent.mkdir(parents=True, exist_ok=True)
+    replay_path.write_bytes(msgspec.msgpack.encode(payload))
+    return replay_path
+
+
 def write_checkpoint_sidecar(
     replay_path: Path,
     replay: Replay,

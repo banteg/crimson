@@ -1905,6 +1905,7 @@ fn replayLoadErrorDetail(err: anyerror) []const u8 {
         error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
         error.LegacyJsonPayload => "legacy JSON replay format is unsupported; regenerate the replay",
         error.InvalidHeaderValue => "replay header contains invalid values",
+        error.InvalidClaimedStats => "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
         error.MissingHeaderField => "replay header missing required fields",
         error.MissingQuestLevel => "quest replays require a valid header.quest_level",
         error.TypoMultiplayer => "Typ-o replays require player_count == 1",

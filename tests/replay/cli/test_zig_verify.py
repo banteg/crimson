@@ -20,6 +20,7 @@ from ._helpers import (
     build_replay,
     build_typo_submit_replay,
     inject_tick_commands,
+    write_current_bad_claimed_stats_replay,
     write_current_missing_quest_level_replay,
     write_current_mode_player_count_replay,
     write_current_typo_event_replay,
@@ -273,6 +274,27 @@ def test_zig_replay_verify_reports_legacy_json_as_replay_failure(tmp_path: Path)
     )
     assert "msgpack" not in result.stderr
     assert "native runtime limitation" not in result.stderr
+
+
+def test_zig_replay_verify_reports_invalid_claimed_stats_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = write_current_bad_claimed_stats_replay(
+        tmp_path,
+        replay=replay,
+        name="bad-claimed-stats.crd",
+    )
+
+    python_result = _run_python_replay_verify_process([str(replay_path), "--format", "json"])
+    zig_result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
+
+    assert python_result.exit_code == 1, python_result.output
+    assert zig_result.returncode == 1, dbg_record._command_detail(zig_result)
+    assert (
+        "replay verification failed: replay header claimed_stats.shots_hit must be <= "
+        "claimed_stats.shots_fired"
+    ) in zig_result.stderr
+    assert zig_result.stderr == python_result.output
+    assert "native runtime limitation" not in zig_result.stderr
 
 
 def test_zig_replay_verify_reports_unknown_command_as_replay_failure(tmp_path: Path) -> None:
