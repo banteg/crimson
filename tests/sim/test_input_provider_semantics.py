@@ -14,7 +14,11 @@ from crimson.sim.input_providers import (
     TickSupply,
 )
 from crimson.sim.tick_runner import TickRunner, TickRunnerConfig
-from tests.support.builders.input_providers import CallbackInputProvider, StaticLocalInputRuntime
+from tests.support.builders.input_providers import (
+    ReadyTickInputProvider,
+    StalledInputProvider,
+    StaticLocalInputRuntime,
+)
 from tests.support.builders.session import make_session
 
 _FRAME_CTX = FrameContext(
@@ -54,7 +58,7 @@ def test_local_provider_allows_empty_inputs_for_zero_players() -> None:
 
 
 def test_network_provider_returns_stalled_when_no_inputs() -> None:
-    provider = CallbackInputProvider(resolve_tick=lambda tick, _dt: None)
+    provider = StalledInputProvider()
     provider.begin_frame(_FRAME_CTX)
 
     tick0 = provider.pull_tick(0, _FRAME_CTX.tick_dt_seconds)
@@ -63,14 +67,7 @@ def test_network_provider_returns_stalled_when_no_inputs() -> None:
 
 
 def test_network_provider_returns_resolved_tick_inline() -> None:
-    provider = CallbackInputProvider(
-        resolve_tick=lambda tick, dt: ResolvedTick(
-            tick_index=int(tick),
-            dt_seconds=float(dt),
-            inputs=(PlayerInput(),),
-            commands=(),
-        ),
-    )
+    provider = ReadyTickInputProvider(inputs=(PlayerInput(),))
     provider.begin_frame(_FRAME_CTX)
 
     tick0 = provider.pull_tick(0, _FRAME_CTX.tick_dt_seconds)
