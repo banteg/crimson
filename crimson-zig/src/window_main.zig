@@ -66,6 +66,7 @@ const window_height = 768;
 const demo_attract_variant_count: i32 = 6;
 const demo_attract_limit_ms: i32 = 4_000;
 const demo_attract_purchase_screen_limit_ms: i32 = 16_000;
+const end_note_timeline_max_ms: i32 = 300;
 const demo_upsell_messages = [_][:0]const u8{
     "Want more Levels?",
     "Want more Weapons?",
@@ -125,6 +126,14 @@ const DemoAttractInactiveAction = enum {
     none,
     purchase,
     close,
+};
+
+const EndNoteAction = enum {
+    none,
+    start_survival,
+    start_rush,
+    start_typo,
+    main_menu,
 };
 
 const DemoPurchaseFeatureLine = struct {
@@ -592,6 +601,48 @@ const DemoAttractPurchaseState = struct {
     }
 };
 
+const EndNoteState = struct {
+    selection: usize = 0,
+    timeline_ms: i32 = 0,
+    closing: bool = false,
+    close_action: EndNoteAction = .none,
+    fade_to_black: bool = false,
+
+    fn reset(self: *EndNoteState) void {
+        self.* = .{};
+    }
+
+    fn beginClose(self: *EndNoteState, action: EndNoteAction, fade_to_black: bool) void {
+        if (self.closing) return;
+        self.closing = true;
+        self.close_action = action;
+        self.fade_to_black = fade_to_black;
+    }
+
+    fn advance(self: *EndNoteState, frame_dt: f32) EndNoteAction {
+        const dt_ms = frameDeltaMs(frame_dt);
+        if (self.closing) {
+            if (dt_ms > 0) self.timeline_ms -= dt_ms;
+            if (self.timeline_ms < 0 and self.close_action != .none) {
+                const action = self.close_action;
+                self.closing = false;
+                self.close_action = .none;
+                self.fade_to_black = false;
+                return action;
+            }
+            return .none;
+        }
+        if (dt_ms > 0) {
+            self.timeline_ms = @min(end_note_timeline_max_ms, self.timeline_ms + dt_ms);
+        }
+        return .none;
+    }
+
+    fn inputEnabled(self: *const EndNoteState) bool {
+        return !self.closing and self.timeline_ms >= end_note_timeline_max_ms;
+    }
+};
+
 const ResultsScreen = struct {
     reason: ResultsReason,
     run_config: live_runner.LiveModeConfig,
@@ -710,7 +761,7 @@ const App = struct {
     mods_menu: window_misc_panels.ModsState = .{},
     other_games_menu: window_misc_panels.OtherGamesState = .{},
     network_session: window_misc_panels.NetworkState = .{},
-    end_note_selection: usize = 0,
+    end_note: EndNoteState = .{},
     gameplay: ?GameplayScreen = null,
     network_live_session: ?NetworkLiveRuntime = null,
     network_live_input_interpreter: local_input.LocalInputInterpreter = .{},
@@ -847,7 +898,7 @@ const App = struct {
             .gameplay => self.updateGameplay(frame_dt),
             .pause => self.updatePause(frame_dt),
             .results => self.updateResults(frame_dt),
-            .end_note => self.updateEndNote(),
+            .end_note => self.updateEndNote(frame_dt),
             .options => self.updateOptions(frame_dt),
             .controls => self.updateControls(frame_dt),
         }
@@ -1615,7 +1666,7 @@ const App = struct {
     fn activateQuestCompletedPrimary(self: *App, results: *const ResultsScreen) void {
         if (isFinalQuestLevelKey(results.run_config.quest_level_key)) {
             self.results = null;
-            self.end_note_selection = 0;
+            self.end_note.reset();
             self.setScreen(.end_note);
             return;
         }
@@ -1631,46 +1682,69 @@ const App = struct {
         self.setScreen(.main_menu);
     }
 
-    fn updateEndNote(self: *App) void {
+    fn updateEndNote(self: *App, frame_dt: f32) void {
         self.audio.ensureMenuThemeForDemo(self.demo_enabled);
+        const finished_action = self.end_note.advance(frame_dt);
+        if (finished_action != .none) {
+            self.finishEndNoteAction(finished_action);
+            return;
+        }
+        if (!self.end_note.inputEnabled()) return;
+
         const buttons = endNoteButtonsForScreen(@floatFromInt(rl.getScreenWidth()));
-        window_ui.updateSelectionFromPointer(&self.end_note_selection, buttons[0..]);
+        window_ui.updateSelectionFromPointer(&self.end_note.selection, buttons[0..]);
         if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-            self.end_note_selection = if (self.end_note_selection == 0) buttons.len - 1 else self.end_note_selection - 1;
+            self.end_note.selection = if (self.end_note.selection == 0) buttons.len - 1 else self.end_note.selection - 1;
         }
         if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-            self.end_note_selection = (self.end_note_selection + 1) % buttons.len;
+            self.end_note.selection = (self.end_note.selection + 1) % buttons.len;
         }
         if (rl.isKeyPressed(.escape)) {
             self.audio.playUiButtonClick();
-            self.menu.openRoot();
-            self.setScreen(.main_menu);
+            self.beginEndNoteClose(.main_menu);
             return;
         }
 
-        if (!window_ui.buttonActivated(buttons[0..], self.end_note_selection)) return;
+        if (!window_ui.buttonActivated(buttons[0..], self.end_note.selection)) return;
         self.audio.playUiButtonClick();
-        switch (self.end_note_selection) {
-            0 => {
+        switch (self.end_note.selection) {
+            0 => self.beginEndNoteClose(.start_survival),
+            1 => self.beginEndNoteClose(.start_rush),
+            2 => self.beginEndNoteClose(.start_typo),
+            3 => self.beginEndNoteClose(.main_menu),
+            else => {},
+        }
+    }
+
+    fn beginEndNoteClose(self: *App, action: EndNoteAction) void {
+        switch (action) {
+            .start_survival => {
                 self.runtime.config.game_mode = @intFromEnum(game_ids.GameModeId.survival);
                 self.runtime.config_dirty = true;
-                self.startNewRun(self.liveRunConfig(.survival, null));
             },
-            1 => {
+            .start_rush => {
                 self.runtime.config.game_mode = @intFromEnum(game_ids.GameModeId.rush);
                 self.runtime.config_dirty = true;
-                self.startNewRun(self.liveRunConfig(.rush, null));
             },
-            2 => {
+            .start_typo => {
                 self.runtime.config.game_mode = @intFromEnum(game_ids.GameModeId.typo);
                 self.runtime.config_dirty = true;
-                self.startNewRun(self.liveRunConfig(.typo, null));
             },
-            3 => {
+            .main_menu, .none => {},
+        }
+        self.end_note.beginClose(action, action == .start_typo);
+    }
+
+    fn finishEndNoteAction(self: *App, action: EndNoteAction) void {
+        switch (action) {
+            .start_survival => self.startNewRun(self.liveRunConfig(.survival, null)),
+            .start_rush => self.startNewRun(self.liveRunConfig(.rush, null)),
+            .start_typo => self.startNewRun(self.liveRunConfig(.typo, null)),
+            .main_menu => {
                 self.menu.openRoot();
                 self.setScreen(.main_menu);
             },
-            else => {},
+            .none => {},
         }
     }
 
@@ -2549,7 +2623,8 @@ const App = struct {
         drawBackdrop();
 
         const screen_width: f32 = @floatFromInt(rl.getScreenWidth());
-        const panel = endNotePanelRect(screen_width);
+        drawEndNoteScreenFade(&self.end_note);
+        const panel = endNotePanelRectForTimeline(screen_width, self.end_note.timeline_ms);
         if (self.runtime_assets) |*runtime_assets| {
             drawTextureFit(runtime_assets.texture(.ui_menu_panel), panel, colorWithAlpha(rl.Color.white, 0.96));
             const hardcore = self.runtime.config.hardcore_flag != 0;
@@ -2575,10 +2650,10 @@ const App = struct {
             }
         }
 
-        const buttons = endNoteButtonsForScreen(screen_width);
+        const buttons = endNoteButtonsForTimeline(screen_width, self.end_note.timeline_ms);
         for (buttons[0..], 0..) |button, idx| {
             const mouse_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
-            window_ui.drawButton(button, idx == self.end_note_selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
+            window_ui.drawButton(button, idx == self.end_note.selection, mouse_hovered, if (self.runtime_assets) |*assets| assets else null);
         }
     }
 
@@ -3451,11 +3526,25 @@ fn resultsHighscoreButtonsForScreen(results: *const ResultsScreen, screen_width:
 }
 
 fn endNotePanelRect(screen_width: f32) rl.Rectangle {
+    return endNotePanelRectForTimeline(screen_width, end_note_timeline_max_ms);
+}
+
+fn endNotePanelRectForTimeline(screen_width: f32, timeline_ms: i32) rl.Rectangle {
+    const base = endNoteBasePanelRect(screen_width);
+    const anim = window_menu.uiElementAnim(1, end_note_timeline_max_ms, 0, base.width, timeline_ms);
+    return rl.Rectangle.init(base.x + anim.offset_x, base.y, base.width, base.height);
+}
+
+fn endNoteBasePanelRect(screen_width: f32) rl.Rectangle {
     return rl.Rectangle.init(-108.0, 29.0 + window_menu.menuWidescreenYShift(screen_width), 510.0, 378.0);
 }
 
 fn endNoteButtonsForScreen(screen_width: f32) [4]UiButton {
-    const panel = endNotePanelRect(screen_width);
+    return endNoteButtonsForTimeline(screen_width, end_note_timeline_max_ms);
+}
+
+fn endNoteButtonsForTimeline(screen_width: f32, timeline_ms: i32) [4]UiButton {
+    const panel = endNotePanelRectForTimeline(screen_width, timeline_ms);
     const x = panel.x + 266.0;
     const y = panel.y + 210.0;
     return .{
@@ -3464,6 +3553,28 @@ fn endNoteButtonsForScreen(screen_width: f32) [4]UiButton {
         window_ui.buttonAt("Typ'o'Shooter", x, y + 64.0, true),
         window_ui.buttonAt("Main Menu", x, y + 96.0, true),
     };
+}
+
+fn endNoteFadeAlpha(state: *const EndNoteState) f32 {
+    if (!state.fade_to_black) return 0.0;
+    const elapsed_ms = @max(0, end_note_timeline_max_ms - state.timeline_ms);
+    return std.math.clamp(@as(f32, @floatFromInt(elapsed_ms)) * 0.01, @as(f32, 0.0), @as(f32, 1.0));
+}
+
+fn drawEndNoteScreenFade(state: *const EndNoteState) void {
+    const alpha = endNoteFadeAlpha(state);
+    if (alpha <= 1e-3) return;
+    rl.drawRectangle(
+        0,
+        0,
+        rl.getScreenWidth(),
+        rl.getScreenHeight(),
+        colorWithAlpha(rl.Color.black, alpha),
+    );
+}
+
+fn frameDeltaMs(frame_dt: f32) i32 {
+    return @intFromFloat(@min(@max(frame_dt, 0.0), 0.1) * 1000.0);
 }
 
 fn endNoteBodyLines(hardcore: bool, preserve_bugs: bool) []const [:0]const u8 {
@@ -4529,6 +4640,49 @@ test "end note panel and buttons use native widescreen anchor" {
 
     const buttons_1024 = endNoteButtonsForScreen(1024.0);
     try std.testing.expectApproxEqAbs(@as(f32, 329.0), buttons_1024[0].rect.y, 1e-6);
+}
+
+test "end note timeline gates input and animates panel from native closed edge" {
+    var state: EndNoteState = .{};
+    try std.testing.expect(!state.inputEnabled());
+
+    const closed_panel = endNotePanelRectForTimeline(640.0, 0);
+    try std.testing.expectApproxEqAbs(@as(f32, -618.0), closed_panel.x, 1e-6);
+
+    try std.testing.expectEqual(EndNoteAction.none, state.advance(0.15));
+    try std.testing.expect(!state.inputEnabled());
+    try std.testing.expectEqual(@as(i32, 100), state.timeline_ms);
+
+    try std.testing.expectEqual(EndNoteAction.none, state.advance(0.10));
+    try std.testing.expect(!state.inputEnabled());
+    try std.testing.expectEqual(@as(i32, 200), state.timeline_ms);
+
+    try std.testing.expectEqual(EndNoteAction.none, state.advance(0.10));
+    try std.testing.expect(state.inputEnabled());
+    try std.testing.expectEqual(@as(i32, end_note_timeline_max_ms), state.timeline_ms);
+}
+
+test "end note close waits for reverse transition before dispatch" {
+    var state: EndNoteState = .{ .timeline_ms = end_note_timeline_max_ms };
+    state.beginClose(.start_typo, true);
+    try std.testing.expect(state.closing);
+    try std.testing.expect(!state.inputEnabled());
+    try std.testing.expectEqual(@as(f32, 0.0), endNoteFadeAlpha(&state));
+
+    try std.testing.expectEqual(EndNoteAction.none, state.advance(0.10));
+    try std.testing.expectEqual(@as(i32, 200), state.timeline_ms);
+    try std.testing.expectEqual(@as(f32, 1.0), endNoteFadeAlpha(&state));
+
+    try std.testing.expectEqual(EndNoteAction.none, state.advance(0.10));
+    try std.testing.expectEqual(@as(i32, 100), state.timeline_ms);
+
+    try std.testing.expectEqual(EndNoteAction.none, state.advance(0.10));
+    try std.testing.expectEqual(@as(i32, 0), state.timeline_ms);
+
+    try std.testing.expectEqual(EndNoteAction.start_typo, state.advance(0.01));
+    try std.testing.expect(!state.closing);
+    try std.testing.expectEqual(EndNoteAction.none, state.close_action);
+    try std.testing.expectEqual(@as(f32, 0.0), endNoteFadeAlpha(&state));
 }
 
 test "end note body preserves native missing comma when requested" {

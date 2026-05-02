@@ -7,7 +7,7 @@ tags:
 
 # Zig port roadmap (`crimson-zig/`)
 
-Last reviewed: **2026-05-02**
+Last reviewed: **2026-05-03**
 
 This page now tracks the remaining work after the Zig port crossed the
 “desktop playable slice” threshold. The current tree already contains a real
@@ -118,7 +118,9 @@ Remaining work:
 - finish remaining results/high-score/product flow parity in
   [`crimson-zig/src/window_main.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_main.zig);
   quest-completion results now include resolved weapon/perk unlock names and
-  native-style completed-results keyboard shortcuts,
+  native-style completed-results keyboard shortcuts, and the final quest
+  end-note screen uses the native 300 ms open/close timeline before launching
+  Survival/Rush/Typ-o or returning to the main menu,
 - keep tightening menu/statistics/options descendants in
   [`crimson-zig/src/window_menu.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_menu.zig),
   [`crimson-zig/src/window_menu_panels.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_menu_panels.zig),
