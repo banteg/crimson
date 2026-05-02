@@ -48,7 +48,7 @@ Today `crimson-zig/` already has:
   case that applies a host snapshot stream, a repeated jitter-burst smoke case,
   a relay-token guest self-reconnect smoke case with post-reconnect input
   continuity, and a longer reconnect-then-resync smoke case,
-- a freestanding WASM replay verify/info plus checkpoint diff/verify ABI in
+- a freestanding WASM replay verify/info/benchmark plus checkpoint diff/verify ABI in
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig).
 
 Current live/native gameplay coverage:
@@ -81,7 +81,7 @@ Remaining work:
 - expand native tooling beyond `replay list`, `replay verify`,
   `replay info`, and `replay benchmark`,
 - continue widening the WASM surface beyond byte-input replay verification,
-  info, and checkpoint comparison.
+  info, benchmark summaries, and checkpoint comparison.
 
 Definition of done:
 

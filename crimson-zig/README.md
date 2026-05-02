@@ -163,7 +163,12 @@ Current freestanding exports:
 - `crimson_free(ptr, size) -> void`
 - `crimson_verify_replay_json(replay_ptr, replay_len, opts_ptr, opts_len, out_ptr, out_len) -> i32`
 - `crimson_info_replay_json(replay_ptr, replay_len, opts_ptr, opts_len, out_ptr, out_len) -> i32`
+- `crimson_benchmark_replay_json(replay_ptr, replay_len, opts_ptr, opts_len, out_ptr, out_len) -> i32`
+- `crimson_diff_checkpoints_text(expected_ptr, expected_len, actual_ptr, actual_len, out_ptr, out_len) -> i32`
+- `crimson_verify_checkpoints_text(replay_ptr, replay_len, checkpoints_ptr, checkpoints_len, opts_ptr, opts_len, out_ptr, out_len) -> i32`
 - `crimson_last_error_json(out_ptr, out_len) -> i32`
 
-`crimson_verify_replay_json` and `crimson_info_replay_json` accept an optional
-JSON options object with `max_ticks`.
+The replay verify/info/checkpoint exports accept an optional JSON options
+object with `max_ticks`. The replay benchmark export accepts `max_ticks`,
+`runs`, `warmup_runs`, and `trace_rng`; freestanding WASM has no host clock, so
+callers that need wall-time measurements should time the export externally.
