@@ -64,7 +64,7 @@ class TutorialMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._perk_menu = PerkMenuController()
+        self._perk_menu = PerkMenuController(runtime=self._perk_menu_runtime())
 
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
