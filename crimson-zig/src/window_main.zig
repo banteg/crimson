@@ -588,6 +588,7 @@ const ResultsScreen = struct {
 const ResultsHighscoreState = struct {
     record: persistence.highscores.HighScoreRecord,
     rank_index: usize,
+    highlight_rank: ?usize = null,
     selection: usize = 0,
     save_error: ?[]const u8 = null,
     saved: bool = false,
@@ -1669,6 +1670,7 @@ const App = struct {
                     results.run_config.quest_level_key
                 else
                     null,
+                .highlight_rank = resultsHighscoreHighlightRank(results),
             },
         );
         self.setScreen(.statistics_menu);
@@ -1793,6 +1795,8 @@ const App = struct {
             return;
         };
         defer upsert.deinit(self.allocator);
+        highscore.rank_index = upsert.rank_index;
+        highscore.highlight_rank = if (scoreTooLowForTop100(upsert.rank_index)) null else upsert.rank_index;
 
         self.runtime.saveConfigIfDirty() catch |err| {
             highscore.save_error = resultsConfigSaveErrorDetail(err);
@@ -2955,6 +2959,13 @@ fn scoreTooLowForTop100(rank_index: usize) bool {
     return rank_index >= persistence.highscores.table_max;
 }
 
+fn resultsHighscoreHighlightRank(results: *const ResultsScreen) ?usize {
+    if (results.highscore) |highscore| {
+        if (highscore.saved) return highscore.highlight_rank;
+    }
+    return null;
+}
+
 fn resultsNamePrompt(results: *const ResultsScreen) [:0]const u8 {
     if (results.run_config.game_mode == .quests and results.run_config.preserve_bugs) {
         return "State your name trooper!";
@@ -3761,6 +3772,32 @@ test "results high score top100 gate reports non-qualifying rank" {
     try std.testing.expect(!scoreTooLowForTop100(0));
     try std.testing.expect(!scoreTooLowForTop100(persistence.highscores.table_max - 1));
     try std.testing.expect(scoreTooLowForTop100(persistence.highscores.table_max));
+}
+
+test "results high score highlight rank is carried only after save" {
+    const unsaved_results: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{ .game_mode = .survival },
+        .summary = undefined,
+        .highscore = .{
+            .record = persistence.highscores.HighScoreRecord.blank(),
+            .rank_index = 3,
+        },
+    };
+    try std.testing.expectEqual(@as(?usize, null), resultsHighscoreHighlightRank(&unsaved_results));
+
+    const saved_results: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{ .game_mode = .survival },
+        .summary = undefined,
+        .highscore = .{
+            .record = persistence.highscores.HighScoreRecord.blank(),
+            .rank_index = 3,
+            .highlight_rank = 3,
+            .saved = true,
+        },
+    };
+    try std.testing.expectEqual(@as(?usize, 3), resultsHighscoreHighlightRank(&saved_results));
 }
 
 test "results high score name prompt follows quest preserve-bugs wording" {

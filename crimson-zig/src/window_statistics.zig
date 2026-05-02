@@ -104,6 +104,7 @@ const HubState = struct {
 const HighScoresScreen = struct {
     mode: game_ids.GameModeId = .survival,
     quest_level_key: i32 = 101,
+    highlight_rank: ?usize = null,
     button_selection: usize = 0,
     dropdown_open: DropdownKind = .none,
     scroll: usize = 0,
@@ -229,6 +230,7 @@ pub fn openRoot(state: *State, allocator: std.mem.Allocator, default_quest_level
 
 pub const OpenHighScoresOptions = struct {
     quest_level_key: ?i32 = null,
+    highlight_rank: ?usize = null,
 };
 
 pub fn openHighScores(
@@ -246,6 +248,7 @@ pub fn openHighScores(
         options.quest_level_key orelse questLevelKeyFromConfig(config)
     else
         questLevelKeyFromConfig(config);
+    state.high_scores.highlight_rank = options.highlight_rank;
     loadHighScores(&state.high_scores, allocator, base_dir, config, status);
 }
 
@@ -777,12 +780,12 @@ fn drawHighScoreMainPanel(
     } else if (state.records.len == 0) {
         window_ui.drawSmallText(assets, "No scores yet.", left_rect.x + 211.0, frame.y + 8.0, muted_text);
     } else {
-        const hovered_rank = hoveredHighScoreRank(state, left_rect);
+        const selected_rank = selectedHighScoreRank(state, left_rect);
         const start = @min(state.scroll, if (state.records.len > 10) state.records.len - 10 else 0);
         const end = @min(start + 10, state.records.len);
         for (state.records[start..end], 0..) |record, row| {
             const idx = start + row;
-            const color = if (hovered_rank != null and hovered_rank.? == idx) text_color else muted_text;
+            const color = if (selected_rank != null and selected_rank.? == idx) text_color else muted_text;
             var value_buf: [32]u8 = undefined;
             const y = frame.y + 8.0 + @as(f32, @floatFromInt(row)) * 16.0;
             window_ui.drawSmallTextFmt("{d}", assets, .{idx + 1}, left_rect.x + 216.0, y, color);
@@ -806,7 +809,7 @@ fn drawHighScoreRightPanel(
     left_rect: rl.Rectangle,
     right_rect: rl.Rectangle,
 ) void {
-    if (hoveredHighScoreRank(state, left_rect)) |rank| {
+    if (selectedHighScoreRank(state, left_rect)) |rank| {
         if (rank < state.records.len) {
             drawHighScoreLocalDetails(assets, state.records[rank], rank, right_rect);
             return;
@@ -1548,6 +1551,23 @@ fn hoveredHighScoreRank(state: *const HighScoresScreen, left_rect: rl.Rectangle)
     return rank;
 }
 
+fn selectedHighScoreRank(state: *const HighScoresScreen, left_rect: rl.Rectangle) ?usize {
+    if (hoveredHighScoreRank(state, left_rect)) |rank| return rank;
+    if (state.highlight_rank) |rank| {
+        if (rank < state.records.len) return rank;
+    }
+    return null;
+}
+
+fn highScoreScrollForHighlight(record_count: usize, highlight_rank: ?usize) usize {
+    if (record_count <= 10) return 0;
+    const max_scroll = record_count - 10;
+    const rank = highlight_rank orelse return 0;
+    if (rank >= record_count) return 0;
+    if (rank < 10) return 0;
+    return @min(rank - 9, max_scroll);
+}
+
 fn hoveredListRow(rect: rl.Rectangle, total: usize, scroll: usize) ?usize {
     const mouse = rl.getMousePosition();
     if (!rectContains(rect, mouse)) return null;
@@ -1895,7 +1915,11 @@ fn loadHighScores(
         return;
     };
     state.records_owned = true;
-    state.scroll = @min(state.scroll, if (state.records.len > 10) state.records.len - 10 else 0);
+    if (state.highlight_rank) |rank| {
+        state.scroll = highScoreScrollForHighlight(state.records.len, rank);
+    } else {
+        state.scroll = @min(state.scroll, if (state.records.len > 10) state.records.len - 10 else 0);
+    }
 }
 
 fn highScorePathErrorDetail(err: anyerror) []const u8 {
@@ -2330,6 +2354,45 @@ test "openHighScores loads requested quest level before reading records" {
     try std.testing.expectEqual(@as(i32, 203), state.high_scores.quest_level_key);
     try std.testing.expectEqual(@as(usize, 1), state.high_scores.records.len);
     try std.testing.expectEqualStrings("Quest203", state.high_scores.records[0].name());
+}
+
+test "openHighScores preserves highlighted saved rank and scrolls it into view" {
+    const allocator = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+
+    const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
+    defer allocator.free(base_dir);
+
+    var records: [12]persistence.highscores.HighScoreRecord = undefined;
+    for (&records, 0..) |*record, idx| {
+        record.* = persistence.highscores.HighScoreRecord.blank();
+        record.setGameModeId(.survival);
+        record.setScoreXp(@intCast(12 - idx));
+        var name_buf: [16]u8 = undefined;
+        record.setName(std.fmt.bufPrint(&name_buf, "Player{d}", .{idx}) catch unreachable);
+    }
+    const path = try persistence.highscores.scoresPathForMode(
+        allocator,
+        base_dir,
+        @intFromEnum(game_ids.GameModeId.survival),
+        .{},
+    );
+    defer allocator.free(path);
+    try persistence.highscores.writeHighscoreRecords(allocator, path, &records, null);
+
+    var state: State = .{};
+    defer state.high_scores.clear(allocator);
+    var config = formats.crimson_cfg.defaultConfig();
+    config.game_mode = @intFromEnum(game_ids.GameModeId.survival);
+    config.player_count = 1;
+    const status = std.mem.zeroes(formats.game_cfg.Status);
+
+    openHighScores(&state, allocator, base_dir, config, status, .{ .highlight_rank = 11 });
+
+    try std.testing.expectEqual(@as(?usize, 11), state.high_scores.highlight_rank);
+    try std.testing.expectEqual(@as(usize, 2), state.high_scores.scroll);
+    try std.testing.expectEqual(@as(usize, 12), state.high_scores.records.len);
 }
 
 test "hub high scores use remembered quest level default" {
