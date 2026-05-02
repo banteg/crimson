@@ -210,6 +210,10 @@ fn runVerifyWithReplayBytes(
     replay_codec.validateReplayBootstrap(header) catch |err| {
         return buildOutputForReplayCodecError(allocator, err);
     };
+    if (try replay_codec.replayEventPlayerIndexFailureDetail(allocator, header.player_count, replay.events)) |detail| {
+        defer allocator.free(detail);
+        return buildVerifyFailedOutput(allocator, detail);
+    }
     const trace_requested = request.trace_rng or request.debug_trace_cdt != null;
     const ticks_to_simulate: usize = if (request.max_ticks) |max_ticks|
         @min(max_ticks, replay.tickCount())

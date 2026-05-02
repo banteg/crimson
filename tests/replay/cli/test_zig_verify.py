@@ -266,6 +266,25 @@ def test_zig_replay_verify_reports_unknown_command_as_replay_failure(tmp_path: P
     assert "native runtime limitation" not in result.stderr
 
 
+def test_zig_replay_verify_reports_event_player_index_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
+    payload = msgspec.msgpack.decode(raw_payload)
+    payload["ticks"][0]["commands"] = [{"type": "perk_menu_open", "player_index": 1}]
+    replay_path = tmp_path / "event-player-index.crd"
+    replay_path.write_bytes(msgspec.msgpack.encode(payload))
+
+    result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert (
+        "replay verification failed: replay event player_index out of range: 1 "
+        "(player_count=1, tick=0, event=perk_menu_open)"
+    ) in result.stderr
+    assert "ticks_processed=" not in result.stderr
+
+
 def test_zig_replay_verify_reports_old_ruleset_as_replay_failure(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
     replay = msgspec.structs.replace(

@@ -436,6 +436,56 @@ pub const ReplayEvent = union(enum) {
     }
 };
 
+pub fn replayEventPlayerIndexFailureDetail(
+    allocator: std.mem.Allocator,
+    player_count: i32,
+    events: []const ReplayEvent,
+) !?[]u8 {
+    for (events) |event| {
+        const player_index = replayEventPlayerIndex(event) orelse continue;
+        if (player_index < 0 or player_index >= player_count) {
+            const detail = try std.fmt.allocPrint(
+                allocator,
+                "replay event player_index out of range: {d} (player_count={d}, tick={d}, event={s})",
+                .{ player_index, player_count, event.tickIndex(), replayEventKindName(event) },
+            );
+            return detail;
+        }
+    }
+    return null;
+}
+
+fn replayEventPlayerIndex(event: ReplayEvent) ?i32 {
+    return switch (event) {
+        .perk_pick => |payload| payload.player_index,
+        .perk_menu_open => |payload| payload.player_index,
+        .typo_char => |payload| payload.player_index,
+        .typo_backspace => |payload| payload.player_index,
+        .typo_submit => |payload| payload.player_index,
+        .capture_bootstrap,
+        .capture_perk_apply,
+        .capture_perk_pending,
+        .capture_creature_spawn,
+        .capture_state_transition,
+        => null,
+    };
+}
+
+fn replayEventKindName(event: ReplayEvent) []const u8 {
+    return switch (event) {
+        .perk_pick => "perk_pick",
+        .perk_menu_open => "perk_menu_open",
+        .typo_char => "typo_char",
+        .typo_backspace => "typo_backspace",
+        .typo_submit => "typo_submit",
+        .capture_bootstrap => "capture_bootstrap",
+        .capture_perk_apply => "capture_perk_apply",
+        .capture_perk_pending => "capture_perk_pending",
+        .capture_creature_spawn => "capture_creature_spawn",
+        .capture_state_transition => "capture_state_transition",
+    };
+}
+
 pub const ReplayEventSummary = struct {
     total_count: usize = 0,
     perk_menu_open_count: usize = 0,
@@ -2155,6 +2205,28 @@ test "parse replay event rejects invalid perk pick indexes" {
         },
     };
     try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
+}
+
+test "event player index failure detail identifies first invalid command event" {
+    const allocator = std.testing.allocator;
+    const events = [_]ReplayEvent{
+        .{ .perk_menu_open = .{
+            .tick_index = 7,
+            .player_index = 1,
+        } },
+        .{ .typo_submit = .{
+            .tick_index = 8,
+            .player_index = 3,
+        } },
+    };
+
+    const detail = (try replayEventPlayerIndexFailureDetail(allocator, 1, events[0..])) orelse return error.TestExpectedDetail;
+    defer allocator.free(detail);
+
+    try std.testing.expectEqualStrings(
+        "replay event player_index out of range: 1 (player_count=1, tick=7, event=perk_menu_open)",
+        detail,
+    );
 }
 
 test "inflate zstd payload consumes replay fixture through eof" {
