@@ -17,7 +17,7 @@ const network_join_endpoint_max_bytes: usize = 48;
 const default_network_port: u16 = 31993;
 const mod_runtime_scope_text = "Native DLL mod loading is outside this port.";
 const other_games_scope_text = "Other Games ads are outside this port.";
-const network_runtime_scope_text = "Lockstep and rollback runtimes available.";
+const network_runtime_scope_text = "Rollback and lockstep runtimes available.";
 const network_room_codes = [_][]const u8{ "ab12", "cd34", "ef56", "gh78" };
 const default_network_host_endpoint = "0.0.0.0:31993";
 const default_network_join_endpoint = "127.0.0.1:31993";
@@ -270,7 +270,7 @@ pub const NetworkState = struct {
     role: NetworkRole = .host,
     mode: NetworkMode = .survival,
     player_count: i32 = 2,
-    netcode: NetworkNetcode = .lockstep,
+    netcode: NetworkNetcode = .rollback,
     room_code_index: usize = 0,
     host_endpoint: NetworkJoinEndpointInput = networkEndpointInput(default_network_host_endpoint),
     join_endpoint: NetworkJoinEndpointInput = networkEndpointInput(default_network_join_endpoint),
@@ -279,7 +279,7 @@ pub const NetworkState = struct {
 
     pub fn reset(self: *NetworkState) void {
         self.* = .{};
-        self.setStatus("Lockstep ready.");
+        self.setStatus("Rollback ready.");
     }
 
     pub fn setStatus(self: *NetworkState, message: []const u8) void {
@@ -741,22 +741,22 @@ test "mods panel explains deliberate native dll scope" {
 }
 
 test "network panel scope text stays explicit" {
-    try std.testing.expectEqualStrings("Lockstep and rollback runtimes available.", network_runtime_scope_text);
+    try std.testing.expectEqualStrings("Rollback and lockstep runtimes available.", network_runtime_scope_text);
 }
 
-test "network panel defaults to host lockstep session" {
+test "network panel defaults to host rollback session" {
     var state: NetworkState = .{};
     state.reset();
 
     try std.testing.expectEqual(NetworkRole.host, state.role);
     try std.testing.expectEqual(NetworkMode.survival, state.mode);
-    try std.testing.expectEqual(NetworkNetcode.lockstep, state.netcode);
+    try std.testing.expectEqual(NetworkNetcode.rollback, state.netcode);
     try std.testing.expectEqual(@as(i32, 2), state.player_count);
     try std.testing.expectEqualStrings("Host", networkRoleLabel(state.role));
     try std.testing.expectEqualStrings("Survival", networkModeValueLabel(&state));
-    try std.testing.expectEqualStrings("Lockstep ready.", state.statusText());
+    try std.testing.expectEqualStrings("Rollback ready.", state.statusText());
     var buf: [96]u8 = undefined;
-    try std.testing.expectEqualStrings("bind 0.0.0.0:31993", networkEndpointValueLabel(&state, &buf));
+    try std.testing.expectEqualStrings("relay 127.0.0.1:31993", networkEndpointValueLabel(&state, &buf));
 }
 
 test "network panel cycles host mode and player count" {
@@ -775,23 +775,23 @@ test "network panel cycles host mode and player count" {
     try std.testing.expectEqual(@as(i32, 4), state.player_count);
 }
 
-test "network panel join uses lobby-derived mode and lockstep endpoint by default" {
+test "network panel join uses lobby-derived mode and rollback room by default" {
     var state: NetworkState = .{ .role = .join, .selection = .endpoint };
     var buf: [96]u8 = undefined;
 
     try std.testing.expectEqualStrings("from lobby", networkModeValueLabel(&state));
     try std.testing.expectEqualStrings("from lobby", networkPlayersValueLabel(&state, &buf));
-    try std.testing.expectEqualStrings("host 127.0.0.1:31993", networkEndpointValueLabel(&state, &buf));
-
-    state.netcode = .rollback;
     try std.testing.expectEqualStrings("room ab12 via relay", networkEndpointValueLabel(&state, &buf));
 
     changeSelectedNetworkValue(&state, 1);
     try std.testing.expectEqualStrings("room cd34 via relay", networkEndpointValueLabel(&state, &buf));
+
+    state.netcode = .lockstep;
+    try std.testing.expectEqualStrings("host 127.0.0.1:31993", networkEndpointValueLabel(&state, &buf));
 }
 
 test "network panel edits lockstep join endpoint" {
-    var state: NetworkState = .{ .role = .join, .selection = .endpoint };
+    var state: NetworkState = .{ .role = .join, .selection = .endpoint, .netcode = .lockstep };
     var buf: [96]u8 = undefined;
 
     state.join_endpoint.set("192.168.1.44:32001");
@@ -811,9 +811,9 @@ test "network panel keeps rollback endpoint cycling separate from lockstep host 
     var state: NetworkState = .{ .role = .join, .selection = .endpoint };
 
     changeSelectedNetworkValue(&state, 1);
-    try std.testing.expectEqual(@as(usize, 0), state.room_code_index);
+    try std.testing.expectEqual(@as(usize, 1), state.room_code_index);
 
-    state.netcode = .rollback;
+    state.netcode = .lockstep;
     changeSelectedNetworkValue(&state, 1);
     try std.testing.expectEqual(@as(usize, 1), state.room_code_index);
 }
@@ -843,6 +843,13 @@ test "network panel validates lockstep endpoint" {
 test "network panel builds launch requests for lockstep and rollback" {
     var state: NetworkState = .{};
 
+    const rollback_host_default = networkLaunchRequest(&state) orelse return error.TestExpectedEqual;
+    try std.testing.expectEqual(NetworkLaunchRole.host, rollback_host_default.role);
+    try std.testing.expectEqual(NetworkLaunchNetcode.rollback, rollback_host_default.netcode);
+    try std.testing.expect(rollback_host_default.room_code_text == null);
+    try std.testing.expectEqualStrings("Network session is not ready.", networkLaunchUnavailableMessage(&state));
+
+    state.netcode = .lockstep;
     const host_request = networkLaunchRequest(&state) orelse return error.TestExpectedEqual;
     try std.testing.expectEqual(NetworkLaunchRole.host, host_request.role);
     try std.testing.expectEqual(NetworkLaunchNetcode.lockstep, host_request.netcode);

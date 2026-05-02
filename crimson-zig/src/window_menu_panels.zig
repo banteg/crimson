@@ -15,7 +15,7 @@ const panel_outline = rl.Color.init(122, 78, 58, 255);
 const text_color = rl.Color.init(245, 236, 225, 255);
 const muted_text = rl.Color.init(171, 150, 132, 255);
 const accent_color = rl.Color.init(218, 80, 46, 255);
-const network_session_tooltip = "Host or join a live lockstep network session.";
+const network_session_tooltip = "Host or join a live network session.";
 
 const player_count_labels = [_][:0]const u8{
     "1 player",
