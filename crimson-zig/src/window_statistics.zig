@@ -1669,13 +1669,17 @@ fn drawHighScoreLocalDetails(assets: *const window_assets.RuntimeAssets, record:
         );
     }
     window_ui.drawSmallTextFmt("Frags: {d}", assets, .{record.creatureKillCount()}, detail_x + 122.0, right_rect.y + 147.0, lower_text);
-    const shots_fired = record.shotsFired();
-    const hit_pct: u32 = if (shots_fired == 0) 0 else @intCast(@divTrunc(record.shotsHit() * 100, shots_fired));
-    window_ui.drawSmallTextFmt("Hit %: {d}%", assets, .{hit_pct}, detail_x + 122.0, right_rect.y + 161.0, lower_text);
+    window_ui.drawSmallTextFmt("Hit %: {d}%", assets, .{highScoreHitPercent(record)}, detail_x + 122.0, right_rect.y + 161.0, lower_text);
     const weapon_name = game_ids.weaponDisplayName(record.mostUsedWeaponId(), preserve_bugs);
     const weapon_name_x = right_rect.x + 90.0 + @max(@as(f32, 0.0), 32.0 - window_ui.measureSmallText(assets, weapon_name) * 0.5);
     window_ui.drawSmallText(assets, weapon_name, weapon_name_x, right_rect.y + 178.0, lower_text);
     rl.drawLine(@intFromFloat(right_rect.x + 74.0), @intFromFloat(right_rect.y + 194.0), @intFromFloat(right_rect.x + 266.0), @intFromFloat(right_rect.y + 194.0), separator);
+}
+
+fn highScoreHitPercent(record: persistence.highscores.HighScoreRecord) u64 {
+    const shots_fired = record.shotsFired();
+    if (shots_fired == 0) return 0;
+    return @divTrunc(@as(u64, record.shotsHit()) * 100, @as(u64, shots_fired));
 }
 
 fn drawClockGauge(assets: *const window_assets.RuntimeAssets, elapsed_ms: u32, x: f32, y: f32) void {
@@ -2341,6 +2345,23 @@ test "statistics right panel shifts match narrow native layouts" {
     const right_rect = rl.Rectangle.init(630.0, 209.0, 424.0, 276.0);
     try std.testing.expectApproxEqAbs(@as(f32, 640.0), highScoreRightOptionsRect(right_rect, 640).x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 642.0), highScoreRightLocalCardRect(right_rect, 640).x, 1e-6);
+}
+
+test "high score local details hit percent uses wide math" {
+    var record = persistence.highscores.HighScoreRecord.blank();
+    try std.testing.expectEqual(@as(u64, 0), highScoreHitPercent(record));
+
+    record.setShotsFired(20);
+    record.setShotsHit(15);
+    try std.testing.expectEqual(@as(u64, 75), highScoreHitPercent(record));
+
+    record.setShotsFired(3);
+    record.setShotsHit(2);
+    try std.testing.expectEqual(@as(u64, 66), highScoreHitPercent(record));
+
+    record.setShotsFired(1);
+    record.setShotsHit(std.math.maxInt(u32));
+    try std.testing.expectEqual(@as(u64, 429496729500), highScoreHitPercent(record));
 }
 
 test "statistics database detail labels follow preserve-bugs wording" {
