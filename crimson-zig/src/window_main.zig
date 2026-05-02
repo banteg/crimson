@@ -3022,6 +3022,22 @@ fn resultsNameEntryScoreCardPos(results: *const ResultsScreen, screen_width: f32
     return rl.Vector2.init(prompt.input_rect.x + 16.0, prompt.input_rect.y + 76.0);
 }
 
+fn resultsSavedScoreCardPos(results: *const ResultsScreen, screen_width: f32) rl.Vector2 {
+    const qualifies = resultsQualifiesForTop100(results);
+    if (isQuestCompletedResult(results)) {
+        const layout = questResultsPanelLayout(screen_width);
+        const score_card_x = layout.top_left.x + 250.0;
+        const score_card_y = layout.top_left.y + (if (qualifies) @as(f32, 96.0) else 108.0) + 16.0;
+        return rl.Vector2.init(score_card_x, score_card_y);
+    }
+
+    const layout = gameOverResultsPanelLayout(screen_width);
+    return rl.Vector2.init(
+        layout.banner_pos.x + 30.0,
+        layout.banner_pos.y + if (qualifies) @as(f32, 80.0) else 78.0,
+    );
+}
+
 fn resultsNameEntryClockLayout(score_card_pos: rl.Vector2, elapsed_ms: u32) ResultsNameEntryClockLayout {
     const col2_x = score_card_pos.x + 100.0;
     return .{
@@ -4187,6 +4203,10 @@ test "results high score prompt uses native ok submit button" {
     try std.testing.expectApproxEqAbs(@as(f32, 338.0), clock.pointer_rect.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 299.0), clock.pointer_rect.y, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 540.0), clock.rotation, 1e-6);
+
+    const saved_score_card = resultsSavedScoreCardPos(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 220.0), saved_score_card.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 149.0), saved_score_card.y, 1e-6);
 }
 
 test "game over score too low message uses native banner anchor" {
@@ -4230,6 +4250,10 @@ test "quest results high score prompt uses native ok submit button" {
     const score_card = resultsNameEntryScoreCardPos(&results, 640.0);
     try std.testing.expectApproxEqAbs(@as(f32, 138.0), score_card.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 225.0), score_card.y, 1e-6);
+
+    const saved_score_card = resultsSavedScoreCardPos(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 142.0), saved_score_card.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 141.0), saved_score_card.y, 1e-6);
 }
 
 test "quest result score too low message uses native score card anchor" {
@@ -5652,8 +5676,6 @@ fn drawResultsHighscore(
     name_prompt: []const u8,
 ) void {
     const layout = resultsHighscorePromptLayout(results, @floatFromInt(rl.getScreenWidth()));
-    var rank_buf: [16]u8 = undefined;
-    const rank_text = ui_formatting.formatOrdinal(&rank_buf, @intCast(highscore.rank_index + 1));
     if (highscore.promptActive()) {
         drawSmallText(runtime_assets, name_prompt, layout.prompt_x, layout.prompt_y, resultsNamePromptColor(results));
 
@@ -5688,8 +5710,13 @@ fn drawResultsHighscore(
             drawSmallText(runtime_assets, save_error, layout.input_rect.x, layout.input_rect.y + 30.0, rl.Color.orange);
         }
     } else {
-        drawSmallText(runtime_assets, "SCORE SAVED", layout.saved_x, layout.saved_y, HudTextColor.accent);
-        drawSmallTextFmt("Rank: {s}  Name: {s}", runtime_assets, .{ rank_text, highscore.record.name() }, layout.saved_x, layout.saved_y + 18.0, HudTextColor.primary);
+        drawResultsScoreCardAt(
+            runtime_assets,
+            results,
+            highscore,
+            resultsSavedScoreCardPos(results, @floatFromInt(rl.getScreenWidth())),
+            !isQuestCompletedResult(results),
+        );
     }
 }
 
@@ -5707,7 +5734,22 @@ fn drawResultsNameEntryScoreCard(
     results: *const ResultsScreen,
     highscore: *const ResultsHighscoreState,
 ) void {
-    const pos = resultsNameEntryScoreCardPos(results, @floatFromInt(rl.getScreenWidth()));
+    drawResultsScoreCardAt(
+        runtime_assets,
+        results,
+        highscore,
+        resultsNameEntryScoreCardPos(results, @floatFromInt(rl.getScreenWidth())),
+        isQuestCompletedResult(results),
+    );
+}
+
+fn drawResultsScoreCardAt(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    results: *const ResultsScreen,
+    highscore: *const ResultsHighscoreState,
+    pos: rl.Vector2,
+    show_weapon_row: bool,
+) void {
     const record = &highscore.record;
     const label_color = colorWithAlpha(rl.Color.init(230, 230, 230, 255), 0.8);
     const value_color = rl.Color.init(230, 230, 255, 255);
@@ -5745,7 +5787,6 @@ fn drawResultsNameEntryScoreCard(
     if (isQuestCompletedResult(results)) {
         drawSmallText(runtime_assets, "Experience", right_label_x, pos.y, line_color);
         drawSmallTextCenteredFmtAtX("{d}", runtime_assets, .{record.scoreXp()}, right_center_x, pos.y + 15.0, label_color);
-        drawResultsNameEntryWeaponRow(runtime_assets, results, record, pos, line_color, row_color);
     } else {
         drawSmallText(runtime_assets, "Game time", right_label_x + 6.0, pos.y, label_color);
         var time_buf: [16]u8 = undefined;
@@ -5753,6 +5794,10 @@ fn drawResultsNameEntryScoreCard(
         const elapsed_ms: i32 = @intCast(@min(elapsed_ms_u32, @as(u32, @intCast(std.math.maxInt(i32)))));
         drawResultsNameEntryClock(runtime_assets, pos, elapsed_ms_u32);
         drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&time_buf, elapsed_ms), right_label_x + 40.0, pos.y + 19.0, label_color);
+    }
+
+    if (show_weapon_row) {
+        drawResultsNameEntryWeaponRow(runtime_assets, results, record, pos, line_color, row_color);
     }
 }
 
