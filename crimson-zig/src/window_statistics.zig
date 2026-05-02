@@ -386,24 +386,22 @@ fn updateHighScores(
             hs.scroll = @intCast(std.math.clamp(@as(i32, @intCast(hs.scroll)) - wheel, 0, @as(i32, @intCast(max_scroll))));
         }
         if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-            hs.button_selection = if (hs.button_selection == 0) buttons.len - 1 else hs.button_selection - 1;
-            hs.scroll = hs.scroll -| 1;
+            applyHighScoreScrollAction(hs, .line_up, max_scroll, rows);
         }
         if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-            hs.button_selection = (hs.button_selection + 1) % buttons.len;
-            hs.scroll = @min(hs.scroll + 1, max_scroll);
+            applyHighScoreScrollAction(hs, .line_down, max_scroll, rows);
         }
         if (rl.isKeyPressed(.page_up)) {
-            hs.scroll = hs.scroll -| rows;
+            applyHighScoreScrollAction(hs, .page_up, max_scroll, rows);
         }
         if (rl.isKeyPressed(.page_down)) {
-            hs.scroll = @min(hs.scroll + rows, max_scroll);
+            applyHighScoreScrollAction(hs, .page_down, max_scroll, rows);
         }
         if (rl.isKeyPressed(.home)) {
-            hs.scroll = 0;
+            applyHighScoreScrollAction(hs, .home, max_scroll, rows);
         }
         if (rl.isKeyPressed(.end)) {
-            hs.scroll = max_scroll;
+            applyHighScoreScrollAction(hs, .end, max_scroll, rows);
         }
     }
 
@@ -1670,6 +1668,26 @@ fn drawClockGauge(assets: *const window_assets.RuntimeAssets, elapsed_ms: u32, x
     );
 }
 
+const HighScoreScrollAction = enum {
+    line_up,
+    line_down,
+    page_up,
+    page_down,
+    home,
+    end,
+};
+
+fn applyHighScoreScrollAction(state: *HighScoresScreen, action: HighScoreScrollAction, max_scroll: usize, rows: usize) void {
+    state.scroll = switch (action) {
+        .line_up => state.scroll -| 1,
+        .line_down => @min(state.scroll + 1, max_scroll),
+        .page_up => state.scroll -| rows,
+        .page_down => @min(state.scroll + rows, max_scroll),
+        .home => 0,
+        .end => max_scroll,
+    };
+}
+
 fn updateHighScoreWidgets(
     state: *HighScoresScreen,
     allocator: std.mem.Allocator,
@@ -2191,6 +2209,22 @@ test "high score date filter matches current month and day semantics" {
     try std.testing.expect(passesDateFilter(record, 1));
     try std.testing.expect(passesDateFilter(record, 2));
     try std.testing.expect(passesDateFilter(record, 3));
+}
+
+test "high score list scrolling does not move footer button selection" {
+    var screen: HighScoresScreen = .{ .button_selection = 1, .scroll = 5 };
+
+    applyHighScoreScrollAction(&screen, .line_down, 20, 10);
+    try std.testing.expectEqual(@as(usize, 6), screen.scroll);
+    try std.testing.expectEqual(@as(usize, 1), screen.button_selection);
+
+    applyHighScoreScrollAction(&screen, .page_up, 20, 10);
+    try std.testing.expectEqual(@as(usize, 0), screen.scroll);
+    try std.testing.expectEqual(@as(usize, 1), screen.button_selection);
+
+    applyHighScoreScrollAction(&screen, .end, 20, 10);
+    try std.testing.expectEqual(@as(usize, 20), screen.scroll);
+    try std.testing.expectEqual(@as(usize, 1), screen.button_selection);
 }
 
 test "statistics easter text appears only on Orbes Volantes day" {
