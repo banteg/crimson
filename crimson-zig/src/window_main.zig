@@ -1113,9 +1113,14 @@ const App = struct {
         if (statistics_update.quest_level_key) |quest_level_key| {
             self.last_quest_level_key = quest_level_key;
         }
-        switch (statistics_update.action) {
+        self.applyStatisticsAction(statistics_update.action);
+    }
+
+    fn applyStatisticsAction(self: *App, action: window_statistics.Action) void {
+        switch (action) {
             .none => {},
             .open_play_game => {
+                self.results = null;
                 self.play_game_menu.reset();
                 self.setScreen(.play_game_menu);
             },
@@ -4460,6 +4465,32 @@ test "result action labels match native casing" {
     try std.testing.expectEqualStrings("Play Again", quest_labels.items[1]);
     try std.testing.expectEqualStrings("High scores", quest_labels.items[2]);
     try std.testing.expectEqualStrings("Main Menu", quest_labels.items[3]);
+}
+
+test "statistics play game action clears stacked results" {
+    var app: App = .{
+        .allocator = std.testing.allocator,
+        .runtime = .{
+            .allocator = std.testing.allocator,
+            .base_dir = &.{},
+            .config_path = &.{},
+            .status_path = &.{},
+            .config = formats.crimson_cfg.defaultConfig(),
+            .status = std.mem.zeroes(formats.game_cfg.Status),
+        },
+        .screen = .statistics_menu,
+        .audio = .{ .allocator = std.testing.allocator },
+        .results = .{
+            .reason = .dead,
+            .run_config = .{ .game_mode = .survival },
+            .summary = undefined,
+        },
+    };
+
+    app.applyStatisticsAction(.open_play_game);
+
+    try std.testing.expect(app.results == null);
+    try std.testing.expectEqual(Screen.play_game_menu, app.screen);
 }
 
 test "quest completed shortcuts match native result actions" {

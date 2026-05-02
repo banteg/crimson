@@ -294,8 +294,9 @@ test "pause menu close timeline gates action dispatch" {
     try std.testing.expect(state.closing);
     try std.testing.expectEqual(@as(?Action, null), advanceTimeline(&state, 100).action);
     try std.testing.expectEqual(timelineMaxMs() - 100, state.timeline_ms);
-    try std.testing.expectEqual(@as(?Action, null), advanceTimeline(&state, 499).action);
+    try std.testing.expectEqual(@as(?Action, null), advanceTimeline(&state, state.timeline_ms).action);
     try std.testing.expect(state.closing);
+    try std.testing.expectEqual(@as(i32, 0), state.timeline_ms);
 
     const update_result = advanceTimeline(&state, 1);
     try std.testing.expectEqual(Action.back_to_menu, update_result.action.?);

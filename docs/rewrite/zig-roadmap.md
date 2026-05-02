@@ -125,7 +125,8 @@ Remaining work:
   aligned with the moving panel, and wait for the close timeline before
   dispatching Play Again, High scores, or Main Menu actions. Result-launched
   high-score tables now return Back to the results screen instead of the
-  statistics hub,
+  statistics hub, and Play a game from that table clears the stacked results
+  screen before opening Play Game,
 - keep tightening menu/statistics/options descendants in
   [`crimson-zig/src/window_menu.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_menu.zig),
   [`crimson-zig/src/window_menu_panels.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_menu_panels.zig),
