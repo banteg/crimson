@@ -658,6 +658,27 @@ const ResultsScreen = struct {
     quest_unlock_weapon_name: ?[]const u8 = null,
     quest_unlock_perk_name: ?[]const u8 = null,
     score_card_hover: ResultsScoreCardHover = .{},
+    closing: bool = false,
+    close_selection: usize = 0,
+    close_timeline_ms: i32 = results_close_timeline_max_ms,
+
+    fn beginClose(self: *ResultsScreen, selection: usize) void {
+        if (self.closing) return;
+        self.closing = true;
+        self.close_selection = selection;
+        self.close_timeline_ms = results_close_timeline_max_ms;
+    }
+
+    fn advanceClose(self: *ResultsScreen, frame_dt: f32) ?usize {
+        if (!self.closing) return null;
+        const dt_ms: i32 = @intFromFloat(@min(frame_dt, 0.1) * 1000.0);
+        if (dt_ms > 0) self.close_timeline_ms -= dt_ms;
+        if (self.close_timeline_ms <= 0) {
+            self.closing = false;
+            return self.close_selection;
+        }
+        return null;
+    }
 };
 
 const ResultsScoreCardHover = struct {
@@ -1540,10 +1561,17 @@ const App = struct {
 
     fn updateResults(self: *App, frame_dt: f32) void {
         if (self.results) |*results| {
+            if (results.advanceClose(frame_dt)) |selection| {
+                self.results_selection = selection;
+                self.activateResultsSelection(results);
+                return;
+            }
+            if (results.closing) return;
+
             if (questCompletedGlobalShortcutSelection(results)) |selection| {
                 self.results_selection = selection;
                 self.audio.playUiButtonClick();
-                self.activateResultsSelection(results);
+                results.beginClose(selection);
                 return;
             }
             if (results.reason == .completed and results.quest_final_time != null and !results.quest_breakdown_anim.done) {
@@ -1578,13 +1606,13 @@ const App = struct {
             if (questCompletedShortcutSelection(results)) |selection| {
                 self.results_selection = selection;
                 self.audio.playUiButtonClick();
-                self.activateResultsSelection(results);
+                results.beginClose(selection);
                 return;
             }
             if (questFailedShortcutSelection(results)) |selection| {
                 self.results_selection = selection;
                 self.audio.playUiButtonClick();
-                self.activateResultsSelection(results);
+                results.beginClose(selection);
                 return;
             }
             const buttons = resultsButtonsFor(results);
@@ -1599,7 +1627,7 @@ const App = struct {
             const activated = window_ui.buttonActivated(buttons.items[0..buttons.len], self.results_selection);
             if (!activated) return;
             self.audio.playUiButtonClick();
-            self.activateResultsSelection(results);
+            results.beginClose(self.results_selection);
             return;
         }
     }
@@ -3012,6 +3040,7 @@ const quest_failed_score_x_offset: f32 = quest_failed_banner_x_offset + 40.0;
 const quest_failed_score_y_offset: f32 = 152.0;
 const quest_failed_button_x_offset: f32 = quest_failed_banner_x_offset + 52.0;
 const quest_failed_button_y_offset: f32 = 240.0;
+const results_close_timeline_max_ms: i32 = 250;
 
 fn gameOverResultsPanelLayout(screen_width: f32) ResultsPanelLayout {
     const top_left = rl.Vector2.init(
@@ -4329,6 +4358,40 @@ test "quest completed shortcuts match native result actions" {
 test "quest completed escape shortcut is global across result phases" {
     try std.testing.expectEqual(@as(?usize, 3), questCompletedGlobalShortcutSelectionFor(true));
     try std.testing.expectEqual(@as(?usize, null), questCompletedGlobalShortcutSelectionFor(false));
+}
+
+test "results close timeline gates action dispatch" {
+    var results: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{ .game_mode = .survival },
+        .summary = undefined,
+    };
+    results.beginClose(2);
+
+    try std.testing.expect(results.closing);
+    try std.testing.expectEqual(@as(?usize, null), results.advanceClose(0.10));
+    try std.testing.expectEqual(results_close_timeline_max_ms - 100, results.close_timeline_ms);
+    try std.testing.expectEqual(@as(?usize, null), results.advanceClose(0.10));
+    try std.testing.expect(results.closing);
+
+    try std.testing.expectEqual(@as(?usize, 2), results.advanceClose(0.05));
+    try std.testing.expect(!results.closing);
+    try std.testing.expectEqual(@as(usize, 2), results.close_selection);
+}
+
+test "results close ignores repeated activation until dispatch" {
+    var results: ResultsScreen = .{
+        .reason = .completed,
+        .run_config = .{ .game_mode = .quests },
+        .summary = undefined,
+    };
+    results.beginClose(0);
+    results.beginClose(3);
+
+    try std.testing.expectEqual(@as(usize, 0), results.close_selection);
+    try std.testing.expectEqual(@as(?usize, null), results.advanceClose(0.10));
+    try std.testing.expectEqual(@as(?usize, null), results.advanceClose(0.10));
+    try std.testing.expectEqual(@as(?usize, 0), results.advanceClose(0.05));
 }
 
 test "game over result action buttons use native banner anchor" {

@@ -120,7 +120,9 @@ Remaining work:
   quest-completion results now include resolved weapon/perk unlock names and
   native-style completed-results keyboard shortcuts, and the final quest
   end-note screen uses the native 300 ms open/close timeline before launching
-  Survival/Rush/Typ-o or returning to the main menu,
+  Survival/Rush/Typ-o or returning to the main menu. Results/game-over action
+  buttons now wait for the native close timeline before dispatching Play Again,
+  High scores, or Main Menu actions,
 - keep tightening menu/statistics/options descendants in
   [`crimson-zig/src/window_menu.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_menu.zig),
   [`crimson-zig/src/window_menu_panels.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_menu_panels.zig),
