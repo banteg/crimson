@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const msgpack = @import("msgpack");
 
 const game_ids = @import("game_ids.zig");
@@ -10,6 +11,7 @@ const tutorial_runtime = @import("tutorial/runtime.zig");
 const verify_native = @import("verify_native.zig");
 
 const checkpoints_format_version: i32 = 4;
+const checkpoint_report_schema_version: i32 = 1;
 const max_checkpoints_payload_bytes: usize = 256 * 1024 * 1024;
 
 pub const CommandOutput = verify_native.CommandOutput;
@@ -167,17 +169,78 @@ const ReplayCheckpointWire = struct {
     typo: ?ReplayTypoSnapshotWire,
 };
 
+const OutputFormat = enum {
+    human,
+    json,
+};
+
 const DiffRequest = struct {
-    expected_file: []const u8,
-    actual_file: []const u8,
+    expected_file: []const u8 = "",
+    actual_file: []const u8 = "",
+    output_format: OutputFormat = .human,
+    json_out: ?[]const u8 = null,
 };
 
 const VerifyCheckpointsRequest = struct {
     replay_file: []const u8,
     checkpoints_file: ?[]const u8 = null,
     base_dir: ?[]const u8 = null,
+    output_format: OutputFormat = .human,
+    json_out: ?[]const u8 = null,
     max_ticks: ?usize = null,
     trace_rng: bool = false,
+};
+
+const DiffOutputOptions = struct {
+    output_format: OutputFormat = .human,
+    json_out: ?[]const u8 = null,
+    expected_file: ?[]const u8 = null,
+    actual_file: ?[]const u8 = null,
+};
+
+const VerifyOutputOptions = struct {
+    output_format: OutputFormat = .human,
+    json_out: ?[]const u8 = null,
+    replay_file: ?[]const u8 = null,
+    checkpoints_file: ?[]const u8 = null,
+    max_ticks: ?usize = null,
+    trace_rng: bool = false,
+};
+
+const CheckpointDiffSummaryPayload = struct {
+    expected_count: usize,
+    actual_count: usize,
+    checked_count: usize,
+    rng_only_drift_tick: ?i32,
+};
+
+const CheckpointDiffPayload = struct {
+    schema_version: i32,
+    status: []const u8,
+    command: []const u8,
+    expected: ?[]const u8,
+    actual: ?[]const u8,
+    summary: CheckpointDiffSummaryPayload,
+};
+
+const VerifyCheckpointsSummaryPayload = struct {
+    checkpoint_count: usize,
+    checked_count: usize,
+    ticks: usize,
+    score_xp: i32,
+    kills: i32,
+    rng_only_drift_tick: ?i32,
+    max_ticks: ?usize,
+    trace_rng: bool,
+};
+
+const VerifyCheckpointsPayload = struct {
+    schema_version: i32,
+    status: []const u8,
+    command: []const u8,
+    replay: ?[]const u8,
+    checkpoints: ?[]const u8,
+    summary: VerifyCheckpointsSummaryPayload,
 };
 
 const DiffParseOutcome = union(enum) {
@@ -282,13 +345,41 @@ pub fn runReplayVerifyCheckpointsBytes(
 }
 
 fn parseDiffArgs(args: []const []const u8) DiffParseOutcome {
-    if (args.len != 2) return .{ .invalid = "expected <expected.chk> <actual.chk>" };
-    if (std.mem.startsWith(u8, args[0], "-")) return .{ .invalid = "expected checkpoints file path, got option" };
-    if (std.mem.startsWith(u8, args[1], "-")) return .{ .invalid = "expected actual checkpoints file path, got option" };
-    return .{ .ok = .{
-        .expected_file = args[0],
-        .actual_file = args[1],
-    } };
+    var request: DiffRequest = .{};
+    var path_count: usize = 0;
+    var idx: usize = 0;
+    while (idx < args.len) : (idx += 1) {
+        const arg = args[idx];
+        if (std.mem.eql(u8, arg, "--format")) {
+            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --format" };
+            idx += 1;
+            request.output_format = parseOutputFormat(args[idx]) orelse return .{ .invalid = "invalid --format value" };
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--format=")) {
+            request.output_format = parseOutputFormat(arg["--format=".len..]) orelse return .{ .invalid = "invalid --format value" };
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--json-out")) {
+            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --json-out" };
+            idx += 1;
+            request.json_out = args[idx];
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--json-out=")) {
+            request.json_out = arg["--json-out=".len..];
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "-")) return .{ .invalid = "expected checkpoints file path, got option" };
+        switch (path_count) {
+            0 => request.expected_file = arg,
+            1 => request.actual_file = arg,
+            else => return .{ .invalid = "expected <expected.chk> <actual.chk>" },
+        }
+        path_count += 1;
+    }
+    if (path_count != 2) return .{ .invalid = "expected <expected.chk> <actual.chk>" };
+    return .{ .ok = request };
 }
 
 fn parseVerifyArgs(args: []const []const u8) VerifyParseOutcome {
@@ -301,6 +392,26 @@ fn parseVerifyArgs(args: []const []const u8) VerifyParseOutcome {
         const arg = args[idx];
         if (std.mem.eql(u8, arg, "--trace-rng")) {
             request.trace_rng = true;
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--format")) {
+            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --format" };
+            idx += 1;
+            request.output_format = parseOutputFormat(args[idx]) orelse return .{ .invalid = "invalid --format value" };
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--format=")) {
+            request.output_format = parseOutputFormat(arg["--format=".len..]) orelse return .{ .invalid = "invalid --format value" };
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--json-out")) {
+            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --json-out" };
+            idx += 1;
+            request.json_out = args[idx];
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--json-out=")) {
+            request.json_out = arg["--json-out=".len..];
             continue;
         }
         if (std.mem.eql(u8, arg, "--checkpoints")) {
@@ -361,7 +472,17 @@ fn runNativeDiff(
     };
     defer actual.deinit();
 
-    return runDiffWithCheckpoints(allocator, expected.value.checkpoints, actual.value.checkpoints);
+    return runDiffWithCheckpointsOutput(
+        allocator,
+        expected.value.checkpoints,
+        actual.value.checkpoints,
+        .{
+            .output_format = request.output_format,
+            .json_out = request.json_out,
+            .expected_file = request.expected_file,
+            .actual_file = request.actual_file,
+        },
+    );
 }
 
 fn runDiffWithCheckpoints(
@@ -369,16 +490,53 @@ fn runDiffWithCheckpoints(
     expected_checkpoints: []const ReplayCheckpointWire,
     actual_checkpoints: []const ReplayCheckpointWire,
 ) !CommandOutput {
+    return runDiffWithCheckpointsOutput(allocator, expected_checkpoints, actual_checkpoints, .{});
+}
+
+fn runDiffWithCheckpointsOutput(
+    allocator: std.mem.Allocator,
+    expected_checkpoints: []const ReplayCheckpointWire,
+    actual_checkpoints: []const ReplayCheckpointWire,
+    options: DiffOutputOptions,
+) !CommandOutput {
     const diff = compareCheckpoints(expected_checkpoints, actual_checkpoints);
     if (!diff.ok) {
         return buildMismatchOutput(allocator, diff);
     }
 
+    var payload_json: ?[]u8 = null;
+    defer if (payload_json) |payload| allocator.free(payload);
+    if (options.output_format == .json or options.json_out != null) {
+        const payload = buildDiffJsonPayload(
+            allocator,
+            expected_checkpoints,
+            actual_checkpoints,
+            diff,
+            options,
+        ) catch |err| {
+            return buildFailedOutput(allocator, checkpointJsonOutErrorDetail(err));
+        };
+        payload_json = payload;
+        if (options.json_out) |json_out_path| {
+            writeFileWithParents(json_out_path, payload) catch |err| {
+                return buildFailedOutput(allocator, checkpointJsonOutErrorDetail(err));
+            };
+        }
+    }
+
     var stdout_buf: std.Io.Writer.Allocating = .init(allocator);
     defer stdout_buf.deinit();
-    try stdout_buf.writer.print("ok: {d} checkpoints match\n", .{expected_checkpoints.len});
-    if (diff.first_rng_only_tick) |tick| {
-        try stdout_buf.writer.print("first rng-only divergence tick={d}\n", .{tick});
+    if (options.output_format == .json) {
+        try stdout_buf.writer.writeAll(payload_json.?);
+        try stdout_buf.writer.writeByte('\n');
+    } else {
+        try stdout_buf.writer.print("ok: {d} checkpoints match\n", .{expected_checkpoints.len});
+        if (diff.first_rng_only_tick) |tick| {
+            try stdout_buf.writer.print("first rng-only divergence tick={d}\n", .{tick});
+        }
+        if (options.json_out) |json_out_path| {
+            try stdout_buf.writer.print("json_report={s}\n", .{json_out_path});
+        }
     }
 
     const stdout = try stdout_buf.toOwnedSlice();
@@ -446,12 +604,18 @@ fn runNativeVerifyCheckpoints(
     };
     defer replay.deinit(allocator);
 
-    return runVerifyCheckpointsWithReplay(
+    return runVerifyCheckpointsWithReplayOutput(
         allocator,
         expected.value.checkpoints,
         replay,
-        request.max_ticks,
-        request.trace_rng,
+        .{
+            .output_format = request.output_format,
+            .json_out = request.json_out,
+            .replay_file = resolution.resolved_path,
+            .checkpoints_file = checkpoints_path,
+            .max_ticks = request.max_ticks,
+            .trace_rng = request.trace_rng,
+        },
     );
 }
 
@@ -461,6 +625,18 @@ fn runVerifyCheckpointsWithReplay(
     replay: replay_codec.Replay,
     max_ticks: ?usize,
     trace_rng: bool,
+) !CommandOutput {
+    return runVerifyCheckpointsWithReplayOutput(allocator, expected_checkpoints, replay, .{
+        .max_ticks = max_ticks,
+        .trace_rng = trace_rng,
+    });
+}
+
+fn runVerifyCheckpointsWithReplayOutput(
+    allocator: std.mem.Allocator,
+    expected_checkpoints: []const ReplayCheckpointWire,
+    replay: replay_codec.Replay,
+    options: VerifyOutputOptions,
 ) !CommandOutput {
     var trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
     defer {
@@ -473,8 +649,8 @@ fn runVerifyCheckpointsWithReplay(
         replay,
         &trace,
         .{
-            .max_ticks = max_ticks,
-            .trace_rng = trace_rng,
+            .max_ticks = options.max_ticks,
+            .trace_rng = options.trace_rng,
             .trace_timing = false,
         },
     ) catch |err| {
@@ -502,16 +678,44 @@ fn runVerifyCheckpointsWithReplay(
     const diff = compareCheckpoints(expected_checkpoints, actual.items);
     if (!diff.ok) return buildMismatchOutput(allocator, diff);
 
+    var payload_json: ?[]u8 = null;
+    defer if (payload_json) |payload| allocator.free(payload);
+    if (options.output_format == .json or options.json_out != null) {
+        const payload = buildVerifyJsonPayload(
+            allocator,
+            expected_checkpoints,
+            diff,
+            run,
+            options,
+        ) catch |err| {
+            return buildVerifyFailedOutput(allocator, checkpointJsonOutErrorDetail(err));
+        };
+        payload_json = payload;
+        if (options.json_out) |json_out_path| {
+            writeFileWithParents(json_out_path, payload) catch |err| {
+                return buildVerifyFailedOutput(allocator, checkpointJsonOutErrorDetail(err));
+            };
+        }
+    }
+
     var stdout_buf: std.Io.Writer.Allocating = .init(allocator);
     defer stdout_buf.deinit();
-    try stdout_buf.writer.print(
-        "ok: {d} checkpoints match; ticks={d} score_xp={d} kills={d}",
-        .{ expected_checkpoints.len, run.ticks, run.player_experience, run.creature_kill_count },
-    );
-    if (diff.first_rng_only_tick) |tick| {
-        try stdout_buf.writer.print("; rng-only drift starts at tick={d}", .{tick});
+    if (options.output_format == .json) {
+        try stdout_buf.writer.writeAll(payload_json.?);
+        try stdout_buf.writer.writeByte('\n');
+    } else {
+        try stdout_buf.writer.print(
+            "ok: {d} checkpoints match; ticks={d} score_xp={d} kills={d}",
+            .{ expected_checkpoints.len, run.ticks, run.player_experience, run.creature_kill_count },
+        );
+        if (diff.first_rng_only_tick) |tick| {
+            try stdout_buf.writer.print("; rng-only drift starts at tick={d}", .{tick});
+        }
+        if (options.json_out) |json_out_path| {
+            try stdout_buf.writer.print("; json_report={s}", .{json_out_path});
+        }
+        try stdout_buf.writer.writeByte('\n');
     }
-    try stdout_buf.writer.writeByte('\n');
 
     const stdout = try stdout_buf.toOwnedSlice();
     errdefer allocator.free(stdout);
@@ -521,6 +725,62 @@ fn runVerifyCheckpointsWithReplay(
         .stderr = stderr,
         .exit_code = 0,
     };
+}
+
+fn buildDiffJsonPayload(
+    allocator: std.mem.Allocator,
+    expected_checkpoints: []const ReplayCheckpointWire,
+    actual_checkpoints: []const ReplayCheckpointWire,
+    diff: DiffResult,
+    options: DiffOutputOptions,
+) ![]u8 {
+    const payload: CheckpointDiffPayload = .{
+        .schema_version = checkpoint_report_schema_version,
+        .status = "ok",
+        .command = "diff-checkpoints",
+        .expected = options.expected_file,
+        .actual = options.actual_file,
+        .summary = .{
+            .expected_count = expected_checkpoints.len,
+            .actual_count = actual_checkpoints.len,
+            .checked_count = diff.checked_count,
+            .rng_only_drift_tick = diff.first_rng_only_tick,
+        },
+    };
+    var payload_writer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer payload_writer.deinit();
+    try std.json.Stringify.value(payload, .{}, &payload_writer.writer);
+    return payload_writer.toOwnedSlice();
+}
+
+fn buildVerifyJsonPayload(
+    allocator: std.mem.Allocator,
+    expected_checkpoints: []const ReplayCheckpointWire,
+    diff: DiffResult,
+    run: replay_runner.ReplayRunResult,
+    options: VerifyOutputOptions,
+) ![]u8 {
+    const payload: VerifyCheckpointsPayload = .{
+        .schema_version = checkpoint_report_schema_version,
+        .status = "ok",
+        .command = "verify-checkpoints",
+        .replay = options.replay_file,
+        .checkpoints = options.checkpoints_file,
+        .summary = .{
+            .checkpoint_count = expected_checkpoints.len,
+            .checked_count = diff.checked_count,
+            .ticks = run.ticks,
+            .score_xp = run.player_experience,
+            .kills = run.creature_kill_count,
+            .rng_only_drift_tick = diff.first_rng_only_tick,
+            .max_ticks = options.max_ticks,
+            .trace_rng = options.trace_rng,
+        },
+    };
+    var payload_writer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer payload_writer.deinit();
+    try std.json.Stringify.value(payload, .{}, &payload_writer.writer);
+    return payload_writer.toOwnedSlice();
 }
 
 fn loadCheckpointsFile(
@@ -1450,6 +1710,24 @@ fn optionalPresence(value: anytype) []const u8 {
     return if (value == null) "null" else "present";
 }
 
+fn parseOutputFormat(raw: []const u8) ?OutputFormat {
+    if (std.mem.eql(u8, raw, "human")) return .human;
+    if (std.mem.eql(u8, raw, "json")) return .json;
+    return null;
+}
+
+fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
+    if (comptime builtin.os.tag == .freestanding) return error.UnsupportedTarget;
+    const io = std.Io.Threaded.global_single_threaded.io();
+    if (std.fs.path.dirname(path)) |dir| {
+        if (dir.len > 0) try std.Io.Dir.cwd().createDirPath(io, dir);
+    }
+    try std.Io.Dir.cwd().writeFile(io, .{
+        .sub_path = path,
+        .data = bytes,
+    });
+}
+
 fn buildFailedOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
@@ -1593,6 +1871,15 @@ fn checkpointBuildErrorDetail(err: anyerror) []const u8 {
 fn generalVerifyErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
         error.OutOfMemory => "native checkpoint verification ran out of memory",
+        else => @errorName(err),
+    };
+}
+
+fn checkpointJsonOutErrorDetail(err: anyerror) []const u8 {
+    return switch (err) {
+        error.AccessDenied => "unable to write checkpoint JSON: access denied",
+        error.OutOfMemory => "native checkpoint JSON output ran out of memory",
+        error.UnsupportedTarget => "checkpoint JSON output file is unavailable on this target",
         else => @errorName(err),
     };
 }

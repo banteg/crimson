@@ -43,8 +43,9 @@ const usage =
     \\  crimson-zig replay verify replay.crd --format json
     \\  crimson-zig replay benchmark replay.crd --runs 5
     \\  crimson-zig replay verify-checkpoints replay.crd
+    \\  crimson-zig replay verify-checkpoints replay.crd --format json
     \\  crimson-zig replay info replay.crd --format json
-    \\  crimson-zig replay diff-checkpoints replay.crd.chk replay.candidate.crd.chk
+    \\  crimson-zig replay diff-checkpoints replay.crd.chk replay.candidate.crd.chk --format json
     \\  crimson-zig dbg record replay.crd --out replay.cdt
     \\  crimson-zig dbg verify
     \\  crimson-zig config --path crimson.cfg --format json

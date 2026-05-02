@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -225,6 +226,80 @@ def test_zig_replay_diff_checkpoints_preserves_rng_only_success(tmp_path: Path) 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "ok: 1 checkpoints match" in result.stdout
     assert "first rng-only divergence tick=0" in result.stdout
+
+
+def test_zig_replay_diff_checkpoints_emits_json_and_artifact(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    sidecar_a = write_checkpoint_sidecar(replay_path, replay)
+    sidecar_b = tmp_path / "survival-copy.crd.chk"
+    json_out = tmp_path / "artifacts" / "diff.json"
+    shutil.copyfile(sidecar_a, sidecar_b)
+
+    result = _run_zig_replay_diff_checkpoints(
+        [
+            str(sidecar_a),
+            str(sidecar_b),
+            "--format=json",
+            "--json-out",
+            str(json_out),
+        ],
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    payload = json.loads(result.stdout)
+    assert payload["schema_version"] == 1
+    assert payload["status"] == "ok"
+    assert payload["command"] == "diff-checkpoints"
+    assert payload["expected"] == str(sidecar_a)
+    assert payload["actual"] == str(sidecar_b)
+    assert payload["summary"] == {
+        "expected_count": 1,
+        "actual_count": 1,
+        "checked_count": 1,
+        "rng_only_drift_tick": None,
+    }
+    assert json.loads(json_out.read_text(encoding="utf-8")) == payload
+
+
+def test_zig_replay_verify_checkpoints_emits_json_and_artifact(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+    sidecar = write_checkpoint_sidecar(replay_path, replay)
+    json_out = tmp_path / "artifacts" / "verify.json"
+
+    result = _run_zig_replay_verify_checkpoints(
+        [
+            str(replay_path),
+            "--checkpoints",
+            str(sidecar),
+            "--format",
+            "json",
+            "--json-out",
+            str(json_out),
+            "--max-ticks=3",
+            "--trace-rng",
+        ],
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    payload = json.loads(result.stdout)
+    assert payload["schema_version"] == 1
+    assert payload["status"] == "ok"
+    assert payload["command"] == "verify-checkpoints"
+    assert payload["replay"] == str(replay_path)
+    assert payload["checkpoints"] == str(sidecar)
+    assert payload["summary"] == {
+        "checkpoint_count": 1,
+        "checked_count": 1,
+        "ticks": 3,
+        "score_xp": 0,
+        "kills": 0,
+        "rng_only_drift_tick": None,
+        "max_ticks": 3,
+        "trace_rng": True,
+    }
+    assert json.loads(json_out.read_text(encoding="utf-8")) == payload
 
 
 def _run_zig_replay_diff_checkpoints(args: list[str]) -> subprocess.CompletedProcess[str]:

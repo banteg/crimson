@@ -77,8 +77,10 @@ Current supported replay-tooling behavior:
 - preserve-bugs compatibility mode
 - replay directory listing via `replay list`, including `--format json` and
   `--json-out`
-- checkpoint verification via `replay verify-checkpoints`
-- checkpoint diffing via `replay diff-checkpoints`
+- checkpoint verification via `replay verify-checkpoints`, including
+  `--format json` and `--json-out`
+- checkpoint diffing via `replay diff-checkpoints`, including `--format json`
+  and `--json-out`
 - replay RNG tracing via `replay verify --trace-rng` and
   `replay benchmark --trace-rng`
 - freestanding WASM replay verification and replay info JSON exports
