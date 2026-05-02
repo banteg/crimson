@@ -3007,6 +3007,14 @@ fn resultsHighscorePromptLayout(results: *const ResultsScreen, screen_width: f32
     };
 }
 
+fn resultsNameEntryScoreCardPos(results: *const ResultsScreen, screen_width: f32) rl.Vector2 {
+    const prompt = resultsHighscorePromptLayout(results, screen_width);
+    if (isQuestCompletedResult(results)) {
+        return rl.Vector2.init(prompt.input_rect.x + 26.0, prompt.input_rect.y + 46.0);
+    }
+    return rl.Vector2.init(prompt.input_rect.x + 16.0, prompt.input_rect.y + 76.0);
+}
+
 fn resultsScoreTooLowMessagePos(results: *const ResultsScreen, screen_width: f32) rl.Vector2 {
     if (isQuestCompletedResult(results)) {
         const layout = questResultsPanelLayout(screen_width);
@@ -4151,6 +4159,10 @@ test "results high score prompt uses native ok submit button" {
     try std.testing.expectApproxEqAbs(@as(f32, 153.0), prompt.prompt_y, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 198.0), prompt.input_rect.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 193.0), prompt.input_rect.y, 1e-6);
+
+    const score_card = resultsNameEntryScoreCardPos(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 214.0), score_card.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 269.0), score_card.y, 1e-6);
 }
 
 test "game over score too low message uses native banner anchor" {
@@ -4190,6 +4202,10 @@ test "quest results high score prompt uses native ok submit button" {
     try std.testing.expectApproxEqAbs(@as(f32, 147.0), prompt.prompt_y, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 112.0), prompt.input_rect.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 179.0), prompt.input_rect.y, 1e-6);
+
+    const score_card = resultsNameEntryScoreCardPos(&results, 640.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 138.0), score_card.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 225.0), score_card.y, 1e-6);
 }
 
 test "quest result score too low message uses native score card anchor" {
@@ -5642,6 +5658,7 @@ fn drawResultsHighscore(
             14,
             colorWithAlpha(rl.Color.white, highscoreCaretAlpha(rl.getTime())),
         );
+        drawResultsNameEntryScoreCard(runtime_assets, results, highscore);
 
         if (highscore.save_error) |save_error| {
             drawSmallText(runtime_assets, save_error, layout.input_rect.x, layout.input_rect.y + 30.0, rl.Color.orange);
@@ -5659,6 +5676,87 @@ fn highscoreCaretPrefix(highscore: *const ResultsHighscoreState) []const u8 {
 
 fn highscoreCaretAlpha(time_s: f64) f32 {
     return if (std.math.sin(time_s * 4.0) > 0.0) 0.4 else 1.0;
+}
+
+fn drawResultsNameEntryScoreCard(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    results: *const ResultsScreen,
+    highscore: *const ResultsHighscoreState,
+) void {
+    const pos = resultsNameEntryScoreCardPos(results, @floatFromInt(rl.getScreenWidth()));
+    const record = &highscore.record;
+    const label_color = colorWithAlpha(rl.Color.init(230, 230, 230, 255), 0.8);
+    const value_color = rl.Color.init(230, 230, 255, 255);
+    const row_color = colorWithAlpha(rl.Color.init(230, 230, 230, 255), 0.7);
+    const line_color = if (isQuestCompletedResult(results))
+        colorWithAlpha(rl.Color.init(149, 175, 198, 255), 0.7)
+    else
+        label_color;
+
+    const left_center_x = pos.x + 36.0;
+    const separator_x = pos.x + 84.0;
+    const right_label_x = pos.x + 100.0;
+    const right_center_x = right_label_x + 32.0;
+
+    drawSmallTextCenteredAtX(runtime_assets, "Score", left_center_x, pos.y, label_color);
+    if (record.gameModeId() == .rush or record.gameModeId() == .quests) {
+        drawSmallTextCenteredFmtAtX("{d:.2} secs", runtime_assets, .{@as(f32, @floatFromInt(record.survivalElapsedMs())) * 0.001}, left_center_x, pos.y + 15.0, value_color);
+    } else {
+        drawSmallTextCenteredFmtAtX("{d}", runtime_assets, .{record.scoreXp()}, left_center_x, pos.y + 15.0, value_color);
+    }
+
+    var ordinal_buf: [16]u8 = undefined;
+    var rank_buf: [32]u8 = undefined;
+    const rank_label = std.fmt.bufPrint(&rank_buf, "Rank: {s}", .{ui_formatting.formatOrdinal(&ordinal_buf, @intCast(highscore.rank_index + 1))}) catch "Rank: --";
+    drawSmallTextCenteredAtX(runtime_assets, rank_label, left_center_x, pos.y + 30.0, label_color);
+
+    rl.drawLine(
+        @intFromFloat(separator_x),
+        @intFromFloat(pos.y),
+        @intFromFloat(separator_x),
+        @intFromFloat(pos.y + 48.0),
+        line_color,
+    );
+
+    if (isQuestCompletedResult(results)) {
+        drawSmallText(runtime_assets, "Experience", right_label_x, pos.y, line_color);
+        drawSmallTextCenteredFmtAtX("{d}", runtime_assets, .{record.scoreXp()}, right_center_x, pos.y + 15.0, label_color);
+        drawResultsNameEntryWeaponRow(runtime_assets, results, record, pos, line_color, row_color);
+    } else {
+        drawSmallText(runtime_assets, "Game time", right_label_x + 6.0, pos.y, label_color);
+        var time_buf: [16]u8 = undefined;
+        const elapsed_ms: i32 = @intCast(@min(record.survivalElapsedMs(), @as(u32, @intCast(std.math.maxInt(i32)))));
+        drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&time_buf, elapsed_ms), right_label_x + 40.0, pos.y + 19.0, label_color);
+    }
+}
+
+fn drawResultsNameEntryWeaponRow(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    results: *const ResultsScreen,
+    record: *const persistence.highscores.HighScoreRecord,
+    pos: rl.Vector2,
+    line_color: rl.Color,
+    row_color: rl.Color,
+) void {
+    const row_y = pos.y + 52.0;
+    rl.drawLine(@intFromFloat(pos.x - 12.0), @intFromFloat(row_y), @intFromFloat(pos.x + 180.0), @intFromFloat(row_y), line_color);
+
+    const weapon_id = record.mostUsedWeaponId();
+    const icon_index = weapon_data.weaponIconIndex(weapon_id);
+    if (icon_index >= 0) {
+        drawTextureRegionCenteredRotated(
+            runtime_assets.texture(.ui_wicons),
+            window_atlas.weaponIconRect(runtime_assets.texture(.ui_wicons).width, runtime_assets.texture(.ui_wicons).height, icon_index),
+            rl.Vector2.init(pos.x + 36.0, row_y + 16.0),
+            64.0,
+            32.0,
+            0.0,
+            rl.Color.white,
+        );
+    }
+
+    const weapon_name = game_ids.weaponDisplayName(weapon_id, results.run_config.preserve_bugs);
+    drawSmallTextCenteredAtX(runtime_assets, weapon_name, pos.x + 36.0, row_y + 32.0, row_color);
 }
 
 const HudTextColor = struct {
