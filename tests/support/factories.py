@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
+
+import msgspec
 
 from crimson.creatures.runtime import CreatureState, CreatureUpdateOptions
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.gameplay import GameplayState
-from crimson.projectiles.runtime import ProjectileUpdateOptions
-from crimson.projectiles.types import CreatureDamageApplier, ProjectileHit
+from crimson.projectiles.runtime import ProjectileHitRuntime, ProjectileUpdateOptions
+from crimson.projectiles.types import CreatureDamageApplier
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.rand import CrandLike
@@ -76,16 +78,19 @@ def make_creature_update_options(
     )
 
 
-def _default_apply_player_damage(players: Sequence[PlayerState]) -> Callable[[int, float], None]:
-    def _apply_player_damage(player_index: int, damage: float) -> None:
-        idx = int(player_index)
-        if not (0 <= idx < len(players)):
-            return
-        player = players[idx]
-        if float(player.shield_timer) <= 0.0:
-            player.health -= float(damage)
+class RecordingProjectileHitRuntime(ProjectileHitRuntime):
+    players: Sequence[PlayerState] = ()
+    player_damage_calls: list[tuple[int, float]] = msgspec.field(default_factory=list)
 
-    return _apply_player_damage
+    def apply_player_damage(self, player_index: int, damage: float) -> None:
+        idx = int(player_index)
+        damage_value = float(damage)
+        self.player_damage_calls.append((idx, damage_value))
+        if not (0 <= idx < len(self.players)):
+            return
+        player = self.players[idx]
+        if float(player.shield_timer) <= 0.0:
+            player.health -= damage_value
 
 
 def make_projectile_update_options(
@@ -97,10 +102,8 @@ def make_projectile_update_options(
     rng: CrandLike | None = None,
     runtime_state: GameplayState | None = None,
     players: Sequence[PlayerState] | None = None,
-    apply_player_damage: Callable[[int, float], None] | None = None,
+    hit_runtime: ProjectileHitRuntime | None = None,
     apply_creature_damage: CreatureDamageApplier | None = None,
-    begin_hit_presentation: Callable[[ProjectileHit], object] | None = None,
-    finish_hit_presentation: Callable[[ProjectileHit, object], None] | None = None,
 ) -> ProjectileUpdateOptions:
     state = GameplayState() if runtime_state is None else runtime_state
     player_seq: Sequence[PlayerState] = () if players is None else players
@@ -110,12 +113,8 @@ def make_projectile_update_options(
         rng=state.rng if rng is None else rng,
         runtime_state=state,
         players=player_seq,
-        apply_player_damage=(
-            _default_apply_player_damage(player_seq) if apply_player_damage is None else apply_player_damage
-        ),
+        hit_runtime=RecordingProjectileHitRuntime(players=player_seq) if hit_runtime is None else hit_runtime,
         apply_creature_damage=apply_creature_damage,
         ion_aoe_scale=float(ion_aoe_scale),
         detail_preset=int(detail_preset),
-        begin_hit_presentation=begin_hit_presentation,
-        finish_hit_presentation=finish_hit_presentation,
     )

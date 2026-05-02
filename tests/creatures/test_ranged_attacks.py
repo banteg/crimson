@@ -12,7 +12,11 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
-from tests.support.factories import make_creature_update_options, make_projectile_update_options
+from tests.support.factories import (
+    RecordingProjectileHitRuntime,
+    make_creature_update_options,
+    make_projectile_update_options,
+)
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -136,9 +140,7 @@ def test_ranged_projectile_can_damage_player() -> None:
         hits_players=True,
     )
 
-    def _apply_player_damage(player_index: int, damage: float) -> None:
-        assert player_index == 0
-        player.health -= float(damage)
+    hit_runtime = RecordingProjectileHitRuntime(players=[player])
 
     state.projectiles.step(
         PrimaryStepCtx(
@@ -149,11 +151,12 @@ def test_ranged_projectile_can_damage_player() -> None:
                 rng=state.rng,
                 runtime_state=state,
                 players=[player],
-                apply_player_damage=_apply_player_damage,
+                hit_runtime=hit_runtime,
             ),
         ),
     )
 
+    assert hit_runtime.player_damage_calls == [(0, 10.0)]
     assert player.health < 100.0
 
 
@@ -181,13 +184,7 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
         hits_players=True,
     )
 
-    player_damage_called = False
-
-    def _apply_player_damage(player_index: int, damage: float) -> None:
-        nonlocal player_damage_called
-
-        player_damage_called = True
-        player.health -= float(damage)
+    hit_runtime = RecordingProjectileHitRuntime(players=[player])
 
     state.projectiles.step(
         PrimaryStepCtx(
@@ -198,11 +195,11 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
                 rng=state.rng,
                 runtime_state=state,
                 players=[player],
-                apply_player_damage=_apply_player_damage,
+                hit_runtime=hit_runtime,
             ),
         ),
     )
 
     assert target.hp < 100.0
-    assert player_damage_called is False
+    assert hit_runtime.player_damage_calls == []
     assert player.health == 100.0
