@@ -206,7 +206,7 @@ def test_world_runtime_apply_tick_batch_applies_post_apply_bonus_sfx(mocker) -> 
         game_mode=GameMode.SURVIVAL,
         input_runtime=StaticLocalInputRuntime(),
     )._apply_tick_batch(
-        world._runtime,
+        world,
         batch=batch,
         session=make_session()[0],
     )
