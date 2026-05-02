@@ -2810,28 +2810,28 @@ fn resultsButtonLabelsFor(results: *const ResultsScreen) ResultsButtonLabels {
         return switch (results.reason) {
             .completed => .{ .items = .{
                 questCompletedPrimaryLabel(results.run_config.quest_level_key),
-                "PLAY AGAIN",
-                "HIGH SCORES",
-                "MAIN MENU",
+                "Play Again",
+                "High scores",
+                "Main Menu",
             }, .len = 4 },
             .dead => .{ .items = .{
-                "PLAY AGAIN",
-                "PLAY ANOTHER",
-                "MAIN MENU",
+                "Play Again",
+                "Play Another",
+                "Main Menu",
                 "",
             }, .len = 3 },
             .runtime_error, .abandoned => .{ .items = .{
-                "PLAY AGAIN",
-                "MAIN MENU",
+                "Play Again",
+                "Main Menu",
                 "",
                 "",
             }, .len = 2 },
         };
     }
     return .{ .items = .{
-        "PLAY AGAIN",
-        "HIGH SCORES",
-        "MAIN MENU",
+        "Play Again",
+        "High scores",
+        "Main Menu",
         "",
     }, .len = 3 };
 }
@@ -2847,7 +2847,7 @@ fn resultsButtonY(button_count: usize, index: usize) f32 {
 }
 
 fn questCompletedPrimaryLabel(level_key: i32) [:0]const u8 {
-    return if (isFinalQuestLevelKey(level_key)) "SHOW END NOTE" else "PLAY NEXT";
+    return if (isFinalQuestLevelKey(level_key)) "Show End Note" else "Play Next";
 }
 
 fn isQuestFailedResult(results: *const ResultsScreen) bool {
@@ -3782,8 +3782,34 @@ test "quest runtime error result does not expose mismatched high score button" {
     };
     const labels = resultsButtonLabelsFor(&results);
     try std.testing.expectEqual(@as(usize, 2), labels.len);
-    try std.testing.expectEqualStrings("PLAY AGAIN", labels.items[0]);
-    try std.testing.expectEqualStrings("MAIN MENU", labels.items[1]);
+    try std.testing.expectEqualStrings("Play Again", labels.items[0]);
+    try std.testing.expectEqualStrings("Main Menu", labels.items[1]);
+}
+
+test "result action labels match native casing" {
+    const survival_results: ResultsScreen = .{
+        .reason = .dead,
+        .run_config = .{ .game_mode = .survival },
+        .summary = undefined,
+    };
+    const survival_labels = resultsButtonLabelsFor(&survival_results);
+    try std.testing.expectEqualStrings("Play Again", survival_labels.items[0]);
+    try std.testing.expectEqualStrings("High scores", survival_labels.items[1]);
+    try std.testing.expectEqualStrings("Main Menu", survival_labels.items[2]);
+
+    const quest_completed_results: ResultsScreen = .{
+        .reason = .completed,
+        .run_config = .{
+            .game_mode = .quests,
+            .quest_level_key = 109,
+        },
+        .summary = undefined,
+    };
+    const quest_labels = resultsButtonLabelsFor(&quest_completed_results);
+    try std.testing.expectEqualStrings("Play Next", quest_labels.items[0]);
+    try std.testing.expectEqualStrings("Play Again", quest_labels.items[1]);
+    try std.testing.expectEqualStrings("High scores", quest_labels.items[2]);
+    try std.testing.expectEqualStrings("Main Menu", quest_labels.items[3]);
 }
 
 test "quest completed shortcuts match native result actions" {
@@ -3896,8 +3922,8 @@ test "quest unlock result names only apply to completed quests" {
 }
 
 test "final quest completed primary action opens end note" {
-    try std.testing.expectEqualStrings("PLAY NEXT", questCompletedPrimaryLabel(509));
-    try std.testing.expectEqualStrings("SHOW END NOTE", questCompletedPrimaryLabel(510));
+    try std.testing.expectEqualStrings("Play Next", questCompletedPrimaryLabel(509));
+    try std.testing.expectEqualStrings("Show End Note", questCompletedPrimaryLabel(510));
     try std.testing.expectEqual(@as(?i32, null), nextQuestLevelKey(510));
     try std.testing.expect(isFinalQuestLevelKey(510));
 }
