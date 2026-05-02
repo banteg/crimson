@@ -52,8 +52,8 @@ class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     apply_creature_damage: CreatureDamageApplier | None = None
     ion_aoe_scale: float = 1.0
     detail_preset: int = 5
-    on_hit: Callable[[ProjectileHit], object] | None = None
-    on_hit_post: Callable[[ProjectileHit, object], None] | None = None
+    begin_hit_presentation: Callable[[ProjectileHit], object] | None = None
+    finish_hit_presentation: Callable[[ProjectileHit, object], None] | None = None
 
 
 class PrimaryStepCtx(msgspec.Struct, frozen=True):
@@ -176,8 +176,8 @@ class ProjectilePool:
             if options.apply_creature_damage is not None
             else self._creature_damage_applier
         )
-        on_hit = options.on_hit
-        on_hit_post = options.on_hit_post
+        begin_hit_presentation = options.begin_hit_presentation
+        finish_hit_presentation = options.finish_hit_presentation
 
         if dt <= 0.0:
             return []
@@ -424,7 +424,7 @@ class ProjectilePool:
                         target=target,
                     )
                     hits.append(hit)
-                    hit_ctx = on_hit(hit) if on_hit is not None else None
+                    hit_presentation = begin_hit_presentation(hit) if begin_hit_presentation is not None else None
 
                     if proj.life_timer != 0.25 and rule.stop_on_hit:
                         proj.life_timer = 0.25
@@ -516,17 +516,17 @@ class ProjectilePool:
                             proj.life_timer = 0.25
 
                     if proj.life_timer == 0.25 and rule.stop_on_hit:
-                        if on_hit_post is not None and hit_ctx is not None:
-                            on_hit_post(hit, hit_ctx)
+                        if finish_hit_presentation is not None and hit_presentation is not None:
+                            finish_hit_presentation(hit, hit_presentation)
                         break
 
                     if proj.damage_pool <= 0.0:
-                        if on_hit_post is not None and hit_ctx is not None:
-                            on_hit_post(hit, hit_ctx)
+                        if finish_hit_presentation is not None and hit_presentation is not None:
+                            finish_hit_presentation(hit, hit_presentation)
                         break
 
-                    if on_hit_post is not None and hit_ctx is not None:
-                        on_hit_post(hit, hit_ctx)
+                    if finish_hit_presentation is not None and hit_presentation is not None:
+                        finish_hit_presentation(hit, hit_presentation)
 
                 step += 3
 

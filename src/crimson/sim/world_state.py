@@ -138,9 +138,10 @@ class _WorldStepRuntime(msgspec.Struct):
             violence_disabled=int(self.violence_disabled),
         )
 
-    def finalize_projectile_hit_presentation(self, hit: ProjectileHit, post_ctx: ProjectileDecalPostCtx) -> None:
+    def finalize_projectile_hit_presentation(self, hit: ProjectileHit, post_ctx: object) -> None:
+        decal_post_ctx = cast("ProjectileDecalPostCtx", post_ctx)
         self.world._finalize_projectile_hit_presentation(
-            post_ctx=post_ctx,
+            post_ctx=decal_post_ctx,
             fx_queue=self.fx_queue,
         )
         hit_trigger, keys = plan_hit_sfx(
@@ -314,11 +315,8 @@ class WorldState(msgspec.Struct):
                     players=self.players,
                     apply_player_damage=step_runtime.apply_player_projectile_damage,
                     apply_creature_damage=step_runtime.apply_creature_damage,
-                    on_hit=step_runtime.prepare_projectile_hit_presentation,
-                    on_hit_post=cast(
-                        "Callable[[ProjectileHit, object], None]",
-                        step_runtime.finalize_projectile_hit_presentation,
-                    ),
+                    begin_hit_presentation=step_runtime.prepare_projectile_hit_presentation,
+                    finish_hit_presentation=step_runtime.finalize_projectile_hit_presentation,
                 ),
             ),
         )
