@@ -62,6 +62,7 @@ def test_replay_benchmark_human_success_outputs_throughput_stats(tmp_path: Path)
     assert "wall_ms_p50=" in result.output
     assert "throughput_tps" in result.output
     assert "realtime_x" in result.output
+    assert "json_report=" not in result.output
 
 
 def test_replay_benchmark_json_output_payload_ok(tmp_path: Path) -> None:

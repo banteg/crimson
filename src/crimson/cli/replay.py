@@ -1046,7 +1046,7 @@ def cmd_replay_verify(
                 f"; header_claim complete={header_claim_payload.expected.complete} "
                 f"match={header_claim_payload.match} "
                 f"mismatches={mismatch_fields}"
-        )
+            )
         typer.echo(message)
 
     if not header_claim_matches:
@@ -1271,7 +1271,8 @@ def cmd_replay_benchmark(
             raise typer.Exit(code=1)
         if render_charts_out_dir is not None:
             typer.echo(
-                "replay benchmark failed: --render-charts-out-dir is supported only with --mode render", err=True,
+                "replay benchmark failed: --render-charts-out-dir is supported only with --mode render",
+                err=True,
             )
             raise typer.Exit(code=1)
 
@@ -1373,7 +1374,7 @@ def cmd_replay_benchmark(
     if json_out is not None:
         json_out.parent.mkdir(parents=True, exist_ok=True)
         json_out.write_bytes(payload_json)
-    if output_format == "human":
+        if output_format == "human":
             typer.echo(f"json_report={json_out}")
 
     if output_format == "json":
