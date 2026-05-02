@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, MutableSequence, Sequence
-from typing import TYPE_CHECKING
+from collections.abc import MutableSequence, Sequence
+from typing import TYPE_CHECKING, TypeAlias
 
 import msgspec
 
@@ -41,6 +41,20 @@ if TYPE_CHECKING:
     from ...gameplay import GameplayState
     from ...sim.state_types import PlayerState
 
+ProjectileHitPresentation: TypeAlias = object
+
+
+class ProjectileHitRuntime(msgspec.Struct):
+    def apply_player_damage(self, player_index: int, damage: float) -> None:
+        _ = player_index, damage
+
+    def begin_hit_presentation(self, hit: ProjectileHit) -> ProjectileHitPresentation | None:
+        _ = hit
+        return None
+
+    def finish_hit_presentation(self, hit: ProjectileHit, presentation: ProjectileHitPresentation) -> None:
+        _ = hit, presentation
+
 
 class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     world_size: float
@@ -48,12 +62,10 @@ class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     rng: CrandLike
     runtime_state: GameplayState
     players: Sequence[PlayerState]
-    apply_player_damage: Callable[[int, float], None]
+    hit_runtime: ProjectileHitRuntime
     apply_creature_damage: CreatureDamageApplier | None = None
     ion_aoe_scale: float = 1.0
     detail_preset: int = 5
-    begin_hit_presentation: Callable[[ProjectileHit], object] | None = None
-    finish_hit_presentation: Callable[[ProjectileHit, object], None] | None = None
 
 
 class PrimaryStepCtx(msgspec.Struct, frozen=True):
@@ -161,10 +173,8 @@ class ProjectilePool:
         rng = options.rng
         runtime_state = options.runtime_state
         players = options.players
-        apply_player_damage = options.apply_player_damage
+        hit_runtime = options.hit_runtime
         apply_creature_damage = options.apply_creature_damage
-        begin_hit_presentation = options.begin_hit_presentation
-        finish_hit_presentation = options.finish_hit_presentation
 
         if dt <= 0.0:
             return []
@@ -375,7 +385,7 @@ class ProjectilePool:
                                 continue
 
                             proj.life_timer = 0.25
-                            apply_player_damage(int(hit_player_idx), 10.0)
+                            hit_runtime.apply_player_damage(int(hit_player_idx), 10.0)
 
                             step += 3
                             continue
@@ -411,7 +421,7 @@ class ProjectilePool:
                         target=target,
                     )
                     hits.append(hit)
-                    hit_presentation = begin_hit_presentation(hit) if begin_hit_presentation is not None else None
+                    hit_presentation = hit_runtime.begin_hit_presentation(hit)
 
                     if proj.life_timer != 0.25 and rule.stop_on_hit:
                         proj.life_timer = 0.25
@@ -503,17 +513,17 @@ class ProjectilePool:
                             proj.life_timer = 0.25
 
                     if proj.life_timer == 0.25 and rule.stop_on_hit:
-                        if finish_hit_presentation is not None and hit_presentation is not None:
-                            finish_hit_presentation(hit, hit_presentation)
+                        if hit_presentation is not None:
+                            hit_runtime.finish_hit_presentation(hit, hit_presentation)
                         break
 
                     if proj.damage_pool <= 0.0:
-                        if finish_hit_presentation is not None and hit_presentation is not None:
-                            finish_hit_presentation(hit, hit_presentation)
+                        if hit_presentation is not None:
+                            hit_runtime.finish_hit_presentation(hit, hit_presentation)
                         break
 
-                    if finish_hit_presentation is not None and hit_presentation is not None:
-                        finish_hit_presentation(hit, hit_presentation)
+                    if hit_presentation is not None:
+                        hit_runtime.finish_hit_presentation(hit, hit_presentation)
 
                 step += 3
 

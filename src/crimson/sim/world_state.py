@@ -27,7 +27,7 @@ from ..owner_ref import OwnerRef
 from ..perks.runtime.effects import perks_update_effects
 from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..player_damage import player_take_projectile_damage
-from ..projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions, SecondaryStepCtx
+from ..projectiles.runtime import PrimaryStepCtx, ProjectileHitRuntime, ProjectileUpdateOptions, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
@@ -59,7 +59,7 @@ _WORLD_DT_STEPS = WORLD_DT_STEPS
 _PLAYER_DEATH_HOOKS = PLAYER_DEATH_HOOKS
 
 
-class _WorldStepRuntime(msgspec.Struct):
+class _WorldStepRuntime(ProjectileHitRuntime):
     world: WorldState
     dt: float
     world_size: float
@@ -78,6 +78,9 @@ class _WorldStepRuntime(msgspec.Struct):
         if not (0 <= idx < len(self.world.players)):
             return
         player_take_projectile_damage(self.world.state, self.world.players[idx], float(damage))
+
+    def apply_player_damage(self, player_index: int, damage: float) -> None:
+        self.apply_player_projectile_damage(player_index, damage)
 
     def apply_creature_damage(
         self,
@@ -160,6 +163,12 @@ class _WorldStepRuntime(msgspec.Struct):
             self.hit_audio_game_tune_started = True
         if keys:
             self.hit_sfx.extend(keys)
+
+    def begin_hit_presentation(self, hit: ProjectileHit) -> ProjectileDecalPostCtx:
+        return self.prepare_projectile_hit_presentation(hit)
+
+    def finish_hit_presentation(self, hit: ProjectileHit, presentation: object) -> None:
+        self.finalize_projectile_hit_presentation(hit, presentation)
 
     def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None:
         idx = int(creature_index)
@@ -317,10 +326,8 @@ class WorldState(msgspec.Struct):
                     rng=self.state.rng,
                     runtime_state=self.state,
                     players=self.players,
-                    apply_player_damage=step_runtime.apply_player_projectile_damage,
+                    hit_runtime=step_runtime,
                     apply_creature_damage=step_runtime.apply_creature_damage,
-                    begin_hit_presentation=step_runtime.prepare_projectile_hit_presentation,
-                    finish_hit_presentation=step_runtime.finalize_projectile_hit_presentation,
                 ),
             ),
         )

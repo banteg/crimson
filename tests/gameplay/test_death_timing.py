@@ -474,18 +474,16 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
 
     def _fake_projectile_step(*args: object, **_kwargs: object) -> list[ProjectileHit]:
         ctx = cast("PrimaryStepCtx", args[0])
-        begin_hit_presentation = ctx.options.begin_hit_presentation
-        finish_hit_presentation = ctx.options.finish_hit_presentation
-        if begin_hit_presentation is None or finish_hit_presentation is None:
-            return []
+        hit_runtime = ctx.options.hit_runtime
         hit = ProjectileHit(
             type_id=ProjectileTemplateId.PISTOL,
             origin=Vec2(0.0, 0.0),
             hit=Vec2(1.0, 1.0),
             target=Vec2(1.0, 1.0),
         )
-        post_ctx = begin_hit_presentation(hit)
-        finish_hit_presentation(hit, post_ctx)
+        post_ctx = hit_runtime.begin_hit_presentation(hit)
+        assert post_ctx is not None
+        hit_runtime.finish_hit_presentation(hit, post_ctx)
         return [hit]
 
     mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)
