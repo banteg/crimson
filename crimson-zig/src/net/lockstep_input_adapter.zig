@@ -6,6 +6,7 @@ const player_runtime = @import("../runtime/player.zig");
 pub const fire_down_flag: u32 = 1 << 0;
 pub const fire_pressed_flag: u32 = 1 << 1;
 pub const reload_pressed_flag: u32 = 1 << 2;
+pub const reload_down_flag: u32 = 1 << 16;
 pub const move_keys_present_flag: u32 = 1 << 3;
 pub const move_forward_flag: u32 = 1 << 4;
 pub const move_backward_flag: u32 = 1 << 5;
@@ -22,6 +23,7 @@ pub const InputFlags = struct {
     fire_down: bool,
     fire_pressed: bool,
     reload_pressed: bool,
+    reload_down: bool,
     move_mode: ?i32 = null,
     aim_scheme: ?i32 = null,
     move_forward_pressed: ?bool = null,
@@ -51,6 +53,7 @@ pub fn unpackGameInput(input: packed_input.PackedPlayerInput) player_runtime.Gam
             .fire_down = flags.fire_down,
             .fire_pressed = flags.fire_pressed,
             .reload_pressed = flags.reload_pressed,
+            .reload_down = flags.reload_down,
             .move_mode = flags.move_mode,
             .aim_scheme = flags.aim_scheme,
             .move_forward_pressed = flags.move_forward_pressed,
@@ -66,6 +69,7 @@ pub fn packGameInputFlags(flags: player_runtime.GameInputFlags) u32 {
     if (flags.fire_down) out |= fire_down_flag;
     if (flags.fire_pressed) out |= fire_pressed_flag;
     if (flags.reload_pressed) out |= reload_pressed_flag;
+    if (flags.reload_down) out |= reload_down_flag;
 
     if (flags.move_forward_pressed != null or
         flags.move_backward_pressed != null or
@@ -99,6 +103,7 @@ pub fn unpackGameInputFlags(flags: u32) InputFlags {
         .fire_down = (flags & fire_down_flag) != 0,
         .fire_pressed = (flags & fire_pressed_flag) != 0,
         .reload_pressed = (flags & reload_pressed_flag) != 0,
+        .reload_down = (flags & reload_down_flag) != 0,
     };
 
     if ((flags & move_keys_present_flag) != 0) {
@@ -131,6 +136,7 @@ test "lockstep input adapter packs replay-compatible flags" {
             .fire_down = true,
             .fire_pressed = false,
             .reload_pressed = true,
+            .reload_down = true,
             .move_mode = 2,
             .aim_scheme = -1,
             .move_forward_pressed = true,
@@ -150,6 +156,7 @@ test "lockstep input adapter packs replay-compatible flags" {
     try std.testing.expect(decoded_flags.fire_down);
     try std.testing.expect(!decoded_flags.fire_pressed);
     try std.testing.expect(decoded_flags.reload_pressed);
+    try std.testing.expect(decoded_flags.reload_down);
     try std.testing.expectEqual(@as(?i32, 2), decoded_flags.move_mode);
     try std.testing.expectEqual(@as(?i32, -1), decoded_flags.aim_scheme);
     try std.testing.expectEqual(@as(?bool, true), decoded_flags.move_forward_pressed);
@@ -187,7 +194,7 @@ test "lockstep input adapter roundtrips game input through packed shape" {
     try std.testing.expectEqual(input.flags.fire_down, roundtrip.flags.fire_down);
     try std.testing.expectEqual(input.flags.fire_pressed, roundtrip.flags.fire_pressed);
     try std.testing.expectEqual(input.flags.reload_pressed, roundtrip.flags.reload_pressed);
-    try std.testing.expect(!roundtrip.flags.reload_down);
+    try std.testing.expectEqual(input.flags.reload_down, roundtrip.flags.reload_down);
     try std.testing.expect(!roundtrip.flags.move_to_cursor_pressed);
     try std.testing.expectEqual(input.flags.move_mode, roundtrip.flags.move_mode);
     try std.testing.expectEqual(input.flags.aim_scheme, roundtrip.flags.aim_scheme);
