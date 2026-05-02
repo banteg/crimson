@@ -64,6 +64,8 @@ pub const State = struct {
     idle_ms: i32 = 0,
     last_mouse_pos: rl.Vector2 = .{ .x = 0.0, .y = 0.0 },
     hover_amounts: [6]i32 = [_]i32{0} ** 6,
+    closing: bool = false,
+    close_action: ?Action = null,
 
     pub fn reset(self: *State) void {
         self.* = .{
@@ -82,6 +84,11 @@ pub const UpdateResult = struct {
     play_button_click: bool = false,
 };
 
+const RootTimelineUpdate = struct {
+    dt_ms: i32,
+    closed_action: ?Action = null,
+};
+
 const RootEntry = struct {
     slot: usize,
     row: i32,
@@ -96,11 +103,54 @@ const RootEntries = struct {
     }
 };
 
+fn frameDeltaMs(frame_dt: f32) i32 {
+    return @intFromFloat(@min(frame_dt, 0.1) * 1000.0);
+}
+
+fn beginRootClose(state: *State, action: Action) void {
+    if (state.closing) return;
+    state.closing = true;
+    state.close_action = action;
+}
+
+fn advanceRootTimeline(state: *State, frame_dt: f32, root_entries: []const RootEntry) RootTimelineUpdate {
+    const dt_ms = frameDeltaMs(frame_dt);
+    if (state.closing) {
+        if (dt_ms > 0) {
+            state.timeline_ms -= dt_ms;
+            state.focus_timer_ms = @max(0, state.focus_timer_ms - dt_ms);
+        }
+        if (state.timeline_ms < 0 and state.close_action != null) {
+            const action = state.close_action;
+            state.closing = false;
+            state.close_action = null;
+            return .{ .dt_ms = dt_ms, .closed_action = action };
+        }
+        return .{ .dt_ms = dt_ms };
+    }
+    if (dt_ms > 0) {
+        state.timeline_ms = @min(rootTimelineMaxMs(root_entries), state.timeline_ms + dt_ms);
+        state.focus_timer_ms = @max(0, state.focus_timer_ms - dt_ms);
+    }
+    return .{ .dt_ms = dt_ms };
+}
+
+fn rootInteractive(state: *const State, root_entries: []const RootEntry) bool {
+    return !state.closing and state.timeline_ms >= rootTimelineMaxMs(root_entries);
+}
+
 pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets, flags: Flags) UpdateResult {
-    const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
     const root_entries = rootEntries(flags);
     if (root_entries.len == 0) return .{};
     if (state.selection >= root_entries.len) state.selection = root_entries.len - 1;
+    const entries = root_entries.slice();
+    const timeline_update = advanceRootTimeline(state, frame_dt, entries);
+    if (timeline_update.closed_action) |action| {
+        return .{ .action = action };
+    }
+    const dt_ms = timeline_update.dt_ms;
+    if (state.closing) return .{};
+
     if (dt_ms > 0) {
         const mouse = rl.getMousePosition();
         const mouse_moved = mouse.x != state.last_mouse_pos.x or mouse.y != state.last_mouse_pos.y;
@@ -111,22 +161,20 @@ pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_asset
         } else {
             state.idle_ms += dt_ms;
         }
-
-        state.timeline_ms = @min(rootTimelineMaxMs(root_entries.slice()), state.timeline_ms + dt_ms);
-        state.focus_timer_ms = @max(0, state.focus_timer_ms - dt_ms);
     }
 
-    if (flags.demo_enabled and state.timeline_ms >= rootTimelineMaxMs(root_entries.slice()) and state.idle_ms >= demo_idle_start_ms) {
-        return .{ .action = .start_demo };
+    if (flags.demo_enabled and rootInteractive(state, entries) and state.idle_ms >= demo_idle_start_ms) {
+        beginRootClose(state, .start_demo);
+        return .{};
     }
 
     if (runtime_assets == null) {
         state.hovered_index = null;
-        updateHoverAmounts(state, dt_ms, root_entries.slice());
+        updateHoverAmounts(state, dt_ms, entries);
         return .{};
     }
 
-    state.hovered_index = hoveredRootIndex(runtime_assets, root_entries.slice());
+    state.hovered_index = hoveredRootIndex(runtime_assets, entries);
     if (state.hovered_index) |hovered_index| {
         if (rootEntryEnabled(root_entries.items[hovered_index].slot, state.timeline_ms)) {
             state.selection = hovered_index;
@@ -136,21 +184,21 @@ pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_asset
 
     if (!activateRootSelection(state, root_entries.items[state.selection].slot)) {
         if (rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
-            state.selection = previousEnabledRootSelection(state.selection, state.timeline_ms, root_entries.slice());
+            state.selection = previousEnabledRootSelection(state.selection, state.timeline_ms, entries);
             state.focus_timer_ms = 1000;
         }
         if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
-            state.selection = nextEnabledRootSelection(state.selection, state.timeline_ms, root_entries.slice());
+            state.selection = nextEnabledRootSelection(state.selection, state.timeline_ms, entries);
             state.focus_timer_ms = 1000;
         }
-        updateHoverAmounts(state, dt_ms, root_entries.slice());
+        updateHoverAmounts(state, dt_ms, entries);
         return .{
-            .play_panel_click = dt_ms > 0 and state.timeline_ms >= rootTimelineMaxMs(root_entries.slice()) and !state.panel_open_sfx_played,
+            .play_panel_click = dt_ms > 0 and state.timeline_ms >= rootTimelineMaxMs(entries) and !state.panel_open_sfx_played,
         };
     }
 
     var result: UpdateResult = .{ .play_button_click = true };
-    result.action = switch (root_entries.items[state.selection].row) {
+    const action: ?Action = switch (root_entries.items[state.selection].row) {
         label_row_play_game => .open_play_game,
         label_row_options => .open_options,
         label_row_statistics => .open_statistics,
@@ -159,20 +207,28 @@ pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_asset
         label_row_quit => .quit,
         else => null,
     };
-    updateHoverAmounts(state, dt_ms, root_entries.slice());
-    if (dt_ms > 0 and state.timeline_ms >= rootTimelineMaxMs(root_entries.slice()) and !state.panel_open_sfx_played) {
+    if (action) |root_action| beginRootClose(state, root_action);
+    updateHoverAmounts(state, dt_ms, entries);
+    if (dt_ms > 0 and state.timeline_ms >= rootTimelineMaxMs(entries) and !state.panel_open_sfx_played) {
         result.play_panel_click = true;
     }
     return result;
 }
 
 test "root menu demo idle starts attract mode in demo builds" {
+    const entries = rootEntries(.{ .demo_enabled = true });
     var state: State = .{
-        .timeline_ms = 10_000,
+        .timeline_ms = rootTimelineMaxMs(entries.slice()),
         .idle_ms = demo_idle_start_ms,
     };
     const result = update(&state, 0.0, null, .{ .demo_enabled = true });
-    try std.testing.expectEqual(Action.start_demo, result.action.?);
+    try std.testing.expectEqual(@as(?Action, null), result.action);
+    try std.testing.expect(state.closing);
+    try std.testing.expectEqual(@as(?Action, .start_demo), state.close_action);
+
+    state.timeline_ms = 0;
+    const closed = update(&state, 0.01, null, .{ .demo_enabled = true });
+    try std.testing.expectEqual(Action.start_demo, closed.action.?);
 }
 
 test "root menu demo idle is ignored in full builds" {
@@ -182,6 +238,32 @@ test "root menu demo idle is ignored in full builds" {
     };
     const result = update(&state, 0.0, null, .{ .demo_enabled = false });
     try std.testing.expectEqual(@as(?Action, null), result.action);
+    try std.testing.expect(!state.closing);
+}
+
+test "root menu close timeline gates action dispatch" {
+    const entries = rootEntries(.{});
+    const max_ms = rootTimelineMaxMs(entries.slice());
+    var state: State = .{
+        .timeline_ms = max_ms,
+        .focus_timer_ms = 1000,
+    };
+
+    beginRootClose(&state, .open_options);
+    try std.testing.expect(!rootInteractive(&state, entries.slice()));
+    try std.testing.expect(state.closing);
+    try std.testing.expectEqual(@as(?Action, .open_options), state.close_action);
+
+    const closing = update(&state, 0.10, null, .{});
+    try std.testing.expectEqual(@as(?Action, null), closing.action);
+    try std.testing.expectEqual(max_ms - 100, state.timeline_ms);
+    try std.testing.expectEqual(@as(i32, 900), state.focus_timer_ms);
+
+    state.timeline_ms = 0;
+    const closed = update(&state, 0.01, null, .{});
+    try std.testing.expectEqual(Action.open_options, closed.action.?);
+    try std.testing.expect(!state.closing);
+    try std.testing.expectEqual(@as(?Action, null), state.close_action);
 }
 
 pub fn draw(state: *const State, runtime_assets: ?*const window_assets.RuntimeAssets, flags: Flags) void {

@@ -91,6 +91,7 @@ Last reviewed: **2026-05-03**
 - **Main menu (state `0`)**: implemented, including timeline/layout behavior and terrain/sign-shadow rules.
   - Code: `src/crimson/screens/menu.py`
   - Ref: [`docs/crimsonland-exe/main-menu.md`](../crimsonland-exe/main-menu.md)
+  - Zig now routes root menu selections and demo-idle attract launch through the native close timeline before dispatch.
 - **Play Game panel (state `1`)**: implemented (mode buttons, player-count dropdown, tooltips, F1 times-played overlay).
   - Code: `src/crimson/game/__init__.py` (`PlayGameMenuView`)
   - Ref: [`docs/crimsonland-exe/play-game-menu.md`](../crimsonland-exe/play-game-menu.md)
