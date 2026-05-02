@@ -4389,16 +4389,20 @@ test "results high score name entry edits at caret" {
     try std.testing.expectEqualStrings(">ACE<", highscore.inputSlice());
 }
 
-test "results high score name display shows caret position" {
+test "results high score name caret prefix follows caret position" {
     var highscore: ResultsHighscoreState = .{
         .record = persistence.highscores.HighScoreRecord.blank(),
         .rank_index = 0,
     };
     highscore.setInput("ACE");
     highscore.moveCaretLeft();
-    var buf: [persistence.highscores.name_max_edit + 1]u8 = undefined;
-    try std.testing.expectEqualStrings("AC_E", highscoreNameDisplay(&buf, &highscore, true));
-    try std.testing.expectEqualStrings("ACE", highscoreNameDisplay(&buf, &highscore, false));
+    try std.testing.expectEqualStrings("AC", highscoreCaretPrefix(&highscore));
+    try std.testing.expectEqualStrings("ACE", highscore.inputSlice());
+}
+
+test "results high score name caret alpha follows native blink" {
+    try std.testing.expectEqual(@as(f32, 1.0), highscoreCaretAlpha(0.0));
+    try std.testing.expectEqual(@as(f32, 0.4), highscoreCaretAlpha(0.25));
 }
 
 test "results weapon names use display labels" {
@@ -5628,10 +5632,16 @@ fn drawResultsHighscore(
             rl.Color.black,
         );
 
-        const caret_visible = @mod(@as(i32, @intFromFloat(rl.getTime() * 2.5)), 2) == 0;
-        var shown_name_buf: [persistence.highscores.name_max_edit + 1]u8 = undefined;
-        const shown_name = highscoreNameDisplay(&shown_name_buf, highscore, caret_visible);
-        drawSmallText(runtime_assets, shown_name, layout.input_rect.x + 4.0, layout.input_rect.y + 2.0, colorWithAlpha(rl.Color.white, 0.8));
+        const text_x = layout.input_rect.x + 4.0;
+        const text_y = layout.input_rect.y + 2.0;
+        drawSmallText(runtime_assets, highscore.inputSlice(), text_x, text_y, colorWithAlpha(rl.Color.white, 0.8));
+        rl.drawRectangle(
+            @intFromFloat(text_x + measureSmallText(runtime_assets, highscoreCaretPrefix(highscore))),
+            @intFromFloat(text_y),
+            1,
+            14,
+            colorWithAlpha(rl.Color.white, highscoreCaretAlpha(rl.getTime())),
+        );
 
         if (highscore.save_error) |save_error| {
             drawSmallText(runtime_assets, save_error, layout.input_rect.x, layout.input_rect.y + 30.0, rl.Color.orange);
@@ -5642,17 +5652,13 @@ fn drawResultsHighscore(
     }
 }
 
-fn highscoreNameDisplay(
-    buf: *[persistence.highscores.name_max_edit + 1]u8,
-    highscore: *const ResultsHighscoreState,
-    caret_visible: bool,
-) []const u8 {
-    if (!caret_visible) return highscore.inputSlice();
+fn highscoreCaretPrefix(highscore: *const ResultsHighscoreState) []const u8 {
     const caret = @min(highscore.input_caret, highscore.input_len);
-    @memcpy(buf[0..caret], highscore.input[0..caret]);
-    buf[caret] = '_';
-    @memcpy(buf[caret + 1 .. caret + 1 + highscore.input_len - caret], highscore.input[caret..highscore.input_len]);
-    return buf[0 .. highscore.input_len + 1];
+    return highscore.input[0..caret];
+}
+
+fn highscoreCaretAlpha(time_s: f64) f32 {
+    return if (std.math.sin(time_s * 4.0) > 0.0) 0.4 else 1.0;
 }
 
 const HudTextColor = struct {
