@@ -27,7 +27,9 @@ Today `crimson-zig/` already has:
   [`crimson-zig/src/verify_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/verify_native.zig)
   and
   [`crimson-zig/src/replay_info_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/replay_info_native.zig),
-  plus native CDT diff, health, tick, entity, and compact query inspection in
+  plus native CDT diff, bisect, health, tick, entity, and compact query
+  inspection in
+  [`crimson-zig/src/dbg_bisect_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/dbg_bisect_native.zig),
   [`crimson-zig/src/dbg_diff_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/dbg_diff_native.zig),
   [`crimson-zig/src/dbg_entity_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/dbg_entity_native.zig),
   [`crimson-zig/src/dbg_health_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/dbg_health_native.zig)
@@ -92,8 +94,8 @@ Remaining work:
 - keep burning down real remaining `Unsupported*` replay/event surfaces that are
   still justified,
 - expand native tooling beyond `replay list`, `replay verify`,
-  `replay info`, `replay benchmark`, `dbg diff`, `dbg health`, `dbg tick`,
-  and `dbg entity`/`dbg query`,
+  `replay info`, `replay benchmark`, `dbg diff`, `dbg bisect`, `dbg health`,
+  `dbg tick`, and `dbg entity`/`dbg query`,
 - continue widening the WASM surface beyond byte-input replay verification,
   info, benchmark summaries, and checkpoint comparison.
 

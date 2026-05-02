@@ -1,6 +1,7 @@
 const std = @import("std");
 const checkpoint_diff_native = @import("checkpoint_diff_native.zig");
 const config_native = @import("config_native.zig");
+const dbg_bisect_native = @import("dbg_bisect_native.zig");
 const dbg_diff_native = @import("dbg_diff_native.zig");
 const dbg_entity_native = @import("dbg_entity_native.zig");
 const dbg_health_native = @import("dbg_health_native.zig");
@@ -30,6 +31,7 @@ const usage =
     \\  crimson-zig replay diff-checkpoints <expected.chk> <actual.chk>
     \\  crimson-zig dbg record <replay.crd> --out <trace.cdt>
     \\  crimson-zig dbg diff <expected.cdt> <actual.cdt> [diff options]
+    \\  crimson-zig dbg bisect <expected.cdt> <actual.cdt> [bisect options]
     \\  crimson-zig dbg health <trace.cdt> [health options]
     \\  crimson-zig dbg tick <trace.cdt> <tick> [tick options]
     \\  crimson-zig dbg entity <trace.cdt> <entity_uid> [entity options]
@@ -58,6 +60,7 @@ const usage =
     \\  crimson-zig replay diff-checkpoints replay.crd.chk replay.candidate.crd.chk --format json
     \\  crimson-zig dbg record replay.crd --out replay.cdt
     \\  crimson-zig dbg diff golden.cdt candidate.cdt --json
+    \\  crimson-zig dbg bisect golden.cdt candidate.cdt
     \\  crimson-zig dbg health replay.cdt
     \\  crimson-zig dbg tick replay.cdt 0 --json
     \\  crimson-zig dbg entity replay.cdt 0 --json
@@ -144,6 +147,14 @@ pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     }
     if (args.len >= 3 and std.mem.eql(u8, args[1], "dbg") and std.mem.eql(u8, args[2], "diff")) {
         const output = try dbg_diff_native.runDbgDiff(allocator, args[3..]);
+        defer output.deinit(allocator);
+
+        try writeStdout(output.stdout);
+        try writeStderr(output.stderr);
+        return output.exit_code;
+    }
+    if (args.len >= 3 and std.mem.eql(u8, args[1], "dbg") and std.mem.eql(u8, args[2], "bisect")) {
+        const output = try dbg_bisect_native.runDbgBisect(allocator, args[3..]);
         defer output.deinit(allocator);
 
         try writeStdout(output.stdout);

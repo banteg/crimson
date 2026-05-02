@@ -281,6 +281,15 @@ pub const TraceDiffReport = struct {
     mismatch: ?TraceDiffMismatch = null,
 };
 
+pub const TraceBisectReport = struct {
+    ok: bool,
+    first_bad_tick: ?i32,
+    checked_count: usize,
+    mismatch: ?TraceDiffMismatch = null,
+    window_start: ?i32 = null,
+    window_end: ?i32 = null,
+};
+
 const TickRange = struct {
     start_tick: i32,
     end_tick: i32,
@@ -1149,6 +1158,34 @@ pub fn diffTraceBytes(
     var actual_rows = try loadTraceDiffRows(allocator, actual_bytes, options);
     defer actual_rows.deinit(allocator);
     return diffTraceRows(expected_rows.items, actual_rows.items, options);
+}
+
+pub fn bisectTraceFiles(
+    allocator: std.mem.Allocator,
+    io: std.Io,
+    expected_path: []const u8,
+    actual_path: []const u8,
+    options: TraceDiffOptions,
+    window_before: i32,
+    window_after: i32,
+) !TraceBisectReport {
+    const expected_bytes = try std.Io.Dir.cwd().readFileAlloc(io, expected_path, allocator, .limited(256 * 1024 * 1024));
+    defer allocator.free(expected_bytes);
+    const actual_bytes = try std.Io.Dir.cwd().readFileAlloc(io, actual_path, allocator, .limited(256 * 1024 * 1024));
+    defer allocator.free(actual_bytes);
+    return bisectTraceBytes(allocator, expected_bytes, actual_bytes, options, window_before, window_after);
+}
+
+pub fn bisectTraceBytes(
+    allocator: std.mem.Allocator,
+    expected_bytes: []const u8,
+    actual_bytes: []const u8,
+    options: TraceDiffOptions,
+    window_before: i32,
+    window_after: i32,
+) !TraceBisectReport {
+    const diff = try diffTraceBytes(allocator, expected_bytes, actual_bytes, options);
+    return bisectReportFromDiff(diff, window_before, window_after);
 }
 
 fn appendMatchingQueryEntityRows(
@@ -2169,6 +2206,35 @@ fn diffTraceRows(
     };
 }
 
+fn bisectReportFromDiff(
+    diff: TraceDiffReport,
+    window_before: i32,
+    window_after: i32,
+) TraceBisectReport {
+    if (diff.ok) {
+        return .{
+            .ok = true,
+            .first_bad_tick = null,
+            .checked_count = diff.checked_count,
+            .mismatch = null,
+            .window_start = null,
+            .window_end = null,
+        };
+    }
+
+    const mismatch = diff.mismatch.?;
+    const before = @max(window_before, 0);
+    const after = @max(window_after, 0);
+    return .{
+        .ok = false,
+        .first_bad_tick = mismatch.tick_index,
+        .checked_count = diff.checked_count,
+        .mismatch = mismatch,
+        .window_start = mismatch.tick_index - before,
+        .window_end = mismatch.tick_index + after,
+    };
+}
+
 fn firstTraceRowMismatch(expected: *const TraceDiffRow, actual: *const TraceDiffRow) ?TraceDiffMismatch {
     if (diffI64(expected.tick_index, expected.tick_index, actual.tick_index, "tick_index")) |mismatch| return mismatch;
     if (diffI64(expected.tick_index, expected.elapsed_ms, actual.elapsed_ms, "elapsed_ms")) |mismatch| return mismatch;
@@ -2324,6 +2390,22 @@ test "trace diff rows report missing ticks" {
     try std.testing.expectEqual(@as(?i32, 3), report.tick_start);
     try std.testing.expectEqualStrings("missing_tick", report.mismatch.?.kind);
     try std.testing.expectEqual(@as(i32, 3), report.mismatch.?.tick_index);
+}
+
+test "trace bisect report derives first bad tick window" {
+    const expected = testTraceDiffRow(1);
+    var actual = expected;
+    actual.checkpoint_kills = 2;
+
+    const diff = diffTraceRows(&.{expected}, &.{actual}, .{});
+    const report = bisectReportFromDiff(diff, 12, 6);
+
+    try std.testing.expect(!report.ok);
+    try std.testing.expectEqual(@as(?i32, 1), report.first_bad_tick);
+    try std.testing.expectEqual(@as(usize, 1), report.checked_count);
+    try std.testing.expectEqual(@as(?i32, -11), report.window_start);
+    try std.testing.expectEqual(@as(?i32, 7), report.window_end);
+    try std.testing.expectEqualStrings("checkpoint.kills", report.mismatch.?.field.?);
 }
 
 fn testTraceDiffRow(tick_index: i32) TraceDiffRow {
