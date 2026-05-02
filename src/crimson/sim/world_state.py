@@ -27,7 +27,7 @@ from ..gameplay import (
 from ..owner_ref import OwnerRef
 from ..perks.runtime.effects import perks_update_effects
 from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
-from ..player_damage import player_take_projectile_damage
+from ..player_damage import PlayerDeathRuntime, player_take_projectile_damage
 from ..projectiles.runtime import PrimaryStepCtx, ProjectileHitRuntime, ProjectileUpdateOptions, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
 from .input import PlayerInput
@@ -60,7 +60,7 @@ _WORLD_DT_STEPS = WORLD_DT_STEPS
 _PLAYER_DEATH_HOOKS = PLAYER_DEATH_HOOKS
 
 
-class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime):
+class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeathRuntime):
     world: WorldState
     dt: float
     world_size: float
@@ -375,10 +375,7 @@ class WorldState(msgspec.Struct):
                 players=self.players,
                 creatures=self.creatures.entries,
                 spawn_slots=self.creatures.spawn_slots,
-                on_player_lethal=lambda dead_player, dt_value=float(player_dt): step_runtime.on_player_lethal(
-                    dead_player,
-                    dt=float(dt_value),
-                ),
+                player_death_runtime=step_runtime,
                 reload_active_any=bool(reload_active_any),
             )
             if dt_player_local is None:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -13,6 +13,7 @@ from grim.rand import CrandLike
 from ..math_parity import NATIVE_TAU, f32, heading_from_delta_f32
 from ..perks import PerkId
 from ..perks.helpers import perk_active
+from ..player_damage import PlayerDeathRuntime
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..rng_caller_static import RngCallerStatic
@@ -92,7 +93,7 @@ class WeaponFireCtx(msgspec.Struct):
     creatures: Sequence[CreatureState] | None = None
     players: Sequence[PlayerState] | None = None
     force_pre_swap_fire_gate: bool = False
-    on_player_lethal: Callable[[PlayerState], None] | None = None
+    player_death_runtime: PlayerDeathRuntime | None = None
 
 
 class WeaponFireResult(msgspec.Struct, frozen=True):
@@ -206,7 +207,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     creatures = ctx.creatures
     players = ctx.players
     force_pre_swap_fire_gate = bool(ctx.force_pre_swap_fire_gate)
-    on_player_lethal = ctx.on_player_lethal
+    player_death_runtime = ctx.player_death_runtime
 
     weapon_id = player.weapon.weapon_id
     weapon = weapon_entry(weapon_id)
@@ -241,7 +242,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 cost,
                 dt=dt,
                 players=players,
-                on_lethal=(lambda: on_player_lethal(player)) if on_player_lethal is not None else None,
+                death_runtime=player_death_runtime,
             )
         else:
             return WeaponFireResult(fired=False)

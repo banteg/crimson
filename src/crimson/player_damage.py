@@ -6,7 +6,9 @@ This is a minimal, rewrite-focused port of `player_take_damage` (0x00425e50).
 See: `docs/crimsonland-exe/player-damage.md`.
 """
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
+
+import msgspec
 
 from grim.sfx_map import SfxId
 
@@ -16,7 +18,7 @@ from .perks.helpers import perk_active
 from .rng_caller_static import RngCallerStatic
 from .sim.state_types import GameplayState, PlayerState
 
-__all__ = ["player_take_damage", "player_take_projectile_damage"]
+__all__ = ["PlayerDeathRuntime", "player_take_damage", "player_take_projectile_damage"]
 _PLAYER_PAIN_SFX: tuple[SfxId, ...] = (
     SfxId.TROOPER_INPAIN_01,
     SfxId.TROOPER_INPAIN_02,
@@ -26,6 +28,11 @@ _PLAYER_DEATH_SFX: tuple[SfxId, ...] = (SfxId.TROOPER_DIE_01, SfxId.TROOPER_DIE_
 _THICK_SKINNED_DAMAGE_SCALE_F32 = 0.6660000085830688
 
 
+class PlayerDeathRuntime(msgspec.Struct):
+    def on_player_lethal(self, player: PlayerState, *, dt: float) -> None:
+        _ = player, dt
+
+
 def player_take_damage(
     state: GameplayState,
     player: PlayerState,
@@ -33,7 +40,7 @@ def player_take_damage(
     *,
     dt: float | None = None,
     players: Sequence[PlayerState] | None = None,
-    on_lethal: Callable[[], None] | None = None,
+    death_runtime: PlayerDeathRuntime | None = None,
 ) -> float:
     """Apply damage to a player, returning the actual damage applied."""
 
@@ -101,8 +108,8 @@ def player_take_damage(
             return max(0.0, health_before - float(player.health))
         if not perk_active(player, PerkId.FINAL_REVENGE):
             state.sfx_queue.append(_PLAYER_DEATH_SFX[state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_DEATH_SFX) & 1])
-        elif on_lethal is not None:
-            on_lethal()
+        elif death_runtime is not None:
+            death_runtime.on_player_lethal(player, dt=0.0 if dt is None else float(dt))
             state.player_death_hook_skip_indices.add(int(player.index))
 
     if not dodged:
