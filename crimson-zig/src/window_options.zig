@@ -844,8 +844,12 @@ fn updateControlsDropdown(state: *ControlsState, config: *formats.crimson_cfg.Cr
 
 fn applyControlsDropdownSelection(state: *ControlsState, config: *formats.crimson_cfg.CrimsonCfg, value: i32) ControlsUpdate {
     const player_index = currentPlayerIndex(state);
+    var config_dirty = true;
     switch (state.open_dropdown) {
-        .player => state.left_selection = 0,
+        .player => {
+            state.left_selection = 0;
+            config_dirty = false;
+        },
         .movement => formats.crimson_cfg.setPlayerMovement(config, player_index, @intCast(value)),
         .aim => formats.crimson_cfg.setPlayerAimScheme(config, player_index, @intCast(value)),
         .none => {},
@@ -857,7 +861,7 @@ fn applyControlsDropdownSelection(state: *ControlsState, config: *formats.crimso
         state.focus_right = false;
     }
     state.open_dropdown = .none;
-    return .{ .config_dirty = true, .play_button_click = true };
+    return .{ .config_dirty = config_dirty, .play_button_click = true };
 }
 
 fn updateControlsRebinding(state: *ControlsState, config: *formats.crimson_cfg.CrimsonCfg) ControlsUpdate {
@@ -1315,4 +1319,32 @@ test "display option helpers update persisted config fields" {
     cfg.texture_scale = textureScaleFromSliderValue(6);
     try std.testing.expectEqual(@as(f32, 2.0), cfg.texture_scale);
     try std.testing.expectEqual(@as(usize, 5), textureScalePresetIndex(cfg.texture_scale));
+}
+
+test "controls player dropdown selection is UI-local" {
+    var cfg = formats.crimson_cfg.defaultConfig();
+    const before_movement = formats.crimson_cfg.playerMovement(&cfg, 0);
+    const before_aim = formats.crimson_cfg.playerAimScheme(&cfg, 0);
+    var state: ControlsState = .{ .open_dropdown = .player };
+
+    const update = applyControlsDropdownSelection(&state, &cfg, 2);
+
+    try std.testing.expect(!update.config_dirty);
+    try std.testing.expect(update.play_button_click);
+    try std.testing.expectEqual(@as(DropdownKind, .none), state.open_dropdown);
+    try std.testing.expectEqual(@as(usize, 2), currentPlayerIndex(&state));
+    try std.testing.expectEqual(before_movement, formats.crimson_cfg.playerMovement(&cfg, 0));
+    try std.testing.expectEqual(before_aim, formats.crimson_cfg.playerAimScheme(&cfg, 0));
+}
+
+test "controls movement dropdown selection updates persisted config" {
+    var cfg = formats.crimson_cfg.defaultConfig();
+    var state: ControlsState = .{ .open_dropdown = .movement };
+
+    const update = applyControlsDropdownSelection(&state, &cfg, local_input.movement_control_static);
+
+    try std.testing.expect(update.config_dirty);
+    try std.testing.expect(update.play_button_click);
+    try std.testing.expectEqual(@as(DropdownKind, .none), state.open_dropdown);
+    try std.testing.expectEqual(@as(u32, @intCast(local_input.movement_control_static)), formats.crimson_cfg.playerMovement(&cfg, 0));
 }
