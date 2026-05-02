@@ -1480,6 +1480,12 @@ const App = struct {
 
     fn updateResults(self: *App, frame_dt: f32) void {
         if (self.results) |*results| {
+            if (questCompletedGlobalShortcutSelection(results)) |selection| {
+                self.results_selection = selection;
+                self.audio.playUiButtonClick();
+                self.activateResultsSelection(results);
+                return;
+            }
             if (results.reason == .completed and results.quest_final_time != null and !results.quest_breakdown_anim.done) {
                 if (rl.isKeyPressed(.space) or rl.isMouseButtonPressed(.left)) {
                     results.quest_breakdown_anim.setFinal(results.quest_final_time.?);
@@ -3017,6 +3023,15 @@ fn questCompletedShortcutSelection(results: *const ResultsScreen) ?usize {
     );
 }
 
+fn questCompletedGlobalShortcutSelection(results: *const ResultsScreen) ?usize {
+    if (!isQuestCompletedResult(results)) return null;
+    return questCompletedGlobalShortcutSelectionFor(rl.isKeyPressed(.escape));
+}
+
+fn questCompletedGlobalShortcutSelectionFor(escape_pressed: bool) ?usize {
+    return if (escape_pressed) 3 else null;
+}
+
 fn questCompletedShortcutSelectionFor(escape_pressed: bool, enter_pressed: bool, n_pressed: bool, h_pressed: bool) ?usize {
     if (escape_pressed) return 3;
     if (enter_pressed) return 1;
@@ -3995,6 +4010,11 @@ test "quest completed shortcuts match native result actions" {
     try std.testing.expectEqual(@as(?usize, 0), questCompletedShortcutSelectionFor(false, false, true, false));
     try std.testing.expectEqual(@as(?usize, 2), questCompletedShortcutSelectionFor(false, false, false, true));
     try std.testing.expectEqual(@as(?usize, null), questCompletedShortcutSelectionFor(false, false, false, false));
+}
+
+test "quest completed escape shortcut is global across result phases" {
+    try std.testing.expectEqual(@as(?usize, 3), questCompletedGlobalShortcutSelectionFor(true));
+    try std.testing.expectEqual(@as(?usize, null), questCompletedGlobalShortcutSelectionFor(false));
 }
 
 test "game over result action buttons use native banner anchor" {
