@@ -138,6 +138,40 @@ pub const TickSummary = struct {
     }
 };
 
+pub const EntityHistoryOptions = struct {
+    tick_start: ?i32 = null,
+    tick_end: ?i32 = null,
+};
+
+pub const TraceVec2Summary = struct {
+    x: f32,
+    y: f32,
+};
+
+pub const EntitySampleSummary = struct {
+    tick_index: i32,
+    uid: i32,
+    generation: i32,
+    pool_kind: []const u8,
+    index: i32,
+    active: bool,
+    type_id: ?i32 = null,
+    hp: ?f32 = null,
+    pos: TraceVec2Summary,
+};
+
+pub const EntityHistorySummary = struct {
+    entity_uid: i32,
+    pool_kind: []const u8,
+    spawn_tick: i32,
+    despawn_tick: i32,
+    samples: []const EntitySampleSummary,
+
+    pub fn deinit(self: EntityHistorySummary, allocator: std.mem.Allocator) void {
+        allocator.free(self.samples);
+    }
+};
+
 const TickRange = struct {
     start_tick: i32,
     end_tick: i32,
@@ -746,6 +780,161 @@ fn buildTopEventTypes(
 fn eventCountLessThan(_: void, left: EventCount, right: EventCount) bool {
     if (left.count != right.count) return left.count > right.count;
     return std.mem.lessThan(u8, left.name, right.name);
+}
+
+pub fn summarizeTraceEntityFile(
+    allocator: std.mem.Allocator,
+    io: std.Io,
+    trace_path: []const u8,
+    entity_uid: i32,
+    options: EntityHistoryOptions,
+) !EntityHistorySummary {
+    const bytes = try std.Io.Dir.cwd().readFileAlloc(io, trace_path, allocator, .limited(256 * 1024 * 1024));
+    defer allocator.free(bytes);
+    return summarizeTraceEntityBytes(allocator, bytes, entity_uid, options);
+}
+
+pub fn summarizeTraceEntityBytes(
+    allocator: std.mem.Allocator,
+    bytes: []const u8,
+    entity_uid: i32,
+    options: EntityHistoryOptions,
+) !EntityHistorySummary {
+    if (entity_uid < 0) return error.EntityNotFound;
+    if (options.tick_start != null and options.tick_end != null and options.tick_start.? > options.tick_end.?) return error.InvalidTickRange;
+    if (bytes.len < trace_magic.len + 4 + trailer_magic.len + 8) return error.InvalidTraceHeader;
+    if (!std.mem.startsWith(u8, bytes, trace_magic)) return error.InvalidTraceMagic;
+    const version = readU32Le(bytes[trace_magic.len..][0..4]);
+    if (version != trace_format_version) return error.UnsupportedTraceFormatVersion;
+
+    const trailer_offset = bytes.len - trailer_magic.len - 8;
+    if (!std.mem.eql(u8, bytes[trailer_offset..][0..trailer_magic.len], trailer_magic)) return error.InvalidTraceTrailer;
+    const footer_offset_u64 = readU64Le(bytes[trailer_offset + trailer_magic.len ..][0..8]);
+    if (footer_offset_u64 > std.math.maxInt(usize)) return error.InvalidTraceFooterOffset;
+    const footer_offset: usize = @intCast(footer_offset_u64);
+    const footer_chunk = try chunkPayloadAt(bytes, footer_offset);
+    if (!std.mem.eql(u8, footer_chunk.kind, chunk_kind_footer)) return error.InvalidTraceFooterChunk;
+    var decoded_footer = try msgpack.decodeFromSlice(TraceFooter, allocator, footer_chunk.payload);
+    defer decoded_footer.deinit();
+    const footer = decoded_footer.value;
+
+    var samples: std.ArrayList(EntitySampleSummary) = .empty;
+    errdefer samples.deinit(allocator);
+    var spawn_tick: ?i32 = null;
+    var despawn_tick: ?i32 = null;
+    var pool_kind: []const u8 = "unknown";
+
+    for (footer.tick_blocks) |entry| {
+        if (options.tick_start) |tick_start| {
+            if (entry.end_tick < tick_start) continue;
+        }
+        if (options.tick_end) |tick_end| {
+            if (entry.start_tick > tick_end) continue;
+        }
+
+        if (entry.file_offset < 0) return error.InvalidTraceBlockOffset;
+        const tick_chunk = try chunkPayloadAt(bytes, @intCast(entry.file_offset));
+        if (!std.mem.eql(u8, tick_chunk.kind, chunk_kind_tick)) return error.InvalidTraceTickChunk;
+        if (tick_chunk.start_tick != entry.start_tick or tick_chunk.end_tick != entry.end_tick) return error.InvalidTraceTickChunk;
+        if (entry.uncompressed_len < 0) return error.InvalidTraceTickChunk;
+        if (tick_chunk.payload.len != @as(usize, @intCast(entry.uncompressed_len))) return error.InvalidTraceTickChunk;
+        if (checksum64(tick_chunk.payload) != entry.checksum) return error.InvalidTraceChecksum;
+
+        var decoded_block = try msgpack.decodeFromSlice(TickBlockRead, allocator, tick_chunk.payload);
+        defer decoded_block.deinit();
+        const block = decoded_block.value;
+        if (block.start_tick != entry.start_tick or block.end_tick != entry.end_tick) return error.InvalidTraceTickBlock;
+
+        for (block.ticks) |tick| {
+            if (options.tick_start) |tick_start| {
+                if (tick.tick_index < tick_start) continue;
+            }
+            if (options.tick_end) |tick_end| {
+                if (tick.tick_index > tick_end) continue;
+            }
+
+            const before_len = samples.items.len;
+            try appendMatchingEntitySamples(allocator, &samples, entity_uid, tick);
+            if (samples.items.len != before_len) {
+                if (spawn_tick == null) {
+                    spawn_tick = tick.tick_index;
+                    pool_kind = samples.items[before_len].pool_kind;
+                }
+                despawn_tick = tick.tick_index;
+            }
+        }
+    }
+
+    if (samples.items.len == 0) return error.EntityNotFound;
+    return .{
+        .entity_uid = entity_uid,
+        .pool_kind = pool_kind,
+        .spawn_tick = spawn_tick.?,
+        .despawn_tick = despawn_tick.?,
+        .samples = try samples.toOwnedSlice(allocator),
+    };
+}
+
+fn appendMatchingEntitySamples(
+    allocator: std.mem.Allocator,
+    out: *std.ArrayList(EntitySampleSummary),
+    entity_uid: i32,
+    tick: TickRecordRead,
+) !void {
+    const samples = tick.channels.entity_samples;
+    for (samples.creatures) |sample| {
+        if (sample.uid != entity_uid) continue;
+        try out.append(allocator, .{
+            .tick_index = tick.tick_index,
+            .uid = sample.uid,
+            .generation = sample.generation,
+            .pool_kind = "creature",
+            .index = sample.index,
+            .active = sample.active,
+            .type_id = sample.type_id,
+            .hp = sample.hp,
+            .pos = .{ .x = sample.pos.x, .y = sample.pos.y },
+        });
+    }
+    for (samples.projectiles) |sample| {
+        if (sample.uid != entity_uid) continue;
+        try out.append(allocator, .{
+            .tick_index = tick.tick_index,
+            .uid = sample.uid,
+            .generation = sample.generation,
+            .pool_kind = "projectile",
+            .index = sample.index,
+            .active = sample.active,
+            .type_id = sample.type_id,
+            .pos = .{ .x = sample.pos.x, .y = sample.pos.y },
+        });
+    }
+    for (samples.secondary_projectiles) |sample| {
+        if (sample.uid != entity_uid) continue;
+        try out.append(allocator, .{
+            .tick_index = tick.tick_index,
+            .uid = sample.uid,
+            .generation = sample.generation,
+            .pool_kind = "secondary_projectile",
+            .index = sample.index,
+            .active = sample.active,
+            .type_id = sample.type_id,
+            .pos = .{ .x = sample.pos.x, .y = sample.pos.y },
+        });
+    }
+    for (samples.bonuses) |sample| {
+        if (sample.uid != entity_uid) continue;
+        try out.append(allocator, .{
+            .tick_index = tick.tick_index,
+            .uid = sample.uid,
+            .generation = sample.generation,
+            .pool_kind = "bonus",
+            .index = sample.index,
+            .active = sample.active,
+            .type_id = sample.bonus_id,
+            .pos = .{ .x = sample.pos.x, .y = sample.pos.y },
+        });
+    }
 }
 
 const EntityGenerationState = struct {

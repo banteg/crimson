@@ -140,7 +140,9 @@ driver `before_tick` hook, and Zig emits it from the replay step timing trace.
 that are present but empty across the selected trace window. Native
 `crimson-zig dbg tick <trace.cdt> <tick> --json` can inspect one tick's
 checkpoint, entity-count, event-count, RNG-row, and timing-row summary directly
-from the same CDT chunks.
+from the same CDT chunks. Native
+`crimson-zig dbg entity <trace.cdt> <entity_uid> --json` can also follow one
+sampled entity UID across a selected tick range.
 
 ## Phase model
 

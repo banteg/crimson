@@ -57,6 +57,7 @@ Last reviewed: **2026-05-02**
   - `crimson-zig dbg record <replay.crd> --out <trace.zig.cdt>`
   - `crimson-zig dbg health <trace.cdt> --format json`
   - `crimson-zig dbg tick <trace.cdt> <tick> --json`
+  - `crimson-zig dbg entity <trace.cdt> <entity_uid> --json`
   - `crimson-zig dbg verify`
   - `crimson-zig config --path <crimson.cfg> --format json`
   - `crimson-zig status --path <game.cfg> --format json`
@@ -65,6 +66,7 @@ Last reviewed: **2026-05-02**
   - `crimson-zig spawn-plan <template_id> --json` (add `--no-demo-mode-active` to include runtime burst effects)
   - `uv run crimson dbg health <trace.cdt>`
   - `uv run crimson dbg tick <trace.cdt> <tick>`
+  - `uv run crimson dbg entity <trace.cdt> <entity_uid>`
   - `uv run crimson dbg diff <expected.cdt> <actual.cdt>`
   - `uv run crimson dbg bisect <expected.cdt> <actual.cdt>`
   - `uv run crimson dbg focus <expected.cdt> <actual.cdt> --tick <n>`

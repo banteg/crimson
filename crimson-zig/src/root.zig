@@ -6,6 +6,7 @@ pub const config_native = @import("config_native.zig");
 pub const replay_info_native = @import("replay_info_native.zig");
 pub const verify_native = @import("verify_native.zig");
 pub const cli = @import("cli.zig");
+pub const dbg_entity_native = @import("dbg_entity_native.zig");
 pub const dbg_health_native = @import("dbg_health_native.zig");
 pub const dbg_record_native = @import("dbg_record_native.zig");
 pub const dbg_tick_native = @import("dbg_tick_native.zig");
