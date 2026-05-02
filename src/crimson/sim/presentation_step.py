@@ -20,6 +20,7 @@ from ..projectiles.types import ProjectileHit, ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_entry_for_projectile_type_id
 from .state_types import BonusPickupEvent, GameplayState, PlayerState
+from .terrain_fx import TerrainFxBatch
 from .world_defs import BEAM_TYPES
 
 _MAX_HIT_SFX_PER_FRAME = 4
@@ -33,9 +34,13 @@ _BULLET_HIT_SFX = (
 )
 
 
-class PresentationStepCommands(msgspec.Struct):
+class DeterministicPresentationPlan(msgspec.Struct):
+    """Deterministic native-parity presentation effects emitted by one sim tick."""
+
     trigger_game_tune: bool = False
     sfx: list[SfxId] = msgspec.field(default_factory=list)
+    terrain_fx: TerrainFxBatch = TerrainFxBatch()
+    post_apply_sfx: tuple[SfxId, ...] = ()
 
 
 class PresentationAudioSink(Protocol):
@@ -331,8 +336,8 @@ def plan_world_presentation_step(
     game_tune_started: bool,
     trigger_game_tune: bool | None = None,
     hit_sfx: Sequence[SfxId] | None = None,
-) -> PresentationStepCommands:
-    commands = PresentationStepCommands()
+) -> DeterministicPresentationPlan:
+    commands = DeterministicPresentationPlan()
     if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
         commands.sfx.append(SfxId.UI_LEVELUP)
     if trigger_game_tune is None and hit_sfx is None:
@@ -383,7 +388,7 @@ def plan_world_presentation_step(
 
 def apply_presentation_plan(
     *,
-    plan: PresentationStepCommands,
+    plan: DeterministicPresentationPlan,
     audio_sink: PresentationAudioSink | None,
     apply_audio: bool = True,
 ) -> None:

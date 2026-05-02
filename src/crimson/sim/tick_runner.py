@@ -118,6 +118,6 @@ class TickRunner:
         return ResolvedTick(
             tick_index=int(source_tick.tick_index),
             dt_seconds=dt_seconds,
-            inputs=list(source_tick.inputs),
-            commands=list(source_tick.commands),
+            inputs=tuple(source_tick.inputs),
+            commands=tuple(source_tick.commands),
         )

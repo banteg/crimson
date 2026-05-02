@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Sequence
 from typing import Literal, TypeAlias
 
 import msgspec
@@ -125,7 +126,7 @@ def _append_event(
 
 def _append_extra_replay_commands(
     *,
-    commands: list[GameCommand],
+    commands: Sequence[GameCommand],
     tick_index: int,
     elapsed_ms: int,
     timeline: list[ReplayInfoTimelineEvent],

@@ -66,7 +66,7 @@ def _apply_batch(
             apply_audio=True,
         )
         world.update_camera(float(step.dt_sim))
-        world.render_resources.consume_terrain_fx_batch(step.terrain_fx)
+        world.render_resources.consume_terrain_fx_batch(step.presentation.terrain_fx)
         applied_ticks.append(int(result.source_tick.tick_index))
     return applied_ticks
 
@@ -136,11 +136,11 @@ def test_runner_path_projectile_hits_enqueue_decals() -> None:
             frame_index=frame_index,
             dt_seconds=1.0 / 60.0,
         )
-        if any(not result.payload.step.terrain_fx.is_empty() for result in batch.completed_results):
+        if any(not result.payload.step.presentation.terrain_fx.is_empty() for result in batch.completed_results):
             break
         _apply_batch(world, session=session, batch=batch)
 
-    assert any(not result.payload.step.terrain_fx.is_empty() for result in batch.completed_results)
+    assert any(not result.payload.step.presentation.terrain_fx.is_empty() for result in batch.completed_results)
 
 
 def test_runner_multi_tick_batch_apply_order_is_deterministic() -> None:

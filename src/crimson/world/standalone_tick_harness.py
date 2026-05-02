@@ -121,13 +121,7 @@ class StandaloneTickHarness:
         }
         apply_presentation_outputs(
             outputs=outputs,
-            sync_audio_bridge_state=runtime.sync_audio_bridge_state,
-            apply_audio_plan=lambda plan, should_apply_audio: runtime.audio_bridge.apply_plan(
-                plan=plan,
-                apply_audio=bool(should_apply_audio),
-            ),
-            apply_terrain_fx=runtime.render_resources.consume_terrain_fx_batch,
-            update_camera=runtime.update_camera,
+            runtime=runtime,
             on_output_applied=lambda output: apply_post_apply_reaction(
                 reaction=reactions.get(int(output.tick_index), PostApplyReaction()),
                 play_sfx=runtime.audio_bridge.router.play_sfx,

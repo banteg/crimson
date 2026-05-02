@@ -22,8 +22,8 @@ def test_network_provider_uses_runtime_resolved_order_without_remerge() -> None:
         resolve_tick=lambda tick, dt: ResolvedTick(
             tick_index=int(tick),
             dt_seconds=float(dt),
-            inputs=list(runtime_resolved),
-            commands=[],
+            inputs=tuple(runtime_resolved),
+            commands=(),
         ),
     )
 

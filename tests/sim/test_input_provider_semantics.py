@@ -9,6 +9,7 @@ from crimson.sim.input_providers import (
     InputProvider,
     InputStatus,
     LocalInputProvider,
+    PerkMenuOpenCommand,
     ResolvedTick,
     TickSupply,
 )
@@ -49,7 +50,7 @@ def test_local_provider_allows_empty_inputs_for_zero_players() -> None:
     tick0 = provider.pull_tick(0, _FRAME_CTX.tick_dt_seconds)
     assert tick0.status is InputStatus.READY
     assert tick0.tick is not None
-    assert tick0.tick.inputs == []
+    assert tick0.tick.inputs == ()
 
 
 def test_network_provider_returns_stalled_when_no_inputs() -> None:
@@ -66,8 +67,8 @@ def test_network_provider_returns_resolved_tick_inline() -> None:
         resolve_tick=lambda tick, dt: ResolvedTick(
             tick_index=int(tick),
             dt_seconds=float(dt),
-            inputs=[PlayerInput()],
-            commands=[],
+            inputs=(PlayerInput(),),
+            commands=(),
         ),
     )
     provider.begin_frame(_FRAME_CTX)
@@ -77,6 +78,22 @@ def test_network_provider_returns_resolved_tick_inline() -> None:
     assert tick0.status is InputStatus.READY
     assert tick0.tick is not None
     assert tick0.tick.tick_index == 0
+    assert tick0.tick.inputs == (PlayerInput(),)
+    assert tick0.tick.commands == ()
+
+
+def test_resolved_tick_schema_uses_tuple_inputs_and_commands() -> None:
+    command = PerkMenuOpenCommand(player_index=0)
+    tick = ResolvedTick(
+        tick_index=3,
+        dt_seconds=1.0 / 60.0,
+        inputs=(PlayerInput(fire_down=True),),
+        commands=(command,),
+    )
+
+    assert tick.tick_index == 3
+    assert tick.inputs == (PlayerInput(fire_down=True),)
+    assert tick.commands == (command,)
 
 
 class _SingleSupplyProvider(InputProvider):
@@ -105,8 +122,8 @@ def test_runner_uses_resolved_tick_dt_instead_of_default_tick_dt() -> None:
             tick=ResolvedTick(
                 tick_index=0,
                 dt_seconds=1.0 / 30.0,
-                inputs=[PlayerInput()],
-                commands=[],
+                inputs=(PlayerInput(),),
+                commands=(),
             ),
         ),
     )
@@ -136,8 +153,8 @@ def test_runner_rejects_non_ready_supply_with_resolved_tick(status: InputStatus)
             tick=ResolvedTick(
                 tick_index=0,
                 dt_seconds=1.0 / 60.0,
-                inputs=[PlayerInput()],
-                commands=[],
+                inputs=(PlayerInput(),),
+                commands=(),
             ),
         ),
     )
@@ -155,8 +172,8 @@ def test_runner_rejects_mismatched_resolved_tick_index() -> None:
             tick=ResolvedTick(
                 tick_index=1,
                 dt_seconds=1.0 / 60.0,
-                inputs=[PlayerInput()],
-                commands=[],
+                inputs=(PlayerInput(),),
+                commands=(),
             ),
         ),
     )

@@ -98,7 +98,6 @@ def advance_playback_frame(
             tick_index=int(tick_result.source_tick.tick_index),
             dt_sim=float(tick_result.payload.step.dt_sim),
             presentation=tick_result.payload.step.presentation,
-            terrain_fx=tick_result.payload.step.terrain_fx,
         ))
 
     return PlaybackFrameAdvance(

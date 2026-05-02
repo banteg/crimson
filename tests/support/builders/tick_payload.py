@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.sim.presentation_step import PresentationStepCommands
+from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.sessions import DeterministicSessionTick
 from crimson.sim.step_pipeline import DeterministicStepResult, PresentationRngTrace
 from crimson.sim.terrain_fx import TerrainFxBatch
@@ -29,14 +29,15 @@ def make_tick_payload(
         dt_sim=dt_sim,
         timing=timing,
         events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
-        presentation=PresentationStepCommands(),
-        presentation_plan_ms=float(presentation_plan_ms),
+        presentation=DeterministicPresentationPlan(
+            terrain_fx=terrain_fx,
+            post_apply_sfx=tuple(post_apply_sfx),
+        ),
         presentation_rng_trace=PresentationRngTrace(),
-        terrain_fx=terrain_fx,
-        post_apply_sfx=tuple(post_apply_sfx),
     )
     return DeterministicSessionTick(
         step=step,
         elapsed_ms=elapsed_ms,
         creature_count_world_step=creature_count,
+        presentation_plan_ms=float(presentation_plan_ms),
     )

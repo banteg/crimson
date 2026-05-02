@@ -2,11 +2,8 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.sfx_map import SfxId
-
 from ..math_parity import f32
-from .presentation_step import PresentationStepCommands
-from .terrain_fx import TerrainFxBatch
+from .presentation_step import DeterministicPresentationPlan
 from .timing import FrameTiming
 from .world_state import WorldEvents
 
@@ -19,11 +16,8 @@ class DeterministicStepResult(msgspec.Struct):
     dt_sim: float
     timing: FrameTiming
     events: WorldEvents
-    presentation: PresentationStepCommands
-    presentation_plan_ms: float
+    presentation: DeterministicPresentationPlan
     presentation_rng_trace: PresentationRngTrace
-    terrain_fx: TerrainFxBatch = TerrainFxBatch()
-    post_apply_sfx: tuple[SfxId, ...] = ()
 
 
 def time_scale_reflex_boost_bonus(

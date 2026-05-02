@@ -66,8 +66,8 @@ class StallableInputProvider(InputProvider):
             tick=ResolvedTick(
                 tick_index=int(tick_index),
                 dt_seconds=float(default_dt_seconds),
-                inputs=list(row),
-                commands=[],
+                inputs=tuple(row),
+                commands=(),
             ),
         )
 
@@ -91,8 +91,8 @@ class EOSInputProvider(InputProvider):
                 tick=ResolvedTick(
                     tick_index=int(tick_index),
                     dt_seconds=float(default_dt_seconds),
-                    inputs=[PlayerInput()],
-                    commands=[],
+                    inputs=(PlayerInput(),),
+                    commands=(),
                 ),
             )
         return TickSupply(status=InputStatus.EOS, tick=None)

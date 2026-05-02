@@ -104,7 +104,7 @@ def _live_runtime_checkpoints(
         )
         world.sync_audio_bridge_state()
         world.audio_bridge.apply_plan(plan=step.presentation, apply_audio=False)
-        world.render_resources.consume_terrain_fx_batch(step.terrain_fx)
+        world.render_resources.consume_terrain_fx_batch(step.presentation.terrain_fx)
 
         checkpoints.append(
             build_checkpoint(
@@ -181,7 +181,7 @@ def test_runtime_playback_driver_matches_verify_terrain_fx_output() -> None:
     runtime_tick = runtime_driver.step_tick(0)
     verify_tick = verify_driver.step_tick(0)
 
-    assert runtime_tick.payload.step.terrain_fx == verify_tick.payload.step.terrain_fx
+    assert runtime_tick.payload.step.presentation.terrain_fx == verify_tick.payload.step.presentation.terrain_fx
 
 
 def test_quest_live_vs_headless_tick_pipeline() -> None:

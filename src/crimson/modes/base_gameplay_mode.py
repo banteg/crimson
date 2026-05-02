@@ -190,7 +190,7 @@ class _LanRuntimeInputProvider:
             return TickSupply(status=InputStatus.STALLED, tick=None)
         frame_tick_index = int(frame.tick_index)
         frame_inputs = tuple(list(packed) for packed in frame.frame_inputs)
-        player_inputs = [unpack_player_input(packed) for packed in frame_inputs]
+        player_inputs = tuple(unpack_player_input(packed) for packed in frame_inputs)
         self._samples_by_runner_tick[int(tick_index)] = LanFrameSample(
             frame_tick_index=int(frame_tick_index),
             frame_inputs=tuple(frame_inputs),
@@ -202,7 +202,7 @@ class _LanRuntimeInputProvider:
                 tick_index=int(tick_index),
                 dt_seconds=float(default_dt_seconds),
                 inputs=player_inputs,
-                commands=list(frame.commands),
+                commands=tuple(frame.commands),
             ),
         )
 
@@ -1709,7 +1709,7 @@ class BaseGameplayMode:
         sim_ms = (time.perf_counter_ns() - sim_ns_start) / 1_000_000.0
         self._sim_ms += float(sim_ms)
         self._presentation_plan_ms += float(
-            sum(max(0.0, float(row.payload.step.presentation_plan_ms)) for row in batch.completed_results),
+            sum(max(0.0, float(row.payload.presentation_plan_ms)) for row in batch.completed_results),
         )
 
         ticks_applied = 0
@@ -1781,18 +1781,13 @@ class BaseGameplayMode:
         }
         apply_presentation_outputs(
             outputs=outputs,
-            sync_audio_bridge_state=self._world_runtime.sync_audio_bridge_state,
-            apply_audio_plan=lambda plan, should_apply_audio: self._world_runtime.audio_bridge.apply_plan(
-                plan=plan,
-                apply_audio=bool(should_apply_audio),
-            ),
-            apply_terrain_fx=self.render_resources.consume_terrain_fx_batch,
-            update_camera=self._world_runtime.update_camera if bool(update_camera) else None,
+            runtime=self._world_runtime,
             on_output_applied=lambda output: self._apply_tick_post_apply_reaction(
                 reaction_by_tick.get(int(output.tick_index), PostApplyReaction()),
                 dt_seconds=float(output.dt_sim),
             ),
             apply_audio=bool(apply_audio),
+            update_camera=bool(update_camera),
         )
 
     def _build_tick_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
@@ -1827,7 +1822,7 @@ class BaseGameplayMode:
                 replay_tick_index = int(
                     recorder.record_tick(
                         list(tick_result.source_tick.inputs),
-                        commands=tick_result.source_tick.commands,
+                        commands=list(tick_result.source_tick.commands),
                     ),
                 )
                 tick_result.replay_tick_index = replay_tick_index
@@ -1941,7 +1936,7 @@ class BaseGameplayMode:
         batch = advance.batch
         self._sim_ms = float((time.perf_counter_ns() - sim_ns_start) / 1_000_000.0)
         self._presentation_plan_ms = float(
-            sum(max(0.0, float(row.payload.step.presentation_plan_ms)) for row in batch.completed_results),
+            sum(max(0.0, float(row.payload.presentation_plan_ms)) for row in batch.completed_results),
         )
 
         apply_ns_start = time.perf_counter_ns()

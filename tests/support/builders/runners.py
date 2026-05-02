@@ -42,8 +42,8 @@ class FakeRunner:
                 source_tick=ResolvedTick(
                     tick_index=int(start_tick + i),
                     dt_seconds=float(tick_dt),
-                    inputs=[],
-                    commands=[],
+                    inputs=(),
+                    commands=(),
                 ),
                 payload=make_tick_payload(),
             )

@@ -8,7 +8,7 @@ import pytest
 import crimson.replay.driver.playback_pump as playback_pump_module
 from crimson.replay.driver.playback_pump import advance_playback_frame
 from crimson.sim.clock import FixedStepClock
-from crimson.sim.presentation_step import PresentationStepCommands
+from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.world_state import WorldEvents
 from tests.support.builders import FakePlaybackDriver
 
@@ -21,7 +21,7 @@ class _SimWorldStub:
         self,
         *,
         events: WorldEvents,
-        presentation: PresentationStepCommands,
+        presentation: DeterministicPresentationPlan,
         dt_sim: float,
         game_tune_started: bool,
     ) -> None:

@@ -108,8 +108,8 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker, make_mode_config
                         source_tick=ResolvedTick(
                             tick_index=0,
                             dt_seconds=1.0 / 60.0,
-                            inputs=[],
-                            commands=[],
+                            inputs=(),
+                            commands=(),
                         ),
                         payload=tick_payload,
                         lan_sync=LanTickSync(
@@ -184,8 +184,8 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
             source_tick=ResolvedTick(
                 tick_index=0,
                 dt_seconds=1.0 / 60.0,
-                inputs=[],
-                commands=[],
+                inputs=(),
+                commands=(),
             ),
             payload=make_tick_payload(elapsed_ms=16.67),
         ),
@@ -193,8 +193,8 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
             source_tick=ResolvedTick(
                 tick_index=1,
                 dt_seconds=1.0 / 60.0,
-                inputs=[],
-                commands=[],
+                inputs=(),
+                commands=(),
             ),
             payload=make_tick_payload(elapsed_ms=33.33),
         ),
@@ -264,8 +264,8 @@ def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker, make_mode_c
         source_tick=ResolvedTick(
             tick_index=0,
             dt_seconds=1.0 / 60.0,
-            inputs=[],
-            commands=[command],
+            inputs=(),
+            commands=(command,),
         ),
         payload=make_tick_payload(elapsed_ms=16.67),
     )

@@ -193,8 +193,8 @@ def test_world_runtime_apply_tick_batch_applies_post_apply_bonus_sfx(mocker) -> 
                 source_tick=ResolvedTick(
                     tick_index=0,
                     dt_seconds=1.0 / 60.0,
-                    inputs=[],
-                    commands=[],
+                    inputs=(),
+                    commands=(),
                 ),
                 payload=make_tick_payload(post_apply_sfx=(SfxId.UI_BONUS,)),
             ),
