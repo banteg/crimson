@@ -88,19 +88,10 @@ def projectile_collision_profile(type_id: ProjectileTemplateId) -> ProjectileCol
 class ProjectilePool:
     def __init__(self, *, size: int = MAIN_PROJECTILE_POOL_SIZE) -> None:
         self._entries = [Projectile() for _ in range(size)]
-        self._creature_damage_applier: CreatureDamageApplier | None = None
 
     @property
     def entries(self) -> list[Projectile]:
         return self._entries
-
-    @property
-    def creature_damage_applier(self) -> CreatureDamageApplier | None:
-        return self._creature_damage_applier
-
-    @creature_damage_applier.setter
-    def creature_damage_applier(self, value: CreatureDamageApplier | None) -> None:
-        self._creature_damage_applier = value
 
     def reset(self) -> None:
         for entry in self._entries:
@@ -171,11 +162,7 @@ class ProjectilePool:
         runtime_state = options.runtime_state
         players = options.players
         apply_player_damage = options.apply_player_damage
-        apply_creature_damage = (
-            options.apply_creature_damage
-            if options.apply_creature_damage is not None
-            else self._creature_damage_applier
-        )
+        apply_creature_damage = options.apply_creature_damage
         begin_hit_presentation = options.begin_hit_presentation
         finish_hit_presentation = options.finish_hit_presentation
 

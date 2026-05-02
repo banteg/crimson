@@ -80,19 +80,10 @@ class SecondaryStepCtx(msgspec.Struct, frozen=True):
 class SecondaryProjectilePool:
     def __init__(self, *, size: int = SECONDARY_PROJECTILE_POOL_SIZE) -> None:
         self._entries = [SecondaryProjectile() for _ in range(size)]
-        self._creature_damage_applier: CreatureDamageApplier | None = None
 
     @property
     def entries(self) -> list[SecondaryProjectile]:
         return self._entries
-
-    @property
-    def creature_damage_applier(self) -> CreatureDamageApplier | None:
-        return self._creature_damage_applier
-
-    @creature_damage_applier.setter
-    def creature_damage_applier(self, value: CreatureDamageApplier | None) -> None:
-        self._creature_damage_applier = value
 
     def reset(self) -> None:
         for entry in self._entries:
@@ -169,11 +160,7 @@ class SecondaryProjectilePool:
         runtime_state = ctx.runtime_state
         fx_queue = ctx.fx_queue
         detail_preset = int(ctx.detail_preset)
-        apply_creature_damage = (
-            ctx.apply_creature_damage
-            if ctx.apply_creature_damage is not None
-            else self._creature_damage_applier
-        )
+        apply_creature_damage = ctx.apply_creature_damage
         on_detonation_kill = ctx.on_detonation_kill
 
         if dt <= 0.0:

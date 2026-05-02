@@ -87,19 +87,10 @@ class BonusPool:
         # Native bonus code uses a writable sentinel entry when allocation/spacing
         # checks fail. Some callers still mutate it, which affects RNG consumption.
         self._sentinel = BonusEntry()
-        self._creature_damage_applier: CreatureDamageApplier | None = None
 
     @property
     def entries(self) -> list[BonusEntry]:
         return self._entries
-
-    @property
-    def creature_damage_applier(self) -> CreatureDamageApplier | None:
-        return self._creature_damage_applier
-
-    @creature_damage_applier.setter
-    def creature_damage_applier(self, value: CreatureDamageApplier | None) -> None:
-        self._creature_damage_applier = value
 
     def reset(self) -> None:
         for entry in self._entries:
@@ -412,11 +403,7 @@ class BonusPool:
                         detail_preset=int(detail_preset),
                         defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
                         freeze_corpse_indices=freeze_corpse_indices,
-                        apply_creature_damage=(
-                            apply_creature_damage
-                            if apply_creature_damage is not None
-                            else self._creature_damage_applier
-                        ),
+                        apply_creature_damage=apply_creature_damage,
                     )
                     entry.picked = True
                     entry.time_left = BONUS_PICKUP_LINGER

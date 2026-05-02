@@ -87,23 +87,13 @@ class ParticlePool:
         *,
         size: int = PARTICLE_POOL_SIZE,
         rng: CrandLike | None = None,
-        creature_damage_applier: CreatureDamageApplier | None = None,
     ) -> None:
         self._entries = [Particle() for _ in range(int(size))]
         self._rng = Crand(0) if rng is None else rng
-        self._creature_damage_applier = creature_damage_applier
 
     @property
     def entries(self) -> list[Particle]:
         return self._entries
-
-    @property
-    def creature_damage_applier(self) -> CreatureDamageApplier | None:
-        return self._creature_damage_applier
-
-    @creature_damage_applier.setter
-    def creature_damage_applier(self, value: CreatureDamageApplier | None) -> None:
-        self._creature_damage_applier = value
 
     def reset(self) -> None:
         for entry in self._entries:
@@ -198,7 +188,7 @@ class ParticlePool:
         if dt <= 0.0:
             return []
         dt = f32(float(dt))
-        damage_applier = apply_creature_damage or self._creature_damage_applier
+        damage_applier = apply_creature_damage
 
         def _creature_find_in_radius(*, pos: Vec2, radius: float) -> int:
             if creatures is None:
