@@ -30,6 +30,7 @@ const Impairment = enum {
     bidirectional_jitter_burst,
     guest_reconnect_bidirectional_jitter_burst,
     guest_double_reconnect_bidirectional_jitter_burst,
+    guest_triple_reconnect_bidirectional_jitter_burst,
 
     fn label(self: Impairment) []const u8 {
         return switch (self) {
@@ -46,6 +47,7 @@ const Impairment = enum {
             .bidirectional_jitter_burst => "bidirectional-jitter-burst",
             .guest_reconnect_bidirectional_jitter_burst => "guest-reconnect-bidirectional-jitter-burst",
             .guest_double_reconnect_bidirectional_jitter_burst => "guest-double-reconnect-bidirectional-jitter-burst",
+            .guest_triple_reconnect_bidirectional_jitter_burst => "guest-triple-reconnect-bidirectional-jitter-burst",
         };
     }
 };
@@ -130,7 +132,7 @@ pub fn runRollbackSmoke(
 
 fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !SmokePayload {
     const force_guest_resync = impairment == .force_guest_resync or impairment == .guest_reconnect_resync or impairment == .guest_double_reconnect_resync;
-    const guest_reconnect = impairment == .guest_reconnect or impairment == .guest_reconnect_resync or impairment == .guest_double_reconnect_resync or impairment == .guest_double_reconnect or impairment == .guest_double_reconnect_bidirectional_jitter_burst;
+    const guest_reconnect = impairment == .guest_reconnect or impairment == .guest_reconnect_resync or impairment == .guest_double_reconnect_resync or impairment == .guest_double_reconnect or impairment == .guest_double_reconnect_bidirectional_jitter_burst or impairment == .guest_triple_reconnect_bidirectional_jitter_burst;
     var server: relay_transport.UdpTransport = .{ .bind_host = "127.0.0.1", .bind_port = 0 };
     try server.open(io);
     defer server.close(io);
@@ -251,6 +253,19 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !Smoke
         );
     }
 
+    if (impairment == .guest_triple_reconnect_bidirectional_jitter_burst) {
+        return runGuestTripleReconnectBidirectionalJitterBurstSmoke(
+            allocator,
+            io,
+            server,
+            &service,
+            &host,
+            &guest,
+            code,
+            packets_sent,
+        );
+    }
+
     if (guest_reconnect) {
         return runGuestReconnectSmoke(
             allocator,
@@ -354,6 +369,7 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !Smoke
         .bidirectional_jitter_burst => unreachable,
         .guest_reconnect_bidirectional_jitter_burst => unreachable,
         .guest_double_reconnect_bidirectional_jitter_burst => unreachable,
+        .guest_triple_reconnect_bidirectional_jitter_burst => unreachable,
     }
     packets_sent += try pumpRelayService(allocator, io, server, &service, final_exchange_ms, &packet_impairment);
     try guest.update(allocator, io, final_exchange_ms);
@@ -633,6 +649,78 @@ fn runGuestDoubleReconnectBidirectionalJitterBurstSmoke(
         .guest_port = guest.boundPort(),
         .room_code = code,
         .impairment = Impairment.guest_double_reconnect_bidirectional_jitter_burst.label(),
+        .packets_sent = packets_sent,
+        .delayed_packets = jitter.delayed_packets,
+        .released_packets = jitter.released_packets,
+        .dropped_packets = jitter.dropped_packets,
+        .host_tick_index = jitter.host_step.last_tick_index orelse return error.RollbackHostFrameMissing,
+        .guest_tick_index = jitter.guest_step.last_tick_index orelse return error.RollbackGuestFrameMissing,
+        .host_input_flags = jitter.guest_step.last_input_flags[0],
+        .guest_input_flags = jitter.guest_step.last_input_flags[1],
+        .host_live_ticks_advanced = jitter.host_step.ticks_advanced,
+        .guest_live_ticks_advanced = jitter.guest_step.ticks_advanced,
+        .host_live_tick_index = if (host.runner) |runner| runner.session.tick_index else 0,
+        .guest_live_tick_index = if (guest.runner) |runner| runner.session.tick_index else 0,
+        .host_resync_count = host_runtime.resync_count,
+        .guest_resync_count = guest_runtime.resync_count,
+        .resync_snapshot_tick = -1,
+        .host_paused_for_resync = host_runtime.paused_for_resync,
+        .guest_paused_for_resync = guest_runtime.paused_for_resync,
+        .host_reconnect_count = host_runtime.reconnect_count,
+        .guest_reconnect_count = guest_runtime.reconnect_count,
+        .host_paused_for_reconnect = host_runtime.paused_for_reconnect,
+        .guest_paused_for_reconnect = guest_runtime.paused_for_reconnect,
+        .host_rollback_count = host_runtime.rollback_count,
+        .guest_rollback_count = guest_runtime.rollback_count,
+        .host_prediction_mismatches = host_runtime.prediction_mismatches,
+        .guest_prediction_mismatches = guest_runtime.prediction_mismatches,
+    };
+}
+
+fn runGuestTripleReconnectBidirectionalJitterBurstSmoke(
+    allocator: std.mem.Allocator,
+    io: Io,
+    server: relay_transport.UdpTransport,
+    service: *relay_service.RelayService,
+    host: *rollback_live_session.LiveSession,
+    guest: *rollback_live_session.LiveSession,
+    code: room_code.RoomCode,
+    initial_packets_sent: usize,
+) !SmokePayload {
+    const guest_token = guest.session.reconnect_token;
+    if (guest_token.len == 0) return error.RollbackReconnectTokenMissing;
+    const guest_slot = guest.session.local_slot_index;
+
+    var packets_sent = initial_packets_sent;
+    packets_sent += try forceGuestReconnectCycle(allocator, io, server, service, host, guest, code, guest_slot, 1800, 7000, 1);
+    var exchange = try driveLiveInputExchange(allocator, io, server, service, host, guest, 7050, 13, 11);
+    packets_sent += exchange.packets_sent;
+
+    packets_sent += try forceGuestReconnectCycle(allocator, io, server, service, host, guest, code, guest_slot, 9000, 14000, 2);
+    exchange = try driveLiveInputExchange(allocator, io, server, service, host, guest, 14050, 17, 19);
+    packets_sent += exchange.packets_sent;
+    if (exchange.host_step.last_tick_index != exchange.guest_step.last_tick_index) return error.RollbackReconnectTickMismatch;
+
+    packets_sent += try forceGuestReconnectCycle(allocator, io, server, service, host, guest, code, guest_slot, 16000, 21000, 3);
+    exchange = try driveLiveInputExchange(allocator, io, server, service, host, guest, 21050, 23, 29);
+    packets_sent += exchange.packets_sent;
+    if (exchange.host_step.last_tick_index != exchange.guest_step.last_tick_index) return error.RollbackReconnectTickMismatch;
+
+    const jitter = try driveBidirectionalJitterBurst(allocator, io, server, service, host, guest, 21600, false);
+    packets_sent += jitter.packets_sent;
+
+    const host_runtime = &(host.session.runtime orelse return error.RollbackRuntimeMissing);
+    const guest_runtime = &(guest.session.runtime orelse return error.RollbackRuntimeMissing);
+    if (host_runtime.reconnect_count != 3 or guest_runtime.reconnect_count != 3) return error.RollbackReconnectCountMismatch;
+    if (host_runtime.resync_count != 0 or guest_runtime.resync_count != 0) return error.RollbackUnexpectedResyncPause;
+    if (host_runtime.paused_for_reconnect or guest_runtime.paused_for_reconnect) return error.RollbackReconnectIncomplete;
+
+    return .{
+        .relay_port = server.boundPort(),
+        .host_port = host.boundPort(),
+        .guest_port = guest.boundPort(),
+        .room_code = code,
+        .impairment = Impairment.guest_triple_reconnect_bidirectional_jitter_burst.label(),
         .packets_sent = packets_sent,
         .delayed_packets = jitter.delayed_packets,
         .released_packets = jitter.released_packets,
@@ -1639,6 +1727,8 @@ fn parseArgs(args: []const []const u8) ParseOutcome {
             request.impairment = .guest_reconnect_bidirectional_jitter_burst;
         } else if (std.mem.eql(u8, arg, "--guest-double-reconnect-bidirectional-jitter-burst")) {
             request.impairment = .guest_double_reconnect_bidirectional_jitter_burst;
+        } else if (std.mem.eql(u8, arg, "--guest-triple-reconnect-bidirectional-jitter-burst")) {
+            request.impairment = .guest_triple_reconnect_bidirectional_jitter_burst;
         } else {
             return .{ .invalid = arg };
         }
@@ -1737,16 +1827,17 @@ fn parseImpairment(value: []const u8) ?Impairment {
     if (std.ascii.eqlIgnoreCase(text, "bidirectional-jitter-burst")) return .bidirectional_jitter_burst;
     if (std.ascii.eqlIgnoreCase(text, "guest-reconnect-bidirectional-jitter-burst")) return .guest_reconnect_bidirectional_jitter_burst;
     if (std.ascii.eqlIgnoreCase(text, "guest-double-reconnect-bidirectional-jitter-burst")) return .guest_double_reconnect_bidirectional_jitter_burst;
+    if (std.ascii.eqlIgnoreCase(text, "guest-triple-reconnect-bidirectional-jitter-burst")) return .guest_triple_reconnect_bidirectional_jitter_burst;
     return null;
 }
 
 const usage =
     \\Usage:
-    \\  crimson-zig net smoke-rollback [--format human|json] [--impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input|force-guest-resync|guest-reconnect|guest-reconnect-resync|guest-double-reconnect|guest-double-reconnect-resync|jitter-burst|bidirectional-jitter-burst|guest-reconnect-bidirectional-jitter-burst|guest-double-reconnect-bidirectional-jitter-burst]
+    \\  crimson-zig net smoke-rollback [--format human|json] [--impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input|force-guest-resync|guest-reconnect|guest-reconnect-resync|guest-double-reconnect|guest-double-reconnect-resync|jitter-burst|bidirectional-jitter-burst|guest-reconnect-bidirectional-jitter-burst|guest-double-reconnect-bidirectional-jitter-burst|guest-triple-reconnect-bidirectional-jitter-burst]
     \\
     \\Options:
     \\  --format human|json
-    \\  --impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input|force-guest-resync|guest-reconnect|guest-reconnect-resync|guest-double-reconnect|guest-double-reconnect-resync|jitter-burst|bidirectional-jitter-burst|guest-reconnect-bidirectional-jitter-burst|guest-double-reconnect-bidirectional-jitter-burst
+    \\  --impair none|delay-first-guest-input|reorder-first-guest-input|drop-first-guest-input|force-guest-resync|guest-reconnect|guest-reconnect-resync|guest-double-reconnect|guest-double-reconnect-resync|jitter-burst|bidirectional-jitter-burst|guest-reconnect-bidirectional-jitter-burst|guest-double-reconnect-bidirectional-jitter-burst|guest-triple-reconnect-bidirectional-jitter-burst
     \\
 ;
 
@@ -1936,6 +2027,21 @@ test "rollback smoke command can absorb bidirectional jitter after guest reconne
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"dropped_packets\": 0") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_reconnect_count\": 2") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_reconnect_count\": 2") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_resync_count\": 0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_resync_count\": 0") != null);
+}
+
+test "rollback smoke command can absorb bidirectional jitter after guest reconnects three times" {
+    const output = try runRollbackSmoke(std.testing.allocator, std.Io.Threaded.global_single_threaded.io(), &.{ "--json", "--impair", "guest-triple-reconnect-bidirectional-jitter-burst" });
+    defer output.deinit(std.testing.allocator);
+
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"impairment\": \"guest-triple-reconnect-bidirectional-jitter-burst\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"delayed_packets\": 6") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"released_packets\": 6") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"dropped_packets\": 0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_reconnect_count\": 3") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_reconnect_count\": 3") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"host_resync_count\": 0") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"guest_resync_count\": 0") != null);
 }

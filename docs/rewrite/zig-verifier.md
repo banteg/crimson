@@ -130,6 +130,10 @@ Current supported replay-tooling behavior:
   and `net smoke-rollback --impair bidirectional-jitter-burst --format json`
   and
   `net smoke-rollback --impair guest-reconnect-bidirectional-jitter-burst --format json`
+  and
+  `net smoke-rollback --impair guest-double-reconnect-bidirectional-jitter-burst --format json`
+  and
+  `net smoke-rollback --impair guest-triple-reconnect-bidirectional-jitter-burst --format json`
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
   data rather than stale “unsupported path” wording
 
@@ -166,8 +170,8 @@ The important remaining gaps are now:
   token before advancing more input, absorb bidirectional jitter after a
   reconnect, drive a longer reconnect-then-resync smoke path, recover from a
   double-reconnect-then-resync sequence, and absorb bidirectional jitter after
-  two reconnect cycles, but broader reconnect/resync stress and product-lobby
-  polish remain.
+  two or three reconnect cycles, but broader reconnect/resync stress and
+  product-lobby polish remain.
 
 The biggest remaining technical risk is not basic gameplay ownership. It is
 closing the remaining replay/tooling and product-shell breadth gaps cleanly.
