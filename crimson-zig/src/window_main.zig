@@ -240,6 +240,11 @@ const NetworkLiveRuntime = union(enum) {
     rollback: rollback_live_session.LiveSession,
 
     fn init(request: window_misc_panels.NetworkLaunchRequest, seed: i32) !NetworkLiveRuntime {
+        return initWithStatus(request, seed, null);
+    }
+
+    fn initWithStatus(request: window_misc_panels.NetworkLaunchRequest, seed: i32, status: ?formats.game_cfg.Status) !NetworkLiveRuntime {
+        const host_status = if (request.role == .host) status else null;
         return switch (request.netcode) {
             .lockstep => switch (request.role) {
                 .host => .{
@@ -253,6 +258,7 @@ const NetworkLiveRuntime = union(enum) {
                         .seed = seed,
                         .input_delay_ticks = 0,
                         .quest_level = request.quest_level,
+                        .status = host_status,
                         .host_ready = true,
                         .pump_options = .{ .first_timeout_ms = 0 },
                     }),
@@ -290,6 +296,7 @@ const NetworkLiveRuntime = union(enum) {
                             null,
                         .quest_level = request.quest_level,
                         .input_delay_ticks = 0,
+                        .status = host_status,
                     },
                 }),
             },
@@ -1689,7 +1696,7 @@ const App = struct {
         const io = std.Io.Threaded.global_single_threaded.io();
         const seed: i32 = @bitCast(self.takeRunSeed());
         const launch_label = networkLaunchNetcodeLabel(request.netcode);
-        var session = NetworkLiveRuntime.init(request, seed) catch |err| {
+        var session = NetworkLiveRuntime.initWithStatus(request, seed, self.runtime.status) catch |err| {
             self.network_session.setStatusFmt("{s} init failed: {s}", .{ launch_label, @errorName(err) });
             return;
         };
@@ -5742,6 +5749,66 @@ test "window network live runtime carries quest level into network sessions" {
         .rollback => |session| {
             try std.testing.expectEqual(@as(i32, 204), session.session.options.quest_level.?.levelKey());
         },
+        .host, .client => return error.TestUnexpectedResult,
+    }
+}
+
+test "window network host carries deterministic status into session start" {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    var status = std.mem.zeroes(formats.game_cfg.Status);
+    status.game_sequence_id = 77;
+
+    var lockstep = try NetworkLiveRuntime.initWithStatus(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .lockstep,
+        .bind_host = "127.0.0.1",
+        .host = "127.0.0.1",
+        .port = 31993,
+    }, 123, status);
+    defer lockstep.deinit(std.testing.allocator, io);
+
+    switch (lockstep) {
+        .host => |host| try std.testing.expectEqual(@as(u32, 77), host.session.runtime.status.?.game_sequence_id),
+        .client, .rollback => return error.TestUnexpectedResult,
+    }
+
+    var rollback = try NetworkLiveRuntime.initWithStatus(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .rollback,
+        .bind_host = "127.0.0.1",
+        .host = "127.0.0.1",
+        .port = 31993,
+    }, 123, status);
+    defer rollback.deinit(std.testing.allocator, io);
+
+    switch (rollback) {
+        .rollback => |session| try std.testing.expectEqual(@as(u32, 77), session.session.options.status.?.game_sequence_id),
+        .host, .client => return error.TestUnexpectedResult,
+    }
+}
+
+test "window network join ignores local deterministic status" {
+    var status = std.mem.zeroes(formats.game_cfg.Status);
+    status.game_sequence_id = 77;
+
+    var rollback = try NetworkLiveRuntime.initWithStatus(.{
+        .role = .join,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .rollback,
+        .bind_host = "127.0.0.1",
+        .host = "127.0.0.1",
+        .port = 31993,
+        .room_code_text = "ABCD",
+    }, 123, status);
+    defer rollback.deinit(std.testing.allocator, std.Io.Threaded.global_single_threaded.io());
+
+    switch (rollback) {
+        .rollback => |session| try std.testing.expect(session.session.options.status == null),
         .host, .client => return error.TestUnexpectedResult,
     }
 }
