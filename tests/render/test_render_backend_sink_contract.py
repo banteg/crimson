@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from crimson.render.pipeline import RenderPipeline
-from crimson.render.sink import NullSink, VideoSink, WindowSink
+from crimson.render.sink import NullSink, VideoSink, VideoTransport, WindowSink
 
 
 def test_render_pipeline_lifecycle_and_resize_behavior() -> None:
@@ -135,12 +135,22 @@ def test_window_sink_raises_on_present_error() -> None:
 def test_video_sink_transport_and_fail_fast_behavior(tmp_path: Path) -> None:
     events: list[str] = []
 
+    class _EventVideoTransport(VideoTransport):
+        def open(self) -> None:
+            events.append("open")
+
+        def present_frame(self) -> None:
+            events.append("present")
+
+        def flush(self) -> None:
+            events.append("flush")
+
+        def close(self) -> None:
+            events.append("close")
+
     sink = VideoSink(
         output_path=tmp_path / "nested" / "out.mp4",
-        open_transport=lambda: events.append("open"),
-        present_frame=lambda: events.append("present"),
-        flush_transport=lambda: events.append("flush"),
-        close_transport=lambda: events.append("close"),
+        transport=_EventVideoTransport(),
     )
     sink.open()
     sink.present()
@@ -149,12 +159,13 @@ def test_video_sink_transport_and_fail_fast_behavior(tmp_path: Path) -> None:
 
     assert events == ["open", "present", "flush", "close"]
 
-    def _raise_present() -> None:
-        raise RuntimeError("present failed")
+    class _FailingVideoTransport(VideoTransport):
+        def present_frame(self) -> None:
+            raise RuntimeError("present failed")
 
     sink = VideoSink(
         output_path=tmp_path / "out.mp4",
-        present_frame=_raise_present,
+        transport=_FailingVideoTransport(),
     )
     sink.open()
     with pytest.raises(RuntimeError, match="present failed"):
