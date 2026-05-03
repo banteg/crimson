@@ -112,6 +112,7 @@ pub const HostSession = struct {
             self.pump_options,
         );
         try self.runtime.pollResends(allocator, now_ms, &self.outbox);
+        try self.runtime.startIfReady(allocator, now_ms, &self.outbox);
         const sent = try lockstep_pump.flushOutbox(allocator, io, self.transport, &self.outbox);
         return .{ .received = received, .sent = sent };
     }
@@ -274,6 +275,34 @@ test "lockstep sessions handshake over udp" {
     try std.testing.expect(client_start.received >= 1);
     try std.testing.expect(client.runtime.started);
     try std.testing.expect(client.runtime.lockstep != null);
+}
+
+test "lockstep host session starts single-player lobby on update" {
+    const allocator = std.testing.allocator;
+    const io = std.Io.Threaded.global_single_threaded.io();
+
+    var status = std.mem.zeroes(game_cfg.Status);
+    status.game_sequence_id = 44;
+    var host = HostSession.init(.{
+        .bind_host = "127.0.0.1",
+        .bind_port = 0,
+        .mode_id = 2,
+        .player_count = 1,
+        .build_id = "0.1.0",
+        .session_id = "solo",
+        .input_delay_ticks = 0,
+        .status = status,
+        .pump_options = .{ .first_timeout_ms = 0 },
+    });
+    try host.open(io);
+    defer host.deinit(allocator, io);
+
+    try std.testing.expect(!host.runtime.started);
+    const update = try host.update(allocator, io, 20);
+    try std.testing.expectEqual(@as(usize, 0), update.received);
+    try std.testing.expectEqual(@as(usize, 0), update.sent);
+    try std.testing.expect(host.runtime.started);
+    try std.testing.expect(host.runtime.lockstep != null);
 }
 
 test "lockstep sessions exchange input and canonical tick frame" {

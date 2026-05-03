@@ -5578,6 +5578,27 @@ test "window network live runtime opens host session" {
     try std.testing.expectEqual(@as(usize, 0), stats.stats.received);
 }
 
+test "window network live runtime starts single-player lockstep host on update" {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    var status = std.mem.zeroes(formats.game_cfg.Status);
+    status.game_sequence_id = 45;
+
+    var runtime = try NetworkLiveRuntime.initWithStatus(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 1,
+        .netcode = .lockstep,
+        .bind_host = "127.0.0.1",
+        .port = 0,
+    }, 123, status);
+    defer runtime.deinit(std.testing.allocator, io);
+
+    try runtime.start(std.testing.allocator, io, 10);
+    try std.testing.expect(runtime.runnerForLocalInput() == null);
+    _ = try runtime.update(std.testing.allocator, io, 20);
+    try std.testing.expect(runtime.runnerForLocalInput() != null);
+}
+
 test "window network live runtime steps host ready frames" {
     const io = std.Io.Threaded.global_single_threaded.io();
     var runtime = try NetworkLiveRuntime.init(.{

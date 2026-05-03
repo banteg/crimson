@@ -200,7 +200,7 @@ pub const HostRuntime = struct {
         }
     }
 
-    fn startIfReady(
+    pub fn startIfReady(
         self: *HostRuntime,
         allocator: std.mem.Allocator,
         now_ms: i64,
@@ -453,6 +453,30 @@ test "lockstep host runtime starts once peer is ready" {
         }
     }
     try std.testing.expect(saw_start);
+}
+
+test "lockstep host runtime starts single player when polled" {
+    const allocator = std.testing.allocator;
+    var status = std.mem.zeroes(game_cfg.Status);
+    status.game_sequence_id = 78;
+
+    var host = HostRuntime.init(.{
+        .mode_id = 3,
+        .player_count = 1,
+        .build_id = "0.1.0",
+        .session_id = "solo",
+        .seed = 456,
+        .status = status,
+    });
+    defer host.deinit(allocator);
+
+    var outbox: Outbox = .{};
+    defer outbox.deinit(allocator);
+
+    try host.startIfReady(allocator, 10, &outbox);
+    try std.testing.expect(host.started);
+    try std.testing.expect(host.lockstep != null);
+    try std.testing.expectEqual(@as(usize, 0), outbox.packets.items.len);
 }
 
 test "lockstep host runtime combines local and peer input into ready frames" {
