@@ -22,8 +22,8 @@ const default_network_port: u16 = 31993;
 const mod_runtime_scope_text = "Native DLL mod loading is outside this port.";
 const other_games_scope_text = "Other Games ads are outside this port.";
 const network_runtime_scope_text = "Rollback and lockstep runtimes available.";
-const default_network_room_code = "ab12";
-const default_network_host_endpoint = "0.0.0.0:31993";
+const default_network_room_code = "";
+const default_network_host_endpoint = "127.0.0.1:31993";
 const default_network_join_endpoint = "127.0.0.1:31993";
 
 const NetworkRole = enum {
@@ -791,7 +791,7 @@ fn collectNetworkEndpointInput(state: *NetworkState) NetworkEndpointInputEdits {
         return edits;
     }
 
-    if (state.netcode != .lockstep or state.role != .join) return edits;
+    if (state.netcode != .lockstep) return edits;
 
     while (true) {
         const codepoint = rl.getCharPressed();
@@ -1011,7 +1011,7 @@ test "network panel join uses lobby-derived mode with editable rollback relay an
     try std.testing.expectEqualStrings("from lobby", networkPlayersValueLabel(&state, &buf));
     try std.testing.expectEqualStrings("Relay", networkEndpointLabel(&state));
     try std.testing.expectEqualStrings("127.0.0.1:31993", networkEndpointValueLabel(&state, &buf));
-    try std.testing.expectEqualStrings("ab12", networkCodeValueLabel(&state));
+    try std.testing.expectEqualStrings("-", networkCodeValueLabel(&state));
 
     state.room_code_input.set("ZX9Q!");
     try std.testing.expectEqualStrings("zx9q", networkCodeValueLabel(&state));
@@ -1105,8 +1105,8 @@ test "network panel builds launch requests for lockstep and rollback" {
     try std.testing.expectEqual(NetworkLaunchNetcode.lockstep, host_request.netcode);
     try std.testing.expectEqual(@as(i32, 1), host_request.mode_id);
     try std.testing.expectEqual(@as(i32, 2), host_request.player_count);
-    try std.testing.expectEqualStrings("0.0.0.0", host_request.bind_host);
-    try std.testing.expectEqualStrings("0.0.0.0", host_request.host);
+    try std.testing.expectEqualStrings("127.0.0.1", host_request.bind_host);
+    try std.testing.expectEqualStrings("127.0.0.1", host_request.host);
     try std.testing.expectEqual(@as(u16, 31993), host_request.port);
 
     state.host_endpoint.set("127.0.0.1:32011");
@@ -1140,6 +1140,11 @@ test "network panel builds launch requests for lockstep and rollback" {
 
     state.netcode = .rollback;
     state.relay_endpoint.set("203.0.113.20:32031");
+    try std.testing.expect(networkLaunchRequest(&state) == null);
+    try std.testing.expectEqualStrings("Room code must be 4 letters or digits.", networkLaunchUnavailableMessage(&state));
+    try std.testing.expectEqualStrings("Invalid code", networkLaunchValueLabel(&state));
+
+    state.room_code_input.set("AB12");
     const rollback_join_request = networkLaunchRequest(&state) orelse return error.TestExpectedEqual;
     try std.testing.expectEqual(NetworkLaunchNetcode.rollback, rollback_join_request.netcode);
     try std.testing.expectEqual(NetworkLaunchRole.join, rollback_join_request.role);
