@@ -1687,7 +1687,7 @@ const App = struct {
 
     fn startNetworkLiveSession(self: *App) void {
         const request = window_misc_panels.networkLaunchRequest(&self.network_session) orelse {
-            self.network_session.setStatus(window_misc_panels.networkLaunchUnavailableMessage(&self.network_session));
+            self.network_session.setError(window_misc_panels.networkLaunchUnavailableMessage(&self.network_session));
             return;
         };
         self.stopNetworkLiveSession();
@@ -1697,12 +1697,12 @@ const App = struct {
         const seed: i32 = @bitCast(self.takeRunSeed());
         const launch_label = networkLaunchNetcodeLabel(request.netcode);
         var session = NetworkLiveRuntime.initWithStatus(request, seed, self.runtime.status) catch |err| {
-            self.network_session.setStatusFmt("{s} init failed: {s}", .{ launch_label, @errorName(err) });
+            self.network_session.setErrorFmt("{s} init failed: {s}", .{ launch_label, @errorName(err) });
             return;
         };
         session.start(self.allocator, io, monotonicMs(io)) catch |err| {
             session.deinit(self.allocator, io);
-            self.network_session.setStatusFmt("{s} open failed: {s}", .{ launch_label, @errorName(err) });
+            self.network_session.setErrorFmt("{s} open failed: {s}", .{ launch_label, @errorName(err) });
             return;
         };
 
@@ -1730,7 +1730,7 @@ const App = struct {
         const io = std.Io.Threaded.global_single_threaded.io();
         const now_ms = monotonicMs(io);
         self.submitNetworkLiveInput(io, frame_dt, now_ms) catch |err| {
-            self.network_session.setStatusFmt("{s} input failed: {s}", .{ self.activeNetworkLiveLabel(), @errorName(err) });
+            self.network_session.setErrorFmt("{s} input failed: {s}", .{ self.activeNetworkLiveLabel(), @errorName(err) });
             self.stopNetworkLiveSession();
             return;
         };
@@ -1738,7 +1738,7 @@ const App = struct {
         const session = if (self.network_live_session) |*session| session else return;
         const label = networkLiveRuntimeLabel(session);
         const net_update = session.update(self.allocator, io, now_ms) catch |err| {
-            self.network_session.setStatusFmt("{s} update failed: {s}", .{ label, @errorName(err) });
+            self.network_session.setErrorFmt("{s} update failed: {s}", .{ label, @errorName(err) });
             self.stopNetworkLiveSession();
             return;
         };
@@ -1757,7 +1757,7 @@ const App = struct {
                     if (session.runConfigForResults()) |run_config| {
                         self.finishLiveRunner(runner, run_config, reason, null);
                     } else {
-                        self.network_session.setStatusFmt("{s} match finished before results were available.", .{label});
+                        self.network_session.setErrorFmt("{s} match finished before results were available.", .{label});
                     }
                     self.stopNetworkLiveSession();
                     return;
@@ -2803,7 +2803,7 @@ const App = struct {
         }
 
         if (self.network_session.status_len != 0) {
-            window_ui.drawSmallText(assets, self.network_session.statusText(), panel.x + 104.0, panel.y + 350.0, rl.Color.init(204, 204, 214, 255));
+            window_ui.drawSmallText(assets, self.network_session.statusText(), panel.x + 104.0, panel.y + 350.0, window_misc_panels.networkStatusColor(self.network_session.status_kind, 255));
         }
     }
 
@@ -2901,7 +2901,7 @@ const App = struct {
         if (self.network_session.status_len == 0) return;
         const assets = runtime_assets orelse return;
         const y = @as(f32, @floatFromInt(rl.getScreenHeight())) - 30.0;
-        window_ui.drawSmallText(assets, self.network_session.statusText(), 18.0, y, rl.Color.init(204, 204, 214, 220));
+        window_ui.drawSmallText(assets, self.network_session.statusText(), 18.0, y, window_misc_panels.networkStatusColor(self.network_session.status_kind, 220));
     }
 
     fn drawGameplay(self: *App) void {

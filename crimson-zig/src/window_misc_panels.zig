@@ -65,6 +65,11 @@ pub const UpdateResult = struct {
     play_button_click: bool = false,
 };
 
+pub const NetworkStatusKind = enum {
+    info,
+    failure,
+};
+
 pub const NetworkLaunchRole = enum {
     host,
     join,
@@ -331,6 +336,7 @@ pub const NetworkState = struct {
     join_endpoint: NetworkJoinEndpointInput = networkEndpointInput(default_network_join_endpoint),
     status_bytes: [network_status_bytes]u8 = undefined,
     status_len: usize = 0,
+    status_kind: NetworkStatusKind = .info,
 
     pub fn reset(self: *NetworkState) void {
         self.* = .{};
@@ -338,13 +344,32 @@ pub const NetworkState = struct {
     }
 
     pub fn setStatus(self: *NetworkState, message: []const u8) void {
+        self.status_kind = .info;
+        self.setStatusText(message);
+    }
+
+    pub fn setError(self: *NetworkState, message: []const u8) void {
+        self.status_kind = .failure;
+        self.setStatusText(message);
+    }
+
+    fn setStatusText(self: *NetworkState, message: []const u8) void {
         const len = @min(message.len, self.status_bytes.len);
         @memcpy(self.status_bytes[0..len], message[0..len]);
         self.status_len = len;
     }
 
     pub fn setStatusFmt(self: *NetworkState, comptime fmt: []const u8, args: anytype) void {
+        self.setStatusFmtWithKind(fmt, .info, args);
+    }
+
+    pub fn setErrorFmt(self: *NetworkState, comptime fmt: []const u8, args: anytype) void {
+        self.setStatusFmtWithKind(fmt, .failure, args);
+    }
+
+    fn setStatusFmtWithKind(self: *NetworkState, comptime fmt: []const u8, kind: NetworkStatusKind, args: anytype) void {
         const rendered = std.fmt.bufPrint(self.status_bytes[0..], fmt, args) catch return;
+        self.status_kind = kind;
         self.status_len = rendered.len;
     }
 
@@ -457,8 +482,15 @@ fn drawNetworkPanel(state: *const NetworkState, assets: *const window_assets.Run
 
     window_ui.drawSmallText(assets, network_runtime_scope_text, animated_rect.x + 96.0, animated_rect.y + 292.0, rl.Color.init(214, 190, 170, 255));
     if (state.status_len != 0) {
-        window_ui.drawSmallText(assets, state.statusText(), animated_rect.x + 136.0, animated_rect.y + 314.0, rl.Color.init(204, 204, 214, 255));
+        window_ui.drawSmallText(assets, state.statusText(), animated_rect.x + 136.0, animated_rect.y + 314.0, networkStatusColor(state.status_kind, 255));
     }
+}
+
+pub fn networkStatusColor(kind: NetworkStatusKind, alpha: u8) rl.Color {
+    return switch (kind) {
+        .info => rl.Color.init(204, 204, 214, alpha),
+        .failure => rl.Color.init(240, 90, 90, alpha),
+    };
 }
 
 pub fn networkLaunchRequest(state: *const NetworkState) ?NetworkLaunchRequest {
@@ -964,6 +996,7 @@ test "network panel defaults to host rollback session" {
     try std.testing.expectEqual(NetworkMode.survival, state.mode);
     try std.testing.expectEqual(NetworkNetcode.rollback, state.netcode);
     try std.testing.expectEqual(@as(i32, 2), state.player_count);
+    try std.testing.expectEqual(NetworkStatusKind.info, state.status_kind);
     try std.testing.expectEqualStrings("Host", networkRoleLabel(state.role));
     try std.testing.expectEqualStrings("Survival", networkModeValueLabel(&state));
     try std.testing.expectEqualStrings("Rollback ready.", state.statusText());
@@ -972,6 +1005,26 @@ test "network panel defaults to host rollback session" {
     try std.testing.expectEqualStrings("Relay", networkEndpointLabel(&state));
     try std.testing.expectEqualStrings("127.0.0.1:31993", networkEndpointValueLabel(&state, &buf));
     try std.testing.expectEqualStrings("assigned by relay", networkCodeValueLabel(&state));
+}
+
+test "network panel distinguishes error status from info status" {
+    var state: NetworkState = .{};
+
+    state.setError("relay unavailable");
+    try std.testing.expectEqual(NetworkStatusKind.failure, state.status_kind);
+    try std.testing.expectEqualStrings("relay unavailable", state.statusText());
+
+    state.setStatusFmt("Rollback room request sent from port {d}.", .{31993});
+    try std.testing.expectEqual(NetworkStatusKind.info, state.status_kind);
+    try std.testing.expectEqualStrings("Rollback room request sent from port 31993.", state.statusText());
+
+    state.setErrorFmt("Rollback update failed: {s}", .{"Timeout"});
+    try std.testing.expectEqual(NetworkStatusKind.failure, state.status_kind);
+    try std.testing.expectEqualStrings("Rollback update failed: Timeout", state.statusText());
+
+    state.reset();
+    try std.testing.expectEqual(NetworkStatusKind.info, state.status_kind);
+    try std.testing.expectEqualStrings("Rollback ready.", state.statusText());
 }
 
 test "network panel cycles host mode and player count" {
