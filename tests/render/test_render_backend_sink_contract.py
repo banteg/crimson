@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 
-from crimson.render.pipeline import RenderPipeline
+from crimson.render.pipeline import RaylibDrawScope, RenderDrawScope, RenderPipeline
 from crimson.render.sink import NullSink, VideoSink, VideoTransport, WindowSink
 
 
@@ -26,12 +27,18 @@ def test_render_pipeline_lifecycle_and_resize_behavior() -> None:
         def close(self) -> None:
             events.append("sink.close")
 
+    class _EventDrawScope(RenderDrawScope):
+        def draw(self, draw_frame: Callable[[], None]) -> None:
+            events.append("draw.begin")
+            try:
+                draw_frame()
+            finally:
+                events.append("draw.end")
+
     pipeline = RenderPipeline(
         sink=_Sink(),
         on_resize=lambda width, height: events.append(f"resize:{int(width)}x{int(height)}"),
-        begin_end_drawing=True,
-        begin_draw=lambda: events.append("draw.begin"),
-        end_draw=lambda: events.append("draw.end"),
+        draw_scope=_EventDrawScope(),
     )
     pipeline.render(draw_frame=lambda: events.append("draw.frame.1"), width=640, height=480)
     pipeline.render(draw_frame=lambda: events.append("draw.frame.2"), width=640, height=480)
@@ -82,6 +89,28 @@ def test_render_pipeline_closes_sink_when_open_fails() -> None:
         pipeline.render(draw_frame=lambda: None, width=640, height=480)
 
     assert events == ["sink.open", "sink.close"]
+
+
+def test_raylib_draw_scope_balances_begin_end_on_draw_error() -> None:
+    events: list[str] = []
+
+    class _RaylibRuntime:
+        def begin_drawing(self) -> None:
+            events.append("begin")
+
+        def end_drawing(self) -> None:
+            events.append("end")
+
+    def _raise_draw() -> None:
+        events.append("draw")
+        raise RuntimeError("draw failed")
+
+    scope = RaylibDrawScope(raylib=_RaylibRuntime())
+
+    with pytest.raises(RuntimeError, match="draw failed"):
+        scope.draw(_raise_draw)
+
+    assert events == ["begin", "draw", "end"]
 
 
 def test_render_pipeline_resets_open_state_when_close_fails() -> None:

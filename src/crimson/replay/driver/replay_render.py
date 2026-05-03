@@ -10,7 +10,7 @@ from typing import Literal
 
 import msgspec
 
-from ...render.pipeline import RenderPipeline
+from ...render.pipeline import RaylibDrawScope, RenderPipeline
 from ...render.sink import VideoSink, VideoTransport
 from ...replay import Replay
 from .playback_driver import build_verify_playback_driver
@@ -260,9 +260,7 @@ def run_replay_render_video(
                     output_path=video_out_path,
                     transport=video_transport,
                 ),
-                begin_end_drawing=True,
-                begin_draw=rl.begin_drawing,
-                end_draw=rl.end_drawing,
+                draw_scope=RaylibDrawScope(raylib=rl),
             )
             render_pipeline.open(width=capture_width, height=capture_height)
             assert render_pipeline is not None

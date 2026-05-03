@@ -83,15 +83,11 @@ class _PipelineSpy:
         *,
         sink: Any,
         on_resize: Any = None,
-        begin_end_drawing: bool = False,
-        begin_draw: Any = None,
-        end_draw: Any = None,
+        draw_scope: Any = None,
     ) -> None:
         self.sink = sink
         self.on_resize = on_resize
-        self.begin_end_drawing = begin_end_drawing
-        self.begin_draw = begin_draw
-        self.end_draw = end_draw
+        self.draw_scope = draw_scope
         self.draw_calls: list[tuple[int, int]] = []
         self.present_calls = 0
         self.close_calls = 0
@@ -112,9 +108,11 @@ def test_run_view_uses_render_pipeline(monkeypatch) -> None:
     fake_rl = _FakeRl()
     view = _ViewSpy()
     sink_sentinel = object()
+    draw_scope_sentinel = object()
 
     monkeypatch.setattr(grim_app, "rl", fake_rl)
     monkeypatch.setattr(grim_app, "WindowSink", lambda: sink_sentinel)
+    monkeypatch.setattr(grim_app, "RaylibDrawScope", lambda *, raylib: draw_scope_sentinel)
     _PipelineSpy.instances.clear()
     monkeypatch.setattr(grim_app, "RenderPipeline", _PipelineSpy)
 
@@ -123,9 +121,7 @@ def test_run_view_uses_render_pipeline(monkeypatch) -> None:
     assert len(_PipelineSpy.instances) == 1
     pipeline = _PipelineSpy.instances[0]
     assert pipeline.sink is sink_sentinel
-    assert pipeline.begin_end_drawing is True
-    assert pipeline.begin_draw == fake_rl.begin_drawing
-    assert pipeline.end_draw == fake_rl.end_drawing
+    assert pipeline.draw_scope is draw_scope_sentinel
     assert pipeline.draw_calls == [(800, 450)]
     assert pipeline.present_calls == 1
     assert pipeline.close_calls == 1
