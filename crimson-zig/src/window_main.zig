@@ -601,6 +601,13 @@ fn networkLobbyConnectedText(summary: NetworkLobbySummary, elapsed_s: f32, scrat
     }) catch "";
 }
 
+fn networkLobbyBackHoverAmount(current: i32, hovered: bool, dt_ms: i32) i32 {
+    if (hovered) {
+        return std.math.clamp(current + dt_ms * 6, 0, 1000);
+    }
+    return std.math.clamp(current - dt_ms * 2, 0, 1000);
+}
+
 fn parseNetworkPeerAddr(host: []const u8, port: u16) !lockstep_session.PeerAddr {
     var parts: [4]u8 = undefined;
     var iter = std.mem.splitScalar(u8, host, '.');
@@ -1518,7 +1525,7 @@ const App = struct {
     fn updateNetworkSession(self: *App, frame_dt: f32) void {
         if (self.network_live_session != null) {
             self.network_live_render_time_s += @max(frame_dt, 0.0);
-            if (rl.isKeyPressed(.escape)) {
+            if (self.networkLiveBackRequested(frame_dt)) {
                 self.audio.playUiButtonClick();
                 self.stopNetworkLiveSession();
                 self.play_game_menu.reset();
@@ -1545,6 +1552,27 @@ const App = struct {
             self.startNetworkLiveSession();
         }
         self.updateNetworkLiveSession(frame_dt);
+    }
+
+    fn networkLiveBackRequested(self: *App, frame_dt: f32) bool {
+        const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
+        const session = if (self.network_live_session) |*session| session else return false;
+        const lobby_waiting = session.runnerForLocalInput() == null;
+        const back_hovered = if (lobby_waiting)
+            if (self.runtime_assets) |*assets|
+                rl.checkCollisionPointRec(rl.getMousePosition(), window_menu.panelBackHitRect(assets, 300))
+            else
+                false
+        else
+            false;
+
+        self.network_session.panel.back_hover_amount = networkLobbyBackHoverAmount(
+            self.network_session.panel.back_hover_amount,
+            back_hovered,
+            dt_ms,
+        );
+
+        return rl.isKeyPressed(.escape) or (back_hovered and rl.isMouseButtonPressed(.left));
     }
 
     fn startNetworkLiveSession(self: *App) void {
@@ -2612,6 +2640,7 @@ const App = struct {
         window_menu.drawMenuBackdrop(assets);
         window_menu.drawSign(300, assets);
         window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), network_lobby_panel_rect, rl.Color.white, false);
+        window_menu.drawPanelBackEntry(assets, 300, self.network_session.panel.back_hover_amount);
 
         const panel = network_lobby_panel_rect;
         const label_color = rl.Color.init(190, 190, 200, 230);
@@ -5617,6 +5646,13 @@ test "window network lobby connected text clamps counts and pulses" {
 
     try std.testing.expectEqualStrings("1/2", networkLobbyConnectedText(.{ .connected = 1, .expected = 2 }, 0.0, &buf));
     try std.testing.expectEqualStrings("4/4..", networkLobbyConnectedText(.{ .connected = 8, .expected = 9 }, 0.9, &buf));
+}
+
+test "window network lobby back hover follows native panel timing" {
+    try std.testing.expectEqual(@as(i32, 600), networkLobbyBackHoverAmount(0, true, 100));
+    try std.testing.expectEqual(@as(i32, 1000), networkLobbyBackHoverAmount(900, true, 100));
+    try std.testing.expectEqual(@as(i32, 300), networkLobbyBackHoverAmount(500, false, 100));
+    try std.testing.expectEqual(@as(i32, 0), networkLobbyBackHoverAmount(100, false, 100));
 }
 
 test "window rollback live runtime exposes assigned room code for lobby status" {
