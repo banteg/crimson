@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from math import isclose
 
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.frame_pump import advance_tick_runner_frame
+from crimson.sim.hooks import TickResult
 from crimson.sim.input_providers import FrameContext, InputStatus
 from crimson.sim.tick_runner import TickBatchResult
 
@@ -16,14 +18,23 @@ class _RecordingRunner:
     start_tick: int | None = None
     ticks_requested: int | None = None
     tick_dt: float | None = None
+    after_tick: Callable[[TickResult], None] | None = None
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
         self.frame_ctx = frame_ctx
 
-    def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> TickBatchResult:
+    def advance_ticks(
+        self,
+        *,
+        start_tick: int,
+        ticks_requested: int,
+        tick_dt: float,
+        after_tick: Callable[[TickResult], None] | None = None,
+    ) -> TickBatchResult:
         self.start_tick = int(start_tick)
         self.ticks_requested = int(ticks_requested)
         self.tick_dt = float(tick_dt)
+        self.after_tick = after_tick
         return self.batch
 
 

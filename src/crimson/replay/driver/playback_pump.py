@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -39,6 +40,7 @@ class _PlaybackStepRunner:
         start_tick: int,
         ticks_requested: int,
         tick_dt: float,
+        after_tick: Callable[[TickResult], None] | None = None,
     ) -> TickBatchResult:
         _ = tick_dt
         completed_results: list[TickResult] = []
@@ -48,7 +50,10 @@ class _PlaybackStepRunner:
             if next_tick_index >= int(self._tick_limit):
                 batch_status = InputStatus.EOS
                 break
-            completed_results.append(self._driver.step_tick(next_tick_index))
+            tick_result = self._driver.step_tick(next_tick_index)
+            completed_results.append(tick_result)
+            if after_tick is not None:
+                after_tick(tick_result)
             next_tick_index += 1
 
         return TickBatchResult(

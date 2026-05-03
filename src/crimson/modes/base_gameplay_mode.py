@@ -342,6 +342,10 @@ class _BatchApplyRuntime(msgspec.Struct, frozen=True):
             tick=tick,
         )
 
+    def record_replay_tick_checkpoint_immediate(self, tick_result: TickResult) -> None:
+        replay_tick_index = self.ensure_replay_tick_index(tick_result)
+        self.record_checkpoint(replay_tick_index, tick_result.payload)
+
     def finalize_tick_result(self, tick_result: TickResult) -> None:
         if self.lan_tick_sync is None:
             return
@@ -1961,6 +1965,12 @@ class BaseGameplayMode:
 
         candidate_ticks = int(local_clock.advance(float(dt_frame)))
         tick_dt = float(local_clock.dt_tick)
+        runtime = _BatchApplyRuntime(
+            mode=self,
+            session=session,
+            recorder=recorder,
+            mode_tick_dt=float(tick_dt) if bool(stop_on_mode_tick) else None,
+        )
         sim_ns_start = time.perf_counter_ns()
         advance = advance_tick_runner_frame(
             runner=runner,
@@ -1972,6 +1982,7 @@ class BaseGameplayMode:
             is_networked=False,
             is_replay=False,
             refund_clock=local_clock,
+            after_tick=runtime.record_replay_tick_checkpoint_immediate if recorder is not None else None,
         )
         self._tick_runner_frame_index = int(advance.frame_index)
         self._tick_runner_next_tick_index = int(advance.next_tick_index)
@@ -1984,12 +1995,7 @@ class BaseGameplayMode:
         apply_ns_start = time.perf_counter_ns()
         outcome = self._process_tick_batch_results(
             batch=batch,
-            runtime=_BatchApplyRuntime(
-                mode=self,
-                session=session,
-                recorder=recorder,
-                mode_tick_dt=float(tick_dt) if bool(stop_on_mode_tick) else None,
-            ),
+            runtime=runtime,
         )
         self._apply_batch_presentation_outputs(
             outputs=outcome.presentation_outputs,

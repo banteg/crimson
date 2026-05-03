@@ -5,7 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Protocol
+from typing import TYPE_CHECKING, Literal, Protocol, cast
 
 import msgspec
 import typer
@@ -159,6 +159,8 @@ def _replay_render_progress_runtime(
 
 
 def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
+    from ..dbg.checkpoint_diff import checkpoint_deepdiff
+
     failure = diff.failure
     assert failure is not None
     exp = failure.expected
@@ -171,10 +173,25 @@ def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
     assert act is not None
     typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
     typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
+    typer.echo(f"  elapsed_ms expected={exp.elapsed_ms} actual={act.elapsed_ms}", err=True)
     typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
     typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
     typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
     typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
+    deepdiff = checkpoint_deepdiff(exp, act, include_rng_fields=False)
+    if deepdiff is not None:
+        mismatches = deepdiff.payload.get("mismatches") if isinstance(deepdiff.payload, dict) else None
+        if isinstance(mismatches, list) and mismatches:
+            first = mismatches[0]
+            if isinstance(first, dict):
+                path = str(first.get("path", "<unknown>"))
+                if first.get("kind") == "length_mismatch":
+                    path = f"{path}._len"
+                typer.echo(
+                    "  first state diff: "
+                    f"{path} expected={first.get('expected')!r} actual={first.get('actual')!r}",
+                    err=True,
+                )
     typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
     if exp.deaths or act.deaths:
         typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
@@ -1652,7 +1669,12 @@ def cmd_replay_verify_checkpoints(
         raise typer.Exit(code=1) from exc
 
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected.checkpoints}
+    expected_by_tick = {int(ckpt.tick_index): ckpt for ckpt in expected.checkpoints}
     actual: list[ReplayCheckpoint] = []
+
+    class _CheckpointMismatchStop(Exception):
+        def __init__(self, diff: object) -> None:
+            self.diff = diff
 
     class _CheckpointVerifyObserver(PlaybackWalkObserver):
         driver: PlaybackDriver
@@ -1663,7 +1685,11 @@ def cmd_replay_verify_checkpoints(
             _ = world
             tick_index = int(tick_result.source_tick.tick_index)
             if tick_index in self.checkpoint_ticks:
-                self.actual.append(self.driver.build_checkpoint(tick_result=tick_result))
+                checkpoint = self.driver.build_checkpoint(tick_result=tick_result)
+                self.actual.append(checkpoint)
+                tick_diff = compare_checkpoints([expected_by_tick[tick_index]], [checkpoint])
+                if not tick_diff.ok:
+                    raise _CheckpointMismatchStop(tick_diff)
 
     try:
         driver = build_verify_playback_driver(
@@ -1679,6 +1705,8 @@ def cmd_replay_verify_checkpoints(
                 actual=actual,
             ),
         )
+    except _CheckpointMismatchStop as exc:
+        _render_checkpoint_diff_failure(cast("ReplayDiffResult", exc.diff))
     except (ReplayGameVersionError, ReplayRunnerError) as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc

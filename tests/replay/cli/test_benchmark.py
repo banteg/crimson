@@ -4,12 +4,13 @@ import json
 from pathlib import Path
 from typing import cast
 
+import msgspec
 from click import unstyle
 from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.replay.checkpoints import FORMAT_VERSION, ReplayCheckpoints, dump_checkpoints_file
+from crimson.replay.checkpoints import FORMAT_VERSION, ReplayCheckpoints, dump_checkpoints_file, load_checkpoints_file
 from crimson.replay.driver.replay_benchmark import (
     BenchmarkAggregate,
     BenchmarkSample,
@@ -952,6 +953,28 @@ def test_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
     result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path)])
 
     assert result.exit_code == 1
+    assert "checkpoint mismatch at tick=0" in result.output
+    assert "first state diff: score_xp expected=999999 actual=0" in result.output
+
+
+def test_replay_verify_checkpoints_reports_elapsed_mismatch(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    sidecar_path = _write_checkpoint_sidecar(replay_path, replay)
+    payload = load_checkpoints_file(sidecar_path)
+    checkpoints = list(payload.checkpoints)
+    checkpoints[0] = msgspec.structs.replace(
+        checkpoints[0],
+        elapsed_ms=int(checkpoints[0].elapsed_ms) + 16,
+    )
+    dump_checkpoints_file(sidecar_path, msgspec.structs.replace(payload, checkpoints=checkpoints))
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path)])
+
+    assert result.exit_code == 1
+    assert "elapsed_ms expected=32 actual=16" in result.output
+    assert "first state diff: elapsed_ms expected=32 actual=16" in result.output
 
 
 def test_replay_verify_checkpoints_rejects_removed_lenient_integrity_flag(tmp_path: Path) -> None:

@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
+
+if TYPE_CHECKING:
+    from .hooks import TickResult
 
 from .clock import FixedStepClock
 from .input_providers import FrameContext, InputStatus
@@ -17,6 +21,7 @@ class TickFrameRunner(Protocol):
         start_tick: int,
         ticks_requested: int,
         tick_dt: float,
+        after_tick: Callable[["TickResult"], None] | None = None,
     ) -> TickBatchResult: ...
 
 
@@ -39,6 +44,7 @@ def advance_tick_runner_frame(
     is_networked: bool,
     is_replay: bool,
     refund_clock: FixedStepClock | None = None,
+    after_tick: Callable[["TickResult"], None] | None = None,
 ) -> TickFrameAdvance:
     next_frame_index = int(frame_index) + 1
     ticks_requested = max(0, int(ticks_requested))
@@ -53,11 +59,19 @@ def advance_tick_runner_frame(
             is_replay=bool(is_replay),
         ),
     )
-    batch = runner.advance_ticks(
-        start_tick=int(start_tick),
-        ticks_requested=int(ticks_requested),
-        tick_dt=float(tick_dt_seconds),
-    )
+    if after_tick is None:
+        batch = runner.advance_ticks(
+            start_tick=int(start_tick),
+            ticks_requested=int(ticks_requested),
+            tick_dt=float(tick_dt_seconds),
+        )
+    else:
+        batch = runner.advance_ticks(
+            start_tick=int(start_tick),
+            ticks_requested=int(ticks_requested),
+            tick_dt=float(tick_dt_seconds),
+            after_tick=after_tick,
+        )
     next_tick_index = int(batch.next_tick_index)
 
     if refund_clock is not None and batch.batch_status in (InputStatus.STALLED, InputStatus.EOS):

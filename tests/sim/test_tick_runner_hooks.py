@@ -86,3 +86,32 @@ def test_tick_runner_advances_all_candidate_ticks_without_hook_stop_callbacks() 
 
     assert result.ticks_completed == 2
     assert [row.source_tick.tick_index for row in result.completed_results] == [0, 1]
+
+
+def test_tick_runner_after_tick_callback_observes_each_tick_before_batch_end() -> None:
+    session, _ = make_session()
+    runner = TickRunner(
+        session=session,
+        input_provider=StallableInputProvider(),
+    )
+
+    elapsed_by_tick: list[tuple[int, int]] = []
+    runner.begin_frame(
+        FrameContext(
+            dt_seconds=2.0 / 60.0,
+            tick_dt_seconds=1.0 / 60.0,
+            frame_index=1,
+            candidate_ticks=2,
+        ),
+    )
+    batch = runner.advance_ticks(
+        start_tick=0,
+        ticks_requested=2,
+        tick_dt=1.0 / 60.0,
+        after_tick=lambda tick: elapsed_by_tick.append(
+            (int(tick.source_tick.tick_index), int(tick.payload.elapsed_ms)),
+        ),
+    )
+
+    assert batch.ticks_completed == 2
+    assert elapsed_by_tick == [(0, 16), (1, 32)]

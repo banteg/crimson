@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import msgspec
 
 from .hooks import TickResult
@@ -44,6 +46,7 @@ class TickRunner:
         start_tick: int,
         ticks_requested: int,
         tick_dt: float,
+        after_tick: Callable[[TickResult], None] | None = None,
     ) -> TickBatchResult:
         start_tick = int(start_tick)
         ticks_requested = max(0, int(ticks_requested))
@@ -94,6 +97,8 @@ class TickRunner:
                 payload=tick,
             )
             completed_results.append(result)
+            if after_tick is not None:
+                after_tick(result)
             ticks_completed += 1
 
         return TickBatchResult(

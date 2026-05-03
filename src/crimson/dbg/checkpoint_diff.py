@@ -45,8 +45,12 @@ def _checkpoint_to_obj(
 def checkpoint_deepdiff(
     expected: ReplayCheckpoint,
     actual: ReplayCheckpoint,
+    *,
+    include_rng_fields: bool = True,
 ) -> CheckpointDeepDiff | None:
-    mismatches, diff_count, _pretty = strict_mismatch_payload(expected, actual)
+    expected_obj = _checkpoint_to_obj(expected, include_rng_fields=bool(include_rng_fields))
+    actual_obj = _checkpoint_to_obj(actual, include_rng_fields=bool(include_rng_fields))
+    mismatches, diff_count, _pretty = strict_mismatch_payload(expected_obj, actual_obj)
     if int(diff_count) <= 0:
         return None
 
