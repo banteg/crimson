@@ -197,7 +197,7 @@ fn runNativeInfo(
         return buildReplayNotFoundOutput(allocator, resolution);
     }
     if (!std.mem.endsWith(u8, resolution.resolved_path, ".crd")) {
-        return buildInfoFailedOutput(allocator, "only .crd replay files are currently supported");
+        return buildInfoFailedOutput(allocator, "replay file must use .crd extension");
     }
 
     const io = std.Io.Threaded.global_single_threaded.io();

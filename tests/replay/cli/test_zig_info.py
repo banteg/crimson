@@ -344,7 +344,7 @@ def test_zig_replay_info_rejects_non_crd_extension(tmp_path: Path) -> None:
 
     assert result.returncode == 1
     assert result.stdout == ""
-    assert "replay info failed: only .crd replay files are currently supported" in result.stderr
+    assert "replay info failed: replay file must use .crd extension" in result.stderr
 
 
 def _run_python_replay_info(args: list[str]) -> dict[str, object]:
