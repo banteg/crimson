@@ -86,6 +86,20 @@ def test_zig_replay_verify_matches_python_full_payload_on_quest_replay(tmp_path:
     assert zig_payload == python_payload
 
 
+def test_zig_replay_verify_matches_python_full_payload_on_tutorial_replay(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.TUTORIAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="tutorial.crd")
+
+    python_payload = _run_python_replay_verify(
+        [str(replay_path), "--format", "json"],
+    )
+    zig_payload = _run_zig_replay_verify(
+        [str(replay_path), "--format", "json"],
+    )
+
+    assert zig_payload == python_payload
+
+
 def test_zig_replay_verify_accepts_current_string_quest_level(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.QUESTS, ticks=2, quest_level="1.1")
     replay_path = write_current_string_quest_level_replay(

@@ -100,6 +100,7 @@ def test_zig_replay_info_matches_python_supported_mode_breadth(tmp_path: Path) -
         ("survival.crd", build_replay(mode=GameMode.SURVIVAL, ticks=2)),
         ("rush.crd", build_replay(mode=GameMode.RUSH, ticks=2)),
         ("quest.crd", build_replay(mode=GameMode.QUESTS, ticks=2, seed=101, quest_level="1.1")),
+        ("tutorial.crd", build_replay(mode=GameMode.TUTORIAL, ticks=2)),
     ]
 
     for filename, replay in cases:

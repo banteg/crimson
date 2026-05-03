@@ -107,6 +107,24 @@ def test_zig_replay_benchmark_matches_python_stable_json_payload(tmp_path: Path)
         assert zig_payload["benchmark"][key].keys() == python_payload["benchmark"][key].keys()
 
 
+def test_zig_replay_benchmark_matches_python_tutorial_run_result(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.TUTORIAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="tutorial.crd")
+    args = [str(replay_path), "--runs", "1", "--warmup-runs", "0", "--max-ticks", "2", "--format", "json"]
+
+    python_result = CliRunner().invoke(app, ["replay", "benchmark", *args])
+    assert python_result.exit_code == 0, python_result.output
+
+    zig_result = _run_zig_replay_benchmark(args)
+    assert zig_result.returncode == 0, dbg_record._command_detail(zig_result)
+
+    python_payload = json.loads(python_result.output)
+    zig_payload = json.loads(zig_result.stdout)
+    assert zig_payload["replay"] == python_payload["replay"]
+    assert zig_payload["settings"] == python_payload["settings"]
+    assert zig_payload["run_result"] == python_payload["run_result"]
+
+
 def test_zig_replay_benchmark_supports_trace_rng(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
