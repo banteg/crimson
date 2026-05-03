@@ -11,6 +11,10 @@ Standalone Zig workspace for the native Crimson port.
   `replay benchmark`, checkpoint verification/diffing),
 - native CDT debug tooling (`dbg record`, `dbg health`, `dbg tick`,
   `dbg entity`, `dbg query`, `dbg diff`, `dbg bisect`, `dbg focus`),
+- native asset tooling (`crimson-zig-asset-smoke`,
+  `crimson-zig-asset-extract`),
+- native rollback/lockstep network session construction, UDP relay serving, and
+  in-process rollback smoke validation,
 - a real raylib desktop app target,
 - archive/codec support for `crimson.paq`, `music.paq`, `sfx.paq`, `crimson.cfg`, and `game.cfg`,
 - a freestanding WASM replay verify/info/benchmark and checkpoint comparison ABI.
@@ -22,7 +26,8 @@ The desktop target now owns a real boot-to-menu-to-gameplay loop:
 - live Survival, Rush, Quests, Typ-o, and Tutorial,
 - archive-backed rendering/audio,
 - native config/status loading and saveback,
-- high-score entry and statistics surfaces.
+- high-score entry and statistics surfaces,
+- Play Game network entry and live lobby surfaces.
 
 The strongest public tooling surface is still replay verification, but the
 workspace direction is a full native port, not a verifier-only fork.
@@ -34,10 +39,10 @@ It is mostly closure work:
 
 - replay/tooling breadth still lags Python,
 - some product-shell flows are still thinner than Python,
-- checkpoint verification tooling still lacks some Python-only diagnostics,
 - WASM is still a narrow replay/runtime ABI, but exposes replay
   verify/info/benchmark JSON paths plus checkpoint text and JSON paths,
-- network/LAN parity is still deferred.
+- network/LAN support exists, but still needs broader long-session stress and
+  product-lobby polish.
 
 For the staged remaining-work breakdown, see
 [`docs/rewrite/zig-roadmap.md`](/Users/banteg/dev/banteg/crimson/docs/rewrite/zig-roadmap.md).
@@ -82,6 +87,7 @@ zig build window
 zig build run-window
 zig build wasm
 zig build asset-smoke
+zig build asset-extract
 zig build run -- replay verify <replay.crd> --format json
 zig build run -- replay info <replay.crd> --format json
 zig build run -- replay list --base-dir .
@@ -89,7 +95,9 @@ zig build run -- replay verify-checkpoints <replay.crd> --format json
 zig build run -- replay diff-checkpoints <expected.chk> <actual.chk> --format json
 zig build run -- replay benchmark <replay.crd> --runs 5
 zig build asset-smoke -- /path/to/assets --json
+zig build asset-extract -- /path/to/game-dir /path/to/assets-dir --json
 zig build run -- relay serve --bind 127.0.0.1 --port 31993
+zig build run -- net smoke-rollback --format json
 ```
 
 Useful targets:
@@ -101,6 +109,10 @@ Useful targets:
 - `zig build asset-smoke`
   Runs a local decode smoke pass over archive-backed assets and reports exact
   failing entries. Pass `--json` or `--format json` for scriptable output.
+- `zig build asset-extract`
+  Extracts `.paq` archives into the Python-compatible
+  `<assets-dir>/<paq-stem>/...` layout and converts decoded JAZ/TGA entries to
+  PNG.
 - `zig build wasm`
   Builds the freestanding replay/runtime ABI target.
 - `zig build web-window`
@@ -108,6 +120,8 @@ Useful targets:
 - `zig build run -- relay serve`
   Runs the native UDP relay server through the main CLI. The dedicated
   `zig build relay-serve` step remains available for relay-only runs.
+- `zig build run -- net smoke-rollback`
+  Exercises an in-process relay plus host/guest rollback exchange.
 
 ## Desktop shell status
 
@@ -144,6 +158,9 @@ The native CLI currently exposes:
 - `crimson-zig dbg diff <expected.cdt> <actual.cdt>`
 - `crimson-zig dbg bisect <expected.cdt> <actual.cdt>`
 - `crimson-zig dbg focus <expected.cdt> <actual.cdt> --tick <n>`
+- `crimson-zig net host --mode survival --players 2 --format json`
+- `crimson-zig net join --code <invite> --format json`
+- `crimson-zig net smoke-rollback --format json`
 - `crimson-zig relay serve`
 
 Supported native replay/runtime modes today:
