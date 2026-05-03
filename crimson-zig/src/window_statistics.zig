@@ -1,4 +1,3 @@
-const builtin = @import("builtin");
 const std = @import("std");
 const rl = @import("raylib");
 
@@ -368,7 +367,7 @@ fn updateHub(
     if (timeline_update.closed_action) |action| {
         return finishHubAction(state, allocator, base_dir, config, status, action);
     }
-    updateStatsEaster(&state.hub, currentDateStampUtc());
+    updateStatsEaster(&state.hub, persistence.highscores.currentDateStamp());
     const panel_rect = animatedCenterPanelRect(stats_panel_rect, state.hub.panel.timeline_ms);
     const buttons = hubButtons(panel_rect);
     window_ui.updateSelectionFromPointer(&state.hub.panel.selection, buttons[0..]);
@@ -2161,7 +2160,7 @@ fn highScoreAllocationErrorDetail(err: anyerror) []const u8 {
 fn passesDateFilter(record: persistence.highscores.HighScoreRecord, date_mode_raw: u8) bool {
     const mode = @min(date_mode_raw, 3);
     if (mode == 0) return true;
-    const stamp = currentDateStampUtc();
+    const stamp = persistence.highscores.currentDateStamp();
     const day = record.data[0x40];
     const checksum = record.data[0x41];
     const month = record.data[0x42];
@@ -2173,25 +2172,6 @@ fn passesDateFilter(record: persistence.highscores.HighScoreRecord, date_mode_ra
         3 => day == stamp.day and month == stamp.month and year == stamp.year,
         else => true,
     };
-}
-
-fn currentDateStampUtc() persistence.highscores.DateStamp {
-    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = currentEpochSeconds() };
-    const epoch_day = epoch_seconds.getEpochDay();
-    const year_day = epoch_day.calculateYearDay();
-    const month_day = year_day.calculateMonthDay();
-    return .{
-        .year = year_day.year,
-        .month = @intCast(@intFromEnum(month_day.month) + 1),
-        .day = @intCast(month_day.day_index + 1),
-    };
-}
-
-fn currentEpochSeconds() u64 {
-    if (builtin.os.tag == .freestanding) return 0;
-    const io = std.Io.Threaded.global_single_threaded.io();
-    const timestamp = std.Io.Timestamp.now(io, .real);
-    return @intCast(@max(timestamp.toSeconds(), 0));
 }
 
 fn updateStatsEaster(hub: *HubState, stamp: persistence.highscores.DateStamp) void {
@@ -2389,7 +2369,7 @@ fn backButtonActivated(button: window_ui.UiButton) bool {
 
 test "high score date filter matches current month and day semantics" {
     var record = persistence.highscores.HighScoreRecord.blank();
-    const stamp = currentDateStampUtc();
+    const stamp = persistence.highscores.currentDateStamp();
     record.data[0x40] = stamp.day;
     record.data[0x42] = stamp.month;
     record.data[0x43] = @intCast(@mod(stamp.year - 2000, 256));

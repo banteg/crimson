@@ -179,7 +179,7 @@ pub const HighScoreRecord = struct {
     pub fn ensureDateFields(self: *HighScoreRecord, now: ?DateStamp) void {
         if (self.data[0x40] != 0) return;
 
-        const stamp = now orelse currentDateStampUtc();
+        const stamp = now orelse currentDateStamp();
         self.data[0x40] = stamp.day;
         self.data[0x42] = stamp.month;
         self.data[0x43] = @intCast(@mod(stamp.year - 2000, 256));
@@ -468,8 +468,13 @@ fn writeU32(bytes: []u8, value: u32) void {
     std.mem.writeInt(u32, bytes[0..4], value, .little);
 }
 
-fn currentDateStampUtc() DateStamp {
-    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = currentEpochSeconds() };
+pub fn currentDateStamp() DateStamp {
+    const epoch_seconds = currentEpochSeconds();
+    return currentLocalDateStamp(epoch_seconds) orelse dateStampUtcFromEpochSeconds(epoch_seconds);
+}
+
+fn dateStampUtcFromEpochSeconds(seconds: u64) DateStamp {
+    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = seconds };
     const epoch_day = epoch_seconds.getEpochDay();
     const year_day = epoch_day.calculateYearDay();
     const month_day = year_day.calculateMonthDay();
@@ -478,6 +483,40 @@ fn currentDateStampUtc() DateStamp {
         .year = year_day.year,
         .month = @intCast(@intFromEnum(month_day.month) + 1),
         .day = @intCast(month_day.day_index + 1),
+    };
+}
+
+const LocalTimeTm = extern struct {
+    tm_sec: c_int,
+    tm_min: c_int,
+    tm_hour: c_int,
+    tm_mday: c_int,
+    tm_mon: c_int,
+    tm_year: c_int,
+    tm_wday: c_int,
+    tm_yday: c_int,
+    tm_isdst: c_int,
+    tm_gmtoff: c_long,
+    tm_zone: ?[*:0]const u8,
+};
+
+extern "c" fn localtime_r(timer: *const std.c.time_t, result: *LocalTimeTm) ?*LocalTimeTm;
+
+fn currentLocalDateStamp(seconds: u64) ?DateStamp {
+    if (builtin.os.tag == .freestanding or builtin.os.tag == .windows) return null;
+    const max_time_t: u64 = @intCast(std.math.maxInt(std.c.time_t));
+    if (seconds > max_time_t) return null;
+    var timer: std.c.time_t = @intCast(seconds);
+    var tm: LocalTimeTm = undefined;
+    if (localtime_r(&timer, &tm) == null) return null;
+    return dateStampFromLocalTm(tm);
+}
+
+fn dateStampFromLocalTm(tm: LocalTimeTm) DateStamp {
+    return .{
+        .year = @intCast(tm.tm_year + 1900),
+        .month = @intCast(tm.tm_mon + 1),
+        .day = @intCast(tm.tm_mday),
     };
 }
 
@@ -507,6 +546,28 @@ test "record name and field accessors roundtrip" {
     try std.testing.expectEqual(@as(u32, 20), record.shotsFired());
     try std.testing.expectEqual(@as(u32, 15), record.shotsHit());
     try std.testing.expectEqual(@as(u32, 7), record.creatureKillCount());
+}
+
+test "date stamp utc conversion uses calendar day" {
+    try std.testing.expectEqual(.{ .year = 1970, .month = 1, .day = 1 }, dateStampUtcFromEpochSeconds(0));
+    try std.testing.expectEqual(.{ .year = 2026, .month = 3, .day = 3 }, dateStampUtcFromEpochSeconds(1772496000));
+}
+
+test "date stamp local conversion uses tm calendar fields" {
+    const tm: LocalTimeTm = .{
+        .tm_sec = 59,
+        .tm_min = 58,
+        .tm_hour = 23,
+        .tm_mday = 3,
+        .tm_mon = 2,
+        .tm_year = 126,
+        .tm_wday = 2,
+        .tm_yday = 61,
+        .tm_isdst = 0,
+        .tm_gmtoff = 0,
+        .tm_zone = null,
+    };
+    try std.testing.expectEqual(.{ .year = 2026, .month = 3, .day = 3 }, dateStampFromLocalTm(tm));
 }
 
 test "scores path builder mirrors Python naming rules" {
