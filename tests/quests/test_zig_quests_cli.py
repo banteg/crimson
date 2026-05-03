@@ -105,6 +105,12 @@ def test_zig_quests_show_plan_matches_python_summary() -> None:
     }
     total_alloc = sum(entry.count * len(plan_cache[entry.spawn_id].creatures) for entry in expected_entries)
     total_slots = sum(entry.count * len(plan_cache[entry.spawn_id].spawn_slots) for entry in expected_entries)
+    first_entry = expected_entries[0]
+    first_plan = plan_cache[first_entry.spawn_id]
+    first_plan_text = (
+        f"alloc={first_entry.count * len(first_plan.creatures):3d} "
+        f"(x{len(first_plan.creatures):2d})  slots={len(first_plan.spawn_slots)}"
+    )
 
     build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
     assert build_run.returncode == 0, dbg_record._command_detail(build_run)
@@ -116,6 +122,7 @@ def test_zig_quests_show_plan_matches_python_summary() -> None:
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert f"Plan: total_alloc={total_alloc} total_spawn_slots={total_slots}" in result.stdout
+    assert first_plan_text in result.stdout
 
 
 def _payload_entries(entries: list[dict[str, Any]]) -> list[tuple[float, float, float, int, int, int]]:

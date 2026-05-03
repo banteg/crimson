@@ -11,6 +11,8 @@ pub const CommandOutput = verify_native.CommandOutput;
 
 const quest_dump_schema_version: i32 = 1;
 const max_quest_spawn_entries: usize = 4096;
+const spawn_plan_summary_cache_len: usize = @as(usize, @intCast(@intFromEnum(spawn_runtime.SpawnId.zombie_const_green_brute_43))) + 1;
+const SpawnPlanSummaryCache = [spawn_plan_summary_cache_len]?SpawnPlanSummary;
 
 const OutputFormat = enum {
     human,
@@ -154,16 +156,19 @@ fn buildHumanQuestOutput(
         .{ level.labelSlice(), entries.len },
     );
     try writer.print("Meta: start_weapon_id={d}\n", .{start_weapon_id});
+    var plan_summaries: SpawnPlanSummaryCache = [_]?SpawnPlanSummary{null} ** spawn_plan_summary_cache_len;
     if (show_plan) {
-        const summary = try summarizeQuestPlan(entries);
+        const summary = try summarizeQuestPlan(entries, &plan_summaries);
         try writer.print(
             "Plan: total_alloc={d} total_spawn_slots={d}\n",
             .{ summary.creature_count, summary.spawn_slot_count },
         );
     }
     for (entries, 0..) |entry, idx| {
+        const spawn_summary_index = @as(usize, @intCast(@intFromEnum(entry.spawn_id)));
+        const plan_summary = if (show_plan and spawn_summary_index < plan_summaries.len) plan_summaries[spawn_summary_index] else null;
         try writer.print(
-            "{d:0>2}  t={d}  id=0x{x:0>2} ({d})  count={d}  x={d: >7.1}  y={d: >7.1}  heading={d: >7.3}\n",
+            "{d:0>2}  t={d}  id=0x{x:0>2} ({d})  count={d}  x={d: >7.1}  y={d: >7.1}  heading={d: >7.3}",
             .{
                 idx + 1,
                 entry.trigger_ms,
@@ -175,6 +180,17 @@ fn buildHumanQuestOutput(
                 entry.heading,
             },
         );
+        if (plan_summary) |summary| {
+            try writer.print(
+                "  alloc={d: >3} (x{d: >2})  slots={d}",
+                .{
+                    @as(usize, @intCast(@max(entry.count, 0))) * summary.creature_count,
+                    summary.creature_count,
+                    summary.spawn_slot_count,
+                },
+            );
+        }
+        try writer.writeByte('\n');
     }
     return stdout_buf.toOwnedSlice();
 }
@@ -365,11 +381,14 @@ fn questEntryLessThan(
     return lhs.count < rhs.count;
 }
 
-fn summarizeQuestPlan(entries: []const spawn_runtime.QuestSpawnEntry) !SpawnPlanSummary {
+fn summarizeQuestPlan(
+    entries: []const spawn_runtime.QuestSpawnEntry,
+    cached_summaries: *SpawnPlanSummaryCache,
+) !SpawnPlanSummary {
     var total_creatures: usize = 0;
     var total_spawn_slots: usize = 0;
     for (entries) |entry| {
-        const summary = try summarizeSpawnTemplate(@intFromEnum(entry.spawn_id));
+        const summary = try cachedSpawnTemplateSummary(cached_summaries, entry.spawn_id);
         const count: usize = @intCast(@max(entry.count, 0));
         total_creatures += count * summary.creature_count;
         total_spawn_slots += count * summary.spawn_slot_count;
@@ -378,6 +397,18 @@ fn summarizeQuestPlan(entries: []const spawn_runtime.QuestSpawnEntry) !SpawnPlan
         .creature_count = total_creatures,
         .spawn_slot_count = total_spawn_slots,
     };
+}
+
+fn cachedSpawnTemplateSummary(
+    cached_summaries: *SpawnPlanSummaryCache,
+    spawn_id: spawn_runtime.SpawnId,
+) !SpawnPlanSummary {
+    const index = @as(usize, @intCast(@intFromEnum(spawn_id)));
+    if (index >= cached_summaries.len) return error.InvalidSpawnTemplate;
+    if (cached_summaries[index]) |summary| return summary;
+    const summary = try summarizeSpawnTemplate(@intFromEnum(spawn_id));
+    cached_summaries[index] = summary;
+    return summary;
 }
 
 fn summarizeSpawnTemplate(template_id: i32) !SpawnPlanSummary {
@@ -462,9 +493,38 @@ test "quest plan summary counts template allocations" {
         },
     };
 
-    const summary = try summarizeQuestPlan(entries[0..]);
+    var cache: SpawnPlanSummaryCache = [_]?SpawnPlanSummary{null} ** spawn_plan_summary_cache_len;
+    const summary = try summarizeQuestPlan(entries[0..], &cache);
     try std.testing.expectEqual(@as(usize, 21), summary.creature_count);
     try std.testing.expectEqual(@as(usize, 3), summary.spawn_slot_count);
+}
+
+test "quests show plan prints per-entry allocation details" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+
+    var entries = [_]spawn_runtime.QuestSpawnEntry{
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+            .spawn_id = .formation_ring_alien_8_12,
+            .trigger_ms = 0,
+            .count = 2,
+        },
+    };
+
+    const summary = try summarizeSpawnTemplate(@intFromEnum(entries[0].spawn_id));
+    const expected = try std.fmt.allocPrint(
+        arena.allocator(),
+        "alloc={d: >3} (x{d: >2})  slots={d}",
+        .{
+            @as(usize, @intCast(entries[0].count)) * summary.creature_count,
+            summary.creature_count,
+            summary.spawn_slot_count,
+        },
+    );
+    const output = try buildHumanQuestOutput(arena.allocator(), .{ .key = 201, .label = .{ '2', '.', '1', 0 }, .label_len = 3 }, 0, entries[0..], true);
+    try std.testing.expect(std.mem.indexOf(u8, output, expected) != null);
 }
 
 test "quests invalid quest plan detail avoids unsupported wording" {
