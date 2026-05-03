@@ -3179,6 +3179,9 @@ const WindowArgs = struct {
     preserve_bugs: bool = false,
     no_intro: bool = false,
     seed: ?u32 = null,
+    width: ?i32 = null,
+    height: ?i32 = null,
+    fps: i32 = 60,
     base_dir: ?[]const u8 = null,
     assets_dir: ?[]const u8 = null,
 };
@@ -3196,12 +3199,14 @@ pub fn main(init: std.process.Init) !void {
     rl.setConfigFlags(.{
         .fullscreen_mode = runtime.config.windowed_flag == 0,
     });
-    rl.initWindow(runtime.windowWidth(window_width), runtime.windowHeight(window_height), "crimson-zig");
+    const initial_width = args.width orelse runtime.windowWidth(window_width);
+    const initial_height = args.height orelse runtime.windowHeight(window_height);
+    rl.initWindow(initial_width, initial_height, "crimson-zig");
     defer rl.closeWindow();
     rl.hideCursor();
     defer rl.showCursor();
 
-    rl.setTargetFPS(60);
+    rl.setTargetFPS(args.fps);
 
     var app = App.init(allocator, runtime, args);
     defer app.deinit();
@@ -3246,6 +3251,36 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
             parsed.seed = try parseWindowSeed(arg["--seed=".len..]);
             continue;
         }
+        if (std.mem.eql(u8, arg, "--width")) {
+            index += 1;
+            if (index >= args.len) return error.InvalidArgs;
+            parsed.width = try parsePositiveI32(args[index]);
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--width=")) {
+            parsed.width = try parsePositiveI32(arg["--width=".len..]);
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--height")) {
+            index += 1;
+            if (index >= args.len) return error.InvalidArgs;
+            parsed.height = try parsePositiveI32(args[index]);
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--height=")) {
+            parsed.height = try parsePositiveI32(arg["--height=".len..]);
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--fps")) {
+            index += 1;
+            if (index >= args.len) return error.InvalidArgs;
+            parsed.fps = try parsePositiveI32(args[index]);
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--fps=")) {
+            parsed.fps = try parsePositiveI32(arg["--fps=".len..]);
+            continue;
+        }
         if (std.mem.eql(u8, arg, "--base-dir") or std.mem.eql(u8, arg, "--runtime-dir")) {
             index += 1;
             if (index >= args.len) return error.InvalidArgs;
@@ -3272,7 +3307,7 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
         }
         if (std.mem.eql(u8, arg, "--help")) {
             std.debug.print(
-                "usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N] [--base-dir PATH] [--assets-dir PATH]\n",
+                "usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--base-dir PATH] [--assets-dir PATH]\n",
                 .{},
             );
             std.process.exit(0);
@@ -3285,6 +3320,12 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
 fn parseWindowSeed(raw: []const u8) !u32 {
     const value = std.fmt.parseInt(u64, raw, 0) catch return error.InvalidArgs;
     if (value > std.math.maxInt(u32)) return error.InvalidArgs;
+    return @intCast(value);
+}
+
+fn parsePositiveI32(raw: []const u8) !i32 {
+    const value = std.fmt.parseInt(i64, raw, 10) catch return error.InvalidArgs;
+    if (value < 1 or value > std.math.maxInt(i32)) return error.InvalidArgs;
     return @intCast(value);
 }
 
@@ -4805,6 +4846,31 @@ test "window args parse seed flag" {
     try std.testing.expectEqual(@as(?u32, 0x1234), joined.seed);
 }
 
+test "window args parse launch dimensions and fps" {
+    const separate = try parseWindowArgs(&.{
+        "crimson-zig-window",
+        "--width",
+        "1280",
+        "--height",
+        "720",
+        "--fps",
+        "144",
+    });
+    try std.testing.expectEqual(@as(?i32, 1280), separate.width);
+    try std.testing.expectEqual(@as(?i32, 720), separate.height);
+    try std.testing.expectEqual(@as(i32, 144), separate.fps);
+
+    const joined = try parseWindowArgs(&.{
+        "crimson-zig-window",
+        "--width=800",
+        "--height=600",
+        "--fps=30",
+    });
+    try std.testing.expectEqual(@as(?i32, 800), joined.width);
+    try std.testing.expectEqual(@as(?i32, 600), joined.height);
+    try std.testing.expectEqual(@as(i32, 30), joined.fps);
+}
+
 test "window args parse runtime and assets dirs" {
     const separate = try parseWindowArgs(&.{
         "crimson-zig-window",
@@ -4831,6 +4897,9 @@ test "window args reject invalid seed" {
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--seed", "0x100000000" }));
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--base-dir" }));
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--assets-dir" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--width" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--height", "0" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--fps=-1" }));
 }
 
 test "window args reject unknown flags" {
