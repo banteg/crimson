@@ -40,7 +40,7 @@ Last reviewed: **2026-05-03**
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-reconnect-bidirectional-jitter-burst --format json`
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-double-reconnect-bidirectional-jitter-burst --format json`
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-triple-reconnect-bidirectional-jitter-burst --format json`
-    - The native Zig `net host/join` surface now reports `runtime_supported=true` for rollback sessions, and the native smoke command exercises an in-process relay plus host/guest live rollback exchange, including delayed-input, reordered-input, dropped-input, repeated and bidirectional jitter recovery without resync, guest-requested resync snapshot, relay-token guest self-reconnect with post-reconnect input continuity, double and triple guest reconnect, a longer reconnect-then-resync path that accepts fresh guest input after the applied snapshot, double- and triple-reconnect-then-resync recovery, and bidirectional jitter after one, two, or three reconnect cycles. Remaining network work is broader stress and lobby parity, not first launch support.
+    - The native Zig `net host/join` surface now reports `runtime_supported=true` for rollback sessions, and the native smoke command exercises an in-process relay plus host/guest live rollback exchange, including delayed-input, reordered-input, dropped-input, repeated and bidirectional jitter recovery without resync, guest-requested resync snapshot, relay-token guest self-reconnect with post-reconnect input continuity, double and triple guest reconnect, a longer reconnect-then-resync path that accepts fresh guest input after the applied snapshot, double- and triple-reconnect-then-resync recovery, and bidirectional jitter after one, two, or three reconnect cycles. The desktop network lobby now opens and backs out through the same native panel timeline as the Python shell. Remaining network work is broader stress and lobby parity, not first launch support.
 - Asset tooling:
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig-asset-smoke <assets-dir>`
     - The installed native smoke tool validates `crimson.paq`, JAZ/TGA/JPEG image decoding, runtime texture specs, and small-font width data.
@@ -124,7 +124,7 @@ Last reviewed: **2026-05-03**
 - **Mods menu (state `0x14` path from main menu)**: implemented as a panel and filesystem DLL discovery UI; plugin loading/runtime is still not implemented.
   - Code: `src/crimson/screens/panels/mods.py`, `src/crimson/screens/menu.py`
   - Ref: [`docs/crimsonland-exe/mods.md`](../crimsonland-exe/mods.md)
-  - Zig now routes Mods, Other Games, and Network Session panel Back/Launch actions through the native close timeline before dispatch.
+  - Zig now routes Mods, Other Games, Network Session, and live Network Lobby panel Back/Launch actions through the native panel timeline before dispatch.
 - **Scope policy for Mods and Other Games/shareware ads**: out of scope for the rewrite target.
   - Rationale: native DLL plugin runtime is not practical to support in the Python rewrite architecture.
   - Rewrite stance: keep menu-shell UX compatibility where useful, but do not implement native DLL mod loading/execution or Other Games ad/runtime flows.

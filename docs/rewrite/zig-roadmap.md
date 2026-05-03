@@ -143,8 +143,8 @@ Remaining work:
   Back, Options, or Quit actions,
 - keep tightening remaining miscellaneous panels in
   [`crimson-zig/src/window_misc_panels.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_misc_panels.zig);
-  Mods, Other Games, and Network Session now wait for the shared native panel
-  close timeline before dispatching Back or Launch actions,
+  Mods, Other Games, Network Session, and the live Network Lobby now use the
+  shared native panel timeline before dispatching Back or Launch actions,
 - keep the demo/trial overlay and purchase-shell behavior aligned with Python
   as surrounding shell flows change,
 - keep removing any remaining fallback/scaffold UI logic from the desktop path.
@@ -208,7 +208,8 @@ Remaining work:
   delayed, reordered, dropped-input, repeated-jitter, post-reconnect jitter,
   guest-resync, guest self-reconnect, and reconnect-then-resync cases into
   broader reconnect/resync stress scenarios,
-- tighten desktop network lobby/status UX around live rollback sessions,
+- keep tightening desktop network lobby/status UX around live rollback sessions;
+  the live lobby now opens and backs out through the native panel timeline,
 - keep legacy lockstep as an explicit fallback while rollback remains primary.
 
 Reference Python surfaces:

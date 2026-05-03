@@ -68,7 +68,6 @@ const demo_attract_variant_count: i32 = 6;
 const demo_attract_limit_ms: i32 = 4_000;
 const demo_attract_purchase_screen_limit_ms: i32 = 16_000;
 const end_note_timeline_max_ms: i32 = 300;
-const network_lobby_panel_rect = rl.Rectangle.init(360.0, 168.0, 510.0, 378.0);
 const demo_upsell_messages = [_][:0]const u8{
     "Want more Levels?",
     "Want more Weapons?",
@@ -709,13 +708,6 @@ fn networkLobbySlotStateColor(slot: schema_shared.SlotState) rl.Color {
     if (slot.ready) return rl.Color.init(146, 224, 142, 255);
     if (slot.connected) return rl.Color.init(225, 235, 247, 255);
     return rl.Color.init(155, 175, 200, 255);
-}
-
-fn networkLobbyBackHoverAmount(current: i32, hovered: bool, dt_ms: i32) i32 {
-    if (hovered) {
-        return std.math.clamp(current + dt_ms * 6, 0, 1000);
-    }
-    return std.math.clamp(current - dt_ms * 2, 0, 1000);
 }
 
 fn parseNetworkPeerAddr(host: []const u8, port: u16) !lockstep_session.PeerAddr {
@@ -1635,12 +1627,20 @@ const App = struct {
     fn updateNetworkSession(self: *App, frame_dt: f32) void {
         if (self.network_live_session != null) {
             self.network_live_render_time_s += @max(frame_dt, 0.0);
-            if (self.networkLiveBackRequested(frame_dt)) {
-                self.audio.playUiButtonClick();
-                self.stopNetworkLiveSession();
-                self.play_game_menu.reset();
-                self.setScreen(.play_game_menu);
-                return;
+            const lobby_waiting = if (self.network_live_session) |*session| session.runnerForLocalInput() == null else false;
+            if (lobby_waiting) {
+                const lobby_update = window_misc_panels.updateNetworkLobby(&self.network_session, frame_dt, if (self.runtime_assets) |*assets| assets else null);
+                if (lobby_update.play_panel_click and !self.network_session.panel.panel_open_sfx_played) {
+                    self.audio.playUiPanelClick();
+                    self.network_session.panel.panel_open_sfx_played = true;
+                }
+                if (lobby_update.play_button_click) self.audio.playUiButtonClick();
+                if (lobby_update.action == .back_to_menu) {
+                    self.stopNetworkLiveSession();
+                    self.play_game_menu.reset();
+                    self.setScreen(.play_game_menu);
+                    return;
+                }
             }
             self.updateNetworkLiveSession(frame_dt);
             return;
@@ -1662,27 +1662,6 @@ const App = struct {
             self.startNetworkLiveSession();
         }
         self.updateNetworkLiveSession(frame_dt);
-    }
-
-    fn networkLiveBackRequested(self: *App, frame_dt: f32) bool {
-        const dt_ms = @as(i32, @intFromFloat(@min(frame_dt, 0.1) * 1000.0));
-        const session = if (self.network_live_session) |*session| session else return false;
-        const lobby_waiting = session.runnerForLocalInput() == null;
-        const back_hovered = if (lobby_waiting)
-            if (self.runtime_assets) |*assets|
-                rl.checkCollisionPointRec(rl.getMousePosition(), window_menu.panelBackHitRect(assets, 300))
-            else
-                false
-        else
-            false;
-
-        self.network_session.panel.back_hover_amount = networkLobbyBackHoverAmount(
-            self.network_session.panel.back_hover_amount,
-            back_hovered,
-            dt_ms,
-        );
-
-        return rl.isKeyPressed(.escape) or (back_hovered and rl.isMouseButtonPressed(.left));
     }
 
     fn startNetworkLiveSession(self: *App) void {
@@ -1709,6 +1688,7 @@ const App = struct {
         const port = session.boundPort();
         self.resetNetworkLiveInput();
         self.network_live_session = session;
+        window_misc_panels.openNetworkLobby(&self.network_session);
         switch (request.netcode) {
             .lockstep => switch (request.role) {
                 .host => self.network_session.setStatusFmt("Lockstep host listening on port {d}.", .{port}),
@@ -2747,12 +2727,7 @@ const App = struct {
         const session = if (self.network_live_session) |*session| session else return;
         const summary = session.lobbySummary() orelse NetworkLobbySummary{};
 
-        window_menu.drawMenuBackdrop(assets);
-        window_menu.drawSign(300, assets);
-        window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), network_lobby_panel_rect, rl.Color.white, false);
-        window_menu.drawPanelBackEntry(assets, 300, self.network_session.panel.back_hover_amount);
-
-        const panel = network_lobby_panel_rect;
+        const panel = window_misc_panels.drawNetworkLobbyShell(&self.network_session, assets);
         const label_color = rl.Color.init(190, 190, 200, 230);
         const value_color = rl.Color.init(225, 235, 247, 255);
         const body_color = rl.Color.init(190, 210, 230, 220);
@@ -5869,13 +5844,6 @@ test "window network lobby connected text clamps counts and pulses" {
 
     try std.testing.expectEqualStrings("1/2", networkLobbyConnectedText(.{ .connected = 1, .expected = 2 }, 0.0, &buf));
     try std.testing.expectEqualStrings("4/4..", networkLobbyConnectedText(.{ .connected = 8, .expected = 9 }, 0.9, &buf));
-}
-
-test "window network lobby back hover follows native panel timing" {
-    try std.testing.expectEqual(@as(i32, 600), networkLobbyBackHoverAmount(0, true, 100));
-    try std.testing.expectEqual(@as(i32, 1000), networkLobbyBackHoverAmount(900, true, 100));
-    try std.testing.expectEqual(@as(i32, 300), networkLobbyBackHoverAmount(500, false, 100));
-    try std.testing.expectEqual(@as(i32, 0), networkLobbyBackHoverAmount(100, false, 100));
 }
 
 test "window rollback live runtime exposes assigned room code for lobby status" {

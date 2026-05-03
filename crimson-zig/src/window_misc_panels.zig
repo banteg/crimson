@@ -465,6 +465,18 @@ pub fn drawNetwork(state: *const NetworkState, runtime_assets: ?*const window_as
     drawNetworkPanel(state, assets, true);
 }
 
+pub fn openNetworkLobby(state: *NetworkState) void {
+    state.panel.reset();
+}
+
+pub fn updateNetworkLobby(state: *NetworkState, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets) UpdateResult {
+    return updatePanelEx(&state.panel, frame_dt, runtime_assets, false);
+}
+
+pub fn drawNetworkLobbyShell(state: *const NetworkState, assets: *const window_assets.RuntimeAssets) rl.Rectangle {
+    return drawPanelShellEx(&state.panel, assets, true);
+}
+
 fn drawNetworkPanel(state: *const NetworkState, assets: *const window_assets.RuntimeAssets, draw_backdrop: bool) void {
     const animated_rect = drawPanelShellEx(&state.panel, assets, draw_backdrop);
     window_ui.drawSmallText(assets, "Network Session", animated_rect.x + 174.0, animated_rect.y + 40.0, rl.Color.white);
@@ -986,6 +998,32 @@ test "misc panel open timeline emits panel click when fully open" {
     panel.panel_open_sfx_played = true;
     update_result = updatePanelEx(&panel, 0.01, null, true);
     try std.testing.expect(!update_result.play_panel_click);
+}
+
+test "network lobby panel reuses native open and close timeline" {
+    var state: NetworkState = .{};
+    state.reset();
+    state.panel.timeline_ms = panel_timeline_max_ms;
+    state.panel.back_hover_amount = 420;
+    state.panel.panel_open_sfx_played = true;
+
+    openNetworkLobby(&state);
+    try std.testing.expectEqual(@as(i32, 0), state.panel.timeline_ms);
+    try std.testing.expectEqual(@as(i32, 0), state.panel.back_hover_amount);
+    try std.testing.expect(!state.panel.panel_open_sfx_played);
+
+    try std.testing.expectEqual(Action.none, updateNetworkLobby(&state, 0.10, null).action);
+    try std.testing.expectEqual(Action.none, updateNetworkLobby(&state, 0.10, null).action);
+    try std.testing.expectEqual(Action.none, updateNetworkLobby(&state, 0.10, null).action);
+    try std.testing.expectEqual(panel_timeline_max_ms, state.panel.timeline_ms);
+
+    beginPanelClose(&state.panel, .back_to_menu);
+    try std.testing.expectEqual(Action.none, updateNetworkLobby(&state, 0.10, null).action);
+    try std.testing.expectEqual(Action.none, updateNetworkLobby(&state, 0.10, null).action);
+    try std.testing.expectEqual(Action.none, updateNetworkLobby(&state, 0.10, null).action);
+
+    const update_result = updateNetworkLobby(&state, 0.01, null);
+    try std.testing.expectEqual(Action.back_to_menu, update_result.action);
 }
 
 test "network panel defaults to host rollback session" {
