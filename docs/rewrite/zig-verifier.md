@@ -169,8 +169,9 @@ The important remaining gaps are now:
   correction, absorb a repeated jitter burst without resync, complete a
   guest-requested resync snapshot, and self-reconnect a guest through its relay
   token before advancing more input, absorb bidirectional jitter after a
-  reconnect, drive a longer reconnect-then-resync smoke path, recover from
-  double- and triple-reconnect-then-resync sequences, and absorb bidirectional
+  reconnect, drive a longer reconnect-then-resync smoke path that accepts
+  fresh guest input after the applied snapshot, recover from double- and
+  triple-reconnect-then-resync sequences, and absorb bidirectional
   jitter after two or three reconnect cycles, but broader reconnect/resync stress and
   product-lobby polish remain.
 

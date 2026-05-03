@@ -141,6 +141,7 @@ pub const RuntimeCore = struct {
     pub fn handleMessage(self: *RuntimeCore, message: relay_protocol.NetMessage, now_ms: i64) !void {
         switch (message) {
             .rb_input_sample => |batch| {
+                if (self.paused_for_resync or self.paused_for_reconnect) return;
                 if (batch.slot_index != @as(i32, @intCast(self.controller.local_slot_index))) {
                     self.markRemoteSeen(batch.slot_index);
                     try self.controller.ingestRemoteSamples(batch.slot_index, batch.samples);
@@ -693,6 +694,27 @@ test "rollback runtime completes resync and resumes input capture after snapshot
     const frame = runtime.popFrame() orelse return error.ExpectedFrame;
     try std.testing.expectEqual(@as(i32, 4), frame.tick_index);
     try std.testing.expectEqual(@as(u32, 7), frame.input(1).flags);
+}
+
+test "rollback runtime ignores input batches while paused for resync" {
+    var runtime = RuntimeCore.init(std.testing.allocator, .{
+        .role = .join,
+        .player_count = 2,
+        .local_slot_index = 1,
+        .input_delay_ticks = 0,
+        .max_rollback_ticks = 2,
+    });
+    defer runtime.deinit();
+
+    runtime.paused_for_resync = true;
+    try runtime.handleMessage(.{ .rb_input_sample = .{
+        .slot_index = 0,
+        .samples = &[_]relay_protocol.RbInputSample{.{ .tick_index = 0, .packed_input = .{ .flags = 99 } }},
+    } }, 20);
+
+    try std.testing.expect(!runtime.remote_seen_slots[0]);
+    try std.testing.expect(runtime.popFrame() == null);
+    try std.testing.expect(runtime.drainRollbackFrom() == null);
 }
 
 test "rollback runtime pauses on peer disconnect and times out reconnect" {

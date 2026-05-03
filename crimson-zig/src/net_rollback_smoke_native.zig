@@ -160,7 +160,7 @@ fn runSmoke(allocator: std.mem.Allocator, io: Io, impairment: Impairment) !Smoke
             .build_id = "0.1.0",
             .peer_name = "host",
             .input_delay_ticks = 0,
-            .rollback_max_ticks = if (force_guest_resync) 2 else relay_protocol.rollback_max_ticks,
+            .rollback_max_ticks = if (impairment == .guest_reconnect_resync) 8 else if (force_guest_resync) 2 else relay_protocol.rollback_max_ticks,
         },
     });
     defer host.deinit(allocator, io);
@@ -910,7 +910,7 @@ fn runGuestReconnectResyncSmoke(
         last_guest_step = exchange.guest_step;
     }
 
-    for (0..5) |idx| {
+    for (0..12) |idx| {
         const tick: u32 = @intCast(idx + 1);
         const now_ms: i64 = 8000 + @as(i64, @intCast(idx)) * 20;
 
@@ -937,7 +937,18 @@ fn runGuestReconnectResyncSmoke(
     const snapshot_tick: i32 = @intCast(guest.runner.?.session.tick_index -| 1);
     if (snapshot_tick < 8) return error.RollbackSnapshotNotApplied;
 
-    if (guest.runner.?.session.tick_index <= @as(usize, @intCast(snapshot_tick))) return error.RollbackSnapshotNotApplied;
+    packets_sent += try settleLiveQueuesUntilIdle(allocator, io, server, service, host, guest, 8350);
+    try guest.queueLocalInput(allocator, io, .{ .flags = 27 }, 8400);
+    packets_sent += try pumpRelayService(allocator, io, server, service, 8401, null);
+    try host.update(allocator, io, 8402);
+    try host.queueLocalInput(allocator, io, .{ .flags = 31 }, 8403);
+    last_host_step = try host.stepFrames(allocator);
+    if (last_host_step.frames_advanced == 0) return error.RollbackHostFrameMissing;
+    if (last_host_step.last_input_flags[0] != 31 or last_host_step.last_input_flags[1] != 27) return error.RollbackHostInputMismatch;
+
+    const snapshot_tick_index: usize = @intCast(snapshot_tick);
+    if ((last_host_step.last_tick_index orelse return error.RollbackHostFrameMissing) <= snapshot_tick_index) return error.RollbackSnapshotNotApplied;
+    if (guest.runner.?.session.tick_index <= snapshot_tick_index) return error.RollbackSnapshotNotApplied;
 
     return .{
         .relay_port = server.boundPort(),

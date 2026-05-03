@@ -227,8 +227,8 @@ def test_zig_net_smoke_rollback_reports_reconnect_then_resync_recovery() -> None
 
     assert payload["status"] == "ok"
     assert payload["impairment"] == "guest-reconnect-resync"
-    assert payload["host_tick_index"] >= 8
-    assert payload["guest_tick_index"] >= 8
+    assert payload["host_input_flags"] == 31
+    assert payload["guest_input_flags"] == 27
     assert payload["delayed_packets"] == 1
     assert payload["released_packets"] == 1
     assert payload["dropped_packets"] >= 1
@@ -237,6 +237,8 @@ def test_zig_net_smoke_rollback_reports_reconnect_then_resync_recovery() -> None
     assert payload["host_resync_count"] == 0
     assert payload["guest_resync_count"] == 1
     assert payload["resync_snapshot_tick"] >= 8
+    assert payload["host_tick_index"] > payload["resync_snapshot_tick"]
+    assert payload["guest_live_tick_index"] > payload["resync_snapshot_tick"]
     assert payload["host_paused_for_reconnect"] is False
     assert payload["guest_paused_for_reconnect"] is False
     assert payload["host_paused_for_resync"] is False
