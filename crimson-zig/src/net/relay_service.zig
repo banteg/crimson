@@ -150,14 +150,18 @@ pub const RelayService = struct {
         }
 
         const peer_id = if (options.peer_id.len != 0) options.peer_id else try self.allocLabel(allocator, "p", &self.next_peer_id);
+        const build_id = try self.allocOwnedText(allocator, hello.build_id);
+        const peer_name = try self.allocOwnedText(allocator, hello.peer_name);
         const peer_index = try self.addPeer(allocator, addr, .{
             .peer_id = peer_id,
-            .build_id = hello.build_id,
-            .peer_name = hello.peer_name,
+            .build_id = build_id,
+            .peer_name = peer_name,
             .last_seen_ms = options.dispatch.now_ms,
         });
         var packets = try relay_pump.handleClientHello(allocator, &self.core, peer_index, hello, options.dispatch.now_ms);
         defer packets.deinit(allocator);
+        self.core.peers.items[peer_index].peer.build_id = build_id;
+        self.core.peers.items[peer_index].peer.peer_name = peer_name;
         if (packet.reliable and packet.seq > 0) {
             self.core.peers.items[peer_index].link.primeRecvSeq(packet.seq);
         }
@@ -209,6 +213,14 @@ pub const RelayService = struct {
         counter.* += 1;
         try self.owned_labels.append(allocator, label);
         return label;
+    }
+
+    fn allocOwnedText(self: *RelayService, allocator: std.mem.Allocator, text: []const u8) ![]const u8 {
+        if (text.len == 0) return "";
+        const owned = try allocator.dupe(u8, text);
+        errdefer allocator.free(owned);
+        try self.owned_labels.append(allocator, owned);
+        return owned;
     }
 
     fn allocRoomCode(self: *RelayService) !room_code.RoomCode {
@@ -338,6 +350,33 @@ test "relay service registers client hello and primes reliable receive seq" {
         },
         else => return error.TestExpectedEqual,
     }
+}
+
+test "relay service owns client hello identity fields" {
+    const allocator = std.testing.allocator;
+    var service: RelayService = .{};
+    defer service.deinit(allocator);
+    const addr = testAddr(1001);
+
+    var build_id = [_]u8{ '0', '.', '1', '.', '0' };
+    var peer_name = [_]u8{ 'h', 'o', 's', 't' };
+    var outbox = try service.receivePacket(allocator, addr, .{
+        .message = .{ .client_hello = .{
+            .protocol_version = relay_protocol.protocol_version,
+            .build_id = build_id[0..],
+            .peer_name = peer_name[0..],
+        } },
+    }, .{
+        .peer_id = "peer-1",
+        .dispatch = .{ .now_ms = 1000 },
+    });
+    defer outbox.deinit(allocator);
+
+    @memset(build_id[0..], 'x');
+    @memset(peer_name[0..], 'y');
+
+    try std.testing.expectEqualStrings("0.1.0", service.core.peers.items[0].peer.build_id);
+    try std.testing.expectEqualStrings("host", service.core.peers.items[0].peer.peer_name);
 }
 
 test "relay service generates owned peer ids when omitted" {
