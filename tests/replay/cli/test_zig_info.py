@@ -18,6 +18,7 @@ from ._helpers import (
     inject_tick_commands,
     write_current_bad_tick_player_count_replay,
     write_current_missing_perk_choice_replay,
+    write_current_string_quest_level_replay,
     write_current_typo_event_replay,
     write_current_unknown_command_replay,
     write_legacy_out_of_order_event_replay,
@@ -60,6 +61,22 @@ def test_zig_replay_info_matches_python_json_payload_on_quest_replay(tmp_path: P
     )
 
     assert zig_payload == python_payload
+
+
+def test_zig_replay_info_accepts_current_string_quest_level(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.QUESTS, ticks=2, quest_level="1.1")
+    replay_path = write_current_string_quest_level_replay(
+        tmp_path,
+        replay=replay,
+        name="quest-string-level.crd",
+        quest_level="1.1",
+    )
+
+    zig_payload = _run_zig_replay_info([str(replay_path), "--format", "json"])
+
+    summary = cast("dict[str, Any]", zig_payload["summary"])
+    assert summary["game_mode_id"] == int(GameMode.QUESTS)
+    assert summary["ticks_simulated"] == 2
 
 
 def test_zig_replay_info_respects_python_max_ticks_contract(tmp_path: Path) -> None:

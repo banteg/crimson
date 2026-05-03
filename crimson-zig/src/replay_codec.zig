@@ -755,12 +755,41 @@ const ReplayHeaderCurrentWire = struct {
     quest_level: ?QuestLevelCurrentWire = null,
     typo_dictionary_words: []const []const u8 = &.{},
     typo_highscore_names: []const []const u8 = &.{},
+    bootstrap_kind: []const u8 = "none",
+    bootstrap_seed: u32 = 0,
     game_version: []const u8 = "",
     tick_rate: i32 = 60,
+    difficulty_level: i32 = 0,
     quest_fail_retry_count: i32 = 0,
     hardcore: bool = false,
     preserve_bugs: bool = false,
     detail_preset: i32 = 5,
+    gore_disabled: i32 = 0,
+    violence_disabled: i32 = 0,
+    world_size: f32 = 1024.0,
+    player_count: i32 = 1,
+    status: ReplayStatusCurrentWire = .{},
+    claimed_stats: ReplayClaimedStatsWire,
+    input_quantization: []const u8 = "f32",
+};
+
+const ReplayHeaderCurrentStringQuestWire = struct {
+    game_mode_id: i32,
+    seed: u32,
+    replay_format_version: i32,
+    quest_level: []const u8 = "",
+    typo_dictionary_words: []const []const u8 = &.{},
+    typo_highscore_names: []const []const u8 = &.{},
+    bootstrap_kind: []const u8 = "none",
+    bootstrap_seed: u32 = 0,
+    game_version: []const u8 = "",
+    tick_rate: i32 = 60,
+    difficulty_level: i32 = 0,
+    quest_fail_retry_count: i32 = 0,
+    hardcore: bool = false,
+    preserve_bugs: bool = false,
+    detail_preset: i32 = 5,
+    gore_disabled: i32 = 0,
     violence_disabled: i32 = 0,
     world_size: f32 = 1024.0,
     player_count: i32 = 1,
@@ -987,6 +1016,11 @@ const ReplayCurrentWire = struct {
     ticks: []const ReplayTickCurrentWire,
 };
 
+const ReplayCurrentStringQuestWire = struct {
+    header: ReplayHeaderCurrentStringQuestWire,
+    ticks: []const ReplayTickCurrentWire,
+};
+
 const TerrainRule = struct {
     threshold: i32,
 };
@@ -1122,6 +1156,9 @@ pub fn parseReplaySummary(
     if (try tryParseCurrentReplaySummary(allocator, payload)) |summary| {
         return summary;
     }
+    if (try tryParseCurrentStringQuestReplaySummary(allocator, payload)) |summary| {
+        return summary;
+    }
 
     var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch |err| {
         return switch (err) {
@@ -1157,6 +1194,9 @@ pub fn parseReplay(
     if (isLegacyJsonPayload(payload)) return error.LegacyJsonPayload;
 
     if (try tryParseCurrentReplay(allocator, payload)) |replay| {
+        return replay;
+    }
+    if (try tryParseCurrentStringQuestReplay(allocator, payload)) |replay| {
         return replay;
     }
 
@@ -2060,6 +2100,34 @@ fn tryParseCurrentReplaySummary(
     };
 }
 
+fn tryParseCurrentStringQuestReplaySummary(
+    allocator: std.mem.Allocator,
+    payload: []const u8,
+) ReplayCodecError!?ReplaySummary {
+    var decoded = msgpack.decodeFromSlice(ReplayCurrentStringQuestWire, allocator, payload) catch |err| {
+        return switch (err) {
+            error.OutOfMemory => error.OutOfMemory,
+            else => null,
+        };
+    };
+    defer decoded.deinit();
+
+    const wire = decoded.value;
+    const header = try buildHeaderCurrentStringQuest(allocator, wire.header);
+    errdefer header.deinit(allocator);
+    if (!isSupportedReplayFormatVersion(header.replay_format_version)) {
+        return error.UnsupportedReplayFormatVersion;
+    }
+
+    const tick_count = wire.ticks.len;
+    try validateCurrentTicks(wire.ticks, header.player_count);
+    return .{
+        .header = header,
+        .tick_count = tick_count,
+        .events = try parseCurrentEventSummary(wire.ticks, tick_count),
+    };
+}
+
 fn tryParseCurrentReplay(
     allocator: std.mem.Allocator,
     payload: []const u8,
@@ -2085,6 +2153,41 @@ fn tryParseCurrentReplay(
     const dt = try buildDtCurrent(allocator, wire.ticks);
     errdefer allocator.free(dt);
     const events = try buildEventsCurrent(allocator, wire.ticks, wire.ticks.len);
+    errdefer allocator.free(events);
+
+    return .{
+        .header = header,
+        .inputs = inputs,
+        .dt = dt,
+        .events = events,
+    };
+}
+
+fn tryParseCurrentStringQuestReplay(
+    allocator: std.mem.Allocator,
+    payload: []const u8,
+) ReplayCodecError!?Replay {
+    var decoded = msgpack.decodeFromSlice(ReplayCurrentStringQuestWire, allocator, payload) catch |err| {
+        return switch (err) {
+            error.OutOfMemory => error.OutOfMemory,
+            else => null,
+        };
+    };
+    defer decoded.deinit();
+
+    const wire = decoded.value;
+    const header = try buildHeaderCurrentStringQuest(allocator, wire.header);
+    errdefer header.deinit(allocator);
+    if (!isSupportedReplayFormatVersion(header.replay_format_version)) {
+        return error.UnsupportedReplayFormatVersion;
+    }
+
+    try validateCurrentTicks(wire.ticks, header.player_count);
+    const inputs = try buildInputsCurrent(allocator, wire.ticks);
+    errdefer freeInputs(allocator, inputs);
+    const dt = try buildDtCurrent(allocator, wire.ticks);
+    errdefer allocator.free(dt);
+    const events = try buildEventsCurrent(allocator, wire.ticks, inputs.len);
     errdefer allocator.free(events);
 
     return .{
@@ -2185,6 +2288,26 @@ fn buildHeaderCurrent(
     allocator: std.mem.Allocator,
     wire: ReplayHeaderCurrentWire,
 ) ReplayCodecError!ReplayHeader {
+    var quest_level_buf: [32]u8 = undefined;
+    const quest_level = if (wire.quest_level) |level|
+        std.fmt.bufPrint(quest_level_buf[0..], "{d}.{d}", .{ level.major, level.minor }) catch return error.InvalidHeaderValue
+    else
+        "";
+    return buildHeaderCurrentWithQuestLevelText(allocator, wire, quest_level);
+}
+
+fn buildHeaderCurrentStringQuest(
+    allocator: std.mem.Allocator,
+    wire: ReplayHeaderCurrentStringQuestWire,
+) ReplayCodecError!ReplayHeader {
+    return buildHeaderCurrentWithQuestLevelText(allocator, wire, wire.quest_level);
+}
+
+fn buildHeaderCurrentWithQuestLevelText(
+    allocator: std.mem.Allocator,
+    wire: anytype,
+    quest_level: []const u8,
+) ReplayCodecError!ReplayHeader {
     const max_world_size_i32_f32: f32 = @floatFromInt(std.math.maxInt(i32));
     if (!std.math.isFinite(wire.world_size) or wire.world_size <= 0.0 or wire.world_size > max_world_size_i32_f32) {
         return error.InvalidHeaderValue;
@@ -2196,17 +2319,19 @@ fn buildHeaderCurrent(
     const tick_rate = try parseI32(wire.tick_rate);
     const player_count = try parseI32(wire.player_count);
     const quest_fail_retry_count = try parseI32(wire.quest_fail_retry_count);
+    const difficulty_level_raw = try parseI32(wire.difficulty_level);
     const detail_preset = try parseI32(wire.detail_preset);
     const violence_disabled = try parseI32(wire.violence_disabled);
+    const gore_disabled_raw = try parseI32(wire.gore_disabled);
     const quest_unlock_index = try parseI32(wire.status.quest_unlock_index);
     const quest_unlock_index_full = try parseI32(wire.status.quest_unlock_index_full);
+    const difficulty_level = if (difficulty_level_raw != 0) difficulty_level_raw else quest_fail_retry_count;
+    const gore_disabled = if (gore_disabled_raw != 0) gore_disabled_raw else violence_disabled;
 
     if (tick_rate <= 0 or player_count <= 0) return error.InvalidHeaderValue;
     try validateModePlayerCount(wire.game_mode_id, player_count);
     if (wire.game_version.len == 0) return error.MissingHeaderField;
-    if (wire.game_mode_id == @intFromEnum(game_ids.GameModeId.quests) and wire.quest_level == null) {
-        return error.MissingQuestLevel;
-    }
+    if (isMissingQuestLevel(wire.game_mode_id, quest_level)) return error.MissingQuestLevel;
     if (wire.status.weapon_usage_counts.len != weapon_usage_count) return error.InvalidHeaderValue;
 
     var usage_counts: [weapon_usage_count]u32 = [_]u32{0} ** weapon_usage_count;
@@ -2226,28 +2351,25 @@ fn buildHeaderCurrent(
     };
     try validateClaimedStats(claimed_stats);
 
-    const quest_level = if (wire.quest_level) |level|
-        std.fmt.allocPrint(allocator, "{d}.{d}", .{ level.major, level.minor }) catch return error.OutOfMemory
-    else
-        allocator.dupe(u8, "") catch return error.OutOfMemory;
-    errdefer allocator.free(quest_level);
+    const quest_level_owned = allocator.dupe(u8, quest_level) catch return error.OutOfMemory;
+    errdefer allocator.free(quest_level_owned);
 
     return .{
         .game_mode_id = wire.game_mode_id,
         .seed = wire.seed,
         .replay_format_version = wire.replay_format_version,
-        .quest_level = quest_level,
+        .quest_level = quest_level_owned,
         .typo_dictionary_words = try dupStringSliceList(allocator, wire.typo_dictionary_words),
         .typo_highscore_names = try dupStringSliceList(allocator, wire.typo_highscore_names),
-        .bootstrap_kind = allocator.dupe(u8, "none") catch return error.OutOfMemory,
-        .bootstrap_seed = 0,
+        .bootstrap_kind = allocator.dupe(u8, wire.bootstrap_kind) catch return error.OutOfMemory,
+        .bootstrap_seed = wire.bootstrap_seed,
         .game_version = allocator.dupe(u8, wire.game_version) catch return error.OutOfMemory,
         .tick_rate = tick_rate,
-        .difficulty_level = quest_fail_retry_count,
+        .difficulty_level = difficulty_level,
         .hardcore = wire.hardcore,
         .preserve_bugs = wire.preserve_bugs,
         .detail_preset = detail_preset,
-        .gore_disabled = violence_disabled,
+        .gore_disabled = gore_disabled,
         .world_size = wire.world_size,
         .player_count = player_count,
         .status = .{
@@ -2619,6 +2741,14 @@ test "inflate zstd payload consumes replay fixture through eof" {
 
     try std.testing.expectEqual(@as(usize, 191445), inflated.len);
     try std.testing.expectEqualSlices(u8, &.{ 0x82, 0xa6, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72 }, inflated[0..8]);
+}
+
+test "parse current replay summary reaches version check for hybrid string quest level fixture" {
+    const compressed = @embedFile("../../tests/fixtures/replays/quest_1.5_20260303_211620_completed_t40512.crd");
+    const inflated = try inflateZstdPayload(std.testing.allocator, compressed, max_replay_payload_bytes);
+    defer std.testing.allocator.free(inflated);
+
+    try std.testing.expectError(error.UnsupportedReplayFormatVersion, parseReplaySummary(std.testing.allocator, inflated));
 }
 
 test "inflate zstd payload enforces max output size" {
