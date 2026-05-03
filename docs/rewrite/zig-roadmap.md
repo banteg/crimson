@@ -164,9 +164,7 @@ Remaining work:
 
 - expand Zig CLI coverage where it materially helps development:
   - replay-oriented tools beyond list/verify/info/benchmark/verify-checkpoints/diff-checkpoints,
-  - useful debug/support commands where they make sense natively, including
-    `crimson-zig spawn-plan` and the installed `crimson-zig-asset-smoke`
-    archive/image decode validator,
+  - useful debug/support commands where they make sense natively,
 - keep trace/debug surfaces aligned with current Python contracts,
 - refresh developer docs when tooling behavior changes.
 
@@ -174,6 +172,10 @@ Definition of done:
 
 - Zig-native tooling is useful beyond the verifier path,
 - the documented command surface matches what is actually supported.
+
+Already-native support surfaces in this workstream include `crimson-zig
+spawn-plan` and the installed `crimson-zig-asset-smoke` archive/image decode
+validator.
 
 ### 4. Presentation and polish follow-through
 
