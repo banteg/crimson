@@ -839,13 +839,94 @@ const QuestCountPair = struct {
 };
 
 fn questCounts(status: formats.game_cfg.Status, stage: i32, row: usize) QuestCountPair {
-    const level_key = stage * 100 + @as(i32, @intCast(row)) + 1;
+    const minor = @as(i32, @intCast(row)) + 1;
+    const level_key = stage * 100 + minor;
     const games_idx = quest_status.trackedQuestGamesCounterIndex(level_key);
     const completed_idx = quest_status.trackedQuestCompletedCounterIndex(level_key);
     return .{
-        .completed = if (completed_idx) |idx| status.quest_play_counts[idx] else 0,
-        .games = if (games_idx) |idx| status.quest_play_counts[idx] else 0,
+        .completed = if (completed_idx) |idx| status.quest_play_counts[idx] else stage5CompletedCount(status, stage, minor),
+        .games = if (games_idx) |idx| status.quest_play_counts[idx] else stage5GamesCount(status, stage, minor),
     };
+}
+
+fn stage5GamesCount(status: formats.game_cfg.Status, stage: i32, minor: i32) u32 {
+    if (stage != 5) return 0;
+    const global_index = quest_status.questGlobalIndex(stage, minor) orelse return 0;
+    const idx = global_index + quest_status.quest_status_games_offset;
+    if (idx < 0 or idx >= formats.game_cfg.quest_play_count) return 0;
+    return status.quest_play_counts[@intCast(idx)];
+}
+
+fn stage5CompletedCount(status: formats.game_cfg.Status, stage: i32, minor: i32) u32 {
+    if (stage != 5) return 0;
+    const global_index = quest_status.questGlobalIndex(stage, minor) orelse return 0;
+    const tail_slot = global_index - quest_status.quest_status_tracked_count;
+    return switch (tail_slot) {
+        0 => status.mode_play_survival,
+        1 => status.mode_play_rush,
+        2 => status.mode_play_typo,
+        3 => status.mode_play_other,
+        4 => status.game_sequence_id,
+        5...8 => statusUnknownTailU32(status, @intCast(tail_slot - 5)),
+        else => 0,
+    };
+}
+
+fn statusUnknownTailU32(status: formats.game_cfg.Status, slot: usize) u32 {
+    const off = slot * 4;
+    if (off + 4 > status.unknown_tail.len) return 0;
+    return std.mem.readInt(u32, status.unknown_tail[off..][0..4], .little);
+}
+
+test "quest counts read tracked stage four counters" {
+    var status = std.mem.zeroes(formats.game_cfg.Status);
+    status.quest_play_counts[50] = 12;
+    status.quest_play_counts[90] = 34;
+
+    const counts = questCounts(status, 4, 9);
+
+    try std.testing.expectEqual(@as(u32, 34), counts.completed);
+    try std.testing.expectEqual(@as(u32, 12), counts.games);
+}
+
+test "quest counts mirror native stage five overflow fields" {
+    var status = std.mem.zeroes(formats.game_cfg.Status);
+    status.quest_play_counts[51] = 123;
+    status.quest_play_counts[52] = 222;
+    status.quest_play_counts[55] = 456;
+    status.quest_play_counts[56] = 789;
+    status.quest_play_counts[60] = 999;
+    status.mode_play_survival = 111;
+    status.mode_play_rush = 222;
+    status.mode_play_typo = 333;
+    status.mode_play_other = 444;
+    status.game_sequence_id = 0x01020304;
+    status.unknown_tail = [_]u8{
+        0x00, 0x01, 0x02, 0x03,
+        0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0a, 0x0b,
+        0x0c, 0x0d, 0x0e, 0x0f,
+    };
+
+    const row0 = questCounts(status, 5, 0);
+    try std.testing.expectEqual(@as(u32, 111), row0.completed);
+    try std.testing.expectEqual(@as(u32, 123), row0.games);
+
+    const row1 = questCounts(status, 5, 1);
+    try std.testing.expectEqual(@as(u32, 222), row1.completed);
+    try std.testing.expectEqual(@as(u32, 222), row1.games);
+
+    const row4 = questCounts(status, 5, 4);
+    try std.testing.expectEqual(@as(u32, 0x01020304), row4.completed);
+    try std.testing.expectEqual(@as(u32, 456), row4.games);
+
+    const row5 = questCounts(status, 5, 5);
+    try std.testing.expectEqual(@as(u32, 0x03020100), row5.completed);
+    try std.testing.expectEqual(@as(u32, 789), row5.games);
+
+    const row9 = questCounts(status, 5, 9);
+    try std.testing.expectEqual(@as(u32, 0), row9.completed);
+    try std.testing.expectEqual(@as(u32, 999), row9.games);
 }
 
 fn frameDeltaMs(frame_dt: f32) i32 {
