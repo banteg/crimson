@@ -147,6 +147,13 @@ Evidence gate:
 Goal: make the shipped Zig window behave like the Python product shell for the
 full menu/game/results loop.
 
+Current evidence:
+
+- `uv run pytest tests/grim/test_zig_window_cli.py` verifies that the default
+  Zig build installs `crimson-zig-window`, that `--help` exposes the shipped
+  window flags, and that `--smoke-start` can construct non-rendering direct
+  launch runners for Survival, Rush, Quests, Typ-o, and Tutorial.
+
 Scope:
 
 - audit and close boot, root menu, Play Game, Quests, Options, Controls,

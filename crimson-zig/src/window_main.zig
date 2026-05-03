@@ -3212,6 +3212,7 @@ const WindowArgs = struct {
     quest_fail_retry_count: ?i32 = null,
     base_dir: ?[]const u8 = null,
     assets_dir: ?[]const u8 = null,
+    smoke_start: bool = false,
 };
 
 pub fn main(init: std.process.Init) !void {
@@ -3222,6 +3223,14 @@ pub fn main(init: std.process.Init) !void {
     const args = try parseWindowArgs(argv);
     runtime_paths.useRuntimeDir(args.base_dir);
     runtime_paths.useAssetsDir(args.assets_dir);
+
+    if (args.smoke_start) {
+        var runtime = try app_runtime.DesktopRuntime.init(allocator);
+        defer runtime.deinit();
+        try runWindowStartSmoke(init.io, runtime.config, runtime.status, args);
+        return;
+    }
+
     var runtime = try app_runtime.DesktopRuntime.init(allocator);
 
     const initial_windowed = args.windowed orelse (runtime.config.windowed_flag != 0);
@@ -3412,9 +3421,13 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
             parsed.assets_dir = arg["--assets-dir=".len..];
             continue;
         }
+        if (std.mem.eql(u8, arg, "--smoke-start")) {
+            parsed.smoke_start = true;
+            continue;
+        }
         if (std.mem.eql(u8, arg, "--help")) {
             std.debug.print(
-                "usage: crimson-zig-window [--demo] [--debug] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--windowed|--fullscreen] [--start-mode MODE] [--quest-level M.N] [--players N] [--detail N] [--gore|--no-gore] [--hardcore|--normal] [--quest-retry-count N] [--base-dir PATH] [--assets-dir PATH]\n",
+                "usage: crimson-zig-window [--demo] [--debug] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--windowed|--fullscreen] [--start-mode MODE] [--quest-level M.N] [--players N] [--detail N] [--gore|--no-gore] [--hardcore|--normal] [--quest-retry-count N] [--base-dir PATH] [--assets-dir PATH] [--smoke-start]\n",
                 .{},
             );
             std.process.exit(0);
@@ -3427,6 +3440,7 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
     if (parsed.quest_fail_retry_count != null) {
         if (parsed.start_mode == null or parsed.start_mode.? != .quests) return error.InvalidArgs;
     }
+    if (parsed.smoke_start and parsed.start_mode == null) return error.InvalidArgs;
     return parsed;
 }
 
@@ -3479,6 +3493,72 @@ fn parseNonNegativeI32(raw: []const u8) !i32 {
     const value = std.fmt.parseInt(i64, raw, 10) catch return error.InvalidArgs;
     if (value < 0 or value > std.math.maxInt(i32)) return error.InvalidArgs;
     return @intCast(value);
+}
+
+fn windowLaunchRunConfig(args: WindowArgs, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status) !live_runner.LiveModeConfig {
+    const mode = args.start_mode orelse return error.InvalidArgs;
+    var seed_state: u32 = 0xC0FFEE;
+    var seed_override = args.seed;
+    var run_config = runConfigForLiveModeWithSeed(
+        mode,
+        if (mode == .quests) args.quest_level_key else null,
+        takeSeedOverride(&seed_state, &seed_override),
+    );
+    if (args.quest_fail_retry_count) |count| run_config.quest_fail_retry_count = count;
+
+    const requested_player_count = args.player_count orelse @as(i32, @intCast(config.player_count));
+    run_config.player_count = livePlayerCountForMode(run_config.game_mode, requested_player_count);
+    run_config.detail_preset = args.detail_preset orelse @as(i32, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))));
+    run_config.gore_disabled = if (args.gore_disabled) |disabled| @intFromBool(disabled) else @intCast(config.gore_disabled);
+    run_config.hardcore = args.hardcore orelse (config.hardcore_flag != 0);
+    run_config.preserve_bugs = args.preserve_bugs;
+    run_config.status_quest_unlock_index = @intCast(status.quest_unlock_index);
+    run_config.status_quest_unlock_index_full = @intCast(status.quest_unlock_index_full);
+    run_config.status_weapon_usage_counts = statusWeaponUsageCounts(status);
+    run_config.demo_mode_active = run_config.demo_mode_active or
+        (args.demo_enabled and (run_config.game_mode == .quests or run_config.game_mode == .tutorial));
+    return run_config;
+}
+
+fn runWindowStartSmoke(io: std.Io, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, args: WindowArgs) !void {
+    const run_config = try windowLaunchRunConfig(args, config, status);
+    const runner = try live_runner.LiveRunner.init(run_config);
+    var quest_buf: [16]u8 = undefined;
+    const quest_text = questLevelLabel(runner.quest_level_key, quest_buf[0..]);
+
+    var buffer: [512]u8 = undefined;
+    var file_writer = std.Io.File.stdout().writer(io, &buffer);
+    const stdout = &file_writer.interface;
+    try stdout.print(
+        "ok: mode={s} player_count={d} quest_level={s} seed={d} detail={d} gore_disabled={d} hardcore={} demo_mode_active={} preserve_bugs={}\n",
+        .{
+            gameModeLabel(runner.session.game_mode),
+            run_config.player_count,
+            quest_text,
+            run_config.seed,
+            run_config.detail_preset,
+            run_config.gore_disabled,
+            run_config.hardcore,
+            run_config.demo_mode_active,
+            run_config.preserve_bugs,
+        },
+    );
+    try stdout.flush();
+}
+
+fn gameModeLabel(mode: game_ids.GameModeId) []const u8 {
+    return switch (mode) {
+        .survival => "survival",
+        .rush => "rush",
+        .quests => "quests",
+        .typo => "typo",
+        .tutorial => "tutorial",
+    };
+}
+
+fn questLevelLabel(level_key: ?i32, buf: []u8) []const u8 {
+    const key = level_key orelse return "none";
+    return std.fmt.bufPrint(buf, "{d}.{d}", .{ @divTrunc(key, 100), @mod(key, 100) }) catch "invalid";
 }
 
 fn initialScreenForArgs(args: WindowArgs) Screen {
@@ -5048,6 +5128,13 @@ test "window args parse direct start mode" {
     try std.testing.expectEqual(@as(?game_ids.GameModeId, .typo), typo.start_mode);
 }
 
+test "window args parse smoke start mode" {
+    const args = try parseWindowArgs(&.{ "crimson-zig-window", "--smoke-start", "--start-mode", "tutorial" });
+    try std.testing.expect(args.smoke_start);
+    try std.testing.expectEqual(@as(?game_ids.GameModeId, .tutorial), args.start_mode);
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--smoke-start" }));
+}
+
 test "window args parse player count override" {
     const separate = try parseWindowArgs(&.{ "crimson-zig-window", "--players", "3" });
     try std.testing.expectEqual(@as(?i32, 3), separate.player_count);
@@ -5128,6 +5215,37 @@ test "window args reject invalid seed" {
 
 test "window args reject unknown flags" {
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--wat" }));
+}
+
+test "window launch smoke config constructs direct mode runners" {
+    var config = formats.crimson_cfg.defaultConfig();
+    config.player_count = 4;
+    var status = std.mem.zeroes(formats.game_cfg.Status);
+    status.quest_unlock_index = 50;
+
+    const cases = [_]struct {
+        argv: []const []const u8,
+        mode: game_ids.GameModeId,
+        player_count: i32,
+        quest_level_key: ?i32 = null,
+    }{
+        .{ .argv = &.{ "crimson-zig-window", "--smoke-start", "--start-mode", "survival" }, .mode = .survival, .player_count = 4 },
+        .{ .argv = &.{ "crimson-zig-window", "--smoke-start", "--start-mode", "rush", "--players", "2" }, .mode = .rush, .player_count = 2 },
+        .{ .argv = &.{ "crimson-zig-window", "--smoke-start", "--start-mode", "quests", "--quest-level", "2.4" }, .mode = .quests, .player_count = 4, .quest_level_key = 204 },
+        .{ .argv = &.{ "crimson-zig-window", "--smoke-start", "--start-mode", "typo", "--players", "4" }, .mode = .typo, .player_count = 1 },
+        .{ .argv = &.{ "crimson-zig-window", "--smoke-start", "--start-mode", "tutorial", "--players", "4" }, .mode = .tutorial, .player_count = 1 },
+    };
+
+    for (cases) |case| {
+        const args = try parseWindowArgs(case.argv);
+        const run_config = try windowLaunchRunConfig(args, config, status);
+        const runner = try live_runner.LiveRunner.init(run_config);
+
+        try std.testing.expectEqual(case.mode, runner.session.game_mode);
+        try std.testing.expectEqual(case.player_count, run_config.player_count);
+        try std.testing.expectEqual(case.quest_level_key, runner.quest_level_key);
+        try std.testing.expectEqual(@as(i32, 50), run_config.status_quest_unlock_index);
+    }
 }
 
 test "seed override is consumed before generated seeds" {
