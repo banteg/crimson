@@ -68,6 +68,7 @@ pub const Session = struct {
     started: bool = false,
     local_slot_index: i32 = -1,
     room_code_latest: ?room_code.RoomCode = null,
+    room_state_latest: ?relay_protocol.RoomState = null,
     reconnect_token: []const u8 = "",
     match_config: ?MatchConfig = null,
     error_reason: []const u8 = "",
@@ -84,6 +85,7 @@ pub const Session = struct {
         self.link.deinit(allocator);
         if (self.runtime) |*runtime| runtime.deinit();
         self.outbox.deinit(allocator);
+        self.clearRoomState(allocator);
         if (self.reconnect_token.len != 0) allocator.free(self.reconnect_token);
         if (self.error_reason.len != 0) allocator.free(self.error_reason);
         self.* = undefined;
@@ -184,6 +186,7 @@ pub const Session = struct {
             .room_state => |state| {
                 self.saw_room_state = true;
                 self.room_code_latest = state.room_code;
+                try self.storeRoomState(allocator, state);
                 if (self.runtime) |*runtime| {
                     if (self.reconnect_state != .idle and roomStateHasConnectedSlot(state, self.local_slot_index)) {
                         runtime.completeReconnect();
@@ -212,6 +215,22 @@ pub const Session = struct {
             else => {},
         }
         try self.flushRuntimeOutbox(allocator, now_ms);
+    }
+
+    fn storeRoomState(self: *Session, allocator: std.mem.Allocator, state: relay_protocol.RoomState) !void {
+        self.clearRoomState(allocator);
+        var message = try relay_protocol.cloneMessage(allocator, .{ .room_state = state });
+        errdefer relay_protocol.deinitMessage(allocator, &message);
+        self.room_state_latest = message.room_state;
+        message = .{ .ping = .{} };
+    }
+
+    fn clearRoomState(self: *Session, allocator: std.mem.Allocator) void {
+        if (self.room_state_latest) |state| {
+            var message: relay_protocol.NetMessage = .{ .room_state = state };
+            relay_protocol.deinitMessage(allocator, &message);
+            self.room_state_latest = null;
+        }
     }
 
     fn handleRoomStart(self: *Session, allocator: std.mem.Allocator, start: relay_protocol.RoomStart) !void {
@@ -407,6 +426,36 @@ test "rollback session handshakes host room and starts runtime" {
     try std.testing.expect(session.started);
     try std.testing.expect(session.runtime != null);
     try std.testing.expectEqual(@as(i32, 0), session.local_slot_index);
+}
+
+test "rollback session retains latest room state for lobby status" {
+    const allocator = std.testing.allocator;
+    const code = try room_code.parseRoomCode("ABCD");
+    var session = Session.init(.{
+        .role = .host,
+        .mode_id = 2,
+        .player_count = 2,
+        .build_id = "0.1.0",
+    });
+    defer session.deinit(allocator);
+
+    var server_link: relay_reliable.RelayReliableLink = .{};
+    defer server_link.deinit(allocator);
+    try session.handlePacket(allocator, try server_link.buildPacket(allocator, .{ .room_state = .{
+        .room_code = code,
+        .session_id = "s1",
+        .player_count = 2,
+        .slots = &[_]relay_protocol.RelaySlot{
+            .{ .slot_index = 0, .connected = true, .ready = true, .is_host = true, .peer_name = "host" },
+            .{ .slot_index = 1, .connected = true, .ready = false, .is_host = false, .peer_name = "guest" },
+        },
+    } }, true, 1000), 1000);
+
+    const state = session.room_state_latest orelse return error.ExpectedRoomState;
+    try std.testing.expectEqualStrings("s1", state.session_id);
+    try std.testing.expectEqual(@as(usize, 2), state.slots.len);
+    try std.testing.expectEqualStrings("guest", state.slots[1].peer_name);
+    try std.testing.expectEqualStrings("abcd", room_code.roomCodeSlice(&state.room_code));
 }
 
 test "rollback session packetizes local input through runtime core" {

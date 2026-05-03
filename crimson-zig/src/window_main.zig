@@ -51,6 +51,7 @@ const relay_transport = cz.net.relay_transport;
 const rollback_live_bridge = cz.net.rollback_live_bridge;
 const rollback_live_session = cz.net.rollback_live_session;
 const room_code = cz.net.room_code;
+const schema_shared = cz.net.schema_shared;
 const runtime_perks = cz.perks;
 const runtime_session = cz.session;
 const state_mod = cz.state;
@@ -457,7 +458,111 @@ const NetworkLiveRuntime = union(enum) {
             .rollback => |rollback| rollback.session.room_code_latest,
         };
     }
+
+    fn lobbySummary(self: *const NetworkLiveRuntime) ?NetworkLobbySummary {
+        return switch (self.*) {
+            .host => |host| .{
+                .connected = @min(expectedPlayerCount(host.session.runtime.lobby.player_count), 1 + host.session.runtime.lobby.peers.items.len),
+                .expected = expectedPlayerCount(host.session.runtime.lobby.player_count),
+                .ready = lockstepHostReadyCount(host.session.runtime.lobby),
+                .local_slot = 0,
+                .session_id = host.session.runtime.lobby.session_id,
+                .started = host.session.runtime.started,
+            },
+            .client => |client| lockstepClientLobbySummary(client.session.runtime),
+            .rollback => |rollback| rollbackLobbySummary(rollback.session),
+        };
+    }
 };
+
+const NetworkLobbySummary = struct {
+    connected: usize = 0,
+    expected: usize = 1,
+    ready: usize = 0,
+    local_slot: ?usize = null,
+    room_code: ?room_code.RoomCode = null,
+    session_id: []const u8 = "",
+    started: bool = false,
+};
+
+fn expectedPlayerCount(player_count: i32) usize {
+    return @intCast(std.math.clamp(player_count, @as(i32, 1), @as(i32, @intCast(state_mod.max_players))));
+}
+
+fn localSlotIndex(slot_index: i32) ?usize {
+    if (slot_index < 0) return null;
+    const slot: usize = @intCast(slot_index);
+    if (slot >= state_mod.max_players) return null;
+    return slot;
+}
+
+fn slotCounts(slots: []const schema_shared.SlotState) struct { connected: usize, ready: usize } {
+    var connected: usize = 0;
+    var ready: usize = 0;
+    for (slots) |slot| {
+        if (slot.connected) connected += 1;
+        if (slot.ready) ready += 1;
+    }
+    return .{ .connected = connected, .ready = ready };
+}
+
+fn lockstepHostReadyCount(lobby: cz.net.lockstep_lobby.HostLobby) usize {
+    var ready: usize = if (lobby.host_ready) 1 else 0;
+    for (lobby.peers.items) |peer| {
+        if (peer.ready) ready += 1;
+    }
+    return @min(ready, expectedPlayerCount(lobby.player_count));
+}
+
+fn lockstepClientLobbySummary(runtime: cz.net.lockstep_client_runtime.ClientRuntime) ?NetworkLobbySummary {
+    if (runtime.lobby.lobby_state_latest) |state| {
+        const counts = slotCounts(state.slots);
+        return .{
+            .connected = counts.connected,
+            .expected = expectedPlayerCount(state.player_count),
+            .ready = counts.ready,
+            .local_slot = localSlotIndex(runtime.lobby.slotIndex()),
+            .session_id = state.session_id,
+            .started = runtime.started or state.started,
+        };
+    }
+    if (runtime.lobby.welcome) |welcome| {
+        if (!welcome.accepted) return null;
+        return .{
+            .connected = 1,
+            .expected = expectedPlayerCount(welcome.player_count),
+            .ready = 1,
+            .local_slot = localSlotIndex(welcome.slot_index),
+            .session_id = welcome.session_id,
+            .started = runtime.started or welcome.started,
+        };
+    }
+    return null;
+}
+
+fn rollbackLobbySummary(session: cz.net.rollback_session.Session) ?NetworkLobbySummary {
+    if (session.room_state_latest) |state| {
+        const counts = slotCounts(state.slots);
+        return .{
+            .connected = counts.connected,
+            .expected = expectedPlayerCount(state.player_count),
+            .ready = counts.ready,
+            .local_slot = localSlotIndex(session.local_slot_index),
+            .room_code = state.room_code,
+            .session_id = state.session_id,
+            .started = session.started or state.started,
+        };
+    }
+    const code = session.room_code_latest orelse return null;
+    return .{
+        .connected = if (session.accepted) 1 else 0,
+        .expected = expectedPlayerCount(session.options.player_count),
+        .ready = if (session.sent_ready) 1 else 0,
+        .local_slot = localSlotIndex(session.local_slot_index),
+        .room_code = code,
+        .started = session.started,
+    };
+}
 
 fn networkLaunchNetcodeLabel(netcode: window_misc_panels.NetworkLaunchNetcode) []const u8 {
     return switch (netcode) {
@@ -1506,8 +1611,48 @@ const App = struct {
             } else {
                 self.network_session.setStatusFmt("{s} frames={d} ticks={d}.", .{ label, net_update.frames_advanced, net_update.ticks_advanced });
             }
-        } else if (session.rollbackRoomCode()) |code| {
-            self.network_session.setStatusFmt("{s} room {s} packets recv={d} sent={d}.", .{ label, room_code.roomCodeSlice(&code), net_update.stats.received, net_update.stats.sent });
+        } else if (session.lobbySummary()) |lobby| {
+            const slot = lobby.local_slot orelse 0;
+            const phase = if (lobby.started) "match" else "lobby";
+            if (lobby.room_code) |code| {
+                self.network_session.setStatusFmt("{s} room {s} {s} {d}/{d} ready={d}/{d} slot={d} packets recv={d} sent={d}.", .{
+                    label,
+                    room_code.roomCodeSlice(&code),
+                    phase,
+                    lobby.connected,
+                    lobby.expected,
+                    lobby.ready,
+                    lobby.expected,
+                    slot,
+                    net_update.stats.received,
+                    net_update.stats.sent,
+                });
+            } else if (lobby.session_id.len != 0) {
+                self.network_session.setStatusFmt("{s} {s} {d}/{d} ready={d}/{d} slot={d} session={s} packets recv={d} sent={d}.", .{
+                    label,
+                    phase,
+                    lobby.connected,
+                    lobby.expected,
+                    lobby.ready,
+                    lobby.expected,
+                    slot,
+                    lobby.session_id,
+                    net_update.stats.received,
+                    net_update.stats.sent,
+                });
+            } else {
+                self.network_session.setStatusFmt("{s} {s} {d}/{d} ready={d}/{d} slot={d} packets recv={d} sent={d}.", .{
+                    label,
+                    phase,
+                    lobby.connected,
+                    lobby.expected,
+                    lobby.ready,
+                    lobby.expected,
+                    slot,
+                    net_update.stats.received,
+                    net_update.stats.sent,
+                });
+            }
         } else if (net_update.stats.received != 0 or net_update.stats.sent != 0) {
             self.network_session.setStatusFmt("{s} packets recv={d} sent={d}.", .{ label, net_update.stats.received, net_update.stats.sent });
         }
@@ -5381,6 +5526,61 @@ test "window rollback live runtime exposes assigned room code for lobby status" 
 
     const code = rollback.rollbackRoomCode() orelse return error.TestExpectedEqual;
     try std.testing.expectEqualStrings("zx9q", room_code.roomCodeSlice(&code));
+}
+
+test "window network live runtime summarizes lockstep host lobby state" {
+    var runtime = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .lockstep,
+        .host = "127.0.0.1",
+        .port = 31993,
+    }, 123);
+    defer runtime.deinit(std.testing.allocator, std.Io.Threaded.global_single_threaded.io());
+
+    const summary = runtime.lobbySummary() orelse return error.ExpectedLobbySummary;
+    try std.testing.expectEqual(@as(usize, 1), summary.connected);
+    try std.testing.expectEqual(@as(usize, 2), summary.expected);
+    try std.testing.expectEqual(@as(usize, 1), summary.ready);
+    try std.testing.expectEqual(@as(?usize, 0), summary.local_slot);
+    try std.testing.expectEqualStrings("window-lockstep", summary.session_id);
+}
+
+test "window network live runtime summarizes rollback room slots" {
+    const allocator = std.testing.allocator;
+    var runtime = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .rollback,
+        .host = "127.0.0.1",
+        .port = 31993,
+    }, 123);
+    defer runtime.deinit(allocator, std.Io.Threaded.global_single_threaded.io());
+
+    var server_link: relay_reliable.RelayReliableLink = .{};
+    defer server_link.deinit(allocator);
+    switch (runtime) {
+        .rollback => |*rollback| try rollback.session.handlePacket(allocator, try server_link.buildPacket(allocator, .{ .room_state = .{
+            .room_code = try room_code.parseRoomCode("ABCD"),
+            .session_id = "window-rollback",
+            .player_count = 2,
+            .slots = &[_]relay_protocol.RelaySlot{
+                .{ .slot_index = 0, .connected = true, .ready = true, .is_host = true, .peer_name = "host" },
+                .{ .slot_index = 1, .connected = true, .ready = false, .is_host = false, .peer_name = "guest" },
+            },
+        } }, true, 20), 20),
+        .host, .client => return error.TestUnexpectedResult,
+    }
+
+    const summary = runtime.lobbySummary() orelse return error.ExpectedLobbySummary;
+    try std.testing.expectEqual(@as(usize, 2), summary.connected);
+    try std.testing.expectEqual(@as(usize, 2), summary.expected);
+    try std.testing.expectEqual(@as(usize, 1), summary.ready);
+    try std.testing.expectEqualStrings("window-rollback", summary.session_id);
+    const code = summary.room_code orelse return error.ExpectedRoomCode;
+    try std.testing.expectEqualStrings("abcd", room_code.roomCodeSlice(&code));
 }
 
 test "window network live runtime opens rollback relay session" {
