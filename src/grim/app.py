@@ -8,7 +8,7 @@ import msgspec
 
 from grim.raylib_api import rl
 
-from .render_pipeline import RenderPipeline, WindowSink
+from .render_pipeline import RaylibDrawScope, RenderPipeline, WindowSink
 from .view import View
 
 SCREENSHOT_DIR = Path("screenshots")
@@ -56,9 +56,7 @@ def run_view(
     run_hooks = hooks if hooks is not None else RunViewHooks()
     render_pipeline = RenderPipeline(
         sink=WindowSink(),
-        begin_end_drawing=True,
-        begin_draw=rl.begin_drawing,
-        end_draw=rl.end_drawing,
+        draw_scope=RaylibDrawScope(raylib=rl),
     )
     try:
         view.open()

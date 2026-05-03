@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Protocol
+from typing import Any, Protocol
 
 RenderDraw = Callable[[], None]
 RenderPresent = Callable[[], None]
@@ -43,6 +43,23 @@ class WindowSink:
         self._opened = False
 
 
+class RenderDrawScope:
+    def draw(self, draw_frame: RenderDraw) -> None:
+        draw_frame()
+
+
+class RaylibDrawScope(RenderDrawScope):
+    def __init__(self, *, raylib: Any) -> None:
+        self._rl = raylib
+
+    def draw(self, draw_frame: RenderDraw) -> None:
+        self._rl.begin_drawing()
+        try:
+            draw_frame()
+        finally:
+            self._rl.end_drawing()
+
+
 class RenderPipeline:
     """Shared draw/present orchestration for live and replay contexts."""
 
@@ -51,17 +68,11 @@ class RenderPipeline:
         *,
         sink: RenderSink,
         on_resize: Callable[[int, int], None] | None = None,
-        begin_end_drawing: bool = False,
-        begin_draw: Callable[[], None] | None = None,
-        end_draw: Callable[[], None] | None = None,
+        draw_scope: RenderDrawScope | None = None,
     ) -> None:
-        if bool(begin_end_drawing) and (begin_draw is None or end_draw is None):
-            raise ValueError("begin_draw and end_draw are required when begin_end_drawing=True")
         self._sink = sink
         self._on_resize = on_resize
-        self._begin_end_drawing = bool(begin_end_drawing)
-        self._begin_draw = begin_draw
-        self._end_draw = end_draw
+        self._draw_scope = draw_scope if draw_scope is not None else RenderDrawScope()
         self._opened = False
         self._width = -1
         self._height = -1
@@ -106,18 +117,7 @@ class RenderPipeline:
     def draw(self, *, draw_frame: RenderDraw, width: int, height: int) -> None:
         self._ensure_open(width=int(width), height=int(height))
         self._resize_if_needed(width=int(width), height=int(height))
-        if self._begin_end_drawing:
-            begin_draw = self._begin_draw
-            end_draw = self._end_draw
-            if begin_draw is None or end_draw is None:
-                raise RuntimeError("render pipeline missing begin/end draw callbacks")
-            begin_draw()
-            try:
-                draw_frame()
-            finally:
-                end_draw()
-            return
-        draw_frame()
+        self._draw_scope.draw(draw_frame)
 
     def present(self) -> None:
         if not self._opened:
