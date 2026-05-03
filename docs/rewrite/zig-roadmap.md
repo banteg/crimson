@@ -116,11 +116,20 @@ changes unless they unblock one of these larger slices or fix a CI regression.
 Goal: prove native replay tooling handles the practical replay corpus we expect
 to support.
 
+Current evidence:
+
+- `uv run pytest tests/replay/cli/test_zig_corpus.py` drives a generated
+  current-ruleset corpus through Zig `replay verify`, `replay info`, `replay
+  list`, `replay benchmark`, `replay verify-checkpoints`, and `replay
+  diff-checkpoints`.
+- The generated corpus names Survival, Rush, Quests, Typ-o, Tutorial,
+  verbose-event, multi-player, and invalid-input cases.
+
 Scope:
 
-- add or refresh a replay corpus manifest that names representative Survival,
-  Rush, Quest, Typ-o, Tutorial, verbose-event, multi-player, and invalid-input
-  fixtures,
+- refresh checked-in completed `.crd` fixtures under `tests/fixtures/replays/`
+  or document them as intentionally legacy-only; the current files are old wire
+  shapes and are not current-ruleset acceptance evidence,
 - make `replay verify`, `replay info`, `replay benchmark`, and checkpoint
   commands run against that corpus in Zig,
 - remove stale "not ported" wording from user-facing replay failures where the
@@ -128,6 +137,7 @@ Scope:
 
 Evidence gate:
 
+- `uv run pytest tests/replay/cli/test_zig_corpus.py`,
 - `uv run pytest tests/replay/cli/test_zig_*.py`,
 - `zig build test --summary all` from `crimson-zig/`,
 - at least one documented command that runs the corpus through native tooling.
