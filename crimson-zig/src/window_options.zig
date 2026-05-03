@@ -1193,9 +1193,12 @@ fn controlsRebindRows(config: *const formats.crimson_cfg.CrimsonCfg, player_inde
             @as(u32, @bitCast(@as(i32, local_input.aim_scheme_keyboard))) => switch (move_mode) {
                 @as(u32, @intCast(local_input.movement_control_relative)) => controls_rows_p1_relative_keyboard[0..],
                 @as(u32, @intCast(local_input.movement_control_static)) => controls_rows_p1_static_keyboard[0..],
+                @as(u32, @intCast(local_input.movement_control_dual_action_pad)) => controls_rows_p1_move_pad_keyboard[0..],
                 else => controls_rows_p1_other_keyboard[0..],
             },
             @as(u32, @bitCast(@as(i32, local_input.aim_scheme_dual_action_pad))) => switch (move_mode) {
+                @as(u32, @intCast(local_input.movement_control_relative)) => controls_rows_p1_relative_dual_pad[0..],
+                @as(u32, @intCast(local_input.movement_control_static)) => controls_rows_p1_static_dual_pad[0..],
                 @as(u32, @intCast(local_input.movement_control_dual_action_pad)) => controls_rows_p1_dual_pad[0..],
                 else => controls_rows_p1_other_dual_pad[0..],
             },
@@ -1219,9 +1222,12 @@ fn controlsRebindRows(config: *const formats.crimson_cfg.CrimsonCfg, player_inde
         @as(u32, @bitCast(@as(i32, local_input.aim_scheme_keyboard))) => switch (move_mode) {
             @as(u32, @intCast(local_input.movement_control_relative)) => controls_rows_relative_keyboard[0..],
             @as(u32, @intCast(local_input.movement_control_static)) => controls_rows_static_keyboard[0..],
+            @as(u32, @intCast(local_input.movement_control_dual_action_pad)) => controls_rows_move_pad_keyboard[0..],
             else => controls_rows_other_keyboard[0..],
         },
         @as(u32, @bitCast(@as(i32, local_input.aim_scheme_dual_action_pad))) => switch (move_mode) {
+            @as(u32, @intCast(local_input.movement_control_relative)) => controls_rows_relative_dual_pad[0..],
+            @as(u32, @intCast(local_input.movement_control_static)) => controls_rows_static_dual_pad[0..],
             @as(u32, @intCast(local_input.movement_control_dual_action_pad)) => controls_rows_dual_pad[0..],
             else => controls_rows_other_dual_pad[0..],
         },
@@ -1387,6 +1393,22 @@ const controls_rows_p1_move_pad_default = [_]RebindRow{
     .{ .label = "Level Up:", .target = .global_pick_perk_code },
     .{ .label = "Reload:", .target = .global_reload_code },
 };
+const controls_rows_move_pad_keyboard = [_]RebindRow{
+    .{ .label = "Torso left:", .target = .player_keyboard_aim_codes, .target_index = 0 },
+    .{ .label = "Torso right:", .target = .player_keyboard_aim_codes, .target_index = 1 },
+    .{ .label = "Fire:", .target = .player_fire_code },
+    .{ .label = "Up/Down Axis:", .target = .player_move_axis_codes, .target_index = 0, .axis = true },
+    .{ .label = "Left/Right Axis:", .target = .player_move_axis_codes, .target_index = 1, .axis = true },
+};
+const controls_rows_p1_move_pad_keyboard = [_]RebindRow{
+    .{ .label = "Torso left:", .target = .player_keyboard_aim_codes, .target_index = 0 },
+    .{ .label = "Torso right:", .target = .player_keyboard_aim_codes, .target_index = 1 },
+    .{ .label = "Fire:", .target = .player_fire_code },
+    .{ .label = "Up/Down Axis:", .target = .player_move_axis_codes, .target_index = 0, .axis = true },
+    .{ .label = "Left/Right Axis:", .target = .player_move_axis_codes, .target_index = 1, .axis = true },
+    .{ .label = "Level Up:", .target = .global_pick_perk_code },
+    .{ .label = "Reload:", .target = .global_reload_code },
+};
 const controls_rows_mouseclick_default = [_]RebindRow{
     .{ .label = "Fire:", .target = .player_fire_code },
     .{ .label = "Move to cursor:", .target = .global_reload_code },
@@ -1461,6 +1483,46 @@ const controls_rows_p1_dual_pad = [_]RebindRow{
     .{ .label = "Fire:", .target = .player_fire_code },
     .{ .label = "Up/Down Axis:", .target = .player_move_axis_codes, .target_index = 0, .axis = true },
     .{ .label = "Left/Right Axis:", .target = .player_move_axis_codes, .target_index = 1, .axis = true },
+    .{ .label = "Level Up:", .target = .global_pick_perk_code },
+    .{ .label = "Reload:", .target = .global_reload_code },
+};
+const controls_rows_relative_dual_pad = [_]RebindRow{
+    .{ .label = "Aim Up/Down Axis:", .target = .player_aim_axis_codes, .target_index = 0, .axis = true },
+    .{ .label = "Aim Left/Right Axis:", .target = .player_aim_axis_codes, .target_index = 1, .axis = true },
+    .{ .label = "Fire:", .target = .player_fire_code },
+    .{ .label = "Forward:", .target = .player_move_codes, .target_index = 0 },
+    .{ .label = "Backwards:", .target = .player_move_codes, .target_index = 1 },
+    .{ .label = "Turn left:", .target = .player_move_codes, .target_index = 2 },
+    .{ .label = "Turn right:", .target = .player_move_codes, .target_index = 3 },
+};
+const controls_rows_p1_relative_dual_pad = [_]RebindRow{
+    .{ .label = "Aim Up/Down Axis:", .target = .player_aim_axis_codes, .target_index = 0, .axis = true },
+    .{ .label = "Aim Left/Right Axis:", .target = .player_aim_axis_codes, .target_index = 1, .axis = true },
+    .{ .label = "Fire:", .target = .player_fire_code },
+    .{ .label = "Forward:", .target = .player_move_codes, .target_index = 0 },
+    .{ .label = "Backwards:", .target = .player_move_codes, .target_index = 1 },
+    .{ .label = "Turn left:", .target = .player_move_codes, .target_index = 2 },
+    .{ .label = "Turn right:", .target = .player_move_codes, .target_index = 3 },
+    .{ .label = "Level Up:", .target = .global_pick_perk_code },
+    .{ .label = "Reload:", .target = .global_reload_code },
+};
+const controls_rows_static_dual_pad = [_]RebindRow{
+    .{ .label = "Aim Up/Down Axis:", .target = .player_aim_axis_codes, .target_index = 0, .axis = true },
+    .{ .label = "Aim Left/Right Axis:", .target = .player_aim_axis_codes, .target_index = 1, .axis = true },
+    .{ .label = "Fire:", .target = .player_fire_code },
+    .{ .label = "Move Up:", .target = .player_move_codes, .target_index = 0 },
+    .{ .label = "Move Down:", .target = .player_move_codes, .target_index = 1 },
+    .{ .label = "Move Left:", .target = .player_move_codes, .target_index = 2 },
+    .{ .label = "Move Right:", .target = .player_move_codes, .target_index = 3 },
+};
+const controls_rows_p1_static_dual_pad = [_]RebindRow{
+    .{ .label = "Aim Up/Down Axis:", .target = .player_aim_axis_codes, .target_index = 0, .axis = true },
+    .{ .label = "Aim Left/Right Axis:", .target = .player_aim_axis_codes, .target_index = 1, .axis = true },
+    .{ .label = "Fire:", .target = .player_fire_code },
+    .{ .label = "Move Up:", .target = .player_move_codes, .target_index = 0 },
+    .{ .label = "Move Down:", .target = .player_move_codes, .target_index = 1 },
+    .{ .label = "Move Left:", .target = .player_move_codes, .target_index = 2 },
+    .{ .label = "Move Right:", .target = .player_move_codes, .target_index = 3 },
     .{ .label = "Level Up:", .target = .global_pick_perk_code },
     .{ .label = "Reload:", .target = .global_reload_code },
 };

@@ -4,6 +4,7 @@ import re
 from enum import IntEnum
 from pathlib import Path
 
+from crimson.aim_schemes import AimScheme
 from crimson.bonuses.ids import BonusId
 from crimson.creatures.spawn import (
     ALIEN_SPAWNER_TEMPLATES,
@@ -14,10 +15,12 @@ from crimson.creatures.spawn import (
     SpawnId,
 )
 from crimson.game_modes import GameMode
+from crimson.movement_controls import MovementControlType
 from crimson.perks.ids import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.quests import all_quests
 from crimson.quests.level import QUEST_COUNT
+from crimson.screens.panels.controls_labels import RebindRowSpec, controls_rebind_plan
 from crimson.weapon_runtime.fire_recipes import PrimaryPelletsMode, resolve_fire_recipe
 from crimson.weapons import WeaponId
 
@@ -28,6 +31,7 @@ ZIG_GAME_IDS = REPO_ROOT / "crimson-zig" / "src" / "game_ids.zig"
 ZIG_QUEST_SPAWN_DIR = REPO_ROOT / "crimson-zig" / "src" / "quest_spawn"
 ZIG_WEAPON_DATA = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "weapon_data.zig"
 ZIG_WINDOW_MENU_PANELS = REPO_ROOT / "crimson-zig" / "src" / "window_menu_panels.zig"
+ZIG_WINDOW_OPTIONS = REPO_ROOT / "crimson-zig" / "src" / "window_options.zig"
 
 
 def _python_enum_values(enum_type: type[IntEnum], *, exclude: set[str] | None = None) -> dict[str, int]:
@@ -124,6 +128,95 @@ def _zig_quest_titles() -> list[str]:
     ]
 
 
+def _normalized_python_rebind_plan(
+    *,
+    aim_scheme: AimScheme,
+    move_mode: MovementControlType,
+    player_index: int,
+) -> tuple[tuple[str, str, int | None, bool], ...]:
+    aim_rows, move_rows, misc_rows = controls_rebind_plan(
+        aim_scheme=aim_scheme,
+        move_mode=move_mode,
+        player_index=player_index,
+    )
+    return tuple(_normalized_python_rebind_row(row) for row in (*aim_rows, *move_rows, *misc_rows))
+
+
+def _normalized_python_rebind_row(row: RebindRowSpec) -> tuple[str, str, int | None, bool]:
+    return (row.label, row.target.name.lower(), row.target_index, row.axis)
+
+
+def _zig_rebind_rows_by_name() -> dict[str, tuple[tuple[str, str, int | None, bool], ...]]:
+    source = ZIG_WINDOW_OPTIONS.read_text()
+    rows_by_name: dict[str, tuple[tuple[str, str, int | None, bool], ...]] = {}
+    for name, body in re.findall(r"const (controls_rows_[a-z0-9_]+) = \[_\]RebindRow\{(.*?)\n\};", source, re.S):
+        rows: list[tuple[str, str, int | None, bool]] = []
+        for item in re.findall(r"\.\{(.*?)\},", body):
+            label_match = re.search(r'\.label\s*=\s*"((?:[^"\\]|\\.)*)"', item)
+            target_match = re.search(r"\.target\s*=\s*\.([a-z0-9_]+)", item)
+            assert label_match is not None
+            assert target_match is not None
+            index_match = re.search(r"\.target_index\s*=\s*(\d+)", item)
+            rows.append(
+                (
+                    bytes(label_match.group(1), "utf-8").decode("unicode_escape"),
+                    target_match.group(1),
+                    int(index_match.group(1)) if index_match is not None else None,
+                    ".axis = true" in item,
+                ),
+            )
+        rows_by_name[name] = tuple(rows)
+    return rows_by_name
+
+
+def _normalized_zig_rebind_plan(
+    *,
+    aim_scheme: AimScheme,
+    move_mode: MovementControlType,
+    player_index: int,
+) -> tuple[tuple[str, str, int | None, bool], ...]:
+    rows_by_name = _zig_rebind_rows_by_name()
+    name = _zig_rebind_array_name(aim_scheme=aim_scheme, move_mode=move_mode, player_index=player_index)
+    return rows_by_name[name]
+
+
+def _zig_rebind_array_name(*, aim_scheme: AimScheme, move_mode: MovementControlType, player_index: int) -> str:
+    prefix = "controls_rows_p1" if player_index == 0 else "controls_rows"
+
+    if move_mode is MovementControlType.MOUSE_POINT_CLICK:
+        if aim_scheme is AimScheme.KEYBOARD:
+            return f"{prefix}_mouseclick_keyboard"
+        if aim_scheme is AimScheme.DUAL_ACTION_PAD:
+            return f"{prefix}_mouseclick_dual_pad"
+        return f"{prefix}_mouseclick_default"
+
+    if aim_scheme is AimScheme.KEYBOARD:
+        if move_mode is MovementControlType.RELATIVE:
+            return f"{prefix}_relative_keyboard"
+        if move_mode is MovementControlType.STATIC:
+            return f"{prefix}_static_keyboard"
+        if move_mode is MovementControlType.DUAL_ACTION_PAD:
+            return f"{prefix}_move_pad_keyboard"
+        return f"{prefix}_other_keyboard"
+
+    if aim_scheme is AimScheme.DUAL_ACTION_PAD:
+        if move_mode is MovementControlType.RELATIVE:
+            return f"{prefix}_relative_dual_pad"
+        if move_mode is MovementControlType.STATIC:
+            return f"{prefix}_static_dual_pad"
+        if move_mode is MovementControlType.DUAL_ACTION_PAD:
+            return f"{prefix}_dual_pad"
+        return f"{prefix}_other_dual_pad"
+
+    if move_mode is MovementControlType.RELATIVE:
+        return f"{prefix}_relative_default"
+    if move_mode is MovementControlType.STATIC:
+        return f"{prefix}_static_default"
+    if move_mode is MovementControlType.DUAL_ACTION_PAD:
+        return f"{prefix}_move_pad_default"
+    return f"{prefix}_default"
+
+
 def test_python_supported_spawn_templates_are_ported_in_zig() -> None:
     missing = sorted(_python_supported_spawn_ids() - _zig_supported_spawn_ids())
     assert missing == []
@@ -166,3 +259,35 @@ def test_zig_quest_start_weapons_match_python_port() -> None:
 
 def test_zig_quest_titles_match_python_port() -> None:
     assert _zig_quest_titles() == [quest.title for quest in all_quests()]
+
+
+def test_zig_controls_rebind_rows_match_python_port() -> None:
+    aim_schemes = (
+        AimScheme.MOUSE,
+        AimScheme.KEYBOARD,
+        AimScheme.JOYSTICK,
+        AimScheme.MOUSE_RELATIVE,
+        AimScheme.DUAL_ACTION_PAD,
+        AimScheme.COMPUTER,
+    )
+    move_modes = (
+        MovementControlType.UNKNOWN,
+        MovementControlType.RELATIVE,
+        MovementControlType.STATIC,
+        MovementControlType.DUAL_ACTION_PAD,
+        MovementControlType.MOUSE_POINT_CLICK,
+        MovementControlType.COMPUTER,
+    )
+
+    for player_index in (0, 1):
+        for aim_scheme in aim_schemes:
+            for move_mode in move_modes:
+                assert _normalized_zig_rebind_plan(
+                    aim_scheme=aim_scheme,
+                    move_mode=move_mode,
+                    player_index=player_index,
+                ) == _normalized_python_rebind_plan(
+                    aim_scheme=aim_scheme,
+                    move_mode=move_mode,
+                    player_index=player_index,
+                )
