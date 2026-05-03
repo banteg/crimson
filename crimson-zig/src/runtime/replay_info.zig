@@ -774,3 +774,108 @@ test "replay info player filter validation matches collector bounds" {
     try std.testing.expectError(error.InvalidPlayerFilter, validatePlayerFilter(2, -1));
     try std.testing.expectError(error.PlayerFilterOutOfRange, validatePlayerFilter(2, 2));
 }
+
+test "replay info snapshot diff emits core player timeline events" {
+    const allocator = std.testing.allocator;
+    var timeline: std.ArrayList(TimelineEvent) = .empty;
+    defer {
+        for (timeline.items) |event| allocator.free(event.detail);
+        timeline.deinit(allocator);
+    }
+
+    const before = replayInfoTestSnapshot();
+    var after = before;
+    after.health = 0.0;
+    after.level = 2;
+    after.experience = 120;
+    after.weapon_id = .assault_rifle;
+    after.perk_counts[@intFromEnum(PerkId.fire_caugh)] = 1;
+
+    try appendSnapshotDiffEvents(
+        allocator,
+        &timeline,
+        &.{before},
+        &.{after},
+        false,
+        0,
+        7,
+        350,
+        null,
+    );
+
+    try std.testing.expectEqual(@as(usize, 5), timeline.items.len);
+    try std.testing.expectEqual(EventKind.weapon_change, timeline.items[0].kind);
+    try std.testing.expectEqual(@as(?i32, 0), timeline.items[0].player_index);
+    try std.testing.expectEqualStrings("p0 weapon Pistol -> Assault Rifle", timeline.items[0].detail);
+    try std.testing.expectEqual(@as(i64, 350), timeline.items[0].elapsed_ms);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.35), timeline.items[0].elapsed_s, 1e-9);
+    try std.testing.expectEqual(@as(i32, @intFromEnum(game_ids.WeaponId.pistol)), timeline.items[0].data.weapon_change.weapon_id_before);
+    try std.testing.expectEqual(@as(i32, @intFromEnum(game_ids.WeaponId.assault_rifle)), timeline.items[0].data.weapon_change.weapon_id_after);
+
+    try std.testing.expectEqual(EventKind.level_up, timeline.items[1].kind);
+    try std.testing.expectEqualStrings("p0 level 1 -> 2 (xp=120)", timeline.items[1].detail);
+    try std.testing.expectEqual(@as(i32, 1), timeline.items[1].data.level_up.level_before);
+    try std.testing.expectEqual(@as(i32, 2), timeline.items[1].data.level_up.level_after);
+    try std.testing.expectEqual(@as(i32, 120), timeline.items[1].data.level_up.xp);
+
+    try std.testing.expectEqual(EventKind.perk_pick, timeline.items[2].kind);
+    try std.testing.expectEqualStrings("p0 perk Fire Cough (54) x1", timeline.items[2].detail);
+    try std.testing.expectEqual(@as(i32, @intFromEnum(PerkId.fire_caugh)), timeline.items[2].data.perk_pick.perk_id);
+    try std.testing.expectEqual(@as(i32, 0), timeline.items[2].data.perk_pick.count_before);
+    try std.testing.expectEqual(@as(i32, 1), timeline.items[2].data.perk_pick.count_after);
+
+    try std.testing.expectEqual(EventKind.health_damage, timeline.items[3].kind);
+    try std.testing.expectEqualStrings("p0 damage 10.000000 (health 10.000000->0.000000)", timeline.items[3].detail);
+    try std.testing.expectApproxEqAbs(@as(f32, 10.0), timeline.items[3].data.health_damage.amount, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 10.0), timeline.items[3].data.health_damage.health_before, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), timeline.items[3].data.health_damage.health_after, 1e-6);
+
+    try std.testing.expectEqual(EventKind.player_death, timeline.items[4].kind);
+    try std.testing.expectEqualStrings("p0 died (health 10.000000->0.000000)", timeline.items[4].detail);
+    try std.testing.expectApproxEqAbs(@as(f32, 10.0), timeline.items[4].data.player_death.health_before, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), timeline.items[4].data.player_death.health_after, 1e-6);
+}
+
+test "replay info snapshot diff filters player-specific core events" {
+    const allocator = std.testing.allocator;
+    var timeline: std.ArrayList(TimelineEvent) = .empty;
+    defer {
+        for (timeline.items) |event| allocator.free(event.detail);
+        timeline.deinit(allocator);
+    }
+
+    var before = [_]PlayerSnapshot{
+        replayInfoTestSnapshot(),
+        replayInfoTestSnapshot(),
+    };
+    var after = before;
+    after[0].weapon_id = .assault_rifle;
+    after[1].health = 12.5;
+
+    try appendSnapshotDiffEvents(
+        allocator,
+        &timeline,
+        before[0..],
+        after[0..],
+        false,
+        0,
+        4,
+        200,
+        1,
+    );
+
+    try std.testing.expectEqual(@as(usize, 1), timeline.items.len);
+    try std.testing.expectEqual(EventKind.health_heal, timeline.items[0].kind);
+    try std.testing.expectEqual(@as(?i32, 1), timeline.items[0].player_index);
+    try std.testing.expectEqualStrings("p1 heal 2.500000 (health 10.000000->12.500000)", timeline.items[0].detail);
+}
+
+fn replayInfoTestSnapshot() PlayerSnapshot {
+    return .{
+        .health = 10.0,
+        .level = 1,
+        .experience = 0,
+        .weapon_id = .pistol,
+        .perk_counts = [_]i32{0} ** state_mod.perk_count_size,
+    };
+}
