@@ -1079,6 +1079,7 @@ const App = struct {
     assets_message: ?[]u8 = null,
     next_seed_state: u32 = 0xC0FFEE,
     next_seed_override: ?u32 = null,
+    player_count_override: ?i32 = null,
     cursor_pulse_time: f32 = 0.0,
     demo_enabled: bool = false,
     preserve_bugs: bool = false,
@@ -1105,6 +1106,7 @@ const App = struct {
             .demo_enabled = args.demo_enabled,
             .preserve_bugs = args.preserve_bugs,
             .next_seed_override = args.seed,
+            .player_count_override = args.player_count,
         };
         app.boot.reset();
         app.menu.reset();
@@ -2329,7 +2331,7 @@ const App = struct {
         const requested_player_count: i32 = if (self.demo_attract_active)
             configured_run.player_count
         else
-            @intCast(self.runtime.config.player_count);
+            self.player_count_override orelse @as(i32, @intCast(self.runtime.config.player_count));
         configured_run.player_count = livePlayerCountForMode(configured_run.game_mode, requested_player_count);
         configured_run.detail_preset = @intCast(std.math.clamp(self.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5)));
         configured_run.gore_disabled = @intCast(self.runtime.config.gore_disabled);
@@ -3189,6 +3191,7 @@ const WindowArgs = struct {
     windowed: ?bool = null,
     start_mode: ?game_ids.GameModeId = null,
     quest_level_key: ?i32 = null,
+    player_count: ?i32 = null,
     base_dir: ?[]const u8 = null,
     assets_dir: ?[]const u8 = null,
 };
@@ -3317,6 +3320,16 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
             parsed.quest_level_key = try parseWindowQuestLevel(arg["--quest-level=".len..]);
             continue;
         }
+        if (std.mem.eql(u8, arg, "--players")) {
+            index += 1;
+            if (index >= args.len) return error.InvalidArgs;
+            parsed.player_count = try parseWindowPlayerCount(args[index]);
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--players=")) {
+            parsed.player_count = try parseWindowPlayerCount(arg["--players=".len..]);
+            continue;
+        }
         if (std.mem.eql(u8, arg, "--base-dir") or std.mem.eql(u8, arg, "--runtime-dir")) {
             index += 1;
             if (index >= args.len) return error.InvalidArgs;
@@ -3343,7 +3356,7 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
         }
         if (std.mem.eql(u8, arg, "--help")) {
             std.debug.print(
-                "usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--windowed|--fullscreen] [--start-mode MODE] [--quest-level M.N] [--base-dir PATH] [--assets-dir PATH]\n",
+                "usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--windowed|--fullscreen] [--start-mode MODE] [--quest-level M.N] [--players N] [--base-dir PATH] [--assets-dir PATH]\n",
                 .{},
             );
             std.process.exit(0);
@@ -3381,6 +3394,12 @@ fn parseWindowStartMode(raw: []const u8) !game_ids.GameModeId {
 fn parseWindowQuestLevel(raw: []const u8) !i32 {
     const level = quest_level_mod.QuestLevel.parse(raw) catch return error.InvalidArgs;
     return level.levelKey();
+}
+
+fn parseWindowPlayerCount(raw: []const u8) !i32 {
+    const value = try parsePositiveI32(raw);
+    if (value > @as(i32, @intCast(state_mod.max_players))) return error.InvalidArgs;
+    return value;
 }
 
 fn initialScreenForArgs(args: WindowArgs) Screen {
@@ -4949,6 +4968,15 @@ test "window args parse direct start mode" {
     try std.testing.expectEqual(@as(?game_ids.GameModeId, .typo), typo.start_mode);
 }
 
+test "window args parse player count override" {
+    const separate = try parseWindowArgs(&.{ "crimson-zig-window", "--players", "3" });
+    try std.testing.expectEqual(@as(?i32, 3), separate.player_count);
+
+    const joined = try parseWindowArgs(&.{ "crimson-zig-window", "--start-mode=rush", "--players=4" });
+    try std.testing.expectEqual(@as(?game_ids.GameModeId, .rush), joined.start_mode);
+    try std.testing.expectEqual(@as(?i32, 4), joined.player_count);
+}
+
 test "window args parse runtime and assets dirs" {
     const separate = try parseWindowArgs(&.{
         "crimson-zig-window",
@@ -4983,6 +5011,9 @@ test "window args reject invalid seed" {
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--quest-level", "1.1" }));
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--start-mode", "survival", "--quest-level", "1.1" }));
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--start-mode=quests", "--quest-level=5.11" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--players" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--players", "0" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--players=5" }));
 }
 
 test "window args reject unknown flags" {
