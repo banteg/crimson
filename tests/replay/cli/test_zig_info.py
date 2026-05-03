@@ -62,6 +62,41 @@ def test_zig_replay_info_matches_python_json_payload_on_quest_replay(tmp_path: P
     assert zig_payload == python_payload
 
 
+def test_zig_replay_info_respects_python_max_ticks_contract(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
+
+    python_payload = _run_python_replay_info(
+        [str(replay_path), "--format", "json", "--max-ticks", "2"],
+    )
+    zig_payload = _run_zig_replay_info(
+        [str(replay_path), "--format", "json", "--max-ticks", "2"],
+    )
+
+    assert zig_payload == python_payload
+    summary = cast("dict[str, Any]", zig_payload["summary"])
+    assert summary["ticks_simulated"] == 2
+
+
+def test_zig_replay_info_matches_python_supported_mode_breadth(tmp_path: Path) -> None:
+    cases = [
+        ("survival.crd", build_replay(mode=GameMode.SURVIVAL, ticks=2)),
+        ("rush.crd", build_replay(mode=GameMode.RUSH, ticks=2)),
+        ("quest.crd", build_replay(mode=GameMode.QUESTS, ticks=2, seed=101, quest_level="1.1")),
+    ]
+
+    for filename, replay in cases:
+        replay_path = write_replay(tmp_path, replay=replay, name=filename)
+        python_payload = _run_python_replay_info(
+            [str(replay_path), "--format", "json"],
+        )
+        zig_payload = _run_zig_replay_info(
+            [str(replay_path), "--format", "json"],
+        )
+
+        assert zig_payload == python_payload
+
+
 def test_zig_replay_info_matches_python_verbose_human_player_filter_output(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1, player_count=2)
     inject_tick_commands(
@@ -117,6 +152,31 @@ def test_zig_replay_info_matches_python_verbose_player_filter_payload(tmp_path: 
             "--verbose",
             "--player-index",
             "1",
+        ],
+    )
+
+    assert zig_payload == python_payload
+
+
+def test_zig_replay_info_matches_python_verbose_rush_command_payload(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.RUSH, ticks=1)
+    inject_tick_commands(replay, 0, [PerkMenuOpenCommand(player_index=0)])
+    replay_path = write_replay(tmp_path, replay=replay, name="rush.crd")
+
+    python_payload = _run_python_replay_info(
+        [
+            str(replay_path),
+            "--format",
+            "json",
+            "--verbose",
+        ],
+    )
+    zig_payload = _run_zig_replay_info(
+        [
+            str(replay_path),
+            "--format",
+            "json",
+            "--verbose",
         ],
     )
 
