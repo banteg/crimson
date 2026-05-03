@@ -450,6 +450,13 @@ const NetworkLiveRuntime = union(enum) {
             .rollback => |rollback| rollback.boundPort(),
         };
     }
+
+    fn rollbackRoomCode(self: *const NetworkLiveRuntime) ?room_code.RoomCode {
+        return switch (self.*) {
+            .host, .client => null,
+            .rollback => |rollback| rollback.session.room_code_latest,
+        };
+    }
 };
 
 fn networkLaunchNetcodeLabel(netcode: window_misc_panels.NetworkLaunchNetcode) []const u8 {
@@ -1499,6 +1506,8 @@ const App = struct {
             } else {
                 self.network_session.setStatusFmt("{s} frames={d} ticks={d}.", .{ label, net_update.frames_advanced, net_update.ticks_advanced });
             }
+        } else if (session.rollbackRoomCode()) |code| {
+            self.network_session.setStatusFmt("{s} room {s} packets recv={d} sent={d}.", .{ label, room_code.roomCodeSlice(&code), net_update.stats.received, net_update.stats.sent });
         } else if (net_update.stats.received != 0 or net_update.stats.sent != 0) {
             self.network_session.setStatusFmt("{s} packets recv={d} sent={d}.", .{ label, net_update.stats.received, net_update.stats.sent });
         }
@@ -5351,6 +5360,27 @@ test "window network live status labels match netcode" {
     }, 123);
     defer rollback.deinit(std.testing.allocator, std.Io.Threaded.global_single_threaded.io());
     try std.testing.expectEqualStrings("Rollback", networkLiveRuntimeLabel(&rollback));
+}
+
+test "window rollback live runtime exposes assigned room code for lobby status" {
+    var rollback = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .rollback,
+        .host = "127.0.0.1",
+        .port = 31993,
+    }, 123);
+    defer rollback.deinit(std.testing.allocator, std.Io.Threaded.global_single_threaded.io());
+
+    try std.testing.expect(rollback.rollbackRoomCode() == null);
+    switch (rollback) {
+        .rollback => |*session| session.session.room_code_latest = try room_code.parseRoomCode("ZX9Q"),
+        .host, .client => return error.TestUnexpectedResult,
+    }
+
+    const code = rollback.rollbackRoomCode() orelse return error.TestExpectedEqual;
+    try std.testing.expectEqualStrings("zx9q", room_code.roomCodeSlice(&code));
 }
 
 test "window network live runtime opens rollback relay session" {
