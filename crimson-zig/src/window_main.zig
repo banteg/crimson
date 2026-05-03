@@ -465,11 +465,14 @@ const NetworkLiveRuntime = union(enum) {
             .host => |host| blk: {
                 const lobby = host.session.runtime.lobby;
                 const slots = lockstepHostLobbySlots(lobby);
+                const endpoint = networkLobbyEndpointFromTextPort(host.session.transport.bind_host, host.session.boundPort());
                 break :blk .{
                     .connected = @min(expectedPlayerCount(lobby.player_count), 1 + lobby.peers.items.len),
                     .expected = expectedPlayerCount(lobby.player_count),
                     .ready = lockstepHostReadyCount(lobby),
                     .local_slot = 0,
+                    .endpoint_bytes = endpoint.bytes,
+                    .endpoint_len = endpoint.len,
                     .session_id = lobby.session_id,
                     .started = host.session.runtime.started,
                     .slots = slots.slots,
@@ -477,23 +480,30 @@ const NetworkLiveRuntime = union(enum) {
                 };
             },
             .client => |client| lockstepClientLobbySummary(client.session.runtime),
-            .rollback => |rollback| rollbackLobbySummary(rollback.session),
+            .rollback => |rollback| rollbackLobbySummary(rollback.session, rollback.server_addr),
         };
     }
 };
 
 const NetworkLobbySummary = struct {
     const max_slot_rows = state_mod.max_players;
+    const endpoint_max_bytes = 48;
 
     connected: usize = 0,
     expected: usize = 1,
     ready: usize = 0,
     local_slot: ?usize = null,
     room_code: ?room_code.RoomCode = null,
+    endpoint_bytes: [endpoint_max_bytes]u8 = [_]u8{0} ** endpoint_max_bytes,
+    endpoint_len: usize = 0,
     session_id: []const u8 = "",
     started: bool = false,
     slots: [max_slot_rows]schema_shared.SlotState = [_]schema_shared.SlotState{.{}} ** max_slot_rows,
     slot_count: usize = 0,
+
+    fn endpointText(self: *const NetworkLobbySummary) []const u8 {
+        return self.endpoint_bytes[0..self.endpoint_len];
+    }
 };
 
 const network_lobby_wait_dots = [_][]const u8{ "", ".", "..", "..." };
@@ -507,6 +517,18 @@ fn localSlotIndex(slot_index: i32) ?usize {
     const slot: usize = @intCast(slot_index);
     if (slot >= state_mod.max_players) return null;
     return slot;
+}
+
+fn networkLobbyEndpointFromTextPort(host: []const u8, port: u16) struct { bytes: [NetworkLobbySummary.endpoint_max_bytes]u8, len: usize } {
+    var bytes: [NetworkLobbySummary.endpoint_max_bytes]u8 = [_]u8{0} ** NetworkLobbySummary.endpoint_max_bytes;
+    const text = std.fmt.bufPrint(bytes[0..], "{s}:{d}", .{ host, port }) catch bytes[0..0];
+    return .{ .bytes = bytes, .len = text.len };
+}
+
+fn networkLobbyEndpointFromIpv4(host: [4]u8, port: u16) struct { bytes: [NetworkLobbySummary.endpoint_max_bytes]u8, len: usize } {
+    var bytes: [NetworkLobbySummary.endpoint_max_bytes]u8 = [_]u8{0} ** NetworkLobbySummary.endpoint_max_bytes;
+    const text = std.fmt.bufPrint(bytes[0..], "{d}.{d}.{d}.{d}:{d}", .{ host[0], host[1], host[2], host[3], port }) catch bytes[0..0];
+    return .{ .bytes = bytes, .len = text.len };
 }
 
 fn slotCounts(slots: []const schema_shared.SlotState) struct { connected: usize, ready: usize } {
@@ -565,6 +587,7 @@ fn lockstepHostReadyCount(lobby: cz.net.lockstep_lobby.HostLobby) usize {
 }
 
 fn lockstepClientLobbySummary(runtime: cz.net.lockstep_client_runtime.ClientRuntime) ?NetworkLobbySummary {
+    const endpoint = networkLobbyEndpointFromIpv4(runtime.host_addr.host, runtime.host_addr.port);
     if (runtime.lobby.lobby_state_latest) |state| {
         const counts = slotCounts(state.slots);
         const slots = copyLobbySlots(state.slots);
@@ -573,6 +596,8 @@ fn lockstepClientLobbySummary(runtime: cz.net.lockstep_client_runtime.ClientRunt
             .expected = expectedPlayerCount(state.player_count),
             .ready = counts.ready,
             .local_slot = localSlotIndex(runtime.lobby.slotIndex()),
+            .endpoint_bytes = endpoint.bytes,
+            .endpoint_len = endpoint.len,
             .session_id = state.session_id,
             .started = runtime.started or state.started,
             .slots = slots.slots,
@@ -586,6 +611,8 @@ fn lockstepClientLobbySummary(runtime: cz.net.lockstep_client_runtime.ClientRunt
             .expected = expectedPlayerCount(welcome.player_count),
             .ready = 1,
             .local_slot = localSlotIndex(welcome.slot_index),
+            .endpoint_bytes = endpoint.bytes,
+            .endpoint_len = endpoint.len,
             .session_id = welcome.session_id,
             .started = runtime.started or welcome.started,
         };
@@ -593,7 +620,8 @@ fn lockstepClientLobbySummary(runtime: cz.net.lockstep_client_runtime.ClientRunt
     return null;
 }
 
-fn rollbackLobbySummary(session: cz.net.rollback_session.Session) ?NetworkLobbySummary {
+fn rollbackLobbySummary(session: cz.net.rollback_session.Session, server_addr: relay_transport.PeerAddr) ?NetworkLobbySummary {
+    const endpoint = networkLobbyEndpointFromIpv4(server_addr.host, server_addr.port);
     if (session.room_state_latest) |state| {
         const counts = slotCounts(state.slots);
         const slots = copyLobbySlots(state.slots);
@@ -603,6 +631,8 @@ fn rollbackLobbySummary(session: cz.net.rollback_session.Session) ?NetworkLobbyS
             .ready = counts.ready,
             .local_slot = localSlotIndex(session.local_slot_index),
             .room_code = state.room_code,
+            .endpoint_bytes = endpoint.bytes,
+            .endpoint_len = endpoint.len,
             .session_id = state.session_id,
             .started = session.started or state.started,
             .slots = slots.slots,
@@ -616,6 +646,8 @@ fn rollbackLobbySummary(session: cz.net.rollback_session.Session) ?NetworkLobbyS
         .ready = if (session.sent_ready) 1 else 0,
         .local_slot = localSlotIndex(session.local_slot_index),
         .room_code = code,
+        .endpoint_bytes = endpoint.bytes,
+        .endpoint_len = endpoint.len,
         .started = session.started,
     };
 }
@@ -2724,42 +2756,47 @@ const App = struct {
 
         const label_x = panel.x + 136.0;
         const value_x = panel.x + 248.0;
+        const row_h = 22.0;
         var y = panel.y + 116.0;
         var connected_buf: [32]u8 = undefined;
         var ready_buf: [32]u8 = undefined;
 
         self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Connected:", networkLobbyConnectedText(summary, self.network_live_render_time_s, &connected_buf), label_color, value_color);
-        y += 26.0;
+        y += row_h;
         const ready_text = std.fmt.bufPrint(ready_buf[0..], "{d}/{d}", .{
             @min(summary.ready, state_mod.max_players),
             @min(@max(summary.expected, 1), state_mod.max_players),
         }) catch "";
         self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Ready:", ready_text, label_color, value_color);
-        y += 26.0;
+        y += row_h;
         self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Role:", networkLiveRoleLabel(session), label_color, value_color);
-        y += 26.0;
+        y += row_h;
         self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Netcode:", networkLiveRuntimeLabel(session), label_color, value_color);
-        y += 26.0;
+        y += row_h;
         if (summary.room_code) |code| {
             self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Code:", room_code.roomCodeSlice(&code), label_color, value_color);
-            y += 26.0;
+            y += row_h;
+        }
+        if (summary.endpoint_len != 0) {
+            self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Address:", summary.endpointText(), label_color, value_color);
+            y += row_h;
         }
         if (summary.session_id.len != 0) {
             self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Session:", summary.session_id, label_color, dim_color);
-            y += 26.0;
+            y += row_h;
         }
         if (summary.slot_count != 0) {
             y += 4.0;
             window_ui.drawSmallText(assets, "Slots:", label_x, y, label_color);
-            y += 24.0;
+            y += 20.0;
             for (summary.slots[0..@min(summary.slot_count, NetworkLobbySummary.max_slot_rows)]) |slot| {
                 self.drawNetworkLobbySlotRow(assets, value_x - 46.0, value_x + 4.0, value_x + 132.0, y, slot);
-                y += 20.0;
+                y += 18.0;
             }
         }
 
         if (self.network_session.status_len != 0) {
-            window_ui.drawSmallText(assets, self.network_session.statusText(), panel.x + 104.0, panel.y + 342.0, rl.Color.init(204, 204, 214, 255));
+            window_ui.drawSmallText(assets, self.network_session.statusText(), panel.x + 104.0, panel.y + 350.0, rl.Color.init(204, 204, 214, 255));
         }
     }
 
@@ -5718,6 +5755,7 @@ test "window network live status labels match netcode" {
         .mode_id = @intFromEnum(game_ids.GameModeId.survival),
         .player_count = 2,
         .netcode = .lockstep,
+        .bind_host = "127.0.0.1",
         .host = "127.0.0.1",
         .port = 31993,
     }, 123);
@@ -5779,6 +5817,7 @@ test "window network live runtime summarizes lockstep host lobby state" {
         .mode_id = @intFromEnum(game_ids.GameModeId.survival),
         .player_count = 2,
         .netcode = .lockstep,
+        .bind_host = "127.0.0.1",
         .host = "127.0.0.1",
         .port = 31993,
     }, 123);
@@ -5789,6 +5828,7 @@ test "window network live runtime summarizes lockstep host lobby state" {
     try std.testing.expectEqual(@as(usize, 2), summary.expected);
     try std.testing.expectEqual(@as(usize, 1), summary.ready);
     try std.testing.expectEqual(@as(?usize, 0), summary.local_slot);
+    try std.testing.expectEqualStrings("127.0.0.1:31993", summary.endpointText());
     try std.testing.expectEqualStrings("window-lockstep", summary.session_id);
     try std.testing.expectEqual(@as(usize, 2), summary.slot_count);
     try std.testing.expectEqual(@as(i32, 0), summary.slots[0].slot_index);
@@ -5832,6 +5872,7 @@ test "window network live runtime summarizes rollback room slots" {
     try std.testing.expectEqual(@as(usize, 2), summary.connected);
     try std.testing.expectEqual(@as(usize, 2), summary.expected);
     try std.testing.expectEqual(@as(usize, 1), summary.ready);
+    try std.testing.expectEqualStrings("127.0.0.1:31993", summary.endpointText());
     try std.testing.expectEqualStrings("window-rollback", summary.session_id);
     const code = summary.room_code orelse return error.ExpectedRoomCode;
     try std.testing.expectEqualStrings("abcd", room_code.roomCodeSlice(&code));
@@ -5850,6 +5891,14 @@ test "window network lobby slot labels match peer state" {
     try std.testing.expectEqualStrings("READY", networkLobbySlotStateLabel(.{ .connected = true, .ready = true }));
     try std.testing.expectEqualStrings("CONNECTED", networkLobbySlotStateLabel(.{ .connected = true }));
     try std.testing.expectEqualStrings("EMPTY", networkLobbySlotStateLabel(.{}));
+}
+
+test "window network lobby endpoint labels format ipv4 and text hosts" {
+    const text_endpoint = networkLobbyEndpointFromTextPort("localhost", 31993);
+    try std.testing.expectEqualStrings("localhost:31993", text_endpoint.bytes[0..text_endpoint.len]);
+
+    const ipv4_endpoint = networkLobbyEndpointFromIpv4(.{ 192, 168, 1, 44 }, 32001);
+    try std.testing.expectEqualStrings("192.168.1.44:32001", ipv4_endpoint.bytes[0..ipv4_endpoint.len]);
 }
 
 test "window network live runtime opens rollback relay session" {
