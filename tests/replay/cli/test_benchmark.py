@@ -977,6 +977,46 @@ def test_replay_verify_checkpoints_reports_elapsed_mismatch(tmp_path: Path) -> N
     assert "first state diff: elapsed_ms expected=32 actual=16" in result.output
 
 
+def test_replay_verify_checkpoints_can_skip_elapsed_mismatch_rows(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    checkpoint_ticks = {0, 1}
+    checkpoints = []
+    _run_verify_playback(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
+    checkpoints[0] = msgspec.structs.replace(
+        checkpoints[0],
+        elapsed_ms=int(checkpoints[0].elapsed_ms) + 16,
+    )
+    checkpoints[1] = msgspec.structs.replace(
+        checkpoints[1],
+        score_xp=999999,
+    )
+    dump_checkpoints_file(
+        replay_path.with_name(f"{replay_path.name}.chk"),
+        ReplayCheckpoints(
+            version=int(FORMAT_VERSION),
+            sample_rate=1,
+            checkpoints=list(checkpoints),
+        ),
+    )
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        [
+            "replay",
+            "verify-checkpoints",
+            str(replay_path),
+            "--skip-elapsed-mismatch",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "checkpoint mismatch at tick=1" in result.output
+    assert "skipped_elapsed_mismatches=1" in result.output
+    assert "first state diff: score_xp expected=999999 actual=0" in result.output
+
+
 def test_replay_verify_checkpoints_rejects_removed_lenient_integrity_flag(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")

@@ -22,6 +22,7 @@ class ReplayDiffResult(msgspec.Struct, frozen=True):
     checked_count: int
     first_rng_only_tick: int | None = None
     failure: ReplayDiffFailure | None = None
+    skipped_elapsed_mismatch_count: int = 0
 
 
 class CheckpointDeepDiff(msgspec.Struct, frozen=True):
@@ -65,10 +66,13 @@ def checkpoint_deepdiff(
 def compare_checkpoints(
     expected: Sequence[ReplayCheckpoint],
     actual: Sequence[ReplayCheckpoint],
+    *,
+    skip_elapsed_mismatch: bool = False,
 ) -> ReplayDiffResult:
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
     first_rng_only_tick: int | None = None
     checked_count = 0
+    skipped_elapsed_mismatch_count = 0
 
     for exp in expected:
         checked_count += 1
@@ -85,9 +89,14 @@ def compare_checkpoints(
                     expected=exp,
                     actual=None,
                 ),
+                skipped_elapsed_mismatch_count=skipped_elapsed_mismatch_count,
             )
 
         if exp == act:
+            continue
+
+        if bool(skip_elapsed_mismatch) and int(exp.elapsed_ms) != int(act.elapsed_ms):
+            skipped_elapsed_mismatch_count += 1
             continue
 
         exp_no_rng = _checkpoint_to_obj(exp, include_rng_fields=False)
@@ -101,17 +110,19 @@ def compare_checkpoints(
             ok=False,
             checked_count=checked_count,
             first_rng_only_tick=first_rng_only_tick,
-            failure=ReplayDiffFailure(
-                kind="state_mismatch",
-                tick_index=tick,
-                expected=exp,
-                actual=act,
-            ),
-        )
+                failure=ReplayDiffFailure(
+                    kind="state_mismatch",
+                    tick_index=tick,
+                    expected=exp,
+                    actual=act,
+                ),
+                skipped_elapsed_mismatch_count=skipped_elapsed_mismatch_count,
+            )
 
     return ReplayDiffResult(
         ok=True,
         checked_count=checked_count,
         first_rng_only_tick=first_rng_only_tick,
         failure=None,
+        skipped_elapsed_mismatch_count=skipped_elapsed_mismatch_count,
     )

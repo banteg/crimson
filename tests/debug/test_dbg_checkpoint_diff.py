@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import struct
 
-from crimson.dbg.checkpoint_diff import checkpoint_deepdiff
+import msgspec
+
+from crimson.dbg.checkpoint_diff import checkpoint_deepdiff, compare_checkpoints
 from crimson.replay.checkpoints import ReplayCheckpoint, ReplayPlayerCheckpoint
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -52,3 +54,21 @@ def test_checkpoint_deepdiff_returns_none_for_identical_objects() -> None:
     actual = _checkpoint_with_health(1.0)
 
     assert checkpoint_deepdiff(expected, actual) is None
+
+
+def test_compare_checkpoints_can_skip_elapsed_mismatch_rows() -> None:
+    first_expected = _checkpoint_with_health(1.0)
+    first_actual = msgspec.structs.replace(first_expected, elapsed_ms=int(first_expected.elapsed_ms) + 16)
+    second_expected = msgspec.structs.replace(_checkpoint_with_health(1.0), tick_index=1)
+    second_actual = msgspec.structs.replace(second_expected, score_xp=1)
+
+    diff = compare_checkpoints(
+        [first_expected, second_expected],
+        [first_actual, second_actual],
+        skip_elapsed_mismatch=True,
+    )
+
+    assert not diff.ok
+    assert diff.skipped_elapsed_mismatch_count == 1
+    assert diff.failure is not None
+    assert diff.failure.tick_index == 1
