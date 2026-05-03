@@ -17,6 +17,7 @@ from ._helpers import (
     build_replay,
     write_current_bad_tick_player_count_replay,
     write_current_missing_perk_choice_replay,
+    write_current_string_quest_level_replay,
     write_replay,
 )
 
@@ -117,6 +118,22 @@ def test_zig_replay_list_mode_collapses_quest_level_and_players(tmp_path: Path) 
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "quest 3.10 2p" in result.stdout
+
+
+def test_zig_replay_list_accepts_current_string_quest_level(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.QUESTS, ticks=1, quest_level="1.1")
+    write_current_string_quest_level_replay(
+        tmp_path / "replays",
+        replay=replay,
+        name="quest-string-level.crd",
+        quest_level="1.1",
+    )
+
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "quest-string-level.crd quest 1.1" in result.stdout
+    assert "count=1 parsed=1 errors=0" in result.stdout
 
 
 def test_zig_replay_list_uses_header_claimed_stats(tmp_path: Path) -> None:

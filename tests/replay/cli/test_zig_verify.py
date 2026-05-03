@@ -25,6 +25,7 @@ from ._helpers import (
     write_current_missing_perk_choice_replay,
     write_current_missing_quest_level_replay,
     write_current_mode_player_count_replay,
+    write_current_string_quest_level_replay,
     write_current_typo_event_replay,
     write_legacy_out_of_order_event_replay,
     write_replay,
@@ -83,6 +84,23 @@ def test_zig_replay_verify_matches_python_full_payload_on_quest_replay(tmp_path:
     )
 
     assert zig_payload == python_payload
+
+
+def test_zig_replay_verify_accepts_current_string_quest_level(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.QUESTS, ticks=2, quest_level="1.1")
+    replay_path = write_current_string_quest_level_replay(
+        tmp_path,
+        replay=replay,
+        name="quest-string-level.crd",
+        quest_level="1.1",
+    )
+
+    zig_payload = _run_zig_replay_verify([str(replay_path), "--format", "json"])
+
+    assert zig_payload["status"] == "ok"
+    run_result = cast("dict[str, object]", zig_payload["run_result"])
+    assert run_result["game_mode_id"] == int(GameMode.QUESTS)
+    assert run_result["ticks"] == 2
 
 
 def test_zig_replay_verify_matches_python_rush_spawn_boundary(tmp_path: Path) -> None:
