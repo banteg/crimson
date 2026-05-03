@@ -334,6 +334,35 @@ def test_zig_net_smoke_rollback_reports_triple_reconnect_recovery() -> None:
     assert payload["guest_paused_for_resync"] is False
 
 
+def test_zig_net_smoke_rollback_reports_double_reconnect_recovery() -> None:
+    payload = _run_zig_net_json(
+        [
+            "smoke-rollback",
+            "--impair",
+            "guest-double-reconnect",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert payload["status"] == "ok"
+    assert payload["impairment"] == "guest-double-reconnect"
+    assert payload["host_input_flags"] == 17
+    assert payload["guest_input_flags"] == 19
+    assert payload["host_tick_index"] == payload["guest_tick_index"]
+    assert payload["delayed_packets"] == 0
+    assert payload["released_packets"] == 0
+    assert payload["dropped_packets"] == 0
+    assert payload["host_reconnect_count"] == 2
+    assert payload["guest_reconnect_count"] == 2
+    assert payload["host_resync_count"] == 0
+    assert payload["guest_resync_count"] == 0
+    assert payload["host_paused_for_reconnect"] is False
+    assert payload["guest_paused_for_reconnect"] is False
+    assert payload["host_paused_for_resync"] is False
+    assert payload["guest_paused_for_resync"] is False
+
+
 def test_zig_net_smoke_rollback_reports_jitter_burst_recovery() -> None:
     payload = _run_zig_net_json(
         [
@@ -384,6 +413,60 @@ def test_zig_net_smoke_rollback_reports_bidirectional_jitter_recovery() -> None:
     assert payload["guest_rollback_count"] >= 3
     assert payload["host_prediction_mismatches"] >= 3
     assert payload["guest_prediction_mismatches"] >= 3
+    assert payload["host_resync_count"] == 0
+    assert payload["guest_resync_count"] == 0
+
+
+def test_zig_net_smoke_rollback_reports_reconnect_jitter_recovery() -> None:
+    payload = _run_zig_net_json(
+        [
+            "smoke-rollback",
+            "--impair",
+            "guest-reconnect-bidirectional-jitter-burst",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert payload["status"] == "ok"
+    assert payload["impairment"] == "guest-reconnect-bidirectional-jitter-burst"
+    assert payload["host_input_flags"] == 43
+    assert payload["guest_input_flags"] == 83
+    assert payload["host_tick_index"] == payload["guest_tick_index"]
+    assert payload["delayed_packets"] == 6
+    assert payload["released_packets"] == 6
+    assert payload["dropped_packets"] == 0
+    assert payload["host_reconnect_count"] == 1
+    assert payload["guest_reconnect_count"] == 1
+    assert payload["host_paused_for_reconnect"] is False
+    assert payload["guest_paused_for_reconnect"] is False
+    assert payload["host_resync_count"] == 0
+    assert payload["guest_resync_count"] == 0
+
+
+def test_zig_net_smoke_rollback_reports_double_reconnect_jitter_recovery() -> None:
+    payload = _run_zig_net_json(
+        [
+            "smoke-rollback",
+            "--impair",
+            "guest-double-reconnect-bidirectional-jitter-burst",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert payload["status"] == "ok"
+    assert payload["impairment"] == "guest-double-reconnect-bidirectional-jitter-burst"
+    assert payload["host_input_flags"] == 43
+    assert payload["guest_input_flags"] == 83
+    assert payload["host_tick_index"] == payload["guest_tick_index"]
+    assert payload["delayed_packets"] == 6
+    assert payload["released_packets"] == 6
+    assert payload["dropped_packets"] == 0
+    assert payload["host_reconnect_count"] == 2
+    assert payload["guest_reconnect_count"] == 2
+    assert payload["host_paused_for_reconnect"] is False
+    assert payload["guest_paused_for_reconnect"] is False
     assert payload["host_resync_count"] == 0
     assert payload["guest_resync_count"] == 0
 
