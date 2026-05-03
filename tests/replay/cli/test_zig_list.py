@@ -204,6 +204,11 @@ def test_zig_replay_list_reports_when_no_replays_found(tmp_path: Path) -> None:
 def test_zig_replay_list_emits_json_and_artifact(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
     write_replay(tmp_path / "replays", replay=replay, name="ok.crd")
+    write_current_unknown_command_replay(
+        tmp_path / "replays",
+        replay=replay,
+        name="unknown-command.crd",
+    )
     broken = tmp_path / "replays" / "broken.crd"
     broken.write_bytes(b"not-a-replay")
     json_out = tmp_path / "artifacts" / "list.json"
@@ -223,7 +228,7 @@ def test_zig_replay_list_emits_json_and_artifact(tmp_path: Path) -> None:
     assert payload["schema_version"] == 1
     assert payload["status"] == "ok"
     assert payload["replays_dir"] == str(tmp_path / "replays")
-    assert payload["summary"] == {"count": 2, "parsed": 1, "errors": 1}
+    assert payload["summary"] == {"count": 3, "parsed": 1, "errors": 2}
     assert payload["rows"][0]["replay"] in {"ok.crd", "broken.crd"}
     ok_row = next(row for row in payload["rows"] if row["replay"] == "ok.crd")
     assert ok_row["mode"] == "survival"
@@ -234,6 +239,12 @@ def test_zig_replay_list_emits_json_and_artifact(tmp_path: Path) -> None:
     broken_row = next(row for row in payload["rows"] if row["replay"] == "broken.crd")
     assert broken_row["mode"] == "invalid"
     assert broken_row["parse_error"] == "replay payload is not valid msgpack wire format"
+    unknown_row = next(row for row in payload["rows"] if row["replay"] == "unknown-command.crd")
+    assert unknown_row["mode"] == "invalid"
+    assert (
+        unknown_row["parse_error"]
+        == "replay event command kind is unknown: type=network_ping tick=0 event_index=0"
+    )
     assert json.loads(json_out.read_text(encoding="utf-8")) == payload
 
 
