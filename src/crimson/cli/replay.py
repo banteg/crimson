@@ -821,7 +821,7 @@ def cmd_replay_play(
     ),
 ) -> None:
     """Play back a recorded replay."""
-    from grim.app import RunViewHooks, run_view
+    from grim.app import ViewRunHooks, run_view
     from grim.config import ensure_crimson_cfg
     from grim.console import create_console
     from grim.view import ViewContext
@@ -858,10 +858,7 @@ def cmd_replay_play(
         height=height,
         title=title,
         fps=fps,
-        hooks=RunViewHooks(
-            should_close=view.should_close,
-            consume_screenshot_request=view.consume_screenshot_request,
-        ),
+        hooks=ViewRunHooks(view),
     )
 
 

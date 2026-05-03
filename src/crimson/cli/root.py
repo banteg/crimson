@@ -39,30 +39,6 @@ def _safe_relpath(name: str) -> Path:
     return Path(*parts)
 
 
-def _view_run_hooks(view: object):
-    from grim.app import RunViewHooks
-
-    def should_close() -> bool:
-        should_close_fn = getattr(view, "should_close", None)
-        if callable(should_close_fn):
-            return bool(should_close_fn())
-        close_requested = getattr(view, "close_requested", False)
-        if isinstance(close_requested, bool):
-            return close_requested
-        return False
-
-    def consume_screenshot_request() -> bool:
-        consume_fn = getattr(view, "consume_screenshot_request", None)
-        if callable(consume_fn):
-            return bool(consume_fn())
-        return False
-
-    return RunViewHooks(
-        should_close=should_close,
-        consume_screenshot_request=consume_screenshot_request,
-    )
-
-
 def _extract_one(paq_path: Path, assets_root: Path) -> int:
     out_root = assets_root / paq_path.stem
     out_root.mkdir(parents=True, exist_ok=True)
@@ -228,7 +204,7 @@ def cmd_view(
     assets_dir: Path = typer.Option(Path("artifacts") / "assets", help="assets root (default: ./artifacts/assets)"),
 ) -> None:
     """Launch a Raylib debug view."""
-    from grim.app import run_view
+    from grim.app import ViewRunHooks, run_view
     from grim.view import ViewContext
 
     from ..debug_views import all_views, view_by_name
@@ -263,14 +239,13 @@ def cmd_view(
     else:
         view = view_def.factory()
     title = f"{view_def.title} — Crimsonland"
-    hooks = _view_run_hooks(view)
     run_view(
         RuntimeResourcesView(view, assets_dir=assets_dir),
         width=width,
         height=height,
         title=title,
         fps=fps,
-        hooks=hooks,
+        hooks=ViewRunHooks(view),
     )
 
 

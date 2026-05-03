@@ -130,3 +130,29 @@ def test_run_view_uses_render_pipeline(monkeypatch) -> None:
     assert view.draw_calls == 1
     assert view.close_calls == 1
     assert fake_rl.close_calls == 1
+
+
+def test_view_run_hooks_read_view_runtime_methods_and_flags() -> None:
+    class _ViewWithMethods:
+        def __init__(self) -> None:
+            self.screenshots = 1
+
+        def should_close(self) -> bool:
+            return True
+
+        def consume_screenshot_request(self) -> bool:
+            self.screenshots -= 1
+            return self.screenshots >= 0
+
+    method_hooks = grim_app.ViewRunHooks(_ViewWithMethods())
+    assert method_hooks.should_close() is True
+    assert method_hooks.consume_screenshot_request() is True
+    assert method_hooks.consume_screenshot_request() is False
+
+    class _FlagView:
+        close_requested = True
+
+    flag_view = _FlagView()
+    flag_hooks = grim_app.ViewRunHooks(flag_view)
+    assert flag_hooks.should_close() is True
+    assert flag_hooks.consume_screenshot_request() is False
