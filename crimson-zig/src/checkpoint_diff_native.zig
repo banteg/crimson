@@ -493,7 +493,7 @@ fn parseVerifyArgs(args: []const []const u8) VerifyParseOutcome {
             continue;
         }
         if (std.mem.eql(u8, arg, "--base-dir") or std.mem.eql(u8, arg, "--runtime-dir")) {
-            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --base-dir" };
+            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --base-dir/--runtime-dir" };
             idx += 1;
             request.base_dir = args[idx];
             continue;
@@ -2267,6 +2267,20 @@ test "byte checkpoint verify accepts replay and checkpoint payloads" {
     try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"checkpoint_count\":1") != null);
     try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"ticks\":1") != null);
     try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"trace_rng\":true") != null);
+}
+
+test "checkpoint verify parser reports runtime dir value requirement" {
+    const parsed = parseVerifyArgs(&.{ "replay.crd", "--runtime-dir" });
+    switch (parsed) {
+        .invalid => |detail| try std.testing.expectEqualStrings("missing value for --base-dir/--runtime-dir", detail),
+        .ok => return error.TestExpectedInvalidArgs,
+    }
+
+    const ok = parseVerifyArgs(&.{ "replay.crd", "--runtime-dir", "runtime" });
+    switch (ok) {
+        .ok => |request| try std.testing.expectEqualStrings("runtime", request.base_dir.?),
+        .invalid => return error.TestExpectedOkArgs,
+    }
 }
 
 test "checkpoint diff maps checkpoint load errors to user details" {
