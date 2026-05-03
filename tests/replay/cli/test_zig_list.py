@@ -15,6 +15,7 @@ from crimson.weapons import WeaponId
 
 from ._helpers import (
     build_replay,
+    write_current_bad_event_player_index_replay,
     write_current_bad_tick_player_count_replay,
     write_current_missing_perk_choice_replay,
     write_current_string_quest_level_replay,
@@ -125,6 +126,25 @@ def test_zig_replay_list_reports_unknown_command_detail(tmp_path: Path) -> None:
         "type=network_ping tick=0 event_index=0"
     ) in result.stdout
     assert "replay events include an unknown command kind" not in result.stdout
+
+
+def test_zig_replay_list_reports_event_player_index_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    write_current_bad_event_player_index_replay(
+        tmp_path / "replays",
+        replay=replay,
+        name="event-player-index.crd",
+    )
+
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "event-player-index.crd invalid - - - - -" in result.stdout
+    assert (
+        "warning: event-player-index.crd: replay event player_index out of range: 1 "
+        "(player_count=1, tick=0, event=perk_menu_open)"
+    ) in result.stdout
+    assert "out-of-range player_index" not in result.stdout
 
 
 def test_zig_replay_list_sorts_in_reverse_chronological_order(tmp_path: Path) -> None:

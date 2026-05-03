@@ -394,6 +394,37 @@ fn buildReplayListRow(
     defer summary.deinit(allocator);
 
     const header = summary.header;
+    if (summary.events.total_count > 0) {
+        var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
+            if (err == error.UnsupportedInputShape) {
+                parse_detail = try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload);
+            } else if (err == error.UnsupportedEventShape) {
+                parse_detail = try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload);
+            } else if (err == error.UnknownCommandKind) {
+                parse_detail = try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload);
+            }
+            return buildInvalidReplayListRow(
+                allocator,
+                rel_path,
+                modified_ns,
+                parse_detail orelse replayListRowErrorDetail(err),
+            );
+        };
+        defer replay.deinit(allocator);
+        if (try replay_codec.replayEventOrderingFailureDetail(allocator, replay.events)) |detail| {
+            defer allocator.free(detail);
+            return buildInvalidReplayListRow(allocator, rel_path, modified_ns, detail);
+        }
+        if (try replay_codec.replayEventPlayerIndexFailureDetail(allocator, header.player_count, replay.events)) |detail| {
+            defer allocator.free(detail);
+            return buildInvalidReplayListRow(allocator, rel_path, modified_ns, detail);
+        }
+        if (try replay_codec.replayEventKindFailureDetail(allocator, header.game_mode_id, replay.events)) |detail| {
+            defer allocator.free(detail);
+            return buildInvalidReplayListRow(allocator, rel_path, modified_ns, detail);
+        }
+    }
+
     const mode = try modeLabel(allocator, header);
     errdefer allocator.free(mode);
     const game_version = try nonEmptyVersion(allocator, header.game_version);
