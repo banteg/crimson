@@ -80,6 +80,137 @@ Current live/native gameplay coverage:
 The earlier “missing the game” framing is obsolete. The remaining roadmap is
 about finishing the port cleanly.
 
+## Completion contract
+
+The Zig port is done when all of these are true at the same time:
+
+- the default `zig build` installs `crimson-zig-window` and the native CLI tools
+  documented here,
+- Survival, Rush, Quests, Typ-o, and Tutorial can all be launched from the Zig
+  desktop shell and from direct launch flags without known mode-blocking gaps,
+- replay verify/info/list/benchmark/checkpoint tooling accepts the same
+  practical supported replay corpus as Python for current rulesets, with
+  invalid inputs reported as invalid replay/input errors rather than "not
+  ported" failures,
+- boot -> menu -> gameplay -> pause -> results -> stats/options/control flows
+  have no known placeholder-only or scaffold UI branches in the shipped desktop
+  path,
+- demo/trial and network lobby flows are either parity-complete or explicitly
+  documented as intentional scope decisions,
+- native developer tooling is broad enough to debug replay/runtime mismatches
+  without dropping back to Python for every investigation,
+- the completion audit maps each item above to concrete evidence: source files,
+  CLI outputs, tests, and green CI runs.
+
+Passing CI is required but not sufficient. CI only proves the current coverage;
+the port is not done until the checklist above has direct artifact evidence and
+there are no remaining undocumented parity gaps.
+
+## Larger landing slices
+
+Use these as the next PR/commit-sized units. Avoid one-test or one-helper
+changes unless they unblock one of these larger slices or fix a CI regression.
+
+### A. Replay corpus closure
+
+Goal: prove native replay tooling handles the practical replay corpus we expect
+to support.
+
+Scope:
+
+- add or refresh a replay corpus manifest that names representative Survival,
+  Rush, Quest, Typ-o, Tutorial, verbose-event, multi-player, and invalid-input
+  fixtures,
+- make `replay verify`, `replay info`, `replay benchmark`, and checkpoint
+  commands run against that corpus in Zig,
+- remove stale "not ported" wording from user-facing replay failures where the
+  input is actually malformed or unsupported-by-policy.
+
+Evidence gate:
+
+- `uv run pytest tests/replay/cli/test_zig_*.py`,
+- `zig build test --summary all` from `crimson-zig/`,
+- at least one documented command that runs the corpus through native tooling.
+
+### B. Product-shell walkthrough closure
+
+Goal: make the shipped Zig window behave like the Python product shell for the
+full menu/game/results loop.
+
+Scope:
+
+- audit and close boot, root menu, Play Game, Quests, Options, Controls,
+  Statistics, Pause, Results, High Scores, demo/trial, Mods, Other Games, and
+  Network Session flows as one shell batch,
+- remove remaining fallback/scaffold branches from shipped paths when runtime
+  data exists,
+- update docs with any intentional differences.
+
+Evidence gate:
+
+- `uv run pytest tests/grim/test_zig_window_cli.py`,
+- `zig build test --summary all` from `crimson-zig/`,
+- `zig build --summary all` from `crimson-zig/`,
+- a manual or automated launch smoke for representative direct launch flags:
+  `--start-mode survival`, `rush`, `quests --quest-level`, `typo`, and
+  `tutorial`.
+
+### C. Native tooling parity closure
+
+Goal: make Zig-native tools useful enough for day-to-day port debugging.
+
+Scope:
+
+- compare `src/crimson/cli/replay.py` and `src/crimson/cli/dbg.py` against the
+  installed Zig command surface,
+- add the missing high-value native commands or document why they stay Python
+  only,
+- ensure command help, JSON output, and docs match the implemented behavior.
+
+Evidence gate:
+
+- CLI parity table in this roadmap or a linked doc,
+- targeted Python/Zig CLI parity tests,
+- `just zig-build`, `just zig-test`, and relevant `uv run pytest tests/replay`
+  or `tests/debug` targets.
+
+### D. Network and demo hardening closure
+
+Goal: finish the non-local product paths that can still hide launch-time gaps.
+
+Scope:
+
+- expand rollback smoke coverage into the remaining reconnect/resync stress
+  cases that are worth keeping,
+- verify host/join JSON surfaces and desktop lobby status against Python relay
+  defaults,
+- finish demo/trial purchase-shell behavior alongside the network shell if the
+  same product-state plumbing is touched.
+
+Evidence gate:
+
+- native `net smoke-rollback` cases,
+- `uv run pytest tests/net` coverage that compares Python contracts where
+  applicable,
+- `zig build test --summary all`.
+
+### E. Final completion audit
+
+Goal: decide whether the Zig port is actually complete.
+
+Scope:
+
+- build a prompt-to-artifact checklist for the completion contract above,
+- cite concrete files, commands, test outputs, and CI run IDs,
+- list every remaining parity difference as either fixed, intentionally scoped
+  out, or still blocking.
+
+Evidence gate:
+
+- clean worktree,
+- current master CI and Zig CI green,
+- final audit committed in docs if any meaningful scope decision remains.
+
 ## Remaining workstreams
 
 ### 1. Replay and verifier breadth
@@ -223,11 +354,11 @@ Reference Python surfaces:
 
 If the goal is to finish the Zig port cleanly, the current order should be:
 
-1. replay/verifier breadth and remaining justified runtime closures
-2. product-shell parity, especially results and demo/trial shell
-3. native tooling breadth
-4. network/LAN stress hardening and product-lobby polish
-5. remaining presentation/audio polish
+1. replay corpus closure
+2. product-shell walkthrough closure
+3. native tooling parity closure
+4. network and demo hardening closure
+5. final completion audit
 
 ## What is no longer a roadmap item
 
