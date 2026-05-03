@@ -114,6 +114,27 @@ pub fn build(b: *std.Build) void {
         asset_smoke_cmd.addArgs(args);
     }
 
+    const asset_extract_exe = b.addExecutable(.{
+        .name = "crimson-zig-asset-extract",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/asset_extract_main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "raylib", .module = raylib_module },
+                .{ .name = "crimson_zig", .module = mod },
+            },
+        }),
+    });
+    asset_extract_exe.root_module.linkLibrary(raylib_artifact);
+    b.installArtifact(asset_extract_exe);
+    const asset_extract_step = b.step("asset-extract", "Extract PAQ archives into an asset directory");
+    const asset_extract_cmd = b.addRunArtifact(asset_extract_exe);
+    asset_extract_step.dependOn(&asset_extract_cmd.step);
+    if (b.args) |args| {
+        asset_extract_cmd.addArgs(args);
+    }
+
     const web_target = b.resolveTargetQuery(.{
         .cpu_arch = .wasm32,
         .os_tag = .emscripten,

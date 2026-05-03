@@ -175,8 +175,9 @@ Definition of done:
 - the documented command surface matches what is actually supported.
 
 Already-native support surfaces in this workstream include `crimson-zig
-spawn-plan` and the installed `crimson-zig-asset-smoke` archive/image decode
-validator.
+spawn-plan`, the installed `crimson-zig-asset-smoke` archive/image decode
+validator, and the installed `crimson-zig-asset-extract` PAQ extractor with
+JAZ/TGA-to-PNG export.
 
 ### 4. Presentation and polish follow-through
 

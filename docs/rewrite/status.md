@@ -44,6 +44,8 @@ Last reviewed: **2026-05-03**
 - Asset tooling:
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig-asset-smoke <assets-dir>`
     - The installed native smoke tool validates `crimson.paq`, JAZ/TGA/JPEG image decoding, runtime texture specs, and small-font width data.
+  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig-asset-extract <game-dir> <assets-dir>`
+    - The installed native extractor walks `.paq` files, preserves the Python extractor's `<assets-dir>/<paq-stem>/...` layout, writes raw payloads, and converts decoded JAZ/TGA entries to PNG.
 - Desktop shell:
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig-window`
     - The installed native desktop shell starts the boot/menu/gameplay product flow; `--demo` starts with shareware demo limits enabled.

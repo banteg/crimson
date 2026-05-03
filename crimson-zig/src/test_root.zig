@@ -297,6 +297,7 @@ test {
     _ = @import("window_options.zig");
     _ = @import("window_perk_menu.zig");
     _ = @import("window_statistics.zig");
+    _ = @import("asset_extract_main.zig");
     _ = @import("asset_smoke_main.zig");
     _ = @import("wasm_exports.zig");
 }
