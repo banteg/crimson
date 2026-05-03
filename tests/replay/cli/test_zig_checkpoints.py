@@ -224,6 +224,18 @@ def test_zig_replay_verify_checkpoints_reports_unknown_command_as_replay_failure
     assert "native replay run" not in result.stderr
 
 
+def test_zig_replay_verify_checkpoints_rejects_non_crd_replay_extension(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival.txt")
+    sidecar = write_checkpoint_sidecar(tmp_path / "sidecar-source.crd", replay)
+
+    result = _run_zig_replay_verify_checkpoints([str(replay_path), "--checkpoints", str(sidecar)])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "replay verification failed: replay file must use .crd extension" in result.stderr
+
+
 def test_zig_replay_diff_checkpoints_reports_state_mismatch(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")

@@ -640,6 +640,9 @@ fn runNativeVerifyCheckpoints(
     if (!resolution.exists) {
         return buildReplayNotFoundOutput(allocator, resolution);
     }
+    if (!std.mem.endsWith(u8, resolution.resolved_path, ".crd")) {
+        return buildVerifyFailedOutput(allocator, "replay file must use .crd extension");
+    }
 
     const checkpoints_path = if (request.checkpoints_file) |path|
         try allocator.dupe(u8, path)
