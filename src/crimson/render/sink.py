@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from pathlib import Path
 
 from grim.render_pipeline import RenderPresent, RenderSink, WindowSink
 
-__all__ = ["RenderPresent", "RenderSink", "WindowSink", "NullSink", "VideoSink"]
+__all__ = ["RenderPresent", "RenderSink", "WindowSink", "NullSink", "VideoSink", "VideoTransport"]
 
 
 class NullSink:
@@ -24,6 +23,20 @@ class NullSink:
         pass
 
 
+class VideoTransport:
+    def open(self) -> None:
+        return None
+
+    def present_frame(self) -> None:
+        return None
+
+    def flush(self) -> None:
+        return None
+
+    def close(self) -> None:
+        return None
+
+
 class VideoSink:
     """Video-export sink. Fail-fast by policy: presentation errors abort rendering."""
 
@@ -31,40 +44,30 @@ class VideoSink:
         self,
         *,
         output_path: Path,
-        open_transport: Callable[[], None] | None = None,
-        present_frame: RenderPresent | None = None,
-        flush_transport: Callable[[], None] | None = None,
-        close_transport: Callable[[], None] | None = None,
+        transport: VideoTransport | None = None,
     ) -> None:
         self.output_path = Path(output_path)
-        self._open_transport = open_transport
-        self._present_frame = present_frame
-        self._flush_transport = flush_transport
-        self._close_transport = close_transport
+        self._transport = transport if transport is not None else VideoTransport()
         self._opened = False
         self._flushed = False
 
     def open(self) -> None:
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
-        if self._open_transport is not None:
-            self._open_transport()
+        self._transport.open()
         self._opened = True
         self._flushed = False
 
     def present(self) -> None:
-        if self._present_frame is not None:
-            self._present_frame()
+        self._transport.present_frame()
 
     def flush(self) -> None:
         if not self._opened or self._flushed:
             return
-        if self._flush_transport is not None:
-            self._flush_transport()
+        self._transport.flush()
         self._flushed = True
 
     def close(self) -> None:
         if not self._opened:
             return
-        if self._close_transport is not None:
-            self._close_transport()
+        self._transport.close()
         self._opened = False

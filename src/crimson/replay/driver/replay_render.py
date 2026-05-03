@@ -11,7 +11,7 @@ from typing import Literal
 import msgspec
 
 from ...render.pipeline import RenderPipeline
-from ...render.sink import VideoSink
+from ...render.sink import VideoSink, VideoTransport
 from ...replay import Replay
 from .playback_driver import build_verify_playback_driver
 from .setup import RunResult
@@ -66,7 +66,7 @@ class ReplayRenderProgress(msgspec.Struct):
         return None
 
 
-class _FfmpegVideoTransport:
+class _FfmpegVideoTransport(VideoTransport):
     def __init__(
         self,
         *,
@@ -258,10 +258,7 @@ def run_replay_render_video(
             render_pipeline = RenderPipeline(
                 sink=VideoSink(
                     output_path=video_out_path,
-                    open_transport=video_transport.open,
-                    present_frame=video_transport.present_frame,
-                    flush_transport=video_transport.flush,
-                    close_transport=video_transport.close,
+                    transport=video_transport,
                 ),
                 begin_end_drawing=True,
                 begin_draw=rl.begin_drawing,
