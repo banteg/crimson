@@ -233,6 +233,18 @@ def write_current_bad_claimed_stats_replay(tmp_path: Path, *, replay: Replay, na
     return replay_path
 
 
+def write_current_bad_bootstrap_seed_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
+    raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
+    payload = msgspec.msgpack.decode(raw_payload)
+    payload["header"]["bootstrap_kind"] = "terrain_v1"
+    payload["header"]["bootstrap_seed"] = 1
+
+    replay_path = tmp_path / name
+    replay_path.parent.mkdir(parents=True, exist_ok=True)
+    replay_path.write_bytes(msgspec.msgpack.encode(payload))
+    return replay_path
+
+
 def write_current_bad_tick_player_count_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
     raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
     payload = msgspec.msgpack.decode(raw_payload)

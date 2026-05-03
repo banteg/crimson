@@ -15,11 +15,15 @@ from crimson.weapons import WeaponId
 
 from ._helpers import (
     build_replay,
+    write_current_bad_bootstrap_seed_replay,
+    write_current_bad_claimed_stats_replay,
     write_current_bad_event_player_index_replay,
     write_current_bad_tick_player_count_replay,
     write_current_missing_perk_choice_replay,
+    write_current_missing_quest_level_replay,
     write_current_mode_player_count_replay,
     write_current_string_quest_level_replay,
+    write_current_typo_event_replay,
     write_current_unknown_command_replay,
     write_replay,
 )
@@ -148,6 +152,25 @@ def test_zig_replay_list_reports_event_player_index_detail(tmp_path: Path) -> No
     assert "out-of-range player_index" not in result.stdout
 
 
+def test_zig_replay_list_reports_event_kind_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    write_current_typo_event_replay(
+        tmp_path / "replays",
+        replay=replay,
+        name="event-kind.crd",
+    )
+
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "event-kind.crd invalid - - - - -" in result.stdout
+    assert (
+        "warning: event-kind.crd: replay event kind invalid for game mode: "
+        "event=typo_char tick=0 event_index=0 game_mode=survival"
+    ) in result.stdout
+    assert "replay events include invalid kinds or values for this mode" not in result.stdout
+
+
 def test_zig_replay_list_sorts_in_reverse_chronological_order(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
     old_path = write_replay(tmp_path / "replays", replay=replay, name="old.crd")
@@ -224,6 +247,60 @@ def test_zig_replay_list_reports_old_ruleset_detail(tmp_path: Path) -> None:
         "native replay tools require latest ruleset replays unless preserve_bugs is set"
     ) in result.stdout
     assert "count=1 parsed=0 errors=1" in result.stdout
+
+
+def test_zig_replay_list_reports_missing_quest_level_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    write_current_missing_quest_level_replay(
+        tmp_path / "replays",
+        replay=replay,
+        name="missing-quest-level.crd",
+    )
+
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "missing-quest-level.crd invalid - - - - -" in result.stdout
+    assert "warning: missing-quest-level.crd: quest replays require a valid header.quest_level" in result.stdout
+    assert "native runtime limitation" not in result.stdout
+
+
+def test_zig_replay_list_reports_invalid_claimed_stats_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    write_current_bad_claimed_stats_replay(
+        tmp_path / "replays",
+        replay=replay,
+        name="bad-claimed-stats.crd",
+    )
+
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "bad-claimed-stats.crd invalid - - - - -" in result.stdout
+    assert (
+        "warning: bad-claimed-stats.crd: replay header claimed_stats.shots_hit must be <= "
+        "claimed_stats.shots_fired"
+    ) in result.stdout
+    assert "native runtime limitation" not in result.stdout
+
+
+def test_zig_replay_list_reports_bootstrap_seed_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    write_current_bad_bootstrap_seed_replay(
+        tmp_path / "replays",
+        replay=replay,
+        name="bad-bootstrap-seed.crd",
+    )
+
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "bad-bootstrap-seed.crd invalid - - - - -" in result.stdout
+    assert (
+        "warning: bad-bootstrap-seed.crd: "
+        "replay bootstrap seed does not match canonical terrain bootstrap draws"
+    ) in result.stdout
+    assert "native runtime limitation" not in result.stdout
 
 
 def test_zig_replay_list_uses_header_claimed_stats(tmp_path: Path) -> None:
