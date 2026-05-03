@@ -58,7 +58,7 @@ Today `crimson-zig/` already has:
   prediction correction without resync, plus a guest-requested resync smoke
   case that applies a host snapshot stream, repeated and bidirectional
   jitter-burst smoke cases, a relay-token guest self-reconnect smoke case with
-  post-reconnect input continuity, a double guest reconnect smoke case, a
+  post-reconnect input continuity, double and triple guest reconnect smoke cases, a
   post-reconnect bidirectional jitter smoke case, a longer reconnect-then-resync
   smoke case, double- and triple-reconnect-then-resync stress cases, and
   double- and triple-reconnect-then-bidirectional-jitter stress cases,
