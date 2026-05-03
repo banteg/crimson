@@ -46,8 +46,8 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Company logo sequence (10tons / Reflexive) with skip behavior.
 - Intro/theme music handoff.
 - Main menu buttons + animations (Play/Options/Stats/Mods/Quit) with panel/back slide animation.
-- Play Game panel (mode select + player count dropdown + tooltips + F1 “times played” overlay).
-- Quest select menu UI (stage icons + hardcore toggle gating + quest list + counts overlay; quest gameplay wired).
+- Play Game panel (mode select + player count dropdown + tooltips + debug-gated F1 “times played” overlay).
+- Quest select menu UI (stage icons + hardcore toggle gating + quest list + debug-gated counts/unlock shortcuts; quest gameplay wired).
 - Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls supports 1..4 player selection, per-player direction-arrow toggle, and right-panel key/button/axis rebinding).
 - Statistics hub (High scores / Weapons / Perks / Credits panels; playtime + weapon usage + quest counters).
 - Menu terrain persists between screens (no regen on Options/Stats/etc navigation).

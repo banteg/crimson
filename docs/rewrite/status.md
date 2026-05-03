@@ -97,10 +97,10 @@ Last reviewed: **2026-05-03**
   - Code: `src/crimson/screens/menu.py`
   - Ref: [`docs/crimsonland-exe/main-menu.md`](../crimsonland-exe/main-menu.md)
   - Zig now routes root menu selections and demo-idle attract launch through the native close timeline before dispatch.
-- **Play Game panel (state `1`)**: implemented (mode buttons, player-count dropdown, tooltips, F1 times-played overlay).
+- **Play Game panel (state `1`)**: implemented (mode buttons, player-count dropdown, tooltips, debug-gated F1 times-played overlay).
   - Code: `src/crimson/game/__init__.py` (`PlayGameMenuView`)
   - Ref: [`docs/crimsonland-exe/play-game-menu.md`](../crimsonland-exe/play-game-menu.md)
-- **Quest select menu (state `0x0b`)**: implemented (quest list, stage icons, hardcore gating/counts overlay).
+- **Quest select menu (state `0x0b`)**: implemented (quest list, stage icons, hardcore gating, debug-gated counts overlay and F5 unlock shortcut).
   - Code: `src/crimson/game/__init__.py` (`QuestsMenuView`)
   - Ref: [`docs/crimsonland-exe/quest-select-menu.md`](../crimsonland-exe/quest-select-menu.md)
 - **Options panel (state `2`)**: implemented for core sliders + controls workflow.

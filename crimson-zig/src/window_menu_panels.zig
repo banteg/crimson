@@ -536,7 +536,15 @@ pub const QuestResult = struct {
     play_panel_click: bool = false,
     play_button_click: bool = false,
     config_dirty: bool = false,
+    status_dirty: bool = false,
 };
+
+fn questResultWithDirty(result: QuestResult, config_dirty: bool, status_dirty: bool) QuestResult {
+    var merged = result;
+    merged.config_dirty = merged.config_dirty or config_dirty;
+    merged.status_dirty = merged.status_dirty or status_dirty;
+    return merged;
+}
 
 test "quest menu reset can preserve selected quest stage" {
     var state: QuestState = .{ .stage = 1 };
@@ -551,9 +559,10 @@ test "quest menu reset can preserve selected quest stage" {
     try std.testing.expectEqual(@as(i32, 1), state.stage);
 }
 
-pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, demo_enabled: bool) QuestResult {
+pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: *formats.game_cfg.Status, demo_enabled: bool, debug_enabled: bool) QuestResult {
     const dt_ms = frameDeltaMs(frame_dt);
     var config_dirty = false;
+    var status_dirty = false;
     if (state.closing) {
         if (dt_ms > 0) state.panel.timeline_ms -= dt_ms;
         if (state.panel.timeline_ms < 0) {
@@ -575,9 +584,12 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
         config.hardcore_flag = 0;
         config_dirty = true;
     }
+    if (debug_enabled and rl.isKeyPressed(.f5)) {
+        status_dirty = unlockAllQuestsForDebug(status);
+    }
     if (rl.isKeyPressed(.escape)) {
         beginCloseQuestBack(state);
-        return .{ .play_button_click = true };
+        return questResultWithDirty(.{ .play_button_click = true }, config_dirty, status_dirty);
     }
 
     if (rl.isKeyPressed(.left)) state.stage = @max(1, state.stage - 1);
@@ -587,39 +599,40 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
     if (hovered_stage) |stage| {
         if (rl.isMouseButtonPressed(.left)) {
             state.stage = stage;
-            return .{ .play_button_click = true };
+            return questResultWithDirty(.{ .play_button_click = true }, config_dirty, status_dirty);
         }
     }
 
     if (questDigitRowPressed()) |row| {
-        return tryStartQuest(state, config, status, demo_enabled, state.stage, row);
+        return questResultWithDirty(tryStartQuest(state, config, status.*, demo_enabled, state.stage, row), config_dirty, status_dirty);
     }
 
-    const hovered_row = hoveredQuestRow(layout, hardcoreUnlocked(status, demo_enabled));
+    const hovered_row = hoveredQuestRow(layout, hardcoreUnlocked(status.*, demo_enabled));
 
-    if (hardcoreUnlocked(status, demo_enabled)) {
+    if (hardcoreUnlocked(status.*, demo_enabled)) {
         const hardcore_rect = hardcoreCheckRect(layout);
         if (rl.checkCollisionPointRec(rl.getMousePosition(), hardcore_rect) and rl.isMouseButtonPressed(.left)) {
             config.hardcore_flag = if (config.hardcore_flag == 0) 1 else 0;
             if (demo_enabled) config.hardcore_flag = 0;
-            return .{ .play_button_click = true, .config_dirty = true };
+            return questResultWithDirty(.{ .play_button_click = true, .config_dirty = true }, config_dirty, status_dirty);
         }
     }
 
     if (hovered_row) |row| {
         if (rl.isMouseButtonPressed(.left) or window_ui.confirmPressed()) {
-            return tryStartQuest(state, config, status, demo_enabled, state.stage, row);
+            return questResultWithDirty(tryStartQuest(state, config, status.*, demo_enabled, state.stage, row), config_dirty, status_dirty);
         }
     }
 
     if (questBackButtonActivated(layout)) {
         beginCloseQuestBack(state);
-        return .{ .play_button_click = true };
+        return questResultWithDirty(.{ .play_button_click = true }, config_dirty, status_dirty);
     }
 
     return .{
         .play_panel_click = dt_ms > 0 and state.panel.timeline_ms >= panel_timeline_max_ms and !state.panel.panel_open_sfx_played,
         .config_dirty = config_dirty,
+        .status_dirty = status_dirty,
     };
 }
 
@@ -718,6 +731,20 @@ fn visibleQuestUnlockIndex(status: formats.game_cfg.Status, demo_enabled: bool) 
     return status.quest_unlock_index;
 }
 
+fn unlockAllQuestsForDebug(status: *formats.game_cfg.Status) bool {
+    const unlock: u16 = 49;
+    var dirty = false;
+    if (status.quest_unlock_index < unlock) {
+        status.quest_unlock_index = unlock;
+        dirty = true;
+    }
+    if (status.quest_unlock_index_full < unlock) {
+        status.quest_unlock_index_full = unlock;
+        dirty = true;
+    }
+    return dirty;
+}
+
 test "demo quest menu caps visible unlock progress to native demo limit" {
     var status = std.mem.zeroes(formats.game_cfg.Status);
     status.quest_unlock_index = 49;
@@ -731,6 +758,27 @@ test "demo quest menu caps visible unlock progress to native demo limit" {
 
     try std.testing.expect(questUnlocked(status, false, false, 5, 10));
     try std.testing.expect(hardcoreUnlocked(status, false));
+}
+
+test "debug quest unlock raises both normal and hardcore progress" {
+    var status = std.mem.zeroes(formats.game_cfg.Status);
+    status.quest_unlock_index = 3;
+    status.quest_unlock_index_full = 12;
+
+    try std.testing.expect(unlockAllQuestsForDebug(&status));
+    try std.testing.expectEqual(@as(u16, 49), status.quest_unlock_index);
+    try std.testing.expectEqual(@as(u16, 49), status.quest_unlock_index_full);
+
+    try std.testing.expect(!unlockAllQuestsForDebug(&status));
+    try std.testing.expectEqual(@as(u16, 49), status.quest_unlock_index);
+    try std.testing.expectEqual(@as(u16, 49), status.quest_unlock_index_full);
+}
+
+test "quest result dirty flags merge with action results" {
+    const merged = questResultWithDirty(.{ .play_button_click = true }, true, true);
+    try std.testing.expect(merged.play_button_click);
+    try std.testing.expect(merged.config_dirty);
+    try std.testing.expect(merged.status_dirty);
 }
 
 fn questTitle(stage: i32, minor: i32) []const u8 {

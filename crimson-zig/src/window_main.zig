@@ -1352,8 +1352,9 @@ const App = struct {
 
     fn updateQuestsMenu(self: *App, frame_dt: f32) void {
         self.audio.ensureMenuThemeForDemo(self.demo_enabled);
-        const quest_update = window_menu_panels.updateQuests(&self.quests_menu, frame_dt, &self.runtime.config, self.runtime.status, self.demo_enabled);
+        const quest_update = window_menu_panels.updateQuests(&self.quests_menu, frame_dt, &self.runtime.config, &self.runtime.status, self.demo_enabled, self.debug_enabled);
         if (quest_update.config_dirty) self.runtime.config_dirty = true;
+        if (quest_update.status_dirty) self.runtime.status_dirty = true;
         if (quest_update.play_panel_click and !self.quests_menu.panel.panel_open_sfx_played) {
             self.audio.playUiPanelClick();
             self.quests_menu.panel.panel_open_sfx_played = true;
