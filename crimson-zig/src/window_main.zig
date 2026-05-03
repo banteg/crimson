@@ -13,6 +13,7 @@ const demo_trial = cz.demo_trial;
 const input_codes = @import("input_codes.zig");
 const local_input = cz.local_input;
 const live_audio = @import("audio/live_audio.zig");
+const quest_level_mod = cz.quest_level;
 const quest_results = @import("quest_results.zig");
 const rng_callers = cz.rng_caller_static;
 const runtime_bootstrap = cz.bootstrap;
@@ -1111,6 +1112,9 @@ const App = struct {
             app.menu.openRoot();
         }
         app.loadAssets();
+        if (args.start_mode) |mode| {
+            app.startNewRun(app.liveRunConfig(mode, if (mode == .quests) args.quest_level_key else null));
+        }
         return app;
     }
 
@@ -3183,6 +3187,8 @@ const WindowArgs = struct {
     height: ?i32 = null,
     fps: i32 = 60,
     windowed: ?bool = null,
+    start_mode: ?game_ids.GameModeId = null,
+    quest_level_key: ?i32 = null,
     base_dir: ?[]const u8 = null,
     assets_dir: ?[]const u8 = null,
 };
@@ -3291,6 +3297,26 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
             parsed.windowed = false;
             continue;
         }
+        if (std.mem.eql(u8, arg, "--start-mode")) {
+            index += 1;
+            if (index >= args.len) return error.InvalidArgs;
+            parsed.start_mode = try parseWindowStartMode(args[index]);
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--start-mode=")) {
+            parsed.start_mode = try parseWindowStartMode(arg["--start-mode=".len..]);
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--quest-level")) {
+            index += 1;
+            if (index >= args.len) return error.InvalidArgs;
+            parsed.quest_level_key = try parseWindowQuestLevel(args[index]);
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--quest-level=")) {
+            parsed.quest_level_key = try parseWindowQuestLevel(arg["--quest-level=".len..]);
+            continue;
+        }
         if (std.mem.eql(u8, arg, "--base-dir") or std.mem.eql(u8, arg, "--runtime-dir")) {
             index += 1;
             if (index >= args.len) return error.InvalidArgs;
@@ -3317,12 +3343,15 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
         }
         if (std.mem.eql(u8, arg, "--help")) {
             std.debug.print(
-                "usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--windowed|--fullscreen] [--base-dir PATH] [--assets-dir PATH]\n",
+                "usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--windowed|--fullscreen] [--start-mode MODE] [--quest-level M.N] [--base-dir PATH] [--assets-dir PATH]\n",
                 .{},
             );
             std.process.exit(0);
         }
         return error.InvalidArgs;
+    }
+    if (parsed.quest_level_key != null) {
+        if (parsed.start_mode == null or parsed.start_mode.? != .quests) return error.InvalidArgs;
     }
     return parsed;
 }
@@ -3337,6 +3366,21 @@ fn parsePositiveI32(raw: []const u8) !i32 {
     const value = std.fmt.parseInt(i64, raw, 10) catch return error.InvalidArgs;
     if (value < 1 or value > std.math.maxInt(i32)) return error.InvalidArgs;
     return @intCast(value);
+}
+
+fn parseWindowStartMode(raw: []const u8) !game_ids.GameModeId {
+    const value = std.mem.trim(u8, raw, " \t\r\n");
+    if (std.ascii.eqlIgnoreCase(value, "survival")) return .survival;
+    if (std.ascii.eqlIgnoreCase(value, "rush")) return .rush;
+    if (std.ascii.eqlIgnoreCase(value, "quests") or std.ascii.eqlIgnoreCase(value, "quest")) return .quests;
+    if (std.ascii.eqlIgnoreCase(value, "typo")) return .typo;
+    if (std.ascii.eqlIgnoreCase(value, "tutorial")) return .tutorial;
+    return error.InvalidArgs;
+}
+
+fn parseWindowQuestLevel(raw: []const u8) !i32 {
+    const level = quest_level_mod.QuestLevel.parse(raw) catch return error.InvalidArgs;
+    return level.levelKey();
 }
 
 fn initialScreenForArgs(args: WindowArgs) Screen {
@@ -4892,6 +4936,19 @@ test "window args parse launch display mode override" {
     try std.testing.expectEqual(@as(?bool, true), last_flag_wins.windowed);
 }
 
+test "window args parse direct start mode" {
+    const survival = try parseWindowArgs(&.{ "crimson-zig-window", "--start-mode", "survival" });
+    try std.testing.expectEqual(@as(?game_ids.GameModeId, .survival), survival.start_mode);
+    try std.testing.expectEqual(@as(?i32, null), survival.quest_level_key);
+
+    const quest = try parseWindowArgs(&.{ "crimson-zig-window", "--start-mode=quests", "--quest-level", "2.4" });
+    try std.testing.expectEqual(@as(?game_ids.GameModeId, .quests), quest.start_mode);
+    try std.testing.expectEqual(@as(?i32, 204), quest.quest_level_key);
+
+    const typo = try parseWindowArgs(&.{ "crimson-zig-window", "--start-mode", "TyPo" });
+    try std.testing.expectEqual(@as(?game_ids.GameModeId, .typo), typo.start_mode);
+}
+
 test "window args parse runtime and assets dirs" {
     const separate = try parseWindowArgs(&.{
         "crimson-zig-window",
@@ -4921,6 +4978,11 @@ test "window args reject invalid seed" {
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--width" }));
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--height", "0" }));
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--fps=-1" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--start-mode" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--start-mode", "arena" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--quest-level", "1.1" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--start-mode", "survival", "--quest-level", "1.1" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--start-mode=quests", "--quest-level=5.11" }));
 }
 
 test "window args reject unknown flags" {
