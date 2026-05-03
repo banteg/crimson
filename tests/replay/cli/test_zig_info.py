@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 from typing import Any, cast
@@ -48,6 +49,21 @@ def test_zig_replay_info_matches_python_human_output_on_simple_replay(tmp_path: 
 
     assert zig_result.returncode == 0, dbg_record._command_detail(zig_result)
     assert zig_result.stdout == python_result.output
+
+
+def test_zig_replay_info_accepts_relative_base_dir(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    write_replay(tmp_path / "replays", replay=replay, name="relative.crd")
+    relative_base = os.path.relpath(tmp_path, dbg_record._REPO_ROOT)
+
+    zig_payload = _run_zig_replay_info(
+        ["relative.crd", "--base-dir", relative_base, "--format", "json"],
+    )
+
+    assert zig_payload["status"] == "ok"
+    assert zig_payload["replay"] == f"{relative_base}/replays/relative.crd"
+    summary = cast("dict[str, Any]", zig_payload["summary"])
+    assert summary["ticks_simulated"] == 2
 
 
 def test_zig_replay_info_matches_python_json_payload_on_quest_replay(tmp_path: Path) -> None:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -45,6 +46,20 @@ def test_zig_replay_verify_checkpoints_accepts_python_sidecar(tmp_path: Path) ->
     write_checkpoint_sidecar(replay_path, replay)
 
     result = _run_zig_replay_verify_checkpoints([str(replay_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "ok: 1 checkpoints match; ticks=3 score_xp=0 kills=0" in result.stdout
+
+
+def test_zig_replay_verify_checkpoints_accepts_relative_base_dir(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    replay_path = write_replay(tmp_path / "replays", replay=replay, name="relative.crd")
+    write_checkpoint_sidecar(replay_path, replay)
+    relative_base = os.path.relpath(tmp_path, dbg_record._REPO_ROOT)
+
+    result = _run_zig_replay_verify_checkpoints(
+        ["relative.crd", "--base-dir", relative_base],
+    )
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "ok: 1 checkpoints match; ticks=3 score_xp=0 kills=0" in result.stdout

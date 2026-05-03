@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -84,6 +85,32 @@ def test_zig_replay_benchmark_emits_json_payload(tmp_path: Path) -> None:
     assert payload["benchmark"]["ticks_per_second"]["max"] >= payload["benchmark"]["ticks_per_second"]["min"] >= 0.0
     assert payload["profile"] is None
     assert payload["render_telemetry"] is None
+
+
+def test_zig_replay_benchmark_accepts_relative_base_dir(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    write_replay(tmp_path / "replays", replay=replay, name="relative.crd")
+    relative_base = os.path.relpath(tmp_path, dbg_record._REPO_ROOT)
+
+    result = _run_zig_replay_benchmark(
+        [
+            "relative.crd",
+            "--base-dir",
+            relative_base,
+            "--runs",
+            "1",
+            "--warmup-runs",
+            "0",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "ok"
+    assert payload["replay"] == f"{relative_base}/replays/relative.crd"
+    assert payload["run_result"]["ticks"] == 2
 
 
 def test_zig_replay_benchmark_matches_python_stable_json_payload(tmp_path: Path) -> None:
