@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import shutil
-from collections.abc import Callable
 from pathlib import Path
-
-import msgspec
 
 from grim.raylib_api import rl
 
@@ -15,13 +12,32 @@ SCREENSHOT_DIR = Path("screenshots")
 SCREENSHOT_KEY = rl.KeyboardKey.KEY_F12
 
 
-def _false_hook() -> bool:
-    return False
+class RunViewHooks:
+    def should_close(self) -> bool:
+        return False
+
+    def consume_screenshot_request(self) -> bool:
+        return False
 
 
-class RunViewHooks(msgspec.Struct, frozen=True):
-    should_close: Callable[[], bool] = _false_hook
-    consume_screenshot_request: Callable[[], bool] = _false_hook
+class ViewRunHooks(RunViewHooks):
+    def __init__(self, view: object) -> None:
+        self._view = view
+
+    def should_close(self) -> bool:
+        should_close_fn = getattr(self._view, "should_close", None)
+        if callable(should_close_fn):
+            return bool(should_close_fn())
+        close_requested = getattr(self._view, "close_requested", False)
+        if isinstance(close_requested, bool):
+            return close_requested
+        return False
+
+    def consume_screenshot_request(self) -> bool:
+        consume_fn = getattr(self._view, "consume_screenshot_request", None)
+        if callable(consume_fn):
+            return bool(consume_fn())
+        return False
 
 
 def _next_screenshot_index(directory: Path) -> int:

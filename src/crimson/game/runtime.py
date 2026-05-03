@@ -7,7 +7,7 @@ import webbrowser
 from pathlib import Path
 
 from grim import music
-from grim.app import RunViewHooks, run_view
+from grim.app import ViewRunHooks, run_view
 from grim.config import ensure_crimson_cfg
 from grim.console import (
     CommandHandler,
@@ -330,10 +330,7 @@ def run_game(config: GameConfig) -> None:
             fps=config.fps,
             config_flags=config_flags,
             exit_key=rl.KeyboardKey.KEY_NULL,
-            hooks=RunViewHooks(
-                should_close=view.should_close,
-                consume_screenshot_request=view.consume_screenshot_request,
-            ),
+            hooks=ViewRunHooks(view),
         )
         if state is not None:
             state.status.save_if_dirty()
