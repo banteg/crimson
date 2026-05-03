@@ -1080,6 +1080,9 @@ const App = struct {
     next_seed_state: u32 = 0xC0FFEE,
     next_seed_override: ?u32 = null,
     player_count_override: ?i32 = null,
+    detail_preset_override: ?i32 = null,
+    gore_disabled_override: ?bool = null,
+    hardcore_override: ?bool = null,
     cursor_pulse_time: f32 = 0.0,
     demo_enabled: bool = false,
     preserve_bugs: bool = false,
@@ -1107,6 +1110,9 @@ const App = struct {
             .preserve_bugs = args.preserve_bugs,
             .next_seed_override = args.seed,
             .player_count_override = args.player_count,
+            .detail_preset_override = args.detail_preset,
+            .gore_disabled_override = args.gore_disabled,
+            .hardcore_override = args.hardcore,
         };
         app.boot.reset();
         app.menu.reset();
@@ -1115,7 +1121,9 @@ const App = struct {
         }
         app.loadAssets();
         if (args.start_mode) |mode| {
-            app.startNewRun(app.liveRunConfig(mode, if (mode == .quests) args.quest_level_key else null));
+            var run_config = app.liveRunConfig(mode, if (mode == .quests) args.quest_level_key else null);
+            if (args.quest_fail_retry_count) |count| run_config.quest_fail_retry_count = count;
+            app.startNewRun(run_config);
         }
         return app;
     }
@@ -2333,9 +2341,9 @@ const App = struct {
         else
             self.player_count_override orelse @as(i32, @intCast(self.runtime.config.player_count));
         configured_run.player_count = livePlayerCountForMode(configured_run.game_mode, requested_player_count);
-        configured_run.detail_preset = @intCast(std.math.clamp(self.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5)));
-        configured_run.gore_disabled = @intCast(self.runtime.config.gore_disabled);
-        configured_run.hardcore = self.runtime.config.hardcore_flag != 0;
+        configured_run.detail_preset = self.detail_preset_override orelse @as(i32, @intCast(std.math.clamp(self.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5))));
+        configured_run.gore_disabled = if (self.gore_disabled_override) |disabled| @intFromBool(disabled) else @intCast(self.runtime.config.gore_disabled);
+        configured_run.hardcore = self.hardcore_override orelse (self.runtime.config.hardcore_flag != 0);
         configured_run.preserve_bugs = configured_run.preserve_bugs or self.preserve_bugs;
         configured_run.status_quest_unlock_index = @intCast(self.runtime.status.quest_unlock_index);
         configured_run.status_quest_unlock_index_full = @intCast(self.runtime.status.quest_unlock_index_full);
@@ -3192,6 +3200,10 @@ const WindowArgs = struct {
     start_mode: ?game_ids.GameModeId = null,
     quest_level_key: ?i32 = null,
     player_count: ?i32 = null,
+    detail_preset: ?i32 = null,
+    gore_disabled: ?bool = null,
+    hardcore: ?bool = null,
+    quest_fail_retry_count: ?i32 = null,
     base_dir: ?[]const u8 = null,
     assets_dir: ?[]const u8 = null,
 };
@@ -3330,6 +3342,42 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
             parsed.player_count = try parseWindowPlayerCount(arg["--players=".len..]);
             continue;
         }
+        if (std.mem.eql(u8, arg, "--detail")) {
+            index += 1;
+            if (index >= args.len) return error.InvalidArgs;
+            parsed.detail_preset = try parseWindowDetailPreset(args[index]);
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--detail=")) {
+            parsed.detail_preset = try parseWindowDetailPreset(arg["--detail=".len..]);
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--gore")) {
+            parsed.gore_disabled = false;
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--no-gore")) {
+            parsed.gore_disabled = true;
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--hardcore")) {
+            parsed.hardcore = true;
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--normal")) {
+            parsed.hardcore = false;
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--quest-retry-count")) {
+            index += 1;
+            if (index >= args.len) return error.InvalidArgs;
+            parsed.quest_fail_retry_count = try parseWindowQuestRetryCount(args[index]);
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--quest-retry-count=")) {
+            parsed.quest_fail_retry_count = try parseWindowQuestRetryCount(arg["--quest-retry-count=".len..]);
+            continue;
+        }
         if (std.mem.eql(u8, arg, "--base-dir") or std.mem.eql(u8, arg, "--runtime-dir")) {
             index += 1;
             if (index >= args.len) return error.InvalidArgs;
@@ -3356,7 +3404,7 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
         }
         if (std.mem.eql(u8, arg, "--help")) {
             std.debug.print(
-                "usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--windowed|--fullscreen] [--start-mode MODE] [--quest-level M.N] [--players N] [--base-dir PATH] [--assets-dir PATH]\n",
+                "usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--windowed|--fullscreen] [--start-mode MODE] [--quest-level M.N] [--players N] [--detail N] [--gore|--no-gore] [--hardcore|--normal] [--quest-retry-count N] [--base-dir PATH] [--assets-dir PATH]\n",
                 .{},
             );
             std.process.exit(0);
@@ -3364,6 +3412,9 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
         return error.InvalidArgs;
     }
     if (parsed.quest_level_key != null) {
+        if (parsed.start_mode == null or parsed.start_mode.? != .quests) return error.InvalidArgs;
+    }
+    if (parsed.quest_fail_retry_count != null) {
         if (parsed.start_mode == null or parsed.start_mode.? != .quests) return error.InvalidArgs;
     }
     return parsed;
@@ -3400,6 +3451,24 @@ fn parseWindowPlayerCount(raw: []const u8) !i32 {
     const value = try parsePositiveI32(raw);
     if (value > @as(i32, @intCast(state_mod.max_players))) return error.InvalidArgs;
     return value;
+}
+
+fn parseWindowDetailPreset(raw: []const u8) !i32 {
+    const value = try parsePositiveI32(raw);
+    if (value > 5) return error.InvalidArgs;
+    return value;
+}
+
+fn parseWindowQuestRetryCount(raw: []const u8) !i32 {
+    const value = try parseNonNegativeI32(raw);
+    if (value > 5) return error.InvalidArgs;
+    return value;
+}
+
+fn parseNonNegativeI32(raw: []const u8) !i32 {
+    const value = std.fmt.parseInt(i64, raw, 10) catch return error.InvalidArgs;
+    if (value < 0 or value > std.math.maxInt(i32)) return error.InvalidArgs;
+    return @intCast(value);
 }
 
 fn initialScreenForArgs(args: WindowArgs) Screen {
@@ -4977,6 +5046,28 @@ test "window args parse player count override" {
     try std.testing.expectEqual(@as(?i32, 4), joined.player_count);
 }
 
+test "window args parse live run modifier overrides" {
+    const args = try parseWindowArgs(&.{
+        "crimson-zig-window",
+        "--start-mode=quests",
+        "--quest-level=3.2",
+        "--detail",
+        "4",
+        "--no-gore",
+        "--hardcore",
+        "--quest-retry-count",
+        "2",
+    });
+    try std.testing.expectEqual(@as(?i32, 4), args.detail_preset);
+    try std.testing.expectEqual(@as(?bool, true), args.gore_disabled);
+    try std.testing.expectEqual(@as(?bool, true), args.hardcore);
+    try std.testing.expectEqual(@as(?i32, 2), args.quest_fail_retry_count);
+
+    const last_flags_win = try parseWindowArgs(&.{ "crimson-zig-window", "--gore", "--no-gore", "--hardcore", "--normal" });
+    try std.testing.expectEqual(@as(?bool, true), last_flags_win.gore_disabled);
+    try std.testing.expectEqual(@as(?bool, false), last_flags_win.hardcore);
+}
+
 test "window args parse runtime and assets dirs" {
     const separate = try parseWindowArgs(&.{
         "crimson-zig-window",
@@ -5014,6 +5105,14 @@ test "window args reject invalid seed" {
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--players" }));
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--players", "0" }));
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--players=5" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--detail" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--detail", "0" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--detail=6" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--quest-retry-count" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--quest-retry-count", "-1" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--quest-retry-count=6" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--start-mode", "survival", "--quest-retry-count", "1" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--quest-retry-count", "1" }));
 }
 
 test "window args reject unknown flags" {
