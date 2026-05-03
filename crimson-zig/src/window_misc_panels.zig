@@ -2,6 +2,7 @@ const std = @import("std");
 const rl = @import("raylib");
 
 const cz = @import("crimson_zig");
+const quest_level_mod = cz.quest_level;
 const room_code = cz.net.room_code;
 
 const window_assets = @import("window_assets.zig");
@@ -14,7 +15,7 @@ const max_mod_lines: usize = 16;
 const max_line_bytes: usize = 224;
 const max_shown_mod_dlls: usize = 10;
 const max_mod_dll_name_bytes: usize = 128;
-const network_row_count: usize = 7;
+const network_row_count: usize = 8;
 const network_status_bytes: usize = 96;
 const network_join_endpoint_max_bytes: usize = 48;
 const default_network_port: u16 = 31993;
@@ -45,6 +46,7 @@ const NetworkSelection = enum(u8) {
     role,
     mode,
     players,
+    quest_level,
     netcode,
     endpoint,
     room_code,
@@ -77,6 +79,7 @@ pub const NetworkLaunchRequest = struct {
     role: NetworkLaunchRole,
     mode_id: i32,
     player_count: i32,
+    quest_level: ?quest_level_mod.QuestLevel = null,
     netcode: NetworkLaunchNetcode,
     bind_host: []const u8 = "0.0.0.0",
     host: []const u8 = "127.0.0.1",
@@ -190,6 +193,10 @@ fn networkRoomCodeInput(default_code: []const u8) NetworkRoomCodeInput {
     };
     input.set(default_code);
     return input;
+}
+
+fn defaultNetworkQuestLevel() quest_level_mod.QuestLevel {
+    return quest_level_mod.QuestLevel.init(1, 1) catch unreachable;
 }
 
 const NetworkEndpoint = struct {
@@ -316,6 +323,7 @@ pub const NetworkState = struct {
     role: NetworkRole = .host,
     mode: NetworkMode = .survival,
     player_count: i32 = 2,
+    quest_level: quest_level_mod.QuestLevel = defaultNetworkQuestLevel(),
     netcode: NetworkNetcode = .rollback,
     room_code_input: NetworkRoomCodeInput = networkRoomCodeInput(default_network_room_code),
     relay_endpoint: NetworkJoinEndpointInput = networkEndpointInput(default_network_join_endpoint),
@@ -441,10 +449,11 @@ fn drawNetworkPanel(state: *const NetworkState, assets: *const window_assets.Run
     drawNetworkRow(assets, animated_rect, 0, state.selection == .role, "Role", networkRoleLabel(state.role), &line_buf);
     drawNetworkRow(assets, animated_rect, 1, state.selection == .mode, "Mode", networkModeValueLabel(state), &line_buf);
     drawNetworkRow(assets, animated_rect, 2, state.selection == .players, "Players", networkPlayersValueLabel(state, &value_buf), &line_buf);
-    drawNetworkRow(assets, animated_rect, 3, state.selection == .netcode, "Netcode", networkNetcodeLabel(state.netcode), &line_buf);
-    drawNetworkRow(assets, animated_rect, 4, state.selection == .endpoint, networkEndpointLabel(state), networkEndpointValueLabel(state, &value_buf), &line_buf);
-    drawNetworkRow(assets, animated_rect, 5, state.selection == .room_code, "Code", networkCodeValueLabel(state), &line_buf);
-    drawNetworkRow(assets, animated_rect, 6, state.selection == .launch, "Launch", networkLaunchValueLabel(state), &line_buf);
+    drawNetworkRow(assets, animated_rect, 3, state.selection == .quest_level, "Quest", networkQuestValueLabel(state, &value_buf), &line_buf);
+    drawNetworkRow(assets, animated_rect, 4, state.selection == .netcode, "Netcode", networkNetcodeLabel(state.netcode), &line_buf);
+    drawNetworkRow(assets, animated_rect, 5, state.selection == .endpoint, networkEndpointLabel(state), networkEndpointValueLabel(state, &value_buf), &line_buf);
+    drawNetworkRow(assets, animated_rect, 6, state.selection == .room_code, "Code", networkCodeValueLabel(state), &line_buf);
+    drawNetworkRow(assets, animated_rect, 7, state.selection == .launch, "Launch", networkLaunchValueLabel(state), &line_buf);
 
     window_ui.drawSmallText(assets, network_runtime_scope_text, animated_rect.x + 96.0, animated_rect.y + 292.0, rl.Color.init(214, 190, 170, 255));
     if (state.status_len != 0) {
@@ -463,6 +472,7 @@ pub fn networkLaunchRequest(state: *const NetworkState) ?NetworkLaunchRequest {
                 },
                 .mode_id = networkModeId(state.mode),
                 .player_count = std.math.clamp(state.player_count, @as(i32, 1), @as(i32, 4)),
+                .quest_level = networkLaunchQuestLevel(state),
                 .netcode = .lockstep,
                 .bind_host = switch (state.role) {
                     .host => endpoint.host,
@@ -488,6 +498,7 @@ pub fn networkLaunchRequest(state: *const NetworkState) ?NetworkLaunchRequest {
                 },
                 .mode_id = networkModeId(state.mode),
                 .player_count = std.math.clamp(state.player_count, @as(i32, 1), @as(i32, 4)),
+                .quest_level = networkLaunchQuestLevel(state),
                 .netcode = .rollback,
                 .bind_host = "0.0.0.0",
                 .host = endpoint.host,
@@ -610,9 +621,10 @@ fn networkSelectionFromIndex(index: usize) NetworkSelection {
         0 => .role,
         1 => .mode,
         2 => .players,
-        3 => .netcode,
-        4 => .endpoint,
-        5 => .room_code,
+        3 => .quest_level,
+        4 => .netcode,
+        5 => .endpoint,
+        6 => .room_code,
         else => .launch,
     };
 }
@@ -635,6 +647,11 @@ fn changeSelectedNetworkValue(state: *NetworkState, direction: i32) void {
                 if (state.player_count > 4) state.player_count = 1;
             }
         },
+        .quest_level => {
+            if (state.role == .host and state.mode == .quests) {
+                state.quest_level = cycleNetworkQuestLevel(state.quest_level, direction);
+            }
+        },
         .netcode => {
             state.netcode = switch (state.netcode) {
                 .rollback => .lockstep,
@@ -645,6 +662,15 @@ fn changeSelectedNetworkValue(state: *NetworkState, direction: i32) void {
         .room_code => {},
         .launch => {},
     }
+}
+
+fn cycleNetworkQuestLevel(level: quest_level_mod.QuestLevel, direction: i32) quest_level_mod.QuestLevel {
+    const index = level.globalIndex();
+    const next_index = if (direction < 0)
+        @mod(index + quest_level_mod.quest_count - 1, quest_level_mod.quest_count)
+    else
+        @mod(index + 1, quest_level_mod.quest_count);
+    return quest_level_mod.QuestLevel.fromGlobalIndex(next_index) catch unreachable;
 }
 
 fn cycleNetworkMode(mode: NetworkMode, direction: i32) NetworkMode {
@@ -676,8 +702,14 @@ fn networkModeValueLabel(state: *const NetworkState) []const u8 {
     return switch (state.mode) {
         .survival => "Survival",
         .rush => "Rush",
-        .quests => "Quests 1.1",
+        .quests => "Quests",
     };
+}
+
+fn networkQuestValueLabel(state: *const NetworkState, scratch: *[96]u8) []const u8 {
+    if (state.role == .join) return "from lobby";
+    if (state.mode != .quests) return "n/a";
+    return state.quest_level.text(scratch[0..]) catch "";
 }
 
 fn networkModeId(mode: NetworkMode) i32 {
@@ -686,6 +718,11 @@ fn networkModeId(mode: NetworkMode) i32 {
         .rush => 2,
         .quests => 3,
     };
+}
+
+fn networkLaunchQuestLevel(state: *const NetworkState) ?quest_level_mod.QuestLevel {
+    if (state.mode != .quests) return null;
+    return state.quest_level;
 }
 
 fn networkNetcodeLabel(netcode: NetworkNetcode) []const u8 {
@@ -931,6 +968,7 @@ test "network panel defaults to host rollback session" {
     try std.testing.expectEqualStrings("Survival", networkModeValueLabel(&state));
     try std.testing.expectEqualStrings("Rollback ready.", state.statusText());
     var buf: [96]u8 = undefined;
+    try std.testing.expectEqualStrings("n/a", networkQuestValueLabel(&state, &buf));
     try std.testing.expectEqualStrings("Relay", networkEndpointLabel(&state));
     try std.testing.expectEqualStrings("127.0.0.1:31993", networkEndpointValueLabel(&state, &buf));
     try std.testing.expectEqualStrings("assigned by relay", networkCodeValueLabel(&state));
@@ -938,6 +976,7 @@ test "network panel defaults to host rollback session" {
 
 test "network panel cycles host mode and player count" {
     var state: NetworkState = .{ .selection = .mode };
+    var buf: [96]u8 = undefined;
 
     changeSelectedNetworkValue(&state, 1);
     try std.testing.expectEqual(NetworkMode.rush, state.mode);
@@ -950,6 +989,17 @@ test "network panel cycles host mode and player count" {
     try std.testing.expectEqual(@as(i32, 1), state.player_count);
     changeSelectedNetworkValue(&state, -1);
     try std.testing.expectEqual(@as(i32, 4), state.player_count);
+
+    state.mode = .quests;
+    state.selection = .quest_level;
+    try std.testing.expectEqualStrings("1.1", networkQuestValueLabel(&state, &buf));
+    changeSelectedNetworkValue(&state, 1);
+    try std.testing.expectEqualStrings("1.2", networkQuestValueLabel(&state, &buf));
+    changeSelectedNetworkValue(&state, -1);
+    try std.testing.expectEqualStrings("1.1", networkQuestValueLabel(&state, &buf));
+    state.quest_level = quest_level_mod.QuestLevel.init(5, 10) catch unreachable;
+    changeSelectedNetworkValue(&state, 1);
+    try std.testing.expectEqualStrings("1.1", networkQuestValueLabel(&state, &buf));
 }
 
 test "network panel join uses lobby-derived mode with editable rollback relay and room" {
@@ -957,6 +1007,7 @@ test "network panel join uses lobby-derived mode with editable rollback relay an
     var buf: [96]u8 = undefined;
 
     try std.testing.expectEqualStrings("from lobby", networkModeValueLabel(&state));
+    try std.testing.expectEqualStrings("from lobby", networkQuestValueLabel(&state, &buf));
     try std.testing.expectEqualStrings("from lobby", networkPlayersValueLabel(&state, &buf));
     try std.testing.expectEqualStrings("Relay", networkEndpointLabel(&state));
     try std.testing.expectEqualStrings("127.0.0.1:31993", networkEndpointValueLabel(&state, &buf));
@@ -1045,6 +1096,7 @@ test "network panel builds launch requests for lockstep and rollback" {
     try std.testing.expectEqual(NetworkLaunchRole.host, rollback_host_default.role);
     try std.testing.expectEqual(NetworkLaunchNetcode.rollback, rollback_host_default.netcode);
     try std.testing.expect(rollback_host_default.room_code_text == null);
+    try std.testing.expect(rollback_host_default.quest_level == null);
     try std.testing.expectEqualStrings("Network session is not ready.", networkLaunchUnavailableMessage(&state));
 
     state.netcode = .lockstep;
@@ -1061,6 +1113,13 @@ test "network panel builds launch requests for lockstep and rollback" {
     const custom_host_request = networkLaunchRequest(&state) orelse return error.TestExpectedEqual;
     try std.testing.expectEqualStrings("127.0.0.1", custom_host_request.bind_host);
     try std.testing.expectEqual(@as(u16, 32011), custom_host_request.port);
+
+    state.mode = .quests;
+    state.quest_level = quest_level_mod.QuestLevel.init(2, 4) catch unreachable;
+    const quest_host_request = networkLaunchRequest(&state) orelse return error.TestExpectedEqual;
+    try std.testing.expectEqual(@as(i32, 3), quest_host_request.mode_id);
+    try std.testing.expectEqual(@as(i32, 204), quest_host_request.quest_level.?.levelKey());
+    state.mode = .survival;
 
     state.host_endpoint.set("127.0.0.1:0");
     try std.testing.expect(networkLaunchRequest(&state) == null);

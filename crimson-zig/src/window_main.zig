@@ -250,6 +250,7 @@ const NetworkLiveRuntime = union(enum) {
                         .session_id = "window-lockstep",
                         .seed = seed,
                         .input_delay_ticks = 0,
+                        .quest_level = request.quest_level,
                         .host_ready = true,
                         .pump_options = .{ .first_timeout_ms = 0 },
                     }),
@@ -263,6 +264,7 @@ const NetworkLiveRuntime = union(enum) {
                         .build_id = cz.version,
                         .host_addr = try parseNetworkPeerAddr(request.host, request.port),
                         .input_delay_ticks = 0,
+                        .quest_level = request.quest_level,
                         .pump_options = .{ .first_timeout_ms = 0 },
                     }),
                 },
@@ -284,6 +286,7 @@ const NetworkLiveRuntime = union(enum) {
                             try cz.net.room_code.parseRoomCode(code_text)
                         else
                             null,
+                        .quest_level = request.quest_level,
                         .input_delay_ticks = 0,
                     },
                 }),
@@ -5251,6 +5254,49 @@ test "window network live runtime uses join request host endpoint" {
         .host = "example.invalid",
         .port = 31994,
     }, 123));
+}
+
+test "window network live runtime carries quest level into network sessions" {
+    const io = std.Io.Threaded.global_single_threaded.io();
+    const quest_level = try cz.quest_level.QuestLevel.init(2, 4);
+
+    var lockstep = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.quests),
+        .player_count = 2,
+        .quest_level = quest_level,
+        .netcode = .lockstep,
+        .bind_host = "127.0.0.1",
+        .port = 0,
+    }, 123);
+    defer lockstep.deinit(std.testing.allocator, io);
+
+    switch (lockstep) {
+        .host => |*host| {
+            const settings = host.session.runtime.lobby.sessionSettings();
+            try std.testing.expectEqual(@as(i32, 204), settings.quest_level.?.levelKey());
+        },
+        .client, .rollback => return error.TestUnexpectedResult,
+    }
+
+    var rollback = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.quests),
+        .player_count = 2,
+        .quest_level = quest_level,
+        .netcode = .rollback,
+        .bind_host = "127.0.0.1",
+        .host = "127.0.0.1",
+        .port = 31993,
+    }, 123);
+    defer rollback.deinit(std.testing.allocator, io);
+
+    switch (rollback) {
+        .rollback => |session| {
+            try std.testing.expectEqual(@as(i32, 204), session.session.options.quest_level.?.levelKey());
+        },
+        .host, .client => return error.TestUnexpectedResult,
+    }
 }
 
 test "window network live runtime opens rollback relay session" {
