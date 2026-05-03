@@ -452,6 +452,20 @@ const NetworkLiveRuntime = union(enum) {
     }
 };
 
+fn networkLaunchNetcodeLabel(netcode: window_misc_panels.NetworkLaunchNetcode) []const u8 {
+    return switch (netcode) {
+        .lockstep => "Lockstep",
+        .rollback => "Rollback",
+    };
+}
+
+fn networkLiveRuntimeLabel(session: *const NetworkLiveRuntime) []const u8 {
+    return switch (session.*) {
+        .host, .client => "Lockstep",
+        .rollback => "Rollback",
+    };
+}
+
 fn parseNetworkPeerAddr(host: []const u8, port: u16) !lockstep_session.PeerAddr {
     var parts: [4]u8 = undefined;
     var iter = std.mem.splitScalar(u8, host, '.');
@@ -1408,37 +1422,50 @@ const App = struct {
 
         const io = std.Io.Threaded.global_single_threaded.io();
         const seed: i32 = @bitCast(self.takeRunSeed());
+        const launch_label = networkLaunchNetcodeLabel(request.netcode);
         var session = NetworkLiveRuntime.init(request, seed) catch |err| {
-            self.network_session.setStatusFmt("Lockstep init failed: {s}", .{@errorName(err)});
+            self.network_session.setStatusFmt("{s} init failed: {s}", .{ launch_label, @errorName(err) });
             return;
         };
         session.start(self.allocator, io, monotonicMs(io)) catch |err| {
             session.deinit(self.allocator, io);
-            self.network_session.setStatusFmt("Lockstep open failed: {s}", .{@errorName(err)});
+            self.network_session.setStatusFmt("{s} open failed: {s}", .{ launch_label, @errorName(err) });
             return;
         };
 
         const port = session.boundPort();
         self.resetNetworkLiveInput();
         self.network_live_session = session;
-        switch (request.role) {
-            .host => self.network_session.setStatusFmt("Lockstep host listening on port {d}.", .{port}),
-            .join => self.network_session.setStatusFmt("Lockstep join sent hello from port {d}.", .{port}),
+        switch (request.netcode) {
+            .lockstep => switch (request.role) {
+                .host => self.network_session.setStatusFmt("Lockstep host listening on port {d}.", .{port}),
+                .join => self.network_session.setStatusFmt("Lockstep join sent hello from port {d}.", .{port}),
+            },
+            .rollback => switch (request.role) {
+                .host => self.network_session.setStatusFmt("Rollback room request sent from port {d}.", .{port}),
+                .join => self.network_session.setStatusFmt("Rollback join sent hello from port {d}.", .{port}),
+            },
         }
+    }
+
+    fn activeNetworkLiveLabel(self: *App) []const u8 {
+        const session = if (self.network_live_session) |*session| session else return "Network";
+        return networkLiveRuntimeLabel(session);
     }
 
     fn updateNetworkLiveSession(self: *App, frame_dt: f32) void {
         const io = std.Io.Threaded.global_single_threaded.io();
         const now_ms = monotonicMs(io);
         self.submitNetworkLiveInput(io, frame_dt, now_ms) catch |err| {
-            self.network_session.setStatusFmt("Lockstep input failed: {s}", .{@errorName(err)});
+            self.network_session.setStatusFmt("{s} input failed: {s}", .{ self.activeNetworkLiveLabel(), @errorName(err) });
             self.stopNetworkLiveSession();
             return;
         };
 
         const session = if (self.network_live_session) |*session| session else return;
+        const label = networkLiveRuntimeLabel(session);
         const net_update = session.update(self.allocator, io, now_ms) catch |err| {
-            self.network_session.setStatusFmt("Lockstep update failed: {s}", .{@errorName(err)});
+            self.network_session.setStatusFmt("{s} update failed: {s}", .{ label, @errorName(err) });
             self.stopNetworkLiveSession();
             return;
         };
@@ -1457,7 +1484,7 @@ const App = struct {
                     if (session.runConfigForResults()) |run_config| {
                         self.finishLiveRunner(runner, run_config, reason, null);
                     } else {
-                        self.network_session.setStatus("Lockstep match finished before results were available.");
+                        self.network_session.setStatusFmt("{s} match finished before results were available.", .{label});
                     }
                     self.stopNetworkLiveSession();
                     return;
@@ -1468,12 +1495,12 @@ const App = struct {
             if (net_update.last_tick_index) |tick_index| {
                 const local_slot = session.localInputSlot() orelse 0;
                 const local_flags = if (local_slot < net_update.last_player_count) net_update.last_input_flags[local_slot] else 0;
-                self.network_session.setStatusFmt("Lockstep tick={d} frames={d} flags=0x{x}.", .{ tick_index, net_update.frames_advanced, local_flags });
+                self.network_session.setStatusFmt("{s} tick={d} frames={d} flags=0x{x}.", .{ label, tick_index, net_update.frames_advanced, local_flags });
             } else {
-                self.network_session.setStatusFmt("Lockstep frames={d} ticks={d}.", .{ net_update.frames_advanced, net_update.ticks_advanced });
+                self.network_session.setStatusFmt("{s} frames={d} ticks={d}.", .{ label, net_update.frames_advanced, net_update.ticks_advanced });
             }
         } else if (net_update.stats.received != 0 or net_update.stats.sent != 0) {
-            self.network_session.setStatusFmt("Lockstep packets recv={d} sent={d}.", .{ net_update.stats.received, net_update.stats.sent });
+            self.network_session.setStatusFmt("{s} packets recv={d} sent={d}.", .{ label, net_update.stats.received, net_update.stats.sent });
         }
     }
 
@@ -5297,6 +5324,33 @@ test "window network live runtime carries quest level into network sessions" {
         },
         .host, .client => return error.TestUnexpectedResult,
     }
+}
+
+test "window network live status labels match netcode" {
+    try std.testing.expectEqualStrings("Lockstep", networkLaunchNetcodeLabel(.lockstep));
+    try std.testing.expectEqualStrings("Rollback", networkLaunchNetcodeLabel(.rollback));
+
+    var lockstep = try NetworkLiveRuntime.init(.{
+        .role = .join,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .lockstep,
+        .host = "127.0.0.1",
+        .port = 31993,
+    }, 123);
+    defer lockstep.deinit(std.testing.allocator, std.Io.Threaded.global_single_threaded.io());
+    try std.testing.expectEqualStrings("Lockstep", networkLiveRuntimeLabel(&lockstep));
+
+    var rollback = try NetworkLiveRuntime.init(.{
+        .role = .host,
+        .mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .player_count = 2,
+        .netcode = .rollback,
+        .host = "127.0.0.1",
+        .port = 31993,
+    }, 123);
+    defer rollback.deinit(std.testing.allocator, std.Io.Threaded.global_single_threaded.io());
+    try std.testing.expectEqualStrings("Rollback", networkLiveRuntimeLabel(&rollback));
 }
 
 test "window network live runtime opens rollback relay session" {
