@@ -3182,6 +3182,7 @@ const WindowArgs = struct {
     width: ?i32 = null,
     height: ?i32 = null,
     fps: i32 = 60,
+    windowed: ?bool = null,
     base_dir: ?[]const u8 = null,
     assets_dir: ?[]const u8 = null,
 };
@@ -3196,8 +3197,9 @@ pub fn main(init: std.process.Init) !void {
     runtime_paths.useAssetsDir(args.assets_dir);
     var runtime = try app_runtime.DesktopRuntime.init(allocator);
 
+    const initial_windowed = args.windowed orelse (runtime.config.windowed_flag != 0);
     rl.setConfigFlags(.{
-        .fullscreen_mode = runtime.config.windowed_flag == 0,
+        .fullscreen_mode = !initial_windowed,
     });
     const initial_width = args.width orelse runtime.windowWidth(window_width);
     const initial_height = args.height orelse runtime.windowHeight(window_height);
@@ -3281,6 +3283,14 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
             parsed.fps = try parsePositiveI32(arg["--fps=".len..]);
             continue;
         }
+        if (std.mem.eql(u8, arg, "--windowed")) {
+            parsed.windowed = true;
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--fullscreen")) {
+            parsed.windowed = false;
+            continue;
+        }
         if (std.mem.eql(u8, arg, "--base-dir") or std.mem.eql(u8, arg, "--runtime-dir")) {
             index += 1;
             if (index >= args.len) return error.InvalidArgs;
@@ -3307,7 +3317,7 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
         }
         if (std.mem.eql(u8, arg, "--help")) {
             std.debug.print(
-                "usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--base-dir PATH] [--assets-dir PATH]\n",
+                "usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--windowed|--fullscreen] [--base-dir PATH] [--assets-dir PATH]\n",
                 .{},
             );
             std.process.exit(0);
@@ -4869,6 +4879,17 @@ test "window args parse launch dimensions and fps" {
     try std.testing.expectEqual(@as(?i32, 800), joined.width);
     try std.testing.expectEqual(@as(?i32, 600), joined.height);
     try std.testing.expectEqual(@as(i32, 30), joined.fps);
+}
+
+test "window args parse launch display mode override" {
+    const windowed = try parseWindowArgs(&.{ "crimson-zig-window", "--windowed" });
+    try std.testing.expectEqual(@as(?bool, true), windowed.windowed);
+
+    const fullscreen = try parseWindowArgs(&.{ "crimson-zig-window", "--fullscreen" });
+    try std.testing.expectEqual(@as(?bool, false), fullscreen.windowed);
+
+    const last_flag_wins = try parseWindowArgs(&.{ "crimson-zig-window", "--fullscreen", "--windowed" });
+    try std.testing.expectEqual(@as(?bool, true), last_flag_wins.windowed);
 }
 
 test "window args parse runtime and assets dirs" {
