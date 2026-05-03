@@ -3179,6 +3179,8 @@ const WindowArgs = struct {
     preserve_bugs: bool = false,
     no_intro: bool = false,
     seed: ?u32 = null,
+    base_dir: ?[]const u8 = null,
+    assets_dir: ?[]const u8 = null,
 };
 
 pub fn main(init: std.process.Init) !void {
@@ -3187,6 +3189,8 @@ pub fn main(init: std.process.Init) !void {
     const allocator = init.gpa;
     const argv = try init.minimal.args.toSlice(init.arena.allocator());
     const args = try parseWindowArgs(argv);
+    runtime_paths.useRuntimeDir(args.base_dir);
+    runtime_paths.useAssetsDir(args.assets_dir);
     var runtime = try app_runtime.DesktopRuntime.init(allocator);
 
     rl.setConfigFlags(.{
@@ -3242,8 +3246,35 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
             parsed.seed = try parseWindowSeed(arg["--seed=".len..]);
             continue;
         }
+        if (std.mem.eql(u8, arg, "--base-dir") or std.mem.eql(u8, arg, "--runtime-dir")) {
+            index += 1;
+            if (index >= args.len) return error.InvalidArgs;
+            parsed.base_dir = args[index];
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--base-dir=")) {
+            parsed.base_dir = arg["--base-dir=".len..];
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--runtime-dir=")) {
+            parsed.base_dir = arg["--runtime-dir=".len..];
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--assets-dir")) {
+            index += 1;
+            if (index >= args.len) return error.InvalidArgs;
+            parsed.assets_dir = args[index];
+            continue;
+        }
+        if (std.mem.startsWith(u8, arg, "--assets-dir=")) {
+            parsed.assets_dir = arg["--assets-dir=".len..];
+            continue;
+        }
         if (std.mem.eql(u8, arg, "--help")) {
-            std.debug.print("usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N]\n", .{});
+            std.debug.print(
+                "usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N] [--base-dir PATH] [--assets-dir PATH]\n",
+                .{},
+            );
             std.process.exit(0);
         }
         return error.InvalidArgs;
@@ -4774,10 +4805,32 @@ test "window args parse seed flag" {
     try std.testing.expectEqual(@as(?u32, 0x1234), joined.seed);
 }
 
+test "window args parse runtime and assets dirs" {
+    const separate = try parseWindowArgs(&.{
+        "crimson-zig-window",
+        "--base-dir",
+        "runtime",
+        "--assets-dir",
+        "assets",
+    });
+    try std.testing.expectEqualStrings("runtime", separate.base_dir.?);
+    try std.testing.expectEqualStrings("assets", separate.assets_dir.?);
+
+    const joined = try parseWindowArgs(&.{
+        "crimson-zig-window",
+        "--runtime-dir=runtime2",
+        "--assets-dir=assets2",
+    });
+    try std.testing.expectEqualStrings("runtime2", joined.base_dir.?);
+    try std.testing.expectEqualStrings("assets2", joined.assets_dir.?);
+}
+
 test "window args reject invalid seed" {
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--seed" }));
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--seed", "nope" }));
     try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--seed", "0x100000000" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--base-dir" }));
+    try std.testing.expectError(error.InvalidArgs, parseWindowArgs(&.{ "crimson-zig-window", "--assets-dir" }));
 }
 
 test "window args reject unknown flags" {
