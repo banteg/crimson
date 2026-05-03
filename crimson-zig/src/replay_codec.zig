@@ -555,6 +555,34 @@ pub fn replayEventShapeFailureDetail(
     return legacyReplayEventShapeFailureDetail(allocator, payload);
 }
 
+pub fn replayUnknownCommandFailureDetail(
+    allocator: std.mem.Allocator,
+    payload: []const u8,
+) ReplayCodecError!?[]u8 {
+    var decoded = msgpack.decodeFromSlice(ReplayCurrentWire, allocator, payload) catch |err| {
+        return switch (err) {
+            error.OutOfMemory => error.OutOfMemory,
+            else => null,
+        };
+    };
+    defer decoded.deinit();
+
+    var event_index: usize = 0;
+    for (decoded.value.ticks, 0..) |tick, tick_index| {
+        for (tick.commands) |command| {
+            defer event_index += 1;
+            if (currentCommandKindKnown(command.type)) continue;
+            return std.fmt.allocPrint(
+                allocator,
+                "replay event command kind is unknown: type={s} tick={d} event_index={d}",
+                .{ command.type, tick_index, event_index },
+            ) catch return error.OutOfMemory;
+        }
+    }
+
+    return null;
+}
+
 fn replayEventKindAllowedInMode(event: ReplayEvent, game_mode: game_ids.GameModeId) bool {
     return switch (event) {
         .typo_char,
@@ -1620,6 +1648,14 @@ fn parseCurrentCommand(
         } };
     }
     return error.UnknownCommandKind;
+}
+
+fn currentCommandKindKnown(command_type: []const u8) bool {
+    return std.mem.eql(u8, command_type, "perk_menu_open") or
+        std.mem.eql(u8, command_type, "perk_pick") or
+        std.mem.eql(u8, command_type, "typo_char") or
+        std.mem.eql(u8, command_type, "typo_backspace") or
+        std.mem.eql(u8, command_type, "typo_submit");
 }
 
 fn currentReplayEventShapeFailureDetail(
@@ -2840,6 +2876,61 @@ test "parse current replay preserves typo metadata and commands" {
     try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_char_count);
     try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_backspace_count);
     try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_submit_count);
+}
+
+test "unknown current replay command detail names command type and position" {
+    const allocator = std.testing.allocator;
+
+    const tick_inputs = [_]ReplayInputWire{
+        .{
+            .move_x = 0.0,
+            .move_y = 0.0,
+            .aim_x = 0.0,
+            .aim_y = 0.0,
+            .flags = 0,
+        },
+    };
+    const ticks = [_]ReplayTickCurrentWire{
+        .{
+            .dt = 1.0 / 60.0,
+            .inputs = tick_inputs[0..],
+            .commands = &.{
+                .{
+                    .type = "network_ping",
+                    .player_index = 0,
+                },
+            },
+        },
+    };
+
+    const wire: ReplayCurrentWire = .{
+        .header = .{
+            .game_mode_id = @intFromEnum(game_ids.GameModeId.survival),
+            .seed = 7,
+            .replay_format_version = replay_format_version,
+            .game_version = "0.9.0",
+            .tick_rate = 60,
+            .player_count = 1,
+            .status = .{
+                .weapon_usage_counts = &([_]u32{0} ** weapon_usage_count),
+            },
+            .claimed_stats = .{},
+            .input_quantization = "f32",
+        },
+        .ticks = ticks[0..],
+    };
+
+    var writer: std.Io.Writer.Allocating = .init(allocator);
+    defer writer.deinit();
+    try msgpack.encode(wire, &writer.writer);
+
+    try std.testing.expectError(error.UnknownCommandKind, parseReplay(allocator, writer.written()));
+    const detail = (try replayUnknownCommandFailureDetail(allocator, writer.written())) orelse return error.TestExpectedDetail;
+    defer allocator.free(detail);
+    try std.testing.expectEqualStrings(
+        "replay event command kind is unknown: type=network_ping tick=0 event_index=0",
+        detail,
+    );
 }
 
 test "build header rejects world_size above i32 range" {

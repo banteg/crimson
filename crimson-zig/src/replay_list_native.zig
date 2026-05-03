@@ -381,6 +381,8 @@ fn buildReplayListRow(
             parse_detail = try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload);
         } else if (err == error.UnsupportedEventShape) {
             parse_detail = try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload);
+        } else if (err == error.UnknownCommandKind) {
+            parse_detail = try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload);
         }
         return buildInvalidReplayListRow(
             allocator,

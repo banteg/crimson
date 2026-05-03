@@ -655,6 +655,10 @@ fn loadReplayBytes(
             if (parse_detail) |detail| {
                 detail.* = try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload);
             }
+        } else if (err == error.UnknownCommandKind) {
+            if (parse_detail) |detail| {
+                detail.* = try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload);
+            }
         }
         return err;
     };

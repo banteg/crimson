@@ -348,7 +348,10 @@ def test_zig_replay_info_reports_unknown_command_as_replay_failure(tmp_path: Pat
 
     assert result.returncode == 1
     assert result.stdout == ""
-    assert "replay info failed: replay events include an unknown command kind" in result.stderr
+    assert (
+        "replay info failed: replay event command kind is unknown: "
+        "type=network_ping tick=0 event_index=0"
+    ) in result.stderr
     assert "replay info collector" not in result.stderr
 
 

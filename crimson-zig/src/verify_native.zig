@@ -209,6 +209,11 @@ fn runVerifyWithReplayBytes(
                 defer allocator.free(detail);
                 return buildVerifyFailedOutput(allocator, detail);
             }
+        } else if (err == error.UnknownCommandKind) {
+            if (try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload)) |detail| {
+                defer allocator.free(detail);
+                return buildVerifyFailedOutput(allocator, detail);
+            }
         }
         return buildOutputForReplayCodecError(allocator, err);
     };
