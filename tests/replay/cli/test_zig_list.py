@@ -18,6 +18,7 @@ from ._helpers import (
     write_current_bad_tick_player_count_replay,
     write_current_missing_perk_choice_replay,
     write_current_string_quest_level_replay,
+    write_current_unknown_command_replay,
     write_replay,
 )
 
@@ -105,6 +106,25 @@ def test_zig_replay_list_reports_event_shape_detail(tmp_path: Path) -> None:
         in result.stdout
     )
     assert "canonical wire shape" not in result.stdout
+
+
+def test_zig_replay_list_reports_unknown_command_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    write_current_unknown_command_replay(
+        tmp_path / "replays",
+        replay=replay,
+        name="unknown-command.crd",
+    )
+
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "unknown-command.crd invalid - - - - -" in result.stdout
+    assert (
+        "warning: unknown-command.crd: replay event command kind is unknown: "
+        "type=network_ping tick=0 event_index=0"
+    ) in result.stdout
+    assert "replay events include an unknown command kind" not in result.stdout
 
 
 def test_zig_replay_list_sorts_in_reverse_chronological_order(tmp_path: Path) -> None:
