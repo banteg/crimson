@@ -233,21 +233,21 @@ fn updatePlayGamePlayerList(state: *PlayGameState, config: *formats.crimson_cfg.
     return .{};
 }
 
-pub fn drawPlayGame(state: *const PlayGameState, runtime_assets: ?*const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32, demo_enabled: bool) void {
+pub fn drawPlayGame(state: *const PlayGameState, runtime_assets: ?*const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32, demo_enabled: bool, debug_enabled: bool) void {
     if (runtime_assets) |assets| {
         drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, playGameLayoutFromPlayerCount(player_count_raw, status, state.panel.timeline_ms, demo_enabled).panel_rect);
-        drawPlayGameContent(state, assets, status, player_count_raw, demo_enabled);
+        drawPlayGameContent(state, assets, status, player_count_raw, demo_enabled, debug_enabled);
         window_menu.drawPanelBackEntry(assets, state.panel.timeline_ms, state.back_hover_amount);
         return;
     }
     rl.clearBackground(panel_color);
 }
 
-fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32, demo_enabled: bool) void {
+fn drawPlayGameContent(state: *const PlayGameState, runtime_assets: *const window_assets.RuntimeAssets, status: formats.game_cfg.Status, player_count_raw: u32, demo_enabled: bool, debug_enabled: bool) void {
     const clamped_player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
     const layout = playGameLayoutFromPlayerCount(clamped_player_count, status, state.panel.timeline_ms, demo_enabled);
     const entries = playGameEntriesFromPlayerCount(clamped_player_count, status, demo_enabled);
-    const show_counts = rl.isKeyDown(.f1);
+    const show_counts = debugCountOverlayVisible(debug_enabled, rl.isKeyDown(.f1));
 
     drawAtlasLabelAt(runtime_assets, layout.title_pos.x, layout.title_pos.y, window_menu.label_row_play_game, rl.Color.white);
 
@@ -623,21 +623,21 @@ pub fn updateQuests(state: *QuestState, frame_dt: f32, config: *formats.crimson_
     };
 }
 
-pub fn drawQuests(state: *const QuestState, runtime_assets: ?*const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, demo_enabled: bool) void {
+pub fn drawQuests(state: *const QuestState, runtime_assets: ?*const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, demo_enabled: bool, debug_enabled: bool) void {
     if (runtime_assets) |assets| {
         drawMenuPanelShellNoTitle(state.panel.timeline_ms, assets, questLayout(state.panel.timeline_ms).panel_rect);
-        drawQuestContent(state, assets, config, status, demo_enabled);
+        drawQuestContent(state, assets, config, status, demo_enabled, debug_enabled);
         return;
     }
     rl.clearBackground(panel_color);
 }
 
-fn drawQuestContent(state: *const QuestState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, demo_enabled: bool) void {
+fn drawQuestContent(state: *const QuestState, runtime_assets: *const window_assets.RuntimeAssets, config: formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, demo_enabled: bool, debug_enabled: bool) void {
     const layout = questLayout(state.panel.timeline_ms);
     const title_tex = runtime_assets.texture(.ui_text_quest);
     const hovered_stage = hoveredQuestStage(layout);
     const hovered_row = hoveredQuestRow(layout, hardcoreUnlocked(status, demo_enabled));
-    const show_counts = rl.isKeyDown(.f1);
+    const show_counts = debugCountOverlayVisible(debug_enabled, rl.isKeyDown(.f1));
     rl.drawTexturePro(
         title_tex,
         rl.Rectangle.init(0.0, 0.0, @floatFromInt(title_tex.width), @floatFromInt(title_tex.height)),
@@ -849,6 +849,10 @@ fn questCounts(status: formats.game_cfg.Status, stage: i32, row: usize) QuestCou
     };
 }
 
+fn debugCountOverlayVisible(debug_enabled: bool, f1_down: bool) bool {
+    return debug_enabled and f1_down;
+}
+
 fn stage5GamesCount(status: formats.game_cfg.Status, stage: i32, minor: i32) u32 {
     if (stage != 5) return 0;
     const global_index = quest_status.questGlobalIndex(stage, minor) orelse return 0;
@@ -927,6 +931,13 @@ test "quest counts mirror native stage five overflow fields" {
     const row9 = questCounts(status, 5, 9);
     try std.testing.expectEqual(@as(u32, 0), row9.completed);
     try std.testing.expectEqual(@as(u32, 999), row9.games);
+}
+
+test "debug count overlays require debug flag and F1" {
+    try std.testing.expect(!debugCountOverlayVisible(false, false));
+    try std.testing.expect(!debugCountOverlayVisible(false, true));
+    try std.testing.expect(!debugCountOverlayVisible(true, false));
+    try std.testing.expect(debugCountOverlayVisible(true, true));
 }
 
 fn frameDeltaMs(frame_dt: f32) i32 {

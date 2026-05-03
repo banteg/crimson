@@ -1085,6 +1085,7 @@ const App = struct {
     hardcore_override: ?bool = null,
     cursor_pulse_time: f32 = 0.0,
     demo_enabled: bool = false,
+    debug_enabled: bool = false,
     preserve_bugs: bool = false,
     demo_trial_elapsed_ms: i32 = 0,
     demo_trial_info: demo_trial.OverlayInfo = .{},
@@ -1107,6 +1108,7 @@ const App = struct {
             .screen = initialScreenForArgs(args),
             .audio = live_audio.Bridge.init(allocator, audio_mod.audioConfigFromCrimsonCfg(runtime.config), null),
             .demo_enabled = args.demo_enabled,
+            .debug_enabled = args.debug_enabled,
             .preserve_bugs = args.preserve_bugs,
             .next_seed_override = args.seed,
             .player_count_override = args.player_count,
@@ -2690,6 +2692,7 @@ const App = struct {
             self.runtime.status,
             self.runtime.config.player_count,
             self.demo_enabled,
+            self.debug_enabled,
         );
     }
 
@@ -2700,6 +2703,7 @@ const App = struct {
             self.runtime.config,
             self.runtime.status,
             self.demo_enabled,
+            self.debug_enabled,
         );
     }
 
@@ -3190,6 +3194,7 @@ const App = struct {
 
 const WindowArgs = struct {
     demo_enabled: bool = false,
+    debug_enabled: bool = false,
     preserve_bugs: bool = false,
     no_intro: bool = false,
     seed: ?u32 = null,
@@ -3254,6 +3259,10 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
         const arg = args[index];
         if (std.mem.eql(u8, arg, "--demo")) {
             parsed.demo_enabled = true;
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--debug")) {
+            parsed.debug_enabled = true;
             continue;
         }
         if (std.mem.eql(u8, arg, "--preserve-bugs")) {
@@ -3404,7 +3413,7 @@ fn parseWindowArgs(args: []const []const u8) !WindowArgs {
         }
         if (std.mem.eql(u8, arg, "--help")) {
             std.debug.print(
-                "usage: crimson-zig-window [--demo] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--windowed|--fullscreen] [--start-mode MODE] [--quest-level M.N] [--players N] [--detail N] [--gore|--no-gore] [--hardcore|--normal] [--quest-retry-count N] [--base-dir PATH] [--assets-dir PATH]\n",
+                "usage: crimson-zig-window [--demo] [--debug] [--preserve-bugs] [--no-intro] [--seed N] [--width N] [--height N] [--fps N] [--windowed|--fullscreen] [--start-mode MODE] [--quest-level M.N] [--players N] [--detail N] [--gore|--no-gore] [--hardcore|--normal] [--quest-retry-count N] [--base-dir PATH] [--assets-dir PATH]\n",
                 .{},
             );
             std.process.exit(0);
@@ -4973,8 +4982,9 @@ test "boolAxis returns signed unit values without overflow" {
 }
 
 test "window args parse demo and no intro flags" {
-    const args = try parseWindowArgs(&.{ "crimson-zig-window", "--demo", "--preserve-bugs", "--no-intro" });
+    const args = try parseWindowArgs(&.{ "crimson-zig-window", "--demo", "--debug", "--preserve-bugs", "--no-intro" });
     try std.testing.expect(args.demo_enabled);
+    try std.testing.expect(args.debug_enabled);
     try std.testing.expect(args.preserve_bugs);
     try std.testing.expect(args.no_intro);
     try std.testing.expectEqual(Screen.main_menu, initialScreenForArgs(args));
