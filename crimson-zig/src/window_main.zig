@@ -2639,6 +2639,10 @@ const App = struct {
     }
 
     fn drawGameplay(self: *App) void {
+        self.drawGameplayWithEntityAlpha(1.0);
+    }
+
+    fn drawGameplayWithEntityAlpha(self: *App, entity_alpha: f32) void {
         rl.clearBackground(rl.Color.init(10, 10, 12, 255));
 
         if (self.gameplay) |*gameplay| {
@@ -2657,7 +2661,6 @@ const App = struct {
                     .y = @floatFromInt(rl.getScreenHeight()),
                 },
             );
-            const entity_alpha: f32 = 1.0;
             const fx_detail_0 = self.runtime.config.fx_detail_0 != 0;
             const fx_detail_1 = self.runtime.config.fx_detail_1 != 0;
             const fx_detail_2 = self.runtime.config.fx_detail_2 != 0;
@@ -2719,8 +2722,12 @@ const App = struct {
     }
 
     fn drawPause(self: *App) void {
-        self.drawGameplay();
-        if (self.gameplay) |gameplay| {
+        const entity_alpha = if (self.gameplay) |*gameplay|
+            window_pause_menu.pauseBackgroundEntityAlpha(&gameplay.pause_menu)
+        else
+            1.0;
+        self.drawGameplayWithEntityAlpha(entity_alpha);
+        if (self.gameplay) |*gameplay| {
             window_pause_menu.draw(&gameplay.pause_menu, if (self.runtime_assets) |*assets| assets else null);
         }
     }

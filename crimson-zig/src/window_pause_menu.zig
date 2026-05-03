@@ -15,6 +15,7 @@ const menu_label_base_y: f32 = 210.0;
 const menu_label_step: f32 = 60.0;
 const menu_item_offset_x: f32 = -71.0;
 const menu_item_offset_y: f32 = -59.0;
+const pause_menu_to_main_menu_fade_ms: i32 = 500;
 
 pub const Action = enum {
     open_options,
@@ -126,6 +127,12 @@ pub fn draw(state: *const State, runtime_assets: ?*const window_assets.RuntimeAs
     for (entries, 0..) |entry, idx| {
         drawEntry(state, assets, entry, idx, idx == state.selection);
     }
+}
+
+pub fn pauseBackgroundEntityAlpha(state: *const State) f32 {
+    if (!state.closing or state.close_action != .back_to_menu) return 1.0;
+    const alpha = @as(f32, @floatFromInt(state.timeline_ms)) / @as(f32, @floatFromInt(pause_menu_to_main_menu_fade_ms));
+    return std.math.clamp(alpha, 0.0, 1.0);
 }
 
 fn drawEntry(state: *const State, assets: *const window_assets.RuntimeAssets, entry: Entry, idx: usize, selected: bool) void {
@@ -315,4 +322,23 @@ test "pause menu open timeline emits panel click once when fully open" {
     state.panel_open_sfx_played = true;
     update_result = advanceTimeline(&state, 1);
     try std.testing.expect(!update_result.play_panel_click);
+}
+
+test "pause menu fades background entities only when closing to main menu" {
+    var state: State = .{};
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), pauseBackgroundEntityAlpha(&state), 0.001);
+
+    state.closing = true;
+    state.close_action = .back_to_previous;
+    state.timeline_ms = @divTrunc(pause_menu_to_main_menu_fade_ms, 2);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), pauseBackgroundEntityAlpha(&state), 0.001);
+
+    state.close_action = .back_to_menu;
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), pauseBackgroundEntityAlpha(&state), 0.001);
+
+    state.timeline_ms = -1;
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), pauseBackgroundEntityAlpha(&state), 0.001);
+
+    state.timeline_ms = pause_menu_to_main_menu_fade_ms * 2;
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), pauseBackgroundEntityAlpha(&state), 0.001);
 }
