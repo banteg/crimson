@@ -163,6 +163,90 @@ fn addClampedI32(left: i32, right: i32) i32 {
     return @intCast(result);
 }
 
+test "demo trial time formatting matches python shell contract" {
+    var buf: [16]u8 = undefined;
+    try std.testing.expectEqualStrings("0:00.00", formatDemoTrialTime(0, buf[0..]));
+    try std.testing.expectEqualStrings("0:12.34", formatDemoTrialTime(12_340, buf[0..]));
+    try std.testing.expectEqualStrings("1:00.00", formatDemoTrialTime(60_000, buf[0..]));
+    try std.testing.expectEqualStrings("0:00.00", formatDemoTrialTime(-1, buf[0..]));
+}
+
+test "demo trial overlay stays hidden outside demo builds" {
+    const info = demoTrialOverlayInfo(false, .survival, demo_total_play_time_ms, demo_quest_grace_time_ms, 410);
+    try std.testing.expect(!info.visible);
+    try std.testing.expectEqual(OverlayKind.none, info.kind);
+    try std.testing.expectEqual(@as(i32, 0), info.remaining_ms);
+    try std.testing.expect(!info.show_remaining_line);
+}
+
+test "demo trial overlay stays hidden in tutorial" {
+    const info = demoTrialOverlayInfo(true, .tutorial, demo_total_play_time_ms, demo_quest_grace_time_ms, 410);
+    try std.testing.expect(!info.visible);
+    try std.testing.expectEqual(OverlayKind.none, info.kind);
+    try std.testing.expectEqual(@as(i32, 0), info.remaining_ms);
+    try std.testing.expect(!info.show_remaining_line);
+}
+
+test "demo trial overlay shows time up when global time is exhausted" {
+    const info = demoTrialOverlayInfo(true, .survival, demo_total_play_time_ms, 0, 101);
+    try std.testing.expect(info.visible);
+    try std.testing.expectEqual(OverlayKind.time_up, info.kind);
+    try std.testing.expectEqual(@as(i32, 0), info.remaining_ms);
+    try std.testing.expect(!info.show_remaining_line);
+}
+
+test "demo trial overlay shows tier limit while global time remains" {
+    const info = demoTrialOverlayInfo(true, .quests, 0, 0, 201);
+    try std.testing.expect(info.visible);
+    try std.testing.expectEqual(OverlayKind.quest_tier_limit, info.kind);
+    try std.testing.expectEqual(@as(i32, demo_total_play_time_ms), info.remaining_ms);
+    try std.testing.expect(info.show_remaining_line);
+}
+
+test "demo trial overlay lets quest mode use grace time before tier limit" {
+    const info = demoTrialOverlayInfo(true, .quests, demo_total_play_time_ms, 1_000, 101);
+    try std.testing.expect(!info.visible);
+    try std.testing.expectEqual(OverlayKind.none, info.kind);
+    try std.testing.expectEqual(@as(i32, demo_quest_grace_time_ms - 1_000), info.remaining_ms);
+    try std.testing.expect(!info.show_remaining_line);
+}
+
+test "demo trial overlay shows tier limit during grace without global remaining line" {
+    const info = demoTrialOverlayInfo(true, .quests, demo_total_play_time_ms, 1_000, 201);
+    try std.testing.expect(info.visible);
+    try std.testing.expectEqual(OverlayKind.quest_tier_limit, info.kind);
+    try std.testing.expectEqual(@as(i32, demo_quest_grace_time_ms - 1_000), info.remaining_ms);
+    try std.testing.expect(!info.show_remaining_line);
+}
+
+test "demo trial timers ignore tutorial in demo builds" {
+    const result = tickDemoTrialTimers(true, .tutorial, false, demo_total_play_time_ms - 5, 0, 10);
+    try std.testing.expectEqual(@as(u32, @intCast(demo_total_play_time_ms - 5)), result.global_playtime_ms);
+    try std.testing.expectEqual(@as(i32, 0), result.quest_grace_elapsed_ms);
+}
+
+test "demo trial timers start grace after time limit" {
+    const result = tickDemoTrialTimers(true, .survival, false, demo_total_play_time_ms - 5, 0, 10);
+    try std.testing.expectEqual(@as(u32, @intCast(demo_total_play_time_ms)), result.global_playtime_ms);
+    try std.testing.expectEqual(@as(i32, 1), result.quest_grace_elapsed_ms);
+}
+
+test "demo trial timers start grace even while overlay visible" {
+    const result = tickDemoTrialTimers(true, .survival, true, demo_total_play_time_ms, 0, 0);
+    try std.testing.expectEqual(@as(u32, @intCast(demo_total_play_time_ms)), result.global_playtime_ms);
+    try std.testing.expectEqual(@as(i32, 1), result.quest_grace_elapsed_ms);
+}
+
+test "demo trial timers count grace only in quests" {
+    const quest_result = tickDemoTrialTimers(true, .quests, false, demo_total_play_time_ms, 1, 100);
+    try std.testing.expectEqual(@as(u32, @intCast(demo_total_play_time_ms)), quest_result.global_playtime_ms);
+    try std.testing.expectEqual(@as(i32, 101), quest_result.quest_grace_elapsed_ms);
+
+    const survival_result = tickDemoTrialTimers(true, .survival, false, demo_total_play_time_ms, 1, 100);
+    try std.testing.expectEqual(@as(u32, @intCast(demo_total_play_time_ms)), survival_result.global_playtime_ms);
+    try std.testing.expectEqual(@as(i32, 1), survival_result.quest_grace_elapsed_ms);
+}
+
 test "demo trial timers stop while overlay visible" {
     const result = tickDemoTrialTimers(true, .survival, true, 1000, 0, 500);
     try std.testing.expectEqual(@as(u32, 1000), result.global_playtime_ms);
