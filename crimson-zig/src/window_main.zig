@@ -68,6 +68,7 @@ const demo_attract_variant_count: i32 = 6;
 const demo_attract_limit_ms: i32 = 4_000;
 const demo_attract_purchase_screen_limit_ms: i32 = 16_000;
 const end_note_timeline_max_ms: i32 = 300;
+const network_lobby_panel_rect = rl.Rectangle.init(360.0, 168.0, 510.0, 378.0);
 const demo_upsell_messages = [_][:0]const u8{
     "Want more Levels?",
     "Want more Weapons?",
@@ -485,6 +486,8 @@ const NetworkLobbySummary = struct {
     started: bool = false,
 };
 
+const network_lobby_wait_dots = [_][]const u8{ "", ".", "..", "..." };
+
 fn expectedPlayerCount(player_count: i32) usize {
     return @intCast(std.math.clamp(player_count, @as(i32, 1), @as(i32, @intCast(state_mod.max_players))));
 }
@@ -576,6 +579,26 @@ fn networkLiveRuntimeLabel(session: *const NetworkLiveRuntime) []const u8 {
         .host, .client => "Lockstep",
         .rollback => "Rollback",
     };
+}
+
+fn networkLiveRoleLabel(session: *const NetworkLiveRuntime) []const u8 {
+    return switch (session.*) {
+        .host => "Host",
+        .client => "Client",
+        .rollback => |rollback| switch (rollback.session.options.role) {
+            .host => "Host",
+            .join => "Client",
+        },
+    };
+}
+
+fn networkLobbyConnectedText(summary: NetworkLobbySummary, elapsed_s: f32, scratch: *[32]u8) []const u8 {
+    const pulse = @as(usize, @intFromFloat(@floor(@max(elapsed_s, 0.0) * 2.5))) % network_lobby_wait_dots.len;
+    return std.fmt.bufPrint(scratch[0..], "{d}/{d}{s}", .{
+        @min(summary.connected, state_mod.max_players),
+        @min(@max(summary.expected, 1), state_mod.max_players),
+        network_lobby_wait_dots[pulse],
+    }) catch "";
 }
 
 fn parseNetworkPeerAddr(host: []const u8, port: u16) !lockstep_session.PeerAddr {
@@ -2571,7 +2594,80 @@ const App = struct {
         if (self.drawNetworkLiveScene(runtime_assets)) {
             return;
         }
+        if (self.network_live_session != null) {
+            self.drawNetworkLobby(runtime_assets);
+            return;
+        }
         window_misc_panels.drawNetwork(&self.network_session, runtime_assets);
+    }
+
+    fn drawNetworkLobby(self: *const App, runtime_assets: ?*const window_assets.RuntimeAssets) void {
+        const assets = runtime_assets orelse {
+            rl.clearBackground(rl.Color.black);
+            return;
+        };
+        const session = if (self.network_live_session) |*session| session else return;
+        const summary = session.lobbySummary() orelse NetworkLobbySummary{};
+
+        window_menu.drawMenuBackdrop(assets);
+        window_menu.drawSign(300, assets);
+        window_ui.drawClassicMenuPanel(assets.texture(.ui_menu_panel), network_lobby_panel_rect, rl.Color.white, false);
+
+        const panel = network_lobby_panel_rect;
+        const label_color = rl.Color.init(190, 190, 200, 230);
+        const value_color = rl.Color.init(225, 235, 247, 255);
+        const body_color = rl.Color.init(190, 210, 230, 220);
+        const dim_color = rl.Color.init(155, 175, 200, 255);
+
+        window_ui.drawSmallText(assets, "Network Lobby", panel.x + 174.0, panel.y + 40.0, rl.Color.white);
+        window_ui.drawSmallText(assets, "Waiting for peers to connect and ready up.", panel.x + 106.0, panel.y + 78.0, body_color);
+
+        const label_x = panel.x + 136.0;
+        const value_x = panel.x + 248.0;
+        var y = panel.y + 116.0;
+        var connected_buf: [32]u8 = undefined;
+        var ready_buf: [32]u8 = undefined;
+
+        self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Connected:", networkLobbyConnectedText(summary, self.network_live_render_time_s, &connected_buf), label_color, value_color);
+        y += 26.0;
+        const ready_text = std.fmt.bufPrint(ready_buf[0..], "{d}/{d}", .{
+            @min(summary.ready, state_mod.max_players),
+            @min(@max(summary.expected, 1), state_mod.max_players),
+        }) catch "";
+        self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Ready:", ready_text, label_color, value_color);
+        y += 26.0;
+        self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Role:", networkLiveRoleLabel(session), label_color, value_color);
+        y += 26.0;
+        self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Netcode:", networkLiveRuntimeLabel(session), label_color, value_color);
+        y += 26.0;
+        if (summary.room_code) |code| {
+            self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Code:", room_code.roomCodeSlice(&code), label_color, value_color);
+            y += 26.0;
+        }
+        if (summary.session_id.len != 0) {
+            self.drawNetworkLobbyRow(assets, label_x, value_x, y, "Session:", summary.session_id, label_color, dim_color);
+            y += 26.0;
+        }
+
+        if (self.network_session.status_len != 0) {
+            window_ui.drawSmallText(assets, self.network_session.statusText(), panel.x + 104.0, panel.y + 308.0, rl.Color.init(204, 204, 214, 255));
+        }
+    }
+
+    fn drawNetworkLobbyRow(
+        self: *const App,
+        assets: *const window_assets.RuntimeAssets,
+        label_x: f32,
+        value_x: f32,
+        y: f32,
+        label: []const u8,
+        value: []const u8,
+        label_color: rl.Color,
+        value_color: rl.Color,
+    ) void {
+        _ = self;
+        window_ui.drawSmallText(assets, label, label_x, y, label_color);
+        window_ui.drawSmallText(assets, value, value_x, y, value_color);
     }
 
     fn drawNetworkLiveScene(self: *App, runtime_assets: ?*const window_assets.RuntimeAssets) bool {
@@ -5501,6 +5597,7 @@ test "window network live status labels match netcode" {
     }, 123);
     defer lockstep.deinit(std.testing.allocator, std.Io.Threaded.global_single_threaded.io());
     try std.testing.expectEqualStrings("Lockstep", networkLiveRuntimeLabel(&lockstep));
+    try std.testing.expectEqualStrings("Client", networkLiveRoleLabel(&lockstep));
 
     var rollback = try NetworkLiveRuntime.init(.{
         .role = .host,
@@ -5512,6 +5609,14 @@ test "window network live status labels match netcode" {
     }, 123);
     defer rollback.deinit(std.testing.allocator, std.Io.Threaded.global_single_threaded.io());
     try std.testing.expectEqualStrings("Rollback", networkLiveRuntimeLabel(&rollback));
+    try std.testing.expectEqualStrings("Host", networkLiveRoleLabel(&rollback));
+}
+
+test "window network lobby connected text clamps counts and pulses" {
+    var buf: [32]u8 = undefined;
+
+    try std.testing.expectEqualStrings("1/2", networkLobbyConnectedText(.{ .connected = 1, .expected = 2 }, 0.0, &buf));
+    try std.testing.expectEqualStrings("4/4..", networkLobbyConnectedText(.{ .connected = 8, .expected = 9 }, 0.9, &buf));
 }
 
 test "window rollback live runtime exposes assigned room code for lobby status" {
