@@ -8,7 +8,7 @@ import statistics
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import Literal, Protocol, cast
+from typing import Any, Literal
 
 import msgspec
 from tqdm import tqdm
@@ -27,31 +27,108 @@ from .setup import RunResult
 
 ProfileSortKey = Literal["cumtime", "tottime"]
 HotspotSource = Literal["project", "all"]
+ReplayBenchmarkPhase = Literal["warmup", "measure", "profile", "telemetry"]
 
 
-class _ProgressBarLike(Protocol):
-    def update(self, value: int) -> None: ...
-
-    def set_postfix_str(self, s: str, refresh: bool = True) -> None: ...
-
-    def close(self) -> None: ...
-
-
-class _TickProgressObserver(PlaybackWalkObserver):
-    tick_progress_bar: _ProgressBarLike
+class ReplayBenchmarkTickProgress(PlaybackWalkObserver):
     tick_total: int
     completed_ticks: int = 0
+
+    def _advance(self, value: int) -> None:
+        _ = value
 
     def progress(self, next_tick_index: int) -> None:
         target_tick = max(0, min(int(self.tick_total), int(next_tick_index)))
         if target_tick <= int(self.completed_ticks):
             return
-        self.tick_progress_bar.update(target_tick - int(self.completed_ticks))
+        self._advance(target_tick - int(self.completed_ticks))
         self.completed_ticks = target_tick
 
+    def complete(self) -> None:
+        self.progress(int(self.tick_total))
 
-class _ProfileStatsLike(Protocol):
-    stats: dict[tuple[str, int, str], tuple[int, int, float, float, object]]
+    def close(self) -> None:
+        return None
+
+
+class ReplayBenchmarkProgress(msgspec.Struct):
+    def begin_ticks(self, *, tick_desc: str, tick_total: int) -> ReplayBenchmarkTickProgress | None:
+        _ = tick_desc, tick_total
+        return None
+
+    def complete_step(
+        self,
+        *,
+        phase: ReplayBenchmarkPhase,
+        sample_index: int | None = None,
+        sample_count: int | None = None,
+    ) -> None:
+        _ = phase, sample_index, sample_count
+
+    def close(self) -> None:
+        return None
+
+
+class _TqdmReplayBenchmarkTickProgress(ReplayBenchmarkTickProgress):
+    tick_bar: Any = None
+
+    def _advance(self, value: int) -> None:
+        self.tick_bar.update(int(value))
+
+    def close(self) -> None:
+        self.tick_bar.close()
+
+
+class _TqdmReplayBenchmarkProgress(ReplayBenchmarkProgress):
+    run_bar: Any
+    tqdm_factory: Any = tqdm
+
+    def begin_ticks(self, *, tick_desc: str, tick_total: int) -> ReplayBenchmarkTickProgress | None:
+        if int(tick_total) <= 0:
+            return None
+        return _TqdmReplayBenchmarkTickProgress(
+            tick_total=int(tick_total),
+            tick_bar=self.tqdm_factory(
+                total=int(tick_total),
+                unit="tick",
+                desc=str(tick_desc),
+                leave=False,
+            ),
+        )
+
+    def complete_step(
+        self,
+        *,
+        phase: ReplayBenchmarkPhase,
+        sample_index: int | None = None,
+        sample_count: int | None = None,
+    ) -> None:
+        self.run_bar.update(1)
+        postfix = f"phase={phase}"
+        if phase == "measure" and sample_index is not None and sample_count is not None:
+            postfix = f"{postfix} sample={int(sample_index)}/{int(sample_count)}"
+        self.run_bar.set_postfix_str(postfix, refresh=False)
+
+    def close(self) -> None:
+        self.run_bar.close()
+
+
+def _replay_benchmark_progress(
+    *,
+    show_progress: bool,
+    planned_steps: int,
+    desc: str,
+) -> ReplayBenchmarkProgress:
+    if not bool(show_progress) or int(planned_steps) <= 0:
+        return ReplayBenchmarkProgress()
+    return _TqdmReplayBenchmarkProgress(
+        run_bar=tqdm(
+            total=int(planned_steps),
+            unit="run",
+            desc=str(desc),
+            leave=False,
+        ),
+    )
 
 
 class ReplayBenchmarkError(ValueError):
@@ -227,53 +304,27 @@ def run_replay_render_benchmark(
     if max_ticks is not None:
         tick_total = min(tick_total, max(0, int(max_ticks)))
 
-    progress: _ProgressBarLike | None = None
+    progress = ReplayBenchmarkProgress()
     try:
         resources = load_runtime_resources(runtime_assets_dir)
         planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0) + (1 if telemetry_requested else 0)
-        if bool(show_progress) and planned_steps > 0:
-            progress = cast(
-                _ProgressBarLike,
-                tqdm(
-                    total=planned_steps,
-                    unit="run",
-                    desc="render benchmark",
-                    leave=False,
-                ),
-            )
+        progress = _replay_benchmark_progress(
+            show_progress=bool(show_progress),
+            planned_steps=planned_steps,
+            desc="render benchmark",
+        )
 
-        def _run_once_with_tick_progress(
+        def _run_once_with_progress(
             *,
             tick_desc: str,
             rtx: bool,
             telemetry_session: RenderTelemetrySession | None = None,
         ) -> _RenderOnceResult:
-            tick_progress: _ProgressBarLike | None = None
-            completed_ticks = 0
-            tick_callback: Callable[[int], None] | None = None
+            tick_progress = progress.begin_ticks(
+                tick_desc=str(tick_desc),
+                tick_total=tick_total,
+            )
             completed_run = False
-            if bool(show_progress) and tick_total > 0:
-                tick_progress_bar = cast(
-                    _ProgressBarLike,
-                    tqdm(
-                        total=tick_total,
-                        unit="tick",
-                        desc=str(tick_desc),
-                        leave=False,
-                    ),
-                )
-                tick_progress = tick_progress_bar
-
-                def _on_tick(tick_index: int) -> None:
-                    nonlocal completed_ticks
-                    target_tick = max(0, min(tick_total, int(tick_index)))
-                    if target_tick <= completed_ticks:
-                        return
-                    tick_progress_bar.update(target_tick - completed_ticks)
-                    completed_ticks = target_tick
-
-                tick_callback = _on_tick
-
             try:
                 result = _run_render_once(
                     ctx=ctx,
@@ -284,29 +335,27 @@ def run_replay_render_benchmark(
                     trace_rng=bool(trace_rng),
                     rtx=bool(rtx),
                     telemetry_session=telemetry_session,
-                    tick_progress_callback=tick_callback,
+                    observer=tick_progress,
                 )
                 completed_run = True
                 return result
             finally:
                 if tick_progress is not None:
-                    if completed_run and completed_ticks < tick_total:
-                        tick_progress.update(tick_total - completed_ticks)
+                    if completed_run:
+                        tick_progress.complete()
                     tick_progress.close()
 
         for _ in range(int(warmup_runs)):
-            _run_once_with_tick_progress(
+            _run_once_with_progress(
                 tick_desc="render ticks warmup",
                 rtx=bool(rtx),
             )
-            if progress is not None:
-                progress.update(1)
-                progress.set_postfix_str("phase=warmup", refresh=False)
+            progress.complete_step(phase="warmup")
 
         samples: list[BenchmarkSample] = []
         for sample_idx in range(int(runs)):
             start_ns = time.perf_counter_ns()
-            measured = _run_once_with_tick_progress(
+            measured = _run_once_with_progress(
                 tick_desc=f"render ticks sample {sample_idx + 1}/{int(runs)}",
                 rtx=bool(rtx),
             )
@@ -327,15 +376,17 @@ def run_replay_render_benchmark(
                 measured.run_result,
                 where=f"render run {sample_idx + 1}",
             )
-            if progress is not None:
-                progress.update(1)
-                progress.set_postfix_str(f"phase=measure sample={sample_idx + 1}/{int(runs)}", refresh=False)
+            progress.complete_step(
+                phase="measure",
+                sample_index=sample_idx + 1,
+                sample_count=int(runs),
+            )
 
         profile_result: ReplayProfileResult | None = None
         if bool(profile):
             prof = cProfile.Profile()
             prof.enable()
-            profiled = _run_once_with_tick_progress(
+            profiled = _run_once_with_progress(
                 tick_desc="render ticks profile",
                 rtx=bool(rtx),
             )
@@ -358,15 +409,13 @@ def run_replay_render_benchmark(
                 source=source,
                 hotspots=tuple(hotspots),
             )
-            if progress is not None:
-                progress.update(1)
-                progress.set_postfix_str("phase=profile", refresh=False)
+            progress.complete_step(phase="profile")
 
         telemetry_result: ReplayRenderTelemetryResult | None = None
         if telemetry_requested:
             telemetry_session = RenderTelemetrySession()
             with telemetry_session:
-                collected = _run_once_with_tick_progress(
+                collected = _run_once_with_progress(
                     tick_desc="render ticks telemetry",
                     rtx=bool(rtx),
                     telemetry_session=telemetry_session,
@@ -415,12 +464,9 @@ def run_replay_render_benchmark(
                 artifacts=artifacts,
                 preview=tuple(frames[:10]),
             )
-            if progress is not None:
-                progress.update(1)
-                progress.set_postfix_str("phase=telemetry", refresh=False)
+            progress.complete_step(phase="telemetry")
     finally:
-        if progress is not None:
-            progress.close()
+        progress.close()
         unload_runtime_resources(resources)
         if window_open:
             rl.close_window()
@@ -459,39 +505,21 @@ def run_replay_benchmark(
     if max_ticks is not None:
         tick_total = min(tick_total, max(0, int(max_ticks)))
 
-    progress: _ProgressBarLike | None = None
+    progress = ReplayBenchmarkProgress()
     try:
         planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0)
-        if bool(show_progress) and planned_steps > 0:
-            progress = cast(
-                _ProgressBarLike,
-                tqdm(
-                    total=planned_steps,
-                    unit="run",
-                    desc="headless benchmark",
-                    leave=False,
-                ),
-            )
+        progress = _replay_benchmark_progress(
+            show_progress=bool(show_progress),
+            planned_steps=planned_steps,
+            desc="headless benchmark",
+        )
 
-        def _run_once_with_tick_progress(*, tick_desc: str) -> RunResult:
-            tick_progress: _ProgressBarLike | None = None
-            tick_observer: _TickProgressObserver | None = None
+        def _run_once_with_progress(*, tick_desc: str) -> RunResult:
+            tick_progress = progress.begin_ticks(
+                tick_desc=str(tick_desc),
+                tick_total=tick_total,
+            )
             completed_run = False
-            if bool(show_progress) and tick_total > 0:
-                tick_progress_bar = cast(
-                    _ProgressBarLike,
-                    tqdm(
-                        total=tick_total,
-                        unit="tick",
-                        desc=str(tick_desc),
-                        leave=False,
-                    ),
-                )
-                tick_progress = tick_progress_bar
-                tick_observer = _TickProgressObserver(
-                    tick_progress_bar=tick_progress_bar,
-                    tick_total=tick_total,
-                )
 
             try:
                 driver = build_verify_playback_driver(
@@ -500,28 +528,25 @@ def run_replay_benchmark(
                     trace_rng=bool(trace_rng),
                 )
                 result = driver.run(
-                    observer=tick_observer,
+                    observer=tick_progress,
                 )
                 completed_run = True
                 return result
             finally:
                 if tick_progress is not None:
-                    completed_ticks = 0 if tick_observer is None else int(tick_observer.completed_ticks)
-                    if completed_run and completed_ticks < tick_total:
-                        tick_progress.update(tick_total - completed_ticks)
+                    if completed_run:
+                        tick_progress.complete()
                     tick_progress.close()
 
         for _ in range(int(warmup_runs)):
-            _run_once_with_tick_progress(tick_desc="headless ticks warmup")
-            if progress is not None:
-                progress.update(1)
-                progress.set_postfix_str("phase=warmup", refresh=False)
+            _run_once_with_progress(tick_desc="headless ticks warmup")
+            progress.complete_step(phase="warmup")
 
         baseline_result: RunResult | None = None
         samples: list[BenchmarkSample] = []
         for sample_idx in range(int(runs)):
             start_ns = time.perf_counter_ns()
-            result = _run_once_with_tick_progress(
+            result = _run_once_with_progress(
                 tick_desc=f"headless ticks sample {sample_idx + 1}/{int(runs)}",
             )
             elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
@@ -540,16 +565,18 @@ def run_replay_benchmark(
                 baseline_result = result
             else:
                 _assert_consistent_run_result(baseline_result, result, where=f"measured run {sample_idx + 1}")
-            if progress is not None:
-                progress.update(1)
-                progress.set_postfix_str(f"phase=measure sample={sample_idx + 1}/{int(runs)}", refresh=False)
+            progress.complete_step(
+                phase="measure",
+                sample_index=sample_idx + 1,
+                sample_count=int(runs),
+            )
 
         assert baseline_result is not None
         profile_result: ReplayProfileResult | None = None
         if bool(profile):
             prof = cProfile.Profile()
             prof.enable()
-            prof_result = _run_once_with_tick_progress(tick_desc="headless ticks profile")
+            prof_result = _run_once_with_progress(tick_desc="headless ticks profile")
             prof.disable()
             _assert_consistent_run_result(baseline_result, prof_result, where="profiled run")
 
@@ -565,12 +592,9 @@ def run_replay_benchmark(
                 source=source,
                 hotspots=tuple(hotspots),
             )
-            if progress is not None:
-                progress.update(1)
-                progress.set_postfix_str("phase=profile", refresh=False)
+            progress.complete_step(phase="profile")
     finally:
-        if progress is not None:
-            progress.close()
+        progress.close()
 
     wall_values = [sample.wall_ms for sample in samples]
     tps_values = [sample.ticks_per_second for sample in samples]
@@ -605,7 +629,7 @@ def _run_render_once(
     trace_rng: bool,
     rtx: bool,
     telemetry_session: RenderTelemetrySession | None = None,
-    tick_progress_callback: Callable[[int], None] | None = None,
+    observer: PlaybackWalkObserver | None = None,
 ) -> _RenderOnceResult:
     mode = ReplayPlaybackMode(
         ctx,
@@ -650,8 +674,8 @@ def _run_render_once(
             frame_ns = max(0, int(time.perf_counter_ns()) - int(frame_start_ns))
 
             tick_after = int(mode.tick_index)
-            if tick_progress_callback is not None:
-                tick_progress_callback(int(tick_after))
+            if observer is not None:
+                observer.progress(int(tick_after))
             if telemetry_session is not None:
                 telemetry_session.end_frame(
                     tick_index_after_update=int(tick_after),
@@ -744,9 +768,9 @@ def _extract_hotspots(
     sort_key: ProfileSortKey,
     top: int,
 ) -> tuple[HotspotSource, list[ReplayProfileHotspot]]:
-    stats = cast(_ProfileStatsLike, pstats.Stats(profile))
+    stats_data: Any = getattr(pstats.Stats(profile), "stats")
     rows: list[ReplayProfileHotspot] = []
-    for key, values in stats.stats.items():
+    for key, values in stats_data.items():
         file_name, line_number, function_name = key
         primitive_calls, total_calls, tottime, cumtime, _callers = values
         rows.append(
