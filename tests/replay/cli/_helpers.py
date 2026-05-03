@@ -165,6 +165,19 @@ def write_current_unknown_command_replay(tmp_path: Path, *, replay: Replay, name
     return replay_path
 
 
+def write_current_bad_event_player_index_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
+    raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
+    payload = msgspec.msgpack.decode(raw_payload)
+    payload["ticks"][0]["commands"] = [
+        {"type": "perk_menu_open", "player_index": payload["header"]["player_count"]},
+    ]
+
+    replay_path = tmp_path / name
+    replay_path.parent.mkdir(parents=True, exist_ok=True)
+    replay_path.write_bytes(msgspec.msgpack.encode(payload))
+    return replay_path
+
+
 def write_current_missing_quest_level_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
     raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
     payload = msgspec.msgpack.decode(raw_payload)

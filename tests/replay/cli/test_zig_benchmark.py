@@ -16,6 +16,7 @@ from crimson.sim.input_providers import PerkPickCommand
 from ._helpers import (
     build_replay,
     inject_tick_commands,
+    write_current_bad_event_player_index_replay,
     write_current_bad_tick_player_count_replay,
     write_current_missing_perk_choice_replay,
     write_current_typo_event_replay,
@@ -287,6 +288,25 @@ def test_zig_replay_benchmark_reports_event_shape_detail(tmp_path: Path) -> None
     assert result.stdout == ""
     assert "replay benchmark failed: replay event perk_pick missing choice_index: tick=0 event_index=0" in result.stderr
     assert "canonical wire shape" not in result.stderr
+
+
+def test_zig_replay_benchmark_reports_event_player_index_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = write_current_bad_event_player_index_replay(
+        tmp_path,
+        replay=replay,
+        name="event-player-index.crd",
+    )
+
+    result = _run_zig_replay_benchmark([str(replay_path), "--runs", "1", "--warmup-runs", "0"])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert (
+        "replay benchmark failed: replay event player_index out of range: 1 "
+        "(player_count=1, tick=0, event=perk_menu_open)"
+    ) in result.stderr
+    assert "native replay benchmark" not in result.stderr
 
 
 def test_zig_replay_benchmark_reports_event_ordering_detail(tmp_path: Path) -> None:
