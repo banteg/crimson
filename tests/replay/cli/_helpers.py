@@ -219,6 +219,17 @@ def write_current_bad_tick_player_count_replay(tmp_path: Path, *, replay: Replay
     return replay_path
 
 
+def write_current_missing_perk_choice_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
+    raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
+    payload = msgspec.msgpack.decode(raw_payload)
+    payload["ticks"][0]["commands"] = [{"type": "perk_pick", "player_index": 0}]
+
+    replay_path = tmp_path / name
+    replay_path.parent.mkdir(parents=True, exist_ok=True)
+    replay_path.write_bytes(msgspec.msgpack.encode(payload))
+    return replay_path
+
+
 def write_checkpoint_sidecar(
     replay_path: Path,
     replay: Replay,

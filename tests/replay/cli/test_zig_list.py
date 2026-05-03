@@ -13,7 +13,12 @@ from crimson.game_modes import GameMode
 from crimson.replay import ReplayClaimedStatsSnapshot
 from crimson.weapons import WeaponId
 
-from ._helpers import build_replay, write_current_bad_tick_player_count_replay, write_replay
+from ._helpers import (
+    build_replay,
+    write_current_bad_tick_player_count_replay,
+    write_current_missing_perk_choice_replay,
+    write_replay,
+)
 
 
 def test_zig_replay_list_shows_replays_under_base_dir(tmp_path: Path) -> None:
@@ -67,6 +72,25 @@ def test_zig_replay_list_reports_tick_player_count_detail(tmp_path: Path) -> Non
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "bad-tick-player-count.crd invalid - - - - -" in result.stdout
     assert "warning: bad-tick-player-count.crd: replay tick 0 has 0 players, expected 1" in result.stdout
+    assert "canonical wire shape" not in result.stdout
+
+
+def test_zig_replay_list_reports_event_shape_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    write_current_missing_perk_choice_replay(
+        tmp_path / "replays",
+        replay=replay,
+        name="missing-perk-choice.crd",
+    )
+
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "missing-perk-choice.crd invalid - - - - -" in result.stdout
+    assert (
+        "warning: missing-perk-choice.crd: replay event perk_pick missing choice_index: tick=0 event_index=0"
+        in result.stdout
+    )
     assert "canonical wire shape" not in result.stdout
 
 

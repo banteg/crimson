@@ -22,6 +22,7 @@ from ._helpers import (
     inject_tick_commands,
     write_current_bad_claimed_stats_replay,
     write_current_bad_tick_player_count_replay,
+    write_current_missing_perk_choice_replay,
     write_current_missing_quest_level_replay,
     write_current_mode_player_count_replay,
     write_current_typo_event_replay,
@@ -315,6 +316,25 @@ def test_zig_replay_verify_reports_tick_player_count_detail(tmp_path: Path) -> N
     assert zig_result.stderr == python_result.output
     assert "canonical wire shape" not in zig_result.stderr
     assert "native runtime limitation" not in zig_result.stderr
+
+
+def test_zig_replay_verify_reports_event_shape_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = write_current_missing_perk_choice_replay(
+        tmp_path,
+        replay=replay,
+        name="missing-perk-choice.crd",
+    )
+
+    result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert (
+        "replay verification failed: replay event perk_pick missing choice_index: tick=0 event_index=0"
+        in result.stderr
+    )
+    assert "canonical wire shape" not in result.stderr
 
 
 def test_zig_replay_verify_reports_unknown_command_as_replay_failure(tmp_path: Path) -> None:

@@ -360,10 +360,10 @@ pub fn runReplayVerifyCheckpointsBytes(
     };
     defer expected.deinit();
 
-    var input_shape_detail: ?[]u8 = null;
-    defer if (input_shape_detail) |detail| allocator.free(detail);
-    var replay = loadReplayBytes(allocator, replay_bytes, &input_shape_detail) catch |err| {
-        return buildVerifyFailedOutput(allocator, input_shape_detail orelse replayLoadErrorDetail(err));
+    var parse_detail: ?[]u8 = null;
+    defer if (parse_detail) |detail| allocator.free(detail);
+    var replay = loadReplayBytes(allocator, replay_bytes, &parse_detail) catch |err| {
+        return buildVerifyFailedOutput(allocator, parse_detail orelse replayLoadErrorDetail(err));
     };
     defer replay.deinit(allocator);
 
@@ -391,10 +391,10 @@ pub fn runReplayVerifyCheckpointsBytesJson(
     };
     defer expected.deinit();
 
-    var input_shape_detail: ?[]u8 = null;
-    defer if (input_shape_detail) |detail| allocator.free(detail);
-    var replay = loadReplayBytes(allocator, replay_bytes, &input_shape_detail) catch |err| {
-        return buildVerifyFailedOutput(allocator, input_shape_detail orelse replayLoadErrorDetail(err));
+    var parse_detail: ?[]u8 = null;
+    defer if (parse_detail) |detail| allocator.free(detail);
+    var replay = loadReplayBytes(allocator, replay_bytes, &parse_detail) catch |err| {
+        return buildVerifyFailedOutput(allocator, parse_detail orelse replayLoadErrorDetail(err));
     };
     defer replay.deinit(allocator);
 
@@ -667,10 +667,10 @@ fn runNativeVerifyCheckpoints(
     };
     defer allocator.free(replay_bytes);
 
-    var input_shape_detail: ?[]u8 = null;
-    defer if (input_shape_detail) |detail| allocator.free(detail);
-    var replay = loadReplayBytes(allocator, replay_bytes, &input_shape_detail) catch |err| {
-        return buildVerifyFailedOutput(allocator, input_shape_detail orelse replayLoadErrorDetail(err));
+    var parse_detail: ?[]u8 = null;
+    defer if (parse_detail) |detail| allocator.free(detail);
+    var replay = loadReplayBytes(allocator, replay_bytes, &parse_detail) catch |err| {
+        return buildVerifyFailedOutput(allocator, parse_detail orelse replayLoadErrorDetail(err));
     };
     defer replay.deinit(allocator);
 
@@ -905,7 +905,7 @@ fn loadCheckpointsBytes(
 fn loadReplayBytes(
     allocator: std.mem.Allocator,
     replay_bytes: []const u8,
-    input_shape_detail: ?*?[]u8,
+    parse_detail: ?*?[]u8,
 ) !replay_codec.Replay {
     var replay_payload_alloc: ?[]u8 = null;
     defer if (replay_payload_alloc) |buf| allocator.free(buf);
@@ -929,8 +929,12 @@ fn loadReplayBytes(
 
     return replay_codec.parseReplay(allocator, replay_payload) catch |err| {
         if (err == error.UnsupportedInputShape) {
-            if (input_shape_detail) |detail| {
+            if (parse_detail) |detail| {
                 detail.* = try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload);
+            }
+        } else if (err == error.UnsupportedEventShape) {
+            if (parse_detail) |detail| {
+                detail.* = try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload);
             }
         }
         return err;

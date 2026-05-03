@@ -448,6 +448,8 @@ fn buildInfoFailedOutputForReplayCodecErrorWithPayload(
 
     if (err == error.UnsupportedInputShape) {
         detail_alloc = try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload);
+    } else if (err == error.UnsupportedEventShape) {
+        detail_alloc = try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload);
     }
     const detail = detail_alloc orelse replayCodecErrorDetail(err);
     return buildInfoFailedOutput(allocator, detail);

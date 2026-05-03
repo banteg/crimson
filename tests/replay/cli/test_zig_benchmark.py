@@ -16,6 +16,7 @@ from ._helpers import (
     build_replay,
     inject_tick_commands,
     write_current_bad_tick_player_count_replay,
+    write_current_missing_perk_choice_replay,
     write_current_typo_event_replay,
     write_current_unknown_command_replay,
     write_legacy_out_of_order_event_replay,
@@ -224,6 +225,22 @@ def test_zig_replay_benchmark_reports_tick_player_count_detail(tmp_path: Path) -
     assert result.returncode == 1
     assert result.stdout == ""
     assert "replay benchmark failed: replay tick 0 has 0 players, expected 1" in result.stderr
+    assert "canonical wire shape" not in result.stderr
+
+
+def test_zig_replay_benchmark_reports_event_shape_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = write_current_missing_perk_choice_replay(
+        tmp_path,
+        replay=replay,
+        name="missing-perk-choice.crd",
+    )
+
+    result = _run_zig_replay_benchmark([str(replay_path), "--runs", "1", "--warmup-runs", "0"])
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "replay benchmark failed: replay event perk_pick missing choice_index: tick=0 event_index=0" in result.stderr
     assert "canonical wire shape" not in result.stderr
 
 

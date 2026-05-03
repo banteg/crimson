@@ -545,6 +545,16 @@ pub fn replayInputShapeFailureDetail(
     return legacyReplayInputShapeFailureDetail(allocator, payload);
 }
 
+pub fn replayEventShapeFailureDetail(
+    allocator: std.mem.Allocator,
+    payload: []const u8,
+) ReplayCodecError!?[]u8 {
+    if (try currentReplayEventShapeFailureDetail(allocator, payload)) |detail| {
+        return detail;
+    }
+    return legacyReplayEventShapeFailureDetail(allocator, payload);
+}
+
 fn replayEventKindAllowedInMode(event: ReplayEvent, game_mode: game_ids.GameModeId) bool {
     return switch (event) {
         .typo_char,
@@ -1572,6 +1582,52 @@ fn parseCurrentCommand(
     return error.UnknownCommandKind;
 }
 
+fn currentReplayEventShapeFailureDetail(
+    allocator: std.mem.Allocator,
+    payload: []const u8,
+) ReplayCodecError!?[]u8 {
+    var decoded = msgpack.decodeFromSlice(ReplayCurrentWire, allocator, payload) catch |err| {
+        return switch (err) {
+            error.OutOfMemory => error.OutOfMemory,
+            else => null,
+        };
+    };
+    defer decoded.deinit();
+
+    var event_index: usize = 0;
+    for (decoded.value.ticks, 0..) |tick, tick_index| {
+        for (tick.commands) |command| {
+            defer event_index += 1;
+            if (std.mem.eql(u8, command.type, "perk_pick")) {
+                if (command.choice_index == null) {
+                    return std.fmt.allocPrint(
+                        allocator,
+                        "replay event perk_pick missing choice_index: tick={d} event_index={d}",
+                        .{ tick_index, event_index },
+                    ) catch return error.OutOfMemory;
+                }
+            } else if (std.mem.eql(u8, command.type, "typo_char")) {
+                const raw = command.ch orelse {
+                    return std.fmt.allocPrint(
+                        allocator,
+                        "replay event typo_char missing ch: tick={d} event_index={d}",
+                        .{ tick_index, event_index },
+                    ) catch return error.OutOfMemory;
+                };
+                if (raw.len != 1) {
+                    return std.fmt.allocPrint(
+                        allocator,
+                        "replay event typo_char ch must be exactly one byte: tick={d} event_index={d} length={d}",
+                        .{ tick_index, event_index, raw.len },
+                    ) catch return error.OutOfMemory;
+                }
+            }
+        }
+    }
+
+    return null;
+}
+
 fn validateDtRows(
     wire_dt: []const f32,
     input_len: usize,
@@ -1644,6 +1700,94 @@ fn parseReplayEvent(
         .orig_capture_state_transition => |event| .{
             .capture_state_transition = try parseCaptureStateTransitionEvent(tick_index, event),
         },
+    };
+}
+
+fn legacyReplayEventShapeFailureDetail(
+    allocator: std.mem.Allocator,
+    payload: []const u8,
+) ReplayCodecError!?[]u8 {
+    var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch |err| {
+        return switch (err) {
+            error.OutOfMemory => error.OutOfMemory,
+            else => null,
+        };
+    };
+    defer decoded.deinit();
+
+    const input_len = decoded.value.inputs.len;
+    for (decoded.value.events, 0..) |event, event_index| {
+        const tick_index = replayEventWireTickIndex(event);
+        const event_name = replayEventWireKindName(event);
+        if (tick_index < 0) {
+            return std.fmt.allocPrint(
+                allocator,
+                "replay event {s} has negative tick_index={d}: event_index={d}",
+                .{ event_name, tick_index, event_index },
+            ) catch return error.OutOfMemory;
+        }
+        if (@as(usize, @intCast(tick_index)) > input_len) {
+            return std.fmt.allocPrint(
+                allocator,
+                "replay event {s} tick_index out of range: tick={d} input_ticks={d} event_index={d}",
+                .{ event_name, tick_index, input_len, event_index },
+            ) catch return error.OutOfMemory;
+        }
+
+        switch (event) {
+            .perk_pick => |payload_event| {
+                if (payload_event.player_index < 0) {
+                    return std.fmt.allocPrint(
+                        allocator,
+                        "replay event perk_pick has negative player_index={d}: tick={d} event_index={d}",
+                        .{ payload_event.player_index, tick_index, event_index },
+                    ) catch return error.OutOfMemory;
+                }
+                if (payload_event.choice_index < 0) {
+                    return std.fmt.allocPrint(
+                        allocator,
+                        "replay event perk_pick has negative choice_index={d}: tick={d} event_index={d}",
+                        .{ payload_event.choice_index, tick_index, event_index },
+                    ) catch return error.OutOfMemory;
+                }
+            },
+            .perk_menu_open => |payload_event| {
+                if (payload_event.player_index < 0) {
+                    return std.fmt.allocPrint(
+                        allocator,
+                        "replay event perk_menu_open has negative player_index={d}: tick={d} event_index={d}",
+                        .{ payload_event.player_index, tick_index, event_index },
+                    ) catch return error.OutOfMemory;
+                }
+            },
+            else => {},
+        }
+    }
+
+    return null;
+}
+
+fn replayEventWireTickIndex(event: ReplayEventWire) i32 {
+    return switch (event) {
+        .perk_pick => |payload| payload.tick_index,
+        .perk_menu_open => |payload| payload.tick_index,
+        .orig_capture_bootstrap => |payload| payload.tick_index,
+        .orig_capture_perk_apply => |payload| payload.tick_index,
+        .orig_capture_perk_pending => |payload| payload.tick_index,
+        .orig_capture_creature_spawn => |payload| payload.tick_index,
+        .orig_capture_state_transition => |payload| payload.tick_index,
+    };
+}
+
+fn replayEventWireKindName(event: ReplayEventWire) []const u8 {
+    return switch (event) {
+        .perk_pick => "perk_pick",
+        .perk_menu_open => "perk_menu_open",
+        .orig_capture_bootstrap => "orig_capture_bootstrap",
+        .orig_capture_perk_apply => "orig_capture_perk_apply",
+        .orig_capture_perk_pending => "orig_capture_perk_pending",
+        .orig_capture_creature_spawn => "orig_capture_creature_spawn",
+        .orig_capture_state_transition => "orig_capture_state_transition",
     };
 }
 

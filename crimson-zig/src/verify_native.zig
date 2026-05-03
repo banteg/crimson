@@ -204,6 +204,11 @@ fn runVerifyWithReplayBytes(
                 defer allocator.free(detail);
                 return buildVerifyFailedOutput(allocator, detail);
             }
+        } else if (err == error.UnsupportedEventShape) {
+            if (try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload)) |detail| {
+                defer allocator.free(detail);
+                return buildVerifyFailedOutput(allocator, detail);
+            }
         }
         return buildOutputForReplayCodecError(allocator, err);
     };
