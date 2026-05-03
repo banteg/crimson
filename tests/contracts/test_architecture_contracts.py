@@ -498,6 +498,7 @@ def test_contract_10_replay_driver_walk_is_canonical_loop_owner() -> None:
     replay_mode_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._advance_runner)
     replay_render_source = inspect.getsource(replay_render_module.run_replay_render_video)
     replay_benchmark_source = inspect.getsource(replay_benchmark_module.run_replay_benchmark)
+    replay_render_benchmark_once_source = inspect.getsource(replay_benchmark_module._run_render_once)
 
     assert "self.step_tick(" in walk_source
     assert "self.walk_ticks(" in run_source
@@ -518,3 +519,5 @@ def test_contract_10_replay_driver_walk_is_canonical_loop_owner() -> None:
     assert "PlaybackDriver(" not in replay_render_source
     assert "build_verify_playback_driver(" in replay_benchmark_source
     assert "PlaybackDriver(" not in replay_benchmark_source
+    assert "tick_progress_callback" not in replay_render_benchmark_once_source
+    assert "observer.progress(" in replay_render_benchmark_once_source
