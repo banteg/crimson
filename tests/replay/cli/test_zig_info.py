@@ -193,6 +193,21 @@ def test_zig_replay_info_matches_python_verbose_player_filter_payload(tmp_path: 
     assert zig_payload == python_payload
 
 
+def test_zig_replay_info_matches_python_invalid_player_filter_errors(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1, player_count=2)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival-2p.crd")
+
+    for player_index in ("-1", "2"):
+        args = [str(replay_path), "--player-index", player_index]
+        python_result = _run_python_replay_info_process(args)
+        zig_result = _run_zig_replay_info_process(args)
+
+        assert python_result.exit_code == 1
+        assert zig_result.returncode == 1
+        assert zig_result.stdout == ""
+        assert zig_result.stderr == python_result.output
+
+
 def test_zig_replay_info_matches_python_verbose_rush_command_payload(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.RUSH, ticks=1)
     inject_tick_commands(replay, 0, [PerkMenuOpenCommand(player_index=0)])
