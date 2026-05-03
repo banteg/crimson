@@ -60,8 +60,8 @@ Today `crimson-zig/` already has:
   jitter-burst smoke cases, a relay-token guest self-reconnect smoke case with
   post-reconnect input continuity, a double guest reconnect smoke case, a
   post-reconnect bidirectional jitter smoke case, a longer reconnect-then-resync
-  smoke case, a double-reconnect-then-resync stress case, and a
-  double- and triple-reconnect-then-bidirectional-jitter stress case,
+  smoke case, double- and triple-reconnect-then-resync stress cases, and
+  double- and triple-reconnect-then-bidirectional-jitter stress cases,
 - a freestanding WASM replay verify/info/benchmark plus checkpoint diff/verify
   text and JSON ABI in
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig).

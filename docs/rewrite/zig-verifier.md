@@ -126,6 +126,7 @@ Current supported replay-tooling behavior:
   and `net smoke-rollback --impair guest-reconnect-resync --format json`
   and `net smoke-rollback --impair guest-double-reconnect --format json`
   and `net smoke-rollback --impair guest-double-reconnect-resync --format json`
+  and `net smoke-rollback --impair guest-triple-reconnect-resync --format json`
   and `net smoke-rollback --impair jitter-burst --format json`
   and `net smoke-rollback --impair bidirectional-jitter-burst --format json`
   and
@@ -168,9 +169,9 @@ The important remaining gaps are now:
   correction, absorb a repeated jitter burst without resync, complete a
   guest-requested resync snapshot, and self-reconnect a guest through its relay
   token before advancing more input, absorb bidirectional jitter after a
-  reconnect, drive a longer reconnect-then-resync smoke path, recover from a
-  double-reconnect-then-resync sequence, and absorb bidirectional jitter after
-  two or three reconnect cycles, but broader reconnect/resync stress and
+  reconnect, drive a longer reconnect-then-resync smoke path, recover from
+  double- and triple-reconnect-then-resync sequences, and absorb bidirectional
+  jitter after two or three reconnect cycles, but broader reconnect/resync stress and
   product-lobby polish remain.
 
 The biggest remaining technical risk is not basic gameplay ownership. It is

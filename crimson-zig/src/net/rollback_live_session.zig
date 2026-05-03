@@ -37,6 +37,7 @@ pub const Options = struct {
     bind_host: []const u8 = "0.0.0.0",
     bind_port: u16 = 0,
     max_packets_per_update: usize = 64,
+    recv_first_timeout_ms: i64 = 0,
 };
 
 pub const LiveSession = struct {
@@ -46,6 +47,7 @@ pub const LiveSession = struct {
     runner: ?live_runner.LiveRunner = null,
     runner_snapshots: std.ArrayList(LiveRunnerSnapshotEntry) = .empty,
     max_packets_per_update: usize,
+    recv_first_timeout_ms: i64,
 
     pub fn init(options: Options) LiveSession {
         return .{
@@ -56,6 +58,7 @@ pub const LiveSession = struct {
             .server_addr = options.server_addr,
             .session = rollback_session.Session.init(options.session),
             .max_packets_per_update = @max(@as(usize, 1), options.max_packets_per_update),
+            .recv_first_timeout_ms = @max(@as(i64, 0), options.recv_first_timeout_ms),
         };
     }
 
@@ -138,7 +141,7 @@ pub const LiveSession = struct {
     }
 
     fn drainIncoming(self: *LiveSession, allocator: std.mem.Allocator, io: Io, now_ms: i64) !void {
-        var packets = try self.transport.recvPackets(allocator, io, self.max_packets_per_update, 0);
+        var packets = try self.transport.recvPackets(allocator, io, self.max_packets_per_update, self.recv_first_timeout_ms);
         defer packets.deinit(allocator);
         for (packets.items.items) |*received| {
             if (!received.addr.eql(self.server_addr)) continue;
