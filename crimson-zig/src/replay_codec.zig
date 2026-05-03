@@ -193,6 +193,7 @@ pub fn isLatestRulesetGameVersion(game_version: []const u8) bool {
 
 pub const ReplayToolKind = enum {
     verifier,
+    replay_list,
     replay_info,
     benchmark,
 };
@@ -223,6 +224,7 @@ pub fn unsupportedReplayHeaderDetail(
     if (tick_count > std.math.maxInt(i32)) {
         return switch (tool_kind) {
             .verifier => "replay has too many ticks for current native verifier",
+            .replay_list => "replay has too many ticks for current native replay list",
             .replay_info => "replay has too many ticks for current native replay info",
             .benchmark => "replay has too many ticks for current native benchmark",
         };

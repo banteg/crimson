@@ -18,6 +18,7 @@ from ._helpers import (
     write_current_bad_event_player_index_replay,
     write_current_bad_tick_player_count_replay,
     write_current_missing_perk_choice_replay,
+    write_current_mode_player_count_replay,
     write_current_string_quest_level_replay,
     write_current_unknown_command_replay,
     write_replay,
@@ -186,6 +187,43 @@ def test_zig_replay_list_accepts_current_string_quest_level(tmp_path: Path) -> N
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "quest-string-level.crd quest 1.1" in result.stdout
     assert "count=1 parsed=1 errors=0" in result.stdout
+
+
+def test_zig_replay_list_reports_single_player_mode_count_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    write_current_mode_player_count_replay(
+        tmp_path / "replays",
+        replay=replay,
+        name="typo-multiplayer.crd",
+        mode=GameMode.TYPO,
+        player_count=2,
+    )
+
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "typo-multiplayer.crd invalid - - - - -" in result.stdout
+    assert "warning: typo-multiplayer.crd: Typ-o replays require player_count == 1" in result.stdout
+    assert "count=1 parsed=0 errors=1" in result.stdout
+
+
+def test_zig_replay_list_reports_old_ruleset_detail(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay = msgspec.structs.replace(
+        replay,
+        header=msgspec.structs.replace(replay.header, game_version="0.6.9"),
+    )
+    write_replay(tmp_path / "replays", replay=replay, name="old-ruleset.crd")
+
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "old-ruleset.crd invalid - - - - -" in result.stdout
+    assert (
+        "warning: old-ruleset.crd: "
+        "native replay tools require latest ruleset replays unless preserve_bugs is set"
+    ) in result.stdout
+    assert "count=1 parsed=0 errors=1" in result.stdout
 
 
 def test_zig_replay_list_uses_header_claimed_stats(tmp_path: Path) -> None:

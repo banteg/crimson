@@ -394,6 +394,12 @@ fn buildReplayListRow(
     defer summary.deinit(allocator);
 
     const header = summary.header;
+    if (replay_codec.unsupportedReplayHeaderDetail(header, summary.tick_count, .replay_list)) |detail| {
+        return buildInvalidReplayListRow(allocator, rel_path, modified_ns, detail);
+    }
+    replay_codec.validateReplayBootstrap(header) catch |err| {
+        return buildInvalidReplayListRow(allocator, rel_path, modified_ns, replayListRowErrorDetail(err));
+    };
     if (summary.events.total_count > 0) {
         var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
             if (err == error.UnsupportedInputShape) {
