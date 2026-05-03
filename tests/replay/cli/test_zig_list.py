@@ -44,6 +44,18 @@ def test_zig_replay_list_shows_replays_under_base_dir(tmp_path: Path) -> None:
     assert f"replays_dir={tmp_path / 'replays'}" in result.stdout
 
 
+def test_zig_replay_list_accepts_relative_base_dir(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    write_replay(tmp_path / "replays", replay=replay, name="relative.crd")
+    relative_base = os.path.relpath(tmp_path, dbg_record._REPO_ROOT)
+
+    result = _run_zig_replay_list(["--base-dir", relative_base])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "relative.crd" in result.stdout
+    assert "count=1 parsed=1 errors=0" in result.stdout
+
+
 def test_zig_replay_list_keeps_listing_when_replay_is_invalid(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
     write_replay(tmp_path / "replays", replay=replay, name="ok.crd")
