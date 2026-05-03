@@ -16,6 +16,8 @@ from crimson.creatures.spawn import (
 from crimson.game_modes import GameMode
 from crimson.perks.ids import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
+from crimson.quests import all_quests
+from crimson.quests.level import QUEST_COUNT
 from crimson.weapon_runtime.fire_recipes import PrimaryPelletsMode, resolve_fire_recipe
 from crimson.weapons import WeaponId
 
@@ -23,7 +25,9 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 ZIG_CREATURES = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "creatures.zig"
 ZIG_FIRE_RECIPES = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "fire_recipes.zig"
 ZIG_GAME_IDS = REPO_ROOT / "crimson-zig" / "src" / "game_ids.zig"
+ZIG_QUEST_SPAWN_DIR = REPO_ROOT / "crimson-zig" / "src" / "quest_spawn"
 ZIG_WEAPON_DATA = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "weapon_data.zig"
+ZIG_WINDOW_MENU_PANELS = REPO_ROOT / "crimson-zig" / "src" / "window_menu_panels.zig"
 
 
 def _python_enum_values(enum_type: type[IntEnum], *, exclude: set[str] | None = None) -> dict[str, int]:
@@ -92,6 +96,34 @@ def _zig_supported_fire_weapons() -> set[str]:
     return supported
 
 
+def _python_quest_start_weapon_ids() -> dict[int, int]:
+    quests = all_quests()
+    assert len(quests) == QUEST_COUNT
+    return {int(quest.level.major) * 100 + int(quest.level.minor): int(quest.start_weapon_id) for quest in quests}
+
+
+def _zig_quest_start_weapon_ids() -> dict[int, int]:
+    weapon_ids = _zig_enum_values("WeaponId")
+    by_level: dict[int, int] = {}
+    for path in sorted(ZIG_QUEST_SPAWN_DIR.glob("logic_tier*.zig")):
+        source = path.read_text()
+        for level_key, weapon_name in re.findall(
+            r"\.level_key\s*=\s*(\d+),\s*\.start_weapon_id\s*=\s*game_ids\.WeaponId\.([a-z0-9_]+),",
+            source,
+        ):
+            by_level[int(level_key)] = weapon_ids[weapon_name]
+    return by_level
+
+
+def _zig_quest_titles() -> list[str]:
+    source = ZIG_WINDOW_MENU_PANELS.read_text()
+    match = re.search(r"pub const quest_titles = \[_\]\[\]const u8\{(.*?)\n\};", source, re.S)
+    assert match is not None
+    return [
+        bytes(value, "utf-8").decode("unicode_escape") for value in re.findall(r'"((?:[^"\\]|\\.)*)"', match.group(1))
+    ]
+
+
 def test_python_supported_spawn_templates_are_ported_in_zig() -> None:
     missing = sorted(_python_supported_spawn_ids() - _zig_supported_spawn_ids())
     assert missing == []
@@ -126,3 +158,11 @@ def test_python_projectile_template_ids_are_known_to_zig() -> None:
         if zig_projectiles.get(name) != value
     }
     assert missing_or_changed == {}
+
+
+def test_zig_quest_start_weapons_match_python_port() -> None:
+    assert _zig_quest_start_weapon_ids() == _python_quest_start_weapon_ids()
+
+
+def test_zig_quest_titles_match_python_port() -> None:
+    assert _zig_quest_titles() == [quest.title for quest in all_quests()]
