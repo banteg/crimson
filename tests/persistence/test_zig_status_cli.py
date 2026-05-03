@@ -91,7 +91,7 @@ def test_zig_status_json_output_reports_summary_and_fields(tmp_path: Path) -> No
     assert result.returncode == 0, dbg_record._command_detail(result)
     payload = json.loads(result.stdout)
     assert payload == json.loads(json_out.read_text())
-    assert payload["schema_version"] == 1
+    assert payload["schema_version"] == 2
     assert payload["status"] == "ok"
     assert payload["path"] == str(path)
     assert payload["checksum"]["valid"] is True
@@ -108,7 +108,28 @@ def test_zig_status_json_output_reports_summary_and_fields(tmp_path: Path) -> No
     }
     assert payload["fields"]["weapon_usage_counts"][5] == 99
     assert payload["fields"]["quest_play_counts"][7] == 1234
-    assert payload["fields"]["unknown_tail"].startswith("crimsonland-test")
+    assert payload["fields"]["unknown_tail"] == list(b"crimsonland-test".ljust(save_status.UNKNOWN_TAIL_SIZE, b"\x00"))
+
+
+def test_zig_status_json_preserves_binary_unknown_tail(tmp_path: Path) -> None:
+    data = save_status.GameStatusData(
+        unknown_tail=bytes(range(0xF0, 0x100)),
+    )
+    path = tmp_path / save_status.GAME_CFG_NAME
+    save_status.save_status(path, data)
+
+    build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
+    assert build_run.returncode == 0, dbg_record._command_detail(build_run)
+
+    result = dbg_record._run_process(
+        [str(dbg_record._ZIG_BIN), "status", "--path", str(path), "--format", "json"],
+        cwd=dbg_record._REPO_ROOT,
+    )
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    payload = json.loads(result.stdout)
+    assert payload["schema_version"] == 2
+    assert payload["fields"]["unknown_tail"] == list(range(0xF0, 0x100))
 
 
 def test_zig_status_rejects_checksum_mismatch(tmp_path: Path) -> None:

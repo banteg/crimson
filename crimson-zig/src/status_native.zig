@@ -6,7 +6,7 @@ const verify_native = @import("verify_native.zig");
 
 pub const CommandOutput = verify_native.CommandOutput;
 
-const status_schema_version: i32 = 1;
+const status_schema_version: i32 = 2;
 const game_cfg_name = "game.cfg";
 
 const OutputFormat = enum {
@@ -50,7 +50,30 @@ const StatusPayload = struct {
     path: []const u8,
     checksum: ChecksumPayload,
     summary: StatusSummaryPayload,
-    fields: game_cfg.Status,
+    fields: StatusFieldsPayload,
+};
+
+const StatusFieldsPayload = struct {
+    quest_unlock_index: u16,
+    quest_unlock_index_full: u16,
+    weapon_usage_counts: [game_cfg.weapon_usage_count]u32,
+    quest_play_counts: [game_cfg.quest_play_count]u32,
+    mode_play_survival: u32,
+    mode_play_rush: u32,
+    mode_play_typo: u32,
+    mode_play_other: u32,
+    game_sequence_id: u32,
+    unknown_tail: ByteArrayPayload,
+};
+
+pub const ByteArrayPayload = struct {
+    bytes: [game_cfg.unknown_tail_size]u8,
+
+    pub fn jsonStringify(self: ByteArrayPayload, jws: anytype) !void {
+        try jws.beginArray();
+        for (self.bytes) |byte| try jws.write(byte);
+        try jws.endArray();
+    }
 };
 
 pub fn runStatus(
@@ -126,7 +149,7 @@ fn runStatusWithBytes(
             .valid = true,
         },
         .summary = summaryPayload(decoded_status),
-        .fields = decoded_status,
+        .fields = fieldsPayload(decoded_status),
     };
 
     var payload_writer: std.Io.Writer.Allocating = .init(allocator);
@@ -234,6 +257,21 @@ fn summaryPayload(status: game_cfg.Status) StatusSummaryPayload {
         .mode_play_typo = status.mode_play_typo,
         .mode_play_other = status.mode_play_other,
         .game_sequence_id = status.game_sequence_id,
+    };
+}
+
+fn fieldsPayload(status: game_cfg.Status) StatusFieldsPayload {
+    return .{
+        .quest_unlock_index = status.quest_unlock_index,
+        .quest_unlock_index_full = status.quest_unlock_index_full,
+        .weapon_usage_counts = status.weapon_usage_counts,
+        .quest_play_counts = status.quest_play_counts,
+        .mode_play_survival = status.mode_play_survival,
+        .mode_play_rush = status.mode_play_rush,
+        .mode_play_typo = status.mode_play_typo,
+        .mode_play_other = status.mode_play_other,
+        .game_sequence_id = status.game_sequence_id,
+        .unknown_tail = .{ .bytes = status.unknown_tail },
     };
 }
 
