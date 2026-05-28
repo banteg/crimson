@@ -8,6 +8,7 @@ import msgspec
 
 from crimson.quests.level import QuestLevel
 from grim.config import CrimsonConfig
+from grim.rand import Crand, CrandLike
 
 from ..game_modes import GameMode
 from ..weapons import WeaponId
@@ -18,6 +19,7 @@ TABLE_MAX = 100
 
 NAME_SIZE = 0x20
 NAME_MAX_EDIT = 0x14  # game_over_screen_update sets ui_text_input maxlen=0x14
+UNI_NUM_MASK = 16348 * 16348 - 1
 
 
 def _known_game_mode(value: int) -> GameMode:
@@ -51,8 +53,8 @@ def _decode_byte(value: int, idx: int) -> int:
     return (int(value) - ((idx * 5 + 1) * idx + 6)) & 0xFF
 
 
-def highscore_date_checksum(year: int, month: int, day: int) -> int:
-    """Port of `highscore_date_checksum` (0x0043a950)."""
+def highscore_date_week(year: int, month: int, day: int) -> int:
+    """Port of the native `dateWeek` helper (0x0043a950)."""
     i_var1 = (0x0E - int(month)) // 0x0C
     i_var2 = (int(year) - i_var1) + 0x12C0
     i_var1 = (
@@ -66,15 +68,25 @@ def highscore_date_checksum(year: int, month: int, day: int) -> int:
     return ((i_var2 - i_var1) % 0x16D + i_var1) // 7 + 1
 
 
+def _score_uni_num_from_rand(rand_value: int) -> int:
+    return int(rand_value) & UNI_NUM_MASK
+
+
 class HighScoreRecord(msgspec.Struct):
     data: bytearray
 
     @classmethod
-    def blank(cls) -> HighScoreRecord:
+    def blank(cls, *, rng: CrandLike | None = None, rand_value: int | None = None) -> HighScoreRecord:
+        if rng is not None and rand_value is not None:
+            raise ValueError("pass either rng or rand_value, not both")
         data = bytearray(RECORD_SIZE)
         data[0x46] = 0x7C
         data[0x47] = 0xFF
-        return cls(data=data)
+        record = cls(data=data)
+        if rand_value is None:
+            rand_value = (rng if rng is not None else Crand()).rand()
+        record.uni_num = _score_uni_num_from_rand(rand_value)
+        return record
 
     @classmethod
     def from_bytes(cls, data: bytes) -> HighScoreRecord:
@@ -196,16 +208,32 @@ class HighScoreRecord(msgspec.Struct):
         struct.pack_into("<I", self.data, 0x34, int(value) & 0xFFFFFFFF)
 
     @property
-    def reserved0(self) -> int:
+    def uni_num(self) -> int:
         return int(struct.unpack_from("<I", self.data, 0x38)[0])
 
-    @reserved0.setter
-    def reserved0(self, value: int) -> None:
+    @uni_num.setter
+    def uni_num(self, value: int) -> None:
         struct.pack_into("<I", self.data, 0x38, int(value) & 0xFFFFFFFF)
+
+    @property
+    def reserved(self) -> int:
+        return int(struct.unpack_from("<I", self.data, 0x3C)[0])
+
+    @reserved.setter
+    def reserved(self, value: int) -> None:
+        struct.pack_into("<I", self.data, 0x3C, int(value) & 0xFFFFFFFF)
 
     @property
     def day(self) -> int:
         return int(self.data[0x40])
+
+    @property
+    def date_week(self) -> int:
+        return int(self.data[0x41])
+
+    @date_week.setter
+    def date_week(self, value: int) -> None:
+        self.data[0x41] = int(value) & 0xFF
 
     @property
     def month(self) -> int:
@@ -239,7 +267,7 @@ class HighScoreRecord(msgspec.Struct):
         self.data[0x40] = int(now.day) & 0xFF
         self.data[0x42] = int(now.month) & 0xFF
         self.data[0x43] = int(now.year - 2000) & 0xFF
-        self.data[0x41] = int(highscore_date_checksum(now.year, now.month, now.day)) & 0xFF
+        self.date_week = highscore_date_week(now.year, now.month, now.day)
 
 
 def scores_dir_for_base_dir(base_dir: Path) -> Path:

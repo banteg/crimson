@@ -8,6 +8,11 @@ pub const table_max: usize = 100;
 
 pub const name_size: usize = 0x20;
 pub const name_max_edit: usize = 0x14;
+pub const uni_num_mask: u32 = 16348 * 16348 - 1;
+
+const crt_rand_mult: u32 = 214_013;
+const crt_rand_inc: u32 = 2_531_011;
+var fallback_uni_num_counter: u32 = 0;
 
 pub const DateStamp = struct {
     year: i32,
@@ -40,9 +45,14 @@ pub const HighScoreRecord = struct {
     data: [record_size]u8,
 
     pub fn blank() HighScoreRecord {
+        return blankWithRandValue(nextFallbackRandValue());
+    }
+
+    pub fn blankWithRandValue(rand_value: u32) HighScoreRecord {
         var record: HighScoreRecord = .{ .data = [_]u8{0} ** record_size };
         record.data[0x46] = 0x7C;
         record.data[0x47] = 0xFF;
+        record.setUniNum(uniNumFromRand(rand_value));
         return record;
     }
 
@@ -160,6 +170,30 @@ pub const HighScoreRecord = struct {
         writeU32(self.data[0x34..][0..4], value);
     }
 
+    pub fn uniNum(self: *const HighScoreRecord) u32 {
+        return readU32(self.data[0x38..][0..4]);
+    }
+
+    pub fn setUniNum(self: *HighScoreRecord, value: u32) void {
+        writeU32(self.data[0x38..][0..4], value);
+    }
+
+    pub fn reserved(self: *const HighScoreRecord) u32 {
+        return readU32(self.data[0x3C..][0..4]);
+    }
+
+    pub fn setReserved(self: *HighScoreRecord, value: u32) void {
+        writeU32(self.data[0x3C..][0..4], value);
+    }
+
+    pub fn dateWeek(self: *const HighScoreRecord) u8 {
+        return self.data[0x41];
+    }
+
+    pub fn setDateWeek(self: *HighScoreRecord, value: u8) void {
+        self.data[0x41] = value;
+    }
+
     pub fn flags(self: *const HighScoreRecord) u8 {
         return self.data[0x44];
     }
@@ -183,7 +217,7 @@ pub const HighScoreRecord = struct {
         self.data[0x40] = stamp.day;
         self.data[0x42] = stamp.month;
         self.data[0x43] = @intCast(@mod(stamp.year - 2000, 256));
-        self.data[0x41] = @intCast(highscoreDateChecksum(stamp.year, stamp.month, stamp.day) & 0xFF);
+        self.setDateWeek(@intCast(highscoreDateWeek(stamp.year, stamp.month, stamp.day) & 0xFF));
     }
 };
 
@@ -194,13 +228,24 @@ pub const ScoresPathOptions = struct {
     player_count: i32 = 1,
 };
 
-pub fn highscoreDateChecksum(year: i32, month: u8, day: u8) i32 {
+pub fn highscoreDateWeek(year: i32, month: u8, day: u8) i32 {
     var i_var1 = @divFloor(0x0E - @as(i32, month), 0x0C);
     var i_var2 = (year - i_var1) + 0x12C0;
     i_var1 = (((i_var2 + ((i_var2 >> 31) & 3)) >> 2) - 0x7D2D + @as(i32, day) + ((@divFloor(i_var2, 400) + (@divFloor(((@as(i32, month) + i_var1 * 0x0C) * 0x99) - 0x1C9, 5) + i_var2 * 0x16D)) - @divFloor(i_var2, 100)));
     i_var2 = @mod(@mod(@mod((i_var1 - @mod(i_var1, 7)) + 0x7BFD, 0x23AB1), 0x8EAC), 0x5B5);
     i_var1 = @divFloor(i_var2, 0x5B4);
     return @divFloor(@mod(i_var2 - i_var1, 0x16D) + i_var1, 7) + 1;
+}
+
+pub fn uniNumFromRand(rand_value: u32) u32 {
+    return rand_value & uni_num_mask;
+}
+
+fn nextFallbackRandValue() u32 {
+    fallback_uni_num_counter +%= 1;
+    const seed: u32 = @truncate(currentEpochSeconds());
+    const state = (seed +% fallback_uni_num_counter) *% crt_rand_mult +% crt_rand_inc;
+    return (state >> 16) & 0x7fff;
 }
 
 pub fn scoresDirForBaseDir(
@@ -528,7 +573,7 @@ fn currentEpochSeconds() u64 {
 }
 
 test "record name and field accessors roundtrip" {
-    var record = HighScoreRecord.blank();
+    var record = HighScoreRecord.blankWithRandValue(0x7fff);
     record.setName("Alpha");
     record.setGameModeId(.survival);
     record.setSurvivalElapsedMs(5000);
@@ -546,6 +591,14 @@ test "record name and field accessors roundtrip" {
     try std.testing.expectEqual(@as(u32, 20), record.shotsFired());
     try std.testing.expectEqual(@as(u32, 15), record.shotsHit());
     try std.testing.expectEqual(@as(u32, 7), record.creatureKillCount());
+    try std.testing.expectEqual(@as(u32, 0x50f), record.uniNum());
+    try std.testing.expectEqual(@as(u32, 0), record.reserved());
+}
+
+test "date fields use native dateWeek byte" {
+    var record = HighScoreRecord.blankWithRandValue(0);
+    record.ensureDateFields(.{ .year = 2026, .month = 5, .day = 28 });
+    try std.testing.expectEqual(@as(u8, @intCast(highscoreDateWeek(2026, 5, 28) & 0xFF)), record.dateWeek());
 }
 
 test "date stamp utc conversion uses calendar day" {

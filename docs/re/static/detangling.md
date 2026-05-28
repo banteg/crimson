@@ -580,10 +580,8 @@ fields are compared in `highscore_record_equals` before a score can replace an e
 | `0x2c` | `DAT_0048706c` | Shots fired | Incremented on projectile spawns; clamped against hits; compared in `highscore_record_equals`. |
 | `0x30` | `DAT_00487070` | Shots hit | Incremented on projectile hit paths (creature hitbox size 16.0); clamped to shots fired; compared in `highscore_record_equals`. |
 | `0x34` | `DAT_00487074` | Creature kill count | Incremented on creature death paths; compared in `highscore_record_equals`. |
-
-Bytes `0x38..0x3f` are currently unknown. The online submit path zeroes `0x3c..0x3f`
-in the 0x40-byte record copies (`highscore_record_pack_for_submit`), suggesting those bytes are not
-required for leaderboard uploads.
+| `0x38` | `DAT_00487078` | `uniNum` | Original `score_t::Reset` / `ResetLight` initializes this to `rand() & (16348 * 16348 - 1)`. |
+| `0x3c` | `DAT_0048707c` | Reserved | Original header names this dword `reserved`. The online submit path zeroes this dword in the 0x40-byte record copies (`highscore_record_pack_for_submit`), suggesting it is not required for leaderboard uploads. |
 ### High score record (0x48 bytes) — tail bytes 0x40..0x47
 
 Score entries are 0x48 bytes (`DAT_00482b10` array, `DAT_00487040` active record). The
@@ -592,7 +590,7 @@ tail bytes are validated against the current date and the full‑version flag.
 | Offset | Address | Meaning | Evidence |
 | --- | --- | --- | --- |
 | `0x40` | `DAT_00487080` | Day‑of‑month | Written via `param_1 + 0x10` (word index → +0x40) in `highscore_write_record`; compared to `local_system_day` (`DAT_00495ace`) in `highscore_load_table` mode 3. |
-| `0x41` | `DAT_00487081` | Date checksum (week‑of‑year) | `highscore_date_checksum` result stored at `param_1 + 0x41`; compared in mode 2. |
+| `0x41` | `DAT_00487081` | `dateWeek` | Week-of-year value stored at `param_1 + 0x41`; compared in mode 2. |
 | `0x42` | `DAT_00487082` | Month (1–12) | Stored from `local_system_time._2_1_` (`DAT_00495ac8`); compared to `local_system_time._2_2_`. |
 | `0x43` | `DAT_00487083` | Year‑2000 | Stored as `(char)local_system_time + '0'` (`DAT_00495ac8`, low byte wraps); compared to `year - 2000`. |
 | `0x44` | `DAT_00487084` | Score flags | Bit 0 gates update vs append (and load gating in `highscore_load_table`); bit 1 is set to `2` when replacing an existing record and bypasses the load gate; bit 2 marks the entry selected for display after duplicate reduction. |
@@ -600,7 +598,7 @@ tail bytes are validated against the current date and the full‑version flag.
 | `0x46` | `DAT_00487040 + 0x46` | Sentinel `0x7c` (`'|'`) | Initialized in `highscore_load_table` default‑record loop. |
 | `0x47` | `DAT_00487040 + 0x47` | Sentinel `0xff` | Initialized in `highscore_load_table` default‑record loop. |
 
-Checksum helper (`highscore_date_checksum`):
+`dateWeek` helper:
 
 - Inputs: year, month, day (from `local_system_time` + `local_system_day`).
 - Returns a week‑of‑year style checksum (1..53) used when `config_highscore_date_mode == 2`.
@@ -612,8 +610,7 @@ High score validation (`highscore_load_table`):
   have bit 0 clear, or bit 1 set.
 
 - Mode 3: day + month + year must match (`local_system_day`, `local_system_time`).
-- Mode 2: checksum from `highscore_date_checksum(year, month, day)` must match the stored checksum byte
-  (`highscore_date_checksum` at `DAT_00487081`), and year must match.
+- Mode 2: computed `dateWeek` must match the stored `dateWeek` byte (`DAT_00487081`), and year must match.
 
 - Mode 1: month + year must match; other mode values skip the date check.
 

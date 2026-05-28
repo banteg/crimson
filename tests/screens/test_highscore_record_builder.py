@@ -7,9 +7,11 @@ from crimson.modes.components.highscore_record_builder import (
     clamp_shots,
     shots_from_state,
 )
+from crimson.persistence.highscores import UNI_NUM_MASK
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from grim.rand import Crand
 
 
 def test_clamp_shots_clamps_hit_and_nonnegative() -> None:
@@ -49,6 +51,7 @@ def test_build_highscore_record_for_game_over_uses_weapon_stats_and_shots() -> N
     assert record.shots_hit == 15
     assert record.game_mode_id == GameMode.SURVIVAL
     assert record.hardcore_marker == 0
+    assert record.uni_num == (Crand(0xBEEF).rand() & UNI_NUM_MASK)
 
 
 def test_build_highscore_record_for_game_over_can_skip_clamp() -> None:

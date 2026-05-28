@@ -48,11 +48,11 @@ def _passes_date_filter(entry: "HighScoreRecord", *, date_mode: int, now: dt.dat
     if mode == 3:
         return int(day) == int(now.day) and int(month) == int(now.month) and int(year) == int(now.year)
     if mode == 2:
-        # Week-of-year checksum stored at record byte 0x41.
-        from ...persistence.highscores import highscore_date_checksum
+        # Native `dateWeek`: week-of-year checksum stored at record byte 0x41.
+        from ...persistence.highscores import highscore_date_week
 
-        stored = int(entry.data[0x41])
-        checksum = int(highscore_date_checksum(now.year, now.month, now.day))
+        stored = int(entry.date_week)
+        checksum = int(highscore_date_week(now.year, now.month, now.day))
         return int(stored) == int(checksum) and int(year) == int(now.year)
     return True
 

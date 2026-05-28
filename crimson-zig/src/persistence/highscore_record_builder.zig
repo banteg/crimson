@@ -43,7 +43,8 @@ pub fn buildHighscoreRecordForGameOver(
 ) highscores.HighScoreRecord {
     const player_index: usize = if (player.index < 0) 0 else @intCast(player.index);
 
-    var record = highscores.HighScoreRecord.blank();
+    var record_rng = state.rng;
+    var record = highscores.HighScoreRecord.blankWithRandValue(record_rng.rand());
     record.setScoreXp(@intCast(@max(0, player.experience)));
     record.setSurvivalElapsedMs(@intCast(@max(0, survival_elapsed_ms)));
     record.setCreatureKillCount(@intCast(@max(0, creature_kill_count)));
@@ -127,6 +128,7 @@ test "build highscore record uses weapon stats and shots" {
     try std.testing.expectEqual(@as(u32, 15), record.shotsHit());
     try std.testing.expectEqual(@as(?game_ids.GameModeId, .survival), record.gameModeId());
     try std.testing.expectEqual(@as(u8, 0), record.hardcoreMarker());
+    try std.testing.expectEqual(@as(u32, 6), record.uniNum());
 }
 
 test "build highscore record can skip clamp" {

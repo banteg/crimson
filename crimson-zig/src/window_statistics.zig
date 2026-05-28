@@ -2162,13 +2162,13 @@ fn passesDateFilter(record: persistence.highscores.HighScoreRecord, date_mode_ra
     if (mode == 0) return true;
     const stamp = persistence.highscores.currentDateStamp();
     const day = record.data[0x40];
-    const checksum = record.data[0x41];
+    const checksum = record.dateWeek();
     const month = record.data[0x42];
     const year = 2000 + @as(i32, record.data[0x43]);
     if (day == 0 or month == 0) return false;
     return switch (mode) {
         1 => month == stamp.month and year == stamp.year,
-        2 => checksum == @as(u8, @intCast(persistence.highscores.highscoreDateChecksum(stamp.year, stamp.month, stamp.day) & 0xFF)) and year == stamp.year,
+        2 => checksum == @as(u8, @intCast(persistence.highscores.highscoreDateWeek(stamp.year, stamp.month, stamp.day) & 0xFF)) and year == stamp.year,
         3 => day == stamp.day and month == stamp.month and year == stamp.year,
         else => true,
     };
@@ -2373,7 +2373,7 @@ test "high score date filter matches current month and day semantics" {
     record.data[0x40] = stamp.day;
     record.data[0x42] = stamp.month;
     record.data[0x43] = @intCast(@mod(stamp.year - 2000, 256));
-    record.data[0x41] = @intCast(persistence.highscores.highscoreDateChecksum(stamp.year, stamp.month, stamp.day) & 0xFF);
+    record.setDateWeek(@intCast(persistence.highscores.highscoreDateWeek(stamp.year, stamp.month, stamp.day) & 0xFF));
     try std.testing.expect(passesDateFilter(record, 1));
     try std.testing.expect(passesDateFilter(record, 2));
     try std.testing.expect(passesDateFilter(record, 3));
