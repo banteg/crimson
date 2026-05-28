@@ -10,7 +10,10 @@ pub const max_players: usize = 4;
 pub const gzip_magic = [_]u8{ 0x1f, 0x8b };
 pub const zstd_magic = [_]u8{ 0x28, 0xB5, 0x2F, 0xFD };
 pub const max_replay_payload_bytes: usize = 64 * 1024 * 1024;
-pub const latest_ruleset_game_version_prefix = "0.9.";
+pub const latest_ruleset_game_version_prefixes = [_][]const u8{
+    "0.9.",
+    "0.10.",
+};
 const msgpack_bin8: u8 = 0xC4;
 const msgpack_bin16: u8 = 0xC5;
 const msgpack_bin32: u8 = 0xC6;
@@ -188,7 +191,10 @@ pub fn unpackInputFlags(flags: u32) InputFlags {
 }
 
 pub fn isLatestRulesetGameVersion(game_version: []const u8) bool {
-    return std.mem.startsWith(u8, game_version, latest_ruleset_game_version_prefix);
+    for (latest_ruleset_game_version_prefixes) |prefix| {
+        if (std.mem.startsWith(u8, game_version, prefix)) return true;
+    }
+    return false;
 }
 
 pub const ReplayToolKind = enum {
