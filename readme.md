@@ -39,7 +39,9 @@ uv run crimson
 
 ## Assets
 
-The rewrite can load the assets from original PAQ archives (`crimson.paq` et al). No original assets or binaries are included in this repository.
+The original Crimsonland Classic assets are distributed for this project with permission from the original developer. Missing PAQ archives (`crimson.paq`, `music.paq`, `sfx.paq`) are downloaded into the runtime directory on first launch, so `uvx crimsonland@latest` works out of the box.
+
+The project also has access to the original uncompressed source art. The current asset pack is a selective hybrid: it uses higher-quality uncompressed textures where they match the shipped runtime art, keeps the original PAQ assets where they are the better match, and stitches a few sprite sheets from both sources.
 
 Point to them explicitly if needed:
 
@@ -141,4 +143,4 @@ Python 3.13+ · raylib (pyray) · Construct · msgspec · Typer · Ghidra · Fri
 
 ## Legal
 
-This project is an independent reverse engineering and reimplementation effort for preservation, research, and compatibility. No original assets or binaries are included. Use your own legally obtained copy.
+This project is an independent reverse engineering and reimplementation effort for preservation, research, and compatibility. Original Crimsonland Classic assets are distributed with permission from the original developer; the game code and reimplementation remain independent.
