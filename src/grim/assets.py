@@ -229,6 +229,21 @@ def load_paq_entries(assets_dir: Path) -> dict[str, bytes]:
     return load_paq_entries_from_path(Path(assets_dir) / PAQ_NAME)
 
 
+def _same_stem_source_art_paths(rel_path: str) -> tuple[str, ...]:
+    if not rel_path.lower().endswith(".jaz"):
+        return ()
+    stem = rel_path[:-4]
+    return (f"{stem}.tga", f"{stem}.jpg")
+
+
+def _select_texture_asset(entries: dict[str, bytes], rel_path: str) -> tuple[str, bytes | None]:
+    for source_art_path in _same_stem_source_art_paths(rel_path):
+        payload = entries.get(source_art_path)
+        if payload is not None:
+            return source_art_path, payload
+    return rel_path, entries.get(rel_path)
+
+
 def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture:
     image = rl.load_image_from_memory(fmt, cast(str, data), len(data))
     texture = rl.load_texture_from_image(image)
@@ -281,7 +296,8 @@ def load_runtime_resources(assets_dir: Path) -> RuntimeResources:
     entries = load_paq_entries(Path(assets_dir))
     textures: dict[TextureId, rl.Texture] = {}
     for texture_id, spec in TEXTURE_SPECS.items():
-        texture = _load_texture_asset_from_bytes(spec.rel_path, entries.get(spec.rel_path))
+        asset_path, payload = _select_texture_asset(entries, spec.rel_path)
+        texture = _load_texture_asset_from_bytes(asset_path, payload)
         if texture is None:
             raise FileNotFoundError(f"Missing runtime texture: {spec.rel_path}")
         _apply_texture_settings(texture, clamp=bool(spec.clamp), point_filter=bool(spec.point_filter))

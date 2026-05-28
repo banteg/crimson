@@ -119,8 +119,8 @@ fn runSmoke(allocator: std.mem.Allocator, assets_dir: []const u8) !SmokeStats {
         const spec = window_assets.runtimeTextureSpec(texture_id);
         stats.runtime_texture_specs += 1;
 
-        if (archive.get(spec.rel_path)) |payload| {
-            if (!try decodeImage(allocator, spec.rel_path, payload)) {
+        if (window_assets.selectTextureAsset(&archive, spec.rel_path)) |asset| {
+            if (!try decodeAsset(allocator, spec.rel_path, asset)) {
                 stats.failures += 1;
             }
         } else {
@@ -254,6 +254,15 @@ fn decodeArchiveEntry(allocator: std.mem.Allocator, rel_path: []const u8, payloa
 
 fn decodeImage(allocator: std.mem.Allocator, rel_path: []const u8, payload: []const u8) !bool {
     var image = window_assets.decodeImageFromBytes(allocator, rel_path, payload) catch |err| {
+        try printFailure(rel_path, err);
+        return false;
+    };
+    defer image.unload();
+    return true;
+}
+
+fn decodeAsset(allocator: std.mem.Allocator, rel_path: []const u8, asset: window_assets.TextureAsset) !bool {
+    var image = window_assets.decodeImageFromAssetFormat(allocator, asset.format, asset.payload) catch |err| {
         try printFailure(rel_path, err);
         return false;
     };

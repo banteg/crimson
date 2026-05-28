@@ -97,6 +97,11 @@ pub const AssetFormat = enum {
     unsupported,
 };
 
+pub const TextureAsset = struct {
+    format: AssetFormat,
+    payload: []const u8,
+};
+
 pub const AssetArchiveError = runtime_archive.RuntimeArchiveError;
 
 pub const DecodeImageError = formats.jaz.JazError || formats.tga.TgaError || std.mem.Allocator.Error || rl.RaylibError || error{
@@ -158,7 +163,11 @@ pub fn detectAssetFormat(rel_path: []const u8) AssetFormat {
 }
 
 pub fn decodeImageFromBytes(allocator: std.mem.Allocator, rel_path: []const u8, bytes: []const u8) DecodeImageError!rl.Image {
-    return switch (detectAssetFormat(rel_path)) {
+    return decodeImageFromAssetFormat(allocator, detectAssetFormat(rel_path), bytes);
+}
+
+pub fn decodeImageFromAssetFormat(allocator: std.mem.Allocator, format: AssetFormat, bytes: []const u8) DecodeImageError!rl.Image {
+    return switch (format) {
         .jaz => decodeJazImage(allocator, bytes),
         .tga => decodeTgaImage(bytes),
         .jpg => rl.loadImageFromMemory(".jpg", bytes),
@@ -189,8 +198,8 @@ pub fn loadRuntimeAssets(allocator: std.mem.Allocator, assets_dir: []const u8) L
     inline for (std.meta.fields(TextureId)) |field| {
         const texture_id: TextureId = @enumFromInt(field.value);
         const spec = textureSpec(texture_id);
-        const payload = archive.get(spec.rel_path) orelse return error.MissingTextureAsset;
-        textures[field.value] = try loadTextureFromBytes(allocator, spec, payload);
+        const asset = selectTextureAsset(&archive, spec.rel_path) orelse return error.MissingTextureAsset;
+        textures[field.value] = try loadTextureFromBytes(allocator, spec, asset);
     }
 
     const small_font_widths_blob = archive.get(small_font_widths_path) orelse return error.MissingFontWidths;
@@ -217,8 +226,24 @@ pub fn loadRuntimeAssetsFromDefaultSearch(allocator: std.mem.Allocator) LoadRunt
     return assets;
 }
 
-fn loadTextureFromBytes(allocator: std.mem.Allocator, spec: TextureSpec, bytes: []const u8) DecodeImageError!rl.Texture2D {
-    var image = try decodeImageFromBytes(allocator, spec.rel_path, bytes);
+pub fn selectTextureAsset(archive: *const AssetArchive, rel_path: []const u8) ?TextureAsset {
+    if (std.ascii.endsWithIgnoreCase(rel_path, ".jaz")) {
+        var alt_path_buffer: [std.fs.max_path_bytes]u8 = undefined;
+        const stem = rel_path[0 .. rel_path.len - 4];
+
+        const tga_path = std.fmt.bufPrint(&alt_path_buffer, "{s}.tga", .{stem}) catch return null;
+        if (archive.get(tga_path)) |payload| return .{ .format = .tga, .payload = payload };
+
+        const jpg_path = std.fmt.bufPrint(&alt_path_buffer, "{s}.jpg", .{stem}) catch return null;
+        if (archive.get(jpg_path)) |payload| return .{ .format = .jpg, .payload = payload };
+    }
+
+    const payload = archive.get(rel_path) orelse return null;
+    return .{ .format = detectAssetFormat(rel_path), .payload = payload };
+}
+
+fn loadTextureFromBytes(allocator: std.mem.Allocator, spec: TextureSpec, asset: TextureAsset) DecodeImageError!rl.Texture2D {
+    var image = try decodeImageFromAssetFormat(allocator, asset.format, asset.payload);
     defer image.unload();
 
     const texture = try rl.loadTextureFromImage(image);
@@ -350,4 +375,26 @@ test "decode image rejects unsupported extensions" {
         error.UnsupportedTextureFormat,
         decodeImageFromBytes(std.testing.allocator, "test.dat", "abc"),
     );
+}
+
+test "texture asset lookup prefers same-stem source art" {
+    const allocator = std.testing.allocator;
+
+    const encoded = try formats.paq.encode(allocator, &[_]formats.paq.EntryInput{
+        .{ .name = "ui\\button.jaz", .payload = "old" },
+        .{ .name = "ui/button.tga", .payload = "source" },
+        .{ .name = "load/arrow.tga", .payload = "arrow" },
+    });
+    defer allocator.free(encoded);
+
+    var archive = try AssetArchive.fromBytes(allocator, encoded);
+    defer archive.deinit();
+
+    const source_asset = selectTextureAsset(&archive, "ui/button.jaz").?;
+    try std.testing.expectEqual(AssetFormat.tga, source_asset.format);
+    try std.testing.expectEqualStrings("source", source_asset.payload);
+
+    const direct_asset = selectTextureAsset(&archive, "load/arrow.tga").?;
+    try std.testing.expectEqual(AssetFormat.tga, direct_asset.format);
+    try std.testing.expectEqualStrings("arrow", direct_asset.payload);
 }
