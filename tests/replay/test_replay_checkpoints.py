@@ -109,6 +109,9 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
     decoded = load_checkpoints(dump_checkpoints(checkpoints))
     assert decoded == checkpoints
     assert decoded.checkpoints[0].deaths[0].owner_id == -1
+    assert decoded.checkpoints[0].events.hit_count == 2
+    assert len(decoded.checkpoints[0].events.hit_head) == 2
+    assert decoded.checkpoints[0].events.hit_head[0].type_id == int(ProjectileTemplateId.PISTOL)
 
 
 def test_load_checkpoints_defaults_optional_checkpoint_fields() -> None:
@@ -135,6 +138,7 @@ def test_load_checkpoints_defaults_optional_checkpoint_fields() -> None:
     assert loaded.checkpoints[0].perk.choices == []
     assert loaded.checkpoints[0].deaths == []
     assert loaded.checkpoints[0].events.hit_count == 0
+    assert loaded.checkpoints[0].events.hit_head == []
     assert loaded.checkpoints[0].events.pickup_count == 0
     assert loaded.checkpoints[0].events.sfx_count == 0
     assert loaded.checkpoints[0].typo is None

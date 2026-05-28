@@ -35,11 +35,16 @@ def _checkpoint_to_obj(
     checkpoint: ReplayCheckpoint,
     *,
     include_rng_fields: bool,
+    include_hit_head: bool = True,
 ) -> BuiltinObject:
     obj = to_builtin_object(checkpoint, field="checkpoint")
     if not include_rng_fields:
         for key in ("rng_state",):
             obj.pop(key, None)
+    if not include_hit_head:
+        events = obj.get("events")
+        if isinstance(events, dict):
+            events.pop("hit_head", None)
     return obj
 
 
@@ -99,8 +104,9 @@ def compare_checkpoints(
             skipped_elapsed_mismatch_count += 1
             continue
 
-        exp_no_rng = _checkpoint_to_obj(exp, include_rng_fields=False)
-        act_no_rng = _checkpoint_to_obj(act, include_rng_fields=False)
+        include_hit_head = bool(exp.events.hit_head) and bool(act.events.hit_head)
+        exp_no_rng = _checkpoint_to_obj(exp, include_rng_fields=False, include_hit_head=include_hit_head)
+        act_no_rng = _checkpoint_to_obj(act, include_rng_fields=False, include_hit_head=include_hit_head)
         if exp_no_rng == act_no_rng:
             if first_rng_only_tick is None:
                 first_rng_only_tick = tick

@@ -207,6 +207,11 @@ def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
             f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
             err=True,
         )
+        if exp.events.hit_head or act.events.hit_head:
+            typer.echo(
+                f"  hit head expected={exp.events.hit_head[:8]} actual={act.events.hit_head[:8]}",
+                err=True,
+            )
     if exp.perk != act.perk:
         typer.echo(
             "  perk snapshot differs "

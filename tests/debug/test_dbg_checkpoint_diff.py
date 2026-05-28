@@ -5,7 +5,12 @@ import struct
 import msgspec
 
 from crimson.dbg.checkpoint_diff import checkpoint_deepdiff, compare_checkpoints
-from crimson.replay.checkpoints import ReplayCheckpoint, ReplayPlayerCheckpoint
+from crimson.replay.checkpoints import (
+    ReplayCheckpoint,
+    ReplayEventSummary,
+    ReplayHitSummaryEntry,
+    ReplayPlayerCheckpoint,
+)
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
@@ -72,3 +77,54 @@ def test_compare_checkpoints_can_skip_elapsed_mismatch_rows() -> None:
     assert diff.skipped_elapsed_mismatch_count == 1
     assert diff.failure is not None
     assert diff.failure.tick_index == 1
+
+
+def test_compare_checkpoints_ignores_hit_head_when_one_side_is_legacy() -> None:
+    expected = msgspec.structs.replace(
+        _checkpoint_with_health(1.0),
+        events=ReplayEventSummary(hit_count=1),
+    )
+    actual = msgspec.structs.replace(
+        expected,
+        events=ReplayEventSummary(
+            hit_count=1,
+            hit_head=[
+                ReplayHitSummaryEntry(
+                    type_id=1,
+                    origin=Vec2(1.0, 2.0),
+                    hit=Vec2(3.0, 4.0),
+                    target=Vec2(5.0, 6.0),
+                ),
+            ],
+        ),
+    )
+
+    diff = compare_checkpoints([expected], [actual])
+
+    assert diff.ok
+
+
+def test_compare_checkpoints_compares_hit_head_when_both_sides_record_it() -> None:
+    hit = ReplayHitSummaryEntry(
+        type_id=1,
+        origin=Vec2(1.0, 2.0),
+        hit=Vec2(3.0, 4.0),
+        target=Vec2(5.0, 6.0),
+    )
+    expected = msgspec.structs.replace(
+        _checkpoint_with_health(1.0),
+        events=ReplayEventSummary(hit_count=1, hit_head=[hit]),
+    )
+    actual = msgspec.structs.replace(
+        expected,
+        events=ReplayEventSummary(
+            hit_count=1,
+            hit_head=[msgspec.structs.replace(hit, target=Vec2(7.0, 8.0))],
+        ),
+    )
+
+    diff = compare_checkpoints([expected], [actual])
+
+    assert not diff.ok
+    assert diff.failure is not None
+    assert diff.failure.tick_index == 0

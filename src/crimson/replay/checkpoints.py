@@ -90,6 +90,13 @@ class ReplayDeathLedgerEntry(msgspec.Struct, frozen=True):
     owner_id: int = -1
 
 
+class ReplayHitSummaryEntry(msgspec.Struct, frozen=True):
+    type_id: int
+    origin: Vec2
+    hit: Vec2
+    target: Vec2
+
+
 class ReplayPerkSnapshot(msgspec.Struct, frozen=True):
     pending_count: int = 0
     choices_dirty: bool = False
@@ -103,6 +110,7 @@ class ReplayEventSummary(msgspec.Struct, frozen=True):
     pickup_count: int = 0
     sfx_count: int = 0
     sfx_head: list[str] = msgspec.field(default_factory=list)
+    hit_head: list[ReplayHitSummaryEntry] = msgspec.field(default_factory=list)
 
 
 class ReplayCheckpoints(msgspec.Struct, frozen=True):
@@ -219,6 +227,15 @@ def build_checkpoint(
         pickup_count=len(pickups),
         sfx_count=len(sfx),
         sfx_head=[key.value for key in sfx[:4]],
+        hit_head=[
+            ReplayHitSummaryEntry(
+                type_id=int(hit.type_id),
+                origin=Vec2(round(hit.origin.x, 4), round(hit.origin.y, 4)),
+                hit=Vec2(round(hit.hit.x, 4), round(hit.hit.y, 4)),
+                target=Vec2(round(hit.target.x, 4), round(hit.target.y, 4)),
+            )
+            for hit in hits[:8]
+        ],
     )
 
     typo_snapshot: ReplayTypoSnapshot | None = None
