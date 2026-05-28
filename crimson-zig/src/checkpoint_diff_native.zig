@@ -93,11 +93,19 @@ const ReplayPerkSnapshotWire = struct {
     player_nonzero_counts: []const []const []const i32,
 };
 
+const ReplayHitSummaryEntryWire = struct {
+    type_id: i32,
+    origin: Vec2Wire,
+    hit: Vec2Wire,
+    target: Vec2Wire,
+};
+
 const ReplayEventSummaryWire = struct {
     hit_count: i32,
     pickup_count: i32,
     sfx_count: i32,
     sfx_head: []const []const u8,
+    hit_head: []const ReplayHitSummaryEntryWire,
 };
 
 pub const BonusTimerEntryWire = struct {
@@ -1045,6 +1053,7 @@ fn deinitOwnedCheckpoint(allocator: std.mem.Allocator, checkpoint: *ReplayCheckp
 fn deinitOwnedEventSummary(allocator: std.mem.Allocator, events: ReplayEventSummaryWire) void {
     for (events.sfx_head) |entry| allocator.free(entry);
     allocator.free(events.sfx_head);
+    allocator.free(events.hit_head);
 }
 
 fn deinitOwnedTypoSnapshot(allocator: std.mem.Allocator, snapshot: ReplayTypoSnapshotWire) void {
@@ -1124,6 +1133,7 @@ fn buildEventSummary(
         .pickup_count = 0,
         .sfx_count = @intCast(sfx_count),
         .sfx_head = sfx_head,
+        .hit_head = try allocator.alloc(ReplayHitSummaryEntryWire, 0),
     };
 }
 
@@ -1323,7 +1333,23 @@ fn eventsEqual(a: ReplayEventSummaryWire, b: ReplayEventSummaryWire) bool {
     if (a.hit_count != b.hit_count) return false;
     if (a.pickup_count != b.pickup_count) return false;
     if (a.sfx_count != b.sfx_count) return false;
+    if (a.hit_head.len != 0 and b.hit_head.len != 0 and !hitHeadSlicesEqual(a.hit_head, b.hit_head)) return false;
     return stringSlicesEqual(a.sfx_head, b.sfx_head);
+}
+
+fn hitHeadSlicesEqual(a: []const ReplayHitSummaryEntryWire, b: []const ReplayHitSummaryEntryWire) bool {
+    if (a.len != b.len) return false;
+    for (a, b) |left, right| {
+        if (left.type_id != right.type_id) return false;
+        if (!vec2Equal(left.origin, right.origin)) return false;
+        if (!vec2Equal(left.hit, right.hit)) return false;
+        if (!vec2Equal(left.target, right.target)) return false;
+    }
+    return true;
+}
+
+fn vec2Equal(a: Vec2Wire, b: Vec2Wire) bool {
+    return a.x == b.x and a.y == b.y;
 }
 
 fn tutorialsEqual(a: ?ReplayTutorialSnapshotWire, b: ?ReplayTutorialSnapshotWire) bool {
@@ -1647,6 +1673,13 @@ fn writeFirstEventMismatch(
         return true;
     }
     if (try writeFirstStringSliceMismatch(writer, "events.sfx_head", expected.sfx_head, actual.sfx_head)) return true;
+    if (expected.hit_head.len != 0 and actual.hit_head.len != 0 and !hitHeadSlicesEqual(expected.hit_head, actual.hit_head)) {
+        try writer.print(
+            "  first state diff: events.hit_head expected_len={d} actual_len={d}\n",
+            .{ expected.hit_head.len, actual.hit_head.len },
+        );
+        return true;
+    }
     return false;
 }
 
@@ -2395,6 +2428,7 @@ fn testCheckpoint() ReplayCheckpointWire {
             .pickup_count = 0,
             .sfx_count = 0,
             .sfx_head = &.{},
+            .hit_head = &.{},
         },
         .tutorial = null,
         .typo = null,

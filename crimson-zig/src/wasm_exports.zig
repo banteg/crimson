@@ -929,6 +929,21 @@ fn buildTestCheckpointsPayload(allocator: std.mem.Allocator, tick_index: i32) ![
         xp_awarded: i32,
         owner_id: i32,
     };
+    const HitSummaryEntry = struct {
+        type_id: i32,
+        origin: struct {
+            x: f64,
+            y: f64,
+        },
+        hit: struct {
+            x: f64,
+            y: f64,
+        },
+        target: struct {
+            x: f64,
+            y: f64,
+        },
+    };
     const Perk = struct {
         pending_count: i32,
         choices_dirty: bool,
@@ -940,6 +955,7 @@ fn buildTestCheckpointsPayload(allocator: std.mem.Allocator, tick_index: i32) ![
         pickup_count: i32,
         sfx_count: i32,
         sfx_head: []const []const u8,
+        hit_head: []const HitSummaryEntry,
     };
     const Checkpoint = struct {
         tick_index: i32,
@@ -975,6 +991,7 @@ fn buildTestCheckpointsPayload(allocator: std.mem.Allocator, tick_index: i32) ![
     const player_nonzero_counts: [0][]const []const i32 = .{};
     const deaths: [0]Death = .{};
     const sfx_head: [0][]const u8 = .{};
+    const hit_head: [0]HitSummaryEntry = .{};
     const checkpoints = [_]Checkpoint{.{
         .tick_index = tick_index,
         .rng_state = 0x1234,
@@ -997,6 +1014,7 @@ fn buildTestCheckpointsPayload(allocator: std.mem.Allocator, tick_index: i32) ![
             .pickup_count = 0,
             .sfx_count = 0,
             .sfx_head = sfx_head[0..],
+            .hit_head = hit_head[0..],
         },
     }};
     const payload: Payload = .{
