@@ -1,6 +1,6 @@
 [project]
 name = "crimsonland"
-version = "0.9.0"
+version = "0.10.0"
 readme = { file = "readme.md", content-type = "text/markdown" }
 requires-python = ">=3.13"
 dependencies = [
