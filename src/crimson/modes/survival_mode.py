@@ -203,9 +203,7 @@ class SurvivalMode(BaseGameplayMode):
         sim_unlock_index_full = int(status.quest_unlock_index_full) if status is not None else 0
         status_unlock_index = int(base_status.quest_unlock_index) if base_status is not None else int(sim_unlock_index)
         status_unlock_index_full = (
-            int(base_status.quest_unlock_index_full)
-            if base_status is not None
-            else int(sim_unlock_index_full)
+            int(base_status.quest_unlock_index_full) if base_status is not None else int(sim_unlock_index_full)
         )
         quest_unlock_index = int(sim_unlock_index)
         terrain = advance_unlock_terrain(
@@ -330,6 +328,7 @@ class SurvivalMode(BaseGameplayMode):
             survival_elapsed_ms=int(self._session_elapsed_ms()),
             creature_kill_count=int(self.creatures.kill_count),
             game_mode_id=game_mode_id,
+            hardcore=bool(self.hardcore),
         )
         self._game_over_record = record
         self._game_over_ui.open()

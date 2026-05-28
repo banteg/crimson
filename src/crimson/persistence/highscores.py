@@ -224,11 +224,11 @@ class HighScoreRecord(msgspec.Struct):
         self.data[0x44] = int(value) & 0xFF
 
     @property
-    def full_version_marker(self) -> int:
+    def hardcore_marker(self) -> int:
         return int(self.data[0x45])
 
-    @full_version_marker.setter
-    def full_version_marker(self, value: int) -> None:
+    @hardcore_marker.setter
+    def hardcore_marker(self, value: int) -> None:
         self.data[0x45] = int(value) & 0xFF
 
     def ensure_date_fields(self, now: dt.date | None = None) -> None:
@@ -305,7 +305,13 @@ def scores_path_for_mode(
     return _with_player_count_suffix(path, player_count=int(player_count))
 
 
-def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage_major: int = 0, quest_stage_minor: int = 0) -> Path:
+def scores_path_for_config(
+    base_dir: Path,
+    config: CrimsonConfig,
+    *,
+    quest_stage_major: int = 0,
+    quest_stage_minor: int = 0,
+) -> Path:
     mode = _known_game_mode(config.gameplay.mode)
     root = scores_dir_for_base_dir(base_dir)
     match mode:
@@ -399,6 +405,7 @@ def sort_highscores(records: list[HighScoreRecord], *, game_mode_id: GameMode) -
         case GameMode.RUSH:
             return sorted(records, key=lambda r: int(r.survival_elapsed_ms), reverse=True)
         case GameMode.QUESTS:
+
             def _quest_key(r: HighScoreRecord) -> tuple[int, int]:
                 value = int(r.survival_elapsed_ms)
                 if value == 0:

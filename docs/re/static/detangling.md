@@ -596,7 +596,7 @@ tail bytes are validated against the current date and the full‑version flag.
 | `0x42` | `DAT_00487082` | Month (1–12) | Stored from `local_system_time._2_1_` (`DAT_00495ac8`); compared to `local_system_time._2_2_`. |
 | `0x43` | `DAT_00487083` | Year‑2000 | Stored as `(char)local_system_time + '0'` (`DAT_00495ac8`, low byte wraps); compared to `year - 2000`. |
 | `0x44` | `DAT_00487084` | Score flags | Bit 0 gates update vs append (and load gating in `highscore_load_table`); bit 1 is set to `2` when replacing an existing record and bypasses the load gate; bit 2 marks the entry selected for display after duplicate reduction. |
-| `0x45` | `DAT_00487085` | Full‑version marker | Set to `0x75` (`'u'`) when `DAT_00480791 != 0`; checked in quest‑mode load to accept full/limited records. |
+| `0x45` | `DAT_00487085` | Hardcore marker | Set to `0x75` (`'u'`) when `config_hardcore != 0`; checked in quest‑mode load to accept hardcore/normal records. |
 | `0x46` | `DAT_00487040 + 0x46` | Sentinel `0x7c` (`'|'`) | Initialized in `highscore_load_table` default‑record loop. |
 | `0x47` | `DAT_00487040 + 0x47` | Sentinel `0xff` | Initialized in `highscore_load_table` default‑record loop. |
 

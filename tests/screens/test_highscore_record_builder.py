@@ -48,6 +48,7 @@ def test_build_highscore_record_for_game_over_uses_weapon_stats_and_shots() -> N
     assert record.shots_fired == 20
     assert record.shots_hit == 15
     assert record.game_mode_id == GameMode.SURVIVAL
+    assert record.hardcore_marker == 0
 
 
 def test_build_highscore_record_for_game_over_can_skip_clamp() -> None:
@@ -67,3 +68,19 @@ def test_build_highscore_record_for_game_over_can_skip_clamp() -> None:
 
     assert record.shots_fired == 3
     assert record.shots_hit == 5
+
+
+def test_build_highscore_record_for_game_over_marks_hardcore() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+
+    record = build_highscore_record_for_game_over(
+        state=state,
+        player=player,
+        survival_elapsed_ms=0,
+        creature_kill_count=0,
+        game_mode_id=GameMode.QUESTS,
+        hardcore=True,
+    )
+
+    assert record.hardcore_marker == 0x75

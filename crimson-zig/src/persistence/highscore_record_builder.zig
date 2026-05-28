@@ -14,6 +14,7 @@ pub const BuildRecordOptions = struct {
     shots_fired: ?i32 = null,
     shots_hit: ?i32 = null,
     clamp_shots_hit: bool = true,
+    hardcore: bool = false,
 };
 
 pub fn clampShots(fired: i32, hit: i32) ShotCounts {
@@ -71,6 +72,7 @@ pub fn buildHighscoreRecordForGameOver(
     };
     record.setShotsFired(@intCast(@max(0, shot_counts.fired)));
     record.setShotsHit(@intCast(@max(0, shot_counts.hit)));
+    record.setHardcoreMarker(if (options.hardcore) 0x75 else 0);
     return record;
 }
 
@@ -124,6 +126,7 @@ test "build highscore record uses weapon stats and shots" {
     try std.testing.expectEqual(@as(u32, 20), record.shotsFired());
     try std.testing.expectEqual(@as(u32, 15), record.shotsHit());
     try std.testing.expectEqual(@as(?game_ids.GameModeId, .survival), record.gameModeId());
+    try std.testing.expectEqual(@as(u8, 0), record.hardcoreMarker());
 }
 
 test "build highscore record can skip clamp" {
@@ -148,4 +151,23 @@ test "build highscore record can skip clamp" {
 
     try std.testing.expectEqual(@as(u32, 3), record.shotsFired());
     try std.testing.expectEqual(@as(u32, 5), record.shotsHit());
+}
+
+test "build highscore record marks hardcore" {
+    const state = state_mod.GameplayState.init(0);
+    const player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{},
+    };
+
+    const record = buildHighscoreRecordForGameOver(
+        state,
+        player,
+        0,
+        0,
+        .quests,
+        .{ .hardcore = true },
+    );
+
+    try std.testing.expectEqual(@as(u8, 0x75), record.hardcoreMarker());
 }

@@ -909,7 +909,7 @@ typedef struct highscore_record_t {
     unsigned char month;
     unsigned char year_offset;
     unsigned char flags;
-    unsigned char full_version_marker;
+    unsigned char hardcore_marker;
     unsigned char sentinel_pipe;
     unsigned char sentinel_ff;
 } highscore_record_t;

@@ -83,6 +83,7 @@ class QuestResultsView:
         record.score_xp = int(outcome.experience)
         record.creature_kill_count = int(outcome.kill_count)
         record.most_used_weapon_id = outcome.most_used_weapon_id
+        record.hardcore_marker = 0x75 if self.state.config.gameplay.hardcore else 0
         fired = max(0, int(outcome.shots_fired))
         hit = max(0, min(int(outcome.shots_hit), fired))
         record.shots_fired = fired
@@ -166,6 +167,7 @@ class QuestResultsView:
         if ui is None:
             return
         audio = self.state.audio
+
         def _play(name: SfxId) -> None:
             if audio is None:
                 return

@@ -168,11 +168,11 @@ pub const HighScoreRecord = struct {
         self.data[0x44] = value;
     }
 
-    pub fn fullVersionMarker(self: *const HighScoreRecord) u8 {
+    pub fn hardcoreMarker(self: *const HighScoreRecord) u8 {
         return self.data[0x45];
     }
 
-    pub fn setFullVersionMarker(self: *HighScoreRecord, value: u8) void {
+    pub fn setHardcoreMarker(self: *HighScoreRecord, value: u8) void {
         self.data[0x45] = value;
     }
 

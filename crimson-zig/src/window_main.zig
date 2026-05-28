@@ -2635,7 +2635,12 @@ const App = struct {
             elapsed_ms,
             @intCast(runner.session.creatures.kill_count),
             runner.session.game_mode,
-            shot_options,
+            .{
+                .shots_fired = shot_options.shots_fired,
+                .shots_hit = shot_options.shots_hit,
+                .clamp_shots_hit = shot_options.clamp_shots_hit,
+                .hardcore = runner.session.state.hardcore,
+            },
         );
 
         const score_path = persistence.highscores.scoresPathForMode(

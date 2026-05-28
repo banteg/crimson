@@ -88,6 +88,7 @@ class QuestFailedView:
         self._outcome = None
         self._record = None
         self._quest_title = ""
+
     def update(self, dt: float) -> None:
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
@@ -125,7 +126,12 @@ class QuestFailedView:
         resources = require_runtime_resources(self.state)
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET * scale, QUEST_FAILED_BUTTON_Y_OFFSET * scale)
 
-        retry_w = button_width(resources, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
+        retry_w = button_width(
+            resources,
+            self._retry_button.label,
+            scale=scale,
+            force_wide=self._retry_button.force_wide,
+        )
         if button_update(
             self._retry_button,
             pos=button_pos,
@@ -207,14 +213,22 @@ class QuestFailedView:
 
         font = resources.small_font
         text_color = rl.Color(235, 235, 235, 255)
-        draw_small_text(font, self._failure_message(), panel_top_left + Vec2(QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET), text_color)
+        draw_small_text(
+            font,
+            self._failure_message(),
+            panel_top_left + Vec2(QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET),
+            text_color,
+        )
         self._draw_score_preview(font, panel_top_left=panel_top_left)
 
         scale = 1.0
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
         retry_w = button_width(
-            resources, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide,
+            resources,
+            self._retry_button.label,
+            scale=scale,
+            force_wide=self._retry_button.force_wide,
         )
         button_draw(resources, self._retry_button, pos=button_pos, width=retry_w, scale=scale)
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
@@ -324,6 +338,7 @@ class QuestFailedView:
         record.score_xp = int(outcome.experience)
         record.creature_kill_count = int(outcome.kill_count)
         record.most_used_weapon_id = outcome.most_used_weapon_id
+        record.hardcore_marker = 0x75 if self.state.config.gameplay.hardcore else 0
         fired = max(0, int(outcome.shots_fired))
         hit = max(0, min(int(outcome.shots_hit), fired))
         record.shots_fired = fired
@@ -402,6 +417,7 @@ class QuestFailedView:
         # `FUN_004411c0`: horizontal 192px separator at x-16 after the score row.
         line_pos = score_pos + Vec2(-16.0, 52.0)
         rl.draw_rectangle(int(line_pos.x), int(line_pos.y), int(192.0), int(1.0), separator_color)
+
 
 __all__ = [
     "QUEST_FAILED_PANEL_SLIDE_DURATION_MS",

@@ -41,6 +41,7 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
+
 class RushMode(BaseGameplayMode):
     def __init__(
         self,
@@ -91,9 +92,7 @@ class RushMode(BaseGameplayMode):
         sim_unlock_index_full = int(status.quest_unlock_index_full) if status is not None else 0
         status_unlock_index = int(base_status.quest_unlock_index) if base_status is not None else int(sim_unlock_index)
         status_unlock_index_full = (
-            int(base_status.quest_unlock_index_full)
-            if base_status is not None
-            else int(sim_unlock_index_full)
+            int(base_status.quest_unlock_index_full) if base_status is not None else int(sim_unlock_index_full)
         )
         quest_unlock_index = int(sim_unlock_index)
         terrain = advance_unlock_terrain(
@@ -175,6 +174,7 @@ class RushMode(BaseGameplayMode):
             survival_elapsed_ms=int(self._session_elapsed_ms()),
             creature_kill_count=int(self.creatures.kill_count),
             game_mode_id=game_mode_id,
+            hardcore=bool(self.hardcore),
         )
 
         self._game_over_record = record

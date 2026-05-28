@@ -32,6 +32,7 @@ def build_highscore_record_for_game_over(
     shots_fired: int | None = None,
     shots_hit: int | None = None,
     clamp_shots_hit: bool = True,
+    hardcore: bool = False,
 ) -> HighScoreRecord:
     record = HighScoreRecord.blank()
     record.score_xp = int(player.experience)
@@ -39,7 +40,9 @@ def build_highscore_record_for_game_over(
     record.creature_kill_count = int(creature_kill_count)
 
     weapon_id = most_used_weapon_id_for_player(
-        state, player_index=int(player.index), fallback_weapon_id=player.weapon.weapon_id,
+        state,
+        player_index=int(player.index),
+        fallback_weapon_id=player.weapon.weapon_id,
     )
     record.most_used_weapon_id = weapon_id
 
@@ -54,4 +57,5 @@ def build_highscore_record_for_game_over(
     record.shots_fired = fired
     record.shots_hit = hit
     record.game_mode_id = game_mode_id
+    record.hardcore_marker = 0x75 if bool(hardcore) else 0
     return record

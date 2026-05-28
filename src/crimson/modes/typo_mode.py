@@ -174,6 +174,7 @@ class TypoShooterMode(BaseGameplayMode):
             shots_fired=int(shots_fired),
             shots_hit=int(shots_hit),
             clamp_shots_hit=False,
+            hardcore=bool(self.hardcore),
         )
 
         self._game_over_record = record

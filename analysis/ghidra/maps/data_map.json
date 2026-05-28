@@ -3591,8 +3591,8 @@
     },
     {
       "address": "0x00487085",
-      "comment": "High score record full-version marker (offset 0x45).",
-      "name": "highscore_full_version_marker",
+      "comment": "High score record hardcore marker (offset 0x45); 0x75 when config_hardcore is set.",
+      "name": "highscore_hardcore_marker",
       "program": "crimsonland.exe"
     },
     {
