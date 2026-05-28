@@ -147,9 +147,10 @@ Validation highlights (see the evidence appendix for snippets):
 - `grim_check_device` has no decompiled callsites yet; grim.dll returns a D3D-style status code.
 - `grim_draw_fullscreen_color` only draws when alpha is positive and forces texture stage 0 to null.
 
-## Grim config IDs (vtable `+0x20` / `grim_set_config_var`)
+## Grim state/config IDs (vtable `+0x20` / `grim_set_config_var`)
 
-High-confidence IDs from the grim.dll switch body (partial list):
+High-confidence IDs from the grim.dll switch body and recovered Grim2D SDK
+state names (partial list):
 
 | ID | Label (proposed) | Behavior (grim.dll) | Notes |
 | --- | --- | --- | --- |
@@ -158,7 +159,7 @@ High-confidence IDs from the grim.dll switch body (partial list):
 | `0x13` | `GRIM_CFG_SRC_BLEND` | `SetRenderState(D3DRS_SRCBLEND, value)` | UI uses `5` (SRCALPHA). |
 | `0x14` | `GRIM_CFG_DEST_BLEND` | `SetRenderState(D3DRS_DESTBLEND, value)` | UI uses `6` (INVSRCALPHA). |
 | `0x15` | `GRIM_CFG_TEX_FILTER` | `SetTextureStageState(MINFILTER/MAGFILTER, value)` | When `value==3`, sets anisotropy. |
-| `0x18` | `GRIM_CFG_UI_SCALE` (tentative) | Default path: stores value in config table | Called with float-like values (0.5, 1.0). |
+| `0x18` | `GRIM_STATE_FONTSCALE` | Default path: stores value in config table | SDK `grSTATE_FONTSCALE`; called with float-like values (0.5, 1.0). |
 | `0x1b` | `GRIM_CFG_TEXTURE_FACTOR` | `SetRenderState(D3DRS_TEXTUREFACTOR, packed RGB)` | Uses float→int conversions before packing. |
 | `0x1c` | `GRIM_CFG_GAMMA_RAMP` | Builds `D3DGAMMARAMP` and calls `SetGammaRamp` | Triggered by `setGammaRamp`. |
 | `0x29` | `GRIM_CFG_BACKBUFFER_WIDTH` | Sets `grim_backbuffer_width` | Mirrors config table. |
