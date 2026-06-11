@@ -1614,6 +1614,10 @@ class CreaturePool:
                 child_idx = self._alloc_slot()
                 if child_idx is None:
                     continue
+                # Native `creature_alloc_slot` draws a phase seed (rand & 0x17f) that the
+                # subsequent struct copy from the parent immediately overwrites; only the
+                # draw itself matters for the stream.
+                rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED)
                 child = msgspec.structs.replace(creature)
                 child.phase_seed = float(int(rng.rand_tagged(phase_seed_caller)) & 0xFF)
                 child.heading = _wrap_angle(float(creature.heading) + float(heading_offset))

@@ -11,7 +11,7 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 def test_split_on_death_spawns_two_smaller_children() -> None:
     state = GameplayState()
-    rng = ScriptedCrand([0x123, 0x456], fallback=ScriptedCrand.Fallback.ZERO)
+    rng = ScriptedCrand([0x111, 0x123, 0x222, 0x456], fallback=ScriptedCrand.Fallback.ZERO)
 
     pool = CreaturePool()
     parent = pool.entries[0]
@@ -53,8 +53,12 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
     assert_float_close(child2.move_speed, parent.move_speed + 0.1)
     assert_float_close(child1.contact_damage, parent.contact_damage * 0.7)
     assert_float_close(child2.contact_damage, parent.contact_damage * 0.7)
-    assert [record.caller for record in rng.records_since()[:2]] == [
+    # Native draws two rands per child: the alloc-slot phase seed (immediately
+    # overwritten by the parent struct copy) and the final phase seed.
+    assert [record.caller for record in rng.records_since()[:4]] == [
+        RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
         RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_1_PHASE_SEED,
+        RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
         RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_2_PHASE_SEED,
     ]
     assert_float_close(child1.reward_value, parent.reward_value * (2.0 / 3.0))

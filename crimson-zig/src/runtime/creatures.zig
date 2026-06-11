@@ -3457,6 +3457,10 @@ fn spawnSplitChildrenOnDeath(
     const heading_offsets = [_]f32{ -native_half_pi, native_half_pi };
     for (heading_offsets) |heading_offset| {
         const child_idx = allocCreatureSlot(self, &state.rng);
+        // Native creature_alloc_slot draws a phase seed (rand & 0x17f) that the
+        // struct copy from the parent immediately overwrites; only the draw
+        // itself matters for the stream.
+        _ = state.rng.randTagged(rng_callers.creature_alloc_slot_phase_seed);
         var child = source;
         child.active = true;
         child.phase_seed = @floatFromInt(state.rng.randTagged(if (heading_offset < 0.0) rng_callers.creature_handle_death_split_child_1_phase_seed else rng_callers.creature_handle_death_split_child_2_phase_seed) & 0xff);
