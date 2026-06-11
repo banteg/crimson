@@ -69,7 +69,9 @@ Rewrite behavior:
 Native behavior:
 
 - `perk_apply` computes `roll = (crt_rand() % 50) + 1`.
-- It multiplies each alive player's health by `roll`, then clamps to `100`.
+- It multiplies each player's health by `roll`, then clamps to `100`. The loop
+  has no alive check: dead players also consume a `crt_rand()` draw, have their
+  (negative) health multiplied, and spawn a heal burst at the corpse.
 
 Why it’s likely a bug:
 
