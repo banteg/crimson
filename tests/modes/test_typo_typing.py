@@ -177,13 +177,18 @@ def test_typo_spawn_step_tags_exact_spawn_tinted_callers() -> None:
         for record in world.state.rng.records_since()
         if record.caller
         in {
+            RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
             RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING,
             RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE,
         }
     ]
+    # Native creature_spawn_tinted draws three rands per spawn: the alloc-slot
+    # phase seed, then heading, then size.
     assert callers == [
+        RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
         RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING,
         RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE,
+        RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
         RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING,
         RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE,
     ]
