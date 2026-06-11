@@ -194,3 +194,52 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
 
     assert creature.flags & CreatureFlags.SELF_DAMAGE_TICK
     assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG)
+
+
+def test_poison_bullets_gate_applies_to_creature_owned_projectiles() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+    world.state.rng = ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # rand & 7 == 1
+
+    player = PlayerState(index=0, pos=Vec2(900.0, 900.0))
+    player.perk_counts[int(PerkId.POISON_BULLETS)] = 1
+    world.players.append(player)
+
+    creature = world.creatures.entries[0]
+    creature.active = True
+    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.pos = Vec2(100.0, 100.0)
+    creature.hp = 1000.0
+    creature.max_hp = 1000.0
+
+    # Native gates the poison roll on the global perk count, so creature-owned
+    # projectiles (splitter children, shock-chain segments) draw it too.
+    world.state.projectiles.spawn(
+        pos=Vec2(creature.pos.x, creature.pos.y),
+        angle=0.0,
+        type_id=ProjectileTemplateId.SPLITTER_GUN,
+        owner=OwnerRef.from_creature(7),
+        travel_budget=45.0,
+    )
+
+    events = world.step(
+        0.016,
+        inputs=[PlayerInput()],
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+    assert events.hits
+    assert creature.flags & CreatureFlags.SELF_DAMAGE_TICK
+    assert RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE in {
+        record.caller for record in world.state.rng.records_since()
+    }

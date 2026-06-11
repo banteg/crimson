@@ -62,16 +62,18 @@ class _ProjectileHitPerkCtx(msgspec.Struct):
     proj: Projectile
     creature: CreatureState
     rng: CrandLike
-    owner_perk_active: Callable[[OwnerRef, int], bool]
-    poison_idx: int
+    poison_bullets_active: bool
 
 
 _ProjectileHitPerkHook = Callable[[_ProjectileHitPerkCtx], None]
 
 
 def _projectile_hit_perk_poison_bullets(ctx: _ProjectileHitPerkCtx) -> None:
+    # Native gates on the global perk count, so the rand is drawn for every
+    # projectile hit while any player owns the perk - including creature-owned
+    # projectiles such as splitter children and shock-chain segments.
     if (
-        ctx.owner_perk_active(ctx.proj.owner, int(ctx.poison_idx))
+        ctx.poison_bullets_active
         and (ctx.rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE) & 7) == 1
     ):
         ctx.creature.flags |= CreatureFlags.SELF_DAMAGE_TICK

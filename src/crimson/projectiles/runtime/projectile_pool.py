@@ -183,6 +183,7 @@ class ProjectilePool:
 
         barrel_greaser_active = False
         ion_gun_master_active = False
+        poison_bullets_active = False
         ion_scale = float(ion_aoe_scale)
         poison_idx = int(PerkId.POISON_BULLETS)
         barrel_idx = int(PerkId.BARREL_GREASER)
@@ -194,18 +195,11 @@ class ProjectilePool:
                 barrel_greaser_active = True
             if 0 <= ion_idx < len(perk_counts) and int(perk_counts[ion_idx]) > 0:
                 ion_gun_master_active = True
-            if barrel_greaser_active and ion_gun_master_active:
-                break
+            if 0 <= poison_idx < len(perk_counts) and int(perk_counts[poison_idx]) > 0:
+                poison_bullets_active = True
 
         if ion_scale == 1.0 and ion_gun_master_active:
             ion_scale = 1.2
-
-        def _owner_perk_active(owner: OwnerRef, perk_idx: int) -> bool:
-            player_index = owner.player_index_in_bounds(len(players))
-            if player_index is None:
-                return False
-            perk_counts = players[player_index].perk_counts
-            return 0 <= perk_idx < len(perk_counts) and int(perk_counts[perk_idx]) > 0
 
         effects: EffectPool | None = runtime_state.effects
         sfx_queue: MutableSequence[SfxId] | None = runtime_state.sfx_queue
@@ -402,8 +396,7 @@ class ProjectilePool:
                         proj=proj,
                         creature=creature,
                         rng=rng,
-                        owner_perk_active=_owner_perk_active,
-                        poison_idx=poison_idx,
+                        poison_bullets_active=poison_bullets_active,
                     )
                     for hook in _PROJECTILE_HIT_PERK_HOOKS:
                         hook(perk_ctx)

@@ -357,15 +357,22 @@ pub const ProjectilePool = struct {
                 }
 
                 const owner_player_idx = proj.owner.playerIndexInBounds(players.len);
-                const owner_player = if (owner_player_idx) |idx| &players[idx] else null;
                 const presentation_player = if (owner_player_idx) |idx| &players[idx] else if (players.len > 0) &players[0] else null;
 
-                if (owner_player) |player| {
+                // Native gates on the global perk count, so the rand is drawn for
+                // every projectile hit while any player owns the perk - including
+                // creature-owned projectiles such as splitter children.
+                var poison_bullets_active = false;
+                for (players) |*player| {
                     if (perks.perkActive(player, PerkId.poison_bullets)) {
-                        const poison_roll = state.rng.randTagged(rng_callers.projectile_update_poison_bullets_gate);
-                        if ((poison_roll & 7) == 1) {
-                            creatures.entries[hit_idx.?].flags |= spawn_mod.CreatureFlags.self_damage_tick;
-                        }
+                        poison_bullets_active = true;
+                        break;
+                    }
+                }
+                if (poison_bullets_active) {
+                    const poison_roll = state.rng.randTagged(rng_callers.projectile_update_poison_bullets_gate);
+                    if ((poison_roll & 7) == 1) {
+                        creatures.entries[hit_idx.?].flags |= spawn_mod.CreatureFlags.self_damage_tick;
                     }
                 }
                 if (presentation_player) |player| {
