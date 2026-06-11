@@ -71,6 +71,7 @@ nav = [
       { "Original bugs" = "rewrite/original-bugs.md" },
       { "Typ-o-Shooter text input" = "rewrite/parity/typo-mode-text-input.md" },
       { "Delta-time parity reference" = "rewrite/parity/delta-time.md" },
+      { "Parity audit 2026-06-12" = "rewrite/parity/audit-2026-06-12.md" },
     ]},
   ]},
   { "Reverse Engineering" = [
