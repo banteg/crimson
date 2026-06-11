@@ -159,7 +159,9 @@ def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
 
 def quest_post_step(ctx: PostStepContext, spawn: QuestSpawnState) -> None:
     state = ctx.world.state
-    dt_ms = float(ctx.step_result.timing.dt_ms_i32)
+    # Native scales frame_dt_ms before quest_mode_update runs, so the quest
+    # timeline, stall timer, and completion transition slow under Reflex Boost.
+    dt_ms = float(ctx.step_result.timing.dt_sim_ms_i32)
     creatures_none_active = not any(c.active for c in ctx.world.creatures.entries)
 
     entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_mode_spawns(
