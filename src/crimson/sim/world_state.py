@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import cast
 
 import msgspec
@@ -113,7 +114,11 @@ class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeath
             creature_damage_runtime=self,
         )
 
-    def on_creature_lethal(self, creature_index: int, death_sfx: tuple[SfxId, ...]) -> None:
+    def on_creature_lethal(
+        self,
+        creature_index: int,
+        resolve_death_sfx: Callable[[], tuple[SfxId, ...]],
+    ) -> None:
         self.world._record_creature_death(
             creature_index=int(creature_index),
             dt=float(self.dt),
@@ -122,7 +127,7 @@ class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeath
             fx_queue=self.fx_queue,
             deaths=self.deaths,
             sfx=self.sfx,
-            death_sfx=death_sfx,
+            resolve_death_sfx=resolve_death_sfx,
         )
 
     def on_secondary_detonation_kill(self, creature_index: int) -> None:
@@ -497,7 +502,7 @@ class WorldState(msgspec.Struct):
         deaths: list[CreatureDeath],
         keep_corpse: bool = True,
         sfx: list[SfxId],
-        death_sfx: tuple[SfxId, ...] = (),
+        resolve_death_sfx: Callable[[], tuple[SfxId, ...]] | None = None,
     ) -> None:
         death = self.creatures.handle_death(
             int(creature_index),
@@ -512,7 +517,8 @@ class WorldState(msgspec.Struct):
             keep_corpse=bool(keep_corpse),
         )
         deaths.append(death)
-        sfx.extend(death_sfx)
+        if resolve_death_sfx is not None:
+            sfx.extend(resolve_death_sfx())
 
     def _prepare_projectile_hit_presentation(
         self,

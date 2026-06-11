@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
@@ -28,7 +29,11 @@ class _FinalRevengeCreatureDamageRuntime(CreatureDamageRuntime):
     fx_queue: FxQueue | None
     deaths: list[CreatureDeath]
 
-    def on_creature_lethal(self, creature_index: int, death_sfx: tuple[SfxId, ...]) -> None:
+    def on_creature_lethal(
+        self,
+        creature_index: int,
+        resolve_death_sfx: Callable[[], tuple[SfxId, ...]],
+    ) -> None:
         self.deaths.append(
             self.creatures.handle_death(
                 int(creature_index),
@@ -42,7 +47,7 @@ class _FinalRevengeCreatureDamageRuntime(CreatureDamageRuntime):
                 fx_queue=self.fx_queue,
             ),
         )
-        self.state.sfx_queue.extend(death_sfx)
+        self.state.sfx_queue.extend(resolve_death_sfx())
 
 
 def apply_final_revenge_on_player_death(

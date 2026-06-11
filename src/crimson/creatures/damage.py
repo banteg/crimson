@@ -229,15 +229,14 @@ def creature_apply_damage(
     dt: float,
     players: list[PlayerState],
     rng: CrandLike,
-    effects: EffectPool | None = None,
-    detail_preset: int = 5,
 ) -> bool:
     """Apply damage to a creature, returning True if the hit killed it.
 
     This is a partial port of `creature_apply_damage` (FUN_004207c0).
 
     Notes:
-    - Death side-effects are handled by the caller.
+    - Death side-effects (handle_death, then shock burst / death SFX) are handled
+      by the caller in native order.
     - `damage_type` is a native integer category; call sites must supply it.
     """
 
@@ -284,12 +283,6 @@ def creature_apply_damage(
         else:
             creature.lifecycle_stage = float(f32(float(creature.lifecycle_stage) - 0.001))
         creature.vel = creature.vel - impulse * 2.0
-        _damage_lethal_ranged_shock_burst(
-            creature=creature,
-            rng=rng,
-            effects=effects,
-            detail_preset=int(detail_preset),
-        )
         return True
 
     return False
@@ -327,13 +320,20 @@ def creature_apply_damage_with_lethal_followup(
         dt=float(dt),
         players=players,
         rng=rng,
-        effects=effects,
-        detail_preset=int(detail_preset),
     )
     if killed and death_start_needed:
-        creature_damage_runtime.on_creature_lethal(
-            int(creature_index),
-            resolve_native_death_sfx(creature, rng=rng, preserve_bugs=preserve_bugs),
-        )
+
+        def _resolve_death_sfx() -> tuple[SfxId, ...]:
+            # Native lethal order: `creature_handle_death` runs first, then either the
+            # shock-burst rand loop (`flags & 0x10`) or the death-SFX rand draw.
+            _damage_lethal_ranged_shock_burst(
+                creature=creature,
+                rng=rng,
+                effects=effects,
+                detail_preset=int(detail_preset),
+            )
+            return resolve_native_death_sfx(creature, rng=rng, preserve_bugs=preserve_bugs)
+
+        creature_damage_runtime.on_creature_lethal(int(creature_index), _resolve_death_sfx)
         return True
     return False

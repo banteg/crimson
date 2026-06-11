@@ -345,7 +345,11 @@ class _CreatureInteractionPlayerDeathRuntime(PlayerDeathRuntime):
 class _CreatureInteractionCreatureDamageRuntime(CreatureDamageRuntime):
     ctx: _CreatureInteractionCtx
 
-    def on_creature_lethal(self, creature_index: int, death_sfx: tuple[SfxId, ...]) -> None:
+    def on_creature_lethal(
+        self,
+        creature_index: int,
+        resolve_death_sfx: Callable[[], tuple[SfxId, ...]],
+    ) -> None:
         ctx = self.ctx
         creature = ctx.creature
         ctx.deaths.append(
@@ -361,7 +365,7 @@ class _CreatureInteractionCreatureDamageRuntime(CreatureDamageRuntime):
                 fx_queue=ctx.fx_queue,
             ),
         )
-        ctx.sfx.extend(death_sfx)
+        ctx.sfx.extend(resolve_death_sfx())
         if creature.active:
             ctx.pool._tick_dead(
                 creature,
@@ -391,7 +395,11 @@ class _CreaturePoolCreatureDamageRuntime(CreatureDamageRuntime):
     deaths: list[CreatureDeath]
     sfx: list[SfxId]
 
-    def on_creature_lethal(self, creature_index: int, death_sfx: tuple[SfxId, ...]) -> None:
+    def on_creature_lethal(
+        self,
+        creature_index: int,
+        resolve_death_sfx: Callable[[], tuple[SfxId, ...]],
+    ) -> None:
         self.deaths.append(
             self.pool.handle_death(
                 int(creature_index),
@@ -405,7 +413,7 @@ class _CreaturePoolCreatureDamageRuntime(CreatureDamageRuntime):
                 fx_queue=self.fx_queue,
             ),
         )
-        self.sfx.extend(death_sfx)
+        self.sfx.extend(resolve_death_sfx())
 
 
 def _creature_interaction_plaguebearer_spread(ctx: _CreatureInteractionCtx) -> None:
