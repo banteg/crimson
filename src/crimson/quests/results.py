@@ -1,8 +1,24 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 import msgspec
+
+if TYPE_CHECKING:
+    from ..persistence.save_status import GameStatusData
+
+
+def advance_quest_unlocks(status: GameStatusData, *, next_unlock: int, hardcore: bool) -> None:
+    """Advance quest unlock progression on completion.
+
+    Native `quest_mode_update` always raises `_quest_unlock_index`; hardcore
+    completion additionally raises `_quest_unlock_index_full`.
+    """
+    if int(next_unlock) > int(status.quest_unlock_index):
+        status.quest_unlock_index = int(next_unlock)
+    if hardcore and int(next_unlock) > int(status.quest_unlock_index_full):
+        status.quest_unlock_index_full = int(next_unlock)
 
 
 class QuestFinalTime(msgspec.Struct, frozen=True):

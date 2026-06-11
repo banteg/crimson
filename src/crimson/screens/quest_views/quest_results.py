@@ -28,7 +28,7 @@ class QuestResultsView:
 
     def open(self) -> None:
         from ...persistence.highscores import HighScoreRecord
-        from ...quests.results import compute_quest_final_time
+        from ...quests.results import advance_quest_unlocks, compute_quest_final_time
         from ..results.quest_results import QuestResultsUi
 
         self._action = None
@@ -118,12 +118,7 @@ class QuestResultsView:
             next_unlock = int(global_index + 1)
             hardcore = self.state.config.gameplay.hardcore
             try:
-                if hardcore:
-                    if next_unlock > int(self.state.status.quest_unlock_index_full):
-                        self.state.status.quest_unlock_index_full = next_unlock
-                else:
-                    if next_unlock > int(self.state.status.quest_unlock_index):
-                        self.state.status.quest_unlock_index = next_unlock
+                advance_quest_unlocks(self.state.status, next_unlock=next_unlock, hardcore=hardcore)
             except (KeyError, TypeError, ValueError) as exc:
                 self._log_nonfatal("failed to update quest unlock progression", exc)
 
