@@ -650,12 +650,17 @@ fn emitProjectileHitPresentationPre(
         }
     }
 
+    // Native wraps the splatter block (including its spread / reverse-gate rand
+    // draws) in `if (config_violence_disabled == '\0')`; the bloody-mess decal
+    // loop below runs regardless of the violence setting.
     if (perks.perkActive(player, PerkId.bloody_mess_quick_learner)) {
-        for (0..8) |_| {
-            const spread = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_bloody_mess_spread) & 0x1f)) - 16.0) * 0.0625;
-            effects.spawnBloodSplatter(state, hit_pos, base_angle + spread, 0.0, detail_preset, state.gore_disabled);
+        if (state.gore_disabled == 0) {
+            for (0..8) |_| {
+                const spread = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_bloody_mess_spread) & 0x1f)) - 16.0) * 0.0625;
+                effects.spawnBloodSplatter(state, hit_pos, base_angle + spread, 0.0, detail_preset, state.gore_disabled);
+            }
+            effects.spawnBloodSplatter(state, hit_pos, base_angle + std.math.pi, 0.0, detail_preset, state.gore_disabled);
         }
-        effects.spawnBloodSplatter(state, hit_pos, base_angle + std.math.pi, 0.0, detail_preset, state.gore_disabled);
 
         var lo: i32 = -30;
         var hi: i32 = 30;
@@ -672,7 +677,7 @@ fn emitProjectileHitPresentationPre(
             lo -= 10;
             hi += 10;
         }
-    } else if (!freeze_active) {
+    } else if (!freeze_active and state.gore_disabled == 0) {
         for (0..2) |_| {
             effects.spawnBloodSplatter(state, hit_pos, base_angle, 0.0, detail_preset, state.gore_disabled);
             if ((state.rng.randTagged(rng_callers.projectile_update_default_reverse_splatter_gate) & 7) == 2) {

@@ -211,27 +211,31 @@ def queue_projectile_decals_pre_hit(
             )
 
     # Native `projectile_update` spawns blood splatter before terrain decals.
+    # The whole splatter block (including its spread / reverse-gate rand draws)
+    # sits inside `if (config_violence_disabled == '\0')`; the bloody-mess decal
+    # loop below runs regardless of the violence setting.
     if bloody:
-        for _ in range(8):
-            spread = (
-                float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_SPREAD) & 0x1F) - 16.0
-            ) * 0.0625
+        if not violence_disabled:
+            for _ in range(8):
+                spread = (
+                    float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_BLOODY_MESS_SPREAD) & 0x1F) - 16.0
+                ) * 0.0625
+                state.effects.spawn_blood_splatter(
+                    pos=hit.hit,
+                    angle=base_angle + spread,
+                    age=0.0,
+                    rng=rng,
+                    detail_preset=detail_preset,
+                    violence_disabled=violence_disabled,
+                )
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,
-                angle=base_angle + spread,
+                angle=base_angle + math.pi,
                 age=0.0,
                 rng=rng,
                 detail_preset=detail_preset,
                 violence_disabled=violence_disabled,
             )
-        state.effects.spawn_blood_splatter(
-            pos=hit.hit,
-            angle=base_angle + math.pi,
-            age=0.0,
-            rng=rng,
-            detail_preset=detail_preset,
-            violence_disabled=violence_disabled,
-        )
 
         lo = -30
         hi = 30
@@ -255,7 +259,7 @@ def queue_projectile_decals_pre_hit(
                 )
             lo -= 10
             hi += 10
-    elif not freeze_active:
+    elif not freeze_active and not violence_disabled:
         for _ in range(2):
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,
