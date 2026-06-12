@@ -346,3 +346,25 @@ def test_perks_update_effects_jinxed_timer_uses_f32_underflow_threshold() -> Non
         expected_after_state=before_state,
     )
     assert rng.values_since(before_calls) == []
+
+
+def test_perks_update_effects_jinxed_award_ignores_double_experience_bonus() -> None:
+    dt = 0.2
+    creatures = [CreatureState() for _ in range(0x17F)]
+    creatures[2].active = True
+    creatures[2].hp = 100.0
+    creatures[2].lifecycle_stage = 16.0
+    creatures[2].reward_value = 12.7
+
+    state = GameplayState()
+    state.bonuses.double_experience = 5.0
+    state.rng = ScriptedCrand([0, 0, 2], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), experience=100, health=50.0)
+    player.perk_counts[int(PerkId.JINXED)] = 1
+
+    perks_update_effects(state, [player], dt, creatures=creatures)
+
+    # Native's Jinxed kill branch has a single XP store with no
+    # bonus_double_xp_timer handling.
+    assert player.experience == 112

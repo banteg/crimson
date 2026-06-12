@@ -699,7 +699,9 @@ pub fn applyJinxedEffects(
     creatures.entries[idx].lifecycle_stage = narrowF32(
         creatures.entries[idx].lifecycle_stage - dt * 20.0,
     );
-    awardExperienceFromReward(state, &players[0], creatures.entries[idx].reward_value);
+    // Native awards the reward exactly once: the Jinxed kill branch has no
+    // Double Experience handling, unlike creature_handle_death.
+    _ = awardExperienceOnceFromReward(&players[0], creatures.entries[idx].reward_value);
     state.sfx_queue.append(.trooper_inpain_01);
 }
 

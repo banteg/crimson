@@ -23,18 +23,6 @@ def _award_experience_once_from_reward(*, player: PlayerState, reward_value: flo
     return int(after - before)
 
 
-def _award_experience_from_reward(ctx: PerksUpdateEffectsCtx, *, reward_value: float) -> int:
-    if not ctx.players:
-        return 0
-    player = ctx.players[0]
-    gained = _award_experience_once_from_reward(player=player, reward_value=float(reward_value))
-    if gained <= 0:
-        return 0
-    if float(ctx.state.bonuses.double_experience) > 0.0:
-        gained += _award_experience_once_from_reward(player=player, reward_value=float(reward_value))
-    return int(gained)
-
-
 def _select_jinxed_accident_target(ctx: PerksUpdateEffectsCtx) -> PlayerState:
     player0 = ctx.players[0]
     if ctx.state.preserve_bugs:
@@ -116,7 +104,12 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         creature = ctx.creatures[idx]
         creature.hp = -1.0
         creature.lifecycle_stage = float(creature.lifecycle_stage) - ctx.dt * 20.0
-        _award_experience_from_reward(ctx, reward_value=float(creature.reward_value))
+        # Native awards the reward exactly once: the Jinxed kill branch has no
+        # Double Experience handling, unlike creature_handle_death.
+        _award_experience_once_from_reward(
+            player=ctx.players[0],
+            reward_value=float(creature.reward_value),
+        )
         ctx.state.sfx_queue.append(SfxId.TROOPER_INPAIN_01)
 
 
