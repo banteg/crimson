@@ -425,11 +425,11 @@ class ProjectilePool:
                     if proj.life_timer != 0.25 and rule.stop_on_hit:
                         proj.life_timer = 0.25
                         jitter = rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER) & 3
-                        jitter_dx = float(f32(float(dir_x) * float(jitter)))
-                        jitter_dy = float(f32(float(dir_y) * float(jitter)))
+                        # Native computes `cos * jitter + pos` in extended
+                        # precision with a single f32 spill on the sum.
                         proj.pos = Vec2(
-                            float(f32(float(proj.pos.x) + float(jitter_dx))),
-                            float(f32(float(proj.pos.y) + float(jitter_dy))),
+                            float(f32(float(dir_x) * float(jitter) + float(proj.pos.x))),
+                            float(f32(float(dir_y) * float(jitter) + float(proj.pos.y))),
                         )
 
                     dist = _damage_distance_f32(proj.origin, proj.pos)

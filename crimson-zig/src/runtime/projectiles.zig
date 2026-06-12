@@ -406,11 +406,11 @@ pub const ProjectilePool = struct {
                 {
                     proj.life_timer = 0.25;
                     const jitter = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_stop_on_hit_jitter) & 3));
-                    const jitter_dx = narrowF32(@as(f32, @floatCast(dir_x_ext * @as(f64, @floatCast(jitter)))));
-                    const jitter_dy = narrowF32(@as(f32, @floatCast(dir_y_ext * @as(f64, @floatCast(jitter)))));
+                    // Native computes `cos * jitter + pos` in extended precision
+                    // with a single f32 spill on the sum.
                     proj.pos = .{
-                        .x = narrowF32(proj.pos.x + jitter_dx),
-                        .y = narrowF32(proj.pos.y + jitter_dy),
+                        .x = @floatCast(dir_x_ext * @as(f64, jitter) + @as(f64, proj.pos.x)),
+                        .y = @floatCast(dir_y_ext * @as(f64, jitter) + @as(f64, proj.pos.y)),
                     };
                 }
 
