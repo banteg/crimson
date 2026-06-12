@@ -3160,25 +3160,26 @@ fn movementDeltaFromHeadingF32(
     move_scale: f32,
     move_speed: f32,
 ) state_mod.Vec2 {
-    // Native computes trig/multiply chain in x87 precision and narrows only
-    // when writing the final velocity components.
+    // The game leaves the x87 in single-precision mode (the Direct3D 8 device
+    // init does not pass D3DCREATE_FPU_PRESERVE): every multiply in the
+    // velocity chain rounds to f32, while fsin/fcos evaluate in extended
+    // precision internally so their rounding lands in the first multiply
+    // (creature_update_all 0x426dab).
     const radians = @as(f64, @floatCast(narrowF32(heading))) - @as(f64, @floatCast(native_half_pi));
 
-    var vx = std.math.cos(radians);
-    vx *= @as(f64, @floatCast(dt));
-    vx *= @as(f64, @floatCast(move_scale));
-    vx *= @as(f64, @floatCast(move_speed));
-    vx *= @as(f64, @floatCast(creature_speed_scale));
+    var vx = narrowF32(std.math.cos(radians) * @as(f64, @floatCast(dt)));
+    vx = narrowF32(vx * move_scale);
+    vx = narrowF32(vx * move_speed);
+    vx = narrowF32(vx * creature_speed_scale);
 
-    var vy = std.math.sin(radians);
-    vy *= @as(f64, @floatCast(dt));
-    vy *= @as(f64, @floatCast(move_scale));
-    vy *= @as(f64, @floatCast(move_speed));
-    vy *= @as(f64, @floatCast(creature_speed_scale));
+    var vy = narrowF32(std.math.sin(radians) * @as(f64, @floatCast(dt)));
+    vy = narrowF32(vy * move_scale);
+    vy = narrowF32(vy * move_speed);
+    vy = narrowF32(vy * creature_speed_scale);
 
     return .{
-        .x = narrowF32(vx),
-        .y = narrowF32(vy),
+        .x = vx,
+        .y = vy,
     };
 }
 

@@ -403,7 +403,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     assert_float_close(near.move_scale, 50.0 * 0.015625)
     assert_float_close(far.move_scale, 1.0)
     assert near_step < far_step
-    assert_float_close(far_step, 0.9999996536134259)
+    assert_float_close(far_step, 0.9999993146409377)
     assert_float_close(near_step, 0.7812510393925548)
 
 

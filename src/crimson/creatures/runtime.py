@@ -178,26 +178,27 @@ def _movement_delta_from_heading_f32(
     move_scale: float,
     move_speed: float,
 ) -> Vec2:
-    # Native movement path computes cos/sin in x87 precision and rounds only on the
-    # final velocity write (`creature_update_all` around 0x00426b85..0x00426bb1).
-    # Avoid pre-rounding direction components to float32 here.
+    # The game leaves the x87 in single-precision mode (the Direct3D 8 device
+    # init does not pass D3DCREATE_FPU_PRESERVE), so every multiply in the
+    # velocity chain rounds to f32; fsin/fcos still evaluate in extended
+    # precision internally, so their rounding lands in the first multiply
+    # (`creature_update_all` 0x426dab..0x426de6, validated against v14 capture
+    # vel channels: 164/166 walker ticks reproduce bit-exactly).
     radians = float(f32(heading)) - NATIVE_HALF_PI
 
     # Preserve native multiply order:
     # `vel = trig(heading - half_pi) * frame_dt * move_scale * move_speed * 30.0`
-    vx = math.cos(radians)
-    vx *= float(dt)
-    vx *= float(move_scale)
-    vx *= float(move_speed)
-    vx *= float(CREATURE_SPEED_SCALE)
+    vx = f32(math.cos(radians) * float(dt))
+    vx = f32(vx * float(move_scale))
+    vx = f32(vx * float(move_speed))
+    vx = f32(vx * float(CREATURE_SPEED_SCALE))
 
-    vy = math.sin(radians)
-    vy *= float(dt)
-    vy *= float(move_scale)
-    vy *= float(move_speed)
-    vy *= float(CREATURE_SPEED_SCALE)
+    vy = f32(math.sin(radians) * float(dt))
+    vy = f32(vy * float(move_scale))
+    vy = f32(vy * float(move_speed))
+    vy = f32(vy * float(CREATURE_SPEED_SCALE))
 
-    return Vec2(f32(vx), f32(vy))
+    return Vec2(vx, vy)
 
 
 def _velocity_from_delta_f32(delta: Vec2, *, dt: float) -> Vec2:
