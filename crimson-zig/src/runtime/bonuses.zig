@@ -255,6 +255,8 @@ pub const BonusPool = struct {
 
             if (entry.picked) continue;
 
+            // Native's player loop has no break: every player inside the
+            // pickup radius applies the bonus this tick.
             var picked_now = false;
             for (players) |*player| {
                 if (distanceSq(entry.pos, player.pos) >= pickup_sq) continue;
@@ -270,7 +272,6 @@ pub const BonusPool = struct {
                 entry.picked = true;
                 entry.time_left = narrowF32(bonus_pickup_linger);
                 picked_now = true;
-                break;
             }
 
             if (expired_to_unused and !picked_now) {

@@ -402,6 +402,9 @@ class BonusPool:
             if entry.picked:
                 continue
 
+            # Native's player loop has no break: every player inside the
+            # pickup radius applies the bonus this tick (a nuke detonates
+            # twice, both players gain shield, and both consume RNG).
             picked_now = False
             for player in players:
                 if Vec2.distance_sq(entry.pos, player.pos) < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS:
@@ -429,7 +432,6 @@ class BonusPool:
                         ),
                     )
                     picked_now = True
-                    break
 
             if expired_to_unused and not picked_now:
                 self._clear_entry(entry)
