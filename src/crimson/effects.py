@@ -540,7 +540,9 @@ class FxQueue:
             width=w,
             height=w,
             rotation=rotation,
-            rgba=RGBA(gray, gray, gray, 1.0),
+            # Native keeps the statically initialized alpha (0x3f47ae14);
+            # only the gray channels are re-rolled per call.
+            rgba=RGBA(gray, gray, gray, 0.7799999713897705),
         )
 
 

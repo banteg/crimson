@@ -435,13 +435,9 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
         return
 
     # Native stores `vel` as per-tick delta (not per-second). It applies movement
-    # as `pos += vel`, so reverting the just-applied movement subtracts `vel`.
-    creature.pos = (creature.pos - creature.vel).clamp_rect(
-        0.0,
-        0.0,
-        float(ctx.world_width),
-        float(ctx.world_height),
-    )
+    # as `pos += vel`, so reverting the just-applied movement subtracts `vel`
+    # with no bounds clamp.
+    creature.pos = creature.pos - creature.vel
 
     # Native reverts the just-applied movement whenever a creature gets within
     # 20 units of the target player, regardless of Energizer.

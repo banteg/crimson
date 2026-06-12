@@ -92,7 +92,8 @@ pub const FxQueue = struct {
             width,
             width,
             rotation,
-            .{ .r = gray, .g = gray, .b = gray, .a = 1.0 },
+            // Native keeps the statically initialized alpha (0x3f47ae14).
+            .{ .r = gray, .g = gray, .b = gray, .a = 0.7799999713897705 },
         );
     }
 };
