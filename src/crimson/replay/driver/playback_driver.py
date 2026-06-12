@@ -20,6 +20,7 @@ from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.header_settings import session_settings_from_replay_header
 from ...replay.input_codec import unpack_tick_inputs
+from ...replay.types import LEGACY_REPLAY_FORMAT_VERSIONS
 from ...rng_caller_static import RngCallerStatic
 from ...sim.bootstrap import TerrainSetup, advance_explicit_terrain, advance_unlock_terrain
 from ...sim.hooks import TickResult
@@ -206,6 +207,9 @@ class PlaybackDriver:
             state=world.state,
             world_size=float(self.world_size),
             player_count=int(self.session_settings.player_count),
+            legacy_table_pistol_start=(
+                int(self.replay.header.replay_format_version) in LEGACY_REPLAY_FORMAT_VERSIONS
+            ),
         )
         world.state.status = GameStatus.from_data(
             path=Path("replay://status"),

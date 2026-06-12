@@ -121,10 +121,32 @@ fn playerPerkActive(player: *const PlayerState, perk_id: PerkId) bool {
     return player.perk_counts.get(perk_id) > 0;
 }
 
+pub fn resetPlayerWeaponNative(player: *PlayerState) void {
+    // Port of the weapon block in `player_reset_all` (0x41fc80): native
+    // resets every run to a hardcoded 10-round pistol with a primed 1.0s
+    // reload duration and a decaying 0.8s shot cooldown, without going
+    // through weapon assignment.
+    player.weapon = .{
+        .weapon_id = WeaponId.pistol,
+        .clip_size = 10,
+        .ammo = 10.0,
+        .reload_active = false,
+        .reload_timer = 0.0,
+        .reload_timer_max = 1.0,
+        .shot_cooldown = 0.8,
+    };
+}
+
+pub const ResetPlayersOptions = struct {
+    // Pre-v12 replays were recorded with a table-assigned pistol.
+    legacy_table_pistol_start: bool = false,
+};
+
 pub fn resetPlayers(
     players: []PlayerState,
     world_size: f32,
     spawn_pos: ?Vec2,
+    options: ResetPlayersOptions,
 ) void {
     if (players.len == 0) return;
 
@@ -138,7 +160,11 @@ pub fn resetPlayers(
             .index = 0,
             .pos = base.clampRect(0.0, 0.0, world_size, world_size),
         };
-        weaponAssignPlayer(&players[0], WeaponId.pistol);
+        if (options.legacy_table_pistol_start) {
+            weaponAssignPlayer(&players[0], WeaponId.pistol);
+        } else {
+            resetPlayerWeaponNative(&players[0]);
+        }
         initDefaultAltWeapon(&players[0]);
         return;
     }
@@ -151,7 +177,11 @@ pub fn resetPlayers(
             .index = @intCast(idx),
             .pos = Vec2.add(base, offset).clampRect(0.0, 0.0, world_size, world_size),
         };
-        weaponAssignPlayer(player, WeaponId.pistol);
+        if (options.legacy_table_pistol_start) {
+            weaponAssignPlayer(player, WeaponId.pistol);
+        } else {
+            resetPlayerWeaponNative(player);
+        }
         initDefaultAltWeapon(player);
     }
 }
@@ -213,7 +243,7 @@ test "reset players preloads alternate pistol slot" {
         },
     };
 
-    resetPlayers(players[0..], 1024.0, null);
+    resetPlayers(players[0..], 1024.0, null, .{});
 
     try std.testing.expect(players[0].alt_weapon != null);
     try std.testing.expectEqual(WeaponId.pistol, players[0].alt_weapon.?.weapon_id);

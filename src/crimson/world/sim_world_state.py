@@ -26,6 +26,24 @@ def _weapon_damage_scale_map() -> dict[int, float]:
     return table
 
 
+def _reset_player_weapon_native(player: PlayerState) -> None:
+    """Port of the weapon block in `player_reset_all` (0x41fc80).
+
+    Native resets every run to a hardcoded 10-round pistol with a primed
+    1.0s reload duration and a decaying 0.8s shot cooldown; it does not go
+    through `weapon_assign_player` (no table stats, no usage count, no
+    reload sfx). Quest setup assigns the start weapon on top of this."""
+
+    weapon = player.weapon
+    weapon.weapon_id = WeaponId.PISTOL
+    weapon.clip_size = 10
+    weapon.ammo = 10.0
+    weapon.reload_active = False
+    weapon.reload_timer = 0.0
+    weapon.reload_timer_max = 1.0
+    weapon.shot_cooldown = 0.8
+
+
 def reset_world_players(
     players: list[PlayerState],
     *,
@@ -33,6 +51,7 @@ def reset_world_players(
     world_size: float,
     player_count: int,
     spawn_pos: Vec2 | None = None,
+    legacy_table_pistol_start: bool = False,
 ) -> None:
     players.clear()
 
@@ -48,7 +67,11 @@ def reset_world_players(
     for idx in range(count):
         pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(world_size), float(world_size))
         player = PlayerState(index=idx, pos=pos)
-        weapon_assign_player(player, WeaponId.PISTOL, state=state)
+        if legacy_table_pistol_start:
+            # Pre-v12 replays were recorded with a table-assigned pistol.
+            weapon_assign_player(player, WeaponId.PISTOL, state=state)
+        else:
+            _reset_player_weapon_native(player)
         init_default_alt_weapon(player)
         players.append(player)
 

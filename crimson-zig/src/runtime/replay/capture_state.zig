@@ -374,7 +374,7 @@ pub fn applyCaptureStateReset(
     state.perk_interval_fire_cough = perk_interval_fire_cough;
     state.perk_interval_hot_tempered = perk_interval_hot_tempered;
 
-    player_runtime.resetPlayers(players, world_size, null);
+    player_runtime.resetPlayers(players, world_size, null, .{ .legacy_table_pistol_start = true });
     for (players) |*player| {
         const quest_weapon = weapon_data.weaponIdFromInt(quest_start_weapon_id);
         player_runtime.weaponAssignPlayer(player, quest_weapon);
@@ -436,7 +436,7 @@ test "capture state reset clears transient pools and restores header fx toggle" 
 
     var players_storage: [state_mod.max_players]state_mod.PlayerState = undefined;
     const players = players_storage[0..1];
-    player_runtime.resetPlayers(players, 1024.0, null);
+    player_runtime.resetPlayers(players, 1024.0, null, .{});
 
     var creatures: creatures_mod.CreaturePool = .{};
     creatures.entries[0].active = true;
