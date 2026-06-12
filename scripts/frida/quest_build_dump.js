@@ -38,7 +38,11 @@ const ADDR = {
   quest_selected_meta: 0x00484730,
   quest_stage_major: 0x00487004,
   quest_stage_minor: 0x00487008,
-  config_full_version: 0x00480790,
+  // 0x480790 is the hardcore flag (u8); 0x480791 is the UI info texts
+  // toggle (u8). Neither is a full-version byte - game_is_full_version()
+  // is hardcoded to 1 in this build.
+  config_hardcore: 0x00480790,
+  config_ui_info_texts: 0x00480791,
   config_player_count: 0x0048035c,
   config_game_mode: 0x00480360,
 };
@@ -186,23 +190,15 @@ function readStage() {
 }
 
 function readConfig() {
-  const fullPtr = exePtr(ADDR.config_full_version);
+  const hardcorePtr = exePtr(ADDR.config_hardcore);
+  const uiInfoPtr = exePtr(ADDR.config_ui_info_texts);
   const countPtr = exePtr(ADDR.config_player_count);
   const modePtr = exePtr(ADDR.config_game_mode);
-  const fullVersion = fullPtr ? safeReadS32(fullPtr) : null;
-  const fullBytes = fullPtr
-    ? [
-        safeReadU8(fullPtr),
-        safeReadU8(fullPtr.add(1)),
-        safeReadU8(fullPtr.add(2)),
-        safeReadU8(fullPtr.add(3)),
-      ]
-    : null;
   const playerCount = countPtr ? safeReadS32(countPtr) : null;
   const gameMode = modePtr ? safeReadS32(modePtr) : null;
   return {
-    full_version: fullVersion,
-    full_version_bytes: fullBytes,
+    hardcore: hardcorePtr ? safeReadU8(hardcorePtr) : null,
+    ui_info_texts: uiInfoPtr ? safeReadU8(uiInfoPtr) : null,
     player_count: playerCount,
     game_mode: gameMode,
   };

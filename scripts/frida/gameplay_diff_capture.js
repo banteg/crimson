@@ -4779,10 +4779,9 @@ function installHooks() {
           seedU32 = null;
         }
         if (seedU32 == null) {
-          const errorRow = { event: "hook_error", name: "crt_srand", error: "missing_seed_arg" };
-          _captureWriteJsonLine(errorRow, true);
-          writeLine(errorRow);
-          shutdownCapture("crt_srand_missing_seed");
+          // Use the tagged contract error row; finalize rejects unknown
+          // event tags with an opaque decode error otherwise.
+          emitCaptureContractError("crt_srand_missing_seed", null);
           return;
         }
         srandContextByTid[this.threadId] = {

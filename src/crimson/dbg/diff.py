@@ -58,10 +58,15 @@ def _tick_mismatch_row(*, kind: str, channel: str, detail: BuiltinObject | None)
     )
 
 
+def _is_capture_impl(impl: str) -> bool:
+    return str(impl) == "frida_original"
+
+
 def _first_mismatch(
     *,
     pairs: list[_TickPair],
     tick_end: int | None = None,
+    capture_compare: bool = False,
 ) -> tuple[int, TraceMismatch | None]:
     checked_count = 0
     for pair in pairs:
@@ -84,7 +89,7 @@ def _first_mismatch(
         exp_rng_stream = rng_stream_channel_required(pair.expected_row)
         act_rng_stream = rng_stream_channel_required(pair.actual_row)
 
-        checkpoint_diff = checkpoint_deepdiff(expected, actual)
+        checkpoint_diff = checkpoint_deepdiff(expected, actual, capture_compare=capture_compare)
         if checkpoint_diff is not None:
             tick_mismatches.append(
                 _tick_mismatch_row(
@@ -207,10 +212,14 @@ def diff_traces(
             tick_start=tick_start,
             tick_end=tick_end,
         )
+        capture_compare = _is_capture_impl(expected_trace.meta.producer.impl) or _is_capture_impl(
+            actual_trace.meta.producer.impl,
+        )
         try:
             checked_count, mismatch = _first_mismatch(
                 pairs=pairs,
                 tick_end=tick_end,
+                capture_compare=capture_compare,
             )
         except TraceError as exc:
             raise ValueError(str(exc)) from exc
@@ -249,11 +258,15 @@ def bisect_traces(
                 window_end=None,
             )
 
+        capture_compare = _is_capture_impl(expected_trace.meta.producer.impl) or _is_capture_impl(
+            actual_trace.meta.producer.impl,
+        )
         end_tick_bound = pairs[-1].tick_index if tick_end is None else tick_end
         try:
             checked_count, mismatch = _first_mismatch(
                 pairs=pairs,
                 tick_end=end_tick_bound,
+                capture_compare=capture_compare,
             )
         except TraceError as exc:
             raise ValueError(str(exc)) from exc

@@ -19,10 +19,11 @@ difﬁng for Original vs Python vs Zig.
 ## 1) Identify the capture artifact
 
 Frida host capture now finalizes directly to `.cdt` traces plus matching `.crd` replay sidecars.
-If only raw JSONL exists, re-run the host finalize flow:
+If only raw JSONL exists, finalize it offline (no game process needed):
 
 ```bash
-uv run scripts/frida/gameplay_diff_capture_host.py \
+uv run --with frida python scripts/frida/gameplay_diff_capture_host.py \
+  --finalize-only \
   --raw-path artifacts/frida/share/gameplay_diff_capture.jsonl \
   --output-dir analysis/frida/traces
 ```

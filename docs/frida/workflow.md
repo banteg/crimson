@@ -83,15 +83,17 @@ frida -n crimsonland.exe -l C:\share\frida\gameplay_state_capture.js
 ```
 
 Differential gameplay capture (tick-aligned checkpoints + event summaries; writes
-`gameplay_diff_capture.json` plus quest-mode per-stage files
-`gameplay_diff_capture.quest_<MAJOR>_<MINOR>.json`):
+a raw `gameplay_diff_capture.jsonl` that the capture host finalizes into per-run
+`gameplay_diff_capture.<mode>.run<k>.cdt` traces plus matching `.crd` replays):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
+just frida-gameplay-diff-capture
 ```
 
-Shortcuts: `just frida-gameplay-diff-capture` (host-mode msgpack capture) or
-`just frida-gameplay-diff-capture-postpack` (file-sink capture + postpack conversion)
+The host attaches, captures until Ctrl+C / game exit, then finalizes and deletes
+the raw JSONL (pass `--keep-raw` to keep it). To finalize a leftover raw file
+without the game running: `uv run --with frida python
+scripts/frida/gameplay_diff_capture_host.py --finalize-only --raw-path <jsonl>`.
 
 Survival autoplay sidecar (manual-run helper that pins control scheme config only;
 default is static movement + computer aim, JSONL to `survival_autoplay.jsonl`):
@@ -139,17 +141,16 @@ frida -n crimsonland.exe -l C:\share\frida\fx_queue_render_trace.js
 Just shortcut (Windows VM):
 
 ```text
-just frida-attach script=scripts\\frida\\crimsonland_probe.js
+just frida-attach scripts\\frida\\crimsonland_probe.js
 ```
 
-Optional overrides: `process=crimsonland.exe`, `CRIMSON_FRIDA_DIR`, and (for scripts with hardcoded addresses) `CRIMSON_FRIDA_ADDRS` / `CRIMSON_FRIDA_LINK_BASE` / `CRIMSON_FRIDA_MODULE`.
+Optional overrides: a second positional arg for the process name, `CRIMSON_FRIDA_DIR`, and (for scripts with hardcoded addresses) `CRIMSON_FRIDA_ADDRS` / `CRIMSON_FRIDA_LINK_BASE` / `CRIMSON_FRIDA_MODULE`.
 
 Default logs written by the scripts:
 
 - `C:\share\frida\grim_hits.jsonl`
 - `C:\share\frida\crimsonland_frida_hits.jsonl`
-- `C:\share\frida\gameplay_diff_capture.json` (if you ran `gameplay_diff_capture.js`)
-- `C:\share\frida\gameplay_diff_capture.quest_<MAJOR>_<MINOR>.json` (quest-mode runs)
+- `C:\share\frida\gameplay_diff_capture.<mode>.run<k>.cdt` / `.crd` (finalized diff captures; one pair per run)
 - `C:\share\frida\survival_autoplay.jsonl` (if you ran `survival_autoplay.js`)
 - `C:\share\frida\creature_anim_trace.jsonl`
 - `C:\share\frida\ui_render_trace.jsonl`
@@ -178,8 +179,8 @@ mkdir -p analysis/frida/raw
 cp /mnt/c/share/frida/grim_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/crimsonland_frida_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/gameplay_state_capture.jsonl analysis/frida/raw/  # optional
-cp /mnt/c/share/frida/gameplay_diff_capture.json analysis/frida/raw/  # optional
-cp /mnt/c/share/frida/gameplay_diff_capture.quest_*.json analysis/frida/raw/  # optional
+cp /mnt/c/share/frida/gameplay_diff_capture.*.run*.cdt analysis/frida/raw/  # optional
+cp /mnt/c/share/frida/gameplay_diff_capture.*.run*.crd analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_trial_overlay_trace.jsonl analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_idle_threshold_trace.jsonl analysis/frida/raw/  # optional
 ```

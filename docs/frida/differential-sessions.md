@@ -35,10 +35,15 @@ When the capture SHA is unchanged, append updates to the same session.
 ## Capture Policy (Current)
 
 - Default to full-detail `gameplay_diff_capture` captures (no focus window, no sample limits).
-- Keep `artifacts/frida/share/gameplay_diff_capture.json` as the canonical artifact and always log SHA256.
-- Use `--run-summary` or `--run-summary-short` in divergence reports.
+- Keep the finalized `gameplay_diff_capture.<mode>.run<k>.cdt` + `.crd` pair as the
+  canonical artifacts (under `artifacts/frida/share/`) and always log SHA256.
+- Compare with `uv run crimson dbg diff/bisect/focus` against a `dbg record`
+  trace of the matching `.crd` replay (the legacy `crimson original
+  divergence-report` flow is gone).
 - If any env knobs throttle capture volume, log exact knob/value.
 - If capture SHA is unchanged, update the existing session; do not create a new one.
+- Expect zero divergences: the 2026-06-12 parity audit resolved all previously
+  known mismatches, so any diff is a real regression or a new finding.
 
 ---
 

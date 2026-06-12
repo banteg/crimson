@@ -345,12 +345,29 @@ def _canonical_channels_payload(
         )
         for idx, row in enumerate(channels.rng_stream)
     ]
+    # Capture timing rows carry session-global tick/frame counters and a null
+    # mode_fn (the gpur_enter sample is built before any mode hook fires);
+    # rebase them to the run-local domain the rewrite recorder emits so the
+    # timing channel is comparable.
+    timing_samples = [
+        msgspec.structs.replace(
+            row,
+            tick_index=int(local_tick),
+            gameplay_frame=(None if row.gameplay_frame is None else int(local_tick)),
+            mode_fn=(
+                "gameplay_update_and_render"
+                if row.mode_fn is None and row.phase == "gpur_enter"
+                else row.mode_fn
+            ),
+        )
+        for row in channels.timing_samples
+    ]
     normalized = _TickChannels(
         checkpoint=checkpoint,
         sim_state=channels.sim_state,
         entity_samples=channels.entity_samples,
         rng_stream=list(channels.rng_stream),
-        timing_samples=list(channels.timing_samples),
+        timing_samples=timing_samples,
     )
     gameplay = normalized.sim_state.gameplay
     return checkpoint, ReplayTickChannels(

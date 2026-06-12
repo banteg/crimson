@@ -23,15 +23,19 @@ into one or more native `.cdt` traces plus matching `.crd` replay files via
 ## Attach via host (recommended)
 
 ```text
-uv run scripts/frida/gameplay_diff_capture_host.py \
+uv run --with frida python scripts/frida/gameplay_diff_capture_host.py \
   --process crimsonland.exe \
   --script scripts\frida\gameplay_diff_capture.js \
   --output-dir C:\share\frida
 ```
 
+(`--with frida` injects the frida package; the host otherwise runs in the
+project env. `just frida-gameplay-diff-capture` wraps the same invocation.)
+
 Optional flags:
 
 - `--raw-path <path>`: override JSONL path (otherwise host uses script stats `out_path`)
+- `--finalize-only`: skip attaching and finalize an existing raw JSONL (use with `--raw-path`; works without the game running and without frida installed)
 - `--keep-raw`: keep JSONL after successful finalize
 
 ## Direct attach

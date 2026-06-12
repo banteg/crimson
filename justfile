@@ -234,7 +234,7 @@ frida-gameplay-state-capture process="crimsonland.exe":
 frida-gameplay-diff-capture process="crimsonland.exe":
     $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
     New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    uv run scripts/frida/gameplay_diff_capture_host.py --process {{process}} --script scripts\\frida\\gameplay_diff_capture.js --output-dir $env:CRIMSON_FRIDA_DIR
+    uv run --with frida python scripts/frida/gameplay_diff_capture_host.py --process {{process}} --script scripts\\frida\\gameplay_diff_capture.js --output-dir $env:CRIMSON_FRIDA_DIR
 
 [windows]
 frida-survival-autoplay process="crimsonland.exe":
@@ -284,15 +284,11 @@ frida-sync-share:
 [unix]
 frida-import-raw:
     mkdir -p analysis/frida/raw
-    for f in grim_hits.jsonl crimsonland_frida_hits.jsonl gameplay_state_capture.jsonl gameplay_diff_capture.json gameplay_diff_capture.msgpack.zst demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl screen_fade_trace.jsonl ui_render_trace.jsonl game_over_panel_trace.jsonl; do \
+    for f in grim_hits.jsonl crimsonland_frida_hits.jsonl gameplay_state_capture.jsonl gameplay_diff_capture.jsonl demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl screen_fade_trace.jsonl ui_render_trace.jsonl game_over_panel_trace.jsonl survival_autoplay.jsonl azk_verify_no_unlock.jsonl creature_anim_trace.jsonl; do \
         [ -e "{{share_dir}}/$f" ] || continue; \
         cp -av "{{share_dir}}/$f" analysis/frida/raw/; \
     done
-    for f in {{share_dir}}/gameplay_diff_capture.quest_*.json; do \
-        [ -e "$f" ] || continue; \
-        cp -av "$f" analysis/frida/raw/; \
-    done
-    for f in {{share_dir}}/gameplay_diff_capture.quest_*.msgpack.zst; do \
+    for f in {{share_dir}}/gameplay_diff_capture.*.run*.cdt {{share_dir}}/gameplay_diff_capture.*.run*.crd; do \
         [ -e "$f" ] || continue; \
         cp -av "$f" analysis/frida/raw/; \
     done

@@ -152,7 +152,9 @@ def _timing_sample_stub(
         "time_scale_active_current": None,
         "time_scale_factor": None,
         "bonus_reflex_boost_timer": None,
-        "mode_fn": "gameplay_update_and_render",
+        # The real capture emits a null mode_fn: the gpur_enter sample is built
+        # before any mode hook fires.
+        "mode_fn": None,
         "player_index": None,
     }
 
@@ -499,6 +501,15 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert creatures1[0].generation == 1
     assert ticks[0].channels.entity_samples.projectiles[0].owner_id == -100
     assert ticks[0].channels.checkpoint.deaths[0].owner_id == -1
+
+    # Capture timing rows are rebased to the run-local domain with the gpur
+    # label so the timing channel is comparable against rewrite traces.
+    timing0 = ticks[0].channels.timing_samples[0]
+    timing1 = ticks[1].channels.timing_samples[0]
+    assert timing0.tick_index == 0
+    assert timing1.tick_index == 1
+    assert timing0.mode_fn == "gameplay_update_and_render"
+    assert timing1.mode_fn == "gameplay_update_and_render"
 
 
 def test_finalize_frida_jsonl_to_traces_canonicalizes_rng_caller(tmp_path: Path) -> None:

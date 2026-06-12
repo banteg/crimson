@@ -36,6 +36,7 @@ def _checkpoint_to_obj(
     *,
     include_rng_fields: bool,
     include_hit_head: bool = True,
+    mask_capture_placeholder_fields: bool = False,
 ) -> BuiltinObject:
     obj = to_builtin_object(checkpoint, field="checkpoint")
     if not include_rng_fields:
@@ -45,6 +46,18 @@ def _checkpoint_to_obj(
         events = obj.get("events")
         if isinstance(events, dict):
             events.pop("hit_head", None)
+    if mask_capture_placeholder_fields:
+        # The frida capture's creature_handle_death hook records no reward/xp
+        # arguments, so its deaths carry reward_value=0, xp_awarded=0,
+        # owner_id=-1 placeholders; mask those fields on both sides so only
+        # the structural death record (creature_index, type_id) is compared.
+        deaths = obj.get("deaths")
+        if isinstance(deaths, list):
+            for entry in deaths:
+                if isinstance(entry, dict):
+                    entry.pop("reward_value", None)
+                    entry.pop("xp_awarded", None)
+                    entry.pop("owner_id", None)
     return obj
 
 
@@ -53,9 +66,22 @@ def checkpoint_deepdiff(
     actual: ReplayCheckpoint,
     *,
     include_rng_fields: bool = True,
+    capture_compare: bool = False,
 ) -> CheckpointDeepDiff | None:
-    expected_obj = _checkpoint_to_obj(expected, include_rng_fields=bool(include_rng_fields))
-    actual_obj = _checkpoint_to_obj(actual, include_rng_fields=bool(include_rng_fields))
+    # `capture_compare` is for diffing against frida_original traces, which
+    # record no hit_head channel and only placeholder death reward fields.
+    expected_obj = _checkpoint_to_obj(
+        expected,
+        include_rng_fields=bool(include_rng_fields),
+        include_hit_head=not capture_compare,
+        mask_capture_placeholder_fields=bool(capture_compare),
+    )
+    actual_obj = _checkpoint_to_obj(
+        actual,
+        include_rng_fields=bool(include_rng_fields),
+        include_hit_head=not capture_compare,
+        mask_capture_placeholder_fields=bool(capture_compare),
+    )
     mismatches, diff_count, _pretty = strict_mismatch_payload(expected_obj, actual_obj)
     if int(diff_count) <= 0:
         return None

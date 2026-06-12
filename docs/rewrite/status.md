@@ -58,7 +58,7 @@ Last reviewed: **2026-05-03**
   - `uv run crimson replay verify-checkpoints <replay.crd>`
   - `uv run crimson replay diff-checkpoints <expected> <actual>`
 - Original/capture differential tooling (via structural traces):
-  - `uv run scripts/frida/gameplay_diff_capture_host.py --raw-path <capture.jsonl> --output-dir <dir>`
+  - `uv run --with frida python scripts/frida/gameplay_diff_capture_host.py --raw-path <capture.jsonl> --output-dir <dir>` (add `--finalize-only` to finalize without attaching)
   - `uv run crimson dbg record <replay.crd> --impl python --out <trace.py.cdt>`
   - `uv run crimson dbg record <replay.crd> --impl zig --out <trace.zig.cdt>`
   - `crimson-zig dbg record <replay.crd> --out <trace.zig.cdt>`

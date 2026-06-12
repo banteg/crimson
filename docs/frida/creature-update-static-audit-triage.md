@@ -7,6 +7,12 @@ tags:
 
 # Creature Update Static Audit Triage
 
+> **Historical (superseded).** This page predates the `.cdt` capture format and
+> uses the removed `crimson original divergence-report` tooling; its expected
+> mismatches were all resolved by the 2026-06-12 parity audit. Do not follow
+> these commands or expectations in new sessions - use
+> [the differential playbook](differential-playbook.md) instead.
+
 This file tracks static parity findings from the hotspot review and the capture-driven verification loop for each fix.
 
 ## Branch-Targeted Canaries

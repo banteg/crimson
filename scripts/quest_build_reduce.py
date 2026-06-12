@@ -37,7 +37,7 @@ class QuestBuildRow(msgspec.Struct, forbid_unknown_fields=True):
     start_weapon_id: Any
     unlock_perk_id: Any
     unlock_weapon_id: Any
-    full_version: Any
+    hardcore: Any
     player_count: Any
     spawn_ids: list[str] | None
     spawn_id_counts: dict[str, int] | None
@@ -223,7 +223,7 @@ def build_rows(events: list[BuildEvent]) -> list[QuestBuildRow]:
                 start_weapon_id=meta.get("start_weapon_id"),
                 unlock_perk_id=meta.get("unlock_perk_id"),
                 unlock_weapon_id=meta.get("unlock_weapon_id"),
-                full_version=config.get("full_version"),
+                hardcore=config.get("hardcore"),
                 player_count=config.get("player_count"),
                 spawn_ids=(None if summary is None else summary.get("spawn_ids")),
                 spawn_id_counts=(None if summary is None else summary.get("spawn_id_counts")),
@@ -254,7 +254,7 @@ def write_csv(path: Path, rows: list[QuestBuildRow]) -> None:
         "start_weapon_id",
         "unlock_perk_id",
         "unlock_weapon_id",
-        "full_version",
+        "hardcore",
         "player_count",
         "spawn_ids",
         "min_trigger_ms",
@@ -279,7 +279,7 @@ def write_csv(path: Path, rows: list[QuestBuildRow]) -> None:
                     "start_weapon_id": row.start_weapon_id,
                     "unlock_perk_id": row.unlock_perk_id,
                     "unlock_weapon_id": row.unlock_weapon_id,
-                    "full_version": row.full_version,
+                    "hardcore": row.hardcore,
                     "player_count": row.player_count,
                     "spawn_ids": spawn_ids,
                     "min_trigger_ms": row.min_trigger_ms,

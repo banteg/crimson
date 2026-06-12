@@ -36,6 +36,10 @@ def focus_tick(
     with TraceReader(Path(golden_trace)) as expected, TraceReader(Path(candidate_trace)) as candidate:
         expected_row = expected.tick(tick)
         candidate_row = candidate.tick(tick)
+        capture_compare = "frida_original" in (
+            str(expected.meta.producer.impl),
+            str(candidate.meta.producer.impl),
+        )
 
     if expected_row is None or candidate_row is None:
         raise ValueError(f"tick {tick} missing in one of the traces")
@@ -43,7 +47,11 @@ def focus_tick(
     expected_checkpoint = checkpoint_channel_required(expected_row)
     candidate_checkpoint = checkpoint_channel_required(candidate_row)
 
-    checkpoint_diff = checkpoint_deepdiff(expected_checkpoint, candidate_checkpoint)
+    checkpoint_diff = checkpoint_deepdiff(
+        expected_checkpoint,
+        candidate_checkpoint,
+        capture_compare=capture_compare,
+    )
 
     rng_ok, rng_stream_detail = compare_rng_stream(
         rng_stream_channel_required(expected_row),

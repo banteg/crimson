@@ -340,12 +340,13 @@ def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
     call_count = 0
     original_first_mismatch = dbg_diff._first_mismatch
 
-    def _counting_first_mismatch(*, pairs, tick_end=None):
+    def _counting_first_mismatch(*, pairs, tick_end=None, capture_compare=False):
         nonlocal call_count
         call_count += 1
         return original_first_mismatch(
             pairs=pairs,
             tick_end=tick_end,
+            capture_compare=capture_compare,
         )
 
     monkeypatch.setattr(dbg_diff, "_first_mismatch", _counting_first_mismatch)

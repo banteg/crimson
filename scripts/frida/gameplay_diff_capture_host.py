@@ -1,9 +1,3 @@
-# /// script
-# requires-python = ">=3.13"
-# dependencies = [
-#   "frida>=16.5.0",
-# ]
-# ///
 from __future__ import annotations
 
 import argparse
@@ -52,6 +46,11 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="keep raw JSONL file after successful finalize",
     )
+    parser.add_argument(
+        "--finalize-only",
+        action="store_true",
+        help="skip attaching; finalize an existing raw JSONL (use with --raw-path)",
+    )
     return parser
 
 
@@ -66,6 +65,9 @@ def _default_raw_capture_path() -> Path:
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
 
+    if args.finalize_only:
+        return _finalize_and_report(args, stats={}, failure=[], start_ts=time.time())
+
     script_path = Path(args.script)
     if not script_path.is_file():
         print(f"[capture-host] script not found: {script_path}", file=sys.stderr)
@@ -76,7 +78,7 @@ def main(argv: list[str] | None = None) -> int:
     except ImportError as exc:
         print(
             "[capture-host] missing dependency: frida. "
-            "Run with `uv run --with frida scripts/frida/gameplay_diff_capture_host.py ...`.",
+            "Run with `uv run --with frida python scripts/frida/gameplay_diff_capture_host.py ...`.",
             file=sys.stderr,
         )
         raise SystemExit(2) from exc
@@ -159,6 +161,16 @@ def main(argv: list[str] | None = None) -> int:
             signal.signal(signal.SIGINT, old_sigint)
             signal.signal(signal.SIGTERM, old_sigterm)
 
+    return _finalize_and_report(args, stats=stats, failure=failure, start_ts=start_ts)
+
+
+def _finalize_and_report(
+    args: argparse.Namespace,
+    *,
+    stats: dict[str, object],
+    failure: list[str],
+    start_ts: float,
+) -> int:
     raw_path = Path(args.raw_path) if args.raw_path is not None else None
     if raw_path is None:
         out_path_obj = stats.get("out_path")

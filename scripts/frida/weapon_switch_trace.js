@@ -62,7 +62,7 @@ const CONFIG = {
 
 const ADDR = {
   gameplay_update_and_render: 0x0040aab0,
-  survival_gameplay_update_and_render: 0x004457c0,
+  typo_gameplay_update_and_render: 0x004457c0,
   weapon_assign_player: 0x00452d40,
   player_fire_weapon: 0x00444980,
   bonus_apply: 0x00409890,
@@ -746,9 +746,9 @@ function main() {
     },
   });
 
-  attachOnce("survival_gameplay_update_and_render", addrs.survival_gameplay_update_and_render, {
+  attachOnce("typo_gameplay_update_and_render", addrs.typo_gameplay_update_and_render, {
     onEnter() {
-      captureOracleFrame("survival_gameplay_update_and_render");
+      captureOracleFrame("typo_gameplay_update_and_render");
       handleWeaponSwitch();
     },
   });

@@ -496,7 +496,7 @@ Config blob layout (partial, 0x480 bytes, base `DAT_00480348`):
 | `0x440` | `DAT_00480788` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
 | `0x444` | `DAT_0048078c` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
 | `0x448` | `DAT_00480790` | `u8` | `0` | Hardcore flag (`0` normal, `1` hardcore). |
-| `0x449` | `DAT_00480791` | `u8` | `1` | Full‑version/unlimited flag (gates quest logic and UI strings). |
+| `0x449` | `DAT_00480791` | `u8` | `1` | UI info texts toggle (options checkbox; gates perk-prompt info text). `game_is_full_version()` is hardcoded to return 1 in this build - there is no full-version config byte. |
 | `0x44c` | `DAT_00480794` | `u32` | `0` | Perk prompt counter (`0..0x32`, increments on each prompt). |
 | `0x450` | `DAT_00480798` | `u32` | `1` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
 | `0x460` | `DAT_004807a8` | `u32` | `1` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
