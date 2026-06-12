@@ -80,6 +80,8 @@ def tutorial_post_step(ctx) -> None:
         state.sfx_queue.append(SfxId.UI_LEVELUP)
 
     for call in actions.spawn_bonuses:
+        # Native tutorial code writes the bonus pool directly (no
+        # bonus_spawn_at 16-burst) and emits its own 12-particle burst below.
         spawned = state.bonus_pool.spawn_at(
             pos=call.pos,
             bonus_id=call.bonus_id,
@@ -87,6 +89,7 @@ def tutorial_post_step(ctx) -> None:
             state=state,
             world_width=float(ctx.world_size),
             world_height=float(ctx.world_size),
+            emit_burst=False,
         )
         if spawned is not None:
             state.effects.spawn_burst(

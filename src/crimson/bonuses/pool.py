@@ -134,6 +134,8 @@ class BonusPool:
         state: GameplayState,
         world_width: float = 1024.0,
         world_height: float = 1024.0,
+        detail_preset: int = 5,
+        emit_burst: bool = True,
     ) -> BonusEntry | None:
         if state.game_mode == GameMode.RUSH:
             return None
@@ -159,6 +161,17 @@ class BonusPool:
             meta = BONUS_BY_ID.get(bonus_id)
             amount = int(meta.native_amount or 0) if meta is not None else 0
         entry.amount = int(amount)
+
+        if emit_burst:
+            # Native `bonus_spawn_at` always spawns a 16-particle burst
+            # (4 crt_rand draws each). The tutorial writes the pool directly
+            # in native code and emits its own 12-particle burst instead.
+            state.effects.spawn_burst(
+                pos=entry.pos,
+                count=16,
+                rng=state.rng,
+                detail_preset=int(detail_preset),
+            )
         return entry
 
     def spawn_at_pos(

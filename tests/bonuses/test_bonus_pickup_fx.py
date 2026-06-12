@@ -16,6 +16,7 @@ def test_bonus_pickup_spawns_burst_effect() -> None:
         pos=Vec2(player.pos.x, player.pos.y),
         bonus_id=BonusId.POINTS,
         state=world.sim_world.state,
+        emit_burst=False,
     )
     assert entry is not None
 
@@ -37,6 +38,7 @@ def test_expired_bonus_can_still_pickup_as_unused_in_same_tick() -> None:
         pos=Vec2(player.pos.x, player.pos.y),
         bonus_id=BonusId.FREEZE,
         state=world.sim_world.state,
+        emit_burst=False,
     )
     assert entry is not None
     entry.time_left = 0.01

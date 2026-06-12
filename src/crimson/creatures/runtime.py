@@ -21,6 +21,7 @@ from grim.rand import Crand, CrandLike
 from grim.sfx_map import SfxId
 
 from ..bonuses import BonusId
+from ..bonuses.pool import BONUS_SPAWN_MARGIN
 from ..effects import EffectPool, FxQueue, FxQueueRotated
 from ..gameplay import (
     award_experience,
@@ -1342,8 +1343,16 @@ class CreaturePool:
         """Run one-shot death side effects and return the `CreatureDeath` event."""
 
         creature = self._entries[int(idx)]
-        survival_record_recent_death(state, pos=creature.pos)
         if (creature.flags & CreatureFlags.BONUS_ON_DEATH) and creature.bonus_id is not None:
+            # Native `bonus_spawn_at` clamps through the creature pos pointer
+            # (also in rush, where no bonus spawns), moving the corpse to the
+            # 32-px world margin, and spawns a 16-particle pickup burst.
+            creature.pos = creature.pos.clamp_rect(
+                BONUS_SPAWN_MARGIN,
+                BONUS_SPAWN_MARGIN,
+                float(world_width) - BONUS_SPAWN_MARGIN,
+                float(world_height) - BONUS_SPAWN_MARGIN,
+            )
             state.bonus_pool.spawn_at(
                 pos=creature.pos,
                 bonus_id=creature.bonus_id,
@@ -1353,10 +1362,12 @@ class CreaturePool:
                 state=state,
                 world_width=world_width,
                 world_height=world_height,
+                detail_preset=int(detail_preset),
             )
             if not bool(state.preserve_bugs):
                 creature.bonus_id = None
                 creature.bonus_duration_override = None
+        survival_record_recent_death(state, pos=creature.pos)
         if not creature.active:
             # Native `creature_handle_death` gates its XP/bonus/freeze body under
             # `if (active != 0)`. Re-entrant callers (notably secondary
