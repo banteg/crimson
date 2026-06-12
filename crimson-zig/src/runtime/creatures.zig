@@ -2312,7 +2312,8 @@ pub const CreaturePool = struct {
                 const jitter = @as(f32, @floatFromInt(jitter_i32)) * 0.002;
                 const size = @max(@as(f32, 1e-6), creature.size);
                 var turn = jitter / (size * 0.025);
-                const half_pi: f32 = std.math.pi / 2.0;
+                // Native clamps against the f32 literal 1.5707964.
+                const half_pi: f32 = native_math.roundF32(native_math.native_half_pi);
                 if (turn > half_pi) turn = half_pi;
                 creature.heading = narrowF32(creature.heading + turn);
             }

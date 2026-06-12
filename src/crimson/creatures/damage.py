@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from collections.abc import Callable
 
 import msgspec
@@ -12,7 +11,7 @@ from grim.sfx_map import SfxId
 
 from ..effects import EffectPool
 from ..effects_atlas import EffectId
-from ..math_parity import f32
+from ..math_parity import NATIVE_HALF_PI, f32
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.helpers import perk_active
@@ -127,8 +126,9 @@ def _damage_type1_heading_jitter(ctx: _CreatureDamageCtx) -> None:
     jitter = float((ctx.rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_HEADING_JITTER) & 0x7F) - 0x40) * 0.002
     size = max(1e-6, float(creature.size))
     turn = jitter / (size * 0.025)
-    turn = min(math.pi / 2.0, turn)
-    creature.heading += turn
+    # Native clamps against the f32 literal 1.5707964 and stores the sum f32.
+    turn = min(float(NATIVE_HALF_PI), turn)
+    creature.heading = float(f32(turn + float(creature.heading)))
 
 
 def _damage_type7_ion_gun_master(ctx: _CreatureDamageCtx) -> None:

@@ -12,6 +12,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects_atlas import EffectId
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.rng_caller_static import RngCallerStatic
@@ -51,7 +52,8 @@ def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None
     assert [record.caller for record in rng.records_since(before_calls)] == [
         RngCallerStatic.CREATURE_APPLY_DAMAGE_HEADING_JITTER,
     ]
-    assert_float_close(creature.heading, -0.1024)
+    # Native stores the jittered heading as f32.
+    assert_float_close(creature.heading, float(f32(-0.1024)))
 
 
 def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
