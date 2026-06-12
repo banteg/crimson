@@ -230,14 +230,30 @@ pub const ParticlePool = struct {
                         };
                         entry.vel = .{};
                     } else {
-                        entry.angle = wrapAngle(entry.angle);
+                        // Native wraps the stored angle iteratively with the
+                        // f32 tau literal, keeps the atan2 hit angle in
+                        // extended precision for its wrap, and deflects by the
+                        // f32 constant 1.2566371.
+                        const native_tau_f32: f32 = native_math.roundF32(native_math.native_tau);
+                        while (native_tau_f32 < entry.angle) {
+                            entry.angle = narrowF32(entry.angle - native_tau_f32);
+                        }
+                        while (entry.angle < 0.0) {
+                            entry.angle = narrowF32(entry.angle + native_tau_f32);
+                        }
                         const hit_delta: state_mod.Vec2 = .{
                             .x = (entry.pos.x - entry.vel.x * dt_f32) - creature.pos.x,
                             .y = (entry.pos.y - entry.vel.y * dt_f32) - creature.pos.y,
                         };
-                        const hit_angle = wrapAngle(hit_delta.toAngle());
-                        const deflect_step: f32 = std.math.tau * 0.2;
-                        if (entry.angle <= hit_angle) {
+                        var hit_angle: f64 = std.math.atan2(@as(f64, hit_delta.y), @as(f64, hit_delta.x));
+                        while (@as(f64, native_tau_f32) < hit_angle) {
+                            hit_angle -= @as(f64, native_tau_f32);
+                        }
+                        while (hit_angle < 0.0) {
+                            hit_angle += @as(f64, native_tau_f32);
+                        }
+                        const deflect_step: f32 = 1.2566371;
+                        if (@as(f64, entry.angle) <= hit_angle) {
                             entry.angle += deflect_step;
                         } else {
                             entry.angle -= deflect_step;

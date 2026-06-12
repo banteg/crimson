@@ -104,8 +104,11 @@ class BonusPool:
         return [entry for entry in self._entries if entry.bonus_id != BonusId.UNUSED]
 
     def _alloc_slot(self) -> BonusEntry | None:
+        # Native bonus_alloc_slot checks only `bonus_id == NONE`, so a slot
+        # whose bonus expired and was then picked (linger with UNUSED id) is
+        # immediately reusable.
         for entry in self._entries:
-            if _bonus_entry_is_empty(entry):
+            if entry.bonus_id == BonusId.UNUSED:
                 return entry
         return None
 
