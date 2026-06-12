@@ -1139,20 +1139,27 @@ class CreaturePool:
             )
             creature.move_scale = float(ai.move_scale)
             if ai.self_damage is not None and ai.self_damage > 0.0:
-                creature.hp -= float(ai.self_damage)
-                if creature.hp <= 0.0:
-                    deaths.append(
-                        self.handle_death(
-                            idx,
-                            state=state,
-                            players=players,
-                            rng=rng,
-                            dt=float(dt),
-                            world_width=world_width,
-                            world_height=world_height,
-                            fx_queue=fx_queue,
-                        ),
-                    )
+                # Native link-death cleanup calls creature_apply_damage(idx,
+                # 1000.0, 1, zero): the full bullet path with heading-jitter
+                # rand, hit flash, and the lethal death-SFX roll.
+                from .damage import creature_apply_damage_with_lethal_followup
+
+                killed = creature_apply_damage_with_lethal_followup(
+                    creature,
+                    creature_index=int(idx),
+                    damage_amount=float(ai.self_damage),
+                    damage_type=CreatureDamageType.BULLET,
+                    impulse=Vec2(),
+                    owner=creature.last_hit_owner,
+                    dt=float(dt),
+                    players=players,
+                    rng=rng,
+                    preserve_bugs=bool(state.preserve_bugs),
+                    effects=state.effects,
+                    detail_preset=int(detail_preset),
+                    creature_damage_runtime=creature_damage_runtime,
+                )
+                if killed:
                     if creature.active:
                         self._tick_dead(
                             creature,
