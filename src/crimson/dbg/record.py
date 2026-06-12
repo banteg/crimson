@@ -160,6 +160,8 @@ def _entity_samples_for_world(
                 orbit_angle=float(creature.orbit_angle),
                 orbit_radius=float(creature.orbit_radius),
                 lifecycle_stage=float(creature.lifecycle_stage),
+                vel=SnapshotVec2(x=float(creature.vel.x), y=float(creature.vel.y)),
+                move_speed=float(creature.move_speed),
             ),
         )
 

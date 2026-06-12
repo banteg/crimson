@@ -450,6 +450,8 @@ const CreatureEntitySample = struct {
     orbit_angle: f32,
     orbit_radius: f32,
     lifecycle_stage: f32,
+    vel: SnapshotVec2,
+    move_speed: f32,
 };
 
 const ProjectileEntitySample = struct {
@@ -1747,6 +1749,8 @@ fn buildEntitySamples(
             .flags = @bitCast(creature.flags),
             .ai_mode = creature.ai_mode,
             .link_index = creature.link_index,
+            .vel = .{ .x = creature.vel.x, .y = creature.vel.y },
+            .move_speed = creature.move_speed,
             .heading = creature.heading,
             .target_heading = creature.target_heading,
             .orbit_angle = creature.orbit_angle,

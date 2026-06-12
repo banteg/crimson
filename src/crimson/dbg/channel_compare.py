@@ -1,6 +1,14 @@
 from __future__ import annotations
 
-from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
+import msgspec
+
+from .canonical_channels import (
+    CreatureEntitySample,
+    EntitySamplesSnapshot,
+    RngStreamRow,
+    SimStateSnapshot,
+    TimingSampleRow,
+)
 from .channel_helpers import ENTITY_SAMPLE_KINDS, EntitySampleRow, entity_rows
 from .payloads import BuiltinObject, BuiltinRows, to_builtin_object, to_builtin_value
 from .strict_compare import strict_mismatch_payload
@@ -122,6 +130,24 @@ def _rows_by_uid(rows: list[EntitySampleRow]) -> tuple[dict[int, EntitySampleRow
     return by_uid, len(rows), duplicate_uids
 
 
+def _mask_absent_optional_channels(
+    expected_row: EntitySampleRow,
+    actual_row: EntitySampleRow,
+) -> tuple[EntitySampleRow, EntitySampleRow]:
+    """Optional creature movement channels only compare when both traces
+    recorded them (capture v14+); older traces carry None."""
+
+    if not (isinstance(expected_row, CreatureEntitySample) and isinstance(actual_row, CreatureEntitySample)):
+        return expected_row, actual_row
+    if expected_row.vel is None or actual_row.vel is None:
+        expected_row = msgspec.structs.replace(expected_row, vel=None)
+        actual_row = msgspec.structs.replace(actual_row, vel=None)
+    if expected_row.move_speed is None or actual_row.move_speed is None:
+        expected_row = msgspec.structs.replace(expected_row, move_speed=None)
+        actual_row = msgspec.structs.replace(actual_row, move_speed=None)
+    return expected_row, actual_row
+
+
 def compare_entity_samples(
     expected_obj: EntitySamplesSnapshot,
     actual_obj: EntitySamplesSnapshot,
@@ -153,6 +179,7 @@ def compare_entity_samples(
         for uid in sorted(set(exp_map) & set(act_map)):
             expected_row = exp_map[uid]
             actual_row = act_map[uid]
+            expected_row, actual_row = _mask_absent_optional_channels(expected_row, actual_row)
             if expected_row == actual_row:
                 continue
             row_path = f"entity_samples.{kind}[uid={uid}]"

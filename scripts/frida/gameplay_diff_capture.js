@@ -1588,6 +1588,11 @@ function entitySamplesFromTick(tickObj) {
       orbit_angle: requireFiniteScalar(row.orbit_angle, "samples.creatures[" + i + "].orbit_angle"),
       orbit_radius: requireFiniteScalar(row.orbit_radius, "samples.creatures[" + i + "].orbit_radius"),
       lifecycle_stage: requireFiniteScalar(row.lifecycle_stage, "samples.creatures[" + i + "].lifecycle_stage"),
+      vel: {
+        x: requireFiniteScalar(requireObject(row.vel, "samples.creatures[" + i + "].vel").x, "samples.creatures[" + i + "].vel.x"),
+        y: requireFiniteScalar(row.vel.y, "samples.creatures[" + i + "].vel.y"),
+      },
+      move_speed: requireFiniteScalar(row.move_speed, "samples.creatures[" + i + "].move_speed"),
     });
   }
 
@@ -2710,6 +2715,11 @@ function readCreatureEntry(index) {
       x: captureNumber(safeReadF32(base.add(0x14))),
       y: captureNumber(safeReadF32(base.add(0x18))),
     },
+    vel: {
+      x: captureNumber(safeReadF32(base.add(0x1c))),
+      y: captureNumber(safeReadF32(base.add(0x20))),
+    },
+    move_speed: captureNumber(safeReadF32(base.add(0x5c))),
     hp: captureNumber(safeReadF32(base.add(0x24))),
     type_id: safeReadS32(base.add(0x6c)),
     target_player: safeReadS32(base.add(0x70)),

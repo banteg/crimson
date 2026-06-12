@@ -91,6 +91,10 @@ class CreatureEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=Tr
     orbit_angle: float
     orbit_radius: float
     lifecycle_stage: float
+    # Movement channels (capture v14+); None in older traces. These pin down
+    # which factor diverges when the per-tick velocity product drifts by ulps.
+    vel: SnapshotVec2 | None = None
+    move_speed: float | None = None
 
 
 class ProjectileEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
