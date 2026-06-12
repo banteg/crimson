@@ -11,7 +11,7 @@ from crimson.dbg.trace import load_trace
 from crimson.replay.codec import load_replay_file
 from crimson.replay.types import WEAPON_USAGE_COUNT
 
-CAPTURE_FORMAT_VERSION = 12
+CAPTURE_FORMAT_VERSION = 13
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> Path:
@@ -335,8 +335,10 @@ def _run_start_row(
     quest_stage_major: int = -1,
     quest_stage_minor: int = -1,
     seed_source: str = "crt_srand",
+    rng_state_at_run_setup: int | None = None,
+    include_rng_state_at_run_setup: bool = True,
 ) -> dict[str, object]:
-    return {
+    row: dict[str, object] = {
         "event": "run_start",
         "run_id": int(run_id),
         "mode_id": int(mode_id),
@@ -345,6 +347,34 @@ def _run_start_row(
         "player_count": int(player_count),
         "quest_stage_major": int(quest_stage_major),
         "quest_stage_minor": int(quest_stage_minor),
+    }
+    if include_rng_state_at_run_setup:
+        row["rng_state_at_run_setup"] = int(seed if rng_state_at_run_setup is None else rng_state_at_run_setup)
+        row["rng_setup_caller_static"] = "0x004181cc"
+    return row
+
+
+def _rng_accounting_stub(*, rng_calls: int = 0) -> dict[str, object]:
+    return {
+        "rng_calls": int(rng_calls),
+        "rng_outside_before": _rng_outside_bag_stub(),
+        "rng_state_enter_u32": 0,
+        "rng_state_leave_u32": 0,
+    }
+
+
+def _rng_outside_bag_stub(
+    *,
+    calls: int = 0,
+    dropped: int = 0,
+    caller_counts: dict[str, int] | None = None,
+    head: list[dict[str, object]] | None = None,
+) -> dict[str, object]:
+    return {
+        "calls": int(calls),
+        "dropped": int(dropped),
+        "caller_counts": {} if caller_counts is None else caller_counts,
+        "head": [] if head is None else head,
     }
 
 
@@ -360,19 +390,14 @@ def _tick_row(
     quest_stage_major: int = -1,
     quest_stage_minor: int = -1,
     channels: dict[str, object] | None = None,
+    rng_calls: int | None = None,
+    rng_outside_before: dict[str, object] | None = None,
+    rng_state_enter_u32: int | None = 0,
+    rng_state_leave_u32: int | None = 0,
+    include_rng_accounting: bool = True,
 ) -> dict[str, object]:
-    return {
-        "event": "tick",
-        "run_id": int(run_id),
-        "tick_index_global": int(tick_index),
-        "elapsed_ms": int(elapsed_ms),
-        "dt_ms_i32": int(dt_ms_i32),
-        "dt": float(dt),
-        "mode_id": int(mode_id),
-        "quest_stage_major": int(quest_stage_major),
-        "quest_stage_minor": int(quest_stage_minor),
-        "replay_inputs": _replay_inputs_stub(player_count=player_count),
-        "channels": _channels_stub(
+    resolved_channels = (
+        _channels_stub(
             tick_index=int(tick_index),
             elapsed_ms=int(elapsed_ms),
             mode_id=int(mode_id),
@@ -383,8 +408,30 @@ def _tick_row(
             quest_stage_minor=int(quest_stage_minor),
         )
         if channels is None
-        else channels,
+        else channels
+    )
+    row: dict[str, object] = {
+        "event": "tick",
+        "run_id": int(run_id),
+        "tick_index_global": int(tick_index),
+        "elapsed_ms": int(elapsed_ms),
+        "dt_ms_i32": int(dt_ms_i32),
+        "dt": float(dt),
+        "mode_id": int(mode_id),
+        "quest_stage_major": int(quest_stage_major),
+        "quest_stage_minor": int(quest_stage_minor),
+        "replay_inputs": _replay_inputs_stub(player_count=player_count),
+        "channels": resolved_channels,
     }
+    if include_rng_accounting:
+        stream = cast(list[object], resolved_channels.get("rng_stream") or [])
+        row["rng_calls"] = len(stream) if rng_calls is None else int(rng_calls)
+        row["rng_outside_before"] = (
+            _rng_outside_bag_stub() if rng_outside_before is None else rng_outside_before
+        )
+        row["rng_state_enter_u32"] = rng_state_enter_u32
+        row["rng_state_leave_u32"] = rng_state_leave_u32
+    return row
 
 
 def _run_end_row(
@@ -395,8 +442,10 @@ def _run_end_row(
     quest_stage_minor: int = -1,
     ticks_written: int = 0,
     reason: str = "run_end",
+    rng_outside_tail: dict[str, object] | None = None,
+    include_rng_outside_tail: bool = True,
 ) -> dict[str, object]:
-    return {
+    row: dict[str, object] = {
         "event": "run_end",
         "run_id": int(run_id),
         "reason": str(reason),
@@ -405,6 +454,9 @@ def _run_end_row(
         "quest_stage_minor": int(quest_stage_minor),
         "ticks_written": int(ticks_written),
     }
+    if include_rng_outside_tail:
+        row["rng_outside_tail"] = _rng_outside_bag_stub() if rng_outside_tail is None else rng_outside_tail
+    return row
 
 
 def _session_end_row(*, session_id: str = "session-test", ticks_written: int = 0) -> dict[str, object]:
@@ -425,6 +477,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
             _run_start_row(run_id=1, mode_id=1, seed=777, player_count=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "tick_index_global": 100,
                 "elapsed_ms": 0,
@@ -453,6 +506,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
             },
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "tick_index_global": 101,
                 "elapsed_ms": 16,
@@ -549,6 +603,7 @@ def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_clos
             _run_start_row(run_id=1, mode_id=1, seed=11, player_count=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "elapsed_ms": 0,
                 "dt_ms_i32": 16,
@@ -575,6 +630,7 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
             _run_start_row(run_id=4, mode_id=2, seed=22, player_count=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 4,
                 "elapsed_ms": 33,
                 "dt_ms_i32": 33,
@@ -608,6 +664,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
             _run_start_row(run_id=1, mode_id=3, seed=31, player_count=1, quest_stage_major=1, quest_stage_minor=5),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "elapsed_ms": 0,
                 "dt_ms_i32": 16,
@@ -628,6 +685,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
             _run_start_row(run_id=2, mode_id=2, seed=32, player_count=1, quest_stage_major=1, quest_stage_minor=5),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 2,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
@@ -648,6 +706,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
             _run_start_row(run_id=3, mode_id=1, seed=33, player_count=1, quest_stage_major=1, quest_stage_minor=5),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 3,
                 "elapsed_ms": 33,
                 "dt_ms_i32": 33,
@@ -695,6 +754,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_rng_marks_channel(tmp_pat
             _run_start_row(run_id=1, mode_id=1, seed=51, player_count=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "elapsed_ms": 0,
                 "dt_ms_i32": 16,
@@ -807,6 +867,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
             _run_start_row(run_id=1, mode_id=3, seed=91, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
@@ -820,7 +881,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 12"):
+    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 13"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -832,6 +893,7 @@ def test_finalize_frida_jsonl_to_traces_keeps_large_first_tick_elapsed(tmp_path:
             _run_start_row(run_id=1, mode_id=3, seed=92, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "elapsed_ms": 25_000,
                 "dt_ms_i32": 16,
@@ -870,6 +932,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_required_canonical_chann
             _run_start_row(run_id=1, mode_id=3, seed=93, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
@@ -899,6 +962,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_extra_non_canonical_channel(
             _run_start_row(run_id=1, mode_id=3, seed=94, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
@@ -999,6 +1063,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_timing_samples_field(tmp
             _run_start_row(run_id=1, mode_id=3, seed=103, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
@@ -1033,6 +1098,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_empty_checkpoint_players(tmp_pat
             _run_start_row(run_id=1, mode_id=3, seed=104, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
@@ -1067,6 +1133,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_invalid_checkpoint_rng_state(tmp
             _run_start_row(run_id=1, mode_id=3, seed=105, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
@@ -1100,6 +1167,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_empty_timing_samples(tmp_path: P
             _run_start_row(run_id=1, mode_id=3, seed=106, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
@@ -1240,6 +1308,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_sim_state_player_count_mismatch(
             _run_start_row(run_id=1, mode_id=3, seed=107, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
+                **_rng_accounting_stub(),
                 "run_id": 1,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
@@ -1350,3 +1419,123 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_capture_format_version(t
 
     with pytest.raises(FridaFinalizeError, match="missing required field `capture_format_version`"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def _single_tick_rows(
+    *,
+    run_start: dict[str, object],
+    tick_overrides: dict[str, object] | None = None,
+    run_end: dict[str, object] | None = None,
+) -> list[dict[str, object]]:
+    tick: dict[str, object] = {
+        "event": "tick",
+        **_rng_accounting_stub(),
+        "run_id": 1,
+        "elapsed_ms": 0,
+        "dt_ms_i32": 16,
+        "dt": 0.016,
+        "mode_id": 1,
+        "replay_inputs": _replay_inputs_stub(player_count=1),
+        "channels": _channels_stub(tick_index=0, elapsed_ms=0, mode_id=1),
+    }
+    tick.update(tick_overrides or {})
+    return [
+        _session_start_row(),
+        run_start,
+        tick,
+        _run_end_row(run_id=1, mode_id=1, ticks_written=1) if run_end is None else run_end,
+        _session_end_row(ticks_written=1),
+    ]
+
+
+def test_finalize_frida_jsonl_to_traces_seeds_replay_from_run_setup_rng_state(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        _single_tick_rows(
+            run_start=_run_start_row(run_id=1, mode_id=1, seed=123, player_count=1, rng_state_at_run_setup=999),
+        ),
+    )
+
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+    replay = load_replay_file(result.traces[0].replay_path)
+    assert replay.header.seed == 999
+    meta, _ticks, _footer = load_trace(result.traces[0].out_path)
+    assert meta.source.seed == 999
+    assert meta.source.run_start_seed_source == "run_setup_rng_state"
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_missing_run_setup_rng_state(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        _single_tick_rows(
+            run_start=_run_start_row(run_id=1, mode_id=1, include_rng_state_at_run_setup=False),
+        ),
+    )
+
+    with pytest.raises(FridaFinalizeError, match="rng_state_at_run_setup is required"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_tick_without_rng_accounting(tmp_path: Path) -> None:
+    rows = _single_tick_rows(run_start=_run_start_row(run_id=1, mode_id=1))
+    tick = rows[2]
+    del tick["rng_outside_before"]
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", rows)
+
+    with pytest.raises(FridaFinalizeError, match="must carry rng accounting"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_rng_calls_stream_mismatch(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        _single_tick_rows(
+            run_start=_run_start_row(run_id=1, mode_id=1),
+            tick_overrides={"rng_calls": 3},
+        ),
+    )
+
+    with pytest.raises(FridaFinalizeError, match="rng_calls=3 does not match rng_stream length 0"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_run_end_without_rng_outside_tail(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        _single_tick_rows(
+            run_start=_run_start_row(run_id=1, mode_id=1),
+            run_end=_run_end_row(run_id=1, mode_id=1, ticks_written=1, include_rng_outside_tail=False),
+        ),
+    )
+
+    with pytest.raises(FridaFinalizeError, match="rng_outside_tail is required"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_reports_unhooked_rng_draws(tmp_path: Path) -> None:
+    # enter == seed (setup distance 0); leave is one LCG step past the last
+    # observed draw, so the report must attribute one unhooked in-tick draw.
+    seed = 100
+    leave = (seed * 214013 + 2531011) & 0xFFFFFFFF
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        _single_tick_rows(
+            run_start=_run_start_row(run_id=1, mode_id=1, rng_state_at_run_setup=seed),
+            tick_overrides={
+                "rng_state_enter_u32": seed,
+                "rng_state_leave_u32": leave,
+                "rng_outside_before": _rng_outside_bag_stub(calls=2, caller_counts={"0x00417f00": 2}),
+            },
+        ),
+    )
+
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+    evidence_path = result.traces[0].out_path.with_suffix(".rng_evidence.json")
+    report = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert report["setup_draw_distance"] == 0
+    assert report["unhooked_in_tick"] == 1
+    assert report["unhooked_gap_neighbors"] == {"tick_tail": 1}
+    assert report["outside_calls"] == 2
+    assert report["outside_caller_counts"] == {"0x00417f00": 2}

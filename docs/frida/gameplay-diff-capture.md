@@ -69,6 +69,51 @@ These traces are directly consumable by:
 - `uv run crimson dbg bisect`
 - `uv run crimson dbg focus`
 
+## Replay seeding (capture format v13)
+
+The session `crt_srand` seed is stale by the time a run starts (menus and
+earlier runs already consumed draws), so the capture latches the rand state
+observed before the run's first terrain draw (`0x004181cc`, the
+terrain-generate prelude roll) and stamps it on `run_start` as
+`rng_state_at_run_setup`. Finalize seeds the `.crd` replay header from that
+state (`run_start_seed_source=run_setup_rng_state` in the trace meta), which
+replays the run's setup draws — terrain stamps and quest build included —
+value-for-value.
+
+## RNG evidence (capture format v13)
+
+The capture reads the real CRT rand state from memory (per-thread data +
+0x14 via `_getptd`) rather than trusting a software mirror, so draws that
+bypass the `crt_rand` hook are observable:
+
+- `rng_stream` rows carry real `state_before_u32`/`state_after_u32`; unhooked
+  draws appear as LCG chain gaps between consecutive rows.
+- tick rows carry `rng_calls` (must equal the stream length),
+  `rng_state_enter_u32`/`rng_state_leave_u32` (gpur boundary samples), and
+  `rng_outside_before` (hooked draws between gpur windows: exhaustive
+  per-caller counts plus a capped detail head).
+- `run_end` rows flush the pending outside draws as `rng_outside_tail`.
+
+Finalize validates all of it and writes a `.rng_evidence.json` report next to
+each `.cdt`: outside-draw caller counts plus unhooked-draw counts split into
+in-tick and boundary, with the hooked callers that bracket each gap. That
+report is the worklist of rng behavior the port does not model yet.
+
+## Test fixtures
+
+`just capture-fixtures-import <captures_dir>` (wraps
+`scripts/import_capture_fixtures.py`) imports finalized `.cdt`/`.crd` pairs into
+`tests/fixtures/captures/`: the full replay sidecar, a trimmed window of the
+native trace (default 64 ticks), and a `manifest.json` with provenance
+(`seed_aligned` reflects whether the capture seeded from the run-setup rand
+state).
+
+`tests/replay/test_original_capture_fixture_parity.py` consumes the fixtures
+(opt-in via `--run-replay-fixtures`): a passing ratchet asserts the first
+gameplay rng draw replays exactly, and a strict windowed `dbg diff` is marked
+xfail until the known native parity gaps (unhooked rng draws, run-start weapon
+state, raw f32 channel encodings) are closed.
+
 ## Notes
 
 - Legacy `dbg import-capture`, `replay convert-capture`, and postpack flow are removed.

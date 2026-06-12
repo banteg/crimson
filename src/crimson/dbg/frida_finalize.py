@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 from contextlib import suppress
 from datetime import UTC, datetime
@@ -44,11 +45,29 @@ _FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
-_SUPPORTED_CAPTURE_FORMAT_VERSION = 12
+_SUPPORTED_CAPTURE_FORMAT_VERSION = 13
 _TRACE_CHUNK_TICKS = 256
 _RUN_START_REASONS = frozenset(("run_start", "first_tick", "quest_attempt", "mode_or_stage_change"))
 _RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change", "shutdown"))
 _SEED_SOURCES = frozenset(("unknown", "crt_srand"))
+# Replay seeds are derived from the rand state latched at run-setup entry
+# (before the first terrain draw), not from the stale session-wide srand seed.
+_RUN_SETUP_SEED_SOURCE = "run_setup_rng_state"
+_LCG_GAP_SEARCH_LIMIT = 1 << 16
+
+
+def _lcg_step_u32(state: int) -> int:
+    return (state * 214013 + 2531011) & 0xFFFFFFFF
+
+
+def _lcg_distance_u32(start: int, target: int, *, limit: int = _LCG_GAP_SEARCH_LIMIT) -> int | None:
+    state = int(start) & 0xFFFFFFFF
+    goal = int(target) & 0xFFFFFFFF
+    for steps in range(limit):
+        if state == goal:
+            return steps
+        state = _lcg_step_u32(state)
+    return None
 _MODE_LABEL_BY_ID = {
     int(GameMode.DEMO): "demo",
     int(GameMode.SURVIVAL): "survival",
@@ -164,6 +183,20 @@ class _SessionStartRow(
     session_fingerprint: _SessionFingerprintRow
 
 
+class _OutsideRngHeadRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    state_before_u32: int
+    state_after_u32: int
+    value_15: int | None = None
+    caller_static: str | None = None
+
+
+class _OutsideRngBag(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    calls: int = 0
+    dropped: int = 0
+    caller_counts: dict[str, int] = msgspec.field(default_factory=dict)
+    head: list[_OutsideRngHeadRow] = msgspec.field(default_factory=list)
+
+
 class _RunStartRow(
     msgspec.Struct,
     frozen=True,
@@ -180,6 +213,8 @@ class _RunStartRow(
     quest_stage_minor: int = -1
     seed_source: str = "unknown"
     tick_index_global: int | None = None
+    rng_state_at_run_setup: int | None = None
+    rng_setup_caller_static: str | None = None
 
 
 class _TickRow(
@@ -198,6 +233,10 @@ class _TickRow(
     tick_index_global: int | None = None
     quest_stage_major: int = -1
     quest_stage_minor: int = -1
+    rng_calls: int | None = None
+    rng_outside_before: _OutsideRngBag | None = None
+    rng_state_enter_u32: int | None = None
+    rng_state_leave_u32: int | None = None
     replay_inputs: list[tuple[float, float, float, float, int]] = msgspec.field(default_factory=list)
 
 
@@ -215,6 +254,7 @@ class _RunEndRow(
     ticks_written: int
     reason: str = "run_end"
     tick_index_global: int | None = None
+    rng_outside_tail: _OutsideRngBag | None = None
 
 
 class _ErrorRow(
@@ -280,6 +320,15 @@ class _OpenRun(msgspec.Struct):
     status: GameStatusData = msgspec.field(default_factory=GameStatusData)
     global_tick_first: int | None = None
     global_tick_last: int | None = None
+    rng_outside_calls: int = 0
+    rng_outside_dropped: int = 0
+    rng_outside_caller_counts: dict[str, int] = msgspec.field(default_factory=dict)
+    rng_unhooked_in_tick: int = 0
+    rng_unhooked_boundary: int = 0
+    rng_unhooked_unresolved: int = 0
+    rng_unhooked_gap_neighbors: dict[str, int] = msgspec.field(default_factory=dict)
+    rng_setup_draw_distance: int | None = None
+    rng_prev_leave_state: int | None = None
 
 
 def _fingerprint(path: Path) -> BuiltinObject:
@@ -598,6 +647,105 @@ def _build_meta(
     )
 
 
+def _merge_outside_rng_bag(run: _OpenRun, bag: _OutsideRngBag) -> None:
+    run.rng_outside_calls += int(bag.calls)
+    run.rng_outside_dropped += int(bag.dropped)
+    for key, count in bag.caller_counts.items():
+        run.rng_outside_caller_counts[str(key)] = run.rng_outside_caller_counts.get(str(key), 0) + int(count)
+
+
+def _account_tick_rng_evidence(
+    run: _OpenRun,
+    *,
+    tick_row: _TickRow,
+    rng_stream: list[RngStreamRow],
+    field: str,
+) -> None:
+    """Track rand draws the crt_rand hook never observed.
+
+    Real memory states (gpur enter/leave plus per-call state_before) expose
+    unhooked draws as LCG chain gaps; the per-caller counts say which hooked
+    callers bracket each gap so the report points at what the port misses.
+    """
+    bag = tick_row.rng_outside_before
+    if (
+        tick_row.rng_calls is None
+        or bag is None
+        or tick_row.rng_state_enter_u32 is None
+        or tick_row.rng_state_leave_u32 is None
+    ):
+        raise FridaFinalizeError(
+            f"{field} must carry rng accounting "
+            "(rng_calls, rng_outside_before, rng_state_enter_u32, rng_state_leave_u32)",
+        )
+    if int(tick_row.rng_calls) != len(rng_stream):
+        raise FridaFinalizeError(
+            f"{field}.rng_calls={int(tick_row.rng_calls)} does not match rng_stream length {len(rng_stream)}",
+        )
+    enter = int(tick_row.rng_state_enter_u32)
+    leave = int(tick_row.rng_state_leave_u32)
+    _merge_outside_rng_bag(run, bag)
+
+    if run.rng_prev_leave_state is None:
+        # First tick of the run: the distance from the replay seed (run-setup
+        # rand state) to gpur enter is the run's setup draw count.
+        run.rng_setup_draw_distance = _lcg_distance_u32(int(run.replay_seed), enter)
+    else:
+        # Between gpur windows: hooked outside draws are counted in the bag;
+        # any excess chain distance is unhooked draws.
+        total = _lcg_distance_u32(run.rng_prev_leave_state, enter)
+        if total is None:
+            run.rng_unhooked_unresolved += 1
+        else:
+            unhooked = total - int(bag.calls)
+            if unhooked < 0:
+                run.rng_unhooked_unresolved += 1
+            else:
+                run.rng_unhooked_boundary += unhooked
+
+    prev = enter
+    for row in rng_stream:
+        gap = _lcg_distance_u32(prev, int(row.state_before_u32))
+        if gap is None:
+            run.rng_unhooked_unresolved += 1
+        elif gap > 0:
+            run.rng_unhooked_in_tick += gap
+            neighbor = "unknown" if row.caller is None else f"0x{int(row.caller):08x}"
+            run.rng_unhooked_gap_neighbors[neighbor] = run.rng_unhooked_gap_neighbors.get(neighbor, 0) + gap
+        prev = int(row.state_after_u32)
+    tail_gap = _lcg_distance_u32(prev, leave)
+    if tail_gap is None:
+        run.rng_unhooked_unresolved += 1
+    elif tail_gap > 0:
+        run.rng_unhooked_in_tick += tail_gap
+        run.rng_unhooked_gap_neighbors["tick_tail"] = (
+            run.rng_unhooked_gap_neighbors.get("tick_tail", 0) + tail_gap
+        )
+    run.rng_prev_leave_state = leave
+
+
+def _write_rng_evidence_report(out_path: Path, run: _OpenRun) -> None:
+    report = {
+        "run_id": int(run.run_id),
+        "mode_id": int(run.mode_id),
+        "replay_seed": int(run.replay_seed),
+        "setup_draw_distance": run.rng_setup_draw_distance,
+        "outside_calls": int(run.rng_outside_calls),
+        "outside_dropped": int(run.rng_outside_dropped),
+        "outside_caller_counts": dict(
+            sorted(run.rng_outside_caller_counts.items(), key=lambda kv: -kv[1]),
+        ),
+        "unhooked_in_tick": int(run.rng_unhooked_in_tick),
+        "unhooked_boundary": int(run.rng_unhooked_boundary),
+        "unhooked_unresolved": int(run.rng_unhooked_unresolved),
+        "unhooked_gap_neighbors": dict(
+            sorted(run.rng_unhooked_gap_neighbors.items(), key=lambda kv: -kv[1]),
+        ),
+    }
+    evidence_path = Path(out_path).with_suffix(".rng_evidence.json")
+    evidence_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+
+
 def _write_run_trace(
     *,
     raw_path: Path,
@@ -672,6 +820,7 @@ def _write_run_trace(
         replay_path,
         Replay(header=replay_header, ticks=replay_ticks),
     )
+    _write_rng_evidence_report(out_path, run)
     return FinalizedTrace(
         run_id=int(run.run_id),
         out_path=Path(out_path),
@@ -764,17 +913,28 @@ def finalize_frida_jsonl_to_traces(
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].seed must be >= 0")
                         if int(run_start.player_count) <= 0:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].player_count must be positive")
+                        # The session srand seed is stale by run start (menus and
+                        # earlier runs already consumed draws); the rand state
+                        # latched at run-setup entry is the replayable seed.
+                        if run_start.rng_state_at_run_setup is None:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].rng_state_at_run_setup is required for replay seeding",
+                            )
+                        if not (0 <= int(run_start.rng_state_at_run_setup) <= 0xFFFFFFFF):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].rng_state_at_run_setup must be u32",
+                            )
                         spool_path = temp_root / f"run_{int(run_start.run_id)}.ticks"
                         active_run = _OpenRun(
                             run_id=int(run_start.run_id),
                             mode_id=mode_id,
                             quest_stage_major=int(run_start.quest_stage_major),
                             quest_stage_minor=int(run_start.quest_stage_minor),
-                            replay_seed=int(run_start.seed),
+                            replay_seed=int(run_start.rng_state_at_run_setup),
                             replay_player_count=int(run_start.player_count),
                             temp_path=spool_path,
                             stream=spool_path.open("wb"),
-                            replay_seed_source=str(run_start.seed_source),
+                            replay_seed_source=_RUN_SETUP_SEED_SOURCE,
                         )
                         continue
                     case _TickRow() as tick_row:
@@ -831,6 +991,12 @@ def finalize_frida_jsonl_to_traces(
                             local_tick=int(active_run.next_local_tick),
                             field=f"{raw_path}.lines[{line_no}].channels",
                         )
+                        _account_tick_rng_evidence(
+                            active_run,
+                            tick_row=tick_row,
+                            rng_stream=channels.rng_stream,
+                            field=f"{raw_path}.lines[{line_no}]",
+                        )
                         if int(active_run.tick_count) == 0 and tick_row.channels.sim_state.gameplay.status is not None:
                             active_run.status = tick_row.channels.sim_state.gameplay.status
                         active_run.replay_inputs.append(list(replay_inputs))
@@ -886,6 +1052,11 @@ def finalize_frida_jsonl_to_traces(
                                 f"{raw_path}.lines[{line_no}] run_end.ticks_written={int(run_end.ticks_written)} "
                                 f"does not match active run tick_count {int(active_run.tick_count)}",
                             )
+                        if run_end.rng_outside_tail is None:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].rng_outside_tail is required",
+                            )
+                        _merge_outside_rng_bag(active_run, run_end.rng_outside_tail)
                         traces.append(
                             _write_run_trace(
                                 raw_path=raw_path,
