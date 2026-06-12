@@ -26,6 +26,8 @@ from ..gameplay import (
     survival_progression_update,
 )
 from ..owner_ref import OwnerRef
+from ..perks import PerkId
+from ..perks.helpers import perk_active
 from ..perks.runtime.effects import perks_update_effects
 from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..player_damage import PlayerDeathRuntime, player_take_projectile_damage
@@ -570,7 +572,25 @@ class WorldState(msgspec.Struct):
     def _advance_creature_anim(self, dt: float) -> None:
         if float(self.state.bonuses.freeze) > 0.0:
             return
-        for creature in self.creatures.entries:
+        # Native advances anim phase inside `if (idx != evil_eyes_target)`:
+        # the frozen creature's walk cycle halts along with its movement.
+        evil_targets: set[int] = set()
+        if self.players:
+            if bool(self.state.preserve_bugs):
+                if perk_active(self.players[0], PerkId.EVIL_EYES):
+                    evil_target = int(self.players[0].evil_eyes_target_creature)
+                    if evil_target >= 0:
+                        evil_targets.add(evil_target)
+            else:
+                for player in self.players:
+                    if float(player.health) <= 0.0 or not perk_active(player, PerkId.EVIL_EYES):
+                        continue
+                    evil_target = int(player.evil_eyes_target_creature)
+                    if evil_target >= 0:
+                        evil_targets.add(evil_target)
+        for idx, creature in enumerate(self.creatures.entries):
+            if idx in evil_targets:
+                continue
             if not (creature.active and creature.hp > 0.0):
                 continue
             type_id = creature.type_id
