@@ -1212,6 +1212,36 @@ class CreaturePool:
                         _advance_pos_by_delta_f32(creature.pos, move_delta).clamp_rect(radius, radius, max_x, max_y),
                     )
 
+                # Native ticks owner-bound spawn slots inside the spawner movement
+                # branch, before this creature's plaguebearer/anim/ranged/contact
+                # rand draws; children spawned here are visited later in the same
+                # pass when their slot index is above the current one.
+                if (
+                    dt > 0.0
+                    and float(state.bonuses.freeze) <= 0.0
+                    and not bool(self.capture_spawn_events_authoritative)
+                    and (creature.flags & HAS_SPAWN_SLOT_FLAG) != 0
+                ):
+                    slot_index = creature.spawn_slot_index
+                    if slot_index is not None and 0 <= int(slot_index) < len(self.spawn_slots):
+                        slot = self.spawn_slots[int(slot_index)]
+                        if int(slot.owner_creature) == int(idx):
+                            child_template_id = tick_spawn_slot(slot, dt)
+                            if child_template_id is not None:
+                                plan = build_spawn_plan(
+                                    child_template_id,
+                                    creature.pos,
+                                    float(RANDOM_HEADING_SENTINEL),
+                                    rng,
+                                    spawn_env,
+                                )
+                                mapping, _ = self.spawn_plan(
+                                    plan,
+                                    rng=rng,
+                                    detail_preset=int(detail_preset),
+                                )
+                                spawned.extend(mapping)
+
             if (
                 players
                 and perk_active(players[0], PerkId.PLAGUEBEARER)
@@ -1318,34 +1348,6 @@ class CreaturePool:
                     break
             if interaction_ctx.skip_creature:
                 continue
-
-            # Tick owner-bound spawn slots at creature-loop tail so spawned children
-            # can still be visited later in the same update pass.
-            if (
-                dt > 0.0
-                and float(state.bonuses.freeze) <= 0.0
-                and not bool(self.capture_spawn_events_authoritative)
-                and (creature.flags & HAS_SPAWN_SLOT_FLAG) != 0
-            ):
-                slot_index = creature.spawn_slot_index
-                if slot_index is not None and 0 <= int(slot_index) < len(self.spawn_slots):
-                    slot = self.spawn_slots[int(slot_index)]
-                    if int(slot.owner_creature) == int(idx):
-                        child_template_id = tick_spawn_slot(slot, dt)
-                        if child_template_id is not None:
-                            plan = build_spawn_plan(
-                                child_template_id,
-                                creature.pos,
-                                float(RANDOM_HEADING_SENTINEL),
-                                rng,
-                                spawn_env,
-                            )
-                            mapping, _ = self.spawn_plan(
-                                plan,
-                                rng=rng,
-                                detail_preset=int(detail_preset),
-                            )
-                            spawned.extend(mapping)
 
         return CreatureUpdateResult(deaths=tuple(deaths), spawned=tuple(spawned), sfx=tuple(sfx))
 
