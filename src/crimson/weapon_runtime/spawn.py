@@ -4,6 +4,7 @@ import math
 
 from grim.geom import Vec2
 
+from ..math_parity import f32
 from ..owner_ref import OwnerRef
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.state_types import GameplayState, PlayerState
@@ -151,13 +152,15 @@ def spawn_projectile_ring(
 ) -> None:
     if count <= 0:
         return
-    step = math.tau / float(count)
+    # Native multiplies the loop index by an f32 step literal (e.g. 0.3926991f
+    # for the 16-ring); keep the f32 rounding so the ring angles match.
+    step = float(f32(math.tau / float(count)))
     for idx in range(count):
         projectile_spawn(
             state,
             players=players,
             pos=origin_pos,
-            angle=float(idx) * step + float(angle_offset),
+            angle=float(f32(float(idx) * step)) + float(angle_offset),
             type_id=type_id,
             owner=owner,
             owner_player_index=owner_player_index,
