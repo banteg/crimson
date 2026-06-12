@@ -77,7 +77,7 @@ pub inline fn appendSpawn(
     count: i32,
 ) QuestSpawnBuildError!void {
     try appendEntry(out_entries, len, .{
-        .pos = pos,
+        .pos = .{ .x = nativeEntryCoord(pos.x), .y = nativeEntryCoord(pos.y) },
         .heading = heading,
         .spawn_id = spawn_id,
         .trigger_ms = trigger_ms,
@@ -150,8 +150,17 @@ pub inline fn randomAngle(rng: *QuestRng) f32 {
     return @as(f32, @floatFromInt(rng.randBelow(0x264))) * 0.01;
 }
 
+pub inline fn nativeEntryCoord(value: f32) f32 {
+    // Native quest spawn entries store integer coordinates: computed positions
+    // are truncated on write and headings derive from the truncated point.
+    return @trunc(value);
+}
+
 pub inline fn headingFromCenter(point: spawn_runtime.Vec2, center: spawn_runtime.Vec2) f32 {
-    return math_runtime.atan2(point.y - center.y, point.x - center.x) - (std.math.pi / 2.0);
+    const tx = nativeEntryCoord(point.x);
+    const ty = nativeEntryCoord(point.y);
+    const native_half_pi: f32 = @bitCast(@as(u32, 0x3FC90FDB));
+    return @floatCast(math_runtime.atan2(@as(f64, ty - center.y), @as(f64, tx - center.x)) - @as(f64, native_half_pi));
 }
 
 pub inline fn vecFromAngle(angle: f32) spawn_runtime.Vec2 {

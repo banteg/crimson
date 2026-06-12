@@ -8,6 +8,7 @@ import msgspec
 from grim.geom import Vec2
 
 from ..creatures.spawn import SpawnId
+from ..math_parity import NATIVE_HALF_PI, f32
 from .types import SpawnEntry
 
 
@@ -82,8 +83,15 @@ def radial_points(
         radius += radius_step
 
 
+def _native_entry_coord(value: float) -> float:
+    # Native quest spawn entries store integer coordinates: computed positions
+    # are truncated on write and headings derive from the truncated point.
+    return float(math.trunc(float(value)))
+
+
 def heading_from_center(point: Vec2, center: Vec2) -> float:
-    return (point - center).to_angle() - (math.pi / 2.0)
+    truncated = Vec2(_native_entry_coord(point.x), _native_entry_coord(point.y))
+    return float(f32((truncated - center).to_angle() - float(NATIVE_HALF_PI)))
 
 
 def line_points(start: Vec2, step: Vec2, count: int) -> Iterator[Vec2]:
@@ -100,7 +108,7 @@ def spawn(
     count: int,
 ) -> SpawnEntry:
     return SpawnEntry(
-        pos=point,
+        pos=Vec2(_native_entry_coord(point.x), _native_entry_coord(point.y)),
         heading=heading,
         spawn_id=spawn_id,
         trigger_ms=trigger_ms,
