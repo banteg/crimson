@@ -467,15 +467,23 @@ fn tryFireWeaponWithForce(
         );
     }
 
-    const dist = aim_delta.length();
-    const max_offset = dist * player.spread_heat * 0.5;
+    // Native float sequence: half the f32 aim distance is spilled, the
+    // spread/magnitude product chain stays in extended precision, the jittered
+    // aim x is spilled while y feeds atan2 unspilled, and the heading is
+    // (float)(atan2(pos - jitter) - 1.5707964).
+    const half_len: f32 = aim_delta.length() * 0.5;
     const dir_roll = state.rng.randTagged(rng_callers.player_update_shot_jitter_dir);
-    const dir_angle = @as(f32, @floatFromInt(dir_roll & 0x1ff)) * (native_tau / 512.0);
     const mag_roll = state.rng.randTagged(rng_callers.player_update_shot_jitter_mag);
-    const mag = @as(f32, @floatFromInt(mag_roll & 0x1ff)) * (1.0 / 512.0);
-    const offset = max_offset * mag;
-    const aim_jitter = state_mod.Vec2.add(player.aim, state_mod.Vec2.fromAngle(dir_angle).mul(offset));
-    const shot_angle = state_mod.Vec2.sub(aim_jitter, player.pos).toHeading();
+    const offset_term: f64 = @as(f64, half_len) * @as(f64, player.spread_heat) *
+        @as(f64, @floatFromInt(mag_roll & 0x1ff)) * 0.001953125;
+    const dir_angle: f32 = @as(f32, @floatFromInt(dir_roll & 0x1ff)) * (native_tau / 512.0);
+    const aim_jitter_x: f32 = @floatCast(@cos(@as(f64, dir_angle)) * offset_term + @as(f64, player.aim.x));
+    const aim_jitter_y: f64 = @sin(@as(f64, dir_angle)) * offset_term + @as(f64, player.aim.y);
+    const native_half_pi_f32: f32 = native_math.roundF32(native_math.native_half_pi);
+    const shot_angle: f32 = @floatCast(std.math.atan2(
+        @as(f64, player.pos.y) - aim_jitter_y,
+        @as(f64, player.pos.x) - @as(f64, aim_jitter_x),
+    ) - @as(f64, native_half_pi_f32));
     var particle_angle = directionFromHeading(shot_angle).toAngle();
     if (player.weapon.weapon_id == .flamethrower or player.weapon.weapon_id == .blow_torch or player.weapon.weapon_id == .hr_flamer) {
         particle_angle = directionFromHeading(aim_heading).toAngle();

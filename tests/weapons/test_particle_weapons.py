@@ -4,7 +4,7 @@ import math
 
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
-from crimson.math_parity import heading_from_delta_f32
+from crimson.math_parity import NATIVE_HALF_PI, f32, heading_from_delta_f32
 from crimson.owner_ref import OwnerRef
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -49,7 +49,14 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
         assert len(particles) == 1
         assert int(particles[0].style_id) == expected_style
         assert particles[0].owner == OwnerRef.from_player(0)
-        expected_angle = Vec2.from_heading(float(heading_from_delta_f32(dx=200.0, dy=0.0))).to_angle()
+        if weapon_id == WeaponId.BUBBLEGUN:
+            # Bubblegun particles use the jittered shot angle: native heading is
+            # f32(atan2(pos - aim) - half_pi), one ulp below f32 pi/2 here.
+            expected_shot_angle = float(f32(math.atan2(0.0, -200.0) - float(NATIVE_HALF_PI)))
+        else:
+            # Flamethrower-family particles use the raw aim heading.
+            expected_shot_angle = float(heading_from_delta_f32(dx=200.0, dy=0.0))
+        expected_angle = Vec2.from_heading(expected_shot_angle).to_angle()
         assert_float_close(float(particles[0].angle), expected_angle)
 
         assert state.projectiles.iter_active() == []

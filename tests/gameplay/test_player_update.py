@@ -15,7 +15,7 @@ from crimson.gameplay import (
     _player_heading_approach_target_with_delta,
     player_update,
 )
-from crimson.math_parity import NATIVE_HALF_PI, NATIVE_PI, NATIVE_TAU, f32, heading_from_delta_f32
+from crimson.math_parity import NATIVE_HALF_PI, NATIVE_PI, NATIVE_TAU, f32
 from crimson.movement_controls import MovementControlType
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
@@ -1060,21 +1060,20 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     rand_dir = expected_rng.rand()
     rand_mag = expected_rng.rand()
 
+    # Mirror the native float sequence: half the f32 aim distance is spilled,
+    # the spread/magnitude product stays extended, jittered aim x is spilled
+    # while y feeds atan2 unspilled, heading = f32(atan2(pos - jitter) - half_pi).
     dx = float(f32(float(aim_x) - float(player.pos.x)))
     dy = float(f32(float(aim_y) - float(player.pos.y)))
     dist_sq = float(f32(float(f32(float(dx) * float(dx))) + float(f32(float(dy) * float(dy)))))
-    dist = float(f32(math.sqrt(float(dist_sq))))
-    max_offset = float(f32(float(f32(float(dist) * float(player.spread_heat))) * 0.5))
-    dir_angle = float(f32(float(rand_dir & 0x1FF) * (float(NATIVE_TAU) / 512.0)))
-    mag = float(f32(float(rand_mag & 0x1FF) * (1.0 / 512.0)))
-    offset = float(f32(float(max_offset) * float(mag)))
-    dir_x = float(f32(math.cos(float(dir_angle))))
-    dir_y = float(f32(math.sin(float(dir_angle))))
-    jitter_x = float(f32(float(aim_x) + float(f32(float(dir_x) * float(offset)))))
-    jitter_y = float(f32(float(aim_y) + float(f32(float(dir_y) * float(offset)))))
-    shot_dx = float(f32(float(jitter_x) - float(player.pos.x)))
-    shot_dy = float(f32(float(jitter_y) - float(player.pos.y)))
-    expected_angle = float(heading_from_delta_f32(dx=float(shot_dx), dy=float(shot_dy)))
+    half_len = float(f32(float(f32(math.sqrt(float(dist_sq)))) * 0.5))
+    offset_term = half_len * float(player.spread_heat) * float(rand_mag & 0x1FF) * 0.001953125
+    dir_angle = float(f32(float(rand_dir & 0x1FF) * float(f32(float(NATIVE_TAU) / 512.0))))
+    jitter_x = float(f32(math.cos(dir_angle) * offset_term + float(aim_x)))
+    jitter_y = math.sin(dir_angle) * offset_term + float(aim_y)
+    expected_angle = float(
+        f32(math.atan2(float(player.pos.y) - jitter_y, float(player.pos.x) - jitter_x) - float(NATIVE_HALF_PI)),
+    )
 
     fire_weapon(
         WeaponFireCtx(

@@ -10,7 +10,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
 
-from ..math_parity import NATIVE_TAU, f32, heading_from_delta_f32
+from ..math_parity import NATIVE_HALF_PI, NATIVE_TAU, f32, heading_from_delta_f32
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..player_damage import PlayerDeathRuntime
@@ -137,34 +137,32 @@ def _native_shot_angle_with_jitter(
 ) -> float:
     # Native gameplay fire owns two exact `player_update` draw sites for the
     # disc-spread direction and magnitude before the later projectile work.
+    # Float sequence per the decompile: half the f32 aim distance is spilled,
+    # the spread/magnitude product chain stays in extended precision, the
+    # jittered aim x is spilled while y feeds atan2 unspilled, and the heading
+    # is `(float)(atan2(pos - jitter) - 1.5707964)`.
     aim_dx = float(f32(float(aim.x) - float(player_pos.x)))
     aim_dy = float(f32(float(aim.y) - float(player_pos.y)))
     dist_sq = float(f32(float(f32(float(aim_dx) * float(aim_dx))) + float(f32(float(aim_dy) * float(aim_dy)))))
-    dist = float(f32(math.sqrt(float(dist_sq))))
-    max_offset = float(f32(float(f32(float(dist) * float(spread_heat))) * 0.5))
+    half_len = float(f32(float(f32(math.sqrt(float(dist_sq)))) * 0.5))
 
-    dir_angle = float(
+    dir_draw = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SHOT_JITTER_DIR) & 0x1FF)
+    mag_draw = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SHOT_JITTER_MAG) & 0x1FF)
+    offset_term = half_len * float(spread_heat) * mag_draw * 0.001953125
+    dir_angle = float(f32(dir_draw * float(f32(float(NATIVE_TAU) / 512.0))))
+
+    aim_jitter_x = float(f32(math.cos(dir_angle) * offset_term + float(aim.x)))
+    aim_jitter_y = math.sin(dir_angle) * offset_term + float(aim.y)
+
+    return float(
         f32(
-            float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SHOT_JITTER_DIR) & 0x1FF)
-            * (float(NATIVE_TAU) / 512.0),
+            math.atan2(
+                float(player_pos.y) - aim_jitter_y,
+                float(player_pos.x) - aim_jitter_x,
+            )
+            - float(NATIVE_HALF_PI),
         ),
     )
-    mag = float(
-        f32(
-            float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SHOT_JITTER_MAG) & 0x1FF)
-            * (1.0 / 512.0),
-        ),
-    )
-    offset = float(f32(float(max_offset) * float(mag)))
-
-    dir_x = float(f32(math.cos(float(dir_angle))))
-    dir_y = float(f32(math.sin(float(dir_angle))))
-    aim_jitter_x = float(f32(float(aim.x) + float(f32(float(dir_x) * float(offset)))))
-    aim_jitter_y = float(f32(float(aim.y) + float(f32(float(dir_y) * float(offset)))))
-
-    shot_dx = float(f32(float(aim_jitter_x) - float(player_pos.x)))
-    shot_dy = float(f32(float(aim_jitter_y) - float(player_pos.y)))
-    return float(heading_from_delta_f32(dx=float(shot_dx), dy=float(shot_dy)))
 
 
 def _apply_pellet_jitter(
