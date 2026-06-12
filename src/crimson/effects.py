@@ -209,7 +209,8 @@ class ParticlePool:
                 dist_sq = f32(f32(float(dx) * float(dx)) + f32(float(dy) * float(dy)))
                 dist = f32(f32(math.sqrt(float(dist_sq))) - float(radius))
                 threshold = f32(f32(float(size) * 0.14285715) + 3.0)
-                if float(threshold) < float(dist):
+                # Native acceptance is strict (`dist < threshold`); reject equality.
+                if float(threshold) <= float(dist):
                     continue
                 return int(creature_idx)
 

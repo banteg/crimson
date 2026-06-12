@@ -379,6 +379,9 @@ class WorldState(msgspec.Struct):
             deaths=step_runtime.deaths,
         )
 
+        # Native updates the sprite pool before the particle loop, so sprites
+        # spawned by particles only advance on the next tick.
+        self.state.sprite_effects.update(dt)
         self.state.particles.update(
             dt,
             creatures=self.creatures.entries,
@@ -386,7 +389,6 @@ class WorldState(msgspec.Struct):
             fx_queue=fx_queue,
             sprite_effects=self.state.sprite_effects,
         )
-        self.state.sprite_effects.update(dt)
         reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
         player_dt = float(dt)
         if dt_player_local is not None:

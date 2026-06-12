@@ -355,6 +355,9 @@ pub fn stepTick(
     );
     frame.rng_after_secondary_projectiles = context.state.rng.state;
 
+    // Native updates the sprite pool before the particle loop, so sprites
+    // spawned by particles only advance on the next tick.
+    context.sprite_effects.update(frame.dt);
     context.particles.update(
         &context.state,
         players,
@@ -365,7 +368,6 @@ pub fn stepTick(
         frame.dt_sim,
         context.world_size,
     );
-    context.sprite_effects.update(frame.dt);
     frame.rng_after_particles = context.state.rng.state;
     callPhaseHook(options.hooks, context, .post_core_simulation, &frame);
 

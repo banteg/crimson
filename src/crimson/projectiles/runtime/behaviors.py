@@ -29,7 +29,7 @@ from ..types import (
     Projectile,
     ProjectileTemplateId,
 )
-from .collision import _apply_damage_to_creature, _hit_radius_for
+from .collision import _apply_damage_to_creature, _within_native_find_radius
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
@@ -111,9 +111,13 @@ def _linger_ion_aoe(
             continue
         if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
             continue
-        creature_radius = _hit_radius_for(creature)
-        hit_r = radius + creature_radius
-        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
+        # Native uses the strict sqrt-form predicate from creature_find_in_radius.
+        if _within_native_find_radius(
+            origin=proj.pos,
+            target=creature.pos,
+            radius=float(radius),
+            target_size=float(creature.size),
+        ):
             _apply_damage_to_creature(
                 ctx.creatures,
                 creature_idx,
