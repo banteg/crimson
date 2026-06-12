@@ -46,10 +46,14 @@ pub fn computeQuestFinalTime(
     const base_ms = base_time_ms;
     var life_bonus_ms: i32 = 0;
     for (player_health_values) |health| {
-        life_bonus_ms += @intFromFloat(@round(health));
+        // Native converts health through __ftol (truncation toward zero).
+        life_bonus_ms += @intFromFloat(@trunc(health));
     }
     const unpicked_perk_bonus_ms = @max(0, pending_perk_count) * 1000;
-    const final_time_ms = @max(1, base_ms - life_bonus_ms - unpicked_perk_bonus_ms);
+    // Native records negative final times; only an exactly-zero result is
+    // remapped to 1 ms.
+    var final_time_ms = base_ms - life_bonus_ms - unpicked_perk_bonus_ms;
+    if (final_time_ms == 0) final_time_ms = 1;
     return .{
         .base_time_ms = base_ms,
         .life_bonus_ms = life_bonus_ms,
@@ -119,17 +123,21 @@ pub fn tickQuestResultsBreakdownAnim(
     return clinks;
 }
 
-test "compute quest final time mirrors python formula" {
+test "compute quest final time mirrors native formula" {
     const breakdown = computeQuestFinalTime(32_500, &.{ 83.6, 41.2 }, 2);
     try std.testing.expectEqual(@as(i32, 32_500), breakdown.base_time_ms);
-    try std.testing.expectEqual(@as(i32, 125), breakdown.life_bonus_ms);
+    // Native __ftol truncates each health value (83 + 41).
+    try std.testing.expectEqual(@as(i32, 124), breakdown.life_bonus_ms);
     try std.testing.expectEqual(@as(i32, 2_000), breakdown.unpicked_perk_bonus_ms);
-    try std.testing.expectEqual(@as(i32, 30_375), breakdown.final_time_ms);
+    try std.testing.expectEqual(@as(i32, 30_376), breakdown.final_time_ms);
 }
 
-test "compute quest final time clamps to one millisecond" {
+test "compute quest final time keeps negative results" {
+    // Native only remaps an exactly-zero result to 1 ms.
     const breakdown = computeQuestFinalTime(100, &.{ 60.0, 60.0 }, 5);
-    try std.testing.expectEqual(@as(i32, 1), breakdown.final_time_ms);
+    try std.testing.expectEqual(@as(i32, -5_020), breakdown.final_time_ms);
+    const zero = computeQuestFinalTime(5_120, &.{ 60.0, 60.0 }, 5);
+    try std.testing.expectEqual(@as(i32, 1), zero.final_time_ms);
 }
 
 test "quest results breakdown anim advances in native phases" {
