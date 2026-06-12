@@ -294,6 +294,10 @@ frida-import-raw:
     done
 
 [unix]
+capture-fixtures-import captures_dir=share_dir:
+    uv run scripts/import_capture_fixtures.py --captures-dir "{{captures_dir}}"
+
+[unix]
 frida-reduce:
     uv run scripts/frida_reduce.py \
       --log analysis/frida/raw/grim_hits.jsonl \
