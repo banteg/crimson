@@ -523,9 +523,11 @@ class SecondaryProjectilePool:
                             color=RGBA(1.0, 1.0, 1.0, 0.37),
                         )
 
-                continue
-
-            if entry.speed < 0.0:
+            # Native's TTL check runs after the hit handling in the same
+            # iteration (no early-out): a rocket that hits while its TTL is
+            # already spent gets its detonation scale overwritten to 0.5, and
+            # exactly-zero TTL detonates this tick (<=, not <).
+            if entry.speed <= 0.0:
                 entry.type_id = SecondaryProjectileTypeId.DETONATION
                 entry.vel = Vec2()
                 entry.detonation_t = 0.0

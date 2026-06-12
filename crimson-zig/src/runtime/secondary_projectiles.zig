@@ -496,10 +496,13 @@ pub const SecondaryProjectilePool = struct {
                 }
 
                 _ = hit_type;
-                continue;
             }
 
-            if (entry.speed < 0.0) {
+            // Native's TTL check runs after the hit handling in the same
+            // iteration: a rocket that hits with its TTL already spent gets
+            // its detonation scale overwritten to 0.5, and exactly-zero TTL
+            // detonates this tick (<=, not <).
+            if (entry.speed <= 0.0) {
                 entry.type_id = SecondaryProjectileTypeId.detonation;
                 entry.vel = .{};
                 entry.detonation_t = 0.0;

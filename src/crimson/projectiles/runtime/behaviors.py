@@ -48,6 +48,7 @@ class _ProjectileUpdateCtx(msgspec.Struct):
     effects: EffectPool | None
     sfx_queue: MutableSequence[SfxId] | None
     creature_damage_runtime: CreatureDamageRuntime
+    sync_creature_index: Callable[[int], None] | None = None
 
 
 class _ProjectileHitInfo(msgspec.Struct):
@@ -312,6 +313,10 @@ def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) ->
 def _post_hit_pulse_gun(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
     creature = ctx.creatures[int(hit.hit_idx)]
     creature.pos = creature.pos + hit.move * 3.0
+    # Native re-scans the pool per query, so later projectiles this tick see
+    # the pushed creature at its new position; resync the spatial hash.
+    if ctx.sync_creature_index is not None:
+        ctx.sync_creature_index(int(hit.hit_idx))
 
 
 def _post_hit_plague_spreader(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:

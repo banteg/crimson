@@ -251,6 +251,7 @@ class ProjectilePool:
             effects=effects,
             sfx_queue=sfx_queue,
             creature_damage_runtime=creature_damage_runtime,
+            sync_creature_index=creature_spatial.sync_index,
         )
 
         def _reset_shock_chain_if_owner(index: int) -> None:
