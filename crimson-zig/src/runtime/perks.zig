@@ -430,23 +430,26 @@ pub fn applyPerkWithContext(
         PerkId.bandage => {
             var effects: effects_mod.EffectPool = .{};
             for (players) |*player| {
-                if (player.health > 0.0) {
-                    const amount: f32 = @floatFromInt(state.rng.randTagged(rng_callers.perk_apply_bandage_heal) % 50 + 1);
-                    if (state.preserve_bugs) {
-                        player.health = @min(100.0, narrowF32(player.health * amount));
-                    } else {
-                        player.health = @min(100.0, narrowF32(player.health + amount));
-                    }
-                    effects.spawnBurst(
-                        state,
-                        player.pos,
-                        8,
-                        5,
-                        0.4,
-                        null,
-                        .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
-                    );
+                // The native loop has no alive gate: dead players consume the
+                // rand, have their negative health multiplied, and spawn a burst
+                // at the corpse. Default mode keeps the documented fix of
+                // healing only alive players (original-bugs.md item 3).
+                if (!state.preserve_bugs and player.health <= 0.0) continue;
+                const amount: f32 = @floatFromInt(state.rng.randTagged(rng_callers.perk_apply_bandage_heal) % 50 + 1);
+                if (state.preserve_bugs) {
+                    player.health = @min(100.0, narrowF32(player.health * amount));
+                } else {
+                    player.health = @min(100.0, narrowF32(player.health + amount));
                 }
+                effects.spawnBurst(
+                    state,
+                    player.pos,
+                    8,
+                    5,
+                    0.4,
+                    null,
+                    .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+                );
             }
         },
         PerkId.lifeline_50_50 => applyPerkImmediateCreatureEffects(perk_id, state, context),
