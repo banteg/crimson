@@ -977,7 +977,10 @@ fn postHitIonRifleShockChain(
 
     const origin_creature = creatures.entries[hit_idx];
     const target = creatures.entries[best_idx];
-    const angle = state_mod.Vec2.sub(target.pos, origin_creature.pos).toHeading();
+    // Native stores (float)(atan2(dy, dx) - 1.5707964 - 3.1415927) with a
+    // single f32 spill (differs from toHeading() by 2*pi).
+    const delta = state_mod.Vec2.sub(target.pos, origin_creature.pos);
+    const angle: f32 = @floatCast(std.math.atan2(@as(f64, delta.y), @as(f64, delta.x)) - @as(f64, native_half_pi) - @as(f64, native_math.roundF32(native_math.native_pi)));
 
     const prev_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;

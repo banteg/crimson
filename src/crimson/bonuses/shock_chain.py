@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import math
+
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 
 from ..creatures.lifecycle import creature_lifecycle_is_alive
+from ..math_parity import NATIVE_HALF_PI, NATIVE_PI, f32
 from ..owner_ref import OwnerRef
 from ..projectiles.types import ProjectileTemplateId
 from ..weapon_runtime.spawn import owner_ref_for_player, projectile_spawn
@@ -36,7 +39,11 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
         return
 
     target = creatures[best_idx]
-    angle = (target.pos - origin).to_heading()
+    # Native stores `(float)(atan2(dy, dx) - 1.5707964 - 3.1415927)` with a
+    # single f32 spill; the value differs from to_heading() by 2*pi and feeds
+    # the projectile's stored f32 angle and velocity.
+    delta = target.pos - origin
+    angle = float(f32(math.atan2(float(delta.y), float(delta.x)) - NATIVE_HALF_PI - NATIVE_PI))
     owner = (
         owner_ref_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else OwnerRef.from_local_player(0)
     )

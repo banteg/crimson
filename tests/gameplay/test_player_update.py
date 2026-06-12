@@ -15,7 +15,7 @@ from crimson.gameplay import (
     _player_heading_approach_target_with_delta,
     player_update,
 )
-from crimson.math_parity import NATIVE_TAU, f32, heading_from_delta_f32
+from crimson.math_parity import NATIVE_HALF_PI, NATIVE_PI, NATIVE_TAU, f32, heading_from_delta_f32
 from crimson.movement_controls import MovementControlType
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
@@ -1304,7 +1304,8 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     assert state.shock_chain_projectile_id != first_proj
     assert sum(1 for entry in pool.entries if entry.active) >= 2
     chained = pool.entries[int(state.shock_chain_projectile_id)]
-    expected_angle = float(f32(math.atan2(far_y, 50.0) + math.pi / 2.0))
+    # Native stores (float)(atan2(dy, dx) - 1.5707964 - 3.1415927).
+    expected_angle = float(f32(math.atan2(far_y, 50.0) - NATIVE_HALF_PI - NATIVE_PI))
     assert_float_close(chained.angle, expected_angle)
 
 

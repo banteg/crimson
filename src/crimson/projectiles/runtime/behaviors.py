@@ -15,7 +15,7 @@ from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...creatures.spawn import CreatureFlags
 from ...effects import EffectPool
-from ...math_parity import f32
+from ...math_parity import NATIVE_HALF_PI, NATIVE_PI, f32
 from ...owner_ref import OwnerRef
 from ...rng_caller_static import RngCallerStatic
 from ...weapons import weapon_entry_for_projectile_type_id
@@ -229,7 +229,10 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
 
             origin = creatures[hit_creature]
             target = creatures[best_idx]
-            angle = (target.pos - origin.pos).to_heading()
+            # Native stores `(float)(atan2(dy, dx) - 1.5707964 - 3.1415927)`
+            # with a single f32 spill (differs from to_heading() by 2*pi).
+            delta = target.pos - origin.pos
+            angle = float(f32(math.atan2(float(delta.y), float(delta.x)) - NATIVE_HALF_PI - NATIVE_PI))
 
             prev_guard = bool(runtime_state.bonus_spawn_guard)
             runtime_state.bonus_spawn_guard = True
