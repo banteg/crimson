@@ -215,8 +215,9 @@ fn build303TheKilling(
             else => {
                 const offsets = [_]i32{ 0, 1000, 2000 };
                 for (offsets) |offset| {
-                    const x: i32 = @as(i32, @intCast(rng.randBelow(0x300))) + 0x80;
+                    // Native rolls pos_y first, then pos_x (0x4385d7/0x4385f5).
                     const y: i32 = @as(i32, @intCast(rng.randBelow(0x300))) + 0x80;
+                    const x: i32 = @as(i32, @intCast(rng.randBelow(0x300))) + 0x80;
                     try common.appendSpawn(
                         out_entries,
                         len,

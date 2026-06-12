@@ -87,42 +87,26 @@ def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
     assert demo_entries[0].count == 2
 
 
-def test_build_3_3_the_killing_matches_native_random_selectors_and_spawner_coords() -> None:
+def test_build_3_3_the_killing_discards_pick_rolls_and_cycles_by_wave_index() -> None:
+    """Native bug (0x4384a0): both per-wave picks roll `crt_rand()` but branch
+    on the wave counter, so templates cycle wave % 3, edges cycle wave % 5,
+    and the random-spawner batches always land on waves 4 and 9."""
+
     ctx = QuestContext(width=1024, height=1024, player_count=1)
+    # Pick rolls of 4 would make every wave a spawner wave if the rolls were
+    # used; spawner coordinate rolls are real (y before x, like native).
     rng = ScriptedCrand(
         [
-            0,
-            0,
-            1,
-            1,
-            2,
-            2,
-            0,
-            3,
-            1,
-            4,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
+            *([4, 4] * 4),
+            4, 4, 10, 11, 12, 13, 14, 15,
+            *([4, 4] * 4),
+            4, 4, 20, 21, 22, 23, 24, 25,
         ],
     )
 
     entries = build_3_3_the_killing(ctx, rng=rng, full_version=True)
 
-    assert [(entry.spawn_id, entry.trigger_ms) for entry in entries[:7]] == [
+    assert [(entry.spawn_id, entry.trigger_ms) for entry in entries] == [
         (SpawnId.AI1_ALIEN_BLUE_TINT_1A, 2000),
         (SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B, 8000),
         (SpawnId.AI1_LIZARD_BLUE_TINT_1C, 14000),
@@ -130,39 +114,41 @@ def test_build_3_3_the_killing_matches_native_random_selectors_and_spawner_coord
         (SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, 26000),
         (SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, 27000),
         (SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, 28000),
+        (SpawnId.AI1_LIZARD_BLUE_TINT_1C, 32000),
+        (SpawnId.AI1_ALIEN_BLUE_TINT_1A, 38000),
+        (SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B, 44000),
+        (SpawnId.AI1_LIZARD_BLUE_TINT_1C, 50000),
+        (SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, 56000),
+        (SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, 57000),
+        (SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, 58000),
     ]
     assert [(entry.pos.x, entry.pos.y) for entry in entries[4:7]] == [
         (139.0, 138.0),
         (141.0, 140.0),
         (143.0, 142.0),
     ]
-    assert [record.caller for record in rng.records_since()] == [
+    assert [(entry.pos.x, entry.pos.y) for entry in entries[11:14]] == [
+        (149.0, 148.0),
+        (151.0, 150.0),
+        (153.0, 152.0),
+    ]
+    wave_pick_callers = [
         RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK,
         RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK,
+    ]
+    spawner_callers = [
         RngCallerStatic.QUEST_BUILD_THE_KILLING_SPAWNER_1_Y,
         RngCallerStatic.QUEST_BUILD_THE_KILLING_SPAWNER_1_X,
         RngCallerStatic.QUEST_BUILD_THE_KILLING_SPAWNER_2_Y,
         RngCallerStatic.QUEST_BUILD_THE_KILLING_SPAWNER_2_X,
         RngCallerStatic.QUEST_BUILD_THE_KILLING_SPAWNER_3_Y,
         RngCallerStatic.QUEST_BUILD_THE_KILLING_SPAWNER_3_X,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK,
-        RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK,
+    ]
+    assert [record.caller for record in rng.records_since()] == [
+        *wave_pick_callers * 5,
+        *spawner_callers,
+        *wave_pick_callers * 5,
+        *spawner_callers,
     ]
 
 

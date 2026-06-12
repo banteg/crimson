@@ -222,11 +222,12 @@ def build_3_3_the_killing(
     edges = edge_midpoints(ctx.width)
     entries: list[SpawnEntry] = []
     trigger = 2000
-    for _wave in range(10):
-        spawn_cycle = (
-            rng.rand_tagged(RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK)
-            % 3
-        )
+    for wave in range(10):
+        # Native bug (0x4384a0): both picks roll `crt_rand()` but discard the
+        # result and branch on the wave counter, so the wave layout is a fixed
+        # cycle while the rng stream still advances two draws per wave.
+        rng.rand_tagged(RngCallerStatic.QUEST_BUILD_THE_KILLING_TEMPLATE_PICK)
+        spawn_cycle = wave % 3
         if spawn_cycle == 0:
             spawn_id = SpawnId.AI1_ALIEN_BLUE_TINT_1A
         elif spawn_cycle == 1:
@@ -234,10 +235,8 @@ def build_3_3_the_killing(
         else:
             spawn_id = SpawnId.AI1_LIZARD_BLUE_TINT_1C
 
-        edge = (
-            rng.rand_tagged(RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK)
-            % 5
-        )
+        rng.rand_tagged(RngCallerStatic.QUEST_BUILD_THE_KILLING_LAYOUT_PICK)
+        edge = wave % 5
         if edge == 0:
             entries.append(
                 spawn_at(
