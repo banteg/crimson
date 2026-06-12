@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import MutableSequence, Sequence
+from collections.abc import Callable, MutableSequence, Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -73,6 +73,10 @@ class SecondaryStepCtx(msgspec.Struct, frozen=True):
     fx_queue: FxQueue | None = None
     detail_preset: int = 5
     creature_damage_runtime: CreatureDamageRuntime | None = None
+    # Native secondary-rocket hits run the same first-hit game-tune branch as
+    # bullet hits (sfx_play_exclusive + one playlist rand) outside demo/rush;
+    # when unset, the plain explosion sound is queued directly.
+    play_rocket_hit_audio: Callable[[], None] | None = None
 
 
 class SecondaryProjectilePool:
@@ -346,7 +350,9 @@ class SecondaryProjectilePool:
                         shots_hit = runtime_state.shots_hit
                         shots_hit[owner_player_index] += 1
 
-                if sfx_queue is not None:
+                if ctx.play_rocket_hit_audio is not None:
+                    ctx.play_rocket_hit_audio()
+                elif sfx_queue is not None:
                     sfx_queue.append(SfxId.EXPLOSION_MEDIUM)
 
                 det_scale = 0.5

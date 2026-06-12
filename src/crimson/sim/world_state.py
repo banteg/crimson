@@ -31,6 +31,7 @@ from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..player_damage import PlayerDeathRuntime, player_take_projectile_damage
 from ..projectiles.runtime import PrimaryStepCtx, ProjectileHitRuntime, ProjectileUpdateOptions, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
+from ..rng_caller_static import RngCallerStatic
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import (
@@ -173,6 +174,21 @@ class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeath
             self.hit_audio_game_tune_started = True
         if keys:
             self.hit_sfx.extend(keys)
+
+    def play_secondary_rocket_hit_audio(self) -> None:
+        # Native secondary-rocket hits run the same first-hit game-tune branch
+        # as bullet hits: sfx_play_exclusive(music_track_extra_0) plus one
+        # playlist rand outside demo/rush, else the panned explosion sound.
+        if (
+            (not self.world.state.demo_mode_active)
+            and self.game_mode != GameMode.RUSH
+            and not self.hit_audio_game_tune_started
+        ):
+            self.trigger_game_tune = True
+            self.hit_audio_game_tune_started = True
+            _ = self.world.state.rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
+            return
+        self.hit_sfx.append(SfxId.EXPLOSION_MEDIUM)
 
     def begin_hit_presentation(self, hit: ProjectileHit) -> ProjectileDecalPostCtx:
         return self.prepare_projectile_hit_presentation(hit)
@@ -349,6 +365,7 @@ class WorldState(msgspec.Struct):
                 fx_queue=fx_queue,
                 detail_preset=int(detail_preset),
                 creature_damage_runtime=step_runtime,
+                play_rocket_hit_audio=step_runtime.play_secondary_rocket_hit_audio,
             ),
         )
         self._run_post_damage_player_death_hooks(

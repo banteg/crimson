@@ -412,7 +412,14 @@ pub const SecondaryProjectilePool = struct {
                 entry.detonation_t = 0.0;
                 entry.detonation_scale = narrowF32(det_scale);
                 entry.trail_timer = 0.0;
-                state.sfx_queue.append(.explosion_medium);
+                // Native secondary-rocket hits run the same first-hit game-tune
+                // branch as bullet hits (one playlist rand) outside demo/rush.
+                if (!state.demo_mode_active and state.game_mode != .rush and !state.game_tune_started) {
+                    state.game_tune_started = true;
+                    _ = state.rng.randTagged(rng_callers.sfx_play_exclusive_playlist_pick);
+                } else {
+                    state.sfx_queue.append(.explosion_medium);
+                }
 
                 if (freeze_active) {
                     const freeze_angle_caller: rng_callers.Caller = switch (entry.type_id) {

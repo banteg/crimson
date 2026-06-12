@@ -580,3 +580,51 @@ def test_perk_effects_step_uses_previous_aim_before_player_update() -> None:
 
     assert seen["aim"] == Vec2(128.0, 256.0)
     assert player.aim == Vec2(900.0, 900.0)
+
+
+def test_first_secondary_rocket_hit_triggers_game_tune() -> None:
+    from crimson.projectiles.runtime import SecondarySpawnSpec
+    from crimson.projectiles.types import SecondaryProjectileTypeId
+
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=False,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
+
+    creature = world.creatures.entries[0]
+    creature.active = True
+    creature.pos = Vec2(100.0, 100.0)
+    creature.hp = 1000.0
+    creature.max_hp = 1000.0
+    creature.size = 50.0
+
+    world.state.secondary_projectiles.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(100.0, 100.0),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.ROCKET,
+            owner=OwnerRef.from_player(0),
+        ),
+    )
+
+    events = world.step(
+        0.016,
+        inputs=[PlayerInput()],
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+
+    # Native secondary-rocket hits run the same first-hit game-tune branch as
+    # bullet hits instead of the panned explosion sound.
+    assert events.trigger_game_tune is True
+    assert SfxId.EXPLOSION_MEDIUM not in world.state.sfx_queue
+    assert SfxId.EXPLOSION_MEDIUM not in events.hit_sfx
