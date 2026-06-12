@@ -522,14 +522,16 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
     )
 
     assert plan_hit_sfx.call_count == 1
+    # Freeze-active hits draw the post-hit burn rand, then the default freeze
+    # shard angle plus the shard spawn draws (native order: burn before shard).
     assert_rng_progression(
         rng,
         before_calls=before_calls,
         before_state=before_state,
-        expected_draws=2,
+        expected_draws=9,
         expected_after_state=0,
     )
-    assert rng.values_since(before_calls) == [0] * 2
+    assert rng.values_since(before_calls) == [0] * 9
     assert events.hit_sfx == []
     assert events.trigger_game_tune is True
 

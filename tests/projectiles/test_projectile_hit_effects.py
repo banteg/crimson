@@ -227,7 +227,7 @@ def test_ion_hit_effects_tag_exact_native_callers() -> None:
     ]
 
 
-def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:
+def test_non_gauss_freeze_hit_pool_step_leaves_shard_to_presentation(mocker) -> None:
     pool = ProjectilePool(size=64)
     creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
     runtime_state = GameplayState()
@@ -261,9 +261,57 @@ def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:
         ),
     )
 
-    assert spawn_freeze_shard.call_count == 1
+    # Native spawns the default freeze shard in the post-hit decal branch,
+    # after the burn draw (see queue_projectile_decals_post_hit).
+    assert spawn_freeze_shard.call_count == 0
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER,
+    ]
+
+
+def test_non_gauss_freeze_hit_presentation_draws_burn_then_single_shard(mocker) -> None:
+    from crimson.effects import FxQueue
+    from crimson.projectiles.types import ProjectileHit
+    from crimson.sim.presentation_step import (
+        queue_projectile_decals_post_hit,
+        queue_projectile_decals_pre_hit,
+    )
+
+    state = GameplayState()
+    state.bonuses.freeze = 1.0
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    spawn_freeze_shard = mocker.patch.object(
+        state.effects,
+        "spawn_freeze_shard",
+        wraps=state.effects.spawn_freeze_shard,
+    )
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    hit = ProjectileHit(
+        type_id=ProjectileTemplateId.PISTOL,
+        origin=Vec2(90.0, 90.0),
+        hit=Vec2(100.0, 100.0),
+        target=Vec2(100.0, 100.0),
+    )
+    fx_queue = FxQueue()
+
+    post_ctx = queue_projectile_decals_pre_hit(
+        state=state,
+        players=[player],
+        fx_queue=fx_queue,
+        hit=hit,
+        rng=state.rng,
+        detail_preset=5,
+        violence_disabled=0,
+    )
+    queue_projectile_decals_post_hit(
+        fx_queue=fx_queue,
+        post_ctx=post_ctx,
+        rng=state.rng,
+    )
+
+    assert spawn_freeze_shard.call_count == 1
+    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN,
         RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE,
         RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_LIFETIME,
         RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION,

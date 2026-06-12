@@ -310,7 +310,18 @@ def queue_projectile_decals_post_hit(
         runtime=post_ctx.large_hit_decal_runtime,
     )
 
-    if bool(hook_handled) or bool(post_ctx.freeze_active):
+    if bool(hook_handled):
+        return
+
+    if bool(post_ctx.freeze_active):
+        # Native: with Freeze active, default hits spawn one freeze shard here,
+        # after the burn draw, instead of the streak decal loop.
+        runtime = post_ctx.large_hit_decal_runtime
+        if runtime is not None:
+            shard_angle = base_angle + float(
+                rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE) % 100,
+            ) * 0.01
+            runtime.spawn_freeze_shard(hit.hit, float(shard_angle))
         return
 
     for _ in range(3):

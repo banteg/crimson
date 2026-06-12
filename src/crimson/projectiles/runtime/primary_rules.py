@@ -43,7 +43,6 @@ class PrimaryProjectileRule(msgspec.Struct, frozen=True):
     pre_hit: PreHitHandler = _pre_hit_none
     post_hit: PostHitHandler = _post_hit_none
     stop_on_hit: bool = True
-    emit_default_freeze_shard: bool = True
     reset_shock_chain_on_linger: bool = False
 
 
@@ -54,12 +53,10 @@ PRIMARY_PROJECTILE_RULE_BY_TYPE_ID: dict[ProjectileTemplateId, PrimaryProjectile
     ProjectileTemplateId.GAUSS_GUN: PrimaryProjectileRule(
         linger=_linger_gauss_gun,
         stop_on_hit=False,
-        emit_default_freeze_shard=False,
     ),
     ProjectileTemplateId.FIRE_BULLETS: PrimaryProjectileRule(
         linger=_linger_default,
         stop_on_hit=False,
-        emit_default_freeze_shard=False,
     ),
     ProjectileTemplateId.BLADE_GUN: PrimaryProjectileRule(
         linger=_linger_default,

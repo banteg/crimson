@@ -496,14 +496,9 @@ pub const ProjectilePool = struct {
                     }
                 }
 
-                // Native `projectile_update` spawns one freeze shard for non-gauss/non-fire
-                // projectile hits while Freeze bonus is active.
-                if (state.bonuses.freeze > 0.0 and
-                    proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) and
-                    proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.fire_bullets))
-                {
-                    effects.spawnFreezeShard(state, proj.pos, proj.angle, detail_preset);
-                }
+                // The default single freeze shard is presentation: it spawns inside
+                // the post-hit decal branch, after the burn draw, in
+                // emitProjectileHitPresentationPost.
 
                 if (proj.damage_pool == 1.0) {
                     const life_before = proj.life_timer;
@@ -715,7 +710,13 @@ fn emitProjectileHitPresentationPost(
         queueLargeHitStreakDecal(state, hit_target, base_angle, effects, terrain_fx, detail_preset);
         return;
     }
-    if (freeze_active) return;
+    if (freeze_active) {
+        // Native: with Freeze active, default hits spawn one freeze shard here,
+        // after the burn draw, instead of the streak decal loop.
+        const shard_angle = base_angle + @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_default_freeze_shard_angle) % 100)) * 0.01;
+        effects.spawnFreezeShard(state, hit_pos, shard_angle, detail_preset);
+        return;
+    }
 
     var streak_idx: usize = 0;
     while (streak_idx < 3) : (streak_idx += 1) {

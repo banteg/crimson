@@ -478,26 +478,10 @@ class ProjectilePool:
                             creature_spatial.sync_index(int(hit_idx))
                             proj.damage_pool -= float(creature.hp)
 
-                    # Native `projectile_update` has separate freeze-hit ownership for
-                    # primary and secondary projectiles. This branch is the default
-                    # primary-projectile single-shard path (`crt_rand` @ 0x4215fa ->
-                    # caller_static 0x4215ff). Secondary rocket-style `% 612` shard
-                    # loops live in the secondary projectile update path instead.
-                    if (
-                        float(runtime_state.bonuses.freeze) > 0.0
-                        and effects is not None
-                        and rule.emit_default_freeze_shard
-                    ):
-                        shard_angle = float(float(proj.angle) - NATIVE_HALF_PI)
-                        shard_angle += float(
-                            rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE) % 100,
-                        ) * 0.01
-                        effects.spawn_freeze_shard(
-                            pos=proj.pos,
-                            angle=float(shard_angle),
-                            rng=rng,
-                            detail_preset=int(detail_preset),
-                        )
+                    # The default single freeze shard (`crt_rand` @ 0x4215fa ->
+                    # caller_static 0x4215ff) is presentation: it spawns inside the
+                    # post-hit decal branch, after the burn draw, in
+                    # `queue_projectile_decals_post_hit`.
 
                     if proj.damage_pool == 1.0:
                         # Native clears damage_pool to 0.0 whenever it's exactly 1.0
