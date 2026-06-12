@@ -505,3 +505,26 @@ Rewrite behavior:
   sounds.
 - With `--preserve-bugs`: keep the native fourth-slot bug, so a trooper death
   roll of `3` resolves to `sfx_trooper_inpain_01`.
+
+## 22) The Killing wave picks roll rand but branch on the wave counter
+
+Native behavior:
+
+- `quest_build_the_killing` (`0x4384a0`) calls `crt_rand()` twice per wave but
+  discards both results, selecting the creature template with `wave % 3` and
+  the spawn edge with `wave % 5`.
+- The quest layout is therefore a fixed cycle (right/left/bottom/top/random
+  spawners), with the random-spawner batches always on waves 4 and 9; only the
+  spawner coordinates use real rolls.
+- Capture evidence: in the 2026-06-13 quest 3.3 run, wave 9 rolled a layout
+  value of 2 yet still spawned the random batch.
+
+Why it's likely a bug:
+
+- The discarded rolls strongly suggest the intent was `rand() % 3` and
+  `rand() % 5`; the rng stream still advances two draws per wave for nothing.
+
+Rewrite behavior:
+
+- The rewrite mirrors the native behavior exactly (burn the rolls, branch on
+  the wave index) so quest builds stay rng-stream aligned with captures.

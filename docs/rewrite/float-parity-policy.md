@@ -28,6 +28,23 @@ amplify into RNG drift and deterministic divergence over long runs.
 The original executable is x87-heavy in gameplay hot paths, but persistent
 gameplay state is still mostly float32.
 
+### Gameplay runs with x87 precision control at 24 bits
+
+Although CRT startup sets `PC_53`, the Direct3D 8 device init does not pass
+`D3DCREATE_FPU_PRESERVE`, so D3D drops the x87 control word to single
+precision before gameplay ever runs. In gameplay code every x87 add/mul/div
+therefore rounds to f32 per operation, while `fsin`/`fcos`/`fpatan` still
+evaluate in extended precision internally (their rounding lands in the first
+downstream arithmetic op).
+
+Validated empirically against v14 capture `vel`/`move_speed` channels: the
+creature velocity chain (`creature_update_all` 0x426dab) reproduces native
+bit-exactly only when each multiply is rounded to f32 (152/154 survival and
+12/12 rush walker-ticks); a double-precision chain with a single final
+rounding flips ~5% of components by 1 ulp. This is why the rewrite's
+f32-after-every-op idiom works, and it is the default model for any
+newly-ported expression.
+
 ### Evidence in decompile artifacts
 
 - CRT startup explicitly sets x87 precision-control to 53-bit (`PC_53`):
