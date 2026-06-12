@@ -23,7 +23,6 @@ from .state_types import BonusPickupEvent, GameplayState, PlayerState
 from .terrain_fx import TerrainFxBatch
 from .world_defs import BEAM_TYPES
 
-_MAX_HIT_SFX_PER_FRAME = 4
 _BULLET_HIT_SFX = (
     SfxId.BULLET_HIT_01,
     SfxId.BULLET_HIT_02,
@@ -107,9 +106,10 @@ def plan_hit_sfx(
 
     trigger_game_tune = False
     local_game_tune_started = bool(game_tune_started)
-    end = min(len(hits), _MAX_HIT_SFX_PER_FRAME)
+    # Native draws a hit-sound rand and plays the panned sample for every hit,
+    # uncapped; the per-hit world-step path already matches this.
     sfx: list[SfxId] = []
-    for idx in range(0, end):
+    for idx in range(len(hits)):
         if (not demo_mode_active) and game_mode != GameMode.RUSH and (not local_game_tune_started):
             # Mirrors `projectile_update`: first eligible hit calls
             # `sfx_play_exclusive(music_track_extra_0)` and skips the panned
