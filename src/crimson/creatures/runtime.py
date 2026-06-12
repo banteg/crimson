@@ -218,6 +218,14 @@ def _owner_to_player_index(owner: OwnerRef) -> int | None:
     return owner.player_index()
 
 
+def pack_bonus_on_death_args(bonus_id: BonusId, amount_override: int) -> int:
+    """Native `link_index` encoding for BONUS_ON_DEATH carriers: low i16 holds
+    the bonus id, high i16 the amount/duration override (-1 = default)."""
+
+    packed = ((int(amount_override) & 0xFFFF) << 16) | (int(bonus_id) & 0xFFFF)
+    return packed - 0x1_0000_0000 if packed >= 0x8000_0000 else packed
+
+
 def _travel_budget_for_type_id(type_id: ProjectileTemplateId) -> float:
     return float(weapon_entry_for_projectile_type_id(type_id).travel_budget)
 
@@ -1506,6 +1514,14 @@ class CreaturePool:
         entry.bonus_duration_override = (
             int(init.bonus_duration_override) if init.bonus_duration_override is not None else None
         )
+        if (entry.flags & CreatureFlags.BONUS_ON_DEATH) and init.bonus_id is not None:
+            # Native packs the `bonus_spawn_at` args into link_index (low i16
+            # bonus id, high i16 amount/duration override); keep the field
+            # native-faithful even though death handling reads the typed fields.
+            entry.link_index = pack_bonus_on_death_args(
+                init.bonus_id,
+                -1 if init.bonus_duration_override is None else int(init.bonus_duration_override),
+            )
 
         entry.tint = RGBA.from_rgba(resolve_tint(init.tint))
 
