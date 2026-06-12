@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 14;
+const CAPTURE_FORMAT_VERSION = 15;
 // First rng caller of native run setup (terrain_generate prelude roll 1). The
 // rand state observed before this draw is the state a replay must seed from to
 // reproduce the run's setup draws (terrain stamps, quest build) value-for-value.
@@ -583,6 +583,7 @@ const outState = {
   rngOutsideTickPendingDropped: 0,
   rngOutsideTickPendingCallerCounts: {},
   pendingRunSetupRng: null,
+  pendingRunPoolResidue: null,
   perkApplyOutsideTickPendingHead: [],
   perkApplyOutsideTickPendingCalls: 0,
   perkApplyOutsideTickPendingDropped: 0,
@@ -1102,8 +1103,14 @@ function startRunForTick(tickObj, reason) {
     // by run start). Consume it so a later run cannot inherit this one's.
     const setupRng = outState.pendingRunSetupRng;
     outState.pendingRunSetupRng = null;
+    const poolResidue = outState.pendingRunPoolResidue;
+    outState.pendingRunPoolResidue = null;
     if (!setupRng) {
       emitCaptureContractError("missing_run_setup_rng_state", tickObj);
+      return false;
+    }
+    if (!poolResidue) {
+      emitCaptureContractError("missing_run_setup_pool_residue", tickObj);
       return false;
     }
     const wrote = _captureWriteJsonLine(
@@ -1118,6 +1125,7 @@ function startRunForTick(tickObj, reason) {
         seed_source: "crt_srand",
         rng_state_at_run_setup: setupRng.state_before_u32 >>> 0,
         rng_setup_caller_static: setupRng.caller_static,
+        pool_residue: poolResidue,
         player_count: playerCount,
         tick_index_global:
           tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
@@ -2697,6 +2705,73 @@ function readActiveSecondaryProjectileSample(limit) {
   return out;
 }
 
+function readCreatureSlotResidue(index) {
+  // Full persistent-field snapshot of one creature slot. `creature_reset_all`
+  // (0x4281e0) clears only `active`, so a run inherits every other field from
+  // the previous occupant; replays seed their pool from this snapshot.
+  const pool = dataPtrs.creature_pool;
+  const base = pool.add(index * STRIDES.creature);
+  return {
+    index: index,
+    active: safeReadU8(base),
+    phase_seed: captureNumber(safeReadF32(base.add(0x04))),
+    state_flag: safeReadU8(base.add(0x08)),
+    collision_flag: safeReadU8(base.add(0x09)),
+    collision_timer: captureNumber(safeReadF32(base.add(0x0c))),
+    lifecycle_stage: captureNumber(safeReadF32(base.add(0x10))),
+    pos: {
+      x: captureNumber(safeReadF32(base.add(0x14))),
+      y: captureNumber(safeReadF32(base.add(0x18))),
+    },
+    vel: {
+      x: captureNumber(safeReadF32(base.add(0x1c))),
+      y: captureNumber(safeReadF32(base.add(0x20))),
+    },
+    hp: captureNumber(safeReadF32(base.add(0x24))),
+    max_hp: captureNumber(safeReadF32(base.add(0x28))),
+    heading: captureNumber(safeReadF32(base.add(0x2c))),
+    target_heading: captureNumber(safeReadF32(base.add(0x30))),
+    size: captureNumber(safeReadF32(base.add(0x34))),
+    hit_flash_timer: captureNumber(safeReadF32(base.add(0x38))),
+    tint: {
+      r: captureNumber(safeReadF32(base.add(0x3c))),
+      g: captureNumber(safeReadF32(base.add(0x40))),
+      b: captureNumber(safeReadF32(base.add(0x44))),
+      a: captureNumber(safeReadF32(base.add(0x48))),
+    },
+    force_target: safeReadS32(base.add(0x4c)),
+    target: {
+      x: captureNumber(safeReadF32(base.add(0x50))),
+      y: captureNumber(safeReadF32(base.add(0x54))),
+    },
+    contact_damage: captureNumber(safeReadF32(base.add(0x58))),
+    move_speed: captureNumber(safeReadF32(base.add(0x5c))),
+    attack_cooldown: captureNumber(safeReadF32(base.add(0x60))),
+    reward_value: captureNumber(safeReadF32(base.add(0x64))),
+    type_id: safeReadS32(base.add(0x6c)),
+    target_player: safeReadS32(base.add(0x70)),
+    link_index: safeReadS32(base.add(0x78)),
+    target_offset: {
+      x: captureNumber(safeReadF32(base.add(0x7c))),
+      y: captureNumber(safeReadF32(base.add(0x80))),
+    },
+    orbit_angle: captureNumber(safeReadF32(base.add(0x84))),
+    orbit_radius_u32: safeReadU32(base.add(0x88)),
+    flags: safeReadS32(base.add(0x8c)),
+    ai_mode: safeReadS32(base.add(0x90)),
+    anim_phase: captureNumber(safeReadF32(base.add(0x94))),
+  };
+}
+
+function readCreaturePoolResidue() {
+  if (!dataPtrs.creature_pool) return null;
+  const out = [];
+  for (let i = 0; i < COUNTS.creatures; i++) {
+    out.push(readCreatureSlotResidue(i));
+  }
+  return out;
+}
+
 function readCreatureEntry(index) {
   const pool = dataPtrs.creature_pool;
   if (!pool || index < 0) return null;
@@ -4073,6 +4148,9 @@ function registerRngRoll(value, callerStaticHex, callerLabel, stateBeforeRealU32
       caller_static: String(rollRow.caller_static),
       seq: rollRow.seq >>> 0,
     };
+    // The pool is stable between creature_reset_all and the run's first tick;
+    // snapshot the residue the run will inherit alongside the rng latch.
+    outState.pendingRunPoolResidue = readCreaturePoolResidue();
   }
 
   if (!tick) {

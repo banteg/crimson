@@ -19,7 +19,7 @@ from ..quests.level import QuestLevel
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
 from ..replay.header_settings import replay_header_from_session_settings
-from ..replay.types import Replay, ReplayTick
+from ..replay.types import Replay, ReplayCreatureSlotResidue, ReplayTick, ReplayVec2
 from .canonical_channels import (
     EntitySamplesSnapshot,
     RngStreamRow,
@@ -46,8 +46,10 @@ _FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
-# v13 samples clip_size as raw f32 bits; v14 emits the decoded value.
-_SUPPORTED_CAPTURE_FORMAT_VERSIONS = frozenset({13, 14})
+# v13 samples clip_size as raw f32 bits; v14 emits the decoded value;
+# v15 adds the creature pool residue snapshot on run_start rows.
+_SUPPORTED_CAPTURE_FORMAT_VERSIONS = frozenset({13, 14, 15})
+_POOL_RESIDUE_CAPTURE_VERSION = 15
 _TRACE_CHUNK_TICKS = 256
 _RUN_START_REASONS = frozenset(("run_start", "first_tick", "quest_attempt", "mode_or_stage_change"))
 _RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change", "shutdown"))
@@ -199,6 +201,52 @@ class _OutsideRngBag(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     head: list[_OutsideRngHeadRow] = msgspec.field(default_factory=list)
 
 
+class _CaptureVec2Row(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    x: float | None = None
+    y: float | None = None
+
+
+class _CaptureTintRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    r: float | None = None
+    g: float | None = None
+    b: float | None = None
+    a: float | None = None
+
+
+class _CapturePoolResidueRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    index: int
+    active: int | None = None
+    phase_seed: float | None = None
+    state_flag: int | None = None
+    collision_flag: int | None = None
+    collision_timer: float | None = None
+    lifecycle_stage: float | None = None
+    pos: _CaptureVec2Row = msgspec.field(default_factory=_CaptureVec2Row)
+    vel: _CaptureVec2Row = msgspec.field(default_factory=_CaptureVec2Row)
+    hp: float | None = None
+    max_hp: float | None = None
+    heading: float | None = None
+    target_heading: float | None = None
+    size: float | None = None
+    hit_flash_timer: float | None = None
+    tint: _CaptureTintRow = msgspec.field(default_factory=_CaptureTintRow)
+    force_target: int | None = None
+    target: _CaptureVec2Row = msgspec.field(default_factory=_CaptureVec2Row)
+    contact_damage: float | None = None
+    move_speed: float | None = None
+    attack_cooldown: float | None = None
+    reward_value: float | None = None
+    type_id: int | None = None
+    target_player: int | None = None
+    link_index: int | None = None
+    target_offset: _CaptureVec2Row = msgspec.field(default_factory=_CaptureVec2Row)
+    orbit_angle: float | None = None
+    orbit_radius_u32: int | None = None
+    flags: int | None = None
+    ai_mode: int | None = None
+    anim_phase: float | None = None
+
+
 class _RunStartRow(
     msgspec.Struct,
     frozen=True,
@@ -217,6 +265,7 @@ class _RunStartRow(
     tick_index_global: int | None = None
     rng_state_at_run_setup: int | None = None
     rng_setup_caller_static: str | None = None
+    pool_residue: list[_CapturePoolResidueRow] | None = None
 
 
 class _TickRow(
@@ -331,6 +380,7 @@ class _OpenRun(msgspec.Struct):
     rng_unhooked_gap_neighbors: dict[str, int] = msgspec.field(default_factory=dict)
     rng_setup_draw_distance: int | None = None
     rng_prev_leave_state: int | None = None
+    pool_residue: tuple[ReplayCreatureSlotResidue, ...] | None = None
 
 
 def _fingerprint(path: Path) -> BuiltinObject:
@@ -363,6 +413,78 @@ def _builtin_int(payload: BuiltinObject, key: str, default: int = 0) -> int:
         except ValueError:
             return default
     return default
+
+
+def _residue_float(value: float | None, *, field: str) -> float:
+    if value is None:
+        raise FridaFinalizeError(f"{field} must be a finite float in the pool residue snapshot")
+    return float(value)
+
+
+def _residue_int(value: int | None, *, field: str) -> int:
+    if value is None:
+        raise FridaFinalizeError(f"{field} must be present in the pool residue snapshot")
+    return int(value)
+
+
+def _residue_vec2(row: _CaptureVec2Row, *, field: str) -> ReplayVec2:
+    return ReplayVec2(
+        x=_residue_float(row.x, field=f"{field}.x"),
+        y=_residue_float(row.y, field=f"{field}.y"),
+    )
+
+
+def _pool_residue_from_run_start(run_start: _RunStartRow, *, field: str) -> tuple[ReplayCreatureSlotResidue, ...]:
+    rows = run_start.pool_residue
+    if rows is None:
+        raise FridaFinalizeError(f"{field}.pool_residue is required for capture v15 run_start rows")
+    out: list[ReplayCreatureSlotResidue] = []
+    for i, row in enumerate(rows):
+        slot_field = f"{field}.pool_residue[{i}]"
+        if int(row.index) != i:
+            raise FridaFinalizeError(f"{slot_field}.index={int(row.index)} does not match slot {i}")
+        if _residue_int(row.active, field=f"{slot_field}.active") != 0:
+            raise FridaFinalizeError(
+                f"{slot_field} is active at run start; creature_reset_all must have run before the latch",
+            )
+        out.append(
+            ReplayCreatureSlotResidue(
+                index=i,
+                phase_seed=_residue_float(row.phase_seed, field=f"{slot_field}.phase_seed"),
+                state_flag=_residue_int(row.state_flag, field=f"{slot_field}.state_flag"),
+                collision_flag=_residue_int(row.collision_flag, field=f"{slot_field}.collision_flag"),
+                collision_timer=_residue_float(row.collision_timer, field=f"{slot_field}.collision_timer"),
+                lifecycle_stage=_residue_float(row.lifecycle_stage, field=f"{slot_field}.lifecycle_stage"),
+                pos=_residue_vec2(row.pos, field=f"{slot_field}.pos"),
+                vel=_residue_vec2(row.vel, field=f"{slot_field}.vel"),
+                hp=_residue_float(row.hp, field=f"{slot_field}.hp"),
+                max_hp=_residue_float(row.max_hp, field=f"{slot_field}.max_hp"),
+                heading=_residue_float(row.heading, field=f"{slot_field}.heading"),
+                target_heading=_residue_float(row.target_heading, field=f"{slot_field}.target_heading"),
+                size=_residue_float(row.size, field=f"{slot_field}.size"),
+                hit_flash_timer=_residue_float(row.hit_flash_timer, field=f"{slot_field}.hit_flash_timer"),
+                tint_r=_residue_float(row.tint.r, field=f"{slot_field}.tint.r"),
+                tint_g=_residue_float(row.tint.g, field=f"{slot_field}.tint.g"),
+                tint_b=_residue_float(row.tint.b, field=f"{slot_field}.tint.b"),
+                tint_a=_residue_float(row.tint.a, field=f"{slot_field}.tint.a"),
+                force_target=_residue_int(row.force_target, field=f"{slot_field}.force_target"),
+                target=_residue_vec2(row.target, field=f"{slot_field}.target"),
+                contact_damage=_residue_float(row.contact_damage, field=f"{slot_field}.contact_damage"),
+                move_speed=_residue_float(row.move_speed, field=f"{slot_field}.move_speed"),
+                attack_cooldown=_residue_float(row.attack_cooldown, field=f"{slot_field}.attack_cooldown"),
+                reward_value=_residue_float(row.reward_value, field=f"{slot_field}.reward_value"),
+                type_id=_residue_int(row.type_id, field=f"{slot_field}.type_id"),
+                target_player=_residue_int(row.target_player, field=f"{slot_field}.target_player"),
+                link_index=_residue_int(row.link_index, field=f"{slot_field}.link_index"),
+                target_offset=_residue_vec2(row.target_offset, field=f"{slot_field}.target_offset"),
+                orbit_angle=_residue_float(row.orbit_angle, field=f"{slot_field}.orbit_angle"),
+                orbit_radius_u32=_residue_int(row.orbit_radius_u32, field=f"{slot_field}.orbit_radius_u32"),
+                flags=_residue_int(row.flags, field=f"{slot_field}.flags"),
+                ai_mode=_residue_int(row.ai_mode, field=f"{slot_field}.ai_mode"),
+                anim_phase=_residue_float(row.anim_phase, field=f"{slot_field}.anim_phase"),
+            ),
+        )
+    return tuple(out)
 
 
 def _validate_capture_completeness(session_row: _SessionStartRow, *, field: str) -> None:
@@ -889,6 +1011,11 @@ def _write_run_trace(
         seed=int(run.replay_seed),
         status=run.status,
     )
+    if run.pool_residue is not None:
+        replay_header = msgspec.structs.replace(
+            replay_header,
+            initial_creature_pool=run.pool_residue,
+        )
     replay_ticks = [
         ReplayTick(
             inputs=run.replay_inputs[i],
@@ -1006,6 +1133,12 @@ def finalize_frida_jsonl_to_traces(
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}].rng_state_at_run_setup must be u32",
                             )
+                        pool_residue: tuple[ReplayCreatureSlotResidue, ...] | None = None
+                        if int(session_start.capture_format_version) >= _POOL_RESIDUE_CAPTURE_VERSION:
+                            pool_residue = _pool_residue_from_run_start(
+                                run_start,
+                                field=f"{raw_path}.lines[{line_no}]",
+                            )
                         spool_path = temp_root / f"run_{int(run_start.run_id)}.ticks"
                         active_run = _OpenRun(
                             run_id=int(run_start.run_id),
@@ -1017,6 +1150,7 @@ def finalize_frida_jsonl_to_traces(
                             temp_path=spool_path,
                             stream=spool_path.open("wb"),
                             replay_seed_source=_RUN_SETUP_SEED_SOURCE,
+                            pool_residue=pool_residue,
                         )
                         continue
                     case _TickRow() as tick_row:

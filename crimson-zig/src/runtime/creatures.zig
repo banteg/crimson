@@ -1,4 +1,5 @@
 const std = @import("std");
+const replay_codec = @import("../replay_codec.zig");
 const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
@@ -83,6 +84,47 @@ pub const CreatureState = struct {
     last_hit_owner: owner_ref.OwnerRef = owner_local_player,
     flags: u32 = 0,
 };
+
+pub fn applyPoolResidue(
+    pool: *CreaturePool,
+    residue: []const replay_codec.ReplayCreatureSlotResidue,
+) void {
+    // Native creature_reset_all clears only `active`; replays of native
+    // captures seed the previous occupants' persistent fields so stale reads
+    // (link_index, target_heading, AI7 timers, ...) match the original run.
+    for (residue) |slot| {
+        if (slot.index < 0 or slot.index >= pool.entries.len) continue;
+        const entry = &pool.entries[@intCast(slot.index)];
+        entry.* = .{
+            .active = false,
+            .type_id = slot.type_id,
+            .pos = .{ .x = slot.pos.x, .y = slot.pos.y },
+            .target = .{ .x = slot.target.x, .y = slot.target.y },
+            .target_offset = .{ .x = slot.target_offset.x, .y = slot.target_offset.y },
+            .heading = slot.heading,
+            .target_heading = slot.target_heading,
+            .phase_seed = slot.phase_seed,
+            .anim_phase = slot.anim_phase,
+            .vel = .{ .x = slot.vel.x, .y = slot.vel.y },
+            .force_target = slot.force_target,
+            .ai_mode = std.enums.fromInt(spawn_mod.CreatureAiMode, slot.ai_mode) orelse .orbit_player,
+            .link_index = slot.link_index,
+            .orbit_angle = slot.orbit_angle,
+            .orbit_radius = @bitCast(slot.orbit_radius_u32),
+            .hp = slot.hp,
+            .max_hp = slot.max_hp,
+            .move_speed = slot.move_speed,
+            .reward_value = slot.reward_value,
+            .size = slot.size,
+            .contact_damage = slot.contact_damage,
+            .plague_infected = slot.collision_flag != 0,
+            .collision_timer = slot.collision_timer,
+            .lifecycle_stage = slot.lifecycle_stage,
+            .attack_cooldown = slot.attack_cooldown,
+            .flags = @bitCast(slot.flags),
+        };
+    }
+}
 
 pub const ShotResolutionResult = struct {
     hits: i32 = 0,

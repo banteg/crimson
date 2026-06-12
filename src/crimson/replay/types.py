@@ -235,6 +235,55 @@ class ReplayClaimedStatsSnapshot(msgspec.Struct, frozen=True):
     shots_hit: NonNegativeInt = 0
 
 
+class ReplayVec2(msgspec.Struct, frozen=True):
+    x: float = 0.0
+    y: float = 0.0
+
+
+class ReplayCreatureSlotResidue(msgspec.Struct, frozen=True):
+    """Persistent creature-slot state inherited at run start.
+
+    Native `creature_reset_all` (0x4281e0) clears only `active`; every other
+    field keeps the previous occupant's value (menu creatures or an earlier
+    run in the same session), and spawn paths overwrite only what they write.
+    Captured at the run-setup latch so replays can seed an identical pool."""
+
+    index: int
+    phase_seed: float = 0.0
+    state_flag: int = 0
+    collision_flag: int = 0
+    collision_timer: float = 0.0
+    lifecycle_stage: float = 0.0
+    pos: ReplayVec2 = msgspec.field(default_factory=ReplayVec2)
+    vel: ReplayVec2 = msgspec.field(default_factory=ReplayVec2)
+    hp: float = 0.0
+    max_hp: float = 0.0
+    heading: float = 0.0
+    target_heading: float = 0.0
+    size: float = 0.0
+    hit_flash_timer: float = 0.0
+    tint_r: float = 0.0
+    tint_g: float = 0.0
+    tint_b: float = 0.0
+    tint_a: float = 0.0
+    force_target: int = 0
+    target: ReplayVec2 = msgspec.field(default_factory=ReplayVec2)
+    contact_damage: float = 0.0
+    move_speed: float = 0.0
+    attack_cooldown: float = 0.0
+    reward_value: float = 0.0
+    type_id: int = 0
+    target_player: int = 0
+    link_index: int = 0
+    target_offset: ReplayVec2 = msgspec.field(default_factory=ReplayVec2)
+    orbit_angle: float = 0.0
+    # Union field in native (radius f32 / projectile type id); raw bits.
+    orbit_radius_u32: int = 0
+    flags: int = 0
+    ai_mode: int = 0
+    anim_phase: float = 0.0
+
+
 class ReplayHeader(msgspec.Struct, frozen=True):
     game_mode_id: GameMode
     seed: int
@@ -255,6 +304,9 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     status: GameStatusData = msgspec.field(default_factory=GameStatusData)
     claimed_stats: ReplayClaimedStatsSnapshot = msgspec.field(default_factory=ReplayClaimedStatsSnapshot)
     input_quantization: InputQuantization = "f32"
+    # Creature pool residue at run start (capture v15+); None for port-recorded
+    # replays, which start from a fresh pool.
+    initial_creature_pool: tuple[ReplayCreatureSlotResidue, ...] | None = None
 
 
 class ReplayTick(msgspec.Struct, frozen=True):

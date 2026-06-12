@@ -881,7 +881,124 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match=r"unsupported capture_format_version=6; expected one of \[13, 14\]"):
+    with pytest.raises(FridaFinalizeError, match=r"unsupported capture_format_version=6; expected one of \[13, 14, 15\]"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def _pool_residue_slot_stub(index: int, **overrides: object) -> dict[str, object]:
+    row: dict[str, object] = {
+        "index": int(index),
+        "active": 0,
+        "phase_seed": 0.0,
+        "state_flag": 0,
+        "collision_flag": 0,
+        "collision_timer": 0.0,
+        "lifecycle_stage": 0.0,
+        "pos": {"x": 0.0, "y": 0.0},
+        "vel": {"x": 0.0, "y": 0.0},
+        "hp": 0.0,
+        "max_hp": 0.0,
+        "heading": 0.0,
+        "target_heading": 0.0,
+        "size": 0.0,
+        "hit_flash_timer": 0.0,
+        "tint": {"r": 0.0, "g": 0.0, "b": 0.0, "a": 0.0},
+        "force_target": 0,
+        "target": {"x": 0.0, "y": 0.0},
+        "contact_damage": 0.0,
+        "move_speed": 0.0,
+        "attack_cooldown": 0.0,
+        "reward_value": 0.0,
+        "type_id": 0,
+        "target_player": 0,
+        "link_index": 0,
+        "target_offset": {"x": 0.0, "y": 0.0},
+        "orbit_angle": 0.0,
+        "orbit_radius_u32": 0,
+        "flags": 0,
+        "ai_mode": 0,
+        "anim_phase": 0.0,
+    }
+    row.update(overrides)
+    return row
+
+
+def _v15_session_start_row() -> dict[str, object]:
+    config = _session_config_stub()
+    config["max_rng_outside_tick_head"] = -1
+    config["max_creature_delta_ids"] = -1
+    row = _session_start_row(capture_format_version=15)
+    row["script_version"] = "15"
+    row["config"] = config
+    return row
+
+
+def test_finalize_frida_jsonl_to_traces_carries_pool_residue_into_replay_header(tmp_path: Path) -> None:
+    run_start = _run_start_row(
+        run_id=1,
+        mode_id=1,
+        seed=91,
+        player_count=1,
+        rng_state_at_run_setup=777,
+    )
+    run_start["pool_residue"] = [
+        _pool_residue_slot_stub(0, link_index=3, target_heading=4.044, type_id=2),
+        _pool_residue_slot_stub(1),
+    ]
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _v15_session_start_row(),
+            run_start,
+            {
+                "event": "tick",
+                **_rng_accounting_stub(),
+                "run_id": 1,
+                "elapsed_ms": 16,
+                "dt_ms_i32": 16,
+                "dt": 0.016,
+                "mode_id": 1,
+                "replay_inputs": _replay_inputs_stub(player_count=1),
+                "channels": _channels_stub(tick_index=0, elapsed_ms=16, mode_id=1),
+            },
+            _run_end_row(run_id=1, mode_id=1, quest_stage_major=-1, quest_stage_minor=-1, ticks_written=1),
+            _session_end_row(ticks_written=1),
+        ],
+    )
+
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+    replay = load_replay_file(result.traces[0].replay_path)
+    pool = replay.header.initial_creature_pool
+    assert pool is not None
+    assert len(pool) == 2
+    assert pool[0].link_index == 3
+    assert pool[0].type_id == 2
+    assert abs(pool[0].target_heading - 4.044) < 1e-6
+    assert pool[1].link_index == 0
+
+
+def test_finalize_frida_jsonl_to_traces_requires_pool_residue_for_v15(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _v15_session_start_row(),
+            _run_start_row(run_id=1, mode_id=1, seed=91, player_count=1, rng_state_at_run_setup=777),
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="pool_residue is required for capture v15"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_active_pool_residue_slot(tmp_path: Path) -> None:
+    run_start = _run_start_row(run_id=1, mode_id=1, seed=91, player_count=1, rng_state_at_run_setup=777)
+    run_start["pool_residue"] = [_pool_residue_slot_stub(0, active=1)]
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [_v15_session_start_row(), run_start],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="active at run start"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 

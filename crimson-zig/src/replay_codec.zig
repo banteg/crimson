@@ -102,6 +102,9 @@ pub const ReplayHeader = struct {
     status: ReplayStatus,
     claimed_stats: ReplayClaimedStats = .{},
     input_quantization: []u8,
+    // Creature pool residue at run start (native captures); empty for
+    // port-recorded replays, which start from a fresh pool.
+    initial_creature_pool: []const ReplayCreatureSlotResidue = &.{},
 
     pub fn deinit(self: ReplayHeader, allocator: std.mem.Allocator) void {
         allocator.free(self.quest_level);
@@ -110,6 +113,7 @@ pub const ReplayHeader = struct {
         allocator.free(self.bootstrap_kind);
         allocator.free(self.game_version);
         allocator.free(self.input_quantization);
+        if (self.initial_creature_pool.len > 0) allocator.free(self.initial_creature_pool);
     }
 };
 
@@ -757,6 +761,47 @@ const ReplayClaimedStatsWire = struct {
     shots_hit: i32 = 0,
 };
 
+pub const ReplayVec2Wire = struct {
+    x: f32 = 0.0,
+    y: f32 = 0.0,
+};
+
+pub const ReplayCreatureSlotResidue = struct {
+    index: i32,
+    phase_seed: f32 = 0.0,
+    state_flag: i32 = 0,
+    collision_flag: i32 = 0,
+    collision_timer: f32 = 0.0,
+    lifecycle_stage: f32 = 0.0,
+    pos: ReplayVec2Wire = .{},
+    vel: ReplayVec2Wire = .{},
+    hp: f32 = 0.0,
+    max_hp: f32 = 0.0,
+    heading: f32 = 0.0,
+    target_heading: f32 = 0.0,
+    size: f32 = 0.0,
+    hit_flash_timer: f32 = 0.0,
+    tint_r: f32 = 0.0,
+    tint_g: f32 = 0.0,
+    tint_b: f32 = 0.0,
+    tint_a: f32 = 0.0,
+    force_target: i32 = 0,
+    target: ReplayVec2Wire = .{},
+    contact_damage: f32 = 0.0,
+    move_speed: f32 = 0.0,
+    attack_cooldown: f32 = 0.0,
+    reward_value: f32 = 0.0,
+    type_id: i32 = 0,
+    target_player: i32 = 0,
+    link_index: i32 = 0,
+    target_offset: ReplayVec2Wire = .{},
+    orbit_angle: f32 = 0.0,
+    orbit_radius_u32: u32 = 0,
+    flags: i32 = 0,
+    ai_mode: i32 = 0,
+    anim_phase: f32 = 0.0,
+};
+
 const ReplayHeaderWire = struct {
     game_mode_id: i32,
     seed: u32,
@@ -806,6 +851,7 @@ const ReplayHeaderCurrentWire = struct {
     status: ReplayStatusCurrentWire = .{},
     claimed_stats: ReplayClaimedStatsWire,
     input_quantization: []const u8 = "f32",
+    initial_creature_pool: ?[]const ReplayCreatureSlotResidue = null,
 };
 
 const ReplayHeaderCurrentStringQuestWire = struct {
@@ -831,6 +877,7 @@ const ReplayHeaderCurrentStringQuestWire = struct {
     status: ReplayStatusCurrentWire = .{},
     claimed_stats: ReplayClaimedStatsWire,
     input_quantization: []const u8 = "f32",
+    initial_creature_pool: ?[]const ReplayCreatureSlotResidue = null,
 };
 
 const ReplayInputWire = struct {
@@ -2422,6 +2469,10 @@ fn buildHeaderCurrentWithQuestLevelText(
         },
         .claimed_stats = claimed_stats,
         .input_quantization = allocator.dupe(u8, wire.input_quantization) catch return error.OutOfMemory,
+        .initial_creature_pool = if (wire.initial_creature_pool) |pool|
+            (allocator.dupe(ReplayCreatureSlotResidue, pool) catch return error.OutOfMemory)
+        else
+            &.{},
     };
 }
 

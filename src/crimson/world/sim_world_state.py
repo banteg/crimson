@@ -1,15 +1,20 @@
 from __future__ import annotations
 
 import math
+import struct
+from collections.abc import Sequence
 from typing import cast
 
 import msgspec
 
+from grim.color import RGBA
 from grim.geom import Vec2
 
-from ..creatures.runtime import CreaturePool
+from ..creatures.runtime import CreatureAiMode, CreaturePool, CreatureState, CreatureTypeId
 from ..creatures.spawn import SpawnEnv
+from ..creatures.spawn_ids import CreatureFlags
 from ..gameplay import GameplayState
+from ..replay.types import ReplayCreatureSlotResidue
 from ..sim.presentation_step import DeterministicPresentationPlan
 from ..sim.state_types import PlayerState
 from ..sim.world_state import WorldEvents, WorldState
@@ -24,6 +29,57 @@ def _weapon_damage_scale_map() -> dict[int, float]:
             continue
         table[int(entry.weapon_id)] = float(cast(float, entry.damage_scale))
     return table
+
+
+def apply_creature_pool_residue(
+    creatures: list[CreatureState],
+    residue: Sequence[ReplayCreatureSlotResidue],
+) -> None:
+    """Seed the fresh pool with the run-start residue captured natively.
+
+    `creature_reset_all` (0x4281e0) clears only `active`; spawn paths
+    overwrite only the fields they write, so stale reads (link_index,
+    target_heading, AI7 timers, ...) must see the previous occupant's values
+    to replay a native session run-for-run."""
+
+    for slot in residue:
+        idx = int(slot.index)
+        if not (0 <= idx < len(creatures)):
+            continue
+        entry = creatures[idx]
+        entry.active = False
+        entry.phase_seed = float(slot.phase_seed)
+        entry.plague_infected = bool(slot.collision_flag)
+        entry.collision_timer = float(slot.collision_timer)
+        entry.lifecycle_stage = float(slot.lifecycle_stage)
+        entry.pos = Vec2(float(slot.pos.x), float(slot.pos.y))
+        entry.vel = Vec2(float(slot.vel.x), float(slot.vel.y))
+        entry.hp = float(slot.hp)
+        entry.max_hp = float(slot.max_hp)
+        entry.heading = float(slot.heading)
+        entry.target_heading = float(slot.target_heading)
+        entry.size = float(slot.size)
+        entry.hit_flash_timer = float(slot.hit_flash_timer)
+        entry.tint = RGBA(float(slot.tint_r), float(slot.tint_g), float(slot.tint_b), float(slot.tint_a))
+        entry.force_target = int(slot.force_target)
+        entry.target = Vec2(float(slot.target.x), float(slot.target.y))
+        entry.contact_damage = float(slot.contact_damage)
+        entry.move_speed = float(slot.move_speed)
+        entry.attack_cooldown = float(slot.attack_cooldown)
+        entry.reward_value = float(slot.reward_value)
+        entry.type_id = CreatureTypeId(int(slot.type_id))
+        entry.target_player = int(slot.target_player)
+        entry.link_index = int(slot.link_index)
+        entry.target_offset = Vec2(float(slot.target_offset.x), float(slot.target_offset.y))
+        entry.orbit_angle = float(slot.orbit_angle)
+        entry.orbit_radius = _f32_from_bits(int(slot.orbit_radius_u32))
+        entry.flags = CreatureFlags(int(slot.flags))
+        entry.ai_mode = CreatureAiMode(int(slot.ai_mode))
+        entry.anim_phase = float(slot.anim_phase)
+
+
+def _f32_from_bits(bits: int) -> float:
+    return struct.unpack("<f", struct.pack("<I", int(bits) & 0xFFFFFFFF))[0]
 
 
 def _reset_player_weapon_native(player: PlayerState) -> None:

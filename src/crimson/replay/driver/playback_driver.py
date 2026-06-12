@@ -39,7 +39,7 @@ from ...sim.sessions import (
 from ...sim.world_state import WorldState
 from ...typo.state import typo_shot_counts
 from ...weapons import WeaponId
-from ...world.sim_world_state import reset_world_players
+from ...world.sim_world_state import apply_creature_pool_residue, reset_world_players
 from .replay_timing import should_apply_world_dt_steps_for_replay
 from .setup import (
     ReplayRunnerError,
@@ -201,6 +201,11 @@ class PlaybackDriver:
             preserve_bugs=bool(self.session_settings.preserve_bugs),
         )
         world.state.rng.srand(int(self.replay.header.seed))
+        if self.replay.header.initial_creature_pool is not None:
+            apply_creature_pool_residue(
+                world.creatures.entries,
+                self.replay.header.initial_creature_pool,
+            )
         reset_world_players(
             world.players,
             state=world.state,

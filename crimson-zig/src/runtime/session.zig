@@ -40,6 +40,7 @@ pub const SessionConfig = struct {
     quest_stage_major: i32 = 0,
     quest_stage_minor: i32 = 0,
     demo_mode_active: bool = false,
+    initial_creature_pool: []const replay_codec.ReplayCreatureSlotResidue = &.{},
 
     pub fn fromReplayHeader(header: replay_codec.ReplayHeader) DeterministicSessionError!SessionConfig {
         const game_mode = std.enums.fromInt(game_ids.GameModeId, header.game_mode_id) orelse {
@@ -59,6 +60,7 @@ pub const SessionConfig = struct {
             .quest_fail_retry_count = header.difficulty_level,
             .status_quest_unlock_index = header.status.quest_unlock_index,
             .status_quest_unlock_index_full = header.status.quest_unlock_index_full,
+            .initial_creature_pool = header.initial_creature_pool,
         };
 
         for (header.status.weapon_usage_counts, 0..) |count, idx| {
@@ -227,6 +229,7 @@ pub const DeterministicSession = struct {
         session.creatures.demo_mode_active = config.demo_mode_active;
         session.creatures.quest_fail_retry_count = config.quest_fail_retry_count;
 
+        creatures_mod.applyPoolResidue(&session.creatures, config.initial_creature_pool);
         player_runtime.resetPlayers(session.players(), config.world_size, null);
         session.creatures.capture_spawn_events_authoritative = options.capture_spawn_events_authoritative;
         session.creatures.effects = &session.effects;
