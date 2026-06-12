@@ -2182,6 +2182,9 @@ pub const CreaturePool = struct {
                 };
 
                 if (state.bonuses.energizer > 0.0 and creature.max_hp < 380.0) {
+                    // Native double-pays the eat kill: a direct exp += reward
+                    // store here, plus creature_handle_death's own award below.
+                    _ = awardExperienceOnceFromReward(&players[0], creature.reward_value);
                     effect_pool.spawnBurst(
                         state,
                         creature.pos,

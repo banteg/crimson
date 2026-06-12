@@ -24,6 +24,7 @@ from ..bonuses import BonusId
 from ..bonuses.pool import BONUS_SPAWN_MARGIN
 from ..effects import EffectPool, FxQueue, FxQueueRotated
 from ..gameplay import (
+    _award_experience_once_from_reward,
     award_experience,
     award_experience_from_reward,
     survival_record_recent_death,
@@ -448,6 +449,11 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
         return
     if float(creature.max_hp) >= 380.0:
         return
+
+    # Native double-pays the eat kill: a direct `exp += reward` store here,
+    # plus creature_handle_death's own award below.
+    if ctx.players:
+        _award_experience_once_from_reward(ctx.players[0], float(creature.reward_value))
 
     ctx.state.effects.spawn_burst(
         pos=creature.pos,

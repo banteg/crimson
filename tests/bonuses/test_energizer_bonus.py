@@ -61,7 +61,9 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
 
     assert len(result.deaths) == 1
     assert not creature.active
-    assert player.experience == 10
+    # Native double-pays the eat kill: a direct exp += reward store in
+    # creature_update_all plus creature_handle_death's own award.
+    assert player.experience == 20
     assert player.health == 100.0
     assert SfxId.UI_BONUS in result.sfx
     assert not any(entry.bonus_id != BonusId.UNUSED for entry in state.bonus_pool.entries)
