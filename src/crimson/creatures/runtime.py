@@ -723,19 +723,17 @@ class CreaturePool:
         if not (0 <= int(player_index) < len(players)):
             return
         player = players[int(player_index)]
-        if float(player.health) <= 0.0:
-            return
 
+        # Native has no hp filters here: dead players' slots still update, and
+        # the current auto-target is used purely for its (possibly stale)
+        # position - corpses and recycled slots included. The demo auto-aim
+        # consumer re-scans with an hp filter.
         auto_target = int(player.auto_target)
         if not (0 <= auto_target < len(self._entries)):
             player.auto_target = int(creature_index)
             return
 
         current = self._entries[int(auto_target)]
-        if not current.active or float(current.hp) <= 0.0:
-            player.auto_target = int(creature_index)
-            return
-
         dist_new = Vec2.distance_sq(player.pos, creature.pos)
         current_origin = player.pos
         if preserve_bugs and int(player_index) != 0 and players:
@@ -1029,6 +1027,19 @@ class CreaturePool:
                     and (int(creature.flags) & _FLAG_AI7_LINK_TIMER) != 0
                 ):
                     creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rng=rng)
+                # Native's targeting block runs before the alive/dead split:
+                # fading corpses still switch their target player and feed the
+                # auto-target comparison.
+                if players:
+                    dead_target_player = self._resolve_target_player_index(creature, players)
+                    if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+                        self._update_player_auto_target(
+                            players=players,
+                            preserve_bugs=bool(state.preserve_bugs),
+                            player_index=int(dead_target_player),
+                            creature_index=int(idx),
+                            creature=creature,
+                        )
                 if creature_lifecycle_is_alive(creature.lifecycle_stage):
                     creature.lifecycle_stage = f32(float(creature.lifecycle_stage) - float(dt))
                 if dt > 0.0:
