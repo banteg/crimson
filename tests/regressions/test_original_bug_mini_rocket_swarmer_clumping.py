@@ -49,3 +49,32 @@ def test_mini_rocket_swarmer_clumping_bug_can_be_preserved() -> None:
     headings = _spawn_swarmer_burst(preserve_bugs=True, ammo=6.0)
     assert len(headings) == 6
     assert len(set(headings)) == 1
+
+
+def test_mini_rocket_swarmer_empty_clip_fires_no_rockets() -> None:
+    # Reachable when firing during reload with Regression Bullets / Ammunition
+    # Within; native spawns zero rockets and zeroes the clip.
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon=WeaponSlot(
+            weapon_id=WeaponId.MINI_ROCKET_SWARMERS,
+            clip_size=6,
+            ammo=-0.5,
+        ),
+        spread_heat=0.0,
+    )
+
+    fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)),
+            dt=0.016,
+            state=state,
+        ),
+    )
+
+    assert not any(entry.active for entry in state.secondary_projectiles.entries)
+    assert player.weapon.ammo == 0.0
+    assert state.shots_fired[0] == 0

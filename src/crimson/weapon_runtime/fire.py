@@ -424,12 +424,16 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 )
         case SwarmerDumpMode():
             # Mini-Rocket Swarmers -> secondary type 2 (fires the full clip in a spread).
-            rocket_count = max(1, int(player.weapon.ammo))
+            # Native spawns one rocket per integer counter step below the float ammo
+            # value (ceil), and zero rockets when firing with an empty/negative clip
+            # (reachable via Regression Bullets / Ammunition Within).
+            clip_ammo = float(player.weapon.ammo)
+            rocket_count = math.ceil(clip_ammo) if clip_ammo > 0.0 else 0
             if bool(state.preserve_bugs):
                 # Native bug: step scales by ammo (`ammo * pi/3`), which aliases to identical headings
                 # for some clip sizes (e.g. 6 rockets), causing visible clumping.
-                step = float(rocket_count) * (math.pi / 3.0)
-                angle = (shot_angle - math.pi) - step * float(rocket_count) * 0.5
+                step = clip_ammo * (math.pi / 3.0)
+                angle = (shot_angle - math.pi) - step * clip_ammo * 0.5
             else:
                 spread = math.pi * (2.0 / 3.0)
                 step = 0.0 if rocket_count <= 1 else spread / float(rocket_count - 1)
@@ -447,7 +451,9 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     ),
                 )
                 angle += step
-            ammo_cost = float(rocket_count)
+            # Native subtracts the full clip value, zeroing the ammo even when
+            # the clip was fractional or negative.
+            ammo_cost = clip_ammo
             shot_count = rocket_count
 
     if 0 <= int(player.index) < len(state.shots_fired):

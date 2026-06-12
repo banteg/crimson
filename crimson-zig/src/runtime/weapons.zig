@@ -411,7 +411,7 @@ fn tryFireWeaponWithForce(
     var shot_cooldown = shot_cooldown_base;
 
     const is_fire_bullets = player.fire_bullets_timer > 0.0;
-    var shot_count = computeShotCount(player.weapon.weapon_id, player.weapon.ammo);
+    var shot_count = computeShotCount(player.weapon.weapon_id);
     if (is_fire_bullets) {
         shot_count = pellet_count;
     }
@@ -554,15 +554,19 @@ fn tryFireWeaponWithForce(
             _ = projectiles.spawn(muzzle, narrowF32(shot_angle + spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, false);
         },
         .swarmer_dump => {
-            const rocket_count = shot_count;
+            // Native spawns one rocket per integer counter step below the float
+            // ammo value (ceil), and zero rockets when firing with an
+            // empty/negative clip; the full clip value is subtracted either way.
+            const clip_ammo = player.weapon.ammo;
+            const rocket_count: i32 = if (clip_ammo > 0.0) @intFromFloat(@ceil(clip_ammo)) else 0;
             const step = if (state.preserve_bugs)
-                narrowF32(@as(f32, @floatFromInt(rocket_count)) * (native_pi / 3.0))
+                narrowF32(clip_ammo * (native_pi / 3.0))
             else if (rocket_count <= 1)
                 0.0
             else
                 narrowF32((native_pi * (2.0 / 3.0)) / @as(f32, @floatFromInt(rocket_count - 1)));
             var angle = if (state.preserve_bugs)
-                narrowF32((shot_angle - native_pi) - step * @as(f32, @floatFromInt(rocket_count)) * 0.5)
+                narrowF32((shot_angle - native_pi) - step * clip_ammo * 0.5)
             else
                 narrowF32(shot_angle - native_pi * (1.0 / 3.0));
             for (0..@as(usize, @intCast(rocket_count))) |_| {
@@ -577,7 +581,8 @@ fn tryFireWeaponWithForce(
                 );
                 angle = narrowF32(angle + step);
             }
-            ammo_cost = @floatFromInt(rocket_count);
+            ammo_cost = clip_ammo;
+            shot_count = rocket_count;
         },
     }
 
@@ -979,14 +984,13 @@ fn muzzleSpriteSpecs(weapon_id: WeaponId) []const MuzzleSpriteSpec {
     };
 }
 
-fn computeShotCount(
-    weapon_id: WeaponId,
-    ammo: f32,
-) i32 {
+fn computeShotCount(weapon_id: WeaponId) i32 {
     return switch (weapon_id) {
         .multi_plasma => 5,
         .plasma_shotgun => 14,
-        .mini_rocket_swarmers => @max(1, @as(i32, @intFromFloat(@floor(@max(0.0, ammo))))),
+        // The swarmer_dump branch derives the real rocket count from the live
+        // clip value (zero rockets on an empty/negative clip, like native).
+        .mini_rocket_swarmers => 1,
         .gauss_shotgun => 6,
         .ion_shotgun => 8,
         else => @max(1, weapon_data.weapon_stats.get(weapon_id).pellet_count),
