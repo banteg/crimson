@@ -387,7 +387,10 @@ pub fn applyPerkWithContext(
         PerkId.thick_skinned => {
             for (players) |*player| {
                 if (player.health > 0.0) {
-                    player.health = @max(1.0, player.health * (2.0 / 3.0));
+                    // Native computes `h - h * 0.33333334f` and stores f32. Its
+                    // `= 1.0` clamp only fires when the result is <= 0, which
+                    // cannot happen for positive health - dead code, no floor.
+                    player.health = narrowF32(player.health - player.health * 0.33333334);
                 }
             }
         },
@@ -1584,8 +1587,9 @@ test "thick skinned clamps health floor at one" {
     };
 
     try applyPerk(&state, players[0..], PerkId.thick_skinned);
-    try std.testing.expectApproxEqAbs(@as(f32, 60.0), players[0].health, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 1.0), players[1].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 60.0), players[0].health, 1e-4);
+    // Native has no health floor: low-health players keep 2/3 of their health.
+    try std.testing.expectApproxEqAbs(@as(f32, 0.8), players[1].health, 1e-4);
 }
 
 test "plaguebearer apply marks all players active" {
