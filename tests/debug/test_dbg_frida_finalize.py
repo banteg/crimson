@@ -885,6 +885,42 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
+def test_finalize_frida_jsonl_to_traces_rejects_trimmed_entity_samples(tmp_path: Path) -> None:
+    config = _session_config_stub()
+    config["creature_sample_limit"] = 64
+    session_start = _session_start_row()
+    session_start["config"] = config
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [session_start])
+
+    with pytest.raises(FridaFinalizeError, match=r"trimmed streams \{'creature_sample_limit': 64\}"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_trimmed_diagnostic_streams_for_v14(tmp_path: Path) -> None:
+    # v13 sessions predate unlimited diagnostic-stream defaults and stay
+    # accepted; the same caps are a recording error from v14 on.
+    session_start = _session_start_row(capture_format_version=14)
+    session_start["script_version"] = "14"
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [session_start])
+
+    with pytest.raises(
+        FridaFinalizeError,
+        match=r"trimmed streams \{'max_rng_outside_tick_head': 256, 'max_creature_delta_ids': 256\}",
+    ):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_focus_mode_capture(tmp_path: Path) -> None:
+    config = _session_config_stub()
+    config["focus_tick"] = 1200
+    session_start = _session_start_row()
+    session_start["config"] = config
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [session_start])
+
+    with pytest.raises(FridaFinalizeError, match=r"focus mode \(focus_tick=1200\)"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
 def test_finalize_frida_jsonl_to_traces_keeps_large_first_tick_elapsed(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",

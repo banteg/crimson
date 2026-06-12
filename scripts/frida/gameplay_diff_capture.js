@@ -246,9 +246,10 @@ const CONFIG = {
   maxRngCallerKinds: parseLimitEnv("CRIMSON_FRIDA_RNG_CALLERS", -1, 0),
   enableRngRollLog: parseBoolEnv("CRIMSON_FRIDA_RNG_ROLL_LOG", true),
   maxRngRollLogEvents: parseLimitEnv("CRIMSON_FRIDA_MAX_RNG_ROLL_LOG_EVENTS", -1, 0),
-  maxRngOutsideTickHead: parseLimitEnv("CRIMSON_FRIDA_RNG_OUTSIDE_TICK_HEAD", 256, 0),
+  // Unlimited by default: fixture-grade captures must not trim any stream.
+  maxRngOutsideTickHead: parseLimitEnv("CRIMSON_FRIDA_RNG_OUTSIDE_TICK_HEAD", -1, 0),
   enableRngStateMirror: parseBoolEnv("CRIMSON_FRIDA_RNG_STATE_MIRROR", true),
-  maxCreatureDeltaIds: parseLimitEnv("CRIMSON_FRIDA_CREATURE_DELTA_IDS", 256, 1),
+  maxCreatureDeltaIds: parseLimitEnv("CRIMSON_FRIDA_CREATURE_DELTA_IDS", -1, 1),
   creatureSampleLimit: parseLimitEnv("CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT", -1, 0),
   projectileSampleLimit: parseLimitEnv("CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT", -1, 0),
   secondaryProjectileSampleLimit: parseLimitEnv("CRIMSON_FRIDA_SECONDARY_PROJECTILE_SAMPLE_LIMIT", -1, 0),
@@ -3108,7 +3109,8 @@ function diffCreatureDigest(beforeDigest, afterDigest) {
 
   const addedHead = [];
   const removedHead = [];
-  const maxHead = Math.max(1, CONFIG.maxCreatureDeltaIds | 0);
+  const configuredDeltaIds = CONFIG.maxCreatureDeltaIds | 0;
+  const maxHead = configuredDeltaIds < 0 ? Infinity : Math.max(1, configuredDeltaIds);
   const afterEntries = afterDigest.active_entries || {};
   const beforeEntries = beforeDigest.active_entries || {};
 

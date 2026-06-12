@@ -365,6 +365,40 @@ def _builtin_int(payload: BuiltinObject, key: str, default: int = 0) -> int:
     return default
 
 
+def _validate_capture_completeness(session_row: _SessionStartRow, *, field: str) -> None:
+    """Reject captures recorded with trimming: parity traces must carry the
+    full per-tick channels, never a sample of creatures/draws/events."""
+
+    config = session_row.config
+    untrimmed_required = {
+        "creature_sample_limit": config.creature_sample_limit,
+        "projectile_sample_limit": config.projectile_sample_limit,
+        "secondary_projectile_sample_limit": config.secondary_projectile_sample_limit,
+        "bonus_sample_limit": config.bonus_sample_limit,
+        "max_rng_head_per_tick": config.max_rng_head_per_tick,
+        "max_rng_caller_kinds": config.max_rng_caller_kinds,
+        "max_events_per_tick": config.max_events_per_tick,
+        "max_head_per_kind": config.max_head_per_kind,
+    }
+    # v13 sessions predate unlimited defaults for the diagnostic streams; from
+    # v14 on they must be complete too (outside-tick rng head fed the per-frame
+    # burn forensics, creature delta ids feed lifecycle digests).
+    if int(session_row.capture_format_version) >= 14:
+        untrimmed_required["max_rng_outside_tick_head"] = config.max_rng_outside_tick_head
+        untrimmed_required["max_creature_delta_ids"] = config.max_creature_delta_ids
+    trimmed = {name: int(value) for name, value in untrimmed_required.items() if int(value) >= 0}
+    if trimmed:
+        raise FridaFinalizeError(
+            f"{field} capture was recorded with trimmed streams {trimmed}; "
+            "parity captures require unlimited limits (-1)",
+        )
+    if int(config.focus_tick) >= 0:
+        raise FridaFinalizeError(
+            f"{field} capture used focus mode (focus_tick={int(config.focus_tick)}); "
+            "parity captures must record every tick",
+        )
+
+
 def _decode_clip_size_raw_bits(value: int, *, field: str) -> int:
     """Decode a v13 `clip_size` sample into the integral clip size.
 
@@ -937,6 +971,7 @@ def finalize_frida_jsonl_to_traces(
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}].session_fingerprint.session_id must match session_id",
                             )
+                        _validate_capture_completeness(session_row, field=f"{raw_path}.lines[{line_no}]")
                         session_start = session_row
                         continue
                     case _:
