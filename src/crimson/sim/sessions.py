@@ -157,11 +157,13 @@ def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
     ctx.world.creatures.spawn_inits(spawns)
 
 
-def quest_post_step(ctx: PostStepContext, spawn: QuestSpawnState) -> None:
+def quest_mid_step(ctx: MidStepContext, spawn: QuestSpawnState) -> None:
+    # Native runs quest_mode_update with the other mode updates before render,
+    # so quest spawns draw RNG ahead of the presentation pass, like the other
+    # modes' mid-steps. The scaled dt keeps the timeline (the quest score), the
+    # stall timer, and the completion transition slowed under Reflex Boost.
     state = ctx.world.state
-    # Native scales frame_dt_ms before quest_mode_update runs, so the quest
-    # timeline, stall timer, and completion transition slow under Reflex Boost.
-    dt_ms = float(ctx.step_result.timing.dt_sim_ms_i32)
+    dt_ms = float(ctx.dt_sim_ms)
     creatures_none_active = not any(c.active for c in ctx.world.creatures.entries)
 
     entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_mode_spawns(
@@ -260,8 +262,11 @@ class RushSessionRuntime(SessionModeRuntime):
 class QuestSessionRuntime(SessionModeRuntime):
     spawn: QuestSpawnState
 
-    def post_step(self, ctx: PostStepContext) -> None:
-        quest_post_step(ctx, self.spawn)
+    def needs_mid_step(self) -> bool:
+        return True
+
+    def mid_step(self, ctx: MidStepContext) -> None:
+        quest_mid_step(ctx, self.spawn)
 
 
 class TypoSessionRuntime(SessionModeRuntime):
