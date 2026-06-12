@@ -414,6 +414,10 @@ fn tryFireWeaponWithForce(
 
     const is_fire_bullets = player.fire_bullets_timer > 0.0;
     var shot_count = computeShotCount(player.weapon.weapon_id);
+    // Native increments the accuracy counter only inside projectile_spawn /
+    // fx_spawn_secondary_projectile; particle weapons never count toward
+    // shots fired. Per-weapon usage keeps counting for most-used tracking.
+    var counts_accuracy_shots = true;
     if (is_fire_bullets) {
         shot_count = pellet_count;
     }
@@ -530,6 +534,7 @@ fn tryFireWeaponWithForce(
             shot_count = 1;
         },
         .particle_stream => |mode| {
+            counts_accuracy_shots = false;
             if (mode.slow) {
                 _ = particles.spawnParticleSlow(
                     state,
@@ -601,7 +606,9 @@ fn tryFireWeaponWithForce(
     const player_idx = player.index;
     if (player_idx >= 0 and player_idx < state.shots_fired.len) {
         const idx: usize = @intCast(player_idx);
-        state.shots_fired[idx] += shot_count;
+        if (counts_accuracy_shots) {
+            state.shots_fired[idx] += shot_count;
+        }
         const weapon_idx: usize = @intCast(@intFromEnum(player.weapon.weapon_id));
         if (weapon_idx < state.weapon_shots_fired[idx].len) {
             state.weapon_shots_fired[idx][weapon_idx] += shot_count;

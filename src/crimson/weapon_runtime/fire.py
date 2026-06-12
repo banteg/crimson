@@ -309,6 +309,11 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     # cvar enabled, primary player shots can hit other players for 10 damage.
     projectile_hits_players = bool(state.friendly_fire_enabled)
     shot_count = 1
+    # Native increments the accuracy counter only inside projectile_spawn /
+    # fx_spawn_secondary_projectile; particle weapons (flamethrowers, bubblegun)
+    # never count toward shots fired. The per-weapon usage counter keeps
+    # incrementing as the rewrite's most-used-weapon heuristic.
+    counts_accuracy_shots = True
     spawn_muzzle_after_projectile = bool(is_fire_bullets) or int(weapon_id) in _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE
     if not spawn_muzzle_after_projectile:
         _spawn_native_fire_muzzle_sprites(
@@ -391,6 +396,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 ),
             )
         case ParticleStreamMode(style=style, slow=slow):
+            counts_accuracy_shots = False
             if slow:
                 state.particles.spawn_particle_slow(
                     pos=muzzle,
@@ -462,7 +468,8 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             shot_count = rocket_count
 
     if 0 <= int(player.index) < len(state.shots_fired):
-        state.shots_fired[int(player.index)] += int(shot_count)
+        if counts_accuracy_shots:
+            state.shots_fired[int(player.index)] += int(shot_count)
         if 0 <= weapon_id < WEAPON_COUNT_SIZE:
             state.weapon_shots_fired[int(player.index)][weapon_id] += int(shot_count)
 
