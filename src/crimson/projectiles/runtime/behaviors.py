@@ -283,6 +283,10 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     )
 
 
+def _no_death_sfx() -> tuple[SfxId, ...]:
+    return ()
+
+
 def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
     _spawn_shrinkifier_hit_effects(
         ctx.effects,
@@ -295,15 +299,10 @@ def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) ->
     new_size = float(creature.size) * 0.65
     creature.size = new_size
     if new_size < 16.0:
-        _apply_damage_to_creature(
-            ctx.creatures,
-            int(hit.hit_idx),
-            float(creature.hp) + 1.0,
-            damage_type=CreatureDamageType.BULLET,
-            impulse=Vec2(),
-            owner=hit.proj.owner,
-            creature_damage_runtime=ctx.creature_damage_runtime,
-        )
+        # Native calls creature_handle_death directly: no damage pipeline, so no
+        # heading-jitter or death-SFX rand draws, and hp stays positive so the
+        # generic chip damage after this hook still applies.
+        ctx.creature_damage_runtime.on_creature_lethal(int(hit.hit_idx), _no_death_sfx)
     hit.proj.life_timer = 0.25
 
 

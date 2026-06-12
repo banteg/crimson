@@ -320,3 +320,58 @@ def test_non_gauss_freeze_hit_presentation_draws_burn_then_single_shard(mocker) 
         RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_SCALE_STEP,
         RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID,
     ]
+
+
+def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
+    from collections.abc import Callable
+
+    from crimson.creatures.damage_runtime import DirectCreatureDamageRuntime
+    from crimson.creatures.spawn import CreatureFlags
+
+    pool = ProjectilePool(size=64)
+    creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=20.0, flags=CreatureFlags(0))
+    runtime_state = GameplayState()
+    lethal_calls: list[int] = []
+
+    class _Runtime(DirectCreatureDamageRuntime):
+        def on_creature_lethal(
+            self,
+            creature_index: int,
+            resolve_death_sfx: Callable[[], tuple[SfxId, ...]],
+        ) -> None:
+            lethal_calls.append(int(creature_index))
+            # Native shrink-death goes straight to creature_handle_death with
+            # no death-SFX or shock-burst draws.
+            assert resolve_death_sfx() == ()
+
+    pool.spawn(
+        pos=Vec2(),
+        angle=0.0,
+        type_id=ProjectileTemplateId.SHRINKIFIER,
+        owner=OwnerRef.from_local_player(0),
+        travel_budget=10.0,
+    )
+
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.016,
+            creatures=[creature],
+            options=make_projectile_update_options(
+                world_size=4096.0,
+                detail_preset=5,
+                rng=rng,
+                runtime_state=runtime_state,
+                creature_damage_runtime=_Runtime(creatures=[creature]),
+            ),
+        ),
+    )
+
+    assert lethal_calls == [0]
+    assert_float_close(creature.size, 13.0)
+    # The generic chip damage still applies after the direct shrink-death;
+    # native leaves hp positive when entering it.
+    assert creature.hp < 100.0
+    assert RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX not in {
+        record.caller for record in rng.records_since()
+    }

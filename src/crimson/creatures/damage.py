@@ -20,7 +20,7 @@ from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PlayerState
 from .damage_runtime import CreatureDamageRuntime
 from .damage_types import CreatureDamageType
-from .runtime import CREATURE_LIFECYCLE_ALIVE, CreatureState
+from .runtime import CreatureState
 from .spawn import CreatureFlags, CreatureTypeId
 
 
@@ -310,7 +310,10 @@ def creature_apply_damage_with_lethal_followup(
     call sites cannot accidentally skip death handling side effects.
     """
 
-    death_start_needed = float(creature.hp) > 0.0 and float(creature.lifecycle_stage) == CREATURE_LIFECYCLE_ALIVE
+    # Native gates the lethal branch purely on entry health; a creature whose
+    # death was already handled with hp still positive (shrinkifier shrink-death,
+    # energizer eat) re-enters the full lethal follow-up on a later killing hit.
+    death_start_needed = float(creature.hp) > 0.0
     killed = creature_apply_damage(
         creature,
         damage_amount=float(damage_amount),
