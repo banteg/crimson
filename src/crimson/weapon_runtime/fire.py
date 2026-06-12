@@ -305,6 +305,9 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
 
     owner = owner_ref_for_player(player.index)
     projectile_owner = owner_ref_for_player_projectiles(state, player.index)
+    # Native encodes friendly fire in the owner id (-1 - player_index): with the
+    # cvar enabled, primary player shots can hit other players for 10 damage.
+    projectile_hits_players = bool(state.friendly_fire_enabled)
     shot_count = 1
     spawn_muzzle_after_projectile = bool(is_fire_bullets) or int(weapon_id) in _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE
     if not spawn_muzzle_after_projectile:
@@ -357,6 +360,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     type_id=type_id,
                     owner=projectile_owner,
                     travel_budget=meta,
+                    hits_players=projectile_hits_players,
                 )
                 if isinstance(speed_rule, ModuloSpeedScale):
                     assert pellet_speed_caller is not None
@@ -421,6 +425,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     type_id=type_id,
                     owner=projectile_owner,
                     travel_budget=travel_budget_for_type_id(type_id),
+                    hits_players=projectile_hits_players,
                 )
         case SwarmerDumpMode():
             # Mini-Rocket Swarmers -> secondary type 2 (fires the full clip in a spread).

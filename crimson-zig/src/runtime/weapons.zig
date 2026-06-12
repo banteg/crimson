@@ -426,7 +426,13 @@ fn tryFireWeaponWithForce(
         player.aim_dir.toHeading();
     const muzzle_dir = rotateVec(directionFromHeading(aim_heading), -0.150915);
     const muzzle = state_mod.Vec2.add(player.pos, muzzle_dir.mul(16.0));
-    const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
+    // Native encodes friendly fire in the owner id (-1 - player_index): with
+    // the cvar enabled, primary player shots can hit other players.
+    const projectile_owner = if (state.friendly_fire_enabled)
+        owner_ref.OwnerRef.fromPlayer(@intCast(player.index))
+    else
+        owner_ref.OwnerRef.fromLocalPlayer(0);
+    const projectile_hits_players = state.friendly_fire_enabled;
     const secondary_owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
     if (is_fire_bullets and pellet_count == 1) {
         shot_cooldown = weapon_data.weapon_stats.get(fire_bullets_weapon_id).shot_cooldown;
@@ -505,7 +511,7 @@ fn tryFireWeaponWithForce(
                     type_id_i32,
                     projectile_owner,
                     meta,
-                    false,
+                    projectile_hits_players,
                 );
                 applySpeedScaleRule(state, projectiles, id, player.weapon.weapon_id, is_fire_bullets, mode.speed_scale);
             }
@@ -549,11 +555,11 @@ fn tryFireWeaponWithForce(
             shot_count = 5;
             const spread_small = std.math.pi / 10.0;
             const spread_large = std.math.pi / 6.0;
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle - spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, false);
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle - spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, false);
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, false);
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle + spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, false);
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle + spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, false);
+            _ = projectiles.spawn(muzzle, narrowF32(shot_angle - spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
+            _ = projectiles.spawn(muzzle, narrowF32(shot_angle - spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, projectile_hits_players);
+            _ = projectiles.spawn(muzzle, narrowF32(shot_angle), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
+            _ = projectiles.spawn(muzzle, narrowF32(shot_angle + spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, projectile_hits_players);
+            _ = projectiles.spawn(muzzle, narrowF32(shot_angle + spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
         },
         .swarmer_dump => {
             // Native spawns one rocket per integer counter step below the float
