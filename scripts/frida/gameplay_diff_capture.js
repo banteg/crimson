@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 13;
+const CAPTURE_FORMAT_VERSION = 14;
 // First rng caller of native run setup (terrain_generate prelude roll 1). The
 // rand state observed before this draw is the state a replay must seed from to
 // reproduce the run's setup draws (terrain stamps, quest build) value-for-value.
@@ -1437,7 +1437,7 @@ function validateAfterPlayers(players, expectedPlayers) {
     requireFiniteScalar(row.aim_y, "after.players[" + i + "].aim_y");
     requireFiniteScalar(row.aim_heading, "after.players[" + i + "].aim_heading");
     requireInt(row.weapon_id, "after.players[" + i + "].weapon_id");
-    requireInt(row.clip_size_i32, "after.players[" + i + "].clip_size_i32");
+    requireFiniteScalar(row.clip_size_f32, "after.players[" + i + "].clip_size_f32");
     requireFiniteScalar(row.ammo_f32, "after.players[" + i + "].ammo_f32");
     requireInt(row.reload_active_i32, "after.players[" + i + "].reload_active_i32");
     requireFiniteScalar(row.reload_timer, "after.players[" + i + "].reload_timer");
@@ -1506,7 +1506,11 @@ function simStateFromTick(tickObj, expectedPlayers) {
       weapon: {
         weapon_id: requireInt(player.weapon_id, "after.players[" + i + "].weapon_id"),
         ammo: requireFiniteScalar(player.ammo_f32, "after.players[" + i + "].ammo_f32"),
-        clip_size: requireInt(player.clip_size_i32, "after.players[" + i + "].clip_size_i32"),
+        // Native stores clip_size as an integral f32; emit the decoded value
+        // (clip_size_i32 is the raw bit pattern kept for forensics).
+        clip_size: Math.round(
+          requireFiniteScalar(player.clip_size_f32, "after.players[" + i + "].clip_size_f32"),
+        ),
         reload_active: requireInt(player.reload_active_i32, "after.players[" + i + "].reload_active_i32") !== 0,
         reload_timer: requireFiniteScalar(player.reload_timer, "after.players[" + i + "].reload_timer"),
         reload_timer_max: requireFiniteScalar(
@@ -2443,7 +2447,9 @@ function readGameplayGlobalsCompact() {
     game_state_pending: readDataI32("game_state_pending"),
     frame_dt: readDataF32("frame_dt"),
     frame_dt_ms_i32: readDataI32("frame_dt_ms"),
-    frame_dt_ms_f32: readDataF32("frame_dt_ms"),
+    // The native global is an i32; emit its numeric value (a float read of
+    // the same address yields a denormal bit pattern).
+    frame_dt_ms_f32: readDataI32("frame_dt_ms"),
     time_played_ms: readDataI32("time_played_ms"),
     creature_active_count: readDataI32("creature_active_count"),
     creature_kill_count: readDataI32("creature_kill_count"),

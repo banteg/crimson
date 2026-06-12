@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import struct
 from contextlib import suppress
 from datetime import UTC, datetime
 from pathlib import Path
@@ -45,7 +46,8 @@ _FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
-_SUPPORTED_CAPTURE_FORMAT_VERSION = 13
+# v13 samples clip_size as raw f32 bits; v14 emits the decoded value.
+_SUPPORTED_CAPTURE_FORMAT_VERSIONS = frozenset({13, 14})
 _TRACE_CHUNK_TICKS = 256
 _RUN_START_REASONS = frozenset(("run_start", "first_tick", "quest_attempt", "mode_or_stage_change"))
 _RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change", "shutdown"))
@@ -363,6 +365,33 @@ def _builtin_int(payload: BuiltinObject, key: str, default: int = 0) -> int:
     return default
 
 
+def _decode_clip_size_raw_bits(value: int, *, field: str) -> int:
+    """Decode a v13 `clip_size` sample into the integral clip size.
+
+    The native player struct stores clip_size as f32 and the v13 capture
+    script samples it with a 32-bit integer read, so the wire value is the
+    raw bit pattern (e.g. 1092616192 == 10.0f)."""
+
+    bits = int(value) & 0xFFFFFFFF
+    decoded = struct.unpack("<f", struct.pack("<I", bits))[0]
+    if not math.isfinite(decoded) or not (0.0 <= decoded <= 10000.0):
+        raise FridaFinalizeError(f"{field} is not a plausible f32 clip_size bit pattern: {int(value)}")
+    rounded = round(decoded)
+    if abs(decoded - rounded) > 1e-3:
+        raise FridaFinalizeError(f"{field} decodes to a non-integral clip_size: {decoded!r}")
+    return int(rounded)
+
+
+def _normalized_capture_player(player: SnapshotPlayer, *, clip_size_raw_bits: bool, field: str) -> SnapshotPlayer:
+    if not clip_size_raw_bits:
+        return player
+    weapon = msgspec.structs.replace(
+        player.weapon,
+        clip_size=_decode_clip_size_raw_bits(player.weapon.clip_size, field=f"{field}.weapon.clip_size"),
+    )
+    return msgspec.structs.replace(player, weapon=weapon)
+
+
 def _decode_capture_row(line: bytes, *, field: str) -> _CaptureRow:
     try:
         return _CAPTURE_ROW_DECODER.decode(line)
@@ -374,6 +403,7 @@ def _canonical_channels_payload(
     *,
     channels: _TickChannels,
     local_tick: int,
+    clip_size_raw_bits: bool,
     field: str,
 ) -> tuple[ReplayCheckpoint, ReplayTickChannels]:
     checkpoint = msgspec.structs.replace(channels.checkpoint, tick_index=int(local_tick))
@@ -397,7 +427,9 @@ def _canonical_channels_payload(
     # Capture timing rows carry session-global tick/frame counters and a null
     # mode_fn (the gpur_enter sample is built before any mode hook fires);
     # rebase them to the run-local domain the rewrite recorder emits so the
-    # timing channel is comparable.
+    # timing channel is comparable. `frame_dt_ms_f32` is recomputed from the
+    # i32 sample: the native global is an i32 and the v13 capture script reads
+    # it with a float read, leaving a denormal bit pattern on the wire.
     timing_samples = [
         msgspec.structs.replace(
             row,
@@ -407,6 +439,9 @@ def _canonical_channels_payload(
                 "gameplay_update_and_render"
                 if row.mode_fn is None and row.phase == "gpur_enter"
                 else row.mode_fn
+            ),
+            frame_dt_ms_f32=(
+                row.frame_dt_ms_f32 if row.frame_dt_ms_i32 is None else float(int(row.frame_dt_ms_i32))
             ),
         )
         for row in channels.timing_samples
@@ -419,18 +454,29 @@ def _canonical_channels_payload(
         timing_samples=timing_samples,
     )
     gameplay = normalized.sim_state.gameplay
+    # Outside quest mode the native quest_stage globals are sticky menu
+    # residue (whatever quest the menu last selected), not run state; the
+    # canonical channel zeroes them like the rewrite does.
+    in_quest = int(gameplay.mode_id) == _GAME_MODE_QUESTS
     return checkpoint, ReplayTickChannels(
         checkpoint=normalized.checkpoint,
         sim_state=SimStateSnapshot(
             gameplay=SnapshotGameplay(
                 mode_id=int(gameplay.mode_id),
-                quest_stage_major=int(gameplay.quest_stage_major),
-                quest_stage_minor=int(gameplay.quest_stage_minor),
+                quest_stage_major=(int(gameplay.quest_stage_major) if in_quest else 0),
+                quest_stage_minor=(int(gameplay.quest_stage_minor) if in_quest else 0),
                 perk_pending_count=int(gameplay.perk_pending_count),
                 perk_choices_dirty=bool(gameplay.perk_choices_dirty),
                 bonus_timers=gameplay.bonus_timers,
             ),
-            players=list(normalized.sim_state.players),
+            players=[
+                _normalized_capture_player(
+                    player,
+                    clip_size_raw_bits=clip_size_raw_bits,
+                    field=f"{field}.sim_state.players[{idx}]",
+                )
+                for idx, player in enumerate(normalized.sim_state.players)
+            ],
         ),
         entity_samples=normalized.entity_samples,
         rng_stream=rng_stream,
@@ -867,10 +913,11 @@ def finalize_frida_jsonl_to_traces(
                     case _SessionStartRow() as session_row:
                         if session_start is not None:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] duplicate session_start")
-                        if int(session_row.capture_format_version) != int(_SUPPORTED_CAPTURE_FORMAT_VERSION):
+                        if int(session_row.capture_format_version) not in _SUPPORTED_CAPTURE_FORMAT_VERSIONS:
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}] unsupported capture_format_version="
-                                f"{int(session_row.capture_format_version)}; expected {int(_SUPPORTED_CAPTURE_FORMAT_VERSION)}",
+                                f"{int(session_row.capture_format_version)}; "
+                                f"expected one of {sorted(_SUPPORTED_CAPTURE_FORMAT_VERSIONS)}",
                             )
                         if not str(session_row.session_id):
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].session_id must be non-empty")
@@ -989,6 +1036,7 @@ def finalize_frida_jsonl_to_traces(
                         _checkpoint, channels = _canonical_channels_payload(
                             channels=tick_row.channels,
                             local_tick=int(active_run.next_local_tick),
+                            clip_size_raw_bits=(int(session_start.capture_format_version) == 13),
                             field=f"{raw_path}.lines[{line_no}].channels",
                         )
                         _account_tick_rng_evidence(
