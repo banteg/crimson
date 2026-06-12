@@ -1,0 +1,168 @@
+{
+  "cases": [
+    {
+      "name": "gameplay_diff_capture.quest_3_3.run1",
+      "crd": "gameplay_diff_capture.quest_3_3.run1.crd",
+      "cdt": "gameplay_diff_capture.quest_3_3.run1.cdt",
+      "source_cdt": "/Users/banteg/syncthing/frida/gameplay_diff_capture.quest_3_3.run1.cdt",
+      "game_mode_id": 3,
+      "tick_count": 2001,
+      "windows": [
+        {
+          "start_tick": 0,
+          "end_tick": 63,
+          "tick_count": 64
+        },
+        {
+          "start_tick": 646,
+          "end_tick": 709,
+          "tick_count": 64
+        },
+        {
+          "start_tick": 1291,
+          "end_tick": 1354,
+          "tick_count": 64
+        },
+        {
+          "start_tick": 1937,
+          "end_tick": 2000,
+          "tick_count": 64
+        }
+      ],
+      "window_tick_count": 256,
+      "seed": 2621773362,
+      "seed_source": "crt_srand",
+      "seed_aligned": false,
+      "native_first_draw": {
+        "tick_index": 30,
+        "state_before_u32": 2781809152,
+        "value_15": 11105,
+        "caller": 4282989
+      },
+      "outside_draws_per_tick": 1
+    },
+    {
+      "name": "gameplay_diff_capture.rush.run1",
+      "crd": "gameplay_diff_capture.rush.run1.crd",
+      "cdt": "gameplay_diff_capture.rush.run1.cdt",
+      "source_cdt": "/Users/banteg/syncthing/frida/gameplay_diff_capture.rush.run1.cdt",
+      "game_mode_id": 2,
+      "tick_count": 568,
+      "windows": [
+        {
+          "start_tick": 0,
+          "end_tick": 63,
+          "tick_count": 64
+        },
+        {
+          "start_tick": 168,
+          "end_tick": 231,
+          "tick_count": 64
+        },
+        {
+          "start_tick": 336,
+          "end_tick": 399,
+          "tick_count": 64
+        },
+        {
+          "start_tick": 504,
+          "end_tick": 567,
+          "tick_count": 64
+        }
+      ],
+      "window_tick_count": 256,
+      "seed": 2621773362,
+      "seed_source": "crt_srand",
+      "seed_aligned": false,
+      "native_first_draw": {
+        "tick_index": 0,
+        "state_before_u32": 3846729293,
+        "value_15": 22656,
+        "caller": 4358562
+      },
+      "outside_draws_per_tick": 1
+    },
+    {
+      "name": "gameplay_diff_capture.survival.run1",
+      "crd": "gameplay_diff_capture.survival.run1.crd",
+      "cdt": "gameplay_diff_capture.survival.run1.cdt",
+      "source_cdt": "/Users/banteg/syncthing/frida/gameplay_diff_capture.survival.run1.cdt",
+      "game_mode_id": 1,
+      "tick_count": 8046,
+      "windows": [
+        {
+          "start_tick": 0,
+          "end_tick": 63,
+          "tick_count": 64
+        },
+        {
+          "start_tick": 2661,
+          "end_tick": 2724,
+          "tick_count": 64
+        },
+        {
+          "start_tick": 5321,
+          "end_tick": 5384,
+          "tick_count": 64
+        },
+        {
+          "start_tick": 7982,
+          "end_tick": 8045,
+          "tick_count": 64
+        }
+      ],
+      "window_tick_count": 256,
+      "seed": 379006640,
+      "seed_source": "run_setup_rng_state",
+      "seed_aligned": true,
+      "native_first_draw": {
+        "tick_index": 0,
+        "state_before_u32": 722012058,
+        "value_15": 31710,
+        "caller": 4228131
+      },
+      "outside_draws_per_tick": 1
+    },
+    {
+      "name": "gameplay_diff_capture.tutorial.run1",
+      "crd": "gameplay_diff_capture.tutorial.run1.crd",
+      "cdt": "gameplay_diff_capture.tutorial.run1.cdt",
+      "source_cdt": "/Users/banteg/syncthing/frida/gameplay_diff_capture.tutorial.run1.cdt",
+      "game_mode_id": 8,
+      "tick_count": 5715,
+      "windows": [
+        {
+          "start_tick": 0,
+          "end_tick": 93,
+          "tick_count": 94
+        },
+        {
+          "start_tick": 1884,
+          "end_tick": 1947,
+          "tick_count": 64
+        },
+        {
+          "start_tick": 3767,
+          "end_tick": 3830,
+          "tick_count": 64
+        },
+        {
+          "start_tick": 5651,
+          "end_tick": 5714,
+          "tick_count": 64
+        }
+      ],
+      "window_tick_count": 286,
+      "seed": 2621773362,
+      "seed_source": "crt_srand",
+      "seed_aligned": false,
+      "native_first_draw": {
+        "tick_index": 86,
+        "state_before_u32": 1138078062,
+        "value_15": 3088,
+        "caller": 4282989
+      },
+      "outside_draws_per_tick": 1
+    }
+  ]
+}

@@ -375,6 +375,7 @@ def _record_replay_to_trace_python(
     *,
     replay_path: Path,
     out_path: Path,
+    pre_tick_rand_draws: int = 0,
 ) -> TraceSummary:
     replay = load_replay_file(replay_path)
 
@@ -391,11 +392,17 @@ def _record_replay_to_trace_python(
     secondary_state = _EntityGenerationState()
     bonus_state = _EntityGenerationState()
 
+    # Native burns rand draws outside the hooked gameplay stream before each
+    # tick (the discarded per-frame `crt_rand()` in `game_frame_update`
+    # 0x0040c1c0, call site 0x0040cac7). Modeling them as pre-tick draws keeps
+    # the in-tick rng stream aligned with frida_original captures.
     driver = build_verify_playback_driver(
         replay,
         max_ticks=None,
         trace_rng=True,
         strict_rng_trace=True,
+        inter_tick_rand_draws=max(0, int(pre_tick_rand_draws)),
+        inter_tick_rand_draws_by_tick=({} if int(pre_tick_rand_draws) > 0 else None),
     )
 
     class _ReplayRecordObserver(PlaybackWalkObserver):
@@ -564,6 +571,7 @@ def record_replay_to_trace(
     out_path: Path,
     impl: Literal["python", "zig"] = "python",
     warnings_out: list[str] | None = None,
+    pre_tick_rand_draws: int = 0,
 ) -> TraceSummary:
     replay_path = Path(replay_path)
     out_path = Path(out_path)
@@ -573,8 +581,11 @@ def record_replay_to_trace(
         summary = _record_replay_to_trace_python(
             replay_path=replay_path,
             out_path=out_path,
+            pre_tick_rand_draws=pre_tick_rand_draws,
         )
         return summary
+    if int(pre_tick_rand_draws) > 0:
+        raise ValueError(f"pre_tick_rand_draws is only supported for the python recorder, not {impl!r}")
     if str(impl) == "zig":
         summary, warnings = _record_replay_to_trace_zig(
             replay_path=replay_path,

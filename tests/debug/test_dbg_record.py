@@ -32,9 +32,11 @@ def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Pa
         *,
         replay_path: Path,
         out_path: Path,
+        pre_tick_rand_draws: int = 0,
     ) -> object:
         captured["replay_path"] = replay_path
         captured["out_path"] = out_path
+        captured["pre_tick_rand_draws"] = pre_tick_rand_draws
         return sentinel
 
     monkeypatch.setattr(dbg_record, "_record_replay_to_trace_python", _fake_python)
@@ -50,12 +52,14 @@ def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Pa
         out_path=out_path,
         impl="python",
         warnings_out=warnings,
+        pre_tick_rand_draws=1,
     )
 
     assert result is sentinel
     assert warnings == []
     assert captured["replay_path"] == replay_path
     assert captured["out_path"] == out_path
+    assert captured["pre_tick_rand_draws"] == 1
 
 
 def test_record_replay_to_trace_dispatches_zig_impl_and_collects_warnings(monkeypatch, tmp_path: Path) -> None:
