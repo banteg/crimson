@@ -403,10 +403,14 @@ class ProjectilePool:
 
                     rule.pre_hit(update_ctx, proj, int(hit_idx))
 
+                    # Native increments the global shots-hit counter for any
+                    # owner (creature-owned splitter children included) when the
+                    # target is still at the alive sentinel; non-player owners
+                    # map to the player-1 global slot.
                     owner_player_index = proj.owner.player_index_in_bounds(len(runtime_state.shots_hit))
-                    if owner_player_index is not None and creature_lifecycle_is_alive(creature.lifecycle_stage):
+                    if creature_lifecycle_is_alive(creature.lifecycle_stage) and runtime_state.shots_hit:
                         shots_hit = runtime_state.shots_hit
-                        shots_hit[owner_player_index] += 1
+                        shots_hit[owner_player_index if owner_player_index is not None else 0] += 1
 
                     target = creature.pos
                     hit = ProjectileHit(

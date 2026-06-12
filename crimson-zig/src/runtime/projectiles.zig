@@ -389,9 +389,13 @@ pub const ProjectilePool = struct {
                     );
                 }
 
-                if (owner_player_idx) |idx| {
-                    if (idx < state.shots_hit.len and creature_lifecycle.isAlive(creatures.entries[hit_idx.?].lifecycle_stage)) {
-                        state.shots_hit[idx] += 1;
+                // Native increments the global shots-hit counter for any owner
+                // (creature-owned splitter children included); non-player owners
+                // map to the player-1 global slot.
+                {
+                    const hit_slot: usize = owner_player_idx orelse 0;
+                    if (hit_slot < state.shots_hit.len and creature_lifecycle.isAlive(creatures.entries[hit_idx.?].lifecycle_stage)) {
+                        state.shots_hit[hit_slot] += 1;
                     }
                 }
 
