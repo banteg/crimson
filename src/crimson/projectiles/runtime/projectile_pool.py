@@ -141,7 +141,8 @@ class ProjectilePool:
             float(f32(math.sin(float(angle_f32)) * 1.5)),
         )
         entry.type_id = type_id
-        entry.life_timer = 0.4
+        # Native stores the f32 literal 0.4.
+        entry.life_timer = float(f32(0.4))
         entry.reserved = 0.0
         entry.speed_scale = 1.0
         entry.travel_budget = float(travel_budget)

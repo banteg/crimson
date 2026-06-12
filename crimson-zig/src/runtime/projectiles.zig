@@ -86,7 +86,9 @@ pub const ProjectilePool = struct {
             .angle = angle,
             .pos = .{ .x = pos.x, .y = pos.y },
             .origin = .{ .x = pos.x, .y = pos.y },
-            .vel = runtime_helpers.directionFromHeading(angle).mul(1.5),
+            // Native writes vel = (cos(angle), sin(angle)) * 1.5 - the raw
+            // trig components, not the heading-rotated direction.
+            .vel = .{ .x = narrowF32(@cos(angle) * 1.5), .y = narrowF32(@sin(angle) * 1.5) },
             .type_id = type_id,
             .life_timer = 0.4,
             .reserved = 0.0,

@@ -28,7 +28,9 @@ def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
         ),
     )
 
-    assert player.experience == 760  # int(1000 - (pistol.reload_time=1.2) * 200)
+    # int(1000 - f32(1.2) * 200): the native f32 reload time (1.2000000476...)
+    # truncates the result to 759, not 760.
+    assert player.experience == 759
     assert any(entry.active for entry in state.projectiles.entries)
     assert player.weapon.ammo == -1
 
@@ -51,7 +53,9 @@ def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> 
         ),
     )
 
-    assert player.experience == 760  # int(1000 - (pistol.reload_time=1.2) * 200)
+    # int(1000 - f32(1.2) * 200): the native f32 reload time (1.2000000476...)
+    # truncates the result to 759, not 760.
+    assert player.experience == 759
     assert any(entry.active for entry in state.projectiles.entries)
     assert player.weapon.ammo == 4
 

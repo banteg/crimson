@@ -23,6 +23,7 @@ import msgspec
 
 from grim.sfx_map import SfxId
 
+from .math_parity import f32
 from .projectiles.types import ProjectileTemplateId
 
 
@@ -772,6 +773,19 @@ WEAPON_TABLE = [
         damage_scale=1.0,
         pellet_count=1,
     ),
+]
+
+# The native weapon table stores float32 fields; quantize the transcribed
+# decimal literals so raw state (reload timers, cooldowns) matches captures.
+WEAPON_TABLE = [
+    msgspec.structs.replace(
+        entry,
+        shot_cooldown=float(f32(entry.shot_cooldown)),
+        reload_time=float(f32(entry.reload_time)),
+        spread_heat_inc=float(f32(entry.spread_heat_inc)),
+        damage_scale=float(f32(entry.damage_scale)),
+    )
+    for entry in WEAPON_TABLE
 ]
 
 WEAPON_BY_ID: dict[WeaponId, Weapon] = {entry.weapon_id: entry for entry in WEAPON_TABLE}

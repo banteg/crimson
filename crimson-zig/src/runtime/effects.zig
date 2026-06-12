@@ -354,6 +354,22 @@ pub const EffectPool = struct {
         }
     }
 
+    pub const BurstCallers = struct {
+        rotation: rng_callers.Caller = rng_callers.effect_spawn_burst_rotation,
+        vel_x: rng_callers.Caller = rng_callers.effect_spawn_burst_vel_x,
+        vel_y: rng_callers.Caller = rng_callers.effect_spawn_burst_vel_y,
+        scale_step: rng_callers.Caller = rng_callers.effect_spawn_burst_scale_step,
+    };
+
+    // Native inlines the burst loop at the bonus-drop kill site, so those
+    // draws carry dedicated 0x0041FBxx return addresses.
+    pub const bonus_on_kill_burst_callers: BurstCallers = .{
+        .rotation = rng_callers.bonus_try_spawn_on_kill_burst_rotation,
+        .vel_x = rng_callers.bonus_try_spawn_on_kill_burst_vel_x,
+        .vel_y = rng_callers.bonus_try_spawn_on_kill_burst_vel_y,
+        .scale_step = rng_callers.bonus_try_spawn_on_kill_burst_scale_step,
+    };
+
     pub fn spawnBurst(
         self: *EffectPool,
         state: *state_mod.GameplayState,
@@ -364,13 +380,27 @@ pub const EffectPool = struct {
         scale_step: ?f32,
         color: Color,
     ) void {
+        self.spawnBurstWithCallers(state, pos, count, detail_preset, lifetime, scale_step, color, .{});
+    }
+
+    pub fn spawnBurstWithCallers(
+        self: *EffectPool,
+        state: *state_mod.GameplayState,
+        pos: state_mod.Vec2,
+        count: i32,
+        detail_preset: i32,
+        lifetime: f32,
+        scale_step: ?f32,
+        color: Color,
+        callers: BurstCallers,
+    ) void {
         var idx: i32 = 0;
         const safe_count = @max(count, 0);
         while (idx < safe_count) : (idx += 1) {
-            const rotation_draw = state.rng.randTagged(rng_callers.effect_spawn_burst_rotation);
-            const vel_x_draw = state.rng.randTagged(rng_callers.effect_spawn_burst_vel_x);
-            const vel_y_draw = state.rng.randTagged(rng_callers.effect_spawn_burst_vel_y);
-            const scale_step_draw = if (scale_step == null) state.rng.randTagged(rng_callers.effect_spawn_burst_scale_step) else 0;
+            const rotation_draw = state.rng.randTagged(callers.rotation);
+            const vel_x_draw = state.rng.randTagged(callers.vel_x);
+            const vel_y_draw = state.rng.randTagged(callers.vel_y);
+            const scale_step_draw = if (scale_step == null) state.rng.randTagged(callers.scale_step) else 0;
             self.spawnBurstParticle(
                 pos,
                 rotation_draw,

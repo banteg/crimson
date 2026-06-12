@@ -4,6 +4,7 @@ from collections.abc import Callable
 
 import msgspec
 
+from ..math_parity import f32
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..sim.state_types import GameplayState, PlayerState, WeaponSlot
@@ -130,5 +131,6 @@ def player_start_reload(player: PlayerState, state: GameplayState) -> None:
     if state.bonuses.weapon_power_up > 0.0:
         reload_time *= 0.6
 
-    player.weapon.reload_timer = max(0.0, reload_time)
+    # Native reload_timer is a float32 field; spill once on the store.
+    player.weapon.reload_timer = float(f32(max(0.0, reload_time)))
     player.weapon.reload_timer_max = player.weapon.reload_timer

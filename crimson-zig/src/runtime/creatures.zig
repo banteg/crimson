@@ -3550,7 +3550,7 @@ fn emitDeathSideEffects(
         world_size,
     );
     if (spawned_bonus) |_| {
-        effects.spawnBurst(
+        effects.spawnBurstWithCallers(
             state,
             death_pos,
             16,
@@ -3558,6 +3558,7 @@ fn emitDeathSideEffects(
             0.4,
             null,
             .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+            effects_mod.EffectPool.bonus_on_kill_burst_callers,
         );
     }
     if (state.bonuses.freeze > 0.0) {

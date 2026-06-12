@@ -4,6 +4,7 @@ from crimson.gameplay import (
     GameplayState,
     player_update,
 )
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.projectiles.runtime import ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
@@ -28,7 +29,8 @@ def test_sharpshooter_forces_spread_heat_and_slows_firing() -> None:
 
     weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.ASSAULT_RIFLE)
     base_cooldown = float(weapon.shot_cooldown)
-    expected_cooldown = base_cooldown * 1.05
+    # Native stores the scaled cooldown as f32.
+    expected_cooldown = float(f32(base_cooldown * 1.05))
 
     fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), dt=0.0, state=state))
     assert_float_close(player.weapon.shot_cooldown, expected_cooldown)
