@@ -189,23 +189,19 @@ def quest_post_step(ctx: PostStepContext, spawn: QuestSpawnState) -> None:
             state.rng,
         )
 
-    any_alive_after = any(player.health > 0.0 for player in ctx.world.players)
-    if any_alive_after:
-        completion_ms, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
-            spawn.completion_transition_ms,
-            frame_dt_ms=dt_ms,
-            creatures_none_active=creatures_none_active,
-            spawn_table_empty=spawn_table_empty_now,
-        )
-        spawn.completion_transition_ms = float(completion_ms)
-        spawn.completed = bool(completed)
-        spawn.play_hit_sfx = bool(play_hit_sfx)
-        spawn.play_completion_music = bool(play_completion_music)
-    else:
-        spawn.completion_transition_ms = -1.0
-        spawn.completed = False
-        spawn.play_hit_sfx = False
-        spawn.play_completion_music = False
+    # Native quest_mode_update has no player-alive gate on the completion
+    # transition: if the timer crosses 2500 ms while the death animation is
+    # still playing, the quest completes despite the player dying.
+    completion_ms, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
+        spawn.completion_transition_ms,
+        frame_dt_ms=dt_ms,
+        creatures_none_active=creatures_none_active,
+        spawn_table_empty=spawn_table_empty_now,
+    )
+    spawn.completion_transition_ms = float(completion_ms)
+    spawn.completed = bool(completed)
+    spawn.play_hit_sfx = bool(play_hit_sfx)
+    spawn.play_completion_music = bool(play_completion_music)
 
 
 def rush_input_transform(inputs: list[PlayerInput]) -> list[PlayerInput]:

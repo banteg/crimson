@@ -545,31 +545,19 @@ pub fn stepTick(
                 context.state.time_scale_active = false;
             }
 
-            var any_alive_after = false;
-            for (players) |player| {
-                if (player.health > 0.0) {
-                    any_alive_after = true;
-                    break;
-                }
-            }
-
-            if (any_alive_after) {
-                const quest_completion = spawn_mod.tickQuestCompletionTransition(
-                    context.quest_completion_transition_ms,
-                    dt_sim_ms,
-                    context.quest_creatures_none_active,
-                    spawn_table_empty_now,
-                );
-                context.quest_completion_transition_ms = quest_completion.completion_transition_ms;
-                context.quest_completed = quest_completion.completed;
-                context.quest_play_hit_sfx = quest_completion.play_hit_sfx;
-                context.quest_play_completion_music = quest_completion.play_completion_music;
-            } else {
-                context.quest_completion_transition_ms = -1.0;
-                context.quest_completed = false;
-                context.quest_play_hit_sfx = false;
-                context.quest_play_completion_music = false;
-            }
+            // Native quest_mode_update has no player-alive gate on the
+            // completion transition: if the timer crosses 2500 ms while the
+            // death animation is still playing, the quest completes anyway.
+            const quest_completion = spawn_mod.tickQuestCompletionTransition(
+                context.quest_completion_transition_ms,
+                dt_sim_ms,
+                context.quest_creatures_none_active,
+                spawn_table_empty_now,
+            );
+            context.quest_completion_transition_ms = quest_completion.completion_transition_ms;
+            context.quest_completed = quest_completion.completed;
+            context.quest_play_hit_sfx = quest_completion.play_hit_sfx;
+            context.quest_play_completion_music = quest_completion.play_completion_music;
 
             frame.rng_after_stage_spawns = context.state.rng.state;
             frame.rng_after_wave_spawns = context.state.rng.state;
