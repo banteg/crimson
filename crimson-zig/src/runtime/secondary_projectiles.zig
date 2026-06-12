@@ -316,7 +316,13 @@ pub const SecondaryProjectilePool = struct {
             if (entry.trail_timer < 0.0) {
                 const direction = runtime_helpers.directionFromHeading(entry.angle);
                 const spawn_pos = state_mod.Vec2.sub(entry.pos, direction.mul(9.0));
-                const trail_velocity = runtime_helpers.directionFromHeading(entry.angle + native_math.native_pi).mul(90.0);
+                // Native bug: both trail velocity components come from cosine
+                // (fcos with no fsin), so the smoke drifts diagonally.
+                const trail_cos = @cos(entry.angle + narrowF32(native_math.native_half_pi));
+                const trail_velocity: state_mod.Vec2 = .{
+                    .x = narrowF32(trail_cos) * 90.0,
+                    .y = narrowF32(trail_cos * 90.0),
+                };
                 _ = sprite_effects.spawn(
                     state,
                     spawn_pos,

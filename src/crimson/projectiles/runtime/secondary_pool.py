@@ -16,7 +16,7 @@ from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects import EffectPool, FxQueue, SpriteEffectPool
 from ...effects_atlas import EffectId
-from ...math_parity import f32
+from ...math_parity import NATIVE_HALF_PI, f32
 from ...owner_ref import OwnerRef
 from ...rng_caller_static import RngCallerStatic
 from ..types import (
@@ -317,7 +317,10 @@ class SecondaryProjectilePool:
             if float(entry.trail_timer) < 0.0:
                 direction = Vec2.from_heading(entry.angle)
                 spawn_pos = entry.pos - direction * 9.0
-                trail_velocity = Vec2.from_heading(entry.angle + math.pi) * 90.0
+                # Native bug: both trail velocity components come from cosine
+                # (fcos with no fsin), so the smoke drifts diagonally.
+                trail_cos = math.cos(float(f32(entry.angle)) + NATIVE_HALF_PI)
+                trail_velocity = Vec2(float(f32(trail_cos)) * 90.0, float(f32(trail_cos * 90.0)))
                 if sprite_effects is not None:
                     sprite_effects.spawn(
                         pos=spawn_pos,
