@@ -485,9 +485,10 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
 
 
 def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
+    # Native has no aliveness re-check here: a creature plague-killed earlier
+    # in the same tick can still bite (the alive branch was chosen at tick
+    # start), drawing the attack-SFX rand and damaging the player.
     creature = ctx.creature
-    if not creature_lifecycle_is_alive(creature.lifecycle_stage):
-        return
     if float(creature.size) <= 16.0:
         return
     if float(ctx.state.bonuses.energizer) > 0.0:
@@ -555,17 +556,24 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
 
 
 def _creature_interaction_plaguebearer_contact_flag(ctx: _CreatureInteractionCtx) -> None:
+    # Native nests this inside the contact gates: size > 16, distance < 30,
+    # target player alive, and no Energizer.
+    creature = ctx.creature
+    if float(creature.size) <= 16.0:
+        return
+    if ctx.contact_dist_sq >= 30.0 * 30.0:
+        return
+    if float(ctx.player.health) <= 0.0:
+        return
     if float(ctx.state.bonuses.energizer) > 0.0:
         return
 
-    creature = ctx.creature
     if (
         bool(ctx.player.plaguebearer_active)
         and float(creature.hp) < 150.0
         and int(ctx.state.plaguebearer_infection_count) < 0x32
     ):
-        if ctx.contact_dist_sq < 30.0 * 30.0:
-            creature.plague_infected = True
+        creature.plague_infected = True
 
 
 def _creature_interaction_contact_kill_small(ctx: _CreatureInteractionCtx) -> None:

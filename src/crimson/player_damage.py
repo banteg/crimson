@@ -93,7 +93,10 @@ def player_take_damage(
     lethal_hit = float(player.health) < 0.0
     if not state.preserve_bugs and float(player.health) == 0.0:
         lethal_hit = True
-    if not dodged and lethal_hit and dt is not None and float(dt) > 0.0:
+    # Native's dodge proc jumps past the damage stores but still runs the
+    # health branch: a dodged hit on an already-dead player keeps decrementing
+    # the death-animation timer.
+    if lethal_hit and dt is not None and float(dt) > 0.0:
         player.death_timer -= float(dt) * 28.0
 
     # Native emits pain/death VO before heading jitter + low-health timer RNG work.
