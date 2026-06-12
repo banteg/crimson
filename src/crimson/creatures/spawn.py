@@ -1222,7 +1222,8 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     c.tint = (tint_r, tint_g, tint_b, tint_a)
 
     # contact_damage = size * 0.0952381
-    c.contact_damage = float(c.size or 0.0) * (2.0 / 21.0)
+    # Native multiplies by the f32 literal 0.0952381 (one ulp above 2/21).
+    c.contact_damage = float(c.size or 0.0) * float(f32(0.0952381))
 
     # reward_value is always 0.0 at this point in the original.
     c.reward_value = (

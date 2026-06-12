@@ -3,7 +3,7 @@ from __future__ import annotations
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
-from crimson.math_parity import NATIVE_HALF_PI
+from crimson.math_parity import NATIVE_HALF_PI, f32
 from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close
@@ -61,5 +61,6 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
         RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
         RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_2_PHASE_SEED,
     ]
-    assert_float_close(child1.reward_value, parent.reward_value * (2.0 / 3.0))
-    assert_float_close(child2.reward_value, parent.reward_value * (2.0 / 3.0))
+    # Native multiplies by the f32 literal 0.6666667.
+    assert_float_close(child1.reward_value, parent.reward_value * float(f32(0.6666667)))
+    assert_float_close(child2.reward_value, parent.reward_value * float(f32(0.6666667)))

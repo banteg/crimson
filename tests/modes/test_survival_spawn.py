@@ -23,8 +23,8 @@ def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
     assert_float_close(c.move_speed, float(f32(0.9)))
     assert_float_close(c.health, 64.0)
     assert_float_close(c.max_health, 64.0)
-    assert_float_close(c.contact_damage, 4.19047619047619)
-    assert_float_close(c.reward_value, 36.36190466653733)
+    assert_float_close(c.contact_damage, 4.190476268529892)
+    assert_float_close(c.reward_value, 36.3619047164917)
 
     assert c.tint is not None
     assert_float_close(c.tint[0], 0.9)
@@ -184,12 +184,12 @@ def test_survival_spawn_creature_uses_exact_native_callers(
     ),
     [
         # Rare stat overrides (color-coded variants).
-        (0x66, 47.0, 4.476190476190476, 65.0, 256.0, 0.9, 0.4, 0.4, 0xFF51C012),
-        (0x51, 57.0, 5.428571428571428, 85.0, 336.0, 0.4, 0.9, 0.4, 0xE157C2DC),
-        (0x6A, 56.0, 5.333333333333333, 125.0, 416.0, 0.4, 0.4, 0.9, 0x444FED00),
+        (0x66, 47.0, 4.476190559566021, 65.0, 256.0, 0.9, 0.4, 0.4, 0xFF51C012),
+        (0x51, 57.0, 5.428571529686451, 85.0, 336.0, 0.4, 0.9, 0.4, 0xE157C2DC),
+        (0x6A, 56.0, 5.333333432674408, 125.0, 416.0, 0.4, 0.4, 0.9, 0x444FED00),
         # Rare health/size boosts (note: contact_damage is NOT recomputed after the size override).
-        (0x422, 80.0, 4.857142857142857, 287.0, 480.0, 0.84, 0.24, 0.89, 0xEC494E99),
-        (0x43, 85.0, 4.857142857142857, 2290.0, 720.0, 0.94, 0.84, 0.29, 0x6B953591),
+        (0x422, 80.0, 4.857142947614193, 287.0, 480.0, 0.84, 0.24, 0.89, 0xEC494E99),
+        (0x43, 85.0, 4.857142947614193, 2290.0, 720.0, 0.94, 0.84, 0.29, 0x6B953591),
     ],
 )
 def test_survival_spawn_creature_rare_variants(

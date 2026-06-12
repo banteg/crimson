@@ -1640,8 +1640,8 @@ class CreaturePool:
 
         if (creature.flags & CreatureFlags.SPLIT_ON_DEATH) and float(creature.size) > 35.0:
             for heading_offset, phase_seed_caller in (
-                (-math.pi / 2.0, RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_1_PHASE_SEED),
-                (math.pi / 2.0, RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_2_PHASE_SEED),
+                (-float(NATIVE_HALF_PI), RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_1_PHASE_SEED),
+                (float(NATIVE_HALF_PI), RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_2_PHASE_SEED),
             ):
                 child_idx = self._alloc_slot()
                 if child_idx is None:
@@ -1652,10 +1652,12 @@ class CreaturePool:
                 rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED)
                 child = msgspec.structs.replace(creature)
                 child.phase_seed = float(int(rng.rand_tagged(phase_seed_caller)) & 0xFF)
-                child.heading = _wrap_angle(float(creature.heading) + float(heading_offset))
-                child.target_heading = float(child.heading)
+                # Native stores `heading +- 1.5707964f` unwrapped and leaves
+                # `target_heading` as the parent's stale copy.
+                child.heading = float(f32(float(creature.heading) + float(heading_offset)))
                 child.hp = float(creature.max_hp) * 0.25
-                child.reward_value = float(child.reward_value) * (2.0 / 3.0)
+                # Native multiplies by the f32 literal 0.6666667.
+                child.reward_value = float(child.reward_value) * float(f32(0.6666667))
                 child.size = float(child.size) - 8.0
                 child.move_speed = float(child.move_speed) + 0.1
                 child.contact_damage = float(child.contact_damage) * 0.7
