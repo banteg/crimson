@@ -263,27 +263,28 @@ class SecondaryProjectilePool:
             if not isinstance(rule, (RocketRule, HomingRocketRule, RocketMinigunRule)):
                 continue
 
-            # Move.
-            entry.pos = entry.pos + entry.vel * dt
+            # Move. Native keeps pos/vel as f32 fields: `pos += f32(dt * vel)`.
+            entry.pos = Vec2(
+                float(f32(float(entry.pos.x) + float(f32(float(dt) * float(entry.vel.x))))),
+                float(f32(float(entry.pos.y) + float(f32(float(dt) * float(entry.vel.y))))),
+            )
 
             # Update velocity + countdown.
-            speed_mag = entry.vel.length()
+            speed_mag = math.sqrt(float(entry.vel.x) * float(entry.vel.x) + float(entry.vel.y) * float(entry.vel.y))
             match rule:
                 case RocketRule(
                     accel_factor_scale=accel_factor_scale, speed_cap=speed_cap, ttl_decay_scale=ttl_decay_scale,
-                ):
-                    if speed_mag < float(speed_cap):
-                        factor = 1.0 + dt * float(accel_factor_scale)
-                        entry.vel = entry.vel * factor
-                    entry.speed = float(f32(float(entry.speed) - float(dt) * float(ttl_decay_scale)))
-                case RocketMinigunRule(
+                ) | RocketMinigunRule(
                     accel_factor_scale=accel_factor_scale,
                     speed_cap=speed_cap,
                     ttl_decay_scale=ttl_decay_scale,
                 ):
                     if speed_mag < float(speed_cap):
-                        factor = 1.0 + dt * float(accel_factor_scale)
-                        entry.vel = entry.vel * factor
+                        factor = float(f32(float(dt) * float(accel_factor_scale) + 1.0))
+                        entry.vel = Vec2(
+                            float(f32(factor * float(entry.vel.x))),
+                            float(f32(factor * float(entry.vel.y))),
+                        )
                     entry.speed = float(f32(float(entry.speed) - float(dt) * float(ttl_decay_scale)))
                 case HomingRocketRule(
                     target_accel=target_accel, max_velocity=max_velocity, ttl_decay_scale=ttl_decay_scale,
@@ -300,14 +301,42 @@ class SecondaryProjectilePool:
 
                     if 0 <= target_id < len(creatures):
                         target = creatures[target_id]
-                        to_target = target.pos - entry.pos
-                        target_dir, dist = to_target.normalized_with_length()
-                        if dist > 1e-6:
-                            entry.angle = to_target.to_heading()
-                            accel = target_dir * (dt * float(target_accel))
-                            next_velocity = entry.vel + accel
-                            if next_velocity.length() <= float(max_velocity):
-                                entry.vel = next_velocity
+                        # Native steering: angle = atan2(pos - target) kept in
+                        # extended precision; the stored f32 angle is atan - pi/2.
+                        # vel_x adds cos((atan - pi/2) - pi/2) from the extended
+                        # angle; vel_y (and the over-cap subtraction for both
+                        # components) recompute from the stored f32 angle, so the
+                        # add-then-subtract is not an exact identity.
+                        atan_ext = math.atan2(
+                            float(entry.pos.y) - float(target.pos.y),
+                            float(entry.pos.x) - float(target.pos.x),
+                        )
+                        entry.angle = float(f32(atan_ext - float(NATIVE_HALF_PI)))
+                        accel_scale = float(dt) * float(target_accel)
+                        entry.vel = Vec2(
+                            float(
+                                f32(
+                                    math.cos((atan_ext - float(NATIVE_HALF_PI)) - float(NATIVE_HALF_PI))
+                                    * accel_scale
+                                    + float(entry.vel.x),
+                                ),
+                            ),
+                            float(
+                                f32(
+                                    math.sin(float(entry.angle) - float(NATIVE_HALF_PI)) * accel_scale
+                                    + float(entry.vel.y),
+                                ),
+                            ),
+                        )
+                        speed_after = math.sqrt(
+                            float(entry.vel.x) * float(entry.vel.x) + float(entry.vel.y) * float(entry.vel.y),
+                        )
+                        if speed_after > float(max_velocity):
+                            heading = float(entry.angle) - float(NATIVE_HALF_PI)
+                            entry.vel = Vec2(
+                                float(f32(float(entry.vel.x) - math.cos(heading) * accel_scale)),
+                                float(f32(float(entry.vel.y) - math.sin(heading) * accel_scale)),
+                            )
 
                     entry.speed = float(f32(float(entry.speed) - float(dt) * float(ttl_decay_scale)))
 

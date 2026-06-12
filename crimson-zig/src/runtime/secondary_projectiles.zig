@@ -1,3 +1,5 @@
+const std = @import("std");
+
 const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
@@ -257,21 +259,22 @@ pub const SecondaryProjectilePool = struct {
                 continue;
             }
 
+            // Native rounds the dt * vel product to f32 before the add.
             entry.pos = .{
-                .x = narrowF32(entry.pos.x + entry.vel.x * dt_f32),
-                .y = narrowF32(entry.pos.y + entry.vel.y * dt_f32),
+                .x = narrowF32(entry.pos.x + narrowF32(dt_f32 * entry.vel.x)),
+                .y = narrowF32(entry.pos.y + narrowF32(dt_f32 * entry.vel.y)),
             };
 
             const speed_mag = entry.vel.length();
             if (entry.type_id == SecondaryProjectileTypeId.rocket) {
                 if (speed_mag < 500.0) {
-                    const factor = narrowF32(1.0 + dt_f32 * 3.0);
+                    const factor = narrowF32(dt_f32 * 3.0 + 1.0);
                     entry.vel = entry.vel.mul(factor);
                 }
                 entry.speed = narrowF32(entry.speed - dt_f32);
             } else if (entry.type_id == SecondaryProjectileTypeId.rocket_minigun) {
                 if (speed_mag < 600.0) {
-                    const factor = narrowF32(1.0 + dt_f32 * 4.0);
+                    const factor = narrowF32(dt_f32 * 4.0 + 1.0);
                     entry.vel = entry.vel.mul(factor);
                 }
                 entry.speed = narrowF32(entry.speed - dt_f32);
@@ -292,20 +295,30 @@ pub const SecondaryProjectilePool = struct {
 
                 if (target_id >= 0 and target_id < creatures.entries.len) {
                     const target = creatures.entries[@intCast(target_id)];
-                    const to_target = state_mod.Vec2.sub(target.pos, entry.pos);
-                    const dist = to_target.length();
-                    if (dist > 1e-6) {
-                        entry.angle = narrowF32(to_target.toHeading());
-                        const inv_dist = narrowF32(1.0 / dist);
-                        const target_dir = to_target.mul(inv_dist);
-                        const accel = target_dir.mul(narrowF32(dt_f32 * 800.0));
-                        const next_velocity = state_mod.Vec2.add(entry.vel, accel);
-                        if (next_velocity.length() <= 350.0) {
-                            entry.vel = .{
-                                .x = narrowF32(next_velocity.x),
-                                .y = narrowF32(next_velocity.y),
-                            };
-                        }
+                    // Native steering: angle = atan2(pos - target) kept in
+                    // extended precision; the stored f32 angle is atan - pi/2.
+                    // vel_x adds cos((atan - pi/2) - pi/2) from the extended
+                    // angle; vel_y (and the over-cap subtraction for both
+                    // components) recompute from the stored f32 angle, so the
+                    // add-then-subtract is not an exact identity.
+                    const half_pi: f32 = native_math.roundF32(native_math.native_half_pi);
+                    const atan_ext: f64 = std.math.atan2(
+                        @as(f64, entry.pos.y) - @as(f64, target.pos.y),
+                        @as(f64, entry.pos.x) - @as(f64, target.pos.x),
+                    );
+                    entry.angle = @floatCast(atan_ext - @as(f64, half_pi));
+                    const accel_scale: f64 = @as(f64, dt_f32) * 800.0;
+                    entry.vel = .{
+                        .x = @floatCast(@cos(atan_ext - @as(f64, half_pi) - @as(f64, half_pi)) * accel_scale + @as(f64, entry.vel.x)),
+                        .y = @floatCast(@sin(@as(f64, entry.angle) - @as(f64, half_pi)) * accel_scale + @as(f64, entry.vel.y)),
+                    };
+                    const speed_after = @sqrt(@as(f64, entry.vel.x) * @as(f64, entry.vel.x) + @as(f64, entry.vel.y) * @as(f64, entry.vel.y));
+                    if (speed_after > 350.0) {
+                        const heading: f64 = @as(f64, entry.angle) - @as(f64, half_pi);
+                        entry.vel = .{
+                            .x = @floatCast(@as(f64, entry.vel.x) - @cos(heading) * accel_scale),
+                            .y = @floatCast(@as(f64, entry.vel.y) - @sin(heading) * accel_scale),
+                        };
                     }
                 }
                 entry.speed = narrowF32(entry.speed - dt_f32 * 0.5);

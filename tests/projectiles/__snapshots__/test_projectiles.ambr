@@ -175,7 +175,7 @@
       'idx': 0,
       'impulse': list([
         0.0,
-        -1170.0,
+        -1169.999924,
       ]),
       'owner': dict({
         'index': 0,
@@ -230,7 +230,7 @@
     ]),
     'entry': dict({
       'active': True,
-      'angle': 1.572696,
+      'angle': -4.710489,
       'detonation_scale': 1.0,
       'detonation_t': 0.0,
       'pos': list([
@@ -242,7 +242,7 @@
       'type_id': 2,
       'vel': list([
         7.999986,
-        -189.9848,
+        -189.984802,
       ]),
     }),
   })
