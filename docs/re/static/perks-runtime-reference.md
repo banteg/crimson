@@ -97,11 +97,13 @@ Notes:
 ### Original
 
 - `perks_update_effects` (0x00406b40): selects an aim target via `creature_find_in_radius(..., 12.0, 0)` and runs the timer/FX emission.
+- The flare itself only spawns FX, but the five `fx_spawn_particle` flames (intensities 0.8/0.6/0.4/0.3/0.2) deal damage downstream: the particle loop in `projectile_update` (0x00420b90) calls `creature_apply_damage(idx, intensity * 10.0, 4, ...)` on contact and darkens the creature tint, so Pyrokinetic damages creatures.
 
 ### Rewrite
 
 - `src/crimson/perks/runtime/effects.py`: `perks_update_effects()`.
 - Pyrokinetic step: `src/crimson/perks/impl/pyrokinetic_effect.py`: `update_pyrokinetic()`.
+- Particle contact damage: `src/crimson/effects.py`: `ParticlePool.update()` (same path as flame weapons).
 
 ## 7. Instant Winner (`PerkId.INSTANT_WINNER`)
 

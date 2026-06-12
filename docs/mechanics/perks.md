@@ -50,8 +50,11 @@ long as the player keeps moving. Stopping causes speed to decay rapidly.
 
 While the crosshair is near a creature, Pyrokinetic decrements that creature's
 shared collision timer. When it wraps, the timer resets to 0.5 seconds and a
-heat flare triggers: a burst of particles and a random decal at the target.
-Purely visual; no damage.
+heat flare triggers: a burst of five flames and a scorch decal at the target.
+The flames are the same fire particles flame weapons spit, and they hurt: each
+one burns the first creature it touches for up to 8 damage (hotter flames hit
+harder, and they cool as they fly), charring it visibly darker. Parking the
+crosshair on a creature roasts it for up to ~23 damage per flare.
 
 ## 7. Instant Winner
 
