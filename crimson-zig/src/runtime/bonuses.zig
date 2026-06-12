@@ -765,9 +765,9 @@ fn applyBonus(
             player.weapon.ammo = @floatFromInt(player.weapon.clip_size);
         },
         .weapon => {
-            if (perkActive(player.*, PerkId.alternate_weapon) and player.alt_weapon == null) {
-                player.alt_weapon = player.weapon;
-            }
+            // Native weapon pickup is just weapon_assign_player: the old
+            // weapon is never stashed (the alt slot is preloaded with a
+            // pistol at player reset).
             const weapon_id = weapon_data.weaponIdFromInt(effective_amount);
             player_runtime.weaponAssignPlayerWithState(player, weapon_id, state);
         },

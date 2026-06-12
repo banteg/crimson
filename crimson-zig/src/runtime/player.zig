@@ -52,9 +52,10 @@ pub fn weaponAssignPlayer(
     player.weapon.clip_size = clip_size;
     player.weapon.ammo = @floatFromInt(clip_size);
     player.weapon_reset_latch = 0;
-    player.weapon.reload_active = false;
+    // Native resets only ammo, the reset latch, shot cooldown, reload timer,
+    // and aux timer; reload_active and reload_timer_max keep their previous
+    // values across a weapon pickup mid-reload.
     player.weapon.reload_timer = 0.0;
-    player.weapon.reload_timer_max = 0.0;
     player.weapon.shot_cooldown = 0.0;
     player.aux_timer = 2.0;
 }
