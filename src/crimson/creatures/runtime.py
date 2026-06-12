@@ -1212,13 +1212,15 @@ class CreaturePool:
                 creature.attack_cooldown -= dt
 
             # Native radioactive contact pulse runs after movement/AI/cooldown
-            # synthesis inside the live-creature branch.
-            if players and perk_active(players[0], PerkId.RADIOACTIVE):
-                radioactive_player = players[0]
-                dist = (creature.pos - radioactive_player.pos).length()
+            # synthesis inside the live-creature branch. The distance is measured
+            # to the creature's target player, the perk gate reads the global
+            # count (any player), the kill XP is credited to player 1, and the
+            # timer-fire requires the creature to still be alive (hp > 0).
+            if players and any(perk_active(p, PerkId.RADIOACTIVE) for p in players):
+                dist = (creature.pos - player.pos).length()
                 if dist < 100.0:
                     creature.collision_timer -= float(dt) * 1.5
-                    if creature.collision_timer < 0.0:
+                    if creature.collision_timer < 0.0 and float(creature.hp) > 0.0:
                         creature.collision_timer = CONTACT_DAMAGE_PERIOD
                         creature.hp -= (100.0 - dist) * 0.3
                         if fx_queue is not None:
@@ -1228,8 +1230,8 @@ class CreaturePool:
                             if creature.type_id == CreatureTypeId.LIZARD:
                                 creature.hp = 1.0
                             else:
-                                radioactive_player.experience = int(
-                                    float(radioactive_player.experience) + float(creature.reward_value),
+                                players[0].experience = int(
+                                    float(players[0].experience) + float(creature.reward_value),
                                 )
                                 creature.lifecycle_stage -= float(dt)
 

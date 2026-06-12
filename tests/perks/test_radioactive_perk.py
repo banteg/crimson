@@ -120,3 +120,69 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
     assert_float_close(creature.lifecycle_stage, CREATURE_LIFECYCLE_ALIVE)
     assert_float_close(creature.collision_timer, 0.5)
     assert fx_queue.count == 1
+
+
+def test_radioactive_pulse_measures_distance_to_target_player() -> None:
+    dt = 0.2
+    state = GameplayState()
+
+    # Only player 1 owns the perk (native gates on the global count), while the
+    # creature targets player 2 and is only in range of player 2.
+    player1 = PlayerState(index=0, pos=Vec2(900.0, 900.0), health=100.0)
+    player1.perk_counts[int(PerkId.RADIOACTIVE)] = 1
+    player2 = PlayerState(index=1, pos=Vec2(), health=100.0)
+
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = True
+    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.pos = Vec2(46.0, 0.0)
+    creature.hp = 50.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.collision_timer = 0.1
+    creature.target_player = 1
+
+    pool.update(
+        dt,
+        options=make_creature_update_options(
+            state=state,
+            players=[player1, player2],
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        ),
+    )
+
+    assert creature.hp < 50.0
+    # Kill XP is credited to player 1 (native writes the global _player_experience).
+    assert player2.experience == 0
+
+
+def test_radioactive_pulse_requires_living_creature() -> None:
+    dt = 0.2
+    state = GameplayState()
+
+    player = PlayerState(index=0, pos=Vec2())
+    player.perk_counts[int(PerkId.RADIOACTIVE)] = 1
+
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = True
+    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.pos = Vec2(46.0, 0.0)
+    creature.hp = -1.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.collision_timer = 0.1
+    experience_before = player.experience
+
+    pool.update(
+        dt,
+        options=make_creature_update_options(
+            state=state,
+            players=[player],
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        ),
+    )
+
+    # Native requires hp > 0 at timer fire: an already-dead creature is not
+    # pulsed again (no XP re-award, no collision timer reset).
+    assert player.experience == experience_before
+    assert creature.collision_timer != 0.5

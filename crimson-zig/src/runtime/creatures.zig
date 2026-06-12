@@ -2102,11 +2102,13 @@ pub const CreaturePool = struct {
                 creature.attack_cooldown = narrowF32(creature.attack_cooldown - dt_f32);
             }
 
-            if (perkActive(player, PerkId.radioactive)) {
+            // Native gates on the global perk count and only fires the pulse
+            // while the creature is still alive (hp > 0).
+            if (anyPlayerHasPerk(players, PerkId.radioactive)) {
                 const dist = state_mod.Vec2.sub(creature.pos, player.pos).length();
                 if (dist < 100.0) {
                     creature.collision_timer -= dt_f32 * 1.5;
-                    if (creature.collision_timer < 0.0) {
+                    if (creature.collision_timer < 0.0 and creature.hp > 0.0) {
                         creature.collision_timer = plague_collision_period;
                         const pulse_damage = (100.0 - dist) * 0.3;
                         creature.hp = narrowF32(creature.hp - pulse_damage);
