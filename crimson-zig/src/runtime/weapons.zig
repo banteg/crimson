@@ -242,8 +242,10 @@ pub fn stepPlayerForTickWithEffects(
     }
 
     const has_alt_weapon_perk = perks.perkActive(player, PerkId.alternate_weapon);
+    // Native gates on grim_is_key_active (key held), so holding reload chains
+    // reloads back-to-back as each one completes.
     const manual_reload_allowed =
-        input_flags.reload_pressed and
+        (input_flags.reload_down or input_flags.reload_pressed) and
         !state.demo_mode_active and
         !has_alt_weapon_perk and
         input_flags.move_mode != movement_control_mouse_point_click and

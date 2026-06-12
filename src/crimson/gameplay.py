@@ -914,8 +914,10 @@ def player_update(
 
     has_alt_weapon_perk = perk_active(player, PerkId.ALTERNATE_WEAPON)
     single_player_mode = (len(players) == 1) if players is not None else True
+    # Native gates on `grim_is_key_active` (key held), so holding reload chains
+    # reloads back-to-back as each one completes.
     manual_reload_allowed = (
-        bool(input_state.reload_pressed)
+        bool(input_state.reload_down or input_state.reload_pressed)
         and (not state.demo_mode_active)
         and (not has_alt_weapon_perk)
         and move_mode != MovementControlType.MOUSE_POINT_CLICK

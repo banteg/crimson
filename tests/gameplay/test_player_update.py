@@ -1306,3 +1306,24 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     chained = pool.entries[int(state.shock_chain_projectile_id)]
     expected_angle = float(f32(math.atan2(far_y, 50.0) + math.pi / 2.0))
     assert_float_close(chained.angle, expected_angle)
+
+
+def test_player_update_held_reload_key_starts_reload_without_edge() -> None:
+    # Native gates manual reload on grim_is_key_active (key held), so a held
+    # reload key chains reloads back-to-back as each one completes.
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(50.0, 50.0),
+        weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, clip_size=10, ammo=10),
+    )
+
+    player_update(
+        player,
+        PlayerInput(aim=Vec2(51.0, 50.0), reload_down=True),
+        0.1,
+        state,
+    )
+
+    assert player.weapon.reload_active is True
+    assert player.weapon.reload_timer > 0.0
