@@ -4,14 +4,6 @@ const rng_callers = @import("rng_caller_static.zig");
 const game_ids = @import("game_ids.zig");
 
 pub const replay_format_version: i32 = 12;
-// v11 replays predate native run-start weapon defaults (player_reset_all
-// 0x41fc80); they play back with the legacy table-assigned pistol.
-pub const previous_replay_format_version: i32 = 11;
-pub const legacy_replay_format_version: i32 = 8;
-
-pub fn isLegacyRunStartVersion(version: i32) bool {
-    return version < replay_format_version;
-}
 pub const weapon_usage_count: usize = 53;
 pub const max_players: usize = 4;
 pub const gzip_magic = [_]u8{ 0x1f, 0x8b };
@@ -2120,9 +2112,7 @@ fn validateInputShape(
 }
 
 fn isSupportedReplayFormatVersion(version: i32) bool {
-    return version == legacy_replay_format_version or
-        version == previous_replay_format_version or
-        version == replay_format_version;
+    return version == replay_format_version;
 }
 
 fn tryParseCurrentReplaySummary(

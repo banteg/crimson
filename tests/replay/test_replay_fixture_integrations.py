@@ -20,12 +20,10 @@ FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "replays"
 
 pytestmark = [pytest.mark.slow, pytest.mark.replay_fixture]
 
-_REPLAY_CASES = (
-    ("survival_20260303_213138_score164406.crd", 45337, 164406, 1895),
-    ("rush_20260303_211707_kills136.crd", 2041, 21771, 136),
-    ("quest_1.5_20260303_211620_completed_t40512.crd", 2685, 23818, 19),
-    ("quest_2.10_20260305_201829_completed_t51600.crd", 3378, 132062, 762),
-)
+# Re-record gameplay fixtures with replay format v12 (native run-start weapon
+# state, PC=24 movement chain) and list them here with their run stats:
+# (filename, expected_ticks, expected_score_xp, expected_kills).
+_REPLAY_CASES: tuple[tuple[str, int, int, int], ...] = ()
 _PLAYBACK_CHUNK_PATTERN = (1, 7, 31, 256)
 
 

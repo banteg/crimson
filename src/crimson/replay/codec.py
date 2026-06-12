@@ -10,7 +10,7 @@ import zstandard as zstd
 from ..game_modes import GameMode
 from ..math_parity import f32
 from .types import (
-    SUPPORTED_REPLAY_FORMAT_VERSIONS,
+    REPLAY_FORMAT_VERSION,
     PackedPlayerInput,
     PackedTickInputs,
     Replay,
@@ -60,7 +60,7 @@ def _validate_claimed_stats(stats: ReplayClaimedStatsSnapshot) -> None:
 
 
 def _validate_header(header: ReplayHeader, *, from_load: bool) -> None:
-    if int(header.replay_format_version) not in SUPPORTED_REPLAY_FORMAT_VERSIONS:
+    if int(header.replay_format_version) != int(REPLAY_FORMAT_VERSION):
         if from_load:
             raise ReplayCodecError(f"unsupported replay format version: {int(header.replay_format_version)}")
         raise ReplayCodecError(

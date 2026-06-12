@@ -6,38 +6,38 @@
       "cdt": "gameplay_diff_capture.quest_3_3.run1.cdt",
       "source_cdt": "/Users/banteg/syncthing/frida/gameplay_diff_capture.quest_3_3.run1.cdt",
       "game_mode_id": 3,
-      "tick_count": 2001,
+      "tick_count": 1823,
       "windows": [
         {
           "start_tick": 0,
-          "end_tick": 63,
+          "end_tick": 69,
+          "tick_count": 70
+        },
+        {
+          "start_tick": 586,
+          "end_tick": 649,
           "tick_count": 64
         },
         {
-          "start_tick": 646,
-          "end_tick": 709,
+          "start_tick": 1173,
+          "end_tick": 1236,
           "tick_count": 64
         },
         {
-          "start_tick": 1291,
-          "end_tick": 1354,
-          "tick_count": 64
-        },
-        {
-          "start_tick": 1937,
-          "end_tick": 2000,
+          "start_tick": 1759,
+          "end_tick": 1822,
           "tick_count": 64
         }
       ],
-      "window_tick_count": 256,
-      "seed": 2621773362,
-      "seed_source": "crt_srand",
-      "seed_aligned": false,
+      "window_tick_count": 262,
+      "seed": 3168614019,
+      "seed_source": "run_setup_rng_state",
+      "seed_aligned": true,
       "native_first_draw": {
-        "tick_index": 30,
-        "state_before_u32": 2781809152,
-        "value_15": 11105,
-        "caller": 4282989
+        "tick_index": 62,
+        "state_before_u32": 3318548289,
+        "value_15": 14959,
+        "caller": 4358562
       },
       "outside_draws_per_tick": 1
     },
@@ -47,7 +47,7 @@
       "cdt": "gameplay_diff_capture.rush.run1.cdt",
       "source_cdt": "/Users/banteg/syncthing/frida/gameplay_diff_capture.rush.run1.cdt",
       "game_mode_id": 2,
-      "tick_count": 568,
+      "tick_count": 546,
       "windows": [
         {
           "start_tick": 0,
@@ -55,29 +55,29 @@
           "tick_count": 64
         },
         {
-          "start_tick": 168,
-          "end_tick": 231,
+          "start_tick": 161,
+          "end_tick": 224,
           "tick_count": 64
         },
         {
-          "start_tick": 336,
-          "end_tick": 399,
+          "start_tick": 321,
+          "end_tick": 384,
           "tick_count": 64
         },
         {
-          "start_tick": 504,
-          "end_tick": 567,
+          "start_tick": 482,
+          "end_tick": 545,
           "tick_count": 64
         }
       ],
       "window_tick_count": 256,
-      "seed": 2621773362,
-      "seed_source": "crt_srand",
-      "seed_aligned": false,
+      "seed": 2269098310,
+      "seed_source": "run_setup_rng_state",
+      "seed_aligned": true,
       "native_first_draw": {
         "tick_index": 0,
-        "state_before_u32": 3846729293,
-        "value_15": 22656,
+        "state_before_u32": 2090501283,
+        "value_15": 9083,
         "caller": 4358562
       },
       "outside_draws_per_tick": 1
@@ -88,7 +88,7 @@
       "cdt": "gameplay_diff_capture.survival.run1.cdt",
       "source_cdt": "/Users/banteg/syncthing/frida/gameplay_diff_capture.survival.run1.cdt",
       "game_mode_id": 1,
-      "tick_count": 8046,
+      "tick_count": 3041,
       "windows": [
         {
           "start_tick": 0,
@@ -96,71 +96,30 @@
           "tick_count": 64
         },
         {
-          "start_tick": 2661,
-          "end_tick": 2724,
+          "start_tick": 992,
+          "end_tick": 1055,
           "tick_count": 64
         },
         {
-          "start_tick": 5321,
-          "end_tick": 5384,
+          "start_tick": 1985,
+          "end_tick": 2048,
           "tick_count": 64
         },
         {
-          "start_tick": 7982,
-          "end_tick": 8045,
+          "start_tick": 2977,
+          "end_tick": 3040,
           "tick_count": 64
         }
       ],
       "window_tick_count": 256,
-      "seed": 379006640,
+      "seed": 2804794035,
       "seed_source": "run_setup_rng_state",
       "seed_aligned": true,
       "native_first_draw": {
         "tick_index": 0,
-        "state_before_u32": 722012058,
-        "value_15": 31710,
+        "state_before_u32": 3852145380,
+        "value_15": 14597,
         "caller": 4228131
-      },
-      "outside_draws_per_tick": 1
-    },
-    {
-      "name": "gameplay_diff_capture.tutorial.run1",
-      "crd": "gameplay_diff_capture.tutorial.run1.crd",
-      "cdt": "gameplay_diff_capture.tutorial.run1.cdt",
-      "source_cdt": "/Users/banteg/syncthing/frida/gameplay_diff_capture.tutorial.run1.cdt",
-      "game_mode_id": 8,
-      "tick_count": 5715,
-      "windows": [
-        {
-          "start_tick": 0,
-          "end_tick": 93,
-          "tick_count": 94
-        },
-        {
-          "start_tick": 1884,
-          "end_tick": 1947,
-          "tick_count": 64
-        },
-        {
-          "start_tick": 3767,
-          "end_tick": 3830,
-          "tick_count": 64
-        },
-        {
-          "start_tick": 5651,
-          "end_tick": 5714,
-          "tick_count": 64
-        }
-      ],
-      "window_tick_count": 286,
-      "seed": 2621773362,
-      "seed_source": "crt_srand",
-      "seed_aligned": false,
-      "native_first_draw": {
-        "tick_index": 86,
-        "state_before_u32": 1138078062,
-        "value_15": 3088,
-        "caller": 4282989
       },
       "outside_draws_per_tick": 1
     }

@@ -1331,7 +1331,7 @@ test "alternate weapon starts with preloaded pistol alt slot" {
             .pos = .{},
         },
     };
-    player_runtime.resetPlayers(players[0..], 1024.0, null, .{});
+    player_runtime.resetPlayers(players[0..], 1024.0, null);
     const player = &players[0];
     player.perk_counts.set(PerkId.alternate_weapon, 1);
 

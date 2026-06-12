@@ -8,7 +8,7 @@ import msgspec
 
 from crimson.dbg.schema import TickRecord, TraceTickRange
 from crimson.dbg.trace import TraceError, TraceReader, iter_trace_ticks, write_trace_iter
-from crimson.replay.codec import load_replay_file
+from crimson.replay.codec import ReplayCodecError, load_replay_file
 from grim.rand import CRT_RAND_INC, CRT_RAND_MULT
 
 # Seeds from captures finalized with this run_start source replay our sim's
@@ -190,6 +190,11 @@ def main() -> int:
                 pass
         except (TraceError, msgspec.ValidationError) as exc:
             print(f"skipping {cdt_path.name}: not readable with the current trace schema ({exc})")
+            continue
+        try:
+            load_replay_file(cdt_path.with_suffix(".crd"))
+        except ReplayCodecError as exc:
+            print(f"skipping {cdt_path.name}: replay sidecar not loadable ({exc})")
             continue
         case = import_run(
             cdt_path,

@@ -13,7 +13,7 @@ from ..gameplay import GameplayState
 from ..sim.presentation_step import DeterministicPresentationPlan
 from ..sim.state_types import PlayerState
 from ..sim.world_state import WorldEvents, WorldState
-from ..weapon_runtime import init_default_alt_weapon, weapon_assign_player
+from ..weapon_runtime import init_default_alt_weapon
 from ..weapons import WEAPON_TABLE, WeaponId
 
 
@@ -51,7 +51,6 @@ def reset_world_players(
     world_size: float,
     player_count: int,
     spawn_pos: Vec2 | None = None,
-    legacy_table_pistol_start: bool = False,
 ) -> None:
     players.clear()
 
@@ -67,16 +66,9 @@ def reset_world_players(
     for idx in range(count):
         pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(world_size), float(world_size))
         player = PlayerState(index=idx, pos=pos)
-        if legacy_table_pistol_start:
-            # Pre-v12 replays were recorded with a table-assigned pistol.
-            weapon_assign_player(player, WeaponId.PISTOL, state=state)
-        else:
-            _reset_player_weapon_native(player)
+        _reset_player_weapon_native(player)
         init_default_alt_weapon(player)
         players.append(player)
-
-    # Reset-time loadout bootstrap should not leak queued reload SFX.
-    state.sfx_queue.clear()
 
 
 class SimWorldState(msgspec.Struct):

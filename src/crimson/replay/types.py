@@ -22,12 +22,6 @@ from ..weapons import WeaponId
 
 REPLAY_FORMAT_VERSION = 12
 
-# v11 replays were recorded before run start modeled native `player_reset_all`
-# (0x41fc80) weapon defaults; they play back with the legacy table-assigned
-# pistol so existing recordings keep verifying.
-LEGACY_REPLAY_FORMAT_VERSIONS = frozenset({11})
-SUPPORTED_REPLAY_FORMAT_VERSIONS = frozenset({REPLAY_FORMAT_VERSION, *LEGACY_REPLAY_FORMAT_VERSIONS})
-
 WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 
 FIRE_DOWN_FLAG = 1 << 0
