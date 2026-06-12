@@ -7416,14 +7416,14 @@ LAB_0040c103:
 
 
 
-/* console_hotkey_update @ 0040c1c0 */
+/* game_frame_update @ 0040c1c0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* per-frame input/update function; contains console hotkey block (DIK_GRAVE) at 0x0040c360 and
    DIK_F12 check; entry identified via WinDbg */
 
-void console_hotkey_update(void)
+void game_frame_update(void)
 
 {
   IGrim2D_vtbl *pIVar1;

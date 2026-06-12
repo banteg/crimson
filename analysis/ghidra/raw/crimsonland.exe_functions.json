@@ -624,9 +624,9 @@
     "calls": ["ShellExecuteA", "__ftol", "config_load_presets", "crt_atexit", "demo_mode_start", "game_is_full_version", "input_primary_just_pressed", "sfx_mute_all", "sfx_play_exclusive", "ui_button_update", "ui_cursor_render", "ui_draw_textured_quad", "ui_elements_update_and_render"]
   },
   {
-    "name": "console_hotkey_update",
+    "name": "game_frame_update",
     "address": "0040c1c0",
-    "signature": "void console_hotkey_update(void)",
+    "signature": "void game_frame_update(void)",
     "external": false,
     "calls_total": 34,
     "calls": ["Sleep", "__ftol", "audio_resume_all", "audio_suspend_all", "audio_update", "config_sync_from_grim", "console_render", "console_set_open", "console_update", "crt_fclose", "crt_fopen", "crt_rand", "crt_sprintf", "demo_mode_start", "demo_purchase_screen_update", "demo_trial_time_limit_ms", "game_is_full_version", "game_over_screen_update", "game_sequence_get", "game_update_generic_menu", "game_update_victory_screen", "gameplay_update_and_render", "perk_count_get", "perk_selection_screen_update", "plugin_runtime_update_and_render", "quest_failed_screen_update", "quest_results_screen_update", "sfx_mute_all", "sfx_play_exclusive", "terrain_generate", "terrain_generate_random", "typo_gameplay_update_and_render", "ui_elements_max_timeline", "ui_render_loading"]
