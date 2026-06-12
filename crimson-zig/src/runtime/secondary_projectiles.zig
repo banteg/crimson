@@ -513,7 +513,9 @@ fn creatureFindNearestAlive(
     origin: state_mod.Vec2,
 ) usize {
     var best_idx: usize = 0;
-    var best_dist_sq: f32 = 1_000_000.0;
+    // Native seeds best with 1e6 and compares plain distances, so the search
+    // is effectively unbounded on a 1024 map; square it for the squared compare.
+    var best_dist_sq: f32 = 1e12;
     const limit: usize = @min(creatures.entries.len, 0x180);
     for (creatures.entries[0..limit], 0..) |creature, idx| {
         if (!creature.active) continue;

@@ -58,7 +58,9 @@ def _creature_find_nearest_for_secondary(
     """Port of `creature_find_nearest(origin, -1, 0.0)` for homing secondary targets."""
 
     best_idx = 0 if preserve_bugs else -1
-    best_dist_sq = 1_000_000.0
+    # Native seeds best with 1e6 and compares plain distances, so the search is
+    # effectively unbounded on a 1024 map; square it for the squared compare.
+    best_dist_sq = 1e12
     max_index = min(len(creatures), 0x180)
     for idx in range(max_index):
         creature = creatures[idx]

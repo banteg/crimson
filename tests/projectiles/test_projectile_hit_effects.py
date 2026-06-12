@@ -375,3 +375,15 @@ def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
     assert RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX not in {
         record.caller for record in rng.records_since()
     }
+
+
+def test_secondary_homing_acquires_targets_beyond_1000_units() -> None:
+    from crimson.projectiles.runtime.collision import _creature_find_nearest_for_secondary
+
+    far_creature = CreatureState(active=True, hp=10.0, lifecycle_stage=16.0, pos=Vec2(1200.0, 900.0))
+    creatures = [CreatureState() for _ in range(3)]
+    creatures[2] = far_creature
+
+    # Native compares plain distances against a 1e6 seed, so targets farther
+    # than 1000 units (offscreen spawns) are still acquired.
+    assert _creature_find_nearest_for_secondary(creatures=creatures, origin=Vec2(0.0, 0.0)) == 2
