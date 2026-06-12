@@ -118,9 +118,11 @@ def _spawn_native_fire_muzzle_sprites(
         return
 
     for speed, scale, alpha in specs:
+        # Native uses raw (cos h, sin h) of the aim heading - the aim direction
+        # rotated 90 degrees - matching the Fire Cough and shell-casing ports.
         state.sprite_effects.spawn(
             pos=muzzle,
-            vel=Vec2.from_heading(aim_heading) * float(speed),
+            vel=Vec2.from_angle(aim_heading) * float(speed),
             scale=float(scale),
             color=RGBA(0.5, 0.5, 0.5, float(alpha)),
         )
