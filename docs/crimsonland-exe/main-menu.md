@@ -30,7 +30,7 @@ Terrain generation is triggered elsewhere:
 - Demo → Menu: `ui_elements_update_and_render` calls `terrain_generate_random()` when
   `demo_mode_active != 0` and `game_state_pending == 0`, right before `game_state_set(0)`.
 
-- Debug: `console_hotkey_update` checks config var `0x57` and calls `terrain_generate_random()`
+- Debug: `game_frame_update` checks config var `0x57` and calls `terrain_generate_random()`
   (or `terrain_generate(desc)` in quest mode), then clears the config var.
 
 ## Menu terrain selection (`terrain_generate_random`)

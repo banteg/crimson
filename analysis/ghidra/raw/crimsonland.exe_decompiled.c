@@ -7420,8 +7420,11 @@ LAB_0040c103:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* per-frame input/update function; contains console hotkey block (DIK_GRAVE) at 0x0040c360 and
-   DIK_F12 check; entry identified via WinDbg */
+/* top-level per-frame update/render dispatcher: frame_dt + reflex-boosted time scale, console
+   toggle (DIK_GRAVE at 0x0040c360) and F12 screenshot input, ESC pause, demo trial timing, screen
+   fade, mouse/analog cursor, game_state dispatch to gameplay/menu/perk/game-over screens, FPS
+   overlay, audio_update, and a discarded per-frame crt_rand() at 0x0040cac7 (advances the shared
+   LCG once per frame); entry identified via WinDbg */
 
 void game_frame_update(void)
 
@@ -11676,7 +11679,7 @@ void gameplay_reset_state(void)
   bonus_energizer_timer = 0.0;
   plaguebearer_infection_count = 0;
   perk_doctor_target_creature_id = -1;
-  highscore_full_version_marker = 0;
+  highscore_hardcore_marker = 0;
   _survival_elapsed_ms = 0;
   _highscore_score_xp = 0;
   highscore_record_quest_minor = 0;
@@ -11757,7 +11760,7 @@ void gameplay_reset_state(void)
   } while ((int)pcVar9 < 0x4852d0);
   fx_queue_rotated = 0;
   fx_queue_count = 0;
-  highscore_full_version_marker = 0;
+  highscore_hardcore_marker = 0;
   _survival_elapsed_ms = 0;
   _highscore_score_xp = 0;
   highscore_record_quest_minor = 0;
@@ -32893,7 +32896,7 @@ void __cdecl quest_start_selected(int tier,int index)
   quest_stage_banner_timer_ms = 0;
   fx_queue_rotated = 0;
   fx_queue_count = 0;
-  highscore_full_version_marker = 0;
+  highscore_hardcore_marker = 0;
   _survival_elapsed_ms = 0;
   _highscore_score_xp = 0;
   highscore_record_quest_minor = 0;
@@ -33998,7 +34001,7 @@ void highscore_record_init(void)
     uVar2 = (uVar2 - 1 | 0xf0000000) + 1;
   }
   highscore_record_random_tag = uVar2 + 0x310;
-  highscore_full_version_marker = -(config_hardcore != '\0') & 0x75;
+  highscore_hardcore_marker = -(config_hardcore != '\0') & 0x75;
   return;
 }
 

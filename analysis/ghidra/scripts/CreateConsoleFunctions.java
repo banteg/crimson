@@ -1,5 +1,6 @@
 /* ###
- * Create console helper/command functions at entrypoint addresses from name_map.json.
+ * Create console helper/command functions and adjacent frame dispatcher
+ * entrypoints from name_map.json.
  * @category Analysis
  */
 
@@ -88,6 +89,13 @@ public class CreateConsoleFunctions extends GhidraScript {
         return rows;
     }
 
+    private static boolean shouldCreateFunction(Row row) {
+        if (row.name == null || row.name.isBlank()) {
+            return false;
+        }
+        return row.name.startsWith("console_") || row.name.equals("game_frame_update");
+    }
+
     @Override
     public void run() throws Exception {
         String mapPath = defaultMapPath();
@@ -130,7 +138,7 @@ public class CreateConsoleFunctions extends GhidraScript {
                     continue;
                 }
             }
-            if (row.name == null || row.name.isBlank() || !row.name.startsWith("console_")) {
+            if (!shouldCreateFunction(row)) {
                 continue;
             }
 

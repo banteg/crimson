@@ -20,7 +20,6 @@ Interesting Functions and Patterns
 [KEY related]
   input_key_name @ 004036d0
   ui_render_keybind_help @ 00405160
-  console_hotkey_update @ 0040c1c0
   mod_api_inp_key_down @ 0040e660
   mod_api_inp_get_key_name @ 0040e680
   input_any_key_pressed @ 00446000

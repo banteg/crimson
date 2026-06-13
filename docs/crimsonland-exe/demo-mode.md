@@ -35,7 +35,7 @@ See: `docs/re/static/boot-sequence.md` (handoff section).
 
 ### Runtime entry: trial/attract trigger
 
-The main loop (`console_hotkey_update`) contains a shareware-only path that
+The main loop (`game_frame_update`) contains a shareware-only path that
 starts `demo_mode_start()` and switches music to `shortie_monk` (exact trigger
 still TBD; see decompile around `0x0040cf06`).
 

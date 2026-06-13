@@ -38,8 +38,8 @@
     "end": "0x0040111A",
     "external": false,
     "library": false,
-    "name": "FUN_004010f0",
-    "signature": "int(int arg1, int arg2, int arg3, int arg4)",
+    "name": "invoke_callback_n",
+    "signature": "int(void *arg1, int arg2, int count, int callback)",
     "size": 42,
     "thunk": false
   },
@@ -68,8 +68,7 @@
   {
     "address": "0x00401160",
     "calls": [
-      "console_global_init",
-      "crt_atexit"
+      "console_global_init"
     ],
     "end": "0x0040116A",
     "external": false,
@@ -88,6 +87,19 @@
     "name": "console_global_init",
     "signature": "int()",
     "size": 10,
+    "thunk": false
+  },
+  {
+    "address": "0x00401180",
+    "calls": [
+      "crt_atexit"
+    ],
+    "end": "0x0040118C",
+    "external": false,
+    "library": false,
+    "name": "console_register_clear_log_atexit",
+    "signature": "int()",
+    "size": 12,
     "thunk": false
   },
   {
@@ -517,7 +529,7 @@
     "external": false,
     "library": false,
     "name": "j_config_init_defaults",
-    "signature": "int()",
+    "signature": "",
     "size": 5,
     "thunk": true
   },
@@ -665,8 +677,8 @@
     "end": "0x00403498",
     "external": false,
     "library": false,
-    "name": "FUN_00403430",
-    "signature": "int(float *arg1, int arg2, int arg3)",
+    "name": "ui_mouse_inside_rect_with_padding",
+    "signature": "int(float *xy, int h, int w)",
     "size": 104,
     "thunk": false
   },
@@ -749,11 +761,11 @@
       "0x0046F18C",
       "crt_atexit",
       "crt_sprintf",
+      "demo_trial_time_limit_ms",
       "game_is_full_version",
       "game_sequence_get",
       "sfx_mute_all",
       "sfx_play_exclusive",
-      "sub_41DF50",
       "ui_button_update"
     ],
     "end": "0x0040512D",
@@ -1184,6 +1196,7 @@
   {
     "address": "0x00409890",
     "calls": [
+      "bonus_hud_slot_activate",
       "creature_apply_damage",
       "creature_find_nearest",
       "crt_rand",
@@ -1195,14 +1208,13 @@
       "projectile_spawn",
       "sfx_play",
       "sfx_play_panned",
-      "sub_41A810",
       "weapon_assign_player"
     ],
     "end": "0x0040A315",
     "external": false,
     "library": false,
     "name": "bonus_apply",
-    "signature": "int __cdecl(int, float *)",
+    "signature": "void(int player_index, bonus_entry_t *bonus_entry)",
     "size": 2693,
     "thunk": false
   },
@@ -1318,8 +1330,8 @@
     "end": "0x0040B629",
     "external": false,
     "library": false,
-    "name": "FUN_0040b5d0",
-    "signature": "int *()",
+    "name": "plugin_runtime_clear_pools",
+    "signature": "void()",
     "size": 89,
     "thunk": false
   },
@@ -1327,7 +1339,7 @@
     "address": "0x0040B630",
     "calls": [
       "0x0046F178",
-      "FUN_0040b5d0",
+      "plugin_runtime_clear_pools",
       "sfx_mute_all",
       "ui_cursor_render",
       "ui_elements_update_and_render"
@@ -1335,8 +1347,8 @@
     "end": "0x0040B739",
     "external": false,
     "library": false,
-    "name": "sub_40B630",
-    "signature": "int()",
+    "name": "plugin_runtime_update_and_render",
+    "signature": "void()",
     "size": 265,
     "thunk": false
   },
@@ -1405,6 +1417,7 @@
       "crt_sprintf",
       "demo_mode_start",
       "demo_purchase_screen_update",
+      "demo_trial_time_limit_ms",
       "game_is_full_version",
       "game_over_screen_update",
       "game_sequence_get",
@@ -1413,22 +1426,21 @@
       "gameplay_update_and_render",
       "perk_count_get",
       "perk_selection_screen_update",
+      "plugin_runtime_update_and_render",
       "quest_failed_screen_update",
       "quest_results_screen_update",
       "sfx_mute_all",
       "sfx_play_exclusive",
-      "sub_40B630",
-      "sub_41DF50",
-      "survival_gameplay_update_and_render",
       "terrain_generate",
       "terrain_generate_random",
+      "typo_gameplay_update_and_render",
       "ui_elements_max_timeline",
       "ui_render_loading"
     ],
     "end": "0x0040CFC4",
     "external": false,
     "library": false,
-    "name": "console_hotkey_update",
+    "name": "game_frame_update",
     "signature": "void()",
     "size": 3588,
     "thunk": false
@@ -1505,10 +1517,10 @@
       "crt_atexit",
       "crt_free",
       "input_primary_just_pressed",
-      "nullsub_72",
       "sfx_play",
       "strdup_malloc",
       "ui_button_update",
+      "ui_callback_noop",
       "ui_mouse_inside_rect"
     ],
     "end": "0x0040DF41",
@@ -1570,7 +1582,7 @@
     "external": false,
     "library": false,
     "name": "j_mod_api_init",
-    "signature": "void()",
+    "signature": "",
     "size": 5,
     "thunk": true
   },
@@ -1583,6 +1595,21 @@
     "name": "mod_api_init",
     "signature": "void()",
     "size": 21,
+    "thunk": false
+  },
+  {
+    "address": "0x0040DFC0",
+    "calls": [
+      "console_push_line",
+      "crt_vsprintf",
+      "mod_api_core_printf"
+    ],
+    "end": "0x0040DFF4",
+    "external": false,
+    "library": false,
+    "name": "sub_40DFC0",
+    "signature": "char(int, char *fmt, ...)",
+    "size": 52,
     "thunk": false
   },
   {
@@ -1609,7 +1636,7 @@
     "external": false,
     "library": false,
     "name": "mod_api_core_get_var",
-    "signature": "char **__stdcall(char *Source)",
+    "signature": "mod_var_t *(const char *id)",
     "size": 61,
     "thunk": false
   },
@@ -1842,7 +1869,7 @@
     "external": false,
     "library": false,
     "name": "mod_api_gfx_draw_quads",
-    "signature": "char __stdcall(int, int)",
+    "signature": "void(mod_vertex2_t *v, int numQuads)",
     "size": 100,
     "thunk": false
   },
@@ -2073,8 +2100,8 @@
     "end": "0x0040F3CF",
     "external": false,
     "library": false,
-    "name": "sub_40E9A0",
-    "signature": "int()",
+    "name": "mods_menu_update",
+    "signature": "void()",
     "size": 2607,
     "thunk": false
   },
@@ -2171,8 +2198,8 @@
     "end": "0x0040FFB9",
     "external": false,
     "library": false,
-    "name": "FUN_0040ff50",
-    "signature": "int(int arg1)",
+    "name": "time_format_mm_ss",
+    "signature": "char *(int total_seconds)",
     "size": 105,
     "thunk": false
   },
@@ -2324,7 +2351,6 @@
   {
     "address": "0x00410D20",
     "calls": [
-      "FUN_0040ff50",
       "__ftol",
       "crt_atexit",
       "gameplay_render_world",
@@ -2338,6 +2364,7 @@
       "sfx_mute_all",
       "sfx_play",
       "sfx_play_exclusive",
+      "time_format_mm_ss",
       "ui_button_update",
       "ui_cursor_render",
       "ui_draw_textured_quad",
@@ -2448,8 +2475,8 @@
     "end": "0x004120A5",
     "external": false,
     "library": false,
-    "name": "j_FUN_004120b0",
-    "signature": "int()",
+    "name": "j_gameplay_run_state_init",
+    "signature": "",
     "size": 5,
     "thunk": true
   },
@@ -2461,7 +2488,7 @@
     "end": "0x0041215C",
     "external": false,
     "library": false,
-    "name": "FUN_004120b0",
+    "name": "gameplay_run_state_init",
     "signature": "int()",
     "size": 172,
     "thunk": false
@@ -2491,7 +2518,6 @@
   {
     "address": "0x00412180",
     "calls": [
-      "crt_atexit",
       "quest_meta_init"
     ],
     "end": "0x0041218A",
@@ -2535,8 +2561,21 @@
     "external": false,
     "library": false,
     "name": "dtor",
-    "signature": "void __thiscall(LPVOID *this)",
+    "signature": "void __thiscall(void **this)",
     "size": 15,
+    "thunk": false
+  },
+  {
+    "address": "0x004121F0",
+    "calls": [
+      "crt_atexit"
+    ],
+    "end": "0x004121FC",
+    "external": false,
+    "library": false,
+    "name": "quest_meta_register_atexit",
+    "signature": "int()",
+    "size": 12,
     "thunk": false
   },
   {
@@ -2626,8 +2665,8 @@
     "end": "0x00412355",
     "external": false,
     "library": false,
-    "name": "j_FUN_00412360",
-    "signature": "int()",
+    "name": "j_highscore_init_sentinels",
+    "signature": "",
     "size": 5,
     "thunk": true
   },
@@ -2647,8 +2686,7 @@
   {
     "address": "0x004123C0",
     "calls": [
-      "FUN_004123d0",
-      "crt_atexit"
+      "bonus_meta_table_init"
     ],
     "end": "0x004123CA",
     "external": false,
@@ -2666,7 +2704,7 @@
     "end": "0x004123E9",
     "external": false,
     "library": false,
-    "name": "FUN_004123d0",
+    "name": "bonus_meta_table_init",
     "signature": "int()",
     "size": 25,
     "thunk": false
@@ -2690,9 +2728,22 @@
     "end": "0x00412434",
     "external": false,
     "library": false,
-    "name": "FUN_00412410",
-    "signature": "void *(int *arg1)",
+    "name": "bonus_meta_entry_release",
+    "signature": "void(int *entry)",
     "size": 36,
+    "thunk": false
+  },
+  {
+    "address": "0x00412440",
+    "calls": [
+      "crt_atexit"
+    ],
+    "end": "0x0041244C",
+    "external": false,
+    "library": false,
+    "name": "bonus_meta_register_atexit",
+    "signature": "int()",
+    "size": 12,
     "thunk": false
   },
   {
@@ -2718,7 +2769,7 @@
     "external": false,
     "library": false,
     "name": "bonus_pick_random_type",
-    "signature": "uint()",
+    "signature": "bonus_id_t()",
     "size": 484,
     "thunk": false
   },
@@ -2857,8 +2908,8 @@
     "end": "0x004136A2",
     "external": false,
     "library": false,
-    "name": "sub_413540",
-    "signature": "double __cdecl(float)",
+    "name": "player_heading_approach_target",
+    "signature": "float(float target_heading)",
     "size": 354,
     "thunk": false
   },
@@ -2873,18 +2924,18 @@
       "fx_spawn_particle_slow",
       "fx_spawn_secondary_projectile",
       "fx_spawn_sprite",
+      "input_aim_pov_left_active",
+      "input_aim_pov_right_active",
       "input_primary_just_pressed",
-      "j_FUN_00452f1d",
       "perk_count_get",
       "player_apply_move_with_spawn_avoidance",
+      "player_heading_approach_target",
       "player_start_reload",
       "player_take_damage",
       "projectile_spawn",
       "sfx_play_panned",
-      "sub_413540",
-      "sub_41E8D0",
-      "sub_41E8F0",
       "vec2_length",
+      "vec2_normalize_dispatch",
       "vec2_sub"
     ],
     "end": "0x00417631",
@@ -2923,21 +2974,21 @@
     "end": "0x00417685",
     "external": false,
     "library": false,
-    "name": "j_FUN_00417690",
-    "signature": "int()",
+    "name": "j_ui_menu_template_pool_init",
+    "signature": "",
     "size": 5,
     "thunk": true
   },
   {
     "address": "0x00417690",
     "calls": [
-      "??0Iostream_init@@QAE@XZ",
-      "FUN_004010f0"
+      "invoke_callback_n",
+      "ui_template_slot_ctor_noop"
     ],
     "end": "0x004177E0",
     "external": false,
     "library": false,
-    "name": "FUN_00417690",
+    "name": "ui_menu_template_pool_init",
     "signature": "int()",
     "size": 336,
     "thunk": false
@@ -2956,9 +3007,9 @@
   {
     "address": "0x004177F0",
     "calls": [
-      "FUN_004010f0",
-      "FUN_00417aa0",
-      "FUN_00417ab0"
+      "invoke_callback_n",
+      "ui_template_block_set_mode4",
+      "ui_template_triplet_reset_and_seed_modes"
     ],
     "end": "0x00417A86",
     "external": false,
@@ -2974,8 +3025,8 @@
     "end": "0x00417A93",
     "external": false,
     "library": true,
-    "name": "??0Iostream_init@@QAE@XZ",
-    "signature": "Iostream_init *__thiscall(Iostream_init *__hidden this)",
+    "name": "ui_template_slot_ctor_noop",
+    "signature": "void *(void *slot)",
     "size": 3,
     "thunk": false
   },
@@ -2985,8 +3036,8 @@
     "end": "0x00417AAD",
     "external": false,
     "library": false,
-    "name": "FUN_00417aa0",
-    "signature": "void *(void *arg1)",
+    "name": "ui_template_block_set_mode4",
+    "signature": "void *(void *block)",
     "size": 13,
     "thunk": false
   },
@@ -2996,8 +3047,8 @@
     "end": "0x00417AE0",
     "external": false,
     "library": false,
-    "name": "FUN_00417ab0",
-    "signature": "char *(char *arg1)",
+    "name": "ui_template_triplet_reset_and_seed_modes",
+    "signature": "void *(void *block)",
     "size": 48,
     "thunk": false
   },
@@ -3087,7 +3138,7 @@
     "external": false,
     "library": false,
     "name": "ui_element_set_rect",
-    "signature": "float *__cdecl(int, float, float, float *)",
+    "signature": "void(ui_element_t *element, float width, float height, float *offset)",
     "size": 348,
     "thunk": false
   },
@@ -3100,7 +3151,7 @@
     "external": false,
     "library": false,
     "name": "ui_element_load",
-    "signature": "char __cdecl(int, const char *)",
+    "signature": "void(ui_element_t *element, char *jaz_path)",
     "size": 207,
     "thunk": false
   },
@@ -3225,8 +3276,8 @@
     "end": "0x0041A8AF",
     "external": false,
     "library": false,
-    "name": "sub_41A810",
-    "signature": "char __cdecl(int, int, int, int)",
+    "name": "bonus_hud_slot_activate",
+    "signature": "void(char *label, int icon_id, float *timer_ptr, float *alt_timer_ptr)",
     "size": 159,
     "thunk": false
   },
@@ -3289,9 +3340,9 @@
   {
     "address": "0x0041CCB0",
     "calls": [
-      "FUN_0041cfe0",
       "crt_snprintf",
       "crt_tolower",
+      "dx_get_version_fallback_from_files",
       "sub_41CDB0"
     ],
     "end": "0x0041CDAB",
@@ -3324,15 +3375,15 @@
     "address": "0x0041CFE0",
     "calls": [
       "0x0046F044",
-      "FUN_0041db50",
-      "sub_41DC10",
-      "sub_41DC50"
+      "dx_version_compare_4x16",
+      "dx_version_pack_4x16",
+      "win32_file_get_version_words"
     ],
     "end": "0x0041DB48",
     "external": false,
     "library": false,
-    "name": "FUN_0041cfe0",
-    "signature": "int(int *arg1, int *arg2, char *arg3)",
+    "name": "dx_get_version_fallback_from_files",
+    "signature": "int(int *major, int *minor, char *letter)",
     "size": 2920,
     "thunk": false
   },
@@ -3348,8 +3399,8 @@
     "end": "0x0041DC0B",
     "external": false,
     "library": false,
-    "name": "FUN_0041db50",
-    "signature": "int(uint arg1, int *arg2)",
+    "name": "win32_file_get_version_words",
+    "signature": "int(char *file_path, uint *out_version_words)",
     "size": 187,
     "thunk": false
   },
@@ -3359,8 +3410,8 @@
     "end": "0x0041DC41",
     "external": false,
     "library": false,
-    "name": "sub_41DC10",
-    "signature": "int __cdecl(int, int, unsigned __int16, unsigned __int16)",
+    "name": "dx_version_pack_4x16",
+    "signature": "unsigned __int64(int major, uint minor, int patch_major, uint patch_minor)",
     "size": 49,
     "thunk": false
   },
@@ -3370,8 +3421,8 @@
     "end": "0x0041DC7D",
     "external": false,
     "library": false,
-    "name": "sub_41DC50",
-    "signature": "int __cdecl(unsigned int, unsigned int, unsigned int, unsigned int)",
+    "name": "dx_version_compare_4x16",
+    "signature": "int(uint current_ls, uint current_ms, uint required_ls, uint required_ms)",
     "size": 45,
     "thunk": false
   },
@@ -3509,7 +3560,7 @@
     "end": "0x0041DF56",
     "external": false,
     "library": false,
-    "name": "sub_41DF50",
+    "name": "demo_trial_time_limit_ms",
     "signature": "int()",
     "size": 6,
     "thunk": false
@@ -3795,8 +3846,8 @@
     "end": "0x0041E28A",
     "external": false,
     "library": false,
-    "name": "FUN_0041e270",
-    "signature": "int(float *arg1, float *arg2)",
+    "name": "vec2_add",
+    "signature": "void(float *dst, float *delta)",
     "size": 26,
     "thunk": false
   },
@@ -3886,7 +3937,7 @@
     "external": false,
     "library": false,
     "name": "sub_41E4A0",
-    "signature": "char *()",
+    "signature": "sprite_effect_t *()",
     "size": 97,
     "thunk": false
   },
@@ -4151,7 +4202,7 @@
     "end": "0x0041E8F0",
     "external": false,
     "library": false,
-    "name": "sub_41E8D0",
+    "name": "input_aim_pov_left_active",
     "signature": "bool()",
     "size": 32,
     "thunk": false
@@ -4162,7 +4213,7 @@
     "end": "0x0041E910",
     "external": false,
     "library": false,
-    "name": "sub_41E8F0",
+    "name": "input_aim_pov_right_active",
     "signature": "bool()",
     "size": 32,
     "thunk": false
@@ -4282,7 +4333,7 @@
     "external": false,
     "library": false,
     "name": "bonus_alloc_slot",
-    "signature": "int *()",
+    "signature": "bonus_entry_t *()",
     "size": 46,
     "thunk": false
   },
@@ -4297,7 +4348,7 @@
     "external": false,
     "library": false,
     "name": "bonus_spawn_at",
-    "signature": "int *__cdecl(float *, int, int)",
+    "signature": "bonus_entry_t *(float *pos, bonus_id_t bonus_id, int duration_override)",
     "size": 479,
     "thunk": false
   },
@@ -4313,7 +4364,7 @@
     "external": false,
     "library": false,
     "name": "bonus_spawn_at_pos",
-    "signature": "int *__cdecl(float *)",
+    "signature": "bonus_entry_t *(float *pos)",
     "size": 309,
     "thunk": false
   },
@@ -4428,7 +4479,7 @@
     "external": false,
     "library": false,
     "name": "fx_spawn_secondary_projectile",
-    "signature": "int(float *pos, float angle, int type_id)",
+    "signature": "int(float *pos, float angle, secondary_projectile_type_id_t type_id)",
     "size": 218,
     "thunk": false
   },
@@ -4439,7 +4490,7 @@
     "external": false,
     "library": false,
     "name": "projectile_spawn",
-    "signature": "int(float *pos, float angle, int type_id, int owner_id)",
+    "signature": "int(float *pos, float angle, projectile_type_id_t type_id, int owner_id)",
     "size": 400,
     "thunk": false
   },
@@ -4509,12 +4560,6 @@
   {
     "address": "0x00420B90",
     "calls": [
-      "FUN_0041e270",
-      "FUN_0042f080",
-      "FUN_0042f270",
-      "FUN_0042f330",
-      "FUN_0042f3f0",
-      "FUN_0042f540",
       "__ftol",
       "creature_apply_damage",
       "creature_find_in_radius",
@@ -4525,16 +4570,22 @@
       "effect_spawn_blood_splatter",
       "effect_spawn_explosion_burst",
       "effect_spawn_freeze_shard",
+      "effect_spawn_ion_hit_core",
+      "effect_spawn_ion_hit_sparks",
+      "effect_spawn_plasma_hit_core",
+      "effect_spawn_shrinkifier_hit",
+      "effect_spawn_splitter_hit_burst",
       "fx_queue_add",
       "fx_queue_add_random",
       "fx_spawn_sprite",
-      "j_FUN_00452f1d",
       "perk_count_get",
       "player_find_in_radius",
       "projectile_spawn",
       "sfx_play_exclusive",
       "sfx_play_panned",
-      "vec2_add_inplace"
+      "vec2_add",
+      "vec2_add_inplace",
+      "vec2_normalize_dispatch"
     ],
     "end": "0x00422C69",
     "external": false,
@@ -4550,8 +4601,8 @@
       "__ftol",
       "creature_find_in_radius",
       "effect_select_texture",
-      "j_FUN_00452f1d",
-      "perk_count_get"
+      "perk_count_get",
+      "vec2_normalize_dispatch"
     ],
     "end": "0x00425D77",
     "external": false,
@@ -4567,8 +4618,8 @@
     "end": "0x00425E4B",
     "external": false,
     "library": false,
-    "name": "sub_425D80",
-    "signature": "int __cdecl(int)",
+    "name": "plaguebearer_spread_infection",
+    "signature": "int(int creature_id)",
     "size": 203,
     "thunk": false
   },
@@ -4602,13 +4653,13 @@
       "effect_spawn_burst",
       "fx_queue_add_random",
       "fx_queue_add_rotated",
-      "j_FUN_00452f1d",
       "perk_count_get",
+      "plaguebearer_spread_infection",
       "player_take_damage",
       "projectile_spawn",
       "sfx_play_panned",
-      "sub_425D80",
-      "vec2_add_inplace"
+      "vec2_add_inplace",
+      "vec2_normalize_dispatch"
     ],
     "end": "0x004276F2",
     "external": false,
@@ -4688,8 +4739,8 @@
     "end": "0x0042820E",
     "external": false,
     "library": false,
-    "name": "FUN_004281e0",
-    "signature": "void *()",
+    "name": "creature_reset_all",
+    "signature": "void()",
     "size": 46,
     "thunk": false
   },
@@ -4723,8 +4774,8 @@
     "calls": [
       "__ftol",
       "effect_select_texture",
-      "j_FUN_00452f1d",
-      "perk_count_get"
+      "perk_count_get",
+      "vec2_normalize_dispatch"
     ],
     "end": "0x00429576",
     "external": false,
@@ -4744,7 +4795,7 @@
     "external": false,
     "library": false,
     "name": "bonus_label_for_entry",
-    "signature": "char *__cdecl(int *)",
+    "signature": "char *(bonus_entry_t *bonus_entry)",
     "size": 99,
     "thunk": false
   },
@@ -5125,22 +5176,22 @@
       "0x0046F1C8",
       "0x0046F1CC",
       "??2@YAPAXI@Z",
-      "FUN_0043aa90",
       "console_flush_log",
       "console_printf",
       "crt_endthread",
       "crt_free",
       "crt_rand",
       "game_is_full_version",
+      "highscore_record_pack_for_submit",
       "highscore_save_record",
-      "j_highscore_load_table",
-      "sub_43AA60"
+      "highscore_submit_full_version_guard",
+      "j_highscore_load_table"
     ],
     "end": "0x0042D892",
     "external": false,
     "library": false,
-    "name": "sub_42D0E0",
-    "signature": "void __cdecl __noreturn()",
+    "name": "highscore_sync_worker",
+    "signature": "void(void *arg)",
     "size": 1970,
     "thunk": false
   },
@@ -5169,8 +5220,8 @@
     "end": "0x0042DDF4",
     "external": false,
     "library": false,
-    "name": "sub_42D8A0",
-    "signature": "void __cdecl __noreturn()",
+    "name": "statistics_update_check_worker",
+    "signature": "void(void *arg)",
     "size": 1364,
     "thunk": false
   },
@@ -5188,7 +5239,7 @@
   {
     "address": "0x0042DE10",
     "calls": [
-      "FUN_004010f0"
+      "invoke_callback_n"
     ],
     "end": "0x0042DE37",
     "external": false,
@@ -5392,8 +5443,8 @@
     "end": "0x0042F262",
     "external": false,
     "library": false,
-    "name": "FUN_0042f080",
-    "signature": "void *(float *arg1)",
+    "name": "effect_spawn_shrinkifier_hit",
+    "signature": "void *(float *pos)",
     "size": 482,
     "thunk": false
   },
@@ -5405,8 +5456,8 @@
     "end": "0x0042F32F",
     "external": false,
     "library": false,
-    "name": "FUN_0042f270",
-    "signature": "void *(float *arg1, float arg2, float arg3)",
+    "name": "effect_spawn_ion_hit_core",
+    "signature": "void *(float *pos, float scale_step, float lifetime)",
     "size": 191,
     "thunk": false
   },
@@ -5418,8 +5469,8 @@
     "end": "0x0042F3E9",
     "external": false,
     "library": false,
-    "name": "FUN_0042f330",
-    "signature": "void *(float *arg1, float arg2, int arg3)",
+    "name": "effect_spawn_plasma_hit_core",
+    "signature": "void *(float *pos, float scale_step, float lifetime)",
     "size": 185,
     "thunk": false
   },
@@ -5433,8 +5484,8 @@
     "end": "0x0042F53D",
     "external": false,
     "library": false,
-    "name": "FUN_0042f3f0",
-    "signature": "void *(float *arg1, float arg2, int arg3)",
+    "name": "effect_spawn_splitter_hit_burst",
+    "signature": "void *(float *pos, float radius, int count)",
     "size": 333,
     "thunk": false
   },
@@ -5448,8 +5499,8 @@
     "end": "0x0042F6BA",
     "external": false,
     "library": false,
-    "name": "FUN_0042f540",
-    "signature": "int(int arg1, float arg2)",
+    "name": "effect_spawn_ion_hit_sparks",
+    "signature": "void *(float *pos, float scale)",
     "size": 378,
     "thunk": false
   },
@@ -5470,8 +5521,7 @@
   {
     "address": "0x0042FA90",
     "calls": [
-      "FUN_0042faa0",
-      "crt_atexit"
+      "perk_meta_table_init"
     ],
     "end": "0x0042FA9A",
     "external": false,
@@ -5489,7 +5539,7 @@
     "end": "0x0042FABC",
     "external": false,
     "library": false,
-    "name": "FUN_0042faa0",
+    "name": "perk_meta_table_init",
     "signature": "int()",
     "size": 28,
     "thunk": false
@@ -5503,6 +5553,19 @@
     "name": "sub_42FAC0",
     "signature": "void __thiscall(_DWORD *this)",
     "size": 27,
+    "thunk": false
+  },
+  {
+    "address": "0x0042FAE0",
+    "calls": [
+      "crt_atexit"
+    ],
+    "end": "0x0042FAEC",
+    "external": false,
+    "library": false,
+    "name": "perk_meta_register_atexit",
+    "signature": "int()",
+    "size": 12,
     "thunk": false
   },
   {
@@ -5606,7 +5669,7 @@
     "external": false,
     "library": false,
     "name": "quest_meta_init_entry",
-    "signature": "int __cdecl(int, int, int, char *Source)",
+    "signature": "int(quest_meta_t *meta, int tier, int index, char *name)",
     "size": 170,
     "thunk": false
   },
@@ -5682,7 +5745,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_fallback",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 150,
     "thunk": false
   },
@@ -5693,7 +5756,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_nagolipoli",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 983,
     "thunk": false
   },
@@ -5704,7 +5767,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_monster_blues",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 348,
     "thunk": false
   },
@@ -5715,7 +5778,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_gathering",
-    "signature": "_DWORD *__cdecl(_DWORD *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 725,
     "thunk": false
   },
@@ -5726,7 +5789,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_army_of_three",
-    "signature": "_DWORD *__cdecl(_DWORD *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 608,
     "thunk": false
   },
@@ -5737,7 +5800,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_knee_deep_in_the_dead",
-    "signature": "int *__cdecl(int, int *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 541,
     "thunk": false
   },
@@ -5748,7 +5811,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_gang_wars",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 424,
     "thunk": false
   },
@@ -5759,7 +5822,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_fortress",
-    "signature": "int *__cdecl(int, int *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 429,
     "thunk": false
   },
@@ -5770,7 +5833,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_cross_fire",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 390,
     "thunk": false
   },
@@ -5781,7 +5844,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_beating",
-    "signature": "int __cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 649,
     "thunk": false
   },
@@ -5792,7 +5855,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_spanking_of_the_dead",
-    "signature": "_DWORD *__cdecl(_DWORD *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 391,
     "thunk": false
   },
@@ -5803,7 +5866,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_hidden_evil",
-    "signature": "int __cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 407,
     "thunk": false
   },
@@ -5814,7 +5877,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_land_hostile",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 239,
     "thunk": false
   },
@@ -5825,7 +5888,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_minor_alien_breach",
-    "signature": "int __cdecl(_DWORD *, int *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 466,
     "thunk": false
   },
@@ -5836,7 +5899,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_alien_squads",
-    "signature": "int *__cdecl(_DWORD *, int *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 507,
     "thunk": false
   },
@@ -5847,7 +5910,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_zombie_masters",
-    "signature": "_DWORD *__cdecl(_DWORD *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 128,
     "thunk": false
   },
@@ -5858,7 +5921,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_8_legged_terror",
-    "signature": "_DWORD *__cdecl(int, int *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 213,
     "thunk": false
   },
@@ -5869,7 +5932,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_ghost_patrols",
-    "signature": "int __cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 334,
     "thunk": false
   },
@@ -5882,7 +5945,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_random_factor",
-    "signature": "int __cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 237,
     "thunk": false
   },
@@ -5893,7 +5956,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_spider_wave_syndrome",
-    "signature": "int __cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 95,
     "thunk": false
   },
@@ -5904,7 +5967,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_nesting_grounds",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 626,
     "thunk": false
   },
@@ -5915,7 +5978,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_alien_dens",
-    "signature": "_DWORD *__cdecl(_DWORD *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 249,
     "thunk": false
   },
@@ -5926,7 +5989,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_arachnoid_farm",
-    "signature": "int __cdecl(int, int *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 382,
     "thunk": false
   },
@@ -5937,7 +6000,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_gauntlet",
-    "signature": "char __cdecl(int, int *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 614,
     "thunk": false
   },
@@ -5948,7 +6011,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_syntax_terror",
-    "signature": "int __cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 339,
     "thunk": false
   },
@@ -5959,7 +6022,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_spider_spawns",
-    "signature": "_DWORD *__cdecl(_DWORD *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 365,
     "thunk": false
   },
@@ -5970,7 +6033,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_two_fronts",
-    "signature": "_DWORD *__cdecl(_DWORD *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 383,
     "thunk": false
   },
@@ -5981,7 +6044,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_survival_of_the_fastest",
-    "signature": "int __cdecl(float *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 861,
     "thunk": false
   },
@@ -5992,7 +6055,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_spideroids",
-    "signature": "int *__cdecl(int *, int *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 224,
     "thunk": false
   },
@@ -6003,7 +6066,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_evil_zombies_at_large",
-    "signature": "int __cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 244,
     "thunk": false
   },
@@ -6014,7 +6077,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_everred_pastures",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 367,
     "thunk": false
   },
@@ -6025,7 +6088,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_lizard_kings",
-    "signature": "_DWORD *__cdecl(_DWORD *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 254,
     "thunk": false
   },
@@ -6038,7 +6101,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_sweep_stakes",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_trigger_cursor_t *cursor, int *count)",
     "size": 258,
     "thunk": false
   },
@@ -6051,7 +6114,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_deja_vu",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 209,
     "thunk": false
   },
@@ -6064,7 +6127,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_target_practice",
-    "signature": "int __cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 240,
     "thunk": false
   },
@@ -6075,7 +6138,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_major_alien_breach",
-    "signature": "_DWORD *__cdecl(_DWORD *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 167,
     "thunk": false
   },
@@ -6086,7 +6149,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_land_of_lizards",
-    "signature": "_DWORD *__cdecl(_DWORD *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 204,
     "thunk": false
   },
@@ -6097,7 +6160,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_lizquidation",
-    "signature": "int __cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 245,
     "thunk": false
   },
@@ -6108,7 +6171,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_zombie_time",
-    "signature": "int __cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 152,
     "thunk": false
   },
@@ -6119,7 +6182,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_frontline_assault",
-    "signature": "int __cdecl(_DWORD *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 285,
     "thunk": false
   },
@@ -6132,7 +6195,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_collaboration",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 286,
     "thunk": false
   },
@@ -6143,7 +6206,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_blighting",
-    "signature": "int __cdecl(int, int *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 624,
     "thunk": false
   },
@@ -6154,7 +6217,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_annihilation",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 278,
     "thunk": false
   },
@@ -6165,7 +6228,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_massacre",
-    "signature": "int __cdecl(float *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 184,
     "thunk": false
   },
@@ -6178,7 +6241,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_killing",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 602,
     "thunk": false
   },
@@ -6189,7 +6252,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_lizard_zombie_pact",
-    "signature": "int __cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 311,
     "thunk": false
   },
@@ -6200,7 +6263,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_lizard_raze",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 254,
     "thunk": false
   },
@@ -6211,7 +6274,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_surrounded_by_reptiles",
-    "signature": "_DWORD *__cdecl(float *, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 242,
     "thunk": false
   },
@@ -6222,7 +6285,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_unblitzkrieg",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 975,
     "thunk": false
   },
@@ -6233,7 +6296,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_the_end_of_all",
-    "signature": "int *__cdecl(float *, int *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 692,
     "thunk": false
   },
@@ -6244,7 +6307,7 @@
     "external": false,
     "library": false,
     "name": "quest_build_spiders_inc",
-    "signature": "int __cdecl(int, int *)",
+    "signature": "void(quest_spawn_entry_t *entries, int *count)",
     "size": 346,
     "thunk": false
   },
@@ -6265,8 +6328,8 @@
   {
     "address": "0x0043A790",
     "calls": [
-      "FUN_004281e0",
       "console_printf",
+      "creature_reset_all",
       "crt_rand",
       "projectile_reset_pools",
       "quest_build_fallback",
@@ -6301,8 +6364,8 @@
     "end": "0x0043AA86",
     "external": false,
     "library": false,
-    "name": "sub_43AA60",
-    "signature": "char __thiscall(std::codecvt_base *this)",
+    "name": "highscore_submit_full_version_guard",
+    "signature": "int()",
     "size": 38,
     "thunk": false
   },
@@ -6312,8 +6375,8 @@
     "end": "0x0043AB01",
     "external": false,
     "library": false,
-    "name": "FUN_0043aa90",
-    "signature": "void *(void *arg1, void *arg2)",
+    "name": "highscore_record_pack_for_submit",
+    "signature": "highscore_record_t *(highscore_record_t *src, highscore_record_t *dst)",
     "size": 113,
     "thunk": false
   },
@@ -6521,7 +6584,7 @@
     "external": false,
     "library": false,
     "name": "j_highscore_load_table",
-    "signature": "int(void)",
+    "signature": "",
     "size": 5,
     "thunk": true
   },
@@ -6531,8 +6594,8 @@
     "end": "0x0043B846",
     "external": false,
     "library": false,
-    "name": "FUN_0043b810",
-    "signature": "void *(void *arg1)",
+    "name": "sfx_entry_reset_runtime_state",
+    "signature": "void *(void *entry)",
     "size": 54,
     "thunk": false
   },
@@ -6672,6 +6735,17 @@
     "name": "dsound_init",
     "signature": "int(void *hwnd, uint coop_level)",
     "size": 289,
+    "thunk": false
+  },
+  {
+    "address": "0x0043BC20",
+    "calls": [],
+    "end": "0x0043BC3A",
+    "external": false,
+    "library": false,
+    "name": "dsound_shutdown",
+    "signature": "void()",
+    "size": 26,
     "thunk": false
   },
   {
@@ -6923,13 +6997,13 @@
   {
     "address": "0x0043C680",
     "calls": [
-      "FUN_0043b810"
+      "sfx_entry_reset_runtime_state"
     ],
     "end": "0x0043C69F",
     "external": false,
     "library": false,
     "name": "sub_43C680",
-    "signature": "_DWORD *()",
+    "signature": "void *()",
     "size": 31,
     "thunk": false
   },
@@ -6969,13 +7043,13 @@
   {
     "address": "0x0043C6E0",
     "calls": [
-      "FUN_0043b810"
+      "sfx_entry_reset_runtime_state"
     ],
     "end": "0x0043C6FF",
     "external": false,
     "library": false,
     "name": "sub_43C6E0",
-    "signature": "_DWORD *()",
+    "signature": "void *()",
     "size": 31,
     "thunk": false
   },
@@ -7311,8 +7385,8 @@
     "end": "0x0043DC7A",
     "external": false,
     "library": false,
-    "name": "FUN_0043d9b0",
-    "signature": "int(int *arg1, int arg2)",
+    "name": "ui_segmented_slider_update",
+    "signature": "int(float *xy, ui_segmented_slider_t *state)",
     "size": 714,
     "thunk": false
   },
@@ -7329,7 +7403,7 @@
     "external": false,
     "library": false,
     "name": "ui_checkbox_update",
-    "signature": "int(float *xy, char *checkbox)",
+    "signature": "int(float *xy, ui_checkbox_t *checkbox)",
     "size": 622,
     "thunk": false
   },
@@ -7367,7 +7441,7 @@
     "external": false,
     "library": false,
     "name": "ui_menu_item_update",
-    "signature": "int(float *xy, int *item)",
+    "signature": "int(float *xy, ui_menu_item_t *item)",
     "size": 548,
     "thunk": false
   },
@@ -7408,7 +7482,7 @@
     "external": false,
     "library": false,
     "name": "ui_button_update",
-    "signature": "char __cdecl(float *, int)",
+    "signature": "int(float *xy, ui_button_t *button)",
     "size": 1215,
     "thunk": false
   },
@@ -7428,25 +7502,25 @@
     "external": false,
     "library": false,
     "name": "ui_text_input_update",
-    "signature": "int(float *xy, int *input_state)",
+    "signature": "int(float *xy, ui_text_input_state_t *input_state)",
     "size": 716,
     "thunk": false
   },
   {
     "address": "0x0043EFC0",
     "calls": [
-      "FUN_00403430",
       "__ftol",
       "ui_focus_draw",
       "ui_focus_set",
       "ui_focus_update",
-      "ui_mouse_inside_rect"
+      "ui_mouse_inside_rect",
+      "ui_mouse_inside_rect_with_padding"
     ],
     "end": "0x0043F54C",
     "external": false,
     "library": false,
     "name": "ui_list_widget_update",
-    "signature": "int(float *xy, char *list)",
+    "signature": "int(float *xy, ui_list_widget_t *list)",
     "size": 1420,
     "thunk": false
   },
@@ -7464,7 +7538,7 @@
     "end": "0x0044008D",
     "external": false,
     "library": false,
-    "name": "sub_43F550",
+    "name": "statistics_menu_update",
     "signature": "void()",
     "size": 2877,
     "thunk": false
@@ -7568,8 +7642,8 @@
     "end": "0x00440936",
     "external": false,
     "library": false,
-    "name": "sub_440110",
-    "signature": "int()",
+    "name": "unlocked_weapons_database_update",
+    "signature": "void()",
     "size": 2086,
     "thunk": false
   },
@@ -7605,8 +7679,8 @@
     "end": "0x00441171",
     "external": false,
     "library": false,
-    "name": "sub_440960",
-    "signature": "int()",
+    "name": "unlocked_perks_database_update",
+    "signature": "void()",
     "size": 2065,
     "thunk": false
   },
@@ -7660,8 +7734,8 @@
     "end": "0x00441213",
     "external": false,
     "library": false,
-    "name": "sub_4411C0",
-    "signature": "int __cdecl(float *)",
+    "name": "highscore_card_draw_horizontal_divider",
+    "signature": "void(float *xy)",
     "size": 83,
     "thunk": false
   },
@@ -7671,8 +7745,8 @@
     "end": "0x00441267",
     "external": false,
     "library": false,
-    "name": "sub_441220",
-    "signature": "int __cdecl(float *)",
+    "name": "highscore_card_draw_vertical_divider",
+    "signature": "void(float *xy)",
     "size": 71,
     "thunk": false
   },
@@ -7684,8 +7758,8 @@
     "end": "0x00441370",
     "external": false,
     "library": false,
-    "name": "sub_441270",
-    "signature": "char *__cdecl(int, int, int)",
+    "name": "highscore_format_date_label",
+    "signature": "char *(int day, int month_index)",
     "size": 256,
     "thunk": false
   },
@@ -7695,9 +7769,9 @@
       "__ftol",
       "crt_sprintf",
       "format_ordinal",
-      "sub_4411C0",
-      "sub_441220",
-      "sub_441270",
+      "highscore_card_draw_horizontal_divider",
+      "highscore_card_draw_vertical_divider",
+      "highscore_format_date_label",
       "ui_draw_clock_gauge"
     ],
     "end": "0x00442150",
@@ -7756,8 +7830,8 @@
     "end": "0x0044432A",
     "external": false,
     "library": false,
-    "name": "sub_4423D0",
-    "signature": "char()",
+    "name": "highscore_screen_update",
+    "signature": "void()",
     "size": 8026,
     "thunk": false
   },
@@ -7966,8 +8040,8 @@
     "end": "0x004450D4",
     "external": false,
     "library": false,
-    "name": "sub_444F70",
-    "signature": "char *__cdecl(char)",
+    "name": "typo_word_pick_fragment",
+    "signature": "char *(char include_extended_pool)",
     "size": 356,
     "thunk": false
   },
@@ -7983,8 +8057,8 @@
     "end": "0x00445309",
     "external": false,
     "library": false,
-    "name": "FUN_004451b0",
-    "signature": "void *()",
+    "name": "typo_word_pick_highscore_name",
+    "signature": "char *()",
     "size": 345,
     "thunk": false
   },
@@ -7994,24 +8068,24 @@
     "end": "0x0044537E",
     "external": false,
     "library": false,
-    "name": "creature_is_name_unique",
-    "signature": "int(char *arg1, int arg2)",
+    "name": "typo_target_name_is_unique",
+    "signature": "int(char *name, int creature_id)",
     "size": 110,
     "thunk": false
   },
   {
     "address": "0x00445380",
     "calls": [
-      "FUN_004451b0",
-      "creature_is_name_unique",
       "crt_rand",
       "crt_sprintf",
-      "sub_444F70"
+      "typo_target_name_is_unique",
+      "typo_word_pick_fragment",
+      "typo_word_pick_highscore_name"
     ],
     "end": "0x0044558A",
     "external": false,
     "library": false,
-    "name": "creature_name_assign_random",
+    "name": "typo_target_name_assign_random",
     "signature": "void(int creature_id)",
     "size": 522,
     "thunk": false
@@ -8022,7 +8096,7 @@
     "end": "0x004455F2",
     "external": false,
     "library": false,
-    "name": "creature_find_by_name",
+    "name": "typo_target_find_by_name",
     "signature": "int(char *name)",
     "size": 98,
     "thunk": false
@@ -8033,7 +8107,7 @@
     "end": "0x004457B2",
     "external": false,
     "library": false,
-    "name": "creature_name_draw_labels",
+    "name": "typo_target_name_draw_labels",
     "signature": "void()",
     "size": 434,
     "thunk": false
@@ -8044,9 +8118,6 @@
       "__ftol",
       "camera_update",
       "console_input_poll",
-      "creature_find_by_name",
-      "creature_name_assign_random",
-      "creature_name_draw_labels",
       "creature_spawn_tinted",
       "creature_update_all",
       "crt_atexit",
@@ -8061,12 +8132,15 @@
       "sfx_mute_all",
       "sfx_play",
       "sfx_play_exclusive",
+      "typo_target_find_by_name",
+      "typo_target_name_assign_random",
+      "typo_target_name_draw_labels",
       "ui_elements_update_and_render"
     ],
     "end": "0x00445FE2",
     "external": false,
     "library": false,
-    "name": "survival_gameplay_update_and_render",
+    "name": "typo_gameplay_update_and_render",
     "signature": "void()",
     "size": 2082,
     "thunk": false
@@ -8121,7 +8195,7 @@
     "end": "0x00446141",
     "external": false,
     "library": false,
-    "name": "nullsub_72",
+    "name": "ui_callback_noop",
     "signature": "void()",
     "size": 1,
     "thunk": false
@@ -8133,7 +8207,7 @@
     "external": false,
     "library": false,
     "name": "ui_get_element_index",
-    "signature": "int __cdecl(int)",
+    "signature": "int(ui_element_t *element)",
     "size": 31,
     "thunk": false
   },
@@ -8175,7 +8249,7 @@
     "external": false,
     "library": false,
     "name": "game_state_set",
-    "signature": "void(int state_id)",
+    "signature": "void(game_state_id_t state_id)",
     "size": 1854,
     "thunk": false
   },
@@ -8190,7 +8264,7 @@
     "external": false,
     "library": false,
     "name": "ui_element_update",
-    "signature": "void __cdecl(int)",
+    "signature": "void(ui_element_t *element)",
     "size": 831,
     "thunk": false
   },
@@ -8203,7 +8277,7 @@
     "external": false,
     "library": false,
     "name": "ui_element_render",
-    "signature": "void __cdecl(int)",
+    "signature": "void(ui_element_t *element)",
     "size": 1801,
     "thunk": false
   },
@@ -8213,7 +8287,7 @@
     "end": "0x00447362",
     "external": false,
     "library": false,
-    "name": "sub_447350",
+    "name": "ui_menu_main_click_mods",
     "signature": "void()",
     "size": 18,
     "thunk": false
@@ -8238,7 +8312,7 @@
     "end": "0x004473D3",
     "external": false,
     "library": false,
-    "name": "sub_447390",
+    "name": "ui_menu_main_click_statistics",
     "signature": "void()",
     "size": 67,
     "thunk": false
@@ -8249,8 +8323,8 @@
     "end": "0x004473F2",
     "external": false,
     "library": false,
-    "name": "FUN_004473e0",
-    "signature": "int()",
+    "name": "ui_menu_main_click_controls",
+    "signature": "void()",
     "size": 18,
     "thunk": false
   },
@@ -8271,7 +8345,7 @@
     "end": "0x0044744D",
     "external": false,
     "library": false,
-    "name": "FUN_00447420",
+    "name": "ui_menu_click_back_contextual",
     "signature": "int()",
     "size": 45,
     "thunk": false
@@ -8295,8 +8369,8 @@
     "end": "0x004474D3",
     "external": false,
     "library": false,
-    "name": "sub_447490",
-    "signature": "int()",
+    "name": "ui_menu_pause_click_resume",
+    "signature": "void()",
     "size": 67,
     "thunk": false
   },
@@ -8310,7 +8384,7 @@
     "end": "0x00447580",
     "external": false,
     "library": false,
-    "name": "sub_4474E0",
+    "name": "ui_menu_pause_click_main_menu",
     "signature": "void()",
     "size": 160,
     "thunk": false
@@ -8329,20 +8403,20 @@
   {
     "address": "0x004475D0",
     "calls": [
-      "FUN_0043d9b0",
-      "FUN_004473e0",
-      "FUN_00447420",
       "__ftol",
       "config_apply_detail_preset",
       "crt_atexit",
       "ui_button_update",
-      "ui_checkbox_update"
+      "ui_checkbox_update",
+      "ui_menu_click_back_contextual",
+      "ui_menu_main_click_controls",
+      "ui_segmented_slider_update"
     ],
     "end": "0x00447C25",
     "external": false,
     "library": false,
-    "name": "sub_4475D0",
-    "signature": "char()",
+    "name": "options_menu_update",
+    "signature": "void()",
     "size": 1621,
     "thunk": false
   },
@@ -8418,8 +8492,8 @@
     "end": "0x00447CCA",
     "external": false,
     "library": false,
-    "name": "FUN_00447c90",
-    "signature": "int(int arg1)",
+    "name": "input_configure_for_label",
+    "signature": "char *(int config_id)",
     "size": 58,
     "thunk": false
   },
@@ -8448,8 +8522,8 @@
     "end": "0x00448AAC",
     "external": false,
     "library": false,
-    "name": "sub_447D40",
-    "signature": "char()",
+    "name": "quest_select_menu_update",
+    "signature": "void()",
     "size": 3436,
     "thunk": false
   },
@@ -8569,7 +8643,7 @@
     "end": "0x00448CC9",
     "external": false,
     "library": false,
-    "name": "sub_448B50",
+    "name": "input_detect_active_analog_axis",
     "signature": "int()",
     "size": 377,
     "thunk": false
@@ -8578,26 +8652,26 @@
     "address": "0x00448CD0",
     "calls": [
       "0x0046F198",
-      "FUN_00447c90",
-      "FUN_0044ecf0",
       "__ftol",
       "crt_atexit",
       "crt_free",
       "input_any_key_pressed",
+      "input_configure_for_label",
+      "input_detect_active_analog_axis",
       "input_primary_just_pressed",
       "input_scheme_label",
       "strdup_malloc",
-      "sub_448B50",
       "ui_checkbox_update",
       "ui_draw_textured_quad",
       "ui_list_widget_update",
-      "ui_menu_item_update"
+      "ui_menu_item_update",
+      "vec2_add_out"
     ],
     "end": "0x0044DFF9",
     "external": false,
     "library": false,
-    "name": "sub_448CD0",
-    "signature": "int()",
+    "name": "controls_menu_update",
+    "signature": "void()",
     "size": 21289,
     "thunk": false
   },
@@ -8607,8 +8681,8 @@
     "end": "0x0044ED0A",
     "external": false,
     "library": false,
-    "name": "FUN_0044ecf0",
-    "signature": "float *(float *arg1, float *arg2, float *arg3)",
+    "name": "vec2_add_out",
+    "signature": "float *(float *dst, float *lhs)",
     "size": 26,
     "thunk": false
   },
@@ -8692,20 +8766,20 @@
   {
     "address": "0x0044ED80",
     "calls": [
-      "FUN_00447420",
       "crt_atexit",
       "game_is_full_version",
       "input_primary_just_pressed",
       "j_highscore_load_table",
       "sfx_mute_all",
       "ui_button_update",
-      "ui_list_widget_update"
+      "ui_list_widget_update",
+      "ui_menu_click_back_contextual"
     ],
     "end": "0x0044FA26",
     "external": false,
     "library": false,
-    "name": "sub_44ED80",
-    "signature": "char()",
+    "name": "play_game_menu_update",
+    "signature": "void()",
     "size": 3238,
     "thunk": false
   },
@@ -8794,8 +8868,8 @@
     "end": "0x0044FB4D",
     "external": false,
     "library": false,
-    "name": "FUN_0044faa0",
-    "signature": "char *(char *arg1)",
+    "name": "ui_element_init_defaults",
+    "signature": "ui_element_t *(ui_element_t *element)",
     "size": 173,
     "thunk": false
   },
@@ -8818,8 +8892,8 @@
     "end": "0x0044FC97",
     "external": false,
     "library": false,
-    "name": "sub_44FC70",
-    "signature": "HINSTANCE()",
+    "name": "ui_menu_main_click_buy_full_version",
+    "signature": "void()",
     "size": 39,
     "thunk": false
   },
@@ -8829,7 +8903,7 @@
     "end": "0x0044FCA8",
     "external": false,
     "library": false,
-    "name": "sub_44FCA0",
+    "name": "ui_menu_main_click_recheck_full_version",
     "signature": "void()",
     "size": 8,
     "thunk": false
@@ -8837,9 +8911,9 @@
   {
     "address": "0x0044FCB0",
     "calls": [
-      "FUN_0044faa0",
       "game_is_full_version",
       "texture_get_or_load_alt",
+      "ui_element_init_defaults",
       "ui_element_layout_calc",
       "ui_element_load",
       "ui_element_set_rect"
@@ -8945,8 +9019,8 @@
     "end": "0x00452F2A",
     "external": false,
     "library": false,
-    "name": "FUN_00452f1d",
-    "signature": "int()",
+    "name": "vec2_normalize_dispatch_init",
+    "signature": "float *(float *dst, float *src)",
     "size": 13,
     "thunk": false
   },
@@ -8956,8 +9030,8 @@
     "end": "0x00452F30",
     "external": false,
     "library": false,
-    "name": "j_FUN_00452f1d",
-    "signature": "int __stdcall(_DWORD)",
+    "name": "vec2_normalize_dispatch",
+    "signature": "float *(float *dst, float *src)",
     "size": 6,
     "thunk": true
   },
@@ -9442,7 +9516,7 @@
     "external": false,
     "library": false,
     "name": "sub_453F76",
-    "signature": "int __stdcall(float *, float *, float *)",
+    "signature": "float *__stdcall(float *, float *, float *)",
     "size": 909,
     "thunk": false
   },
@@ -10106,8 +10180,8 @@
     "end": "0x00455614",
     "external": false,
     "library": false,
-    "name": "FUN_00455587",
-    "signature": "int *(int *arg1, float arg2)",
+    "name": "vec2_normalize_safe",
+    "signature": "float *(float *dst, float *src)",
     "size": 141,
     "thunk": false
   },
@@ -10642,7 +10716,7 @@
     "external": false,
     "library": false,
     "name": "sub_457650",
-    "signature": "int __userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, int, const double *, const double *, const double *, const double *, float)",
+    "signature": "int __userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, int, const double *, const double *, const double *, const double *, unsigned int)",
     "size": 180,
     "thunk": false
   },
@@ -10653,7 +10727,7 @@
     "external": false,
     "library": false,
     "name": "sub_457710",
-    "signature": "double *__userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, double *, int, const double *, int, const double *, float)",
+    "signature": "double *__userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, double *, int, const double *, int, const double *, unsigned int)",
     "size": 135,
     "thunk": false
   },
@@ -10664,7 +10738,7 @@
     "external": false,
     "library": false,
     "name": "sub_4577A0",
-    "signature": "__m128 *__userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, __m128 *, __m128 *, __m128 *, __m128 *, __m128 *, float)",
+    "signature": "__m128 *__userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, __m128 *, __m128 *, __m128 *, __m128 *, __m128 *, unsigned int)",
     "size": 167,
     "thunk": false
   },
@@ -10675,7 +10749,7 @@
     "external": false,
     "library": false,
     "name": "sub_457850",
-    "signature": "int __userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, int, const double *, const double *, const double *, const double *, float)",
+    "signature": "int __userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, int, const double *, const double *, const double *, const double *, unsigned int)",
     "size": 181,
     "thunk": false
   },
@@ -10686,7 +10760,7 @@
     "external": false,
     "library": false,
     "name": "sub_457910",
-    "signature": "__m128 *__userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, __m128 *, __m128 *, __m128 *, __m128 *, __m128 *, float)",
+    "signature": "__m128 *__userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, __m128 *, __m128 *, __m128 *, __m128 *, __m128 *, unsigned int)",
     "size": 156,
     "thunk": false
   },
@@ -10697,7 +10771,7 @@
     "external": false,
     "library": false,
     "name": "sub_4579B0",
-    "signature": "double *__userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, __m128@<xmm3>, double *, int, const double *, int, const double *, float)",
+    "signature": "double *__userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, __m128@<xmm3>, double *, int, const double *, int, const double *, unsigned int)",
     "size": 136,
     "thunk": false
   },
@@ -11108,7 +11182,7 @@
     "external": false,
     "library": false,
     "name": "sub_458D1E",
-    "signature": "int __stdcall(int, int)",
+    "signature": "int __stdcall(int, unsigned int)",
     "size": 109,
     "thunk": false
   },
@@ -11132,7 +11206,7 @@
     "external": false,
     "library": false,
     "name": "sub_458D9E",
-    "signature": "int __stdcall(int, int)",
+    "signature": "int __stdcall(int, unsigned int)",
     "size": 116,
     "thunk": false
   },
@@ -11339,7 +11413,7 @@
     "external": false,
     "library": false,
     "name": "sub_459ADF",
-    "signature": "__m64 *__stdcall(__m64 *, int, unsigned int)",
+    "signature": "__m64 *__stdcall(__m64 *, __m64 *, unsigned int)",
     "size": 108,
     "thunk": false
   },
@@ -11478,7 +11552,7 @@
     "external": false,
     "library": false,
     "name": "sub_45ACFB",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, int)",
+    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
     "size": 235,
     "thunk": false
   },
@@ -11491,7 +11565,7 @@
     "external": false,
     "library": false,
     "name": "sub_45ADE6",
-    "signature": "__m64 *__stdcall(__m64 *, int)",
+    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
     "size": 220,
     "thunk": false
   },
@@ -11656,7 +11730,7 @@
     "external": false,
     "library": false,
     "name": "sub_45DD30",
-    "signature": "int __stdcall(__m64 *, _DWORD *, __m64 *)",
+    "signature": "__m64 *__stdcall(__m64 *, _DWORD *, __m64 *)",
     "size": 738,
     "thunk": false
   },
@@ -11691,7 +11765,7 @@
     "external": false,
     "library": false,
     "name": "sub_45E73E",
-    "signature": "__m64 *__stdcall(__m64 *, _DWORD *, __m64 *)",
+    "signature": "float *__stdcall(float *, float *, float *)",
     "size": 28,
     "thunk": false
   },
@@ -11790,7 +11864,7 @@
     "external": false,
     "library": false,
     "name": "j_vec3_transform_coord",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
+    "signature": "",
     "size": 5,
     "thunk": true
   },
@@ -11835,7 +11909,7 @@
     "external": false,
     "library": false,
     "name": "sub_45F0C5",
-    "signature": "__m64 *__userpurge@<eax>(__m64@<mm2>, __m64@<mm3>, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *)",
+    "signature": "float *__stdcall(float *out, __m64 *vec, __m64 *, __m64 *, __m64 *rhs, __m64 *lhs)",
     "size": 307,
     "thunk": false
   },
@@ -12077,7 +12151,7 @@
     "external": false,
     "library": false,
     "name": "math_atan2_packed",
-    "signature": "void()",
+    "signature": "unsigned __int64()",
     "size": 245,
     "thunk": false
   },
@@ -12088,7 +12162,7 @@
     "external": false,
     "library": false,
     "name": "math_acos_packed",
-    "signature": "void()",
+    "signature": "unsigned __int64()",
     "size": 247,
     "thunk": false
   },
@@ -12110,7 +12184,7 @@
     "external": false,
     "library": false,
     "name": "math_sincos_packed",
-    "signature": "unsigned int __usercall@<eax>(__m64@<mm0>)",
+    "signature": "unsigned __int64()",
     "size": 281,
     "thunk": false
   },
@@ -12121,7 +12195,7 @@
     "external": false,
     "library": false,
     "name": "math_sin_packed",
-    "signature": "unsigned int __usercall@<eax>(__m64@<mm0>)",
+    "signature": "unsigned __int64()",
     "size": 283,
     "thunk": false
   },
@@ -12855,7 +12929,7 @@
     "external": false,
     "library": false,
     "name": "sub_461FD5",
-    "signature": "int(int, ...)",
+    "signature": "int(char *, ...)",
     "size": 65,
     "thunk": false
   },
@@ -15838,7 +15912,7 @@
     "external": false,
     "library": false,
     "name": "sub_46A344",
-    "signature": "int __cdecl(int, int)",
+    "signature": "int __cdecl(int *, int *)",
     "size": 45,
     "thunk": false
   },
@@ -15852,7 +15926,7 @@
     "external": false,
     "library": false,
     "name": "sub_46A371",
-    "signature": "int __cdecl(int, int)",
+    "signature": "int __cdecl(int *, int *)",
     "size": 45,
     "thunk": false
   },
@@ -17108,7 +17182,7 @@
     "external": false,
     "library": false,
     "name": "ov_pcm_seek",
-    "signature": "int __cdecl(_DWORD, _DWORD, _DWORD)",
+    "signature": "int(OggVorbis_File *vf, ogg_int64_t pos)",
     "size": 6,
     "thunk": true
   },
@@ -17119,7 +17193,7 @@
     "external": false,
     "library": false,
     "name": "ov_pcm_total",
-    "signature": "__int64 __cdecl(_DWORD, _DWORD)",
+    "signature": "ogg_int64_t(OggVorbis_File *vf, int i)",
     "size": 6,
     "thunk": true
   },
@@ -17130,7 +17204,7 @@
     "external": false,
     "library": false,
     "name": "ov_info",
-    "signature": "int __cdecl(_DWORD, _DWORD)",
+    "signature": "vorbis_info *(OggVorbis_File *vf, int link)",
     "size": 6,
     "thunk": true
   },
@@ -17141,7 +17215,7 @@
     "external": false,
     "library": false,
     "name": "ov_open_callbacks",
-    "signature": "int __cdecl(_DWORD, _DWORD, _DWORD, _DWORD, _DWORD, _DWORD, _DWORD, _DWORD)",
+    "signature": "int(void *datasource, OggVorbis_File *vf, char *initial, int ibytes, ov_callbacks callbacks)",
     "size": 6,
     "thunk": true
   },
@@ -17152,7 +17226,7 @@
     "external": false,
     "library": false,
     "name": "ov_clear",
-    "signature": "int __cdecl(_DWORD)",
+    "signature": "int(OggVorbis_File *vf)",
     "size": 6,
     "thunk": true
   },
@@ -17163,7 +17237,7 @@
     "external": false,
     "library": false,
     "name": "ov_read",
-    "signature": "int __cdecl(_DWORD, _DWORD, _DWORD, _DWORD, _DWORD, _DWORD, _DWORD)",
+    "signature": "int(OggVorbis_File *vf, char *buffer, int length, int bigendianp, int word, int sgned, int *bitstream)",
     "size": 6,
     "thunk": true
   },

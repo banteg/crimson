@@ -223,7 +223,7 @@ sequence.
 ## 8. Main Loop
 
 The game enters the main loop with `game_state_id = 0` (Main Menu). The per-frame
-input/hotkey pass here is `console_hotkey_update` (`FUN_0040c1c0`).
+input/hotkey pass here is `game_frame_update` (`FUN_0040c1c0`).
 
 ## Decompile Notes: Post-logo render setup (early draw pipeline)
 

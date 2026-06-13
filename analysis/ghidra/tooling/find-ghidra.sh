@@ -35,6 +35,12 @@ for CANDIDATE in /opt/ghidra*/support/analyzeHeadless; do
         exit 0
     fi
 done
+for CANDIDATE in /Applications/ghidra*_PUBLIC/support/analyzeHeadless; do
+    if [[ -x "$CANDIDATE" ]]; then
+        echo "$CANDIDATE"
+        exit 0
+    fi
+done
 shopt -u nullglob
 
 HEADLESS_CANDIDATES=(

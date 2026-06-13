@@ -1,23 +1,25 @@
-Database C:\dev\crimson\game_bins\crimsonland\1.9.93-gog\crimsonland.exe.i64 already exists.
+Database /Users/banteg/dev/banteg/crimson/game_bins/crimsonland/1.9.93-gog/crimsonland.exe.i64 already exists.
 Do you want to overwrite it? -> ~L~oad existing
 
   bytes   pages size description
 --------- ----- ---- --------------------------------------------
- 10723328  1309 8192 allocating memory for b-tree...
+ 11124736  1358 8192 allocating memory for b-tree...
   2097152   256 8192 allocating memory for virtual array...
    262144    32 8192 allocating memory for name pointers...
 -----------------------------------------------------------------
- 13082624            total memory allocated
+ 13484032            total memory allocated
 
-Loading processor module C:\Program Files\IDA Professional 9.2\procs\pc.dll for metapc...OK
+Loading processor module /Applications/IDA Professional 9.3.app/Contents/MacOS/procs/pc.dylib for metapc...OK
 Loading type libraries...
 Autoanalysis subsystem has been initialized.
 Database for file 'crimsonland.exe' has been loaded.
-Hex-Rays Decompiler plugin has been loaded (v9.2.0.250908)
+Hex-Rays Decompiler plugin has been loaded (v9.3.0.260213)
   The hotkeys are F5: decompile, Ctrl-F5: decompile all.
 
   Please check the Edit/Plugins menu for more information.
-Hex-rays version 9.2.0.250908 has been detected, gooMBA plugin ready to use
+Hex-rays version 9.3.0.260213 has been detected, gooMBA plugin ready to use
+Using type parser: legacy
+Applied name map: analysis/ghidra/maps/name_map.json (updated 623, created 0, renamed 0, signatures 603, comments 623, skipped 583)
 401160: restored microcode from idb
 401160: restored pseudocode from idb
 The decompiler assumes that the segment '.rdata' is read-only because of its NAME.
@@ -80,6 +82,8 @@ to determine if it is read-only.
 40DF60: restored pseudocode from idb
 40DF80: restored microcode from idb
 40DF80: restored pseudocode from idb
+40DFC0: restored microcode from idb
+40DFC0: restored pseudocode from idb
 40E850: restored microcode from idb
 40E850: restored pseudocode from idb
 40F3D0: restored microcode from idb
@@ -348,6 +352,8 @@ to determine if it is read-only.
 4530F0: restored pseudocode from idb
 453133: restored microcode from idb
 453133: restored pseudocode from idb
+45315A: restored microcode from idb
+45315A: restored pseudocode from idb
 45316D: restored microcode from idb
 45316D: restored pseudocode from idb
 453197: restored microcode from idb
@@ -362,8 +368,12 @@ to determine if it is read-only.
 45336F: restored pseudocode from idb
 4533D9: restored microcode from idb
 4533D9: restored pseudocode from idb
+453464: restored microcode from idb
+453464: restored pseudocode from idb
 453484: restored microcode from idb
 453484: restored pseudocode from idb
+4534EA: restored microcode from idb
+4534EA: restored pseudocode from idb
 4534FB: restored microcode from idb
 4534FB: restored pseudocode from idb
 453519: restored microcode from idb
@@ -384,20 +394,52 @@ to determine if it is read-only.
 4538E1: restored pseudocode from idb
 45398D: restored microcode from idb
 45398D: restored pseudocode from idb
+453A57: restored microcode from idb
+453A57: restored pseudocode from idb
 453A6A: restored microcode from idb
 453A6A: restored pseudocode from idb
+453CA0: restored microcode from idb
+453CA0: restored pseudocode from idb
 453CB3: restored microcode from idb
 453CB3: restored pseudocode from idb
 453D2D: restored microcode from idb
 453D2D: restored pseudocode from idb
+453F63: restored microcode from idb
+453F63: restored pseudocode from idb
 453F76: restored microcode from idb
 453F76: restored pseudocode from idb
+454303: restored microcode from idb
+454303: restored pseudocode from idb
 454331: restored microcode from idb
 454331: restored pseudocode from idb
+45438D: restored microcode from idb
+45438D: restored pseudocode from idb
 4543BB: restored microcode from idb
 4543BB: restored pseudocode from idb
+454417: restored microcode from idb
+454417: restored pseudocode from idb
+454433: restored microcode from idb
+454433: restored pseudocode from idb
+4544AD: restored microcode from idb
+4544AD: restored pseudocode from idb
+4544C9: restored microcode from idb
+4544C9: restored pseudocode from idb
+454544: restored microcode from idb
+454544: restored pseudocode from idb
+454560: restored microcode from idb
+454560: restored pseudocode from idb
+4545DC: restored microcode from idb
+4545DC: restored pseudocode from idb
+4545FC: restored microcode from idb
+4545FC: restored pseudocode from idb
+4546FE: restored microcode from idb
+4546FE: restored pseudocode from idb
 454711: restored microcode from idb
 454711: restored pseudocode from idb
+4547F3: restored microcode from idb
+4547F3: restored pseudocode from idb
+454821: restored microcode from idb
+454821: restored pseudocode from idb
 454832: restored microcode from idb
 454832: restored pseudocode from idb
 454859: restored microcode from idb
@@ -406,28 +448,44 @@ to determine if it is read-only.
 454966: restored pseudocode from idb
 454A10: restored microcode from idb
 454A10: restored pseudocode from idb
+454B44: restored microcode from idb
+454B44: restored pseudocode from idb
+454B64: restored microcode from idb
+454B64: restored pseudocode from idb
+454BC0: restored microcode from idb
+454BC0: restored pseudocode from idb
 454BF4: restored microcode from idb
 454BF4: restored pseudocode from idb
+454CCD: restored microcode from idb
+454CCD: restored pseudocode from idb
 454CE0: restored microcode from idb
 454CE0: restored pseudocode from idb
 454D83: restored microcode from idb
 454D83: restored pseudocode from idb
+454E3C: restored microcode from idb
+454E3C: restored pseudocode from idb
 454E4F: restored microcode from idb
 454E4F: restored pseudocode from idb
 454F09: restored microcode from idb
 454F09: restored pseudocode from idb
 454F8D: restored microcode from idb
 454F8D: restored pseudocode from idb
+455028: restored microcode from idb
+455028: restored pseudocode from idb
 455052: restored microcode from idb
 455052: restored pseudocode from idb
 455135: restored microcode from idb
 455135: restored pseudocode from idb
 45515F: restored microcode from idb
 45515F: restored pseudocode from idb
+4551B6: restored microcode from idb
+4551B6: restored pseudocode from idb
 4551C7: restored microcode from idb
 4551C7: restored pseudocode from idb
 4551F6: restored microcode from idb
 4551F6: restored pseudocode from idb
+455281: restored microcode from idb
+455281: restored pseudocode from idb
 455294: restored microcode from idb
 455294: restored pseudocode from idb
 455345: restored microcode from idb
@@ -438,6 +496,24 @@ to determine if it is read-only.
 455439: restored pseudocode from idb
 4554E8: restored microcode from idb
 4554E8: restored pseudocode from idb
+455614: restored microcode from idb
+455614: restored pseudocode from idb
+45567F: restored microcode from idb
+45567F: restored pseudocode from idb
+4556FF: restored microcode from idb
+4556FF: restored pseudocode from idb
+45573B: restored microcode from idb
+45573B: restored pseudocode from idb
+4557DB: restored microcode from idb
+4557DB: restored pseudocode from idb
+45589A: restored microcode from idb
+45589A: restored pseudocode from idb
+455A27: restored microcode from idb
+455A27: restored pseudocode from idb
+455BCD: restored microcode from idb
+455BCD: restored pseudocode from idb
+455C86: restored microcode from idb
+455C86: restored pseudocode from idb
 455CBF: restored microcode from idb
 455CBF: restored pseudocode from idb
 455F73: restored microcode from idb
@@ -458,6 +534,8 @@ to determine if it is read-only.
 4567B0: restored pseudocode from idb
 4568C0: restored microcode from idb
 4568C0: restored pseudocode from idb
+4569D0: restored microcode from idb
+4569D0: restored pseudocode from idb
 456AA5: restored microcode from idb
 456AA5: restored pseudocode from idb
 456CCB: restored microcode from idb
@@ -470,6 +548,12 @@ to determine if it is read-only.
 456DF4: restored pseudocode from idb
 456E53: restored microcode from idb
 456E53: restored pseudocode from idb
+456EEC: restored microcode from idb
+456EEC: restored pseudocode from idb
+456FB6: restored microcode from idb
+456FB6: restored pseudocode from idb
+457099: restored microcode from idb
+457099: restored pseudocode from idb
 457127: restored microcode from idb
 457127: restored pseudocode from idb
 457170: restored microcode from idb
@@ -736,24 +820,42 @@ to determine if it is read-only.
 45FEB0: restored pseudocode from idb
 4603C0: restored microcode from idb
 4603C0: restored pseudocode from idb
+460CB8: restored microcode from idb
+460CB8: restored pseudocode from idb
 460CCF: restored microcode from idb
 460CCF: restored pseudocode from idb
 461501: restored microcode from idb
 461501: restored pseudocode from idb
 461FD5: restored microcode from idb
 461FD5: restored pseudocode from idb
+462A17: restored microcode from idb
+462A17: restored pseudocode from idb
 463176: restored microcode from idb
 463176: restored pseudocode from idb
+466A61: restored microcode from idb
+466A61: restored pseudocode from idb
 466BD6: restored microcode from idb
 466BD6: restored pseudocode from idb
+466CA6: restored microcode from idb
+466CA6: restored pseudocode from idb
 46777A: restored microcode from idb
 46777A: restored pseudocode from idb
+4678BE: restored microcode from idb
+4678BE: restored pseudocode from idb
 467914: restored microcode from idb
 467914: restored pseudocode from idb
+467A2D: restored microcode from idb
+467A2D: restored pseudocode from idb
 467C7A: restored microcode from idb
 467C7A: restored pseudocode from idb
+467D9E: restored microcode from idb
+467D9E: restored pseudocode from idb
 468DDC: restored microcode from idb
 468DDC: restored pseudocode from idb
+46A318: restored microcode from idb
+46A318: restored pseudocode from idb
+46A32E: restored microcode from idb
+46A32E: restored pseudocode from idb
 46A344: restored microcode from idb
 46A344: restored pseudocode from idb
 46A371: restored microcode from idb
@@ -764,6 +866,6 @@ to determine if it is read-only.
 46D6B5: restored pseudocode from idb
 46D6C6: restored microcode from idb
 46D6C6: restored pseudocode from idb
-IDA decompile complete: C:\dev\crimson\analysis\ida\raw\crimsonland.exe\crimsonland.exe_decompiled.c
+IDA decompile complete: /Users/banteg/dev/banteg/crimson/analysis/ida/raw/crimsonland.exe/crimsonland.exe_decompiled.c
 Flushing buffers, please wait...ok
-Unloading IDP module C:\Program Files\IDA Professional 9.2\procs\pc.dll...
+Unloading IDP module /Applications/IDA Professional 9.3.app/Contents/MacOS/procs/pc.dylib...

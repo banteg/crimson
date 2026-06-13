@@ -9921,7 +9921,7 @@ Sections:
 0040c1c0  // per-frame input/update function; contains console hotkey block (DIK_GRAVE) at
 0040c1c0  // 0x0040c360 and DIK_F12 check; entry identified via WinDbg
 0040c1c0  
-0040c1c0    void console_hotkey_update()
+0040c1c0    void game_frame_update()
 
 0040c1cb  int32_t ebx
 0040c1cb  int32_t var_2c = ebx
@@ -39209,7 +39209,7 @@ Sections:
 0042b4e7      
 0042b4ec      if ((startup_post_load_settle_ticks_1:1.b & 0x41) == 0)
 0042b4f7          int32_t var_2c_3 = 0x2d
-0042b4f9          grim_interface_ptr_56 = console_hotkey_update
+0042b4f9          grim_interface_ptr_56 = game_frame_update
 0042b508          (*(*grim_interface_ptr + 0x20))(0x2d, var_28, var_24, var_20, 
 0042b508              grim_interface_ptr_56)
 0042b50b          void* grim_interface_ptr_8 = grim_interface_ptr
@@ -124456,4 +124456,3 @@ Sections:
 004ded60  extern wchar16* __builtin_wcscpy(wchar16* dest, wchar16 const* src)
 004ded64  extern wchar16* __builtin_wmemcpy(wchar16* dest, wchar16 const* src, uint32_t count)
 .synthetic_builtins section ended  {0x4ded50-0x4ded68}
-
