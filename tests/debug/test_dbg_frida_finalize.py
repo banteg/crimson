@@ -1524,6 +1524,59 @@ def test_finalize_frida_jsonl_to_traces_rejects_capture_error_row(tmp_path: Path
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
+def test_finalize_frida_jsonl_to_traces_allows_nonfatal_run_error_between_runs(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(run_id=1, mode_id=3, seed=108, quest_stage_major=1, quest_stage_minor=1),
+            _tick_row(
+                run_id=1,
+                tick_index=0,
+                elapsed_ms=16,
+                dt_ms_i32=16,
+                dt=0.016,
+                mode_id=3,
+                quest_stage_major=1,
+                quest_stage_minor=1,
+            ),
+            {
+                "event": "run_error",
+                "error": "samples.secondary_projectiles[0].speed must be finite",
+                "run_id": 1,
+                "mode_id": 3,
+                "quest_stage_major": 1,
+                "quest_stage_minor": 1,
+                "tick_index_global": 1,
+            },
+            _run_end_row(
+                run_id=1,
+                mode_id=3,
+                quest_stage_major=1,
+                quest_stage_minor=1,
+                ticks_written=1,
+                reason="capture_contract_error",
+            ),
+            _run_start_row(run_id=2, mode_id=1, seed=109),
+            _tick_row(
+                run_id=2,
+                tick_index=2,
+                elapsed_ms=16,
+                dt_ms_i32=16,
+                dt=0.016,
+                mode_id=1,
+            ),
+            _run_end_row(run_id=2, mode_id=1, ticks_written=1),
+            _session_end_row(ticks_written=2),
+        ],
+    )
+
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+    assert [trace.tick_count for trace in result.traces] == [1, 1]
+    assert [trace.mode_id for trace in result.traces] == [3, 1]
+
+
 def test_finalize_frida_jsonl_to_traces_rejects_session_end_session_id_mismatch(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",

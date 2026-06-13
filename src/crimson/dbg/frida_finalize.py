@@ -52,7 +52,7 @@ _SUPPORTED_CAPTURE_FORMAT_VERSIONS = frozenset({13, 14, 15})
 _POOL_RESIDUE_CAPTURE_VERSION = 15
 _TRACE_CHUNK_TICKS = 256
 _RUN_START_REASONS = frozenset(("run_start", "first_tick", "quest_attempt", "mode_or_stage_change"))
-_RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change", "shutdown"))
+_RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change", "shutdown", "capture_contract_error"))
 _SEED_SOURCES = frozenset(("unknown", "crt_srand"))
 # Replay seeds are derived from the rand state latched at run-setup entry
 # (before the first terrain draw), not from the stale session-wide srand seed.
@@ -320,6 +320,21 @@ class _ErrorRow(
     tick_index_global: int | None = None
 
 
+class _RunErrorRow(
+    msgspec.Struct,
+    frozen=True,
+    forbid_unknown_fields=True,
+    tag_field="event",
+    tag="run_error",
+):
+    error: str
+    run_id: int | None = None
+    mode_id: int | None = None
+    quest_stage_major: int | None = None
+    quest_stage_minor: int | None = None
+    tick_index_global: int | None = None
+
+
 class _SessionEndRow(
     msgspec.Struct,
     frozen=True,
@@ -331,7 +346,7 @@ class _SessionEndRow(
     ticks_written: int
 
 
-type _CaptureRow = _SessionStartRow | _RunStartRow | _TickRow | _RunEndRow | _ErrorRow | _SessionEndRow
+type _CaptureRow = _SessionStartRow | _RunStartRow | _TickRow | _RunEndRow | _ErrorRow | _RunErrorRow | _SessionEndRow
 
 
 _CAPTURE_ROW_DECODER = msgspec.json.Decoder(type=_CaptureRow)
@@ -1294,6 +1309,8 @@ def finalize_frida_jsonl_to_traces(
                             f"{location} capture error={error_row.error!r} "
                             f"tick_index_global={int(error_row.tick_index_global)}",
                         )
+                    case _RunErrorRow():
+                        continue
                     case _SessionEndRow():
                         if active_run is not None:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] session_end while run is active")

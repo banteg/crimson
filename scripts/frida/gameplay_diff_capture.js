@@ -549,7 +549,9 @@ const outState = {
   currentRunQuestMajor: -1,
   currentRunQuestMinor: -1,
   currentRunKey: "",
+  currentRunStarted: false,
   currentRunBootstrapQuestAttemptPending: false,
+  captureContractSuspendedRunKey: null,
   currentRunElapsedRawStartMs: null,
   currentRunElapsedRawLastMs: null,
   currentRunElapsedNormalizedMs: null,
@@ -847,16 +849,25 @@ function _captureForceFlush() {
 }
 
 function emitCaptureContractError(errorCode, tickObj) {
+  const runKey = outState.currentRunKey || runKeyForTick(tickObj);
   const row = {
-    event: "error",
+    event: "run_error",
     error: String(errorCode || "capture_contract_error"),
     run_id: outState.runActive ? outState.currentRunId | 0 : null,
+    mode_id: outState.runActive ? outState.currentRunModeId | 0 : tickModeId(tickObj),
+    quest_stage_major: outState.runActive ? outState.currentRunQuestMajor | 0 : tickQuestMajor(tickObj),
+    quest_stage_minor: outState.runActive ? outState.currentRunQuestMinor | 0 : tickQuestMinor(tickObj),
     tick_index_global:
       tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
   };
   _captureWriteJsonLine(row, true);
-  writeLine(row);
-  shutdownCapture(String(errorCode || "capture_contract_error"));
+  writeLine(Object.assign({}, row, { event: "error" }));
+  if (runKey) outState.captureContractSuspendedRunKey = runKey;
+  try {
+    closeActiveRun("capture_contract_error", tickObj);
+  } catch (_) {
+    resetCurrentRunState();
+  }
   return null;
 }
 
@@ -1027,6 +1038,10 @@ function startCaptureFile(meta, outPath) {
 
 function closeActiveRun(reason, tickObj) {
   if (!outState.runActive) return;
+  if (!outState.currentRunStarted) {
+    resetCurrentRunState();
+    return;
+  }
   // Draws between the run's last tick and its close belong to this run, not
   // to the next tick's outside-before bag.
   const outsideTail = takePendingOutsideRngRolls();
@@ -1062,12 +1077,17 @@ function closeActiveRun(reason, tickObj) {
     true,
   );
   if (wrote) _captureForceFlush();
+  resetCurrentRunState();
+}
+
+function resetCurrentRunState() {
   outState.runActive = false;
   outState.currentRunTickCount = 0;
   outState.currentRunModeId = -1;
   outState.currentRunQuestMajor = -1;
   outState.currentRunQuestMinor = -1;
   outState.currentRunKey = "";
+  outState.currentRunStarted = false;
   outState.currentRunBootstrapQuestAttemptPending = false;
   outState.currentRunElapsedRawStartMs = null;
   outState.currentRunElapsedRawLastMs = null;
@@ -1091,6 +1111,7 @@ function startRunForTick(tickObj, reason) {
     outState.currentRunQuestMajor = questMajor;
     outState.currentRunQuestMinor = questMinor;
     outState.currentRunKey = runKey;
+    outState.currentRunStarted = false;
     outState.currentRunBootstrapQuestAttemptPending =
       startReason === "first_tick" && (outState.currentRunModeId | 0) === GAME_MODE_QUESTS;
     outState.currentRunElapsedRawStartMs = null;
@@ -1136,6 +1157,7 @@ function startRunForTick(tickObj, reason) {
       emitCaptureContractError("run_start_write_failed", tickObj);
       return false;
     }
+    outState.currentRunStarted = true;
     _captureForceFlush();
     return true;
   } catch (error) {
@@ -1148,6 +1170,15 @@ function startRunForTick(tickObj, reason) {
 }
 
 function ensureRunForTick(tickObj) {
+  if (!outState.runActive && outState.captureContractSuspendedRunKey) {
+    const nextRunKey = runKeyForTick(tickObj);
+    const needsQuestRollover = consumeQuestAttemptRolloverForTick(tickObj);
+    if (nextRunKey === outState.captureContractSuspendedRunKey && !needsQuestRollover) {
+      return false;
+    }
+    outState.captureContractSuspendedRunKey = null;
+    return startRunForTick(tickObj, needsQuestRollover ? "quest_attempt" : "mode_or_stage_change");
+  }
   let needsRollover = outState.runActive ? consumeQuestAttemptRolloverForTick(tickObj) : false;
   if (!outState.runActive) {
     return startRunForTick(tickObj, "first_tick");
