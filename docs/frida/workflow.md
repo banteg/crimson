@@ -6,67 +6,47 @@ and `analysis/ghidra/maps/data_map.json` after review.
 
 ## 1) Collect runtime logs
 
-Copy the scripts into the VM share `C:\share\frida` (WSL path `/mnt/c/share/frida`).
-You can override the output directory with `CRIMSON_FRIDA_DIR`. For `grim_hooks.js`,
-set `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
-
-From WSL, you can sync the current repo scripts into the share:
-
-```bash
-just frida-sync-share
-```
-
-- `scripts/frida/grim_hooks.js`
-- `scripts/frida/grim_hooks_targets.json`
-- `scripts/frida/crimsonland_probe.js`
-- `scripts/frida/menu_logo_pivot_trace.js`
-- `scripts/frida/screen_fade_trace.js`
-- `scripts/frida/perk_prompt_trace.js`
-- `scripts/frida/ui_render_trace.js`
-- `scripts/frida/panel_state_resolution_sweep.js`
-- `scripts/frida/gameplay_state_capture.js`
-- `scripts/frida/gameplay_diff_capture.js`
-- `scripts/frida/survival_autoplay.js`
-- `scripts/frida/creature_anim_trace.js`
-- `scripts/frida/creature_render_trace.js`
-- `scripts/frida/fx_queue_render_trace.js`
-- `scripts/frida/azk_verify_no_unlock.js`
+Run Frida from the Windows checkout so hook scripts load from the repo under
+`scripts\frida\...`. Scripts write to `C:\share\frida` by default, which can be
+kept in Syncthing; override the output directory with `CRIMSON_FRIDA_DIR`. For
+`grim_hooks.js`, set `CRIMSON_FRIDA_CONFIG` to point at a different
+`grim_hooks_targets.json`.
 
 Attach by process name (required; spawn caused empty textures + crash on 2026-01-18):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\grim_hooks.js
+frida -n crimsonland.exe -l scripts\frida\grim_hooks.js
 ```
 
 In a separate terminal (or a second run), attach the probe script:
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\crimsonland_probe.js
+frida -n crimsonland.exe -l scripts\frida\crimsonland_probe.js
 ```
 
 Menu logo rotation trace (focused, JSONL to `menu_logo_pivot_trace.jsonl`):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\menu_logo_pivot_trace.js
+frida -n crimsonland.exe -l scripts\frida\menu_logo_pivot_trace.js
 ```
 
 Screen fade trace (UI/fade globals + fullscreen overlay, JSONL to `screen_fade_trace.jsonl`):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\screen_fade_trace.js
+frida -n crimsonland.exe -l scripts\frida\screen_fade_trace.js
 ```
 
 UI render trace (menus/panels/widgets, JSONL to `ui_render_trace.jsonl`):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\ui_render_trace.js
+frida -n crimsonland.exe -l scripts\frida\ui_render_trace.js
 ```
 
 Panel-state resolution sweep (issue #165 capture: automatic state forcing +
 panel/text capture; writes resolution-scoped JSONL):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\panel_state_resolution_sweep.js
+frida -n crimsonland.exe -l scripts\frida\panel_state_resolution_sweep.js
 ```
 
 Just shortcut (Windows VM):
@@ -79,7 +59,7 @@ Comprehensive gameplay/state capture (automatic snapshots + write tracing, JSONL
 `gameplay_state_capture.jsonl`):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\gameplay_state_capture.js
+frida -n crimsonland.exe -l scripts\frida\gameplay_state_capture.js
 ```
 
 Differential gameplay capture (tick-aligned checkpoints + event summaries; writes
@@ -99,7 +79,7 @@ Survival autoplay sidecar (manual-run helper that pins control scheme config onl
 default is static movement + computer aim, JSONL to `survival_autoplay.jsonl`):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\survival_autoplay.js
+frida -n crimsonland.exe -l scripts\frida\survival_autoplay.js
 ```
 
 Shortcut: `just frida-survival-autoplay`
@@ -108,7 +88,7 @@ AlienZooKeeper no-unlock verifier (forces state `0x1a`, resets timer to `0x2580`
 and logs a final `verdict` event to `azk_verify_no_unlock.jsonl`):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\azk_verify_no_unlock.js
+frida -n crimsonland.exe -l scripts\frida\azk_verify_no_unlock.js
 ```
 
 Shortcut: `just frida-azk-verify`
@@ -123,19 +103,19 @@ You can disable or tune it via:
 Creature animation phase trace (focused, JSONL to `creature_anim_trace.jsonl`):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\creature_anim_trace.js
+frida -n crimsonland.exe -l scripts\frida\creature_anim_trace.js
 ```
 
 Creature render trace (draw calls + alpha for dying creatures, JSONL to `creature_render_trace.jsonl`):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\creature_render_trace.js
+frida -n crimsonland.exe -l scripts\frida\creature_render_trace.js
 ```
 
 FX queue bake trace (corpse shadow/color passes into terrain RT, JSONL to `fx_queue_render_trace.jsonl`):
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\fx_queue_render_trace.js
+frida -n crimsonland.exe -l scripts\frida\fx_queue_render_trace.js
 ```
 
 Just shortcut (Windows VM):

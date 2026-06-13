@@ -277,11 +277,6 @@ frida-copy-share:
     done
 
 [unix]
-frida-sync-share:
-    mkdir -p {{share_dir}}
-    cp -av scripts/frida/*.js scripts/frida/*.json {{share_dir}}/
-
-[unix]
 frida-import-raw:
     mkdir -p analysis/frida/raw
     for f in grim_hits.jsonl crimsonland_frida_hits.jsonl gameplay_state_capture.jsonl gameplay_diff_capture.jsonl demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl screen_fade_trace.jsonl ui_render_trace.jsonl game_over_panel_trace.jsonl survival_autoplay.jsonl azk_verify_no_unlock.jsonl creature_anim_trace.jsonl; do \

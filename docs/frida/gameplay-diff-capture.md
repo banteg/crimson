@@ -41,7 +41,7 @@ Optional flags:
 ## Direct attach
 
 ```text
-frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
+frida -n crimsonland.exe -l scripts\frida\gameplay_diff_capture.js
 ```
 
 Default raw output:

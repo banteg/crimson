@@ -24,8 +24,8 @@ Goal: validate a small backlog subset using Frida hooks without pausing.
 How to run (Frida hook script):
 
 1) Game path (this VM): `C:\Crimsonland\crimsonland.exe`.
-2) Copy `scripts/frida/grim_hooks.js` and `scripts/frida/grim_hooks_targets.json`
-   into the VM share `C:\share\frida` (host path `~/utm/win11/share/frida/`).
+2) Run Frida from the Windows checkout so `scripts/frida/grim_hooks.js` and
+   `scripts/frida/grim_hooks_targets.json` are loaded directly from the repo.
    Optional: set `CRIMSON_FRIDA_DIR` to change the log directory or
    `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
 
@@ -33,7 +33,7 @@ How to run (Frida hook script):
 4) Launch the game, then attach by process name (required; spawn is unstable on this VM):
 
    ```text
-   frida -n crimsonland.exe -l C:\share\frida\grim_hooks.js
+   frida -n crimsonland.exe -l scripts\frida\grim_hooks.js
    ```
 
    Spawned runs on Win11 ARM64 caused empty textures and a crash before the main menu
