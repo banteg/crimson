@@ -88,7 +88,7 @@
       "cdt": "gameplay_diff_capture.survival.run1.cdt",
       "source_cdt": "/Users/banteg/syncthing/frida/gameplay_diff_capture.survival.run1.cdt",
       "game_mode_id": 1,
-      "tick_count": 3041,
+      "tick_count": 12470,
       "windows": [
         {
           "start_tick": 0,
@@ -96,29 +96,29 @@
           "tick_count": 64
         },
         {
-          "start_tick": 992,
-          "end_tick": 1055,
+          "start_tick": 4135,
+          "end_tick": 4198,
           "tick_count": 64
         },
         {
-          "start_tick": 1985,
-          "end_tick": 2048,
+          "start_tick": 8271,
+          "end_tick": 8334,
           "tick_count": 64
         },
         {
-          "start_tick": 2977,
-          "end_tick": 3040,
+          "start_tick": 12406,
+          "end_tick": 12469,
           "tick_count": 64
         }
       ],
       "window_tick_count": 256,
-      "seed": 2804794035,
+      "seed": 2113491914,
       "seed_source": "run_setup_rng_state",
       "seed_aligned": true,
       "native_first_draw": {
         "tick_index": 0,
-        "state_before_u32": 3852145380,
-        "value_15": 14597,
+        "state_before_u32": 1940701111,
+        "value_15": 18225,
         "caller": 4228131
       },
       "outside_draws_per_tick": 1
