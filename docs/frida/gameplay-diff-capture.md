@@ -30,7 +30,9 @@ uv run --with frida python scripts/frida/gameplay_diff_capture_host.py \
 ```
 
 (`--with frida` injects the frida package; the host otherwise runs in the
-project env. `just frida-gameplay-diff-capture` wraps the same invocation.)
+project env. `just frida-gameplay-diff-capture` wraps the same invocation.
+Pass host flags after `--`, for example
+`just frida-gameplay-diff-capture -- --keep-raw`.)
 
 Optional flags:
 

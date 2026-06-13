@@ -178,75 +178,51 @@ windbg-tail:
 # Frida
 [windows]
 frida-attach script="scripts\\frida\\crimsonland_probe.js" process="crimsonland.exe":
-    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
-    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    frida -n {{process}} -l {{script}}
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "{{script}}"
 
 [windows]
-frida-unlock-secrets:
-    frida -n crimsonland.exe -l scripts\\frida\\unlock_secrets.js
+frida-unlock-secrets process="crimsonland.exe":
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\unlock_secrets.js"
 
 [windows]
-frida-quest-spanking-count:
-    frida -n crimsonland.exe -l scripts\\frida\\quest_spanking_count.js
+frida-quest-spanking-count process="crimsonland.exe":
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\quest_spanking_count.js"
 
 [windows]
 frida-azk-verify process="crimsonland.exe":
-    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
-    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    frida -n {{process}} -l scripts\\frida\\azk_verify_no_unlock.js
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\azk_verify_no_unlock.js"
 
 [windows]
-frida-quest-build-dump:
-    frida -n crimsonland.exe -l scripts\\frida\\quest_build_dump.js
+frida-quest-build-dump process="crimsonland.exe":
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\quest_build_dump.js"
 
 [windows]
 frida-demo-trial-overlay process="crimsonland.exe" addrs="" link_base="" module="":
-    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
-    if ("{{addrs}}" -ne "") { $env:CRIMSON_FRIDA_ADDRS = "{{addrs}}" } else { Remove-Item Env:CRIMSON_FRIDA_ADDRS -ErrorAction SilentlyContinue }
-    if ("{{link_base}}" -ne "") { $env:CRIMSON_FRIDA_LINK_BASE = "{{link_base}}" } else { Remove-Item Env:CRIMSON_FRIDA_LINK_BASE -ErrorAction SilentlyContinue }
-    if ("{{module}}" -ne "") { $env:CRIMSON_FRIDA_MODULE = "{{module}}" } else { Remove-Item Env:CRIMSON_FRIDA_MODULE -ErrorAction SilentlyContinue }
-    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    frida -n {{process}} -l scripts\\frida\\demo_trial_overlay_trace.js
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; if ("{{addrs}}" -ne "") { $env:CRIMSON_FRIDA_ADDRS = "{{addrs}}" } else { Remove-Item Env:CRIMSON_FRIDA_ADDRS -ErrorAction SilentlyContinue }; if ("{{link_base}}" -ne "") { $env:CRIMSON_FRIDA_LINK_BASE = "{{link_base}}" } else { Remove-Item Env:CRIMSON_FRIDA_LINK_BASE -ErrorAction SilentlyContinue }; if ("{{module}}" -ne "") { $env:CRIMSON_FRIDA_MODULE = "{{module}}" } else { Remove-Item Env:CRIMSON_FRIDA_MODULE -ErrorAction SilentlyContinue }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\demo_trial_overlay_trace.js"
 
 [windows]
 frida-demo-idle-threshold process="crimsonland.exe" addrs="" link_base="" module="":
-    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
-    if ("{{addrs}}" -ne "") { $env:CRIMSON_FRIDA_ADDRS = "{{addrs}}" } else { Remove-Item Env:CRIMSON_FRIDA_ADDRS -ErrorAction SilentlyContinue }
-    if ("{{link_base}}" -ne "") { $env:CRIMSON_FRIDA_LINK_BASE = "{{link_base}}" } else { Remove-Item Env:CRIMSON_FRIDA_LINK_BASE -ErrorAction SilentlyContinue }
-    if ("{{module}}" -ne "") { $env:CRIMSON_FRIDA_MODULE = "{{module}}" } else { Remove-Item Env:CRIMSON_FRIDA_MODULE -ErrorAction SilentlyContinue }
-    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    frida -n {{process}} -l scripts\\frida\\demo_idle_threshold_trace.js
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; if ("{{addrs}}" -ne "") { $env:CRIMSON_FRIDA_ADDRS = "{{addrs}}" } else { Remove-Item Env:CRIMSON_FRIDA_ADDRS -ErrorAction SilentlyContinue }; if ("{{link_base}}" -ne "") { $env:CRIMSON_FRIDA_LINK_BASE = "{{link_base}}" } else { Remove-Item Env:CRIMSON_FRIDA_LINK_BASE -ErrorAction SilentlyContinue }; if ("{{module}}" -ne "") { $env:CRIMSON_FRIDA_MODULE = "{{module}}" } else { Remove-Item Env:CRIMSON_FRIDA_MODULE -ErrorAction SilentlyContinue }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\demo_idle_threshold_trace.js"
 
 [windows]
 frida-game-over-panel-trace process="crimsonland.exe":
-    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
-    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    frida -n {{process}} -l scripts\\frida\\game_over_panel_trace.js
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\game_over_panel_trace.js"
 
 [windows]
 frida-gameplay-state-capture process="crimsonland.exe":
-    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
-    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    frida -n {{process}} -l scripts\\frida\\gameplay_state_capture.js
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\gameplay_state_capture.js"
 
 [windows]
-frida-gameplay-diff-capture process="crimsonland.exe":
-    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
-    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    uv run --with frida python scripts/frida/gameplay_diff_capture_host.py --process {{process}} --script scripts\\frida\\gameplay_diff_capture.js --output-dir $env:CRIMSON_FRIDA_DIR
+frida-gameplay-diff-capture *host_args:
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; uv run --with frida python scripts/frida/gameplay_diff_capture_host.py {{host_args}}
 
 [windows]
 frida-survival-autoplay process="crimsonland.exe":
-    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
-    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    frida -n {{process}} -l scripts\\frida\\survival_autoplay.js
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\survival_autoplay.js"
 
 [windows]
 frida-panel-state-resolution-sweep process="crimsonland.exe":
-    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
-    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    frida -n {{process}} -l scripts\\frida\\panel_state_resolution_sweep.js
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\panel_state_resolution_sweep.js"
 
 [windows]
 ghidra-sync:
