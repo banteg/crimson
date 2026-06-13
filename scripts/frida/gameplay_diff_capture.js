@@ -2676,18 +2676,19 @@ function readSecondaryProjectileEntry(index) {
   return {
     index: index,
     active: active,
+    angle: captureNumber(safeReadF32(base.add(0x04))),
+    speed: captureNumber(safeReadF32(base.add(0x08))),
     pos: {
-      x: captureNumber(safeReadF32(base.add(0x04))),
-      y: captureNumber(safeReadF32(base.add(0x08))),
+      x: captureNumber(safeReadF32(base.add(0x0c))),
+      y: captureNumber(safeReadF32(base.add(0x10))),
     },
-    life_timer: captureNumber(safeReadF32(base.add(0x0c))),
-    angle: captureNumber(safeReadF32(base.add(0x10))),
     vel: {
       x: captureNumber(safeReadF32(base.add(0x14))),
       y: captureNumber(safeReadF32(base.add(0x18))),
     },
-    trail_timer: captureNumber(safeReadF32(base.add(0x1c))),
-    type_id: safeReadS32(base.add(0x20)),
+    type_id: safeReadS32(base.add(0x1c)),
+    trail_timer: captureNumber(safeReadF32(base.add(0x20))),
+    owner_id: -100,
     target_id: safeReadS32(base.add(0x24)),
   };
 }
