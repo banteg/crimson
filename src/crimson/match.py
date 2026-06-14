@@ -738,9 +738,16 @@ def compile_scratch(config: ScratchConfig, match_root: Path = DEFAULT_MATCH_ROOT
     source = config.directory / config.source
     validate_scratch_source(source)
     build_dir = config.directory / "build" / config.compiler
+    build_key = f"{config.compiler}\n{config.cflags}\n{config.source}\n"
+    build_key_path = build_dir / ".build_key"
     obj_name = Path(config.source).with_suffix(".obj").name
     obj_path = build_dir / obj_name
-    if obj_path.exists() and obj_path.stat().st_mtime >= source.stat().st_mtime:
+    if (
+        obj_path.exists()
+        and obj_path.stat().st_mtime >= source.stat().st_mtime
+        and build_key_path.exists()
+        and build_key_path.read_text(encoding="utf-8") == build_key
+    ):
         return obj_path
 
     build_dir.mkdir(parents=True, exist_ok=True)
@@ -756,6 +763,7 @@ def compile_scratch(config: ScratchConfig, match_root: Path = DEFAULT_MATCH_ROOT
     )
     if completed.returncode != 0 or not obj_path.exists():
         raise RuntimeError(f"cl failed:\n{completed.stdout}{completed.stderr}")
+    build_key_path.write_text(build_key, encoding="utf-8")
     return obj_path
 
 
