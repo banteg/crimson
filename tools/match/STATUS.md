@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**13/2161** functions matched, **213/675651** code bytes (**0.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**14/2161** functions matched, **232/675651** code bytes (**0.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 6/986 | 99/385754 | 0.0% | 6/16 |
+| crimsonland.exe | 7/986 | 118/385754 | 0.0% | 7/17 |
 | grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
 
 ## crimsonland.exe
 
-**6/986** functions, **99/385754** bytes (**0.0%**), **6/16** scratches at 100%.
+**7/986** functions, **118/385754** bytes (**0.0%**), **7/17** scratches at 100%.
 
 | state | function | address | bytes | insns | match | prefix | build | note |
 |---|---|---|---:|---:|---:|---:|---|---|
@@ -26,6 +26,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | game_sequence_get | 0x0041df60 | 6 | 2/2 | 100.00% | 2/2 |  | smoke |
 | wip | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 133/131 | 61.36% | 0/131 |  | gameplay-movement |
 | wip | bonus_alloc_slot | 0x0041f580 | 46 | 17/14 | 58.06% | 0/14 |  | gameplay-bonus-pool |
+| match | weapon_table_entry | 0x0041fc60 | 19 | 6/6 | 100.00% | 6/6 |  | gameplay-weapon-table |
 | wip | creature_find_nearest | 0x00420040 | 225 | 91/89 | 64.44% | 7/89 |  | gameplay-target-search |
 | wip | projectile_spawn | 0x00420440 | 400 | 118/126 | 63.11% | 0/126 |  | gameplay-projectile |
 | match | projectile_reset_pools | 0x004205d0 | 37 | 11/11 | 100.00% | 11/11 |  | gameplay-pool-reset |
