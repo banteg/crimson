@@ -136,7 +136,8 @@ def cmd_match_status(
 ) -> None:
     """Compile all scratches and print their current match scores."""
     statuses = matchlib.collect_scratch_statuses(match_root, compiler=compiler, cflags=cflags)
-    typer.echo(matchlib.render_status_table(statuses))
+    totals = matchlib.collect_image_totals(statuses)
+    typer.echo(matchlib.render_status_table(statuses, totals))
     if write is not None:
         write.parent.mkdir(parents=True, exist_ok=True)
-        write.write_text(matchlib.render_status_markdown(statuses), encoding="utf-8")
+        write.write_text(matchlib.render_status_markdown(statuses, totals), encoding="utf-8")

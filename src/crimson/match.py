@@ -12,6 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_VERSION = "1.9.93-gog"
 DEFAULT_GAME_DIR = REPO_ROOT / "game_bins" / "crimsonland" / DEFAULT_VERSION
 DEFAULT_IMAGE_NAME = "crimsonland.exe"
+TRACKED_IMAGE_NAMES = ("crimsonland.exe", "grim.dll")
 DEFAULT_MATCH_ROOT = REPO_ROOT / "tools" / "match"
 DEFAULT_FUNCTIONS_PATH = REPO_ROOT / "analysis" / "ida" / "raw" / DEFAULT_IMAGE_NAME / "functions.json"
 DEFAULT_METADATA_PATH = REPO_ROOT / "analysis" / "ida" / "raw" / DEFAULT_IMAGE_NAME / "metadata.json"
@@ -245,7 +246,9 @@ class MatchDump:
 
 def parse_coff_object(data: bytes) -> CoffObject:
     machine, section_count, _, symtab_offset, symbol_count, optional_header_size, _ = struct.unpack_from(
-        "<HHIIIHH", data, 0,
+        "<HHIIIHH",
+        data,
+        0,
     )
     if machine != IMAGE_FILE_MACHINE_I386:
         raise ValueError(f"expected i386 COFF object, got machine 0x{machine:x}")
@@ -342,7 +345,9 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
     siblings = sorted(
         symbol.value
         for symbol in obj.symbols
-        if _is_function_symbol(symbol) and symbol.section_number == target.section_number and symbol.value > target.value
+        if _is_function_symbol(symbol)
+        and symbol.section_number == target.section_number
+        and symbol.value > target.value
     )
     end = siblings[0] if siblings else len(section.data)
     relocation_offsets = frozenset(
@@ -548,8 +553,7 @@ def diff_regions(
         if current is None:
             current = {"a0": a0, "a1": a1, "b0": b0, "b1": b1, "changed_a": a1 - a0, "changed_b": b1 - b0}
         elif pending_equal is not None and (
-            (pending_equal[1] - pending_equal[0]) <= context
-            or (pending_equal[3] - pending_equal[2]) <= context
+            (pending_equal[1] - pending_equal[0]) <= context or (pending_equal[3] - pending_equal[2]) <= context
         ):
             current["a1"] = a1
             current["b1"] = b1
@@ -674,6 +678,21 @@ class ScratchStatus:
         return "wip"
 
 
+@dataclass(frozen=True, slots=True)
+class ImageTotals:
+    image: str
+    function_count: int
+    byte_total: int
+    matched_functions: int
+    matched_bytes: int
+    scratch_count: int
+    matched_scratches: int
+
+    @property
+    def byte_percentage(self) -> float:
+        return self.matched_bytes / self.byte_total if self.byte_total else 0.0
+
+
 def load_scratch_config(directory: Path) -> ScratchConfig:
     values: dict[str, str] = {}
     for token in shlex.split((directory / "scratch.conf").read_text(encoding="utf-8"), comments=True):
@@ -706,7 +725,9 @@ def validate_scratch_source(source: Path) -> None:
     text = source.read_text(encoding="latin1")
     for pattern in FORBIDDEN_SOURCE_PATTERNS:
         if pattern.search(text):
-            raise ValueError(f"{source}: inline assembly/naked functions are not allowed in scratches (no fakematching)")
+            raise ValueError(
+                f"{source}: inline assembly/naked functions are not allowed in scratches (no fakematching)",
+            )
 
 
 def compile_scratch(config: ScratchConfig, match_root: Path = DEFAULT_MATCH_ROOT) -> Path:
@@ -806,6 +827,41 @@ def collect_scratch_statuses(
 
 
 STATUS_HEADER = ("state", "image", "function", "address", "bytes", "insns", "match", "prefix", "build", "note")
+IMAGE_TOTALS_HEADER = ("image", "functions", "bytes", "code", "scratches")
+
+
+def collect_image_totals(statuses: list[ScratchStatus]) -> list[ImageTotals]:
+    totals: list[ImageTotals] = []
+    images = sorted({*TRACKED_IMAGE_NAMES, *(status.config.image for status in statuses)})
+    for image_name in images:
+        image_path, functions_path, metadata_path = _paths_for_image(image_name)
+        manifest = load_function_manifest(
+            functions_path,
+            metadata_path=metadata_path,
+            image_name=image_name,
+        )
+        image = load_image(image_path, manifest.image_base)
+        byte_total = sum(len(image.function_bytes(function.address, function.end)) for function in manifest.functions)
+        image_statuses = [status for status in statuses if status.config.image == image_name]
+        matched_by_function: dict[int, int] = {}
+        for status in image_statuses:
+            if status.state == "match":
+                matched_by_function[status.address] = max(
+                    matched_by_function.get(status.address, 0),
+                    status.target_size,
+                )
+        totals.append(
+            ImageTotals(
+                image=image_name,
+                function_count=len(manifest.functions),
+                byte_total=byte_total,
+                matched_functions=len(matched_by_function),
+                matched_bytes=sum(matched_by_function.values()),
+                scratch_count=len(image_statuses),
+                matched_scratches=sum(1 for status in image_statuses if status.state == "match"),
+            ),
+        )
+    return totals
 
 
 def render_status_rows(statuses: list[ScratchStatus]) -> list[tuple[str, ...]]:
@@ -833,58 +889,94 @@ def render_status_rows(statuses: list[ScratchStatus]) -> list[tuple[str, ...]]:
     return rows
 
 
-def render_status_summary_rows(statuses: list[ScratchStatus]) -> list[tuple[str, str, str]]:
-    rows = []
-    for image in sorted({status.config.image for status in statuses}):
-        image_statuses = [status for status in statuses if status.config.image == image]
-        matched = sum(1 for status in image_statuses if status.state == "match")
-        rows.append((image, str(matched), str(len(image_statuses))))
-    return rows
+def render_image_total_rows(totals: list[ImageTotals]) -> list[tuple[str, ...]]:
+    return [
+        (
+            total.image,
+            f"{total.matched_functions}/{total.function_count}",
+            f"{total.matched_bytes}/{total.byte_total}",
+            f"{total.byte_percentage:.1%}",
+            f"{total.matched_scratches}/{total.scratch_count}",
+        )
+        for total in totals
+    ]
 
 
-def render_status_table(statuses: list[ScratchStatus]) -> str:
+def _overall_totals(totals: list[ImageTotals]) -> ImageTotals:
+    return ImageTotals(
+        image="all",
+        function_count=sum(total.function_count for total in totals),
+        byte_total=sum(total.byte_total for total in totals),
+        matched_functions=sum(total.matched_functions for total in totals),
+        matched_bytes=sum(total.matched_bytes for total in totals),
+        scratch_count=sum(total.scratch_count for total in totals),
+        matched_scratches=sum(total.matched_scratches for total in totals),
+    )
+
+
+def _image_summary(total: ImageTotals) -> str:
+    return (
+        f"{total.image}: {total.matched_functions}/{total.function_count} functions, "
+        f"{total.matched_bytes}/{total.byte_total} bytes "
+        f"({total.byte_percentage:.1%}) matched; "
+        f"{total.matched_scratches}/{total.scratch_count} scratches at 100%"
+    )
+
+
+def render_status_table(statuses: list[ScratchStatus], totals: list[ImageTotals]) -> str:
     rows = [STATUS_HEADER, *render_status_rows(statuses)]
     widths = [max(len(row[column]) for row in rows) for column in range(len(STATUS_HEADER))]
     lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rows]
-    matched = sum(1 for status in statuses if status.state == "match")
-    lines.append(f"\nmatched scratches: {matched}/{len(statuses)}")
-    summary_rows = [("image", "matched", "scratches"), *render_status_summary_rows(statuses)]
-    if len(summary_rows) > 1:
-        summary_widths = [max(len(row[column]) for row in summary_rows) for column in range(3)]
-        lines.append("by image:")
-        lines.extend(
-            "  ".join(cell.ljust(width) for cell, width in zip(row, summary_widths)).rstrip()
-            for row in summary_rows
-        )
+    overall = _overall_totals(totals)
+    lines.append(
+        f"\nall images: {overall.matched_functions}/{overall.function_count} functions, "
+        f"{overall.matched_bytes}/{overall.byte_total} bytes "
+        f"({overall.byte_percentage:.1%}) matched; "
+        f"{overall.matched_scratches}/{overall.scratch_count} scratches at 100%",
+    )
+    lines.append("by image:")
+    lines.extend(_image_summary(total) for total in totals)
     return "\n".join(lines)
 
 
-def render_status_markdown(statuses: list[ScratchStatus]) -> str:
-    matched = sum(1 for status in statuses if status.state == "match")
+def render_status_markdown(statuses: list[ScratchStatus], totals: list[ImageTotals]) -> str:
+    overall = _overall_totals(totals)
     lines = [
         "# Matching Status",
         "",
         "Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.",
         "",
-        f"Matched scratches: **{matched}/{len(statuses)}**.",
+        f"**{overall.matched_functions}/{overall.function_count}** functions matched, "
+        f"**{overall.matched_bytes}/{overall.byte_total}** code bytes "
+        f"(**{overall.byte_percentage:.1%}**). Byte totals are manifest function "
+        "extents with terminal padding trimmed.",
         "",
         "## Images",
         "",
-        "| image | matched | scratches |",
-        "|---|---:|---:|",
+        "| " + " | ".join(IMAGE_TOTALS_HEADER) + " |",
+        "|---|---:|---:|---:|---:|",
     ]
-    for image, matched_count, total_count in render_status_summary_rows(statuses):
-        lines.append(f"| {image} | {matched_count} | {total_count} |")
-    lines.extend(
-        [
-            "",
-            "## Scratches",
-            "",
-            "| state | image | function | address | bytes | insns | match | prefix | build | note |",
-            "|---|---|---|---|---:|---:|---:|---:|---|---|",
-        ],
-    )
-    for row in render_status_rows(statuses):
+    for row in render_image_total_rows(totals):
         lines.append("| " + " | ".join(row) + " |")
+    for total in totals:
+        image_statuses = [status for status in statuses if status.config.image == total.image]
+        lines.extend(
+            [
+                "",
+                f"## {total.image}",
+                "",
+                f"**{total.matched_functions}/{total.function_count}** functions, "
+                f"**{total.matched_bytes}/{total.byte_total}** bytes "
+                f"(**{total.byte_percentage:.1%}**), "
+                f"**{total.matched_scratches}/{total.scratch_count}** scratches at 100%.",
+                "",
+                "| state | function | address | bytes | insns | match | prefix | build | note |",
+                "|---|---|---|---:|---:|---:|---:|---|---|",
+            ],
+        )
+        for row in render_status_rows(image_statuses):
+            lines.append("| " + " | ".join((row[0], *row[2:])) + " |")
+        if not image_statuses:
+            lines.append("| - | - | - | - | - | - | - | - | no scratches |")
     lines.append("")
     return "\n".join(lines)

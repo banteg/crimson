@@ -112,9 +112,10 @@ uv run crimson match status --compiler msvc7.0
 ```
 
 Target function extents come from `analysis/ida/raw/<image>/functions.json`.
-The status dashboard reports total progress and a per-image summary. Pass
-`END` when the manifest extent includes unrelated code or misses a hand-curated
-boundary.
+The status dashboard reports matched functions out of every manifest function,
+matched code bytes as a percentage of every manifest function extent, and then
+groups scratch rows under each tracked image. Pass `END` when the manifest
+extent includes unrelated code or misses a hand-curated boundary.
 
 Use `NOTE=smoke` for tiny plumbing checks. Treat compiler/settings calibration
 as provisional until it includes broader representative branches, calls, stack
