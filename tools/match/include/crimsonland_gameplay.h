@@ -26,8 +26,12 @@ extern int render_overlay_player_index;
 extern float frame_dt;
 extern float player_heading_turn_delta;
 extern float bonus_weapon_power_up_timer;
+extern game_mode_id_t config_game_mode;
+extern int quest_stage_major;
+extern int quest_stage_minor;
 
 extern weapon_stats_t weapon_table[];
+extern weapon_usage_counts_t weapon_usage_counts;
 extern projectile_pool_t projectile_pool;
 extern particle_t particle_pool[];
 extern creature_t creature_pool[];
@@ -40,6 +44,7 @@ extern unsigned char creatures_any_active_flag;
 extern int highscore_record_shots_fired;
 
 int perk_count_get(int perk_id);
+int crt_rand(void);
 void sfx_play_panned(int sfx_id, float *pos, float volume);
 
 #ifdef __cplusplus
