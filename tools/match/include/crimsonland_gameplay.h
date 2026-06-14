@@ -29,6 +29,9 @@ extern float bonus_weapon_power_up_timer;
 extern game_mode_id_t config_game_mode;
 extern int quest_stage_major;
 extern int quest_stage_minor;
+extern int quest_unlock_index;
+extern int quest_unlock_index_full;
+extern quest_meta_t quest_selected_meta[];
 
 extern weapon_stats_t weapon_table[];
 extern weapon_usage_counts_t weapon_usage_counts;
@@ -45,6 +48,7 @@ extern int highscore_record_shots_fired;
 
 int perk_count_get(int perk_id);
 int crt_rand(void);
+int game_is_full_version(void);
 void sfx_play_panned(int sfx_id, float *pos, float volume);
 
 #ifdef __cplusplus

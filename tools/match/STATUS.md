@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 10/986 | 234/385754 | 0.1% | 10/18 |
+| crimsonland.exe | 10/986 | 234/385754 | 0.1% | 10/19 |
 | grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
 
 ## crimsonland.exe
 
-**10/986** functions, **234/385754** bytes (**0.1%**), **10/18** scratches at 100%.
+**10/986** functions, **234/385754** bytes (**0.1%**), **10/19** scratches at 100%.
 
 | state | function | address | bytes | insns | match | prefix | build | note |
 |---|---|---|---:|---:|---:|---:|---|---|
@@ -35,6 +35,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | creatures_none_active | 0x00428210 | 40 | 12/12 | 100.00% | 12/12 | msvc6.5pp /O2 /G6 /W3 /GR- | gameplay-creature-scan |
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 10/10 | 100.00% | 10/10 | msvc6.5pp /O2 /G6 /W3 /GR- | gameplay-spawn-slots |
 | wip | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 97.22% | 6/36 |  | gameplay-weapon-rng |
+| wip | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 91.67% | 8/48 |  | gameplay-weapon-unlocks |
 
 ## grim.dll
 
