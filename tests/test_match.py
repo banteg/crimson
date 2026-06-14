@@ -8,10 +8,12 @@ import pytest
 from crimson.match import (
     DEFAULT_FUNCTIONS_PATH,
     FunctionManifest,
+    FunctionSymbol,
     LoadedImage,
     ObjectFunction,
     ScratchConfig,
     ScratchStatus,
+    collect_scratch_statuses,
     common_prefix_length,
     diff_regions,
     disassemble_normalized_function,
@@ -20,7 +22,10 @@ from crimson.match import (
     match_function,
     normalize_function,
     parse_coff_object,
+    render_status_markdown,
     render_status_rows,
+    render_status_summary_rows,
+    render_status_table,
     resolve_function,
     validate_scratch_source,
 )
@@ -169,11 +174,12 @@ def test_render_status_rows_includes_prefix() -> None:
         directory=Path("scratch"),
         function="foo",
         image="crimsonland.exe",
-        compiler="msvc7.0",
+        compiler="msvc6.5",
         cflags="/O2 /G6 /W3 /GR-",
         source="scratch.cpp",
         end_va=None,
         symbol=None,
+        note="branch",
     )
     status = ScratchStatus(
         config=config,
@@ -186,3 +192,46 @@ def test_render_status_rows_includes_prefix() -> None:
         error=None,
     )
     assert render_status_rows([status])[0][7] == "2/4"
+    assert render_status_rows([status])[0][9] == "branch"
+    assert render_status_summary_rows([status]) == [("crimsonland.exe", "0", "1")]
+    assert "by image:" in render_status_table([status])
+    assert "| crimsonland.exe | 0 | 1 |" in render_status_markdown([status])
+
+
+def test_collect_status_overrides_compiler(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    scratch = tmp_path / "scratches" / "foo"
+    scratch.mkdir(parents=True)
+    (scratch / "scratch.conf").write_text("FUNCTION=foo\n", encoding="utf-8")
+    (scratch / "scratch.cpp").write_text("extern \"C\" void foo() {}\n", encoding="utf-8")
+
+    observed = {}
+
+    def fake_load_manifest(*args: object, **kwargs: object) -> FunctionManifest:
+        return FunctionManifest(
+            image_name="crimsonland.exe",
+            image_base=0x400000,
+            functions=(FunctionSymbol(name="foo", address=0x401000, end=0x401001, size=1),),
+        )
+
+    def fake_load_image(*args: object, **kwargs: object) -> LoadedImage:
+        return LoadedImage(mapped=b"\xc3", image_base=0x401000, size_of_image=1)
+
+    def fake_compile(config: ScratchConfig, match_root: Path) -> Path:
+        observed["compiler"] = config.compiler
+        observed["cflags"] = config.cflags
+        return scratch / "scratch.obj"
+
+    monkeypatch.setattr("crimson.match.load_function_manifest", fake_load_manifest)
+    monkeypatch.setattr("crimson.match.load_image", fake_load_image)
+    monkeypatch.setattr("crimson.match.compile_scratch", fake_compile)
+    monkeypatch.setattr("crimson.match.parse_coff_object", lambda data: object())
+    monkeypatch.setattr(
+        "crimson.match.extract_object_function",
+        lambda obj, symbol: ObjectFunction(name="foo", data=b"\xc3", relocation_offsets=frozenset()),
+    )
+    monkeypatch.setattr(Path, "read_bytes", lambda self: b"")
+
+    statuses = collect_scratch_statuses(tmp_path, compiler="msvc6.5", cflags="/O2")
+
+    assert statuses[0].state == "match"
+    assert observed == {"compiler": "msvc6.5", "cflags": "/O2"}

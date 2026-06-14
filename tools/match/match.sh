@@ -10,7 +10,7 @@ REPO_ROOT="$(cd "$MATCH_ROOT/../.." && pwd)"
 
 IMAGE="crimsonland.exe"
 FUNCTION=""
-COMPILER="msvc7.0"
+COMPILER="msvc6.5"
 CFLAGS="/O2 /G6 /W3 /GR-"
 SOURCE="scratch.cpp"
 END=""
@@ -19,7 +19,7 @@ SYMBOL=""
 
 : "${FUNCTION:?scratch.conf must set FUNCTION}"
 
-BUILD_DIR="$SCRATCH_DIR/build"
+BUILD_DIR="$SCRATCH_DIR/build/$COMPILER"
 mkdir -p "$BUILD_DIR"
 cp "$SCRATCH_DIR/$SOURCE" "$BUILD_DIR/$(basename "$SOURCE")"
 

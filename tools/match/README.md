@@ -3,23 +3,47 @@
 This is the Crimsonland version of the Snail Mail matching-islands workflow:
 write a small C/C++ scratch for one native function, compile it with the
 original-era MSVC toolchain, then diff normalized x86 assembly against the
-function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe`.
+function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe` or
+`game_bins/crimsonland/1.9.93-gog/grim.dll`.
+
+## Tracked Images
+
+Track both shipped PE images in the same dashboard:
+
+- `crimsonland.exe`: main game executable
+- `grim.dll`: Grim2D engine DLL
+
+Every scratch has an `IMAGE`; it defaults to `crimsonland.exe`. Set
+`IMAGE=grim.dll` for Grim2D functions so the harness reads the matching
+manifest, metadata, and binary image.
 
 ## Toolchain
 
-Current static docs identify both `crimsonland.exe` and `grim.dll` as Visual
-Studio 2003 / VC++ 7.1 SP1 builds. decomp.me currently publishes a nearby
-`msvc7.0` bundle in `OmniBlade/decomp.me`'s `msvcwin9x` release; this checkout
-uses it as the initial calibration profile until we have a VC7.1 bundle or
-evidence that another profile wins.
+Current PE evidence points to a VC6-family final link for both
+`crimsonland.exe` and `grim.dll`:
+
+- PE optional-header linker version is `6.0`.
+- Rich headers include `Linker600` and dominant `Utc12_C` / `Utc12_CPP` object
+  counts.
+- `grim.dll` imports `MSVCRT.dll`, consistent with a VC6 `/MD` build.
+- both images have 2011-02-01 PE timestamps, so this looks like an old-code
+  toolchain used for a later packaged/relinked binary.
+
+The Rich headers also contain some VC7-era import-library/static-object records,
+so treat that as mixed-library ancestry rather than the primary compiler.
 
 ```sh
-MSVC_VER=msvc7.0
+MSVC_VER=msvc6.5
 CFLAGS="/O2 /G6 /W3 /GR-"
+NOTE=branch-x87
 ```
 
-The flags are a working hypothesis, not a proven global match profile yet.
-Keep per-scratch overrides in `scratch.conf` while we calibrate exact coverage.
+The current ranking is `msvc6.5`, then `msvc6.5pp`, then `msvc6.6`, with
+`msvc7.0` kept as a comparison profile. Both `msvc6.5` and `msvc6.5pp` produce
+100% matches for the checked-in smoke scratches plus representative
+x87/control-flow scratches in both images; the scratches do not distinguish
+those two profiles yet. Keep per-scratch overrides in `scratch.conf` while we
+calibrate broader coverage.
 
 `tools/match/cl.sh` looks for the compiler in this order:
 
@@ -27,6 +51,9 @@ Keep per-scratch overrides in `scratch.conf` while we calibrate exact coverage.
    containing `$MSVC_VER/`
 2. `tools/match/compilers/$MSVC_VER/`
 3. a sibling Snail Mail checkout at `../snail-mail/tools/match/compilers/$MSVC_VER/`
+
+decomp.me's `msvcwin9x` release has usable `msvc6.5`, `msvc6.5pp`, and
+`msvc7.0` archives. The current dashboard is generated with `msvc6.5`.
 
 Initialize the Wine prefix once with:
 
@@ -47,6 +74,13 @@ Minimum config:
 FUNCTION=console_cmd_argc_get
 ```
 
+DLL config:
+
+```sh
+IMAGE=grim.dll
+FUNCTION=grim_get_time_ms
+```
+
 Useful optional fields:
 
 ```sh
@@ -54,7 +88,7 @@ IMAGE=crimsonland.exe
 SOURCE=scratch.cpp
 SYMBOL=probe
 END=0x00401156
-COMPILER=msvc7.0
+COMPILER=msvc6.5
 CFLAGS="/O2 /G6 /W3 /GR-"
 ```
 
@@ -70,9 +104,23 @@ Regenerate the dashboard:
 uv run crimson match status --write tools/match/STATUS.md
 ```
 
+Compare another compiler profile without editing scratches:
+
+```sh
+uv run crimson match status --compiler msvc6.5pp
+uv run crimson match status --compiler msvc7.0
+```
+
 Target function extents come from `analysis/ida/raw/<image>/functions.json`.
-Pass `END` when the manifest extent includes unrelated code or misses a
-hand-curated boundary.
+The status dashboard reports total progress and a per-image summary. Pass
+`END` when the manifest extent includes unrelated code or misses a hand-curated
+boundary.
+
+Use `NOTE=smoke` for tiny plumbing checks. Treat compiler/settings calibration
+as provisional until it includes broader representative branches, calls, stack
+arguments, and x87 code from both images. For link-sensitive code, check `/MD`
+vs `/MT` first; `grim.dll`'s `MSVCRT.dll` import makes `/MD` the likely final
+link mode.
 
 ## No Fakematching
 

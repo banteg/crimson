@@ -1,11 +1,11 @@
 #!/bin/sh
 # Run an original-era MSVC cl.exe under Wine.
-# Compiler is selected by MSVC_VER (default msvc7.0).
+# Compiler is selected by MSVC_VER (default msvc6.5).
 set -eu
 
 MATCH_ROOT="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$MATCH_ROOT/../.." && pwd)"
-MSVC_VER="${MSVC_VER:-msvc7.0}"
+MSVC_VER="${MSVC_VER:-msvc6.5}"
 
 find_compiler() {
     if [ -n "${CRIMSON_MSVC_ROOT:-}" ]; then

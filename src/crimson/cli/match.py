@@ -130,10 +130,12 @@ def cmd_match_validate(source: Path = typer.Argument(..., help="scratch source f
 @match_app.command("status")
 def cmd_match_status(
     match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    compiler: str | None = typer.Option(None, "--compiler", help="override scratch compiler for this status run"),
+    cflags: str | None = typer.Option(None, "--cflags", help="override scratch compiler flags for this status run"),
     write: Path | None = typer.Option(None, "--write", help="write markdown status to this path"),
 ) -> None:
     """Compile all scratches and print their current match scores."""
-    statuses = matchlib.collect_scratch_statuses(match_root)
+    statuses = matchlib.collect_scratch_statuses(match_root, compiler=compiler, cflags=cflags)
     typer.echo(matchlib.render_status_table(statuses))
     if write is not None:
         write.parent.mkdir(parents=True, exist_ok=True)

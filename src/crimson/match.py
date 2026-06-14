@@ -5,7 +5,7 @@ import json
 import re
 import shlex
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -637,7 +637,7 @@ def run_match_dump(
 
 
 DEFAULT_SCRATCH_IMAGE = DEFAULT_IMAGE_NAME
-DEFAULT_SCRATCH_COMPILER = "msvc7.0"
+DEFAULT_SCRATCH_COMPILER = "msvc6.5"
 DEFAULT_SCRATCH_CFLAGS = "/O2 /G6 /W3 /GR-"
 
 
@@ -651,6 +651,7 @@ class ScratchConfig:
     source: str
     end_va: int | None
     symbol: str | None
+    note: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -690,6 +691,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         source=values.get("SOURCE", "scratch.cpp"),
         end_va=int(values["END"], 0) if "END" in values else None,
         symbol=values.get("SYMBOL"),
+        note=values.get("NOTE", ""),
     )
 
 
@@ -714,13 +716,13 @@ def compile_scratch(config: ScratchConfig, match_root: Path = DEFAULT_MATCH_ROOT
 
     source = config.directory / config.source
     validate_scratch_source(source)
-    build_dir = config.directory / "build"
+    build_dir = config.directory / "build" / config.compiler
     obj_name = Path(config.source).with_suffix(".obj").name
     obj_path = build_dir / obj_name
     if obj_path.exists() and obj_path.stat().st_mtime >= source.stat().st_mtime:
         return obj_path
 
-    build_dir.mkdir(exist_ok=True)
+    build_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy(source, build_dir / Path(config.source).name)
     command = [str(match_root / "cl.sh"), "/c", *shlex.split(config.cflags), Path(config.source).name]
     completed = subprocess.run(
@@ -740,12 +742,23 @@ def _paths_for_image(image: str) -> tuple[Path, Path, Path]:
     return default_image_path(image), default_functions_path(image), default_metadata_path(image)
 
 
-def collect_scratch_statuses(match_root: Path = DEFAULT_MATCH_ROOT) -> list[ScratchStatus]:
+def collect_scratch_statuses(
+    match_root: Path = DEFAULT_MATCH_ROOT,
+    *,
+    compiler: str | None = None,
+    cflags: str | None = None,
+) -> list[ScratchStatus]:
     statuses: list[ScratchStatus] = []
     manifest_cache: dict[str, FunctionManifest] = {}
     image_cache: dict[str, LoadedImage] = {}
     for conf_path in sorted(match_root.glob("scratches/*/scratch.conf")):
         config = load_scratch_config(conf_path.parent)
+        if compiler is not None or cflags is not None:
+            config = replace(
+                config,
+                compiler=compiler or config.compiler,
+                cflags=cflags or config.cflags,
+            )
         image_path, functions_path, metadata_path = _paths_for_image(config.image)
         if config.image not in manifest_cache:
             manifest_cache[config.image] = load_function_manifest(
@@ -814,9 +827,18 @@ def render_status_rows(statuses: list[ScratchStatus]) -> list[tuple[str, ...]]:
                 ratio,
                 prefix,
                 "" if build == default_build else build,
-                status.error or "",
+                status.error or status.config.note,
             ),
         )
+    return rows
+
+
+def render_status_summary_rows(statuses: list[ScratchStatus]) -> list[tuple[str, str, str]]:
+    rows = []
+    for image in sorted({status.config.image for status in statuses}):
+        image_statuses = [status for status in statuses if status.config.image == image]
+        matched = sum(1 for status in image_statuses if status.state == "match")
+        rows.append((image, str(matched), str(len(image_statuses))))
     return rows
 
 
@@ -826,6 +848,14 @@ def render_status_table(statuses: list[ScratchStatus]) -> str:
     lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rows]
     matched = sum(1 for status in statuses if status.state == "match")
     lines.append(f"\nmatched scratches: {matched}/{len(statuses)}")
+    summary_rows = [("image", "matched", "scratches"), *render_status_summary_rows(statuses)]
+    if len(summary_rows) > 1:
+        summary_widths = [max(len(row[column]) for row in summary_rows) for column in range(3)]
+        lines.append("by image:")
+        lines.extend(
+            "  ".join(cell.ljust(width) for cell, width in zip(row, summary_widths)).rstrip()
+            for row in summary_rows
+        )
     return "\n".join(lines)
 
 
@@ -838,9 +868,22 @@ def render_status_markdown(statuses: list[ScratchStatus]) -> str:
         "",
         f"Matched scratches: **{matched}/{len(statuses)}**.",
         "",
-        "| state | image | function | address | bytes | insns | match | prefix | build | note |",
-        "|---|---|---|---|---:|---:|---:|---:|---|---|",
+        "## Images",
+        "",
+        "| image | matched | scratches |",
+        "|---|---:|---:|",
     ]
+    for image, matched_count, total_count in render_status_summary_rows(statuses):
+        lines.append(f"| {image} | {matched_count} | {total_count} |")
+    lines.extend(
+        [
+            "",
+            "## Scratches",
+            "",
+            "| state | image | function | address | bytes | insns | match | prefix | build | note |",
+            "|---|---|---|---|---:|---:|---:|---:|---|---|",
+        ],
+    )
     for row in render_status_rows(statuses):
         lines.append("| " + " | ".join(row) + " |")
     lines.append("")
