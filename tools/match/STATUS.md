@@ -24,11 +24,11 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | player_heading_approach_target | 0x00413540 | 354 | 96/95 | 28.27% | 2/95 |  | gameplay-angle-x87 |
 | match | vec2_length | 0x00417660 | 26 | 12/12 | 100.00% | 12/12 |  | x87-fsqrt |
 | match | game_sequence_get | 0x0041df60 | 6 | 2/2 | 100.00% | 2/2 |  | smoke |
-| wip | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 133/131 | 61.36% | 0/131 |  | gameplay-movement |
+| wip | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 135/131 | 64.66% | 1/131 |  | gameplay-movement |
 | wip | bonus_alloc_slot | 0x0041f580 | 46 | 17/14 | 58.06% | 0/14 |  | gameplay-bonus-pool |
 | match | weapon_table_entry | 0x0041fc60 | 19 | 6/6 | 100.00% | 6/6 |  | gameplay-weapon-table |
-| wip | creature_find_nearest | 0x00420040 | 225 | 91/89 | 64.44% | 7/89 |  | gameplay-target-search |
-| wip | projectile_spawn | 0x00420440 | 400 | 118/126 | 63.11% | 0/126 |  | gameplay-projectile |
+| wip | creature_find_nearest | 0x00420040 | 225 | 91/89 | 65.56% | 7/89 |  | gameplay-target-search |
+| wip | projectile_spawn | 0x00420440 | 400 | 118/126 | 64.75% | 0/126 |  | gameplay-projectile |
 | match | projectile_reset_pools | 0x004205d0 | 37 | 11/11 | 100.00% | 11/11 |  | gameplay-pool-reset |
 | wip | creature_find_in_radius | 0x004206a0 | 133 | 51/47 | 40.82% | 0/47 |  | gameplay-target-search |
 | wip | creature_reset_all | 0x004281e0 | 46 | 12/13 | 80.00% | 2/13 |  | gameplay-creature-reset |

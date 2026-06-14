@@ -22,7 +22,7 @@ extern "C" int creature_find_nearest(float *pos, int exclude_id, float min_dist)
             }
             ++creature;
             ++index;
-        } while (creature < &creature_pool[0x180]);
+        } while ((int)creature < (int)&creature_pool[0x180]);
         return best_index;
     }
 
@@ -41,6 +41,6 @@ extern "C" int creature_find_nearest(float *pos, int exclude_id, float min_dist)
         }
         ++creature;
         ++index;
-    } while (creature < &creature_pool[0x180]);
+    } while ((int)creature < (int)&creature_pool[0x180]);
     return best_index;
 }

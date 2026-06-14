@@ -3,7 +3,9 @@
 
 extern "C" void player_apply_move_with_spawn_avoidance(int player_index, float *pos, float *delta)
 {
-    if (perk_count_get(PERK_ID_ALTERNATE_WEAPON) != 0) {
+    player_state_t *player = &player_state_table[player_index];
+
+    if (perk_count_get(perk_id_alternate_weapon) != 0) {
         delta[0] = delta[0] * 0.8f;
         delta[1] = delta[1] * 0.8f;
     }
@@ -15,7 +17,7 @@ extern "C" void player_apply_move_with_spawn_avoidance(int player_index, float *
     do {
         creature_t *owner = slot->owner;
         if (owner != 0) {
-            float radius = (owner->size + player_state_table[player_index].size) * 0.33333334f;
+            float radius = (owner->size + player->size) * 0.33333334f;
             float dx = owner->pos_x - pos[0];
             float dy = owner->pos_y - pos[1];
             if ((float)sqrt(dx * dx + dy * dy) <= radius) {
@@ -48,5 +50,5 @@ extern "C" void player_apply_move_with_spawn_avoidance(int player_index, float *
             }
         }
         ++slot;
-    } while (slot < &creature_spawn_slot_table[0x20]);
+    } while ((int)slot < (int)&creature_spawn_slot_table[0x20]);
 }

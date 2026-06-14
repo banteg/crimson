@@ -1,8 +1,12 @@
-#include <math.h>
 #include "crimsonland_gameplay.h"
+
+extern "C" float cos(float angle);
+extern "C" float sin(float angle);
 
 extern "C" int projectile_spawn(float *pos, float angle, int type_id, int owner_id)
 {
+    float default_damage = 1.0f;
+
     if (!bonus_spawn_guard) {
         while (
             (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3)
@@ -25,7 +29,7 @@ extern "C" int projectile_spawn(float *pos, float angle, int type_id, int owner_
         }
         ++projectile;
         ++index;
-    } while (projectile < &projectile_pool[0x60]);
+    } while ((int)projectile < (int)&projectile_pool[0x60]);
     index = 0x5f;
 
 found:
@@ -42,17 +46,17 @@ found:
     projectile->pos.tail.vy.life_timer = 0.4f;
     projectile->pos.tail.vy.reserved = 0.0f;
     projectile->pos.tail.vy.speed_scale = 1.0f;
-    projectile->pos.tail.vel_x = (float)(cos(angle) * 1.5);
-    projectile->pos.tail.vy.vel_y = (float)(sin(angle) * 1.5);
+    projectile->pos.tail.vel_x = (float)(cos(angle) * 1.5f);
+    projectile->pos.tail.vy.vel_y = (float)(sin(angle) * 1.5f);
 
     if (type_id == PROJECTILE_TYPE_ION_MINIGUN) {
         projectile->pos.tail.vy.hit_radius = 3.0f;
-        projectile->pos.tail.vy.damage_pool = 1.0f;
+        projectile->pos.tail.vy.damage_pool = default_damage;
         return index;
     }
     if (type_id == PROJECTILE_TYPE_ION_RIFLE) {
         projectile->pos.tail.vy.hit_radius = 5.0f;
-        projectile->pos.tail.vy.damage_pool = 1.0f;
+        projectile->pos.tail.vy.damage_pool = default_damage;
         return index;
     }
     if (type_id == PROJECTILE_TYPE_ION_CANNON || type_id == PROJECTILE_TYPE_PLASMA_CANNON) {
@@ -72,6 +76,6 @@ found:
             return index;
         }
     }
-    projectile->pos.tail.vy.damage_pool = 1.0f;
+    projectile->pos.tail.vy.damage_pool = default_damage;
     return index;
 }
