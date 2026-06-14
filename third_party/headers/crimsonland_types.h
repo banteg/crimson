@@ -120,14 +120,16 @@ typedef struct player_state_t {
     unsigned char _pad6[4];
     int weapon_id;
     float clip_size;
-    int reload_active;
+    unsigned char reload_active;
+    unsigned char _pad_reload_active[3];
     float ammo;
     float reload_timer;
     float shot_cooldown;
     float reload_timer_max;
     int alt_weapon_id;
     float alt_clip_size;
-    int alt_reload_active;
+    unsigned char alt_reload_active;
+    unsigned char _pad_alt_reload_active[3];
     float alt_ammo;
     float alt_reload_timer;
     float alt_shot_cooldown;
