@@ -55,10 +55,17 @@ calibrate broader coverage.
 decomp.me's `msvcwin9x` release has usable `msvc6.5`, `msvc6.5pp`, and
 `msvc7.0` archives. The current dashboard is generated with `msvc6.5`.
 
-Initialize the Wine prefix once with:
+Run the compiler through `wibo`. Put `wibo` on `PATH`, set
+`WIBO=/path/to/wibo`, or place it at `tools/match/bin/wibo`. On macOS/Apple
+Silicon, the `wibo-macos` x86_64 release runs under Rosetta 2. Download the
+platform release from the decompals/wibo releases page and make it executable,
+for example:
 
 ```sh
-WINEPREFIX="$HOME/.wine-crimson" wineboot -i
+mkdir -p tools/match/bin
+curl -L -o tools/match/bin/wibo \
+  https://github.com/decompals/wibo/releases/download/1.1.0/wibo-macos
+chmod +x tools/match/bin/wibo
 ```
 
 ## Scratch Layout

@@ -10,6 +10,7 @@
 /analysis/frida/ui_render_trace_marked_frames.jsonl
 /analysis/windbg/*.log
 /analysis/binary_ninja/*.bndb
+/tools/match/bin/
 /tools/match/compilers/
 /tools/match/idioms/build/
 /tools/match/scratches/*/build/
