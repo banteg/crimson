@@ -13,9 +13,9 @@ void weapon_refresh_available(void)
 
     unlock_count = quest_unlock_index;
     one = 1;
-    index = 0;
     weapon_table[WEAPON_ID_PISTOL].unlocked = (unsigned char)one;
-    if (quest_unlock_index > 0) {
+    index = 0;
+    if (unlock_count > 0) {
         int *unlock_weapon_id = &quest_selected_meta[0].unlock_weapon_id;
         while (index < unlock_count) {
             int weapon_id;

@@ -40,7 +40,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 10/10 | 100.00% | 10/10 | msvc6.5pp /O2 /G6 /W3 /GR- | gameplay-spawn-slots |
 | wip | creature_spawn_template | 0x00430af0 | 14099 | 2731/3159 | 57.28% | 20/3159 |  | gameplay-spawn-switch |
 | wip | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 97.22% | 6/36 |  | gameplay-weapon-rng |
-| wip | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 91.67% | 8/48 |  | gameplay-weapon-unlocks |
+| wip | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 93.75% | 10/48 |  | gameplay-weapon-unlocks |
 
 ## grim.dll
 
