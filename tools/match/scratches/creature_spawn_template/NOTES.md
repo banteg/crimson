@@ -16,7 +16,8 @@ Initial scope:
 Known missing work:
 
 - tighter local/field ordering in the dispatch ladder
-- the `0x13` chain formation is still structurally late in the source
+- the `0x13` chain formation is now in the native ladder slot, but its body
+  still differs in local ordering
 - tail modifier ordering/codegen still diverges after the large dispatch
 
 Keep tracking prefix, not just total match percent. This scratch is expected to
@@ -25,7 +26,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=55.06% prefix=20/3159 target_insns=3159 candidate_insns=2689
+match=57.28% prefix=20/3159 target_insns=3159 candidate_insns=2731
 first_target=lea edx, dword [ebp+ebp*8]
 first_candidate=mov edi, dword [esp+0x60]
 ```
@@ -40,3 +41,6 @@ Frame/prefix notes:
 - The Wibo-backed compile path makes this scratch practical enough to iterate
   on medium-size case families; the random-stat block added a large body match
   without moving the prefix.
+- Moving the `0x13` chain formation ahead of the grid/fixed-stat ladder improved
+  total body alignment from `55.06%` to `57.28%`; the prefix remains blocked at
+  the same root-slot address arithmetic mismatch.

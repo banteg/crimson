@@ -350,7 +350,62 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature_pool[root_slot_idx].link_index = child_slot_idx;
             APPLY_UNHANDLED_TEMPLATE_FALLBACK();
         } else {
-            if (template_id != SPAWN_ID_FORMATION_CHAIN_ALIEN_10_13) {
+            if (template_id == SPAWN_ID_FORMATION_CHAIN_ALIEN_10_13) {
+                creature->type_id = CREATURE_TYPE_ALIEN;
+                slot_10_i = terrain_texture_height / 2;
+                creature->ai_mode = CREATURE_AI_CHASE_PLAYER;
+                creature->pos_x = -10.0f;
+                creature->tint_r = 0.6f;
+                creature->pos_y = (float)slot_10_i;
+                creature->tint_g = 0.8f;
+                creature->tint_b = 0.91f;
+                creature->health = 200.0f;
+                creature->move_speed = 2.0f;
+                creature->reward_value = 600.0f;
+                creature->tint_a = 1.0f;
+                creature->size = 40.0f;
+                creature->contact_damage = 20.0f;
+                pos = (float *)0x2;
+                creature->max_health = 200.0f;
+                creature->pos_x = (float)cos(0.0f) * 256.0f + *origin_pos_ptr;
+                creature->ai_mode = CREATURE_AI_ORBIT_LINK;
+                creature->pos_y = (float)sin(0.0f) * 256.0f + origin_pos_ptr[1];
+                chain_link_idx = root_slot_idx;
+                do {
+                    child_slot_idx = creature_alloc_slot();
+                    float angle = (float)(int)pos * 0.34906587f;
+                    creature = &creature_pool[child_slot_idx];
+                    creature->ai_mode = CREATURE_AI_ORBIT_LINK;
+                    creature->link_index = chain_link_idx;
+                    creature->orbit_angle = 3.1415927f;
+                    creature->orbit_radius.raw_u32 = 0x41200000;
+                    creature->pos_x = (float)cos(angle) * 256.0f + *origin_pos_ptr;
+                    creature->vel_x = 0.0f;
+                    creature->health = 60.0f;
+                    creature->pos_y = (float)sin(angle) * 256.0f + origin_pos_ptr[1];
+                    creature->vel_y = 0.0f;
+                    creature->reward_value = 60.0f;
+                    creature->max_health = 60.0f;
+                    creature->tint_r = 0.4f;
+                    pos = (float *)((int)pos + 2);
+                    creature->tint_g = 0.7f;
+                    creature->collision_flag = 0;
+                    creature->tint_b = 0.11f;
+                    creature->collision_timer = 0.0f;
+                    creature->active = 1;
+                    creature->tint_a = 1.0f;
+                    creature->state_flag = 1;
+                    creature->hitbox_size = 16.0f;
+                    creature->attack_cooldown = 0.0f;
+                    creature->type_id = CREATURE_TYPE_ALIEN;
+                    creature->move_speed = 2.0f;
+                    creature->size = 50.0f;
+                    creature->contact_damage = 4.0f;
+                    chain_link_idx = child_slot_idx;
+                } while ((int)pos < 0x16);
+                creature_pool[root_slot_idx].link_index = child_slot_idx;
+                APPLY_UNHANDLED_TEMPLATE_FALLBACK();
+            } else {
                 if (template_id == SPAWN_ID_FORMATION_GRID_ALIEN_GREEN_14) {
                     creature = &creature_pool[root_slot_idx];
                     INIT_GRID_ROOT(CREATURE_TYPE_ALIEN, CREATURE_AI_CHASE_PLAYER,
@@ -799,64 +854,9 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                 } else if (template_id == SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43) {
                     SET_ROOT_STATS(CREATURE_TYPE_ZOMBIE, 2000.0f, 2.1f, 460.0f,
                                    0.2f, 0.6f, 0.1f, 1.0f, 70.0f, 15.0f);
-                }
-            } else {
-                creature->type_id = CREATURE_TYPE_ALIEN;
-                slot_10_i = terrain_texture_height / 2;
-                creature->ai_mode = CREATURE_AI_CHASE_PLAYER;
-                creature->pos_x = -10.0f;
-                creature->tint_r = 0.6f;
-                creature->pos_y = (float)slot_10_i;
-                creature->tint_g = 0.8f;
-                creature->tint_b = 0.91f;
-                creature->health = 200.0f;
-                creature->move_speed = 2.0f;
-                creature->reward_value = 600.0f;
-                creature->tint_a = 1.0f;
-                creature->size = 40.0f;
-                creature->contact_damage = 20.0f;
-                pos = (float *)0x2;
-                creature->max_health = 200.0f;
-                creature->pos_x = (float)cos(0.0f) * 256.0f + *origin_pos_ptr;
-                creature->ai_mode = CREATURE_AI_ORBIT_LINK;
-                creature->pos_y = (float)sin(0.0f) * 256.0f + origin_pos_ptr[1];
-                chain_link_idx = root_slot_idx;
-                do {
-                    child_slot_idx = creature_alloc_slot();
-                    float angle = (float)(int)pos * 0.34906587f;
-                    creature = &creature_pool[child_slot_idx];
-                    creature->ai_mode = CREATURE_AI_ORBIT_LINK;
-                    creature->link_index = chain_link_idx;
-                    creature->orbit_angle = 3.1415927f;
-                    creature->orbit_radius.raw_u32 = 0x41200000;
-                    creature->pos_x = (float)cos(angle) * 256.0f + *origin_pos_ptr;
-                    creature->vel_x = 0.0f;
-                    creature->health = 60.0f;
-                    creature->pos_y = (float)sin(angle) * 256.0f + origin_pos_ptr[1];
-                    creature->vel_y = 0.0f;
-                    creature->reward_value = 60.0f;
-                    creature->max_health = 60.0f;
-                    creature->tint_r = 0.4f;
-                    pos = (float *)((int)pos + 2);
-                    creature->tint_g = 0.7f;
-                    creature->collision_flag = 0;
-                    creature->tint_b = 0.11f;
-                    creature->collision_timer = 0.0f;
-                    creature->active = 1;
-                    creature->tint_a = 1.0f;
-                    creature->state_flag = 1;
-                    creature->hitbox_size = 16.0f;
-                    creature->attack_cooldown = 0.0f;
-                    creature->type_id = CREATURE_TYPE_ALIEN;
-                    creature->move_speed = 2.0f;
-                    creature->size = 50.0f;
-                    creature->contact_damage = 4.0f;
-                    chain_link_idx = child_slot_idx;
-                } while ((int)pos < 0x16);
-                creature_pool[root_slot_idx].link_index = child_slot_idx;
-                APPLY_UNHANDLED_TEMPLATE_FALLBACK();
             }
         }
+    }
     }
 
     if (!demo_mode_active
