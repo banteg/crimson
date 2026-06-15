@@ -178,6 +178,7 @@ extern float camera_shake_timer;
 extern int terrain_texture_width;
 extern int terrain_texture_height;
 extern int quest_fail_retry_count;
+extern int survival_elapsed_ms;
 
 extern int sfx_ui_bonus;
 extern int sfx_shockwave;
