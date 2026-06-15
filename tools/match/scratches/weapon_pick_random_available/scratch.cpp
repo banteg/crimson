@@ -19,7 +19,7 @@ extern "C" int weapon_pick_random_available(void)
             config_game_mode == GAME_MODE_QUEST
             && quest_stage_major == 5
             && quest_stage_minor == 10
-            && weapon_id == 0x17
+            && weapon_id == WEAPON_ID_ION_CANNON
         )
     );
     return weapon_id;

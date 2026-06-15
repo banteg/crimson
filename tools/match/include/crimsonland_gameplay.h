@@ -9,13 +9,6 @@ typedef struct IDirectSoundBuffer *LPDIRECTSOUNDBUFFER;
 extern "C" {
 #endif
 
-enum {
-    PERK_ID_FASTLOADER = 3,
-    PERK_ID_ALTERNATE_WEAPON = 9,
-    PERK_ID_REGRESSION_BULLETS = 23,
-    PERK_ID_AMMUNITION_WITHIN = 35,
-};
-
 extern int perk_id_fastloader;
 extern int perk_id_alternate_weapon;
 extern int perk_id_regression_bullets;
