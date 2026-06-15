@@ -150,6 +150,7 @@ extern weapon_stats_t weapon_table[];
 extern perk_meta_t perk_meta_table[];
 extern weapon_usage_counts_t weapon_usage_counts;
 extern projectile_pool_t projectile_pool;
+extern secondary_projectile_pool_t secondary_projectile_pool;
 extern particle_t particle_pool[];
 extern creature_t creature_pool[];
 extern creature_spawn_slot_t creature_spawn_slot_table[];

@@ -1,6 +1,6 @@
 #include "crimsonland_gameplay.h"
 
-static float abs_bits(float value)
+static __inline float abs_bits(float value)
 {
     unsigned int bits = *(unsigned int *)&value;
     bits &= 0x7fffffff;
