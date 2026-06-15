@@ -46,7 +46,7 @@ extern unsigned char creatures_any_active_flag;
 extern int highscore_record_shots_fired;
 
 int perk_count_get(int perk_id);
-int perk_can_offer(int perk_id);
+unsigned char perk_can_offer(int perk_id);
 int crt_rand(void);
 int console_printf(char *queue, char *fmt, ...);
 int crt_sprintf(char *dst, const char *fmt, ...);
