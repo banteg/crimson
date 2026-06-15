@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 12/986 | 345/385754 | 0.1% | 12/23 |
+| crimsonland.exe | 12/986 | 345/385754 | 0.1% | 12/24 |
 | grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
 
 ## crimsonland.exe
 
-**12/986** functions, **345/385754** bytes (**0.1%**), **12/23** scratches at 100%.
+**12/986** functions, **345/385754** bytes (**0.1%**), **12/24** scratches at 100%.
 
 | state | function | address | bytes | insns | match | prefix | build | note |
 |---|---|---|---:|---:|---:|---:|---|---|
@@ -38,6 +38,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | perk_select_random | 0x0042fbd0 | 89 | 32/32 | 96.88% | 28/32 | msvc6.5pp /O2 /G6 /W3 /GR- | gameplay-perk-rng |
 | match | perk_count_get | 0x0042fcf0 | 12 | 3/3 | 100.00% | 3/3 |  | gameplay-perk-count |
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 10/10 | 100.00% | 10/10 | msvc6.5pp /O2 /G6 /W3 /GR- | gameplay-spawn-slots |
+| wip | creature_spawn_template | 0x00430af0 | 14099 | 930/3159 | 20.05% | 20/3159 |  | gameplay-spawn-switch |
 | wip | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 97.22% | 6/36 |  | gameplay-weapon-rng |
 | wip | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 91.67% | 8/48 |  | gameplay-weapon-unlocks |
 
