@@ -34,6 +34,9 @@ extern creature_t creature_pool[];
 extern creature_spawn_slot_t creature_spawn_slot_table[];
 extern bonus_pool_t bonus_pool;
 extern bonus_entry_t bonus_pool_sentinel;
+extern bonus_meta_t bonus_meta_table[];
+extern char *bonus_label_points;
+extern char bonus_label_format_buffer[];
 
 extern unsigned char bonus_spawn_guard;
 extern unsigned char creatures_any_active_flag;
@@ -41,7 +44,9 @@ extern int highscore_record_shots_fired;
 
 int perk_count_get(int perk_id);
 int crt_rand(void);
+int crt_sprintf(char *dst, const char *fmt, ...);
 int game_is_full_version(void);
+char *weapon_table_entry(int weapon_id);
 void sfx_play_panned(int sfx_id, float *pos, float volume);
 
 #ifdef __cplusplus
