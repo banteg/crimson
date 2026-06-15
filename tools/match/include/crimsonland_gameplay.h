@@ -119,6 +119,14 @@ extern int perk_id_alternate_weapon;
 extern int perk_id_regression_bullets;
 extern int perk_id_ammunition_within;
 extern int perk_id_bonus_economist;
+extern int perk_id_final_revenge;
+extern int perk_id_unstoppable;
+extern int perk_id_thick_skinned;
+extern int perk_id_highlander;
+extern int perk_id_dodger;
+extern int perk_id_ninja;
+extern int perk_id_death_clock;
+extern int perk_id_tough_reloader;
 extern int perk_id_max;
 
 extern player_state_t player_state_table[];
@@ -168,6 +176,7 @@ extern int bonus_icon_energizer;
 extern int bonus_icon_double_experience;
 
 extern unsigned char bonus_spawn_guard;
+extern unsigned char survival_reward_damage_seen;
 extern unsigned char creatures_any_active_flag;
 extern unsigned char demo_mode_active;
 extern int highscore_record_shots_fired;
@@ -185,6 +194,8 @@ extern int sfx_shockwave;
 extern int sfx_shock_hit_01;
 extern int sfx_explosion_medium;
 extern int sfx_explosion_large;
+extern int sfx_trooper_inpain_01;
+extern int sfx_trooper_die_01;
 
 extern int effect_template_flags;
 extern float effect_template_color_r;

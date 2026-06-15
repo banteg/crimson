@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 12/986 | 345/385754 | 0.1% | 12/27 |
+| crimsonland.exe | 12/986 | 345/385754 | 0.1% | 12/28 |
 | grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
 
 ## crimsonland.exe
 
-**12/986** functions, **345/385754** bytes (**0.1%**), **12/27** scratches at 100%.
+**12/986** functions, **345/385754** bytes (**0.1%**), **12/28** scratches at 100%.
 
 | state | function | address | bytes | insns | match | prefix | build | note |
 |---|---|---|---:|---:|---:|---:|---|---|
@@ -34,6 +34,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | creatures_apply_radius_damage | 0x00420600 | 159 | 58/57 | 74.78% | 11/57 |  | gameplay-radius-damage |
 | wip | creature_find_in_radius | 0x004206a0 | 133 | 51/47 | 40.82% | 0/47 |  | gameplay-target-search |
 | wip | player_find_in_radius | 0x00420730 | 133 | 54/54 | 64.81% | 9/54 |  | gameplay-target-search |
+| wip | player_take_damage | 0x00425e50 | 969 | 265/267 | 75.56% | 9/267 |  | gameplay-player-damage |
 | wip | creature_reset_all | 0x004281e0 | 46 | 12/13 | 80.00% | 2/13 |  | gameplay-creature-reset |
 | match | creatures_none_active | 0x00428210 | 40 | 12/12 | 100.00% | 12/12 | msvc6.5pp /O2 /G6 /W3 /GR- | gameplay-creature-scan |
 | wip | creature_spawn | 0x00428240 | 334 | 78/79 | 73.89% | 5/79 |  | gameplay-creature-spawn |
