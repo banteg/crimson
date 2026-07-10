@@ -4230,81 +4230,9 @@ function recordTimingSample(phase, writeKind, payload) {
   }
 }
 
-const EVENT_HEAD_ORDER = [
-  "state_transition",
-  "mode_tick",
-  "input_primary_edge",
-  "input_primary_down",
-  "input_any_key",
-  "player_fire",
-  "weapon_assign",
-  "bonus_apply",
-  "bonus_spawn",
-  "secondary_projectile_spawn",
-  "projectile_spawn",
-  "projectile_find_query",
-  "projectile_find_hit",
-  "creature_damage",
-  "player_damage",
-  "creature_death",
-  "creature_spawn",
-  "creature_spawn_low",
-  "creature_update_micro",
-  "perk_apply",
-  "perk_generate_choices",
-  "sfx",
-  "perk_delta",
-  "quest_timeline_delta",
-  "creature_lifecycle",
-];
-
 function asObject(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   return value;
-}
-
-function toPerkApplyEntry(value) {
-  const row = asObject(value);
-  const backtrace = Array.isArray(row.backtrace)
-    ? row.backtrace.map((item) => String(item))
-    : null;
-  return {
-    perk_id: row.perk_id == null ? null : row.perk_id,
-    choice_index: row.choice_index == null ? null : row.choice_index,
-    pending_before: row.pending_before == null ? null : row.pending_before,
-    pending_after: row.pending_after == null ? null : row.pending_after,
-    caller: row.caller == null ? null : row.caller,
-    caller_static: row.caller_static == null ? null : row.caller_static,
-    backtrace: backtrace,
-  };
-}
-
-function buildCaptureEventHeads(eventHeadsByKind) {
-  const out = [];
-  const byKind = asObject(eventHeadsByKind);
-  for (let i = 0; i < EVENT_HEAD_ORDER.length; i++) {
-    const kind = EVENT_HEAD_ORDER[i];
-    const entries = Array.isArray(byKind[kind]) ? byKind[kind] : [];
-    for (let j = 0; j < entries.length; j++) {
-      const payload = asObject(entries[j]);
-      if (kind === "perk_apply") {
-        out.push(
-          Object.assign(
-            {
-              type: "perk_apply",
-            },
-            toPerkApplyEntry(payload)
-          )
-        );
-      } else {
-        out.push({
-          type: kind,
-          data: payload,
-        });
-      }
-    }
-  }
-  return out;
 }
 
 function pushInputContext(threadId, ctx) {
@@ -4987,7 +4915,7 @@ function finalizeTick() {
     checkpoint: checkpoint,
     event_counts: tick.event_counts,
     event_overflow: tick.overflow,
-    event_heads: buildCaptureEventHeads(tick.event_heads),
+    event_heads: tick.event_heads,
     timing_samples: timingSamplesFromTick({
       tick_index: tick.tick_index,
       gameplay_frame: tick.gameplay_frame,
