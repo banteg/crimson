@@ -12,7 +12,7 @@ QuestStageMajor: TypeAlias = Annotated[int, msgspec.Meta(ge=1, le=QUEST_STAGE_CO
 QuestStageMinor: TypeAlias = Annotated[int, msgspec.Meta(ge=1, le=QUESTS_PER_STAGE)]
 
 
-class QuestLevel(msgspec.Struct, frozen=True):
+class QuestLevel(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     major: QuestStageMajor
     minor: QuestStageMinor
 

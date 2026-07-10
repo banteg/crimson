@@ -158,7 +158,7 @@ fn runNativeVerify(
         io,
         resolution.resolved_path,
         allocator,
-        .limited(replay_codec.max_replay_payload_bytes),
+        .limited(replay_codec.max_replay_file_bytes),
     ) catch |err| {
         return buildVerifyFailedOutput(allocator, verifyReplayReadErrorDetail(err));
     };
@@ -176,27 +176,14 @@ fn runVerifyWithReplayBytes(
     var replay_payload_alloc: ?[]u8 = null;
     defer if (replay_payload_alloc) |buf| allocator.free(buf);
 
-    const replay_payload: []const u8 = if (replay_codec.isZstdPayload(replay_bytes)) blk: {
-        const inflated = replay_codec.inflateZstdPayload(
-            allocator,
-            replay_bytes,
-            replay_codec.max_replay_payload_bytes,
-        ) catch |err| {
-            return buildOutputForReplayCodecError(allocator, err);
-        };
-        replay_payload_alloc = inflated;
-        break :blk inflated;
-    } else if (replay_codec.isGzipPayload(replay_bytes)) blk: {
-        const inflated = replay_codec.inflateGzipPayload(
-            allocator,
-            replay_bytes,
-            replay_codec.max_replay_payload_bytes,
-        ) catch |err| {
-            return buildOutputForReplayCodecError(allocator, err);
-        };
-        replay_payload_alloc = inflated;
-        break :blk inflated;
-    } else replay_bytes;
+    const replay_payload = replay_codec.inflateZstdFilePayload(
+        allocator,
+        replay_bytes,
+        replay_codec.max_replay_payload_bytes,
+    ) catch |err| {
+        return buildOutputForReplayCodecError(allocator, err);
+    };
+    replay_payload_alloc = replay_payload;
 
     var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
         if (err == error.UnsupportedInputShape) {
@@ -214,6 +201,11 @@ fn runVerifyWithReplayBytes(
                 defer allocator.free(detail);
                 return buildVerifyFailedOutput(allocator, detail);
             }
+        } else if (err == error.UnsupportedEventKind) {
+            if (try replay_codec.replayCommandKindFailureDetail(allocator, replay_payload)) |detail| {
+                defer allocator.free(detail);
+                return buildVerifyFailedOutput(allocator, detail);
+            }
         }
         return buildOutputForReplayCodecError(allocator, err);
     };
@@ -223,9 +215,6 @@ fn runVerifyWithReplayBytes(
     if (replay_codec.unsupportedReplayHeaderDetail(header, replay.tickCount(), .verifier)) |detail| {
         return buildVerifyFailedOutput(allocator, detail);
     }
-    replay_codec.validateReplayBootstrap(header) catch |err| {
-        return buildOutputForReplayCodecError(allocator, err);
-    };
     if (try replay_codec.replayEventOrderingFailureDetail(allocator, replay.events)) |detail| {
         defer allocator.free(detail);
         return buildVerifyFailedOutput(allocator, detail);
@@ -278,7 +267,7 @@ fn runVerifyWithReplayBytes(
                     .{
                         .processed_ticks = tick_trace.items.len,
                         .total_ticks = ticks_to_simulate,
-                        .event_count = replay.events.len,
+                        .event_count = replay.prelude.len + replay.postlude.len + replay.events.len,
                     },
                 );
             };
@@ -293,7 +282,7 @@ fn runVerifyWithReplayBytes(
                 err,
                 .{
                     .total_ticks = ticks_to_simulate,
-                    .event_count = replay.events.len,
+                    .event_count = replay.prelude.len + replay.postlude.len + replay.events.len,
                 },
             );
         };
@@ -613,7 +602,8 @@ fn verifyReplayReadErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
         error.FileNotFound => "replay file not found",
         error.AccessDenied => "unable to read replay file: access denied",
-        error.FileTooBig, error.PayloadTooLarge => "replay payload exceeds max decompressed size",
+        error.FileTooBig => "replay zstd envelope exceeds max file size",
+        error.PayloadTooLarge => "replay payload exceeds max decompressed size",
         error.OutOfMemory => "native replay verifier ran out of memory while reading replay",
         else => @errorName(err),
     };
@@ -642,23 +632,21 @@ fn buildOutputForReplayCodecError(
     err: replay_codec.ReplayCodecError,
 ) !CommandOutput {
     switch (err) {
-        error.InvalidMsgpack => return buildVerifyFailedOutput(allocator, "replay payload is not valid msgpack wire format"),
-        error.LegacyJsonPayload => return buildVerifyFailedOutput(allocator, "legacy JSON replay format is unsupported; regenerate the replay"),
+        error.InvalidMsgpack => return buildVerifyFailedOutput(allocator, "replay payload does not match format 15 msgpack schema"),
         error.InvalidHeaderValue => return buildVerifyFailedOutput(allocator, "replay header contains invalid values"),
         error.InvalidClaimedStats => return buildVerifyFailedOutput(allocator, "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired"),
         error.MissingHeaderField => return buildVerifyFailedOutput(allocator, "replay header missing required fields"),
         error.MissingQuestLevel => return buildVerifyFailedOutput(allocator, "quest replays require a valid header.quest_level"),
         error.TypoMultiplayer => return buildVerifyFailedOutput(allocator, "Typ-o replays require player_count == 1"),
         error.TutorialMultiplayer => return buildVerifyFailedOutput(allocator, "tutorial replays require player_count == 1"),
-        error.UnsupportedInputShape => return buildVerifyFailedOutput(allocator, "replay input rows are invalid: expected canonical wire shape"),
-        error.UnsupportedEventShape => return buildVerifyFailedOutput(allocator, "replay events are invalid: expected canonical wire shape"),
-        error.InvalidGzipPayload => return buildVerifyFailedOutput(allocator, "unable to inflate replay gzip payload"),
+        error.UnsupportedGameMode => return buildVerifyFailedOutput(allocator, "replay game mode is not supported"),
+        error.UnsupportedInputShape => return buildVerifyFailedOutput(allocator, "replay tick inputs do not match format 15"),
+        error.UnsupportedEventShape => return buildVerifyFailedOutput(allocator, "replay tick operations do not match format 15"),
+        error.UnsupportedEventKind => return buildVerifyFailedOutput(allocator, "replay tick commands are invalid for this game mode"),
         error.InvalidZstdPayload => return buildVerifyFailedOutput(allocator, "unable to inflate replay zstd payload"),
         error.UnsupportedReplayFormatVersion => return buildVerifyFailedOutput(allocator, "replay format version is not supported"),
-        error.UnknownCommandKind => return buildVerifyFailedOutput(allocator, "replay events include an unknown command kind"),
-        error.UnsupportedBootstrapKind => return buildVerifyFailedOutput(allocator, "replay bootstrap kind is not supported"),
+        error.UnknownCommandKind => return buildVerifyFailedOutput(allocator, "replay tick operations do not match format 15"),
         error.UnsupportedInputQuantization => return buildVerifyFailedOutput(allocator, "replay input quantization is not supported"),
-        error.BootstrapSeedMismatch => return buildVerifyFailedOutput(allocator, "replay bootstrap seed does not match canonical terrain bootstrap draws"),
         error.PayloadTooLarge => return buildVerifyFailedOutput(allocator, "replay payload exceeds max decompressed size"),
         error.OutOfMemory => return buildVerifyFailedOutput(allocator, "native replay msgpack decode ran out of memory"),
     }
@@ -676,7 +664,7 @@ fn buildReplayRunnerFailureOutput(
         error.UnsupportedPlayerCount => "native replay run only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "native replay run only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay events include invalid kinds or values for this mode",
+        error.UnsupportedEventKind => "replay tick commands are invalid for this game mode",
         error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player_index",
         error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
         error.InvalidSpawnTemplate => "replay capture payload references an invalid creature spawn template",
@@ -1126,22 +1114,21 @@ test "replay codec invalid replay errors map to verify failed output" {
         err: replay_codec.ReplayCodecError,
         detail: []const u8,
     }{
-        .{ .err = error.InvalidMsgpack, .detail = "replay payload is not valid msgpack wire format" },
-        .{ .err = error.LegacyJsonPayload, .detail = "legacy JSON replay format is unsupported; regenerate the replay" },
+        .{ .err = error.InvalidMsgpack, .detail = "replay payload does not match format 15 msgpack schema" },
         .{ .err = error.InvalidHeaderValue, .detail = "replay header contains invalid values" },
         .{ .err = error.InvalidClaimedStats, .detail = "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired" },
         .{ .err = error.MissingHeaderField, .detail = "replay header missing required fields" },
         .{ .err = error.MissingQuestLevel, .detail = "quest replays require a valid header.quest_level" },
         .{ .err = error.TypoMultiplayer, .detail = "Typ-o replays require player_count == 1" },
         .{ .err = error.TutorialMultiplayer, .detail = "tutorial replays require player_count == 1" },
-        .{ .err = error.UnsupportedInputShape, .detail = "replay input rows are invalid: expected canonical wire shape" },
-        .{ .err = error.UnsupportedEventShape, .detail = "replay events are invalid: expected canonical wire shape" },
-        .{ .err = error.InvalidGzipPayload, .detail = "unable to inflate replay gzip payload" },
+        .{ .err = error.UnsupportedGameMode, .detail = "replay game mode is not supported" },
+        .{ .err = error.UnsupportedInputShape, .detail = "replay tick inputs do not match format 15" },
+        .{ .err = error.UnsupportedEventShape, .detail = "replay tick operations do not match format 15" },
+        .{ .err = error.UnsupportedEventKind, .detail = "replay tick commands are invalid for this game mode" },
+        .{ .err = error.InvalidZstdPayload, .detail = "unable to inflate replay zstd payload" },
         .{ .err = error.UnsupportedReplayFormatVersion, .detail = "replay format version is not supported" },
-        .{ .err = error.UnknownCommandKind, .detail = "replay events include an unknown command kind" },
-        .{ .err = error.UnsupportedBootstrapKind, .detail = "replay bootstrap kind is not supported" },
+        .{ .err = error.UnknownCommandKind, .detail = "replay tick operations do not match format 15" },
         .{ .err = error.UnsupportedInputQuantization, .detail = "replay input quantization is not supported" },
-        .{ .err = error.BootstrapSeedMismatch, .detail = "replay bootstrap seed does not match canonical terrain bootstrap draws" },
         .{ .err = error.PayloadTooLarge, .detail = "replay payload exceeds max decompressed size" },
         .{ .err = error.OutOfMemory, .detail = "native replay msgpack decode ran out of memory" },
     };
@@ -1172,7 +1159,7 @@ test "runtime replay failure output includes progress hints" {
     defer allocator.free(output.stderr);
 
     try std.testing.expectEqual(@as(i32, 1), output.exit_code);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay events include invalid kinds or values for this mode") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay tick commands are invalid for this game mode") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "ticks_processed=2559/8807") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "event_count=8") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "unsupported") == null);
@@ -1186,15 +1173,13 @@ fn makeTestReplayHeader(
         .seed = 1,
         .replay_format_version = replay_codec.replay_format_version,
         .quest_level = try allocator.dupe(u8, ""),
-        .bootstrap_kind = try allocator.dupe(u8, "none"),
-        .bootstrap_seed = 0,
         .game_version = try allocator.dupe(u8, "0.9.0"),
         .tick_rate = 60,
-        .difficulty_level = 0,
+        .quest_fail_retry_count = 0,
         .hardcore = false,
         .preserve_bugs = false,
         .detail_preset = 5,
-        .gore_disabled = 0,
+        .violence_disabled = 0,
         .world_size = 1024.0,
         .player_count = 1,
         .status = .{

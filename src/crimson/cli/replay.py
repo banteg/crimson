@@ -169,21 +169,20 @@ def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
     if failure.kind == "missing_checkpoint":
         typer.echo(f"checkpoint missing at tick={int(failure.tick_index)}", err=True)
         raise typer.Exit(code=1)
+    if failure.kind == "extra_checkpoint":
+        typer.echo(f"unexpected checkpoint at tick={int(failure.tick_index)}", err=True)
+        raise typer.Exit(code=1)
 
+    assert exp is not None
     assert act is not None
     typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
-    if int(diff.skipped_elapsed_mismatch_count) > 0:
-        typer.echo(
-            f"  skipped_elapsed_mismatches={diff.skipped_elapsed_mismatch_count}",
-            err=True,
-        )
     typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
     typer.echo(f"  elapsed_ms expected={exp.elapsed_ms} actual={act.elapsed_ms}", err=True)
     typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
     typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
     typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
     typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
-    deepdiff = checkpoint_deepdiff(exp, act, include_rng_fields=False)
+    deepdiff = checkpoint_deepdiff(exp, act)
     if deepdiff is not None:
         mismatches = deepdiff.payload.get("mismatches") if isinstance(deepdiff.payload, dict) else None
         if isinstance(mismatches, list) and mismatches:
@@ -1628,11 +1627,6 @@ def cmd_replay_verify_checkpoints(
         "--trace-rng",
         help="include presentation RNG draw marks in verification checkpoints",
     ),
-    skip_elapsed_mismatch: bool = typer.Option(
-        False,
-        "--skip-elapsed-mismatch",
-        help="skip checkpoint rows whose elapsed_ms differs before comparing state fields",
-    ),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
         "--base-dir",
@@ -1695,7 +1689,6 @@ def cmd_replay_verify_checkpoints(
         driver: PlaybackDriver
         checkpoint_ticks: set[int]
         actual: list[ReplayCheckpoint]
-        skipped_elapsed_mismatch_count: int = 0
 
         def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
             _ = world
@@ -1706,19 +1699,9 @@ def cmd_replay_verify_checkpoints(
                 tick_diff = compare_checkpoints(
                     [expected_by_tick[tick_index]],
                     [checkpoint],
-                    skip_elapsed_mismatch=bool(skip_elapsed_mismatch),
                 )
                 if not tick_diff.ok:
-                    skipped_count = int(self.skipped_elapsed_mismatch_count) + int(
-                        tick_diff.skipped_elapsed_mismatch_count,
-                    )
-                    if skipped_count != int(tick_diff.skipped_elapsed_mismatch_count):
-                        tick_diff = msgspec.structs.replace(
-                            tick_diff,
-                            skipped_elapsed_mismatch_count=skipped_count,
-                        )
                     raise _CheckpointMismatchStop(tick_diff)
-                self.skipped_elapsed_mismatch_count += int(tick_diff.skipped_elapsed_mismatch_count)
 
     try:
         driver = build_verify_playback_driver(
@@ -1732,7 +1715,6 @@ def cmd_replay_verify_checkpoints(
                 driver=driver,
                 checkpoint_ticks=checkpoint_ticks,
                 actual=actual,
-                skipped_elapsed_mismatch_count=0,
             ),
         )
     except _CheckpointMismatchStop as exc:
@@ -1741,11 +1723,7 @@ def cmd_replay_verify_checkpoints(
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    diff = compare_checkpoints(
-        expected.checkpoints,
-        actual,
-        skip_elapsed_mismatch=bool(skip_elapsed_mismatch),
-    )
+    diff = compare_checkpoints(expected.checkpoints, actual)
     if not diff.ok:
         _render_checkpoint_diff_failure(diff)
 
@@ -1753,10 +1731,6 @@ def cmd_replay_verify_checkpoints(
         f"ok: {len(expected.checkpoints)} checkpoints match; ticks={result.ticks} "
         f"score_xp={result.score_xp} kills={result.creature_kill_count}"
     )
-    if diff.first_rng_only_tick is not None:
-        message += f"; rng-only drift starts at tick={diff.first_rng_only_tick}"
-    if int(diff.skipped_elapsed_mismatch_count) > 0:
-        message += f"; skipped_elapsed_mismatches={diff.skipped_elapsed_mismatch_count}"
     typer.echo(message)
 
 
@@ -1764,11 +1738,6 @@ def cmd_replay_verify_checkpoints(
 def cmd_replay_diff_checkpoints(
     expected_file: Path = typer.Argument(..., help="expected checkpoints sidecar (.crd.chk)"),
     actual_file: Path = typer.Argument(..., help="actual checkpoints sidecar (.crd.chk)"),
-    skip_elapsed_mismatch: bool = typer.Option(
-        False,
-        "--skip-elapsed-mismatch",
-        help="skip checkpoint rows whose elapsed_ms differs before comparing state fields",
-    ),
 ) -> None:
     """Compare two checkpoint sidecars and report the first divergence."""
     from ..dbg.checkpoint_diff import compare_checkpoints
@@ -1776,17 +1745,9 @@ def cmd_replay_diff_checkpoints(
 
     expected = load_checkpoints_file(Path(expected_file))
     actual = load_checkpoints_file(Path(actual_file))
-    diff = compare_checkpoints(
-        expected.checkpoints,
-        actual.checkpoints,
-        skip_elapsed_mismatch=bool(skip_elapsed_mismatch),
-    )
+    diff = compare_checkpoints(expected.checkpoints, actual.checkpoints)
     if not diff.ok:
         _render_checkpoint_diff_failure(diff)
 
     message = f"ok: {len(expected.checkpoints)} checkpoints match"
-    if diff.first_rng_only_tick is not None:
-        message += f"; rng-only drift starts at tick={diff.first_rng_only_tick}"
-    if int(diff.skipped_elapsed_mismatch_count) > 0:
-        message += f"; skipped_elapsed_mismatches={diff.skipped_elapsed_mismatch_count}"
     typer.echo(message)

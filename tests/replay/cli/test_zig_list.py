@@ -108,7 +108,8 @@ def test_zig_replay_list_reports_event_shape_detail(tmp_path: Path) -> None:
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "missing-perk-choice.crd invalid - - - - -" in result.stdout
     assert (
-        "warning: missing-perk-choice.crd: replay event perk_pick missing choice_index: tick=0 event_index=0"
+        "warning: missing-perk-choice.crd: "
+        "replay prelude perk_pick missing choice_index: tick=0 operation_index=0"
         in result.stdout
     )
     assert "canonical wire shape" not in result.stdout
@@ -127,8 +128,8 @@ def test_zig_replay_list_reports_unknown_command_detail(tmp_path: Path) -> None:
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "unknown-command.crd invalid - - - - -" in result.stdout
     assert (
-        "warning: unknown-command.crd: replay event command kind is unknown: "
-        "type=network_ping tick=0 event_index=0"
+        "warning: unknown-command.crd: replay command type is unknown: "
+        "type=network_ping tick=0 command_index=0"
     ) in result.stdout
     assert "replay events include an unknown command kind" not in result.stdout
 
@@ -146,7 +147,7 @@ def test_zig_replay_list_reports_event_player_index_detail(tmp_path: Path) -> No
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "event-player-index.crd invalid - - - - -" in result.stdout
     assert (
-        "warning: event-player-index.crd: replay event player_index out of range: 1 "
+        "warning: event-player-index.crd: replay prelude player_index out of range: 1 "
         "(player_count=1, tick=0, event=perk_menu_open)"
     ) in result.stdout
     assert "out-of-range player_index" not in result.stdout
@@ -165,8 +166,8 @@ def test_zig_replay_list_reports_event_kind_detail(tmp_path: Path) -> None:
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "event-kind.crd invalid - - - - -" in result.stdout
     assert (
-        "warning: event-kind.crd: replay event kind invalid for game mode: "
-        "event=typo_char tick=0 event_index=0 game_mode=survival"
+        "warning: event-kind.crd: replay command invalid for game mode: "
+        "type=typo_char tick=0 command_index=0 game_mode=survival"
     ) in result.stdout
     assert "replay events include invalid kinds or values for this mode" not in result.stdout
 
@@ -196,7 +197,7 @@ def test_zig_replay_list_mode_collapses_quest_level_and_players(tmp_path: Path) 
     assert "quest 3.10 2p" in result.stdout
 
 
-def test_zig_replay_list_accepts_current_string_quest_level(tmp_path: Path) -> None:
+def test_zig_replay_list_rejects_string_quest_level(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.QUESTS, ticks=1, quest_level="1.1")
     write_current_string_quest_level_replay(
         tmp_path / "replays",
@@ -208,8 +209,12 @@ def test_zig_replay_list_accepts_current_string_quest_level(tmp_path: Path) -> N
     result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
 
     assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "quest-string-level.crd quest 1.1" in result.stdout
-    assert "count=1 parsed=1 errors=0" in result.stdout
+    assert "quest-string-level.crd invalid - - - - -" in result.stdout
+    assert (
+        "warning: quest-string-level.crd: replay payload does not match format 15 msgpack schema"
+        in result.stdout
+    )
+    assert "count=1 parsed=0 errors=1" in result.stdout
 
 
 def test_zig_replay_list_reports_single_player_mode_count_detail(tmp_path: Path) -> None:
@@ -284,7 +289,7 @@ def test_zig_replay_list_reports_invalid_claimed_stats_detail(tmp_path: Path) ->
     assert "native runtime limitation" not in result.stdout
 
 
-def test_zig_replay_list_reports_bootstrap_seed_detail(tmp_path: Path) -> None:
+def test_zig_replay_list_rejects_legacy_bootstrap_fields(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
     write_current_bad_bootstrap_seed_replay(
         tmp_path / "replays",
@@ -297,8 +302,7 @@ def test_zig_replay_list_reports_bootstrap_seed_detail(tmp_path: Path) -> None:
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "bad-bootstrap-seed.crd invalid - - - - -" in result.stdout
     assert (
-        "warning: bad-bootstrap-seed.crd: "
-        "replay bootstrap seed does not match canonical terrain bootstrap draws"
+        "warning: bad-bootstrap-seed.crd: replay payload does not match format 15 msgpack schema"
     ) in result.stdout
     assert "native runtime limitation" not in result.stdout
 
@@ -373,12 +377,12 @@ def test_zig_replay_list_emits_json_and_artifact(tmp_path: Path) -> None:
     assert ok_row["parse_error"] is None
     broken_row = next(row for row in payload["rows"] if row["replay"] == "broken.crd")
     assert broken_row["mode"] == "invalid"
-    assert broken_row["parse_error"] == "replay payload is not valid msgpack wire format"
+    assert broken_row["parse_error"] == "unable to inflate replay zstd payload"
     unknown_row = next(row for row in payload["rows"] if row["replay"] == "unknown-command.crd")
     assert unknown_row["mode"] == "invalid"
     assert (
         unknown_row["parse_error"]
-        == "replay event command kind is unknown: type=network_ping tick=0 event_index=0"
+        == "replay command type is unknown: type=network_ping tick=0 command_index=0"
     )
     assert json.loads(json_out.read_text(encoding="utf-8")) == payload
 

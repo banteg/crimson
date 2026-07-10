@@ -174,8 +174,6 @@ def _run_verify_playback(
     checkpoint_use_world_step_creature_count: bool = False,
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
-    inter_tick_rand_draws: int = 0,
-    inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     spawn_entries=None,
     start_weapon_id=None,
     observer: PlaybackWalkObserver | None = None,
@@ -185,8 +183,6 @@ def _run_verify_playback(
         max_ticks=max_ticks,
         warn_on_version_mismatch=bool(warn_on_version_mismatch),
         trace_rng=bool(trace_rng),
-        inter_tick_rand_draws=int(inter_tick_rand_draws),
-        inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         spawn_entries=spawn_entries,
         start_weapon_id=start_weapon_id,
     )

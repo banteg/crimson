@@ -11,14 +11,24 @@ from crimson.dbg.canonical_channels import (
     SimStateSnapshot,
     SnapshotBonusTimers,
     SnapshotGameplay,
+    SnapshotPlayer,
+    SnapshotVec2,
+    SnapshotWeapon,
 )
 from crimson.dbg.schema import TRACE_SCHEMA_VERSION
 from crimson.dbg.trace import load_trace
 from crimson.game_modes import GameMode
 from crimson.persistence.save_status import GameStatusData
-from crimson.replay.checkpoints import ReplayCheckpoint
+from crimson.replay.checkpoints import (
+    ReplayCheckpoint,
+    ReplayCheckpointVec2,
+    ReplayEventSummary,
+    ReplayPerkSnapshot,
+    ReplayPlayerCheckpoint,
+)
 from crimson.replay.types import Replay, ReplayHeader, ReplayTick
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.weapons import WeaponId
 
 
 def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Path) -> None:
@@ -31,11 +41,9 @@ def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Pa
         *,
         replay_path: Path,
         out_path: Path,
-        pre_tick_rand_draws: int = 0,
     ) -> object:
         captured["replay_path"] = replay_path
         captured["out_path"] = out_path
-        captured["pre_tick_rand_draws"] = pre_tick_rand_draws
         return sentinel
 
     monkeypatch.setattr(dbg_record, "_record_replay_to_trace_python", _fake_python)
@@ -51,14 +59,12 @@ def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Pa
         out_path=out_path,
         impl="python",
         warnings_out=warnings,
-        pre_tick_rand_draws=1,
     )
 
     assert result is sentinel
     assert warnings == []
     assert captured["replay_path"] == replay_path
     assert captured["out_path"] == out_path
-    assert captured["pre_tick_rand_draws"] == 1
 
 
 def test_record_replay_to_trace_dispatches_zig_impl_and_collects_warnings(monkeypatch, tmp_path: Path) -> None:
@@ -122,9 +128,33 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
                 kills=0,
                 creature_count=0,
                 perk_pending=0,
-                players=[],
+                players=[
+                    ReplayPlayerCheckpoint(
+                        pos=ReplayCheckpointVec2(0.0, 0.0),
+                        health=100.0,
+                        weapon_id=WeaponId.PISTOL,
+                        ammo=0.0,
+                        experience=0,
+                        level=1,
+                    ),
+                ],
                 bonus_timers={},
                 deaths=[],
+                perk=ReplayPerkSnapshot(
+                    pending_count=0,
+                    choices_dirty=False,
+                    choices=[0] * 7,
+                    player_nonzero_counts=[[]],
+                ),
+                events=ReplayEventSummary(
+                    hit_count=0,
+                    pickup_count=0,
+                    sfx_count=0,
+                    sfx_head=[],
+                    hit_head=[],
+                ),
+                tutorial=None,
+                typo=None,
             )
 
         def run(self, *, observer):
@@ -139,7 +169,7 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
             observer.after_tick(tick_result, world)
             observer.rng_trace(
                 tick_result,
-                ((0x90ABCDEF, 28052, 0xED9D2340, None),),
+                ((0x90ABCDEF, 23203, 0x5AA3B0F6, None),),
             )
             return SimpleNamespace()
 
@@ -173,7 +203,29 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
                     freeze_ms=0,
                 ),
             ),
-            players=[],
+            players=[
+                SnapshotPlayer(
+                    index=0,
+                    pos=SnapshotVec2(x=0.0, y=0.0),
+                    heading=0.0,
+                    move_speed=0.0,
+                    move_phase=0.0,
+                    aim=SnapshotVec2(x=0.0, y=0.0),
+                    aim_heading=0.0,
+                    health=100.0,
+                    weapon=SnapshotWeapon(
+                        weapon_id=int(WeaponId.PISTOL),
+                        ammo=0.0,
+                        clip_size=0,
+                        reload_active=False,
+                        reload_timer=0.0,
+                        reload_timer_max=0.0,
+                        shot_cooldown=0.0,
+                    ),
+                    experience=0,
+                    level=1,
+                ),
+            ],
         ),
     )
 
@@ -274,7 +326,7 @@ def test_zig_dbg_record_cli_writes_cdt_trace(tmp_path: Path) -> None:
     assert record_run.returncode == 0, dbg_record._command_detail(record_run)
     assert f"trace={out_path}" in record_run.stdout
     assert "ticks start=0 end=0 count=1" in record_run.stdout
-    assert "channels=checkpoint,sim_state,entity_samples,rng_stream,timing_samples" in record_run.stdout
+    assert "channels=replay_step,checkpoint,sim_state,entity_samples,rng_stream,timing_samples" in record_run.stdout
     meta, ticks, footer = load_trace(out_path)
     assert meta.trace_schema_version == TRACE_SCHEMA_VERSION
     assert footer.tick_count == len(ticks)

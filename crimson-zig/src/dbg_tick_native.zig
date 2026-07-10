@@ -259,13 +259,17 @@ fn traceTickErrorDetail(err: anyerror) []const u8 {
         error.InvalidTracePayload,
         error.InvalidTraceTrailer,
         error.InvalidTraceFooterOffset,
+        error.InvalidTraceMetaChunk,
         error.InvalidTraceFooterChunk,
         error.InvalidTraceTickChunk,
         error.InvalidTraceTickBlock,
+        error.InvalidTraceFooter,
         error.InvalidTraceBlockOffset,
         error.InvalidTraceChecksum,
+        error.InvalidTraceChunkLayout,
         => "invalid CDT trace",
         error.UnsupportedTraceFormatVersion => "unsupported CDT trace format version",
+        error.UnsupportedTraceSchemaVersion => "unsupported CDT trace schema version",
         error.UnsupportedTraceCompression => "compressed CDT trace chunks are not supported",
         error.OutOfMemory => "out of memory",
         else => @errorName(err),
@@ -319,7 +323,7 @@ test "dbg tick summarizes native CDT trace" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "tick.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();

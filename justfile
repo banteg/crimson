@@ -259,7 +259,7 @@ frida-import-raw:
         [ -e "{{share_dir}}/$f" ] || continue; \
         cp -av "{{share_dir}}/$f" analysis/frida/raw/; \
     done
-    for f in {{share_dir}}/gameplay_diff_capture.*.run*.cdt {{share_dir}}/gameplay_diff_capture.*.run*.crd; do \
+    for f in {{share_dir}}/gameplay_diff_capture.*.run*.cdt {{share_dir}}/gameplay_diff_capture.*.run*.crd {{share_dir}}/gameplay_diff_capture.*.run*.rng_evidence.json {{share_dir}}/gameplay_diff_capture.*.run*.evidence.msgpack.zst; do \
         [ -e "$f" ] || continue; \
         cp -av "$f" analysis/frida/raw/; \
     done

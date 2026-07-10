@@ -156,8 +156,9 @@ fn buildHealthHuman(
     try writeOptionalI32(writer, summary.tick_window.actual_end);
     try writer.print(" ticks_in_window={d}\n", .{summary.tick_window.ticks_in_window});
     try writer.print(
-        "channels=checkpoint:{d},entity_samples:{d},rng_stream:{d},sim_state:{d},timing_samples:{d}\n",
+        "channels=replay_step:{d},checkpoint:{d},entity_samples:{d},rng_stream:{d},sim_state:{d},timing_samples:{d}\n",
         .{
+            summary.channels_present.replay_step,
             summary.channels_present.checkpoint,
             summary.channels_present.entity_samples,
             summary.channels_present.rng_stream,
@@ -301,8 +302,10 @@ fn traceHealthErrorDetail(err: anyerror) []const u8 {
         error.InvalidTraceFooter,
         error.InvalidTraceBlockOffset,
         error.InvalidTraceChecksum,
+        error.InvalidTraceChunkLayout,
         => "invalid CDT trace",
         error.UnsupportedTraceFormatVersion => "unsupported CDT trace format version",
+        error.UnsupportedTraceSchemaVersion => "unsupported CDT trace schema version",
         error.UnsupportedTraceCompression => "compressed CDT trace chunks are not supported",
         error.OutOfMemory => "out of memory",
         else => @errorName(err),
@@ -357,7 +360,7 @@ test "dbg health summarizes native CDT trace" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "health.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -376,7 +379,7 @@ test "dbg health summarizes native CDT trace" {
     try std.testing.expectEqual(@as(u8, 0), health_output.exit_code);
     try std.testing.expectEqualStrings("", health_output.stderr);
     try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"status\":\"ok\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"trace_schema_version\":12") != null);
+    try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"trace_schema_version\":14") != null);
     try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"ticks_in_window\":") != null);
     try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"ok_for_parity_analysis\":true") != null);
 

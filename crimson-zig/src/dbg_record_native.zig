@@ -4,7 +4,7 @@ const verify_native = @import("verify_native.zig");
 
 pub const CommandOutput = verify_native.CommandOutput;
 
-const trace_channels = "checkpoint,sim_state,entity_samples,rng_stream,timing_samples";
+const trace_channels = "replay_step,checkpoint,sim_state,entity_samples,rng_stream,timing_samples";
 
 const DbgRecordRequest = struct {
     replay_file: []const u8,

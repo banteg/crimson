@@ -120,6 +120,8 @@ class TickRunner:
         dt_seconds = float(source_tick.dt_seconds)
         if dt_seconds <= 0.0:
             raise RuntimeError("resolved tick dt_seconds must be positive")
+        if source_tick.prelude or source_tick.postlude:
+            raise RuntimeError("TickRunner input providers cannot supply replay boundary operations")
         return ResolvedTick(
             tick_index=int(source_tick.tick_index),
             dt_seconds=dt_seconds,

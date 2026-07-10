@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from ..sim.input_providers import ReplayPostludeOperation, ReplayPreludeOperation, ReplayTickCommand
 from ..sim.timing import ftol_ms_i32
 
 
@@ -23,10 +24,32 @@ class SnapshotWeapon(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
 class SnapshotPlayer(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     index: int
     pos: SnapshotVec2
+    heading: float
+    move_speed: float
+    move_phase: float
+    aim: SnapshotVec2
+    aim_heading: float
     health: float
     weapon: SnapshotWeapon
     experience: int
     level: int
+
+
+class ReplayInputSample(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    move_x: float
+    move_y: float
+    aim_x: float
+    aim_y: float
+    flags: int
+
+
+class ReplayStepSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    dt: float
+    inputs: list[ReplayInputSample]
+    prelude: list[ReplayPreludeOperation]
+    postlude: list[ReplayPostludeOperation]
+    commands: list[ReplayTickCommand]
+
 
 class SnapshotBonusTimers(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     weapon_power_up_ms: int
@@ -55,23 +78,23 @@ class RngStreamRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     value_15: int
     state_before_u32: int
     state_after_u32: int
-    caller: int | None = None
+    caller: int | None
 
 
 class TimingSampleRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     tick_index: int
-    gameplay_frame: int | None = None
-    phase: str = ""
-    write_kind: str = "snapshot"
-    frame_dt_f32: float | None = None
-    frame_dt_ms_i32: int | None = None
-    frame_dt_ms_f32: float | None = None
-    time_scale_active_entry: bool | None = None
-    time_scale_active_current: bool | None = None
-    time_scale_factor: float | None = None
-    bonus_reflex_boost_timer: float | None = None
-    mode_fn: str | None = None
-    player_index: int | None = None
+    gameplay_frame: int | None
+    phase: str
+    write_kind: str
+    frame_dt_f32: float | None
+    frame_dt_ms_i32: int | None
+    frame_dt_ms_f32: float | None
+    time_scale_active_entry: bool | None
+    time_scale_active_current: bool | None
+    time_scale_factor: float | None
+    bonus_reflex_boost_timer: float | None
+    mode_fn: str | None
+    player_index: int | None
 
 
 class CreatureEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -86,15 +109,19 @@ class CreatureEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=Tr
     flags: int
     ai_mode: int
     link_index: int
+    force_target: int
+    target: SnapshotVec2
+    target_player: int
+    target_offset: SnapshotVec2
     heading: float
     target_heading: float
+    collision_timer: float
+    attack_cooldown: float
     orbit_angle: float
     orbit_radius: float
     lifecycle_stage: float
-    # Movement channels (capture v14+); None in older traces. These pin down
-    # which factor diverges when the per-tick velocity product drifts by ulps.
-    vel: SnapshotVec2 | None = None
-    move_speed: float | None = None
+    vel: SnapshotVec2
+    move_speed: float
 
 
 class ProjectileEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -150,6 +177,30 @@ class EntitySamplesSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=T
     projectiles: list[ProjectileEntitySample]
     secondary_projectiles: list[SecondaryProjectileEntitySample]
     bonuses: list[BonusEntitySample]
+
+
+_ENTITY_KIND_IDS = {
+    "creature": 1,
+    "projectile": 2,
+    "secondary_projectile": 3,
+    "bonus": 4,
+}
+
+
+def entity_uid(*, pool_kind: str, index: int, generation: int) -> int:
+    """Return a trace-wide entity id unique across pools and slot reuse."""
+
+    try:
+        kind_id = _ENTITY_KIND_IDS[str(pool_kind)]
+    except KeyError as exc:
+        raise ValueError(f"unknown entity pool kind: {pool_kind!r}") from exc
+    slot = int(index)
+    lifetime = int(generation)
+    if not (0 <= slot < 1_000_000):
+        raise ValueError(f"entity pool index out of range: {slot}")
+    if not (0 <= lifetime < 1_000):
+        raise ValueError(f"entity generation out of range: {lifetime}")
+    return int(kind_id * 1_000_000_000 + lifetime * 1_000_000 + slot)
 
 
 def bonus_timer_ms(value: float) -> int:

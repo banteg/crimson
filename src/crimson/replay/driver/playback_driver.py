@@ -134,8 +134,6 @@ class PlaybackDriver:
         strict_rng_trace: bool = False,
         version_mismatch_action: str | None = "verification",
         world_size: float | None = None,
-        inter_tick_rand_draws: int = 0,
-        inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
         spawn_entries: tuple[SpawnEntry, ...] | None = None,
         start_weapon_id: WeaponId | None = None,
     ) -> None:
@@ -143,8 +141,6 @@ class PlaybackDriver:
         self.max_ticks = max_ticks
         self.trace_rng = bool(trace_rng)
         self.strict_rng_trace = bool(strict_rng_trace)
-        self.inter_tick_rand_draws = max(0, int(inter_tick_rand_draws))
-        self.inter_tick_rand_draws_by_tick = inter_tick_rand_draws_by_tick
         self._provided_world_size = float(world_size) if world_size is not None else None
         self._quest_spawn_entries = tuple(spawn_entries) if spawn_entries is not None else None
         self._quest_start_weapon_id = start_weapon_id
@@ -387,13 +383,6 @@ class PlaybackDriver:
         state.game_mode = self.mode_id
         state.demo_mode_active = False
 
-        if self.inter_tick_rand_draws_by_tick is not None:
-            draws = self.inter_tick_rand_draws_by_tick.get(int(tick_index))
-            if draws is None:
-                draws = int(self.inter_tick_rand_draws)
-            for _ in range(max(0, int(draws))):
-                state.rng.rand_tagged(RngCallerStatic.REPLAY_DRIVER_INTER_TICK_DRAW_BY_TICK)
-
     def build_checkpoint(
         self,
         *,
@@ -420,7 +409,13 @@ class PlaybackDriver:
         replay_tick = self.replay.ticks[tick_index]
         dt_tick = float(replay_tick.dt)
         inputs = unpack_tick_inputs(replay_tick.inputs)
+        prelude = list(replay_tick.prelude)
+        postlude = list(replay_tick.postlude)
         commands = list(replay_tick.commands)
+        prelude_post_apply_sfx = self.session.apply_replay_prelude(
+            dt=dt_tick,
+            operations=prelude,
+        )
         with _tick_rng_trace(
             self.world.state.rng,
             enabled=bool(self.trace_rng),
@@ -430,6 +425,8 @@ class PlaybackDriver:
                 tick_index=int(tick_index),
                 dt_seconds=float(dt_tick),
                 inputs=tuple(inputs),
+                prelude=tuple(prelude),
+                postlude=tuple(postlude),
                 commands=tuple(commands),
             )
 
@@ -438,17 +435,18 @@ class PlaybackDriver:
                 inputs=inputs,
                 trace_rng=self.trace_rng,
                 commands=commands,
+                prelude_post_apply_sfx=prelude_post_apply_sfx,
             )
+            # These operations occurred inside the native gameplay update,
+            # after simulation. Keep the tick RNG sink active so their draws
+            # remain at the tail of this tick's canonical stream.
+            self.session.apply_replay_postlude(operations=postlude)
             tick_result = TickResult(
                 source_tick=source_tick,
                 payload=session_tick,
                 replay_tick_index=int(tick_index),
             )
 
-        if self.inter_tick_rand_draws_by_tick is None:
-            draws = max(0, int(self.inter_tick_rand_draws))
-            for _ in range(draws):
-                self.world.state.rng.rand_tagged(RngCallerStatic.REPLAY_DRIVER_INTER_TICK_DRAW)
         self._last_tick_rng_rows = tuple(tick_rng_rows)
         return tick_result
 
@@ -556,8 +554,6 @@ def build_verify_playback_driver(
     warn_on_version_mismatch: bool = True,
     trace_rng: bool = False,
     strict_rng_trace: bool = False,
-    inter_tick_rand_draws: int = 0,
-    inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     spawn_entries: tuple[SpawnEntry, ...] | None = None,
     start_weapon_id: WeaponId | None = None,
 ) -> PlaybackDriver:
@@ -569,8 +565,6 @@ def build_verify_playback_driver(
         trace_rng=bool(trace_rng),
         strict_rng_trace=bool(strict_rng_trace),
         version_mismatch_action=("verification" if bool(warn_on_version_mismatch) else None),
-        inter_tick_rand_draws=int(inter_tick_rand_draws),
-        inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         spawn_entries=spawn_entries,
         start_weapon_id=start_weapon_id,
     )

@@ -7,22 +7,20 @@ import subprocess
 from pathlib import Path
 
 import msgspec
-import zstandard as zstd
 
 import crimson.dbg.record as dbg_record
 from crimson.game_modes import GameMode
-from crimson.replay import dump_replay
 from crimson.replay.checkpoints import ReplayDeathLedgerEntry, dump_checkpoints_file, load_checkpoints_file
 
 from ._helpers import (
     build_replay,
     build_typo_submit_replay,
     write_checkpoint_sidecar,
+    write_current_bad_event_player_index_replay,
     write_current_bad_tick_player_count_replay,
     write_current_missing_perk_choice_replay,
     write_current_typo_event_replay,
     write_current_unknown_command_replay,
-    write_legacy_out_of_order_event_replay,
     write_replay,
 )
 
@@ -165,7 +163,7 @@ def test_zig_replay_verify_checkpoints_reports_event_shape_detail(tmp_path: Path
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay verification failed: replay event perk_pick missing choice_index: tick=0 event_index=0"
+        "replay verification failed: replay prelude perk_pick missing choice_index: tick=0 operation_index=0"
         in result.stderr
     )
     assert "canonical wire shape" not in result.stderr
@@ -173,39 +171,22 @@ def test_zig_replay_verify_checkpoints_reports_event_shape_detail(tmp_path: Path
 
 def test_zig_replay_verify_checkpoints_reports_event_player_index_detail(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay_path = write_replay(tmp_path, replay=replay, name="event-player-index.crd")
+    replay_path = write_current_bad_event_player_index_replay(
+        tmp_path,
+        replay=replay,
+        name="event-player-index.crd",
+    )
     sidecar = write_checkpoint_sidecar(replay_path, replay)
-    raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
-    payload = msgspec.msgpack.decode(raw_payload)
-    payload["ticks"][0]["commands"] = [{"type": "perk_menu_open", "player_index": 1}]
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
 
     result = _run_zig_replay_verify_checkpoints([str(replay_path), "--checkpoints", str(sidecar)])
 
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay verification failed: replay event player_index out of range: 1 "
+        "replay verification failed: replay prelude player_index out of range: 1 "
         "(player_count=1, tick=0, event=perk_menu_open)"
     ) in result.stderr
     assert "replay events include an out-of-range player index" not in result.stderr
-
-
-def test_zig_replay_verify_checkpoints_reports_event_ordering_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
-    sidecar_source = write_replay(tmp_path, replay=replay, name="event-order-source.crd")
-    sidecar = write_checkpoint_sidecar(sidecar_source, replay)
-    replay_path = write_legacy_out_of_order_event_replay(tmp_path, replay=replay, name="event-order.crd")
-
-    result = _run_zig_replay_verify_checkpoints([str(replay_path), "--checkpoints", str(sidecar)])
-
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert (
-        "replay verification failed: replay events are not ordered in canonical tick order: "
-        "tick=1 follows tick=2 (event_index=1, event=perk_menu_open)"
-    ) in result.stderr
-    assert "replay events are not ordered in canonical tick order (progress:" not in result.stderr
 
 
 def test_zig_replay_verify_checkpoints_reports_event_kind_detail(tmp_path: Path) -> None:
@@ -219,8 +200,8 @@ def test_zig_replay_verify_checkpoints_reports_event_kind_detail(tmp_path: Path)
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay verification failed: replay event kind invalid for game mode: "
-        "event=typo_char tick=0 event_index=0 game_mode=survival"
+        "replay verification failed: replay command invalid for game mode: "
+        "type=typo_char tick=0 command_index=0 game_mode=survival"
     ) in result.stderr
     assert "replay events include kinds or values invalid for this mode" not in result.stderr
 
@@ -236,8 +217,8 @@ def test_zig_replay_verify_checkpoints_reports_unknown_command_as_replay_failure
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay verification failed: replay event command kind is unknown: "
-        "type=network_ping tick=0 event_index=0"
+        "replay verification failed: replay command type is unknown: "
+        "type=network_ping tick=0 command_index=0"
     ) in result.stderr
     assert "native replay run" not in result.stderr
 
@@ -359,7 +340,7 @@ def test_zig_replay_diff_checkpoints_reports_first_death_detail(tmp_path: Path) 
     assert "creature_index=7, type_id=2, reward_value=3.5, xp_awarded=4, owner_id=1" in result.stderr
 
 
-def test_zig_replay_diff_checkpoints_preserves_rng_only_success(tmp_path: Path) -> None:
+def test_zig_replay_diff_checkpoints_rejects_rng_only_mismatch(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
     sidecar_a = write_checkpoint_sidecar(replay_path, replay)
@@ -372,9 +353,9 @@ def test_zig_replay_diff_checkpoints_preserves_rng_only_success(tmp_path: Path) 
 
     result = _run_zig_replay_diff_checkpoints([str(sidecar_a), str(sidecar_b)])
 
-    assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "ok: 1 checkpoints match" in result.stdout
-    assert "first rng-only divergence tick=0" in result.stdout
+    assert result.returncode == 1
+    assert "checkpoint mismatch at tick=0" in result.stderr
+    assert "first state diff: rng_state" in result.stderr
 
 
 def test_zig_replay_diff_checkpoints_emits_json_and_artifact(tmp_path: Path) -> None:
@@ -406,7 +387,6 @@ def test_zig_replay_diff_checkpoints_emits_json_and_artifact(tmp_path: Path) -> 
         "expected_count": 1,
         "actual_count": 1,
         "checked_count": 1,
-        "rng_only_drift_tick": None,
     }
     assert json.loads(json_out.read_text(encoding="utf-8")) == payload
 
@@ -444,7 +424,6 @@ def test_zig_replay_verify_checkpoints_emits_json_and_artifact(tmp_path: Path) -
         "ticks": 3,
         "score_xp": 0,
         "kills": 0,
-        "rng_only_drift_tick": None,
         "max_ticks": 3,
         "trace_rng": True,
     }

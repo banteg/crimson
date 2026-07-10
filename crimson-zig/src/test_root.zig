@@ -317,7 +317,7 @@ test "aggregate dbg health summarizes native CDT trace" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "health.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -336,7 +336,7 @@ test "aggregate dbg health summarizes native CDT trace" {
     try std.testing.expectEqual(@as(u8, 0), health_output.exit_code);
     try std.testing.expectEqualStrings("", health_output.stderr);
     try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"status\":\"ok\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"trace_schema_version\":12") != null);
+    try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"trace_schema_version\":14") != null);
     try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"ticks_in_window\":") != null);
     try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"ok_for_parity_analysis\":true") != null);
 
@@ -360,7 +360,7 @@ test "aggregate dbg tick summarizes native CDT tick" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "tick.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -401,7 +401,7 @@ test "aggregate dbg diff compares native CDT traces" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "diff.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -442,7 +442,7 @@ test "aggregate dbg bisect compares native CDT traces" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "bisect.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -483,7 +483,7 @@ test "aggregate dbg focus compares one native CDT tick" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "focus.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -524,7 +524,7 @@ test "aggregate dbg entity summarizes native CDT entity" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "entity.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -538,11 +538,11 @@ test "aggregate dbg entity summarizes native CDT entity" {
     try std.testing.expectEqual(@as(u8, 0), record_output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, record_output.stdout, "trace=") != null);
 
-    const entity_output = try cz.dbg_entity_native.runDbgEntity(allocator, &.{ trace_path, "0", "--json", "--json-out", json_path });
+    const entity_output = try cz.dbg_entity_native.runDbgEntity(allocator, &.{ trace_path, "1001000000", "--json", "--json-out", json_path });
     defer entity_output.deinit(allocator);
     try std.testing.expectEqual(@as(u8, 0), entity_output.exit_code);
     try std.testing.expectEqualStrings("", entity_output.stderr);
-    try std.testing.expect(std.mem.indexOf(u8, entity_output.stdout, "\"entity_uid\":0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, entity_output.stdout, "\"entity_uid\":1001000000") != null);
     try std.testing.expect(std.mem.indexOf(u8, entity_output.stdout, "\"pool_kind\":\"creature\"") != null);
 
     const artifact = try std.Io.Dir.cwd().readFileAlloc(io, json_path, allocator, .limited(64 * 1024));
@@ -565,7 +565,7 @@ test "aggregate dbg query filters native CDT rows" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "query.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -579,12 +579,12 @@ test "aggregate dbg query filters native CDT rows" {
     try std.testing.expectEqual(@as(u8, 0), record_output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, record_output.stdout, "trace=") != null);
 
-    const query_output = try cz.dbg_query_native.runDbgQuery(allocator, &.{ trace_path, "entities where uid == 0", "--json", "--json-out", json_path });
+    const query_output = try cz.dbg_query_native.runDbgQuery(allocator, &.{ trace_path, "entities where uid == 1001000000", "--json", "--json-out", json_path });
     defer query_output.deinit(allocator);
     try std.testing.expectEqual(@as(u8, 0), query_output.exit_code);
     try std.testing.expectEqualStrings("", query_output.stderr);
     try std.testing.expect(std.mem.indexOf(u8, query_output.stdout, "\"scope\":\"entities\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, query_output.stdout, "\"uid\":0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, query_output.stdout, "\"uid\":1001000000") != null);
 
     const artifact = try std.Io.Dir.cwd().readFileAlloc(io, json_path, allocator, .limited(64 * 1024));
     defer allocator.free(artifact);

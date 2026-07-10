@@ -4,19 +4,27 @@ tags:
   - differential-sessions
 ---
 
-# Differential Capture Sessions (Condensed)
+# Differential capture sessions
 
-This log tracks original-vs-rewrite differential work by **capture SHA**.
-When the capture SHA is unchanged, append updates to the same session.
+This index tracks original-vs-rewrite work by **capture SHA256**. The linked
+older sessions are historical investigation notes; their recordings predate the
+current owned formats and are not expected to load. Do not add compatibility
+code for them.
 
-## Session Template
+Start a current session only from a fresh Frida format 18 capture finalized as
+CDT container 2/schema 14 with its CRD replay 15 and evidence sidecars.
+
+## Session template
 
 - **Title:** `Session <N> (YYYY-MM-DD)`
-- **Legacy IDs:** `<optional old IDs>`
-- **Capture:** `<path>`
-- **Capture SHA256:** `<sha256 or n/a>`
-- **Baseline verifier command:** `<exact command>`
-- **First mismatch:** `tick <n> (<fields>)`
+- **Capture set:** `<native.cdt>`, `<run.crd>`, `<rng_evidence.json>`,
+  `<evidence.msgpack.zst>`
+- **Capture versions:** `Frida 18 / CDT 2+14 / CRD 15 / evidence 1`
+- **Capture SHA256:** `<sha256 for every artifact>`
+- **Replay trace:** `<python-or-zig.cdt>`
+- **Commands:** `<exact health, record, diff, bisect, or focus commands>`
+- **First mismatch by channel:** `<channel -> tick/path>`
+- **First diagnostics:** `<channel -> tick/path>`
 
 ### Key Findings
 
@@ -32,18 +40,43 @@ When the capture SHA is unchanged, append updates to the same session.
 
 ---
 
-## Capture Policy (Current)
+## Current capture policy
 
-- Default to full-detail `gameplay_diff_capture` captures (no focus window, no sample limits).
-- Keep the finalized `gameplay_diff_capture.<mode>.run<k>.cdt` + `.crd` pair as the
-  canonical artifacts (under `artifacts/frida/share/`) and always log SHA256.
-- Compare with `uv run crimson dbg diff/bisect/focus` against a `dbg record`
-  trace of the matching `.crd` replay (the legacy `crimson original
-  divergence-report` flow is gone).
-- If any env knobs throttle capture volume, log exact knob/value.
-- If capture SHA is unchanged, update the existing session; do not create a new one.
-- Expect zero divergences: the 2026-06-12 parity audit resolved all previously
-  known mismatches, so any diff is a real regression or a new finding.
+- Capture full-detail gameplay with every limit set to unlimited. Focus windows
+  and sampled streams are not replay-grade and the finalizer rejects them.
+- Keep the `.cdt`, `.crd`, `.rng_evidence.json`, and `.evidence.msgpack.zst`
+  files together as the canonical native artifact set. Log their SHA256 values
+  and every capture knob that changes coverage.
+- Reject and regenerate any artifact that is not Frida 18, CDT 2/schema 14,
+  CRD 15, and evidence 1. These files are throwaway and there is no migration
+  path.
+- Run `dbg health` on the native trace and the replay-recorded trace before
+  reading a diff. Stop if either selected window is not parity-ready.
+- Record the matching CRD with the implementation under test, then compare the
+  two CDTs with `dbg diff`. Use `dbg bisect`/`dbg focus` after the first report,
+  not as a substitute for the full-channel diff.
+- Log `channel_first_mismatches` for all affected channels. For finite float
+  differences, record the field path, bit encodings, and f32 ULP distance.
+- Log `channel_first_diagnostics` separately. In particular, an RNG
+  caller-attribution-only difference is useful localization evidence but not a
+  behavioral mismatch.
+- If the capture SHA is unchanged, append to its existing session. Start a new
+  session after recapturing or changing the comparison implementation.
+- Fixture parity is strict. Do not blanket-`xfail` a known mismatch; record the
+  exact first mismatch and fix or isolate the responsible behavior.
+
+The normal command sequence is:
+
+```text
+uv run crimson dbg health <native.cdt>
+uv run crimson dbg record <run.crd> --out <candidate.cdt> --impl <python|zig>
+uv run crimson dbg health <candidate.cdt>
+uv run crimson dbg diff <native.cdt> <candidate.cdt>
+```
+
+The raw JSONL lifecycle is strict. A capture error, tick discontinuity,
+unfinished run, or missing `session_end` means recapture; finalization does not
+salvage a partial session.
 
 ---
 

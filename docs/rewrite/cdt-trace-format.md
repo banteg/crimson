@@ -4,146 +4,205 @@ tags:
   - formats
 ---
 
-# CDT trace format (rewrite)
+# CDT trace format
 
-`CDT` is the debug trace container used by `crimson dbg record|diff|bisect|focus|tick|entity|query`.
-It is rewrite tooling format, not an original Crimsonland asset/container format.
+CDT is Crimson's owned debug-trace container. It is used by
+`crimson dbg record|health|diff|bisect|focus|tick|entity|query`; it is not an
+original Crimsonland asset format.
 
-This spec describes the current on-disk contract implemented by `src/crimson/dbg/schema.py`
-and `src/crimson/dbg/trace.py`.
-
-For cross-producer alignment details, see
+This document specifies the only supported contract implemented by
+`src/crimson/dbg/schema.py` and `src/crimson/dbg/trace.py`. For producer and
+workflow details, see
 [`trace-format-alignment.md`](trace-format-alignment.md).
 
 ## Versioning
 
-- `trace_format_version`: container/envelope version (`1` currently)
-- `trace_schema_version`: channel payload schema version (`12` currently)
-- container and schema versions are independent
-- Zig's runtime replay trace structs are internal collection types; CDT is the
-  shared on-disk debug trace format
+- `trace_format_version = 2`: container and envelope
+- `trace_schema_version = 14`: typed tick payloads
+
+The reader requires both exact versions. There is no compatibility path for an
+older CDT because traces are cheap to record again.
 
 ## File layout
 
-1. `TRACE_MAGIC` bytes: `b"crimson_debug_trace_v1\n"`
+1. `TRACE_MAGIC`: `b"crimson_debug_trace_v2\n"`
 2. `<u32le trace_format_version>`
 3. one `META` chunk
-4. zero or more `TICK` chunks
+4. one or more `TICK` chunks
 5. one `FOTR` chunk
 6. trailer `<8-byte magic, u64le footer_offset>`
 
-Trailer magic is `b"CDTFTR1\n"`.
+The trailer magic is `b"CDTFTR2\n"`.
+Chunks are adjacent in the declared order: unindexed bytes, padding, extra
+chunks, and bytes between the footer and trailer are rejected.
 
 ## Chunk envelope
 
-Each chunk has a fixed header followed by a compressed payload:
+Each chunk has header struct `<4siiIIIQ>` followed by its payload:
 
-- Header struct: `<4siiIIIQ>`
-- Fields in order:
-1. `kind` (`META`, `TICK`, `FOTR`)
-2. `start_tick` (`i32`)
-3. `end_tick` (`i32`)
-4. `flags` (`u32`)
-5. `compressed_len` (`u32`)
-6. `uncompressed_len` (`u32`)
-7. `checksum64` (`u64`, blake2b-64 of uncompressed bytes)
+1. `kind`: `META`, `TICK`, or `FOTR`
+2. `start_tick`: signed 32-bit tick bound
+3. `end_tick`: signed 32-bit tick bound
+4. `flags`: exactly `CHUNK_FLAG_MSGPACK`
+5. `compressed_len`: stored payload length
+6. `uncompressed_len`: stored payload length
+7. `checksum64`: little-endian blake2b-64 of the payload
 
-Payload encoding:
+The legacy length field names remain in the fixed envelope, but CDT v2 payloads
+are raw msgpack. The two lengths are equal and the zstd flag is not accepted.
 
-- `flags & CHUNK_FLAG_ZSTD` must be set (zstd compressed payload)
-- `flags & CHUNK_FLAG_MSGPACK` must be set (msgpack encoded payload)
+Payload types are:
 
-## Msgpack payload types
+- `META` -> `TraceMeta`
+- `TICK` -> `TickBlock`
+- `FOTR` -> `TraceFooter`
 
-- `META` payload: `TraceMeta`
-- `TICK` payload: `TickBlock`
-- `FOTR` payload: `TraceFooter`
+`TraceFooter` indexes every tick block and records the total count plus first
+and last tick. Its offset in the trailer allows direct lookup without scanning
+the whole trace.
 
-`TickBlock` contains ordered `TickRecord` rows:
+## Metadata
+
+`TraceMeta` contains:
+
+- the exact container and schema versions
+- creation time
+- typed producer identity
+- typed source identity and replay fingerprint
+- declared tick range
+- optional captured game status
+
+Unknown fields are rejected. Producer-private Frida settings and diagnostic
+bags move to the versioned typed evidence sidecar rather than widening the
+shared metadata schema; the raw JSONL may be deleted after finalization.
+The declared tick range must exactly match the rows and footer written to disk.
+
+## Tick blocks
+
+A `TickBlock` contains ordered `TickRecord` rows. Every row contains:
 
 - `tick_index`
 - `elapsed_ms`
 - `dt_ms_i32`
 - `mode_id`
-- `channels` (`ReplayTickChannels`)
+- `channels`
 
-Tick rows are required to be non-decreasing by `tick_index`.
+Tick indices must be non-negative, strictly increasing, and unique. A CDT may
+represent a selected window and therefore need not start at zero. The health
+report exposes gaps so a user can decide whether the selected evidence is
+suitable for a comparison.
 
-`TraceMeta` uses typed metadata structs for `producer`, `source`, and
-`tick_range`. Unknown metadata fields are rejected. Producer-private settings
-stay in producer-private logs instead of the shared CDT metadata.
+## Channel contract (schema 14)
 
-`TraceFooter` stores the tick block index and total tick window.
+Every tick requires all six channels:
 
-## Channel contract (schema v12)
+| Channel | Payload |
+| --- | --- |
+| `replay_step` | `ReplayStepSnapshot` |
+| `checkpoint` | `ReplayCheckpoint` |
+| `sim_state` | `SimStateSnapshot` |
+| `entity_samples` | `EntitySamplesSnapshot` |
+| `rng_stream` | `list[RngStreamRow]` |
+| `timing_samples` | `list[TimingSampleRow]` |
 
-Required channels in both compared traces:
+### `replay_step`
 
-- `checkpoint`
-- `sim_state`
-- `entity_samples`
-- `rng_stream`
-- `timing_samples`
+The replay step is the authoritative driving evidence for the tick:
 
-Canonical typed payloads are defined in `src/crimson/replay/checkpoints.py`
-and `src/crimson/dbg/canonical_channels.py`:
+- `dt`: finite, non-negative f32 frame delta
+- `inputs`: a non-empty row per player containing `move_x`, `move_y`, `aim_x`,
+  `aim_y`, and uint32 `flags`
+- `prelude`: ordered RNG burns and perk operations applied before simulation
+- `postlude`: perk-menu generation applied after simulation while tick RNG
+  tracing remains active
+- `commands`: Typ-o commands applied as part of the tick
 
-- `checkpoint` -> `ReplayCheckpoint`
-- `sim_state` -> `SimStateSnapshot`
-- `entity_samples` -> `EntitySamplesSnapshot`
-- `rng_stream` -> `list[RngStreamRow]`
-- `timing_samples` -> `list[TimingSampleRow]`
+Checkpoint and simulation player counts must equal the input count.
 
-`rng_stream` rows contain:
+### `checkpoint`
 
-- `tick_call_index`
+The checkpoint tick and elapsed time must equal their enclosing `TickRecord`.
+Effective hit and pickup counts are cross-producer fields. The non-equivalent
+audio count, detailed death rows, and SFX/hit heads are zero or empty in CDT.
+Native raw details live in the capture evidence sidecar, while replay-only
+checkpoint sidecars may retain their fully typed rows. This makes the shared
+channel strictly comparable without producer masks.
+It carries the compact deterministic state used for fast divergence detection.
+
+### `sim_state`
+
+The gameplay mode must equal the enclosing mode. Each player row includes
+position and gameplay state plus the movement fields needed to explain input
+integration:
+
+- `heading`
+- `move_speed`
+- `move_phase`
+- `aim`
+- `aim_heading`
+
+### `entity_samples`
+
+Creature, projectile, secondary-projectile, and bonus samples use stable UIDs.
+UIDs must be unique within each entity kind for a tick, allowing `dbg entity`
+to follow slot reuse without confusing two lifetimes.
+
+### `rng_stream`
+
+Each row contains:
+
+- one-based `tick_call_index`
 - `value_15`
 - `state_before_u32`
 - `state_after_u32`
-- `caller`
+- optional static `caller`
 
-`caller` is the optional static caller address used for parity diagnostics. It is
-stored as an integer and rendered as hex only in human-facing diff output. Frida
-raw JSONL still uses producer-private field names such as `caller_static`, but
-finalization canonicalizes them into this durable `caller` field.
+Every row must be a valid CRT LCG transition and `value_15` must derive from the
+after-state. A gap between consecutive hooked rows is allowed because it is
+evidence of native draws that bypassed the hook.
 
-`timing_samples` rows contain phase-level timing evidence. Frida captures,
-Python replay traces, and Zig replay traces all emit a non-empty row set with a
-`gpur_enter` sample for supported replay ticks. The shared minimum row records
-the tick index, gameplay frame, `frame_dt_f32`, `frame_dt_ms_i32`,
-`frame_dt_ms_f32`, time-scale state, reflex boost timer, and
-`mode_fn = "gameplay_update_and_render"`.
+The caller is diagnostic attribution. Equal values and states with different
+callers produce a caller-attribution diagnostic, not an RNG behavior mismatch.
+
+### `timing_samples`
+
+Every tick has a non-empty timing set with exactly one `gpur_enter` row. Its
+`frame_dt_f32` equals `replay_step.dt`, its `frame_dt_ms_i32` equals the
+enclosing `dt_ms_i32`, and its `mode_fn` identifies
+`gameplay_update_and_render` for finalized Frida captures.
 
 ## Producers
 
 The intended comparison set is:
 
-1. Original game capture, produced by Frida JSONL and finalized by
-   `src/crimson/dbg/frida_finalize.py`.
-2. Python replay trace, produced by `src/crimson/dbg/record.py`.
-3. Zig replay trace, produced by `crimson-zig/src/cdt_trace.zig`.
+1. Frida capture format 18 finalized into CDT v2/schema 14.
+2. Python CRD v15 replay recording.
+3. Zig CRD v15 replay recording.
 
-All three producers should emit the same required channels and the same durable
-row semantics. Producer-private fields are allowed before finalization, but the
-`.cdt` payload must stay canonical.
+All emit the same durable channel semantics. A producer may keep additional
+diagnostics before finalization, but it may not add aliases or optional channel
+shapes to CDT.
 
 ## Diff contract
 
-`dbg diff` compares traces by tick and returns the first divergent tick.
-For that tick, it reports all channel mismatches in deterministic order:
+`dbg diff` compares ticks in deterministic channel order:
 
-1. `checkpoint`
-2. `rng_stream`
-3. `sim_state`
-4. `entity_samples`
-5. `timing_samples`
+1. `replay_step`
+2. `checkpoint`
+3. `rng_stream`
+4. `sim_state`
+5. `entity_samples`
+6. `timing_samples`
 
-Mismatch payload format:
+The JSON report exposes:
 
-- top-level `mismatch.kind = "tick_mismatch"`
-- top-level `mismatch.detail.mismatch_count`
-- top-level `mismatch.detail.mismatches[]`
-- each row has `kind`, `channel`, and `detail`
+- `mismatch`: the earliest divergent tick and all behavioral channel
+  mismatches at that tick
+- `channel_first_mismatches`: the first behavioral mismatch for every channel
+  across the selected range
+- `channel_first_diagnostics`: the first non-behavioral diagnostic for every
+  channel, including RNG caller-only differences
 
-This enables correlating divergence across channels at the same tick instead of failing after
-the first channel-level mismatch.
+Strict field mismatches name the path and include expected/actual values.
+Finite float mismatches additionally include numeric delta, expected and actual
+f32 hex encodings, and f32 ULP distance.

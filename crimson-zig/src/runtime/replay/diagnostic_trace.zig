@@ -67,8 +67,14 @@ pub const ReplayTickCreatureSample = struct {
     flags: u32,
     ai_mode: i32,
     link_index: i32,
+    force_target: i32,
+    target: state_mod.Vec2,
+    target_player: i32,
+    target_offset: state_mod.Vec2,
     heading: f32,
     target_heading: f32,
+    collision_timer: f32,
+    attack_cooldown: f32,
     orbit_angle: f32,
     orbit_radius: f32,
     lifecycle_stage: f32,
@@ -293,8 +299,14 @@ fn collectCreatureSamples(
             .flags = creature.flags,
             .ai_mode = @intFromEnum(creature.ai_mode),
             .link_index = creature.link_index,
+            .force_target = creature.force_target,
+            .target = creature.target,
+            .target_player = creature.target_player,
+            .target_offset = creature.target_offset,
             .heading = creature.heading,
             .target_heading = creature.target_heading,
+            .collision_timer = creature.collision_timer,
+            .attack_cooldown = creature.attack_cooldown,
             .orbit_angle = creature.orbit_angle,
             .orbit_radius = creature.orbit_radius,
             .lifecycle_stage = creature.lifecycle_stage,
@@ -370,4 +382,32 @@ fn collectBonusSamples(
         });
     }
     return rows.toOwnedSlice(allocator);
+}
+
+test "creature diagnostic samples retain AI first-cause state" {
+    const allocator = std.testing.allocator;
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.entries[0] = .{
+        .active = true,
+        .type_id = 2,
+        .force_target = 1,
+        .target = .{ .x = 10.0, .y = 20.0 },
+        .target_player = 2,
+        .target_offset = .{ .x = 3.0, .y = 4.0 },
+        .collision_timer = 0.25,
+        .attack_cooldown = 0.5,
+    };
+
+    const samples = try collectCreatureSamples(allocator, &creatures);
+    defer allocator.free(samples);
+    try std.testing.expectEqual(@as(usize, 1), samples.len);
+    const sample = samples[0];
+    try std.testing.expectEqual(@as(i32, 1), sample.force_target);
+    try std.testing.expectEqual(@as(f32, 10.0), sample.target.x);
+    try std.testing.expectEqual(@as(f32, 20.0), sample.target.y);
+    try std.testing.expectEqual(@as(i32, 2), sample.target_player);
+    try std.testing.expectEqual(@as(f32, 3.0), sample.target_offset.x);
+    try std.testing.expectEqual(@as(f32, 4.0), sample.target_offset.y);
+    try std.testing.expectEqual(@as(f32, 0.25), sample.collision_timer);
+    try std.testing.expectEqual(@as(f32, 0.5), sample.attack_cooldown);
 }

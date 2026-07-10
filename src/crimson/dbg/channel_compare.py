@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import msgspec
-
 from .canonical_channels import (
-    CreatureEntitySample,
     EntitySamplesSnapshot,
+    ReplayStepSnapshot,
     RngStreamRow,
     SimStateSnapshot,
     TimingSampleRow,
@@ -32,62 +30,90 @@ def _rng_stream_row_payload(row: RngStreamRow, *, field: str) -> BuiltinObject:
 
 
 def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngStreamRow]) -> tuple[bool, BuiltinObject | None]:
-    exp_keys = [
+    exp_behavior = [
         (
             row.tick_call_index,
             row.value_15,
             row.state_before_u32,
             row.state_after_u32,
-            row.caller,
         )
         for row in expected_rows
     ]
-    act_keys = [
+    act_behavior = [
         (
             row.tick_call_index,
             row.value_15,
             row.state_before_u32,
             row.state_after_u32,
-            row.caller,
         )
         for row in actual_rows
     ]
-    max_prefix = min(len(exp_keys), len(act_keys))
-    prefix = 0
-    while prefix < max_prefix and exp_keys[prefix] == act_keys[prefix]:
-        prefix += 1
-    if prefix == len(exp_keys) == len(act_keys):
+    max_prefix = min(len(exp_behavior), len(act_behavior))
+    behavior_prefix = 0
+    while behavior_prefix < max_prefix and exp_behavior[behavior_prefix] == act_behavior[behavior_prefix]:
+        behavior_prefix += 1
+    caller_prefix = 0
+    while (
+        caller_prefix < max_prefix
+        and expected_rows[caller_prefix].caller == actual_rows[caller_prefix].caller
+    ):
+        caller_prefix += 1
+    behavior_ok = behavior_prefix == len(exp_behavior) == len(act_behavior)
+    attribution_ok = behavior_ok and caller_prefix == len(expected_rows) == len(actual_rows)
+    if behavior_ok and attribution_ok:
         return True, None
     detail = to_builtin_object(
         {
-            "prefix_match_len": prefix,
-            "expected_calls": len(exp_keys),
-            "actual_calls": len(act_keys),
-            "missing_tail": max(0, len(exp_keys) - len(act_keys)),
-            "extra_tail": max(0, len(act_keys) - len(exp_keys)),
+            "behavior_ok": behavior_ok,
+            "caller_attribution_ok": attribution_ok,
+            "classification": ("caller_attribution_only" if behavior_ok else "rng_behavior"),
+            "behavior_prefix_match_len": behavior_prefix,
+            "caller_prefix_match_len": caller_prefix,
+            "expected_calls": len(exp_behavior),
+            "actual_calls": len(act_behavior),
+            "missing_tail": max(0, len(exp_behavior) - len(act_behavior)),
+            "extra_tail": max(0, len(act_behavior) - len(exp_behavior)),
         },
         field="rng_stream.diff",
     )
-    if prefix < len(expected_rows):
+    mismatch_index = caller_prefix if behavior_ok else behavior_prefix
+    if mismatch_index < len(expected_rows):
         detail["expected_first_mismatch"] = _rng_stream_row_payload(
-            expected_rows[prefix],
+            expected_rows[mismatch_index],
             field="rng_stream.expected",
         )
-    if prefix < len(actual_rows):
+    if mismatch_index < len(actual_rows):
         detail["actual_first_mismatch"] = _rng_stream_row_payload(
-            actual_rows[prefix],
+            actual_rows[mismatch_index],
             field="rng_stream.actual",
         )
-    return False, detail
+    return behavior_ok, detail
+
+
+def compare_replay_step(
+    expected_obj: ReplayStepSnapshot,
+    actual_obj: ReplayStepSnapshot,
+) -> tuple[bool, BuiltinObject | None]:
+    payload, diff_count, pretty = strict_mismatch_payload(expected_obj, actual_obj, root_path="replay_step")
+    if int(diff_count) == 0:
+        return True, None
+    return False, to_builtin_object(
+        {
+            "diff_count": int(diff_count),
+            "mismatches": payload,
+            "pretty": pretty,
+        },
+        field="replay_step.diff",
+    )
 
 
 def compare_sim_state(
     expected_obj: SimStateSnapshot,
     actual_obj: SimStateSnapshot,
 ) -> tuple[bool, BuiltinObject | None]:
-    if expected_obj == actual_obj:
-        return True, None
     payload, diff_count, pretty = strict_mismatch_payload(expected_obj, actual_obj, root_path="sim_state")
+    if int(diff_count) == 0:
+        return True, None
     return False, to_builtin_object(
         {
             "diff_count": int(diff_count),
@@ -102,13 +128,13 @@ def compare_timing_samples(
     expected_rows: list[TimingSampleRow],
     actual_rows: list[TimingSampleRow],
 ) -> tuple[bool, BuiltinObject | None]:
-    if expected_rows == actual_rows:
-        return True, None
     payload, diff_count, pretty = strict_mismatch_payload(
         expected_rows,
         actual_rows,
         root_path="timing_samples",
     )
+    if int(diff_count) == 0:
+        return True, None
     return False, to_builtin_object(
         {
             "diff_count": int(diff_count),
@@ -130,31 +156,10 @@ def _rows_by_uid(rows: list[EntitySampleRow]) -> tuple[dict[int, EntitySampleRow
     return by_uid, len(rows), duplicate_uids
 
 
-def _mask_absent_optional_channels(
-    expected_row: EntitySampleRow,
-    actual_row: EntitySampleRow,
-) -> tuple[EntitySampleRow, EntitySampleRow]:
-    """Optional creature movement channels only compare when both traces
-    recorded them (capture v14+); older traces carry None."""
-
-    if not (isinstance(expected_row, CreatureEntitySample) and isinstance(actual_row, CreatureEntitySample)):
-        return expected_row, actual_row
-    if expected_row.vel is None or actual_row.vel is None:
-        expected_row = msgspec.structs.replace(expected_row, vel=None)
-        actual_row = msgspec.structs.replace(actual_row, vel=None)
-    if expected_row.move_speed is None or actual_row.move_speed is None:
-        expected_row = msgspec.structs.replace(expected_row, move_speed=None)
-        actual_row = msgspec.structs.replace(actual_row, move_speed=None)
-    return expected_row, actual_row
-
-
 def compare_entity_samples(
     expected_obj: EntitySamplesSnapshot,
     actual_obj: EntitySamplesSnapshot,
 ) -> tuple[bool, BuiltinObject | None]:
-    if expected_obj == actual_obj:
-        return True, None
-
     detail: BuiltinObject = {}
     row_diffs: BuiltinRows = []
     for kind in ENTITY_SAMPLE_KINDS:
@@ -179,15 +184,14 @@ def compare_entity_samples(
         for uid in sorted(set(exp_map) & set(act_map)):
             expected_row = exp_map[uid]
             actual_row = act_map[uid]
-            expected_row, actual_row = _mask_absent_optional_channels(expected_row, actual_row)
-            if expected_row == actual_row:
-                continue
             row_path = f"entity_samples.{kind}[uid={uid}]"
             payload, diff_count, pretty = strict_mismatch_payload(
                 expected_row,
                 actual_row,
                 root_path=row_path,
             )
+            if int(diff_count) == 0:
+                continue
             row_diffs.append(
                 {
                     "path": row_path,

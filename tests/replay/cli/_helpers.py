@@ -21,7 +21,15 @@ from crimson.replay.checkpoints import (
     dump_checkpoints_file,
 )
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import GameCommand, TypoCharCommand, TypoSubmitCommand
+from crimson.sim.input_providers import (
+    PerkMenuOpenCommand,
+    PerkPickCommand,
+    ReplayPreludeOperation,
+    ReplayTickCommand,
+    RngBurnOperation,
+    TypoCharCommand,
+    TypoSubmitCommand,
+)
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.replay_runner_helpers import _run_verify_playback
@@ -86,10 +94,24 @@ def claim_replay_stats(replay: Replay) -> Replay:
     )
 
 
-def inject_tick_commands(replay: Replay, tick_index: int, commands: list[GameCommand]) -> None:
+def inject_tick_commands(
+    replay: Replay,
+    tick_index: int,
+    commands: list[ReplayPreludeOperation | ReplayTickCommand],
+) -> None:
     old_tick = replay.ticks[tick_index]
-    existing = list(old_tick.commands) + commands
-    replay.ticks[tick_index] = msgspec.structs.replace(old_tick, commands=existing)
+    prelude = list(old_tick.prelude)
+    tick_commands = list(old_tick.commands)
+    for command in commands:
+        if isinstance(command, (RngBurnOperation, PerkMenuOpenCommand, PerkPickCommand)):
+            prelude.append(command)
+        else:
+            tick_commands.append(command)
+    replay.ticks[tick_index] = msgspec.structs.replace(
+        old_tick,
+        prelude=prelude,
+        commands=tick_commands,
+    )
 
 
 def write_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
@@ -99,47 +121,11 @@ def write_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
     return replay_path
 
 
-def write_legacy_out_of_order_event_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
-    raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
-    payload = msgspec.msgpack.decode(raw_payload)
-    header = payload["header"]
-
-    legacy_payload = {
-        "header": {
-            "game_mode_id": header["game_mode_id"],
-            "seed": header["seed"],
-            "replay_format_version": header["replay_format_version"],
-            "quest_level": "",
-            "bootstrap_kind": "none",
-            "bootstrap_seed": 0,
-            "game_version": header["game_version"],
-            "tick_rate": header["tick_rate"],
-            "difficulty_level": 0,
-            "hardcore": header["hardcore"],
-            "preserve_bugs": header["preserve_bugs"],
-            "detail_preset": header["detail_preset"],
-            "gore_disabled": header["violence_disabled"],
-            "world_size": header["world_size"],
-            "player_count": header["player_count"],
-            "status": {
-                "quest_unlock_index": header["status"]["quest_unlock_index"],
-                "quest_unlock_index_full": header["status"]["quest_unlock_index_full"],
-                "weapon_usage_counts": header["status"]["weapon_usage_counts"],
-            },
-            "claimed_stats": header["claimed_stats"],
-            "input_quantization": header["input_quantization"],
-        },
-        "inputs": [tick["inputs"] for tick in payload["ticks"]],
-        "dt": [tick["dt"] for tick in payload["ticks"]],
-        "events": [
-            {"type": "perk_menu_open", "tick_index": 2, "player_index": 0},
-            {"type": "perk_menu_open", "tick_index": 1, "player_index": 0},
-        ],
-    }
-
+def _write_current_payload(tmp_path: Path, *, payload: object, name: str) -> Path:
     replay_path = tmp_path / name
     replay_path.parent.mkdir(parents=True, exist_ok=True)
-    replay_path.write_bytes(msgspec.msgpack.encode(legacy_payload))
+    raw = msgspec.msgpack.encode(payload)
+    replay_path.write_bytes(zstd.ZstdCompressor(level=19).compress(raw))
     return replay_path
 
 
@@ -148,10 +134,7 @@ def write_current_typo_event_replay(tmp_path: Path, *, replay: Replay, name: str
     payload = msgspec.msgpack.decode(raw_payload)
     payload["ticks"][0]["commands"] = [{"type": "typo_char", "player_index": 0, "ch": "x"}]
 
-    replay_path = tmp_path / name
-    replay_path.parent.mkdir(parents=True, exist_ok=True)
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
-    return replay_path
+    return _write_current_payload(tmp_path, payload=payload, name=name)
 
 
 def write_current_unknown_command_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
@@ -159,23 +142,17 @@ def write_current_unknown_command_replay(tmp_path: Path, *, replay: Replay, name
     payload = msgspec.msgpack.decode(raw_payload)
     payload["ticks"][0]["commands"] = [{"type": "network_ping", "player_index": 0}]
 
-    replay_path = tmp_path / name
-    replay_path.parent.mkdir(parents=True, exist_ok=True)
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
-    return replay_path
+    return _write_current_payload(tmp_path, payload=payload, name=name)
 
 
 def write_current_bad_event_player_index_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
     raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
     payload = msgspec.msgpack.decode(raw_payload)
-    payload["ticks"][0]["commands"] = [
+    payload["ticks"][0]["prelude"] = [
         {"type": "perk_menu_open", "player_index": payload["header"]["player_count"]},
     ]
 
-    replay_path = tmp_path / name
-    replay_path.parent.mkdir(parents=True, exist_ok=True)
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
-    return replay_path
+    return _write_current_payload(tmp_path, payload=payload, name=name)
 
 
 def write_current_missing_quest_level_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
@@ -184,10 +161,7 @@ def write_current_missing_quest_level_replay(tmp_path: Path, *, replay: Replay, 
     payload["header"]["game_mode_id"] = int(GameMode.QUESTS)
     payload["header"]["quest_level"] = None
 
-    replay_path = tmp_path / name
-    replay_path.parent.mkdir(parents=True, exist_ok=True)
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
-    return replay_path
+    return _write_current_payload(tmp_path, payload=payload, name=name)
 
 
 def write_current_string_quest_level_replay(tmp_path: Path, *, replay: Replay, name: str, quest_level: str) -> Path:
@@ -196,10 +170,7 @@ def write_current_string_quest_level_replay(tmp_path: Path, *, replay: Replay, n
     payload["header"]["game_mode_id"] = int(GameMode.QUESTS)
     payload["header"]["quest_level"] = str(quest_level)
 
-    replay_path = tmp_path / name
-    replay_path.parent.mkdir(parents=True, exist_ok=True)
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
-    return replay_path
+    return _write_current_payload(tmp_path, payload=payload, name=name)
 
 
 def write_current_mode_player_count_replay(
@@ -215,10 +186,7 @@ def write_current_mode_player_count_replay(
     payload["header"]["game_mode_id"] = int(mode)
     payload["header"]["player_count"] = int(player_count)
 
-    replay_path = tmp_path / name
-    replay_path.parent.mkdir(parents=True, exist_ok=True)
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
-    return replay_path
+    return _write_current_payload(tmp_path, payload=payload, name=name)
 
 
 def write_current_bad_claimed_stats_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
@@ -227,10 +195,7 @@ def write_current_bad_claimed_stats_replay(tmp_path: Path, *, replay: Replay, na
     payload["header"]["claimed_stats"]["shots_fired"] = 1
     payload["header"]["claimed_stats"]["shots_hit"] = 2
 
-    replay_path = tmp_path / name
-    replay_path.parent.mkdir(parents=True, exist_ok=True)
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
-    return replay_path
+    return _write_current_payload(tmp_path, payload=payload, name=name)
 
 
 def write_current_bad_bootstrap_seed_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
@@ -239,10 +204,7 @@ def write_current_bad_bootstrap_seed_replay(tmp_path: Path, *, replay: Replay, n
     payload["header"]["bootstrap_kind"] = "terrain_v1"
     payload["header"]["bootstrap_seed"] = 1
 
-    replay_path = tmp_path / name
-    replay_path.parent.mkdir(parents=True, exist_ok=True)
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
-    return replay_path
+    return _write_current_payload(tmp_path, payload=payload, name=name)
 
 
 def write_current_bad_tick_player_count_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
@@ -250,21 +212,15 @@ def write_current_bad_tick_player_count_replay(tmp_path: Path, *, replay: Replay
     payload = msgspec.msgpack.decode(raw_payload)
     payload["ticks"][0]["inputs"] = []
 
-    replay_path = tmp_path / name
-    replay_path.parent.mkdir(parents=True, exist_ok=True)
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
-    return replay_path
+    return _write_current_payload(tmp_path, payload=payload, name=name)
 
 
 def write_current_missing_perk_choice_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
     raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
     payload = msgspec.msgpack.decode(raw_payload)
-    payload["ticks"][0]["commands"] = [{"type": "perk_pick", "player_index": 0}]
+    payload["ticks"][0]["prelude"] = [{"type": "perk_pick", "player_index": 0}]
 
-    replay_path = tmp_path / name
-    replay_path.parent.mkdir(parents=True, exist_ok=True)
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
-    return replay_path
+    return _write_current_payload(tmp_path, payload=payload, name=name)
 
 
 def write_checkpoint_sidecar(

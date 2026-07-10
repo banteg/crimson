@@ -9,7 +9,7 @@ pub const CommandOutput = verify_native.CommandOutput;
 
 const Request = struct {
     trace_path: []const u8,
-    entity_uid: i32,
+    entity_uid: i64,
     tick_start: ?i32 = null,
     tick_end: ?i32 = null,
     json: bool = false,
@@ -25,7 +25,7 @@ const ParseOutcome = union(enum) {
 const EntityJsonPayload = struct {
     schema_version: i32 = 1,
     trace: []const u8,
-    entity_uid: i32,
+    entity_uid: i64,
     pool_kind: []const u8,
     spawn_tick: i32,
     despawn_tick: i32,
@@ -171,7 +171,7 @@ fn writeOptionalF32(writer: *std.Io.Writer, value: ?f32) !void {
 
 fn parseArgs(args: []const []const u8) ParseOutcome {
     var trace_path: ?[]const u8 = null;
-    var entity_uid: ?i32 = null;
+    var entity_uid: ?i64 = null;
     var request: Request = .{
         .trace_path = "",
         .entity_uid = 0,
@@ -202,7 +202,7 @@ fn parseArgs(args: []const []const u8) ParseOutcome {
             continue;
         }
         if (entity_uid == null) {
-            entity_uid = parseNonNegativeI32(arg) orelse return .{ .invalid = "invalid entity uid value" };
+            entity_uid = parseNonNegativeI64(arg) orelse return .{ .invalid = "invalid entity uid value" };
             continue;
         }
         if (std.mem.startsWith(u8, arg, "-")) return .{ .invalid = arg };
@@ -254,6 +254,13 @@ fn parseNonNegativeI32(value: []const u8) ?i32 {
     return parsed;
 }
 
+fn parseNonNegativeI64(value: []const u8) ?i64 {
+    if (value.len == 0) return null;
+    const parsed = std.fmt.parseInt(i64, value, 10) catch return null;
+    if (parsed < 0) return null;
+    return parsed;
+}
+
 fn buildUsageOutput(allocator: std.mem.Allocator, exit_code: u8, detail: []const u8) !CommandOutput {
     const stdout = try allocator.dupe(u8, "");
     errdefer allocator.free(stdout);
@@ -285,13 +292,17 @@ fn traceEntityErrorDetail(err: anyerror) []const u8 {
         error.InvalidTracePayload,
         error.InvalidTraceTrailer,
         error.InvalidTraceFooterOffset,
+        error.InvalidTraceMetaChunk,
         error.InvalidTraceFooterChunk,
         error.InvalidTraceTickChunk,
         error.InvalidTraceTickBlock,
+        error.InvalidTraceFooter,
         error.InvalidTraceBlockOffset,
         error.InvalidTraceChecksum,
+        error.InvalidTraceChunkLayout,
         => "invalid CDT trace",
         error.UnsupportedTraceFormatVersion => "unsupported CDT trace format version",
+        error.UnsupportedTraceSchemaVersion => "unsupported CDT trace schema version",
         error.UnsupportedTraceCompression => "compressed CDT trace chunks are not supported",
         error.OutOfMemory => "out of memory",
         else => @errorName(err),
@@ -310,11 +321,11 @@ fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
 }
 
 test "dbg entity parser accepts uid range and JSON output" {
-    const parsed = parseArgs(&.{ "sample.cdt", "4", "--ticks=1..8", "--json", "--json-out=out/entity.json" });
+    const parsed = parseArgs(&.{ "sample.cdt", "4001000000", "--ticks=1..8", "--json", "--json-out=out/entity.json" });
     switch (parsed) {
         .ok => |request| {
             try std.testing.expectEqualStrings("sample.cdt", request.trace_path);
-            try std.testing.expectEqual(@as(i32, 4), request.entity_uid);
+            try std.testing.expectEqual(@as(i64, 4_001_000_000), request.entity_uid);
             try std.testing.expectEqual(@as(?i32, 1), request.tick_start);
             try std.testing.expectEqual(@as(?i32, 8), request.tick_end);
             try std.testing.expect(request.json);
@@ -347,7 +358,7 @@ test "dbg entity summarizes native CDT trace" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "entity.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -361,11 +372,11 @@ test "dbg entity summarizes native CDT trace" {
     try std.testing.expectEqual(@as(u8, 0), record_output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, record_output.stdout, "trace=") != null);
 
-    const entity_output = try runDbgEntity(allocator, &.{ trace_path, "0", "--json", "--json-out", json_path });
+    const entity_output = try runDbgEntity(allocator, &.{ trace_path, "1001000000", "--json", "--json-out", json_path });
     defer entity_output.deinit(allocator);
     try std.testing.expectEqual(@as(u8, 0), entity_output.exit_code);
     try std.testing.expectEqualStrings("", entity_output.stderr);
-    try std.testing.expect(std.mem.indexOf(u8, entity_output.stdout, "\"entity_uid\":0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, entity_output.stdout, "\"entity_uid\":1001000000") != null);
     try std.testing.expect(std.mem.indexOf(u8, entity_output.stdout, "\"samples\":") != null);
     try std.testing.expect(std.mem.indexOf(u8, entity_output.stdout, "\"pool_kind\":\"creature\"") != null);
 

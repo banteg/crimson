@@ -10,9 +10,10 @@ const state_mod = @import("runtime/state.zig");
 const tutorial_runtime = @import("tutorial/runtime.zig");
 const verify_native = @import("verify_native.zig");
 
-const checkpoints_format_version: i32 = 4;
+pub const checkpoints_format_version: i32 = 5;
 const checkpoint_report_schema_version: i32 = 1;
-const max_checkpoints_payload_bytes: usize = 256 * 1024 * 1024;
+pub const max_checkpoints_payload_bytes: usize = 256 * 1024 * 1024;
+pub const max_checkpoints_file_bytes: usize = 257 * 1024 * 1024;
 
 pub const CommandOutput = verify_native.CommandOutput;
 
@@ -41,7 +42,7 @@ const ReplayDeathLedgerEntryWire = struct {
     type_id: i32,
     reward_value: f64,
     xp_awarded: i32,
-    owner_id: i32 = -1,
+    owner_id: i32,
 
     fn msgpackRead(unpacker: anytype) !ReplayDeathLedgerEntryWire {
         const field_count = try unpacker.readMapHeader(u32);
@@ -51,11 +52,13 @@ const ReplayDeathLedgerEntryWire = struct {
             .type_id = 0,
             .reward_value = 0.0,
             .xp_awarded = 0,
+            .owner_id = 0,
         };
         var seen_creature_index = false;
         var seen_type_id = false;
         var seen_reward_value = false;
         var seen_xp_awarded = false;
+        var seen_owner_id = false;
 
         for (0..field_count) |_| {
             const field_name = try unpacker.readStringInto(&field_name_buf);
@@ -73,12 +76,13 @@ const ReplayDeathLedgerEntryWire = struct {
                 seen_xp_awarded = true;
             } else if (std.mem.eql(u8, field_name, "owner_id")) {
                 entry.owner_id = try unpacker.readInt(i32);
+                seen_owner_id = true;
             } else {
                 return error.UnknownStructField;
             }
         }
 
-        if (!seen_creature_index or !seen_type_id or !seen_reward_value or !seen_xp_awarded) {
+        if (!seen_creature_index or !seen_type_id or !seen_reward_value or !seen_xp_awarded or !seen_owner_id) {
             return error.MissingCheckpointDeathField;
         }
 
@@ -219,7 +223,6 @@ const CheckpointDiffSummaryPayload = struct {
     expected_count: usize,
     actual_count: usize,
     checked_count: usize,
-    rng_only_drift_tick: ?i32,
 };
 
 const CheckpointDiffPayload = struct {
@@ -237,7 +240,6 @@ const VerifyCheckpointsSummaryPayload = struct {
     ticks: usize,
     score_xp: i32,
     kills: i32,
-    rng_only_drift_tick: ?i32,
     max_ticks: ?usize,
     trace_rng: bool,
 };
@@ -275,16 +277,21 @@ const ReplayResolution = struct {
 };
 
 const DiffFailure = struct {
-    kind: enum { missing_checkpoint, state_mismatch },
+    kind: enum {
+        missing_checkpoint,
+        extra_checkpoint,
+        duplicate_expected_checkpoint,
+        duplicate_actual_checkpoint,
+        state_mismatch,
+    },
     tick_index: i32,
-    expected: *const ReplayCheckpointWire,
+    expected: ?*const ReplayCheckpointWire = null,
     actual: ?*const ReplayCheckpointWire = null,
 };
 
 const DiffResult = struct {
     ok: bool,
     checked_count: usize,
-    first_rng_only_tick: ?i32 = null,
     failure: ?DiffFailure = null,
 };
 
@@ -607,9 +614,6 @@ fn runDiffWithCheckpointsOutput(
         try stdout_buf.writer.writeByte('\n');
     } else {
         try stdout_buf.writer.print("ok: {d} checkpoints match\n", .{expected_checkpoints.len});
-        if (diff.first_rng_only_tick) |tick| {
-            try stdout_buf.writer.print("first rng-only divergence tick={d}\n", .{tick});
-        }
         if (options.json_out) |json_out_path| {
             try stdout_buf.writer.print("json_report={s}\n", .{json_out_path});
         }
@@ -672,7 +676,7 @@ fn runNativeVerifyCheckpoints(
         io,
         resolution.resolved_path,
         allocator,
-        .limited(replay_codec.max_replay_payload_bytes),
+        .limited(replay_codec.max_replay_file_bytes),
     ) catch |err| {
         return buildVerifyFailedOutput(allocator, replayFileLoadErrorDetail(err));
     };
@@ -802,9 +806,6 @@ fn runVerifyCheckpointsWithReplayOutput(
             "ok: {d} checkpoints match; ticks={d} score_xp={d} kills={d}",
             .{ expected_checkpoints.len, run.ticks, run.player_experience, run.creature_kill_count },
         );
-        if (diff.first_rng_only_tick) |tick| {
-            try stdout_buf.writer.print("; rng-only drift starts at tick={d}", .{tick});
-        }
         if (options.json_out) |json_out_path| {
             try stdout_buf.writer.print("; json_report={s}", .{json_out_path});
         }
@@ -838,7 +839,6 @@ fn buildDiffJsonPayload(
             .expected_count = expected_checkpoints.len,
             .actual_count = actual_checkpoints.len,
             .checked_count = diff.checked_count,
-            .rng_only_drift_tick = diff.first_rng_only_tick,
         },
     };
     var payload_writer: std.Io.Writer.Allocating = .init(allocator);
@@ -866,7 +866,6 @@ fn buildVerifyJsonPayload(
             .ticks = run.ticks,
             .score_xp = run.player_experience,
             .kills = run.creature_kill_count,
-            .rng_only_drift_tick = diff.first_rng_only_tick,
             .max_ticks = options.max_ticks,
             .trace_rng = options.trace_rng,
         },
@@ -882,7 +881,12 @@ fn loadCheckpointsFile(
     path: []const u8,
 ) !msgpack.Decoded(ReplayCheckpointsWire) {
     const io = std.Io.Threaded.global_single_threaded.io();
-    const bytes = try std.Io.Dir.cwd().readFileAlloc(io, path, allocator, .unlimited);
+    const bytes = try std.Io.Dir.cwd().readFileAlloc(
+        io,
+        path,
+        allocator,
+        .limited(max_checkpoints_file_bytes),
+    );
     defer allocator.free(bytes);
 
     return loadCheckpointsBytes(allocator, bytes);
@@ -892,16 +896,12 @@ fn loadCheckpointsBytes(
     allocator: std.mem.Allocator,
     bytes: []const u8,
 ) !msgpack.Decoded(ReplayCheckpointsWire) {
-    var payload: []u8 = undefined;
-    var payload_owned = false;
-    if (replay_codec.isZstdPayload(bytes)) {
-        payload = try replay_codec.inflateZstdPayload(allocator, bytes, max_checkpoints_payload_bytes);
-        payload_owned = true;
-    } else {
-        if (bytes.len > max_checkpoints_payload_bytes) return error.PayloadTooLarge;
-        payload = @constCast(bytes);
-    }
-    defer if (payload_owned) allocator.free(payload);
+    const payload = try replay_codec.inflateZstdFilePayload(
+        allocator,
+        bytes,
+        max_checkpoints_payload_bytes,
+    );
+    defer allocator.free(payload);
 
     var decoded = msgpack.decodeFromSlice(ReplayCheckpointsWire, allocator, payload) catch |err| switch (err) {
         error.OutOfMemory => return error.OutOfMemory,
@@ -910,7 +910,29 @@ fn loadCheckpointsBytes(
     errdefer decoded.deinit();
 
     if (decoded.value.version != checkpoints_format_version) return error.UnsupportedCheckpointsVersion;
+    try validateCurrentCheckpoints(decoded.value);
     return decoded;
+}
+
+fn validateCurrentCheckpoints(checkpoints: ReplayCheckpointsWire) !void {
+    if (checkpoints.sample_rate <= 0) return error.InvalidCheckpointsSampleRate;
+    if (checkpoints.checkpoints.len == 0) return error.EmptyCheckpoints;
+
+    var previous_tick: ?i32 = null;
+    for (checkpoints.checkpoints) |checkpoint| {
+        if (checkpoint.tick_index < 0) return error.InvalidCheckpointTickIndex;
+        if (previous_tick) |previous| {
+            if (checkpoint.tick_index <= previous) return error.InvalidCheckpointOrder;
+        }
+        if (checkpoint.players.len == 0) return error.EmptyCheckpointPlayers;
+        if (checkpoint.perk.choices.len != replay_codec.perk_choice_slot_count) {
+            return error.InvalidCheckpointPerkChoices;
+        }
+        if (checkpoint.perk_pending != checkpoint.perk.pending_count) {
+            return error.InvalidCheckpointPerkPending;
+        }
+        previous_tick = checkpoint.tick_index;
+    }
 }
 
 fn loadReplayBytes(
@@ -920,23 +942,12 @@ fn loadReplayBytes(
 ) !replay_codec.Replay {
     var replay_payload_alloc: ?[]u8 = null;
     defer if (replay_payload_alloc) |buf| allocator.free(buf);
-    const replay_payload: []const u8 = if (replay_codec.isZstdPayload(replay_bytes)) blk: {
-        const inflated = try replay_codec.inflateZstdPayload(
-            allocator,
-            replay_bytes,
-            replay_codec.max_replay_payload_bytes,
-        );
-        replay_payload_alloc = inflated;
-        break :blk inflated;
-    } else if (replay_codec.isGzipPayload(replay_bytes)) blk: {
-        const inflated = try replay_codec.inflateGzipPayload(
-            allocator,
-            replay_bytes,
-            replay_codec.max_replay_payload_bytes,
-        );
-        replay_payload_alloc = inflated;
-        break :blk inflated;
-    } else replay_bytes;
+    const replay_payload = try replay_codec.inflateZstdFilePayload(
+        allocator,
+        replay_bytes,
+        replay_codec.max_replay_payload_bytes,
+    );
+    replay_payload_alloc = replay_payload;
 
     return replay_codec.parseReplay(allocator, replay_payload) catch |err| {
         if (err == error.UnsupportedInputShape) {
@@ -950,6 +961,10 @@ fn loadReplayBytes(
         } else if (err == error.UnknownCommandKind) {
             if (parse_detail) |detail| {
                 detail.* = try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload);
+            }
+        } else if (err == error.UnsupportedEventKind) {
+            if (parse_detail) |detail| {
+                detail.* = try replay_codec.replayCommandKindFailureDetail(allocator, replay_payload);
             }
         }
         return err;
@@ -975,12 +990,12 @@ fn buildCheckpointFromTrace(
     for (trace_players, 0..) |player, idx| {
         players[idx] = .{
             .pos = .{
-                .x = round4f64(player.pos.x),
-                .y = round4f64(player.pos.y),
+                .x = @floatCast(player.pos.x),
+                .y = @floatCast(player.pos.y),
             },
-            .health = round4f64(player.health),
+            .health = @floatCast(player.health),
             .weapon_id = @intFromEnum(player.weapon.weapon_id),
-            .ammo = round4f64(player.weapon.ammo),
+            .ammo = @floatCast(player.weapon.ammo),
             .experience = player.experience,
             .level = player.level,
         };
@@ -1065,9 +1080,8 @@ fn buildPerkChoices(
     row: *const replay_runner.ReplayTickTrace,
 ) ![]const i32 {
     const choices = row.gameplay_state.perk_selection.choices;
-    const visible_count = @min(row.gameplay_state.perk_selection.choice_count, choices.len);
-    const out = try allocator.alloc(i32, visible_count);
-    for (choices[0..visible_count], 0..) |choice, idx| {
+    const out = try allocator.alloc(i32, choices.len);
+    for (choices, 0..) |choice, idx| {
         out[idx] = @intFromEnum(choice);
     }
     return out;
@@ -1196,57 +1210,110 @@ fn bonusTimerMs(value: f32) i32 {
     return @intFromFloat(@floor(value * 1000.0));
 }
 
-fn round4f64(value: f32) f64 {
-    const scaled = @round(@as(f64, @floatCast(value)) * 10000.0);
-    return scaled / 10000.0;
-}
-
 fn compareCheckpoints(
     expected: []const ReplayCheckpointWire,
     actual: []const ReplayCheckpointWire,
 ) DiffResult {
-    var first_rng_only_tick: ?i32 = null;
-    var checked_count: usize = 0;
+    if (firstDuplicateTick(expected)) |duplicate| {
+        return .{
+            .ok = false,
+            .checked_count = 0,
+            .failure = .{
+                .kind = .duplicate_expected_checkpoint,
+                .tick_index = duplicate.tick_index,
+                .expected = duplicate,
+            },
+        };
+    }
+    if (firstDuplicateTick(actual)) |duplicate| {
+        return .{
+            .ok = false,
+            .checked_count = 0,
+            .failure = .{
+                .kind = .duplicate_actual_checkpoint,
+                .tick_index = duplicate.tick_index,
+                .actual = duplicate,
+            },
+        };
+    }
 
-    for (expected) |*exp| {
+    var previous_tick: ?i32 = null;
+    var checked_count: usize = 0;
+    while (nextCheckpointTick(expected, actual, previous_tick)) |tick_index| {
         checked_count += 1;
-        const act = checkpointForTick(actual, exp.tick_index) orelse {
+        const exp = checkpointForTick(expected, tick_index);
+        const act = checkpointForTick(actual, tick_index);
+        if (exp == null) {
             return .{
                 .ok = false,
                 .checked_count = checked_count,
-                .first_rng_only_tick = first_rng_only_tick,
+                .failure = .{
+                    .kind = .extra_checkpoint,
+                    .tick_index = tick_index,
+                    .actual = act,
+                },
+            };
+        }
+        if (act == null) {
+            return .{
+                .ok = false,
+                .checked_count = checked_count,
                 .failure = .{
                     .kind = .missing_checkpoint,
-                    .tick_index = exp.tick_index,
+                    .tick_index = tick_index,
                     .expected = exp,
                 },
             };
-        };
-
-        if (checkpointEqual(exp, act, true)) continue;
-        if (checkpointEqual(exp, act, false)) {
-            if (first_rng_only_tick == null) first_rng_only_tick = exp.tick_index;
-            continue;
         }
-
-        return .{
-            .ok = false,
-            .checked_count = checked_count,
-            .first_rng_only_tick = first_rng_only_tick,
-            .failure = .{
-                .kind = .state_mismatch,
-                .tick_index = exp.tick_index,
-                .expected = exp,
-                .actual = act,
-            },
-        };
+        if (!checkpointEqual(exp.?, act.?)) {
+            return .{
+                .ok = false,
+                .checked_count = checked_count,
+                .failure = .{
+                    .kind = .state_mismatch,
+                    .tick_index = tick_index,
+                    .expected = exp,
+                    .actual = act,
+                },
+            };
+        }
+        previous_tick = tick_index;
     }
 
     return .{
         .ok = true,
         .checked_count = checked_count,
-        .first_rng_only_tick = first_rng_only_tick,
     };
+}
+
+fn firstDuplicateTick(checkpoints: []const ReplayCheckpointWire) ?*const ReplayCheckpointWire {
+    for (checkpoints, 0..) |*checkpoint, index| {
+        for (checkpoints[0..index]) |prior| {
+            if (prior.tick_index == checkpoint.tick_index) return checkpoint;
+        }
+    }
+    return null;
+}
+
+fn nextCheckpointTick(
+    expected: []const ReplayCheckpointWire,
+    actual: []const ReplayCheckpointWire,
+    previous_tick: ?i32,
+) ?i32 {
+    var next_tick: ?i32 = null;
+    for (expected) |checkpoint| {
+        if (previous_tick) |previous| {
+            if (checkpoint.tick_index <= previous) continue;
+        }
+        if (next_tick == null or checkpoint.tick_index < next_tick.?) next_tick = checkpoint.tick_index;
+    }
+    for (actual) |checkpoint| {
+        if (previous_tick) |previous| {
+            if (checkpoint.tick_index <= previous) continue;
+        }
+        if (next_tick == null or checkpoint.tick_index < next_tick.?) next_tick = checkpoint.tick_index;
+    }
+    return next_tick;
 }
 
 fn checkpointForTick(checkpoints: []const ReplayCheckpointWire, tick_index: i32) ?*const ReplayCheckpointWire {
@@ -1256,9 +1323,9 @@ fn checkpointForTick(checkpoints: []const ReplayCheckpointWire, tick_index: i32)
     return null;
 }
 
-fn checkpointEqual(a: *const ReplayCheckpointWire, b: *const ReplayCheckpointWire, compare_rng: bool) bool {
+fn checkpointEqual(a: *const ReplayCheckpointWire, b: *const ReplayCheckpointWire) bool {
     if (a.tick_index != b.tick_index) return false;
-    if (compare_rng and a.rng_state != b.rng_state) return false;
+    if (a.rng_state != b.rng_state) return false;
     if (a.elapsed_ms != b.elapsed_ms) return false;
     if (a.score_xp != b.score_xp) return false;
     if (a.kills != b.kills) return false;
@@ -1333,7 +1400,7 @@ fn eventsEqual(a: ReplayEventSummaryWire, b: ReplayEventSummaryWire) bool {
     if (a.hit_count != b.hit_count) return false;
     if (a.pickup_count != b.pickup_count) return false;
     if (a.sfx_count != b.sfx_count) return false;
-    if (a.hit_head.len != 0 and b.hit_head.len != 0 and !hitHeadSlicesEqual(a.hit_head, b.hit_head)) return false;
+    if (!hitHeadSlicesEqual(a.hit_head, b.hit_head)) return false;
     return stringSlicesEqual(a.sfx_head, b.sfx_head);
 }
 
@@ -1410,8 +1477,17 @@ fn buildMismatchOutput(
         .missing_checkpoint => {
             try writer.print("checkpoint missing at tick={d}\n", .{failure.tick_index});
         },
+        .extra_checkpoint => {
+            try writer.print("unexpected checkpoint at tick={d}\n", .{failure.tick_index});
+        },
+        .duplicate_expected_checkpoint => {
+            try writer.print("expected checkpoints contain duplicate tick={d}\n", .{failure.tick_index});
+        },
+        .duplicate_actual_checkpoint => {
+            try writer.print("actual checkpoints contain duplicate tick={d}\n", .{failure.tick_index});
+        },
         .state_mismatch => {
-            const exp = failure.expected;
+            const exp = failure.expected.?;
             const act = failure.actual.?;
             try writer.print("checkpoint mismatch at tick={d}\n", .{failure.tick_index});
             try writeFirstStateMismatch(writer, exp, act);
@@ -1467,6 +1543,10 @@ fn writeFirstStateMismatch(
 ) !void {
     if (expected.tick_index != actual.tick_index) {
         try writer.print("  first state diff: tick_index expected={d} actual={d}\n", .{ expected.tick_index, actual.tick_index });
+        return;
+    }
+    if (expected.rng_state != actual.rng_state) {
+        try writer.print("  first state diff: rng_state expected={d} actual={d}\n", .{ expected.rng_state, actual.rng_state });
         return;
     }
     if (expected.elapsed_ms != actual.elapsed_ms) {
@@ -1673,7 +1753,7 @@ fn writeFirstEventMismatch(
         return true;
     }
     if (try writeFirstStringSliceMismatch(writer, "events.sfx_head", expected.sfx_head, actual.sfx_head)) return true;
-    if (expected.hit_head.len != 0 and actual.hit_head.len != 0 and !hitHeadSlicesEqual(expected.hit_head, actual.hit_head)) {
+    if (!hitHeadSlicesEqual(expected.hit_head, actual.hit_head)) {
         try writer.print(
             "  first state diff: events.hit_head expected_len={d} actual_len={d}\n",
             .{ expected.hit_head.len, actual.hit_head.len },
@@ -1941,8 +2021,16 @@ fn checkpointFileLoadErrorDetail(err: anyerror) []const u8 {
         error.AccessDenied => "unable to read checkpoints file: access denied",
         error.InvalidMsgpack => "checkpoints payload is not valid msgpack wire format",
         error.InvalidZstdPayload => "unable to inflate checkpoints zstd payload",
+        error.FileTooBig => "checkpoints zstd envelope exceeds max file size",
         error.PayloadTooLarge => "checkpoints payload exceeds max decompressed size",
         error.UnsupportedCheckpointsVersion => "checkpoints format version is not supported",
+        error.InvalidCheckpointsSampleRate => "checkpoints sample_rate must be positive",
+        error.EmptyCheckpoints => "checkpoints must contain at least one row",
+        error.InvalidCheckpointTickIndex => "checkpoint tick_index must be non-negative",
+        error.InvalidCheckpointOrder => "checkpoint tick indices must be strictly increasing and unique",
+        error.EmptyCheckpointPlayers => "checkpoint players must be non-empty",
+        error.InvalidCheckpointPerkChoices => "checkpoint perk choices must contain exactly 7 slots",
+        error.InvalidCheckpointPerkPending => "checkpoint perk_pending must equal perk.pending_count",
         error.OutOfMemory => "native checkpoint decode ran out of memory",
         else => @errorName(err),
     };
@@ -1952,7 +2040,8 @@ fn replayFileLoadErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
         error.FileNotFound => "replay file not found",
         error.AccessDenied => "unable to read replay file: access denied",
-        error.FileTooBig, error.PayloadTooLarge => "replay payload exceeds max decompressed size",
+        error.FileTooBig => "replay zstd envelope exceeds max file size",
+        error.PayloadTooLarge => "replay payload exceeds max decompressed size",
         error.OutOfMemory => "native replay load ran out of memory",
         else => @errorName(err),
     };
@@ -1960,23 +2049,20 @@ fn replayFileLoadErrorDetail(err: anyerror) []const u8 {
 
 fn replayLoadErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
-        error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
-        error.LegacyJsonPayload => "legacy JSON replay format is unsupported; regenerate the replay",
+        error.InvalidMsgpack => "replay payload does not match format 15 msgpack schema",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.InvalidClaimedStats => "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
         error.MissingHeaderField => "replay header missing required fields",
         error.MissingQuestLevel => "quest replays require a valid header.quest_level",
         error.TypoMultiplayer => "Typ-o replays require player_count == 1",
         error.TutorialMultiplayer => "tutorial replays require player_count == 1",
-        error.UnsupportedInputShape => "replay input rows are not in the canonical wire shape",
-        error.UnsupportedEventShape => "replay events are not in the canonical wire shape",
-        error.InvalidGzipPayload => "unable to inflate replay gzip payload",
+        error.UnsupportedGameMode => "replay game mode is not supported",
+        error.UnsupportedInputShape => "replay tick inputs do not match format 15",
+        error.UnsupportedEventShape => "replay tick operations do not match format 15",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnknownCommandKind => "replay events include an unknown command kind",
-        error.UnsupportedBootstrapKind => "replay bootstrap kind is not supported",
+        error.UnknownCommandKind => "replay tick operations do not match format 15",
         error.UnsupportedInputQuantization => "replay input quantization is not supported",
-        error.BootstrapSeedMismatch => "replay bootstrap seed does not match canonical terrain bootstrap draws",
         error.PayloadTooLarge => "replay payload exceeds max decompressed size",
         error.OutOfMemory => "native replay load ran out of memory",
         else => @errorName(err),
@@ -1992,7 +2078,7 @@ fn replayRunnerErrorDetail(err: anyerror) []const u8 {
         error.UnsupportedPlayerCount => "native replay run only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "native replay run only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay events include kinds or values invalid for this mode",
+        error.UnsupportedEventKind => "replay tick commands are invalid for this game mode",
         error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player index",
         error.MissingRngCallerTag => "replay capture is missing required RNG caller tags",
         error.InvalidSpawnTemplate => "replay capture references an invalid spawn template",
@@ -2122,15 +2208,51 @@ fn defaultCheckpointsPath(allocator: std.mem.Allocator, replay_path: []const u8)
     return std.fmt.allocPrint(allocator, "{s}.chk", .{replay_path});
 }
 
-test "compare checkpoints permits rng-only divergence" {
+test "compare checkpoints rejects rng-only divergence" {
+    const allocator = std.testing.allocator;
     const expected = testCheckpoint();
     var actual = testCheckpoint();
     actual.rng_state = 0xFEED;
 
     const diff = compareCheckpoints(&.{expected}, &.{actual});
 
-    try std.testing.expect(diff.ok);
-    try std.testing.expectEqual(@as(?i32, 1), diff.first_rng_only_tick);
+    try std.testing.expect(!diff.ok);
+    try std.testing.expectEqual(.state_mismatch, diff.failure.?.kind);
+    try std.testing.expectEqual(@as(i32, 1), diff.failure.?.tick_index);
+
+    var writer: std.Io.Writer.Allocating = .init(allocator);
+    defer writer.deinit();
+    try writeFirstStateMismatch(&writer.writer, &expected, &actual);
+    try std.testing.expectEqualStrings(
+        "  first state diff: rng_state expected=4660 actual=65261\n",
+        writer.written(),
+    );
+}
+
+test "compare checkpoints rejects extra actual ticks" {
+    const expected = testCheckpoint();
+    var extra = testCheckpoint();
+    extra.tick_index = 2;
+
+    const diff = compareCheckpoints(&.{expected}, &.{ expected, extra });
+
+    try std.testing.expect(!diff.ok);
+    try std.testing.expectEqual(.extra_checkpoint, diff.failure.?.kind);
+    try std.testing.expectEqual(@as(i32, 2), diff.failure.?.tick_index);
+}
+
+test "compare checkpoints rejects duplicate ticks on either side" {
+    const checkpoint = testCheckpoint();
+
+    const duplicate_expected = compareCheckpoints(&.{ checkpoint, checkpoint }, &.{checkpoint});
+    try std.testing.expect(!duplicate_expected.ok);
+    try std.testing.expectEqual(.duplicate_expected_checkpoint, duplicate_expected.failure.?.kind);
+    try std.testing.expectEqual(@as(i32, 1), duplicate_expected.failure.?.tick_index);
+
+    const duplicate_actual = compareCheckpoints(&.{checkpoint}, &.{ checkpoint, checkpoint });
+    try std.testing.expect(!duplicate_actual.ok);
+    try std.testing.expectEqual(.duplicate_actual_checkpoint, duplicate_actual.failure.?.kind);
+    try std.testing.expectEqual(@as(i32, 1), duplicate_actual.failure.?.tick_index);
 }
 
 test "compare checkpoints reports first state mismatch" {
@@ -2195,7 +2317,27 @@ test "checkpoint mismatch output reports first event field difference" {
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "first state diff: events.sfx_count expected=0 actual=1") != null);
 }
 
-test "byte checkpoint diff accepts msgpack payloads" {
+test "compare checkpoints rejects one-sided hit detail" {
+    const expected = testCheckpoint();
+    var actual = testCheckpoint();
+    const actual_hits = [_]ReplayHitSummaryEntryWire{.{
+        .type_id = 1,
+        .origin = .{ .x = 1.0, .y = 2.0 },
+        .hit = .{ .x = 3.0, .y = 4.0 },
+        .target = .{ .x = 5.0, .y = 6.0 },
+    }};
+    actual.events.hit_count = 1;
+    actual.events.hit_head = actual_hits[0..];
+    var expected_with_count = expected;
+    expected_with_count.events.hit_count = 1;
+
+    const diff = compareCheckpoints(&.{expected_with_count}, &.{actual});
+
+    try std.testing.expect(!diff.ok);
+    try std.testing.expectEqual(.state_mismatch, diff.failure.?.kind);
+}
+
+test "byte checkpoint diff accepts zstd msgpack payloads" {
     const allocator = std.testing.allocator;
     const checkpoint = testCheckpoint();
     const payload = try encodeTestCheckpoints(allocator, &.{checkpoint});
@@ -2226,9 +2368,115 @@ test "byte checkpoint diff accepts msgpack payloads" {
     try std.testing.expect(std.mem.indexOf(u8, json_output.stdout, "\"checked_count\":1") != null);
 }
 
+test "checkpoint file envelope rejects concatenated frames and invalid checksums" {
+    const allocator = std.testing.allocator;
+    const checkpoint = testCheckpoint();
+    const payload = try encodeTestCheckpoints(allocator, &.{checkpoint});
+    defer allocator.free(payload);
+    const concatenated = try std.mem.concat(allocator, u8, &.{ payload, payload });
+    defer allocator.free(concatenated);
+
+    try std.testing.expectError(
+        error.InvalidZstdPayload,
+        loadCheckpointsBytes(allocator, concatenated),
+    );
+
+    const raw = try replay_codec.inflateZstdPayload(
+        allocator,
+        payload,
+        max_checkpoints_payload_bytes,
+    );
+    defer allocator.free(raw);
+    const checksum_payload = try allocator.alloc(u8, payload.len + @sizeOf(u32));
+    defer allocator.free(checksum_payload);
+    @memcpy(checksum_payload[0..payload.len], payload);
+    checksum_payload[replay_codec.zstd_magic.len] |= 0b0000_0100;
+    const checksum: u32 = @truncate(std.hash.XxHash64.hash(0, raw));
+    std.mem.writeInt(u32, checksum_payload[payload.len..][0..@sizeOf(u32)], checksum, .little);
+
+    var decoded = try loadCheckpointsBytes(allocator, checksum_payload);
+    decoded.deinit();
+    checksum_payload[checksum_payload.len - 1] ^= 0x80;
+    try std.testing.expectError(
+        error.InvalidZstdPayload,
+        loadCheckpointsBytes(allocator, checksum_payload),
+    );
+}
+
+test "checkpoint loader enforces current semantic invariants" {
+    const allocator = std.testing.allocator;
+    const valid = testCheckpoint();
+
+    const valid_payload = try encodeTestCheckpoints(allocator, &.{valid});
+    defer allocator.free(valid_payload);
+    var decoded = try loadCheckpointsBytes(allocator, valid_payload);
+    decoded.deinit();
+
+    const zero_sample_rate = try encodeTestCheckpointsWithSampleRate(allocator, &.{valid}, 0);
+    defer allocator.free(zero_sample_rate);
+    try std.testing.expectError(
+        error.InvalidCheckpointsSampleRate,
+        loadCheckpointsBytes(allocator, zero_sample_rate),
+    );
+
+    const empty = try encodeTestCheckpoints(allocator, &.{});
+    defer allocator.free(empty);
+    try std.testing.expectError(
+        error.EmptyCheckpoints,
+        loadCheckpointsBytes(allocator, empty),
+    );
+
+    var negative_tick = valid;
+    negative_tick.tick_index = -1;
+    const negative_tick_payload = try encodeTestCheckpoints(allocator, &.{negative_tick});
+    defer allocator.free(negative_tick_payload);
+    try std.testing.expectError(
+        error.InvalidCheckpointTickIndex,
+        loadCheckpointsBytes(allocator, negative_tick_payload),
+    );
+
+    var first = valid;
+    first.tick_index = 2;
+    var duplicate = valid;
+    duplicate.tick_index = 2;
+    const duplicate_ticks = try encodeTestCheckpoints(allocator, &.{ first, duplicate });
+    defer allocator.free(duplicate_ticks);
+    try std.testing.expectError(
+        error.InvalidCheckpointOrder,
+        loadCheckpointsBytes(allocator, duplicate_ticks),
+    );
+
+    var no_players = valid;
+    no_players.players = &.{};
+    const no_players_payload = try encodeTestCheckpoints(allocator, &.{no_players});
+    defer allocator.free(no_players_payload);
+    try std.testing.expectError(
+        error.EmptyCheckpointPlayers,
+        loadCheckpointsBytes(allocator, no_players_payload),
+    );
+
+    var six_choices = valid;
+    six_choices.perk.choices = &([_]i32{0} ** 6);
+    const six_choices_payload = try encodeTestCheckpoints(allocator, &.{six_choices});
+    defer allocator.free(six_choices_payload);
+    try std.testing.expectError(
+        error.InvalidCheckpointPerkChoices,
+        loadCheckpointsBytes(allocator, six_choices_payload),
+    );
+
+    var mismatched_pending = valid;
+    mismatched_pending.perk_pending = 1;
+    const mismatched_pending_payload = try encodeTestCheckpoints(allocator, &.{mismatched_pending});
+    defer allocator.free(mismatched_pending_payload);
+    try std.testing.expectError(
+        error.InvalidCheckpointPerkPending,
+        loadCheckpointsBytes(allocator, mismatched_pending_payload),
+    );
+}
+
 test "byte checkpoint verify accepts replay and checkpoint payloads" {
     const allocator = std.testing.allocator;
-    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     var replay = try loadReplayBytes(allocator, replay_bytes, null);
@@ -2335,7 +2583,7 @@ test "checkpoint diff maps checkpoint load errors to user details" {
     );
 }
 
-test "checkpoint death entries default legacy owner id" {
+test "checkpoint death entries require owner id" {
     const allocator = std.testing.allocator;
     const LegacyDeathEntry = struct {
         creature_index: i32,
@@ -2354,19 +2602,45 @@ test "checkpoint death entries default legacy owner id" {
     defer writer.deinit();
     try msgpack.encode(wire, &writer.writer);
 
-    var decoded = try msgpack.decodeFromSlice(ReplayDeathLedgerEntryWire, allocator, writer.written());
-    defer decoded.deinit();
+    try std.testing.expectError(
+        error.MissingCheckpointDeathField,
+        msgpack.decodeFromSlice(ReplayDeathLedgerEntryWire, allocator, writer.written()),
+    );
+}
 
-    try std.testing.expectEqual(@as(i32, 5), decoded.value.creature_index);
-    try std.testing.expectEqual(@as(i32, 2), decoded.value.type_id);
-    try std.testing.expectEqual(@as(f64, 75.0), decoded.value.reward_value);
-    try std.testing.expectEqual(@as(i32, 10), decoded.value.xp_awarded);
-    try std.testing.expectEqual(@as(i32, -1), decoded.value.owner_id);
+test "checkpoint vec2 requires exactly x and y" {
+    const allocator = std.testing.allocator;
+    const MissingY = struct {
+        x: f64,
+    };
+    const UnknownZ = struct {
+        x: f64,
+        y: f64,
+        z: f64,
+    };
+
+    var missing_writer: std.Io.Writer.Allocating = .init(allocator);
+    defer missing_writer.deinit();
+    const missing: MissingY = .{ .x = 1.0 };
+    try msgpack.encode(missing, &missing_writer.writer);
+    try std.testing.expectError(
+        error.MissingStructFields,
+        msgpack.decodeFromSlice(Vec2Wire, allocator, missing_writer.written()),
+    );
+
+    var unknown_writer: std.Io.Writer.Allocating = .init(allocator);
+    defer unknown_writer.deinit();
+    const unknown: UnknownZ = .{ .x = 1.0, .y = 2.0, .z = 3.0 };
+    try msgpack.encode(unknown, &unknown_writer.writer);
+    try std.testing.expectError(
+        error.UnknownStructField,
+        msgpack.decodeFromSlice(Vec2Wire, allocator, unknown_writer.written()),
+    );
 }
 
 test "checkpoint verify maps replay load and runner errors to user details" {
     try std.testing.expectEqualStrings(
-        "replay payload is not valid msgpack wire format",
+        "replay payload does not match format 15 msgpack schema",
         replayLoadErrorDetail(error.InvalidMsgpack),
     );
     try std.testing.expectEqualStrings(
@@ -2374,7 +2648,7 @@ test "checkpoint verify maps replay load and runner errors to user details" {
         replayLoadErrorDetail(error.PayloadTooLarge),
     );
     try std.testing.expectEqualStrings(
-        "replay events include an unknown command kind",
+        "replay tick operations do not match format 15",
         replayLoadErrorDetail(error.UnknownCommandKind),
     );
     try std.testing.expectEqualStrings(
@@ -2386,7 +2660,7 @@ test "checkpoint verify maps replay load and runner errors to user details" {
         replayRunnerErrorDetail(error.UnsupportedEventPlayerIndex),
     );
     try std.testing.expectEqualStrings(
-        "replay events include kinds or values invalid for this mode",
+        "replay tick commands are invalid for this game mode",
         replayRunnerErrorDetail(error.UnsupportedEventKind),
     );
     try std.testing.expectEqualStrings(
@@ -2420,7 +2694,7 @@ fn testCheckpoint() ReplayCheckpointWire {
         .perk = .{
             .pending_count = 0,
             .choices_dirty = false,
-            .choices = &.{},
+            .choices = &([_]i32{0} ** replay_codec.perk_choice_slot_count),
             .player_nonzero_counts = &.{},
         },
         .events = .{
@@ -2439,13 +2713,23 @@ fn encodeTestCheckpoints(
     allocator: std.mem.Allocator,
     checkpoints: []const ReplayCheckpointWire,
 ) ![]u8 {
+    return encodeTestCheckpointsWithSampleRate(allocator, checkpoints, 1);
+}
+
+fn encodeTestCheckpointsWithSampleRate(
+    allocator: std.mem.Allocator,
+    checkpoints: []const ReplayCheckpointWire,
+    sample_rate: i32,
+) ![]u8 {
     const payload: ReplayCheckpointsWire = .{
         .version = checkpoints_format_version,
-        .sample_rate = 1,
+        .sample_rate = sample_rate,
         .checkpoints = checkpoints,
     };
     var writer: std.Io.Writer.Allocating = .init(allocator);
     errdefer writer.deinit();
     try msgpack.encode(payload, &writer.writer);
-    return writer.toOwnedSlice();
+    const raw = try writer.toOwnedSlice();
+    defer allocator.free(raw);
+    return replay_codec.wrapZstdFilePayload(allocator, raw);
 }

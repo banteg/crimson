@@ -45,7 +45,7 @@ const usage =
     \\Expressions:
     \\  ticks where checkpoint.kills >= 0
     \\  ticks where rng_stream_count > 0
-    \\  entities where uid == 0
+    \\  entities where uid == 1001000000
     \\  entities where pool_kind == creature
     \\
 ;
@@ -357,13 +357,17 @@ fn queryErrorDetail(err: anyerror) []const u8 {
         error.InvalidTracePayload,
         error.InvalidTraceTrailer,
         error.InvalidTraceFooterOffset,
+        error.InvalidTraceMetaChunk,
         error.InvalidTraceFooterChunk,
         error.InvalidTraceTickChunk,
         error.InvalidTraceTickBlock,
+        error.InvalidTraceFooter,
         error.InvalidTraceBlockOffset,
         error.InvalidTraceChecksum,
+        error.InvalidTraceChunkLayout,
         => "invalid CDT trace",
         error.UnsupportedTraceFormatVersion => "unsupported CDT trace format version",
+        error.UnsupportedTraceSchemaVersion => "unsupported CDT trace schema version",
         error.UnsupportedTraceCompression => "compressed CDT trace chunks are not supported",
         error.OutOfMemory => "out of memory",
         else => @errorName(err),
@@ -419,7 +423,7 @@ test "dbg query summarizes native CDT trace" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "query.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -433,13 +437,13 @@ test "dbg query summarizes native CDT trace" {
     try std.testing.expectEqual(@as(u8, 0), record_output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, record_output.stdout, "trace=") != null);
 
-    const query_output = try runDbgQuery(allocator, &.{ trace_path, "entities where uid == 0", "--json", "--json-out", json_path });
+    const query_output = try runDbgQuery(allocator, &.{ trace_path, "entities where uid == 1001000000", "--json", "--json-out", json_path });
     defer query_output.deinit(allocator);
     try std.testing.expectEqual(@as(u8, 0), query_output.exit_code);
     try std.testing.expectEqualStrings("", query_output.stderr);
     try std.testing.expect(std.mem.indexOf(u8, query_output.stdout, "\"scope\":\"entities\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, query_output.stdout, "\"match_count\":") != null);
-    try std.testing.expect(std.mem.indexOf(u8, query_output.stdout, "\"uid\":0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, query_output.stdout, "\"uid\":1001000000") != null);
 
     const artifact = try std.Io.Dir.cwd().readFileAlloc(io, json_path, allocator, .limited(64 * 1024));
     defer allocator.free(artifact);

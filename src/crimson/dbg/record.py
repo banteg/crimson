@@ -15,7 +15,7 @@ from ..math_parity import f32
 from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.driver.playback_driver import PlaybackWalkObserver, RngTraceDraw, build_verify_playback_driver
-from ..replay.types import Replay
+from ..replay.types import Replay, current_replay_game_version
 from ..sim.hooks import TickResult
 from ..sim.step_pipeline import time_scale_reflex_boost_factor
 from ..sim.timing import ftol_ms_i32
@@ -25,6 +25,8 @@ from .canonical_channels import (
     CreatureEntitySample,
     EntitySamplesSnapshot,
     ProjectileEntitySample,
+    ReplayInputSample,
+    ReplayStepSnapshot,
     RngStreamRow,
     SecondaryProjectileEntitySample,
     SimStateSnapshot,
@@ -35,6 +37,7 @@ from .canonical_channels import (
     SnapshotWeapon,
     TimingSampleRow,
     bonus_timer_ms,
+    entity_uid,
 )
 from .payloads import BuiltinObject
 from .schema import (
@@ -74,6 +77,13 @@ class _EntityGenerationState(msgspec.Struct):
             self.generation_by_index[idx] += 1
         self._seen_in_tick.add(idx)
         return int(self.generation_by_index[idx])
+
+
+def _checkpoint_for_trace(checkpoint: ReplayCheckpoint) -> ReplayCheckpoint:
+    """Keep only checkpoint fields with an exact representation in every producer."""
+
+    events = msgspec.structs.replace(checkpoint.events, sfx_count=0, sfx_head=[], hit_head=[])
+    return msgspec.structs.replace(checkpoint, deaths=[], events=events)
 
 
 def _fingerprint(path: Path) -> BuiltinObject:
@@ -142,9 +152,10 @@ def _entity_samples_for_world(
         if not creature.active:
             continue
         generation = creature_state.next_generation(index=index)
+        target_offset = creature.target_offset
         creatures.append(
             CreatureEntitySample(
-                uid=int(index),
+                uid=entity_uid(pool_kind="creature", index=index, generation=generation),
                 generation=generation,
                 pool_kind="creature",
                 index=index,
@@ -155,8 +166,17 @@ def _entity_samples_for_world(
                 flags=int(creature.flags),
                 ai_mode=int(creature.ai_mode),
                 link_index=int(creature.link_index),
+                force_target=int(creature.force_target),
+                target=SnapshotVec2(x=float(creature.target.x), y=float(creature.target.y)),
+                target_player=int(creature.target_player),
+                target_offset=SnapshotVec2(
+                    x=0.0 if target_offset is None else float(target_offset.x),
+                    y=0.0 if target_offset is None else float(target_offset.y),
+                ),
                 heading=float(creature.heading),
                 target_heading=float(creature.target_heading),
+                collision_timer=float(creature.collision_timer),
+                attack_cooldown=float(creature.attack_cooldown),
                 orbit_angle=float(creature.orbit_angle),
                 orbit_radius=float(creature.orbit_radius),
                 lifecycle_stage=float(creature.lifecycle_stage),
@@ -172,7 +192,7 @@ def _entity_samples_for_world(
         generation = projectile_state.next_generation(index=index)
         projectiles.append(
             ProjectileEntitySample(
-                uid=int(index),
+                uid=entity_uid(pool_kind="projectile", index=index, generation=generation),
                 generation=generation,
                 pool_kind="projectile",
                 index=index,
@@ -197,7 +217,7 @@ def _entity_samples_for_world(
         generation = secondary_state.next_generation(index=index)
         secondary_projectiles.append(
             SecondaryProjectileEntitySample(
-                uid=int(index),
+                uid=entity_uid(pool_kind="secondary_projectile", index=index, generation=generation),
                 generation=generation,
                 pool_kind="secondary_projectile",
                 index=index,
@@ -220,7 +240,7 @@ def _entity_samples_for_world(
         generation = bonus_state.next_generation(index=index)
         bonuses.append(
             BonusEntitySample(
-                uid=int(index),
+                uid=entity_uid(pool_kind="bonus", index=index, generation=generation),
                 generation=generation,
                 pool_kind="bonus",
                 index=index,
@@ -255,6 +275,11 @@ def _sim_state_from_world(world: WorldState, *, replay: Replay) -> SimStateSnaps
             SnapshotPlayer(
                 index=int(player.index),
                 pos=SnapshotVec2(x=float(player.pos.x), y=float(player.pos.y)),
+                heading=float(player.heading),
+                move_speed=float(player.move_speed),
+                move_phase=float(player.move_phase),
+                aim=SnapshotVec2(x=float(player.aim.x), y=float(player.aim.y)),
+                aim_heading=float(player.aim_heading),
                 health=float(player.health),
                 weapon=SnapshotWeapon(
                     weapon_id=int(player.weapon.weapon_id),
@@ -293,20 +318,34 @@ def _build_replay_fingerprint(*, replay_path: Path, replay: Replay) -> BuiltinOb
     replay_fingerprint["tick_rate"] = replay.header.tick_rate
     replay_fingerprint["seed"] = replay.header.seed
     replay_fingerprint["mode_id"] = replay.header.game_mode_id
-    replay_fingerprint["quest_level"] = "" if replay.header.quest_level is None else replay.header.quest_level.text
+    replay_fingerprint["player_count"] = replay.header.player_count
+    replay_fingerprint["quest_level"] = None if replay.header.quest_level is None else replay.header.quest_level.text
     return replay_fingerprint
 
 
 def _source_from_replay_fingerprint(fingerprint: BuiltinObject) -> TraceSource:
+    quest_level_value = fingerprint.get("quest_level")
+    quest_level = str(quest_level_value) if isinstance(quest_level_value, str) and quest_level_value else None
+    quest_stage_major: int | None = None
+    quest_stage_minor: int | None = None
+    if quest_level is not None:
+        major_text, minor_text = quest_level.split(".", 1)
+        quest_stage_major = int(major_text)
+        quest_stage_minor = int(minor_text)
     return TraceSource(
         path=_builtin_text(fingerprint, "path"),
         sha256=_builtin_text(fingerprint, "sha256"),
         size=_builtin_int(fingerprint, "size"),
         mtime_ns=_builtin_int(fingerprint, "mtime_ns"),
+        kind="replay",
+        replay_sha256=_builtin_text(fingerprint, "sha256"),
         tick_rate=_builtin_int(fingerprint, "tick_rate"),
         seed=_builtin_int(fingerprint, "seed"),
         mode_id=_builtin_int(fingerprint, "mode_id"),
-        quest_level=_builtin_text(fingerprint, "quest_level"),
+        player_count=_builtin_int(fingerprint, "player_count"),
+        quest_level=quest_level,
+        quest_stage_major=quest_stage_major,
+        quest_stage_minor=quest_stage_minor,
     )
 
 
@@ -359,7 +398,7 @@ def _build_trace_meta(
         created_utc=datetime.now(tz=UTC).isoformat(),
         producer=TraceProducer(
             impl=str(impl),
-            impl_version="",
+            impl_version=current_replay_game_version(),
             platform=str(platform.system()),
             arch=str(platform.machine()),
         ),
@@ -377,7 +416,6 @@ def _record_replay_to_trace_python(
     *,
     replay_path: Path,
     out_path: Path,
-    pre_tick_rand_draws: int = 0,
 ) -> TraceSummary:
     replay = load_replay_file(replay_path)
 
@@ -394,17 +432,11 @@ def _record_replay_to_trace_python(
     secondary_state = _EntityGenerationState()
     bonus_state = _EntityGenerationState()
 
-    # Native burns rand draws outside the hooked gameplay stream before each
-    # tick (the discarded per-frame `crt_rand()` in `game_frame_update`
-    # 0x0040c1c0, call site 0x0040cac7). Modeling them as pre-tick draws keeps
-    # the in-tick rng stream aligned with frida_original captures.
     driver = build_verify_playback_driver(
         replay,
         max_ticks=None,
         trace_rng=True,
         strict_rng_trace=True,
-        inter_tick_rand_draws=max(0, int(pre_tick_rand_draws)),
-        inter_tick_rand_draws_by_tick=({} if int(pre_tick_rand_draws) > 0 else None),
     )
 
     class _ReplayRecordObserver(PlaybackWalkObserver):
@@ -457,7 +489,23 @@ def _record_replay_to_trace_python(
         rng_stream = list(rng_stream_by_tick[tick_index])
 
         channels = ReplayTickChannels(
-            checkpoint=checkpoint,
+            replay_step=ReplayStepSnapshot(
+                dt=float(f32(float(replay.ticks[tick_index].dt))),
+                inputs=[
+                    ReplayInputSample(
+                        move_x=float(f32(float(packed[0]))),
+                        move_y=float(f32(float(packed[1]))),
+                        aim_x=float(f32(float(packed[2]))),
+                        aim_y=float(f32(float(packed[3]))),
+                        flags=int(packed[4]),
+                    )
+                    for packed in replay.ticks[tick_index].inputs
+                ],
+                prelude=list(replay.ticks[tick_index].prelude),
+                postlude=list(replay.ticks[tick_index].postlude),
+                commands=list(replay.ticks[tick_index].commands),
+            ),
+            checkpoint=_checkpoint_for_trace(checkpoint),
             sim_state=sim_state_obj,
             entity_samples=entity_samples_obj,
             rng_stream=rng_stream,
@@ -573,7 +621,6 @@ def record_replay_to_trace(
     out_path: Path,
     impl: Literal["python", "zig"] = "python",
     warnings_out: list[str] | None = None,
-    pre_tick_rand_draws: int = 0,
 ) -> TraceSummary:
     replay_path = Path(replay_path)
     out_path = Path(out_path)
@@ -583,11 +630,8 @@ def record_replay_to_trace(
         summary = _record_replay_to_trace_python(
             replay_path=replay_path,
             out_path=out_path,
-            pre_tick_rand_draws=pre_tick_rand_draws,
         )
         return summary
-    if int(pre_tick_rand_draws) > 0:
-        raise ValueError(f"pre_tick_rand_draws is only supported for the python recorder, not {impl!r}")
     if str(impl) == "zig":
         summary, warnings = _record_replay_to_trace_zig(
             replay_path=replay_path,

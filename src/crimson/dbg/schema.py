@@ -4,13 +4,20 @@ import msgspec
 
 from ..persistence.save_status import GameStatusData
 from ..replay.checkpoints import ReplayCheckpoint
-from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
+from .canonical_channels import (
+    EntitySamplesSnapshot,
+    ReplayStepSnapshot,
+    RngStreamRow,
+    SimStateSnapshot,
+    TimingSampleRow,
+)
 
-TRACE_MAGIC = b"crimson_debug_trace_v1\n"
-TRACE_FORMAT_VERSION = 1
-TRACE_SCHEMA_VERSION = 12
+TRACE_MAGIC = b"crimson_debug_trace_v2\n"
+TRACE_FORMAT_VERSION = 2
+TRACE_SCHEMA_VERSION = 14
 
 TRACE_REQUIRED_CHANNELS = (
+    "replay_step",
     "checkpoint",
     "sim_state",
     "entity_samples",
@@ -27,11 +34,11 @@ CHUNK_KIND_META = _CHUNK_KIND_META.decode("ascii")
 CHUNK_KIND_TICK = _CHUNK_KIND_TICK.decode("ascii")
 CHUNK_KIND_FOOTER = _CHUNK_KIND_FOOTER.decode("ascii")
 
-TRAILER_MAGIC = b"CDTFTR1\n"
+TRAILER_MAGIC = b"CDTFTR2\n"
 
 CHUNK_FLAG_ZSTD = 1 << 0
 CHUNK_FLAG_MSGPACK = 1 << 1
-DEFAULT_CHUNK_FLAGS = int(CHUNK_FLAG_ZSTD | CHUNK_FLAG_MSGPACK)
+DEFAULT_CHUNK_FLAGS = int(CHUNK_FLAG_MSGPACK)
 
 
 class TraceProducer(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -47,9 +54,11 @@ class TraceSource(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     size: int | None = None
     mtime_ns: int | None = None
     kind: str | None = None
+    replay_sha256: str | None = None
     tick_rate: int | None = None
     seed: int | None = None
     mode_id: int | None = None
+    player_count: int | None = None
     quest_level: str | None = None
     run_id: int | None = None
     quest_stage_major: int | None = None
@@ -65,7 +74,7 @@ class TraceTickRange(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     tick_count: int
 
 
-class TraceMeta(msgspec.Struct, forbid_unknown_fields=True):
+class TraceMeta(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     trace_format_version: int
     trace_schema_version: int
     created_utc: str
@@ -75,15 +84,16 @@ class TraceMeta(msgspec.Struct, forbid_unknown_fields=True):
     status: GameStatusData | None = None
 
 
-class ReplayTickChannels(msgspec.Struct):
+class ReplayTickChannels(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    replay_step: ReplayStepSnapshot
     checkpoint: ReplayCheckpoint
     sim_state: SimStateSnapshot
     entity_samples: EntitySamplesSnapshot
-    rng_stream: list[RngStreamRow] = msgspec.field(default_factory=list)
-    timing_samples: list[TimingSampleRow] = msgspec.field(default_factory=list)
+    rng_stream: list[RngStreamRow]
+    timing_samples: list[TimingSampleRow]
 
 
-class TickRecord(msgspec.Struct):
+class TickRecord(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     tick_index: int
     elapsed_ms: int
     dt_ms_i32: int
@@ -91,13 +101,13 @@ class TickRecord(msgspec.Struct):
     channels: ReplayTickChannels
 
 
-class TickBlock(msgspec.Struct):
+class TickBlock(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     start_tick: int
     end_tick: int
     ticks: list[TickRecord]
 
 
-class TickBlockIndexEntry(msgspec.Struct):
+class TickBlockIndexEntry(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     start_tick: int
     end_tick: int
     file_offset: int
@@ -106,7 +116,7 @@ class TickBlockIndexEntry(msgspec.Struct):
     checksum: int
 
 
-class TraceFooter(msgspec.Struct):
+class TraceFooter(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     tick_blocks: list[TickBlockIndexEntry]
     tick_count: int
     first_tick: int

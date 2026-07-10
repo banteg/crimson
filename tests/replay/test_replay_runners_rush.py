@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from crimson.game_modes import GameMode
-from crimson.sim.input_providers import PerkPickCommand
+from crimson.sim.input_providers import PerkPickCommand, RngBurnOperation
 from tests.support.replay_runner_helpers import ReplayRngTraceRecorder, _blank_rush_replay, _run_verify_playback
 
 
@@ -35,13 +35,17 @@ def test_rush_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
     assert result.elapsed_ms == 500
 
 
-def test_rush_runner_inter_tick_rand_draws_shift_rng_state() -> None:
+def test_rush_runner_rng_burn_prelude_shifts_rng_state() -> None:
     _header, rec = _blank_rush_replay(ticks=3, seed=0x1234)
     replay = rec.finish()
 
     baseline = _run_verify_playback(replay)
-    shifted = _run_verify_playback(replay, inter_tick_rand_draws=1)
-    shifted_again = _run_verify_playback(replay, inter_tick_rand_draws=1)
+    shifted_replay = msgspec.structs.replace(
+        replay,
+        ticks=[msgspec.structs.replace(tick, prelude=[RngBurnOperation(draws=1)]) for tick in replay.ticks],
+    )
+    shifted = _run_verify_playback(shifted_replay)
+    shifted_again = _run_verify_playback(shifted_replay)
 
     assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
     assert shifted == shifted_again
@@ -53,7 +57,7 @@ def test_rush_runner_ignores_stale_perk_pick_command() -> None:
     replay = rec.finish()
     replay.ticks[0] = msgspec.structs.replace(
         replay.ticks[0],
-        commands=[PerkPickCommand(player_index=0, choice_index=0)],
+        prelude=[PerkPickCommand(player_index=0, choice_index=0)],
     )
 
     result = _run_verify_playback(replay)

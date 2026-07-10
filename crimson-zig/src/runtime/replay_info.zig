@@ -39,6 +39,7 @@ pub const EventKind = enum {
     player_death,
     creature_deaths,
     perk_menu_open,
+    rng_burn,
     typo_backspace,
     typo_char,
     typo_submit,
@@ -110,6 +111,10 @@ const PerkMenuOpenData = struct {
     player_index: i32,
 };
 
+const RngBurnData = struct {
+    draws: u32,
+};
+
 const TypoCharData = struct {
     player_index: i32,
     ch: u8,
@@ -138,6 +143,7 @@ pub const EventData = union(enum) {
     player_death: PlayerDeathData,
     creature_deaths: CreatureDeathsData,
     perk_menu_open: PerkMenuOpenData,
+    rng_burn: RngBurnData,
     typo_backspace: TypoCommandData,
     typo_char: TypoCharData,
     typo_submit: TypoCommandData,
@@ -192,6 +198,7 @@ pub const EventCountsByKind = struct {
             .health_heal,
             .level_up,
             .perk_menu_open,
+            .rng_burn,
             .typo_backspace,
             .typo_char,
             .typo_submit,
@@ -242,6 +249,8 @@ pub fn collect(
         return error.InvalidHeaderValue;
     }
 
+    const prelude = replay.prelude;
+    const postlude = replay.postlude;
     const events = replay.events;
     var context = session_builders.buildReplaySession(
         game_mode,
@@ -249,7 +258,6 @@ pub fn collect(
         events,
         .{
             .strict_events = true,
-            .inter_tick_rand_draws = 0,
         },
     ) catch |err| switch (err) {
         error.InvalidPlayerCount => return error.UnsupportedPlayerCount,
@@ -267,7 +275,15 @@ pub fn collect(
     var timeline: std.ArrayList(TimelineEvent) = .empty;
     defer timeline.deinit(allocator);
 
+    var prelude_index: usize = 0;
+    var postlude_index: usize = 0;
     for (0..ticks_to_simulate) |tick_index| {
+        if (prelude_index < prelude.len and prelude[prelude_index].tickIndex() < tick_index) {
+            return error.UnsupportedEventOrdering;
+        }
+        if (postlude_index < postlude.len and postlude[postlude_index].tickIndex() < tick_index) {
+            return error.UnsupportedEventOrdering;
+        }
         if (context.event_index < events.len and events[context.event_index].tickIndex() < tick_index) {
             return error.UnsupportedEventOrdering;
         }
@@ -277,6 +293,11 @@ pub fn collect(
         const creature_kills_before = context.creatures.kill_count;
 
         const dt_tick = replay.dt[tick_index];
+        const tick_prelude_start = prelude_index;
+        while (prelude_index < prelude.len and prelude[prelude_index].tickIndex() == tick_index) : (prelude_index += 1) {}
+        try replay_runner.applyReplayOperations(&context, prelude[tick_prelude_start..prelude_index], dt_tick);
+        const tick_postlude_start = postlude_index;
+        while (postlude_index < postlude.len and postlude[postlude_index].tickIndex() == tick_index) : (postlude_index += 1) {}
         const tick_event_start = context.event_index;
         var tick_event_end = tick_event_start;
         while (tick_event_end < events.len and events[tick_event_end].tickIndex() == tick_index) : (tick_event_end += 1) {}
@@ -296,19 +317,27 @@ pub fn collect(
             dt_tick,
             .{},
         );
+        try replay_runner.applyReplayPostlude(&context, postlude[tick_postlude_start..postlude_index], dt_tick);
 
         const elapsed_ms = currentElapsedMs(&context);
-        if (game_mode != .rush) {
-            try appendExtraReplayCommands(
-                allocator,
-                &timeline,
-                events[tick_event_start..tick_event_end],
-                @intCast(tick_index),
-                elapsed_ms,
-                options.player_index,
-                options.include_extra_events,
-            );
-        }
+        try appendExtraReplayPrelude(
+            allocator,
+            &timeline,
+            prelude[tick_prelude_start..prelude_index],
+            @intCast(tick_index),
+            elapsed_ms,
+            options.player_index,
+            options.include_extra_events,
+        );
+        try appendExtraReplayCommands(
+            allocator,
+            &timeline,
+            events[tick_event_start..tick_event_end],
+            @intCast(tick_index),
+            elapsed_ms,
+            options.player_index,
+            options.include_extra_events,
+        );
         try appendBonusPickupEvents(
             allocator,
             &timeline,
@@ -342,14 +371,25 @@ pub fn collect(
             before_snapshots[0..context.playersConst().len],
             after_snapshots[0..context.playersConst().len],
             header.preserve_bugs,
-            header.gore_disabled,
+            header.violence_disabled,
             @intCast(tick_index),
             elapsed_ms,
             options.player_index,
         );
+        try appendExtraReplayPostlude(
+            allocator,
+            &timeline,
+            postlude[tick_postlude_start..postlude_index],
+            @intCast(tick_index),
+            elapsed_ms,
+            options.player_index,
+            options.include_extra_events,
+        );
     }
 
     if (ticks_to_simulate == replay.tickCount()) {
+        if (prelude_index != prelude.len) return error.UnsupportedEventOrdering;
+        if (postlude_index != postlude.len) return error.UnsupportedEventOrdering;
         const terminal_tick = replay.tickCount();
         if (context.event_index < events.len and events[context.event_index].tickIndex() < terminal_tick) {
             return error.UnsupportedEventOrdering;
@@ -359,17 +399,15 @@ pub fn collect(
         const elapsed_ms = currentElapsedMs(&context);
         while (context.event_index < events.len and events[context.event_index].tickIndex() == terminal_tick) : (context.event_index += 1) {
             const event = events[context.event_index];
-            if (game_mode != .rush) {
-                try appendExtraReplayCommands(
-                    allocator,
-                    &timeline,
-                    &.{event},
-                    @intCast(terminal_tick),
-                    elapsed_ms,
-                    options.player_index,
-                    options.include_extra_events,
-                );
-            }
+            try appendExtraReplayCommands(
+                allocator,
+                &timeline,
+                &.{event},
+                @intCast(terminal_tick),
+                elapsed_ms,
+                options.player_index,
+                options.include_extra_events,
+            );
             const outcome = try replay_events.applyReplayEvent(
                 event,
                 &context.state,
@@ -405,6 +443,89 @@ pub fn collect(
         .player_count = @intCast(context.playersConst().len),
         .timeline = try timeline.toOwnedSlice(allocator),
     };
+}
+
+fn appendExtraReplayPostlude(
+    allocator: std.mem.Allocator,
+    timeline: *std.ArrayList(TimelineEvent),
+    tick_postlude: []const replay_codec.ReplayPostludeOp,
+    tick_index: i32,
+    elapsed_ms: i64,
+    player_filter: ?i32,
+    include_extra_events: bool,
+) ReplayInfoError!void {
+    if (!include_extra_events) return;
+    for (tick_postlude) |open| {
+        if (player_filter) |index| {
+            if (open.player_index != index) continue;
+        }
+        const detail = try std.fmt.allocPrint(
+            allocator,
+            "p{d} perk menu opened",
+            .{open.player_index},
+        );
+        errdefer allocator.free(detail);
+        try timeline.append(allocator, makeEvent(
+            tick_index,
+            elapsed_ms,
+            .perk_menu_open,
+            open.player_index,
+            detail,
+            .{ .perk_menu_open = .{ .player_index = open.player_index } },
+        ));
+    }
+}
+
+fn appendExtraReplayPrelude(
+    allocator: std.mem.Allocator,
+    timeline: *std.ArrayList(TimelineEvent),
+    tick_prelude: []const replay_codec.ReplayPreludeOp,
+    tick_index: i32,
+    elapsed_ms: i64,
+    player_filter: ?i32,
+    include_extra_events: bool,
+) ReplayInfoError!void {
+    if (!include_extra_events) return;
+    for (tick_prelude) |op| {
+        switch (op) {
+            .rng_burn => |burn| {
+                const detail = try std.fmt.allocPrint(
+                    allocator,
+                    "replay prelude burned {d} RNG draw(s)",
+                    .{burn.draws},
+                );
+                errdefer allocator.free(detail);
+                try timeline.append(allocator, makeEvent(
+                    tick_index,
+                    elapsed_ms,
+                    .rng_burn,
+                    null,
+                    detail,
+                    .{ .rng_burn = .{ .draws = burn.draws } },
+                ));
+            },
+            .perk_menu_open => |open| {
+                if (player_filter) |index| {
+                    if (open.player_index != index) continue;
+                }
+                const detail = try std.fmt.allocPrint(
+                    allocator,
+                    "p{d} perk menu opened",
+                    .{open.player_index},
+                );
+                errdefer allocator.free(detail);
+                try timeline.append(allocator, makeEvent(
+                    tick_index,
+                    elapsed_ms,
+                    .perk_menu_open,
+                    open.player_index,
+                    detail,
+                    .{ .perk_menu_open = .{ .player_index = open.player_index } },
+                ));
+            },
+            .perk_pick => {},
+        }
+    }
 }
 
 fn appendBonusPickupEvents(

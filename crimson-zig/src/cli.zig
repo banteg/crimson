@@ -66,8 +66,8 @@ const usage =
     \\  crimson-zig dbg focus golden.cdt candidate.cdt --tick 0 --json
     \\  crimson-zig dbg health replay.cdt
     \\  crimson-zig dbg tick replay.cdt 0 --json
-    \\  crimson-zig dbg entity replay.cdt 0 --json
-    \\  crimson-zig dbg query replay.cdt "entities where uid == 0" --json
+    \\  crimson-zig dbg entity replay.cdt 1001000000 --json
+    \\  crimson-zig dbg query replay.cdt "entities where uid == 1001000000" --json
     \\  crimson-zig dbg verify
     \\  crimson-zig config --path crimson.cfg --format json
     \\  crimson-zig status --path game.cfg --format json

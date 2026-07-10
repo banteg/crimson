@@ -139,7 +139,6 @@ pub fn deinitReplayTickTraceRows(
 pub const ReplayRunOptions = struct {
     strict_events: bool = true,
     max_ticks: ?usize = null,
-    inter_tick_rand_draws: i32 = 0,
     quest_spawn_entries: ?[]const spawn_mod.QuestSpawnEntry = null,
     quest_start_weapon_id: ?i32 = null,
     trace_rng: bool = true,
@@ -162,6 +161,102 @@ pub fn runReplayWithOptions(
         null,
         options,
     );
+}
+
+/// Apply an ordered per-tick replay operation phase. The caller owns trace
+/// placement: preludes run before the sink is enabled, while postludes run
+/// after simulation with the tick sink still active.
+pub fn applyReplayOperations(
+    context: *runtime_session.DeterministicSession,
+    ops: []const replay_codec.ReplayPreludeOp,
+    dt_tick: f32,
+) ReplayRunnerError!void {
+    var menu_open_seen = false;
+    const perk_event_dt = survival_progression.timeScaleReflexBoostBonus(
+        context.state.bonuses.reflex_boost,
+        context.state.time_scale_active,
+        dt_tick,
+    );
+
+    for (ops) |op| {
+        switch (op) {
+            .rng_burn => |burn| {
+                var draw_index: u32 = 0;
+                while (draw_index < burn.draws) : (draw_index += 1) {
+                    _ = context.state.rng.randTagged(rng_callers.replay_prelude_rng_burn);
+                }
+            },
+            .perk_menu_open, .perk_pick => {
+                const event: replay_codec.ReplayEvent = switch (op) {
+                    .perk_menu_open => |open| .{ .perk_menu_open = .{
+                        .tick_index = open.tick_index,
+                        .player_index = open.player_index,
+                    } },
+                    .perk_pick => |pick| .{ .perk_pick = .{
+                        .tick_index = pick.tick_index,
+                        .player_index = pick.player_index,
+                        .choice_index = pick.choice_index,
+                    } },
+                    .rng_burn => unreachable,
+                };
+                const outcome = try replay_events.applyReplayEvent(
+                    event,
+                    &context.state,
+                    context.players(),
+                    &context.creatures,
+                    perk_event_dt,
+                    &context.quest_spawn_timeline_ms,
+                    &context.quest_no_creatures_timer_ms,
+                    &context.quest_completion_transition_ms,
+                    .{
+                        .game_mode = context.game_mode,
+                        .player_count = context.player_count,
+                        .quest_unlock_index = context.quest_unlock_index,
+                        .strict_events = context.strict_events,
+                        .menu_open_seen_this_tick = menu_open_seen,
+                    },
+                );
+                menu_open_seen = menu_open_seen or outcome.menu_open_seen_this_tick;
+                context.perk_menu_open_count += outcome.perk_menu_open_count_delta;
+                context.perk_pick_count += outcome.perk_pick_count_delta;
+            },
+        }
+    }
+}
+
+pub fn applyReplayPostlude(
+    context: *runtime_session.DeterministicSession,
+    ops: []const replay_codec.ReplayPostludeOp,
+    dt_tick: f32,
+) ReplayRunnerError!void {
+    const perk_event_dt = survival_progression.timeScaleReflexBoostBonus(
+        context.state.bonuses.reflex_boost,
+        context.state.time_scale_active,
+        dt_tick,
+    );
+    for (ops) |open| {
+        const outcome = try replay_events.applyReplayEvent(
+            .{ .perk_menu_open = .{
+                .tick_index = open.tick_index,
+                .player_index = open.player_index,
+            } },
+            &context.state,
+            context.players(),
+            &context.creatures,
+            perk_event_dt,
+            &context.quest_spawn_timeline_ms,
+            &context.quest_no_creatures_timer_ms,
+            &context.quest_completion_transition_ms,
+            .{
+                .game_mode = context.game_mode,
+                .player_count = context.player_count,
+                .quest_unlock_index = context.quest_unlock_index,
+                .strict_events = context.strict_events,
+                .menu_open_seen_this_tick = false,
+            },
+        );
+        context.perk_menu_open_count += outcome.perk_menu_open_count_delta;
+    }
 }
 
 pub fn runReplayWithTrace(
@@ -188,6 +283,8 @@ pub fn runReplayWithTrace(
         return error.InvalidHeaderValue;
     }
 
+    const prelude = replay.prelude;
+    const postlude = replay.postlude;
     const events = replay.events;
     var context = session_builders.buildReplaySession(
         game_mode,
@@ -195,7 +292,6 @@ pub fn runReplayWithTrace(
         events,
         .{
             .strict_events = options.strict_events,
-            .inter_tick_rand_draws = options.inter_tick_rand_draws,
             .quest_spawn_entries = options.quest_spawn_entries,
             .quest_start_weapon_id = options.quest_start_weapon_id,
         },
@@ -213,12 +309,25 @@ pub fn runReplayWithTrace(
         replay.tickCount();
     const full_replay_simulated = ticks_to_simulate == replay.tickCount();
 
+    var prelude_index: usize = 0;
+    var postlude_index: usize = 0;
     for (0..ticks_to_simulate) |tick_index| {
+        if (prelude_index < prelude.len and prelude[prelude_index].tickIndex() < tick_index) {
+            return error.UnsupportedEventOrdering;
+        }
+        if (postlude_index < postlude.len and postlude[postlude_index].tickIndex() < tick_index) {
+            return error.UnsupportedEventOrdering;
+        }
         if (context.event_index < events.len and events[context.event_index].tickIndex() < tick_index) {
             return error.UnsupportedEventOrdering;
         }
 
         const dt_tick = replay.dt[tick_index];
+        const tick_prelude_start = prelude_index;
+        while (prelude_index < prelude.len and prelude[prelude_index].tickIndex() == tick_index) : (prelude_index += 1) {}
+        try applyReplayOperations(&context, prelude[tick_prelude_start..prelude_index], dt_tick);
+        const tick_postlude_start = postlude_index;
+        while (postlude_index < postlude.len and postlude[postlude_index].tickIndex() == tick_index) : (postlude_index += 1) {}
         const tick_event_start = context.event_index;
         var tick_event_end = tick_event_start;
         while (tick_event_end < events.len and events[tick_event_end].tickIndex() == tick_index) : (tick_event_end += 1) {}
@@ -258,6 +367,7 @@ pub fn runReplayWithTrace(
             dt_tick,
             step_options,
         );
+        try applyReplayPostlude(&context, postlude[tick_postlude_start..postlude_index], dt_tick);
         if (rng_trace_active and context.state.rng.consumeMissingTraceCaller()) {
             return error.MissingRngCallerTag;
         }
@@ -310,6 +420,8 @@ pub fn runReplayWithTrace(
     }
 
     if (full_replay_simulated) {
+        if (prelude_index != prelude.len) return error.UnsupportedEventOrdering;
+        if (postlude_index != postlude.len) return error.UnsupportedEventOrdering;
         const terminal_tick = replay.tickCount();
         if (context.event_index < events.len and events[context.event_index].tickIndex() < terminal_tick) {
             return error.UnsupportedEventOrdering;
@@ -1004,28 +1116,89 @@ test "survival run consumes replay dt rows for elapsed_ms" {
     try std.testing.expectEqual(@as(i64, 500), result.elapsed_ms_sim);
 }
 
-test "survival run inter-tick rand draws shift rng deterministically" {
+test "survival run ordered rng-burn preludes shift rng deterministically" {
     const allocator = std.testing.allocator;
 
-    const replay = try buildTestReplay(allocator, .{
+    const baseline_replay = try buildTestReplay(allocator, .{
         .tick_rate = 60,
         .seed = 0x1234,
         .inputs = &.{ 0, 0, 0 },
         .events = &.{},
     });
-    defer replay.deinit(allocator);
+    defer baseline_replay.deinit(allocator);
+    const burns = [_]replay_codec.ReplayPreludeOp{
+        .{ .rng_burn = .{ .tick_index = 0, .draws = 1 } },
+        .{ .rng_burn = .{ .tick_index = 1, .draws = 1 } },
+        .{ .rng_burn = .{ .tick_index = 2, .draws = 1 } },
+    };
+    const shifted_replay = try buildTestReplay(allocator, .{
+        .tick_rate = 60,
+        .seed = 0x1234,
+        .inputs = &.{ 0, 0, 0 },
+        .prelude = &burns,
+        .events = &.{},
+    });
+    defer shifted_replay.deinit(allocator);
 
-    const baseline = try runReplay(replay);
-    const shifted = try runReplayWithOptions(replay, .{
-        .inter_tick_rand_draws = 1,
-    });
-    const shifted_again = try runReplayWithOptions(replay, .{
-        .inter_tick_rand_draws = 1,
-    });
+    const baseline = try runReplay(baseline_replay);
+    const shifted = try runReplay(shifted_replay);
+    const shifted_again = try runReplay(shifted_replay);
 
     try std.testing.expectEqual(@as(usize, 3), baseline.ticks);
     try std.testing.expectEqual(shifted.wave_spawn_rng_state, shifted_again.wave_spawn_rng_state);
     try std.testing.expect(shifted.wave_spawn_rng_state != baseline.wave_spawn_rng_state);
+}
+
+test "postlude menu RNG follows simulation in the canonical tick trace" {
+    const allocator = std.testing.allocator;
+
+    const baseline_replay = try buildTestReplay(allocator, .{
+        .tick_rate = 60,
+        .seed = 0x1234,
+        .inputs = &.{0},
+        .events = &.{},
+    });
+    defer baseline_replay.deinit(allocator);
+    const postlude_ops = [_]replay_codec.ReplayPostludeOp{
+        .{ .tick_index = 0, .player_index = 0 },
+    };
+    const postlude_replay = try buildTestReplay(allocator, .{
+        .tick_rate = 60,
+        .seed = 0x1234,
+        .inputs = &.{0},
+        .postlude = &postlude_ops,
+        .events = &.{},
+    });
+    defer postlude_replay.deinit(allocator);
+
+    var baseline_trace: std.ArrayList(ReplayTickTrace) = .empty;
+    defer {
+        deinitReplayTickTraceRows(allocator, baseline_trace.items);
+        baseline_trace.deinit(allocator);
+    }
+    _ = try runReplayWithTrace(allocator, baseline_replay, &baseline_trace, .{});
+
+    var postlude_trace: std.ArrayList(ReplayTickTrace) = .empty;
+    defer {
+        deinitReplayTickTraceRows(allocator, postlude_trace.items);
+        postlude_trace.deinit(allocator);
+    }
+    const result = try runReplayWithTrace(allocator, postlude_replay, &postlude_trace, .{});
+
+    try std.testing.expectEqual(@as(usize, 1), baseline_trace.items.len);
+    try std.testing.expectEqual(@as(usize, 1), postlude_trace.items.len);
+    const baseline_rng = baseline_trace.items[0].rng_rows;
+    const postlude_rng = postlude_trace.items[0].rng_rows;
+    try std.testing.expect(postlude_rng.len > baseline_rng.len);
+    for (baseline_rng, postlude_rng[0..baseline_rng.len]) |expected, actual| {
+        try std.testing.expectEqual(expected.state_before_u32, actual.state_before_u32);
+        try std.testing.expectEqual(expected.state_after_u32, actual.state_after_u32);
+        try std.testing.expectEqual(expected.value_15, actual.value_15);
+        try std.testing.expectEqual(expected.caller, actual.caller);
+    }
+    try std.testing.expect(!postlude_trace.items[0].gameplay_state.perk_selection.choices_dirty);
+    try std.testing.expectEqual(@as(usize, replay_codec.perk_choice_slot_count), postlude_trace.items[0].gameplay_state.perk_selection.choice_count);
+    try std.testing.expectEqual(@as(usize, 1), result.perk_menu_open_count);
 }
 
 test "survival run applies capture bootstrap payload state" {
@@ -1457,25 +1630,35 @@ test "rush run spawn cadence uses raw frame dt, not sim dt" {
     try std.testing.expectEqual(@as(usize, 4), result.wave_spawn_count);
 }
 
-test "rush run inter-tick rand draws shift rng deterministically" {
+test "rush run ordered rng-burn preludes shift rng deterministically" {
     const allocator = std.testing.allocator;
 
-    const replay = try buildTestReplay(allocator, .{
+    const baseline_replay = try buildTestReplay(allocator, .{
         .game_mode_id = @intFromEnum(GameModeId.rush),
         .seed = 0x1234,
         .tick_rate = 60,
         .inputs = &.{ 0, 0, 0 },
         .events = &.{},
     });
-    defer replay.deinit(allocator);
+    defer baseline_replay.deinit(allocator);
+    const burns = [_]replay_codec.ReplayPreludeOp{
+        .{ .rng_burn = .{ .tick_index = 0, .draws = 1 } },
+        .{ .rng_burn = .{ .tick_index = 1, .draws = 1 } },
+        .{ .rng_burn = .{ .tick_index = 2, .draws = 1 } },
+    };
+    const shifted_replay = try buildTestReplay(allocator, .{
+        .game_mode_id = @intFromEnum(GameModeId.rush),
+        .seed = 0x1234,
+        .tick_rate = 60,
+        .inputs = &.{ 0, 0, 0 },
+        .prelude = &burns,
+        .events = &.{},
+    });
+    defer shifted_replay.deinit(allocator);
 
-    const baseline = try runReplay(replay);
-    const shifted = try runReplayWithOptions(replay, .{
-        .inter_tick_rand_draws = 1,
-    });
-    const shifted_again = try runReplayWithOptions(replay, .{
-        .inter_tick_rand_draws = 1,
-    });
+    const baseline = try runReplay(baseline_replay);
+    const shifted = try runReplay(shifted_replay);
+    const shifted_again = try runReplay(shifted_replay);
 
     try std.testing.expectEqual(@as(usize, 3), baseline.ticks);
     try std.testing.expectEqual(shifted.wave_spawn_rng_state, shifted_again.wave_spawn_rng_state);
@@ -2633,6 +2816,8 @@ const TestReplayConfig = struct {
     preserve_bugs: bool = false,
     quest_level: []const u8 = "",
     inputs: []const u32,
+    prelude: []const replay_codec.ReplayPreludeOp = &.{},
+    postlude: []const replay_codec.ReplayPostludeOp = &.{},
     events: []const replay_codec.ReplayEvent,
 };
 
@@ -2645,6 +2830,8 @@ const TestReplayMultiConfig = struct {
     preserve_bugs: bool = false,
     quest_level: []const u8 = "",
     inputs: []const []const u32,
+    prelude: []const replay_codec.ReplayPreludeOp = &.{},
+    postlude: []const replay_codec.ReplayPostludeOp = &.{},
     events: []const replay_codec.ReplayEvent,
 };
 
@@ -2667,6 +2854,16 @@ fn buildTestReplay(
         ticks[tick_index] = input_tick;
     }
 
+    const prelude = if (cfg.prelude.len > 0)
+        try allocator.dupe(replay_codec.ReplayPreludeOp, cfg.prelude)
+    else
+        &.{};
+    errdefer if (prelude.len > 0) allocator.free(prelude);
+    const postlude = if (cfg.postlude.len > 0)
+        try allocator.dupe(replay_codec.ReplayPostludeOp, cfg.postlude)
+    else
+        &.{};
+    errdefer if (postlude.len > 0) allocator.free(postlude);
     const events = try allocator.alloc(replay_codec.ReplayEvent, cfg.events.len);
     for (cfg.events, 0..) |event, idx| {
         events[idx] = event;
@@ -2687,15 +2884,13 @@ fn buildTestReplay(
             .seed = cfg.seed,
             .replay_format_version = replay_codec.replay_format_version,
             .quest_level = try allocator.dupe(u8, cfg.quest_level),
-            .bootstrap_kind = try allocator.dupe(u8, "none"),
-            .bootstrap_seed = 1,
             .game_version = try allocator.dupe(u8, cfg.game_version),
             .tick_rate = cfg.tick_rate,
-            .difficulty_level = 0,
+            .quest_fail_retry_count = 0,
             .hardcore = false,
             .preserve_bugs = cfg.preserve_bugs,
             .detail_preset = 5,
-            .gore_disabled = 0,
+            .violence_disabled = 0,
             .world_size = 1024.0,
             .player_count = 1,
             .status = .{
@@ -2707,6 +2902,8 @@ fn buildTestReplay(
         },
         .inputs = ticks,
         .dt = dt,
+        .prelude = prelude,
+        .postlude = postlude,
         .events = events,
     };
 }
@@ -2734,6 +2931,16 @@ fn buildTestReplayMulti(
         ticks[tick_index] = input_tick;
     }
 
+    const prelude = if (cfg.prelude.len > 0)
+        try allocator.dupe(replay_codec.ReplayPreludeOp, cfg.prelude)
+    else
+        &.{};
+    errdefer if (prelude.len > 0) allocator.free(prelude);
+    const postlude = if (cfg.postlude.len > 0)
+        try allocator.dupe(replay_codec.ReplayPostludeOp, cfg.postlude)
+    else
+        &.{};
+    errdefer if (postlude.len > 0) allocator.free(postlude);
     const events = try allocator.alloc(replay_codec.ReplayEvent, cfg.events.len);
     for (cfg.events, 0..) |event, idx| {
         events[idx] = event;
@@ -2754,15 +2961,13 @@ fn buildTestReplayMulti(
             .seed = cfg.seed,
             .replay_format_version = replay_codec.replay_format_version,
             .quest_level = try allocator.dupe(u8, cfg.quest_level),
-            .bootstrap_kind = try allocator.dupe(u8, "none"),
-            .bootstrap_seed = 1,
             .game_version = try allocator.dupe(u8, cfg.game_version),
             .tick_rate = cfg.tick_rate,
-            .difficulty_level = 0,
+            .quest_fail_retry_count = 0,
             .hardcore = false,
             .preserve_bugs = cfg.preserve_bugs,
             .detail_preset = 5,
-            .gore_disabled = 0,
+            .violence_disabled = 0,
             .world_size = 1024.0,
             .player_count = cfg.player_count,
             .status = .{
@@ -2774,6 +2979,8 @@ fn buildTestReplayMulti(
         },
         .inputs = ticks,
         .dt = dt,
+        .prelude = prelude,
+        .postlude = postlude,
         .events = events,
     };
 }

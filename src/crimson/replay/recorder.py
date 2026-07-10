@@ -4,7 +4,17 @@ import math
 from collections.abc import Sequence
 
 from ..sim.input import PlayerInput
-from ..sim.input_providers import GameCommand
+from ..sim.input_providers import (
+    GameCommand,
+    PerkMenuOpenCommand,
+    PerkPickCommand,
+    ReplayPostludeOperation,
+    ReplayPreludeOperation,
+    ReplayTickCommand,
+    TypoBackspaceCommand,
+    TypoCharCommand,
+    TypoSubmitCommand,
+)
 from .input_codec import pack_tick_inputs
 from .types import (
     REPLAY_FORMAT_VERSION,
@@ -43,6 +53,8 @@ class ReplayRecorder:
         inputs: Sequence[PlayerInput],
         *,
         commands: Sequence[GameCommand] | None = None,
+        prelude: Sequence[ReplayPreludeOperation] | None = None,
+        postlude: Sequence[ReplayPostludeOperation] | None = None,
         dt: float | None = None,
     ) -> int:
         """Record a single simulation tick worth of inputs.
@@ -58,8 +70,27 @@ class ReplayRecorder:
         if not math.isfinite(tick_dt) or tick_dt < 0.0:
             raise ValueError(f"dt must be finite and >= 0, got {tick_dt!r}")
 
+        replay_prelude = list(prelude or ())
+        replay_commands: list[ReplayTickCommand] = []
+        for command in commands or ():
+            match command:
+                case PerkMenuOpenCommand() | PerkPickCommand():
+                    replay_prelude.append(command)
+                case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
+                    replay_commands.append(command)
+                case _:
+                    raise ValueError(f"unsupported replay command: {type(command).__name__}")
+
         tick_index = self._tick_index
-        self._ticks.append(ReplayTick(dt=tick_dt, inputs=packed, commands=list(commands) if commands else []))
+        self._ticks.append(
+            ReplayTick(
+                dt=tick_dt,
+                inputs=packed,
+                prelude=replay_prelude,
+                postlude=list(postlude or ()),
+                commands=replay_commands,
+            ),
+        )
         self._tick_index += 1
         return tick_index
 
