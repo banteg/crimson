@@ -44,3 +44,30 @@ def test_frida_agent_uses_the_python_capture_format_version() -> None:
 
     assert match is not None
     assert int(match.group(1)) == FRIDA_CAPTURE_FORMAT_VERSION
+
+
+def test_frida_agent_does_not_require_callable_rng_state_accessor_as_hook() -> None:
+    source = (Path(__file__).parents[2] / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
+
+    hook_names = re.search(
+        r"^function requiredReplayHookNames\(\) \{(?P<body>.*?)^\}",
+        source,
+        flags=re.MULTILINE | re.DOTALL,
+    )
+    function_names = re.search(
+        r"^function requiredReplayFnNames\(\) \{(?P<body>.*?)^\}",
+        source,
+        flags=re.MULTILINE | re.DOTALL,
+    )
+    validation = re.search(
+        r"^function validateInstalledRequiredHooks\(\) \{(?P<body>.*?)^\}",
+        source,
+        flags=re.MULTILINE | re.DOTALL,
+    )
+
+    assert hook_names is not None
+    assert function_names is not None
+    assert validation is not None
+    assert '"crt_getptd"' not in hook_names.group("body")
+    assert '"crt_getptd"' in function_names.group("body")
+    assert "requiredReplayHookNames()" in validation.group("body")

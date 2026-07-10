@@ -937,13 +937,18 @@ function emitStartupContractError(errorCode, extra) {
   return false;
 }
 
-function requiredReplayFnNames() {
+function requiredReplayHookNames() {
   const names = REQUIRED_REPLAY_FN_NAMES.slice();
   if (CONFIG.enableRngHooks) {
     names.push("crt_srand");
     names.push("crt_rand");
-    names.push("crt_getptd");
   }
+  return names;
+}
+
+function requiredReplayFnNames() {
+  const names = requiredReplayHookNames();
+  if (CONFIG.enableRngHooks) names.push("crt_getptd");
   return names;
 }
 
@@ -1047,7 +1052,7 @@ function validateStartupReadiness(ptrs) {
 
 function validateInstalledRequiredHooks() {
   const failures = [];
-  const names = requiredReplayFnNames();
+  const names = requiredReplayHookNames();
   for (let i = 0; i < names.length; i++) {
     const name = names[i];
     const status = outState.hookStatusByName[name];
