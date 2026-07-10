@@ -4999,6 +4999,8 @@ function finalizeTick() {
       query_hash: toHex(tick.input_hash_state >>> 0, 8),
     },
     input_player_keys: tick.input_player_keys,
+    replay_prelude: tick.replay_prelude,
+    replay_postlude: tick.replay_postlude,
     rng_stream: tick.rng.head,
     rng_calls: tick.rng.calls | 0,
     rng_outside_before: {

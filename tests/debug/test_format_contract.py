@@ -71,3 +71,14 @@ def test_frida_agent_does_not_require_callable_rng_state_accessor_as_hook() -> N
     assert '"crt_getptd"' not in hook_names.group("body")
     assert '"crt_getptd"' in function_names.group("body")
     assert "requiredReplayHookNames()" in validation.group("body")
+
+
+def test_frida_agent_forwards_replay_boundaries_to_tick_contract() -> None:
+    source = (Path(__file__).parents[2] / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
+    finalize_tick = source.split("function finalizeTick() {", 1)[1].split(
+        "function finalizeTickOrReport() {",
+        1,
+    )[0]
+
+    assert "replay_prelude: tick.replay_prelude" in finalize_tick
+    assert "replay_postlude: tick.replay_postlude" in finalize_tick
